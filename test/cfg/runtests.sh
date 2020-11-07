@@ -392,6 +392,28 @@ else
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --library=opencv2 ${DIR}opencv2.cpp
 
+# cppunit.cpp
+set +e
+pkg-config --version
+PKGCONFIG_RETURNCODE=$?
+set -e
+
+if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
+    echo "pkg-config needed to retrieve cppunit configuration is not available, skipping syntax check."
+else
+    set +e
+    CPPUNIT=$(pkg-config cppunit)
+    CPPUNIT_RETURNCODE=$?
+    set -e
+    if [ $CPPUNIT_RETURNCODE -ne 0 ]; then
+        echo "cppunit not found, skipping syntax check for cppunit"
+    else
+        echo "cppunit found, checking syntax with ${CXX} now."
+        ${CXX} ${CXX_OPT} -Wno-deprecated-declarations ${DIR}cppunit.cpp
+    fi
+fi
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=cppunit -f ${DIR}cppunit.cpp
+
 # Check the syntax of the defines in the configuration files
 set +e
 xmlstarlet --version

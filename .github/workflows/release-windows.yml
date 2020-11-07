@@ -7,9 +7,10 @@ name: release-windows
 on:
   push:
     tags:
-    - '2.*'
+      - '2.*'
   schedule:
     - cron:  '0 0 * * *'
+  workflow_dispatch:
 
 defaults:
   run:
@@ -58,11 +59,6 @@ jobs:
           lupdate gui.pro
           lrelease gui.pro -removeidentical
 
-      - name: Create online-help
-        run: |
-          cd gui\help
-          qhelpgenerator online-help.qhcp -o online-help.qhc
-
       - name: Matchcompiler
         run: python tools\matchcompiler.py --write-dir lib
 
@@ -88,7 +84,12 @@ jobs:
           mkdir bin
           xcopy /S Build\gui bin
           cd win_installer
-          msbuild -m cppcheck.wixproj /p:Platform=x64,ProductVersion=2.0.${{ github.run_number }}
+          REM Read ProductVersion
+          for /f "tokens=4 delims= " %%a in ('find "ProductVersion" productInfo.wxi') do set PRODUCTVER=%%a
+          REM Remove double quotes
+          set PRODUCTVER=%PRODUCTVER:"=%
+          echo ProductVersion=%PRODUCTVER%
+          msbuild -m cppcheck.wixproj /p:Platform=x64,ProductVersion=%PRODUCTVER%.${{ github.run_number }}
 
       - uses: actions/upload-artifact@v2
         with:

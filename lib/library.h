@@ -179,7 +179,8 @@ public:
     bool isNotLibraryFunction(const Token *ftok) const;
     bool matchArguments(const Token *ftok, const std::string &functionName) const;
 
-    bool isUseRetVal(const Token* ftok) const;
+    enum class UseRetValType { NONE, DEFAULT, ERROR_CODE };
+    UseRetValType getUseRetValType(const Token* ftok) const;
 
     const std::string& returnValue(const Token *ftok) const;
     const std::string& returnValueType(const Token *ftok) const;
@@ -306,12 +307,12 @@ public:
         bool leakignore;
         bool isconst;
         bool ispure;
-        bool useretval;
+        UseRetValType useretval;
         bool ignore;  // ignore functions/macros from a library (gtk, qt etc)
         bool formatstr;
         bool formatstr_scan;
         bool formatstr_secure;
-        Function() : use(false), leakignore(false), isconst(false), ispure(false), useretval(false), ignore(false), formatstr(false), formatstr_scan(false), formatstr_secure(false) {}
+        Function() : use(false), leakignore(false), isconst(false), ispure(false), useretval(UseRetValType::NONE), ignore(false), formatstr(false), formatstr_scan(false), formatstr_secure(false) {}
     };
 
     const Function *getFunction(const Token *ftok) const;

@@ -34,6 +34,7 @@
 #include <algorithm>
 #include <cassert>
 #include <climits>
+#include <cstring>
 #include <iomanip>
 #include <iostream>
 #include <unordered_map>
@@ -1820,12 +1821,12 @@ void SymbolDatabase::clangSetVariables(const std::vector<const Variable *> &vari
     mVariableList = variableList;
 }
 
-Variable::Variable(const Token *name_, const std::string &clangType, const Token *start,
-                   nonneg int index_, AccessControl access_, const Type *type_,
-                   const Scope *scope_)
+Variable::Variable(const Token *name_, const std::string &clangType, const Token *typeStart,
+                   const Token *typeEnd, nonneg int index_, AccessControl access_,
+                   const Type *type_, const Scope *scope_)
     : mNameToken(name_),
-      mTypeStartToken(start),
-      mTypeEndToken(name_ ? name_->previous() : nullptr),
+      mTypeStartToken(typeStart),
+      mTypeEndToken(typeEnd),
       mIndex(index_),
       mAccess(access_),
       mFlags(0),
@@ -1837,6 +1838,10 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
         mTypeStartToken = mTypeEndToken;
         while (Token::Match(mTypeStartToken->previous(), "%type%|*|&"))
             mTypeStartToken = mTypeStartToken->previous();
+        if (mTypeStartToken->str() == "const")
+            mTypeStartToken = mTypeStartToken->next();
+        if (mTypeStartToken->str() == "struct")
+            mTypeStartToken = mTypeStartToken->next();
     }
     if (Token::simpleMatch(mTypeStartToken, "static"))
         setFlag(fIsStatic, true);
@@ -2042,6 +2047,16 @@ std::string Variable::getTypeName() const
     return ret;
 }
 
+static bool isOperator(const Token *tokenDef)
+{
+    if (!tokenDef)
+        return false;
+    if (tokenDef->isOperatorKeyword())
+        return true;
+    const std::string &name = tokenDef->str();
+    return name.size() > 8 && name.compare(0,8,"operator")==0 && std::strchr("+-*/%&|~^<>!=[(", name[8]);
+}
+
 Function::Function(const Tokenizer *mTokenizer,
                    const Token *tok,
                    const Scope *scope,
@@ -2065,7 +2080,7 @@ Function::Function(const Tokenizer *mTokenizer,
       mFlags(0)
 {
     // operator function
-    if (tokenDef->isOperatorKeyword()) {
+    if (::isOperator(tokenDef)) {
         isOperator(true);
 
         // 'operator =' is special
@@ -2089,40 +2104,7 @@ Function::Function(const Tokenizer *mTokenizer,
         isExplicit(tokenDef->previous()->str() == "explicit");
     }
 
-    const Token *tok1 = tok;
-
-    // look for end of previous statement
-    while (tok1->previous() && !Token::Match(tok1->previous(), ";|}|{|public:|protected:|private:")) {
-        tok1 = tok1->previous();
-
-        // extern function
-        if (tok1->str() == "extern") {
-            isExtern(true);
-        }
-
-        // virtual function
-        else if (tok1->str() == "virtual") {
-            hasVirtualSpecifier(true);
-        }
-
-        // static function
-        else if (tok1->str() == "static") {
-            isStatic(true);
-            if (scope->type == Scope::eNamespace || scope->type == Scope::eGlobal)
-                isStaticLocal(true);
-        }
-
-        // friend function
-        else if (tok1->str() == "friend") {
-            isFriend(true);
-        }
-
-        // Function template
-        else if (tok1->link() && tok1->str() == ">" && Token::simpleMatch(tok1->link()->previous(), "template <")) {
-            templateDef = tok1->link()->previous();
-            break;
-        }
-    }
+    const Token *tok1 = setFlags(tok, scope);
 
     // find the return type
     if (!isConstructor() && !isDestructor() && !isLambda()) {
@@ -2213,6 +2195,53 @@ Function::Function(const Token *tokenDef)
       functionPointerUsage(nullptr),
       mFlags(0)
 {
+    // operator function
+    if (::isOperator(tokenDef)) {
+        isOperator(true);
+
+        // 'operator =' is special
+        if (tokenDef->str() == "operator=")
+            type = Function::eOperatorEqual;
+    }
+
+    setFlags(tokenDef, tokenDef->scope());
+}
+
+const Token *Function::setFlags(const Token *tok1, const Scope *scope)
+{
+    // look for end of previous statement
+    while (tok1->previous() && !Token::Match(tok1->previous(), ";|}|{|public:|protected:|private:")) {
+        tok1 = tok1->previous();
+
+        // extern function
+        if (tok1->str() == "extern") {
+            isExtern(true);
+        }
+
+        // virtual function
+        else if (tok1->str() == "virtual") {
+            hasVirtualSpecifier(true);
+        }
+
+        // static function
+        else if (tok1->str() == "static") {
+            isStatic(true);
+            if (scope->type == Scope::eNamespace || scope->type == Scope::eGlobal)
+                isStaticLocal(true);
+        }
+
+        // friend function
+        else if (tok1->str() == "friend") {
+            isFriend(true);
+        }
+
+        // Function template
+        else if (tok1->link() && tok1->str() == ">" && Token::simpleMatch(tok1->link()->previous(), "template <")) {
+            templateDef = tok1->link()->previous();
+            break;
+        }
+    }
+    return tok1;
 }
 
 std::string Function::fullName() const
@@ -2807,7 +2836,9 @@ bool Type::isClassType() const
 
 bool Type::isEnumType() const
 {
-    return classScope && classScope->type == Scope::ScopeType::eEnum;
+    //We explicitly check for "enum" because a forward declared enum doesn't get its own scope
+    return (classDef && classDef->str() == "enum") ||
+           (classScope && classScope->type == Scope::ScopeType::eEnum);
 }
 
 bool Type::isStructType() const
@@ -3679,8 +3710,8 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
         argumentList.emplace_back(nameTok, startTok, endTok, count++, AccessControl::Argument, argType, functionScope, symbolDatabase->mSettings);
 
         if (tok->str() == ")") {
-            // check for a variadic function
-            if (Token::simpleMatch(startTok, "..."))
+            // check for a variadic function or a variadic template function
+            if (Token::simpleMatch(endTok, "..."))
                 isVariadic(true);
 
             break;
@@ -4776,7 +4807,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 fallback1++;
 
             // Try to evaluate the apparently more complex expression
-            else {
+            else if (check->isCPP()) {
                 const Token *vartok = arguments[j];
                 while (vartok->isUnaryOp("&") || vartok->isUnaryOp("*"))
                     vartok = vartok->astOperand1();
@@ -4794,6 +4825,10 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                     break;
                 }
             }
+
+            else
+                // C code: if number of arguments match then do not match types
+                fallback1++;
         }
 
         const size_t hasToBe = func->isVariadic() ? (func->argCount() - 1) : args;

@@ -41,6 +41,9 @@ private:
         settings.library.setalloc("malloc", id, -1);
         settings.library.setrealloc("realloc", id, -1);
         settings.library.setdealloc("free", id, 1);
+        while (!Library::ismemory(++id));
+        settings.library.setalloc("socket", id, -1);
+        settings.library.setdealloc("close", id, 1);
         while (!Library::isresource(++id));
         settings.library.setalloc("fopen", id, -1);
         settings.library.setrealloc("freopen", id, -1, 3);
@@ -1392,10 +1395,19 @@ private:
     }
 
     void ifelse8() { // #5747
-        check("void f() {\n"
+        check("int f() {\n"
               "    int fd = socket(AF_INET, SOCK_PACKET, 0 );\n"
               "    if (fd == -1)\n"
-              "        return;\n"
+              "        return -1;\n"
+              "    return fd;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    int fd = socket(AF_INET, SOCK_PACKET, 0 );\n"
+              "    if (fd != -1)\n"
+              "        return fd;\n"
+              "    return -1;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

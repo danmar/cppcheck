@@ -850,6 +850,45 @@ def isNoReturnScope(tok):
     return False
 
 
+# Return the token which the value is assigned to
+def getAssignedVariableToken(valueToken):
+    if not valueToken:
+        return None
+    if not valueToken.astParent:
+        return None
+    operator = valueToken.astParent
+    if operator.isAssignmentOp:
+        return operator.astOperand1
+    if operator.isArithmeticalOp:
+        return getAssignedVariableToken(operator)
+    return None
+
+# If the value is used as a return value, return the function definition
+def getFunctionUsingReturnValue(valueToken):
+    if not valueToken:
+        return None
+    if not valueToken.astParent:
+        return None
+    operator = valueToken.astParent
+    if operator.str == 'return':
+        return operator.scope.function
+    if operator.isArithmeticalOp:
+        return getFunctionUsingReturnValue(operator)
+    return None
+
+# Return true if the token follows a specific sequence of token str values
+def tokenFollowsSequence(token, sequence):
+    if not token:
+        return False
+    for i in reversed(sequence):
+        prev = token.previous
+        if not prev:
+            return False
+        if prev.str != i:
+            return False
+        token = prev
+    return True
+
 class Define:
     def __init__(self, directive):
         self.args = []
@@ -1023,7 +1062,7 @@ class MisraSettings(object):
 
 class MisraChecker:
 
-    def __init__(self, settings, stdversion="c90"):
+    def __init__(self, settings, stdversion="c89"):
         """
         :param settings: misra.py script settings.
         """
@@ -1290,17 +1329,143 @@ class MisraChecker:
             if scope.className and scope.className[:num_sign_chars] in macroNames:
                 self.reportError(scope.bodyStart, 5, 5)
 
+
+    def misra_6_1(self, data):
+        # Bitfield type must be bool or explicity signed/unsigned int
+        for token in data.tokenlist:
+            if not token.valueType:
+                continue
+            if token.valueType.bits == 0:
+                continue
+            if not token.variable:
+                continue
+            if not token.scope:
+                continue
+            if token.scope.type not in 'Struct':
+                continue
+
+            if data.standards.c == 'c89':
+                if token.valueType.type != 'int':
+                    self.reportError(token, 6, 1)
+            elif data.standards.c == 'c99':
+                if token.valueType.type == 'bool':
+                    continue
+
+            isExplicitlySignedOrUnsigned = False
+            typeToken = token.variable.typeStartToken
+            while typeToken:
+                if typeToken.isUnsigned or typeToken.isSigned:
+                    isExplicitlySignedOrUnsigned = True
+                    break
+
+                if typeToken.Id == token.variable.typeEndToken.Id:
+                    break
+
+                typeToken = typeToken.next
+
+            if not isExplicitlySignedOrUnsigned:
+                self.reportError(token, 6, 1)
+
+
+    def misra_6_2(self, data):
+        # Bitfields of size 1 can not be signed
+        for token in data.tokenlist:
+            if not token.valueType:
+                continue
+            if not token.scope:
+                continue
+            if token.scope.type not in 'Struct':
+                continue
+            if token.valueType.bits == 1 and token.valueType.sign == 'signed':
+                self.reportError(token, 6, 2)
+
+
     def misra_7_1(self, rawTokens):
         compiled = re.compile(r'^0[0-7]+$')
         for tok in rawTokens:
             if compiled.match(tok.str):
                 self.reportError(tok, 7, 1)
 
+    def misra_7_2(self, data):
+        # Large constant numbers that are assigned to a variable should have an
+        # u/U suffix if the variable type is unsigned.
+        def reportErrorIfMissingSuffix(variable, value):
+            if value and value.isNumber:
+                if variable and variable.valueType and variable.valueType.sign == 'unsigned':
+                    if variable.valueType.type in ['char', 'short', 'int', 'long', 'long long']:
+                        limit = 1 << (bitsOfEssentialType(variable.valueType.type) -1)
+                        for v in value.values:
+                            if v.valueKind == 'known' and v.intvalue >= limit:
+                                if not 'U' in value.str.upper():    
+                                    self.reportError(value, 7, 2)
+        
+        for token in data.tokenlist:
+            # Check normal variable assignment
+            if token.valueType and token.isNumber:
+                variable = getAssignedVariableToken(token)
+                reportErrorIfMissingSuffix(variable, token)
+
+            # Check use as function parameter
+            if isFunctionCall(token) and token.astOperand1 and token.astOperand1.function:
+                functionDeclaration = token.astOperand1.function
+                
+                if functionDeclaration.tokenDef:
+                    if functionDeclaration.tokenDef.Id == token.astOperand1.Id:
+                        # Token is not a function call, but it is the definition of the function
+                        continue
+
+                    parametersUsed = getArguments(token)
+                    for i in range(len(parametersUsed)):
+                        usedParameter = parametersUsed[i]
+                        if usedParameter.isNumber:
+                            parameterDefinition = functionDeclaration.argument.get(i+1)
+                            if parameterDefinition and parameterDefinition.nameToken:
+                                reportErrorIfMissingSuffix(parameterDefinition.nameToken, usedParameter)
+
     def misra_7_3(self, rawTokens):
         compiled = re.compile(r'^[0-9.uU]+l')
         for tok in rawTokens:
             if compiled.match(tok.str):
                 self.reportError(tok, 7, 3)
+
+    def misra_7_4(self, data):
+        # A string literal shall not be assigned to an object unless the object's type
+        # is constant.
+        def reportErrorIfVariableIsNotConst(variable, stringLiteral):
+            if variable.valueType:
+                if (variable.valueType.constness % 2) != 1:
+                    self.reportError(stringLiteral, 7, 4)
+
+        for token in data.tokenlist:
+            if token.isString:
+                # Check normal variable assignment
+                variable = getAssignedVariableToken(token)
+                if variable:
+                    reportErrorIfVariableIsNotConst(variable, token)
+                
+                # Check use as return value
+                function = getFunctionUsingReturnValue(token)
+                if function:
+                    # "Primitive" test since there is no info available on return value type
+                    if not tokenFollowsSequence(function.tokenDef, ['const', 'char', '*']):
+                        self.reportError(token, 7, 4)
+
+            # Check use as function parameter
+            if isFunctionCall(token) and token.astOperand1 and token.astOperand1.function:
+                functionDeclaration = token.astOperand1.function
+                
+                if functionDeclaration.tokenDef:
+                    if functionDeclaration.tokenDef.Id == token.astOperand1.Id:
+                        # Token is not a function call, but it is the definition of the function
+                        continue
+
+                    parametersUsed = getArguments(token)
+                    for i in range(len(parametersUsed)):
+                        usedParameter = parametersUsed[i]
+                        parameterDefinition = functionDeclaration.argument.get(i+1)
+
+                        if usedParameter.isString and parameterDefinition.nameToken:
+                            reportErrorIfVariableIsNotConst(parameterDefinition.nameToken, usedParameter)
 
     def misra_8_11(self, data):
         for var in data.variables:
@@ -2902,11 +3067,14 @@ class MisraChecker:
             self.executeCheck(502, self.misra_5_2, cfg)
             self.executeCheck(504, self.misra_5_4, cfg)
             self.executeCheck(505, self.misra_5_5, cfg)
-            # 6.1 require updates in Cppcheck (type info for bitfields are lost)
-            # 6.2 require updates in Cppcheck (type info for bitfields are lost)
+            self.executeCheck(601, self.misra_6_1, cfg)
+            self.executeCheck(602, self.misra_6_2, cfg)
             if cfgNumber == 0:
                 self.executeCheck(701, self.misra_7_1, data.rawTokens)
+            self.executeCheck(702, self.misra_7_2, cfg)
+            if cfgNumber == 0:
                 self.executeCheck(703, self.misra_7_3, data.rawTokens)
+            self.executeCheck(704, self.misra_7_4, cfg)            
             self.executeCheck(811, self.misra_8_11, cfg)
             self.executeCheck(812, self.misra_8_12, cfg)
             if cfgNumber == 0:

@@ -55,14 +55,18 @@ private:
         TEST_CASE(cxxMethodDecl1);
         TEST_CASE(cxxMethodDecl2);
         TEST_CASE(cxxMethodDecl3);
-        TEST_CASE(cxxNewExpr);
+        TEST_CASE(cxxNewExpr1);
+        TEST_CASE(cxxNewExpr2);
         TEST_CASE(cxxNullPtrLiteralExpr);
         TEST_CASE(cxxOperatorCallExpr);
         TEST_CASE(cxxRecordDecl1);
+        TEST_CASE(cxxRecordDecl2);
+        TEST_CASE(cxxRecordDeclDerived);
         TEST_CASE(cxxStaticCastExpr1);
         TEST_CASE(cxxStaticCastExpr2);
         TEST_CASE(cxxStdInitializerListExpr);
         TEST_CASE(cxxThrowExpr);
+        TEST_CASE(defaultStmt);
         TEST_CASE(doStmt);
         TEST_CASE(enumDecl);
         TEST_CASE(forStmt);
@@ -70,6 +74,7 @@ private:
         TEST_CASE(funcdecl2);
         TEST_CASE(funcdecl3);
         TEST_CASE(funcdecl4);
+        TEST_CASE(funcdecl5);
         TEST_CASE(functionTemplateDecl1);
         TEST_CASE(functionTemplateDecl2);
         TEST_CASE(initListExpr);
@@ -113,7 +118,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(clang);
         clangimport::parseClangAstDump(&tokenizer, istr);
-        return tokenizer.tokens()->stringifyList(true, false, false, true, false);
+        return tokenizer.tokens()->stringifyList(true, false, false, false, false);
     }
 
     void breakStmt() {
@@ -162,14 +167,7 @@ private:
                              "        |     |-DeclRefExpr 0x2444d68 <col:13> 'int' lvalue ParmVar 0x2444aa0 'x' 'int'\n"
                              "        |     `-IntegerLiteral 0x2444d90 <col:15> 'int' 123\n"
                              "        `-BreakStmt 0x2444dd8 <line:6:13>";
-        ASSERT_EQUALS("void foo ( int x@1 ) {\n"
-                      "switch ( x@1 ) {\n"
-                      "case 16 :\n"
-                      "case 32 :\n"
-                      "x@1 = 123 ;\n"
-                      "\n"
-                      "\n"
-                      "break ; } }", parse(clang));
+        ASSERT_EQUALS("void foo ( int x@1 ) { switch ( x@1 ) { case 16 : case 32 : x@1 = 123 ; break ; } }", parse(clang));
     }
 
     void characterLiteral() {
@@ -190,7 +188,7 @@ private:
                              "  |-CXXRecordDecl 0x274c758 <col:1, col:7> col:7 implicit class C\n"
                              "  `-CXXMethodDecl 0x274c870 <col:11, col:23> col:16 foo 'void ()'\n"
                              "    `-CompoundStmt 0x274c930 <col:22, col:23>";
-        ASSERT_EQUALS("class C { void foo ( ) { } }", parse(clang));
+        ASSERT_EQUALS("class C { void foo ( ) { } } ;", parse(clang));
     }
 
     void classTemplateDecl1() {
@@ -251,7 +249,7 @@ private:
                              "|   | `-ParmVarDecl 0x247c790 <col:25> col:25 'const C<int> &'\n"
                              "|   `-CXXConstructorDecl 0x247c828 <col:25> col:25 implicit constexpr C 'void (C<int> &&)' inline default trivial noexcept-unevaluated 0x247c828\n"
                              "|     `-ParmVarDecl 0x247c960 <col:25> col:25 'C<int> &&'\n";
-        ASSERT_EQUALS("class C { int foo ( ) { return 0 ; } default ( ) { } noexcept-unevaluated ( const C<int> & ) ; noexcept-unevaluated ( C<int> && ) ; }", parse(clang));
+        ASSERT_EQUALS("class C { int foo ( ) { return 0 ; } default ( ) { } noexcept-unevaluated ( const C<int> & ) ; noexcept-unevaluated ( C<int> && ) ; } ;", parse(clang));
     }
 
     void conditionalExpr() {
@@ -358,7 +356,7 @@ private:
         const char clang[] = "`-CXXRecordDecl 0x8ecd60 <1.cpp:1:1, line:4:1> line:1:8 struct S definition\n"
                              "  `-CXXDestructorDecl 0x8ed088 <line:3:3, col:9> col:3 ~S 'void () noexcept'\n"
                              "    `-CompoundStmt 0x8ed1a8 <col:8, col:9>";
-        ASSERT_EQUALS("struct S\n\n{ ~S ( ) { } }", parse(clang));
+        ASSERT_EQUALS("struct S { ~S ( ) { } } ;", parse(clang));
     }
 
     void cxxForRangeStmt1() {
@@ -392,8 +390,7 @@ private:
                              "      |       `-ImplicitCastExpr 0x4281040 <col:15> 'const char *':'const char *' <LValueToRValue>\n"
                              "      |         `-DeclRefExpr 0x4281018 <col:15> 'const char *':'const char *' lvalue Var 0x4280ca8 '__begin1' 'const char *':'const char *'\n"
                              "      `-CompoundStmt 0x42810e0 <col:24, line:7:3>";
-        ASSERT_EQUALS("void foo ( ) {\n"
-                      "for ( char c1@1 : hello ) { } }",
+        ASSERT_EQUALS("void foo ( ) { for ( char c1@1 : hello ) { } }",
                       parse(clang));
     }
 
@@ -447,8 +444,7 @@ private:
                              "    |         `-CXXFunctionalCastExpr 0x1592b40 <line:2:15, line:3:28> 'MyVar<int>':'MyVar<int>' functional cast to MyVar<int> <ConstructorConversion>\n"
                              "    |           `-CXXConstructExpr 0x15929f0 <line:2:15, line:3:28> 'MyVar<int>':'MyVar<int>' 'void (int)'\n"
                              "    |             `-IntegerLiteral 0x1570248 <col:27> 'int' 5\n";
-        ASSERT_EQUALS("int main ( int argc@1 , char ** argv@2 ) {\n"
-                      "MyVar<int> setCode@3 = MyVar<int> ( 5 ) ; }",
+        ASSERT_EQUALS("int main ( int argc@1 , char ** argv@2 ) { MyVar<int> setCode@3 = MyVar<int> ( 5 ) ; }",
                       parse(clang));
     }
 
@@ -496,22 +492,27 @@ private:
                              "| `-CXXMethodDecl 0x21ccc68 <line:3:1, col:10> col:6 foo 'void ()'\n"
                              "`-CXXMethodDecl 0x21ccd60 parent 0x21cca40 prev 0x21ccc68 <line:6:1, col:19> col:12 foo 'void ()'\n"
                              "  `-CompoundStmt 0x21cce50 <col:18, col:19>";
-        ASSERT_EQUALS("class Fred\n"
-                      "{ void foo ( ) ; }\n"
-                      "\n"
-                      "\n"
-                      "void foo ( ) { }", parse(clang));
+        ASSERT_EQUALS("class Fred { void foo ( ) ; } ; void foo ( ) { }", parse(clang));
     }
 
-    void cxxNewExpr() {
+    void cxxNewExpr1() {
         const char clang[] = "|-VarDecl 0x3a97680 <1.cpp:2:1, col:14> col:6 i 'int *' cinit\n"
                              "| `-CXXNewExpr 0x3a97d18 <col:10, col:14> 'int *' Function 0x3a97778 'operator new' 'void *(unsigned long)'\n"
                              "`-VarDecl 0x3a97d80 <line:3:1, col:21> col:6 j 'int *' cinit\n"
                              "  `-CXXNewExpr 0x3a97e68 <col:10, col:21> 'int *' array Function 0x3a978c0 'operator new[]' 'void *(unsigned long)'\n"
                              "    `-ImplicitCastExpr 0x3a97e18 <col:18> 'unsigned long' <IntegralCast>\n"
                              "      `-IntegerLiteral 0x3a97de0 <col:18> 'int' 100";
-        ASSERT_EQUALS("int * i@1 = new int ;\n"
-                      "int * j@2 = new int [ 100 ] ;",
+        ASSERT_EQUALS("int * i@1 = new int ; int * j@2 = new int [ 100 ] ;",
+                      parse(clang));
+    }
+
+    void cxxNewExpr2() {
+        const char clang[] = "|-FunctionDecl 0x59a188 <line:7:1, line:9:1> line:7:11 f 'struct S *()'\n"
+                             "| `-CompoundStmt 0x5c4318 <col:15, line:9:1>\n"
+                             "|   `-ReturnStmt 0x5c4308 <line:8:3, col:14>\n"
+                             "|     `-CXXNewExpr 0x5c42c8 <col:10, col:14> 'S *' Function 0x59a378 'operator new' 'void *(unsigned long)'\n"
+                             "|       `-CXXConstructExpr 0x5c42a0 <col:14> 'S' 'void () noexcept'";
+        ASSERT_EQUALS("struct S * f ( ) { return new S ( ) ; }",
                       parse(clang));
     }
 
@@ -538,7 +539,24 @@ private:
 
     void cxxRecordDecl1() {
         const char clang[] = "`-CXXRecordDecl 0x34cc5f8 <1.cpp:2:1, col:7> col:7 class Foo";
-        ASSERT_EQUALS("", parse(clang));
+        ASSERT_EQUALS("class Foo ;", parse(clang));
+    }
+
+    void cxxRecordDecl2() {
+        const char clang[] = "`-CXXRecordDecl 0x34cc5f8 <1.cpp:2:1, col:7> col:7 struct Foo definition";
+        ASSERT_EQUALS("struct Foo { } ;", parse(clang));
+    }
+
+    void cxxRecordDeclDerived() {
+        const char clang[] = "|-CXXRecordDecl 0x19ccd38 <e.cpp:4:1, line:6:1> line:4:8 referenced struct base definition\n"
+                             "| `-VarDecl 0x19ccf00 <line:5:5, col:35> col:27 value 'const bool' static constexpr cinit\n"
+                             "|   |-value: Int 0\n"
+                             "|   `-CXXBoolLiteralExpr 0x19ccf68 <col:35> 'bool' false\n"
+                             "`-CXXRecordDecl 0x19ccfe8 <line:8:1, col:32> col:8 struct derived definition\n"
+                             "  |-public 'base'\n"
+                             "  `-CXXRecordDecl 0x19cd150 <col:1, col:8> col:8 implicit struct derived";
+
+        ASSERT_EQUALS("struct base { static const bool value@1 = false ; } ; struct derived : public base { } ;", parse(clang));
     }
 
     void cxxStaticCastExpr1() {
@@ -575,6 +593,20 @@ private:
                              "    `-CXXThrowExpr 0x3701790 <col:14, col:20> 'void'\n"
                              "      `-IntegerLiteral 0x3701770 <col:20> 'int' 1";
         ASSERT_EQUALS("void foo ( ) { throw 1 ; }", parse(clang));
+    }
+
+    void defaultStmt() {
+        const char clang[] = "`-FunctionDecl 0x18476b8 <1.c:3:1, line:9:1> line:3:5 foo 'int (int)'\n"
+                             "  |-ParmVarDecl 0x18475e0 <col:9, col:13> col:13 used rc 'int'\n"
+                             "  `-CompoundStmt 0x1847868 <line:4:1, line:9:1>\n"
+                             "    `-SwitchStmt 0x18477e0 <line:5:3, line:8:3>\n"
+                             "      |-ImplicitCastExpr 0x18477c8 <line:5:10> 'int' <LValueToRValue>\n"
+                             "      | `-DeclRefExpr 0x18477a8 <col:10> 'int' lvalue ParmVar 0x18475e0 'rc' 'int'\n"
+                             "      `-CompoundStmt 0x1847850 <col:14, line:8:3>\n"
+                             "        `-DefaultStmt 0x1847830 <line:6:3, line:7:12>\n"
+                             "          `-ReturnStmt 0x1847820 <col:5, col:12>\n"
+                             "            `-IntegerLiteral 0x1847800 <col:12> 'int' 1";
+        ASSERT_EQUALS("int foo ( int rc@1 ) { switch ( rc@1 ) { default : return 1 ; } }", parse(clang));
     }
 
     void doStmt() {
@@ -634,8 +666,7 @@ private:
                              "        | `-DeclRefExpr 0x24b2d28 <col:12> 'int' lvalue ParmVar 0x24b2ae0 'x' 'int'\n"
                              "        `-ImplicitCastExpr 0x24b2d90 <col:16> 'int' <LValueToRValue>\n"
                              "          `-DeclRefExpr 0x24b2d50 <col:16> 'int' lvalue ParmVar 0x24b2b58 'y' 'int'";
-        ASSERT_EQUALS("int foo ( int x@1 , int y@2 ) {\n\n"
-                      "return x@1 / y@2 ; }", parse(clang));
+        ASSERT_EQUALS("int foo ( int x@1 , int y@2 ) { return x@1 / y@2 ; }", parse(clang));
     }
 
     void funcdecl3() {
@@ -652,6 +683,11 @@ private:
                              "| |-ParmVarDecl 0x272cd00 <<invalid sloc>> <invalid sloc> 'unsigned long'\n"
                              "| `-ParmVarDecl 0x272cd60 <<invalid sloc>> <invalid sloc> 'FILE *'";
         ASSERT_EQUALS("unsigned long fwrite ( const void * , unsigned long , unsigned long , FILE * ) ;", parse(clang));
+    }
+
+    void funcdecl5() {
+        const char clang[] = "`-FunctionDecl 0x59d670 <1.c:1:1, col:28> col:20 foo 'void (void)' static inline";
+        ASSERT_EQUALS("static inline void foo ( ) ;", parse(clang));
     }
 
     void functionTemplateDecl1() {
@@ -684,8 +720,7 @@ private:
                              "      |-ImplicitCastExpr 0x333afc8 <col:9, col:16> 'int (*)(int)' <FunctionToPointerDecay>\n"
                              "      | `-DeclRefExpr 0x333af00 <col:9, col:16> 'int (int)' lvalue Function 0x333ae00 'foo' 'int (int)' (FunctionTemplate 0x333a860 'foo')\n"
                              "      `-IntegerLiteral 0x333ab48 <col:18> 'int' 1";
-        ASSERT_EQUALS("int foo<int> ( int t@1 ) { return t@1 + 1 ; }\n"
-                      "int bar ( ) { foo ( 1 ) ; }", parse(clang));
+        ASSERT_EQUALS("int foo<int> ( int t@1 ) { return t@1 + 1 ; } int bar ( ) { foo ( 1 ) ; }", parse(clang));
     }
 
     void ifelse() {
@@ -701,9 +736,7 @@ private:
                              "      | `-IntegerLiteral 0x2637cb8 <col:13> 'int' 10\n"
                              "      |-CompoundStmt 0x2637d18 <col:17, col:18>\n"
                              "      `-CompoundStmt 0x2637d28 <line:3:10, col:11>";
-        ASSERT_EQUALS("int foo ( int x@1 ) {\n"
-                      "if ( x@1 > 10 ) { }\n"
-                      "else { } }", parse(clang));
+        ASSERT_EQUALS("int foo ( int x@1 ) { if ( x@1 > 10 ) { } else { } }", parse(clang));
     }
 
     void ifStmt() {
@@ -747,8 +780,7 @@ private:
                              "      `-ImplicitCastExpr 0x2441e40 <col:30, col:32> 'int' <LValueToRValue>\n"
                              "        `-MemberExpr 0x2441e08 <col:30, col:32> 'int' lvalue .x 0x2441b48\n"
                              "          `-DeclRefExpr 0x2441de0 <col:30> 'struct S':'struct S' lvalue ParmVar 0x2441be8 's' 'struct S':'struct S'";
-        ASSERT_EQUALS("struct S { int x@1 ; } ;\n"
-                      "int foo ( struct S s@2 ) { return s@2 . x@1 ; }",
+        ASSERT_EQUALS("struct S { int x@1 ; } ; int foo ( struct S s@2 ) { return s@2 . x@1 ; }",
                       parse(clang));
     }
 
@@ -763,9 +795,7 @@ private:
         const char clang[] = "`-RecordDecl 0x354eac8 <1.c:1:1, line:4:1> line:1:8 struct S definition\n"
                              "  |-FieldDecl 0x354eb88 <line:2:3, col:7> col:7 x 'int'\n"
                              "  `-FieldDecl 0x354ebe8 <line:3:3, col:7> col:7 y 'int'";
-        ASSERT_EQUALS("struct S\n"
-                      "{ int x@1 ;\n"
-                      "int y@2 ; } ;",
+        ASSERT_EQUALS("struct S { int x@1 ; int y@2 ; } ;",
                       parse(clang));
     }
 
@@ -841,8 +871,7 @@ private:
                              "  `-ImplicitCastExpr 0x32b8c00 <col:9> 'int' <LValueToRValue>\n"
                              "    `-DeclRefExpr 0x32b8bd8 <col:9> 'int' lvalue Var 0x32b8aa0 'a' 'int'";
 
-        ASSERT_EQUALS("int a@1 = 1 ;\n"
-                      "int b@2 = a@1 ;",
+        ASSERT_EQUALS("int a@1 = 1 ; int b@2 = a@1 ;",
                       parse(clang));
     }
 
@@ -857,11 +886,7 @@ private:
                              "      | `-IntegerLiteral 0x3873d00 <col:5> 'int' 0\n"
                              "      `-IntegerLiteral 0x3873d88 <col:10> 'int' 0\n";
 
-        ASSERT_EQUALS("int [10] a@1 ;\n" // <- TODO
-                      "\n"
-                      "void foo ( ) {\n"
-                      "\n"
-                      "a@1 [ 0 ] = 0 ; }",
+        ASSERT_EQUALS("int [10] a@1 ; void foo ( ) { a@1 [ 0 ] = 0 ; }",
                       parse(clang));
     }
 
@@ -893,8 +918,7 @@ private:
                              "      |-<<<NULL>>>\n"
                              "      |-IntegerLiteral 0x3d45bf8 <col:12> 'int' 0\n"
                              "      `-NullStmt 0x3d45c18 <col:14>";
-        ASSERT_EQUALS("void foo ( ) {\n"
-                      "while ( 0 ) { ; } }",
+        ASSERT_EQUALS("void foo ( ) { while ( 0 ) { ; } }",
                       parse(clang));
     }
 
@@ -930,11 +954,7 @@ private:
                              "`-VarDecl 0x29ad898 <line:5:1, col:22> col:9 x 'ns::abc':'ns::abc' cinit\n"
                              "  `-DeclRefExpr 0x29ad998 <col:13, col:22> 'ns::abc' EnumConstant 0x29ad7b0 'c' 'ns::abc'\n";
 
-        ASSERT_EQUALS("namespace ns\n"
-                      "{ enum abc { a , b , c } }\n"
-                      "\n"
-                      "\n"
-                      "ns::abc x@1 = c ;", parse(clang));
+        ASSERT_EQUALS("namespace ns { enum abc { a , b , c } } ns::abc x@1 = c ;", parse(clang));
 
         GET_SYMBOL_DB(clang);
 

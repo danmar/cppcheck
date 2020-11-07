@@ -200,6 +200,14 @@ void memleak_mmap(int fd)
     // cppcheck-suppress memleak
 }
 
+void * memleak_mmap2() // #8327
+{
+    void * data = mmap(NULL, 10, PROT_READ, MAP_PRIVATE, 1, 0);
+    if (data != MAP_FAILED)
+        return data;
+    return NULL;
+}
+
 void resourceLeak_fdopen(int fd)
 {
     // cppcheck-suppress unreadVariable

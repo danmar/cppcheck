@@ -236,9 +236,9 @@ public:
         evaluate(settings);
     }
 
-    Variable(const Token *name_, const std::string &clangType, const Token *start,
-             nonneg int index_, AccessControl access_, const Type *type_,
-             const Scope *scope_);
+    Variable(const Token *name_, const std::string &clangType, const Token *typeStart,
+             const Token *typeEnd, nonneg int index_, AccessControl access_,
+             const Type *type_, const Scope *scope_);
 
     ~Variable();
 
@@ -978,6 +978,7 @@ private:
     void hasTrailingReturnType(bool state) {
         return setFlag(fHasTrailingReturnType, state);
     }
+    const Token *setFlags(const Token *tok1, const Scope *scope);
 };
 
 class CPPCHECKLIB Scope {
