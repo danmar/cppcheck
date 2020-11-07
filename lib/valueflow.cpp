@@ -2139,7 +2139,7 @@ struct ValueFlowAnalyzer : Analyzer {
             if (parent->str() != "=") {
                 a |= Action::Read;
             } else {
-                if (rhsValue && value->equalValue(*rhsValue))
+                if (rhsValue && !value->isImpossible() && value->equalValue(*rhsValue))
                     a = Action::Idempotent;
             }
             return a;
