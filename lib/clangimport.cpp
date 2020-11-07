@@ -117,7 +117,16 @@ static std::vector<std::string> splitString(const std::string &line)
                 pos2 = line.find("\'", pos2 + 3);
         } else {
             pos2 = line.find(" ", pos1) - 1;
-            if (std::isalpha(line[pos1]) &&
+            if ((std::isalpha(line[pos1]) || line[pos1] == '_') &&
+                line.find("::", pos1) < pos2 &&
+                line.find("::", pos1) < line.find("<", pos1)) {
+                pos2 = line.find("::", pos1);
+                ret.push_back(line.substr(pos1, pos2-pos1));
+                ret.push_back("::");
+                pos1 = pos2 + 2;
+                continue;
+            }
+            if ((std::isalpha(line[pos1]) || line[pos1] == '_') &&
                 line.find("<", pos1) < pos2 &&
                 line.find("<<",pos1) != line.find("<",pos1) &&
                 line.find(">", pos1) != std::string::npos &&
@@ -457,7 +466,7 @@ const ::Type * clangimport::AstNode::addTypeTokens(TokenList *tokenList, const s
     for (const Token *typeToken = tokenList->back(); Token::Match(typeToken, "&|*|%name%"); typeToken = typeToken->previous()) {
         if (!typeToken->isName())
             continue;
-        const ::Type *recordType = scope->findType(typeToken->str());
+        const ::Type *recordType = scope->check->findVariableType(scope, typeToken);
         if (recordType) {
             const_cast<Token*>(typeToken)->type(recordType);
             return recordType;
