@@ -82,7 +82,8 @@ private:
         TEST_CASE(ifStmt);
         TEST_CASE(labelStmt);
         TEST_CASE(memberExpr);
-        TEST_CASE(namespaceDecl);
+        TEST_CASE(namespaceDecl1);
+        TEST_CASE(namespaceDecl2);
         TEST_CASE(recordDecl);
         TEST_CASE(switchStmt);
         TEST_CASE(typedefDecl1);
@@ -784,10 +785,18 @@ private:
                       parse(clang));
     }
 
-    void namespaceDecl() {
+    void namespaceDecl1() {
         const char clang[] = "`-NamespaceDecl 0x2e5f658 <hello.cpp:1:1, col:24> col:11 x\n"
                              "  `-VarDecl 0x2e5f6d8 <col:15, col:19> col:19 var 'int'";
         ASSERT_EQUALS("namespace x { int var@1 ; }",
+                      parse(clang));
+    }
+
+    void namespaceDecl2() {
+        const char clang[] = "`-NamespaceDecl 0x1753e60 <1.cpp:1:1, line:4:1> line:1:11 std\n"
+                             "  |-VisibilityAttr 0x1753ed0 <col:31, col:56> Default\n"
+                             "  `-VarDecl 0x1753f40 <line:3:5, col:9> col:9 x 'int'";
+        ASSERT_EQUALS("namespace std { int x@1 ; }",
                       parse(clang));
     }
 

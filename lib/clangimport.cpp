@@ -530,6 +530,8 @@ Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType 
     if (!children2.empty()) {
         tokenList->back()->scope(scope);
         for (AstNodePtr astNode: children2) {
+            if (astNode->nodeType == "VisibilityAttr")
+                continue;
             astNode->createTokens(tokenList);
             if (scopeType == Scope::ScopeType::eEnum)
                 astNode->addtoken(tokenList, ",");
