@@ -118,7 +118,5 @@ def test_ast_control_flow():
     check_ast('void foo(int a, int b, int c) { foo(a,b,c); }')
 
 def test_ast():
-    # TODO
-    #check_ast('struct S { int x; }; S* foo() { return new S(); }')
-    pass
+    check_ast('struct S { int x; }; S* foo() { return new S(); }')
 

@@ -6249,6 +6249,10 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     vt.sign = (vt.type == ValueType::Type::CHAR) ? mDefaultSignedness : ValueType::Sign::SIGNED;
             }
             setValueType(tok, vt);
+            if (Token::simpleMatch(tok->astOperand1(), "(")) {
+                vt.pointer--;
+                setValueType(tok->astOperand1(), vt);
+            }
         } else if (tok->isKeyword() && tok->str() == "return" && tok->scope()) {
             const Scope* fscope = tok->scope();
             while (fscope && !fscope->function)
