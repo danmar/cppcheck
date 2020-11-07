@@ -2090,7 +2090,7 @@ struct ValueFlowAnalyzer : Analyzer {
                 return read | Action::Invalid;
             const ValueFlow::Value* value = getValue(tok);
             // Check if its assigned to the same value
-            if (value && Token::Match(tok->astParent(), "=") && astIsLHS(tok) &&
+            if (value && !value->isImpossible() && Token::simpleMatch(tok->astParent(), "=") && astIsLHS(tok) &&
                 astIsIntegral(tok->astParent()->astOperand2(), false)) {
                 std::vector<int> result = evaluate(tok->astParent()->astOperand2());
                 if (!result.empty() && value->equalTo(result.front()))
