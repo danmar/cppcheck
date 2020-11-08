@@ -161,7 +161,7 @@ static std::vector<std::string> splitString(const std::string &line)
 namespace clangimport {
     struct Data {
         struct Decl {
-            Decl(Scope *scope) : def(nullptr), enumerator(nullptr), function(nullptr), scope(scope), var(nullptr) {}
+            explicit Decl(Scope *scope) : def(nullptr), enumerator(nullptr), function(nullptr), scope(scope), var(nullptr) {}
             Decl(Token *def, Variable *var) : def(def), enumerator(nullptr), function(nullptr), scope(nullptr), var(var) {}
             Decl(Token *def, Function *function) : def(def), enumerator(nullptr), function(function), scope(nullptr), var(nullptr) {}
             Decl(Token *def, Enumerator *enumerator) : def(def), enumerator(enumerator), function(nullptr), scope(nullptr), var(nullptr) {}
