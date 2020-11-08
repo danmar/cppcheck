@@ -2126,8 +2126,7 @@ struct ValueFlowAnalyzer : Analyzer {
         if (parent && parent->isAssignmentOp() && astIsLHS(tok) &&
             parent->astOperand2()->hasKnownValue()) {
             // If the operator is invertible
-            if (d == Direction::Reverse && (Token::simpleMatch(parent, "&=") || Token::simpleMatch(parent, "|=") ||
-                                            Token::simpleMatch(parent, "%=")))
+            if (d == Direction::Reverse && (parent->str() == "&=" || parent->str() == "|=" || parent->str() == "%="))
                 return Action::None;
             const Token* rhs = parent->astOperand2();
             const ValueFlow::Value* rhsValue = getKnownValue(rhs, ValueFlow::Value::ValueType::INT);
