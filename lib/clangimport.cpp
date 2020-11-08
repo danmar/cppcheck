@@ -957,7 +957,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == ImplicitCastExpr) {
         Token *expr = children[0]->createTokens(tokenList);
-        if (!expr->valueType())
+        if (!expr->valueType() || contains(mExtTokens, "<ArrayToPointerDecay>"))
             setValueType(expr);
         return expr;
     }

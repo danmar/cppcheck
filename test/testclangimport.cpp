@@ -112,6 +112,7 @@ private:
         TEST_CASE(valueFlow2);
 
         TEST_CASE(valueType1);
+        TEST_CASE(valueType2);
     }
 
     std::string parse(const char clang[]) {
@@ -1109,6 +1110,19 @@ private:
         ASSERT(!!tok);
         ASSERT(!!tok->valueType());
         ASSERT_EQUALS("bool", tok->valueType()->str());
+    }
+
+    void valueType2() {
+        const char clang[] = "`-VarDecl 0xc9eda0 <1.cpp:2:1, col:17> col:13 s 'const char *' cinit\n"
+                             "  `-ImplicitCastExpr 0xc9eef0 <col:17> 'const char *' <ArrayToPointerDecay>\n"
+                             "    `-StringLiteral 0xc9eed0 <col:17> 'const char [6]' lvalue \"hello\"\n";
+
+        GET_SYMBOL_DB(clang);
+
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "\"hello\"");
+        ASSERT(!!tok);
+        ASSERT(!!tok->valueType());
+        ASSERT_EQUALS("const signed char *", tok->valueType()->str());
     }
 };
 
