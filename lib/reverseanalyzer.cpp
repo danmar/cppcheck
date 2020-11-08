@@ -82,7 +82,7 @@ struct ReverseTraversal {
             Token* parent = tok->astParent();
             if (tok != parent->astOperand2())
                 continue;
-            if (Token::Match(parent, ":")) {
+            if (Token::simpleMatch(parent, ":")) {
                 if (astIsLHS(tok))
                     opSide = 1;
                 else if (astIsRHS(tok))
