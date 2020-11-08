@@ -161,9 +161,10 @@ static std::vector<std::string> splitString(const std::string &line)
 namespace clangimport {
     struct Data {
         struct Decl {
-            Decl(Token *def, Variable *var) : def(def), enumerator(nullptr), function(nullptr), var(var) {}
-            Decl(Token *def, Function *function) : def(def), enumerator(nullptr), function(function), var(nullptr) {}
-            Decl(Token *def, Enumerator *enumerator) : def(def), enumerator(enumerator), function(nullptr), var(nullptr) {}
+            Decl(Scope *scope) : def(nullptr), enumerator(nullptr), function(nullptr), scope(scope), var(nullptr) {}
+            Decl(Token *def, Variable *var) : def(def), enumerator(nullptr), function(nullptr), scope(nullptr), var(var) {}
+            Decl(Token *def, Function *function) : def(def), enumerator(nullptr), function(function), scope(nullptr), var(nullptr) {}
+            Decl(Token *def, Enumerator *enumerator) : def(def), enumerator(enumerator), function(nullptr), scope(nullptr), var(nullptr) {}
             void ref(Token *tok) {
                 if (enumerator)
                     tok->enumerator(enumerator);
@@ -177,6 +178,7 @@ namespace clangimport {
             Token *def;
             Enumerator *enumerator;
             Function *function;
+            Scope *scope;
             Variable *var;
         };
 
@@ -197,6 +199,11 @@ namespace clangimport {
             mDeclMap.insert(std::pair<std::string, Decl>(addr, decl));
             nameToken->function(function);
             notFound(addr);
+        }
+
+        void scopeDecl(const std::string &addr, Scope *scope) {
+            Decl decl(scope);
+            mDeclMap.insert(std::pair<std::string, Decl>(addr, decl));
         }
 
         void varDecl(const std::string &addr, Token *def, Variable *var) {
@@ -229,6 +236,11 @@ namespace clangimport {
 
         bool hasDecl(const std::string &addr) const {
             return mDeclMap.find(addr) != mDeclMap.end();
+        }
+
+        const Scope *getScope(const std::string &addr) {
+            auto it = mDeclMap.find(addr);
+            return (it == mDeclMap.end() ? nullptr : it->second.scope);
         }
 
         // "}" tokens that are not end-of-scope
@@ -277,6 +289,7 @@ namespace clangimport {
         Token *createTokens(TokenList *tokenList);
         Token *addtoken(TokenList *tokenList, const std::string &str, bool valueType=true);
         const ::Type *addTypeTokens(TokenList *tokenList, const std::string &str, const Scope *scope = nullptr);
+        void addFullScopeNameTokens(TokenList *tokenList, const Scope *recordScope);
         Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode, const Token *def);
         Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children, const Token *def);
         Token *createTokensCall(TokenList *tokenList);
@@ -473,6 +486,23 @@ const ::Type * clangimport::AstNode::addTypeTokens(TokenList *tokenList, const s
         }
     }
     return nullptr;
+}
+
+void clangimport::AstNode::addFullScopeNameTokens(TokenList *tokenList, const Scope *recordScope)
+{
+    if (!recordScope)
+        return;
+    std::list<const Scope *> scopes;
+    while (recordScope && recordScope != tokenList->back()->scope() && !recordScope->isExecutable()) {
+        scopes.push_front(recordScope);
+        recordScope = recordScope->nestedIn;
+    }
+    for (const Scope *s: scopes) {
+        if (!s->className.empty()) {
+            addtoken(tokenList, s->className);
+            addtoken(tokenList, "::");
+        }
+    }
 }
 
 const Scope *clangimport::AstNode::getNestedInScope(TokenList *tokenList)
@@ -1127,6 +1157,10 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
         addTypeTokens(tokenList, '\'' + getType() + '\'');
         startToken = before ? before->next() : tokenList->front();
     }
+
+    if (mExtTokens.size() > 4 && mExtTokens[1] == "parent")
+        addFullScopeNameTokens(tokenList, mData->getScope(mExtTokens[2]));
+
     Token *nameToken = addtoken(tokenList, getSpelling() + getTemplateParameters());
     Scope *nestedIn = const_cast<Scope *>(nameToken->scope());
 
@@ -1249,6 +1283,8 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
                 children2.push_back(child);
         }
         Scope *scope = createScope(tokenList, isStruct ? Scope::ScopeType::eStruct : Scope::ScopeType::eClass, children2, classToken);
+        const std::string addr = mExtTokens[0];
+        mData->scopeDecl(addr, scope);
         scope->className = className;
         mData->mSymbolDatabase->typeList.push_back(Type(classToken, scope, classToken->scope()));
         scope->definedType = &mData->mSymbolDatabase->typeList.back();

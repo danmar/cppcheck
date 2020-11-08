@@ -500,7 +500,7 @@ private:
                              "| `-CXXMethodDecl 0x21ccc68 <line:3:1, col:10> col:6 foo 'void ()'\n"
                              "`-CXXMethodDecl 0x21ccd60 parent 0x21cca40 prev 0x21ccc68 <line:6:1, col:19> col:12 foo 'void ()'\n"
                              "  `-CompoundStmt 0x21cce50 <col:18, col:19>";
-        ASSERT_EQUALS("class Fred { void foo ( ) ; } ; void foo ( ) { }", parse(clang));
+        ASSERT_EQUALS("class Fred { void foo ( ) ; } ; void Fred :: foo ( ) { }", parse(clang));
     }
 
     void cxxNewExpr1() {
