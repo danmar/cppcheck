@@ -42,7 +42,8 @@ private:
         TEST_CASE(continueStmt);
         TEST_CASE(cstyleCastExpr);
         TEST_CASE(cxxBoolLiteralExpr);
-        TEST_CASE(cxxConstructorDecl);
+        TEST_CASE(cxxConstructorDecl1);
+        TEST_CASE(cxxConstructorDecl2);
         TEST_CASE(cxxConstructExpr1);
         TEST_CASE(cxxConstructExpr2);
         TEST_CASE(cxxConstructExpr3);
@@ -250,7 +251,7 @@ private:
                              "|   | `-ParmVarDecl 0x247c790 <col:25> col:25 'const C<int> &'\n"
                              "|   `-CXXConstructorDecl 0x247c828 <col:25> col:25 implicit constexpr C 'void (C<int> &&)' inline default trivial noexcept-unevaluated 0x247c828\n"
                              "|     `-ParmVarDecl 0x247c960 <col:25> col:25 'C<int> &&'\n";
-        ASSERT_EQUALS("class C { int foo ( ) { return 0 ; } default ( ) { } noexcept-unevaluated ( const C<int> & ) ; noexcept-unevaluated ( C<int> && ) ; } ;", parse(clang));
+        ASSERT_EQUALS("class C { int foo ( ) { return 0 ; } C ( ) { } C ( const C<int> & ) = default ; C ( C<int> && ) = default ; } ;", parse(clang));
     }
 
     void conditionalExpr() {
@@ -297,7 +298,7 @@ private:
         ASSERT_EQUALS("bool x@1 = true ;", parse(clang));
     }
 
-    void cxxConstructorDecl() {
+    void cxxConstructorDecl1() {
         const char clang[] = "|-CXXConstructorDecl 0x428e890 <col:11, col:24> col:11 C 'void ()'\n"
                              "| `-CompoundStmt 0x428ea58 <col:15, col:24>\n"
                              "|   `-BinaryOperator 0x428ea30 <col:17, col:21> 'int' lvalue '='\n"
@@ -306,6 +307,12 @@ private:
                              "|     `-IntegerLiteral 0x428ea10 <col:21> 'int' 0\n"
                              "`-FieldDecl 0x428e958 <col:26, col:30> col:30 referenced x 'int'";
         ASSERT_EQUALS("C ( ) { this . x@1 = 0 ; } int x@1", parse(clang));
+    }
+
+    void cxxConstructorDecl2() {
+        const char clang[] = "`-CXXConstructorDecl 0x1c208c0 <col:11> col:11 implicit constexpr basic_string 'void (std::basic_string<char> &&)' inline default trivial noexcept-unevaluated 0x1c208c0\n"
+                             "  `-ParmVarDecl 0x1c209f0 <col:11> col:11 'std::basic_string<char> &&'";
+        ASSERT_EQUALS("basic_string ( std :: basic_string<char> && ) = default ;", parse(clang));
     }
 
     void cxxConstructExpr1() {

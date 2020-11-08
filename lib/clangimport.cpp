@@ -320,7 +320,7 @@ std::string clangimport::AstNode::getSpelling() const
     }
 
     int typeIndex = mExtTokens.size() - 1;
-    if (nodeType == FunctionDecl) {
+    if (nodeType == FunctionDecl || nodeType == CXXConstructorDecl) {
         while (typeIndex >= 0 && mExtTokens[typeIndex][0] != '\'')
             typeIndex--;
         if (typeIndex <= 0)
@@ -1111,7 +1111,7 @@ Token * clangimport::AstNode::createTokensCall(TokenList *tokenList)
 void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
 {
     const bool prev = (std::find(mExtTokens.begin(), mExtTokens.end(), "prev") != mExtTokens.end());
-    const bool hasBody = mFile == 0 && !children.empty() && children.back()->nodeType == CompoundStmt;
+    const bool hasBody = !children.empty() && children.back()->nodeType == CompoundStmt;
     const bool isStatic = (std::find(mExtTokens.begin(), mExtTokens.end(), "static") != mExtTokens.end());
     const bool isInline = (std::find(mExtTokens.begin(), mExtTokens.end(), "inline") != mExtTokens.end());
 
@@ -1207,6 +1207,11 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
         bodyStart->link(bodyEnd);
         bodyEnd->link(bodyStart);
     } else {
+        if (nodeType == CXXConstructorDecl && (std::find(mExtTokens.begin(), mExtTokens.end(), "default") != mExtTokens.end())) {
+            addtoken(tokenList, "=");
+            addtoken(tokenList, "default");
+        }
+
         addtoken(tokenList, ";");
     }
 }
