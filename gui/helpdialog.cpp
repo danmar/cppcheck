@@ -66,6 +66,8 @@ HelpDialog::HelpDialog(QWidget *parent) :
     }
 
     mHelpEngine = new QHelpEngine(helpFile);
+    // Disable the timestamp check of online-help.qhc by setting _q_readonly
+    mHelpEngine->setProperty("_q_readonly", QVariant::fromValue<bool>(true));
     mHelpEngine->setupData();
 
     mUi->contents->addWidget(mHelpEngine->contentWidget());
