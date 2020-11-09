@@ -572,7 +572,7 @@ Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType 
     scope->classDef = def;
     scope->check = nestedIn->check;
     scope->bodyStart = addtoken(tokenList, "{");
-    mData->scopeAccessControl[scope] = (scopeType == Scope::ScopeType::eClass) ? AccessControl::Private : AccessControl::Public;
+    mData->scopeAccessControl[scope] = scope->defaultAccess();
     if (!children2.empty()) {
         tokenList->back()->scope(scope);
         for (AstNodePtr astNode: children2) {
