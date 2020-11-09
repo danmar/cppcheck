@@ -796,6 +796,90 @@ void misra_15_3() {
   }
 }
 
+void misra_15_4() {
+  misra_15_4_label:
+    return;
+
+  int x = 0;
+  int y = 0;
+  int z = 0;
+
+  // Break on different loop scopes
+  for (x = 0; x < 42; ++x) {
+    if (x==1) {
+      break;
+    }
+    for (y = 0; y < 42; ++y) { // 15.4
+      if (y==1) {
+        break; 
+      }
+      if (y==2) {
+        break;
+      }
+      for (z = 0; y < 42; ++z) {
+        if (z==1) {
+          break;
+        }
+      }
+    }
+  }
+
+  // Break in while loop
+  do { // 15.4
+    if(x == 1) {
+        break;
+    }
+    if(x == 2) {
+        break
+    }
+    x++;
+  } while(x != 42);
+
+  // Break and goto in same loop
+  for (int x = 0; x < 10; ++x) { // 15.4
+    if (x == 1) {
+        break;
+    }
+    if (x == 2) {
+        goto misra_15_4_label; // 15.1 15.2
+    }
+  }
+
+  // Inner loop uses goto
+  for (x = 0; x < 42; ++x) { // 15.4
+    if (x==1) {
+      break; 
+    }
+    for (y = 0; y < 42; ++y) {
+      if (y == 1) {
+        goto misra_15_4_label; // 15.1 15.2
+      }
+    }
+  }
+
+  // Allow switch with multiple breaks inside loop
+  for (x = 0; x < 42; ++x) {
+    switch (x) {
+      case 1:
+        break;
+      default:
+        break;
+    }
+  }
+
+  // Do not allow switch with multiple gotos inside loop
+  for (x = 0; x < 42; ++x) { // 15.4
+    switch (x) {
+      case 1:
+        goto misra_15_4_label; // 15.1 15.2
+        break;
+      default:
+        goto misra_15_4_label; // 15.1 15.2
+        break;
+    }
+  }
+}
+
 int misra_15_5() {
   if (x!=0) {
     return 1; // 15.5
