@@ -1091,6 +1091,7 @@ private:
 
         GET_SYMBOL_DB(clang);
         const Variable *refVar = db->variableList().back();
+        ASSERT(refVar->isReference());
         ASSERT(refVar->isRValueReference());
     }
 
