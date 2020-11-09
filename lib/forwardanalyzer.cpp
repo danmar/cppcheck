@@ -569,17 +569,17 @@ struct ForwardTraversal {
 
 Analyzer::Action valueFlowGenericForward(Token* start,
                                          const Token* end,
-                                         const ValuePtr<Analyzer>& fa,
+                                         const ValuePtr<Analyzer>& a,
                                          const Settings* settings)
 {
-    ForwardTraversal ft{fa, settings};
+    ForwardTraversal ft{a, settings};
     ft.updateRange(start, end);
     return ft.actions;
 }
 
-Analyzer::Action valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>& fa, const Settings* settings)
+Analyzer::Action valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>& a, const Settings* settings)
 {
-    ForwardTraversal ft{fa, settings};
+    ForwardTraversal ft{a, settings};
     ft.updateRecursive(start);
     return ft.actions;
 }
