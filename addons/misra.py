@@ -2019,6 +2019,35 @@ class MisraChecker:
                             self.reportError(token, 15, 3)
                             break
                         t = t.next
+    
+    def misra_15_4(self, data):
+        # Return a list of scopes affected by a break or goto
+        def getLoopsAffectedByBreak(knownLoops, scope, isGoto):
+            if scope and scope.type and scope.type not in ['Global', 'Function']:
+                if not isGoto and scope.type == 'Switch':
+                    return
+                if scope.type in ['For', 'While', 'Do']:
+                    knownLoops.append(scope)
+                    if not isGoto:
+                        return
+                getLoopsAffectedByBreak(knownLoops, scope.nestedIn, isGoto)
+        
+        loopWithBreaks = {}
+        for token in data.tokenlist:
+            if token.str not in ['break', 'goto']:
+                continue
+
+            affectedLoopScopes = []
+            getLoopsAffectedByBreak(affectedLoopScopes, token.scope, token.str == 'goto')
+            for scope in affectedLoopScopes:
+                if scope in loopWithBreaks:
+                    loopWithBreaks[scope] += 1
+                else:
+                    loopWithBreaks[scope] = 1
+
+        for scope, breakCount in loopWithBreaks.items():
+            if breakCount > 1:
+                self.reportError(scope.bodyStart, 15, 4)
 
     def misra_15_5(self, data):
         for token in data.tokenlist:
@@ -3108,6 +3137,7 @@ class MisraChecker:
             self.executeCheck(1501, self.misra_15_1, cfg)
             self.executeCheck(1502, self.misra_15_2, cfg)
             self.executeCheck(1503, self.misra_15_3, cfg)
+            self.executeCheck(1504, self.misra_15_4, cfg)
             self.executeCheck(1505, self.misra_15_5, cfg)
             if cfgNumber == 0:
                 self.executeCheck(1506, self.misra_15_6, data.rawTokens)
