@@ -106,6 +106,7 @@ private:
         TEST_CASE(symbolDatabaseFunction1);
         TEST_CASE(symbolDatabaseFunction2);
         TEST_CASE(symbolDatabaseFunction3);
+        TEST_CASE(symbolDatabaseFunctionConst);
         TEST_CASE(symbolDatabaseNodeType1);
 
         TEST_CASE(valueFlow1);
@@ -1042,6 +1043,19 @@ private:
         ASSERT_EQUALS(2, func->argCount());
         ASSERT_EQUALS(false, func->getArgumentVar(0)->isReference());
         ASSERT_EQUALS(true, func->getArgumentVar(1)->isReference());
+    }
+
+    void symbolDatabaseFunctionConst() {
+        const char clang[] = "`-CXXRecordDecl 0x7e2d98 <1.cpp:2:1, line:5:1> line:2:7 class foo definition\n"
+                             "  `-CXXMethodDecl 0x7e3000 <line:4:3, col:12> col:8 f 'void () const'";
+
+        GET_SYMBOL_DB(clang);
+
+        // There is a function f that is const
+        ASSERT_EQUALS(2, db->scopeList.size());
+        ASSERT_EQUALS(1, db->scopeList.back().functionList.size());
+        const Function &func = db->scopeList.back().functionList.back();
+        ASSERT(func.isConst());
     }
 
     void symbolDatabaseNodeType1() {

@@ -2177,7 +2177,7 @@ Function::Function(const Tokenizer *mTokenizer,
     }
 }
 
-Function::Function(const Token *tokenDef)
+Function::Function(const Token *tokenDef, const std::string &clangType)
     : tokenDef(tokenDef),
       argDef(nullptr),
       token(nullptr),
@@ -2205,6 +2205,9 @@ Function::Function(const Token *tokenDef)
     }
 
     setFlags(tokenDef, tokenDef->scope());
+
+    if (endsWith(clangType, " const", 6))
+        isConst(true);
 }
 
 const Token *Function::setFlags(const Token *tok1, const Scope *scope)

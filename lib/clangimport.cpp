@@ -306,6 +306,7 @@ namespace clangimport {
         Token *createTokensVarDecl(TokenList *tokenList);
         std::string getSpelling() const;
         std::string getType(int index = 0) const;
+        std::string getFullType(int index = 0) const;
         bool isDefinition() const;
         std::string getTemplateParameters() const;
         const Scope *getNestedInScope(TokenList *tokenList);
@@ -357,18 +358,7 @@ std::string clangimport::AstNode::getSpelling() const
 
 std::string clangimport::AstNode::getType(int index) const
 {
-    int typeIndex = 1;
-    while (typeIndex < mExtTokens.size() && mExtTokens[typeIndex][0] != '\'')
-        typeIndex++;
-    if (typeIndex >= mExtTokens.size())
-        return "";
-    std::string type = mExtTokens[typeIndex];
-    if (type.find("\':\'") != std::string::npos) {
-        if (index == 0)
-            type.erase(type.find("\':\'") + 1);
-        else
-            type.erase(0, type.find("\':\'") + 2);
-    }
+    std::string type = getFullType(index);
     if (type.find(" (") != std::string::npos) {
         std::string::size_type pos = type.find(" (");
         type[pos] = '\'';
@@ -385,6 +375,23 @@ std::string clangimport::AstNode::getType(int index) const
         type.erase(pos+1);
     }
     return unquote(type);
+}
+
+std::string clangimport::AstNode::getFullType(int index) const
+{
+    int typeIndex = 1;
+    while (typeIndex < mExtTokens.size() && mExtTokens[typeIndex][0] != '\'')
+        typeIndex++;
+    if (typeIndex >= mExtTokens.size())
+        return "";
+    std::string type = mExtTokens[typeIndex];
+    if (type.find("\':\'") != std::string::npos) {
+        if (index == 0)
+            type.erase(type.find("\':\'") + 1);
+        else
+            type.erase(0, type.find("\':\'") + 2);
+    }
+    return type;
 }
 
 bool clangimport::AstNode::isDefinition() const
@@ -1188,7 +1195,7 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
         mData->ref(addr, nameToken);
     }
     if (!nameToken->function()) {
-        nestedIn->functionList.push_back(Function(nameToken));
+        nestedIn->functionList.push_back(Function(nameToken, unquote(getFullType())));
         mData->funcDecl(mExtTokens.front(), nameToken, &nestedIn->functionList.back());
         if (nodeType == CXXConstructorDecl)
             nestedIn->functionList.back().type = Function::Type::eConstructor;
@@ -1253,6 +1260,9 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
     Token *par2 = addtoken(tokenList, ")");
     par1->link(par2);
     par2->link(par1);
+
+    if (function->isConst())
+        addtoken(tokenList, "const");
 
     // Function body
     if (hasBody) {
