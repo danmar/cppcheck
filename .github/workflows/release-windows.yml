@@ -51,6 +51,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
         with:
+          version: '5.15.1'
           modules: 'qtcharts qthelp'
 
       - name: Create .qm
