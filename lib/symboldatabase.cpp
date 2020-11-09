@@ -1838,13 +1838,13 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
         mTypeStartToken = mTypeEndToken;
         while (Token::Match(mTypeStartToken->previous(), "%type%|*|&"))
             mTypeStartToken = mTypeStartToken->previous();
-        if (mTypeStartToken->str() == "const")
-            mTypeStartToken = mTypeStartToken->next();
-        if (mTypeStartToken->str() == "struct")
-            mTypeStartToken = mTypeStartToken->next();
     }
-    if (Token::simpleMatch(mTypeStartToken, "static"))
-        setFlag(fIsStatic, true);
+
+    while (Token::Match(mTypeStartToken, "const|struct|static")) {
+        if (mTypeStartToken->str() == "static")
+            setFlag(fIsStatic, true);
+        mTypeStartToken = mTypeStartToken->next();
+    }
 
     if (endsWith(clangType, " &", 2))
         setFlag(fIsReference, true);
