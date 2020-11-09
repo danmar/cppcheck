@@ -1848,6 +1848,8 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
 
     if (endsWith(clangType, " &", 2))
         setFlag(fIsReference, true);
+    else if (endsWith(clangType, " &&", 3))
+        setFlag(fIsRValueRef, true);
 
     std::string::size_type pos = clangType.find("[");
     if (pos != std::string::npos) {

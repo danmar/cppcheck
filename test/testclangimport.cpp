@@ -108,6 +108,7 @@ private:
         TEST_CASE(symbolDatabaseFunction3);
         TEST_CASE(symbolDatabaseFunctionConst);
         TEST_CASE(symbolDatabaseVariableRef);
+        TEST_CASE(symbolDatabaseVariableRRef);
         TEST_CASE(symbolDatabaseNodeType1);
 
         TEST_CASE(valueFlow1);
@@ -1070,6 +1071,27 @@ private:
         GET_SYMBOL_DB(clang);
         const Variable *refVar = db->variableList().back();
         ASSERT(refVar->isReference());
+    }
+
+    void symbolDatabaseVariableRRef() {
+        const char clang[] = "`-FunctionDecl 0x1a40df0 <3.cpp:1:1, line:4:1> line:1:6 foo 'void ()'\n"
+                             "  `-CompoundStmt 0x1a41180 <col:12, line:4:1>\n"
+                             "    |-DeclStmt 0x1a40f58 <line:2:3, col:8>\n"
+                             "    | `-VarDecl 0x1a40ef0 <col:3, col:7> col:7 used x 'int'\n"
+                             "    `-DeclStmt 0x1a41168 <line:3:3, col:18>\n"
+                             "      `-VarDecl 0x1a40fb8 <col:3, col:17> col:9 ref 'int &&' cinit\n"
+                             "        `-ExprWithCleanups 0x1a410f8 <col:15, col:17> 'int' xvalue\n"
+                             "          `-MaterializeTemporaryExpr 0x1a41098 <col:15, col:17> 'int' xvalue extended by Var 0x1a40fb8 'ref' 'int &&'\n"
+                             "            `-BinaryOperator 0x1a41078 <col:15, col:17> 'int' '+'\n"
+                             "              |-ImplicitCastExpr 0x1a41060 <col:15> 'int' <LValueToRValue>\n"
+                             "              | `-DeclRefExpr 0x1a41020 <col:15> 'int' lvalue Var 0x1a40ef0 'x' 'int'\n"
+                             "              `-IntegerLiteral 0x1a41040 <col:17> 'int' 1\n";
+
+        ASSERT_EQUALS("void foo ( ) { int x@1 ; int && ref@2 = x@1 + 1 ; }", parse(clang));
+
+        GET_SYMBOL_DB(clang);
+        const Variable *refVar = db->variableList().back();
+        ASSERT(refVar->isRValueReference());
     }
 
     void symbolDatabaseNodeType1() {
