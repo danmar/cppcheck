@@ -1495,6 +1495,181 @@ class MisraChecker:
             if token.str == 'restrict':
                 self.reportError(token, 8, 14)
 
+    def misra_9_2(self, data):
+        # Holds information about a struct or union's element definition.
+        class ElementDef:
+            def __init__(self, elementType, name, valueType = None, dimensions = None):
+                self.elementType = elementType
+                self.name = name
+                self.valueType = valueType
+                self.dimensions = dimensions
+
+        # Return an array containing the size of each dimension of an array declaration,
+        # or coordinates of a designator in an array initializer,
+        # and the name token's valueType, if it exist.
+        #
+        # Ex:   int arr[1][2][3] = .....
+        #                    ^
+        #       returns: [1,2,3], valueType
+        #
+        # Ex:   int arr[3][4] = { [1][2] = 5 }
+        #                            ^
+        #       returns [1,2], None
+        def get_array_dimensions_and_valuetype(token):
+            designator = []
+            while token and token.str == '[':
+                if token.astOperand2 and token.astOperand2.isNumber:
+                    designator.insert(0, token.astOperand2.values[0].intvalue)
+                    token = token.astOperand1
+                elif token.astOperand1.isNumber:
+                    designator.insert(0, int(token.astOperand1.str))
+                    break
+                else:
+                    designator = None
+                    break
+
+            if token.valueType:
+                valueType = token.valueType
+            else:
+                valueType = None
+
+            return designator, valueType
+
+        # Returns a list of the struct elements as StructElementDef in the order they are declared.
+        def get_record_elements(valueType):
+            elements = []
+            for token in data.tokenlist:
+                if token.variableId and token.scope == valueType.typeScope:
+                    if token.variable.isArray:
+                        dimensions, arrayValueType = get_array_dimensions_and_valuetype(token.astParent)
+                        elements.append(ElementDef('array', token.str, arrayValueType, dimensions))
+                    elif token.variable.isClass:
+                        elements.append(ElementDef('class', token.str, token.valueType))
+                    else:
+                        elements.append(ElementDef('element', token.str))
+
+            return elements
+
+        # Recursively checks if the initializer conforms to the dimensions of the array declaration
+        # at a given level.
+        # Parameters:
+        #   token:      root node of the initializer tree
+        #   dimensions: dimension sizes of the array declaration
+        #   valueType:  the array type
+        #   level:      the nesting level of the initializer corresponding to the array dimension
+        def check_array_initializer(token, dimensions, valueType, level = 0):
+            if not token:
+                return level
+
+            if level == len(dimensions) and valueType.type == 'record':
+                elements = get_record_elements(valueType)
+                return (-1 if check_object_initializer(token.astOperand1, elements) < 0
+                        else level)
+
+            elif token.str == '{':
+                return (-1 if level != 0 and not token.astOperand1
+                        else check_array_initializer(token.astOperand1, dimensions, valueType, level + 1) - 1)
+
+            elif token.str == ',':
+                level = check_array_initializer(token.astOperand1, dimensions, valueType, level)
+
+                return (level if level < 0 else 
+                        check_array_initializer(token.astOperand2, dimensions, valueType, level))
+
+            elif token.isAssignmentOp:
+                designator, _ = get_array_dimensions_and_valuetype(token.astOperand1)
+                # Re-calculate level based on designator in initializer
+                level = level + len(designator) - 1
+                return check_array_initializer(token.astOperand2, dimensions, valueType, level)
+
+            elif token.isString:
+                if level != len(dimensions)-1:
+                    return -1
+
+            elif level != len(dimensions):
+                return -1
+
+            return level
+
+        # Recursively checks if the initializer conforms to the elements of the struct or union
+        # at a given level.
+        # Parameters:
+        #   token:      root node of the initializer tree
+        #   elements:   the elements as specified in the declaration
+        def check_object_initializer(token, elements):
+            def check_object_initializer_recursive(token, pos = None):
+                if token.str == ',':
+                    pos = check_object_initializer_recursive(token.astOperand1)
+                    return (-1 if pos < 0
+                            else check_object_initializer_recursive(token.astOperand2, pos + 1))
+                else:
+                    if pos == None:
+                        pos = 0
+
+                    if token.isAssignmentOp and token.astOperand1.str == '.':
+                        elementName = token.astOperand1.astOperand1.str
+                        pos = next((i for i, element in enumerate(elements) if element.name == elementName), len(elements))
+                        token = token.astOperand2
+
+                    if pos < len(elements):
+                        element = elements[pos]
+                        if element.elementType == 'class':
+                            subElements = get_record_elements(element.valueType)
+                            return (-1 if check_object_initializer(token, subElements) < 0
+                                    else pos)
+                        elif element.elementType == 'array':
+                            return (-1 if check_array_initializer(token, element.dimensions, element.valueType) < 0
+                                    else pos)
+                        elif token.str == '{':
+                            return -1
+                return pos
+
+            # Initializer must start with a curly bracket
+            if not token or not token.str == '{':
+                return -1
+            token = token.astOperand1
+
+            # Empty initializer is not ok { }
+            if not token:
+                return -1
+
+            # Zero initializer is ok { 0 }
+            if token.str == '0' :
+                return 0
+
+            return check_object_initializer_recursive(token)
+
+        # ------
+        for nameToken in data.tokenlist:
+            if nameToken.variableId:
+                token = nameToken
+                while token.astParent and not token.astParent.isAssignmentOp:
+                    token = token.astParent
+
+                eq = token.astParent
+
+                if not eq:
+                    continue
+
+                var = nameToken.variable
+
+                if var.isArray :
+                    dimensions, valueType = get_array_dimensions_and_valuetype(eq.astOperand1)
+                    if dimensions == None:
+                        continue
+
+                    if check_array_initializer(eq.astOperand2, dimensions, valueType) < 0:
+                        self.reportError(var.nameToken, 9, 2)
+                elif var.isClass:
+                    if not nameToken.valueType:
+                        continue
+
+                    valueType = nameToken.valueType
+                    if valueType.type == 'record':
+                        elements = get_record_elements(valueType)
+                        if check_object_initializer(eq.astOperand2, elements) < 0:
+                            self.reportError(var.nameToken, 9, 2)
+
     def misra_9_5(self, rawTokens):
         for token in rawTokens:
             if simpleMatch(token, '[ ] = { ['):
@@ -3108,6 +3283,7 @@ class MisraChecker:
             self.executeCheck(704, self.misra_7_4, cfg)            
             self.executeCheck(811, self.misra_8_11, cfg)
             self.executeCheck(812, self.misra_8_12, cfg)
+            self.executeCheck(802, self.misra_9_2, cfg)
             if cfgNumber == 0:
                 self.executeCheck(814, self.misra_8_14, data.rawTokens)
                 self.executeCheck(905, self.misra_9_5, data.rawTokens)
