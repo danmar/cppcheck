@@ -1657,33 +1657,35 @@ class MisraChecker:
 
         # ------
         for token in data.tokenlist:
-            if token.variableId:
-                # Scan up to see if token is on left side of assignment
-                eq = token
-                while not eq.isAssignmentOp and eq.astParent and eq.astParent.astOperand1 == eq:
-                    eq = eq.astParent
+            if token.variable:
+                variable = token.variable
+                nameToken = variable.nameToken
+                # Find declarations (also if isSplittedVarDeclEq is True)
+                if nameToken.file == token.file and nameToken.linenr == token.linenr and nameToken.column == token.column:
+                    # Find declarations with initializer assignment
+                    eq = token
+                    while not eq.isAssignmentOp and eq.astParent:
+                        eq = eq.astParent
 
-                if not eq or not eq.isAssignmentOp:
-                    continue
-
-                var = token.variable
-
-                if var.isArray :
-                    dimensions, valueType = get_array_dimensions_and_valuetype(eq.astOperand1)
-                    if dimensions == None:
+                    if not eq.isAssignmentOp:
                         continue
 
-                    if check_array_initializer(eq.astOperand2, dimensions, valueType) < 0:
-                        self.reportError(token, 9, 2)
-                elif var.isClass:
-                    if not token.valueType:
-                        continue
+                    if variable.isArray :
+                        dimensions, valueType = get_array_dimensions_and_valuetype(eq.astOperand1)
+                        if dimensions == None:
+                            continue
 
-                    valueType = token.valueType
-                    if valueType.type == 'record':
-                        elements = get_record_elements(valueType)
-                        if check_object_initializer(eq.astOperand2, elements) < 0:
+                        if check_array_initializer(eq.astOperand2, dimensions, valueType) < 0:
                             self.reportError(token, 9, 2)
+                    elif variable.isClass:
+                        if not token.valueType:
+                            continue
+
+                        valueType = token.valueType
+                        if valueType.type == 'record':
+                            elements = get_record_elements(valueType)
+                            if check_object_initializer(eq.astOperand2, elements) < 0:
+                                self.reportError(token, 9, 2)
 
     def misra_9_5(self, rawTokens):
         for token in rawTokens:
