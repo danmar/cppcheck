@@ -16,21 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef forwardanalyzerH
-#define forwardanalyzerH
+#ifndef reverseanalyzerH
+#define reverseanalyzerH
 
-#include "analyzer.h"
-#include <vector>
-
+struct Analyzer;
 class Settings;
 class Token;
-template <class T> class ValuePtr;
+template <class T>
+class ValuePtr;
 
-Analyzer::Action valueFlowGenericForward(Token* start,
-                                         const Token* end,
-                                         const ValuePtr<Analyzer>& a,
-                                         const Settings* settings);
-
-Analyzer::Action valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>& a, const Settings* settings);
+void valueFlowGenericReverse(Token* start, const ValuePtr<Analyzer>& a, const Settings* settings);
 
 #endif

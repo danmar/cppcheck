@@ -3453,6 +3453,20 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct a {\n"
+              "  int *b();\n"
+              "};\n"
+              "bool g(a c, a* d) {\n"
+              "  a *v, *e = v = &c;\n"
+              "  if (!v)\n"
+              "    return true;\n"
+              "  int *f = v->b();\n"
+              "  if (f)\n"
+              "    v = nullptr;\n"
+              "  if (v == nullptr && e) {}\n"
+              "  return d;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
