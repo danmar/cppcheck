@@ -247,6 +247,7 @@ private:
 
         TEST_CASE(templateTypeDeduction1); // #8962
         TEST_CASE(templateTypeDeduction2);
+        TEST_CASE(templateTypeDeduction3);
 
         TEST_CASE(simplifyTemplateArgs1);
         TEST_CASE(simplifyTemplateArgs2);
@@ -5256,6 +5257,28 @@ private:
                               "}";
 
         TODO_ASSERT_EQUALS(expected, actual, tok(code));
+    }
+
+    void templateTypeDeduction3() {  // #9975
+        const char code[] = "struct A {\n"
+                            "    int a = 1;\n"
+                            "    void f() { g(1); }\n"
+                            "    template <typename T> void g(T x) { a = 2; }\n"
+                            "};\n"
+                            "int main() {\n"
+                            "    A a;\n"
+                            "    a.f();\n"
+                            "}";
+        const char exp[]  = "struct A { "
+                            "int a ; a = 1 ; "
+                            "void f ( ) { g<int> ( 1 ) ; } "
+                            "void g<int> ( int x ) ; "
+                            "} ; "
+                            "int main ( ) { "
+                            "A a ; "
+                            "a . f ( ) ; "
+                            "} void A :: g<int> ( int x ) { a = 2 ; }";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void simplifyTemplateArgs1() {

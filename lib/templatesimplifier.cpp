@@ -850,7 +850,13 @@ void TemplateSimplifier::getTemplateInstantiations()
             // look for function instantiation with type deduction
             // fixme: only single argument functions supported
             if (tok->strAt(1) == "(") {
-                std::string fullName = qualification + (qualification.empty() ? "" : " :: ") + tok->str();
+                std::string fullName;
+                if (!qualification.empty())
+                    fullName = qualification + " :: " + tok->str();
+                else if (!scopeName.empty())
+                    fullName = scopeName + " :: " + tok->str();
+                else
+                    fullName = tok->str();
                 // get all declarations with this name
                 for (auto pos = functionNameMap.lower_bound(tok->str());
                      pos != functionNameMap.upper_bound(tok->str()); ++pos) {
