@@ -1846,9 +1846,9 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
         mTypeStartToken = mTypeStartToken->next();
     }
 
-    if (endsWith(clangType, " &", 2))
+    if (Token::simpleMatch(mTypeEndToken, "&"))
         setFlag(fIsReference, true);
-    else if (endsWith(clangType, " &&", 3)) {
+    else if (Token::simpleMatch(mTypeEndToken, "&&")) {
         setFlag(fIsReference, true);
         setFlag(fIsRValueRef, true);
     }

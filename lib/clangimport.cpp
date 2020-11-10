@@ -108,6 +108,11 @@ static std::vector<std::string> splitString(const std::string &line)
     std::string::size_type pos1 = line.find_first_not_of(" ");
     while (pos1 != std::string::npos) {
         std::string::size_type pos2;
+        if (line[pos1] == '*') {
+            ret.push_back("*");
+            pos1 = line.find_first_not_of(" ", pos1 + 1);
+            continue;
+        }
         if (line[pos1] == '<')
             pos2 = line.find(">", pos1);
         else if (line[pos1] == '\"')

@@ -109,6 +109,7 @@ private:
         TEST_CASE(symbolDatabaseFunctionConst);
         TEST_CASE(symbolDatabaseVariableRef);
         TEST_CASE(symbolDatabaseVariableRRef);
+        TEST_CASE(symbolDatabaseVariablePointerRef);
         TEST_CASE(symbolDatabaseNodeType1);
 
         TEST_CASE(valueFlow1);
@@ -456,7 +457,7 @@ private:
                              "    |         `-CXXFunctionalCastExpr 0x1592b40 <line:2:15, line:3:28> 'MyVar<int>':'MyVar<int>' functional cast to MyVar<int> <ConstructorConversion>\n"
                              "    |           `-CXXConstructExpr 0x15929f0 <line:2:15, line:3:28> 'MyVar<int>':'MyVar<int>' 'void (int)'\n"
                              "    |             `-IntegerLiteral 0x1570248 <col:27> 'int' 5\n";
-        ASSERT_EQUALS("int main ( int argc@1 , char ** argv@2 ) { MyVar<int> setCode@3 = MyVar<int> ( 5 ) ; }",
+        ASSERT_EQUALS("int main ( int argc@1 , char * * argv@2 ) { MyVar<int> setCode@3 = MyVar<int> ( 5 ) ; }",
                       parse(clang));
     }
 
@@ -922,7 +923,7 @@ private:
 
     void vardecl5() {
         const char clang[] = "|-VarDecl 0x2e31fc0 <line:27:1, col:38> col:26 sys_errlist 'const char *const []' extern";
-        ASSERT_EQUALS("const char *const [] sys_errlist@1 ;", parse(clang));
+        ASSERT_EQUALS("const char * const [] sys_errlist@1 ;", parse(clang));
     }
 
     void vardecl6() {
@@ -1093,6 +1094,18 @@ private:
         const Variable *refVar = db->variableList().back();
         ASSERT(refVar->isReference());
         ASSERT(refVar->isRValueReference());
+    }
+
+    void symbolDatabaseVariablePointerRef() {
+        const char clang[] = "`-FunctionDecl 0x9b4f10 <3.cpp:1:1, col:17> col:6 used foo 'void (int *&)'\n"
+                             "  `-ParmVarDecl 0x9b4e40 <col:10, col:16> col:16 p 'int *&'\n";
+
+        ASSERT_EQUALS("void foo ( int * & p@1 ) ;", parse(clang));
+
+        GET_SYMBOL_DB(clang);
+        const Variable *p = db->variableList().back();
+        ASSERT(p->isPointer());
+        ASSERT(p->isReference());
     }
 
     void symbolDatabaseNodeType1() {
