@@ -5,23 +5,23 @@
     <filterSection>
         <toc>
             <section title="Cppcheck GUI help" ref="index.html">
-                <section title="Investigating warnings" ref="./investigating-warnings.html"/>
-                <section title="Preferences" ref="./preferences.html"/>
-                <section title="Project file dialog" ref="./projectfiledialog.html"/>
-                <section title="Severities" ref="./severities.html"/>
-                <section title="Standalone analysis" ref="./standalone-analysis.html"/>
-                <section title="Tagging" ref="./tagging.html"/>
-                <section title="Quick walk through" ref="./walkthrough.html"/>
+                <section title="Investigating warnings" ref="investigating-warnings.html"/>
+                <section title="Preferences" ref="preferences.html"/>
+                <section title="Project file dialog" ref="projectfiledialog.html"/>
+                <section title="Severities" ref="severities.html"/>
+                <section title="Standalone analysis" ref="standalone-analysis.html"/>
+                <section title="Tagging" ref="tagging.html"/>
+                <section title="Quick walk through" ref="walkthrough.html"/>
             </section>
         </toc>
         <keywords>
-            <keyword name="Error" ref="./severities.html"/>
-            <keyword name="Performance" ref="./severities.html"/>
-            <keyword name="Portability" ref="./severities.html"/>
-            <keyword name="Project" ref="./projectfiledialog.html"/>
-            <keyword name="Style" ref="./severities.html"/>
-            <keyword name="Tag" ref="./tagging.html"/>
-            <keyword name="Warning" ref="./severities.html"/>
+            <keyword name="Error" ref="severities.html"/>
+            <keyword name="Performance" ref="severities.html"/>
+            <keyword name="Portability" ref="severities.html"/>
+            <keyword name="Project" ref="projectfiledialog.html"/>
+            <keyword name="Style" ref="severities.html"/>
+            <keyword name="Tag" ref="tagging.html"/>
+            <keyword name="Warning" ref="severities.html"/>
         </keywords>
         <files>
           <file>index.html</file>

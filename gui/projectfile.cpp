@@ -1151,7 +1151,11 @@ QString ProjectFile::getAddonFilePath(QString filesDir, const QString &addon)
         filesDir += "/";
 
     QStringList searchPaths;
-    searchPaths << filesDir << (filesDir + "addons/") << (filesDir + "../addons/");
+    searchPaths << filesDir << (filesDir + "addons/") << (filesDir + "../addons/")
+#ifdef FILESDIR
+                << (QLatin1String(FILESDIR) + "/addons/")
+#endif
+                ;
 
     foreach (QString path, searchPaths) {
         QString f = path + addon + ".py";

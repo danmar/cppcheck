@@ -410,9 +410,10 @@ Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
 
 namespace {
     struct Space {
-        Space() : bodyEnd(nullptr), isNamespace(false) { }
+        Space() : bodyEnd(nullptr), bodyEnd2(nullptr), isNamespace(false) { }
         std::string className;
-        const Token * bodyEnd;
+        const Token * bodyEnd;  // for body contains typedef define
+        const Token * bodyEnd2; // for body contains typedef using
         bool isNamespace;
     };
 }
@@ -609,6 +610,7 @@ void Tokenizer::simplifyTypedef()
                 info.isNamespace = isNamespace;
                 info.className = className;
                 info.bodyEnd = tok->link();
+                info.bodyEnd2 = tok->link();
                 spaceInfo.push_back(info);
 
                 hasClass = false;
@@ -1050,7 +1052,7 @@ void Tokenizer::simplifyTypedef()
                                 inMemberFunc = false;
                         }
 
-                        if (classLevel > 0 && tok2 == spaceInfo[classLevel - 1].bodyEnd) {
+                        if (classLevel > 0 && tok2 == spaceInfo[classLevel - 1].bodyEnd2) {
                             --classLevel;
                             pattern.clear();
 
@@ -1103,7 +1105,7 @@ void Tokenizer::simplifyTypedef()
                             if (classLevel < spaceInfo.size() &&
                                 spaceInfo[classLevel].isNamespace &&
                                 spaceInfo[classLevel].className == tok2->previous()->str()) {
-                                spaceInfo[classLevel].bodyEnd = tok2->link();
+                                spaceInfo[classLevel].bodyEnd2 = tok2->link();
                                 ++classLevel;
                                 pattern.clear();
                                 for (int i = classLevel; i < spaceInfo.size(); ++i)
@@ -3605,7 +3607,7 @@ void Tokenizer::setVarIdPass1()
                     continue;
             }
 
-            if (!scopeStack.top().isEnum) {
+            if (!scopeStack.top().isEnum || !(Token::Match(tok->previous(), "{|,")  && Token::Match(tok->next(), ",|=|}"))) {
                 const std::map<std::string, int>::const_iterator it = variableMap.find(tok->str());
                 if (it != variableMap.end()) {
                     tok->varId(it->second);
@@ -4903,7 +4905,7 @@ void Tokenizer::printDebugOutput(int simplification) const
         }
 
         if (mSettings->verbose)
-            list.front()->printAst(mSettings->verbose, mSettings->xml, std::cout);
+            list.front()->printAst(mSettings->verbose, mSettings->xml, list.getFiles(), std::cout);
 
         list.front()->printValueFlow(mSettings->xml, std::cout);
 
@@ -8098,7 +8100,7 @@ bool Tokenizer::simplifyRedundantParentheses()
             continue;
         }
 
-        // Do not simplify if there is comma inside parantheses..
+        // Do not simplify if there is comma inside parentheses..
         if (Token::Match(tok->previous(), "%op% (") || Token::Match(tok->link(), ") %op%")) {
             bool innerComma = false;
             for (const Token *inner = tok->link()->previous(); inner != tok; inner = inner->previous()) {
@@ -9485,6 +9487,15 @@ void Tokenizer::reportUnknownMacros()
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%str% %name% (") && Token::Match(tok->linkAt(2), ") %str%")) {
             if (tok->next()->isKeyword())
+                continue;
+            unknownMacroError(tok->next());
+        }
+        if (Token::Match(tok, "[(,] %name% (") && Token::Match(tok->linkAt(2), ") %name% %name%|,|)")) {
+            if (tok->next()->isKeyword() || tok->linkAt(2)->next()->isKeyword())
+                continue;
+            if (cAlternativeTokens.count(tok->linkAt(2)->next()->str()) > 0)
+                continue;
+            if (tok->next()->str().compare(0, 2, "__") == 0) // attribute/annotation
                 continue;
             unknownMacroError(tok->next());
         }

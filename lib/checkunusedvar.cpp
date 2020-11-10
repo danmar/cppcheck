@@ -1134,6 +1134,10 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                         variables.read(tok2->varId(), tok);
                 }
             }
+        } else if (tok->variable() && tok->variable()->isClass() && tok->variable()->type() &&
+                   (tok->variable()->type()->needInitialization == Type::NeedInitialization::False) &&
+                   tok->next()->str() == ";") {
+            variables.write(tok->varId(), tok);
         }
     }
 }
@@ -1471,7 +1475,6 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
 {
     // a type that has no side effects (no constructors and no members with constructors)
     /** @todo false negative: check constructors for side effects */
-
     const std::pair<std::map<const Type *,bool>::iterator,bool> found=mIsRecordTypeWithoutSideEffectsMap.insert(
                 std::pair<const Type *,bool>(type,false)); //Initialize with side effects for possible recursions
     bool & withoutSideEffects = found.first->second;
@@ -1489,8 +1492,36 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
         if (f.argDef && Token::simpleMatch(f.argDef->link(), ") ="))
             continue; // ignore default/deleted constructors
         const bool emptyBody = (f.functionScope && Token::simpleMatch(f.functionScope->bodyStart, "{ }"));
-        const bool hasInitList = f.argDef && Token::simpleMatch(f.argDef->link(), ") :");
-        if (!emptyBody || hasInitList)
+
+        Token* nextToken = f.argDef->link();
+        if (Token::simpleMatch(nextToken, ") :")) {
+            // validating initialization list
+            nextToken = nextToken->next(); // goto ":"
+
+            for (const Token *initListToken = nextToken; Token::Match(initListToken, "[:,] %var% [({]"); initListToken = initListToken->linkAt(2)->next()) {
+                const Token* varToken = initListToken->next();
+                const Variable* variable = varToken->variable();
+                if (variable && !isVariableWithoutSideEffects(*variable)) {
+                    return withoutSideEffects = false;
+                }
+
+                const Token* valueEnd = initListToken->linkAt(2);
+                for (const Token* valueToken = initListToken->tokAt(3); valueToken != valueEnd; valueToken = valueToken->next()) {
+                    const Variable* initValueVar = valueToken->variable();
+                    if (initValueVar && !isVariableWithoutSideEffects(*initValueVar)) {
+                        return withoutSideEffects = false;
+                    }
+                    if ((valueToken->tokType() == Token::Type::eFunction) ||
+                        (valueToken->tokType() == Token::Type::eName) ||
+                        (valueToken->tokType() == Token::Type::eLambda) ||
+                        (valueToken->tokType() == Token::Type::eOther)) {
+                        return withoutSideEffects = false;
+                    }
+                }
+            }
+        }
+
+        if (!emptyBody)
             return (withoutSideEffects = false);
     }
 
@@ -1502,22 +1533,32 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
 
     // Is there a member variable with possible side effects
     for (const Variable& var : type->classScope->varlist) {
-        if (var.isPointer())
-            continue;
-
-        const Type* variableType = var.type();
-        if (variableType) {
-            if (!isRecordTypeWithoutSideEffects(variableType))
-                return (withoutSideEffects = false);
-        } else {
-            ValueType::Type valueType = var.valueType()->type;
-            if ((valueType == ValueType::Type::UNKNOWN_TYPE) || (valueType == ValueType::Type::NONSTD))
-                return (withoutSideEffects = false);
+        withoutSideEffects = isVariableWithoutSideEffects(var);
+        if (!withoutSideEffects) {
+            return withoutSideEffects;
         }
     }
 
 
     return (withoutSideEffects = true);
+}
+
+bool CheckUnusedVar::isVariableWithoutSideEffects(const Variable& var)
+{
+    if (var.isPointer())
+        return true;
+
+    const Type* variableType = var.type();
+    if (variableType) {
+        if (!isRecordTypeWithoutSideEffects(variableType))
+            return false;
+    } else {
+        ValueType::Type valueType = var.valueType()->type;
+        if ((valueType == ValueType::Type::UNKNOWN_TYPE) || (valueType == ValueType::Type::NONSTD))
+            return false;
+    }
+
+    return true;
 }
 
 bool CheckUnusedVar::isEmptyType(const Type* type)

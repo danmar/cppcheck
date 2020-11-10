@@ -598,8 +598,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                      value2.isIntValue())) {
                     ValueFlow::Value result(0);
                     combineValueProperties(value1, value2, &result);
-                    const float floatValue1 = value1.isIntValue() ? value1.intvalue : value1.floatValue;
-                    const float floatValue2 = value2.isIntValue() ? value2.intvalue : value2.floatValue;
+                    const double floatValue1 = value1.isIntValue() ? value1.intvalue : value1.floatValue;
+                    const double floatValue2 = value2.isIntValue() ? value2.intvalue : value2.floatValue;
                     switch (parent->str()[0]) {
                     case '+':
                         if (value1.isTokValue() || value2.isTokValue())
@@ -1626,6 +1626,34 @@ static void valueFlowOppositeCondition(SymbolDatabase *symboldatabase, const Set
                 setTokenValue(cond2, value, settings);
             }
             tok2 = ifOpenBraceTok->link();
+        }
+    }
+}
+
+static void valueFlowEnumValue(SymbolDatabase * symboldatabase, const Settings * settings)
+{
+
+    for (Scope & scope : symboldatabase->scopeList) {
+        if (scope.type != Scope::eEnum)
+            continue;
+        MathLib::bigint value = 0;
+        bool prev_enum_is_known = true;
+
+        for (Enumerator & enumerator : scope.enumeratorList) {
+            if (enumerator.start) {
+                Token *rhs = enumerator.start->previous()->astOperand2();
+                ValueFlow::valueFlowConstantFoldAST(rhs, settings);
+                if (rhs && rhs->hasKnownIntValue()) {
+                    enumerator.value = rhs->values().front().intvalue;
+                    enumerator.value_known = true;
+                    value = enumerator.value + 1;
+                    prev_enum_is_known = true;
+                } else
+                    prev_enum_is_known = false;
+            } else if (prev_enum_is_known) {
+                enumerator.value = value++;
+                enumerator.value_known = true;
+            }
         }
     }
 }
@@ -4486,6 +4514,8 @@ static void valueFlowAfterCondition(TokenList *tokenlist,
         ValueFlow::Value false_value;
         const Token *vartok = parseCompareInt(tok, true_value, false_value);
         if (vartok) {
+            if (vartok->hasKnownValue())
+                return cond;
             if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
                 vartok = vartok->astOperand1();
             cond.true_values.push_back(true_value);
@@ -5809,7 +5839,7 @@ struct ContainerVariableAnalyzer : VariableAnalyzer {
 
     virtual Action isModified(const Token* tok) const OVERRIDE {
         Action read = Action::Read;
-        // An iterator wont change the container size
+        // An iterator won't change the container size
         if (astIsIterator(tok))
             return read;
         if (Token::Match(tok->astParent(), "%assign%") && astIsLHS(tok))
@@ -6620,11 +6650,14 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     for (Token *tok = tokenlist->front(); tok; tok = tok->next())
         tok->clearValueFlow();
 
+    valueFlowEnumValue(symboldatabase, settings);
     valueFlowNumber(tokenlist);
     valueFlowString(tokenlist);
     valueFlowArray(tokenlist);
     valueFlowUnknownFunctionReturn(tokenlist, settings);
     valueFlowGlobalConstVar(tokenlist, settings);
+    valueFlowEnumValue(symboldatabase, settings);
+    valueFlowNumber(tokenlist);
     valueFlowGlobalStaticVar(tokenlist, settings);
     valueFlowPointerAlias(tokenlist);
     valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings);

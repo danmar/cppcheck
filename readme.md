@@ -18,8 +18,8 @@ A manual is available [online](http://cppcheck.sourceforge.net/manual.pdf).
 
 Cppcheck is a hobby project with limited resources. You can help us by donating CPU (1 core or as many as you like). It is simple:
 
- 1. Download (and extract) Cppcheck source code
- 2. Run script: python cppcheck/tools/donate-cpu.py
+ 1. Download (and extract) Cppcheck source code.
+ 2. Run script: python cppcheck/tools/donate-cpu.py.
 
 The script will analyse debian source code and upload the results to a cppcheck server. We need these results both to improve Cppcheck and to detect regressions.
 
@@ -53,16 +53,16 @@ cmake ..
 cmake --build .
 ```
 
-If you want to compile the GUI you can use the flag
+If you want to compile the GUI you can use the flag.
 -DBUILD_GUI=ON
 
-For rules support (requires pcre) use the flag
+For rules support (requires pcre) use the flag.
 -DHAVE_RULES=ON
 
 For release builds it is recommended that you use:
 -DUSE_MATCHCOMPILER=ON
 
-Using cmake you can generate project files for Visual Studio, XCode, etc.
+Using cmake you can generate project files for Visual Studio,XCode,etc.
 
 ### qmake
 

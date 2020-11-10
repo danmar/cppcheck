@@ -120,9 +120,9 @@ void TokenList::determineCppC()
     if (mIsCpp) {
         //mKeywords.insert("bool"); // type
         mKeywords.insert("catch");
-        mKeywords.insert("delete");
         mKeywords.insert("class");
         mKeywords.insert("const_cast");
+        mKeywords.insert("decltype");
         mKeywords.insert("delete");
         mKeywords.insert("dynamic_cast");
         mKeywords.insert("explicit");
@@ -145,6 +145,7 @@ void TokenList::determineCppC()
         mKeywords.insert("try");
         mKeywords.insert("typeid");
         mKeywords.insert("typename");
+        mKeywords.insert("typeof");
         mKeywords.insert("using");
         mKeywords.insert("virtual");
         //mKeywords.insert("wchar_t"); // type
