@@ -295,6 +295,64 @@ enum misra_8_12_e { misra_e1 = sizeof(int), misra_e2}; // no-crash
 
 void misra_8_14(char * restrict str) {(void)str;} // 8.14
 
+void misra_9_2() {
+    typedef struct {
+        int i1;
+        int i2;
+    } misra_9_2_struct1;
+
+    typedef struct {
+        char c1;
+        misra_9_2_struct1 is1;
+        char c2[4];
+    } misra_9_2_struct2;
+
+    int misra_9_2_empty_initializer[2][2]          = { };
+    int misra_9_2_empty_nested_initalizer[2][2]    = { { } };            // 9.2
+    int misra_9_2_zero_initializer_a[5]            = { 0 };
+    int misra_9_2_zero_initializer_b[5][2]         = { 0 };
+    int misra_9_2_zero_initializer_c[2][2]         = { { 1, 2 }, { 0 } };
+
+    char misra_9_2_string_wrong_level_a[12]        = { "Hello world" };  // 9.2
+    char misra_9_2_string_wrong_level_b[2][20]     = "Hello world";      // 9.2
+    char misra_9_2_string_correct_level_a[]        = "Hello world";
+    char misra_9_2_string_correct_level_b[2][12]   = { "Hello world" };
+
+
+    int misra_9_2_array_initializer_incorrect_levels_a[3][2]    = { 1, 2, 3, 4, 5, 6 };               // 9.2
+    int misra_9_2_array_initializer_correct_levels_a[3][2]      = { { 1, 2 }, { 3, 4 }, { 5, 6 } };
+    int misra_9_2_array_initializer_incorrect_levels_b[6]       = { { 1, 2 }, { 3, 4 }, { 5, 6 } };   // 9.2
+    int misra_9_2_array_initializer_correct_levels_b[6]         = { 1, 2, 3, 4, 5, 6 };
+
+
+    int misra_9_2_array_incorrect_designator_a[1]    = { [0][1] = 1 };                                // 9.2
+    int misra_9_2_array_incorrect_designator_b[1]    = { [0] = { 1, 2 } };                            // 9.2
+    int misra_9_2_array_incorrect_designator_c[1][2] = { [0] = 1 };                                   // 9.2
+    int misra_9_2_array_incorrect_designator_d[2][2] = { { 1, 2 }, [1][0] = {3, 4} };                 // 9.2
+    int misra_9_2_array_correct_designator_a[2]      = { [0] = 1, 2 };
+    int misra_9_2_array_correct_designator_b[2]      = { [1] = 2, [0] = 1 };
+    int misra_9_2_array_correct_designator_c[2][2]   = { { 1, 2 }, [1] = {3, 4} };
+    int misra_9_2_array_correct_designator_d[2][2]   = { { 1, 2 }, [1][0] = 3, 4};
+
+
+
+    misra_9_2_struct2 misra_9_2_struct_empty_initializer         = { };
+    misra_9_2_struct2 misra_9_2_struct_zero_initializer          = { 0 };
+    misra_9_2_struct1 misra_9_2_struct_missing_brackets          = 1;                                 // 9.2
+    misra_9_2_struct2 misra_9_2_struct_correct_initializer       = { 1, {2, 3}, {0} };
+    misra_9_2_struct1 misra_9_2_struct_array_incorrect_levels[2] = { 1, 2, 3, 4 };                    // 9.2
+    misra_9_2_struct1 misra_9_2_struct_array_correct_levels[2]   = { {1, 2}, {3, 4} };
+    misra_9_2_struct1 misra_9_2_struct_correct_designator_a      = { .i2 = 2, .i1 = 1 };
+    misra_9_2_struct2 misra_9_2_struct_correct_designator_b      = { .is1 = {2, 3}, { 4 } };
+    misra_9_2_struct2 misra_9_2_struct_correct_designator_c      = { .i1 = {2, 3}, { 4 } };
+    misra_9_2_struct2 misra_9_2_struct_correct                   = { .is1 = misra_9_2_struct_correct_designator_a }
+
+    union misra_9_2_union {
+        char c;
+        misra_9_2_struct1 i;
+    } u = { 3 };
+}
+
 void misra_9_5() {
   int x[] = {[0]=23}; // 9.5
 }

@@ -1504,6 +1504,12 @@ class MisraChecker:
                 self.valueType = valueType
                 self.dimensions = dimensions
 
+        def get_intvalue(token):
+            if token and token.values and len(token.values) > 0:
+                return token.values[0].intvalue
+            else:
+                return None
+
         # Return an array containing the size of each dimension of an array declaration,
         # or coordinates of a designator in an array initializer,
         # and the name token's valueType, if it exist.
@@ -1516,16 +1522,18 @@ class MisraChecker:
         #                            ^
         #       returns [1,2], None
         def get_array_dimensions_and_valuetype(token):
-            designator = []
+            dimensions = []
             while token and token.str == '[':
-                if token.astOperand2 and token.astOperand2.isNumber:
-                    designator.insert(0, token.astOperand2.values[0].intvalue)
+                op1_value = get_intvalue(token.astOperand1)
+                op2_value = get_intvalue(token.astOperand2)
+                if op2_value != None:
+                    dimensions.insert(0, op2_value)
                     token = token.astOperand1
-                elif token.astOperand1.isNumber:
-                    designator.insert(0, int(token.astOperand1.str))
+                elif op1_value != None:
+                    dimensions.insert(0, op1_value)
                     break
                 else:
-                    designator = None
+                    dimensions = None
                     break
 
             if token.valueType:
@@ -1533,7 +1541,7 @@ class MisraChecker:
             else:
                 valueType = None
 
-            return designator, valueType
+            return dimensions, valueType
 
         # Returns a list of the struct elements as StructElementDef in the order they are declared.
         def get_record_elements(valueType):
@@ -1567,6 +1575,10 @@ class MisraChecker:
                         else level)
 
             elif token.str == '{':
+                # Zero initializer
+                if token.astOperand1 and token.astOperand1.str == '0':
+                    return level
+
                 return (-1 if level != 0 and not token.astOperand1
                         else check_array_initializer(token.astOperand1, dimensions, valueType, level + 1) - 1)
 
@@ -1576,7 +1588,7 @@ class MisraChecker:
                 return (level if level < 0 else 
                         check_array_initializer(token.astOperand2, dimensions, valueType, level))
 
-            elif token.isAssignmentOp:
+            elif token.isAssignmentOp and not token.valueType:
                 designator, _ = get_array_dimensions_and_valuetype(token.astOperand1)
                 # Re-calculate level based on designator in initializer
                 level = level + len(designator) - 1
@@ -1614,9 +1626,13 @@ class MisraChecker:
                     if pos < len(elements):
                         element = elements[pos]
                         if element.elementType == 'class':
-                            subElements = get_record_elements(element.valueType)
-                            return (-1 if check_object_initializer(token, subElements) < 0
-                                    else pos)
+                            if token.isName:
+                                if not token.valueType.typeScope  == element.valueType.typeScope:
+                                    return -1
+                            else:
+                                subElements = get_record_elements(element.valueType)
+                                return (-1 if check_object_initializer(token, subElements) < 0
+                                        else pos)
                         elif element.elementType == 'array':
                             return (-1 if check_array_initializer(token, element.dimensions, element.valueType) < 0
                                     else pos)
@@ -1640,18 +1656,17 @@ class MisraChecker:
             return check_object_initializer_recursive(token)
 
         # ------
-        for nameToken in data.tokenlist:
-            if nameToken.variableId:
-                token = nameToken
-                while token.astParent and not token.astParent.isAssignmentOp:
-                    token = token.astParent
+        for token in data.tokenlist:
+            if token.variableId:
+                # Scan up to see if token is on left side of assignment
+                eq = token
+                while not eq.isAssignmentOp and eq.astParent and eq.astParent.astOperand1 == eq:
+                    eq = eq.astParent
 
-                eq = token.astParent
-
-                if not eq:
+                if not eq or not eq.isAssignmentOp:
                     continue
 
-                var = nameToken.variable
+                var = token.variable
 
                 if var.isArray :
                     dimensions, valueType = get_array_dimensions_and_valuetype(eq.astOperand1)
@@ -1659,16 +1674,16 @@ class MisraChecker:
                         continue
 
                     if check_array_initializer(eq.astOperand2, dimensions, valueType) < 0:
-                        self.reportError(var.nameToken, 9, 2)
+                        self.reportError(token, 9, 2)
                 elif var.isClass:
-                    if not nameToken.valueType:
+                    if not token.valueType:
                         continue
 
-                    valueType = nameToken.valueType
+                    valueType = token.valueType
                     if valueType.type == 'record':
                         elements = get_record_elements(valueType)
                         if check_object_initializer(eq.astOperand2, elements) < 0:
-                            self.reportError(var.nameToken, 9, 2)
+                            self.reportError(token, 9, 2)
 
     def misra_9_5(self, rawTokens):
         for token in rawTokens:
