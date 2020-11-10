@@ -213,7 +213,12 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
             ret = tok->astOperand1();
         }
     } else if (comp == "!=" && rhs == std::string("0")) {
-        ret = tok;
+        if (tok->str() == "!") {
+            ret = tok->astOperand1();
+            // handle (!(x==0)) as (x!=0)
+            astIsVariableComparison(ret, "==", "0", &ret);
+        } else
+            ret = tok;
     } else if (comp == "==" && rhs == std::string("0")) {
         if (tok->str() == "!") {
             ret = tok->astOperand1();
