@@ -279,8 +279,8 @@ void misra_7_4()
    char *f = 1 + "text f" + 2; // 7.4 18.4
    const wchar_t *g = "text_g";
    wchar_t *h = "text_h"; // 7.4
-   
-   misra_7_4_const_call(1, ("text_const_call")); 
+
+   misra_7_4_const_call(1, ("text_const_call"));
    misra_7_4_const_ptr_call(1, ("text_const_call"));
    misra_7_4_call(1, "text_call"); // 7.4 11.8
 }
@@ -340,7 +340,6 @@ void misra_9_2() {
     struct1 struct_array_correct_levels[2]   = { {1, 2}, {3, 4} };
     struct1 struct_correct_designator_a      = { .i2 = 2, .i1 = 1 };
     struct2 struct_correct_designator_b      = { .is1 = {2, 3}, { 4 } };
-    struct2 struct_correct_designator_c      = { .i1 = {2, 3}, { 4 } };
     struct2 struct_correct                   = { .is1 = struct_correct_designator_a }
 
     union misra_9_2_union {   // 19.2
@@ -882,7 +881,7 @@ void misra_15_4() {
     }
     for (y = 0; y < 42; ++y) { // 15.4
       if (y==1) {
-        break; 
+        break;
       }
       if (y==2) {
         break;
@@ -919,7 +918,7 @@ void misra_15_4() {
   // Inner loop uses goto
   for (x = 0; x < 42; ++x) { // 15.4
     if (x==1) {
-      break; 
+      break;
     }
     for (y = 0; y < 42; ++y) {
       if (y == 1) {

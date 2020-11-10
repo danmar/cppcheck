@@ -1392,7 +1392,7 @@ class MisraChecker:
                         v = value.getKnownIntValue()
                         if v is not None and v >= limit:
                             self.reportError(value, 7, 2)
-        
+
         for token in data.tokenlist:
             # Check normal variable assignment
             if token.valueType and token.isNumber:
@@ -1402,7 +1402,7 @@ class MisraChecker:
             # Check use as function parameter
             if isFunctionCall(token) and token.astOperand1 and token.astOperand1.function:
                 functionDeclaration = token.astOperand1.function
-                
+
                 if functionDeclaration.tokenDef:
                     if functionDeclaration.tokenDef is token.astOperand1:
                         # Token is not a function call, but it is the definition of the function
@@ -1436,7 +1436,7 @@ class MisraChecker:
                 variable = getAssignedVariableToken(token)
                 if variable:
                     reportErrorIfVariableIsNotConst(variable, token)
-                
+
                 # Check use as return value
                 function = getFunctionUsingReturnValue(token)
                 if function:
@@ -1447,7 +1447,7 @@ class MisraChecker:
             # Check use as function parameter
             if isFunctionCall(token) and token.astOperand1 and token.astOperand1.function:
                 functionDeclaration = token.astOperand1.function
-                
+
                 if functionDeclaration.tokenDef:
                     if functionDeclaration.tokenDef is token.astOperand1:
                         # Token is not a function call, but it is the definition of the function
@@ -1585,7 +1585,7 @@ class MisraChecker:
             elif token.str == ',':
                 level = check_array_initializer(token.astOperand1, dimensions, valueType, level)
 
-                return (level if level < 0 else 
+                return (level if level < 0 else
                         check_array_initializer(token.astOperand2, dimensions, valueType, level))
 
             elif token.isAssignmentOp and not token.valueType:
@@ -1609,59 +1609,73 @@ class MisraChecker:
         #   token:      root node of the initializer tree
         #   elements:   the elements as specified in the declaration
         def check_object_initializer(token, elements):
-            def check_object_initializer_recursive(token, pos = None):
-                if token.str == ',':
-                    pos = check_object_initializer_recursive(token.astOperand1)
-                    return (-1 if pos < 0
-                            else check_object_initializer_recursive(token.astOperand2, pos + 1))
-                else:
-                    if pos == None:
-                        pos = 0
-
-                    if token.isAssignmentOp and token.astOperand1.str == '.':
-                        elementName = token.astOperand1.astOperand1.str
-                        pos = next((i for i, element in enumerate(elements) if element.name == elementName), len(elements))
-                        token = token.astOperand2
-
-                    if pos < len(elements):
-                        element = elements[pos]
-                        if element.elementType == 'class':
-                            if token.isName:
-                                if not token.valueType.typeScope  == element.valueType.typeScope:
-                                    return -1
-                            else:
-                                subElements = get_record_elements(element.valueType)
-                                return (-1 if check_object_initializer(token, subElements) < 0
-                                        else pos)
-                        elif element.elementType == 'array':
-                            return (-1 if check_array_initializer(token, element.dimensions, element.valueType) < 0
-                                    else pos)
-                        elif token.str == '{':
-                            return -1
-                return pos
-
             # Initializer must start with a curly bracket
             if not token or not token.str == '{':
+                # self.reportError(token, 9, 2)
                 return -1
             token = token.astOperand1
 
             # Empty initializer is not ok { }
             if not token:
+                # self.reportError(token, 9, 2)
                 return -1
 
             # Zero initializer is ok { 0 }
             if token.str == '0' :
                 return 0
 
-            return check_object_initializer_recursive(token)
+            pos = None
+            while(token):
+                if token.str == ',':
+                    token = token.astOperand1
+                else:
+                    if token.isAssignmentOp and token.astOperand1.str == '.':
+                        element_name = token.astOperand1.astOperand1.str
+                        pos = next((i for i, element in enumerate(elements) if element.name == element_name), len(elements))
+                        token = token.astOperand2
+                    elif pos == None:
+                        pos = 0
+
+                    if pos >= len(elements):
+                        # self.reportError(token, 9, 2)
+                        return -1
+
+                    element = elements[pos]
+                    if element.elementType == 'class':
+                        if token.isName:
+                            if not token.valueType.typeScope  == element.valueType.typeScope:
+                                # self.reportError(token, 9, 2)
+                                return -1
+                        else:
+                            sub_elements = get_record_elements(element.valueType)
+                            if check_object_initializer(token, sub_elements) < 0:
+                                return -1
+                    elif element.elementType == 'array':
+                        if check_array_initializer(token, element.dimensions, element.valueType) < 0:
+                            return -1
+                    elif token.str == '{':
+                        # self.reportError(token, 9, 2)
+                        return -1
+
+                    # The assignment represents the astOperand
+                    if token.astParent.isAssignmentOp:
+                        token = token.astParent
+
+                    if not token == token.astParent.astOperand2:
+                        pos = pos + 1
+                        token = token.astParent.astOperand2
+                    else:
+                        token = None
+
+            return 0
 
         # ------
         for token in data.tokenlist:
             if token.variable:
                 variable = token.variable
-                nameToken = variable.nameToken
+                name_token = variable.nameToken
                 # Find declarations (also if isSplittedVarDeclEq is True)
-                if nameToken.file == token.file and nameToken.linenr == token.linenr and nameToken.column == token.column:
+                if name_token.file == token.file and name_token.linenr == token.linenr and name_token.column == token.column:
                     # Find declarations with initializer assignment
                     eq = token
                     while not eq.isAssignmentOp and eq.astParent:
@@ -1671,19 +1685,19 @@ class MisraChecker:
                         continue
 
                     if variable.isArray :
-                        dimensions, valueType = get_array_dimensions_and_valuetype(eq.astOperand1)
+                        dimensions, value_type = get_array_dimensions_and_valuetype(eq.astOperand1)
                         if dimensions == None:
                             continue
 
-                        if check_array_initializer(eq.astOperand2, dimensions, valueType) < 0:
+                        if check_array_initializer(eq.astOperand2, dimensions, value_type) < 0:
                             self.reportError(token, 9, 2)
                     elif variable.isClass:
                         if not token.valueType:
                             continue
 
-                        valueType = token.valueType
-                        if valueType.type == 'record':
-                            elements = get_record_elements(valueType)
+                        value_type = token.valueType
+                        if value_type.type == 'record':
+                            elements = get_record_elements(value_type)
                             if check_object_initializer(eq.astOperand2, elements) < 0:
                                 self.reportError(token, 9, 2)
 
@@ -1721,7 +1735,7 @@ class MisraChecker:
             if op and op.valueType:
                 if op.valueType.sign in ['unsigned', 'signed']:
                     return True
-            return False 
+            return False
 
         def isEssentiallyChar(op):
             if op.isName:
@@ -1748,7 +1762,7 @@ class MisraChecker:
             if token.str == '-':
                 if not isEssentiallyChar(operand1):
                     self.reportError(token, 10, 2)
-                if not isEssentiallyChar(operand2) and not isEssentiallySignedOrUnsigned(operand2): 
+                if not isEssentiallyChar(operand2) and not isEssentiallySignedOrUnsigned(operand2):
                     self.reportError(token, 10, 2)
 
     def misra_10_4(self, data):
@@ -2239,7 +2253,7 @@ class MisraChecker:
                             self.reportError(token, 15, 3)
                             break
                         t = t.next
-    
+
     def misra_15_4(self, data):
         # Return a list of scopes affected by a break or goto
         def getLoopsAffectedByBreak(knownLoops, scope, isGoto):
@@ -2251,7 +2265,7 @@ class MisraChecker:
                     if not isGoto:
                         return
                 getLoopsAffectedByBreak(knownLoops, scope.nestedIn, isGoto)
-        
+
         loopWithBreaks = {}
         for token in data.tokenlist:
             if token.str not in ['break', 'goto']:
@@ -3297,7 +3311,7 @@ class MisraChecker:
             self.executeCheck(702, self.misra_7_2, cfg)
             if cfgNumber == 0:
                 self.executeCheck(703, self.misra_7_3, data.rawTokens)
-            self.executeCheck(704, self.misra_7_4, cfg)            
+            self.executeCheck(704, self.misra_7_4, cfg)
             self.executeCheck(811, self.misra_8_11, cfg)
             self.executeCheck(812, self.misra_8_12, cfg)
             self.executeCheck(802, self.misra_9_2, cfg)
