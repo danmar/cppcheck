@@ -1472,7 +1472,6 @@ void CheckCondition::alwaysTrueFalse()
 
             // don't warn when condition checks sizeof result
             bool hasSizeof = false;
-            bool hasNonNumber = false;
             visitAstNodes(tok, [&](const Token * tok2) {
                 if (!tok2)
                     return ChildrenToVisit::none;
@@ -1484,11 +1483,10 @@ void CheckCondition::alwaysTrueFalse()
                 }
                 if (tok2->isComparisonOp() || tok2->isArithmeticalOp()) {
                     return ChildrenToVisit::op1_and_op2;
-                } else
-                    hasNonNumber = true;
+                }
                 return ChildrenToVisit::none;
             });
-            if (!hasNonNumber && hasSizeof)
+            if (hasSizeof)
                 continue;
 
             alwaysTrueFalseError(tok, &tok->values().front());
