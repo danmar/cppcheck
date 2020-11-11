@@ -39,6 +39,9 @@
 #include <list>
 #include <set>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #ifdef HAVE_RULES
 // xml is used for rules
 #include <tinyxml2.h>
@@ -94,6 +97,16 @@ static bool addPathsToSet(const std::string& fileName, std::set<std::string>* se
         return false;
     set->insert(templist.begin(), templist.end());
     return true;
+}
+
+static bool folderExist(const std::string &path)
+{
+    const char *cPath = path.c_str();
+    struct stat info;
+    // inspired by https://stackoverflow.com/questions/18100097/portable-way-to-check-if-directory-exists-windows-linux-c
+    if ((stat(cPath, &info) == 0) && (info.st_mode & S_IFDIR))
+      return true;
+    return false;
 }
 
 CmdLineParser::CmdLineParser(Settings *settings)
@@ -576,6 +589,16 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings->plistOutput = "./";
                 else if (!endsWith(mSettings->plistOutput,'/'))
                     mSettings->plistOutput += '/';
+
+                printf("mSettings->plistOutput %s\n", mSettings->plistOutput.c_str());
+                if ((mSettings->plistOutput != "./") && (!folderExist(mSettings->plistOutput)))
+                {
+                  std::string message("cppcheck: error: plist folder does not exist: \"");
+                  message += mSettings->plistOutput;
+                  message += "\".";
+                  printMessage(message);
+                  return false;
+                }
             }
 
             // --project
