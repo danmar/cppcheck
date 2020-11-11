@@ -1368,6 +1368,8 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
             parent = parent->astParent();
         while (parent && parent->isCast())
             parent = parent->astParent();
+        if (Token::Match(parent, "[+-]") && parent->valueType() && parent->valueType()->pointer)
+            parent = parent->astParent();
 
         // passing variable to subfunction?
         if (Token::Match(parent, "[(,{]"))

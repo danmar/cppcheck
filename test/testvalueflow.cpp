@@ -4109,6 +4109,17 @@ private:
                "}";
         values = tokenValues(code, "szHdr ; }");
         ASSERT_EQUALS(0, values.size());
+
+        // #9933
+        code = "struct MyStruct { size_t value; }\n"
+               "\n"
+               "void foo() {\n"
+               "    MyStruct x;\n"
+               "    fread(((char *)&x) + 0, sizeof(x), f);\n"
+               "    if (x.value < 432) {}\n"
+               "}";
+        values = tokenValues(code, "x . value");
+        ASSERT_EQUALS(0, values.size());
     }
 
     void valueFlowTerminatingCond() {
