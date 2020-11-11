@@ -505,6 +505,8 @@ private:
         TEST_CASE(unknownMacroBeforeReturn);
 
         TEST_CASE(cppcast);
+
+        TEST_CASE(checkHeader1);
     }
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -8600,6 +8602,60 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             ASSERT_EQUALS(tok->str() == "(", tok->isCast());
         }
+    }
+
+    std::string checkHeaders(const char code[], bool f) {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        settings.checkHeaders = f;
+
+        // Raw tokens..
+        std::vector<std::string> files(1, "test.cpp");
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+        Preprocessor preprocessor(settings0, nullptr);
+        preprocessor.setDirectives(tokens1);
+
+        // Tokenizer..
+        Tokenizer tokenizer(&settings0, this);
+        tokenizer.createTokens(std::move(tokens2));
+        tokenizer.simplifyTokens1("");
+
+        return tokenizer.tokens()->stringifyList();
+    }
+
+    void checkHeader1() {
+        // #9977
+        const char code[] = "# 1 \"test.h\"\n"
+                            "struct A {\n"
+                            "    int a = 1;\n"
+                            "    void f() { g(1); }\n"
+                            "    template <typename T> void g(T x) { a = 2; }\n" // <- template is used and should be kept
+                            "};";
+
+        ASSERT_EQUALS("\n\n##file 1\n"
+                      "1: struct A {\n"
+                      "2: int a ; a = 1 ;\n"
+                      "3: void f ( ) { g<int> ( 1 ) ; }\n"
+                      "4: void g<int> ( int x ) ;\n"
+                      "5: } ; void A :: g<int> ( int x ) { a = 2 ; }\n",
+                      checkHeaders(code, true));
+
+        ASSERT_EQUALS("\n\n##file 1\n"
+                      "1: struct A {\n"
+                      "2: int a ; a = 1 ;\n"
+                      "3: void f ( ) { g<int> ( 1 ) ; }\n"
+                      "4: void g<int> ( int x ) ;\n"
+                      "5: } ; void A :: g<int> ( int x ) { a = 2 ; }\n",
+                      checkHeaders(code, false));
     }
 };
 

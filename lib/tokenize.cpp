@@ -5018,9 +5018,6 @@ void Tokenizer::dump(std::ostream &out) const
 
 void Tokenizer::simplifyHeaders()
 {
-    // TODO : can we remove anything in headers here? Like unused declarations.
-    // Maybe if --dump is used we want to have _everything_.
-
     if (mSettings->checkHeaders && mSettings->checkUnusedTemplates)
         // Full analysis. All information in the headers are kept.
         return;
@@ -5031,11 +5028,16 @@ void Tokenizer::simplifyHeaders()
     const bool removeUnusedIncludedTemplates = !mSettings->checkUnusedTemplates || !mSettings->checkHeaders;
     const bool removeUnusedTemplates = !mSettings->checkUnusedTemplates;
 
-    // We want to remove selected stuff from the headers but not *everything*.
-    // The intention here is to not damage the analysis of the source file.
-    // You should get all warnings in the source file.
-
-    // TODO: Remove unused types/variables/etc in headers..
+    // checkHeaders:
+    //
+    // If it is true then keep all code in the headers. It's possible
+    // to remove unused types/variables if false positives / false
+    // negatives can be avoided.
+    //
+    // If it is false, then we want to remove selected stuff from the
+    // headers but not *everything*. The intention here is to not damage
+    // the analysis of the source file. You should get all warnings in
+    // the source file. You should not get false positives.
 
     // functions and types to keep
     std::set<std::string> keep;
@@ -5043,7 +5045,7 @@ void Tokenizer::simplifyHeaders()
         if (!tok->isName())
             continue;
 
-        if (checkHeaders && tok->fileIndex() != 0)
+        if (!checkHeaders && tok->fileIndex() != 0)
             continue;
 
         if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
