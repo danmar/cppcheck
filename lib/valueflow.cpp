@@ -948,6 +948,8 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings *settings)
         return settings->sizeof_float;
     if (vt.type == ValueType::Type::DOUBLE)
         return settings->sizeof_double;
+    if (vt.type == ValueType::Type::LONGDOUBLE)
+        return settings->sizeof_long_double;
 
     return 0;
 }
