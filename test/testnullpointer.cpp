@@ -1899,8 +1899,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void nullpointer61()
-    {
+    void nullpointer61() {
         check("struct a {\n"
               "  int *e;\n"
               "};\n"
@@ -1933,8 +1932,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void nullpointer62()
-    {
+    void nullpointer62() {
         check("struct A {\n"
               "  bool f()() const;\n"
               "};\n"
@@ -1964,8 +1962,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void nullpointer63()
-    {
+    void nullpointer63() {
         check("struct A {\n"
               "    A* a() const;\n"
               "    A* b() const;\n"
@@ -1979,8 +1976,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void nullpointer64()
-    {
+    void nullpointer64() {
         check("struct A {\n"
               "  A* f() const;\n"
               "  int g() const;\n"

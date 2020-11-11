@@ -26,8 +26,12 @@ struct ForwardTraversal {
     std::pair<bool, bool> evalCond(const Token* tok) {
         std::vector<int> result = analyzer->evaluate(tok);
         // TODO: We should convert to bool
-        bool checkThen = std::any_of(result.begin(), result.end(), [](int x) { return x == 1; });
-        bool checkElse = std::any_of(result.begin(), result.end(), [](int x) { return x == 0; });
+        bool checkThen = std::any_of(result.begin(), result.end(), [](int x) {
+            return x == 1;
+        });
+        bool checkElse = std::any_of(result.begin(), result.end(), [](int x) {
+            return x == 0;
+        });
         return std::make_pair(checkThen, checkElse);
     }
 
@@ -150,8 +154,7 @@ struct ForwardTraversal {
     }
 
     template <class T>
-    T* findRange(T* start, const Token* end, std::function<bool(Analyzer::Action)> pred)
-    {
+    T* findRange(T* start, const Token* end, std::function<bool(Analyzer::Action)> pred) {
         for (T* tok = start; tok && tok != end; tok = tok->next()) {
             Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Forward);
             if (pred(action))
@@ -160,8 +163,7 @@ struct ForwardTraversal {
         return nullptr;
     }
 
-    Analyzer::Action analyzeRecursive(const Token* start)
-    {
+    Analyzer::Action analyzeRecursive(const Token* start) {
         Analyzer::Action result = Analyzer::Action::None;
         std::function<Progress(const Token*)> f = [&](const Token* tok) {
             result = analyzer->analyze(tok, Analyzer::Direction::Forward);
@@ -173,8 +175,7 @@ struct ForwardTraversal {
         return result;
     }
 
-    Analyzer::Action analyzeRange(const Token* start, const Token* end)
-    {
+    Analyzer::Action analyzeRange(const Token* start, const Token* end) {
         Analyzer::Action result = Analyzer::Action::None;
         for (const Token* tok = start; tok && tok != end; tok = tok->next()) {
             Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Forward);
@@ -211,17 +212,17 @@ struct ForwardTraversal {
         Inconclusive,
     };
 
-    Analyzer::Action analyzeScope(const Token* endBlock) { return analyzeRange(endBlock->link(), endBlock); }
+    Analyzer::Action analyzeScope(const Token* endBlock) {
+        return analyzeRange(endBlock->link(), endBlock);
+    }
 
-    Analyzer::Action checkScope(Token* endBlock)
-    {
+    Analyzer::Action checkScope(Token* endBlock) {
         Analyzer::Action a = analyzeScope(endBlock);
         forkScope(endBlock, a.isModified());
         return a;
     }
 
-    Analyzer::Action checkScope(const Token* endBlock)
-    {
+    Analyzer::Action checkScope(const Token* endBlock) {
         Analyzer::Action a = analyzeScope(endBlock);
         return a;
     }
@@ -568,9 +569,9 @@ struct ForwardTraversal {
 };
 
 Analyzer::Action valueFlowGenericForward(Token* start,
-                                         const Token* end,
-                                         const ValuePtr<Analyzer>& a,
-                                         const Settings* settings)
+        const Token* end,
+        const ValuePtr<Analyzer>& a,
+        const Settings* settings)
 {
     ForwardTraversal ft{a, settings};
     ft.updateRange(start, end);
