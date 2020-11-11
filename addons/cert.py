@@ -25,11 +25,8 @@ def reportError(token, severity, msg, id):
         cppcheckdata.reportError(token, severity, msg, 'cert', id)
 
 def simpleMatch(token, pattern):
-    for p in pattern.split(' '):
-        if not token or token.str != p:
-            return False
-        token = token.next
-    return True
+    return cppcheckdata.simpleMatch(token, pattern)
+
 
 def isUnpackedStruct(token):
     if token.valueType is None:

@@ -59,11 +59,7 @@ def isUnsignedType(ty):
 
 
 def simpleMatch(token, pattern):
-    for p in pattern.split(' '):
-        if not token or token.str != p:
-            return False
-        token = token.next
-    return True
+    return cppcheckdata.simpleMatch(token, pattern)
 
 
 def rawlink(rawtoken):
