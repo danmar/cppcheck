@@ -296,7 +296,7 @@ enum misra_8_12_e { misra_e1 = sizeof(int), misra_e2}; // no-crash
 void misra_8_14(char * restrict str) {(void)str;} // 8.14
 
 void misra_9_2() {
-    int empty_init[2][2]                     = { };
+    int empty_init[2][2]                     = { };                                    // 9.2
     int empty_nested_init[2][2]              = { { } };                                // 9.2
     int zero_init_a[5]                       = { 0 };
     int zero_init_b[5][2]                    = { 0 };
@@ -332,6 +332,8 @@ void misra_9_2() {
         char c2[4];
     } struct2;
 
+    int a;
+
     struct2 struct_empty_init                = { };                                    // 9.2
     struct2 struct_zero_init                 = { 0 };
     struct1 struct_missing_brackets          = 1;                                      // 9.2
@@ -340,6 +342,7 @@ void misra_9_2() {
     struct1 struct_array_correct_levels[2]   = { {1, 2}, {3, 4} };
     struct1 struct_correct_designator_a      = { .i2 = 2, .i1 = 1 };
     struct2 struct_correct_designator_b      = { .is1 = {2, 3}, { 4 } };
+    struct1 struct_correct_designator_c      = { a = 1, 2 };                           // 13.1
     struct2 struct_correct                   = { .is1 = struct_correct_designator_a }
 
     union misra_9_2_union {   // 19.2
