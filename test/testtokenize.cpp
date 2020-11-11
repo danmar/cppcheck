@@ -8625,7 +8625,7 @@ private:
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(&settings, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
@@ -8652,9 +8652,9 @@ private:
         ASSERT_EQUALS("\n\n##file 1\n"
                       "1: struct A {\n"
                       "2: int a ; a = 1 ;\n"
-                      "3: void f ( ) { g<int> ( 1 ) ; }\n"
-                      "4: void g<int> ( int x ) ;\n"
-                      "5: } ; void A :: g<int> ( int x ) { a = 2 ; }\n",
+                      "3: void f ( ) ;\n"
+                      "4:\n"
+                      "5: } ;\n",
                       checkHeaders(code, false));
     }
 };
