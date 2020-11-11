@@ -1535,7 +1535,7 @@ class MisraChecker:
             return op.isChar
 
         for token in data.tokenlist:
-            if not token.isArithmeticalOp or not token.str in ['+', '-']:
+            if not token.isArithmeticalOp or token.str not in ['+', '-']:
                 continue
 
             operand1 = token.astOperand1
