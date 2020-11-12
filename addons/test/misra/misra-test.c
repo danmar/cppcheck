@@ -351,7 +351,24 @@ void misra_10_1_ternary()
     a = (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8) << (get_bool(19) ? ui16 : ui8); // 10.4
     a = (get_bool(42) ? (get_bool(34) ? i16 : ui8) : ui8) << (get_bool(19) ? ui16 : ui8); // 10.1 10.4
     a = (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8) << (get_bool(19) ? i16 : ui8); // 10.1 10.4
+}
 
+void misra_10_2() {
+    unsigned int u8a = 0;
+    signed char cha = 0;
+    signed int s8a = 0;
+    signed short s16a = 0;
+    float f32a = 0.0;
+    char res;
+
+    res = '0' + u8a; // 10.4
+    res = s8a + '0';
+    res = cha - '0';
+    res = '0' - s8a;
+    res = cha + ':';
+
+    res = s16a - 'a'; // 10.2
+    res = '0' + f32a; // 10.2 10.4
 }
 
 void misra_10_4(u32 x, s32 y) {

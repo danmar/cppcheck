@@ -1523,6 +1523,41 @@ class MisraChecker:
                     if e1_et == 'char' and e2_et == 'char':
                         self.reportError(token, 10, 1)
 
+    def misra_10_2(self, data):
+        def isEssentiallySignedOrUnsigned(op):
+            if op and op.valueType:
+                if op.valueType.sign in ['unsigned', 'signed']:
+                    return True
+            return False 
+
+        def isEssentiallyChar(op):
+            if op.isName:
+                return getEssentialType(op) == 'char'
+            return op.isChar
+
+        for token in data.tokenlist:
+            if not token.isArithmeticalOp or token.str not in ['+', '-']:
+                continue
+
+            operand1 = token.astOperand1
+            operand2 = token.astOperand2
+            if not operand1 or not operand2:
+                continue
+            if not operand1.isChar and not operand2.isChar:
+                continue
+
+            if token.str == '+':
+                if isEssentiallyChar(operand1) and not isEssentiallySignedOrUnsigned(operand2):
+                    self.reportError(token, 10, 2)
+                if isEssentiallyChar(operand2) and not isEssentiallySignedOrUnsigned(operand1):
+                    self.reportError(token, 10, 2)
+
+            if token.str == '-':
+                if not isEssentiallyChar(operand1):
+                    self.reportError(token, 10, 2)
+                if not isEssentiallyChar(operand2) and not isEssentiallySignedOrUnsigned(operand2): 
+                    self.reportError(token, 10, 2)
+
     def misra_10_4(self, data):
         op = {'+', '-', '*', '/', '%', '&', '|', '^', '+=', '-=', ':'}
         for token in data.tokenlist:
@@ -3077,6 +3112,7 @@ class MisraChecker:
                 self.executeCheck(814, self.misra_8_14, data.rawTokens)
                 self.executeCheck(905, self.misra_9_5, data.rawTokens)
             self.executeCheck(1001, self.misra_10_1, cfg)
+            self.executeCheck(1002, self.misra_10_2, cfg)
             self.executeCheck(1004, self.misra_10_4, cfg)
             self.executeCheck(1006, self.misra_10_6, cfg)
             self.executeCheck(1008, self.misra_10_8, cfg)
