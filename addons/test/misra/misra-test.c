@@ -355,7 +355,7 @@ void misra_10_1_ternary()
 
 void misra_10_2() {
     unsigned int u8a = 0;
-    char cha = 0;
+    signed char cha = 0;
     signed int s8a = 0;
     signed short s16a = 0;
     float f32a = 0.0;
@@ -365,10 +365,10 @@ void misra_10_2() {
     res = s8a + '0';
     res = cha - '0';
     res = '0' - s8a;
+    res = cha + ':';
 
     res = s16a - 'a'; // 10.2
     res = '0' + f32a; // 10.2 10.4
-    res = cha + ':';  // 10.2
 }
 
 void misra_10_4(u32 x, s32 y) {
