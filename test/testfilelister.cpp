@@ -17,6 +17,7 @@
  */
 
 #include "filelister.h"
+#include "path.h"
 #include "pathmatch.h"
 #include "testsuite.h"
 
@@ -45,13 +46,10 @@ private:
                 return;
         }
 
-        TEST_CASE(isDirectory);
         TEST_CASE(recursiveAddFiles);
-    }
-
-    void isDirectory() const {
-        ASSERT_EQUALS(false, FileLister::isDirectory("readme.txt"));
-        ASSERT_EQUALS(true, FileLister::isDirectory("lib"));
+        // this test are part of the Path module
+        TEST_CASE(folderExists);
+        TEST_CASE(fileExists);
     }
 
     void recursiveAddFiles() const {
@@ -78,6 +76,16 @@ private:
 
         // Make sure headers are not added..
         ASSERT(files.find("lib/tokenize.h") == files.end());
+    }
+
+    void folderExists() const {
+        ASSERT_EQUALS(false, Path::folderExists("readme.txt"));
+        ASSERT_EQUALS(true, Path::folderExists("lib"));
+    }
+
+    void fileExists() const {
+        ASSERT_EQUALS(false, Path::fileExists("lib"));
+        ASSERT_EQUALS(true, Path::fileExists("readme.txt"));
     }
 };
 

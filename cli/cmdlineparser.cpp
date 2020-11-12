@@ -20,7 +20,6 @@
 
 #include "check.h"
 #include "cppcheckexecutor.h"
-#include "filelister.h"
 #include "importproject.h"
 #include "path.h"
 #include "platform.h"
@@ -399,7 +398,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     path = Path::fromNativeSeparators(path);
                     path = Path::simplifyPath(path);
 
-                    if (FileLister::isDirectory(path)) {
+                    if (Path::folderExists(path)) {
                         // If directory name doesn't end with / or \, add it
                         if (!endsWith(path, '/'))
                             path += '/';
@@ -577,10 +576,11 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 else if (!endsWith(mSettings->plistOutput,'/'))
                     mSettings->plistOutput += '/';
 
-                if ((mSettings->plistOutput != "./") && (!Path::folderExist(mSettings->plistOutput)))
+                std::string plistOutput = Path::toNativeSeparators(mSettings->plistOutput);
+                if (!Path::folderExists(mSettings->plistOutput))
                 {
                   std::string message("cppcheck: error: plist folder does not exist: \"");
-                  message += mSettings->plistOutput;
+                  message += plistOutput;
                   message += "\".";
                   printMessage(message);
                   return false;

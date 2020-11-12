@@ -181,16 +181,6 @@ std::string Path::getRelativePath(const std::string& absolutePath, const std::ve
     return absolutePath;
 }
 
-bool Path::folderExist(const std::string &path)
-{
-    const char *cPath = path.c_str();
-    struct stat info;
-    // inspired by https://stackoverflow.com/questions/18100097/portable-way-to-check-if-directory-exists-windows-linux-c
-    if ((stat(cPath, &info) == 0) && (info.st_mode & S_IFDIR))
-      return true;
-    return false;
-}
-
 bool Path::isC(const std::string &path)
 {
     // In unix, ".C" is considered C++ file
@@ -258,8 +248,67 @@ std::string Path::stripDirectoryPart(const std::string &file)
     return file;
 }
 
-bool Path::fileExists(const std::string &file)
+
+// This functions where previously defined in the FileLister Class
+#ifdef _WIN32
+
+///////////////////////////////////////////////////////////////////////////////
+////// This code is WIN32 systems /////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+#include <windows.h>
+#ifndef __BORLANDC__
+#include <shlwapi.h>
+#endif
+
+// Here is the catch: cppcheck core is Ansi code (using char type).
+// When compiling Unicode targets WinAPI automatically uses *W Unicode versions
+// of called functions. Thus, we explicitly call *A versions of the functions.
+
+static BOOL myFolderExists(const std::string& path)
 {
-    std::ifstream f(file.c_str());
-    return f.is_open();
+#ifdef __BORLANDC__
+    return (GetFileAttributes(path.c_str()) & FILE_ATTRIBUTE_DIRECTORY);
+#else
+// See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
+    return PathIsDirectoryA(path.c_str());
+#endif
 }
+static BOOL myFileExists(const std::string& path)
+{
+#ifdef __BORLANDC__
+    DWORD fa = GetFileAttributes(path.c_str());
+    BOOL result = FALSE;
+    if (fa != INVALID_FILE_ATTRIBUTES && !(fa & FILE_ATTRIBUTE_DIRECTORY))
+        result = TRUE;
+#else
+    const BOOL result = PathFileExistsA(path.c_str());
+#endif
+    return result;
+}
+
+bool Path::folderExists(const std::string &path)
+{
+    return (myFolderExists(path) != FALSE);
+}
+
+bool Path::fileExists(const std::string &path)
+{
+    return (myFileExists(path) != FALSE);
+}
+
+#else
+
+bool Path::folderExists(const std::string &path)
+{
+    struct stat file_stat;
+    return (stat(path.c_str(), &file_stat) != -1 && (file_stat.st_mode & S_IFMT) == S_IFDIR);
+}
+
+bool Path::fileExists(const std::string &path)
+{
+    struct stat file_stat;
+    return (stat(path.c_str(), &file_stat) != -1 && (file_stat.st_mode & S_IFMT) == S_IFREG);
+}
+
+#endif
