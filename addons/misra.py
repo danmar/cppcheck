@@ -1525,8 +1525,9 @@ class MisraChecker:
 
     def misra_10_2(self, data):
         def isEssentiallySignedOrUnsigned(op):
-            if op and op.valueType and op.valueType.sign:
-                return True
+            if op and op.valueType:
+                if op.valueType.sign in ['unsigned', 'signed']:
+                    return True
             return False 
 
         def isEssentiallyChar(op):
