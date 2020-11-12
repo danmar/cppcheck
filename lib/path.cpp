@@ -29,6 +29,10 @@
 #include <fstream>
 #include <sstream>
 
+
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #ifndef _WIN32
 #include <unistd.h>
 #else
@@ -175,6 +179,16 @@ std::string Path::getRelativePath(const std::string& absolutePath, const std::ve
             return absolutePath.substr(bp.length() + 1);
     }
     return absolutePath;
+}
+
+bool folderExist(const std::string &path)
+{
+    const char *cPath = path.c_str();
+    struct stat info;
+    // inspired by https://stackoverflow.com/questions/18100097/portable-way-to-check-if-directory-exists-windows-linux-c
+    if ((stat(cPath, &info) == 0) && (info.st_mode & S_IFDIR))
+      return true;
+    return false;
 }
 
 bool Path::isC(const std::string &path)

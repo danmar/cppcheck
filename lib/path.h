@@ -119,6 +119,13 @@ public:
     static std::string getRelativePath(const std::string& absolutePath, const std::vector<std::string>& basePaths);
 
     /**
+      * @brief Checks if a Folder exists
+      * @param path Path to be checked if it is a folder
+      * @return true if given path is a folder
+      */
+    static bool folderExist(const std::string &path);
+
+    /**
       * @brief Get an absolute file path from a relative one.
       * @param filePath File path to be made absolute.
       * @return absolute path, if possible. Otherwise an empty path is returned
