@@ -282,7 +282,7 @@ static BOOL myFileExists(const std::string& path)
     if (fa != INVALID_FILE_ATTRIBUTES && !(fa & FILE_ATTRIBUTE_DIRECTORY))
         result = TRUE;
 #else
-    const BOOL result = PathFileExistsA(path.c_str());
+    const BOOL result = PathFileExistsA(path.c_str()) && !PathIsDirectoryA(path.c_str());
 #endif
     return result;
 }
