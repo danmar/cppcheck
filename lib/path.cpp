@@ -181,7 +181,7 @@ std::string Path::getRelativePath(const std::string& absolutePath, const std::ve
     return absolutePath;
 }
 
-bool folderExist(const std::string &path)
+bool Path::folderExist(const std::string &path)
 {
     const char *cPath = path.c_str();
     struct stat info;

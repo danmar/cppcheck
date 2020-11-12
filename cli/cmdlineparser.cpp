@@ -577,7 +577,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 else if (!endsWith(mSettings->plistOutput,'/'))
                     mSettings->plistOutput += '/';
 
-                if ((mSettings->plistOutput != "./") && (!folderExist(mSettings->plistOutput)))
+                if ((mSettings->plistOutput != "./") && (!Path::folderExist(mSettings->plistOutput)))
                 {
                   std::string message("cppcheck: error: plist folder does not exist: \"");
                   message += mSettings->plistOutput;
