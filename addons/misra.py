@@ -1584,7 +1584,7 @@ class MisraChecker:
                     levelOffsets[-1] = len(designator) - 1
                     token = token.astOperand2
                     isFirstElement = False
-                
+
                 effectiveLevel = sum(levelOffsets) + level
 
                 isStringInitializer = token.isString and effectiveLevel == len(dimensions) - 1
@@ -1597,8 +1597,13 @@ class MisraChecker:
                     else:
                         isFirstElement = False
                         if valueType.type == 'record':
-                            if not checkObjectInitializer(token, elements):
-                                return False
+                            if token.isName:
+                                if not token.valueType.typeScope  == valueType.typeScope:
+                                    self.reportError(token, 9, 2)
+                                    return False
+                            else:
+                                if not checkObjectInitializer(token, elements):
+                                    return False
                         elif token.str == '{' or token.isString:
                             self.reportError(token, 9, 2)
                             return False

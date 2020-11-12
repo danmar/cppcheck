@@ -343,7 +343,11 @@ void misra_9_2() {
     struct1 struct_correct_designator_a      = { .i2 = 2, .i1 = 1 };
     struct2 struct_correct_designator_b      = { .is1 = {2, 3}, { 4 } };
     struct1 struct_correct_designator_c      = { a = 1, 2 };                           // 13.1
-    struct2 struct_correct                   = { .is1 = struct_correct_designator_a }
+    struct2 struct_incorrect_type            = { .is1 = struct_correct_designator_b }; // 9.2
+    struct2 struct_correct_type              = { .is1 = struct_correct_designator_a };
+
+    struct1 struct_array_incorrect_type[1]   = { struct_correct_designator_b };        // 9.2
+    struct1 struct_array_correct_type[1]     = { struct_correct_designator_a };
 
     union misra_9_2_union {   // 19.2
         char c;
