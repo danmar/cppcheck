@@ -178,7 +178,7 @@ public:
       * @param path Path to be checked if it is a File
       * @return true if given path is a File
       */
-    static bool fileExists(const std::string &path);
+    static bool fileExists(const std::string &file);
 };
 
 /// @}
