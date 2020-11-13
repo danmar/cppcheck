@@ -1504,12 +1504,6 @@ class MisraChecker:
                 self.valueType = valueType
                 self.dimensions = dimensions
 
-        def getIntvalue(token):
-            if token and token.values and len(token.values) > 0:
-                return token.values[0].intvalue
-            else:
-                return None
-
         # Return an array containing the size of each dimension of an array declaration,
         # or coordinates of a designator in an array initializer,
         # and the name token's valueType, if it exist.
@@ -1526,22 +1520,17 @@ class MisraChecker:
         def getArrayDimensionsAndValueType(token):
             dimensions = []
             while token and token.str == '[':
-                op1Value = getIntvalue(token.astOperand1)
-                op2Value = getIntvalue(token.astOperand2)
-                if op2Value != None:
-                    dimensions.insert(0, op2Value)
+                if token.astOperand2 != None:
+                    dimensions.insert(0, token.astOperand2.getKnownIntValue())
                     token = token.astOperand1
-                elif op1Value != None:
-                    dimensions.insert(0, op1Value)
+                elif token.astOperand1 != None:
+                    dimensions.insert(0, token.astOperand1.getKnownIntValue())
                     break
                 else:
                     dimensions = None
                     break
 
-            if token.valueType:
-                valueType = token.valueType
-            else:
-                valueType = None
+            valueType = token.valueType if token else None
 
             return dimensions, valueType
 
@@ -1718,8 +1707,13 @@ class MisraChecker:
             if token.variable:
                 variable = token.variable
                 nameToken = variable.nameToken
-                # Find declarations (also if isSplittedVarDeclEq is True)
-                if nameToken.file == token.file and nameToken.linenr == token.linenr and nameToken.column == token.column:
+
+                # Check if declaration and initialization is
+                # split into two separate statements in ast.
+                if nameToken.next.isSplittedVarDeclEq:
+                    nameToken = nameToken.next.next
+
+                if nameToken is token:
                     # Find declarations with initializer assignment
                     eq = token
                     while not eq.isAssignmentOp and eq.astParent:

@@ -1247,7 +1247,7 @@ void misra_18_8(int x) {
   int buf1[10];
   int buf2[sizeof(int)];
   int vla[x]; // 18.8
-  static const unsigned char arr18_8_1[] = UNDEFINED_ID;
+  static const unsigned char arr18_8_1[] = UNDEFINED_ID; // 9.2
   static uint32_t enum_test_0[R18_8_ENUM_CONSTANT_0] = {0};
 }
 
