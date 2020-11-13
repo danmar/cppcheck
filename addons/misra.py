@@ -1245,7 +1245,7 @@ class MisraChecker:
                     if hasExternalLinkage(variable1) or hasExternalLinkage(variable2):
                         continue
                     if (variable1.nameToken.str[:num_sign_chars] == variable2.nameToken.str[:num_sign_chars] and
-                            variable1.Id != variable2.Id):
+                            variable1 is not variable2):
                         if int(variable1.nameToken.linenr) > int(variable2.nameToken.linenr):
                             self.reportError(variable1.nameToken, 5, 2)
                         else:
@@ -1351,7 +1351,7 @@ class MisraChecker:
                     isExplicitlySignedOrUnsigned = True
                     break
 
-                if typeToken.Id == token.variable.typeEndToken.Id:
+                if typeToken is token.variable.typeEndToken:
                     break
 
                 typeToken = typeToken.next
@@ -1383,14 +1383,15 @@ class MisraChecker:
         # Large constant numbers that are assigned to a variable should have an
         # u/U suffix if the variable type is unsigned.
         def reportErrorIfMissingSuffix(variable, value):
+            if 'U' in value.str.upper():
+                return
             if value and value.isNumber:
                 if variable and variable.valueType and variable.valueType.sign == 'unsigned':
                     if variable.valueType.type in ['char', 'short', 'int', 'long', 'long long']:
                         limit = 1 << (bitsOfEssentialType(variable.valueType.type) -1)
-                        for v in value.values:
-                            if v.valueKind == 'known' and v.intvalue >= limit:
-                                if not 'U' in value.str.upper():    
-                                    self.reportError(value, 7, 2)
+                        v = value.getKnownIntValue()
+                        if v is not None and v >= limit:
+                            self.reportError(value, 7, 2)
         
         for token in data.tokenlist:
             # Check normal variable assignment
@@ -1403,7 +1404,7 @@ class MisraChecker:
                 functionDeclaration = token.astOperand1.function
                 
                 if functionDeclaration.tokenDef:
-                    if functionDeclaration.tokenDef.Id == token.astOperand1.Id:
+                    if functionDeclaration.tokenDef is token.astOperand1:
                         # Token is not a function call, but it is the definition of the function
                         continue
 
@@ -1448,7 +1449,7 @@ class MisraChecker:
                 functionDeclaration = token.astOperand1.function
                 
                 if functionDeclaration.tokenDef:
-                    if functionDeclaration.tokenDef.Id == token.astOperand1.Id:
+                    if functionDeclaration.tokenDef is token.astOperand1:
                         # Token is not a function call, but it is the definition of the function
                         continue
 
@@ -1783,9 +1784,8 @@ class MisraChecker:
                     continue
                 if (token.astOperand2.values and vt1.pointer > 0 and
                         vt2.pointer == 0 and token.astOperand2.values):
-                    for val in token.astOperand2.values:
-                        if val.intvalue == 0:
-                            self.reportError(token, 11, 9)
+                    if token.astOperand2.getValue(0):
+                        self.reportError(token, 11, 9)
 
     def misra_12_1_sizeof(self, rawTokens):
         state = 0

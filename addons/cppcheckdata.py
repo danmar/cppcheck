@@ -320,6 +320,18 @@ class Token:
                 return value
         return None
 
+    def getKnownIntValue(self):
+        """
+        If token has a known int value then return that.
+        Otherwise returns None
+        """
+        if not self.values:
+            return None
+        for value in self.values:
+            if value.valueKind == 'known':
+                return value.intvalue
+        return None
+
 
 class Scope:
     """
