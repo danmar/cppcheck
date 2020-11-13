@@ -47,6 +47,7 @@ private:
 
         TEST_CASE(isDirectory);
         TEST_CASE(recursiveAddFiles);
+        TEST_CASE(fileExists);
     }
 
     void isDirectory() const {
@@ -78,6 +79,11 @@ private:
 
         // Make sure headers are not added..
         ASSERT(files.find("lib/tokenize.h") == files.end());
+    }
+
+    void fileExists() const {
+        ASSERT_EQUALS(false, FileLister::fileExists("lib"));
+        ASSERT_EQUALS(true, FileLister::fileExists("readme.txt"));
     }
 };
 

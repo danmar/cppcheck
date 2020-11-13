@@ -173,6 +173,11 @@ public:
      */
     static std::string stripDirectoryPart(const std::string &file);
 
+    /**
+      * @brief Checks if a File exists
+      * @param path Path to be checked if it is a File
+      * @return true if given path is a File
+      */
     static bool fileExists(const std::string &file);
 };
 
