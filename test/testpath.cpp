@@ -38,7 +38,6 @@ private:
         TEST_CASE(is_c);
         TEST_CASE(is_cpp);
         TEST_CASE(get_path_from_filename);
-        // folderExists and fileExists tests are part of testfilelister
     }
 
     void removeQuotationMarks() const {

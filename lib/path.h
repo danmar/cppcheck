@@ -179,13 +179,6 @@ public:
       * @return true if given path is a File
       */
     static bool fileExists(const std::string &path);
-
-    /**
-      * @brief Checks if a Folder exists
-      * @param path Path to be checked if it is a Folder
-      * @return true if given path is a Folder
-      */
-    static bool folderExists(const std::string &path);
 };
 
 /// @}

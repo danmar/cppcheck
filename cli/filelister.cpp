@@ -40,10 +40,33 @@
 // When compiling Unicode targets WinAPI automatically uses *W Unicode versions
 // of called functions. Thus, we explicitly call *A versions of the functions.
 
+static BOOL myIsDirectory(const std::string& path)
+{
+#ifdef __BORLANDC__
+    return (GetFileAttributes(path.c_str()) & FILE_ATTRIBUTE_DIRECTORY);
+#else
+// See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
+    return PathIsDirectoryA(path.c_str());
+#endif
+}
+
 static HANDLE myFindFirstFile(const std::string& path, LPWIN32_FIND_DATAA findData)
 {
     HANDLE hFind = FindFirstFileA(path.c_str(), findData);
     return hFind;
+}
+
+static BOOL myFileExists(const std::string& path)
+{
+#ifdef __BORLANDC__
+    DWORD fa = GetFileAttributes(path.c_str());
+    BOOL result = FALSE;
+    if (fa != INVALID_FILE_ATTRIBUTES && !(fa & FILE_ATTRIBUTE_DIRECTORY))
+        result = TRUE;
+#else
+    const BOOL result = PathFileExistsA(path.c_str()) && !PathIsDirectoryA(path.c_str());
+#endif
+    return result;
 }
 
 void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
@@ -63,7 +86,7 @@ void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::
     std::string searchPattern = cleanedPath;
 
     // The user wants to check all files in a dir
-    const bool checkAllFilesInDir = (Path::folderExists(cleanedPath) != FALSE);
+    const bool checkAllFilesInDir = (myIsDirectory(cleanedPath) != FALSE);
 
     if (checkAllFilesInDir) {
         const char c = cleanedPath.back();
@@ -127,6 +150,16 @@ void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::
     FindClose(hFind);
 }
 
+bool FileLister::isDirectory(const std::string &path)
+{
+    return (myIsDirectory(path) != FALSE);
+}
+
+bool FileLister::fileExists(const std::string &path)
+{
+    return (myFileExists(path) != FALSE);
+}
+
 
 #else
 
@@ -184,9 +217,9 @@ static void addFiles2(std::map<std::string, std::size_t> &files,
                 new_path = path + '/' + dir_result->d_name;
 
 #if defined(_DIRENT_HAVE_D_TYPE) || defined(_BSD_SOURCE)
-                bool path_is_directory = (dir_result->d_type == DT_DIR || (dir_result->d_type == DT_UNKNOWN && Path::folderExists(new_path)));
+                bool path_is_directory = (dir_result->d_type == DT_DIR || (dir_result->d_type == DT_UNKNOWN && FileLister::isDirectory(new_path)));
 #else
-                bool path_is_directory = Path::folderExists(new_path);
+                bool path_is_directory = FileLister::isDirectory(new_path);
 #endif
                 if (path_is_directory) {
                     if (recursive && !ignored.match(new_path)) {
@@ -219,6 +252,18 @@ void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::
 
         addFiles2(files, corrected_path, extra, recursive, ignored);
     }
+}
+
+bool FileLister::isDirectory(const std::string &path)
+{
+    struct stat file_stat;
+    return (stat(path.c_str(), &file_stat) != -1 && (file_stat.st_mode & S_IFMT) == S_IFDIR);
+}
+
+bool FileLister::fileExists(const std::string &path)
+{
+    struct stat file_stat;
+    return (stat(path.c_str(), &file_stat) != -1 && (file_stat.st_mode & S_IFMT) == S_IFREG);
 }
 
 #endif

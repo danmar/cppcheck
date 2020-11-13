@@ -29,10 +29,6 @@
 #include <fstream>
 #include <sstream>
 
-
-#include <sys/types.h>
-#include <sys/stat.h>
-
 #ifndef _WIN32
 #include <unistd.h>
 #else
@@ -248,67 +244,8 @@ std::string Path::stripDirectoryPart(const std::string &file)
     return file;
 }
 
-
-// This functions where previously defined in the FileLister Class
-#ifdef _WIN32
-
-///////////////////////////////////////////////////////////////////////////////
-////// This code is WIN32 systems /////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-#include <windows.h>
-#ifndef __BORLANDC__
-#include <shlwapi.h>
-#endif
-
-// Here is the catch: cppcheck core is Ansi code (using char type).
-// When compiling Unicode targets WinAPI automatically uses *W Unicode versions
-// of called functions. Thus, we explicitly call *A versions of the functions.
-
-static BOOL myFolderExists(const std::string& path)
+bool Path::fileExists(const std::string &file)
 {
-#ifdef __BORLANDC__
-    return (GetFileAttributes(path.c_str()) & FILE_ATTRIBUTE_DIRECTORY);
-#else
-// See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
-    return PathIsDirectoryA(path.c_str());
-#endif
+    std::ifstream f(file.c_str());
+    return f.is_open();
 }
-static BOOL myFileExists(const std::string& path)
-{
-#ifdef __BORLANDC__
-    DWORD fa = GetFileAttributes(path.c_str());
-    BOOL result = FALSE;
-    if (fa != INVALID_FILE_ATTRIBUTES && !(fa & FILE_ATTRIBUTE_DIRECTORY))
-        result = TRUE;
-#else
-    const BOOL result = PathFileExistsA(path.c_str()) && !PathIsDirectoryA(path.c_str());
-#endif
-    return result;
-}
-
-bool Path::folderExists(const std::string &path)
-{
-    return (myFolderExists(path) != FALSE);
-}
-
-bool Path::fileExists(const std::string &path)
-{
-    return (myFileExists(path) != FALSE);
-}
-
-#else
-
-bool Path::folderExists(const std::string &path)
-{
-    struct stat file_stat;
-    return (stat(path.c_str(), &file_stat) != -1 && (file_stat.st_mode & S_IFMT) == S_IFDIR);
-}
-
-bool Path::fileExists(const std::string &path)
-{
-    struct stat file_stat;
-    return (stat(path.c_str(), &file_stat) != -1 && (file_stat.st_mode & S_IFMT) == S_IFREG);
-}
-
-#endif
