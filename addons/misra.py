@@ -1703,39 +1703,39 @@ class MisraChecker:
             return True
 
         # ------
-        for token in data.tokenlist:
-            if token.variable:
-                variable = token.variable
-                nameToken = variable.nameToken
+        for variable in data.variables:
+            if not variable.nameToken:
+                continue
 
-                # Check if declaration and initialization is
-                # split into two separate statements in ast.
-                if nameToken.next.isSplittedVarDeclEq:
-                    nameToken = nameToken.next.next
+            nameToken = variable.nameToken
 
-                if nameToken is token:
-                    # Find declarations with initializer assignment
-                    eq = token
-                    while not eq.isAssignmentOp and eq.astParent:
-                        eq = eq.astParent
+            # Check if declaration and initialization is
+            # split into two separate statements in ast.
+            if nameToken.next and nameToken.next.isSplittedVarDeclEq:
+                nameToken = nameToken.next.next
 
-                    if not eq.isAssignmentOp:
-                        continue
+            # Find declarations with initializer assignment
+            eq = nameToken
+            while not eq.isAssignmentOp and eq.astParent:
+                eq = eq.astParent
 
-                    if variable.isArray :
-                        dimensions, valueType = getArrayDimensionsAndValueType(eq.astOperand1)
-                        if dimensions == None:
-                            continue
+            if not eq.isAssignmentOp:
+                continue
 
-                        checkArrayInitializer(eq.astOperand2, dimensions, valueType)
-                    elif variable.isClass:
-                        if not token.valueType:
-                            continue
+            if variable.isArray :
+                dimensions, valueType = getArrayDimensionsAndValueType(eq.astOperand1)
+                if dimensions == None:
+                    continue
 
-                        valueType = token.valueType
-                        if valueType.type == 'record':
-                            elements = getRecordElements(valueType)
-                            checkObjectInitializer(eq.astOperand2, elements)
+                checkArrayInitializer(eq.astOperand2, dimensions, valueType)
+            elif variable.isClass:
+                if not nameToken.valueType:
+                    continue
+
+                valueType = nameToken.valueType
+                if valueType.type == 'record':
+                    elements = getRecordElements(valueType)
+                    checkObjectInitializer(eq.astOperand2, elements)
 
     def misra_9_5(self, rawTokens):
         for token in rawTokens:
