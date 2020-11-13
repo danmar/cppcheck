@@ -578,13 +578,12 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings->plistOutput += '/';
 
                 const std::string plistOutput = Path::toNativeSeparators(mSettings->plistOutput);
-                if (!FileLister::isDirectory(plistOutput))
-                {
-                  std::string message("cppcheck: error: plist folder does not exist: \"");
-                  message += plistOutput;
-                  message += "\".";
-                  printMessage(message);
-                  return false;
+                if (!FileLister::isDirectory(plistOutput)) {
+                    std::string message("cppcheck: error: plist folder does not exist: \"");
+                    message += plistOutput;
+                    message += "\".";
+                    printMessage(message);
+                    return false;
                 }
             }
 
