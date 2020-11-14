@@ -60,10 +60,10 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
         return;
 
     static const std::vector<std::string> externalfolders{"externals",
-                                                          "externals/picojson",
-                                                          "externals/simplecpp",
-                                                          "externals/tinyxml"
-                                                         };
+        "externals/picojson",
+        "externals/simplecpp",
+        "externals/tinyxml"
+    };
 
     // Is the dependency already included?
     if (std::find(depfiles.begin(), depfiles.end(), filename) != depfiles.end())
