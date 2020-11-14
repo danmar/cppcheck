@@ -493,7 +493,7 @@ static Token * skipDecl(Token *tok)
     return tok;
 }
 
-static bool iscast(const Token *tok)
+static bool iscast(const Token *tok, bool cpp)
 {
     if (!Token::Match(tok, "( ::| %name%"))
         return false;
@@ -501,7 +501,8 @@ static bool iscast(const Token *tok)
     if (Token::simpleMatch(tok->link(), ") ( )"))
         return false;
 
-    if (tok->previous() && tok->previous()->isName() && tok->previous()->str() != "return")
+    if (tok->previous() && tok->previous()->isName() && tok->previous()->str() != "return" &&
+        (!cpp || tok->previous()->str() != "throw"))
         return false;
 
     if (Token::simpleMatch(tok->previous(), ">") && tok->previous()->link())
@@ -830,7 +831,7 @@ static void compileTerm(Token *&tok, AST_state& state)
         }
     } else if (tok->str() == "{") {
         const Token *prev = tok->previous();
-        if (Token::simpleMatch(prev, ") {") && iscast(prev->link()))
+        if (Token::simpleMatch(prev, ") {") && iscast(prev->link(), state.cpp))
             prev = prev->link()->previous();
         if (Token::simpleMatch(tok->link(),"} [")) {
             tok = tok->next();
@@ -905,7 +906,7 @@ static bool isPrefixUnary(const Token* tok, bool cpp)
     if (tok->str() == "*" && tok->previous()->tokType() == Token::eIncDecOp && isPrefixUnary(tok->previous(), cpp))
         return true;
 
-    return tok->strAt(-1) == ")" && iscast(tok->linkAt(-1));
+    return tok->strAt(-1) == ")" && iscast(tok->linkAt(-1), cpp);
 }
 
 static void compilePrecedence2(Token *&tok, AST_state& state)
@@ -973,7 +974,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             else
                 compileUnaryOp(tok, state, compileExpression);
             tok = tok2->link()->next();
-        } else if (tok->str() == "(" && (!iscast(tok) || Token::Match(tok->previous(), "if|while|for|switch|catch"))) {
+        } else if (tok->str() == "(" && (!iscast(tok, state.cpp) || Token::Match(tok->previous(), "if|while|for|switch|catch"))) {
             Token* tok2 = tok;
             tok = tok->next();
             const bool opPrevTopSquare = !state.op.empty() && state.op.top() && state.op.top()->str() == "[";
@@ -984,7 +985,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 || (tok->previous() && tok->previous()->isName() && !Token::Match(tok->previous(), "return|case") && (!state.cpp || !Token::Match(tok->previous(), "throw|delete")))
                 || (tok->strAt(-1) == "]" && (!state.cpp || !Token::Match(tok->linkAt(-1)->previous(), "new|delete")))
                 || (tok->strAt(-1) == ">" && tok->linkAt(-1))
-                || (tok->strAt(-1) == ")" && !iscast(tok->linkAt(-1))) // Don't treat brackets to clarify precedence as function calls
+                || (tok->strAt(-1) == ")" && !iscast(tok->linkAt(-1), state.cpp)) // Don't treat brackets to clarify precedence as function calls
                 || (tok->strAt(-1) == "}" && opPrevTopSquare)) {
                 const bool operandInside = oldOpSize < state.op.size();
                 if (operandInside)
@@ -993,7 +994,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                     compileUnaryOp(tok, state, nullptr);
             }
             tok = tok->link()->next();
-        } else if (iscast(tok) && Token::simpleMatch(tok->link(), ") {") && Token::simpleMatch(tok->link()->linkAt(1), "} [")) {
+        } else if (iscast(tok, state.cpp) && Token::simpleMatch(tok->link(), ") {") && Token::simpleMatch(tok->link()->linkAt(1), "} [")) {
             Token *cast = tok;
             tok = tok->link()->next();
             Token *tok1 = tok;
@@ -1027,7 +1028,7 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                 }
             }
             compileUnaryOp(tok, state, compilePrecedence3);
-        } else if (tok->str() == "(" && iscast(tok)) {
+        } else if (tok->str() == "(" && iscast(tok, state.cpp)) {
             Token* castTok = tok;
             castTok->isCast(true);
             tok = tok->link()->next();
