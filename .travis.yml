@@ -194,7 +194,7 @@ script:
   - make -s check -j2 CPPFLAGS=-DTEST_MATHLIB_VALUE
   - touch lib/mathlib.cpp test/testmathlib.cpp
 # syntax checking of cppcheck source code with -DNONNEG
-  - ls lib/*.cpp | xargs -n 1 -P 2 g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml -DNONNEG
+  - ls lib/*.cpp | xargs -n 1 -P 2 g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/picojson -Iexternals/simplecpp -Iexternals/tinyxml -DNONNEG
 # compile cppcheck, default build
   - echo $CXXFLAGS
   - make -s check -j2

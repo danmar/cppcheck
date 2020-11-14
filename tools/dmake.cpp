@@ -59,10 +59,11 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
     if (filename == "externals/z3_version.h")
         return;
 
-    static const std::vector<std::string> externalfolders = {"externals",
-                                                             "externals/simplecpp",
-                                                             "externals/tinyxml"
-                                                            };
+    static const std::vector<std::string> externalfolders{"externals",
+                                                          "externals/picojson",
+                                                          "externals/simplecpp",
+                                                          "externals/tinyxml"
+                                                         };
 
     // Is the dependency already included?
     if (std::find(depfiles.begin(), depfiles.end(), filename) != depfiles.end())
@@ -386,7 +387,7 @@ int main(int argc, char **argv)
          << "endif\n\n";
 
     makeConditionalVariable(fout, "PREFIX", "/usr");
-    makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -isystem externals -isystem externals/simplecpp -isystem externals/tinyxml");
+    makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -isystem externals -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml");
     makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -isystem externals/simplecpp -isystem externals/tinyxml");
     makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Icli -isystem externals/simplecpp -isystem externals/tinyxml");
 
