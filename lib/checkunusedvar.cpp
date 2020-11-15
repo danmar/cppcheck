@@ -1511,10 +1511,13 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
                     if (initValueVar && !isVariableWithoutSideEffects(*initValueVar)) {
                         return withoutSideEffects = false;
                     }
-                    if ((valueToken->tokType() == Token::Type::eFunction) ||
-                        (valueToken->tokType() == Token::Type::eName) ||
+                    if ((valueToken->tokType() == Token::Type::eName) ||
                         (valueToken->tokType() == Token::Type::eLambda) ||
                         (valueToken->tokType() == Token::Type::eOther)) {
+                        return withoutSideEffects = false;
+                    }
+                    const Function* initValueFunc = valueToken->function();
+                    if (initValueFunc && !isFunctionWithoutSideEffects(*initValueFunc)) {
                         return withoutSideEffects = false;
                     }
                 }
@@ -1585,4 +1588,62 @@ bool CheckUnusedVar::isEmptyType(const Type* type)
 
     emptyType=false;   // unknown types are assumed to be nonempty
     return emptyType;
+}
+
+bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func)
+{
+    // no body to analyze
+    if (!func.hasBody() || !func.functionScope || !func.functionScope->bodyStart) {
+        return false;
+    }
+
+    Token* bodyToken = func.functionScope->bodyStart->next();
+    while (bodyToken != func.functionScope->bodyEnd) {
+        const Variable* bodyVariable = bodyToken->variable();
+        if (bodyVariable) {
+            // check variable for side-effects
+            if (!isVariableWithoutSideEffects(*bodyVariable)) {
+                return false;
+            }
+            // check if global variable is changed
+            if (bodyVariable->isGlobal()) {
+                const Token* next = bodyToken->next();
+                const Token* prev = bodyToken->previous();
+                if (next->isIncDecOp() || prev->isIncDecOp() ||
+                    next->isAssignmentOp()) {
+                    return false;
+                }
+            }
+        }
+
+        // check nested function
+        const Function* bodyFunction = bodyToken->function();
+        if (bodyFunction && !isFunctionWithoutSideEffects(*bodyFunction)) {
+            return false;
+        }
+
+        // check returned value
+        if (Token::simpleMatch(bodyToken, "return")) {
+            const Token* returnValueToken = bodyToken->next();
+            // simple one-token return
+            if (Token::simpleMatch(returnValueToken->next(), ";")) { // TODO: handle complex return expressions
+                if (returnValueToken->isLiteral()) {
+                    return true;
+                }
+                const Variable* returnVariable = returnValueToken->variable();
+                if (returnVariable && isVariableWithoutSideEffects(*returnVariable)) {
+                    return true;
+                }
+            }
+        }
+
+        // unknown name
+        if (bodyToken->isNameOnly()) {
+            return false;
+        }
+
+        bodyToken = bodyToken->next();
+    }
+
+    return false;
 }
