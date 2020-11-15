@@ -7887,6 +7887,7 @@ private:
         ASSERT_EQUALS("unoRef:: var0(", testAst(code1));
 
         ASSERT_EQUALS("vary=", testAst("std::string var = y;"));
+        ASSERT_EQUALS("var1=", testAst("decltype(x) var = 1;"));
     }
 
     void astunaryop() { // unary operators
