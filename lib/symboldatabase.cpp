@@ -2016,11 +2016,6 @@ void Variable::evaluate(const Settings* settings)
 
 void Variable::setValueType(const ValueType &valueType)
 {
-    if (valueType.type == ValueType::Type::UNKNOWN_TYPE) {
-        const Token *declType = Token::findsimplematch(mTypeStartToken, "decltype (", mTypeEndToken);
-        if (declType && !declType->next()->valueType())
-            return;
-    }
     delete mValueType;
     mValueType = new ValueType(valueType);
     if ((mValueType->pointer > 0) && (!isArray() || Token::Match(mNameToken->previous(), "( * %name% )")))
@@ -4210,14 +4205,7 @@ bool Scope::isVariableDeclaration(const Token* const tok, const Token*& vartok, 
             }
         }
     } else if (Token::Match(localTypeTok, "%type%")) {
-
-        if (isCPP11 && Token::simpleMatch(localTypeTok, "decltype (") && Token::Match(localTypeTok->linkAt(1), ") %name%|*|&|&&"))
-            localVarTok = skipPointersAndQualifiers(localTypeTok->linkAt(1)->next());
-        else {
-            localVarTok = skipPointersAndQualifiers(localTypeTok->next());
-            if (isCPP11 && Token::simpleMatch(localVarTok, "decltype (") && Token::Match(localVarTok->linkAt(1), ") %name%|*|&|&&"))
-                localVarTok = skipPointersAndQualifiers(localVarTok->linkAt(1)->next());
-        }
+        localVarTok = skipPointersAndQualifiers(localTypeTok->next());
     }
 
     if (!localVarTok)
@@ -5682,11 +5670,6 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         }
     }
 
-    if (mIsCpp && vt2 && Token::simpleMatch(parent->previous(), "decltype (")) {
-        setValueType(parent, *vt2);
-        return;
-    }
-
     if (!vt1)
         return;
     if (parent->astOperand2() && !vt2)
@@ -5817,17 +5800,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
                 break;
             par = true;
         }
-        if (Token::simpleMatch(type, "decltype (") && type->next()->valueType()) {
-            const ValueType *vt2 = type->next()->valueType();
-            if (valuetype->sign == ValueType::Sign::UNKNOWN_SIGN)
-                valuetype->sign = vt2->sign;
-            if (valuetype->type == ValueType::Type::UNKNOWN_TYPE)
-                valuetype->type = vt2->type;
-            valuetype->constness += vt2->constness;
-            valuetype->pointer += vt2->pointer;
-            type = type->linkAt(1)->next();
-            continue;
-        } else if (type->isSigned())
+        if (type->isSigned())
             valuetype->sign = ValueType::Sign::SIGNED;
         else if (type->isUnsigned())
             valuetype->sign = ValueType::Sign::UNSIGNED;
@@ -6242,8 +6215,6 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 setValueType(tok, ValueType::parseDecl(functionScope->function->retDef, mSettings));
         } else if (tok->variable()) {
             setValueType(tok, *tok->variable());
-            if (!tok->variable()->valueType() && tok->valueType())
-                const_cast<Variable*>(tok->variable())->setValueType(*tok->valueType());
         } else if (tok->enumerator()) {
             setValueType(tok, *tok->enumerator());
         } else if (tok->isKeyword() && tok->str() == "new") {

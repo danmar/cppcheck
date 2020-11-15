@@ -209,7 +209,6 @@ private:
         TEST_CASE(setVarIdStructMembers1);
 
         TEST_CASE(decltype1);
-        TEST_CASE(decltype2);
 
         TEST_CASE(exprid1);
     }
@@ -3277,12 +3276,6 @@ private:
     void decltype1() {
         const char code[] = "void foo(int x, decltype(A::b) *p);";
         const char expected[] = "1: void foo ( int x@1 , decltype ( A :: b ) * p@2 ) ;\n";
-        ASSERT_EQUALS(expected, tokenize(code));
-    }
-
-    void decltype2() {
-        const char code[] = "int x; decltype(x) y;";
-        const char expected[] = "1: int x@1 ; decltype ( x@1 ) y@2 ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
