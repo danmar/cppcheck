@@ -252,6 +252,9 @@ public:
 
     void addSemicolonAfterUnknownMacro();
 
+    // Remove C99 and CPP11 _Pragma(str)
+    void removePragma();
+
     /** Remove undefined macro in class definition:
       * class DLLEXPORT Fred { };
       * class Fred FINAL : Base { };

@@ -84,6 +84,8 @@ private:
 
         TEST_CASE(syntax_case_default);
 
+        TEST_CASE(removePragma);
+
         TEST_CASE(foreach);     // #3690
         TEST_CASE(ifconstexpr);
 
@@ -569,13 +571,13 @@ private:
             return "";
     }
 
-    std::string tokenizeAndStringify(const char code[], const Settings &settings) {
+    std::string tokenizeAndStringify(const char code[], const Settings &settings, const char filename[] = "test.cpp") {
         errout.str("");
 
         // tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, filename);
         if (!tokenizer.tokens())
             return "";
         return tokenizer.tokens()->stringifyList(false, true, false, true, false, nullptr, nullptr);
@@ -971,6 +973,21 @@ private:
         //valid, when 'x' and 'y' are constexpr.
         tokenizeAndStringify("void f() {switch (n) { case sqrt(x+y): z(); break;}}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void removePragma() {
+        const char code[] = "_Pragma(\"abc\") int x;";
+        Settings s;
+
+        s.standards.c = Standards::C89;
+        ASSERT_EQUALS("_Pragma ( \"abc\" ) int x ;", tokenizeAndStringify(code, s, "test.c"));
+        s.standards.c = Standards::CLatest;
+        ASSERT_EQUALS("int x ;", tokenizeAndStringify(code, s, "test.c"));
+
+        s.standards.cpp = Standards::CPP03;
+        ASSERT_EQUALS("_Pragma ( \"abc\" ) int x ;", tokenizeAndStringify(code, s, "test.cpp"));
+        s.standards.cpp = Standards::CPPLatest;
+        ASSERT_EQUALS("int x ;", tokenizeAndStringify(code, s, "test.cpp"));
     }
 
     void foreach () {

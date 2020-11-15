@@ -4352,6 +4352,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     createLinks();
 
+    removePragma();
+
     reportUnknownMacros();
 
     simplifyHeaders();
@@ -5208,6 +5210,22 @@ void Tokenizer::removeMacrosInGlobalScope()
                 prev = prev->previous();
             if (prev && prev->str() == ")")
                 tok = tok->link();
+        }
+    }
+}
+
+//---------------------------------------------------------------------------
+
+void Tokenizer::removePragma()
+{
+    if (isC() && mSettings->standards.c == Standards::C89)
+        return;
+    if (isCPP() && mSettings->standards.cpp == Standards::CPP03)
+        return;
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        while (Token::simpleMatch(tok, "_Pragma (")) {
+            Token::eraseTokens(tok, tok->linkAt(1)->next());
+            tok->deleteThis();
         }
     }
 }
