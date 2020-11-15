@@ -2580,7 +2580,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (warning) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (style) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -2596,7 +2596,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (warning) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (style) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -2725,7 +2725,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:10]: (warning) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:10]: (style) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
 
         check("void bar() {}\n" // bar isn't noreturn
               "void foo()\n"
@@ -2741,7 +2741,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (warning) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (style) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
 
         check("void foo(int a) {\n"
               "    char str[10];\n"
@@ -2753,7 +2753,7 @@ private:
               "      strcpy(str, \"b'\");\n"
               "    }\n"
               "}", nullptr, false, false, false);
-        // TODO ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (warning) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
+        // TODO ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (style) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
 
         check("void foo(int a) {\n"
               "    char str[10];\n"
@@ -2765,7 +2765,7 @@ private:
               "      strncpy(str, \"b'\");\n"
               "    }\n"
               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (warning) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
+        // TODO ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (style) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
 
         check("void foo(int a) {\n"
               "    char str[10];\n"
@@ -2780,7 +2780,7 @@ private:
               "      z++;\n"
               "    }\n"
               "}", nullptr, false, false, false);
-        // TODO ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:10]: (warning) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
+        // TODO ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:10]: (style) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
 
         check("void foo(int a) {\n"
               "    char str[10];\n"
@@ -2856,7 +2856,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (warning) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (style) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -2871,7 +2871,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (warning) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (style) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -2910,7 +2910,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (warning) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (style) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -2925,7 +2925,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (warning) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (style) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -2964,7 +2964,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (warning) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (style) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -2979,7 +2979,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (warning) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (style) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -3018,7 +3018,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (warning) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (style) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -3033,7 +3033,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (warning) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:11]: (style) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
         check("void foo()\n"
               "{\n"
               "    int y = 1;\n"
@@ -3180,7 +3180,7 @@ private:
               "    }\n"
               "    bar(y);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:10]: (warning) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:10]: (style) Variable 'y' is reassigned a value before the old one has been used. 'break;' missing?\n", errout.str());
 
         check("bool f() {\n"
               "    bool ret = false;\n"
@@ -3217,7 +3217,7 @@ private:
               "        break;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant bitwise operation on 'y' in 'switch' statement. 'break;' missing?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Redundant bitwise operation on 'y' in 'switch' statement. 'break;' missing?\n", errout.str());
 
         check("void foo(int a)\n"
               "{\n"
@@ -3231,7 +3231,7 @@ private:
               "        break;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant bitwise operation on 'y' in 'switch' statement. 'break;' missing?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Redundant bitwise operation on 'y' in 'switch' statement. 'break;' missing?\n", errout.str());
 
         check("void foo(int a)\n"
               "{\n"
@@ -3245,7 +3245,7 @@ private:
               "        break;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant bitwise operation on 'y' in 'switch' statement. 'break;' missing?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Redundant bitwise operation on 'y' in 'switch' statement. 'break;' missing?\n", errout.str());
 
         check("void foo(int a)\n"
               "{\n"
@@ -3319,7 +3319,7 @@ private:
               "        break;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant bitwise operation on 'y' in 'switch' statement. 'break;' missing?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Redundant bitwise operation on 'y' in 'switch' statement. 'break;' missing?\n", errout.str());
 
         check("void foo(int a)\n"
               "{\n"
