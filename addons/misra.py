@@ -1536,16 +1536,18 @@ class MisraChecker:
 
         # Returns a list of the struct elements as StructElementDef in the order they are declared.
         def getRecordElements(valueType):
+            if not valueType or not valueType.typeScope:
+                return []
+
             elements = []
-            for token in data.tokenlist:
-                if token.variable and token.scope == valueType.typeScope:
-                    if token.variable.isArray:
-                        dimensions, arrayValueType = getArrayDimensionsAndValueType(token.astParent)
-                        elements.append(ElementDef('array', token.str, arrayValueType, dimensions))
-                    elif token.variable.isClass:
-                        elements.append(ElementDef('class', token.str, token.valueType))
-                    else:
-                        elements.append(ElementDef('element', token.str))
+            for variable in valueType.typeScope.varlist:
+                if variable.isArray:
+                    dimensions, arrayValueType = getArrayDimensionsAndValueType(variable.nameToken.astParent)
+                    elements.append(ElementDef('array', variable.nameToken.str, arrayValueType, dimensions))
+                elif variable.isClass:
+                    elements.append(ElementDef('class', variable.nameToken.str, variable.nameToken.valueType))
+                else:
+                    elements.append(ElementDef('element', variable.nameToken.str))
 
             return elements
 
