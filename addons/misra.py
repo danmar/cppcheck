@@ -1721,7 +1721,8 @@ class MisraChecker:
             while not eq.isAssignmentOp and eq.astParent:
                 eq = eq.astParent
 
-            if not eq.isAssignmentOp:
+            # We are only looking for initializers
+            if not eq.isAssignmentOp or eq.astOperand2.isName:
                 continue
 
             if variable.isArray :
