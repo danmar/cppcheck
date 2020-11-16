@@ -3476,6 +3476,15 @@ void Tokenizer::setVarIdPass1()
                 syntaxError(errTok);
             }
             if (decl) {
+                if (isCPP()) {
+                    if (Token *declTypeTok = Token::findsimplematch(tok, "decltype (", tok2)) {
+                        for (Token *declTok = declTypeTok->linkAt(1); declTok != declTypeTok; declTok = declTok->previous()) {
+                            if (declTok->isName() && !Token::Match(declTok->previous(), "::|.") && variableMap.hasVariable(declTok->str()))
+                                declTok->varId(variableMap.find(declTok->str())->second);
+                        }
+                    }
+                }
+
                 if (tok->str() == "(" && isFunctionHead(tok,"{") && scopeStack.top().isExecutable)
                     inlineFunction = true;
 

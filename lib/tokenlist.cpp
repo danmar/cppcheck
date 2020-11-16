@@ -1390,8 +1390,6 @@ static Token * findAstTop(Token *tok1, Token *tok2)
 
 static Token * createAstAtToken(Token *tok, bool cpp)
 {
-    if (cpp && Token::simpleMatch(tok, "decltype ("))
-        return tok->linkAt(1);
     if (Token::simpleMatch(tok, "for (")) {
         if (cpp && Token::Match(tok, "for ( const| auto &|&&| [")) {
             Token *decl = Token::findsimplematch(tok, "[");
