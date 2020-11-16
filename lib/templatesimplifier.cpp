@@ -780,6 +780,32 @@ void TemplateSimplifier::addInstantiation(Token *token, const std::string &scope
         mTemplateInstantiations.emplace_back(instantiation);
 }
 
+static void getFunctionArguments(const Token *nameToken, std::vector<const Token *> &args)
+{
+    const Token *argToken = nameToken->tokAt(2);
+
+    if (argToken->str() == ")")
+        return;
+
+    args.push_back(argToken);
+
+    while ((argToken = argToken->nextArgumentBeforeCreateLinks2()))
+        args.push_back(argToken);
+}
+
+static bool areAllParamsTypes(const std::vector<const Token *> &params)
+{
+    if (params.empty())
+        return false;
+
+    for (auto param : params) {
+        if (!Token::Match(param->previous(), "typename|class %name% ,|>"))
+            return false;
+    }
+
+    return true;
+}
+
 void TemplateSimplifier::getTemplateInstantiations()
 {
     std::multimap<std::string, const TokenAndName *> functionNameMap;
@@ -847,9 +873,17 @@ void TemplateSimplifier::getTemplateInstantiations()
                 tok = tok->tokAt(2);
             }
 
+            // skip specialization
+            if (tok == skip) {
+                skip = nullptr;
+                continue;
+            }
+
             // look for function instantiation with type deduction
-            // fixme: only single argument functions supported
             if (tok->strAt(1) == "(") {
+                std::vector<const Token *> instantiationArgs;
+                getFunctionArguments(tok, instantiationArgs);
+
                 std::string fullName;
                 if (!qualification.empty())
                     fullName = qualification + " :: " + tok->str();
@@ -857,39 +891,69 @@ void TemplateSimplifier::getTemplateInstantiations()
                     fullName = scopeName + " :: " + tok->str();
                 else
                     fullName = tok->str();
+
                 // get all declarations with this name
                 for (auto pos = functionNameMap.lower_bound(tok->str());
                      pos != functionNameMap.upper_bound(tok->str()); ++pos) {
                     // look for declaration with same qualification
                     if (pos->second->fullName() == fullName) {
-                        // make sure it is a single argument function
-                        if (Token::Match(pos->second->token()->tokAt(2), "typename|class %name% >") &&
-                            Token::Match(pos->second->nameToken()->tokAt(2), "const| %type% &| %name%| )") &&
-                            Token::Match(tok->tokAt(2), "%num%|%str%|%char%|%bool% )")) {
+                        std::vector<const Token *> templateParams;
+                        getTemplateParametersInDeclaration(pos->second->token()->tokAt(2), templateParams);
+
+                        // todo: handle more than one template parameter
+                        if (templateParams.size() != 1 || !areAllParamsTypes(templateParams))
+                            continue;
+
+                        std::vector<const Token *> declarationParams;
+                        getFunctionArguments(pos->second->nameToken(), declarationParams);
+
+                        // function argument counts must match
+                        if (instantiationArgs.empty() || instantiationArgs.size() != declarationParams.size())
+                            continue;
+
+                        size_t match = 0;
+                        size_t argMatch = 0;
+                        for (size_t i = 0; i < declarationParams.size(); ++i) {
+                            // fixme: only type deducton from literals is supported
+                            bool isArgLiteral = Token::Match(instantiationArgs[i], "%num%|%str%|%char%|%bool% ,|)");
+                            if (isArgLiteral && Token::Match(declarationParams[i], "const| %type% &| %name%| ,|)")) {
+                                match++;
+
+                                // check if parameter types match
+                                if (templateParams[0]->str() == declarationParams[i]->str())
+                                    argMatch = i;
+                                else {
+                                    // todo: check if non-template args match for function overloads
+                                }
+                            }
+                        }
+
+                        if (match == declarationParams.size()) {
+                            const Token *arg = instantiationArgs[argMatch];
                             tok->insertToken(">");
-                            switch (tok->tokAt(3)->tokType()) {
+                            switch (arg->tokType()) {
                             case Token::eBoolean:
                                 tok->insertToken("bool");
                                 break;
                             case Token::eChar:
-                                if (tok->tokAt(3)->isLong())
+                                if (arg->isLong())
                                     tok->insertToken("wchar_t");
                                 else
                                     tok->insertToken("char");
                                 break;
                             case Token::eString:
                                 tok->insertToken("*");
-                                if (tok->tokAt(4)->isLong())
+                                if (arg->isLong())
                                     tok->insertToken("wchar_t");
                                 else
                                     tok->insertToken("char");
                                 tok->insertToken("const");
                                 break;
                             case Token::eNumber: {
-                                MathLib::value num(tok->strAt(3));
+                                MathLib::value num(arg->str());
                                 if (num.isFloat()) {
                                     // MathLib::getSuffix doesn't work for floating point numbers
-                                    char suffix = tok->strAt(3).back();
+                                    char suffix = arg->str().back();
                                     if (suffix == 'f' || suffix == 'F')
                                         tok->insertToken("float");
                                     else if (suffix == 'l' || suffix == 'L') {
