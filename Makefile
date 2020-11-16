@@ -156,8 +156,7 @@ MAN_SOURCE=man/cppcheck.1.xml
 
 ###### Object Files
 
-LIBOBJ =      $(libcppdir)/1.o \
-              $(libcppdir)/analyzerinfo.o \
+LIBOBJ =      $(libcppdir)/analyzerinfo.o \
               $(libcppdir)/astutils.o \
               $(libcppdir)/bughuntingchecks.o \
               $(libcppdir)/check.o \
@@ -404,9 +403,6 @@ validateRules:
 	xmllint --noout rules/*.xml
 
 ###### Build
-
-$(libcppdir)/1.o: lib/1.cpp externals/tinyxml2/tinyxml2.h
-	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/1.o $(libcppdir)/1.cpp
 
 $(libcppdir)/analyzerinfo.o: lib/analyzerinfo.cpp externals/tinyxml2/tinyxml2.h lib/analyzerinfo.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/path.h lib/platform.h lib/suppressions.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/analyzerinfo.o $(libcppdir)/analyzerinfo.cpp
