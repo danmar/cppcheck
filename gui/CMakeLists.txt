@@ -10,7 +10,7 @@ if (BUILD_GUI)
     endif()
 
     include_directories(${PROJECT_SOURCE_DIR}/lib/)
-    include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/tinyxml/)
+    include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/tinyxml2/)
 
     file(GLOB hdrs "*.h")
     file(GLOB srcs "*.cpp")
@@ -20,7 +20,7 @@ if (BUILD_GUI)
     QT5_ADD_RESOURCES(resources "gui.qrc")
     QT5_ADD_TRANSLATION(qms ${tss})
 
-    add_executable(cppcheck-gui ${hdrs} ${srcs} ${uis_hdrs} ${resources} ${qms} $<TARGET_OBJECTS:lib_objs> $<TARGET_OBJECTS:tinyxml_objs> $<TARGET_OBJECTS:simplecpp_objs>)
+    add_executable(cppcheck-gui ${hdrs} ${srcs} ${uis_hdrs} ${resources} ${qms} $<TARGET_OBJECTS:lib_objs> $<TARGET_OBJECTS:tinyxml2_objs> $<TARGET_OBJECTS:simplecpp_objs>)
     if (HAVE_RULES)
         target_link_libraries(cppcheck-gui ${PCRE_LIBRARY})
     endif()

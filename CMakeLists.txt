@@ -33,7 +33,7 @@ if (BUILD_TESTS)
     enable_testing()
 endif()
 
-add_subdirectory(externals/tinyxml)
+add_subdirectory(externals/tinyxml2)
 add_subdirectory(externals/simplecpp)
 add_subdirectory(lib)   # CppCheck Library 
 add_subdirectory(cli)   # Client application

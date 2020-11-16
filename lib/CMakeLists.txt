@@ -1,6 +1,6 @@
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/)
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/picojson/)
-include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/tinyxml/)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/tinyxml2/)
 include_directories(${PROJECT_SOURCE_DIR}/externals/simplecpp/)
 
 file(GLOB_RECURSE hdrs "*.h")

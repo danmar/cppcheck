@@ -194,7 +194,7 @@ private:
     void importCompileCommands7() const {
         const char json[] = R"([{
                                    "directory": "/tmp",
-                                   "command": "gcc -DFILESDIR=\"\\\"/home/danielm/cppcheck 2\\\"\" -I\"/home/danielm/cppcheck 2/build/externals/tinyxml\" -DTEST1 -DTEST2=2 -o /tmp/src.o -c /tmp/src.c",
+                                   "command": "gcc -DFILESDIR=\"\\\"/home/danielm/cppcheck 2\\\"\" -I\"/home/danielm/cppcheck 2/build/externals/tinyxml2\" -DTEST1 -DTEST2=2 -o /tmp/src.o -c /tmp/src.c",
                                    "file": "/tmp/src.c"
                                }])";
         std::istringstream istr(json);
@@ -203,7 +203,7 @@ private:
         ASSERT_EQUALS(1, importer.fileSettings.size());
         //FIXME ASSERT_EQUALS("FILESDIR=\"/home/danielm/cppcheck 2\";TEST1=1;TEST2=2", importer.fileSettings.begin()->defines);
         ASSERT_EQUALS(1, importer.fileSettings.begin()->includePaths.size());
-        ASSERT_EQUALS("/home/danielm/cppcheck 2/build/externals/tinyxml/", importer.fileSettings.begin()->includePaths.front());
+        ASSERT_EQUALS("/home/danielm/cppcheck 2/build/externals/tinyxml2/", importer.fileSettings.begin()->includePaths.front());
     }
 
     void importCompileCommandsArgumentsSection() const {

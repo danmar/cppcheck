@@ -16,7 +16,7 @@ rm cppcheck-$1.tar.bz2
 rm cppcheck-$1/Changelog
 
 echo Building...
-g++ -O2 -o democlient-$1.cgi -I$cppchecklib -Icppcheck-$1/externals/tinyxml cppcheck-$1/democlient/democlient.cpp $cppchecklib/*.cpp cppcheck-$1/externals/tinyxml/tinyxml2.cpp
+g++ -O2 -o democlient-$1.cgi -I$cppchecklib -Icppcheck-$1/externals/tinyxml2 cppcheck-$1/democlient/democlient.cpp $cppchecklib/*.cpp cppcheck-$1/externals/tinyxml2/tinyxml2.cpp
 
 echo Copy cgi to webspace...
 cp democlient-$1.cgi /home/project-web/cppcheck/cgi-bin/democlient.cgi
