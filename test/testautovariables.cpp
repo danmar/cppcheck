@@ -1764,6 +1764,22 @@ private:
               "    return cr;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9987
+        check("void g(std::vector<int>);\n"
+              "void f() {\n"
+              "    std::vector<int>&& v = {};\n"
+              "    g(std::move(v));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(std::vector<int>);\n"
+             "std::vector<int> h();\n"
+              "void f() {\n"
+              "    std::vector<int>&& v = h();\n"
+              "    g(std::move(v));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testglobalnamespace() {
