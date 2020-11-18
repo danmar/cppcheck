@@ -132,6 +132,9 @@
               <File Id='arm64wchar_t2.xml' Name='arm64-wchar_t2.xml' Source='$(var.PtfsDir)\arm64-wchar_t2.xml' />
               <File Id='arm64wchar_t4.xml' Name='arm64-wchar_t4.xml' Source='$(var.PtfsDir)\arm64-wchar_t4.xml' />
               <File Id='avr8.xml' Name='avr8.xml' Source='$(var.PtfsDir)\avr8.xml' />
+              <File Id='pic8.xml' Name='pic8.xml' Source='$(var.PtfsDir)\pic8.xml' />
+              <File Id='pic16.xml' Name='pic16.xml' Source='$(var.PtfsDir)\pic16.xml' />
+              <File Id='mips.xml' Name='mips.xml' Source='$(var.PtfsDir)\mips.xml' />
               <File Id='cray_sv1.xml' Name='cray_sv1.xml' Source='$(var.PtfsDir)\cray_sv1.xml' />
               <File Id='msp430_eabi_large_datamodel.xml' Name='msp430_eabi_large_datamodel.xml' Source='$(var.PtfsDir)\msp430_eabi_large_datamodel.xml' />
               <File Id='unix32unsigned.xml' Name='unix32-unsigned.xml' Source='$(var.PtfsDir)\unix32-unsigned.xml' />
