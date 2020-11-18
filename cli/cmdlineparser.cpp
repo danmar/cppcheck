@@ -1132,7 +1132,7 @@ void CmdLineParser::printHelp()
               "                                 8 bit PIC microcontrollers\n"
               "                          * pic16\n"
               "                                 16 bit PIC microcontrollers\n"
-              "                          * mips\n"
+              "                          * mips32\n"
               "                                 32 bit MIPS microcontrollers\n"              
               "                          * native\n"
               "                                 Type sizes of host system are assumed, but no\n"
