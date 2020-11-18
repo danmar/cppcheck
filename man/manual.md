@@ -8,9 +8,10 @@ documentclass: report
 
 # Introduction
 
-Cppcheck is an analysis tool for C/C++ code. It provides unique code analysis to detect bugs and focuses on detecting undefined behaviour and dangerous coding constructs. 
-The goal is to detect only real errors in the code, and generate as few false positives as possible. 
-Cppcheck is designed to analyze your C/C++ code even if it has non-standard syntax, as is common in for example embedded projects.
+Cppcheck is an analysis tool for C/C++ code. It provides unique code analysis to detect bugs and focuses on detecting 
+undefined behaviour and dangerous coding constructs. The goal is to detect only real errors in the code, and generate 
+as few false positives as possible. Cppcheck is designed to analyze your C/C++ code even if it has non-standard syntax, 
+as is common in for example embedded projects.
 
 Supported code and platforms:
 
@@ -35,7 +36,7 @@ In the project settings dialog, the first option you see is "Import project". It
 feature if you can. Cppcheck can import:
 
 - Visual studio solution / project
-- Compile database, whcih can be generated from CMake/qbs/etc build files
+- Compile database, which can be generated from CMake/qbs/etc build files
 - Borland C++ Builder 6
 
 When you have filled out the project settings and clicked on OK, the Cppcheck analysis will start.
@@ -77,31 +78,36 @@ If "path" is a folder, then cppcheck will recursively check all source files in 
 
 ### Check files manually or use project file
 
-With Cppcheck you can check files manually by specifying files/paths to check and settings. Or you can use a project file, such as CMake or Visual Studio.
+With Cppcheck you can check files manually by specifying files/paths to check and settings. Or you can use a project 
+file, such as CMake or Visual Studio.
 
-We don't know which approach (project file or manual configuration) will give you the best results. It is recommended that you try both. It is possible that you will get different results so that to find most bugs you need to use both approaches.
-
-Later chapters will describe this in more detail.
+We don't know which approach (project file or manual configuration) will give you the best results. It is recommended 
+that you try both. It is possible that you will get different results so that to find most bugs you need to use both 
+approaches. Later chapters will describe this in more detail.
 
 ### Check files matching a given file filter
 
 With `--file-filter=<str>` you can set a file filter and only those files matching the filter will be checked.
 
-For example: if you want to check only those files and folders starting from a subfolder src/ that start with "test" you have to type:
+For example: if you want to check only those files and folders starting from a subfolder src/ that start with "test" 
+you have to type:
 
     cppcheck src/ --file-filter=src/test*
 
-Cppcheck first collects all files in src/ and will apply the filter after that. So the filter must start with the given start folder. 
+Cppcheck first collects all files in src/ and will apply the filter after that. So the filter must start with the given 
+start folder. 
 
 ### Excluding a file or folder from checking
 
-To exclude a file or folder, there are two options. The first option is to only provide the paths and files you want to check:
+To exclude a file or folder, there are two options. The first option is to only provide the paths and files you want to 
+check:
 
     cppcheck src/a src/b
 
 All files under src/a and src/b are then checked.
 
-The second option is to use -i, which specifies the files/paths to ignore. With this command no files in src/c are checked:
+The second option is to use -i, which specifies the files/paths to ignore. With this command no files in src/c are 
+checked:
 
     cppcheck -isrc/c src
 
@@ -116,11 +122,11 @@ By default Cppcheck uses an internal C/C++ parser. However there is an experimen
 
 Install `clang`. Then use Cppcheck option `--clang`.
 
-Technically, Cppcheck will execute `clang` with its `-ast-dump` option. The Clang output is then imported and converted into the normal Cppcheck format. 
-And then normal Cppcheck analysis is performed on that.
+Technically, Cppcheck will execute `clang` with its `-ast-dump` option. The Clang output is then imported and converted into 
+the normal Cppcheck format. And then normal Cppcheck analysis is performed on that.
 
-You can also pass a custom Clang executable to the option by using for example `--clang=clang-10`. You can also pass it with a path. 
-On Windows it will append the `.exe` extension unless you use a path.
+You can also pass a custom Clang executable to the option by using for example `--clang=clang-10`. You can also pass it 
+with a path. On Windows it will append the `.exe` extension unless you use a path.
 
 ## Severities
 
@@ -140,15 +146,18 @@ stylistic issues, such as unused functions, redundant code, constness, operator 
 
 **performance**
 
-run time performance suggestions based on common knowledge, though it is not certain any measurable speed difference will be achieved by fixing these messages.
+run time performance suggestions based on common knowledge, though it is not certain any measurable speed difference 
+will be achieved by fixing these messages.
 
 **portability**
 
-portability warnings. Implementation defined behavior. 64-bit portability. Some undefined behavior that probably works "as you want", etc.
+portability warnings. Implementation defined behavior. 64-bit portability. Some undefined behavior that probably works 
+"as you want", etc.
 
 **information**
 
-configuration problems, which does not relate to the syntactical correctness, but the used cppcheck configuration could be improved.
+configuration problems, which does not relate to the syntactical correctness, but the used cppcheck configuration could 
+be improved.
 
 ## Possible speedup analysis of template code
 
