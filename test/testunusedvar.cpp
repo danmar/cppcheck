@@ -822,6 +822,109 @@ private:
             "   C c;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        // clean function recursion
+        functionVariableUsage(
+            "int func(int i) {\n"
+            "   if (i != 2) {\n"
+            "       func(i++);\n"
+            "       return 2;\n"
+            "   }\n"
+            "   return i;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(0)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:14]: (style) Unused variable: c\n", errout.str());
+
+        // side-effect function recursion
+        functionVariableUsage(
+            "int global = 1;\n"
+            "int func(int i) {\n"
+            "   if (i != 2) {\n"
+            "       global++;\n"
+            "       func(i++);\n"
+            "       return 2;\n"
+            "   }\n"
+            "   return i;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(0)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // multiple returns (side-effect & clean)
+        functionVariableUsage(
+            "int func(int i) {\n"
+            "   if (i == 0) { return 0;}\n"
+            "   else { return unknownSideEffectFunction(); }\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(0)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // multiple clean returns
+        functionVariableUsage(
+            "int func(int i) {\n"
+            "   if (i == 0) { return 0;}\n"
+            "   else { return i; }\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(0)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:11]: (style) Unused variable: c\n", errout.str());
+
+        // multiple side-effect returns
+        functionVariableUsage(
+            "int func(int i) {\n"
+            "   if (i == 0) { return unknownSideEffectFunction();}\n"
+            "   else { return unknown_var; }\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(0)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // argument return
+        functionVariableUsage(
+            "int func(int i) {\n"
+            "    return i;"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(0)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:9]: (style) Unused variable: c\n", errout.str());
     }
 
     // #5355 - False positive: Variable is not assigned a value.

@@ -1590,15 +1590,16 @@ bool CheckUnusedVar::isEmptyType(const Type* type)
     return emptyType;
 }
 
-bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func)
-{
+bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func) {
     // no body to analyze
-    if (!func.hasBody() || !func.functionScope || !func.functionScope->bodyStart) {
+    if (!func.hasBody()) {
         return false;
     }
 
-    Token* bodyToken = func.functionScope->bodyStart->next();
-    while (bodyToken != func.functionScope->bodyEnd) {
+    bool sideEffectReturnFound = false;
+    for (Token* bodyToken = func.functionScope->bodyStart->next(); bodyToken != func.functionScope->bodyEnd; 
+        bodyToken = bodyToken->next())
+    {
         const Variable* bodyVariable = bodyToken->variable();
         if (bodyVariable) {
             // check variable for side-effects
@@ -1618,32 +1619,37 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func)
 
         // check nested function
         const Function* bodyFunction = bodyToken->function();
-        if (bodyFunction && !isFunctionWithoutSideEffects(*bodyFunction)) {
-            return false;
+        if (bodyFunction) {
+            if (bodyFunction->fullName() == func.fullName()) { // recursion found
+                continue;
+            }
+            if (!isFunctionWithoutSideEffects(*bodyFunction)) {
+                return false;
+            }
         }
 
         // check returned value
         if (Token::simpleMatch(bodyToken, "return")) {
             const Token* returnValueToken = bodyToken->next();
-            // simple one-token return
-            if (Token::simpleMatch(returnValueToken->next(), ";")) { // TODO: handle complex return expressions
-                if (returnValueToken->isLiteral()) {
-                    return true;
-                }
-                const Variable* returnVariable = returnValueToken->variable();
-                if (returnVariable && isVariableWithoutSideEffects(*returnVariable)) {
-                    return true;
-                }
+            // TODO: handle complex return expressions
+            if (!Token::simpleMatch(returnValueToken->next(), ";")) {
+                sideEffectReturnFound = true;
+                continue;
             }
+            // simple one-token return
+            const Variable* returnVariable = returnValueToken->variable();
+            if (returnValueToken->isLiteral() || 
+                (returnVariable && isVariableWithoutSideEffects(*returnVariable))) {
+                continue;
+            }
+            sideEffectReturnFound = true;
         }
 
         // unknown name
         if (bodyToken->isNameOnly()) {
             return false;
         }
-
-        bodyToken = bodyToken->next();
     }
 
-    return false;
+    return !sideEffectReturnFound;
 }
