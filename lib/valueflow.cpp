@@ -241,46 +241,6 @@ const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, Val
     return nullptr;
 }
 
-/**
- * Should value be skipped because it's hidden inside && || or ?: expression.
- * Example: ((x!=NULL) && (*x == 123))
- * If 'valuetok' points at the x in '(*x == 123)'. Then the '&&' will be returned.
- * @param valuetok original variable token
- * @return NULL=>don't skip, non-NULL=>The operator token that cause the skip. For instance the '&&'.
- * */
-static const Token * skipValueInConditionalExpression(const Token * const valuetok)
-{
-    // Walk up the ast
-    const Token *prev = valuetok;
-    for (const Token *tok = valuetok->astParent(); tok; tok = tok->astParent()) {
-        const bool prevIsLhs = (prev == tok->astOperand1());
-        prev = tok;
-
-        if (prevIsLhs || !Token::Match(tok, "%oror%|&&|?|:"))
-            continue;
-
-        if (tok->hasKnownIntValue())
-            return tok;
-
-        // Is variable protected in LHS..
-        bool bailout = false;
-        visitAstNodes(tok->astOperand1(), [&](const Token *tok2) {
-            if (tok2->str() == ".")
-                return ChildrenToVisit::none;
-            // A variable is seen..
-            if (tok2 != valuetok && tok2->variable() &&
-                (tok2->varId() == valuetok->varId() || (!tok2->variable()->isArgument() && !tok2->hasKnownIntValue()))) {
-                // TODO: limit this bailout
-                bailout = true;
-                return ChildrenToVisit::done;
-            }
-            return ChildrenToVisit::op1_and_op2;
-        });
-        if (bailout)
-            return tok;
-    }
-    return nullptr;
-}
 
 static bool isEscapeScope(const Token* tok, TokenList * tokenlist, bool unknown = false)
 {
@@ -293,29 +253,6 @@ static bool isEscapeScope(const Token* tok, TokenList * tokenlist, bool unknown 
     std::string unknownFunction;
     if (tokenlist && tokenlist->getSettings()->library.isScopeNoReturn(tok->link(), &unknownFunction))
         return unknownFunction.empty() || unknown;
-    return false;
-}
-
-static bool bailoutSelfAssignment(const Token * const tok)
-{
-    const Token *parent = tok;
-    while (parent) {
-        const Token *op = parent;
-        parent = parent->astParent();
-
-        // Assignment where lhs variable exists in rhs => return true
-        if (parent                         != nullptr      &&
-            parent->astOperand2()          == op           &&
-            parent->astOperand1()          != nullptr      &&
-            parent->str()                  == "=") {
-            for (const Token *lhs = parent->astOperand1(); lhs; lhs = lhs->astOperand1()) {
-                if (lhs->varId() == tok->varId())
-                    return true;
-                if (lhs->astOperand2() && lhs->astOperand2()->varId() == tok->varId())
-                    return true;
-            }
-        }
-    }
     return false;
 }
 
@@ -1749,17 +1686,6 @@ static Analyzer::Action valueFlowForwardVariable(Token* const startToken,
         TokenList* const tokenlist,
         const Settings* const settings);
 
-// Old deprecated version
-static void valueFlowForward(Token* startToken,
-                             const Token* endToken,
-                             const Token* exprTok,
-                             std::list<ValueFlow::Value> values,
-                             const bool constValue,
-                             const bool subFunction,
-                             TokenList* const tokenlist,
-                             ErrorLogger* const errorLogger,
-                             const Settings* settings);
-
 static void valueFlowReverse(TokenList* tokenlist,
                              Token* tok,
                              const Token* const varToken,
@@ -2708,26 +2634,12 @@ static Analyzer::Action valueFlowForward(Token* startToken,
     }
 }
 
-// Old deprecated version
-static void valueFlowForward(Token* startToken,
-                             const Token* endToken,
-                             const Token* exprTok,
-                             std::list<ValueFlow::Value> values,
-                             const bool,
-                             const bool,
-                             TokenList* const tokenlist,
-                             ErrorLogger* const,
-                             const Settings* settings)
-{
-    valueFlowForward(startToken, endToken, exprTok, std::move(values), tokenlist, settings);
-}
-
 static void valueFlowReverse(TokenList* tokenlist,
                              Token* tok,
                              const Token* const varToken,
                              ValueFlow::Value val,
                              ValueFlow::Value val2,
-                             ErrorLogger* errorLogger,
+                             ErrorLogger* /*errorLogger*/,
                              const Settings* settings)
 {
     std::list<ValueFlow::Value> values = {val};
