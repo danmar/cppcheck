@@ -1774,7 +1774,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void g(std::vector<int>);\n"
-             "std::vector<int> h();\n"
+              "std::vector<int> h();\n"
               "void f() {\n"
               "    std::vector<int>&& v = h();\n"
               "    g(std::move(v));\n"

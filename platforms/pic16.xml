@@ -14,5 +14,5 @@
     <pointer>2</pointer>
     <size_t>2</size_t>
     <wchar_t>2</wchar_t>
-  </sizeof> 
+  </sizeof>
 </platform>
