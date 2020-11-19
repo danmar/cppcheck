@@ -306,6 +306,12 @@ void misra_9_2() {
     const char string_wrong_level_b[2][20]   = "Hello world";                          // 9.2
     const char string_correct_level_a[]      = "Hello world";
     const char string_correct_level_b[2][12] = { "Hello world" };
+    const char *char_p_correct_level[2]      = { "Hello", [1] = "world" };
+    const char *char_p_incorrect_level[1]    = "Hello world";                          // 9.2
+
+    char **str_p = &char_p_correct_level[0];
+    char **str_p_array_correct_level[1]      = { str_p };
+    char **str_p_array_incorrect_level[1]    = { { str_p } };                          // 9.2
 
     int array_init_incorrect_levels_a[3][2]  = { 1, 2, 3, 4, 5, 6 };                   // 9.2
     int array_init_correct_levels_a[3][2]    = { { 1, 2 }, { 3, 4 }, { 5, 6 } };

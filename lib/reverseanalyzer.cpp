@@ -188,11 +188,9 @@ struct ReverseTraversal {
                         break;
                     valueFlowGenericForward(condTok, analyzer, settings);
                 }
-                Token* thenEnd = nullptr;
-                Token* elseEnd = nullptr;
+                Token* thenEnd;
                 const bool hasElse = Token::simpleMatch(tok->link()->tokAt(-2), "} else {");
                 if (hasElse) {
-                    elseEnd = tok;
                     thenEnd = tok->link()->tokAt(-2);
                 } else {
                     thenEnd = tok;

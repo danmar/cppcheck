@@ -1519,11 +1519,18 @@ class MisraChecker:
         #       returns [1,2], None
         def getArrayDimensionsAndValueType(token):
             dimensions = []
+
+            while token.str == '*':
+                if token.astOperand2 is not None:
+                    token = token.astOperand2
+                else:
+                    token = token.astOperand1
+
             while token and token.str == '[':
-                if token.astOperand2 != None:
+                if token.astOperand2 is not None:
                     dimensions.insert(0, token.astOperand2.getKnownIntValue())
                     token = token.astOperand1
-                elif token.astOperand1 != None:
+                elif token.astOperand1 is not None:
                     dimensions.insert(0, token.astOperand1.getKnownIntValue())
                     break
                 else:
@@ -1578,14 +1585,13 @@ class MisraChecker:
 
                 effectiveLevel = sum(levelOffsets) + level
 
-                isStringInitializer = token.isString and effectiveLevel == len(dimensions) - 1
+                # Zero initializer is ok at any level
                 isZeroInitializer = (isFirstElement and token.str == '0')
+                # String initializer is ok at one level below value level unless array to pointers
+                isStringInitializer = token.isString and effectiveLevel == len(dimensions) - 1 and valueType.pointer == len(dimensions)
+
                 if effectiveLevel == len(dimensions) or isZeroInitializer or isStringInitializer:
-                    if isZeroInitializer or isStringInitializer:
-                        # Zero initializer is ok at any level
-                        # String initializer is ok at one level below value level
-                        pass
-                    else:
+                    if not isZeroInitializer and not isStringInitializer:
                         isFirstElement = False
                         if valueType.type == 'record':
                             if token.isName:
@@ -1595,16 +1601,19 @@ class MisraChecker:
                             else:
                                 if not checkObjectInitializer(token, elements):
                                     return False
-                        elif token.str == '{' or token.isString:
+                        elif token.str == '{':
+                            self.reportError(token, 9, 2)
+                            return False
+                        # String initializer is not ok at this level, unless array to pointers
+                        # (should be pointer to const-qualified char, but that check is out of scope for 9.2)
+                        elif token.isString and valueType.pointer == len(dimensions):
                             self.reportError(token, 9, 2)
                             return False
 
+                    # Done evaluating leaf node - go back up to find next astOperand2
                     while token:
-                        # Done checking once level is back to 0
-                        if level == 0:
-                            return True
-
-                        if not token.astParent:
+                        # Done checking once level is back to 0 (or we run out of parents)
+                        if level == 0 or not token.astParent:
                             return True
 
                         if  token.astParent.astOperand1 == token and token.astParent.astOperand2:
@@ -1662,7 +1671,7 @@ class MisraChecker:
                 if token.str == ',':
                     token = token.astOperand1
                 else:
-                    if pos == None:
+                    if pos is None:
                         pos = 0
 
                     if token.isAssignmentOp:
@@ -1727,7 +1736,7 @@ class MisraChecker:
 
             if variable.isArray :
                 dimensions, valueType = getArrayDimensionsAndValueType(eq.astOperand1)
-                if dimensions == None:
+                if dimensions is None:
                     continue
 
                 checkArrayInitializer(eq.astOperand2, dimensions, valueType)
