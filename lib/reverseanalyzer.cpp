@@ -173,7 +173,7 @@ struct ReverseTraversal {
                 if (!continueB)
                     break;
                 valueFlowGenericForward(assignTop->astOperand2(), analyzer, settings);
-                tok = previousBeforeAstLeftmostLeaf(assignTop);
+                tok = previousBeforeAstLeftmostLeaf(assignTop)->next();
                 continue;
             }
             if (tok->str() == "}") {
