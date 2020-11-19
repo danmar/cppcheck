@@ -673,15 +673,6 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
         if (tok2->str() == ">")
             countgt++;
 
-        // don't remove constructor
-        if (tok2->str() == "explicit" ||
-            (countgt == 1 && Token::Match(tok2->previous(), "> %type% (") &&
-             Tokenizer::startOfExecutableScope(tok2->linkAt(1)))) {
-            eraseTokens(tok, tok2);
-            deleteToken(tok);
-            return true;
-        }
-
         if (tok2->str() == ";") {
             tok2 = tok2->next();
             eraseTokens(tok, tok2);
@@ -895,8 +886,9 @@ void TemplateSimplifier::getTemplateInstantiations()
                 // get all declarations with this name
                 for (auto pos = functionNameMap.lower_bound(tok->str());
                      pos != functionNameMap.upper_bound(tok->str()); ++pos) {
-                    // look for declaration with same qualification
-                    if (pos->second->fullName() == fullName) {
+                    // look for declaration with same qualification or constructor with same qualification
+                    if (pos->second->fullName() == fullName ||
+                        (pos->second->scope() == fullName && tok->str() == pos->second->name())) {
                         std::vector<const Token *> templateParams;
                         getTemplateParametersInDeclaration(pos->second->token()->tokAt(2), templateParams);
 
@@ -3038,7 +3030,9 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         if (!Token::Match(instantiation.token(), "%name% <"))
             continue;
 
-        if (instantiation.fullName() != templateDeclaration.fullName()) {
+        if (!((instantiation.fullName() == templateDeclaration.fullName()) ||
+              (instantiation.name() == templateDeclaration.name() &&
+               instantiation.fullName() == templateDeclaration.scope()))) {
             // FIXME: fallback to not matching scopes until type deduction works
 
             // names must match
