@@ -133,6 +133,7 @@
               <File Id='arm64wchar_t4.xml' Name='arm64-wchar_t4.xml' Source='$(var.PtfsDir)\arm64-wchar_t4.xml' />
               <File Id='avr8.xml' Name='avr8.xml' Source='$(var.PtfsDir)\avr8.xml' />
               <File Id='pic8.xml' Name='pic8.xml' Source='$(var.PtfsDir)\pic8.xml' />
+              <File Id='pic8-enhanced.xml' Name='pic8-enhanced.xml' Source='$(var.PtfsDir)\pic8-enhanced.xml' />
               <File Id='pic16.xml' Name='pic16.xml' Source='$(var.PtfsDir)\pic16.xml' />
               <File Id='mips32.xml' Name='mips32.xml' Source='$(var.PtfsDir)\mips32.xml' />
               <File Id='cray_sv1.xml' Name='cray_sv1.xml' Source='$(var.PtfsDir)\cray_sv1.xml' />
