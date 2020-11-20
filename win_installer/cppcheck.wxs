@@ -132,6 +132,7 @@
               <File Id='arm64wchar_t2.xml' Name='arm64-wchar_t2.xml' Source='$(var.PtfsDir)\arm64-wchar_t2.xml' />
               <File Id='arm64wchar_t4.xml' Name='arm64-wchar_t4.xml' Source='$(var.PtfsDir)\arm64-wchar_t4.xml' />
               <File Id='avr8.xml' Name='avr8.xml' Source='$(var.PtfsDir)\avr8.xml' />
+              <File Id='elbrus-e1cp.xml' Name='elbrus-e1cp.xml' Source='$(var.PtfsDir)\elbrus-e1cp.xml' />
               <File Id='pic8.xml' Name='pic8.xml' Source='$(var.PtfsDir)\pic8.xml' />
               <File Id='pic8-enhanced.xml' Name='pic8-enhanced.xml' Source='$(var.PtfsDir)\pic8-enhanced.xml' />
               <File Id='pic16.xml' Name='pic16.xml' Source='$(var.PtfsDir)\pic16.xml' />
