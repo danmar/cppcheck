@@ -1128,6 +1128,8 @@ void CmdLineParser::printHelp()
               "                                 64 bit Windows\n"
               "                          * avr8\n"
               "                                 8 bit AVR microcontrollers\n"
+              "                          * elbrus-e1cp\n"
+              "                                 Elbrus e1c+ architecture\n"
               "                          * pic8\n"
               "                                 8 bit PIC microcontrollers\n"
               "                                 Baseline and mid-range architectures\n"
