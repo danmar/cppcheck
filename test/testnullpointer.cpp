@@ -105,6 +105,7 @@ private:
         TEST_CASE(nullpointer62);
         TEST_CASE(nullpointer63);
         TEST_CASE(nullpointer64);
+        TEST_CASE(nullpointer65); // #9980
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2007,6 +2008,26 @@ private:
               "    }\n"
               "    if (!y) {}\n"
               "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer65() {
+        check("struct A {\n"
+              "    double get();\n"
+              "};\n"
+              "double x;\n"
+              "double run(A** begin, A** end) {\n"
+              "    A* a = nullptr;\n"
+              "    while (begin != end) {\n"
+              "        a = *begin;\n"
+              "        x = a->get();\n"
+              "        ++begin;\n"
+              "    }\n"
+              "    x = 0;\n"
+              "    if (a)\n"
+              "        return a->get();\n"
+              "    return 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
