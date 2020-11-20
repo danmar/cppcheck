@@ -1609,6 +1609,9 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func) {
             // check if global variable is changed
             if (bodyVariable->isGlobal()) {
                 const Token* next = bodyToken->next();
+                if (Token::simpleMatch(next, "[")) {
+                    next = next->link()->next();
+                }
                 const Token* prev = bodyToken->previous();
                 if (next->isIncDecOp() || prev->isIncDecOp() ||
                     next->isAssignmentOp()) {

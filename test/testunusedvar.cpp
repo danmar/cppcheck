@@ -699,6 +699,23 @@ private:
             "}");
         ASSERT_EQUALS("", errout.str());
 
+        // changing global array variable in function body
+        functionVariableUsage(
+            "int x[] = {0, 1, 3};\n"
+            "int func() {\n"
+            "   x[0] = 4;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
         // changing local variable
         functionVariableUsage(
             "int func() {\n"
