@@ -1144,7 +1144,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
             continue;
 
         if (!mSettings.quiet) {
-            std::cout << "Processing rule: " << rule.pattern << std::endl;
+            reportOut("Processing rule: " + rule.pattern);
         }
 
         const char *pcreCompileErrorStr = nullptr;
