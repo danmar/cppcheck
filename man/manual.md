@@ -19,11 +19,17 @@ Supported code and platforms:
 - Cppcheck should be compilable by any compiler that supports the latest C++ standard.
 - Cppcheck should work on any platform that has sufficient CPU and memory.
 
-Cppcheck is rarely wrong about reported errors, but there are many bugs that it doesn't detect (yet). 
+Cppcheck is rarely wrong about reported errors, but there are many bugs that it doesn't detect (yet). Most logarithmic 
+bugs will not be found by static analysis. To avoid logarithmic bugs it is more effective to test your software and 
+design it carefully than by running Cppcheck.
 
-You will find more bugs in your software by testing your software carefully than by using Cppcheck. You will find
-more bugs in your software by instrumenting your software than by using Cppcheck. But Cppcheck can still detect some
-of the bugs that you miss when testing and instrumenting your software.
+Cppcheck is not very deep. A dynamic analysis tool is much more effective in finding deep bugs than Cppcheck.
+
+Then there are also bugs that Cppcheck should detect that it does not detect yet. No sophisticated product is perfect. 
+However there is work ongoing on a "bug hunting" mode that makes Cppcheck soundy.
+
+Also, next to careful design, you will find more bugs in your software by testing your software rigorously than by 
+using Cppcheck. You will find more bugs in your software by instrumenting your software than by using Cppcheck. 
 
 # Getting started
 
@@ -58,7 +64,7 @@ If you save that into file1.c and execute:
 
     cppcheck file1.c
 
-The output from cppcheck will then be:
+The output from Cppcheck will then be:
 
     Checking file1.c...
     [file1.c:4]: (error) Array 'a[10]' index 10 out of bounds
@@ -69,7 +75,7 @@ Normally a program has many source files. Cppcheck can check all source files in
 
     cppcheck path
 
-If "path" is a folder, then cppcheck will recursively check all source files in this folder:
+If "path" is a folder, then Cppcheck will recursively check all source files in this folder:
 
     Checking path/file1.cpp...
     1/2 files checked 50% done
@@ -82,8 +88,8 @@ With Cppcheck you can check files manually by specifying files/paths to check an
 file, such as CMake or Visual Studio.
 
 We don't know which approach (project file or manual configuration) will give you the best results. It is recommended 
-that you try both. It is possible that you will get different results so that to find most bugs you need to use both 
-approaches. Later chapters will describe this in more detail.
+that you try both. It is possible that you will get different results so that to find the largest amount of bugs you 
+need to use both approaches. Later chapters will describe this in more detail.
 
 ### Check files matching a given file filter
 
@@ -111,8 +117,8 @@ checked:
 
     cppcheck -isrc/c src
 
-This option is only valid when supplying an input directory. To ignore multiple directories supply the -i multiple times. 
-The following command ignores both the src/b and src/c directories:
+This option is only valid when supplying an input directory. To ignore multiple directories supply the -i flag for each 
+directory individually. The following command ignores both the src/b and src/c directories:
 
     cppcheck -isrc/b -isrc/c
 
@@ -156,7 +162,7 @@ portability warnings. Implementation defined behavior. 64-bit portability. Some 
 
 **information**
 
-configuration problems, which does not relate to the syntactical correctness, but the used cppcheck configuration could 
+configuration problems, which does not relate to the syntactical correctness, but the used Cppcheck configuration could 
 be improved.
 
 ## Possible speedup analysis of template code
@@ -192,7 +198,7 @@ and then it bails out.
 To limit template recursion you can:
 
 - add template specialisation
-- configure cppcheck, which can be done in the GUI project file dialog
+- configure Cppcheck, which can be done in the GUI project file dialog
 
 Example code with template specialisation:
 
@@ -305,7 +311,7 @@ Here is a file that has 2 preprocessor configurations with A defined and without
 By default Cppcheck will check all preprocessor configurations, except those that have #error in them.
 So the above code will by default be analyzed both with `A` defined and without `A` defined.
 
-You can use `-D` and/or `-U` to change this. When you use `-D`, cppcheck will by default only check the given configuration and nothing else. 
+You can use `-D` and/or `-U` to change this. When you use `-D`, Cppcheck will by default only check the given configuration and nothing else. 
 This is how compilers work. But you can use `--force` or `--max-configs` to override the number of configurations.
 
 Check all configurations:
@@ -329,12 +335,15 @@ Another useful flag might be `-U`. It tells Cppcheck that a macro is not defined
 To add an include path, use `-I`, followed by the path.
 
 Cppcheck's preprocessor basically handles includes like any other preprocessor. 
-However, while other preprocessors stop working when they encounter a missing header, Cppcheck will just print an information message and continues parsing the code.
+However, while other preprocessors stop working when they encounter a missing header, Cppcheck will just print an 
+information message and continues parsing the code.
 
 The purpose of this behaviour is that Cppcheck is meant to work without necessarily seeing the entire code. 
 Actually, it is recommended to not give all include paths. 
-While it is useful for Cppcheck to see the declaration of a class when checking the implementation of its members, passing standard library headers is discouraged, because it will result in less informative results and longer checking time. 
-For such cases, .cfg files (see below) are the preferred way to provide information about the implementation of functions and types to Cppcheck.
+While it is useful for Cppcheck to see the declaration of a class when checking the implementation of its members, 
+passing standard library headers is discouraged, because it will result in less informative results and longer checking 
+time. For such cases, .cfg files (see below) are the preferred way to provide information about the implementation of 
+functions and types to Cppcheck.
 
 # Platform
 
@@ -855,7 +864,7 @@ Some addons need extra arguments. You can configure how you want to execute an a
         ]
     }
 
-And then the configuration can be executed on the cppcheck command line:
+And then the configuration can be executed on the Cppcheck command line:
 
     cppcheck --addon=misra.json somefile.c
 
@@ -882,7 +891,7 @@ The .cfg file format is documented in the `Reference: Cppcheck .cfg format` (htt
 
 # HTML Report
 
-You can convert the XML output from cppcheck into a HTML report. You'll need Python and the pygments module (<http://pygments.org/)> for this to work. In the Cppcheck source tree there is a folder htmlreport that contains a script that transforms a Cppcheck XML file into HTML output.
+You can convert the XML output from Cppcheck into a HTML report. You'll need Python and the pygments module (<http://pygments.org/)> for this to work. In the Cppcheck source tree there is a folder htmlreport that contains a script that transforms a Cppcheck XML file into HTML output.
 
 This command generates the help screen:
 
@@ -1078,6 +1087,8 @@ max values.
 
 ## Incomplete analysis
 
-The data flow analysis can analyze simple functions completely but complex functions are not analyzed completely (yet). The data flow analysis will be continuously improved in the future but it will never be perfect.
+The data flow analysis can analyze simple functions completely but complex functions are not analyzed completely (yet). 
+The data flow analysis will be continuously improved in the future but it will never be perfect.
 
-It is likely that you will get false alarms caused by incomplete data flow analysis. Unfortunately it is unlikely that such false alarms can be fixed by contracts.
+It is likely that you will get false alarms caused by incomplete data flow analysis. Unfortunately it is unlikely that 
+such false alarms can be fixed by contracts.
