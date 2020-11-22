@@ -357,7 +357,8 @@ private:
                             "    int y;\n"
                             "};";
         check(code);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Member variable 'A::y' is not initialized in the constructor.\n"
+                      "[test.cpp:3]: (warning) Member variable 'A::y' is not initialized in the constructor.\n", errout.str());
         check((code + std::string("A<int> a(10);")).c_str());
         ASSERT_EQUALS("[test.cpp:2]: (warning) Member variable 'A < int >::y' is not initialized in the constructor.\n"
                       "[test.cpp:3]: (warning) Member variable 'A < int >::y' is not initialized in the constructor.\n", errout.str());
