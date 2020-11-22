@@ -751,6 +751,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     return false;
                 }
             }
+            else if (std::strcmp(argv[i], "--skip-unused-templates") == 0) {
+                mSettings->checkUnusedTemplates = false;
+            }
 
             // --std
             else if (std::strcmp(argv[i], "--std=posix") == 0) {
