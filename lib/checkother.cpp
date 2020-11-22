@@ -1361,6 +1361,8 @@ void CheckOther::checkConstVariable()
             continue;
         if (var->isRValueReference())
             continue;
+        if (var->isPointer())
+            continue;
         if (var->isConst())
             continue;
         if (!var->scope())
