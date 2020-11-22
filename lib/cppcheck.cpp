@@ -1143,6 +1143,10 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         if (rule.pattern.empty() || rule.id.empty() || rule.severity == Severity::none || rule.tokenlist != tokenlist)
             continue;
 
+        if (!mSettings.quiet) {
+            reportOut("Processing rule: " + rule.pattern);
+        }
+
         const char *pcreCompileErrorStr = nullptr;
         int erroffset = 0;
         pcre * const re = pcre_compile(rule.pattern.c_str(),0,&pcreCompileErrorStr,&erroffset,nullptr);
