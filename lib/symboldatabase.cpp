@@ -2104,6 +2104,7 @@ Function::Function(const Tokenizer *mTokenizer,
     // class constructor/destructor
     else if (((tokenDef->str() == scope->className) ||
               (tokenDef->str().substr(0, scope->className.size()) == scope->className &&
+               tokenDef->str().size() > scope->className.size() + 1 &&
                tokenDef->str()[scope->className.size() + 1] == '<')) &&
               scope->type != Scope::ScopeType::eNamespace) {
         // destructor
