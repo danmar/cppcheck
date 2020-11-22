@@ -6101,10 +6101,14 @@ private:
             ASSERT_EQUALS("", errout.str());
         }
 
-        check("template<int n> void foo(unsigned int x) {\n"
-              "if (x <= 0);\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
+        {
+            Settings keepTemplates;
+            keepTemplates.checkUnusedTemplates = true;
+            check("template<int n> void foo(unsigned int x) {\n"
+                  "if (x <= 0);\n"
+                  "}\n", &keepTemplates);
+            ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
+        }
 
         // #8836
         check("uint32_t value = 0xFUL;\n"
@@ -8743,11 +8747,14 @@ private:
     }
 
     void forwardAndUsed() {
+        Settings keepTemplates;
+        keepTemplates.checkUnusedTemplates = true;
+
         check("template<typename T>\n"
               "void f(T && t) {\n"
               "    g(std::forward<T>(t));\n"
               "    T s = t;\n"
-              "}");
+              "}", &keepTemplates);
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of forwarded variable 't'.\n", errout.str());
     }
 

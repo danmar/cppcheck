@@ -221,6 +221,7 @@ private:
         settings.platform(Settings::Unix64);
         settings.standards.c   = Standards::C89;
         settings.standards.cpp = Standards::CPP11;
+        settings.checkUnusedTemplates = true;
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -239,6 +240,7 @@ private:
         settings.platform(Settings::Unix64);
         settings.standards.c   = Standards::C89;
         settings.standards.cpp = Standards::CPP11;
+        settings.checkUnusedTemplates = true;
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -257,6 +259,7 @@ private:
         settings.platform(Settings::Unix64);
         settings.standards.c   = Standards::C89;
         settings.standards.cpp = Standards::CPP11;
+        settings.checkUnusedTemplates = true;
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);

@@ -115,6 +115,10 @@ private:
         LOAD_LIB_2(settings1.library, "std.cfg");
         settings2.platform(Settings::Unspecified);
 
+        // If there are unused templates, keep those
+        settings1.checkUnusedTemplates = true;
+        settings2.checkUnusedTemplates = true;
+
         TEST_CASE(array);
         TEST_CASE(stlarray1);
         TEST_CASE(stlarray2);

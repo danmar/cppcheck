@@ -41,6 +41,9 @@ private:
     void run() OVERRIDE {
         settings.addEnabled("portability");
 
+        // If there are unused templates, keep those
+        settings.checkUnusedTemplates = true;
+
         TEST_CASE(template1);
         TEST_CASE(template2);
         TEST_CASE(template3);
@@ -458,7 +461,8 @@ private:
 
         // The expected result..
         const char expected[] = "class A<int> ; "
-                                "void f ( ) { A<int> a ; } ; "
+                                "void f ( ) { A<int> a ; } "
+                                "template < typename T > class B { void g ( ) { A < T > b ; b = A < T > :: h ( ) ; } } ; "
                                 "class A<int> { } ;";
 
         ASSERT_EQUALS(expected, tok(code));
@@ -1472,6 +1476,7 @@ private:
                             "template <class T, unsigned S> C3<T, S>::C3(const C3<T, S> &v) { C1<T *> c1; }\n"
                             "C3<int,6> c3;";
         const char exp[] = "struct C1<int*> ; "
+                           "template < class T > void f ( ) { x = y ? ( C1 < int > :: allocate ( 1 ) ) : 0 ; } "
                            "class C3<int,6> ; "
                            "C3<int,6> c3 ; "
                            "class C3<int,6> { } ; "
@@ -2549,8 +2554,8 @@ private:
                             "template <typename T> class Fred {};\n"
                             "ObjectCache<Fred> _cache;";
         const char exp[] = "class ObjectCache<Fred> ; "
-                           "ObjectCache<Fred> _cache ; "
-                           "class ObjectCache<Fred> { } ;";
+                           "template < typename T > class Fred { } ; "
+                           "ObjectCache<Fred> _cache ; class ObjectCache<Fred> { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -4092,7 +4097,8 @@ private:
                             "template < class T > struct Unconst < const T & > { } ; "
                             "template < class T > struct Unconst < T * const > { } ; "
                             "template < class T1 , class T2 > struct type_equal { enum Anonymous0 { value = 0 } ; } ; "
-                            "template < class T > struct type_equal < T , T > { enum Anonymous1 { value = 1 } ; } ;";
+                            "template < class T > struct type_equal < T , T > { enum Anonymous1 { value = 1 } ; } ; "
+                            "template < class T > struct template_is_const { enum Anonymous2 { value = ! type_equal < T , Unconst < T > :: type > :: value } ; } ;";
         ASSERT_EQUALS(exp1, tok(code1));
     }
 
@@ -4372,7 +4378,7 @@ private:
         const char code[] = "class Fred {\n"
                             "    template<class T> explicit Fred(T t) { }\n"
                             "}";
-        ASSERT_EQUALS("class Fred { }", tok(code));
+        ASSERT_EQUALS("class Fred { template < class T > explicit Fred ( T t ) { } }", tok(code));
 
         // #3532
         const char code2[] = "class Fred {\n"

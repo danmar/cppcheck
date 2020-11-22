@@ -293,18 +293,14 @@ void Token::deleteThis()
         takeData(mNext);
         mNext->link(nullptr); // mark as unlinked
         deleteNext();
-    } else if (mPrevious && mPrevious->mPrevious) { // Copy previous to this and delete previous
+    } else if (mPrevious) { // Copy previous to this and delete previous
         takeData(mPrevious);
-
-        Token* toDelete = mPrevious;
-        mPrevious = mPrevious->mPrevious;
-        mPrevious->mNext = this;
-
-        delete toDelete;
+        mPrevious->link(nullptr);
+        deletePrevious();
     } else {
         // We are the last token in the list, we can't delete
         // ourselves, so just make us empty
-        str("");
+        str(";");
     }
 }
 

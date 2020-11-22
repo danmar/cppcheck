@@ -47,6 +47,12 @@ private:
     void run() OVERRIDE {
         LOAD_LIB_2(settings_windows.library, "windows.cfg");
 
+        // If there are unused templates, keep those
+        settings0.checkUnusedTemplates = true;
+        settings1.checkUnusedTemplates = true;
+        settings2.checkUnusedTemplates = true;
+        settings_windows.checkUnusedTemplates = true;
+
         TEST_CASE(tokenize1);
         TEST_CASE(tokenize2);
         TEST_CASE(tokenize4);
@@ -95,7 +101,8 @@ private:
 
         TEST_CASE(longtok);
 
-        TEST_CASE(removeUnusedTemplates);
+        TEST_CASE(simplifyHeadersAndUnusedTemplates1);
+        TEST_CASE(simplifyHeadersAndUnusedTemplates2);
 
         TEST_CASE(simplifyCasts1);
         TEST_CASE(simplifyCasts2);
@@ -1028,7 +1035,7 @@ private:
     }
 
 
-    void removeUnusedTemplates() {
+    void simplifyHeadersAndUnusedTemplates1() {
         Settings s;
         s.checkUnusedTemplates = false;
         ASSERT_EQUALS(";",
@@ -1044,6 +1051,22 @@ private:
                                            "}", s));
     }
 
+    void simplifyHeadersAndUnusedTemplates2() {
+        const char code[] = "; template< typename T, u_int uBAR = 0 >\n"
+                            "class Foo {\n"
+                            "public:\n"
+                            "    void FooBar() {\n"
+                            "        new ( (uBAR ? uBAR : sizeof(T))) T;\n"
+                            "    }\n"
+                            "};";
+
+        Settings s;
+        s.checkUnusedTemplates = false;
+        ASSERT_EQUALS(";", tokenizeAndStringify(code, s));
+
+        s.checkUnusedTemplates = true;
+        ASSERT_THROW(tokenizeAndStringify(code, s), InternalError);
+    }
 
     // Don’t remove "(int *)"..
     void simplifyCasts1() {
@@ -7467,11 +7490,11 @@ private:
     }
 
     void simplifyEmptyNamespaces() {
-        ASSERT_EQUALS("", tokenizeAndStringify("namespace { }"));
-        ASSERT_EQUALS("", tokenizeAndStringify("namespace foo { }"));
-        ASSERT_EQUALS("", tokenizeAndStringify("namespace foo { namespace { } }"));
-        ASSERT_EQUALS("", tokenizeAndStringify("namespace { namespace { } }")); // Ticket #9512
-        ASSERT_EQUALS("", tokenizeAndStringify("namespace foo { namespace bar { } }"));
+        ASSERT_EQUALS(";", tokenizeAndStringify("namespace { }"));
+        ASSERT_EQUALS(";", tokenizeAndStringify("namespace foo { }"));
+        ASSERT_EQUALS(";", tokenizeAndStringify("namespace foo { namespace { } }"));
+        ASSERT_EQUALS(";", tokenizeAndStringify("namespace { namespace { } }")); // Ticket #9512
+        ASSERT_EQUALS(";", tokenizeAndStringify("namespace foo { namespace bar { } }"));
     }
 
     void prepareTernaryOpForAST() {
@@ -8625,12 +8648,12 @@ private:
         }
     }
 
-    std::string checkHeaders(const char code[], bool f) {
+    std::string checkHeaders(const char code[], bool checkHeadersFlag) {
         // Clear the error buffer..
         errout.str("");
 
         Settings settings;
-        settings.checkHeaders = f;
+        settings.checkHeaders = checkHeadersFlag;
 
         // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
@@ -8670,12 +8693,11 @@ private:
                       "5: } ; void A :: g<int> ( int x ) { a = 2 ; }\n",
                       checkHeaders(code, true));
 
-        ASSERT_EQUALS("\n\n##file 1\n"
-                      "1: struct A {\n"
-                      "2: int a ; a = 1 ;\n"
-                      "3: void f ( ) ;\n"
+        ASSERT_EQUALS("\n\n##file 1\n\n"
+                      "1:\n"
+                      "|\n"
                       "4:\n"
-                      "5: } ;\n",
+                      "5: ;\n",
                       checkHeaders(code, false));
     }
 };

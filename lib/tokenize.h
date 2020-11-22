@@ -169,7 +169,7 @@ public:
      * - All executable code.
      * - Unused types/variables/etc
      */
-    void simplifyHeaders();
+    void simplifyHeadersAndUnusedTemplates();
 
     /**
      * Deletes dead code between 'begin' and 'end'.

@@ -4365,7 +4365,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     reportUnknownMacros();
 
-    simplifyHeaders();
+    simplifyHeadersAndUnusedTemplates();
 
     // Remove __asm..
     simplifyAsm();
@@ -5027,7 +5027,7 @@ void Tokenizer::dump(std::ostream &out) const
         list.front()->printValueFlow(true, out);
 }
 
-void Tokenizer::simplifyHeaders()
+void Tokenizer::simplifyHeadersAndUnusedTemplates()
 {
     if (mSettings->checkHeaders && mSettings->checkUnusedTemplates)
         // Full analysis. All information in the headers are kept.
@@ -5053,7 +5053,13 @@ void Tokenizer::simplifyHeaders()
     // functions and types to keep
     std::set<std::string> keep;
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!tok->isName())
+        if (isCPP() && Token::simpleMatch(tok, "template <")) {
+            const Token *closingBracket = tok->next()->findClosingBracket();
+            if (Token::Match(closingBracket, "> class|struct %name% {"))
+                tok = closingBracket->linkAt(3);
+        }
+
+        if (!tok->isName() || tok->isKeyword())
             continue;
 
         if (!checkHeaders && tok->fileIndex() != 0)
@@ -5088,49 +5094,42 @@ void Tokenizer::simplifyHeaders()
             }
         }
 
-        if (Token::Match(tok, "[;{}]")) {
+        if (!tok->previous() || Token::Match(tok->previous(), "[;{}]")) {
             // Remove unused function declarations
             if (isIncluded && removeUnusedIncludedFunctions) {
                 while (1) {
-                    Token *start = tok->next();
+                    Token *start = tok;
                     while (start && functionStart.find(start->str()) != functionStart.end())
                         start = start->next();
-                    if (Token::Match(start, "%name% (") && Token::Match(start->linkAt(1), ") const| ;") && keep.find(start->str()) == keep.end())
+                    if (Token::Match(start, "%name% (") && Token::Match(start->linkAt(1), ") const| ;") && keep.find(start->str()) == keep.end()) {
                         Token::eraseTokens(tok, start->linkAt(1)->tokAt(2));
-                    else
+                        tok->deleteThis();
+                    } else
                         break;
                 }
             }
 
             if (isIncluded && removeUnusedIncludedClasses) {
-                if (Token::Match(tok, "[;{}] class|struct %name% [:{]") && keep.find(tok->strAt(2)) == keep.end()) {
+                if (Token::Match(tok, "class|struct %name% [:{]") && keep.find(tok->strAt(1)) == keep.end()) {
                     // Remove this class/struct
-                    const Token *endToken = tok->tokAt(3);
+                    const Token *endToken = tok->tokAt(2);
                     if (endToken->str() == ":") {
                         endToken = endToken->next();
                         while (Token::Match(endToken, "%name%|,"))
                             endToken = endToken->next();
                     }
-                    if (endToken && endToken->str() == "{" && Token::simpleMatch(endToken->link(), "} ;"))
+                    if (endToken && endToken->str() == "{" && Token::simpleMatch(endToken->link(), "} ;")) {
                         Token::eraseTokens(tok, endToken->link()->next());
+                        tok->deleteThis();
+                    }
                 }
             }
 
             if (removeUnusedTemplates || (isIncluded && removeUnusedIncludedTemplates)) {
-                if (Token::Match(tok->next(), "template < %name%")) {
-                    const Token *tok2 = tok->tokAt(3);
-                    while (Token::Match(tok2, "%name% %name% [,=>]") || Token::Match(tok2, "typename|class ... %name% [,>]")) {
-                        if (Token::Match(tok2, "typename|class ..."))
-                            tok2 = tok2->tokAt(3);
-                        else
-                            tok2 = tok2->tokAt(2);
-                        if (Token::Match(tok2, "= %name% [,>]"))
-                            tok2 = tok2->tokAt(2);
-                        if (tok2->str() == ",")
-                            tok2 = tok2->next();
-                    }
-                    if (Token::Match(tok2, "> class|struct %name% [;:{]") && keep.find(tok2->strAt(2)) == keep.end()) {
-                        const Token *endToken = tok2->tokAt(3);
+                if (Token::Match(tok, "template < %name%")) {
+                    const Token *closingBracket = tok->next()->findClosingBracket();
+                    if (Token::Match(closingBracket, "> class|struct %name% [;:{]") && keep.find(closingBracket->strAt(2)) == keep.end()) {
+                        const Token *endToken = closingBracket->tokAt(3);
                         if (endToken->str() == ":") {
                             endToken = endToken->next();
                             while (Token::Match(endToken, "%name%|,"))
@@ -5138,11 +5137,14 @@ void Tokenizer::simplifyHeaders()
                         }
                         if (endToken && endToken->str() == "{")
                             endToken = endToken->link()->next();
-                        if (endToken && endToken->str() == ";")
+                        if (endToken && endToken->str() == ";") {
                             Token::eraseTokens(tok, endToken);
-                    } else if (Token::Match(tok2, "> %type% %name% (") && Token::simpleMatch(tok2->linkAt(3), ") {") && keep.find(tok2->strAt(2)) == keep.end()) {
-                        const Token *endToken = tok2->linkAt(3)->linkAt(1)->next();
+                            tok->deleteThis();
+                        }
+                    } else if (Token::Match(closingBracket, "> %type% %name% (") && Token::simpleMatch(closingBracket->linkAt(3), ") {") && keep.find(closingBracket->strAt(2)) == keep.end()) {
+                        const Token *endToken = closingBracket->linkAt(3)->linkAt(1)->next();
                         Token::eraseTokens(tok, endToken);
+                        tok->deleteThis();
                     }
                 }
             }
