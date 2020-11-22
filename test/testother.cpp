@@ -2305,6 +2305,13 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #10002
+        check("using A = int*;\n"
+              "void f(const A& x) {\n"
+              "    ++(*x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void e();\n"
               "void g(void);\n"
               "void h(void);\n"
