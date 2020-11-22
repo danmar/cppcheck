@@ -616,7 +616,7 @@ private:
             "void f() {\n"
             "   C c;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:11]: (style) Unused variable: c\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:11]: (style) Unused variable: c\n", "", errout.str());
 
         // changing global variable in return
         functionVariableUsage(
@@ -931,7 +931,7 @@ private:
         // argument return
         functionVariableUsage(
             "int func(int i) {\n"
-            "    return i;"
+            "    return i;\n"
             "}\n"
             "class C {\n"
             "public:\n"
@@ -941,7 +941,59 @@ private:
             "void f() {\n"
             "   C c;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:9]: (style) Unused variable: c\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (style) Unused variable: c\n", errout.str());
+
+        // global variable modifying through function argument
+        functionVariableUsage(
+            "char buf[10];\n"
+            "int func(char* p) {\n"
+            "   *p = 0;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(buf)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // global variable modifying through local pointer
+        functionVariableUsage(
+            "int global = 1;\n"
+            "int func() {\n"
+            "   int *p = &global;\n"
+            "   *p = 0;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // global struct variable
+        functionVariableUsage(
+            "struct S { int x; } s;\n"
+            "int func() {\n"
+            "   s.x = 1;;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // #5355 - False positive: Variable is not assigned a value.

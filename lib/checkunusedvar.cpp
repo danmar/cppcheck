@@ -1517,7 +1517,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
                         return withoutSideEffects = false;
                     }
                     const Function* initValueFunc = valueToken->function();
-                    if (initValueFunc && !isFunctionWithoutSideEffects(*initValueFunc)) {
+                    if (initValueFunc && !isFunctionWithoutSideEffects(*initValueFunc, *valueToken)) {
                         return withoutSideEffects = false;
                     }
                 }
@@ -1590,10 +1590,17 @@ bool CheckUnusedVar::isEmptyType(const Type* type)
     return emptyType;
 }
 
-bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func) {
+bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const Token& functionUsageToken) {
     // no body to analyze
     if (!func.hasBody()) {
         return false;
+    }
+
+    for (const Token* argsToken = functionUsageToken.next(); !Token::simpleMatch(argsToken, ")"); argsToken = argsToken->next()) {
+        const Variable* argVar = argsToken->variable();
+        if (argVar && argVar->isGlobal()) {
+            return false; // TODO: analyze global variable usage
+        }
     }
 
     bool sideEffectReturnFound = false;
@@ -1607,16 +1614,8 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func) {
                 return false;
             }
             // check if global variable is changed
-            if (bodyVariable->isGlobal()) {
-                const Token* next = bodyToken->next();
-                if (Token::simpleMatch(next, "[")) {
-                    next = next->link()->next();
-                }
-                const Token* prev = bodyToken->previous();
-                if (next->isIncDecOp() || prev->isIncDecOp() ||
-                    next->isAssignmentOp()) {
-                    return false;
-                }
+            if (bodyVariable->isGlobal()) { 
+                return false; // TODO: analyze global variable usage
             }
         }
 
@@ -1626,7 +1625,7 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func) {
             if (bodyFunction->fullName() == func.fullName()) { // recursion found
                 continue;
             }
-            if (!isFunctionWithoutSideEffects(*bodyFunction)) {
+            if (!isFunctionWithoutSideEffects(*bodyFunction, *bodyToken)) {
                 return false;
             }
         }
