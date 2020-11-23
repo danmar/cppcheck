@@ -67,7 +67,7 @@ void ProjectFile::clear()
     mClangAnalyzer = mClangTidy = false;
     mAnalyzeAllVsConfigs = false;
     mCheckHeaders = true;
-    mCheckUnusedTemplates = false;
+    mCheckUnusedTemplates = true;
     mMaxCtuDepth = settings.maxCtuDepth;
     mMaxTemplateRecursion = settings.maxTemplateRecursion;
     mCheckUnknownFunctionReturn.clear();

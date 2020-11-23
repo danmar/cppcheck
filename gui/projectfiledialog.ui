@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="mTabPathsAndDefines">
       <attribute name="title">
@@ -503,7 +503,7 @@
           <item>
            <widget class="QCheckBox" name="mCheckHeaders">
             <property name="text">
-             <string>Check code in headers  (slower analysis, more results)</string>
+             <string>Check code in headers  (should be ON normally. if you want a limited quick analysis then turn this OFF)</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -513,7 +513,10 @@
           <item>
            <widget class="QCheckBox" name="mCheckUnusedTemplates">
             <property name="text">
-             <string>Check code in unused templates  (slower and less accurate analysis)</string>
+             <string>Check code in unused templates (should be ON normally. however in theory there is no safety implications if there is something bad in a unused template so they can be skipped safely to reduce warnings and speed up analysis)</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
