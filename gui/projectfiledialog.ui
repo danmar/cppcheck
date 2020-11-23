@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>940</width>
     <height>617</height>
    </rect>
   </property>
@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="mTabPathsAndDefines">
       <attribute name="title">
@@ -513,7 +513,7 @@
           <item>
            <widget class="QCheckBox" name="mCheckUnusedTemplates">
             <property name="text">
-             <string>Check code in unused templates (should be ON normally. however in theory there is no safety implications if there is something bad in a unused template so they can be skipped safely to reduce warnings and speed up analysis)</string>
+             <string>Check code in unused templates (should be ON normally, however in theory you can safely ignore warnings in unused templates)</string>
             </property>
             <property name="checked">
              <bool>true</bool>
