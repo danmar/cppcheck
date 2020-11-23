@@ -5264,7 +5264,6 @@ private:
                            "}\n";
         ASSERT_EQUALS("void fn2<int> ( int t = [ ] { return 1 ; } ( ) ) ;\n"
                       "\n"
-                      "\n"
                       "int main ( )\n"
                       "{\n"
                       "fn2<int> ( ) ;\n"
