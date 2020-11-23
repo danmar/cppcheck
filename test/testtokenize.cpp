@@ -1065,7 +1065,13 @@ private:
         ASSERT_EQUALS(";", tokenizeAndStringify(code, s));
 
         s.checkUnusedTemplates = true;
-        ASSERT_THROW(tokenizeAndStringify(code, s), InternalError);
+        ASSERT_EQUALS("; template < typename T , u_int uBAR = 0 >\n"
+                      "class Foo {\n"
+                      "public:\n"
+                      "void FooBar ( ) {\n"
+                      "new ( uBAR ? uBAR : sizeof ( T ) ) T ;\n"
+                      "}\n"
+                      "} ;", tokenizeAndStringify(code, s));
     }
 
     // Don’t remove "(int *)"..
@@ -7752,17 +7758,20 @@ private:
         ASSERT_EQUALS("aFoobar(new=", testAst("a = new Foo(bar);"));
         ASSERT_EQUALS("aFoobar(new=", testAst("a = new Foo(bar);"));
         ASSERT_EQUALS("aFoo(new=", testAst("a = new Foo<bar>();"));
-        ASSERT_EQUALS("X12,3,(new", testAst("new (a,b,c) X(1,2,3);"));
         ASSERT_EQUALS("aXnew(", testAst("a (new (X));"));
         ASSERT_EQUALS("aXnew5,(", testAst("a (new (X), 5);"));
         ASSERT_EQUALS("adelete", testAst("delete a;"));
         ASSERT_EQUALS("adelete", testAst("delete (a);"));
         ASSERT_EQUALS("adelete", testAst("delete[] a;"));
         ASSERT_EQUALS("ab.3c-(delete", testAst("delete[] a.b(3 - c);"));
-        ASSERT_EQUALS("a::new=", testAst("a = new (b) ::X;"));
         ASSERT_EQUALS("aA1(new(bB2(new(,", testAst("a(new A(1)), b(new B(2))"));
         ASSERT_EQUALS("Fred10[new", testAst(";new Fred[10];"));
         ASSERT_EQUALS("adelete", testAst("void f() { delete a; }"));
+
+        // placement new
+        ASSERT_EQUALS("X12,3,(new ab,c,", testAst("new (a,b,c) X(1,2,3);"));
+        ASSERT_EQUALS("a::new=", testAst("a = new (b) ::X;"));
+        ASSERT_EQUALS("cCnew= abc:?", testAst("c = new(a ? b : c) C;"));
 
         // invalid code (libreoffice), don't hang
         // #define SlideSorterViewShell

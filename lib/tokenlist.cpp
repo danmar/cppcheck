@@ -1045,9 +1045,14 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
             if (tok->str() == "(") {
                 if (Token::Match(tok, "( &| %name%") && Token::Match(tok->link(), ") ( %type%") && Token::simpleMatch(tok->link()->linkAt(1), ") ("))
                     tok = tok->link()->next();
-                if (Token::Match(tok->link(), ") ::| %type%"))
+                if (Token::Match(tok->link(), ") ::| %type%")) {
+                    if (Token::Match(tok, "( !!)")) {
+                        Token *innerTok = tok->next();
+                        AST_state innerState(true);
+                        compileExpression(innerTok, innerState);
+                    }
                     tok = tok->link()->next();
-                else if (Token::Match(tok, "( %type%") && Token::Match(tok->link(), ") [();,[]")) {
+                } else if (Token::Match(tok, "( %type%") && Token::Match(tok->link(), ") [();,[]")) {
                     tok = tok->next();
                     innertype = true;
                 } else if (Token::Match(tok, "( &| %name%") && Token::simpleMatch(tok->link(), ") (")) {
