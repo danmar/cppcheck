@@ -252,6 +252,7 @@ private:
         TEST_CASE(templateTypeDeduction2);
         TEST_CASE(templateTypeDeduction3);
         TEST_CASE(templateTypeDeduction4); // #9983
+        TEST_CASE(templateTypeDeduction5);
 
         TEST_CASE(simplifyTemplateArgs1);
         TEST_CASE(simplifyTemplateArgs2);
@@ -5371,6 +5372,73 @@ private:
                                 "template < typename T , typename U > void f ( T x , U y ) { a = x + y ; } "
                                 "void test ( ) { f ( 0 , 0.0 ) ; }";
             TODO_ASSERT_EQUALS(exp, act, tok(code));
+        }
+    }
+
+    void templateTypeDeduction5() {
+        {
+            const char code[] = "class Fred {\n"
+                                "public:\n"
+                                "    template <class T> Fred(T t) { }\n"
+                                "};\n"
+                                "Fred fred1 = Fred(0);\n"
+                                "Fred fred2 = Fred(0.0);\n"
+                                "Fred fred3 = Fred(\"zero\");\n"
+                                "Fred fred4 = Fred(false);";
+            const char exp[]  = "class Fred { "
+                                "public: "
+                                "Fred<int> ( int t ) ; "
+                                "Fred<double> ( double t ) ; "
+                                "Fred<constchar*> ( const char * t ) ; "
+                                "Fred<bool> ( bool t ) ; "
+                                "} ; "
+                                "Fred fred1 ; fred1 = Fred<int> ( 0 ) ; "
+                                "Fred fred2 ; fred2 = Fred<double> ( 0.0 ) ; "
+                                "Fred fred3 ; fred3 = Fred<constchar*> ( \"zero\" ) ; "
+                                "Fred fred4 ; fred4 = Fred<bool> ( false ) ; "
+                                "Fred :: Fred<int> ( int t ) { } "
+                                "Fred :: Fred<double> ( double t ) { } "
+                                "Fred :: Fred<constchar*> ( const char * t ) { } "
+                                "Fred :: Fred<bool> ( bool t ) { }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "namespace NS {\n"
+                                "class Fred {\n"
+                                "public:\n"
+                                "    template <class T> Fred(T t) { }\n"
+                                "};\n"
+                                "Fred fred1 = Fred(0);\n"
+                                "Fred fred2 = Fred(0.0);\n"
+                                "Fred fred3 = Fred(\"zero\");\n"
+                                "Fred fred4 = Fred(false);\n"
+                                "}\n"
+                                "NS::Fred fred1 = NS::Fred(0);\n"
+                                "NS::Fred fred2 = NS::Fred(0.0);\n"
+                                "NS::Fred fred3 = NS::Fred(\"zero\");\n"
+                                "NS::Fred fred4 = NS::Fred(false);\n";
+            const char exp[]  = "namespace NS { "
+                                "class Fred { "
+                                "public: "
+                                "Fred<int> ( int t ) ; "
+                                "Fred<double> ( double t ) ; "
+                                "Fred<constchar*> ( const char * t ) ; "
+                                "Fred<bool> ( bool t ) ; "
+                                "} ; "
+                                "Fred fred1 ; fred1 = Fred<int> ( 0 ) ; "
+                                "Fred fred2 ; fred2 = Fred<double> ( 0.0 ) ; "
+                                "Fred fred3 ; fred3 = Fred<constchar*> ( \"zero\" ) ; "
+                                "Fred fred4 ; fred4 = Fred<bool> ( false ) ; "
+                                "} "
+                                "NS :: Fred fred1 ; fred1 = NS :: Fred<int> ( 0 ) ; "
+                                "NS :: Fred fred2 ; fred2 = NS :: Fred<double> ( 0.0 ) ; "
+                                "NS :: Fred fred3 ; fred3 = NS :: Fred<constchar*> ( \"zero\" ) ; "
+                                "NS :: Fred fred4 ; fred4 = NS :: Fred<bool> ( false ) ; "
+                                "NS :: Fred :: Fred<int> ( int t ) { } "
+                                "NS :: Fred :: Fred<double> ( double t ) { } "
+                                "NS :: Fred :: Fred<constchar*> ( const char * t ) { } "
+                                "NS :: Fred :: Fred<bool> ( bool t ) { }";
+            ASSERT_EQUALS(exp, tok(code));
         }
     }
 
