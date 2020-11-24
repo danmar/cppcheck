@@ -80,6 +80,7 @@ static const std::string ImplicitCastExpr = "ImplicitCastExpr";
 static const std::string InitListExpr = "InitListExpr";
 static const std::string IntegerLiteral = "IntegerLiteral";
 static const std::string LabelStmt = "LabelStmt";
+static const std::string LinkageSpecDecl = "LinkageSpecDecl";
 static const std::string MaterializeTemporaryExpr = "MaterializeTemporaryExpr";
 static const std::string MemberExpr = "MemberExpr";
 static const std::string NamespaceDecl = "NamespaceDecl";
@@ -998,6 +999,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
             child->createTokens(tokenList);
         return nullptr;
     }
+    if (nodeType == LinkageSpecDecl)
+        return nullptr;
     if (nodeType == MaterializeTemporaryExpr)
         return children[0]->createTokens(tokenList);
     if (nodeType == MemberExpr) {
