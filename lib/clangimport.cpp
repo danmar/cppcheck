@@ -103,11 +103,12 @@ static std::string unquote(const std::string &s)
     return (s[0] == '\'') ? s.substr(1, s.size() - 2) : s;
 }
 
+
 static std::vector<std::string> splitString(const std::string &line)
 {
     std::vector<std::string> ret;
     std::string::size_type pos1 = line.find_first_not_of(" ");
-    while (pos1 != std::string::npos) {
+    while (pos1 < line.size()) {
         std::string::size_type pos2;
         if (line[pos1] == '*') {
             ret.push_back("*");
@@ -123,6 +124,24 @@ static std::vector<std::string> splitString(const std::string &line)
             if (pos2 < (int)line.size() - 3 && line.compare(pos2, 3, "\':\'", 0, 3) == 0)
                 pos2 = line.find("\'", pos2 + 3);
         } else {
+            pos2 = pos1;
+            while (pos2 < line.size() && (line[pos2] == '_' || line[pos2] == ':' || std::isalnum((unsigned char)line[pos2])))
+                ++pos2;
+            if (pos2 > pos1 && pos2 < line.size() && line[pos2] == '<' && std::isalpha(line[pos1])) {
+                int tlevel = 1;
+                while (++pos2 < line.size() && tlevel > 0) {
+                    if (line[pos2] == '<')
+                        ++tlevel;
+                    else if (line[pos2] == '>')
+                        --tlevel;
+                }
+                if (tlevel == 0 && pos2 < line.size() && line[pos2] == ' ') {
+                    ret.push_back(line.substr(pos1, pos2-pos1));
+                    pos1 = pos2 + 1;
+                    continue;
+                }
+            }
+
             pos2 = line.find(" ", pos1) - 1;
             if ((std::isalpha(line[pos1]) || line[pos1] == '_') &&
                 line.find("::", pos1) < pos2 &&
@@ -1323,7 +1342,8 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
                 child->nodeType == CXXMethodDecl ||
                 child->nodeType == FieldDecl ||
                 child->nodeType == VarDecl ||
-                child->nodeType == AccessSpecDecl)
+                child->nodeType == AccessSpecDecl ||
+                child->nodeType == TypedefDecl)
                 children2.push_back(child);
         }
         Scope *scope = createScope(tokenList, isStruct ? Scope::ScopeType::eStruct : Scope::ScopeType::eClass, children2, classToken);

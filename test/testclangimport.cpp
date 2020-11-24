@@ -66,6 +66,7 @@ private:
         TEST_CASE(cxxRecordDeclDerived);
         TEST_CASE(cxxStaticCastExpr1);
         TEST_CASE(cxxStaticCastExpr2);
+        TEST_CASE(cxxStaticCastExpr3);
         TEST_CASE(cxxStdInitializerListExpr);
         TEST_CASE(cxxThrowExpr);
         TEST_CASE(defaultStmt);
@@ -318,7 +319,7 @@ private:
     void cxxConstructorDecl2() {
         const char clang[] = "`-CXXConstructorDecl 0x1c208c0 <col:11> col:11 implicit constexpr basic_string 'void (std::basic_string<char> &&)' inline default trivial noexcept-unevaluated 0x1c208c0\n"
                              "  `-ParmVarDecl 0x1c209f0 <col:11> col:11 'std::basic_string<char> &&'";
-        ASSERT_EQUALS("basic_string ( std :: basic_string<char> && ) = default ;", parse(clang));
+        ASSERT_EQUALS("basic_string ( std::basic_string<char> && ) = default ;", parse(clang));
     }
 
     void cxxConstructExpr1() {
@@ -482,7 +483,7 @@ private:
                              "| |-ParmVarDecl 0x55c786f5a6a8 <col:106, col:125> col:125 checksum 'unsigned long long'\n"
                              "| |-ParmVarDecl 0x55c786f5ac00 <col:135, col:173> col:173 errors 'std::list<ErrorLogger::ErrorMessage> *'\n"
                              "  `-CompoundStmt 0x0 <>";
-        ASSERT_EQUALS("_Bool analyzeFile ( const std :: string & buildDir@1 , const std :: string & sourcefile@2 , const std :: string & cfg@3 , unsigned long long checksum@4 , std :: list<ErrorLogger::ErrorMessage> * errors@5 ) { }", parse(clang));
+        ASSERT_EQUALS("_Bool analyzeFile ( const std :: string & buildDir@1 , const std :: string & sourcefile@2 , const std :: string & cfg@3 , unsigned long long checksum@4 , std::list<ErrorLogger::ErrorMessage> * errors@5 ) { }", parse(clang));
     }
 
     void cxxMethodDecl2() { // "unexpanded" template method
@@ -514,8 +515,6 @@ private:
                              "| |-TemplateArgument type 'char'\n"
                              "| | `-BuiltinType 0x15984c0 'char'\n"
                              "| |-CXXRecordDecl 0x15d8520 <col:5, col:12> col:12 implicit struct char_traits\n"
-                             "| |-TypedefDecl 0x15d85c0 <line:10:7, col:20> col:20 referenced char_type 'char'\n"
-                             "| | `-BuiltinType 0x15984c0 'char'\n"
                              "| |-CXXMethodDecl 0x15d8738 <line:12:7, line:16:7> line:13:7 move 'char *(char *)' static\n"
                              "| | |-ParmVarDecl 0x15d8630 <col:12, col:18> col:18 used __s1 'char *'\n"
                              "| | `-CompoundStmt 0x15d88e8 <line:14:7, line:16:7>\n";
@@ -599,6 +598,24 @@ private:
                              "  `-CXXStaticCastExpr 0x3e453e8 <col:12> 'std::_Rb_tree_iterator<std::pair<const std::__cxx11::basic_string<char>, Library::AllocFunc> >' xvalue static_cast<struct std::_Rb_tree_iterator<struct std::pair<const class std::__cxx11::basic_string<char>, struct Library::AllocFunc> > &&> <NoOp>\n"
                              "    `-DeclRefExpr 0x3e453b0 <col:12> 'std::_Rb_tree_iterator<std::pair<const std::__cxx11::basic_string<char>, Library::AllocFunc> >' lvalue ParmVar 0x3e45250 '' 'std::_Rb_tree_iterator<std::pair<const std::__cxx11::basic_string<char>, Library::AllocFunc> > &&'";
         ASSERT_EQUALS("int a@1 = static_cast<structstd::_Rb_tree_iterator<structstd::pair<constclassstd::__cxx11::basic_string<char>,structLibrary::AllocFunc>>&&> ( <NoName> ) ;", parse(clang));
+    }
+
+    void cxxStaticCastExpr3() {
+        const char clang[] = "`-ClassTemplateSpecializationDecl 0xd842d8 <line:4:3, line:7:3> line:4:21 struct char_traits definition\n"
+                             "  |-TemplateArgument type 'char'\n"
+                             "  | `-BuiltinType 0xd444c0 'char'\n"
+                             "  |-CXXRecordDecl 0xd84500 <col:14, col:21> col:21 implicit struct char_traits\n"
+                             "  |-TypedefDecl 0xd845a0 <line:5:7, col:20> col:20 referenced char_type 'char'\n"
+                             "  | `-BuiltinType 0xd444c0 'char'\n"
+                             "  `-CXXMethodDecl 0xd847b0 <line:6:7, col:80> col:18 assign 'char_traits<char>::char_type *(char_traits<char>::char_type *)'\n"
+                             "    |-ParmVarDecl 0xd84670 <col:25, col:36> col:36 used __s 'char_traits<char>::char_type *'\n"
+                             "    `-CompoundStmt 0xd848f8 <col:41, col:80>\n"
+                             "      `-ReturnStmt 0xd848e8 <col:43, col:77>\n"
+                             "        `-CXXStaticCastExpr 0xd848b8 <col:50, col:77> 'char_traits<char>::char_type *' static_cast<char_traits<char>::char_type *> <NoOp>\n"
+                             "          `-ImplicitCastExpr 0xd848a0 <col:74> 'char_traits<char>::char_type *' <LValueToRValue> part_of_explicit_cast\n"
+                             "            `-DeclRefExpr 0xd84870 <col:74> 'char_traits<char>::char_type *' lvalue ParmVar 0xd84670 '__s' 'char_traits<char>::char_type *'\n";
+
+        ASSERT_EQUALS("struct char_traits<char> { typedef char char_type ; char_traits<char>::char_type * assign ( char_traits<char>::char_type * __s@1 ) { return static_cast<char_traits<char>::char_type*> ( __s@1 ) ; } } ;", parse(clang));
     }
 
     void cxxStdInitializerListExpr() {
