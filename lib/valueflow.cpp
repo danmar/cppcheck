@@ -3547,11 +3547,12 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
 
 struct Lambda {
     enum class Capture {
+        Undefined,
         ByValue,
         ByReference
     };
     explicit Lambda(const Token * tok)
-        : capture(nullptr), arguments(nullptr), returnTok(nullptr), bodyTok(nullptr), explicitCaptures() {
+        : capture(nullptr), arguments(nullptr), returnTok(nullptr), bodyTok(nullptr), explicitCaptures(), implicitCapture(Capture::Undefined) {
         if (!Token::simpleMatch(tok, "[") || !tok->link())
             return;
         capture = tok;
