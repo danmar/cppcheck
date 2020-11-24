@@ -56,6 +56,7 @@ private:
         TEST_CASE(cxxMethodDecl1);
         TEST_CASE(cxxMethodDecl2);
         TEST_CASE(cxxMethodDecl3);
+        TEST_CASE(cxxMethodDecl4);
         TEST_CASE(cxxNewExpr1);
         TEST_CASE(cxxNewExpr2);
         TEST_CASE(cxxNullPtrLiteralExpr);
@@ -506,6 +507,20 @@ private:
                              "`-CXXMethodDecl 0x21ccd60 parent 0x21cca40 prev 0x21ccc68 <line:6:1, col:19> col:12 foo 'void ()'\n"
                              "  `-CompoundStmt 0x21cce50 <col:18, col:19>";
         ASSERT_EQUALS("class Fred { void foo ( ) ; } ; void Fred :: foo ( ) { }", parse(clang));
+    }
+
+    void cxxMethodDecl4() {
+        const char clang[] = "|-ClassTemplateSpecializationDecl 0x15d82f8 <line:7:3, line:18:3> line:8:12 struct char_traits definition\n"
+                             "| |-TemplateArgument type 'char'\n"
+                             "| | `-BuiltinType 0x15984c0 'char'\n"
+                             "| |-CXXRecordDecl 0x15d8520 <col:5, col:12> col:12 implicit struct char_traits\n"
+                             "| |-TypedefDecl 0x15d85c0 <line:10:7, col:20> col:20 referenced char_type 'char'\n"
+                             "| | `-BuiltinType 0x15984c0 'char'\n"
+                             "| |-CXXMethodDecl 0x15d8738 <line:12:7, line:16:7> line:13:7 move 'char *(char *)' static\n"
+                             "| | |-ParmVarDecl 0x15d8630 <col:12, col:18> col:18 used __s1 'char *'\n"
+                             "| | `-CompoundStmt 0x15d88e8 <line:14:7, line:16:7>\n";
+        ASSERT_EQUALS("struct char_traits<char> { static char * move ( char * __s1@1 ) { } } ;",
+                      parse(clang));
     }
 
     void cxxNewExpr1() {

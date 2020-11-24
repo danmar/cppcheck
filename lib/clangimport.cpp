@@ -347,7 +347,7 @@ std::string clangimport::AstNode::getSpelling() const
     }
 
     int typeIndex = mExtTokens.size() - 1;
-    if (nodeType == FunctionDecl || nodeType == CXXConstructorDecl) {
+    if (nodeType == FunctionDecl || nodeType == CXXConstructorDecl || nodeType == CXXMethodDecl) {
         while (typeIndex >= 0 && mExtTokens[typeIndex][0] != '\'')
             typeIndex--;
         if (typeIndex <= 0)
