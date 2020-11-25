@@ -28,13 +28,12 @@ jobs:
 
       - name: Build cppcheck
         run: |
-          make clean
           cp externals/z3_version_old.h externals/z3_version.h
-          CXXFLAGS="-O1 -g" make -j$(nproc) USE_Z3=yes HAVE_RULES=yes
+          CXXFLAGS="-O1 -g" make -j$(nproc) USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes
 
       - name: Build test
         run: |
-          CXXFLAGS="-O1 -g" make -j$(nproc) testrunner USE_Z3=yes HAVE_RULES=yes
+          CXXFLAGS="-O1 -g" make -j$(nproc) testrunner USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes
 
       - name: Run valgrind
         run: |
