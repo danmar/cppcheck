@@ -859,6 +859,28 @@ private:
             "}");
         ASSERT_EQUALS("[test.cpp:14]: (style) Unused variable: c\n", errout.str());
 
+        // indirect clean function recursion
+        functionVariableUsage(
+            "void another_func() {\n"
+            "   func(0);\n"
+            "}\n"
+            "int func(int i) {\n"
+            "   if (i != 2) {\n"
+            "       another_func();\n"
+            "       return 2;\n"
+            "   }\n"
+            "   return i;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(0)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:17]: (style) Unused variable: c\n", errout.str());
+
         // side-effect function recursion
         functionVariableUsage(
             "int global = 1;\n"

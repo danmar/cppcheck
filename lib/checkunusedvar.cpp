@@ -1517,7 +1517,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
                         return withoutSideEffects = false;
                     }
                     const Function* initValueFunc = valueToken->function();
-                    if (initValueFunc && !isFunctionWithoutSideEffects(*initValueFunc, *valueToken)) {
+                    if (initValueFunc && !isFunctionWithoutSideEffects(*initValueFunc, valueToken, {})) {
                         return withoutSideEffects = false;
                     }
                 }
@@ -1590,13 +1590,14 @@ bool CheckUnusedVar::isEmptyType(const Type* type)
     return emptyType;
 }
 
-bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const Token& functionUsageToken) {
+bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const Token* functionUsageToken,
+        std::list<const Function*> nested_in) {
     // no body to analyze
     if (!func.hasBody()) {
         return false;
     }
 
-    for (const Token* argsToken = functionUsageToken.next(); !Token::simpleMatch(argsToken, ")"); argsToken = argsToken->next()) {
+    for (const Token* argsToken = functionUsageToken->next(); !Token::simpleMatch(argsToken, ")"); argsToken = argsToken->next()) {
         const Variable* argVar = argsToken->variable();
         if (argVar && argVar->isGlobal()) {
             return false; // TODO: analyze global variable usage
@@ -1622,10 +1623,11 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
         // check nested function
         const Function* bodyFunction = bodyToken->function();
         if (bodyFunction) {
-            if (bodyFunction->fullName() == func.fullName()) { // recursion found
+            if (std::find(nested_in.begin(), nested_in.end(), bodyFunction) != nested_in.end()) { // recursion found
                 continue;
             }
-            if (!isFunctionWithoutSideEffects(*bodyFunction, *bodyToken)) {
+            nested_in.push_back(bodyFunction);
+            if (!isFunctionWithoutSideEffects(*bodyFunction, bodyToken, nested_in)) {
                 return false;
             }
         }

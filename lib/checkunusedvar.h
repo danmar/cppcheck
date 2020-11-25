@@ -74,7 +74,8 @@ private:
     bool isRecordTypeWithoutSideEffects(const Type* type);
     bool isVariableWithoutSideEffects(const Variable& var);
     bool isEmptyType(const Type* type);
-    bool isFunctionWithoutSideEffects(const Function& func, const Token& functionUsageToken);
+    bool isFunctionWithoutSideEffects(const Function& func, const Token* functionUsageToken,
+        std::list<const Function*> nested_in);
 
     // Error messages..
     void unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname, bool isUnion = false);
