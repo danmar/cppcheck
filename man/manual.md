@@ -84,8 +84,8 @@ If "path" is a folder, then Cppcheck will recursively check all source files in 
 
 ### Check files manually or use project file
 
-With Cppcheck you can check files manually by specifying files/paths to check and settings. Or you can use a project 
-file, such as CMake or Visual Studio.
+With Cppcheck you can check files manually by specifying files/paths to check and settings. Or you can use a build 
+environment, such as CMake or Visual Studio.
 
 We don't know which approach (project file or manual configuration) will give you the best results. It is recommended 
 that you try both. It is possible that you will get different results so that to find the largest amount of bugs you 
@@ -140,7 +140,7 @@ The possible severities for messages are:
 
 **error**
 
-when code is executed there is either undefined behavior or a memory leak
+when code is executed there is either undefined behavior or other error, such as a memory leak or resource leak
 
 **warning**
 
@@ -334,16 +334,16 @@ Another useful flag might be `-U`. It tells Cppcheck that a macro is not defined
 
 To add an include path, use `-I`, followed by the path.
 
-Cppcheck's preprocessor basically handles includes like any other preprocessor. 
-However, while other preprocessors stop working when they encounter a missing header, Cppcheck will just print an 
-information message and continues parsing the code.
+Cppcheck's preprocessor basically handles includes like any other preprocessor. However, while other preprocessors 
+stop working when they encounter a missing header, Cppcheck will just print an information message and continues 
+parsing the code.
 
 The purpose of this behaviour is that Cppcheck is meant to work without necessarily seeing the entire code. 
 Actually, it is recommended to not give all include paths. 
 While it is useful for Cppcheck to see the declaration of a class when checking the implementation of its members, 
-passing standard library headers is discouraged, because it will result in less informative results and longer checking 
-time. For such cases, .cfg files (see below) are the preferred way to provide information about the implementation of 
-functions and types to Cppcheck.
+passing standard library headers is discouraged, because the analysis will not wor fully and lead to a longer checking 
+time. For such cases, .cfg files are the preferred way to provide information about the implementation of functions and 
+types to Cppcheck, see below for more information.
 
 # Platform
 
@@ -919,7 +919,7 @@ Example usage:
 
 If you want to detect most bugs and can accept false alarms, then Cppcheck has analysis for that.
 
-This analysis is verbose; it should diagnose most bugs reported in CVEs and from dynamic analysis.
+This analysis is soundy; it should diagnose most bugs reported in CVEs and from dynamic analysis.
 
 You have to expect false alarms. However Cppcheck tries to limit false alarms. 
 The purpose of the data flow analysis is to limit false alarms.
