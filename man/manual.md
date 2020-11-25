@@ -10,26 +10,34 @@ documentclass: report
 
 Cppcheck is an analysis tool for C/C++ code. It provides unique code analysis to detect bugs and focuses on detecting 
 undefined behaviour and dangerous coding constructs. The goal is to detect only real errors in the code, and generate 
-as few false positives as possible. Cppcheck is designed to analyze your C/C++ code even if it has non-standard syntax, 
-as is common in for example embedded projects.
+as few false positives (wrongly reported warnings) as possible. Cppcheck is designed to analyze your C/C++ code even
+if it has non-standard syntax, as is common in for example embedded projects.
 
 Supported code and platforms:
 
 - Cppcheck checks non-standard code that contains various compiler extensions, inline assembly code, etc.
-- Cppcheck should be compilable by any compiler that supports the latest C++ standard.
-- Cppcheck should work on any platform that has sufficient CPU and memory.
+- Cppcheck should be compilable by any compiler that supports C++11 or later.
+- Cppcheck is cross platform and is used in various posix/windows/etc environments.
 
-Cppcheck is rarely wrong about reported errors, but there are many bugs that it doesn't detect (yet). Most logarithmic 
-bugs will not be found by static analysis. To avoid logarithmic bugs it is more effective to test your software and 
-design it carefully than by running Cppcheck.
+The checks in Cppcheck are not perfect. There are bugs that should be found, that Cppcheck fails to detect.
 
-Cppcheck is not very deep. A dynamic analysis tool is much more effective in finding deep bugs than Cppcheck.
+## About static analysis
 
-Then there are also bugs that Cppcheck should detect that it does not detect yet. No sophisticated product is perfect. 
-However there is work ongoing on a "bug hunting" mode that makes Cppcheck soundy.
+The kinds of bugs that you can find with static analysis are:
+ * undefined behavior
+ * using dangerous code patterns
+ * coding style
 
-Also, next to careful design, you will find more bugs in your software by testing your software rigorously than by 
-using Cppcheck. You will find more bugs in your software by instrumenting your software than by using Cppcheck. 
+There are many bugs that you can not find with static analysis. Static analysis tools do not have human knowledge about
+what your program is intended to do. If the output from your program is valid but unexpected then in most cases this is
+not detected by static analysis tools. For instance, if your small program writes "Helo" on the screen instead of "Hello"
+it is unlikely that any tool will complain about that.
+
+Static analysis should be used as a complement in your quality assurance. It does not replace any of;
+ * careful design
+ * testing
+ * dynamic analysis
+ * fuzzing
 
 # Getting started
 
