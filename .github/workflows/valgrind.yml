@@ -13,7 +13,6 @@ jobs:
       fail-fast: false # not worthwhile...
 
     runs-on: ${{ matrix.os }}
-    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v2
@@ -37,5 +36,6 @@ jobs:
           CXXFLAGS="-O1 -g" make -j$(nproc) testrunner USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes
 
       - name: Run valgrind
+        continue-on-error: true
         run: |
-          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-fds=yes ./testrunner || true
+          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-fds=yes ./testrunner
