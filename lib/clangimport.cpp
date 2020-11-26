@@ -1244,6 +1244,7 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
     if (hasBody) {
         symbolDatabase->scopeList.push_back(Scope(nullptr, nullptr, nestedIn));
         scope = &symbolDatabase->scopeList.back();
+        scope->check = symbolDatabase;
         scope->function = function;
         scope->classDef = nameToken;
         scope->type = Scope::ScopeType::eFunction;
