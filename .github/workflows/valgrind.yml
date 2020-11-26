@@ -38,4 +38,4 @@ jobs:
 
       - name: Run valgrind
         run: |
-          valgrind --error-limit=50 --leak-check=full --num-callers=50 --show-reachable=yes --track-fds=yes ./testrunner || true
+          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-fds=yes ./testrunner || true
