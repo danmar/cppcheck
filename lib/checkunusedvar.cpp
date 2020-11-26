@@ -1511,10 +1511,14 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
                     if (initValueVar && !isVariableWithoutSideEffects(*initValueVar)) {
                         return withoutSideEffects = false;
                     }
-                    if ((valueToken->tokType() == Token::Type::eFunction) ||
-                        (valueToken->tokType() == Token::Type::eName) ||
+                    if ((valueToken->tokType() == Token::Type::eName) ||
                         (valueToken->tokType() == Token::Type::eLambda) ||
                         (valueToken->tokType() == Token::Type::eOther)) {
+                        return withoutSideEffects = false;
+                    }
+                    const Function* initValueFunc = valueToken->function();
+                    if (initValueFunc && !isFunctionWithoutSideEffects(*initValueFunc, valueToken, 
+                        std::list<const Function*>{})) {
                         return withoutSideEffects = false;
                     }
                 }
@@ -1585,4 +1589,72 @@ bool CheckUnusedVar::isEmptyType(const Type* type)
 
     emptyType=false;   // unknown types are assumed to be nonempty
     return emptyType;
+}
+
+bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const Token* functionUsageToken,
+        std::list<const Function*> checkedFuncs) {
+    // no body to analyze
+    if (!func.hasBody()) {
+        return false;
+    }
+
+    for (const Token* argsToken = functionUsageToken->next(); !Token::simpleMatch(argsToken, ")"); argsToken = argsToken->next()) {
+        const Variable* argVar = argsToken->variable();
+        if (argVar && argVar->isGlobal()) {
+            return false; // TODO: analyze global variable usage
+        }
+    }
+
+    bool sideEffectReturnFound = false;
+    for (Token* bodyToken = func.functionScope->bodyStart->next(); bodyToken != func.functionScope->bodyEnd; 
+        bodyToken = bodyToken->next())
+    {
+        const Variable* bodyVariable = bodyToken->variable();
+        if (bodyVariable) {
+            // check variable for side-effects
+            if (!isVariableWithoutSideEffects(*bodyVariable)) {
+                return false;
+            }
+            // check if global variable is changed
+            if (bodyVariable->isGlobal()) { 
+                return false; // TODO: analyze global variable usage
+            }
+        }
+
+        // check nested function
+        const Function* bodyFunction = bodyToken->function();
+        if (bodyFunction) {
+            if (std::find(checkedFuncs.begin(), checkedFuncs.end(), bodyFunction) != checkedFuncs.end()) { // recursion found
+                continue;
+            }
+            checkedFuncs.push_back(bodyFunction);
+            if (!isFunctionWithoutSideEffects(*bodyFunction, bodyToken, checkedFuncs)) {
+                return false;
+            }
+        }
+
+        // check returned value
+        if (Token::simpleMatch(bodyToken, "return")) {
+            const Token* returnValueToken = bodyToken->next();
+            // TODO: handle complex return expressions
+            if (!Token::simpleMatch(returnValueToken->next(), ";")) {
+                sideEffectReturnFound = true;
+                continue;
+            }
+            // simple one-token return
+            const Variable* returnVariable = returnValueToken->variable();
+            if (returnValueToken->isLiteral() || 
+                (returnVariable && isVariableWithoutSideEffects(*returnVariable))) {
+                continue;
+            }
+            sideEffectReturnFound = true;
+        }
+
+        // unknown name
+        if (bodyToken->isNameOnly()) {
+            return false;
+        }
+    }
+
+    return !sideEffectReturnFound;
 }

@@ -433,6 +433,9 @@ public:
     bool isBoolean() const {
         return mTokType == eBoolean;
     }
+    bool isIncDecOp() const {
+        return mTokType == eIncDecOp;
+    }
     bool isBinaryOp() const {
         return astOperand1() != nullptr && astOperand2() != nullptr;
     }
