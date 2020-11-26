@@ -13,6 +13,7 @@ jobs:
       fail-fast: false # not worthwhile...
 
     runs-on: ${{ matrix.os }}
+    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v2
@@ -37,4 +38,4 @@ jobs:
 
       - name: Run valgrind
         run: |
-          valgrind --error-limit=no --leak-check=full --num-callers=50 --show-reachable=yes --track-fds=yes ./testrunner || true
+          valgrind --error-limit=50 --leak-check=full --num-callers=50 --show-reachable=yes --track-fds=yes ./testrunner || true
