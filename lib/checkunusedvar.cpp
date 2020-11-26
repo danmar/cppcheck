@@ -1517,7 +1517,8 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
                         return withoutSideEffects = false;
                     }
                     const Function* initValueFunc = valueToken->function();
-                    if (initValueFunc && !isFunctionWithoutSideEffects(*initValueFunc, valueToken, {})) {
+                    if (initValueFunc && !isFunctionWithoutSideEffects(*initValueFunc, valueToken, 
+                        std::list<const Function*>{})) {
                         return withoutSideEffects = false;
                     }
                 }
@@ -1591,7 +1592,7 @@ bool CheckUnusedVar::isEmptyType(const Type* type)
 }
 
 bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const Token* functionUsageToken,
-        std::list<const Function*> nested_in) {
+        std::list<const Function*> checkedFuncs) {
     // no body to analyze
     if (!func.hasBody()) {
         return false;
@@ -1623,11 +1624,11 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
         // check nested function
         const Function* bodyFunction = bodyToken->function();
         if (bodyFunction) {
-            if (std::find(nested_in.begin(), nested_in.end(), bodyFunction) != nested_in.end()) { // recursion found
+            if (std::find(checkedFuncs.begin(), checkedFuncs.end(), bodyFunction) != checkedFuncs.end()) { // recursion found
                 continue;
             }
-            nested_in.push_back(bodyFunction);
-            if (!isFunctionWithoutSideEffects(*bodyFunction, bodyToken, nested_in)) {
+            checkedFuncs.push_back(bodyFunction);
+            if (!isFunctionWithoutSideEffects(*bodyFunction, bodyToken, checkedFuncs)) {
                 return false;
             }
         }
