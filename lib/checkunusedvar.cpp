@@ -1557,6 +1557,8 @@ bool CheckUnusedVar::isVariableWithoutSideEffects(const Variable& var)
         if (!isRecordTypeWithoutSideEffects(variableType))
             return false;
     } else {
+        if (WRONG_DATA(!var.valueType(), var.typeStartToken()))
+            return false;
         ValueType::Type valueType = var.valueType()->type;
         if ((valueType == ValueType::Type::UNKNOWN_TYPE) || (valueType == ValueType::Type::NONSTD))
             return false;
