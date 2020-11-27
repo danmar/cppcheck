@@ -964,7 +964,9 @@ void CheckClass::initializationListUsage()
             const Variable* var = tok->variable();
             if (!var || var->scope() != owner || var->isStatic())
                 continue;
-            if (var->isPointer() || var->isReference() || var->isEnumType() || var->valueType()->type > ValueType::Type::ITERATOR)
+            if (var->isPointer() || var->isReference() || var->isEnumType())
+                continue;
+            if (!WRONG_DATA(!var->valueType(), tok) && var->valueType()->type > ValueType::Type::ITERATOR)
                 continue;
 
             // bailout: multi line lambda in rhs => do not warn
