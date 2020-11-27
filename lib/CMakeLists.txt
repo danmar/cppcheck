@@ -1,6 +1,8 @@
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/)
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/picojson/)
-include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/tinyxml2/)
+if(USE_BUNDLED_TINYXML2)
+    include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/tinyxml2/)
+endif()
 include_directories(${PROJECT_SOURCE_DIR}/externals/simplecpp/)
 
 file(GLOB_RECURSE hdrs "*.h")
