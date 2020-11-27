@@ -7,25 +7,29 @@ on: [push, pull_request]
 jobs:
   build:
 
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-      fail-fast: false # not worthwhile...
-
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
+        
+      - name: Prepare
+        run: |
+          sudo apt-get update
+          sudo apt-get install debian-goodies ubuntu-dbgsym-keyring
 
-      - name: Install missing software on ubuntu
-        if: matrix.os == 'ubuntu-latest'
+      - name: Add debug repos on ubuntu
+        run: echo "deb http://ddebs.ubuntu.com $(lsb_release -cs) main restricted universe multiverse\
+               deb http://ddebs.ubuntu.com $(lsb_release -cs)-updates main restricted universe multiverse\
+               deb http://ddebs.ubuntu.com $(lsb_release -cs)-proposed main restricted universe multiverse" | \
+               sudo tee -a /etc/apt/sources.list.d/ddebs.list
+
+      - name: Install missing software
         run: |
           sudo apt-get update
           sudo apt-get install libxml2-utils
-          sudo apt-get install z3 libz3-dev
           sudo apt-get install valgrind
-          sudo apt-get install debian-goodies ubuntu-dbgsym-keyring
-          cp externals/z3_version_old.h externals/z3_version.h
+          sudo apt-get install z3 libz3-dev
+          sudo apt-get install z3-dbgsym    
 
       - name: Build cppcheck
         run: |
