@@ -38,4 +38,4 @@ jobs:
       - name: Run valgrind
         continue-on-error: true
         run: |
-          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-fds=yes ./testrunner
+          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-fds=yes ./testrunner TestGarbage
