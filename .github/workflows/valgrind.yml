@@ -18,10 +18,10 @@ jobs:
           sudo apt-get install debian-goodies ubuntu-dbgsym-keyring
 
       - name: Add debug repos on ubuntu
-        run: echo "deb http://ddebs.ubuntu.com $(lsb_release -cs) main restricted universe multiverse\
-               deb http://ddebs.ubuntu.com $(lsb_release -cs)-updates main restricted universe multiverse\
-               deb http://ddebs.ubuntu.com $(lsb_release -cs)-proposed main restricted universe multiverse" | \
-               sudo tee -a /etc/apt/sources.list.d/ddebs.list
+        run:  |
+           sudo echo "deb http://ddebs.ubuntu.com $(lsb_release -cs) main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list
+           sudo echo "deb http://ddebs.ubuntu.com $(lsb_release -cs)-updates main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list
+           sudo echo "deb http://ddebs.ubuntu.com $(lsb_release -cs)-proposed main restricted universe multiverse" >>/etc/apt/sources.list.d/ddebs.list
 
       - name: Install missing software
         run: |
