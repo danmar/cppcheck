@@ -24,6 +24,7 @@ jobs:
           sudo apt-get install libxml2-utils
           sudo apt-get install z3 libz3-dev
           sudo apt-get install valgrind
+          sudo apt-get install debian-goodies ubuntu-dbgsym-keyring
           cp externals/z3_version_old.h externals/z3_version.h
 
       - name: Build cppcheck
