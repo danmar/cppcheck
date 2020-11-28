@@ -284,7 +284,7 @@ unsigned int ThreadExecutor::check()
                         ++rp;
                 }
             }
-
+        } else if (!childFile.empty()) {
             int stat = 0;
             pid_t child = waitpid(0, &stat, WNOHANG);
             if (child > 0) {
