@@ -182,7 +182,7 @@ unsigned int ThreadExecutor::check()
     std::list<ImportProject::FileSettings>::const_iterator iFileSettings = mSettings.project.fileSettings.begin();
     for (;;) {
         // Start a new child
-        size_t nchildren = rpipes.size();
+        size_t nchildren = childFile.size();
         if ((iFile != mFiles.end() || iFileSettings != mSettings.project.fileSettings.end()) && nchildren < mSettings.jobs && checkLoadAverage(nchildren)) {
             int pipes[2];
             if (pipe(pipes) == -1) {
