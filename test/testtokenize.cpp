@@ -503,8 +503,8 @@ private:
         // #9052
         TEST_CASE(noCrash1);
         TEST_CASE(noCrash2);
-
         TEST_CASE(noCrash3);
+        TEST_CASE(noCrash4);
 
         // --check-config
         TEST_CASE(checkConfiguration);
@@ -8586,6 +8586,19 @@ private:
 
     void noCrash3() {
         ASSERT_NO_THROW(tokenizeAndStringify("void a(X<int> x, typename Y1::Y2<int, A::B::C, 2> y, Z z = []{});"));
+    }
+
+    void noCrash4() {
+        ASSERT_NO_THROW(tokenizeAndStringify("struct Range { int lower; int upper; };\n"
+                                             "void rsh(const Range* lhs, const Range* rhs) {\n"
+                                             "   int32_t shiftLower = rhs->lower;\n"
+                                             "   int32_t shiftUpper = rhs->upper;\n"
+                                             "\n"
+                                             "   int32_t lhsLower = lhs->lower;\n"
+                                             "   int32_t min = lhsLower < 0 ? lhsLower >> shiftLower : lhsLower >> shiftUpper;\n"
+                                             "   int32_t lhsUpper = lhs->upper;\n"
+                                             "   int32_t max = lhsUpper >= 0 ? lhsUpper >> shiftLower : lhsUpper >> shiftUpper;\n"
+                                             "}\n"));
     }
 
     void checkConfig(const char code[]) {

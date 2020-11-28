@@ -142,7 +142,7 @@ struct ReverseTraversal {
                     continue;
                 }
                 // Simple assign
-                if (assignTok->astParent() == assignTop || assignTok == assignTop) {
+                if ((assignTok->astParent() == assignTop || assignTok == assignTop) && assignTok->astOperand1() && assignTok->astOperand2()) {
                     Analyzer::Action rhsAction =
                         analyzer->analyze(assignTok->astOperand2(), Analyzer::Direction::Reverse);
                     Analyzer::Action lhsAction =
