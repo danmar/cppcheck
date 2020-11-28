@@ -558,7 +558,7 @@ static bool iscast(const Token *tok, bool cpp)
 
 static Token* findTypeEnd(Token* tok)
 {
-    while (Token::Match(tok, "%name%|.|::|*|&|<|(|template|decltype|sizeof")) {
+    while (Token::Match(tok, "%name%|.|::|*|&|&&|<|(|template|decltype|sizeof")) {
         if (Token::Match(tok, "(|<"))
             tok = tok->link();
         if (!tok)
@@ -949,9 +949,8 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                     Token* curlyBracket = roundBracket->link()->next();
                     if (Token::Match(curlyBracket, "mutable|const|noexcept"))
                         curlyBracket = curlyBracket->next();
-                    if (curlyBracket && curlyBracket->originalName() == "->") {
+                    if (curlyBracket && curlyBracket->originalName() == "->")
                         curlyBracket = findTypeEnd(curlyBracket->next());
-                    }
                     if (curlyBracket && curlyBracket->str() == "{") {
                         squareBracket->astOperand1(roundBracket);
                         roundBracket->astOperand1(curlyBracket);

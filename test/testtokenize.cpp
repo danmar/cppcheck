@@ -8023,6 +8023,7 @@ private:
         ASSERT_EQUALS("{([return", testAst("return []() -> decltype(0) {};"));
         ASSERT_EQUALS("x{(&[=", testAst("x = [&]()->std::string const & {};"));
         ASSERT_EQUALS("f{([=", testAst("f = []() -> foo* {};"));
+        ASSERT_EQUALS("f{([=", testAst("f = []() -> foo&& {};"));
         ASSERT_EQUALS("f{([=", testAst("f = [](void) mutable -> foo* {};"));
         ASSERT_EQUALS("f{([=", testAst("f = []() mutable {};"));
 
