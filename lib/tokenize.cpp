@@ -4374,6 +4374,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     if (isCPP())
         mTemplateSimplifier->fixAngleBrackets();
 
+    // Remove extra "template" tokens that are not used by cppcheck
+    removeExtraTemplateKeywords();
+
     // Bail out if code is garbage
     if (mTimerResults) {
         Timer t("Tokenizer::tokenize::findGarbageCode", mSettings->showtime, mTimerResults);
@@ -5148,6 +5151,16 @@ void Tokenizer::simplifyHeadersAndUnusedTemplates()
                     }
                 }
             }
+        }
+    }
+}
+
+void Tokenizer::removeExtraTemplateKeywords()
+{
+    if (isCPP()) {
+        for (Token *tok = list.front(); tok; tok = tok->next()) {
+            if (Token::Match(tok, "%name% .|:: template %name%"))
+                tok->next()->deleteNext();
         }
     }
 }

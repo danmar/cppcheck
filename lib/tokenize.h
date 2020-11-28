@@ -172,6 +172,11 @@ public:
     void simplifyHeadersAndUnusedTemplates();
 
     /**
+     * Remove extra "template" keywords that are not used by Cppcheck
+     */
+    void removeExtraTemplateKeywords();
+
+    /**
      * Deletes dead code between 'begin' and 'end'.
      * In general not everything can be erased, such as:
      * - code after labels;

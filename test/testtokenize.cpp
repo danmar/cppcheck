@@ -516,6 +516,8 @@ private:
         TEST_CASE(cppcast);
 
         TEST_CASE(checkHeader1);
+
+        TEST_CASE(removeExtraTemplateKeywords);
     }
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -6469,7 +6471,7 @@ private:
         ASSERT_EQUALS("template < typename T > void g ( S < & T :: operatorint > ) { }", tokenizeAndStringify(code3));
 
         const char code4[] = "template <typename T> void g(S<&T::template operator- <double> >) {}";
-        ASSERT_EQUALS("template < typename T > void g ( S < & T :: template operator- < double > > ) { }", tokenizeAndStringify(code4));
+        ASSERT_EQUALS("template < typename T > void g ( S < & T :: operator- < double > > ) { }", tokenizeAndStringify(code4));
     }
 
     void simplifyOperatorName12() { // #9110
@@ -8708,6 +8710,16 @@ private:
                       "4:\n"
                       "5: ;\n",
                       checkHeaders(code, false));
+    }
+
+    void removeExtraTemplateKeywords() {
+        const char code1[] = "typename GridView::template Codim<0>::Iterator iterator;";
+        const char expected1[] = "GridView :: Codim < 0 > :: Iterator iterator ;";
+        ASSERT_EQUALS(expected1, tokenizeAndStringify(code1, false));
+
+        const char code2[] = "typename GridView::template Codim<0>::Iterator it = gv.template begin<0>();";
+        const char expected2[] = "GridView :: Codim < 0 > :: Iterator it ; it = gv . begin < 0 > ( ) ;";
+        ASSERT_EQUALS(expected2, tokenizeAndStringify(code2, false));
     }
 };
 
