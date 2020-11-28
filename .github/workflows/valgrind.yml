@@ -28,8 +28,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install libxml2-utils
           sudo apt-get install valgrind
-          sudo apt-get install z3 libz3-dev
-          sudo apt-get install z3-dbgsym    
+          sudo apt-get install libz3-4 libz3-4-dbgsym    
 
       - name: Build cppcheck
         run: |
