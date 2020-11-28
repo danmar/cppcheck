@@ -1136,14 +1136,14 @@ void Token::printOut(const char *title) const
 {
     if (title && title[0])
         std::cout << "\n### " << title << " ###\n";
-    std::cout << stringifyList(stringifyOptions::forDebugExprId(), nullptr, nullptr) << std::endl;
+    std::cout << stringifyList(stringifyOptions::forPrintOut(), nullptr, nullptr) << std::endl;
 }
 
 void Token::printOut(const char *title, const std::vector<std::string> &fileNames) const
 {
     if (title && title[0])
         std::cout << "\n### " << title << " ###\n";
-    std::cout << stringifyList(stringifyOptions::forDebugExprId(), &fileNames, nullptr) << std::endl;
+    std::cout << stringifyList(stringifyOptions::forPrintOut(), &fileNames, nullptr) << std::endl;
 }
 
 void Token::printLines(int lines) const
@@ -1186,9 +1186,9 @@ void Token::stringify(std::ostream& os, const stringifyOptions& options) const
         }
     }
     if (options.varid && mImpl->mVarId != 0)
-        os << '@' << mImpl->mVarId;
-    if (options.exprid && mImpl->mExprId != 0)
-        os << '@' << mImpl->mExprId;
+        os << "@" << (options.idtype ? "var" : "") << mImpl->mVarId;
+    else if (options.exprid && mImpl->mExprId != 0)
+        os << "@" << (options.idtype ? "expr" : "") << mImpl->mExprId;
 }
 
 void Token::stringify(std::ostream& os, bool varid, bool attributes, bool macro) const
