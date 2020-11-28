@@ -5342,7 +5342,8 @@ namespace {
     const std::set<std::string> c_keywords = { C_KEYWORDS, "restrict" };
     const std::set<std::string> cpp_keywords = {
         C_KEYWORDS,
-        "alignas", "alignof", "and", "and_eq", "asm", "bitand", "bitor", "bool", "catch", "class", "compl",
+        "alignas", "alignof", "and", "and_eq", "asm", "bitand", "bitor", "bool", "catch", "char16_t", "char32_t",
+        "class", "compl",
         "concept", "constexpr", "const_cast", "decltype",
         "delete", "dynamic_cast", "explicit", "export", "false", "friend",
         "mutable", "namespace", "new", "noexcept", "not", "not_eq", "nullptr", "operator",
