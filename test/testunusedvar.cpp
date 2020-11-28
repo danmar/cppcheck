@@ -515,8 +515,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void cleanFunction()
-    {
+    void cleanFunction() {
         // unknown function
         functionVariableUsage(
             "class F {\n"
@@ -541,7 +540,7 @@ private:
             "   C c;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
-        
+
         // return literal
         functionVariableUsage(
             "int func() { return 1; }\n"

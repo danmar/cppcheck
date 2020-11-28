@@ -1517,8 +1517,8 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
                         return withoutSideEffects = false;
                     }
                     const Function* initValueFunc = valueToken->function();
-                    if (initValueFunc && !isFunctionWithoutSideEffects(*initValueFunc, valueToken, 
-                        std::list<const Function*>{})) {
+                    if (initValueFunc && !isFunctionWithoutSideEffects(*initValueFunc, valueToken,
+                    std::list<const Function*> {})) {
                         return withoutSideEffects = false;
                     }
                 }
@@ -1594,7 +1594,8 @@ bool CheckUnusedVar::isEmptyType(const Type* type)
 }
 
 bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const Token* functionUsageToken,
-        std::list<const Function*> checkedFuncs) {
+        std::list<const Function*> checkedFuncs)
+{
     // no body to analyze
     if (!func.hasBody()) {
         return false;
@@ -1608,9 +1609,8 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
     }
 
     bool sideEffectReturnFound = false;
-    for (Token* bodyToken = func.functionScope->bodyStart->next(); bodyToken != func.functionScope->bodyEnd; 
-        bodyToken = bodyToken->next())
-    {
+    for (Token* bodyToken = func.functionScope->bodyStart->next(); bodyToken != func.functionScope->bodyEnd;
+         bodyToken = bodyToken->next()) {
         const Variable* bodyVariable = bodyToken->variable();
         if (bodyVariable) {
             // check variable for side-effects
@@ -1618,7 +1618,7 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
                 return false;
             }
             // check if global variable is changed
-            if (bodyVariable->isGlobal()) { 
+            if (bodyVariable->isGlobal()) {
                 return false; // TODO: analyze global variable usage
             }
         }
@@ -1645,7 +1645,7 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
             }
             // simple one-token return
             const Variable* returnVariable = returnValueToken->variable();
-            if (returnValueToken->isLiteral() || 
+            if (returnValueToken->isLiteral() ||
                 (returnVariable && isVariableWithoutSideEffects(*returnVariable))) {
                 continue;
             }
