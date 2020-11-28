@@ -5333,7 +5333,7 @@ Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *n
 namespace {
 
 #define C_KEYWORDS\
-    "_Bool", "auto", "break", "case", "char", "const", "continue", "default", "do",\
+    "_Bool", "_Complex", "_Imaginary", "auto", "break", "case", "char", "const", "continue", "default", "do",\
         "double", "else", "enum", "extern", "float", "for", "goto", "if", "inline",\
         "int", "long", "register", "restrict", "return", "short", "signed", "sizeof",\
         "static", "struct", "switch", "typedef", "union", "unsigned", "void", "volatile",\
