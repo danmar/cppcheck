@@ -9563,6 +9563,10 @@ void Tokenizer::findGarbageCode() const
             }
         }
 
+        // array assignment
+        else if (Token::Match(tok, "%assign% [") && Token::simpleMatch(tok->linkAt(1), "] ;"))
+            syntaxError(tok, tok->str() + "[...];");
+
         // UNKNOWN_MACRO(return)
         if (tok->isKeyword() && Token::Match(tok, "throw|return )") && Token::Match(tok->linkAt(1)->previous(), "%name% ("))
             unknownMacroError(tok->linkAt(1)->previous());
