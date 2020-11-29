@@ -348,6 +348,8 @@ private:
         TEST_CASE(functionAttributeBefore);
         TEST_CASE(functionAttributeAfter);
 
+        TEST_CASE(fixAngleBrackets);
+
         TEST_CASE(cpp03template1);
         TEST_CASE(cpp0xtemplate1);
         TEST_CASE(cpp0xtemplate2);
@@ -5268,6 +5270,13 @@ private:
         ASSERT(func3 && func3->isAttributePure() && func3->isAttributeNothrow() && func3->isAttributeConst());
         ASSERT(func4 && func4->isAttributePure() && func4->isAttributeNothrow() && func4->isAttributeConst());
         ASSERT(func5 && func5->isAttributeNoreturn());
+    }
+
+    void fixAngleBrackets() {
+        {
+            const char *code = "; z = x < 0 ? x >> y : x >> y;";
+            ASSERT_EQUALS("; z = x < 0 ? x >> y : x >> y ;", tokenizeAndStringify(code));
+        }
     }
 
     void cpp03template1() {

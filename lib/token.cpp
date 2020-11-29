@@ -865,6 +865,16 @@ const Token * Token::findClosingBracket() const
     const bool templateParameter(strAt(-1) == "template");
     std::set<std::string> templateParameters;
 
+    bool isDecl = true;
+    for (const Token *prev = previous(); prev; prev = prev->previous()) {
+        if (prev->str() == "=")
+            isDecl = false;
+        if (Token::simpleMatch(prev, "template <"))
+            isDecl = true;
+        if (Token::Match(prev, "[;{}]"))
+            break;
+    }
+
     unsigned int depth = 0;
     for (closing = this; closing != nullptr; closing = closing->next()) {
         if (Token::Match(closing, "{|[|(")) {
@@ -882,6 +892,8 @@ const Token * Token::findClosingBracket() const
             if (--depth == 0)
                 return closing;
         } else if (closing->str() == ">>" || closing->str() == ">>=") {
+            if (!isDecl && depth == 1)
+                continue;
             if (depth <= 2)
                 return closing;
             depth -= 2;
