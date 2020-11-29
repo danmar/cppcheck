@@ -3371,8 +3371,8 @@ private:
                            "template < bool b , class > using c = typename a < b > :: d ; "
                            "template < class , template < class > class , class > struct e ; "
                            "template < class f , class g , class ... h > "
-                           "using i = typename e < f , g :: template fn , h ... > :: d ; "
-                           "template < class ... j > struct k : c < sizeof... ( j ) , int > :: template fn < j ... > { } ;";
+                           "using i = typename e < f , g :: fn , h ... > :: d ; "
+                           "template < class ... j > struct k : c < sizeof... ( j ) , int > :: fn < j ... > { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 

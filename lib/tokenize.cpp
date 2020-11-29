@@ -5159,7 +5159,7 @@ void Tokenizer::removeExtraTemplateKeywords()
 {
     if (isCPP()) {
         for (Token *tok = list.front(); tok; tok = tok->next()) {
-            if (Token::Match(tok, "%name% .|:: template %name%"))
+            if (Token::Match(tok, "%name%|> .|:: template %name%"))
                 tok->next()->deleteNext();
         }
     }
