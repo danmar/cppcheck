@@ -348,7 +348,7 @@ private:
         TEST_CASE(functionAttributeBefore);
         TEST_CASE(functionAttributeAfter);
 
-        TEST_CASE(fixAngleBrackets);
+        TEST_CASE(splitTemplateRightAngleBrackets);
 
         TEST_CASE(cpp03template1);
         TEST_CASE(cpp0xtemplate1);
@@ -5272,7 +5272,7 @@ private:
         ASSERT(func5 && func5->isAttributeNoreturn());
     }
 
-    void fixAngleBrackets() {
+    void splitTemplateRightAngleBrackets() {
         {
             const char *code = "; z = x < 0 ? x >> y : x >> y;";
             ASSERT_EQUALS("; z = x < 0 ? x >> y : x >> y ;", tokenizeAndStringify(code));

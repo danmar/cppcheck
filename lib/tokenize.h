@@ -176,6 +176,13 @@ public:
      */
     void removeExtraTemplateKeywords();
 
+
+    /** Split up template right angle brackets.
+     * foo < bar < >> => foo < bar < > >
+     */
+    void splitTemplateRightAngleBrackets(bool check);
+
+
     /**
      * Deletes dead code between 'begin' and 'end'.
      * In general not everything can be erased, such as:

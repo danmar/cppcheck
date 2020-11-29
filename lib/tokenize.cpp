@@ -4371,8 +4371,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     simplifyAsm();
 
     // foo < bar < >> => foo < bar < > >
-    if (isCPP())
-        mTemplateSimplifier->fixAngleBrackets();
+    if (isCPP() || mSettings->daca)
+        splitTemplateRightAngleBrackets(!isCPP());
 
     // Remove extra "template" tokens that are not used by cppcheck
     removeExtraTemplateKeywords();
@@ -5161,6 +5161,48 @@ void Tokenizer::removeExtraTemplateKeywords()
         for (Token *tok = list.front(); tok; tok = tok->next()) {
             if (Token::Match(tok, "%name%|> .|:: template %name%"))
                 tok->next()->deleteNext();
+        }
+    }
+}
+
+static std::string getExpression(const Token *tok) {
+    std::string line;
+    for (const Token *prev = tok->previous(); prev && !Token::Match(prev, "[;{}]"); prev = prev->previous())
+        line = prev->str() + " " + line;
+    line += "!!!" + tok->str() + "!!!";
+    for (const Token *next = tok->next(); next && !Token::Match(next, "[;{}]"); next = next->next())
+        line = line + " " + next->str();
+    return line;
+}
+
+void Tokenizer::splitTemplateRightAngleBrackets(bool check)
+{
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        // Ticket #6181: normalize C++11 template parameter list closing syntax
+        if (tok->str() == "<" && mTemplateSimplifier->templateParameters(tok)) {
+            Token *endTok = tok->findClosingBracket();
+            if (check && endTok) {
+                reportError(tok, Severity::debug, "wrongSplitTemplateRightAngleBrackets", "bad closing bracket for !!!<!!!: " + getExpression(tok), false);
+                continue;
+            }
+            if (endTok && endTok->str() == ">>") {
+                endTok->str(">");
+                endTok->insertToken(">");
+            } else if (endTok && endTok->str() == ">>=") {
+                endTok->str(">");
+                endTok->insertToken("=");
+                endTok->insertToken(">");
+            }
+        } else if (Token::Match(tok, "class|struct|union|=|:|public|protected|private %name% <")) {
+            Token *endTok = tok->tokAt(2)->findClosingBracket();
+            if (check && endTok) {
+                reportError(tok, Severity::debug, "wrongSplitTemplateRightAngleBrackets", "bad closing bracket for !!!<!!!: " + getExpression(tok), false);
+                continue;
+            }
+            if (Token::Match(endTok, ">> ;|{|%type%")) {
+                endTok->str(">");
+                endTok->insertToken(">");
+            }
         }
     }
 }

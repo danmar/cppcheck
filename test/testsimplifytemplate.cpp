@@ -4739,7 +4739,7 @@ private:
         std::istringstream istr(code);
         tokenizer.createTokens(istr, "test.cpp");
         tokenizer.createLinks();
-        tokenizer.mTemplateSimplifier->fixAngleBrackets();
+        tokenizer.splitTemplateRightAngleBrackets(false);
 
         for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next()) {
             if (tok1->str() == "var1")
@@ -4798,7 +4798,7 @@ private:
         std::istringstream istr(code);
         tokenizer.createTokens(istr, "test.cpp");
         tokenizer.createLinks();
-        tokenizer.mTemplateSimplifier->fixAngleBrackets();
+	tokenizer.splitTemplateRightAngleBrackets(false);
 
         const Token *_tok = tokenizer.tokens();
         for (unsigned i = 0 ; i < offset ; ++i)
@@ -4868,7 +4868,7 @@ private:
         std::istringstream istr(code);
         tokenizer.createTokens(istr, "test.cpp");
         tokenizer.createLinks();
-        tokenizer.mTemplateSimplifier->fixAngleBrackets();
+        tokenizer.splitTemplateRightAngleBrackets(false);
 
         const Token *_tok = tokenizer.tokens();
         for (unsigned i = 0 ; i < offset ; ++i)
