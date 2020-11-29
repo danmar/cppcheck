@@ -102,6 +102,12 @@ private:
      */
     bool checkLoadAverage(size_t nchildren);
 
+    /**
+     * @brief Reports internal errors related to child processes
+     * @param msg The error message
+     */
+    void reportInternalChildErr(const std::string &childname, const std::string &msg);
+
 public:
     /**
      * @return true if support for threads exist.
