@@ -128,7 +128,7 @@ private:
         std::istringstream istr(clang);
         clangimport::parseClangAstDump(&tokenizer, istr);
         if (!tokenizer.tokens()) {
-        	return std::string();
+            return std::string();
         }
         return tokenizer.tokens()->stringifyList(true, false, false, false, false);
     }
