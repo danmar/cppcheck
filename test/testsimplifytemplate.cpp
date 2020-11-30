@@ -4798,7 +4798,7 @@ private:
         std::istringstream istr(code);
         tokenizer.createTokens(istr, "test.cpp");
         tokenizer.createLinks();
-	tokenizer.splitTemplateRightAngleBrackets(false);
+        tokenizer.splitTemplateRightAngleBrackets(false);
 
         const Token *_tok = tokenizer.tokens();
         for (unsigned i = 0 ; i < offset ; ++i)

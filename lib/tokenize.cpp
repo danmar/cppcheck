@@ -5165,7 +5165,8 @@ void Tokenizer::removeExtraTemplateKeywords()
     }
 }
 
-static std::string getExpression(const Token *tok) {
+static std::string getExpression(const Token *tok)
+{
     std::string line;
     for (const Token *prev = tok->previous(); prev && !Token::Match(prev, "[;{}]"); prev = prev->previous())
         line = prev->str() + " " + line;

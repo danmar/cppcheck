@@ -861,6 +861,14 @@ const Token * Token::findClosingBracket() const
     if (mStr != "<")
         return nullptr;
 
+    if (!mPrevious)
+        return nullptr;
+
+    if (!(mPrevious->isName() ||
+          Token::Match(mPrevious->previous(), "operator %op% <") ||
+          Token::Match(mPrevious->tokAt(-2), "operator [([] [)]] <")))
+        return nullptr;
+
     const Token *closing = nullptr;
     const bool templateParameter(strAt(-1) == "template");
     std::set<std::string> templateParameters;
