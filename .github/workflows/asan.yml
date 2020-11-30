@@ -31,9 +31,9 @@ jobs:
 
       - name: Run tests
         run: |
-          ./testrunner
+          ASAN_OPTIONS=detect_stack_use_after_return=1 ./testrunner
 
       - name: Bughunting lib
         run: |
-          ./cppcheck -D__CPPCHECK__ --bug-hunting -j$(nproc) lib
+          ASAN_OPTIONS=detect_stack_use_after_return=1 ./cppcheck -D__CPPCHECK__ --bug-hunting -j$(nproc) lib
 
