@@ -20,20 +20,19 @@ jobs:
       - name: Install missing software on ubuntu
         run: |
           sudo apt-get update
-          sudo apt-get install libxml2-utils
-          sudo apt-get install z3 libz3-dev
+          sudo apt-get install libz3-4 libz3-dev
           cp externals/z3_version_old.h externals/z3_version.h
 
       - name: Build
         run: |
           cp externals/z3_version_old.h externals/z3_version.h
-          CXXFLAGS="-fsanitize=undefined -Og -g3" make cppcheck testrunner -j$(nproc) USE_Z3=yes
+          CC=clang CXX=clang++ CXXFLAGS="-fsanitize=undefined -fsanitize=nullability -O1 -g3 -DCPPCHK_GLIBCXX_DEBUG" make cppcheck testrunner -j$(nproc) USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes
 
       - name: Run tests
         run: |
-          ./testrunner
+          UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 ./testrunner
 
-      - name: checkcfg
+      - name: Bughunting lib
         run: |
-          make checkcfg
+          UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 ./cppcheck -D__CPPCHECK__ --bug-hunting -j$(nproc) lib
 
