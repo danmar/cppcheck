@@ -731,6 +731,9 @@ bool TemplateSimplifier::getTemplateDeclarations()
                         // Implementation => add to mTemplateDeclarations
                         mTemplateDeclarations.emplace_back(std::move(decl));
                     }
+                    Token *end = findTemplateDeclarationEnd(tok);
+                    if (end)
+                        tok = end;
                     break;
                 }
             }
