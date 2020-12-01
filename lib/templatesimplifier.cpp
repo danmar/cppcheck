@@ -69,8 +69,15 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *token, const std::string &
     mFullName(mScope.empty() ? mName : (mScope + " :: " + mName)),
     mNameToken(nullptr), mParamEnd(nullptr), mFlags(0)
 {
-    if (mToken)
+    if (mToken) {
+        if (mToken->strAt(1) == "<") {
+            const Token *end = mToken->next()->findClosingBracket();
+            if (end && end->strAt(1) == "(") {
+                isFunction(true);
+            }
+        }
         mToken->templateSimplifierPointer(this);
+    }
 }
 
 TemplateSimplifier::TokenAndName::TokenAndName(Token *token, const std::string &scope, const Token *nameToken, const Token *paramEnd) :
@@ -749,7 +756,18 @@ void TemplateSimplifier::addInstantiation(Token *token, const std::string &scope
 
 static void getFunctionArguments(const Token *nameToken, std::vector<const Token *> &args)
 {
-    const Token *argToken = nameToken->tokAt(2);
+    const Token *argToken;
+
+    if (nameToken->strAt(1) == "(")
+        argToken = nameToken->tokAt(2);
+    else if (nameToken->strAt(1) == "<") {
+        const Token *end = nameToken->next()->findClosingBracket();
+        if (end)
+            argToken = end->tokAt(2);
+        else
+            return;
+    } else
+        return;
 
     if (argToken->str() == ")")
         return;
@@ -3041,6 +3059,27 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 continue;
         }
 
+        if (templateDeclaration.isFunction() && instantiation.isFunction()) {
+            std::vector<const Token*> declFuncArgs;
+            getFunctionArguments(templateDeclaration.nameToken(), declFuncArgs);
+            std::vector<const Token*> instFuncParams;
+            getFunctionArguments(instantiation.token(), instFuncParams);
+
+            if (declFuncArgs.size() != instFuncParams.size()) {
+                // check for default arguments
+                const Token* tok = templateDeclaration.nameToken()->tokAt(2);
+                const Token* end = templateDeclaration.nameToken()->linkAt(1);
+                size_t count = 0;
+                for (; tok != end; tok = tok->next()) {
+                    if (tok->str() == "=")
+                        count++;
+                }
+
+                if (instFuncParams.size() < (declFuncArgs.size() - count) || instFuncParams.size() > declFuncArgs.size())
+                    continue;
+            }
+        }
+
         // A global function can't be called through a pointer.
         if (templateDeclaration.isFunction() && templateDeclaration.scope().empty() &&
             (instantiation.token()->strAt(-1) == "." ||
@@ -3300,7 +3339,26 @@ static bool specMatch(
     if (decl.isPartialSpecialization() || decl.isSpecialization() || decl.isAlias() || decl.isFriend())
         return false;
 
-    return spec.isSameFamily(decl);
+    if (!spec.isSameFamily(decl))
+        return false;
+
+    // make sure the scopes and names match
+    if (spec.fullName() == decl.fullName()) {
+        if (spec.isFunction()) {
+            std::vector<const Token*> specArgs;
+            std::vector<const Token*> declArgs;
+            getFunctionArguments(spec.nameToken(), specArgs);
+            getFunctionArguments(decl.nameToken(), declArgs);
+
+            if (specArgs.size() == declArgs.size()) {
+                // @todo make sure function parameters also match
+                return true;
+            }
+        } else
+            return true;
+    }
+
+    return false;
 }
 
 void TemplateSimplifier::getSpecializations()
@@ -3310,26 +3368,18 @@ void TemplateSimplifier::getSpecializations()
         if (spec.isSpecialization()) {
             bool found = false;
             for (auto & decl : mTemplateDeclarations) {
-                if (!specMatch(spec, decl))
-                    continue;
-
-                // make sure the scopes and names match
-                if (spec.fullName() == decl.fullName()) {
-                    // @todo make sure function parameters also match
+                if (specMatch(spec, decl)) {
                     mTemplateSpecializationMap[spec.token()] = decl.token();
                     found = true;
+                    break;
                 }
             }
 
             if (!found) {
                 for (auto & decl : mTemplateForwardDeclarations) {
-                    if (!specMatch(spec, decl))
-                        continue;
-
-                    // make sure the scopes and names match
-                    if (spec.fullName() == decl.fullName()) {
-                        // @todo make sure function parameters also match
+                    if (specMatch(spec, decl)) {
                         mTemplateSpecializationMap[spec.token()] = decl.token();
+                        break;
                     }
                 }
             }
@@ -3344,26 +3394,18 @@ void TemplateSimplifier::getPartialSpecializations()
         if (spec.isPartialSpecialization()) {
             bool found = false;
             for (auto & decl : mTemplateDeclarations) {
-                if (!specMatch(spec, decl))
-                    continue;
-
-                // make sure the scopes and names match
-                if (spec.fullName() == decl.fullName()) {
-                    // @todo make sure function parameters also match
+                if (specMatch(spec, decl)) {
                     mTemplatePartialSpecializationMap[spec.token()] = decl.token();
                     found = true;
+                    break;
                 }
             }
 
             if (!found) {
                 for (auto & decl : mTemplateForwardDeclarations) {
-                    if (!specMatch(spec, decl))
-                        continue;
-
-                    // make sure the scopes and names match
-                    if (spec.fullName() == decl.fullName()) {
-                        // @todo make sure function parameters also match
+                    if (specMatch(spec, decl)) {
                         mTemplatePartialSpecializationMap[spec.token()] = decl.token();
+                        break;
                     }
                 }
             }

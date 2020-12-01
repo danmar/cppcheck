@@ -202,6 +202,7 @@ private:
         TEST_CASE(template157); // #9854
         TEST_CASE(template158); // daca crash
         TEST_CASE(template159); // #9886
+        TEST_CASE(template160);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1971,8 +1972,8 @@ private:
     void template87() {
         const char code[] = "template<typename T>\n"
                             "T f1(T t) { return t; }\n"
-                            "template const char * f1<const char *>();\n"
-                            "template const char & f1<const char &>();";
+                            "template const char * f1<const char *>(const char *);\n"
+                            "template const char & f1<const char &>(const char &);";
         const char exp[] = "const char * f1<constchar*> ( const char * t ) ; "
                            "const char & f1<constchar&> ( const char & t ) ; "
                            "const char * f1<constchar*> ( const char * t ) { return t ; } "
@@ -4042,6 +4043,28 @@ private:
                             "int i ; i = test<impl*,int,decltype(impl::create<impl*>().impl::create<int>())> ( ) ; "
                             "int test<impl*,int,decltype(impl::create<impl*>().impl::create<int>())> ( ) { return 0 ; } "
                             "struct tester<impl*,int,decltype(impl::create<impl*>().impl::create<int>())> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template160() {
+        const char code[] = "struct Fred {\n"
+                            "    template <typename T> static void foo() { }\n"
+                            "    template <typename T> static void foo(T) { }\n"
+                            "};\n"
+                            "template void Fred::foo<char>();\n"
+                            "template <> void Fred::foo<bool>() { }\n"
+                            "template void Fred::foo<float>(float);\n"
+                            "template <> void Fred::foo<int>(int) { }";
+        const char exp[]  = "struct Fred { "
+                            "static void foo<bool> ( ) ; "
+                            "static void foo<char> ( ) ; "
+                            "static void foo<int> ( int ) ; "
+                            "static void foo<float> ( float ) ; "
+                            "} ; "
+                            "void Fred :: foo<bool> ( ) { } "
+                            "void Fred :: foo<int> ( int ) { } "
+                            "void Fred :: foo<float> ( float ) { } "
+                            "void Fred :: foo<char> ( ) { }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
