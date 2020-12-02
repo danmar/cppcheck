@@ -864,7 +864,7 @@ static void compileTerm(Token *&tok, AST_state& state)
             if (tok->link() != tok->next()) {
                 state.inArrayAssignment++;
                 compileUnaryOp(tok, state, compileExpression);
-                while (Token::Match(tok, "} [,};]") && state.inArrayAssignment > 0) {
+                if (Token::Match(tok, "} [,};]") && state.inArrayAssignment > 0) {
                     tok = tok->next();
                     state.inArrayAssignment--;
                 }

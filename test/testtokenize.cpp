@@ -7869,7 +7869,7 @@ private:
         // function pointer
         TODO_ASSERT_EQUALS("todo", "va_argapvoid((,(*0=", testAst("*va_arg(ap, void(**) ()) = 0;"));
 
-        // struct initialization
+        // struct/array initialization
         ASSERT_EQUALS("name_bytes[bits~unusedBits>>unusedBits<<{=", testAst("const uint8_t name_bytes[] = { (~bits >> unusedBits) << unusedBits };"));
         ASSERT_EQUALS("abuf.0{={=", testAst("a = { .buf = { 0 } };"));
         ASSERT_EQUALS("ab2[a.0=b.0=,{a.0=b.0=,{,{=", testAst("struct AB ab[2] = { { .a=0, .b=0 }, { .a=0, .b=0 } };"));
@@ -7883,6 +7883,7 @@ private:
         ASSERT_EQUALS("x0fSa.1{=b.2{,c.\"\"=,{(||=", testAst("x = 0 || f(S{.a = { 1 }, .b { 2 }, .c = \"\" });"));
         ASSERT_EQUALS("a0{,( \"\"abc12:?,", testAst("a(0, {{\"\", (abc) ? 1 : 2}});"));
         ASSERT_EQUALS("a0{,( \'\'abc12:?,", testAst("a(0, {{\'\', (abc) ? 1 : 2}});"));
+        ASSERT_EQUALS("x12,{34,{,{56,{78,{,{,{=", testAst("x = { { {1,2}, {3,4} }, { {5,6}, {7,8} } };"));
 
         // struct initialization hang
         ASSERT_EQUALS("sbar.1{,{(={= forfieldfield++;;(",
