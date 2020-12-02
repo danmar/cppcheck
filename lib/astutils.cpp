@@ -67,6 +67,19 @@ void visitAstNodes(Token *ast, std::function<ChildrenToVisit(Token *)> visitor)
     visitAstNodesGeneric(ast, std::move(visitor));
 }
 
+const Token* findAstNode(const Token* ast, const std::function<bool(const Token*)>& pred)
+{
+    const Token* result = nullptr;
+    visitAstNodes(ast, [&](const Token* tok) {
+        if (pred(tok)) {
+            result = tok;
+            return ChildrenToVisit::done;
+        }
+        return ChildrenToVisit::op1_and_op2;
+    });
+    return result;
+}
+
 static void astFlattenRecursive(const Token *tok, std::vector<const Token *> *result, const char* op, nonneg int depth = 0)
 {
     ++depth;
@@ -1775,6 +1788,26 @@ bool isThisChanged(const Token* start, const Token* end, int indirect, const Set
             return true;
     }
     return false;
+}
+
+bool isExpressionChanged(const Token* expr, const Token *start, const Token *end, const Settings *settings, bool cpp, int depth)
+{
+    const Token* result = findAstNode(expr, [&](const Token* tok) {
+        if (exprDependsOnThis(tok) && isThisChanged(start, end, false, settings, cpp)) {
+            return true;
+        }
+        bool global = false;
+        if (tok->variable()) {
+            if (tok->variable()->isConst())
+                return false;
+            global = !tok->variable()->isLocal() && !tok->variable()->isArgument();
+        }
+        if (tok->exprId() > 0 &&
+        isVariableChanged(start, end, tok->valueType() ? tok->valueType()->pointer : 0, tok->exprId(), global, settings, cpp, depth))
+            return true;
+        return false;
+    });
+    return result;
 }
 
 int numberOfArguments(const Token *start)
