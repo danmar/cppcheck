@@ -581,11 +581,19 @@ Token *TemplateSimplifier::findTemplateDeclarationEnd(Token *tok)
         return nullptr;
 
     Token * tok2 = tok;
+    bool in_init = false;
     while (tok2 && !Token::Match(tok2, ";|{")) {
         if (tok2->str() == "<")
             tok2 = tok2->findClosingBracket();
         else if (Token::Match(tok2, "(|[") && tok2->link())
             tok2 = tok2->link();
+        else if (tok2->str() == ":")
+            in_init = true;
+        else if (in_init && Token::Match(tok2, "%name% (|{")) {
+            tok2 = tok2->linkAt(1);
+            if (tok2->strAt(1) == "{")
+                in_init = false;
+        }
         if (tok2)
             tok2 = tok2->next();
     }
@@ -624,57 +632,11 @@ bool TemplateSimplifier::removeTemplate(Token *tok)
     if (!Token::simpleMatch(tok, "template <"))
         return false;
 
-    int indentlevel = 0;
-    unsigned int countgt = 0;   // Counter for ">"
-    for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-
-        if (tok2->str() == "(") {
-            tok2 = tok2->link();
-        } else if (tok2->str() == ")") {  // garbage code! (#3504)
-            eraseTokens(tok,tok2);
-            deleteToken(tok);
-            return false;
-        }
-
-        else if (tok2->str() == "{") {
-            tok2 = tok2->link();
-            if (indentlevel < 2) {
-                tok2 = tok2->next();
-                if (tok2 && tok2->str() == ";" && tok2->next())
-                    tok2 = tok2->next();
-                eraseTokens(tok, tok2);
-                deleteToken(tok);
-                return true;
-            }
-        } else if (tok2->str() == "}") {  // garbage code! (#3449)
-            eraseTokens(tok,tok2);
-            deleteToken(tok);
-            return false;
-        }
-
-        // Count ">"
-        if (tok2->str() == ">")
-            countgt++;
-
-        if (tok2->str() == ";") {
-            tok2 = tok2->next();
-            eraseTokens(tok, tok2);
-            deleteToken(tok);
-            return true;
-        }
-
-        if (tok2->str() == "<")
-            ++indentlevel;
-
-        else if (indentlevel >= 2 && tok2->str() == ">")
-            --indentlevel;
-
-        else if (Token::Match(tok2, "> class|struct|union %name% [,)]")) {
-            tok2 = tok2->next();
-            eraseTokens(tok, tok2);
-            deleteToken(tok);
-            return true;
-        }
+    Token *end = findTemplateDeclarationEnd(tok);
+    if (end && end->next()) {
+        eraseTokens(tok, end->next());
+        deleteToken(tok);
+        return true;
     }
 
     return false;
@@ -2241,7 +2203,7 @@ void TemplateSimplifier::expandTemplate(
                         mTokenList.addtoken(tokSemicolon, tokSemicolon->linenr(), tokSemicolon->fileIndex());
                     }
                     brackets.pop();
-                    if (brackets.empty() && !Token::Match(tok3, "} >|,|%cop%")) {
+                    if (brackets.empty() && !Token::Match(tok3, "} >|,|{|%cop%")) {
                         inTemplateDefinition = false;
                         break;
                     }

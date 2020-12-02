@@ -204,6 +204,7 @@ private:
         TEST_CASE(template159); // #9886
         TEST_CASE(template160);
         TEST_CASE(template161);
+        TEST_CASE(template162);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -4090,6 +4091,21 @@ private:
                             "adapter<JobEntry> ( Args && ... args ) : JobEntry { std :: forward < Args > ( args ) ... } { } "
                             "} ;";
         TODO_ASSERT_EQUALS(exp, act, tok(code));
+    }
+
+    void template162() {
+        const char code[] = "template <std::size_t N>\n"
+                            "CountryCode<N>::CountryCode(std::string cc) : m_String{std::move(cc)} {\n"
+                            "}\n"
+                            "template class CountryCode<2>;\n"
+                            "template class CountryCode<3>;";
+        const char exp[]  = "CountryCode<2> :: CountryCode<2> ( std :: string cc ) ; "
+                            "CountryCode<3> :: CountryCode<3> ( std :: string cc ) ; "
+                            "CountryCode<2> :: CountryCode<2> ( std :: string cc ) : m_String { std :: move ( cc ) } { "
+                            "} "
+                            "CountryCode<3> :: CountryCode<3> ( std :: string cc ) : m_String { std :: move ( cc ) } { "
+                            "}";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
