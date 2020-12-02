@@ -5274,8 +5274,22 @@ private:
 
     void splitTemplateRightAngleBrackets() {
         {
-            const char *code = "; z = x < 0 ? x >> y : x >> y;";
+            const char code[] = "; z = x < 0 ? x >> y : x >> y;";
             ASSERT_EQUALS("; z = x < 0 ? x >> y : x >> y ;", tokenizeAndStringify(code));
+        }
+        {
+            // ftp://ftp.de.debian.org/debian/pool/main/f/ffmpeg/ffmpeg_4.3.1.orig.tar.xz
+            // ffmpeg-4.3.1/libavcodec/mpeg4videodec.c:376
+            const char code[] = "void f ( ) {\n"
+                                "    int shift_y = ctx->sprite_shift[0];\n"
+                                "    int shift_c = ctx->sprite_shift[1];\n"
+                                "    if ( shift_c < 0 || shift_y < 0 ||\n"
+                                "         FFABS ( sprite_offset [ 0 ] [ i ] ) >= INT_MAX >> shift_y ||\n"
+                                "         FFABS ( sprite_offset [ 1 ] [ i ] ) >= INT_MAX >> shift_c ||\n"
+                                "         FFABS ( sprite_delta [ 0 ] [ i ] ) >= INT_MAX >> shift_y ||\n"
+                                "         FFABS ( sprite_delta [ 1 ] [ i ] ) >= INT_MAX >> shift_y ) ;\n"
+                                "}";
+            ASSERT_EQUALS(std::string::npos, tokenizeAndStringify(code).find("> >"));
         }
     }
 

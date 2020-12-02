@@ -5178,9 +5178,14 @@ static std::string getExpression(const Token *tok)
 
 void Tokenizer::splitTemplateRightAngleBrackets(bool check)
 {
+    std::set<std::string> vars;
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "[;{}] %type% %type% [;,=]") && tok->next()->isStandardType())
+            vars.insert(tok->strAt(2));
+
         // Ticket #6181: normalize C++11 template parameter list closing syntax
-        if (tok->str() == "<" && mTemplateSimplifier->templateParameters(tok)) {
+        if (tok->str() == "<" && mTemplateSimplifier->templateParameters(tok) && vars.find(tok->previous()->str()) == vars.end()) {
             Token *endTok = tok->findClosingBracket();
             if (check) {
                 if (Token::Match(endTok, ">>|>>="))
@@ -5195,7 +5200,7 @@ void Tokenizer::splitTemplateRightAngleBrackets(bool check)
                 endTok->insertToken("=");
                 endTok->insertToken(">");
             }
-        } else if (Token::Match(tok, "class|struct|union|=|:|public|protected|private %name% <")) {
+        } else if (Token::Match(tok, "class|struct|union|=|:|public|protected|private %name% <") && vars.find(tok->next()->str()) == vars.end()) {
             Token *endTok = tok->tokAt(2)->findClosingBracket();
             if (check) {
                 if (Token::simpleMatch(endTok, ">>"))
