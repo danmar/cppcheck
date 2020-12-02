@@ -842,9 +842,9 @@ Cppcheck is distributed with a few addons which are listed below.
 
 [misra.py](https://github.com/danmar/cppcheck/blob/main/addons/misra.py) is used to verify compliance with MISRA C 2012, a proprietary set of guidelines to avoid questionable code, developed for embedded systems.
 
-Since this standard is proprietary, cppcheck does not display error text by specifying only the number of violated rules (for example, [c2012-21.3]). If you want to display full texts for violated rules, you will need to create a text file containing MISRA rules, which you will have to pass when calling the script with `--rule-texts` key. Some examples of rule texts files available in [tests directory](https://github.com/danmar/cppcheck/blob/main/addons/test/misra/).
+This standard is proprietary, and open source tools are not allowed to distribute the Misra rule texts. Therefore Cppcheck is not allowed to write the rule texts directly. Cppcheck is allowed to distribute the rules and display the id of each violated rule (for example, [c2012-21.3]). The corresponding rule text can also be written however you need to provide that. To get the rule texts, please buy the PDF from MISRA (https://www.misra.org.uk). If you copy the rule texts from "Appendix A - Summary of guidelines" in the PDF and write those in a text file, then by using that text file Cppcheck can write the proper warning messages. To see how the text file can be formatted, take a look at the files listed here: https://github.com/danmar/cppcheck/blob/main/addons/test/misra/. You can use the option `--rule-texts` to specify your rules text file.
 
-You can also suppress some unwanted rules using the `--suppress-rules` option. Suppressed rules should be set as comma-separated list, for example: `--suppress-rules 21.1,18.7`. The full list of supported rules is available on [Cppcheck](http://cppcheck.sourceforge.net/misra.php) home page.
+The full list of supported rules is available on [Cppcheck](http://cppcheck.sourceforge.net/misra.php) home page.
 
 ### y2038.py
 
@@ -867,8 +867,7 @@ Some addons need extra arguments. You can configure how you want to execute an a
     {
         "script": "misra.py",
         "args": [
-            "--rule-texts=misra.txt",
-            "--suppress-rules 17.3,21.12"
+            "--rule-texts=misra.txt"
         ]
     }
 
