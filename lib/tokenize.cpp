@@ -5185,7 +5185,7 @@ void Tokenizer::splitTemplateRightAngleBrackets(bool check)
             vars.insert(tok->strAt(2));
 
         // Ticket #6181: normalize C++11 template parameter list closing syntax
-        if (tok->str() == "<" && mTemplateSimplifier->templateParameters(tok) && vars.find(tok->previous()->str()) == vars.end()) {
+        if (tok->previous() && tok->str() == "<" && mTemplateSimplifier->templateParameters(tok) && vars.find(tok->previous()->str()) == vars.end()) {
             Token *endTok = tok->findClosingBracket();
             if (check) {
                 if (Token::Match(endTok, ">>|>>="))
