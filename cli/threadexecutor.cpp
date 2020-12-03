@@ -182,7 +182,7 @@ unsigned int ThreadExecutor::check()
     std::list<ImportProject::FileSettings>::const_iterator iFileSettings = mSettings.project.fileSettings.begin();
     for (;;) {
         // Start a new child
-        size_t nchildren = childFile.size();
+        size_t nchildren = rpipes.size();
         if ((iFile != mFiles.end() || iFileSettings != mSettings.project.fileSettings.end()) && nchildren < mSettings.jobs && checkLoadAverage(nchildren)) {
             int pipes[2];
             if (pipe(pipes) == -1) {
@@ -284,7 +284,7 @@ unsigned int ThreadExecutor::check()
                         ++rp;
                 }
             }
-        } else if (!childFile.empty()) {
+
             int stat = 0;
             pid_t child = waitpid(0, &stat, WNOHANG);
             if (child > 0) {
@@ -295,17 +295,21 @@ unsigned int ThreadExecutor::check()
                     childFile.erase(c);
                 }
 
-                if (WIFEXITED(stat)) {
-                    const int exitstaus = WEXITSTATUS(stat);
-                    if (exitstaus != 0) {
-                        std::ostringstream oss;
-                        oss << "Child process exited with " << exitstaus;
-                        reportInternalChildErr(childname, oss.str());
-                    }
-                } else if (WIFSIGNALED(stat)) {
+                if (WIFSIGNALED(stat)) {
                     std::ostringstream oss;
-                    oss << "Child process crashed with signal " << WTERMSIG(stat);
-                    reportInternalChildErr(childname, oss.str());
+                    oss << "Internal error: Child process crashed with signal " << WTERMSIG(stat);
+
+                    std::list<ErrorMessage::FileLocation> locations;
+                    locations.emplace_back(childname, 0, 0);
+                    const ErrorMessage errmsg(locations,
+                                              emptyString,
+                                              Severity::error,
+                                              oss.str(),
+                                              "cppcheckError",
+                                              false);
+
+                    if (!mSettings.nomsg.isSuppressed(errmsg.toSuppressionsErrorMessage()))
+                        mErrorLogger.reportErr(errmsg);
                 }
             }
         } else {
@@ -353,21 +357,6 @@ void ThreadExecutor::reportInfo(const ErrorMessage &msg)
 void ThreadExecutor::bughuntingReport(const std::string &str)
 {
     writeToPipe(REPORT_VERIFICATION, str.c_str());
-}
-
-void ThreadExecutor::reportInternalChildErr(const std::string &childname, const std::string &msg)
-{
-    std::list<ErrorMessage::FileLocation> locations;
-    locations.emplace_back(childname, 0, 0);
-    const ErrorMessage errmsg(locations,
-                              emptyString,
-                              Severity::error,
-                              "Internal error: " + msg,
-                              "cppcheckError",
-                              false);
-
-    if (!mSettings.nomsg.isSuppressed(errmsg.toSuppressionsErrorMessage()))
-        mErrorLogger.reportErr(errmsg);
 }
 
 #elif defined(THREADING_MODEL_WIN)
