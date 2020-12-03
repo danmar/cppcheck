@@ -206,7 +206,12 @@ bool isThisChanged(const Token* start, const Token* end, int indirect, const Set
 const Token* findVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 
-bool isExpressionChanged(const Token* expr, const Token *start, const Token *end, const Settings *settings, bool cpp, int depth = 20);
+bool isExpressionChanged(const Token* expr,
+                         const Token* start,
+                         const Token* end,
+                         const Settings* settings,
+                         bool cpp,
+                         int depth = 20);
 
 /// If token is an alias if another variable
 bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive = nullptr);

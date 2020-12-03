@@ -1790,7 +1790,7 @@ bool isThisChanged(const Token* start, const Token* end, int indirect, const Set
     return false;
 }
 
-bool isExpressionChanged(const Token* expr, const Token *start, const Token *end, const Settings *settings, bool cpp, int depth)
+bool isExpressionChanged(const Token* expr, const Token* start, const Token* end, const Settings* settings, bool cpp, int depth)
 {
     const Token* result = findAstNode(expr, [&](const Token* tok) {
         if (exprDependsOnThis(tok) && isThisChanged(start, end, false, settings, cpp)) {
@@ -1803,7 +1803,8 @@ bool isExpressionChanged(const Token* expr, const Token *start, const Token *end
             global = !tok->variable()->isLocal() && !tok->variable()->isArgument();
         }
         if (tok->exprId() > 0 &&
-        isVariableChanged(start, end, tok->valueType() ? tok->valueType()->pointer : 0, tok->exprId(), global, settings, cpp, depth))
+            isVariableChanged(
+                start, end, tok->valueType() ? tok->valueType()->pointer : 0, tok->exprId(), global, settings, cpp, depth))
             return true;
         return false;
     });
