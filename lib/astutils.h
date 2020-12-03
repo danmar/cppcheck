@@ -49,6 +49,8 @@ enum class ChildrenToVisit {
 void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *)> visitor);
 void visitAstNodes(Token *ast, std::function<ChildrenToVisit(Token *)> visitor);
 
+const Token* findAstNode(const Token* ast, const std::function<bool(const Token*)>& pred);
+
 std::vector<const Token*> astFlatten(const Token* tok, const char* op);
 
 bool astHasToken(const Token* root, const Token * tok);
@@ -203,6 +205,13 @@ bool isThisChanged(const Token* start, const Token* end, int indirect, const Set
 
 const Token* findVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
+
+bool isExpressionChanged(const Token* expr,
+                         const Token* start,
+                         const Token* end,
+                         const Settings* settings,
+                         bool cpp,
+                         int depth = 20);
 
 /// If token is an alias if another variable
 bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive = nullptr);

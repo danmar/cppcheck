@@ -1353,28 +1353,7 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
             if (!isEscapeScope(blockTok, tokenlist))
                 continue;
             // Check if any variables are modified in scope
-            bool bail = false;
-            for (const Token * tok2=condTok->next(); tok2 != condTok->link(); tok2 = tok2->next()) {
-                const Variable * var = tok2->variable();
-                if (!var)
-                    continue;
-                if (!var->scope())
-                    continue;
-                const Token * endToken = var->scope()->bodyEnd;
-                if (!var->isLocal() && !var->isConst() && !var->isArgument()) {
-                    bail = true;
-                    break;
-                }
-                if (var->isStatic() && !var->isConst()) {
-                    bail = true;
-                    break;
-                }
-                if (!var->isConst() && var->declEndToken() && isVariableChanged(var->declEndToken()->next(), endToken, tok2->varId(), false, settings, cpp)) {
-                    bail = true;
-                    break;
-                }
-            }
-            if (bail)
+            if (isExpressionChanged(condTok->astOperand2(), blockTok->link(), scope->bodyEnd, settings, cpp))
                 continue;
             // TODO: Handle multiple conditions
             if (Token::Match(condTok->astOperand2(), "%oror%|%or%|&|&&"))
