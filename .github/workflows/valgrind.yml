@@ -42,7 +42,7 @@ jobs:
       - name: Run valgrind
         continue-on-error: true
         run: |
-          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --gen-suppressions=all --log-fd=9 ./testrunner TestGarbage TestOther 9>memcheck.log
+          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --suppressions=valgrind/testrunner.supp --gen-suppressions=all --log-fd=9 ./testrunner TestGarbage TestOther 9>memcheck.log
           cat memcheck.log
           
       - uses: actions/upload-artifact@v2
