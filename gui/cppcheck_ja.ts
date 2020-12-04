@@ -188,12 +188,12 @@ Parameters: -l(line) (file)</translation>
         <translation>インデックス</translation>
     </message>
     <message>
-        <location filename="helpdialog.cpp" line="52"/>
+        <location filename="helpdialog.cpp" line="57"/>
         <source>Helpfile &apos;%1&apos; was not found</source>
         <translation>ヘルプファイル &apos;%1&apos; が見つかりません</translation>
     </message>
     <message>
-        <location filename="helpdialog.cpp" line="54"/>
+        <location filename="helpdialog.cpp" line="59"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -1611,22 +1611,22 @@ Options:
         <translation type="obsolete">除外するパス</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="807"/>
+        <location filename="projectfiledialog.ui" line="810"/>
         <source>MISRA C 2012</source>
         <translation>MISRA C 2012</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="816"/>
+        <location filename="projectfiledialog.ui" line="819"/>
         <source>Misra rule texts</source>
         <translation>Misra ルールテキスト</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="823"/>
+        <location filename="projectfiledialog.ui" line="826"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;MISRA C 2012 pdfのAppendix A &amp;quot;Summary of guidelines&amp;quot; からテキストをコピーペーストしてください。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="830"/>
+        <location filename="projectfiledialog.ui" line="833"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -1665,15 +1665,15 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="188"/>
         <location filename="projectfiledialog.ui" line="303"/>
-        <location filename="projectfiledialog.ui" line="668"/>
+        <location filename="projectfiledialog.ui" line="671"/>
         <source>Edit</source>
         <translation>編集</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="195"/>
         <location filename="projectfiledialog.ui" line="310"/>
-        <location filename="projectfiledialog.ui" line="675"/>
-        <location filename="projectfiledialog.ui" line="718"/>
+        <location filename="projectfiledialog.ui" line="678"/>
+        <location filename="projectfiledialog.ui" line="721"/>
         <source>Remove</source>
         <translation>取り除く</translation>
     </message>
@@ -1719,22 +1719,27 @@ Options:
         <translation>Cppcheckビルトイン</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="633"/>
+        <location filename="projectfiledialog.ui" line="506"/>
+        <source>Check code in headers  (should be ON normally. if you want a limited quick analysis then turn this OFF)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="projectfiledialog.ui" line="636"/>
         <source>If tags are added, you will be able to right click on warnings and set one of these tags. You can manually categorize warnings.</source>
         <translation>タグが追加された場合、警告上で右クリックしてそれらのタグの中の一つを設定できます。警告を分類できます。</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="643"/>
+        <location filename="projectfiledialog.ui" line="646"/>
         <source>Exclude source files</source>
         <translation>除外するソースファイル</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="654"/>
+        <location filename="projectfiledialog.ui" line="657"/>
         <source>Exclude folder...</source>
         <translation>フォルダで除外...</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="661"/>
+        <location filename="projectfiledialog.ui" line="664"/>
         <source>Exclude file...</source>
         <translation>ファイルで除外...</translation>
     </message>
@@ -1761,17 +1766,17 @@ Options:
         <translation>解析の制限</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="506"/>
         <source>Check code in headers  (slower analysis, more results)</source>
-        <translation>ヘッダファイルのコードもチェック(解析に時間がかかりますが結果は増えます)</translation>
+        <translation type="vanished">ヘッダファイルのコードもチェック(解析に時間がかかりますが結果は増えます)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="516"/>
-        <source>Check code in unused templates  (slower and less accurate analysis)</source>
-        <translation>未使用テンプレートのコードもチェック (解析に時間がかかり、また正確性は低い)</translation>
+        <source>Check code in unused templates (should be ON normally, however in theory you can safely ignore warnings in unused templates)</source>
+        <oldsource>Check code in unused templates  (slower and less accurate analysis)</oldsource>
+        <translation type="unfinished">未使用テンプレートのコードもチェック (解析に時間がかかり、また正確性は低い)</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="525"/>
+        <location filename="projectfiledialog.ui" line="528"/>
         <source>Max CTU depth</source>
         <translation>CTUの最大深さ</translation>
     </message>
@@ -1784,7 +1789,7 @@ Options:
         <translation type="vanished">注意: アドオンには&lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt; が必要です。</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="842"/>
+        <location filename="projectfiledialog.ui" line="845"/>
         <source>External tools</source>
         <translation>外部ツール</translation>
     </message>
@@ -1836,27 +1841,27 @@ Options:
         <translation>可能な限りクラスが柔軟であり堅牢であることを望む場合、公開されたインターフェースが非常に堅牢です。Cppcheckは引数があらゆる値をとりうると仮定します。</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="556"/>
+        <location filename="projectfiledialog.ui" line="559"/>
         <source>Max recursion in template instantiation</source>
         <translation>テンプレートインスタンス化の最大再帰回数</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="605"/>
+        <location filename="projectfiledialog.ui" line="608"/>
         <source>Warning options</source>
         <translation>警告オプション</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="611"/>
+        <location filename="projectfiledialog.ui" line="614"/>
         <source>Root path:</source>
         <translation>ルートパス:</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="617"/>
+        <location filename="projectfiledialog.ui" line="620"/>
         <source>Filepaths in warnings will be relative to this path</source>
         <translation>警告中のファイルパスはこのパスからの相対パスになります</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="627"/>
+        <location filename="projectfiledialog.ui" line="630"/>
         <source>Warning tags (separated by semicolon)</source>
         <translation>警告タグ(セミコロン区切り)</translation>
     </message>
@@ -1875,7 +1880,7 @@ Options:
         <translation type="obsolete">除外する</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="700"/>
+        <location filename="projectfiledialog.ui" line="703"/>
         <source>Suppressions</source>
         <translation>指摘の抑制</translation>
     </message>
@@ -1884,7 +1889,7 @@ Options:
         <translation type="obsolete">抑制リスト</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="711"/>
+        <location filename="projectfiledialog.ui" line="714"/>
         <source>Add</source>
         <translation>追加</translation>
     </message>
@@ -1893,33 +1898,33 @@ Options:
         <translation type="vanished">アドオンとツール</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="757"/>
-        <location filename="projectfiledialog.ui" line="763"/>
+        <location filename="projectfiledialog.ui" line="760"/>
+        <location filename="projectfiledialog.ui" line="766"/>
         <source>Addons</source>
         <translation>アドオン</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="769"/>
+        <location filename="projectfiledialog.ui" line="772"/>
         <source>Note: Addons require &lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt; being installed.</source>
         <translation>注意: アドオンには&lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt;が必要です。</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="779"/>
+        <location filename="projectfiledialog.ui" line="782"/>
         <source>Y2038</source>
         <translation>Y2038</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="786"/>
+        <location filename="projectfiledialog.ui" line="789"/>
         <source>Thread safety</source>
         <translation>スレッドセーフ</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="793"/>
+        <location filename="projectfiledialog.ui" line="796"/>
         <source>Coding standards</source>
         <translation>コーディング標準</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="800"/>
+        <location filename="projectfiledialog.ui" line="803"/>
         <source>Cert</source>
         <translation>CERT</translation>
     </message>
@@ -1932,12 +1937,12 @@ Options:
         <translation type="obsolete">複数ツールの併用はよい結果を生みます。</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="855"/>
+        <location filename="projectfiledialog.ui" line="858"/>
         <source>Clang analyzer</source>
         <translation>Clang Analyzer</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="848"/>
+        <location filename="projectfiledialog.ui" line="851"/>
         <source>Clang-tidy</source>
         <translation>Clang-tidy</translation>
     </message>
