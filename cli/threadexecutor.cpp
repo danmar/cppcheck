@@ -244,7 +244,8 @@ unsigned int ThreadExecutor::check()
                 pipeFile[pipes[0]] = iFile->first;
                 ++iFile;
             }
-        } else if (!rpipes.empty()) {
+        }
+        if (!rpipes.empty()) {
             fd_set rfds;
             FD_ZERO(&rfds);
             for (std::list<int>::const_iterator rp = rpipes.begin(); rp != rpipes.end(); ++rp)
@@ -284,7 +285,8 @@ unsigned int ThreadExecutor::check()
                         ++rp;
                 }
             }
-        } else if (!childFile.empty()) {
+        }
+        if (!childFile.empty()) {
             int stat = 0;
             pid_t child = waitpid(0, &stat, WNOHANG);
             if (child > 0) {
@@ -308,7 +310,8 @@ unsigned int ThreadExecutor::check()
                     reportInternalChildErr(childname, oss.str());
                 }
             }
-        } else {
+        }
+        if (iFile == mFiles.end() && iFileSettings == mSettings.project.fileSettings.end() && rpipes.empty() && childFile.empty()) {
             // All done
             break;
         }
