@@ -1985,6 +1985,9 @@ static const std::set<std::string> stl_containers_not_const = { "map", "unordere
 
 bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed) const
 {
+    if (mTokenizer->hasIfdef(func->functionScope->bodyStart, func->functionScope->bodyEnd))
+        return false;
+
     // if the function doesn't have any assignment nor function call,
     // it can be a const function..
     for (const Token *tok1 = func->functionScope->bodyStart; tok1 && tok1 != func->functionScope->bodyEnd; tok1 = tok1->next()) {
