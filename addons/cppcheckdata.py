@@ -15,8 +15,6 @@ from fnmatch import fnmatch
 
 EXIT_CODE = 0
 
-current_dumpfile_suppressions = []
-
 class Directive:
     """
     Directive class. Contains information about each preprocessor directive in the source code.
@@ -656,11 +654,12 @@ class Suppression:
 
     def isMatch(self, file, line, message, errorId):
         if ((self.fileName is None or fnmatch(file, self.fileName))
-                and (self.lineNumber is None or int(line) == int(self.lineNumber))
+                and (self.lineNumber is None or line == self.lineNumber)
                 and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
                 and fnmatch(errorId, self.errorId)):
             return True
-        return False
+        else:
+            return False
 
 
 class Configuration:
@@ -890,9 +889,6 @@ class CppcheckData:
                     self.suppressions.append(Suppression(suppressions_node))
                 suppressions_done = True
 
-        global current_dumpfile_suppressions
-        current_dumpfile_suppressions = self.suppressions
-
         # Set links between rawTokens.
         for i in range(len(self.rawTokens)-1):
             self.rawTokens[i+1].previous = self.rawTokens[i]
@@ -1116,12 +1112,6 @@ def simpleMatch(token, pattern):
     return True
 
 
-def is_suppressed(location, message, errorId):
-    for suppression in current_dumpfile_suppressions:
-        if suppression.isMatch(location.file, location.linenr, message, errorId):
-            return True
-    return False
-
 def reportError(location, severity, message, addon, errorId, extra=''):
     if '--cli' in sys.argv:
         msg = { 'file': location.file,
@@ -1134,8 +1124,6 @@ def reportError(location, severity, message, addon, errorId, extra=''):
                 'extra': extra}
         sys.stdout.write(json.dumps(msg) + '\n')
     else:
-        if is_suppressed(location, message, '%s-%s' % (addon, errorId)):
-            return
         loc = '[%s:%i]' % (location.file, location.linenr)
         if len(extra) > 0:
             message += ' (' + extra + ')'

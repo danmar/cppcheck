@@ -1088,6 +1088,9 @@ class MisraChecker:
         # should not be None for both.
         self.suppressedRules = dict()
 
+        # List of suppression extracted from the dumpfile
+        self.dumpfileSuppressions = None
+
         # Prefix to ignore when matching suppression files.
         self.filePrefix = None
 
@@ -1102,8 +1105,8 @@ class MisraChecker:
 
     def __repr__(self):
         attrs = ["settings", "verify_expected", "verify_actual", "violations",
-                 "ruleTexts", "suppressedRules", "filePrefix",
-                 "suppressionStats", "stdversion", "severity"]
+                 "ruleTexts", "suppressedRules", "dumpfileSuppressions",
+                 "filePrefix", "suppressionStats", "stdversion", "severity"]
         return "{}({})".format(
             "MisraChecker",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -3095,6 +3098,29 @@ class MisraChecker:
             return False
         return None in self.suppressedRules[rule_num]
 
+    def parseSuppressions(self):
+        """
+        Parse the suppression list provided by cppcheck looking for
+        rules that start with 'misra' or MISRA.  The MISRA rule number
+        follows using either '_' or '.' to separate the numbers.
+        Examples:
+            misra_6.0
+            misra_7_0
+            misra.21.11
+        """
+        rule_pattern = re.compile(r'^(misra|MISRA)[_.]([0-9]+)[_.]([0-9]+)')
+
+        for each in self.dumpfileSuppressions:
+            res = rule_pattern.match(each.errorId)
+
+            if res:
+                num1 = int(res.group(2)) * 100
+                ruleNum = num1 + int(res.group(3))
+                linenr = None
+                if each.lineNumber:
+                    linenr = int(each.lineNumber)
+                self.addSuppressedRule(ruleNum, each.fileName, linenr, each.symbolName)
+
     def showSuppressedRules(self):
         """
         Print out rules in suppression list sorted by Rule Number
@@ -3319,6 +3345,9 @@ class MisraChecker:
     def parseDump(self, dumpfile):
         filename = '.'.join(dumpfile.split('.')[:-1])
         data = cppcheckdata.parsedump(dumpfile)
+
+        self.dumpfileSuppressions = data.suppressions
+        self.parseSuppressions()
 
         typeBits['CHAR'] = data.platform.char_bit
         typeBits['SHORT'] = data.platform.short_bit
