@@ -114,8 +114,12 @@ static void bufferOverflow(const Token *tok, const ExprEngine::Value &value, Exp
         }
 
         std::shared_ptr<ExprEngine::ArrayValue> arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(argValue);
-        if (!arrayValue || arrayValue->size.size() != 1) // TODO : multidimensional array
-            continue;
+        if (!arrayValue || arrayValue->size.size() != 1) {
+            // TODO: implement this properly.
+            overflowArgument = argnr;
+            bailout = true;
+            break;
+        }
 
         const Library::ArgumentChecks &checks = argNrChecks.second;
         for (const Library::ArgumentChecks::MinSize &minsize: checks.minsizes) {
@@ -131,6 +135,12 @@ static void bufferOverflow(const Token *tok, const ExprEngine::Value &value, Exp
                     break;
                 }
             } else if (minsize.type == Library::ArgumentChecks::MinSize::STRLEN && minsize.arg > 0 && minsize.arg <= arguments.size()) {
+                if (func->formatstr) {
+                    // TODO: implement this properly. check if minsize refers to a format string and check max length of that..
+                    overflowArgument = argnr;
+                    bailout = true;
+                    break;
+                }
                 if (Token::Match(arguments[minsize.arg - 1], "%str%")) {
                     const Token * const str = arguments[minsize.arg - 1];
                     if (arrayValue->size[0]->isLessThan(dataBase, Token::getStrLength(str))) {
