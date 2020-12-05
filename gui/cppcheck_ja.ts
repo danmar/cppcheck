@@ -1721,7 +1721,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="506"/>
         <source>Check code in headers  (should be ON normally. if you want a limited quick analysis then turn this OFF)</source>
-        <translation type="unfinished"></translation>
+        <translation>ヘッダファイルのコードもチェック  (通常はONにしてください、制限するときのみOFF)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="636"/>
@@ -1773,7 +1773,7 @@ Options:
         <location filename="projectfiledialog.ui" line="516"/>
         <source>Check code in unused templates (should be ON normally, however in theory you can safely ignore warnings in unused templates)</source>
         <oldsource>Check code in unused templates  (slower and less accurate analysis)</oldsource>
-        <translation type="unfinished">未使用テンプレートのコードもチェック (解析に時間がかかり、また正確性は低い)</translation>
+        <translation>未使用テンプレートのコードもチェック (解析に時間がかかり、また正確性は低い)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="528"/>
