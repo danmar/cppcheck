@@ -24,6 +24,9 @@
 #include "token.h"
 #include <cstring>
 
+static const CWE CWE_BUFFER_UNDERRUN(786U);  // Access of Memory Location Before Start of Buffer
+static const CWE CWE_BUFFER_OVERRUN(788U);   // Access of Memory Location After End of Buffer
+
 
 static float getKnownFloatValue(const Token *tok, float def)
 {
@@ -34,6 +37,42 @@ static float getKnownFloatValue(const Token *tok, float def)
     return def;
 }
 
+static void arrayIndex(const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase)
+{
+    if (!Token::simpleMatch(tok->astParent(), "["))
+        return;
+    const Token *buf = tok->astParent()->astOperand1();
+    if (!buf || !buf->variable() || !buf->variable()->isArray())
+        // TODO
+        return;
+    const Token *index = tok->astParent()->astOperand2();
+    if (tok != index)
+        // TODO
+        return;
+    if (buf->variable()->dimensions().size() == 1 && buf->variable()->dimensions()[0].known) {
+        const MathLib::bigint bufSize = buf->variable()->dimensions()[0].num;
+        if (value.isGreaterThan(dataBase, bufSize - 1)) {
+            const bool bailout = (value.type == ExprEngine::ValueType::BailoutValue);
+            dataBase->reportError(tok,
+                                  Severity::SeverityType::error,
+                                  "bughuntingArrayIndexOutOfBounds",
+                                  "Array index out of bounds, cannot determine that " + index->expressionString() + " is less than " + std::to_string(bufSize),
+                                  CWE_BUFFER_OVERRUN,
+                                  false,
+                                  bailout);
+        }
+    }
+    if (value.isLessThan(dataBase, 0)) {
+        const bool bailout = (value.type == ExprEngine::ValueType::BailoutValue);
+        dataBase->reportError(tok,
+                              Severity::SeverityType::error,
+                              "bughuntingArrayIndexNegative",
+                              "Array index out of bounds, cannot determine that " + index->expressionString() + " is not negative",
+                              CWE_BUFFER_UNDERRUN,
+                              false,
+                              bailout);
+    }
+}
 
 static void bufferOverflow(const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase)
 {
@@ -565,6 +604,7 @@ static void checkAssignment(const Token *tok, const ExprEngine::Value &value, Ex
 
 void addBughuntingChecks(std::vector<ExprEngine::Callback> *callbacks)
 {
+    callbacks->push_back(arrayIndex);
     callbacks->push_back(bufferOverflow);
     callbacks->push_back(divByZero);
     callbacks->push_back(checkFunctionCall);

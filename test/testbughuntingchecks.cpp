@@ -36,6 +36,7 @@ private:
         settings.inconclusive = true;
         LOAD_LIB_2(settings.library, "std.cfg");
         TEST_CASE(checkAssignment);
+        TEST_CASE(arrayIndexOutOfBounds1);
         TEST_CASE(uninit);
         TEST_CASE(uninit_array);
         TEST_CASE(uninit_function_par);
@@ -65,6 +66,16 @@ private:
         check("struct S { __cppcheck_low__(0) int x; };\n"
               "void foo(S *s, int any) { s->x = any; }");
         ASSERT_EQUALS("[test.cpp:2]: (error) There is assignment, cannot determine that value is greater or equal with 0\n", errout.str());
+    }
+
+    void arrayIndexOutOfBounds1() {
+        check("void foo(int x) {\n"
+              "  int p[8];"
+              "  p[x] = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Array index out of bounds, cannot determine that x is less than 8\n"
+                      "[test.cpp:2]: (error) Array index out of bounds, cannot determine that x is not negative\n",
+                      errout.str());
     }
 
     void uninit() {
