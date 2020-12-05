@@ -104,8 +104,10 @@ static void bufferOverflow(const Token *tok, const ExprEngine::Value &value, Exp
 
     for (auto argNrChecks: func->argumentChecks) {
         const int argnr = argNrChecks.first;
-        if (argnr <= 0 || argnr > arguments.size())
+        const Library::ArgumentChecks &checks = argNrChecks.second;
+        if (argnr <= 0 || argnr > arguments.size() || checks.minsizes.empty())
             continue;
+
         ExprEngine::ValuePtr argValue = functionCallArguments->argValues[argnr - 1];
         if (!argValue || argValue->type == ExprEngine::ValueType::BailoutValue) {
             overflowArgument = argnr;
@@ -121,7 +123,6 @@ static void bufferOverflow(const Token *tok, const ExprEngine::Value &value, Exp
             break;
         }
 
-        const Library::ArgumentChecks &checks = argNrChecks.second;
         for (const Library::ArgumentChecks::MinSize &minsize: checks.minsizes) {
             if (minsize.type == Library::ArgumentChecks::MinSize::ARGVALUE && minsize.arg > 0 && minsize.arg <= arguments.size()) {
                 ExprEngine::ValuePtr otherValue = functionCallArguments->argValues[minsize.arg - 1];
