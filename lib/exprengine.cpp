@@ -2748,6 +2748,20 @@ static void dumpRecursive(ExprEngine::ValuePtr val)
     case ExprEngine::ValueType::FloatRange:
         std::cout << "FloatRange";
         break;
+    case ExprEngine::ValueType::FunctionCallArgumentValues: {
+        std::cout << "FunctionCallArgumentValues(";
+        const char *sep = "";
+        for (auto arg: std::dynamic_pointer_cast<ExprEngine::FunctionCallArgumentValues>(val)->argValues) {
+            std::cout << sep;
+            sep = ",";
+            if (!arg)
+                std::cout << "NULL";
+            else
+                dumpRecursive(arg);
+        }
+        std::cout << ")";
+    }
+    break;
     case ExprEngine::ValueType::IntRange:
         std::cout << "IntRange";
         break;
