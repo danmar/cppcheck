@@ -1421,6 +1421,27 @@ bool ExprEngine::BinOpResult::isLessThan(ExprEngine::DataBase *dataBase, int val
 #endif
 }
 
+bool ExprEngine::BinOpResult::isTrue(ExprEngine::DataBase *dataBase) const
+{
+#ifdef USE_Z3
+    try {
+        ExprData exprData;
+        z3::solver solver(exprData.context);
+        z3::expr e = exprData.getExpr(this);
+        for (auto constraint : dynamic_cast<const Data *>(dataBase)->constraints)
+            solver.add(exprData.getConstraintExpr(constraint));
+        exprData.addAssertions(solver);
+        return solver.check() == z3::sat;
+    } catch (const z3::exception &exception) {
+        std::cerr << "z3:" << exception << std::endl;
+        return true;  // Safe option is to return true
+    }
+#else
+    (void)dataBase;
+    return false;
+#endif
+}
+
 std::string ExprEngine::BinOpResult::getExpr(ExprEngine::DataBase *dataBase) const
 {
 #ifdef USE_Z3
@@ -1851,6 +1872,8 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
                 data.assignValue(argtok, addressOf->varId, getValueRangeFromValueType(&vt, data));
         }
     }
+
+    call(data.callbacks, tok, std::make_shared<ExprEngine::FunctionCallArgumentValues>(argValues), &data);
 
     if (tok->astOperand1()->function()) {
         const Function *function = tok->astOperand1()->function();

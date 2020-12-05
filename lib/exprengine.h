@@ -64,6 +64,7 @@ namespace ExprEngine {
         AddressOfValue,
         BinOpResult,
         IntegerTruncation,
+        FunctionCallArgumentValues,
         BailoutValue
     };
 
@@ -281,6 +282,7 @@ namespace ExprEngine {
         bool isEqual(DataBase *dataBase, int value) const OVERRIDE;
         bool isGreaterThan(DataBase *dataBase, int value) const OVERRIDE;
         virtual bool isLessThan(DataBase *dataBase, int value) const OVERRIDE;
+        bool isTrue(DataBase *dataBase) const;
 
         std::string getExpr(DataBase *dataBase) const;
 
@@ -309,6 +311,16 @@ namespace ExprEngine {
         ExprEngine::ValuePtr inputValue;
         int bits;
         char sign;
+    };
+
+    class FunctionCallArgumentValues: public Value {
+    public:
+        FunctionCallArgumentValues(const std::vector<ExprEngine::ValuePtr> &argValues)
+            : Value("argValues", ValueType::FunctionCallArgumentValues)
+            , argValues(argValues)
+        {}
+
+        const std::vector<ExprEngine::ValuePtr> argValues;
     };
 
     class BailoutValue : public Value {

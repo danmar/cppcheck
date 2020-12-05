@@ -37,6 +37,10 @@ private:
         LOAD_LIB_2(settings.library, "std.cfg");
         TEST_CASE(checkAssignment);
         TEST_CASE(arrayIndexOutOfBounds1);
+        TEST_CASE(bufferOverflowMemCmp1);
+        TEST_CASE(bufferOverflowMemCmp2);
+        TEST_CASE(bufferOverflowStrcpy1);
+        TEST_CASE(bufferOverflowStrcpy2);
         TEST_CASE(uninit);
         TEST_CASE(uninit_array);
         TEST_CASE(uninit_function_par);
@@ -76,6 +80,35 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (error) Array index out of bounds, cannot determine that x is less than 8\n"
                       "[test.cpp:2]: (error) Array index out of bounds, cannot determine that x is not negative\n",
                       errout.str());
+    }
+
+    void bufferOverflowMemCmp1() {
+        // CVE-2020-24265
+        check("void foo(const char *pktdata, int datalen) {\n"
+              "  if (memcmp(pktdata, \"MGC\", 3)) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Buffer read/write, when calling 'memcmp' it cannot be determined that 1st argument is not overflowed\n", errout.str());
+    }
+
+    void bufferOverflowMemCmp2() {
+        check("void foo(const char *pktdata, unsigned int datalen) {\n"
+              "  if (memcmp(pktdata, \"MGC\", datalen)) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Buffer read/write, when calling 'memcmp' it cannot be determined that 1st argument is not overflowed\n", errout.str());
+    }
+
+    void bufferOverflowStrcpy1() {
+        check("void foo(char *p) {\n"
+              "  strcpy(p, \"hello\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Buffer read/write, when calling 'strcpy' it cannot be determined that 1st argument is not overflowed\n", errout.str());
+    }
+
+    void bufferOverflowStrcpy2() {
+        check("void foo(char *p, const char *q) {\n"
+              "  strcpy(p, q);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Buffer read/write, when calling 'strcpy' it cannot be determined that 1st argument is not overflowed\n", errout.str());
     }
 
     void uninit() {
