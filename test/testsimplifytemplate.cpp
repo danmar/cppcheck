@@ -205,6 +205,7 @@ private:
         TEST_CASE(template160);
         TEST_CASE(template161);
         TEST_CASE(template162);
+        TEST_CASE(template163); // #9685 syntax error
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -4106,6 +4107,11 @@ private:
                             "CountryCode<3> :: CountryCode<3> ( std :: string cc ) : m_String { std :: move ( cc ) } { "
                             "}";
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template163() { // #9685 syntax error
+        const char code[] = "extern \"C++\" template < typename T > T * test ( ) { return nullptr ; }";
+        ASSERT_EQUALS(code, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
