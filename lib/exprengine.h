@@ -315,7 +315,7 @@ namespace ExprEngine {
 
     class FunctionCallArgumentValues: public Value {
     public:
-        FunctionCallArgumentValues(const std::vector<ExprEngine::ValuePtr> &argValues)
+        explicit FunctionCallArgumentValues(const std::vector<ExprEngine::ValuePtr> &argValues)
             : Value("argValues", ValueType::FunctionCallArgumentValues)
             , argValues(argValues)
         {}
