@@ -37,6 +37,7 @@ private:
         LOAD_LIB_2(settings.library, "std.cfg");
         TEST_CASE(checkAssignment);
         TEST_CASE(arrayIndexOutOfBounds1);
+        TEST_CASE(arrayIndexOutOfBounds2);
         TEST_CASE(bufferOverflowMemCmp1);
         TEST_CASE(bufferOverflowMemCmp2);
         TEST_CASE(bufferOverflowStrcpy1);
@@ -79,6 +80,17 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Array index out of bounds, cannot determine that x is less than 8\n"
                       "[test.cpp:2]: (error) Array index out of bounds, cannot determine that x is not negative\n",
+                      errout.str());
+    }
+
+    void arrayIndexOutOfBounds2() {
+        check("void foo(int n) {\n"
+              "  int p[8];"
+              "  for (int i = 0; i < n; i++)"
+              "    p[i] = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Array index out of bounds, cannot determine that i is less than 8\n"
+                      "[test.cpp:2]: (error) Array index out of bounds, cannot determine that i is not negative\n",
                       errout.str());
     }
 

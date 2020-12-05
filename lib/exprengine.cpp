@@ -1675,6 +1675,10 @@ static void assignExprValue(const Token *expr, ExprEngine::ValuePtr value, Data 
                 if (!loopAssign)
                     arrayValue->assign(indexValue, value);
             }
+        } else {
+            const Token * const indexToken = expr->astOperand2();
+            auto indexValue = executeExpression(indexToken, data);
+            call(data.callbacks, indexToken, indexValue, &data);
         }
     } else if (expr->isUnaryOp("*")) {
         auto pval = executeExpression(expr->astOperand1(), data);
@@ -2509,6 +2513,7 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                     data.assignValue(tok2, varid, getValueRangeFromValueType(vartok->valueType(), data));
                 }
             }
+            tok = tok->linkAt(1);
         }
 
         if (Token::simpleMatch(tok, "} else {"))
