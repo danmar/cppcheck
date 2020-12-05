@@ -5705,14 +5705,14 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
     }
 
     if (ternary || parent->isArithmeticalOp() || parent->tokType() == Token::eIncDecOp) {
-        // CONTAINER + pointer => CONTAINER
-        if (parent->str() == "+" && vt1->type == ValueType::Type::CONTAINER && vt2 && vt2->pointer != 0) {
+
+        // CONTAINER + x => CONTAINER
+        if (parent->str() == "+" && vt1->type == ValueType::Type::CONTAINER && vt2 && vt2->isIntegral()) {
             setValueType(parent, *vt1);
             return;
         }
-
-        // pointer + CONTAINER => CONTAINER
-        if (parent->str() == "+" && vt1->pointer != 0U && vt2 && vt2->type == ValueType::Type::CONTAINER) {
+        // x + CONTAINER => CONTAINER
+        if (parent->str() == "+" && vt1->isIntegral() && vt2 && vt2->type == ValueType::Type::CONTAINER) {
             setValueType(parent, *vt2);
             return;
         }

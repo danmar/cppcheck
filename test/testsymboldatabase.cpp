@@ -7141,6 +7141,9 @@ private:
             ASSERT_EQUALS("container(test :: string)", typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "+", "test.cpp", &set));
             ASSERT_EQUALS("container(test :: string)", typeOf("Vector<test::string> v; x = v.front();", "(", "test.cpp", &set));
             ASSERT_EQUALS("container(test :: string)", typeOf("void foo(){test::string s; return \"x\"+s;}", "+", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)", typeOf("void foo(){test::string s; return s+\"x\";}", "+", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)", typeOf("void foo(){test::string s; return 'x'+s;}", "+", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)", typeOf("void foo(){test::string s; return s+'x';}", "+", "test.cpp", &set));
         }
 
         // new
