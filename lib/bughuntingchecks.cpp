@@ -156,7 +156,12 @@ static void bufferOverflow(const Token *tok, const ExprEngine::Value &value, Exp
                         break;
                     }
                     std::shared_ptr<ExprEngine::ArrayValue> arrayValue2 = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(otherValue);
-                    if (arrayValue2 && arrayValue2->size.size() == 1 && isLessThan(dataBase, arrayValue->size[0], arrayValue2->size[0])) {
+                    if (!arrayValue2 || arrayValue2->size.size() != 1) {
+                        overflowArgument = argnr;
+                        bailout = true;
+                        break;
+                    }
+                    if (isLessThan(dataBase, arrayValue->size[0], arrayValue2->size[0])) {
                         overflowArgument = argnr;
                         break;
                     }
