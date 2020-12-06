@@ -32,7 +32,8 @@ jobs:
         run: |
           ASAN_OPTIONS=detect_stack_use_after_return=1 ./testrunner
 
-      - name: Bughunting lib
-        run: |
-          ASAN_OPTIONS=detect_stack_use_after_return=1 ./cppcheck -D__CPPCHECK__ --bug-hunting -j$(nproc) lib
+# This takes too long time right now
+#      - name: Bughunting lib
+#        run: |
+#          ASAN_OPTIONS=detect_stack_use_after_return=1 ./cppcheck -D__CPPCHECK__ --bug-hunting -j$(nproc) lib
 
