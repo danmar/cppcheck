@@ -151,8 +151,12 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *token, const std::string &
             }
         }
         // check for member class or function and adjust scope
-        if ((isFunction() || isClass()) && mNameToken->strAt(-1) == "::") {
+        if ((isFunction() || isClass()) &&
+            (mNameToken->strAt(-1) == "::" || Token::simpleMatch(mNameToken->tokAt(-2), ":: ~"))) {
             const Token * start = mNameToken;
+            if (start->strAt(-1) == "~")
+                start = start->previous();
+            const Token *end = start;
 
             while (start && (Token::Match(start->tokAt(-2), "%name% ::") ||
                              (Token::simpleMatch(start->tokAt(-2), "> ::") &&
@@ -164,10 +168,10 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *token, const std::string &
                     start = start->tokAt(-2);
             }
 
-            if (start && start != nameToken) {
+            if (start && start != end) {
                 if (!mScope.empty())
                     mScope += " ::";
-                while (start && start->next() != mNameToken) {
+                while (start && start->next() != end) {
                     if (start->str() == "<")
                         start = start->findClosingBracket();
                     else {
@@ -3021,6 +3025,17 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
 
             // scopes must match when present
             if (!instantiation.scope().empty() && !templateDeclaration.scope().empty())
+                continue;
+        }
+
+        // make sure constructors and destructors don't match each other
+        if (templateDeclaration.nameToken()->strAt(-1) == "~" && instantiation.token()->strAt(-1) != "~")
+            continue;
+
+        // template families should match
+        if (!instantiation.isFunction() && templateDeclaration.isFunction()) {
+            // there are exceptions
+            if (!Token::simpleMatch(instantiation.token()->tokAt(-2), "decltype ("))
                 continue;
         }
 
