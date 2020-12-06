@@ -2011,12 +2011,12 @@ static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr executeDot(const Token *tok, Data &data)
 {
-    if (!tok->astOperand1() || !tok->astOperand1()->varId()) {
-        auto v = getValueRangeFromValueType(tok->valueType(), data);
+    if (!tok->astOperand1()) {
+        auto v = std::make_shared<ExprEngine::BailoutValue>();
         call(data.callbacks, tok, v, &data);
         return v;
     }
-    std::shared_ptr<ExprEngine::StructValue> structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(data.getValue(tok->astOperand1()->varId(), nullptr, nullptr));
+    std::shared_ptr<ExprEngine::StructValue> structValue = std::dynamic_pointer_cast<ExprEngine::StructValue>(executeExpression(tok->astOperand1(), data));
     if (!structValue) {
         if (tok->originalName() == "->") {
             std::shared_ptr<ExprEngine::ArrayValue> pointerValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(data.getValue(tok->astOperand1()->varId(), nullptr, nullptr));
