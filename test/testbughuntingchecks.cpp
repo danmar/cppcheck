@@ -85,12 +85,24 @@ private:
 
     void arrayIndexOutOfBounds2() {
         check("void foo(int n) {\n"
-              "  int p[8];"
-              "  for (int i = 0; i < n; i++)"
+              "  int p[8];\n"
+              "  for (int i = 0; i < n; i++)\n"
               "    p[i] = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Array index out of bounds, cannot determine that i is less than 8\n"
-                      "[test.cpp:2]: (error) Array index out of bounds, cannot determine that i is not negative\n",
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array index out of bounds, cannot determine that i is less than 8\n"
+                      "[test.cpp:4]: (error) Array index out of bounds, cannot determine that i is not negative\n",
+                      errout.str());
+
+        // .. with unknown expression
+        check("void foo(int n) {\n"
+              "  int p[8];\n"
+              "  crx_data_header_t *d =\n"
+              "    &libraw_internal_data.unpacker_data.crx_header[framei];\n"
+              "  for (int i = 0; i < n; i++)\n"
+              "    p[i] = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Array index out of bounds, cannot determine that i is less than 8\n"
+                      "[test.cpp:6]: (error) Array index out of bounds, cannot determine that i is not negative\n",
                       errout.str());
     }
 

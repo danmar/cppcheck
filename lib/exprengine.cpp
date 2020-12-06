@@ -1728,7 +1728,7 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     }
 
     if (!rhsValue)
-        throw ExprEngineException(tok, "Expression '" + tok->expressionString() + "'; Failed to evaluate RHS");
+        rhsValue = std::make_shared<ExprEngine::BailoutValue>();
 
     ExprEngine::ValuePtr assignValue;
     if (tok->str() == "=")
