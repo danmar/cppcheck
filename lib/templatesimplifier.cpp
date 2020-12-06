@@ -3035,7 +3035,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         // template families should match
         if (!instantiation.isFunction() && templateDeclaration.isFunction()) {
             // there are exceptions
-            if (!Token::Match(instantiation.token()->tokAt(-2), "decltype ("))
+            if (!Token::simpleMatch(instantiation.token()->tokAt(-2), "decltype ("))
                 continue;
         }
 
