@@ -41,7 +41,7 @@ jobs:
 
       - name: Run valgrind
         run: |
-          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --suppressions=valgrind/testrunner.supp --gen-suppressions=all --log-fd=9 ./testrunner TestGarbage TestOther TestSimplifyTemplate 9>memcheck.log
+          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --suppressions=valgrind/testrunner.supp --gen-suppressions=all --log-fd=9 --error-exitcode=42 ./testrunner TestGarbage TestOther TestSimplifyTemplate 9>memcheck.log
           cat memcheck.log
           
       - uses: actions/upload-artifact@v2
