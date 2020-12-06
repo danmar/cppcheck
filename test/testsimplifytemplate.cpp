@@ -206,6 +206,7 @@ private:
         TEST_CASE(template161);
         TEST_CASE(template162);
         TEST_CASE(template163); // #9685 syntax error
+        TEST_CASE(template164); // #9394
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -4096,14 +4097,24 @@ private:
 
     void template162() {
         const char code[] = "template <std::size_t N>\n"
+                            "struct CountryCode {\n"
+                            "    CountryCode(std::string cc);\n"
+                            "};"
+                            "template <std::size_t N>\n"
                             "CountryCode<N>::CountryCode(std::string cc) : m_String{std::move(cc)} {\n"
                             "}\n"
                             "template class CountryCode<2>;\n"
                             "template class CountryCode<3>;";
-        const char exp[]  = "CountryCode<2> :: CountryCode<2> ( std :: string cc ) ; "
-                            "CountryCode<3> :: CountryCode<3> ( std :: string cc ) ; "
+        const char exp[]  = "struct CountryCode<2> ; "
+                            "struct CountryCode<3> ; "
+                            "struct CountryCode<2> { "
+                            "CountryCode<2> ( std :: string cc ) ; "
+                            "} ; "
                             "CountryCode<2> :: CountryCode<2> ( std :: string cc ) : m_String { std :: move ( cc ) } { "
                             "} "
+                            "struct CountryCode<3> { "
+                            "CountryCode<3> ( std :: string cc ) ; "
+                            "} ; "
                             "CountryCode<3> :: CountryCode<3> ( std :: string cc ) : m_String { std :: move ( cc ) } { "
                             "}";
         ASSERT_EQUALS(exp, tok(code));
@@ -4112,6 +4123,42 @@ private:
     void template163() { // #9685 syntax error
         const char code[] = "extern \"C++\" template < typename T > T * test ( ) { return nullptr ; }";
         ASSERT_EQUALS(code, tok(code));
+    }
+
+    void template164() {  // #9394
+        const char code[] = "template <class TYPE>\n"
+                            "struct A {\n"
+                            "    A();\n"
+                            "    ~A();\n"
+                            "    static void f();\n"
+                            "};\n"
+                            "template <class TYPE>\n"
+                            "A<TYPE>::A() { }\n"
+                            "template <class TYPE>\n"
+                            "A<TYPE>::~A() { }\n"
+                            "template <class TYPE>\n"
+                            "void A<TYPE>::f() { }\n"
+                            "template class A<int>;\n"
+                            "template class A<float>;";
+        const char exp[]  = "struct A<int> ; "
+                            "struct A<float> ; "
+                            "struct A<int> { "
+                            "A<int> ( ) ; "
+                            "~ A<int> ( ) ; "
+                            "static void f ( ) ; "
+                            "} ; "
+                            "A<int> :: A<int> ( ) { } "
+                            "A<int> :: ~ A<int> ( ) { } "
+                            "void A<int> :: f ( ) { } "
+                            "struct A<float> { "
+                            "A<float> ( ) ; "
+                            "~ A<float> ( ) ; "
+                            "static void f ( ) ; "
+                            "} ; "
+                            "A<float> :: A<float> ( ) { } "
+                            "A<float> :: ~ A<float> ( ) { } "
+                            "void A<float> :: f ( ) { }";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
