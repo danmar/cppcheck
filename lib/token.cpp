@@ -1258,6 +1258,14 @@ std::string Token::stringifyList(const stringifyOptions& options, const std::vec
                 ret << tok->linenr() << ": ";
             } else if (this == tok && options.linenumbers) {
                 ret << tok->linenr() << ": ";
+            } else if (lineNumber > tok->linenr()) {
+                lineNumber = tok->linenr();
+                ret << '\n';
+                if (options.linenumbers) {
+                    ret << lineNumber << ':';
+                    if (lineNumber == tok->linenr())
+                        ret << ' ';
+                }
             } else {
                 while (lineNumber < tok->linenr()) {
                     ++lineNumber;
@@ -1273,7 +1281,7 @@ std::string Token::stringifyList(const stringifyOptions& options, const std::vec
         }
 
         tok->stringify(ret, options); // print token
-        if (tok->next() != end && (!options.linebreaks || (tok->next()->linenr() <= tok->linenr() && tok->next()->fileIndex() == tok->fileIndex())))
+        if (tok->next() != end && (!options.linebreaks || (tok->next()->linenr() == tok->linenr() && tok->next()->fileIndex() == tok->fileIndex())))
             ret << ' ';
     }
     if (options.linebreaks && (options.files || options.linenumbers))
