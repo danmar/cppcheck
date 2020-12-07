@@ -2453,6 +2453,16 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                         lhs = lhs->astOperand1();
                     if (!lhs)
                         throw ExprEngineException(tok2, "Unhandled assignment in loop");
+                    if (Token::Match(lhs, ". %name% =|[") && Token::simpleMatch(lhs->astOperand1(), ".")) {
+                        const Token *structToken = lhs;
+                        while (Token::Match(structToken, ".|["))
+                            structToken = structToken->astOperand1();
+                        if (Token::Match(structToken, "%var%")) {
+                            data.assignValue(structToken, structToken->varId(), std::make_shared<ExprEngine::BailoutValue>());
+                            changedVariables.insert(structToken->varId());
+                            continue;
+                        }
+                    }
                     if (Token::Match(lhs, ". %name% =|[") && lhs->astOperand1() && lhs->astOperand1()->valueType()) {
                         const Token *structToken = lhs->astOperand1();
                         if (!structToken->valueType() || !structToken->varId())
