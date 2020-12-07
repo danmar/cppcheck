@@ -27,6 +27,7 @@
 #include "token.h"
 #include "tokenize.h"
 
+#include <cmath>
 #include <cstddef>
 #include <list>
 #include <ostream>
@@ -425,9 +426,9 @@ void CheckType::checkFloatToIntegerOverflow(const Token *tok, const ValueType *v
             continue;
         if (!mSettings->isEnabled(&f, false))
             continue;
-        if (f.floatValue > ~0ULL)
+        if (f.floatValue >= std::exp2(mSettings->long_long_bit))
             floatToIntegerOverflowError(tok, f);
-        else if ((-f.floatValue) > (1ULL<<62))
+        else if ((-f.floatValue) > std::exp2(mSettings->long_long_bit - 1))
             floatToIntegerOverflowError(tok, f);
         else if (mSettings->platformType != Settings::Unspecified) {
             int bits = 0;
