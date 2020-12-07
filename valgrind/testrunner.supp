@@ -1,0 +1,16 @@
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:__static_initialization_and_destruction_0
+   fun:_GLOBAL__sub_I_memory_manager.cpp
+   fun:call_init.part.0
+   fun:call_init
+   fun:_dl_init
+   obj:/usr/lib/x86_64-linux-gnu/ld-2.31.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
