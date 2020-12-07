@@ -700,6 +700,18 @@ private:
               "    else if ( value & (int)Value2 ) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(size_t x) {\n"
+              "    if (x == sizeof(int)) {}\n"
+              "    else { if (x == sizeof(long))} {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(size_t x) {\n"
+              "    if (x == sizeof(long)) {}\n"
+              "    else { if (x == sizeof(long long))} {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void oppositeElseIfCondition() {
@@ -3002,8 +3014,8 @@ private:
               "  if (sizeof(char) != x) {}\n"
               "  if (x != sizeof(char)) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'sizeof(char)!=x' is always true\n"
-                      "[test.cpp:4]: (style) Condition 'x!=sizeof(char)' is always true\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'sizeof(char)!=x' is always true\n"
+                           "[test.cpp:4]: (style) Condition 'x!=sizeof(char)' is always true\n", "", errout.str());
 
         // Don't warn in assertions. Condition is often 'always true' by intention.
         // If platform,defines,etc cause an 'always false' assertion then that is not very dangerous neither
@@ -3453,6 +3465,20 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct a {\n"
+              "  int *b();\n"
+              "};\n"
+              "bool g(a c, a* d) {\n"
+              "  a *v, *e = v = &c;\n"
+              "  if (!v)\n"
+              "    return true;\n"
+              "  int *f = v->b();\n"
+              "  if (f)\n"
+              "    v = nullptr;\n"
+              "  if (v == nullptr && e) {}\n"
+              "  return d;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {

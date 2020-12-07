@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>940</width>
     <height>617</height>
    </rect>
   </property>
@@ -503,7 +503,7 @@
           <item>
            <widget class="QCheckBox" name="mCheckHeaders">
             <property name="text">
-             <string>Check code in headers  (slower analysis, more results)</string>
+             <string>Check code in headers  (should be ON normally. if you want a limited quick analysis then turn this OFF)</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -513,7 +513,10 @@
           <item>
            <widget class="QCheckBox" name="mCheckUnusedTemplates">
             <property name="text">
-             <string>Check code in unused templates  (slower and less accurate analysis)</string>
+             <string>Check code in unused templates (should be ON normally, however in theory you can safely ignore warnings in unused templates)</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
             </property>
            </widget>
           </item>

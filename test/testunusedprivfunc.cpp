@@ -77,7 +77,7 @@ private:
 
         TEST_CASE(multiFile);
         TEST_CASE(unknownBaseTemplate); // ticket #2580
-        TEST_CASE(hierarchie_loop); // ticket 5590
+        TEST_CASE(hierarchy_loop); // ticket 5590
 
         TEST_CASE(staticVariable); //ticket #5566
 
@@ -752,7 +752,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void hierarchie_loop() {
+    void hierarchy_loop() {
         check("class InfiniteB : InfiniteA {\n"
               "    class D {\n"
               "    };\n"

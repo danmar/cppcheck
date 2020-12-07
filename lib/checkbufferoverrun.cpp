@@ -726,17 +726,6 @@ void CheckBufferOverrun::terminateStrncpyError(const Token *tok, const std::stri
                 "assumes buffer is null-terminated.", CWE170, true);
 }
 
-void CheckBufferOverrun::bufferNotZeroTerminatedError(const Token *tok, const std::string &varname, const std::string &function)
-{
-    const std::string errmsg = "$symbol:" + varname + '\n' +
-                               "$symbol:" + function + '\n' +
-                               "The buffer '" + varname + "' is not null-terminated after the call to " + function + "().\n"
-                               "The buffer '" + varname + "' is not null-terminated after the call to " + function + "(). "
-                               "This will cause bugs later in the code if the code assumes the buffer is null-terminated.";
-
-    reportError(tok, Severity::warning, "bufferNotZeroTerminated", errmsg, CWE170, true);
-}
-
 
 
 //---------------------------------------------------------------------------

@@ -59,10 +59,11 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
     if (filename == "externals/z3_version.h")
         return;
 
-    static const std::vector<std::string> externalfolders = {"externals",
-                                                             "externals/simplecpp",
-                                                             "externals/tinyxml"
-                                                            };
+    static const std::vector<std::string> externalfolders{"externals",
+        "externals/picojson",
+        "externals/simplecpp",
+        "externals/tinyxml2"
+    };
 
     // Is the dependency already included?
     if (std::find(depfiles.begin(), depfiles.end(), filename) != depfiles.end())
@@ -386,9 +387,9 @@ int main(int argc, char **argv)
          << "endif\n\n";
 
     makeConditionalVariable(fout, "PREFIX", "/usr");
-    makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -isystem externals -isystem externals/simplecpp -isystem externals/tinyxml");
-    makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -isystem externals/simplecpp -isystem externals/tinyxml");
-    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Icli -isystem externals/simplecpp -isystem externals/tinyxml");
+    makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -isystem externals -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2");
+    makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -isystem externals/simplecpp -isystem externals/tinyxml2");
+    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Icli -isystem externals/simplecpp -isystem externals/tinyxml2");
 
     fout << "BIN=$(DESTDIR)$(PREFIX)/bin\n\n";
     fout << "# For 'make man': sudo apt-get install xsltproc docbook-xsl docbook-xml on Linux\n";
@@ -420,7 +421,7 @@ int main(int argc, char **argv)
     fout << "run-dmake: dmake\n";
     fout << "\t./dmake\n\n";
     fout << "generate_cfg_tests: tools/generate_cfg_tests.o $(EXTOBJ)\n";
-    fout << "\tg++ -isystem externals/tinyxml -o generate_cfg_tests tools/generate_cfg_tests.o $(EXTOBJ)\n";
+    fout << "\tg++ -isystem externals/tinyxml2 -o generate_cfg_tests tools/generate_cfg_tests.o $(EXTOBJ)\n";
     fout << "clean:\n";
     fout << "\trm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";

@@ -516,7 +516,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 filename2 = filename.substr(filename.rfind('/') + 1);
             else
                 filename2 = filename;
-            filename2 = mSettings.plistOutput + filename2.substr(0, filename2.find('.')) + ".plist";
+            std::size_t fileNameHash = std::hash<std::string> {}(filename);
+            filename2 = mSettings.plistOutput + filename2.substr(0, filename2.find('.')) + "_" + std::to_string(fileNameHash) + ".plist";
             plistFile.open(filename2);
             plistFile << ErrorLogger::plistHeader(version(), files);
         }
@@ -1141,6 +1142,10 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
     for (const Settings::Rule &rule : mSettings.rules) {
         if (rule.pattern.empty() || rule.id.empty() || rule.severity == Severity::none || rule.tokenlist != tokenlist)
             continue;
+
+        if (!mSettings.quiet) {
+            reportOut("Processing rule: " + rule.pattern);
+        }
 
         const char *pcreCompileErrorStr = nullptr;
         int erroffset = 0;

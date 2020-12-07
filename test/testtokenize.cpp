@@ -47,6 +47,12 @@ private:
     void run() OVERRIDE {
         LOAD_LIB_2(settings_windows.library, "windows.cfg");
 
+        // If there are unused templates, keep those
+        settings0.checkUnusedTemplates = true;
+        settings1.checkUnusedTemplates = true;
+        settings2.checkUnusedTemplates = true;
+        settings_windows.checkUnusedTemplates = true;
+
         TEST_CASE(tokenize1);
         TEST_CASE(tokenize2);
         TEST_CASE(tokenize4);
@@ -84,6 +90,8 @@ private:
 
         TEST_CASE(syntax_case_default);
 
+        TEST_CASE(removePragma);
+
         TEST_CASE(foreach);     // #3690
         TEST_CASE(ifconstexpr);
 
@@ -93,7 +101,8 @@ private:
 
         TEST_CASE(longtok);
 
-        TEST_CASE(removeUnusedTemplates);
+        TEST_CASE(simplifyHeadersAndUnusedTemplates1);
+        TEST_CASE(simplifyHeadersAndUnusedTemplates2);
 
         TEST_CASE(simplifyCasts1);
         TEST_CASE(simplifyCasts2);
@@ -339,6 +348,8 @@ private:
         TEST_CASE(functionAttributeBefore);
         TEST_CASE(functionAttributeAfter);
 
+        TEST_CASE(splitTemplateRightAngleBrackets);
+
         TEST_CASE(cpp03template1);
         TEST_CASE(cpp0xtemplate1);
         TEST_CASE(cpp0xtemplate2);
@@ -505,6 +516,10 @@ private:
         TEST_CASE(unknownMacroBeforeReturn);
 
         TEST_CASE(cppcast);
+
+        TEST_CASE(checkHeader1);
+
+        TEST_CASE(removeExtraTemplateKeywords);
     }
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -567,13 +582,13 @@ private:
             return "";
     }
 
-    std::string tokenizeAndStringify(const char code[], const Settings &settings) {
+    std::string tokenizeAndStringify(const char code[], const Settings &settings, const char filename[] = "test.cpp") {
         errout.str("");
 
         // tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.tokenize(istr, filename);
         if (!tokenizer.tokens())
             return "";
         return tokenizer.tokens()->stringifyList(false, true, false, true, false, nullptr, nullptr);
@@ -971,6 +986,21 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void removePragma() {
+        const char code[] = "_Pragma(\"abc\") int x;";
+        Settings s;
+
+        s.standards.c = Standards::C89;
+        ASSERT_EQUALS("_Pragma ( \"abc\" ) int x ;", tokenizeAndStringify(code, s, "test.c"));
+        s.standards.c = Standards::CLatest;
+        ASSERT_EQUALS("int x ;", tokenizeAndStringify(code, s, "test.c"));
+
+        s.standards.cpp = Standards::CPP03;
+        ASSERT_EQUALS("_Pragma ( \"abc\" ) int x ;", tokenizeAndStringify(code, s, "test.cpp"));
+        s.standards.cpp = Standards::CPPLatest;
+        ASSERT_EQUALS("int x ;", tokenizeAndStringify(code, s, "test.cpp"));
+    }
+
     void foreach () {
         // #3690,#5154
         const char code[] ="void f() { for each ( char c in MyString ) { Console::Write(c); } }";
@@ -1009,7 +1039,7 @@ private:
     }
 
 
-    void removeUnusedTemplates() {
+    void simplifyHeadersAndUnusedTemplates1() {
         Settings s;
         s.checkUnusedTemplates = false;
         ASSERT_EQUALS(";",
@@ -1025,6 +1055,28 @@ private:
                                            "}", s));
     }
 
+    void simplifyHeadersAndUnusedTemplates2() {
+        const char code[] = "; template< typename T, u_int uBAR = 0 >\n"
+                            "class Foo {\n"
+                            "public:\n"
+                            "    void FooBar() {\n"
+                            "        new ( (uBAR ? uBAR : sizeof(T))) T;\n"
+                            "    }\n"
+                            "};";
+
+        Settings s;
+        s.checkUnusedTemplates = false;
+        ASSERT_EQUALS(";", tokenizeAndStringify(code, s));
+
+        s.checkUnusedTemplates = true;
+        ASSERT_EQUALS("; template < typename T , u_int uBAR = 0 >\n"
+                      "class Foo {\n"
+                      "public:\n"
+                      "void FooBar ( ) {\n"
+                      "new ( uBAR ? uBAR : sizeof ( T ) ) T ;\n"
+                      "}\n"
+                      "} ;", tokenizeAndStringify(code, s));
+    }
 
     // Don’t remove "(int *)"..
     void simplifyCasts1() {
@@ -5220,6 +5272,27 @@ private:
         ASSERT(func5 && func5->isAttributeNoreturn());
     }
 
+    void splitTemplateRightAngleBrackets() {
+        {
+            const char code[] = "; z = x < 0 ? x >> y : x >> y;";
+            ASSERT_EQUALS("; z = x < 0 ? x >> y : x >> y ;", tokenizeAndStringify(code));
+        }
+        {
+            // ftp://ftp.de.debian.org/debian/pool/main/f/ffmpeg/ffmpeg_4.3.1.orig.tar.xz
+            // ffmpeg-4.3.1/libavcodec/mpeg4videodec.c:376
+            const char code[] = "void f ( ) {\n"
+                                "    int shift_y = ctx->sprite_shift[0];\n"
+                                "    int shift_c = ctx->sprite_shift[1];\n"
+                                "    if ( shift_c < 0 || shift_y < 0 ||\n"
+                                "         FFABS ( sprite_offset [ 0 ] [ i ] ) >= INT_MAX >> shift_y ||\n"
+                                "         FFABS ( sprite_offset [ 1 ] [ i ] ) >= INT_MAX >> shift_c ||\n"
+                                "         FFABS ( sprite_delta [ 0 ] [ i ] ) >= INT_MAX >> shift_y ||\n"
+                                "         FFABS ( sprite_delta [ 1 ] [ i ] ) >= INT_MAX >> shift_y ) ;\n"
+                                "}";
+            ASSERT_EQUALS(std::string::npos, tokenizeAndStringify(code).find("> >"));
+        }
+    }
+
     void cpp03template1() {
         {
             const char *code = "template<typename> struct extent {};";
@@ -5244,7 +5317,6 @@ private:
                            "  fn2<int>();\n"
                            "}\n";
         ASSERT_EQUALS("void fn2<int> ( int t = [ ] { return 1 ; } ( ) ) ;\n"
-                      "\n"
                       "\n"
                       "int main ( )\n"
                       "{\n"
@@ -6422,7 +6494,7 @@ private:
         ASSERT_EQUALS("template < typename T > void g ( S < & T :: operatorint > ) { }", tokenizeAndStringify(code3));
 
         const char code4[] = "template <typename T> void g(S<&T::template operator- <double> >) {}";
-        ASSERT_EQUALS("template < typename T > void g ( S < & T :: template operator- < double > > ) { }", tokenizeAndStringify(code4));
+        ASSERT_EQUALS("template < typename T > void g ( S < & T :: operator- < double > > ) { }", tokenizeAndStringify(code4));
     }
 
     void simplifyOperatorName12() { // #9110
@@ -7448,11 +7520,11 @@ private:
     }
 
     void simplifyEmptyNamespaces() {
-        ASSERT_EQUALS("", tokenizeAndStringify("namespace { }"));
-        ASSERT_EQUALS("", tokenizeAndStringify("namespace foo { }"));
-        ASSERT_EQUALS("", tokenizeAndStringify("namespace foo { namespace { } }"));
-        ASSERT_EQUALS("", tokenizeAndStringify("namespace { namespace { } }")); // Ticket #9512
-        ASSERT_EQUALS("", tokenizeAndStringify("namespace foo { namespace bar { } }"));
+        ASSERT_EQUALS(";", tokenizeAndStringify("namespace { }"));
+        ASSERT_EQUALS(";", tokenizeAndStringify("namespace foo { }"));
+        ASSERT_EQUALS(";", tokenizeAndStringify("namespace foo { namespace { } }"));
+        ASSERT_EQUALS(";", tokenizeAndStringify("namespace { namespace { } }")); // Ticket #9512
+        ASSERT_EQUALS(";", tokenizeAndStringify("namespace foo { namespace bar { } }"));
     }
 
     void prepareTernaryOpForAST() {
@@ -7710,17 +7782,20 @@ private:
         ASSERT_EQUALS("aFoobar(new=", testAst("a = new Foo(bar);"));
         ASSERT_EQUALS("aFoobar(new=", testAst("a = new Foo(bar);"));
         ASSERT_EQUALS("aFoo(new=", testAst("a = new Foo<bar>();"));
-        ASSERT_EQUALS("X12,3,(new", testAst("new (a,b,c) X(1,2,3);"));
         ASSERT_EQUALS("aXnew(", testAst("a (new (X));"));
         ASSERT_EQUALS("aXnew5,(", testAst("a (new (X), 5);"));
         ASSERT_EQUALS("adelete", testAst("delete a;"));
         ASSERT_EQUALS("adelete", testAst("delete (a);"));
         ASSERT_EQUALS("adelete", testAst("delete[] a;"));
         ASSERT_EQUALS("ab.3c-(delete", testAst("delete[] a.b(3 - c);"));
-        ASSERT_EQUALS("a::new=", testAst("a = new (b) ::X;"));
         ASSERT_EQUALS("aA1(new(bB2(new(,", testAst("a(new A(1)), b(new B(2))"));
         ASSERT_EQUALS("Fred10[new", testAst(";new Fred[10];"));
         ASSERT_EQUALS("adelete", testAst("void f() { delete a; }"));
+
+        // placement new
+        ASSERT_EQUALS("X12,3,(new ab,c,", testAst("new (a,b,c) X(1,2,3);"));
+        ASSERT_EQUALS("a::new=", testAst("a = new (b) ::X;"));
+        ASSERT_EQUALS("cCnew= abc:?", testAst("c = new(a ? b : c) C;"));
 
         // invalid code (libreoffice), don't hang
         // #define SlideSorterViewShell
@@ -7808,7 +7883,7 @@ private:
         // function pointer
         TODO_ASSERT_EQUALS("todo", "va_argapvoid((,(*0=", testAst("*va_arg(ap, void(**) ()) = 0;"));
 
-        // struct initialization
+        // struct/array initialization
         ASSERT_EQUALS("name_bytes[bits~unusedBits>>unusedBits<<{=", testAst("const uint8_t name_bytes[] = { (~bits >> unusedBits) << unusedBits };"));
         ASSERT_EQUALS("abuf.0{={=", testAst("a = { .buf = { 0 } };"));
         ASSERT_EQUALS("ab2[a.0=b.0=,{a.0=b.0=,{,{=", testAst("struct AB ab[2] = { { .a=0, .b=0 }, { .a=0, .b=0 } };"));
@@ -7822,6 +7897,7 @@ private:
         ASSERT_EQUALS("x0fSa.1{=b.2{,c.\"\"=,{(||=", testAst("x = 0 || f(S{.a = { 1 }, .b { 2 }, .c = \"\" });"));
         ASSERT_EQUALS("a0{,( \"\"abc12:?,", testAst("a(0, {{\"\", (abc) ? 1 : 2}});"));
         ASSERT_EQUALS("a0{,( \'\'abc12:?,", testAst("a(0, {{\'\', (abc) ? 1 : 2}});"));
+        ASSERT_EQUALS("x12,{34,{,{56,{78,{,{,{=", testAst("x = { { {1,2}, {3,4} }, { {5,6}, {7,8} } };"));
 
         // struct initialization hang
         ASSERT_EQUALS("sbar.1{,{(={= forfieldfield++;;(",
@@ -7868,6 +7944,9 @@ private:
         ASSERT_EQUALS("unoRef:: var0(", testAst(code1));
 
         ASSERT_EQUALS("vary=", testAst("std::string var = y;"));
+
+        // create ast for decltype
+        ASSERT_EQUALS("decltypex( var1=", testAst("decltype(x) var = 1;"));
     }
 
     void astunaryop() { // unary operators
@@ -7882,6 +7961,7 @@ private:
         ASSERT_EQUALS("x(throw", testAst(";throw x();"));
         ASSERT_EQUALS("a*bc:?return", testAst("return *a ? b : c;"));
         ASSERT_EQUALS("xy*--=", testAst("x = -- * y;"));
+        ASSERT_EQUALS("x(throw", testAst(";throw (foo) x;")); // #9955
 
         // Unary :: operator
         ASSERT_EQUALS("abcd::12,(e/:?=", testAst("a = b ? c : ::d(1,2) / e;"));
@@ -7969,6 +8049,7 @@ private:
         ASSERT_EQUALS("{([return", testAst("return []() -> decltype(0) {};"));
         ASSERT_EQUALS("x{(&[=", testAst("x = [&]()->std::string const & {};"));
         ASSERT_EQUALS("f{([=", testAst("f = []() -> foo* {};"));
+        ASSERT_EQUALS("f{([=", testAst("f = []() -> foo&& {};"));
         ASSERT_EQUALS("f{([=", testAst("f = [](void) mutable -> foo* {};"));
         ASSERT_EQUALS("f{([=", testAst("f = []() mutable {};"));
 
@@ -8600,6 +8681,69 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             ASSERT_EQUALS(tok->str() == "(", tok->isCast());
         }
+    }
+
+    std::string checkHeaders(const char code[], bool checkHeadersFlag) {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        settings.checkHeaders = checkHeadersFlag;
+
+        // Raw tokens..
+        std::vector<std::string> files(1, "test.cpp");
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+        Preprocessor preprocessor(settings0, nullptr);
+        preprocessor.setDirectives(tokens1);
+
+        // Tokenizer..
+        Tokenizer tokenizer(&settings, this);
+        tokenizer.createTokens(std::move(tokens2));
+        tokenizer.simplifyTokens1("");
+
+        return tokenizer.tokens()->stringifyList();
+    }
+
+    void checkHeader1() {
+        // #9977
+        const char code[] = "# 1 \"test.h\"\n"
+                            "struct A {\n"
+                            "    int a = 1;\n"
+                            "    void f() { g(1); }\n"
+                            "    template <typename T> void g(T x) { a = 2; }\n" // <- template is used and should be kept
+                            "};";
+
+        ASSERT_EQUALS("\n\n##file 1\n"
+                      "1: struct A {\n"
+                      "2: int a ; a = 1 ;\n"
+                      "3: void f ( ) { g<int> ( 1 ) ; }\n"
+                      "4: void g<int> ( int x ) ;\n"
+                      "5: } ; void A :: g<int> ( int x ) { a = 2 ; }\n",
+                      checkHeaders(code, true));
+
+        ASSERT_EQUALS("\n\n##file 1\n\n"
+                      "1:\n"
+                      "|\n"
+                      "4:\n"
+                      "5: ;\n",
+                      checkHeaders(code, false));
+    }
+
+    void removeExtraTemplateKeywords() {
+        const char code1[] = "typename GridView::template Codim<0>::Iterator iterator;";
+        const char expected1[] = "GridView :: Codim < 0 > :: Iterator iterator ;";
+        ASSERT_EQUALS(expected1, tokenizeAndStringify(code1, false));
+
+        const char code2[] = "typename GridView::template Codim<0>::Iterator it = gv.template begin<0>();";
+        const char expected2[] = "GridView :: Codim < 0 > :: Iterator it ; it = gv . begin < 0 > ( ) ;";
+        ASSERT_EQUALS(expected2, tokenizeAndStringify(code2, false));
     }
 };
 

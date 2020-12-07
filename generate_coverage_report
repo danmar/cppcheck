@@ -14,7 +14,7 @@ rm lib/*.gcda
 rm lib/*.gcno
 rm test/*.gcda
 rm test/*.gcno
-rm externals/tinyxml/*.gcda
-rm externals/tinyxml/*.gcno
+rm externals/tinyxml2/*.gcda
+rm externals/tinyxml2/*.gcno
 rm lcov.info lcov_tmp.info
 make clean

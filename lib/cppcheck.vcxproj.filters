@@ -116,7 +116,7 @@
     <ClCompile Include="library.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\externals\tinyxml\tinyxml2.cpp">
+    <ClCompile Include="..\externals\tinyxml2\tinyxml2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="valueflow.cpp">
@@ -292,7 +292,7 @@
     <ClInclude Include="library.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\externals\tinyxml\tinyxml2.h">
+    <ClInclude Include="..\externals\tinyxml2\tinyxml2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="valueflow.h">

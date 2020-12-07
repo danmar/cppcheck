@@ -493,7 +493,7 @@ static Token * skipDecl(Token *tok)
     return tok;
 }
 
-static bool iscast(const Token *tok)
+static bool iscast(const Token *tok, bool cpp)
 {
     if (!Token::Match(tok, "( ::| %name%"))
         return false;
@@ -501,7 +501,8 @@ static bool iscast(const Token *tok)
     if (Token::simpleMatch(tok->link(), ") ( )"))
         return false;
 
-    if (tok->previous() && tok->previous()->isName() && tok->previous()->str() != "return")
+    if (tok->previous() && tok->previous()->isName() && tok->previous()->str() != "return" &&
+        (!cpp || tok->previous()->str() != "throw"))
         return false;
 
     if (Token::simpleMatch(tok->previous(), ">") && tok->previous()->link())
@@ -557,7 +558,7 @@ static bool iscast(const Token *tok)
 
 static Token* findTypeEnd(Token* tok)
 {
-    while (Token::Match(tok, "%name%|.|::|*|&|<|(|template|decltype|sizeof")) {
+    while (Token::Match(tok, "%name%|.|::|*|&|&&|<|(|template|decltype|sizeof")) {
         if (Token::Match(tok, "(|<"))
             tok = tok->link();
         if (!tok)
@@ -830,7 +831,7 @@ static void compileTerm(Token *&tok, AST_state& state)
         }
     } else if (tok->str() == "{") {
         const Token *prev = tok->previous();
-        if (Token::simpleMatch(prev, ") {") && iscast(prev->link()))
+        if (Token::simpleMatch(prev, ") {") && iscast(prev->link(), state.cpp))
             prev = prev->link()->previous();
         if (Token::simpleMatch(tok->link(),"} [")) {
             tok = tok->next();
@@ -863,7 +864,7 @@ static void compileTerm(Token *&tok, AST_state& state)
             if (tok->link() != tok->next()) {
                 state.inArrayAssignment++;
                 compileUnaryOp(tok, state, compileExpression);
-                while (Token::Match(tok, "} [,};]") && state.inArrayAssignment > 0) {
+                if (Token::Match(tok, "} [,};]") && state.inArrayAssignment > 0) {
                     tok = tok->next();
                     state.inArrayAssignment--;
                 }
@@ -905,7 +906,7 @@ static bool isPrefixUnary(const Token* tok, bool cpp)
     if (tok->str() == "*" && tok->previous()->tokType() == Token::eIncDecOp && isPrefixUnary(tok->previous(), cpp))
         return true;
 
-    return tok->strAt(-1) == ")" && iscast(tok->linkAt(-1));
+    return tok->strAt(-1) == ")" && iscast(tok->linkAt(-1), cpp);
 }
 
 static void compilePrecedence2(Token *&tok, AST_state& state)
@@ -948,9 +949,8 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                     Token* curlyBracket = roundBracket->link()->next();
                     if (Token::Match(curlyBracket, "mutable|const|noexcept"))
                         curlyBracket = curlyBracket->next();
-                    if (curlyBracket && curlyBracket->originalName() == "->") {
+                    if (curlyBracket && curlyBracket->originalName() == "->")
                         curlyBracket = findTypeEnd(curlyBracket->next());
-                    }
                     if (curlyBracket && curlyBracket->str() == "{") {
                         squareBracket->astOperand1(roundBracket);
                         roundBracket->astOperand1(curlyBracket);
@@ -973,7 +973,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             else
                 compileUnaryOp(tok, state, compileExpression);
             tok = tok2->link()->next();
-        } else if (tok->str() == "(" && (!iscast(tok) || Token::Match(tok->previous(), "if|while|for|switch|catch"))) {
+        } else if (tok->str() == "(" && (!iscast(tok, state.cpp) || Token::Match(tok->previous(), "if|while|for|switch|catch"))) {
             Token* tok2 = tok;
             tok = tok->next();
             const bool opPrevTopSquare = !state.op.empty() && state.op.top() && state.op.top()->str() == "[";
@@ -984,7 +984,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 || (tok->previous() && tok->previous()->isName() && !Token::Match(tok->previous(), "return|case") && (!state.cpp || !Token::Match(tok->previous(), "throw|delete")))
                 || (tok->strAt(-1) == "]" && (!state.cpp || !Token::Match(tok->linkAt(-1)->previous(), "new|delete")))
                 || (tok->strAt(-1) == ">" && tok->linkAt(-1))
-                || (tok->strAt(-1) == ")" && !iscast(tok->linkAt(-1))) // Don't treat brackets to clarify precedence as function calls
+                || (tok->strAt(-1) == ")" && !iscast(tok->linkAt(-1), state.cpp)) // Don't treat brackets to clarify precedence as function calls
                 || (tok->strAt(-1) == "}" && opPrevTopSquare)) {
                 const bool operandInside = oldOpSize < state.op.size();
                 if (operandInside)
@@ -993,7 +993,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                     compileUnaryOp(tok, state, nullptr);
             }
             tok = tok->link()->next();
-        } else if (iscast(tok) && Token::simpleMatch(tok->link(), ") {") && Token::simpleMatch(tok->link()->linkAt(1), "} [")) {
+        } else if (iscast(tok, state.cpp) && Token::simpleMatch(tok->link(), ") {") && Token::simpleMatch(tok->link()->linkAt(1), "} [")) {
             Token *cast = tok;
             tok = tok->link()->next();
             Token *tok1 = tok;
@@ -1027,7 +1027,7 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                 }
             }
             compileUnaryOp(tok, state, compilePrecedence3);
-        } else if (tok->str() == "(" && iscast(tok)) {
+        } else if (tok->str() == "(" && iscast(tok, state.cpp)) {
             Token* castTok = tok;
             castTok->isCast(true);
             tok = tok->link()->next();
@@ -1044,9 +1044,14 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
             if (tok->str() == "(") {
                 if (Token::Match(tok, "( &| %name%") && Token::Match(tok->link(), ") ( %type%") && Token::simpleMatch(tok->link()->linkAt(1), ") ("))
                     tok = tok->link()->next();
-                if (Token::Match(tok->link(), ") ::| %type%"))
+                if (Token::Match(tok->link(), ") ::| %type%")) {
+                    if (Token::Match(tok, "( !!)")) {
+                        Token *innerTok = tok->next();
+                        AST_state innerState(true);
+                        compileExpression(innerTok, innerState);
+                    }
                     tok = tok->link()->next();
-                else if (Token::Match(tok, "( %type%") && Token::Match(tok->link(), ") [();,[]")) {
+                } else if (Token::Match(tok, "( %type%") && Token::Match(tok->link(), ") [();,[]")) {
                     tok = tok->next();
                     innertype = true;
                 } else if (Token::Match(tok, "( &| %name%") && Token::simpleMatch(tok->link(), ") (")) {
@@ -1456,7 +1461,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
                     compileExpression(tok2, state1);
                     if (Token::Match(tok2, ";|)"))
                         break;
-                    init1 = nullptr;
+                    init1 = nullptr; // cppcheck-suppress redundantAssignment ; FALSE POSITIVE
                 }
                 if (!tok2) // #7109 invalid code
                     return nullptr;

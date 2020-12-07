@@ -20,7 +20,6 @@ def get_debug_section(title, stdout):
     if title == '##AST':
         # TODO set types
         s = re.sub(r"return '[a-zA-Z0-9: *]+'", "return", s)
-        s = re.sub(r"new '[a-zA-Z0-9: *]+'", "new", s)
 
     pos1 = s.find(title)
     assert pos1 > 0
@@ -102,6 +101,15 @@ def test_symbol_database_6():
 def test_symbol_database_7():
     check_symbol_database('struct S {int x;}; void f(struct S *s) {}')
 
+def test_symbol_database_class_access_1():
+    check_symbol_database('class Fred { void foo ( ) {} } ;')
+
+def test_symbol_database_class_access_2():
+    check_symbol_database('class Fred { protected: void foo ( ) {} } ;')
+
+def test_symbol_database_class_access_3():
+    check_symbol_database('class Fred { public: void foo ( ) {} } ;')
+
 def test_symbol_database_operator():
     check_symbol_database('struct Fred { void operator=(int x); };')
 
@@ -120,5 +128,4 @@ def test_ast_control_flow():
 
 def test_ast():
     check_ast('struct S { int x; }; S* foo() { return new S(); }')
-
 

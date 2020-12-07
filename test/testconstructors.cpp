@@ -31,11 +31,11 @@ public:
 private:
     Settings settings;
 
-    void check(const char code[], bool showAll = false) {
+    void check(const char code[], bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
-        settings.inconclusive = showAll;
+        settings.inconclusive = inconclusive;
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

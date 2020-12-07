@@ -964,7 +964,9 @@ void CheckClass::initializationListUsage()
             const Variable* var = tok->variable();
             if (!var || var->scope() != owner || var->isStatic())
                 continue;
-            if (var->isPointer() || var->isReference() || var->isEnumType() || var->valueType()->type > ValueType::Type::ITERATOR)
+            if (var->isPointer() || var->isReference() || var->isEnumType())
+                continue;
+            if (!WRONG_DATA(!var->valueType(), tok) && var->valueType()->type > ValueType::Type::ITERATOR)
                 continue;
 
             // bailout: multi line lambda in rhs => do not warn
@@ -1983,6 +1985,9 @@ static const std::set<std::string> stl_containers_not_const = { "map", "unordere
 
 bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed) const
 {
+    if (mTokenizer->hasIfdef(func->functionScope->bodyStart, func->functionScope->bodyEnd))
+        return false;
+
     // if the function doesn't have any assignment nor function call,
     // it can be a const function..
     for (const Token *tok1 = func->functionScope->bodyStart; tok1 && tok1 != func->functionScope->bodyEnd; tok1 = tok1->next()) {

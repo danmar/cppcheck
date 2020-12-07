@@ -35,7 +35,7 @@ Settings::Settings()
       checkConfiguration(false),
       checkHeaders(true),
       checkLibrary(false),
-      checkUnusedTemplates(false),
+      checkUnusedTemplates(true),
       clang(false),
       clangExecutable("clang"),
       clangTidy(false),

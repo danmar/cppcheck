@@ -79,7 +79,7 @@ public:
         void parseCommand(const std::string &command);
 
         void parseCommandStd(const std::string& command, std::string::size_type *pos, std::string& defs);
-        void parseCommandDefine(const std::string& command, std::string::size_type *pos, std::string& defs);
+        static void parseCommandDefine(const std::string& command, std::string::size_type *pos, std::string& defs);
         void parseCommandUndefine(const std::string& command,  std::string::size_type *pos);
         void parseCommandInclude(const std::string& command,  std::string::size_type *pos);
         void parseCommandSystemInclude(const std::string& command,  std::string::size_type *pos);

@@ -1,6 +1,9 @@
 // To test:
 // ~/cppcheck/cppcheck --dump misc-test.cpp && python ../misc.py -verify misc-test.cpp.dump
 
+#include <string>
+#include <vector>
+
 // Warn about string concatenation in array initializers..
 const char *a[] = {"a" "b"}; // stringConcatInArrayInit
 const char *b[] = {"a","b" "c"}; // stringConcatInArrayInit

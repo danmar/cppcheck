@@ -33,7 +33,10 @@ if (BUILD_TESTS)
     enable_testing()
 endif()
 
-add_subdirectory(externals/tinyxml)
+if(USE_BUNDLED_TINYXML2)
+    message(STATUS "Using bundled version of tinyxml2")
+    add_subdirectory(externals/tinyxml2)
+endif()
 add_subdirectory(externals/simplecpp)
 add_subdirectory(lib)   # CppCheck Library 
 add_subdirectory(cli)   # Client application

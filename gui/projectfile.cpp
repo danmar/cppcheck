@@ -67,7 +67,7 @@ void ProjectFile::clear()
     mClangAnalyzer = mClangTidy = false;
     mAnalyzeAllVsConfigs = false;
     mCheckHeaders = true;
-    mCheckUnusedTemplates = false;
+    mCheckUnusedTemplates = true;
     mMaxCtuDepth = settings.maxCtuDepth;
     mMaxTemplateRecursion = settings.maxTemplateRecursion;
     mCheckUnknownFunctionReturn.clear();
@@ -815,12 +815,12 @@ void ProjectFile::setVSConfigurations(const QStringList &vsConfigs)
     mVsConfigurations = vsConfigs;
 }
 
-void ProjectFile::setWarningTags(std::size_t hash, QString tag)
+void ProjectFile::setWarningTags(std::size_t hash, QString tags)
 {
-    if (tag.isEmpty())
+    if (tags.isEmpty())
         mWarningTags.erase(hash);
     else if (hash > 0)
-        mWarningTags[hash] = tag;
+        mWarningTags[hash] = tags;
 }
 
 QString ProjectFile::getWarningTags(std::size_t hash) const

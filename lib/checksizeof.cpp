@@ -177,6 +177,9 @@ void CheckSizeof::checkSizeofForPointerSize()
             while (Token::Match(variable2, "%var% ::|."))
                 variable2 = variable2->tokAt(2);
 
+            if (!variable)
+                continue;
+
             // Ensure the variables are in the symbol database
             // Also ensure the variables are pointers
             // Only keep variables which are pointers

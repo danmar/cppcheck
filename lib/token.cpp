@@ -293,18 +293,14 @@ void Token::deleteThis()
         takeData(mNext);
         mNext->link(nullptr); // mark as unlinked
         deleteNext();
-    } else if (mPrevious && mPrevious->mPrevious) { // Copy previous to this and delete previous
+    } else if (mPrevious) { // Copy previous to this and delete previous
         takeData(mPrevious);
-
-        Token* toDelete = mPrevious;
-        mPrevious = mPrevious->mPrevious;
-        mPrevious->mNext = this;
-
-        delete toDelete;
+        mPrevious->link(nullptr);
+        deletePrevious();
     } else {
         // We are the last token in the list, we can't delete
         // ourselves, so just make us empty
-        str("");
+        str(";");
     }
 }
 
@@ -865,9 +861,27 @@ const Token * Token::findClosingBracket() const
     if (mStr != "<")
         return nullptr;
 
+    if (!mPrevious)
+        return nullptr;
+
+    if (!(mPrevious->isName() ||
+          Token::Match(mPrevious->previous(), "operator %op% <") ||
+          Token::Match(mPrevious->tokAt(-2), "operator [([] [)]] <")))
+        return nullptr;
+
     const Token *closing = nullptr;
     const bool templateParameter(strAt(-1) == "template");
     std::set<std::string> templateParameters;
+
+    bool isDecl = true;
+    for (const Token *prev = previous(); prev; prev = prev->previous()) {
+        if (prev->str() == "=")
+            isDecl = false;
+        if (Token::simpleMatch(prev, "template <"))
+            isDecl = true;
+        if (Token::Match(prev, "[;{}]"))
+            break;
+    }
 
     unsigned int depth = 0;
     for (closing = this; closing != nullptr; closing = closing->next()) {
@@ -886,6 +900,8 @@ const Token * Token::findClosingBracket() const
             if (--depth == 0)
                 return closing;
         } else if (closing->str() == ">>" || closing->str() == ">>=") {
+            if (!isDecl && depth == 1)
+                continue;
             if (depth <= 2)
                 return closing;
             depth -= 2;
@@ -1140,14 +1156,14 @@ void Token::printOut(const char *title) const
 {
     if (title && title[0])
         std::cout << "\n### " << title << " ###\n";
-    std::cout << stringifyList(stringifyOptions::forDebugExprId(), nullptr, nullptr) << std::endl;
+    std::cout << stringifyList(stringifyOptions::forPrintOut(), nullptr, nullptr) << std::endl;
 }
 
 void Token::printOut(const char *title, const std::vector<std::string> &fileNames) const
 {
     if (title && title[0])
         std::cout << "\n### " << title << " ###\n";
-    std::cout << stringifyList(stringifyOptions::forDebugExprId(), &fileNames, nullptr) << std::endl;
+    std::cout << stringifyList(stringifyOptions::forPrintOut(), &fileNames, nullptr) << std::endl;
 }
 
 void Token::printLines(int lines) const
@@ -1190,9 +1206,9 @@ void Token::stringify(std::ostream& os, const stringifyOptions& options) const
         }
     }
     if (options.varid && mImpl->mVarId != 0)
-        os << '@' << mImpl->mVarId;
-    if (options.exprid && mImpl->mExprId != 0)
-        os << '@' << mImpl->mExprId;
+        os << "@" << (options.idtype ? "var" : "") << mImpl->mVarId;
+    else if (options.exprid && mImpl->mExprId != 0)
+        os << "@" << (options.idtype ? "expr" : "") << mImpl->mExprId;
 }
 
 void Token::stringify(std::ostream& os, bool varid, bool attributes, bool macro) const

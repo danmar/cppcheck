@@ -172,12 +172,12 @@ Parameters: -l(line) (file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="helpdialog.cpp" line="52"/>
+        <location filename="helpdialog.cpp" line="57"/>
         <source>Helpfile &apos;%1&apos; was not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="helpdialog.cpp" line="54"/>
+        <location filename="helpdialog.cpp" line="59"/>
         <source>Cppcheck</source>
         <translation type="unfinished">Cppcheck</translation>
     </message>
@@ -1424,22 +1424,22 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="807"/>
+        <location filename="projectfiledialog.ui" line="810"/>
         <source>MISRA C 2012</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="816"/>
+        <location filename="projectfiledialog.ui" line="819"/>
         <source>Misra rule texts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="823"/>
+        <location filename="projectfiledialog.ui" line="826"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="830"/>
+        <location filename="projectfiledialog.ui" line="833"/>
         <source>...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1478,15 +1478,15 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="188"/>
         <location filename="projectfiledialog.ui" line="303"/>
-        <location filename="projectfiledialog.ui" line="668"/>
+        <location filename="projectfiledialog.ui" line="671"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="195"/>
         <location filename="projectfiledialog.ui" line="310"/>
-        <location filename="projectfiledialog.ui" line="675"/>
-        <location filename="projectfiledialog.ui" line="718"/>
+        <location filename="projectfiledialog.ui" line="678"/>
+        <location filename="projectfiledialog.ui" line="721"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1552,47 +1552,43 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="506"/>
-        <source>Check code in headers  (slower analysis, more results)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="projectfiledialog.ui" line="516"/>
-        <source>Check code in unused templates  (slower and less accurate analysis)</source>
+        <source>Check code in unused templates (should be ON normally, however in theory you can safely ignore warnings in unused templates)</source>
+        <oldsource>Check code in unused templates  (slower and less accurate analysis)</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="525"/>
+        <location filename="projectfiledialog.ui" line="528"/>
         <source>Max CTU depth</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="556"/>
+        <location filename="projectfiledialog.ui" line="559"/>
         <source>Max recursion in template instantiation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="605"/>
+        <location filename="projectfiledialog.ui" line="608"/>
         <source>Warning options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="611"/>
+        <location filename="projectfiledialog.ui" line="614"/>
         <source>Root path:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="617"/>
+        <location filename="projectfiledialog.ui" line="620"/>
         <source>Filepaths in warnings will be relative to this path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="627"/>
+        <location filename="projectfiledialog.ui" line="630"/>
         <source>Warning tags (separated by semicolon)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="842"/>
+        <location filename="projectfiledialog.ui" line="845"/>
         <source>External tools</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1632,73 +1628,78 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="633"/>
+        <location filename="projectfiledialog.ui" line="506"/>
+        <source>Check code in headers  (should be ON normally. if you want a limited quick analysis then turn this OFF)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="projectfiledialog.ui" line="636"/>
         <source>If tags are added, you will be able to right click on warnings and set one of these tags. You can manually categorize warnings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="643"/>
+        <location filename="projectfiledialog.ui" line="646"/>
         <source>Exclude source files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="654"/>
+        <location filename="projectfiledialog.ui" line="657"/>
         <source>Exclude folder...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="661"/>
+        <location filename="projectfiledialog.ui" line="664"/>
         <source>Exclude file...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="700"/>
+        <location filename="projectfiledialog.ui" line="703"/>
         <source>Suppressions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="711"/>
+        <location filename="projectfiledialog.ui" line="714"/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="757"/>
-        <location filename="projectfiledialog.ui" line="763"/>
+        <location filename="projectfiledialog.ui" line="760"/>
+        <location filename="projectfiledialog.ui" line="766"/>
         <source>Addons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="769"/>
+        <location filename="projectfiledialog.ui" line="772"/>
         <source>Note: Addons require &lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt; being installed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="779"/>
+        <location filename="projectfiledialog.ui" line="782"/>
         <source>Y2038</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="786"/>
+        <location filename="projectfiledialog.ui" line="789"/>
         <source>Thread safety</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="793"/>
+        <location filename="projectfiledialog.ui" line="796"/>
         <source>Coding standards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="800"/>
+        <location filename="projectfiledialog.ui" line="803"/>
         <source>Cert</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="855"/>
+        <location filename="projectfiledialog.ui" line="858"/>
         <source>Clang analyzer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.ui" line="848"/>
+        <location filename="projectfiledialog.ui" line="851"/>
         <source>Clang-tidy</source>
         <translation type="unfinished"></translation>
     </message>

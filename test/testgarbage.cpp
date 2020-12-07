@@ -245,6 +245,7 @@ private:
         TEST_CASE(garbageCode212); // #8765
         TEST_CASE(garbageCode213); // #8758
         TEST_CASE(garbageCode214);
+        TEST_CASE(garbageCode215); // daca@home script with extension .c
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1663,6 +1664,10 @@ private:
 
     void garbageCode214() {
         checkCode("THIS FILE CONTAINS VARIOUS TEXT");
+    }
+
+    void garbageCode215() { // daca@home script with extension .c
+        ASSERT_THROW(checkCode("a = [1,2,3];"), InternalError);
     }
 
     void syntaxErrorFirstToken() {

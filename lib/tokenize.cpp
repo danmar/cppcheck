@@ -3476,6 +3476,15 @@ void Tokenizer::setVarIdPass1()
                 syntaxError(errTok);
             }
             if (decl) {
+                if (isCPP()) {
+                    if (Token *declTypeTok = Token::findsimplematch(tok, "decltype (", tok2)) {
+                        for (Token *declTok = declTypeTok->linkAt(1); declTok != declTypeTok; declTok = declTok->previous()) {
+                            if (declTok->isName() && !Token::Match(declTok->previous(), "::|.") && variableMap.hasVariable(declTok->str()))
+                                declTok->varId(variableMap.find(declTok->str())->second);
+                        }
+                    }
+                }
+
                 if (tok->str() == "(" && isFunctionHead(tok,"{") && scopeStack.top().isExecutable)
                     inlineFunction = true;
 
@@ -4352,16 +4361,21 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     createLinks();
 
+    removePragma();
+
     reportUnknownMacros();
 
-    simplifyHeaders();
+    simplifyHeadersAndUnusedTemplates();
 
     // Remove __asm..
     simplifyAsm();
 
     // foo < bar < >> => foo < bar < > >
-    if (isCPP())
-        mTemplateSimplifier->fixAngleBrackets();
+    if (isCPP() || mSettings->daca)
+        splitTemplateRightAngleBrackets(!isCPP());
+
+    // Remove extra "template" tokens that are not used by cppcheck
+    removeExtraTemplateKeywords();
 
     // Bail out if code is garbage
     if (mTimerResults) {
@@ -5016,11 +5030,8 @@ void Tokenizer::dump(std::ostream &out) const
         list.front()->printValueFlow(true, out);
 }
 
-void Tokenizer::simplifyHeaders()
+void Tokenizer::simplifyHeadersAndUnusedTemplates()
 {
-    // TODO : can we remove anything in headers here? Like unused declarations.
-    // Maybe if --dump is used we want to have _everything_.
-
     if (mSettings->checkHeaders && mSettings->checkUnusedTemplates)
         // Full analysis. All information in the headers are kept.
         return;
@@ -5031,19 +5042,30 @@ void Tokenizer::simplifyHeaders()
     const bool removeUnusedIncludedTemplates = !mSettings->checkUnusedTemplates || !mSettings->checkHeaders;
     const bool removeUnusedTemplates = !mSettings->checkUnusedTemplates;
 
-    // We want to remove selected stuff from the headers but not *everything*.
-    // The intention here is to not damage the analysis of the source file.
-    // You should get all warnings in the source file.
-
-    // TODO: Remove unused types/variables/etc in headers..
+    // checkHeaders:
+    //
+    // If it is true then keep all code in the headers. It's possible
+    // to remove unused types/variables if false positives / false
+    // negatives can be avoided.
+    //
+    // If it is false, then we want to remove selected stuff from the
+    // headers but not *everything*. The intention here is to not damage
+    // the analysis of the source file. You should get all warnings in
+    // the source file. You should not get false positives.
 
     // functions and types to keep
     std::set<std::string> keep;
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!tok->isName())
+        if (isCPP() && Token::simpleMatch(tok, "template <")) {
+            const Token *closingBracket = tok->next()->findClosingBracket();
+            if (Token::Match(closingBracket, "> class|struct %name% {"))
+                tok = closingBracket->linkAt(3);
+        }
+
+        if (!tok->isName() || tok->isKeyword())
             continue;
 
-        if (checkHeaders && tok->fileIndex() != 0)
+        if (!checkHeaders && tok->fileIndex() != 0)
             continue;
 
         if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
@@ -5075,49 +5097,42 @@ void Tokenizer::simplifyHeaders()
             }
         }
 
-        if (Token::Match(tok, "[;{}]")) {
+        if (!tok->previous() || Token::Match(tok->previous(), "[;{}]")) {
             // Remove unused function declarations
             if (isIncluded && removeUnusedIncludedFunctions) {
                 while (1) {
-                    Token *start = tok->next();
+                    Token *start = tok;
                     while (start && functionStart.find(start->str()) != functionStart.end())
                         start = start->next();
-                    if (Token::Match(start, "%name% (") && Token::Match(start->linkAt(1), ") const| ;") && keep.find(start->str()) == keep.end())
+                    if (Token::Match(start, "%name% (") && Token::Match(start->linkAt(1), ") const| ;") && keep.find(start->str()) == keep.end()) {
                         Token::eraseTokens(tok, start->linkAt(1)->tokAt(2));
-                    else
+                        tok->deleteThis();
+                    } else
                         break;
                 }
             }
 
             if (isIncluded && removeUnusedIncludedClasses) {
-                if (Token::Match(tok, "[;{}] class|struct %name% [:{]") && keep.find(tok->strAt(2)) == keep.end()) {
+                if (Token::Match(tok, "class|struct %name% [:{]") && keep.find(tok->strAt(1)) == keep.end()) {
                     // Remove this class/struct
-                    const Token *endToken = tok->tokAt(3);
+                    const Token *endToken = tok->tokAt(2);
                     if (endToken->str() == ":") {
                         endToken = endToken->next();
                         while (Token::Match(endToken, "%name%|,"))
                             endToken = endToken->next();
                     }
-                    if (endToken && endToken->str() == "{" && Token::simpleMatch(endToken->link(), "} ;"))
+                    if (endToken && endToken->str() == "{" && Token::simpleMatch(endToken->link(), "} ;")) {
                         Token::eraseTokens(tok, endToken->link()->next());
+                        tok->deleteThis();
+                    }
                 }
             }
 
             if (removeUnusedTemplates || (isIncluded && removeUnusedIncludedTemplates)) {
-                if (Token::Match(tok->next(), "template < %name%")) {
-                    const Token *tok2 = tok->tokAt(3);
-                    while (Token::Match(tok2, "%name% %name% [,=>]") || Token::Match(tok2, "typename|class ... %name% [,>]")) {
-                        if (Token::Match(tok2, "typename|class ..."))
-                            tok2 = tok2->tokAt(3);
-                        else
-                            tok2 = tok2->tokAt(2);
-                        if (Token::Match(tok2, "= %name% [,>]"))
-                            tok2 = tok2->tokAt(2);
-                        if (tok2->str() == ",")
-                            tok2 = tok2->next();
-                    }
-                    if (Token::Match(tok2, "> class|struct %name% [;:{]") && keep.find(tok2->strAt(2)) == keep.end()) {
-                        const Token *endToken = tok2->tokAt(3);
+                if (Token::Match(tok, "template < %name%")) {
+                    const Token *closingBracket = tok->next()->findClosingBracket();
+                    if (Token::Match(closingBracket, "> class|struct %name% [;:{]") && keep.find(closingBracket->strAt(2)) == keep.end()) {
+                        const Token *endToken = closingBracket->tokAt(3);
                         if (endToken->str() == ":") {
                             endToken = endToken->next();
                             while (Token::Match(endToken, "%name%|,"))
@@ -5125,13 +5140,76 @@ void Tokenizer::simplifyHeaders()
                         }
                         if (endToken && endToken->str() == "{")
                             endToken = endToken->link()->next();
-                        if (endToken && endToken->str() == ";")
+                        if (endToken && endToken->str() == ";") {
                             Token::eraseTokens(tok, endToken);
-                    } else if (Token::Match(tok2, "> %type% %name% (") && Token::simpleMatch(tok2->linkAt(3), ") {") && keep.find(tok2->strAt(2)) == keep.end()) {
-                        const Token *endToken = tok2->linkAt(3)->linkAt(1)->next();
+                            tok->deleteThis();
+                        }
+                    } else if (Token::Match(closingBracket, "> %type% %name% (") && Token::simpleMatch(closingBracket->linkAt(3), ") {") && keep.find(closingBracket->strAt(2)) == keep.end()) {
+                        const Token *endToken = closingBracket->linkAt(3)->linkAt(1)->next();
                         Token::eraseTokens(tok, endToken);
+                        tok->deleteThis();
                     }
                 }
+            }
+        }
+    }
+}
+
+void Tokenizer::removeExtraTemplateKeywords()
+{
+    if (isCPP()) {
+        for (Token *tok = list.front(); tok; tok = tok->next()) {
+            if (Token::Match(tok, "%name%|> .|:: template %name%"))
+                tok->next()->deleteNext();
+        }
+    }
+}
+
+static std::string getExpression(const Token *tok)
+{
+    std::string line;
+    for (const Token *prev = tok->previous(); prev && !Token::Match(prev, "[;{}]"); prev = prev->previous())
+        line = prev->str() + " " + line;
+    line += "!!!" + tok->str() + "!!!";
+    for (const Token *next = tok->next(); next && !Token::Match(next, "[;{}]"); next = next->next())
+        line = line + " " + next->str();
+    return line;
+}
+
+void Tokenizer::splitTemplateRightAngleBrackets(bool check)
+{
+    std::set<std::string> vars;
+
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "[;{}] %type% %type% [;,=]") && tok->next()->isStandardType())
+            vars.insert(tok->strAt(2));
+
+        // Ticket #6181: normalize C++11 template parameter list closing syntax
+        if (tok->previous() && tok->str() == "<" && mTemplateSimplifier->templateParameters(tok) && vars.find(tok->previous()->str()) == vars.end()) {
+            Token *endTok = tok->findClosingBracket();
+            if (check) {
+                if (Token::Match(endTok, ">>|>>="))
+                    reportError(tok, Severity::debug, "dacaWrongSplitTemplateRightAngleBrackets", "bad closing bracket for !!!<!!!: " + getExpression(tok), false);
+                continue;
+            }
+            if (endTok && endTok->str() == ">>") {
+                endTok->str(">");
+                endTok->insertToken(">");
+            } else if (endTok && endTok->str() == ">>=") {
+                endTok->str(">");
+                endTok->insertToken("=");
+                endTok->insertToken(">");
+            }
+        } else if (Token::Match(tok, "class|struct|union|=|:|public|protected|private %name% <") && vars.find(tok->next()->str()) == vars.end()) {
+            Token *endTok = tok->tokAt(2)->findClosingBracket();
+            if (check) {
+                if (Token::simpleMatch(endTok, ">>"))
+                    reportError(tok, Severity::debug, "dacaWrongSplitTemplateRightAngleBrackets", "bad closing bracket for !!!<!!!: " + getExpression(tok), false);
+                continue;
+            }
+            if (Token::Match(endTok, ">> ;|{|%type%")) {
+                endTok->str(">");
+                endTok->insertToken(">");
             }
         }
     }
@@ -5206,6 +5284,22 @@ void Tokenizer::removeMacrosInGlobalScope()
                 prev = prev->previous();
             if (prev && prev->str() == ")")
                 tok = tok->link();
+        }
+    }
+}
+
+//---------------------------------------------------------------------------
+
+void Tokenizer::removePragma()
+{
+    if (isC() && mSettings->standards.c == Standards::C89)
+        return;
+    if (isCPP() && mSettings->standards.cpp == Standards::CPP03)
+        return;
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        while (Token::simpleMatch(tok, "_Pragma (")) {
+            Token::eraseTokens(tok, tok->linkAt(1)->next());
+            tok->deleteThis();
         }
     }
 }
@@ -9532,6 +9626,10 @@ void Tokenizer::findGarbageCode() const
             }
         }
 
+        // array assignment
+        else if (Token::Match(tok, "%assign% [") && Token::simpleMatch(tok->linkAt(1), "] ;"))
+            syntaxError(tok, tok->str() + "[...];");
+
         // UNKNOWN_MACRO(return)
         if (tok->isKeyword() && Token::Match(tok, "throw|return )") && Token::Match(tok->linkAt(1)->previous(), "%name% ("))
             unknownMacroError(tok->linkAt(1)->previous());
@@ -9753,7 +9851,7 @@ void Tokenizer::findGarbageCode() const
         for (const Token *tok = tokens(); tok; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "template <"))
                 continue;
-            if (tok->previous() && !Token::Match(tok->previous(), "[:;{})>]")) {
+            if (tok->previous() && !Token::Match(tok->previous(), ":|;|{|}|)|>|\"C++\"")) {
                 if (tok->previous()->isUpperCaseName())
                     unknownMacroError(tok->previous());
                 else

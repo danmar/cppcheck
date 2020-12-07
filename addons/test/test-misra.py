@@ -117,7 +117,7 @@ def test_rules_suppression(checker, capsys):
         checker.parseDump(src + ".dump")
         captured = capsys.readouterr().err
         found = re.search(re_suppressed, captured)
-        assert(found is None)
+        assert found is None, 'Unexptected output:\n' + captured
         dump_remove(src)
 
 

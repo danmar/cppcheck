@@ -24,6 +24,9 @@
 #include "token.h"
 #include <cstring>
 
+static const CWE CWE_BUFFER_UNDERRUN(786U);  // Access of Memory Location Before Start of Buffer
+static const CWE CWE_BUFFER_OVERRUN(788U);   // Access of Memory Location After End of Buffer
+
 
 static float getKnownFloatValue(const Token *tok, float def)
 {
@@ -34,46 +37,149 @@ static float getKnownFloatValue(const Token *tok, float def)
     return def;
 }
 
+static bool isLessThan(ExprEngine::DataBase *dataBase, ExprEngine::ValuePtr lhs, ExprEngine::ValuePtr rhs)
+{
+    return ExprEngine::BinOpResult("<", lhs, rhs).isTrue(dataBase);
+}
+
+static void arrayIndex(const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase)
+{
+    if (!Token::simpleMatch(tok->astParent(), "["))
+        return;
+    const Token *buf = tok->astParent()->astOperand1();
+    if (!buf || !buf->variable() || !buf->variable()->isArray())
+        // TODO
+        return;
+    const Token *index = tok->astParent()->astOperand2();
+    if (tok != index)
+        // TODO
+        return;
+    if (buf->variable()->dimensions().size() == 1 && buf->variable()->dimensions()[0].known) {
+        const MathLib::bigint bufSize = buf->variable()->dimensions()[0].num;
+        if (value.isGreaterThan(dataBase, bufSize - 1)) {
+            const bool bailout = (value.type == ExprEngine::ValueType::BailoutValue);
+            dataBase->reportError(tok,
+                                  Severity::SeverityType::error,
+                                  "bughuntingArrayIndexOutOfBounds",
+                                  "Array index out of bounds, cannot determine that " + index->expressionString() + " is less than " + std::to_string(bufSize),
+                                  CWE_BUFFER_OVERRUN,
+                                  false,
+                                  bailout);
+        }
+    }
+    if (value.isLessThan(dataBase, 0)) {
+        const bool bailout = (value.type == ExprEngine::ValueType::BailoutValue);
+        dataBase->reportError(tok,
+                              Severity::SeverityType::error,
+                              "bughuntingArrayIndexNegative",
+                              "Array index out of bounds, cannot determine that " + index->expressionString() + " is not negative",
+                              CWE_BUFFER_UNDERRUN,
+                              false,
+                              bailout);
+    }
+}
 
 static void bufferOverflow(const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase)
 {
-    if (!Token::simpleMatch(tok->astParent(), ","))
+    if (value.type != ExprEngine::ValueType::FunctionCallArgumentValues)
+        return;
+    if (!Token::simpleMatch(tok, "(") || !Token::Match(tok->previous(), "%name% ("))
         return;
 
-    if (!tok->valueType() || tok->valueType()->pointer != 1 || tok->valueType()->type != ::ValueType::Type::CHAR)
+    const Library::Function *func = dataBase->settings->library.getFunction(tok->previous());
+    if (!func)
         return;
 
-    int argnr = (tok == tok->astParent()->astOperand1()) ? 0 : 1;
-    const Token *ftok = tok->astParent();
-    while (Token::simpleMatch(ftok, ",")) {
-        ++argnr;
-        ftok = ftok->astParent();
-    }
-    ftok = ftok ? ftok->previous() : nullptr;
-    if (!Token::Match(ftok, "%name% ("))
+    const ExprEngine::FunctionCallArgumentValues *functionCallArguments = dynamic_cast<const ExprEngine::FunctionCallArgumentValues *>(&value);
+    if (!functionCallArguments)
+        return;
+
+    const std::vector<const Token *> arguments = getArguments(tok);
+    if (functionCallArguments->argValues.size() != arguments.size())
+        // TODO investigate what to do
         return;
 
     int overflowArgument = 0;
+    bool bailout = false;
 
-    if (const Library::Function *func = dataBase->settings->library.getFunction(ftok)) {
-        for (auto argNrChecks: func->argumentChecks) {
-            int nr = argNrChecks.first;
-            const Library::ArgumentChecks &checks = argNrChecks.second;
-            for (const Library::ArgumentChecks::MinSize &minsize: checks.minsizes) {
-                if (minsize.type == Library::ArgumentChecks::MinSize::STRLEN && minsize.arg == argnr)
-                    overflowArgument = nr;
+    for (auto argNrChecks: func->argumentChecks) {
+        const int argnr = argNrChecks.first;
+        const Library::ArgumentChecks &checks = argNrChecks.second;
+        if (argnr <= 0 || argnr > arguments.size() || checks.minsizes.empty())
+            continue;
+
+        ExprEngine::ValuePtr argValue = functionCallArguments->argValues[argnr - 1];
+        if (!argValue || argValue->type == ExprEngine::ValueType::BailoutValue) {
+            overflowArgument = argnr;
+            bailout = true;
+            break;
+        }
+
+        std::shared_ptr<ExprEngine::ArrayValue> arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(argValue);
+        if (!arrayValue || arrayValue->size.size() != 1) {
+            // TODO: implement this properly.
+            overflowArgument = argnr;
+            bailout = true;
+            break;
+        }
+
+        for (const Library::ArgumentChecks::MinSize &minsize: checks.minsizes) {
+            if (minsize.type == Library::ArgumentChecks::MinSize::ARGVALUE && minsize.arg > 0 && minsize.arg <= arguments.size()) {
+                ExprEngine::ValuePtr otherValue = functionCallArguments->argValues[minsize.arg - 1];
+                if (!otherValue || otherValue->type == ExprEngine::ValueType::BailoutValue) {
+                    overflowArgument = argnr;
+                    bailout = true;
+                    break;
+                }
+                if (isLessThan(dataBase, arrayValue->size[0], otherValue)) {
+                    overflowArgument = argnr;
+                    break;
+                }
+            } else if (minsize.type == Library::ArgumentChecks::MinSize::STRLEN && minsize.arg > 0 && minsize.arg <= arguments.size()) {
+                if (func->formatstr) {
+                    // TODO: implement this properly. check if minsize refers to a format string and check max length of that..
+                    overflowArgument = argnr;
+                    bailout = true;
+                    break;
+                }
+                if (Token::Match(arguments[minsize.arg - 1], "%str%")) {
+                    const Token * const str = arguments[minsize.arg - 1];
+                    if (arrayValue->size[0]->isLessThan(dataBase, Token::getStrLength(str))) {
+                        overflowArgument = argnr;
+                        break;
+                    }
+                } else {
+                    ExprEngine::ValuePtr otherValue = functionCallArguments->argValues[minsize.arg - 1];
+                    if (!otherValue || otherValue->type == ExprEngine::ValueType::BailoutValue) {
+                        overflowArgument = argnr;
+                        bailout = true;
+                        break;
+                    }
+                    std::shared_ptr<ExprEngine::ArrayValue> arrayValue2 = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(otherValue);
+                    if (!arrayValue2 || arrayValue2->size.size() != 1) {
+                        overflowArgument = argnr;
+                        bailout = true;
+                        break;
+                    }
+                    if (isLessThan(dataBase, arrayValue->size[0], arrayValue2->size[0])) {
+                        overflowArgument = argnr;
+                        break;
+                    }
+                }
             }
         }
+
+        if (overflowArgument > 0)
+            break;
     }
 
-    if (!overflowArgument)
+    if (overflowArgument == 0)
         return;
 
-    const bool bailout = (value.type == ExprEngine::ValueType::BailoutValue);
     dataBase->reportError(tok,
                           Severity::SeverityType::error,
                           "bughuntingBufferOverflow",
-                          "Buffer read/write, when calling '" + ftok->str() +  "' it cannot be determined that " + std::to_string(overflowArgument) + getOrdinalText(overflowArgument) + " argument is not overflowed",
+                          "Buffer read/write, when calling '" + tok->previous()->str() +  "' it cannot be determined that " + std::to_string(overflowArgument) + getOrdinalText(overflowArgument) + " argument is not overflowed",
                           CWE(120),
                           false,
                           bailout);
@@ -565,6 +671,7 @@ static void checkAssignment(const Token *tok, const ExprEngine::Value &value, Ex
 
 void addBughuntingChecks(std::vector<ExprEngine::Callback> *callbacks)
 {
+    callbacks->push_back(arrayIndex);
     callbacks->push_back(bufferOverflow);
     callbacks->push_back(divByZero);
     callbacks->push_back(checkFunctionCall);

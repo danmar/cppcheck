@@ -301,7 +301,7 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
 void CheckThread::stop()
 {
     mState = Stopping;
-    mCppcheck.terminate();
+    Settings::terminate();
 }
 
 void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QString err)

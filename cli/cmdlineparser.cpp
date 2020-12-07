@@ -576,6 +576,15 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings->plistOutput = "./";
                 else if (!endsWith(mSettings->plistOutput,'/'))
                     mSettings->plistOutput += '/';
+
+                const std::string plistOutput = Path::toNativeSeparators(mSettings->plistOutput);
+                if (!FileLister::isDirectory(plistOutput)) {
+                    std::string message("cppcheck: error: plist folder does not exist: \"");
+                    message += plistOutput;
+                    message += "\".";
+                    printMessage(message);
+                    return false;
+                }
             }
 
             // --project
@@ -1119,6 +1128,18 @@ void CmdLineParser::printHelp()
               "                                 64 bit Windows\n"
               "                          * avr8\n"
               "                                 8 bit AVR microcontrollers\n"
+              "                          * elbrus-e1cp\n"
+              "                                 Elbrus e1c+ architecture\n"
+              "                          * pic8\n"
+              "                                 8 bit PIC microcontrollers\n"
+              "                                 Baseline and mid-range architectures\n"
+              "                          * pic8-enhanced\n"
+              "                                 8 bit PIC microcontrollers\n"
+              "                                 Enhanced mid-range and high end (PIC18) architectures\n"
+              "                          * pic16\n"
+              "                                 16 bit PIC microcontrollers\n"
+              "                          * mips32\n"
+              "                                 32 bit MIPS microcontrollers\n"
               "                          * native\n"
               "                                 Type sizes of host system are assumed, but no\n"
               "                                 further assumptions.\n"

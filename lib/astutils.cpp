@@ -67,6 +67,19 @@ void visitAstNodes(Token *ast, std::function<ChildrenToVisit(Token *)> visitor)
     visitAstNodesGeneric(ast, std::move(visitor));
 }
 
+const Token* findAstNode(const Token* ast, const std::function<bool(const Token*)>& pred)
+{
+    const Token* result = nullptr;
+    visitAstNodes(ast, [&](const Token* tok) {
+        if (pred(tok)) {
+            result = tok;
+            return ChildrenToVisit::done;
+        }
+        return ChildrenToVisit::op1_and_op2;
+    });
+    return result;
+}
+
 static void astFlattenRecursive(const Token *tok, std::vector<const Token *> *result, const char* op, nonneg int depth = 0)
 {
     ++depth;
@@ -213,7 +226,12 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
             ret = tok->astOperand1();
         }
     } else if (comp == "!=" && rhs == std::string("0")) {
-        ret = tok;
+        if (tok->str() == "!") {
+            ret = tok->astOperand1();
+            // handle (!(x==0)) as (x!=0)
+            astIsVariableComparison(ret, "==", "0", &ret);
+        } else
+            ret = tok;
     } else if (comp == "==" && rhs == std::string("0")) {
         if (tok->str() == "!") {
             ret = tok->astOperand1();
@@ -299,6 +317,24 @@ static bool hasToken(const Token * startTok, const Token * stopTok, const Token 
             return true;
     }
     return false;
+}
+
+template <class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
+static T* previousBeforeAstLeftmostLeafGeneric(T* tok)
+{
+    T* leftmostLeaf = tok;
+    while (leftmostLeaf && leftmostLeaf->astOperand1())
+        leftmostLeaf = leftmostLeaf->astOperand1();
+    return leftmostLeaf->previous();
+}
+
+const Token* previousBeforeAstLeftmostLeaf(const Token* tok)
+{
+    return previousBeforeAstLeftmostLeafGeneric(tok);
+}
+Token* previousBeforeAstLeftmostLeaf(Token* tok)
+{
+    return previousBeforeAstLeftmostLeafGeneric(tok);
 }
 
 template <class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
@@ -1345,6 +1381,8 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
             parent = parent->astParent();
         while (parent && parent->isCast())
             parent = parent->astParent();
+        if (Token::Match(parent, "[+-]") && parent->valueType() && parent->valueType()->pointer)
+            parent = parent->astParent();
 
         // passing variable to subfunction?
         if (Token::Match(parent, "[(,{]"))
@@ -1750,6 +1788,27 @@ bool isThisChanged(const Token* start, const Token* end, int indirect, const Set
             return true;
     }
     return false;
+}
+
+bool isExpressionChanged(const Token* expr, const Token* start, const Token* end, const Settings* settings, bool cpp, int depth)
+{
+    const Token* result = findAstNode(expr, [&](const Token* tok) {
+        if (exprDependsOnThis(tok) && isThisChanged(start, end, false, settings, cpp)) {
+            return true;
+        }
+        bool global = false;
+        if (tok->variable()) {
+            if (tok->variable()->isConst())
+                return false;
+            global = !tok->variable()->isLocal() && !tok->variable()->isArgument();
+        }
+        if (tok->exprId() > 0 &&
+            isVariableChanged(
+                start, end, tok->valueType() ? tok->valueType()->pointer : 0, tok->exprId(), global, settings, cpp, depth))
+            return true;
+        return false;
+    });
+    return result;
 }
 
 int numberOfArguments(const Token *start)

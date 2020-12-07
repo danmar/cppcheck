@@ -39,6 +39,7 @@ private:
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(isRecordTypeWithoutSideEffects);
+        TEST_CASE(cleanFunction);
 
         TEST_CASE(emptyclass);  // #5355 - False positive: Variable is not assigned a value.
         TEST_CASE(emptystruct);  // #5355 - False positive: Variable is not assigned a value.
@@ -472,17 +473,6 @@ private:
         functionVariableUsage(
             "class F {\n"
             "public:\n"
-            "   F() : x(unknownFunc()) {}\n"
-            "   int x;\n"
-            "};\n"
-            "void f() {\n"
-            "   F f;\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
-        functionVariableUsage(
-            "class F {\n"
-            "public:\n"
             "   F() : x(++unknownValue) {}\n"
             "   int x;\n"
             "};\n"
@@ -521,6 +511,508 @@ private:
             "};\n"
             "void f() {\n"
             "   F f;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void cleanFunction() {
+        // unknown function
+        functionVariableUsage(
+            "class F {\n"
+            "public:\n"
+            "   F() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   F f;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // function forward declaration
+        functionVariableUsage(
+            "int func();\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // return literal
+        functionVariableUsage(
+            "int func() { return 1; }\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:8]: (style) Unused variable: c\n", errout.str());
+
+        // return variable without side effects
+        functionVariableUsage(
+            "int func() {\n"
+            "   int x = 1;\n"
+            "   return x;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:11]: (style) Unused variable: c\n", errout.str());
+
+        // return variable with side effects
+        functionVariableUsage(
+            "int func() {\n"
+            "   unknown_type x = 1;\n"
+            "   return x;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // return unknown variable
+        functionVariableUsage(
+            "int func() {\n"
+            "   return unknown_var;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // return variable is global, but not changed
+        functionVariableUsage(
+            "int x = 1;\n"
+            "int func() {\n"
+            "   return x;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        TODO_ASSERT_EQUALS("[test.cpp:11]: (style) Unused variable: c\n", "", errout.str());
+
+        // changing global variable in return
+        functionVariableUsage(
+            "int x = 1;\n"
+            "int func() {\n"
+            "   return x++;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // changing global variable in function body
+        functionVariableUsage(
+            "int x = 1;\n"
+            "int func() {\n"
+            "   x++;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage(
+            "int x = 1;\n"
+            "int func() {\n"
+            "   --x;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage(
+            "int x = 1;\n"
+            "int func() {\n"
+            "   x += 2;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage(
+            "int x = 1;\n"
+            "int func() {\n"
+            "   x = 2;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // changing global array variable in function body
+        functionVariableUsage(
+            "int x[] = {0, 1, 3};\n"
+            "int func() {\n"
+            "   x[0] = 4;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // changing local variable
+        functionVariableUsage(
+            "int func() {\n"
+            "   int x = 1;\n"
+            "   x = 2;\n"
+            "   x++;\n"
+            "   return x;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:13]: (style) Unused variable: c\n", errout.str());
+
+        // variable of user-defined class without side effects
+        functionVariableUsage(
+            "class A {};\n"
+            "A func() {\n"
+            "   A a;\n"
+            "   return a;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   A x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:12]: (style) Unused variable: c\n", errout.str());
+
+        // variable of user-defined class with side effects
+        functionVariableUsage(
+            "class A {\n"
+            "public:\n"
+            "   unknown_type u{1};\n"
+            "};\n"
+            "int func() {\n"
+            "   A a;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // unknown type variable
+        functionVariableUsage(
+            "int func() {\n"
+            "   unknown_type a;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // nested clean function call
+        functionVariableUsage(
+            "int another_func() { return 1;}\n"
+            "int func() {\n"
+            "   another_func();\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:12]: (style) Unused variable: c\n", errout.str());
+
+        // nested side-effects function call
+        functionVariableUsage(
+            "int global = 1;"
+            "int another_func() {\n"
+            "   global++;\n"
+            "   return global;}\n"
+            "int func() {\n"
+            "   another_func();\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // unknown nested function
+        functionVariableUsage(
+            "int func() {\n"
+            "   unknown_func();\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // clean function recursion
+        functionVariableUsage(
+            "int func(int i) {\n"
+            "   if (i != 2) {\n"
+            "       func(i++);\n"
+            "       return 2;\n"
+            "   }\n"
+            "   return i;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(0)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:14]: (style) Unused variable: c\n", errout.str());
+
+        // indirect clean function recursion
+        functionVariableUsage(
+            "void another_func() {\n"
+            "   func(0);\n"
+            "}\n"
+            "int func(int i) {\n"
+            "   if (i != 2) {\n"
+            "       another_func();\n"
+            "       return 2;\n"
+            "   }\n"
+            "   return i;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(0)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:17]: (style) Unused variable: c\n", errout.str());
+
+        // side-effect function recursion
+        functionVariableUsage(
+            "int global = 1;\n"
+            "int func(int i) {\n"
+            "   if (i != 2) {\n"
+            "       global++;\n"
+            "       func(i++);\n"
+            "       return 2;\n"
+            "   }\n"
+            "   return i;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(0)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // multiple returns (side-effect & clean)
+        functionVariableUsage(
+            "int func(int i) {\n"
+            "   if (i == 0) { return 0;}\n"
+            "   else { return unknownSideEffectFunction(); }\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(0)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // multiple clean returns
+        functionVariableUsage(
+            "int func(int i) {\n"
+            "   if (i == 0) { return 0;}\n"
+            "   else { return i; }\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(0)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:11]: (style) Unused variable: c\n", errout.str());
+
+        // multiple side-effect returns
+        functionVariableUsage(
+            "int func(int i) {\n"
+            "   if (i == 0) { return unknownSideEffectFunction();}\n"
+            "   else { return unknown_var; }\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(0)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // argument return
+        functionVariableUsage(
+            "int func(int i) {\n"
+            "    return i;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(0)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:10]: (style) Unused variable: c\n", errout.str());
+
+        // global variable modifying through function argument
+        functionVariableUsage(
+            "char buf[10];\n"
+            "int func(char* p) {\n"
+            "   *p = 0;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(buf)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // global variable modifying through local pointer
+        functionVariableUsage(
+            "int global = 1;\n"
+            "int func() {\n"
+            "   int *p = &global;\n"
+            "   *p = 0;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // global struct variable
+        functionVariableUsage(
+            "struct S { int x; } s;\n"
+            "int func() {\n"
+            "   s.x = 1;;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
     }

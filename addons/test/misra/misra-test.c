@@ -279,8 +279,8 @@ void misra_7_4()
    char *f = 1 + "text f" + 2; // 7.4 18.4
    const wchar_t *g = "text_g";
    wchar_t *h = "text_h"; // 7.4
-   
-   misra_7_4_const_call(1, ("text_const_call")); 
+
+   misra_7_4_const_call(1, ("text_const_call"));
    misra_7_4_const_ptr_call(1, ("text_const_call"));
    misra_7_4_call(1, "text_call"); // 7.4 11.8
 }
@@ -294,6 +294,72 @@ enum misra_8_12_d { misra_d1 = 1, misra_d2 = 2, misra_d3 = misra_d1 }; // no-war
 enum misra_8_12_e { misra_e1 = sizeof(int), misra_e2}; // no-crash
 
 void misra_8_14(char * restrict str) {(void)str;} // 8.14
+
+void misra_9_2() {
+    int empty_init[2][2]                     = { };                                    // 9.2
+    int empty_nested_init[2][2]              = { { } };                                // 9.2
+    int zero_init_a[5]                       = { 0 };
+    int zero_init_b[5][2]                    = { 0 };
+    int zero_init_c[2][2]                    = { { 1, 2 }, { 0 } };
+
+    const char string_wrong_level_a[12]      = { "Hello world" };                      // 9.2
+    const char string_wrong_level_b[2][20]   = "Hello world";                          // 9.2
+    const char string_correct_level_a[]      = "Hello world";
+    const char string_correct_level_b[2][12] = { "Hello world" };
+    const char *char_p_correct_level[2]      = { "Hello", [1] = "world" };
+    const char *char_p_incorrect_level[1]    = "Hello world";                          // 9.2
+
+    char **str_p = &char_p_correct_level[0];
+    char **str_p_array_correct_level[1]      = { str_p };
+    char **str_p_array_incorrect_level[1]    = { { str_p } };                          // 9.2
+
+    int array_init_incorrect_levels_a[3][2]  = { 1, 2, 3, 4, 5, 6 };                   // 9.2
+    int array_init_correct_levels_a[3][2]    = { { 1, 2 }, { 3, 4 }, { 5, 6 } };
+    int array_init_incorrect_levels_b[6]     = { { 1, 2 }, { 3, 4 }, { 5, 6 } };       // 9.2
+    int array_init_correct_levels_b[6]       = { 1, 2, 3, 4, 5, 6 };
+
+    int array_incorrect_designator_a[1]      = { [0][1] = 1 };                         // 9.2
+    int array_incorrect_designator_b[1]      = { [0] = { 1, 2 } };                     // 9.2
+    int array_incorrect_designator_c[1][2]   = { [0] = 1 };                            // 9.2
+    int array_incorrect_designator_d[2][2]   = { { 1, 2 }, [1][0] = {3, 4} };          // 9.2
+    int array_correct_designator_a[2]        = { [0] = 1, 2 };
+    int array_correct_designator_b[2]        = { [1] = 2, [0] = 1 };
+    int array_correct_designator_c[2][2]     = { { 1, 2 }, [1] = {3, 4} };
+    int array_correct_designator_d[2][2]     = { { 1, 2 }, [1][0] = 3, 4};
+
+    typedef struct {
+        int i1;
+        int i2;
+    } struct1;
+
+    typedef struct {
+        char c1;
+        struct1 is1;
+        char c2[4];
+    } struct2;
+
+    int a;
+
+    struct2 struct_empty_init                = { };                                    // 9.2
+    struct2 struct_zero_init                 = { 0 };
+    struct1 struct_missing_brackets          = 1;                                      // 9.2
+    struct2 struct_correct_init              = { 1, {2, 3}, {0} };
+    struct1 struct_array_incorrect_levels[2] = { 1, 2, 3, 4 };                         // 9.2
+    struct1 struct_array_correct_levels[2]   = { {1, 2}, {3, 4} };
+    struct1 struct_correct_designator_a      = { .i2 = 2, .i1 = 1 };
+    struct2 struct_correct_designator_b      = { .is1 = {2, 3}, { 4 } };
+    struct1 struct_correct_designator_c      = { a = 1, 2 };                           // 13.1
+    struct2 struct_incorrect_type            = { .is1 = struct_correct_designator_b }; // 9.2
+    struct2 struct_correct_type              = { .is1 = struct_correct_designator_a };
+
+    struct1 struct_array_incorrect_type[1]   = { struct_correct_designator_b };        // 9.2
+    struct1 struct_array_correct_type[1]     = { struct_correct_designator_a };
+
+    union misra_9_2_union {   // 19.2
+        char c;
+        struct1 i;
+    } u = { 3 };              // 19.2
+}
 
 void misra_9_5() {
   int x[] = {[0]=23}; // 9.5
@@ -351,7 +417,24 @@ void misra_10_1_ternary()
     a = (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8) << (get_bool(19) ? ui16 : ui8); // 10.4
     a = (get_bool(42) ? (get_bool(34) ? i16 : ui8) : ui8) << (get_bool(19) ? ui16 : ui8); // 10.1 10.4
     a = (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8) << (get_bool(19) ? i16 : ui8); // 10.1 10.4
+}
 
+void misra_10_2() {
+    unsigned int u8a = 0;
+    signed char cha = 0;
+    signed int s8a = 0;
+    signed short s16a = 0;
+    float f32a = 0.0;
+    char res;
+
+    res = '0' + u8a; // 10.4
+    res = s8a + '0';
+    res = cha - '0';
+    res = '0' - s8a;
+    res = cha + ':';
+
+    res = s16a - 'a'; // 10.2
+    res = '0' + f32a; // 10.2 10.4
 }
 
 void misra_10_4(u32 x, s32 y) {
@@ -793,6 +876,90 @@ void misra_15_3() {
       break;
   default:
       break;
+  }
+}
+
+void misra_15_4() {
+  misra_15_4_label:
+    return;
+
+  int x = 0;
+  int y = 0;
+  int z = 0;
+
+  // Break on different loop scopes
+  for (x = 0; x < 42; ++x) {
+    if (x==1) {
+      break;
+    }
+    for (y = 0; y < 42; ++y) { // 15.4
+      if (y==1) {
+        break;
+      }
+      if (y==2) {
+        break;
+      }
+      for (z = 0; y < 42; ++z) {
+        if (z==1) {
+          break;
+        }
+      }
+    }
+  }
+
+  // Break in while loop
+  do { // 15.4
+    if(x == 1) {
+        break;
+    }
+    if(x == 2) {
+        break
+    }
+    x++;
+  } while(x != 42);
+
+  // Break and goto in same loop
+  for (int x = 0; x < 10; ++x) { // 15.4
+    if (x == 1) {
+        break;
+    }
+    if (x == 2) {
+        goto misra_15_4_label; // 15.1 15.2
+    }
+  }
+
+  // Inner loop uses goto
+  for (x = 0; x < 42; ++x) { // 15.4
+    if (x==1) {
+      break;
+    }
+    for (y = 0; y < 42; ++y) {
+      if (y == 1) {
+        goto misra_15_4_label; // 15.1 15.2
+      }
+    }
+  }
+
+  // Allow switch with multiple breaks inside loop
+  for (x = 0; x < 42; ++x) {
+    switch (x) {
+      case 1:
+        break;
+      default:
+        break;
+    }
+  }
+
+  // Do not allow switch with multiple gotos inside loop
+  for (x = 0; x < 42; ++x) { // 15.4
+    switch (x) {
+      case 1:
+        goto misra_15_4_label; // 15.1 15.2
+        break;
+      default:
+        goto misra_15_4_label; // 15.1 15.2
+        break;
+    }
   }
 }
 

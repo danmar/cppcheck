@@ -115,6 +115,10 @@ private:
         LOAD_LIB_2(settings1.library, "std.cfg");
         settings2.platform(Settings::Unspecified);
 
+        // If there are unused templates, keep those
+        settings1.checkUnusedTemplates = true;
+        settings2.checkUnusedTemplates = true;
+
         TEST_CASE(array);
         TEST_CASE(stlarray1);
         TEST_CASE(stlarray2);
@@ -155,6 +159,7 @@ private:
         TEST_CASE(isVariablePointerToConstVolatilePointer);
         TEST_CASE(isVariableMultiplePointersAndQualifiers);
         TEST_CASE(variableVolatile);
+        TEST_CASE(isVariableDecltype);
 
         TEST_CASE(VariableValueType1);
         TEST_CASE(VariableValueType2);
@@ -1288,6 +1293,33 @@ private:
         ASSERT(y);
         ASSERT(y->variable());
         ASSERT(y->variable()->isVolatile());
+    }
+
+    void isVariableDecltype() {
+        GET_SYMBOL_DB("int x;\n"
+                      "decltype(x) a;\n"
+                      "const decltype(x) b;\n"
+                      "decltype(x) *c;\n");
+        ASSERT(db);
+        ASSERT_EQUALS(4, db->scopeList.front().varlist.size());
+
+        const Variable *a = Token::findsimplematch(tokenizer.tokens(), "a")->variable();
+        ASSERT(a);
+        ASSERT_EQUALS("a", a->name());
+        ASSERT(a->valueType());
+        ASSERT_EQUALS("signed int", a->valueType()->str());
+
+        const Variable *b = Token::findsimplematch(tokenizer.tokens(), "b")->variable();
+        ASSERT(b);
+        ASSERT_EQUALS("b", b->name());
+        ASSERT(b->valueType());
+        ASSERT_EQUALS("const signed int", b->valueType()->str());
+
+        const Variable *c = Token::findsimplematch(tokenizer.tokens(), "c")->variable();
+        ASSERT(c);
+        ASSERT_EQUALS("c", c->name());
+        ASSERT(c->valueType());
+        ASSERT_EQUALS("signed int *", c->valueType()->str());
     }
 
     void arrayMemberVar1() {
@@ -7108,6 +7140,10 @@ private:
             ASSERT_EQUALS("container(test :: string)", typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "s", "test.cpp", &set));
             ASSERT_EQUALS("container(test :: string)", typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "+", "test.cpp", &set));
             ASSERT_EQUALS("container(test :: string)", typeOf("Vector<test::string> v; x = v.front();", "(", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)", typeOf("void foo(){test::string s; return \"x\"+s;}", "+", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)", typeOf("void foo(){test::string s; return s+\"x\";}", "+", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)", typeOf("void foo(){test::string s; return 'x'+s;}", "+", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)", typeOf("void foo(){test::string s; return s+'x';}", "+", "test.cpp", &set));
         }
 
         // new

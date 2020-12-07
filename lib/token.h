@@ -433,6 +433,9 @@ public:
     bool isBoolean() const {
         return mTokType == eBoolean;
     }
+    bool isIncDecOp() const {
+        return mTokType == eIncDecOp;
+    }
     bool isBinaryOp() const {
         return astOperand1() != nullptr && astOperand2() != nullptr;
     }
@@ -850,6 +853,7 @@ public:
     struct stringifyOptions {
         bool varid = false;
         bool exprid = false;
+        bool idtype = false; // distinguish varid / exprid
         bool attributes = false;
         bool macro = false;
         bool linenumbers = false;
@@ -872,6 +876,13 @@ public:
         static stringifyOptions forDebugExprId() {
             stringifyOptions options = forDebug();
             options.exprid = true;
+            return options;
+        }
+        static stringifyOptions forPrintOut() {
+            stringifyOptions options = forDebug();
+            options.exprid = true;
+            options.varid = true;
+            options.idtype = true;
             return options;
         }
     };
