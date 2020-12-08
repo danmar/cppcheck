@@ -187,7 +187,7 @@ void TokenList::deleteTokens(Token *tok)
 // add a token.
 //---------------------------------------------------------------------------
 
-void TokenList::addtoken(std::string str, const nonneg int lineno, const nonneg int fileno, bool split)
+void TokenList::addtoken(std::string str, const nonneg int lineno, const nonneg int column, const nonneg int fileno, bool split)
 {
     if (str.empty())
         return;
@@ -198,11 +198,11 @@ void TokenList::addtoken(std::string str, const nonneg int lineno, const nonneg 
         size_t end = 0;
         while ((end = str.find("##", begin)) != std::string::npos) {
             addtoken(str.substr(begin, end - begin), lineno, fileno, false);
-            addtoken("##", lineno, fileno, false);
+            addtoken("##", lineno, column, fileno, false);
             begin = end+2;
         }
         if (begin != 0) {
-            addtoken(str.substr(begin), lineno, fileno, false);
+            addtoken(str.substr(begin), lineno, column, fileno, false);
             return;
         }
     }
@@ -216,6 +216,7 @@ void TokenList::addtoken(std::string str, const nonneg int lineno, const nonneg 
     }
 
     mTokensFrontBack.back->linenr(lineno);
+    mTokensFrontBack.back->column(column);
     mTokensFrontBack.back->fileIndex(fileno);
 }
 
@@ -237,7 +238,7 @@ void TokenList::addtoken(std::string str, const Token *locationTok)
     mTokensFrontBack.back->fileIndex(locationTok->fileIndex());
 }
 
-void TokenList::addtoken(const Token * tok, const nonneg int lineno, const nonneg int fileno)
+void TokenList::addtoken(const Token * tok, const nonneg int lineno, const nonneg int column, const nonneg int fileno)
 {
     if (tok == nullptr)
         return;
@@ -253,6 +254,7 @@ void TokenList::addtoken(const Token * tok, const nonneg int lineno, const nonne
     }
 
     mTokensFrontBack.back->linenr(lineno);
+    mTokensFrontBack.back->column(column);
     mTokensFrontBack.back->fileIndex(fileno);
     mTokensFrontBack.back->flags(tok->flags());
 }

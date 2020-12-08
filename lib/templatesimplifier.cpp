@@ -1534,7 +1534,7 @@ void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, c
             if (insert)
                 mTokenList.back()->tokAt(offset)->insertToken(token, "");
             else
-                mTokenList.addtoken(token, tok->linenr(), tok->fileIndex());
+                mTokenList.addtoken(token, tok->linenr(), tok->column(), tok->fileIndex());
         }
         start = end + 1;
     }
@@ -1549,10 +1549,10 @@ void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, c
             mTokenList.back()->tokAt(offset)->insertToken("::", "");
         } else {
             if (!inTemplate)
-                mTokenList.addtoken(templateDeclaration.scope().substr(start), tok->linenr(), tok->fileIndex());
+                mTokenList.addtoken(templateDeclaration.scope().substr(start), tok->linenr(), tok->column(), tok->fileIndex());
             else
                 mTokenList.back()->str(mTokenList.back()->str() + templateDeclaration.scope().substr(start));
-            mTokenList.addtoken("::", tok->linenr(), tok->fileIndex());
+            mTokenList.addtoken("::", tok->linenr(), tok->column(), tok->fileIndex());
         }
     }
 }
@@ -1906,7 +1906,7 @@ void TemplateSimplifier::expandTemplate(
                     if (copy) {
                         if (!templateDeclaration.scope().empty() && tok5->strAt(-1) != "::")
                             addNamespace(templateDeclaration, tok5);
-                        mTokenList.addtoken(newName, tok5->linenr(), tok5->fileIndex());
+                        mTokenList.addtoken(newName, tok5->linenr(), tok5->column(), tok5->fileIndex());
                         tok5 = tok5->next()->findClosingBracket();
                     } else {
                         tok5->str(newName);
@@ -1992,7 +1992,7 @@ void TemplateSimplifier::expandTemplate(
             if (copy) {
                 if (!templateDeclaration.scope().empty() && tok3->strAt(-1) != "::")
                     addNamespace(templateDeclaration, tok3);
-                mTokenList.addtoken(newName, tok3->linenr(), tok3->fileIndex());
+                mTokenList.addtoken(newName, tok3->linenr(), tok3->column(), tok3->fileIndex());
             }
 
             while (tok3 && tok3->str() != "::")
@@ -2204,7 +2204,7 @@ void TemplateSimplifier::expandTemplate(
                     Token::createMutualLinks(brackets.top(), mTokenList.back());
                     if (tok3->strAt(1) == ";") {
                         const Token * tokSemicolon = tok3->next();
-                        mTokenList.addtoken(tokSemicolon, tokSemicolon->linenr(), tokSemicolon->fileIndex());
+                        mTokenList.addtoken(tokSemicolon, tokSemicolon->linenr(), tokSemicolon->column(), tokSemicolon->fileIndex());
                     }
                     brackets.pop();
                     if (brackets.empty() && !Token::Match(tok3, "} >|,|{|%cop%")) {
