@@ -3838,9 +3838,11 @@ void Tokenizer::setVarIdPass2()
                         baseClassName = name;
                         break;
                     }
-                    if (scopeName3.size() < 8)
+                    // Remove last scope name
+                    if (scopeName3.size() <= 8)
                         break;
-                    const std::string::size_type pos = scopeName3.rfind(" :: ", scopeName.size()-5);
+                    scopeName3.erase(scopeName3.size() - 4);
+                    const std::string::size_type pos = scopeName3.rfind(" :: ");
                     if (pos == std::string::npos)
                         break;
                     scopeName3.erase(pos + 4);
