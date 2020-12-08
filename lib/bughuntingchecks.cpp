@@ -498,9 +498,21 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
 
     const std::string symbol = (tok->varId() > 0) ? ("$symbol:" + tok->str() + "\n") : std::string();
 
+    std::string errorId = "bughuntingUninit";
+
+    {
+        const Token *vartok = tok;
+        while (Token::simpleMatch(vartok, "."))
+            vartok = vartok->previous();
+        const Variable *var = vartok ? vartok->variable() : nullptr;
+        if (var && var->isArgument())
+            errorId += "Arg";
+    }
+
+
     dataBase->reportError(tok,
                           Severity::SeverityType::error,
-                          "bughuntingUninit",
+                          errorId.c_str(),
                           symbol + "Cannot determine that '" + uninitexpr + "' is initialized" + inconclusiveMessage,
                           CWE_USE_OF_UNINITIALIZED_VARIABLE,
                           inconclusive,
