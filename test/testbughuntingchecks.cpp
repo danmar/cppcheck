@@ -207,7 +207,7 @@ private:
         // constant parameters should point at initialized data
 
         check("char foo(char id[]) { return id[0]; }");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that 'id[0]' is initialized\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that 'id[0]' is initialized (you can use 'const' to say data must be initialized)\n", errout.str());
 
         check("char foo(const char id[]) { return id[0]; }");
         ASSERT_EQUALS("", errout.str());
