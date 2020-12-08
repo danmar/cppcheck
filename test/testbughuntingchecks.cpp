@@ -222,6 +222,15 @@ private:
 
         check("void foo(int *p) { if (p) *p=0; }");
         ASSERT_EQUALS("", errout.str());
+
+        check("class C {\n"
+              "public:\n"
+              "  C();\n"
+              "  int x;\n"
+              "};\n"
+              "\n"
+              "void foo(const C &c) { int x = c.x; }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninit_malloc() {

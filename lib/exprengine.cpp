@@ -2631,13 +2631,15 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
         return value;
     }
     if (valueType->type == ValueType::Type::RECORD) {
-        bool init = true;
+        bool uninitData = true;
         if (var.isLocal() && !var.isStatic()) {
-            init = valueType->typeScope &&
-                   valueType->typeScope->definedType &&
-                   valueType->typeScope->definedType->needInitialization != Type::NeedInitialization::False;
+            uninitData = !valueType->typeScope ||
+                         !valueType->typeScope->definedType ||
+                         valueType->typeScope->definedType->needInitialization != Type::NeedInitialization::False;
         }
-        return createStructVal(valueType->typeScope, init, data);
+        if (var.isArgument() && var.isConst())
+            uninitData = false;
+        return createStructVal(valueType->typeScope, uninitData, data);
     }
     if (valueType->smartPointerType) {
         auto structValue = createStructVal(valueType->smartPointerType->classScope, var.isLocal() && !var.isStatic(), data);
