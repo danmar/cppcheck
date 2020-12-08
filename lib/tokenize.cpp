@@ -6519,6 +6519,10 @@ void Tokenizer::simplifyFunctionParameters()
 
                 //since there are changes to tokens, put tok where tok1 is
                 tok = declEnd->next();
+
+                //fix up line number
+                if (tok->str() == ",")
+                    tok->linenr(tok->previous()->linenr());
             }
             //goto forward and continue
             tok = tok->next()->link();
