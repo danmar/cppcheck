@@ -1481,14 +1481,14 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
                 // In template arguments, there might not be AST
                 // Determine size by using the "raw tokens"
                 TokenList tokenList(mSettings);
-                tokenList.addtoken(";", 0, 0, false);
+                tokenList.addtoken(";", 0, 0, 0, false);
                 bool fail = false;
                 for (const Token *tok = dimension.tok; tok && !Token::Match(tok, "[,>]"); tok = tok->next()) {
                     if (!tok->isName())
-                        tokenList.addtoken(tok->str(), 0, 0, false);
+                        tokenList.addtoken(tok->str(), 0, 0, 0, false);
 
                     else if (tok->hasKnownIntValue())
-                        tokenList.addtoken(std::to_string(tok->getKnownIntValue()), 0, 0, false);
+                        tokenList.addtoken(std::to_string(tok->getKnownIntValue()), 0, 0, 0, false);
 
                     else {
                         fail = true;
@@ -1499,7 +1499,7 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
                 if (fail)
                     continue;
 
-                tokenList.addtoken(";", 0, 0, false);
+                tokenList.addtoken(";", 0, 0, 0, false);
 
                 for (Token *tok = tokenList.front(); tok;) {
                     if (TemplateSimplifier::simplifyNumericCalculations(tok, false))
@@ -5860,11 +5860,11 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             do {
                 std::string::size_type pos2 = type->str().find("::", pos1);
                 if (pos2 == std::string::npos) {
-                    typeTokens.addtoken(type->str().substr(pos1), 0, 0, false);
+                    typeTokens.addtoken(type->str().substr(pos1), 0, 0, 0, false);
                     break;
                 }
-                typeTokens.addtoken(type->str().substr(pos1, pos2 - pos1), 0, 0, false);
-                typeTokens.addtoken("::", 0, 0, false);
+                typeTokens.addtoken(type->str().substr(pos1, pos2 - pos1), 0, 0, 0, false);
+                typeTokens.addtoken("::", 0, 0, 0, false);
                 pos1 = pos2 + 2;
             } while (pos1 < type->str().size());
             const Library::Container *container = settings->library.detectContainer(typeTokens.front());
