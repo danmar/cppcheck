@@ -3845,8 +3845,16 @@ void Tokenizer::setVarIdPass2()
         for (Token *tok2 = tokStart->next(); tok2 && tok2 != tokStart->link(); tok2 = tok2->next()) {
             // skip parentheses..
             if (tok2->link()) {
+                if (tok2->str() == "(") {
+                    Token *funcstart = const_cast<Token*>(isFunctionHead(tok2, "{"));
+                    if (funcstart) {
+                        setVarIdClassFunction(scopeName2 + classname, funcstart, funcstart->link(), thisClassVars, structMembers, &mVarId);
+                        tok2 = funcstart->link();
+                        continue;
+                    }
+                }
                 if (tok2->str() == "{") {
-                    if (tok2->strAt(-1) == ")" || tok2->strAt(-2) == ")")
+                    if (tok2->strAt(-1) == ")")
                         setVarIdClassFunction(scopeName2 + classname, tok2, tok2->link(), thisClassVars, structMembers, &mVarId);
                     tok2 = tok2->link();
                 } else if (Token::Match(tok2, "( %name%|)") && !Token::Match(tok2->link(), "(|[")) {
