@@ -3830,7 +3830,22 @@ void Tokenizer::setVarIdPass2()
                 continue;
             }
             if (Token::Match(tokStart, "%name% ,|{")) {
-                const std::map<std::string, int>& baseClassVars = varsByClass[tokStart->str()];
+                std::string baseClassName = tokStart->str();
+                std::string scopeName3(scopeName2);
+                while (!scopeName3.empty()) {
+                    const std::string name = scopeName3 + baseClassName;
+                    if (varsByClass.find(name) != varsByClass.end()) {
+                        baseClassName = name;
+                        break;
+                    }
+                    if (scopeName3.size() < 8)
+                        break;
+                    const std::string::size_type pos = scopeName3.rfind(" :: ", scopeName.size()-5);
+                    if (pos == std::string::npos)
+                        break;
+                    scopeName3.erase(pos + 4);
+                }
+                const std::map<std::string, int>& baseClassVars = varsByClass[baseClassName];
                 thisClassVars.insert(baseClassVars.begin(), baseClassVars.end());
             }
             tokStart = tokStart->next();
