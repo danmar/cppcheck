@@ -357,8 +357,10 @@ void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
                         ;
                     else if (level == 0 && Token::Match(tok2->previous(), "%type%")) {
                         // @todo add better expression detection
-                        if (!Token::Match(tok2->next(), "*| %type%|%num% ;"))
+                        if (!(Token::Match(tok2->next(), "*| %type%|%num% ;") ||
+                              Token::Match(tok2->next(), "*| %type% . %type% ;"))) {
                             inclevel = true;
+                        }
                     } else if (tok2->next() && tok2->next()->isStandardType() && !Token::Match(tok2->tokAt(2), "(|{"))
                         inclevel = true;
                     else if (Token::simpleMatch(tok2, "< typename"))
