@@ -297,7 +297,7 @@ void misra_8_14(char * restrict str) {(void)str;} // 8.14
 
 void misra_9_2() {
     int empty_init[2][2]                     = { };                                    // 9.2
-    int empty_nested_init[2][2]              = { { } };                                // 9.2
+    int empty_nested_init[2][2]              = { { } };                                // 9.2 9.3
     int zero_init_a[5]                       = { 0 };
     int zero_init_b[5][2]                    = { 0 };
     int zero_init_c[2][2]                    = { { 1, 2 }, { 0 } };
@@ -305,17 +305,17 @@ void misra_9_2() {
     const char string_wrong_level_a[12]      = { "Hello world" };                      // 9.2
     const char string_wrong_level_b[2][20]   = "Hello world";                          // 9.2
     const char string_correct_level_a[]      = "Hello world";
-    const char string_correct_level_b[2][12] = { "Hello world" };
+    const char string_correct_level_b[1][12] = { "Hello world" };
     const char *char_p_correct_level[2]      = { "Hello", [1] = "world" };
     const char *char_p_incorrect_level[1]    = "Hello world";                          // 9.2
 
-    char **str_p = &char_p_correct_level[0];
+    char **str_p                             = &char_p_correct_level[0];
     char **str_p_array_correct_level[1]      = { str_p };
     char **str_p_array_incorrect_level[1]    = { { str_p } };                          // 9.2
 
     int array_init_incorrect_levels_a[3][2]  = { 1, 2, 3, 4, 5, 6 };                   // 9.2
     int array_init_correct_levels_a[3][2]    = { { 1, 2 }, { 3, 4 }, { 5, 6 } };
-    int array_init_incorrect_levels_b[6]     = { { 1, 2 }, { 3, 4 }, { 5, 6 } };       // 9.2
+    int array_init_incorrect_levels_b[6]     = { { 1, 2 }, { 3, 4 }, { 5, 6 } };       // 9.2 9.3
     int array_init_correct_levels_b[6]       = { 1, 2, 3, 4, 5, 6 };
 
     int array_incorrect_designator_a[1]      = { [0][1] = 1 };                         // 9.2
@@ -347,7 +347,7 @@ void misra_9_2() {
     struct1 struct_array_incorrect_levels[2] = { 1, 2, 3, 4 };                         // 9.2
     struct1 struct_array_correct_levels[2]   = { {1, 2}, {3, 4} };
     struct1 struct_correct_designator_a      = { .i2 = 2, .i1 = 1 };
-    struct2 struct_correct_designator_b      = { .is1 = {2, 3}, { 4 } };
+    struct2 struct_correct_designator_b      = { .is1 = {2, 3}, { 4, 5, 6, 7 } };
     struct1 struct_correct_designator_c      = { a = 1, 2 };                           // 13.1
     struct2 struct_incorrect_type            = { .is1 = struct_correct_designator_b }; // 9.2
     struct2 struct_correct_type              = { .is1 = struct_correct_designator_a };
@@ -658,7 +658,7 @@ void misra_13_1(int *p) {
   int a4[2] = { [0]=0, [1]=(v+=1) }; // 13.1
   int a5[2] = { [0]=0, [1]=(v+1) };
   int a6[2] = { v, 1 };
-  int a6[2] = { v >>= 3 }; // 13.1
+  int a6[2] = { v >>= 3 }; // 13.1 9.3
   int a7[2] = { v, ++v }; // 13.1
   int a8[1] = { vv }; // TODO: 13.1 Trac #9504
 
