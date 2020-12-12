@@ -2453,6 +2453,16 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                         lhs = lhs->astOperand1();
                     if (!lhs)
                         throw ExprEngineException(tok2, "Unhandled assignment in loop");
+                    if (Token::Match(lhs, ". %name% =|[") && Token::simpleMatch(lhs->astOperand1(), ".")) {
+                        const Token *structToken = lhs;
+                        while (Token::Match(structToken, ".|["))
+                            structToken = structToken->astOperand1();
+                        if (Token::Match(structToken, "%var%")) {
+                            data.assignValue(structToken, structToken->varId(), std::make_shared<ExprEngine::BailoutValue>());
+                            changedVariables.insert(structToken->varId());
+                            continue;
+                        }
+                    }
                     if (Token::Match(lhs, ". %name% =|[") && lhs->astOperand1() && lhs->astOperand1()->valueType()) {
                         const Token *structToken = lhs->astOperand1();
                         if (!structToken->valueType() || !structToken->varId())
@@ -2621,13 +2631,15 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
         return value;
     }
     if (valueType->type == ValueType::Type::RECORD) {
-        bool init = true;
+        bool uninitData = true;
         if (var.isLocal() && !var.isStatic()) {
-            init = valueType->typeScope &&
-                   valueType->typeScope->definedType &&
-                   valueType->typeScope->definedType->needInitialization != Type::NeedInitialization::False;
+            uninitData = !valueType->typeScope ||
+                         !valueType->typeScope->definedType ||
+                         valueType->typeScope->definedType->needInitialization != Type::NeedInitialization::False;
         }
-        return createStructVal(valueType->typeScope, init, data);
+        if (var.isArgument() && var.isConst())
+            uninitData = false;
+        return createStructVal(valueType->typeScope, uninitData, data);
     }
     if (valueType->smartPointerType) {
         auto structValue = createStructVal(valueType->smartPointerType->classScope, var.isLocal() && !var.isStatic(), data);

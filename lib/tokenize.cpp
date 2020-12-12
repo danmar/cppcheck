@@ -3830,7 +3830,24 @@ void Tokenizer::setVarIdPass2()
                 continue;
             }
             if (Token::Match(tokStart, "%name% ,|{")) {
-                const std::map<std::string, int>& baseClassVars = varsByClass[tokStart->str()];
+                std::string baseClassName = tokStart->str();
+                std::string scopeName3(scopeName2);
+                while (!scopeName3.empty()) {
+                    const std::string name = scopeName3 + baseClassName;
+                    if (varsByClass.find(name) != varsByClass.end()) {
+                        baseClassName = name;
+                        break;
+                    }
+                    // Remove last scope name
+                    if (scopeName3.size() <= 8)
+                        break;
+                    scopeName3.erase(scopeName3.size() - 4);
+                    const std::string::size_type pos = scopeName3.rfind(" :: ");
+                    if (pos == std::string::npos)
+                        break;
+                    scopeName3.erase(pos + 4);
+                }
+                const std::map<std::string, int>& baseClassVars = varsByClass[baseClassName];
                 thisClassVars.insert(baseClassVars.begin(), baseClassVars.end());
             }
             tokStart = tokStart->next();
@@ -3845,8 +3862,16 @@ void Tokenizer::setVarIdPass2()
         for (Token *tok2 = tokStart->next(); tok2 && tok2 != tokStart->link(); tok2 = tok2->next()) {
             // skip parentheses..
             if (tok2->link()) {
+                if (tok2->str() == "(") {
+                    Token *funcstart = const_cast<Token*>(isFunctionHead(tok2, "{"));
+                    if (funcstart) {
+                        setVarIdClassFunction(scopeName2 + classname, funcstart, funcstart->link(), thisClassVars, structMembers, &mVarId);
+                        tok2 = funcstart->link();
+                        continue;
+                    }
+                }
                 if (tok2->str() == "{") {
-                    if (tok2->strAt(-1) == ")" || tok2->strAt(-2) == ")")
+                    if (tok2->strAt(-1) == ")")
                         setVarIdClassFunction(scopeName2 + classname, tok2, tok2->link(), thisClassVars, structMembers, &mVarId);
                     tok2 = tok2->link();
                 } else if (Token::Match(tok2, "( %name%|)") && !Token::Match(tok2->link(), "(|[")) {
@@ -6519,6 +6544,10 @@ void Tokenizer::simplifyFunctionParameters()
 
                 //since there are changes to tokens, put tok where tok1 is
                 tok = declEnd->next();
+
+                //fix up line number
+                if (tok->str() == ",")
+                    tok->linenr(tok->previous()->linenr());
             }
             //goto forward and continue
             tok = tok->next()->link();

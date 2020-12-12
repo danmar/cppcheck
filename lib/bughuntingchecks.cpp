@@ -498,10 +498,25 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
 
     const std::string symbol = (tok->varId() > 0) ? ("$symbol:" + tok->str() + "\n") : std::string();
 
+    std::string constMessage;
+    std::string errorId = "bughuntingUninit";
+
+    {
+        const Token *vartok = tok;
+        while (Token::Match(vartok, ".|["))
+            vartok = vartok->astOperand1();
+        const Variable *var = vartok ? vartok->variable() : nullptr;
+        if (var && var->isArgument()) {
+            errorId += "NonConstArg";
+            constMessage = " (you can use 'const' to say data must be initialized)";
+        }
+    }
+
+
     dataBase->reportError(tok,
                           Severity::SeverityType::error,
-                          "bughuntingUninit",
-                          symbol + "Cannot determine that '" + uninitexpr + "' is initialized" + inconclusiveMessage,
+                          errorId.c_str(),
+                          symbol + "Cannot determine that '" + uninitexpr + "' is initialized" + constMessage + inconclusiveMessage,
                           CWE_USE_OF_UNINITIALIZED_VARIABLE,
                           inconclusive,
                           value.type == ExprEngine::ValueType::BailoutValue);

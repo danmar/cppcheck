@@ -882,7 +882,8 @@ private:
                                 "2:\n"
                                 "|\n"
                                 "5:\n"
-                                "6: Container<int> intContainer@1 ; struct Container<int> {\n"
+                                "6: Container<int> intContainer@1 ;\n"
+                                "1: struct Container<int> {\n"
                                 "2: Container<int> ( ) ;\n"
                                 "3: int * mElements@2 ;\n"
                                 "4: } ;\n"
@@ -4012,9 +4013,8 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS("void func (\n"
-                          "int in ,\n"
-                          "int r ,\n"
-                          "int m )\n"
+                          "int in , int r , int m\n"
+                          ")\n"
                           "{\n"
                           "}", tokenizeAndStringify(code));
         }
@@ -4025,7 +4025,8 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS("void f (\n"
-                          "char * r )\n"
+                          "char * r\n"
+                          ")\n"
                           "\n"
                           "{\n"
                           "}", tokenizeAndStringify(code));
@@ -4046,7 +4047,8 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS("void f (\n"
-                          "char * r )\n"
+                          "char * r\n"
+                          ")\n"
                           "\n"
                           "{\n"
                           "}", tokenizeAndStringify(code));
@@ -4060,8 +4062,8 @@ private:
 
             ASSERT_EQUALS("void f (\n"
                           "char * r ,\n"
-                          "\n"
-                          "char * s )\n"
+                          "char * s\n"
+                          ")\n"
                           "\n"
                           "\n"
                           "{\n"
@@ -4074,9 +4076,8 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS("void f (\n"
-                          "char * r ,\n"
-                          "char * s ,\n"
-                          "char * t )\n"
+                          "char * r , char * s , char * t\n"
+                          ")\n"
                           "\n"
                           "{\n"
                           "}", tokenizeAndStringify(code));
@@ -5321,7 +5322,8 @@ private:
                       "int main ( )\n"
                       "{\n"
                       "fn2<int> ( ) ;\n"
-                      "} void fn2<int> ( int t = [ ] { return 1 ; } ( ) )\n"
+                      "}\n"
+                      "void fn2<int> ( int t = [ ] { return 1 ; } ( ) )\n"
                       "{ }", tokenizeAndStringify(code));
     }
 
@@ -5340,7 +5342,8 @@ private:
         ASSERT_EQUALS("struct S<int,(int)0> ;\n"
                       "\n"
                       "\n"
-                      "S<int,(int)0> s ; struct S<int,(int)0>\n"
+                      "S<int,(int)0> s ;\n"
+                      "struct S<int,(int)0>\n"
                       "{ } ;",
                       tokenizeAndStringify(code));
     }
@@ -8725,7 +8728,8 @@ private:
                       "2: int a ; a = 1 ;\n"
                       "3: void f ( ) { g<int> ( 1 ) ; }\n"
                       "4: void g<int> ( int x ) ;\n"
-                      "5: } ; void A :: g<int> ( int x ) { a = 2 ; }\n",
+                      "5: } ;\n"
+                      "4: void A :: g<int> ( int x ) { a = 2 ; }\n",
                       checkHeaders(code, true));
 
         ASSERT_EQUALS("\n\n##file 1\n\n"

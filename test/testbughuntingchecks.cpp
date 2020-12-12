@@ -40,6 +40,7 @@ private:
         TEST_CASE(arrayIndexOutOfBounds2);
         TEST_CASE(arrayIndexOutOfBounds3);
         TEST_CASE(arrayIndexOutOfBounds4);
+        TEST_CASE(arrayIndexOutOfBounds5);
         TEST_CASE(bufferOverflowMemCmp1);
         TEST_CASE(bufferOverflowMemCmp2);
         TEST_CASE(bufferOverflowStrcpy1);
@@ -135,6 +136,23 @@ private:
                       errout.str());
     }
 
+    void arrayIndexOutOfBounds5() {
+        check("struct {\n"
+              "    struct { int z; } y;\n"
+              "} x;\n"
+              "\n"
+              "void foo(int i) {\n"
+              "    for (int c = 0; c <= i; c++)\n"
+              "        x.y.z = 13;\n"
+              "    int buf[10];\n"
+              "    if (buf[i] > 0) { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array index out of bounds, cannot determine that i is less than 10\n"
+                      "[test.cpp:9]: (error) Array index out of bounds, cannot determine that i is not negative\n"
+                      "[test.cpp:9]: (error) Cannot determine that 'buf[i]' is initialized\n",
+                      errout.str());
+    }
+
     void bufferOverflowMemCmp1() {
         // CVE-2020-24265
         check("void foo(const char *pktdata, int datalen) {\n"
@@ -189,7 +207,7 @@ private:
         // constant parameters should point at initialized data
 
         check("char foo(char id[]) { return id[0]; }");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that 'id[0]' is initialized\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that 'id[0]' is initialized (you can use 'const' to say data must be initialized)\n", errout.str());
 
         check("char foo(const char id[]) { return id[0]; }");
         ASSERT_EQUALS("", errout.str());
@@ -203,6 +221,15 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (error, inconclusive) Cannot determine that 'data[0]' is initialized. It is inconclusive if there would be a problem in the function call.\n", errout.str());
 
         check("void foo(int *p) { if (p) *p=0; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class C {\n"
+              "public:\n"
+              "  C();\n"
+              "  int x;\n"
+              "};\n"
+              "\n"
+              "void foo(const C &c) { int x = c.x; }");
         ASSERT_EQUALS("", errout.str());
     }
 

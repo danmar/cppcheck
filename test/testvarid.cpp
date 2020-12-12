@@ -135,6 +135,8 @@ private:
         TEST_CASE(varid_namespace_1);   // #7272
         TEST_CASE(varid_namespace_2);   // #7000
         TEST_CASE(varid_namespace_3);   // #8627
+        TEST_CASE(varid_namespace_4);
+        TEST_CASE(varid_namespace_5);
         TEST_CASE(varid_initList);
         TEST_CASE(varid_initListWithBaseTemplate);
         TEST_CASE(varid_initListWithScope);
@@ -1968,6 +1970,44 @@ private:
 
         ASSERT_EQUALS("5: int type@2 ;", getLine(actual,5));
         ASSERT_EQUALS("11: type@2 = 0 ;", getLine(actual,11));
+    }
+
+    void varid_namespace_4() {
+        const char code[] = "namespace X {\n"
+                            "  struct foo { int x;};\n"
+                            "  struct bar: public foo {\n"
+                            "    void dostuff();\n"
+                            "  };\n"
+                            "  void bar::dostuff() { int x2 = x * 2; }\n"
+                            "}";
+        ASSERT_EQUALS("1: namespace X {\n"
+                      "2: struct foo { int x@1 ; } ;\n"
+                      "3: struct bar : public foo {\n"
+                      "4: void dostuff ( ) ;\n"
+                      "5: } ;\n"
+                      "6: void bar :: dostuff ( ) { int x2@2 ; x2@2 = x@1 * 2 ; }\n"
+                      "7: }\n", tokenize(code, "test.cpp"));
+    }
+
+    void varid_namespace_5() {
+        const char code[] = "namespace X {\n"
+                            "  struct foo { int x;};\n"
+                            "  namespace Y {\n"
+                            "    struct bar: public foo {\n"
+                            "      void dostuff();\n"
+                            "    };\n"
+                            "    void bar::dostuff() { int x2 = x * 2; }\n"
+                            "  }\n"
+                            "}";
+        ASSERT_EQUALS("1: namespace X {\n"
+                      "2: struct foo { int x@1 ; } ;\n"
+                      "3: namespace Y {\n"
+                      "4: struct bar : public foo {\n"
+                      "5: void dostuff ( ) ;\n"
+                      "6: } ;\n"
+                      "7: void bar :: dostuff ( ) { int x2@2 ; x2@2 = x@1 * 2 ; }\n"
+                      "8: }\n"
+                      "9: }\n", tokenize(code, "test.cpp"));
     }
 
     void varid_initList() {

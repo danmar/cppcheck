@@ -484,8 +484,7 @@ void clangimport::AstNode::setLocations(TokenList *tokenList, int file, int line
 Token *clangimport::AstNode::addtoken(TokenList *tokenList, const std::string &str, bool valueType)
 {
     const Scope *scope = getNestedInScope(tokenList);
-    tokenList->addtoken(str, mLine, mFile);
-    tokenList->back()->column(mCol);
+    tokenList->addtoken(str, mLine, mCol, mFile);
     tokenList->back()->scope(scope);
     if (valueType)
         setValueType(tokenList->back());
