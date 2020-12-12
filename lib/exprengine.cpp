@@ -159,22 +159,48 @@ namespace {
 
 static std::string str(ExprEngine::ValuePtr val)
 {
-    const char * const valueTypeStr[] = {
-        "UninitValue",
-        "IntRange",
-        "FloatRange",
-        "ConditionalValue",
-        "ArrayValue",
-        "StringLiteralValue",
-        "StructValue",
-        "AddressOfValue",
-        "BinOpResult",
-        "IntegerTruncation",
-        "BailoutValue"
+    const char *typestr;
+    switch (val->type) {
+    case ExprEngine::ValueType::AddressOfValue:
+        typestr = "AddressOfValue";
+        break;
+    case ExprEngine::ValueType::ArrayValue:
+        typestr = "ArrayValue";
+        break;
+    case ExprEngine::ValueType::UninitValue:
+        typestr = "UninitValue";
+        break;
+    case ExprEngine::ValueType::IntRange:
+        typestr = "IntRange";
+        break;
+    case ExprEngine::ValueType::FloatRange:
+        typestr = "FloatRange";
+        break;
+    case ExprEngine::ValueType::ConditionalValue:
+        typestr = "ConditionalValue";
+        break;
+    case ExprEngine::ValueType::StringLiteralValue:
+        typestr = "StringLiteralValue";
+        break;
+    case ExprEngine::ValueType::StructValue:
+        typestr = "StructValue";
+        break;
+    case ExprEngine::ValueType::BinOpResult:
+        typestr = "BinOpResult";
+        break;
+    case ExprEngine::ValueType::IntegerTruncation:
+        typestr = "IntegerTruncation";
+        break;
+    case ExprEngine::ValueType::FunctionCallArgumentValues:
+        typestr = "FunctionCallArgumentValues";
+        break;
+    case ExprEngine::ValueType::BailoutValue:
+        typestr = "BailoutValue";
+        break;
     };
 
     std::ostringstream ret;
-    ret << val->name << "=" << valueTypeStr[(int)val->type] << "(" << val->getRange() << ")";
+    ret << val->name << "=" << typestr << "(" << val->getRange() << ")";
     return ret.str();
 }
 
@@ -247,7 +273,7 @@ namespace {
             if (mSymbols.find(symbolicExpression) != mSymbols.end())
                 return;
             mSymbols.insert(symbolicExpression);
-            mMap[tok].push_back(symbolicExpression + "=" + value->getRange());
+            mMap[tok].push_back(str(value));
         }
 
         void state(const Token *tok, const std::string &s) {
@@ -311,6 +337,11 @@ namespace {
         const std::set<std::string> getMissingContracts() const {
             return mMissingContracts;
         }
+
+        void ifSplit(const Token *tok, unsigned int thenIndex, unsigned int elseIndex) {
+            mMap[tok].push_back("Split. Then:" + std::to_string(thenIndex) + " Else:" + std::to_string(elseIndex));
+        }
+
     private:
         const char *getStatus(int linenr) const {
             if (mErrors.find(linenr) != mErrors.end())
@@ -682,6 +713,10 @@ namespace {
                 if (it != memory.end())
                     memory.erase(it);
             }
+        }
+
+        static void ifSplit(const Token *tok, const Data& thenData, const Data& elseData) {
+            thenData.mTrackExecution->ifSplit(tok, thenData.mDataIndex, elseData.mDataIndex);
         }
 
     private:
@@ -2400,6 +2435,8 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             Data elseData(data);
             thenData.addConstraint(condValue, true);
             elseData.addConstraint(condValue, false);
+
+            Data::ifSplit(tok, thenData, elseData);
 
             const Token *thenStart = tok->linkAt(1)->next();
             const Token *thenEnd = thenStart->link();
