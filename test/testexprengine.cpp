@@ -331,15 +331,15 @@ private:
         Settings settings;
         LOAD_LIB_2(settings.library, "std.cfg");
 
-        ASSERT_EQUALS("1:26: $3=0:2147483647\n"
-                      "1:26: $2=-128:127\n"
-                      "1:27: 0:{ s=($4,[$3],[:]=$2)}\n",
+        ASSERT_EQUALS("1:26: $3=IntRange(0:2147483647)\n"
+                      "1:26: $2=IntRange(-128:127)\n"
+                      "1:27: 0:memory:{s=($4,[$3],[:]=$2)}\n",
                       trackExecution("void foo() { std::string s; }", &settings));
 
 
-        ASSERT_EQUALS("1:52: $3=0:2147483647\n"
-                      "1:52: $2=-128:127\n"
-                      "1:66: 0:{ s=($4,[$3],[:]=$2)}\n",
+        ASSERT_EQUALS("1:52: $3=IntRange(0:2147483647)\n"
+                      "1:52: $2=IntRange(-128:127)\n"
+                      "1:66: 0:memory:{s=($4,[$3],[:]=$2)}\n",
                       trackExecution("std::string getName(int); void foo() { std::string s = getName(1); }", &settings));
     }
 
@@ -609,9 +609,9 @@ private:
     void array4() {
         const char code[] = "int buf[10];\n"
                             "void f() { int x = buf[0]; }";
-        ASSERT_EQUALS("2:16: $2:0=-2147483648:2147483647\n"
-                      "2:20: $2=-2147483648:2147483647\n"
-                      "2:26: 0:{ buf=($1,[10],[:]=$2) x=$2:0}\n",
+        ASSERT_EQUALS("2:16: $2:0=IntRange(-2147483648:2147483647)\n"
+                      "2:20: $2=IntRange(-2147483648:2147483647)\n"
+                      "2:26: 0:memory:{buf=($1,[10],[:]=$2) x=$2:0}\n",
                       trackExecution(code));
     }
 
@@ -621,10 +621,10 @@ private:
                             "  buf[x][1][2] = 10;\n"
                             "  return buf[0][1][2];\n"
                             "}";
-        ASSERT_EQUALS("1:14: $1=-2147483648:2147483647\n"
-                      "1:14: 0:{ x=$1}\n"
-                      "2:19: 0:{ x=$1 buf=($2,[3][4][5],[:]=?)}\n"
-                      "3:20: 0:{ x=$1 buf=($2,[3][4][5],[:]=?,[((20)*($1))+(7)]=10)}\n",
+        ASSERT_EQUALS("1:14: $1=IntRange(-2147483648:2147483647)\n"
+                      "1:14: 0:memory:{x=$1}\n"
+                      "2:19: 0:memory:{x=$1 buf=($2,[3][4][5],[:]=?)}\n"
+                      "3:20: 0:memory:{x=$1 buf=($2,[3][4][5],[:]=?,[((20)*($1))+(7)]=10)}\n",
                       trackExecution(code));
     }
 
