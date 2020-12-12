@@ -1213,6 +1213,10 @@ bool ExprEngine::IntRange::isEqual(DataBase *dataBase, int value) const
     } catch (const z3::exception &exception) {
         std::cerr << "z3: " << exception << std::endl;
         return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
+        return true;  // Safe option is to return true
     }
 #else
     // The value may or may not be in range
@@ -1240,6 +1244,10 @@ bool ExprEngine::IntRange::isGreaterThan(DataBase *dataBase, int value) const
         return solver.check() == z3::sat;
     } catch (const z3::exception &exception) {
         std::cerr << "z3: " << exception << std::endl;
+        return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
         return true;  // Safe option is to return true
     }
 #else
@@ -1269,6 +1277,10 @@ bool ExprEngine::IntRange::isLessThan(DataBase *dataBase, int value) const
     } catch (const z3::exception &exception) {
         std::cerr << "z3: " << exception << std::endl;
         return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
+        return true;  // Safe option is to return true
     }
 #else
     // The value may or may not be in range
@@ -1297,6 +1309,10 @@ bool ExprEngine::FloatRange::isEqual(DataBase *dataBase, int value) const
         return solver.check() != z3::unsat;
     } catch (const z3::exception &exception) {
         std::cerr << "z3: " << exception << std::endl;
+        return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
         return true;  // Safe option is to return true
     }
 #else
@@ -1328,6 +1344,10 @@ bool ExprEngine::FloatRange::isGreaterThan(DataBase *dataBase, int value) const
     } catch (const z3::exception &exception) {
         std::cerr << "z3: " << exception << std::endl;
         return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
+        return true;  // Safe option is to return true
     }
 #else
     // The value may or may not be in range
@@ -1358,6 +1378,10 @@ bool ExprEngine::FloatRange::isLessThan(DataBase *dataBase, int value) const
     } catch (const z3::exception &exception) {
         std::cerr << "z3: " << exception << std::endl;
         return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
+        return true;  // Safe option is to return true
     }
 #else
     // The value may or may not be in range
@@ -1369,13 +1393,22 @@ bool ExprEngine::FloatRange::isLessThan(DataBase *dataBase, int value) const
 bool ExprEngine::BinOpResult::isEqual(ExprEngine::DataBase *dataBase, int value) const
 {
 #ifdef USE_Z3
-    ExprData exprData;
-    z3::solver solver(exprData.context);
-    z3::expr e = exprData.getExpr(this);
-    exprData.addConstraints(solver, dynamic_cast<const Data *>(dataBase));
-    exprData.addAssertions(solver);
-    solver.add(exprData.int_expr(e) == value);
-    return solver.check() == z3::sat;
+    try {
+        ExprData exprData;
+        z3::solver solver(exprData.context);
+        z3::expr e = exprData.getExpr(this);
+        exprData.addConstraints(solver, dynamic_cast<const Data *>(dataBase));
+        exprData.addAssertions(solver);
+        solver.add(exprData.int_expr(e) == value);
+        return solver.check() == z3::sat;
+    } catch (const z3::exception &exception) {
+        std::cerr << "z3:" << exception << std::endl;
+        return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
+        return true;  // Safe option is to return true
+    }
 #else
     (void)dataBase;
     (void)value;
@@ -1396,6 +1429,10 @@ bool ExprEngine::BinOpResult::isGreaterThan(ExprEngine::DataBase *dataBase, int 
         return solver.check() == z3::sat;
     } catch (const z3::exception &exception) {
         std::cerr << "z3:" << exception << std::endl;
+        return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
         return true;  // Safe option is to return true
     }
 #else
@@ -1419,6 +1456,10 @@ bool ExprEngine::BinOpResult::isLessThan(ExprEngine::DataBase *dataBase, int val
     } catch (const z3::exception &exception) {
         std::cerr << "z3:" << exception << std::endl;
         return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
+        return true;  // Safe option is to return true
     }
 #else
     (void)dataBase;
@@ -1440,6 +1481,10 @@ bool ExprEngine::BinOpResult::isTrue(ExprEngine::DataBase *dataBase) const
         return solver.check() == z3::sat;
     } catch (const z3::exception &exception) {
         std::cerr << "z3:" << exception << std::endl;
+        return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
         return true;  // Safe option is to return true
     }
 #else
@@ -2688,7 +2733,7 @@ void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorL
 
     try {
         execute(functionScope->bodyStart, functionScope->bodyEnd, data);
-    } catch (ExprEngineException &e) {
+    } catch (const ExprEngineException &e) {
         if (settings->debugBugHunting)
             report << "ExprEngineException tok.line:" << e.tok->linenr() << " what:" << e.what << "\n";
         trackExecution.setAbortLine(e.tok->linenr());
