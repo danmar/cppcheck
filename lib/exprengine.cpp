@@ -339,7 +339,7 @@ namespace {
         }
 
         void ifSplit(const Token *tok, unsigned int thenIndex, unsigned int elseIndex) {
-            mMap[tok].push_back("Split. Then:" + std::to_string(thenIndex) + " Else:" + std::to_string(elseIndex));
+            mMap[tok].push_back(std::to_string(thenIndex) + ": Split. Then:" + std::to_string(thenIndex) + " Else:" + std::to_string(elseIndex));
         }
 
     private:
@@ -534,13 +534,17 @@ namespace {
                 return;
             const SymbolDatabase * const symbolDatabase = tokenizer->getSymbolDatabase();
             std::ostringstream s;
-            s << mDataIndex << ":" << "{";
+            s << mDataIndex << ":" << "memory:{";
+            bool first = true;
             for (auto mem : memory) {
                 ExprEngine::ValuePtr value = mem.second;
                 const Variable *var = symbolDatabase->getVariableFromVarId(mem.first);
                 if (!var)
                     continue;
-                s << " " << var->name() << "=";
+                if (!first)
+                    s << " ";
+                first = false;
+                s << var->name() << "=";
                 if (!value)
                     s << "(null)";
                 else if (value->name[0] == '$' && value->getSymbolicExpression() != value->name)
@@ -549,6 +553,18 @@ namespace {
                     s << value->name;
             }
             s << "}";
+
+            if (!constraints.empty()) {
+                s << " constraints:{";
+                first = true;
+                for (auto constraint: constraints) {
+                    if (!first)
+                        s << " ";
+                    first = false;
+                    s << constraint->getSymbolicExpression();
+                }
+                s << "}";
+            }
             mTrackExecution->state(tok, s.str());
         }
 
