@@ -1107,7 +1107,7 @@ void CmdLineParser::printHelp()
               "                         If used together with a Visual Studio Solution (*.sln)\n"
               "                         or Visual Studio Project (*.vcxproj) you can limit\n"
               "                         the configuration cppcheck should check.\n"
-              "                         For example: ""--project-configuration=Release|Win32"""
+              "                         For example: '--project-configuration=Release|Win32'\n"
               "    --max-configs=<limit>\n"
               "                         Maximum number of configurations to check in a file\n"
               "                         before skipping it. Default is '12'. If used together\n"
