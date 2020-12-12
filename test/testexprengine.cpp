@@ -62,6 +62,7 @@ private:
         TEST_CASE(if4);
         TEST_CASE(if5);
         TEST_CASE(ifelse1);
+        TEST_CASE(ifif);
 
         TEST_CASE(istream);
 
@@ -435,6 +436,27 @@ private:
                       "(= (+ $1 2) 40)\n"
                       "z3::unsat\n",
                       expr("void f(short x) { if (x > 5) ; else if (x+2==40); }", "=="));
+    }
+
+
+    void ifif() {
+        const char code[] = "void foo(unsigned char x) {\n"
+                            "    if (x > 5) {}\n"
+                            "    if (x > 5) {}\n"
+                            "    return x == 13;\n"
+                            "}";
+
+        ASSERT_EQUALS("(> $1 5)\n"
+                      "(> $1 5)\n"
+                      "(and (>= $1 0) (<= $1 255))\n"
+                      "(= $1 13)\n"
+                      "z3::sat\n"
+                      "(<= $1 5)\n"
+                      "(<= $1 5)\n"
+                      "(and (>= $1 0) (<= $1 255))\n"
+                      "(= $1 13)\n"
+                      "z3::unsat\n",
+                      expr(code, "=="));
     }
 
 

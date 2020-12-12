@@ -1178,7 +1178,6 @@ public:
         return bool_expr(getExpr(v));
     }
 
-private:
     z3::expr bool_expr(z3::expr e) {
         if (e.is_bool())
             return e;
@@ -1375,7 +1374,7 @@ bool ExprEngine::BinOpResult::isEqual(ExprEngine::DataBase *dataBase, int value)
     z3::expr e = exprData.getExpr(this);
     exprData.addConstraints(solver, dynamic_cast<const Data *>(dataBase));
     exprData.addAssertions(solver);
-    solver.add(e == value);
+    solver.add(exprData.int_expr(e) == value);
     return solver.check() == z3::sat;
 #else
     (void)dataBase;
@@ -1437,6 +1436,7 @@ bool ExprEngine::BinOpResult::isTrue(ExprEngine::DataBase *dataBase) const
         z3::expr e = exprData.getExpr(this);
         exprData.addConstraints(solver, dynamic_cast<const Data *>(dataBase));
         exprData.addAssertions(solver);
+        solver.add(exprData.int_expr(e) != 0);
         return solver.check() == z3::sat;
     } catch (const z3::exception &exception) {
         std::cerr << "z3:" << exception << std::endl;
@@ -2343,6 +2343,14 @@ static std::string execute(const Token *start, const Token *end, Data &data)
         else if (Token::simpleMatch(tok, "if (")) {
             const Token *cond = tok->next()->astOperand2(); // TODO: C++17 condition
             const ExprEngine::ValuePtr condValue = executeExpression(cond, data);
+
+            bool alwaysFalse = false;
+            bool alwaysTrue = false;
+            if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue)) {
+                alwaysFalse = !b->isTrue(&data);
+                alwaysTrue = !alwaysFalse && !b->isEqual(&data, 0);
+            }
+
             Data &thenData(data);
             Data elseData(data);
             thenData.addConstraint(condValue, true);
@@ -2364,18 +2372,25 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                 }
             };
 
-            exec(thenStart->next(), end, thenData);
+            if (!alwaysFalse)
+                exec(thenStart->next(), end, thenData);
 
-            if (Token::simpleMatch(thenEnd, "} else {")) {
-                const Token *elseStart = thenEnd->tokAt(2);
-                exec(elseStart->next(), end, elseData);
-            } else {
-                exec(thenEnd, end, elseData);
+            if (!alwaysTrue) {
+                if (Token::simpleMatch(thenEnd, "} else {")) {
+                    const Token *elseStart = thenEnd->tokAt(2);
+                    exec(elseStart->next(), end, elseData);
+                } else {
+                    exec(thenEnd, end, elseData);
+                }
             }
 
             if (exceptionToken)
                 throw ExprEngineException(exceptionToken, exceptionMessage);
 
+            if (alwaysTrue)
+                return thenData.str();
+            else if (alwaysFalse)
+                return elseData.str();
             return thenData.str() + elseData.str();
         }
 
