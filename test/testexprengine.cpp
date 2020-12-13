@@ -50,6 +50,7 @@ private:
         TEST_CASE(expr9);
         TEST_CASE(exprAssign1);
         TEST_CASE(exprAssign2); // Truncation
+        TEST_CASE(exprNot);
 
         TEST_CASE(getValueConst1);
 
@@ -352,6 +353,9 @@ private:
         ASSERT_EQUALS("2", getRange("void f(unsigned char x) { x = 258; int a = x }", "a=x"));
     }
 
+    void exprNot() {
+        ASSERT_EQUALS("($1)==(0)", getRange("void f(unsigned char a) { return !a; }", "!a"));
+    }
 
     void getValueConst1() { // Data::getValue
         ASSERT_EQUALS("512", getRange("const int x=512; void func() { x=x }", "x=x"));

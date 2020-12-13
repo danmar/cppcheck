@@ -2267,6 +2267,17 @@ static ExprEngine::ValuePtr executeDeref(const Token *tok, Data &data)
     return ExprEngine::ValuePtr();
 }
 
+static ExprEngine::ValuePtr executeNot(const Token *tok, Data &data)
+{
+    ExprEngine::ValuePtr v = executeExpression(tok->astOperand1(), data);
+    if (!v)
+        return v;
+    ExprEngine::ValuePtr zero = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
+    auto result = simplifyValue(std::make_shared<ExprEngine::BinOpResult>("==", v, zero));
+    call(data.callbacks, tok, result, &data);
+    return result;
+}
+
 static ExprEngine::ValuePtr executeVariable(const Token *tok, Data &data)
 {
     auto val = data.getValue(tok->varId(), tok->valueType(), tok);
@@ -2344,6 +2355,9 @@ static ExprEngine::ValuePtr executeExpression1(const Token *tok, Data &data)
 
     if (tok->isUnaryOp("*"))
         return executeDeref(tok, data);
+
+    if (tok->isUnaryOp("!"))
+        return executeNot(tok, data);
 
     if (tok->varId())
         return executeVariable(tok, data);
