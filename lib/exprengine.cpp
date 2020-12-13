@@ -268,7 +268,7 @@ namespace {
             if (tok->index() == 0)
                 return;
             const std::string &symbolicExpression = value->getSymbolicExpression();
-            if (symbolicExpression[0] != '$')
+            if (std::isdigit(symbolicExpression[0]) || value->type == ExprEngine::ValueType::BinOpResult)
                 return;
             if (mSymbols.find(symbolicExpression) != mSymbols.end())
                 return;
