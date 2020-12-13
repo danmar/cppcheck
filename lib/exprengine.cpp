@@ -2382,8 +2382,16 @@ static std::string execute(const Token *start, const Token *end, Data &data)
     Recursion updateRecursion(&data.recursion, data.recursion);
 
     for (const Token *tok = start; tok != end; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}]"))
+        if (Token::Match(tok, "[;{}]")) {
             data.trackProgramState(tok);
+            if (tok->str() == ";") {
+                const Token *prev = tok->previous();
+                while (prev && !Token::Match(prev, "[;{}]"))
+                    prev = prev->previous();
+                if (Token::Match(prev, "[;{}] return|throw"))
+                    return data.str();
+            }
+        }
 
         if (Token::simpleMatch(tok, "__CPPCHECK_BAILOUT__ ;"))
             // This is intended for testing

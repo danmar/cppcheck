@@ -63,6 +63,7 @@ private:
         TEST_CASE(if5);
         TEST_CASE(ifelse1);
         TEST_CASE(ifif);
+        TEST_CASE(ifreturn);
 
         TEST_CASE(istream);
 
@@ -459,6 +460,19 @@ private:
                       expr(code, "=="));
     }
 
+
+    void ifreturn() { // Early return
+        const char code[] = "void foo(unsigned char x) {\n"
+                            "    if (x > 5) { return; }\n"
+                            "    return x == 13;\n"
+                            "}";
+
+        ASSERT_EQUALS("(<= $1 5)\n"
+                      "(and (>= $1 0) (<= $1 255))\n"
+                      "(= $1 13)\n"
+                      "z3::unsat\n",
+                      expr(code, "=="));
+    }
 
     void istream() {
         const char code[] = "void foo(const std::string& in) {\n"
