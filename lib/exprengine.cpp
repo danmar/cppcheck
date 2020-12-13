@@ -1952,6 +1952,11 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 
     bool hasBody = tok->astOperand1()->function() && tok->astOperand1()->function()->hasBody();
     if (hasBody) {
+        const Scope *functionScope = tok->scope();
+        while (functionScope->isExecutable() && functionScope->type != Scope::ScopeType::eFunction)
+            functionScope = functionScope->nestedIn;
+        if (functionScope == tok->astOperand1()->function()->functionScope)
+            hasBody = false;
         for (const auto &errorPathItem: data.errorPath) {
             if (errorPathItem.first == tok) {
                 hasBody = false;
