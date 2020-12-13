@@ -2628,7 +2628,7 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                         if (!structVal) {
                             // Handle pointer to a struct
                             if (auto structPtr = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(structVal1)) {
-                                if (structPtr && structPtr->pointer && !structPtr->data.empty()) {
+                                if (structPtr->pointer && !structPtr->data.empty()) {
                                     auto indexValue = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
                                     for (auto val: structPtr->read(indexValue)) {
                                         structVal = std::dynamic_pointer_cast<ExprEngine::StructValue>(val.second);
