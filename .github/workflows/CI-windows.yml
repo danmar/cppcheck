@@ -41,6 +41,7 @@ jobs:
           copy pcre.h ..\externals
           copy Release\pcre.lib ..\externals\pcre64.lib
         env:
+          # see https://www.pcre.org/original/changelog.txt
           PCRE_VERSION: 8.44  
 
       - name: Install Z3 library
@@ -49,7 +50,8 @@ jobs:
           7z x z3-%Z3_VERSION%-win.zip -oexternals -r -y
           move externals\z3-%Z3_VERSION%-x64-win externals\z3
         env:
-          Z3_VERSION: 4.8.7 
+          # see https://github.com/Z3Prover/z3/releases:  
+          Z3_VERSION: 4.8.9
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
