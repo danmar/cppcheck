@@ -1627,8 +1627,8 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
                     return false;
                 }
                 // check if pointer to global variable assigned to another variable (another_var = &global_var)
-                if (Token::simpleMatch(bodyToken->previous(), "&") && Token::simpleMatch(bodyToken->previous()->previous(), "=")) {
-                    const Token* assigned_var_token = bodyToken->previous()->previous()->previous();
+                if (Token::simpleMatch(bodyToken->tokAt(-1), "&") && Token::simpleMatch(bodyToken->tokAt(-2), "=")) {
+                    const Token* assigned_var_token = bodyToken->tokAt(-3);
                     if (assigned_var_token && assigned_var_token->variable())
                     {
                         pointersToGlobals.push_back(assigned_var_token->variable());
