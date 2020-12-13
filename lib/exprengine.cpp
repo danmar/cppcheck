@@ -2826,7 +2826,7 @@ void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorL
         execute(functionScope->bodyStart, functionScope->bodyEnd, data);
     } catch (const ExprEngineException &e) {
         if (settings->debugBugHunting)
-            report << "ExprEngineException tok.line:" << e.tok->linenr() << " what:" << e.what << "\n";
+            report << "ExprEngineException " << e.tok->linenr() << ":" << e.tok->column() << ": " << e.what << "\n";
         trackExecution.setAbortLine(e.tok->linenr());
         auto bailoutValue = std::make_shared<BailoutValue>();
         for (const Token *tok = e.tok; tok != functionScope->bodyEnd; tok = tok->next()) {
