@@ -159,22 +159,48 @@ namespace {
 
 static std::string str(ExprEngine::ValuePtr val)
 {
-    const char * const valueTypeStr[] = {
-        "UninitValue",
-        "IntRange",
-        "FloatRange",
-        "ConditionalValue",
-        "ArrayValue",
-        "StringLiteralValue",
-        "StructValue",
-        "AddressOfValue",
-        "BinOpResult",
-        "IntegerTruncation",
-        "BailoutValue"
+    const char *typestr;
+    switch (val->type) {
+    case ExprEngine::ValueType::AddressOfValue:
+        typestr = "AddressOfValue";
+        break;
+    case ExprEngine::ValueType::ArrayValue:
+        typestr = "ArrayValue";
+        break;
+    case ExprEngine::ValueType::UninitValue:
+        typestr = "UninitValue";
+        break;
+    case ExprEngine::ValueType::IntRange:
+        typestr = "IntRange";
+        break;
+    case ExprEngine::ValueType::FloatRange:
+        typestr = "FloatRange";
+        break;
+    case ExprEngine::ValueType::ConditionalValue:
+        typestr = "ConditionalValue";
+        break;
+    case ExprEngine::ValueType::StringLiteralValue:
+        typestr = "StringLiteralValue";
+        break;
+    case ExprEngine::ValueType::StructValue:
+        typestr = "StructValue";
+        break;
+    case ExprEngine::ValueType::BinOpResult:
+        typestr = "BinOpResult";
+        break;
+    case ExprEngine::ValueType::IntegerTruncation:
+        typestr = "IntegerTruncation";
+        break;
+    case ExprEngine::ValueType::FunctionCallArgumentValues:
+        typestr = "FunctionCallArgumentValues";
+        break;
+    case ExprEngine::ValueType::BailoutValue:
+        typestr = "BailoutValue";
+        break;
     };
 
     std::ostringstream ret;
-    ret << val->name << "=" << valueTypeStr[(int)val->type] << "(" << val->getRange() << ")";
+    ret << val->name << "=" << typestr << "(" << val->getRange() << ")";
     return ret.str();
 }
 
@@ -247,7 +273,7 @@ namespace {
             if (mSymbols.find(symbolicExpression) != mSymbols.end())
                 return;
             mSymbols.insert(symbolicExpression);
-            mMap[tok].push_back(symbolicExpression + "=" + value->getRange());
+            mMap[tok].push_back(str(value));
         }
 
         void state(const Token *tok, const std::string &s) {
@@ -311,6 +337,11 @@ namespace {
         const std::set<std::string> getMissingContracts() const {
             return mMissingContracts;
         }
+
+        void ifSplit(const Token *tok, unsigned int thenIndex, unsigned int elseIndex) {
+            mMap[tok].push_back(std::to_string(thenIndex) + ": Split. Then:" + std::to_string(thenIndex) + " Else:" + std::to_string(elseIndex));
+        }
+
     private:
         const char *getStatus(int linenr) const {
             if (mErrors.find(linenr) != mErrors.end())
@@ -503,13 +534,17 @@ namespace {
                 return;
             const SymbolDatabase * const symbolDatabase = tokenizer->getSymbolDatabase();
             std::ostringstream s;
-            s << mDataIndex << ":" << "{";
+            s << mDataIndex << ":" << "memory:{";
+            bool first = true;
             for (auto mem : memory) {
                 ExprEngine::ValuePtr value = mem.second;
                 const Variable *var = symbolDatabase->getVariableFromVarId(mem.first);
                 if (!var)
                     continue;
-                s << " " << var->name() << "=";
+                if (!first)
+                    s << " ";
+                first = false;
+                s << var->name() << "=";
                 if (!value)
                     s << "(null)";
                 else if (value->name[0] == '$' && value->getSymbolicExpression() != value->name)
@@ -518,6 +553,18 @@ namespace {
                     s << value->name;
             }
             s << "}";
+
+            if (!constraints.empty()) {
+                s << " constraints:{";
+                first = true;
+                for (auto constraint: constraints) {
+                    if (!first)
+                        s << " ";
+                    first = false;
+                    s << constraint->getSymbolicExpression();
+                }
+                s << "}";
+            }
             mTrackExecution->state(tok, s.str());
         }
 
@@ -682,6 +729,10 @@ namespace {
                 if (it != memory.end())
                     memory.erase(it);
             }
+        }
+
+        static void ifSplit(const Token *tok, const Data& thenData, const Data& elseData) {
+            thenData.mTrackExecution->ifSplit(tok, thenData.mDataIndex, elseData.mDataIndex);
         }
 
     private:
@@ -1178,7 +1229,6 @@ public:
         return bool_expr(getExpr(v));
     }
 
-private:
     z3::expr bool_expr(z3::expr e) {
         if (e.is_bool())
             return e;
@@ -1214,6 +1264,10 @@ bool ExprEngine::IntRange::isEqual(DataBase *dataBase, int value) const
     } catch (const z3::exception &exception) {
         std::cerr << "z3: " << exception << std::endl;
         return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
+        return true;  // Safe option is to return true
     }
 #else
     // The value may or may not be in range
@@ -1241,6 +1295,10 @@ bool ExprEngine::IntRange::isGreaterThan(DataBase *dataBase, int value) const
         return solver.check() == z3::sat;
     } catch (const z3::exception &exception) {
         std::cerr << "z3: " << exception << std::endl;
+        return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
         return true;  // Safe option is to return true
     }
 #else
@@ -1270,6 +1328,10 @@ bool ExprEngine::IntRange::isLessThan(DataBase *dataBase, int value) const
     } catch (const z3::exception &exception) {
         std::cerr << "z3: " << exception << std::endl;
         return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
+        return true;  // Safe option is to return true
     }
 #else
     // The value may or may not be in range
@@ -1298,6 +1360,10 @@ bool ExprEngine::FloatRange::isEqual(DataBase *dataBase, int value) const
         return solver.check() != z3::unsat;
     } catch (const z3::exception &exception) {
         std::cerr << "z3: " << exception << std::endl;
+        return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
         return true;  // Safe option is to return true
     }
 #else
@@ -1329,6 +1395,10 @@ bool ExprEngine::FloatRange::isGreaterThan(DataBase *dataBase, int value) const
     } catch (const z3::exception &exception) {
         std::cerr << "z3: " << exception << std::endl;
         return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
+        return true;  // Safe option is to return true
     }
 #else
     // The value may or may not be in range
@@ -1359,6 +1429,10 @@ bool ExprEngine::FloatRange::isLessThan(DataBase *dataBase, int value) const
     } catch (const z3::exception &exception) {
         std::cerr << "z3: " << exception << std::endl;
         return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
+        return true;  // Safe option is to return true
     }
 #else
     // The value may or may not be in range
@@ -1370,13 +1444,22 @@ bool ExprEngine::FloatRange::isLessThan(DataBase *dataBase, int value) const
 bool ExprEngine::BinOpResult::isEqual(ExprEngine::DataBase *dataBase, int value) const
 {
 #ifdef USE_Z3
-    ExprData exprData;
-    z3::solver solver(exprData.context);
-    z3::expr e = exprData.getExpr(this);
-    exprData.addConstraints(solver, dynamic_cast<const Data *>(dataBase));
-    exprData.addAssertions(solver);
-    solver.add(e == value);
-    return solver.check() == z3::sat;
+    try {
+        ExprData exprData;
+        z3::solver solver(exprData.context);
+        z3::expr e = exprData.getExpr(this);
+        exprData.addConstraints(solver, dynamic_cast<const Data *>(dataBase));
+        exprData.addAssertions(solver);
+        solver.add(exprData.int_expr(e) == value);
+        return solver.check() == z3::sat;
+    } catch (const z3::exception &exception) {
+        std::cerr << "z3:" << exception << std::endl;
+        return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
+        return true;  // Safe option is to return true
+    }
 #else
     (void)dataBase;
     (void)value;
@@ -1397,6 +1480,10 @@ bool ExprEngine::BinOpResult::isGreaterThan(ExprEngine::DataBase *dataBase, int 
         return solver.check() == z3::sat;
     } catch (const z3::exception &exception) {
         std::cerr << "z3:" << exception << std::endl;
+        return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
         return true;  // Safe option is to return true
     }
 #else
@@ -1420,6 +1507,10 @@ bool ExprEngine::BinOpResult::isLessThan(ExprEngine::DataBase *dataBase, int val
     } catch (const z3::exception &exception) {
         std::cerr << "z3:" << exception << std::endl;
         return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
+        return true;  // Safe option is to return true
     }
 #else
     (void)dataBase;
@@ -1437,9 +1528,14 @@ bool ExprEngine::BinOpResult::isTrue(ExprEngine::DataBase *dataBase) const
         z3::expr e = exprData.getExpr(this);
         exprData.addConstraints(solver, dynamic_cast<const Data *>(dataBase));
         exprData.addAssertions(solver);
+        solver.add(exprData.int_expr(e) != 0);
         return solver.check() == z3::sat;
     } catch (const z3::exception &exception) {
         std::cerr << "z3:" << exception << std::endl;
+        return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
         return true;  // Safe option is to return true
     }
 #else
@@ -1856,6 +1952,11 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
 
     bool hasBody = tok->astOperand1()->function() && tok->astOperand1()->function()->hasBody();
     if (hasBody) {
+        const Scope *functionScope = tok->scope();
+        while (functionScope->isExecutable() && functionScope->type != Scope::ScopeType::eFunction)
+            functionScope = functionScope->nestedIn;
+        if (functionScope == tok->astOperand1()->function()->functionScope)
+            hasBody = false;
         for (const auto &errorPathItem: data.errorPath) {
             if (errorPathItem.first == tok) {
                 hasBody = false;
@@ -2286,8 +2387,16 @@ static std::string execute(const Token *start, const Token *end, Data &data)
     Recursion updateRecursion(&data.recursion, data.recursion);
 
     for (const Token *tok = start; tok != end; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}]"))
+        if (Token::Match(tok, "[;{}]")) {
             data.trackProgramState(tok);
+            if (tok->str() == ";") {
+                const Token *prev = tok->previous();
+                while (prev && !Token::Match(prev, "[;{}]"))
+                    prev = prev->previous();
+                if (Token::Match(prev, "[;{}] return|throw"))
+                    return data.str();
+            }
+        }
 
         if (Token::simpleMatch(tok, "__CPPCHECK_BAILOUT__ ;"))
             // This is intended for testing
@@ -2343,10 +2452,20 @@ static std::string execute(const Token *start, const Token *end, Data &data)
         else if (Token::simpleMatch(tok, "if (")) {
             const Token *cond = tok->next()->astOperand2(); // TODO: C++17 condition
             const ExprEngine::ValuePtr condValue = executeExpression(cond, data);
+
+            bool alwaysFalse = false;
+            bool alwaysTrue = false;
+            if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue)) {
+                alwaysFalse = !b->isTrue(&data);
+                alwaysTrue = !alwaysFalse && !b->isEqual(&data, 0);
+            }
+
             Data &thenData(data);
             Data elseData(data);
             thenData.addConstraint(condValue, true);
             elseData.addConstraint(condValue, false);
+
+            Data::ifSplit(tok, thenData, elseData);
 
             const Token *thenStart = tok->linkAt(1)->next();
             const Token *thenEnd = thenStart->link();
@@ -2364,18 +2483,25 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                 }
             };
 
-            exec(thenStart->next(), end, thenData);
+            if (!alwaysFalse)
+                exec(thenStart->next(), end, thenData);
 
-            if (Token::simpleMatch(thenEnd, "} else {")) {
-                const Token *elseStart = thenEnd->tokAt(2);
-                exec(elseStart->next(), end, elseData);
-            } else {
-                exec(thenEnd, end, elseData);
+            if (!alwaysTrue) {
+                if (Token::simpleMatch(thenEnd, "} else {")) {
+                    const Token *elseStart = thenEnd->tokAt(2);
+                    exec(elseStart->next(), end, elseData);
+                } else {
+                    exec(thenEnd, end, elseData);
+                }
             }
 
             if (exceptionToken)
                 throw ExprEngineException(exceptionToken, exceptionMessage);
 
+            if (alwaysTrue)
+                return thenData.str();
+            else if (alwaysFalse)
+                return elseData.str();
             return thenData.str() + elseData.str();
         }
 
@@ -2673,7 +2799,7 @@ void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorL
 
     try {
         execute(functionScope->bodyStart, functionScope->bodyEnd, data);
-    } catch (ExprEngineException &e) {
+    } catch (const ExprEngineException &e) {
         if (settings->debugBugHunting)
             report << "ExprEngineException tok.line:" << e.tok->linenr() << " what:" << e.what << "\n";
         trackExecution.setAbortLine(e.tok->linenr());

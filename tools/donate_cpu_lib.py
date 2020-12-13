@@ -454,6 +454,7 @@ def upload_info(package, info_output, server_address):
 def get_libraries():
     libraries = ['posix', 'gnu']
     library_includes = {'boost': ['<boost/'],
+                       'bsd': ['<sys/queue.h>','<sys/tree.h>'],
                        'cairo': ['<cairo.h>'],
                        'cppunit': ['<cppunit/'],
                        'icu': ['<unicode/', '"unicode/'],
