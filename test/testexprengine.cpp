@@ -84,6 +84,7 @@ private:
         TEST_CASE(array3);
         TEST_CASE(array4);
         TEST_CASE(array5);
+        TEST_CASE(array6);
         TEST_CASE(arrayInit1);
         TEST_CASE(arrayInit2);
         TEST_CASE(arrayUninit);
@@ -593,8 +594,8 @@ private:
                             "    *len = 0;\n"
                             "  *len == 0;\n"
                             "}";
-        // Currently the *len gets a BailoutValue in the loop
-        ASSERT_EQUALS("", expr(code, "=="));
+        ASSERT_EQUALS("(= 0 0)\n"
+                      "z3::sat\n", expr(code, "=="));
     }
 
     void while5() {
@@ -650,6 +651,16 @@ private:
                       "2:19: 0:memory:{x=$1 buf=($2,[3][4][5],[:]=?)}\n"
                       "3:20: 0:memory:{x=$1 buf=($2,[3][4][5],[:]=?,[((20)*($1))+(7)]=10)}\n",
                       trackExecution(code));
+    }
+
+    void array6() {
+        const char code[] = "void foo(int *x) {\n"
+                            "  *x = 2;\n"
+                            "  if (*x == 21) {}"
+                            "}";
+        ASSERT_EQUALS("(= 2 21)\n"
+                      "z3::unsat\n",
+                      expr(code, "=="));
     }
 
     void arrayInit1() {

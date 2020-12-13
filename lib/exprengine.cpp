@@ -1787,6 +1787,10 @@ static void assignExprValue(const Token *expr, ExprEngine::ValuePtr value, Data 
             auto val = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(pval);
             if (val)
                 data.assignValue(expr, val->varId, value);
+        } else if (pval && pval->type == ExprEngine::ValueType::ArrayValue) {
+            auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(pval);
+            auto indexValue = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
+            arrayValue->assign(indexValue, value);
         } else if (pval && pval->type == ExprEngine::ValueType::BinOpResult) {
             auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(pval);
             if (b && b->binop == "+") {
