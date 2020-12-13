@@ -113,6 +113,8 @@ private:
         TEST_CASE(structMember2);
         TEST_CASE(structMember3);
 
+        TEST_CASE(pointerToStructInLoop);
+
         TEST_CASE(ternaryOperator1);
 #endif
     }
@@ -803,6 +805,20 @@ private:
 
         const char expected[] = "(and (>= $3 (- 2147483648)) (<= $3 2147483647))\n"
                                 "(= $3 1)\n"
+                                "z3::sat\n";
+
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
+
+    void pointerToStructInLoop() {
+        const char code[] = "struct S { int x; };\n"
+                            "void foo(struct S *s) {\n"
+                            "  while (1)\n"
+                            "    s->x = 42; \n"
+                            "}";
+
+        const char expected[] = "(and (>= $3 (- 2147483648)) (<= $3 2147483647))\n"
+                                "(= $3 42)\n"
                                 "z3::sat\n";
 
         ASSERT_EQUALS(expected, expr(code, "=="));
