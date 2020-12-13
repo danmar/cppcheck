@@ -1609,17 +1609,31 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
     }
 
     bool sideEffectReturnFound = false;
+    std::list<const Variable*> pointersToGlobals;
     for (Token* bodyToken = func.functionScope->bodyStart->next(); bodyToken != func.functionScope->bodyEnd;
-         bodyToken = bodyToken->next()) {
+            bodyToken = bodyToken->next())
+    {
+        // check variable inside function body
         const Variable* bodyVariable = bodyToken->variable();
         if (bodyVariable) {
-            // check variable for side-effects
             if (!isVariableWithoutSideEffects(*bodyVariable)) {
                 return false;
             }
             // check if global variable is changed
-            if (bodyVariable->isGlobal()) {
-                return false; // TODO: analyze global variable usage
+            if (bodyVariable->isGlobal() ||
+                (std::find(pointersToGlobals.begin(), pointersToGlobals.end(), bodyVariable) != pointersToGlobals.end()))
+            {
+                if (isVariableChanged(bodyToken, 20, nullptr, true)) {
+                    return false;
+                }
+                // check if pointer to global variable assigned to another variable (another_var = &global_var)
+                if (Token::simpleMatch(bodyToken->previous(), "&") && Token::simpleMatch(bodyToken->previous()->previous(), "=")) {
+                    const Token* assigned_var_token = bodyToken->previous()->previous()->previous();
+                    if (assigned_var_token && assigned_var_token->variable())
+                    {
+                        pointersToGlobals.push_back(assigned_var_token->variable());
+                    }
+                }
             }
         }
 

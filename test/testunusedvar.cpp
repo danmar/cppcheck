@@ -615,7 +615,7 @@ private:
             "void f() {\n"
             "   C c;\n"
             "}");
-        TODO_ASSERT_EQUALS("[test.cpp:11]: (style) Unused variable: c\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (style) Unused variable: c\n", errout.str());
 
         // changing global variable in return
         functionVariableUsage(
@@ -698,6 +698,23 @@ private:
             "}");
         ASSERT_EQUALS("", errout.str());
 
+        // global variable use in function body without change
+        functionVariableUsage(
+            "int global = 1;\n"
+            "int func() {\n"
+            "   int x = global + 1;\n"
+            "   return x;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:12]: (style) Unused variable: c\n", errout.str());
+
         // changing global array variable in function body
         functionVariableUsage(
             "int x[] = {0, 1, 3};\n"
@@ -714,6 +731,39 @@ private:
             "   C c;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage(
+            "int x[] = {0, 1, 3};\n"
+            "int func() {\n"
+            "   *x = 2;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage(
+            "int x[] = {0, 1, 3};\n"
+            "int func() {\n"
+            "   *(x + 1) = 2;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        // TODO: update astutils.cpp:1544 isVariableChanged() - array change through pointer arithmetic is not handled
+        TODO_ASSERT_EQUALS("", "[test.cpp:12]: (style) Unused variable: c\n", errout.str());
 
         // changing local variable
         functionVariableUsage(
@@ -985,7 +1035,7 @@ private:
         functionVariableUsage(
             "int global = 1;\n"
             "int func() {\n"
-            "   int *p = &global;\n"
+            "   int* p = &global;\n"
             "   *p = 0;\n"
             "   return 1;\n"
             "}\n"
@@ -999,11 +1049,29 @@ private:
             "}");
         ASSERT_EQUALS("", errout.str());
 
-        // global struct variable
+        // global variable assigning to local pointer, but not modifying
+        functionVariableUsage(
+            "int global = 1;\n"
+            "int func() {\n"
+            "   int* p = &global;\n"
+            "   (void) p;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:13]: (style) Unused variable: c\n", errout.str());
+
+        // global struct variable modification
         functionVariableUsage(
             "struct S { int x; } s;\n"
             "int func() {\n"
-            "   s.x = 1;;\n"
+            "   s.x = 1;\n"
             "   return 1;\n"
             "}\n"
             "class C {\n"
@@ -1015,6 +1083,59 @@ private:
             "   C c;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        // global struct variable without modification
+        functionVariableUsage(
+            "struct S { int x; } s;\n"
+            "int func() {\n"
+            "   int y = s.x + 1;\n"
+            "   return y;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:12]: (style) Unused variable: c\n", errout.str());
+
+        // global pointer to struct variable modification
+        functionVariableUsage(
+            "struct S { int x; };\n"
+            "struct S* s = new(struct S);\n"
+            "int func() {\n"
+            "   s->x = 1;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // global pointer to struct variable without modification
+        functionVariableUsage(
+            "struct S { int x; };\n"
+            "struct S* s = new(struct S);\n"
+            "int func() {\n"
+            "   int y = s->x + 1;\n"
+            "   return y;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:13]: (style) Unused variable: c\n", errout.str());
     }
 
     // #5355 - False positive: Variable is not assigned a value.
