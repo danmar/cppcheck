@@ -2625,8 +2625,19 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                         if (!structVal1)
                             structVal1 = createVariableValue(*structToken->variable(), data);
                         auto structVal = std::dynamic_pointer_cast<ExprEngine::StructValue>(structVal1);
-                        if (!structVal)
-                            throw ExprEngineException(tok2, "Unhandled assignment in loop");
+                        if (!structVal) {
+                            // Handle pointer to a struct
+                            if (auto structPtr = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(structVal1)) {
+                                if (structPtr && structPtr->pointer && !structPtr->data.empty()) {
+                                    auto indexValue = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
+                                    for (auto val: structPtr->read(indexValue)) {
+                                        structVal = std::dynamic_pointer_cast<ExprEngine::StructValue>(val.second);
+                                    }
+                                }
+                            }
+                            if (!structVal)
+                                throw ExprEngineException(tok2, "Unhandled assignment in loop");
+                        }
 
                         data.assignStructMember(tok2, &*structVal, memberName, memberValue);
                         continue;
