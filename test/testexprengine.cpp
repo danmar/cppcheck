@@ -50,6 +50,7 @@ private:
         TEST_CASE(expr9);
         TEST_CASE(exprAssign1);
         TEST_CASE(exprAssign2); // Truncation
+        TEST_CASE(exprAssign3);
         TEST_CASE(exprNot);
 
         TEST_CASE(getValueConst1);
@@ -78,6 +79,7 @@ private:
         TEST_CASE(while3);
         TEST_CASE(while4);
         TEST_CASE(while5);
+        TEST_CASE(while6);
 
         TEST_CASE(array1);
         TEST_CASE(array2);
@@ -358,6 +360,10 @@ private:
         ASSERT_EQUALS("2", getRange("void f(unsigned char x) { x = 258; int a = x }", "a=x"));
     }
 
+    void exprAssign3() {
+        ASSERT_EQUALS("1", getRange("void f(unsigned char *a) { *a = 1 }", "*a=1"));
+    }
+
     void exprNot() {
         ASSERT_EQUALS("($1)==(0)", getRange("void f(unsigned char a) { return !a; }", "!a"));
     }
@@ -605,6 +611,16 @@ private:
                             "    x += 4;\n"
                             "}";
         ASSERT(getRange(code, "x", 4).find("?") != std::string::npos);
+    }
+
+    void while6() {
+        const char code[] = "void f(int *arr) {\n"
+                            "  while (cond)\n"
+                            "    *arr = 4;\n"
+                            "  arr[0] == 4;"
+                            "}";
+        ASSERT_EQUALS("(= 4 4)\n"
+                      "z3::sat\n", expr(code, "=="));
     }
 
 

@@ -138,6 +138,7 @@
 #include "symboldatabase.h"
 #include "tokenize.h"
 
+#include <cassert>
 #include <limits>
 #include <memory>
 #include <iostream>
@@ -2646,19 +2647,30 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                         data.assignStructMember(tok2, &*structVal, memberName, memberValue);
                         continue;
                     }
+
+                    // Assign a pointer value
                     if (lhs->isUnaryOp("*") && lhs->astOperand1()->varId()) {
                         const Token *varToken = tok2->astOperand1()->astOperand1();
                         ExprEngine::ValuePtr val = data.getValue(varToken->varId(), varToken->valueType(), varToken);
-                        if (val && val->type == ExprEngine::ValueType::ArrayValue) {
-                            // Try to assign "any" value
-                            auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(val);
-                            arrayValue->assign(std::make_shared<ExprEngine::IntRange>("0", 0, 0), std::make_shared<ExprEngine::BailoutValue>());
+                        if (!val || val->type != ExprEngine::ValueType::ArrayValue)
+                            throw ExprEngineException(tok2, "Unhandled assignment in loop");
+                        auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(val);
+                        assert(arrayValue);
+                        int varid = varToken->varId();
+                        if (changedVariables.find(varid) != changedVariables.end())
                             continue;
-                        }
+                        changedVariables.insert(varid);
+                        auto oldValue = data.getValue(varid, nullptr, nullptr);
+                        if (oldValue && oldValue->isUninit())
+                            call(data.callbacks, varToken, oldValue, &data);
+                        data.assignValue(tok2, varid, val);
+                        continue;
                     }
+
                     if (!lhs->variable())
                         throw ExprEngineException(tok2, "Unhandled assignment in loop");
-                    // give variable "any" value
+
+                    // Give variable "any" value
                     int varid = lhs->varId();
                     if (changedVariables.find(varid) != changedVariables.end())
                         continue;
