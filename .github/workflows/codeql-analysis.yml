@@ -24,7 +24,7 @@ jobs:
       run: |
          sudo apt-get update
          sudo apt-get install libxml2-utils
-         sudo apt-get install z3 libz3-dev
+         sudo apt-get install libz3-dev libz3-4
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
