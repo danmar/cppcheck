@@ -7,12 +7,7 @@ on: [push, pull_request]
 jobs:
   build:
 
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-      fail-fast: false # not worthwhile...
-
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v2
@@ -21,7 +16,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install libz3-4 libz3-dev
-          cp externals/z3_version_old.h externals/z3_version.h
 
       - name: Build
         run: |
