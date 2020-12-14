@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   analyze:
     name: Analyze
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     strategy:
       fail-fast: false
@@ -25,7 +25,6 @@ jobs:
          sudo apt-get update
          sudo apt-get install libxml2-utils
          sudo apt-get install z3 libz3-dev
-         cp externals/z3_version_old.h externals/z3_version.h
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
