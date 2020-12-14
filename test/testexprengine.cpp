@@ -87,6 +87,7 @@ private:
         TEST_CASE(array6);
         TEST_CASE(arrayInit1);
         TEST_CASE(arrayInit2);
+        TEST_CASE(arrayInit3);
         TEST_CASE(arrayUninit);
         TEST_CASE(arrayInLoop);
 
@@ -615,8 +616,8 @@ private:
     }
 
     void array2() {
-        ASSERT_EQUALS("(and (>= |$3:4| 0) (<= |$3:4| 255))\n"
-                      "(= |$3:4| 365)\n"
+        ASSERT_EQUALS("(and (>= |$4:4| 0) (<= |$4:4| 255))\n"
+                      "(= |$4:4| 365)\n"
                       "z3::unsat\n",
                       expr("void dostuff(unsigned char *); int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4] == 365; }", "=="));
     }
@@ -670,6 +671,10 @@ private:
 
     void arrayInit2() {
         ASSERT_EQUALS("66", getRange("void f() { char str[] = \"hello\"; str[0] = \'B\'; }", "str[0]=\'B\'"));
+    }
+
+    void arrayInit3() {
+        ASSERT_EQUALS("-32768:32767", getRange("void f() { short buf[5] = {2, 1, 0, 3, 4}; ret = buf[2]; }", "buf[2]"));
     }
 
     void arrayUninit() {

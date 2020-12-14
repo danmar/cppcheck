@@ -891,8 +891,12 @@ ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
         size.push_back(std::make_shared<ExprEngine::IntRange>(data->getNewSymbolName(), 1, ExprEngine::ArrayValue::MAXSIZE));
     }
 
+    const Token *initToken = var->nameToken();
+    while (initToken && initToken->str() != "=")
+        initToken = initToken->astParent();
+
     ValuePtr val;
-    if (var && !var->isGlobal() && !var->isStatic() && !(var->isArgument() && var->isConst()))
+    if (var && !var->isGlobal() && !var->isStatic() && !(var->isArgument() && var->isConst()) && !initToken)
         val = std::make_shared<ExprEngine::UninitValue>();
     else if (var && var->valueType()) {
         ::ValueType vt(*var->valueType());
