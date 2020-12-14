@@ -7,7 +7,7 @@ on: [push]
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v2
@@ -16,13 +16,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install libxml2-utils
-          sudo apt-get install z3 libz3-dev
+          sudo apt-get install libz3-dev libz3-4
           sudo apt-get install lcov
           pip install lcov_cobertura
 
       - name: Compile instrumented
         run: |
-          cp externals/z3_version_old.h externals/z3_version.h
           make test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" USE_Z3=yes HAVE_RULES=yes -j$(nproc)
           
       - name: Generate coverage report
@@ -35,7 +34,7 @@ jobs:
           lcov --extract lcov_tmp.info "$(pwd)/*" --output-file lcov.info
           genhtml lcov.info -o coverage_report --frame --legend --demangle-cpp
           
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v2
         with:
          name: Coverage results
          path: coverage_report
