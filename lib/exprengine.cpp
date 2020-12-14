@@ -1635,6 +1635,19 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, 
 
 static ExprEngine::ValuePtr getValueRangeFromValueType(const ValueType *valueType, Data &data)
 {
+    if (valueType && valueType->pointer) {
+        ExprEngine::ValuePtr val;
+        if (valueType->pointer == 0 && valueType->isIntegral()) {
+            ValueType datatype(*valueType);
+            datatype.pointer = 0;
+            val = getValueRangeFromValueType(data.getNewSymbolName(), &datatype, *data.settings);
+        }
+        if (!val)
+            val = std::make_shared<ExprEngine::BailoutValue>();
+        auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ExprEngine::ArrayValue::MAXSIZE);
+        return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), bufferSize, val, true, true, false);
+    }
+
     if (!valueType || valueType->pointer)
         return ExprEngine::ValuePtr();
     if (valueType->container) {
@@ -1837,10 +1850,9 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
             if (rhsValue)
                 call(data.callbacks, tok->astOperand2(), rhsValue, &data);
         }
+        if (!rhsValue)
+            rhsValue = std::make_shared<ExprEngine::BailoutValue>();
     }
-
-    if (!rhsValue)
-        rhsValue = std::make_shared<ExprEngine::BailoutValue>();
 
     ExprEngine::ValuePtr assignValue;
     if (tok->str() == "=")

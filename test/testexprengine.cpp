@@ -98,6 +98,7 @@ private:
         TEST_CASE(functionCall2);
         TEST_CASE(functionCall3);
         TEST_CASE(functionCall4);
+        TEST_CASE(functionCall5);
 
         TEST_CASE(functionCallContract1);
 
@@ -722,6 +723,14 @@ private:
 
     void functionCall4() {
         ASSERT_EQUALS("1:2147483647", getRange("void f() { sizeof(data); }", "sizeof(data)"));
+    }
+
+    void functionCall5() { // unknown result from function, pointer type..
+        ASSERT_EQUALS("1:36: $3=ArrayValue([$2],[:]=bailout,null)\n"
+                      "1:36: $2=IntRange(1:2147483647)\n"
+                      "1:36: bailout=BailoutValue(bailout)\n"
+                      "1:46: 0:memory:{p=($3,[$2],[:]=bailout)}\n",
+                      trackExecution("char *foo(int); void bar() { char *p = foo(1); }"));
     }
 
     void functionCallContract1() {
