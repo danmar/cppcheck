@@ -124,6 +124,8 @@ struct ReverseTraversal {
             }
             if (Token::Match(tok, "return|break|continue"))
                 break;
+            if (Token::Match(tok, "%name% :"))
+                break;
             // Evaluate LHS of assignment before RHS
             if (Token* assignTok = assignExpr(tok)) {
                 Token* assignTop = assignTok;

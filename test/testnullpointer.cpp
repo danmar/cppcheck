@@ -106,6 +106,7 @@ private:
         TEST_CASE(nullpointer63);
         TEST_CASE(nullpointer64);
         TEST_CASE(nullpointer65); // #9980
+        TEST_CASE(nullpointer66); // #10024
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2028,6 +2029,23 @@ private:
               "    if (a)\n"
               "        return a->get();\n"
               "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer66() {
+        check("int f() {\n"
+              "    int ret = 0;\n"
+              "    int *v = nullptr;\n"
+              "    if (!MyAlloc(&v)) {\n"
+              "        ret = -1;\n"
+              "        goto done;\n"
+              "    }\n"
+              "    DoSomething(*v);\n"
+              "done:\n"
+              "    if (v)\n"
+              "      MyFree(&v);\n"
+              "    return ret;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
