@@ -240,6 +240,10 @@ namespace ExprEngine {
 
         std::string getSymbolicExpression() const OVERRIDE;
 
+        std::string getRange() const OVERRIDE {
+            return getSymbolicExpression();
+        }
+
         ValuePtr getValueOfMember(const std::string &n) const {
             auto it = member.find(n);
             return (it == member.end()) ? ValuePtr() : it->second;

@@ -159,7 +159,7 @@ namespace {
 
 static std::string str(ExprEngine::ValuePtr val)
 {
-    const char *typestr;
+    const char *typestr = "???UnknownValueType???";
     switch (val->type) {
     case ExprEngine::ValueType::AddressOfValue:
         typestr = "AddressOfValue";
@@ -1050,8 +1050,15 @@ std::string ExprEngine::ArrayValue::getSymbolicExpression() const
     for (const auto &indexAndValue : data) {
         ostr << ",["
              << (!indexAndValue.index ? std::string(":") : indexAndValue.index->name)
-             << "]="
-             << indexAndValue.value->name;
+             << "]=";
+        if (indexAndValue.value->type == ExprEngine::ValueType::StructValue)
+            ostr << "("
+                 << indexAndValue.value->name
+                 << ","
+                 << indexAndValue.value->getSymbolicExpression()
+                 << ")";
+        else
+            ostr << indexAndValue.value->name;
     }
     return ostr.str();
 }
@@ -2717,7 +2724,7 @@ void ExprEngine::executeAllFunctions(ErrorLogger *errorLogger, const Tokenizer *
     }
 }
 
-static ExprEngine::ValuePtr createStructVal(const Scope *structScope, bool uninitData, Data &data)
+static ExprEngine::ValuePtr createStructVal(const Token *tok, const Scope *structScope, bool uninitData, Data &data)
 {
     if (!structScope)
         return ExprEngine::ValuePtr();
@@ -2737,7 +2744,7 @@ static ExprEngine::ValuePtr createStructVal(const Scope *structScope, bool unini
         if (member.valueType() && member.valueType()->isIntegral()) {
             ExprEngine::ValuePtr memberValue = createVariableValue(member, data);
             if (memberValue)
-                structValue->member[member.name()] = memberValue;
+                data.assignStructMember(tok, structValue.get(), member.name(), memberValue);
         }
     }
     return structValue;
@@ -2763,7 +2770,7 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
         auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0UL);
         ExprEngine::ValuePtr pointerValue;
         if (valueType->type == ValueType::Type::RECORD)
-            pointerValue = createStructVal(valueType->typeScope, var.isLocal() && !var.isStatic(), data);
+            pointerValue = createStructVal(var.nameToken(), valueType->typeScope, var.isLocal() && !var.isStatic(), data);
         else {
             ValueType vt(*valueType);
             vt.pointer = 0;
@@ -2794,10 +2801,10 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
         }
         if (var.isArgument() && var.isConst())
             uninitData = false;
-        return createStructVal(valueType->typeScope, uninitData, data);
+        return createStructVal(var.nameToken(), valueType->typeScope, uninitData, data);
     }
     if (valueType->smartPointerType) {
-        auto structValue = createStructVal(valueType->smartPointerType->classScope, var.isLocal() && !var.isStatic(), data);
+        auto structValue = createStructVal(var.nameToken(), valueType->smartPointerType->classScope, var.isLocal() && !var.isStatic(), data);
         auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0UL);
         return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, structValue, true, true, false);
     }
