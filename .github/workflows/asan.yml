@@ -19,7 +19,6 @@ jobs:
 
       - name: Build
         run: |
-          cp externals/z3_version_old.h externals/z3_version.h
           CC=clang CXX=clang++ CXXFLAGS="-fsanitize=address -O1 -g3 -DCPPCHK_GLIBCXX_DEBUG" make cppcheck testrunner -j$(nproc) USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes
 
       - name: Run tests
