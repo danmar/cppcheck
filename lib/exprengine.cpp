@@ -2651,11 +2651,12 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                     // Assign a pointer value
                     if (lhs->isUnaryOp("*") && lhs->astOperand1()->varId()) {
                         const Token *varToken = tok2->astOperand1()->astOperand1();
+                        // Get value of the pointer
                         ExprEngine::ValuePtr val = data.getValue(varToken->varId(), varToken->valueType(), varToken);
-                        if (!val || val->type != ExprEngine::ValueType::ArrayValue)
+                        if (!val || (val->type != ExprEngine::ValueType::ArrayValue &&
+                                     val->type != ExprEngine::ValueType::AddressOfValue))
                             throw ExprEngineException(tok2, "Unhandled assignment in loop");
-                        auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(val);
-                        assert(arrayValue);
+                        // Handle the value that we are pointing to
                         int varid = varToken->varId();
                         if (changedVariables.find(varid) != changedVariables.end())
                             continue;
@@ -2663,7 +2664,17 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                         auto oldValue = data.getValue(varid, nullptr, nullptr);
                         if (oldValue && oldValue->isUninit())
                             call(data.callbacks, varToken, oldValue, &data);
-                        data.assignValue(tok2, varid, val);
+                        if (val->type == ExprEngine::ValueType::ArrayValue) {
+                            // Unknown pointer, array or struct
+                            auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(val);
+                            assert(arrayValue);
+                            data.assignValue(tok2, varid, val);
+                        } else if (val->type == ExprEngine::ValueType::AddressOfValue) {
+                            // Address of a known variable
+                            auto addressOf = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(val);
+                            assert(addressOf);
+                            data.assignValue(tok2, varid, val);
+                        }
                         continue;
                     }
 

@@ -80,6 +80,7 @@ private:
         TEST_CASE(while4);
         TEST_CASE(while5);
         TEST_CASE(while6);
+        TEST_CASE(while7);
 
         TEST_CASE(array1);
         TEST_CASE(array2);
@@ -621,6 +622,17 @@ private:
                             "}";
         ASSERT_EQUALS("(= 4 4)\n"
                       "z3::sat\n", expr(code, "=="));
+    }
+
+    void while7() {
+        const char code[] = "void foo() {\n"
+                            "  int a = 2;\n"
+                            "  int *p = &a;\n"
+                            "  while (1) *p = 0;\n"
+                            "  return a == 2;\n"
+                            "}";
+        ASSERT_EQUALS("(= 0 2)\n"
+                      "z3::unsat\n", expr(code, "=="));
     }
 
 
