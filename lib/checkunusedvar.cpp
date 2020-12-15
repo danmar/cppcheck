@@ -1609,7 +1609,7 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
     }
 
     bool sideEffectReturnFound = false;
-    std::list<const Variable*> pointersToGlobals;
+    std::set<const Variable*> pointersToGlobals;
     for (Token* bodyToken = func.functionScope->bodyStart->next(); bodyToken != func.functionScope->bodyEnd;
             bodyToken = bodyToken->next())
     {
@@ -1623,7 +1623,8 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
             if (bodyVariable->isGlobal() ||
                 (std::find(pointersToGlobals.begin(), pointersToGlobals.end(), bodyVariable) != pointersToGlobals.end()))
             {
-                if (isVariableChanged(bodyToken, 20, nullptr, true)) {
+                const int depth = 20;
+                if (isVariableChanged(bodyToken, depth, mSettings, mTokenizer->isCPP())) {
                     return false;
                 }
                 // check if pointer to global variable assigned to another variable (another_var = &global_var)
@@ -1631,7 +1632,7 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
                     const Token* assigned_var_token = bodyToken->tokAt(-3);
                     if (assigned_var_token && assigned_var_token->variable())
                     {
-                        pointersToGlobals.push_back(assigned_var_token->variable());
+                        pointersToGlobals.insert(assigned_var_token->variable());
                     }
                 }
             }
