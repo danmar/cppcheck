@@ -891,7 +891,7 @@ ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
         size.push_back(std::make_shared<ExprEngine::IntRange>(data->getNewSymbolName(), 1, ExprEngine::ArrayValue::MAXSIZE));
     }
 
-    const Token *initToken = var->nameToken();
+    const Token *initToken = var ? var->nameToken() : nullptr;
     while (initToken && initToken->str() != "=")
         initToken = initToken->astParent();
 
