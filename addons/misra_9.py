@@ -208,8 +208,162 @@ class ElementDef:
     def isMisra95Compliant(self):
         return not self.isFlexible or all([not child.isDesignated for child in self.children])
 
+# Parses the initializers and uodate the ElementDefs status accordingly
+class InitializerParser:
+    def __init__(self):
+        self.token = None
+        self.root = None
+        self.ed = None
+        self.rootStack = []
+
+    def parseInitializer(self, root, token):
+        self.root = root
+        self.token = token
+        dummyRoot = ElementDef('array', '->', self.root.valueType)
+        dummyRoot.children = [self.root]
+
+        self.rootStack.clear()
+        self.root = dummyRoot
+        self.ed = self.root.getFirstValueElement()
+        isFirstElement = False
+        isDesignated = False
+
+        while self.token:
+            if self.token.str == ',':
+                self.token = self.token.astOperand1
+                isFirstElement = False
+
+            # Designated initializer ( [2]=...  or .name=... )
+            elif self.token.isAssignmentOp and not self.token.valueType:
+                self.popFromStackIfExitElement()
+
+                self.ed = getElementByDesignator(self.root, self.token.astOperand1)
+                if self.ed:
+                    # Update root
+                    self.pushToRootStackAndMarkAsDesignated()
+                    # Make sure ed points to valueElement
+                    self.ed = self.ed.getFirstValueElement()
+
+                self.token = self.token.astOperand2
+                isFirstElement = False
+                isDesignated = True
+
+            elif self.token.str == '{':
+                nextChild = self.root.getNextChild()
+                if nextChild:
+                    if nextChild.isArray or nextChild.isRecord:
+                        nextChild.unset()
+                        nextChild.setInitialized(isDesignated)
+                        self.ed = nextChild.getFirstValueElement()
+                        isDesignated = False
+                    elif self.token.astOperand1:
+                        # Create dummy nextChild to represent excess levels in initializer
+                        dummyRoot = ElementDef('array', '<-', self.root.valueType)
+                        dummyRoot.parent = self.root
+                        dummyRoot.childIndex = 0
+                        dummyRoot.children = [nextChild]
+                        nextChild.parent = dummyRoot
+
+                        self.root.markStuctureViolation(self.token)
+
+                        # Fake dummy as nextChild (of current root)
+                        nextChild = dummyRoot
+
+                if self.token.astOperand1:
+                    self.root = nextChild
+                    self.token = self.token.astOperand1
+                    isFirstElement = True
+                else:
+                    # {}
+                    if self.root.name == '<-':
+                        self.root.parent.markStuctureViolation(self.token)
+                    else:
+                        self.root.markStuctureViolation(self.token)
+                    self.ed = None
+                    self.unwindAndContinue()
+
+            else:
+                if self.ed and self.ed.isValue:
+                    if isFirstElement and self.token.str == '0' and self.token.next.str == '}':
+                        # Zero initializer causes recursive initialization
+                        self.root.initializeChildren()
+                    elif  self.token.isString and self.ed.valueType.pointer > 0:
+                        if self.ed.valueType.pointer - self.ed.getEffectiveLevel() == 1:
+                            if self.ed.parent != self.root:
+                                self.root.markStuctureViolation(self.token)
+                            self.ed.setInitialized(isDesignated)
+                        elif self.ed.valueType.pointer == self.ed.getEffectiveLevel():
+                            if(self.root.name != '->' and self.ed.parent.parent != self.root) or (self.root.name == '->' and self.root.children[0] != self.ed.parent):
+                                self.root.markStuctureViolation(self.token)
+                            else:
+                                self.ed.parent.setInitialized(isDesignated)
+                            self.ed.parent.initializeChildren()
+                    else:
+                        if self.ed.parent != self.root:
+                            # Check if token is correct value type for self.root.children[?]
+                            child = self.root.getChildByValueElement(self.ed)
+                            if child.elementType != 'record' or self.token.valueType.type != 'record' or child.valueType.typeScope != self.token.valueType.typeScope:
+                                self.root.markStuctureViolation(self.token)
+                        self.ed.setInitialized(isDesignated)
+
+                    # Mark all elements up to root with positional or designated
+                    # (for complex designators, or missing structure)
+                    parent = self.ed.parent
+                    while parent and parent != self.root:
+                        parent.isDesignated = isDesignated if isDesignated else parent.isDesignated
+                        parent.isPositional = not isDesignated if not isDesignated else parent.isPositional
+                        parent = parent.parent
+                    isDesignated = False
+
+                self.unwindAndContinue()
+
+    def pushToRootStackAndMarkAsDesignated(self):
+        new = self.ed.parent
+        if new != self.root:
+            # Mark all elements up to self.root root as designated
+            parent = new
+            while parent != self.root:
+                parent.isDesignated = True
+                parent = parent.parent
+            self.rootStack.append((self.root, new))
+            new.markAsCurrent()
+        new.childIndex = new.children.index(self.ed) - 1
+        self.root = new
+
+    def popFromStackIfExitElement(self):
+        if len(self.rootStack) > 0 and self.rootStack[-1][1] == self.root:
+            old = self.rootStack.pop()[0]
+            old.markAsCurrent()
+            self.root = old
+
+    def unwindAndContinue(self):
+        while self.token:
+            if self.token.astParent.astOperand1 == self.token and self.token.astParent.astOperand2:
+                if self.ed:
+                    self.ed.markAsCurrent()
+                    self.ed = self.ed.getNextValueElement(self.root)
+
+                self.token = self.token.astParent.astOperand2
+                break
+            else:
+                self.token = self.token.astParent
+                if self.token.str == '{':
+                    self.ed = self.root.getLastValueElement()
+                    self.ed.markAsCurrent()
+
+                    # Cleanup if root is dummy node representing excess levels in initializer
+                    if self.root and self.root.name == '<-':
+                        self.root.children[0].parent = self.root.parent
+
+                    self.root = self.root.parent
+
+                if self.token.astParent == None:
+                    self.token = None
+                    break
 
 def misra_9_x(self, data, rule, rawTokens = None):
+    parser = InitializerParser()
+
     for variable in data.variables:
         if not variable.nameToken:
             continue
@@ -232,7 +386,7 @@ def misra_9_x(self, data, rule, rawTokens = None):
 
         if variable.isArray or variable.isClass:
             ed = getElementDef(nameToken, rawTokens)
-            parseInitializer(ed, eq.astOperand2, rule)
+            parser.parseInitializer(ed, eq.astOperand2)
             # print(rule, nameToken.str + '=', ed.getInitDump())
             if rule == 902 and not ed.isMisra92Compliant():
                 self.reportError(nameToken, 9, 2)
@@ -323,147 +477,3 @@ def getElementByDesignator(ed, token):
             ed = ed.getChildByName(name)
 
     return ed
-
-def parseInitializer(root, token, rule):
-    def pushToRootStackAndMarkAsDesignated(old, nextEd):
-        new = nextEd.parent
-        if new != old:
-            # Mark all elements up to old root as designated
-            parent = new
-            while parent != old:
-                parent.isDesignated = True
-                parent = parent.parent
-            rootStack.append((old, new))
-            new.markAsCurrent()
-        new.childIndex = new.children.index(nextEd) - 1
-        return new
-
-    def popFromStackIfExitElement(element):
-        if len(rootStack) > 0 and rootStack[-1][1] == element:
-            old = rootStack.pop()[0]
-            old.markAsCurrent()
-            return old
-        return element
-
-    def unwindAndContinue():
-        nonlocal token, root, ed
-        while token:
-            if token.astParent.astOperand1 == token and token.astParent.astOperand2:
-                if ed:
-                    ed.markAsCurrent()
-                    ed = ed.getNextValueElement(root)
-
-                token = token.astParent.astOperand2
-                break
-            else:
-                token = token.astParent
-                if token.str == '{':
-                    ed = root.getLastValueElement()
-                    ed.markAsCurrent()
-
-                    # Cleanup if root is dummy node representing excess levels in initializer
-                    if root and root.name == '<-':
-                        root.children[0].parent = root.parent
-
-                    root = root.parent
-
-                if token.astParent == None:
-                    token = None
-                    break
-
-    dummyRoot = ElementDef('array', '->', root.valueType)
-    dummyRoot.children = [root]
-
-    rootStack = []
-    root = dummyRoot
-    ed = root.getFirstValueElement()
-    isFirstElement = False
-    isDesignated = False
-
-    while token:
-        if token.str == ',':
-            token = token.astOperand1
-            isFirstElement = False
-
-        # Designated initializer ( [2]=...  or .name=... )
-        elif token.isAssignmentOp and not token.valueType:
-            root = popFromStackIfExitElement(root)
-
-            ed = getElementByDesignator(root, token.astOperand1)
-            if ed:
-                root = pushToRootStackAndMarkAsDesignated(root, ed)
-                # Make sure ed points to valueElement
-                ed = ed.getFirstValueElement()
-
-            token = token.astOperand2
-            isFirstElement = False
-            isDesignated = True
-
-        elif token.str == '{':
-            nextChild = root.getNextChild()
-            if nextChild:
-                if nextChild.isArray or nextChild.isRecord:
-                    nextChild.unset()
-                    nextChild.setInitialized(isDesignated)
-                    ed = nextChild.getFirstValueElement()
-                    isDesignated = False
-                elif token.astOperand1:
-                    # Create dummy nextChild to represent excess levels in initializer
-                    dummyRoot = ElementDef('array', '<-', root.valueType)
-                    dummyRoot.parent = root
-                    dummyRoot.childIndex = 0
-                    dummyRoot.children = [nextChild]
-                    nextChild.parent = dummyRoot
-
-                    root.markStuctureViolation(token)
-
-                    # Fake dummy as nextChild (of current root)
-                    nextChild = dummyRoot
-
-            if token.astOperand1:
-                root = nextChild
-                token = token.astOperand1
-                isFirstElement = True
-            else:
-                # {}
-                if root.name == '<-':
-                    root.parent.markStuctureViolation(token)
-                else:
-                    root.markStuctureViolation(token)
-                ed = None
-                unwindAndContinue()
-
-        else:
-            if ed and ed.isValue:
-                if isFirstElement and token.str == '0' and token.next.str == '}':
-                    # Zero initializer causes recursive initialization
-                    root.initializeChildren()
-                elif  token.isString and ed.valueType.pointer > 0:
-                    if ed.valueType.pointer - ed.getEffectiveLevel() == 1:
-                        if ed.parent != root:
-                            root.markStuctureViolation(token)
-                        ed.setInitialized(isDesignated)
-                    elif ed.valueType.pointer == ed.getEffectiveLevel():
-                        if(root.name != '->' and ed.parent.parent != root) or (root.name == '->' and root.children[0] != ed.parent):
-                            root.markStuctureViolation(token)
-                        else:
-                            ed.parent.setInitialized(isDesignated)
-                        ed.parent.initializeChildren()
-                else:
-                    if ed.parent != root:
-                        # Check if token is correct value type for root.children[?]
-                        child = root.getChildByValueElement(ed)
-                        if child.elementType != 'record' or token.valueType.type != 'record' or child.valueType.typeScope != token.valueType.typeScope:
-                            root.markStuctureViolation(token)
-                    ed.setInitialized(isDesignated)
-
-                # Mark all elements up to root with positional or designated
-                # (for complex designators, or missing structure)
-                parent = ed.parent
-                while parent and parent != root:
-                    parent.isDesignated = isDesignated if isDesignated else parent.isDesignated
-                    parent.isPositional = not isDesignated if not isDesignated else parent.isPositional
-                    parent = parent.parent
-                isDesignated = False
-
-            unwindAndContinue()
