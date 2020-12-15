@@ -103,7 +103,7 @@ jobs:
 
       # Run self check after "Build GUI" to include generated headers in analysis
       - name: Self check
-        if: matrix.os == 'ubuntu-18.04'
+        if: matrix.os == 'ubuntu-20.04'
         run: |
           # compile with verification and ast matchers
           make clean
@@ -118,14 +118,14 @@ jobs:
           ./cppcheck -q -j$(nproc) --template=gcc -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,internal --exception-handling test/*.cpp tools
 
       - name: Build triage on ubuntu
-        if: matrix.os == 'ubuntu-18.04'
+        if: matrix.os == 'ubuntu-20.04'
         run: |
           pushd tools/triage
           qmake
           make -j$(nproc)
 
       - name: Build Fuzzer
-        if: matrix.os == 'ubuntu-18.04'
+        if: matrix.os == 'ubuntu-20.04'
         run: |
           g++ -fsyntax-only -std=c++11 -Ilib oss-fuzz/*.cpp
 
