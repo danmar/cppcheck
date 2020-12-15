@@ -222,7 +222,7 @@ class InitializerParser:
         dummyRoot = ElementDef('array', '->', self.root.valueType)
         dummyRoot.children = [self.root]
 
-        self.rootStack.clear()
+        self.rootStack = []
         self.root = dummyRoot
         self.ed = self.root.getFirstValueElement()
         isFirstElement = False
