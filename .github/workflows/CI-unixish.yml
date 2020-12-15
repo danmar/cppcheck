@@ -128,7 +128,7 @@ jobs:
         if: matrix.os == 'ubuntu-20.04'
         run: |
           pushd oss-fuzz
-          make -j$(nproc)
+          make -j$(nproc) CXX=clang++ CXXFLAGS="-fsanitize=address" fuzz-client translate
 
       - uses: actions/upload-artifact@v2
         with:
