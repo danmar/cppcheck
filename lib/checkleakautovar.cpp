@@ -101,6 +101,9 @@ void VarInfo::print()
         case NOALLOC:
             status = "noalloc";
             break;
+        case REALLOC:
+            status = "realloc";
+            break;
         default:
             status = "?";
             break;
@@ -111,6 +114,7 @@ void VarInfo::print()
                   << "possibleUsage='" << strusage << "' "
                   << "conditionalAlloc=" << (conditionalAlloc.find(it->first) != conditionalAlloc.end() ? "yes" : "no") << " "
                   << "referenced=" << (referenced.find(it->first) != referenced.end() ? "yes" : "no") << " "
+                  << "reallocedFrom=" << it->second.reallocedFromType
                   << std::endl;
     }
 }
@@ -499,18 +503,24 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
                     const Token *vartok = nullptr;
                     if (astIsVariableComparison(tok3, "!=", "0", &vartok)) {
+                        varInfo2.reallocToAlloc(vartok->varId());
                         varInfo2.erase(vartok->varId());
                         if (notzero.find(vartok->varId()) != notzero.end())
                             varInfo2.clear();
                     } else if (astIsVariableComparison(tok3, "==", "0", &vartok)) {
+                        varInfo1.reallocToAlloc(vartok->varId());
                         varInfo1.erase(vartok->varId());
                     } else if (astIsVariableComparison(tok3, "<", "0", &vartok)) {
+                        varInfo1.reallocToAlloc(vartok->varId());
                         varInfo1.erase(vartok->varId());
                     } else if (astIsVariableComparison(tok3, ">", "0", &vartok)) {
+                        varInfo2.reallocToAlloc(vartok->varId());
                         varInfo2.erase(vartok->varId());
                     } else if (astIsVariableComparison(tok3, "==", "-1", &vartok)) {
+                        varInfo1.reallocToAlloc(vartok->varId());
                         varInfo1.erase(vartok->varId());
                     } else if (astIsVariableComparison(tok3, "!=", "-1", &vartok)) {
+                        varInfo2.reallocToAlloc(vartok->varId());
                         varInfo2.erase(vartok->varId());
                     }
                     return ChildrenToVisit::none;
@@ -801,15 +811,18 @@ void CheckLeakAutoVar::changeAllocStatusIfRealloc(std::map<int, VarInfo::AllocIn
     const Library::AllocFunc* f = mSettings->library.getReallocFuncInfo(fTok);
     if (f && f->arg == -1 && f->reallocArg > 0 && f->reallocArg <= numberOfArguments(fTok)) {
         const Token* argTok = getArguments(fTok).at(f->reallocArg - 1);
-        VarInfo::AllocInfo& argAlloc = alloctype[argTok->varId()];
+        if (alloctype.find(argTok->varId()) != alloctype.end()) {
+            VarInfo::AllocInfo& argAlloc = alloctype[argTok->varId()];
+            if (argAlloc.type != 0 && argAlloc.type != f->groupId)
+                mismatchError(fTok, argAlloc.allocTok, argTok->str());
+            argAlloc.status = VarInfo::REALLOC;
+            argAlloc.allocTok = fTok;
+        }
         VarInfo::AllocInfo& retAlloc = alloctype[retTok->varId()];
-        if (argAlloc.type != 0 && argAlloc.type != f->groupId)
-            mismatchError(fTok, argAlloc.allocTok, argTok->str());
-        argAlloc.status = VarInfo::DEALLOC;
-        argAlloc.allocTok = fTok;
         retAlloc.type = f->groupId;
         retAlloc.status = VarInfo::ALLOC;
         retAlloc.allocTok = fTok;
+        retAlloc.reallocedFromType = argTok->varId();
     }
 }
 
@@ -826,7 +839,8 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocI
                 varInfo->erase(arg->varId());
         } else if (var->second.managed()) {
             doubleFreeError(tok, var->second.allocTok, arg->str(), allocation.type);
-        } else if (var->second.type != allocation.type) {
+            var->second.status = allocation.status;
+        } else if (var->second.type != allocation.type && var->second.type != 0) {
             // mismatching allocation and deallocation
             mismatchError(tok, var->second.allocTok, arg->str());
             varInfo->erase(arg->varId());
