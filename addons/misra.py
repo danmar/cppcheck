@@ -1505,10 +1505,11 @@ class MisraChecker:
     def misra_9_4(self, data):
         misra_9.misra_9_x(self, data, 904)
 
-    def misra_9_5(self, rawTokens):
-        for token in rawTokens:
-            if simpleMatch(token, '[ ] = { ['):
-                self.reportError(token, 9, 5)
+    def misra_9_5(self, data, rawTokens):
+        misra_9.misra_9_x(self, data, 905, rawTokens)
+        #for token in rawTokens:
+        #    if simpleMatch(token, '[ ] = { ['):
+        #        self.reportError(token, 9, 5)
 
     def misra_10_1(self, data):
         for token in data.tokenlist:
@@ -3124,7 +3125,7 @@ class MisraChecker:
             self.executeCheck(903, self.misra_9_3, cfg)
             self.executeCheck(904, self.misra_9_4, cfg)
             if cfgNumber == 0:
-                self.executeCheck(905, self.misra_9_5, data.rawTokens)
+                self.executeCheck(905, self.misra_9_5, cfg, data.rawTokens)
             self.executeCheck(1001, self.misra_10_1, cfg)
             self.executeCheck(1002, self.misra_10_2, cfg)
             self.executeCheck(1004, self.misra_10_4, cfg)

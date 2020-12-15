@@ -1,7 +1,7 @@
-# Holds information about a struct or union's element definition.
+# Holds information about an array, struct or union's element definition.
 class ElementDef:
     def __init__(self, elementType, name, valueType, dimensions = None):
-        self.elementType = elementType
+        self.elementType = elementType      # 'array', 'record' or 'value'
         self.name = str(name)
         self.valueType = valueType
         self.children = []
@@ -12,6 +12,9 @@ class ElementDef:
         self.isPositional = False
         self.numInits = 0
         self.childIndex = -1
+
+        self.isFlexible = False
+        self.structureViolationToken = None
 
     def __repr__(self):
         inits = ""
@@ -32,30 +35,23 @@ class ElementDef:
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
         )
 
+    @property
+    def isArray(self):
+        return self.elementType == 'array'
+
+    @property
+    def isRecord(self):
+        return self.elementType == 'record'
+
+    @property
+    def isValue(self):
+        return self.elementType == 'value'
+
+
     def getLongName(self):
         return self.parent.getLongName() + "." + self.name if self.parent else self.name
 
-    def getDebugDump(self, level = 0):
-        t = []
-        if self.isPositional:
-            t.append('P')
-        if self.isDesignated:
-            t.append('D')
-        if self.numInits == 0:
-            t.append('_')
-        if (self.numInits > 1):
-            t.append(str(self.numInits))
-        myDump = self.name + ":" + "/".join(t)
-
-        if len(self.children):
-            childDumps = []
-            for c in self.children:
-                childDumps.append(c.getDebugDump(level + 1))
-            myDump += "{\n" + '  ' * (level + 1) + ", ".join(childDumps) + "\n" + '  ' * level + "}"
-
-        return myDump
-
-    def getSlimDump(self):
+    def getInitDump(self):
         t = []
         if self.isPositional:
             t.append('P')
@@ -71,11 +67,10 @@ class ElementDef:
         if len(self.children):
             childDumps = []
             for c in self.children:
-                childDumps.append(c.getSlimDump())
+                childDumps.append(c.getInitDump())
             myDump += "{ " + ", ".join(childDumps) + " }"
 
         return myDump
-
 
     def addChild(self, child):
         self.children.append(child)
@@ -86,6 +81,9 @@ class ElementDef:
         return self.getChildByIndex(self.childIndex)
 
     def getChildByIndex(self, index):
+        if self.isFlexible:
+            while len(self.children) <= index:
+                createChild(self, self.flexibleToken, len(self.children))
         return self.children[index] if index >= 0 and len(self.children) > index else None
 
     def getChildByName(self, name):
@@ -93,6 +91,50 @@ class ElementDef:
             if c.name == name:
                 return c
         return None
+
+    def getNextValueElement(self, root):
+        current = self
+        while current != root:
+            # Get next index of parent
+            i = current.parent.children.index(current) + 1
+            # Next index of parent exists
+            if i < len(current.parent.children):
+                current = current.parent.children[i]
+                return current.getFirstValueElement()
+
+            # Next index of parent doesn't exist. Move up
+            current = current.parent
+        return None
+
+    def getFirstValueElement(self):
+        current = self
+
+        # Move to first child as long as children exists
+        next_child = current.getChildByIndex(0)
+        while next_child:
+            current = next_child
+            next_child = current.getChildByIndex(0)
+        return current
+
+    def getLastValueElement(self):
+        current = self
+        # Move to last child as long as children exists
+        while len(current.children) > 0:
+            current = current.children[-1]
+        return current
+
+    def getChildByValueElement(self, ed):
+        potentialChild = ed
+        while potentialChild and not potentialChild in self.children:
+            potentialChild = potentialChild.parent
+
+        return self.children[self.children.index(potentialChild)] if potentialChild else None
+
+    def getEffectiveLevel(self):
+        if self.parent and self.parent.elementType == "array":
+            return self.parent.getEffectiveLevel() + 1
+        else:
+            return 0
 
     def setInitialized(self, designated=False, positional=False):
         if designated:
@@ -114,6 +156,25 @@ class ElementDef:
         for child in self.children:
             child.unset()
 
+    def markStuctureViolation(self, token):
+        if self.name == '->':
+            self.children[0].markStuctureViolation(token)
+        elif not self.structureViolationToken:
+            self.structureViolationToken = token
+
+    def markAsFlexibleArray(self, token):
+        self.flexibleToken = token;
+        self.isFlexible = True
+
+    def markAsCurrent(self):
+        if self.parent:
+            if self.name == '<-':
+                self.parent.childIndex = self.parent.children.index(self.children[0])
+            else:
+                self.parent.childIndex = self.parent.children.index(self)
+
+            self.parent.markAsCurrent()
+
     def isAllChildrenSet(self):
         myself = len(self.children) == 0 and (self.isDesignated or self.isPositional)
         mychildren =  len(self.children) > 0 and all([child.isAllChildrenSet() for child in self.children])
@@ -124,6 +185,9 @@ class ElementDef:
 
     def isOnlyDesignated(self):
         return all([not child.isPositional for child in self.children])
+
+    def isMisra92Compliant(self):
+        return self.structureViolationToken is None and all([child.isMisra92Compliant() for child in self.children])
 
     def isMisra93Compliant(self):
         if self.elementType == 'array':
@@ -141,63 +205,11 @@ class ElementDef:
     def isMisra94Compliant(self):
         return self.numInits <= 1 and all([child.isMisra94Compliant() for child in self.children])
 
-    def markAsCurrent(self):
-        if self.parent:
-            if self.name == '<-':
-                self.parent.childIndex = self.parent.children.index(self.children[0])
-            else:
-                self.parent.childIndex = self.parent.children.index(self)
-
-            self.parent.markAsCurrent()
-
-    def getNextValueElement(self, root):
-        current = self
-        while current != root:
-            # Get next index of parent
-            i = current.parent.children.index(current) + 1
-            # Next index of parent exists
-            if i < len(current.parent.children):
-                current = current.parent.children[i]
-                return current.getFirstValueElement()
-
-            # Next index of parent doesn't exist. Move up
-            current = current.parent
-        return None
-
-    def getFirstValueElement(self):
-        current = self
-        # Move to first child as long as children exists
-        while len(current.children) > 0:
-            current = current.children[0]
-        return current
-
-    def getLastValueElement(self):
-        current = self
-        # Move to last child as long as children exists
-        while len(current.children) > 0:
-            current = current.children[-1]
-        return current
-
-    def getEffectiveLevel(self):
-        if self.parent and self.parent.elementType == "array":
-            return self.parent.getEffectiveLevel() + 1
-        else:
-            return 0
-
-    @property
-    def isArray(self):
-        return self.elementType == 'array'
-
-    @property
-    def isRecord(self):
-        return self.elementType == 'record'
-
-    @property
-    def isValue(self):
-        return self.elementType == 'value'
+    def isMisra95Compliant(self):
+        return not self.isFlexible or all([not child.isDesignated for child in self.children])
 
 
-def misra_9_x(self, data, rule):
+def misra_9_x(self, data, rule, rawTokens = None):
     for variable in data.variables:
         if not variable.nameToken:
             continue
@@ -218,37 +230,23 @@ def misra_9_x(self, data, rule):
         if not eq.isAssignmentOp or eq.astOperand2.isName:
             continue
 
-        if rule == 902:
-            if variable.isArray :
-                dimensions, valueType = getArrayDimensionsAndValueType(eq.astOperand1)
-                if dimensions is None:
-                    continue
+        if variable.isArray or variable.isClass:
+            ed = getElementDef(nameToken, rawTokens)
+            parseInitializer(ed, eq.astOperand2, rule)
+            # print(rule, nameToken.str + '=', ed.getInitDump())
+            if rule == 902 and not ed.isMisra92Compliant():
+                self.reportError(nameToken, 9, 2)
+            if rule == 903 and not ed.isMisra93Compliant():
+                self.reportError(nameToken, 9, 3)
+            if rule == 904 and not ed.isMisra94Compliant():
+                self.reportError(nameToken, 9, 4)
+            if rule == 905 and not ed.isMisra95Compliant():
+                self.reportError(nameToken, 9, 5)
 
-                checkArrayInitializer(self, eq.astOperand2, dimensions, valueType)
-            elif variable.isClass:
-                if not nameToken.valueType:
-                    continue
-
-                valueType = nameToken.valueType
-                if valueType.type == 'record':
-                    elements = getRecordElements(valueType)
-                    checkObjectInitializer(self, eq.astOperand2, elements)
-
-        else:
-            if variable.isArray or variable.isClass:
-                ed = getElementDef(nameToken)
-                parseInitializer(ed, eq.astOperand2, rule)
-                # print(rule, nameToken.str + '=', ed.getSlimDump())
-                if rule == 903 and not ed.isMisra93Compliant():
-                    self.reportError(nameToken, 9, 3)
-                if rule == 904 and not ed.isMisra94Compliant():
-                    self.reportError(nameToken, 9, 4)
-
-
-def getElementDef(nameToken):
+def getElementDef(nameToken, rawTokens = None):
     if nameToken.variable.isArray:
         ed = ElementDef("array", nameToken.str, nameToken.valueType)
-        createArrayChildrenDefs(ed, nameToken.astParent)
+        createArrayChildrenDefs(ed, nameToken.astParent, rawTokens)
     elif nameToken.variable.isClass:
         ed = ElementDef("record", nameToken.str, nameToken.valueType)
         createRecordChildrenDefs(ed)
@@ -256,21 +254,33 @@ def getElementDef(nameToken):
         ed = ElementDef("value", nameToken.str, nameToken.valueType)
     return ed
 
-def createArrayChildrenDefs(ed, token):
+def createArrayChildrenDefs(ed, token, rawTokens = None):
     if token.str == '[':
+        if rawTokens is not None:
+            foundToken = next(rawToken for rawToken in rawTokens if rawToken.file == token.file and rawToken.linenr == token.linenr and rawToken.column == token.column)
+
+            if foundToken and foundToken.next and foundToken.next.str == ']':
+                ed.markAsFlexibleArray(token)
+
         if token.astOperand2 is not None:
             for i in range(token.astOperand2.getKnownIntValue()):
-                if token.astParent and token.astParent.str == '[':
-                    child = ElementDef("array", i, ed.valueType)
-                    createArrayChildrenDefs(child, token.astParent)
-                else:
-                    if ed.valueType.type == "record":
-                        child = ElementDef("record", i, ed.valueType)
-                        createRecordChildrenDefs(child)
-                    else:
-                        child = ElementDef("value", i, ed.valueType)
+                createChild(ed, token, i)
+        else:
+            ed.markAsFlexibleArray(token)
 
-                ed.addChild(child)
+
+def createChild(ed, token, name):
+    if token.astParent and token.astParent.str == '[':
+        child = ElementDef("array", name, ed.valueType)
+        createArrayChildrenDefs(child, token.astParent)
+    else:
+        if ed.valueType.type == "record":
+            child = ElementDef("record", name, ed.valueType)
+            createRecordChildrenDefs(child)
+        else:
+            child = ElementDef("value", name, ed.valueType)
+
+    ed.addChild(child)
 
 def createRecordChildrenDefs(ed):
     valueType = ed.valueType
@@ -295,6 +305,9 @@ def getElementByDesignator(ed, token):
             elif token.astOperand1 is not None:
                 chIndex = token.astOperand1.getKnownIntValue()
 
+            if not ed.isArray:
+                ed.markStuctureViolation(token)
+
             ed = ed.getChildByIndex(chIndex)
 
         elif token.str == '.':
@@ -303,6 +316,9 @@ def getElementByDesignator(ed, token):
                 name = token.astOperand2.str
             elif token.astOperand1 is not None:
                 name = token.astOperand1.str
+
+            if not ed.isRecord:
+                ed.markStuctureViolation(token)
 
             ed = ed.getChildByName(name)
 
@@ -355,17 +371,14 @@ def parseInitializer(root, token, rule):
                     token = None
                     break
 
-    if not token.str == '{':
-        # 9.2
-        return
+    dummyRoot = ElementDef('array', '->', root.valueType)
+    dummyRoot.children = [root]
 
     rootStack = []
-
-    token = token.astOperand1
-    isFirstElement = True
-    isDesignated = False
-
+    root = dummyRoot
     ed = root.getFirstValueElement()
+    isFirstElement = False
+    isDesignated = False
 
     while token:
         if token.str == ',':
@@ -379,6 +392,8 @@ def parseInitializer(root, token, rule):
             ed = getElementByDesignator(root, token.astOperand1)
             if ed:
                 root = pushToRootStackAndMarkAsDesignated(root, ed)
+                # Make sure ed points to valueElement
+                ed = ed.getFirstValueElement()
 
             token = token.astOperand2
             isFirstElement = False
@@ -400,6 +415,8 @@ def parseInitializer(root, token, rule):
                     dummyRoot.children = [nextChild]
                     nextChild.parent = dummyRoot
 
+                    root.markStuctureViolation(token)
+
                     # Fake dummy as nextChild (of current root)
                     nextChild = dummyRoot
 
@@ -409,6 +426,10 @@ def parseInitializer(root, token, rule):
                 isFirstElement = True
             else:
                 # {}
+                if root.name == '<-':
+                    root.parent.markStuctureViolation(token)
+                else:
+                    root.markStuctureViolation(token)
                 ed = None
                 unwindAndContinue()
 
@@ -419,11 +440,21 @@ def parseInitializer(root, token, rule):
                     root.initializeChildren()
                 elif  token.isString and ed.valueType.pointer > 0:
                     if ed.valueType.pointer - ed.getEffectiveLevel() == 1:
+                        if ed.parent != root:
+                            root.markStuctureViolation(token)
                         ed.setInitialized(isDesignated)
                     elif ed.valueType.pointer == ed.getEffectiveLevel():
-                        ed.parent.setInitialized(isDesignated)
+                        if(root.name != '->' and ed.parent.parent != root) or (root.name == '->' and root.children[0] != ed.parent):
+                            root.markStuctureViolation(token)
+                        else:
+                            ed.parent.setInitialized(isDesignated)
                         ed.parent.initializeChildren()
                 else:
+                    if ed.parent != root:
+                        # Check if token is correct value type for root.children[?]
+                        child = root.getChildByValueElement(ed)
+                        if child.elementType != 'record' or token.valueType.type != 'record' or child.valueType.typeScope != token.valueType.typeScope:
+                            root.markStuctureViolation(token)
                     ed.setInitialized(isDesignated)
 
                 # Mark all elements up to root with positional or designated
@@ -436,228 +467,3 @@ def parseInitializer(root, token, rule):
                 isDesignated = False
 
             unwindAndContinue()
-
-
-
-# Return an array containing the size of each dimension of an array declaration,
-# or coordinates of a designator in an array initializer,
-# and the name token's valueType, if it exist.
-#
-# In the examples below, the ^ indicates the initial token passed to the function.
-#
-# Ex:   int arr[1][2][3] = .....
-#                    ^
-#       returns: [1,2,3], valueType
-#
-# Ex:   int arr[3][4] = { [1][2] = 5 }
-#                            ^
-#       returns [1,2], None
-def getArrayDimensionsAndValueType(token):
-    dimensions = []
-
-    while token.str == '*':
-        if token.astOperand2 is not None:
-            token = token.astOperand2
-        else:
-            token = token.astOperand1
-
-    # while token.astOperand1.str == '[':
-    #     token = token.astOperand1
-
-    while token and token.str == '[':
-        if token.astOperand2 is not None:
-            dimensions.insert(0, token.astOperand2.getKnownIntValue())
-            token = token.astOperand1
-        elif token.astOperand1 is not None:
-            dimensions.insert(0, token.astOperand1.getKnownIntValue())
-            break
-        else:
-            dimensions = None
-            break
-
-    valueType = token.valueType if token else None
-    name = token.str if token else None
-
-    return dimensions, valueType
-
-    # subDimensions = dimensions
-    # for d, i in dimensions:
-    #     for j in range(d):
-    #         e = ElementDef('array', name, valueType, )
-
-    # root = ElementDef('array', name, valueType, children)
-
-
-
-# Returns a list of the struct elements as StructElementDef in the order they are declared.
-def getRecordElements(valueType):
-    if not valueType or not valueType.typeScope:
-        return []
-
-    elements = []
-    for variable in valueType.typeScope.varlist:
-        if variable.isArray:
-            dimensions, arrayValueType = getArrayDimensionsAndValueType(variable.nameToken.astParent)
-            elements.append(ElementDef('array', variable.nameToken.str, arrayValueType, dimensions))
-        elif variable.isClass:
-            elements.append(ElementDef('record', variable.nameToken.str, variable.nameToken.valueType))
-        else:
-            elements.append(ElementDef('value', variable.nameToken.str, variable.nameToken.valueType))
-
-    return elements
-
-# Checks if the initializer conforms to the dimensions of the array declaration
-# at a given level.
-# Parameters:
-#   token:      root node of the initializer tree
-#   dimensions: dimension sizes of the array declaration
-#   valueType:  the array type
-def checkArrayInitializer(self, token, dimensions, valueType):
-    level = 0
-    levelOffsets = [] # Calculated when designators in initializers are used
-    elements = getRecordElements(valueType) if valueType.type == 'record' else None
-
-    isFirstElement = False
-    while token:
-        if token.str == ',':
-            token = token.astOperand1
-            isFirstElement = False
-            continue
-
-        if token.isAssignmentOp and not token.valueType:
-            designator, _ = getArrayDimensionsAndValueType(token.astOperand1)
-            # Calculate level offset based on designator in initializer
-            levelOffsets[-1] = len(designator) - 1
-            token = token.astOperand2
-            isFirstElement = False
-
-        effectiveLevel = sum(levelOffsets) + level
-
-        # Zero initializer is ok at any level
-        isZeroInitializer = (isFirstElement and token.str == '0')
-        # String initializer is ok at one level below value level unless array to pointers
-        isStringInitializer = token.isString and effectiveLevel == len(dimensions) - 1 and valueType.pointer == len(dimensions)
-
-        if effectiveLevel == len(dimensions) or isZeroInitializer or isStringInitializer:
-            if not isZeroInitializer and not isStringInitializer:
-                isFirstElement = False
-                if valueType.type == 'record':
-                    if token.isName:
-                        if not token.valueType.typeScope  == valueType.typeScope:
-                            self.reportError(token, 9, 2)
-                            return False
-                    else:
-                        if not checkObjectInitializer(self, token, elements):
-                            return False
-                elif token.str == '{':
-                    self.reportError(token, 9, 2)
-                    return False
-                # String initializer is not ok at this level, unless array to pointers
-                # (should be pointer to const-qualified char, but that check is out of scope for 9.2)
-                elif token.isString and valueType.pointer == len(dimensions):
-                    self.reportError(token, 9, 2)
-                    return False
-
-            # Done evaluating leaf node - go back up to find next astOperand2
-            while token:
-                # Done checking once level is back to 0 (or we run out of parents)
-                if level == 0 or not token.astParent:
-                    return True
-
-                if  token.astParent.astOperand1 == token and token.astParent.astOperand2:
-                    token = token.astParent.astOperand2
-                    break
-                else:
-                    token = token.astParent
-                    if token.str == '{':
-                        level = level - 1
-                        levelOffsets.pop()
-                        effectiveLevel = sum(levelOffsets) + level
-
-        elif token.str == '{' :
-            if not token.astOperand1:
-                # Empty initializer
-                self.reportError(token, 9, 2)
-                return False
-
-            token = token.astOperand1
-            level = level + 1
-            levelOffsets.append(0)
-            isFirstElement = True
-        else:
-            self.reportError(token, 9, 2)
-            return False
-
-    return True
-
-# Checks if the initializer conforms to the elements of the struct or union
-# Parameters:
-#   token:      root node of the initializer tree
-#   elements:   the elements as specified in the declaration
-def checkObjectInitializer(self, token, elements):
-    if not token:
-        return True
-
-    # Initializer must start with a curly bracket
-    if not token.str == '{':
-        self.reportError(token, 9, 2)
-        return False
-
-    # Empty initializer is not ok { }
-    if not token.astOperand1:
-        self.reportError(token, 9, 2)
-        return False
-
-    token = token.astOperand1
-
-    # Zero initializer is ok { 0 }
-    if token.str == '0' :
-        return True
-
-    pos = None
-    while(token):
-        if token.str == ',':
-            token = token.astOperand1
-        else:
-            if pos is None:
-                pos = 0
-
-            if token.isAssignmentOp:
-                if token.astOperand1.str == '.':
-                    elementName = token.astOperand1.astOperand1.str
-                    pos = next((i for i, element in enumerate(elements) if element.name == elementName), len(elements))
-                token = token.astOperand2
-
-            if pos >= len(elements):
-                self.reportError(token, 9, 2)
-                return False
-
-            element = elements[pos]
-            if element.elementType == 'record':
-                if token.isName:
-                    if not token.valueType.typeScope  == element.valueType.typeScope:
-                        self.reportError(token, 9, 2)
-                        return False
-                else:
-                    subElements = getRecordElements(element.valueType)
-                    if not checkObjectInitializer(self, token, subElements):
-                        return False
-            elif element.elementType == 'array':
-                if not checkArrayInitializer(self, token, element.dimensions, element.valueType):
-                    return False
-            elif token.str == '{':
-                self.reportError(token, 9, 2)
-                return False
-
-            # The assignment represents the astOperand
-            if token.astParent.isAssignmentOp:
-                token = token.astParent
-
-            if not token == token.astParent.astOperand2:
-                pos = pos + 1
-                token = token.astParent.astOperand2
-            else:
-                token = None
-
-    return True
-
