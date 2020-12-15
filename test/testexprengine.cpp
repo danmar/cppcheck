@@ -357,11 +357,11 @@ private:
     }
 
     void exprAssign2() {
-        ASSERT_EQUALS("2", getRange("void f(unsigned char x) { x = 258; int a = x }", "a=x"));
+        ASSERT_EQUALS("2", getRange("void f(unsigned char x) { x = 258; int a = x; }", "a=x"));
     }
 
     void exprAssign3() {
-        ASSERT_EQUALS("1", getRange("void f(unsigned char *a) { *a = 1 }", "*a=1"));
+        ASSERT_EQUALS("1", getRange("void f(unsigned char *a) { *a = 1; }", "*a=1"));
     }
 
     void exprNot() {
