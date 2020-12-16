@@ -85,6 +85,7 @@ private:
         TEST_CASE(array4);
         TEST_CASE(array5);
         TEST_CASE(array6);
+        TEST_CASE(array7);
         TEST_CASE(arrayInit1);
         TEST_CASE(arrayInit2);
         TEST_CASE(arrayInit3);
@@ -663,6 +664,19 @@ private:
         ASSERT_EQUALS("(= 2 21)\n"
                       "z3::unsat\n",
                       expr(code, "=="));
+    }
+
+    void array7() {
+        const char code[] = "void foo(unsigned char *x) {\n"
+                            "  *x = 2;\n"
+                            "  *x = 1;\n"
+                            "}";
+        ASSERT_EQUALS("1:28: $2=ArrayValue([$1],[:]=?,null)\n"
+                      "1:28: $1=IntRange(1:ffffffffffffffff)\n"
+                      "1:28: 0:memory:{x=($2,[$1],[:]=?)}\n"
+                      "2:9: 0:memory:{x=($2,[$1],[:]=?,[0]=2)}\n"
+                      "3:9: 0:memory:{x=($2,[$1],[:]=?,[0]=1)}\n",
+                      trackExecution(code));
     }
 
     void arrayInit1() {

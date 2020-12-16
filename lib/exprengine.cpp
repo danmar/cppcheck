@@ -929,6 +929,16 @@ void ExprEngine::ArrayValue::assign(ExprEngine::ValuePtr index, ExprEngine::Valu
     if (!index)
         data.clear();
     if (value) {
+        if (index) {
+            // Remove old item that will be "overwritten"
+            for (size_t i = 0; i < data.size(); ++i) {
+                if (data[i].index && data[i].index->name == index->name) {
+                    data.erase(data.begin() + i);
+                    break;
+                }
+            }
+        }
+
         ExprEngine::ArrayValue::IndexAndValue indexAndValue = {index, value};
         data.push_back(indexAndValue);
     }
