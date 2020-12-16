@@ -365,7 +365,7 @@ void misra_9_array_initializers_with_designators() {
     char    i[2][2]     = { { 1, 2 }, [1] = { 3, 4 } };
     char    j[2][2]     = { { 1, 2 }, [1] = { [0] = 3 } };
     char    k[2][2]     = { { 1, 2 }, [1][0] = 3 };
-    char    l[2][2]     = { { 1, 2 }, [1][0] = 3, 4};
+    char    l[2][2]     = { { 1, 2 }, [1][0] = 3, 4};                       // 9.2
     char    m[2][2]     = { [0] = { [2] = 2 }, [1][5] = 4 };
     char    n[2][2]     = { [0] = { 1 } };                                  // 9.3
     char    o[2][2]     = { { 1 }, [1][0] = 3 };                            // 9.3
@@ -394,7 +394,7 @@ void misra_9_struct_initializers() {
         struct1 s[2][2];
     } struct3;
 
-    struct3 sa[2]  = { [1].s[1][0].i1 = 3, 4 };
+    struct3 sa[2]  = { [1].s[1][0].i1 = 3, 4 };         // 9.2
 
     struct1 sa          = 1;                            // 9.2
 
@@ -419,21 +419,29 @@ void misra_9_struct_initializers() {
     // Struct designators
     struct1 sda    = { 1, .i2 = 2 };
     struct2 sdb    = { 1, { 2, .i2=3 }, .c2[1]=5 };
-    struct2 sdc    = { 1, { 2, .i2=3 }, .c2 = { 5 } };  // 9.3
-    struct2 sdd    = { 1, { 2, .i2=3 }, .c2 = 5 };      // 9.2
+    struct2 sdc    = { 1, { 2, .i2=3 }, .c2 = { 5 } };        // 9.3
+    struct2 sdd    = { 1, { 2, .i2=3 }, .c2 = 5 };            // 9.2
     struct2 sde    = { .is1 = { 2, 3 }, { 4, 5, 6, 7 } };
 
     // Struct arrays
     struct1 asa[2] = { {1,2}, {3,4} };
     struct1 asb[2] = { {1}, {3,4} };
-    struct1 asc[2] = { {1,2} };                         // 9.3
-    struct1 asd[2] = { 1,2, 3,4 };                      // 9.2
-    struct1 ase[2] = { 1,2, 3 };                        // 9.2
-    struct1 asf[2] = { 1,2 };                           // 9.2 9.3
+    struct1 asc[2] = { {1,2} };                               // 9.3
+    struct1 asd[2] = { 1,2, 3,4 };                            // 9.2
+    struct1 ase[2] = { 1,2, 3 };                              // 9.2
+    struct1 asf[2] = { 1,2 };                                 // 9.2 9.3
     struct1 asg[2] = { [1].i1 = 3 };
     struct3 ash[2] = { [1].s[1][0].i1 = 3 };
-    struct3 asi[2] = { [0] = { .s[0] = { { 1, 2 } }}};  // 9.3
-    struct3 asj[2] = { [0] = { .s[0] = { 1, 2 }}};      // 9.2 9.3
+    struct3 asi[2] = { [0] = { .s[0] = { { 1, 2 } }}};        // 9.3
+    struct3 asj[2] = { [0] = { .s[0] = { 1, 2 }}};            // 9.2 9.3
+
+    // Missing type information
+    dummy_struct dsa       = { 1, .a = 2 };
+    dummy_struct dsb[2]    = { {1,2}, {3,4} };
+    dummy_struct dsc[2][2] = { {1,2}, {3,4} };
+    dummy_struct dsd[2][2] = { 1, 2, 3, 4 };                  // 9.2
+    dummy_struct dse[3]    = { {1,2}, {3,4}, [1] = {5,6} };   // 9.3 9.4
+    dummy_struct dsd[]     = { [0] = 1 };                     // 9.5
 }
 
 void misra_9_2() {

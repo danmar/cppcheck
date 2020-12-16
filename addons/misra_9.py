@@ -68,6 +68,8 @@ class ElementDef:
             childDumps = []
             for c in self.children:
                 childDumps.append(c.getInitDump())
+            if self.structureViolationToken is not None:
+                myDump += "!"
             myDump += "{ " + ", ".join(childDumps) + " }"
 
         return myDump
@@ -250,12 +252,19 @@ class InitializerParser:
 
             elif self.token.str == '{':
                 nextChild = self.root.getNextChild()
+
                 if nextChild:
                     if nextChild.isArray or nextChild.isRecord:
                         nextChild.unset()
                         nextChild.setInitialized(isDesignated)
                         self.ed = nextChild.getFirstValueElement()
                         isDesignated = False
+                    elif nextChild.valueType is None:
+                        # No type information available - unable to check structure - assume correct initialization
+                        nextChild.setInitialized(isDesignated)
+                        self.unwindAndContinue()
+                        continue
+
                     elif self.token.astOperand1:
                         # Create dummy nextChild to represent excess levels in initializer
                         dummyRoot = ElementDef('array', '<-', self.root.valueType)
@@ -284,10 +293,13 @@ class InitializerParser:
 
             else:
                 if self.ed and self.ed.isValue:
+                    if not isDesignated and len(self.rootStack) > 0 and self.rootStack[-1][1] == self.root:
+                        self.rootStack[-1][0].markStuctureViolation(self.token)
+
                     if isFirstElement and self.token.str == '0' and self.token.next.str == '}':
                         # Zero initializer causes recursive initialization
                         self.root.initializeChildren()
-                    elif  self.token.isString and self.ed.valueType.pointer > 0:
+                    elif self.token.isString and self.ed.valueType.pointer > 0:
                         if self.ed.valueType.pointer - self.ed.getEffectiveLevel() == 1:
                             if self.ed.parent != self.root:
                                 self.root.markStuctureViolation(self.token)
@@ -304,14 +316,15 @@ class InitializerParser:
                             child = self.root.getChildByValueElement(self.ed)
                             if child.elementType != 'record' or self.token.valueType.type != 'record' or child.valueType.typeScope != self.token.valueType.typeScope:
                                 self.root.markStuctureViolation(self.token)
+
                         self.ed.setInitialized(isDesignated)
 
                     # Mark all elements up to root with positional or designated
                     # (for complex designators, or missing structure)
                     parent = self.ed.parent
                     while parent and parent != self.root:
-                        parent.isDesignated = isDesignated if isDesignated else parent.isDesignated
-                        parent.isPositional = not isDesignated if not isDesignated else parent.isPositional
+                        parent.isDesignated = isDesignated if isDesignated and not parent.isPositional else parent.isDesignated
+                        parent.isPositional = not isDesignated if not isDesignated and not parent.isDesignated else parent.isPositional
                         parent = parent.parent
                     isDesignated = False
 
@@ -350,7 +363,7 @@ class InitializerParser:
                 if self.token.str == '{':
                     self.ed = self.root.getLastValueElement()
                     self.ed.markAsCurrent()
-
+                    
                     # Cleanup if root is dummy node representing excess levels in initializer
                     if self.root and self.root.name == '<-':
                         self.root.children[0].parent = self.root.parent
@@ -428,7 +441,7 @@ def createChild(ed, token, name):
         child = ElementDef("array", name, ed.valueType)
         createArrayChildrenDefs(child, token.astParent)
     else:
-        if ed.valueType.type == "record":
+        if ed.valueType and ed.valueType.type == "record":
             child = ElementDef("record", name, ed.valueType)
             createRecordChildrenDefs(child)
         else:
