@@ -127,7 +127,8 @@ jobs:
       - name: Build Fuzzer
         if: matrix.os == 'ubuntu-20.04'
         run: |
-          g++ -fsyntax-only -std=c++11 -Ilib oss-fuzz/*.cpp
+          pushd oss-fuzz
+          make -j$(nproc) CXX=clang++ CXXFLAGS="-fsanitize=address" fuzz-client translate
 
       - uses: actions/upload-artifact@v2
         with:
