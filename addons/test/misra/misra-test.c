@@ -295,38 +295,90 @@ enum misra_8_12_e { misra_e1 = sizeof(int), misra_e2}; // no-crash
 
 void misra_8_14(char * restrict str) {(void)str;} // 8.14
 
-void misra_9_2() {
-    int empty_init[2][2]                     = { };                                    // 9.2
-    int empty_nested_init[2][2]              = { { } };                                // 9.2
-    int zero_init_a[5]                       = { 0 };
-    int zero_init_b[5][2]                    = { 0 };
-    int zero_init_c[2][2]                    = { { 1, 2 }, { 0 } };
+void misra_9_empty_or_zero_initializers() {
+    int a[2]    = {};                          // 9.2
+    int b[2][2] = {};                          // 9.2
+    int c[2][2] = { {} };                      // 9.2 9.3
+    int d[2][2] = { {}, {} };                  // 9.2
+    int e[2][2] = { { 1 , 2 }, {} };           // 9.2
 
-    const char string_wrong_level_a[12]      = { "Hello world" };                      // 9.2
-    const char string_wrong_level_b[2][20]   = "Hello world";                          // 9.2
-    const char string_correct_level_a[]      = "Hello world";
-    const char string_correct_level_b[2][12] = { "Hello world" };
-    const char *char_p_correct_level[2]      = { "Hello", [1] = "world" };
-    const char *char_p_incorrect_level[1]    = "Hello world";                          // 9.2
+    int f[5]    = { 0 };
+    int g[5][2] = { 0 };
+    int h[2][2] = { { 0 } };                   // 9.3
+    int i[2][2] = { { 0 }, { 0 } };
+    int j[2][2] = { { 1, 2 }, { 0 } };
+    int k[2][2] = { [0] = { 1 , 2 }, { 0 } };
+    int l[1][2] = { { 0 }, [0] = { 1 } };      // 9.3 9.4
 
-    char **str_p = &char_p_correct_level[0];
-    char **str_p_array_correct_level[1]      = { str_p };
-    char **str_p_array_incorrect_level[1]    = { { str_p } };                          // 9.2
+    typedef struct {
+        int a;
+        int b;
+    } struct1;
 
-    int array_init_incorrect_levels_a[3][2]  = { 1, 2, 3, 4, 5, 6 };                   // 9.2
-    int array_init_correct_levels_a[3][2]    = { { 1, 2 }, { 3, 4 }, { 5, 6 } };
-    int array_init_incorrect_levels_b[6]     = { { 1, 2 }, { 3, 4 }, { 5, 6 } };       // 9.2
-    int array_init_correct_levels_b[6]       = { 1, 2, 3, 4, 5, 6 };
+    struct1 m   = { };                         // 9.2
+    struct1 n   = { 0 };
+}
 
-    int array_incorrect_designator_a[1]      = { [0][1] = 1 };                         // 9.2
-    int array_incorrect_designator_b[1]      = { [0] = { 1, 2 } };                     // 9.2
-    int array_incorrect_designator_c[1][2]   = { [0] = 1 };                            // 9.2
-    int array_incorrect_designator_d[2][2]   = { { 1, 2 }, [1][0] = {3, 4} };          // 9.2
-    int array_correct_designator_a[2]        = { [0] = 1, 2 };
-    int array_correct_designator_b[2]        = { [1] = 2, [0] = 1 };
-    int array_correct_designator_c[2][2]     = { { 1, 2 }, [1] = {3, 4} };
-    int array_correct_designator_d[2][2]     = { { 1, 2 }, [1][0] = 3, 4};
+void misra_9_string_initializers() {
+    const char a[12]    = { "Hello world" };           // 9.2
+    const char b[2][20] = "Hello world";               // 9.2 9.3
+    const char c[]      = "Hello world";
+    const char d[15]    = "Hello world";
+    const char e[1][12] = { "Hello world" };
+    const char *f[2]    = { "Hello", [1] = "world" };
+    const char *g[1]    = "Hello world";               // 9.2
 
+    const char h[2][15] = { { 0 }, "Hello world" };
+
+    char **str_p = &f[0];
+
+    char **i[1]         = { str_p };
+    char **j[1]         = { { str_p } };               // 9.2
+}
+
+void misra_9_array_initializers() {
+    char    a[4]        = { 1, 2, 3, 4 };
+    char    b[2][2]     = { {1, 2}, {3, 4} };
+    char    c[2][2]     = { 1, 2, 3, 4 };                                   // 9.2
+    char    d[6]        = { { 1, 2 }, { 3, 4 }, { 5, 6 } };                 // 9.2 9.3
+
+    char    e[2][2]     = { {1, 2}, {4} };                                  // 9.3
+    char    f[2][2]     = { 1, 2, 3 };                                      // 9.2 9.3
+    char    g[2][2]     = { {1, 2, 3, 4} };                                 // 9.3
+
+    char    h[2][2]     = { { 1, { 2 } }, { 3, { 5 } } };                   // 9.2
+    char    i[2][2]     = { { 1, { 2 } }, { 3 } };                          // 9.2 9.3
+    char    j[2][3]     = { { 1, { 2 }, 3 }, { 4, { 5 }, 6 } };             // 9.2
+    char    k[2][3]     = { { 1, { 2 }, 3 }, { 4, { 5 } } };                // 9.2 9.3
+    char    l[3]        = { 1, { 2, 3 } };                                  // 9.2 9.3
+}
+
+void misra_9_array_initializers_with_designators() {
+    char    a[1]        = { [0][1] = 1 };                                   // 9.2
+    char    b[1]        = { [0] = { 1, 2 } };                               // 9.2
+    char    c[2][2]     = { [0] = {1, 2, 3} };
+    char    d[1][2]     = { [0] = 1 };                                      // 9.2
+    char    e[2][2]     = { { 1, 2 }, [1][0] = {3, 4} };                    // 9.2
+    char    f[2]        = { [0] = 1, 2 };
+    char    g[2]        = { [1] = 2, [0] = 1 };
+    char    h[2][2]     = { { 1, 2 }, [1] = { 3 } };                        // 9.3
+    char    i[2][2]     = { { 1, 2 }, [1] = { 3, 4 } };
+    char    j[2][2]     = { { 1, 2 }, [1] = { [0] = 3 } };
+    char    k[2][2]     = { { 1, 2 }, [1][0] = 3 };
+    char    l[2][2]     = { { 1, 2 }, [1][0] = 3, 4};                       // 9.2
+    char    m[2][2]     = { [0] = { [2] = 2 }, [1][5] = 4 };
+    char    n[2][2]     = { [0] = { 1 } };                                  // 9.3
+    char    o[2][2]     = { { 1 }, [1][0] = 3 };                            // 9.3
+    char    p[2][2]     = { { 1, 2 }, { 3, 4 }, [1] = { 3 } };              // 9.3 9.4
+    char    q[2][2]     = { { 1, 2 }, { 1 }, [1] = { [1] = 3 } };           // 9.4
+    char    r[2][2][2]  = { [0][0] = { 1, 2 }, [1] = { [0] = {5, 6} } };
+    char    s[2][2][2]  = { [0][0] = { 1, 2 }, [1] = {5, 6, 7, 8}};         // 9.2
+    char    t[2][2][2]  = { [0][0] = { 1, 2 }, {3, 4}, [1] = {5, 6}};       // 9.2 9.3
+    char    u[2][2][2]  = { [0] = { 1, 2, {3, 4} } };                       // 9.2
+    char    v[2][2][2]  = { [0] = { 1, 2, [1] = {3, 4} }};                  // 9.2
+}
+
+void misra_9_struct_initializers() {
     typedef struct {
         int i1;
         int i2;
@@ -338,31 +390,77 @@ void misra_9_2() {
         char c2[4];
     } struct2;
 
+    typedef struct {
+        struct1 s[2][2];
+    } struct3;
+
+    struct3 sa[2]  = { [1].s[1][0].i1 = 3, 4 };         // 9.2
+
+    struct1 sa          = 1;                            // 9.2
+
+    struct1 sb     = { 1, 2 };
+    struct2 sc     = { 1, { 2 }, {4, 5, 6, 7} };
+    struct2 sd     = { 1, { 2, 3 }, {4, 5, 6} };        // 9.3
+    struct2 se     = { 1, 2, 3, 4, 5, 6, 7  };          // 9.2
+    struct2 sf     = { 1, { 2, 3 }, 4, 5, 6, 7 };       // 9.2
+    struct2 sg     = { 1, { 2 }, 4, 5, 6, 7 };          // 9.2
+    struct2 sh     = { 1, { 2, 3 }, 4, 5, 6 };          // 9.2 9.3
+    struct2 si     = { 1, 2, 3, {4,5,6,7} };            // 9.2
+
     int a;
+    struct1 sj     = { a = 1, 2 };                      // 13.1
 
-    struct2 struct_empty_init                = { };                                    // 9.2
-    struct2 struct_zero_init                 = { 0 };
-    struct1 struct_missing_brackets          = 1;                                      // 9.2
-    struct2 struct_correct_init              = { 1, {2, 3}, {0} };
-    struct1 struct_array_incorrect_levels[2] = { 1, 2, 3, 4 };                         // 9.2
-    struct1 struct_array_correct_levels[2]   = { {1, 2}, {3, 4} };
-    struct1 struct_correct_designator_a      = { .i2 = 2, .i1 = 1 };
-    struct2 struct_correct_designator_b      = { .is1 = {2, 3}, { 4 } };
-    struct1 struct_correct_designator_c      = { a = 1, 2 };                           // 13.1
-    struct2 struct_incorrect_type            = { .is1 = struct_correct_designator_b }; // 9.2
-    struct2 struct_correct_type              = { .is1 = struct_correct_designator_a };
+    // Struct types
+    struct2 sta      = { .is1 = sc }; // 9.2
+    struct2 stb      = { .is1 = sb };
+    struct1 stc[1]   = { sc };        // 9.2
+    struct1 std[1]   = { sb };
 
-    struct1 struct_array_incorrect_type[1]   = { struct_correct_designator_b };        // 9.2
-    struct1 struct_array_correct_type[1]     = { struct_correct_designator_a };
+    // Struct designators
+    struct1 sda    = { 1, .i2 = 2 };
+    struct2 sdb    = { 1, { 2, .i2=3 }, .c2[1]=5 };
+    struct2 sdc    = { 1, { 2, .i2=3 }, .c2 = { 5 } };        // 9.3
+    struct2 sdd    = { 1, { 2, .i2=3 }, .c2 = 5 };            // 9.2
+    struct2 sde    = { .is1 = { 2, 3 }, { 4, 5, 6, 7 } };
 
-    union misra_9_2_union {   // 19.2
+    // Struct arrays
+    struct1 asa[2] = { {1,2}, {3,4} };
+    struct1 asb[2] = { {1}, {3,4} };
+    struct1 asc[2] = { {1,2} };                               // 9.3
+    struct1 asd[2] = { 1,2, 3,4 };                            // 9.2
+    struct1 ase[2] = { 1,2, 3 };                              // 9.2
+    struct1 asf[2] = { 1,2 };                                 // 9.2 9.3
+    struct1 asg[2] = { [1].i1 = 3 };
+    struct3 ash[2] = { [1].s[1][0].i1 = 3 };
+    struct3 asi[2] = { [0] = { .s[0] = { { 1, 2 } }}};        // 9.3
+    struct3 asj[2] = { [0] = { .s[0] = { 1, 2 }}};            // 9.2 9.3
+
+    // Missing type information
+    dummy_struct dsa       = { 1, .a = 2 };
+    dummy_struct dsb[2]    = { {1,2}, {3,4} };
+    dummy_struct dsc[2][2] = { {1,2}, {3,4} };
+    dummy_struct dsd[2][2] = { 1, 2, 3, 4 };                  // 9.2
+    dummy_struct dse[3]    = { {1,2}, {3,4}, [1] = {5,6} };   // 9.3 9.4
+    dummy_struct dsd[]     = { [0] = 1 };                     // 9.5
+}
+
+void misra_9_2() {
+    union misra_9_2_union {     // 19.2
         char c;
         struct1 i;
-    } u = { 3 };              // 19.2
+    } u = { 3 };                // 19.2
 }
 
 void misra_9_5() {
-  int x[] = {[0]=23}; // 9.5
+    char a[]    = { 1, 2, 3 };
+    char b[]    = { [2] = 5 };                          // 9.5
+    char c[]    = { 1, [1] = 5 };                       // 9.5
+    char d[]    = { [1] = 2, [0] = 1 };                 // 9.5
+
+    char e[][2] = { { 1, 2 }, { 3, 4 } };
+    char f[][2] = { [1] = { 3, 4 } };                   // 9.5
+    char g[][2] = { { 1, 2 }, [1] = { 3, 4 } };         // 9.5
+    char h[][2] = { [1] = { 1, 2 }, [0] = { 3, 4 } };   // 9.5
 }
 
 typedef char misra_10_1_char_t;
@@ -658,7 +756,7 @@ void misra_13_1(int *p) {
   int a4[2] = { [0]=0, [1]=(v+=1) }; // 13.1
   int a5[2] = { [0]=0, [1]=(v+1) };
   int a6[2] = { v, 1 };
-  int a6[2] = { v >>= 3 }; // 13.1
+  int a6[2] = { v >>= 3 }; // 13.1 9.3
   int a7[2] = { v, ++v }; // 13.1
   int a8[1] = { vv }; // TODO: 13.1 Trac #9504
 
