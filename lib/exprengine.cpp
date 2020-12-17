@@ -2547,7 +2547,7 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             Data &thenData(data);
             Data elseData(data);
             bool alwaysFalse = conditionAlwaysFalse(condValue, &data);
-            bool alwaysTrue = conditionAlwaysTrue(condValue, &data);
+            bool alwaysTrue = alwaysFalse ? false : conditionAlwaysTrue(condValue, &data);
             conditionAddConstraints(condValue, thenData, elseData);
 
             Data::ifSplit(tok, thenData, elseData);
@@ -2658,7 +2658,7 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             Data &bodyData(data);
             Data noexecData(data);
             bool alwaysFalse = conditionAlwaysFalse(condValue, &data);
-            bool alwaysTrue = conditionAlwaysTrue(condValue, &data);
+            bool alwaysTrue = alwaysFalse ? false : conditionAlwaysTrue(condValue, &data);
             conditionAddConstraints(condValue, bodyData, noexecData);
 
             Data::ifSplit(tok, bodyData, noexecData);
