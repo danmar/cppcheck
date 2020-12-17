@@ -62,6 +62,9 @@ private:
         TEST_CASE(if3);
         TEST_CASE(if4);
         TEST_CASE(if5);
+        TEST_CASE(ifAlwaysTrue1);
+        TEST_CASE(ifAlwaysTrue2);
+        TEST_CASE(ifAlwaysFalse);
         TEST_CASE(ifelse1);
         TEST_CASE(ifif);
         TEST_CASE(ifreturn);
@@ -78,6 +81,9 @@ private:
         TEST_CASE(while3);
         TEST_CASE(while4);
         TEST_CASE(while5);
+        TEST_CASE(while6);
+        TEST_CASE(while7);
+        TEST_CASE(while8);
 
         TEST_CASE(array1);
         TEST_CASE(array2);
@@ -442,6 +448,44 @@ private:
                       expr("void foo(const int *x) { if (f1() && *x > 12) dostuff(*x == 5); }", "=="));
     }
 
+    void ifAlwaysTrue1() {
+        const char code[] = "int foo() {\n"
+                            "  int a = 42;\n"
+                            "  if (1)\n"
+                            "    a = 0;\n"
+                            "  return a == 0;\n"
+                            "}";
+        const char expected[] = "(distinct 1 0)\n"
+                                "(= 0 0)\n"
+                                "z3::sat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
+
+    void ifAlwaysTrue2() {
+        const char code[] = "int foo() {\n"
+                            "  int a = 42;\n"
+                            "  if (\"foo\")\n"
+                            "    a = 0;\n"
+                            "  return a == 0;\n"
+                            "}";
+        const char expected[] = "(distinct 1 0)\n"
+                                "(= 0 0)\n"
+                                "z3::sat\n";
+        TODO_ASSERT_EQUALS(expected, "", expr(code, "=="));
+    }
+
+    void ifAlwaysFalse() {
+        const char code[] = "int foo() {\n"
+                            "  int a = 42;\n"
+                            "  if (0)\n"
+                            "    a = 0;\n"
+                            "  return a == 0;\n"
+                            "}";
+        const char expected[] = "(= 0 0)\n"
+                                "(= 42 0)\n"
+                                "z3::unsat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
 
     void ifelse1() {
         ASSERT_EQUALS("(<= $1 5)\n"
@@ -559,10 +603,16 @@ private:
                             "    x = x + 34;\n"
                             "  x == 340;\n"
                             "}";
-        ASSERT_EQUALS("(and (>= $2 (- 2147483648)) (<= $2 2147483647))\n"
-                      "(= (+ $2 34) 340)\n"
-                      "z3::sat\n",
-                      expr(code, "=="));
+        const char expected[] = "(< 0 $1)\n"
+                                "(and (>= $2 (- 2147483648)) (<= $2 2147483647))\n"
+                                "(and (>= $1 (- 2147483648)) (<= $1 2147483647))\n"
+                                "(= (+ $2 34) 340)\n"
+                                "z3::sat\n"
+                                "(>= 0 $1)\n"
+                                "(and (>= $1 (- 2147483648)) (<= $1 2147483647))\n"
+                                "(= 0 340)\n"
+                                "z3::unsat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
     void while2() {
@@ -572,10 +622,16 @@ private:
                             "    x++;\n"
                             "  x == 1;\n"
                             "}";
-        ASSERT_EQUALS("(and (>= $2 (- 2147483648)) (<= $2 2147483647))\n"
-                      "(= (+ $2 1) 1)\n"
-                      "z3::sat\n",
-                      expr(code, "=="));
+        const char expected[] = "(< 0 $1)\n"
+                                "(and (>= $2 (- 2147483648)) (<= $2 2147483647))\n"
+                                "(and (>= $1 (- 2147483648)) (<= $1 2147483647))\n"
+                                "(= (+ $2 1) 1)\n"
+                                "z3::sat\n"
+                                "(>= 0 $1)\n"
+                                "(and (>= $1 (- 2147483648)) (<= $1 2147483647))\n"
+                                "(= 0 1)\n"
+                                "z3::unsat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
     void while3() {
@@ -586,9 +642,10 @@ private:
                             "    ab.a = 3;\n"
                             "  ab.a == 0;\n"
                             "}";
-        ASSERT_EQUALS("(= 3 0)\n"
-                      "z3::unsat\n",
-                      expr(code, "=="));
+        const char expected[] = "(distinct 1 0)\n"
+                                "(= 3 0)\n"
+                                "z3::unsat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
     void while4() {
@@ -597,8 +654,12 @@ private:
                             "    *len = 0;\n"
                             "  *len == 0;\n"
                             "}";
-        ASSERT_EQUALS("(= 0 0)\n"
-                      "z3::sat\n", expr(code, "=="));
+        const char expected[] = "(= |$2:0| 0)\n"
+                                "(and (>= $8 (- 2147483648)) (<= $8 2147483647))\n"
+                                "(and (>= |$2:0| (- 128)) (<= |$2:0| 127))\n"
+                                "(= $8 0)\n"
+                                "z3::sat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
     void while5() {
@@ -610,6 +671,47 @@ private:
         ASSERT(getRange(code, "x", 4).find("?") != std::string::npos);
     }
 
+    void while6() {
+        const char code[] = "int foo(int *arr) {\n"
+                            "  while (1)\n"
+                            "    *arr = 0;\n"
+                            "}";
+        const char expected[] = "1:19: $2=ArrayValue([$1],[:]=?,null)\n"
+                                "1:19: $1=IntRange(1:ffffffffffffffff)\n"
+                                "1:19: 0:memory:{arr=($2,[$1],[:]=?)}\n"
+                                "2:3: 0: Split. Then:0 Else:1\n"
+                                "3:0: 0:memory:{arr=($2,[$1],[:]=?,[0]=0)} constraints:{1}\n"
+                                "3:13: 0:memory:{arr=($2,[$1],[:]=?,[0]=0)} constraints:{1}\n";
+        ASSERT_EQUALS(expected, trackExecution(code));
+    }
+
+    void while7() {
+        const char code[] = "int foo(int *arr) {\n"
+                            "  while (0)\n"
+                            "    *arr = 0;\n"
+                            "}";
+        const char expected[] = "1:19: $2=ArrayValue([$1],[:]=?,null)\n"
+                                "1:19: $1=IntRange(1:ffffffffffffffff)\n"
+                                "1:19: 0:memory:{arr=($2,[$1],[:]=?)}\n"
+                                "2:3: 0: Split. Then:0 Else:1\n"
+                                "3:0: 1:memory:{arr=($3,[$1],[:]=?)} constraints:{(0)==(0)}\n";
+        ASSERT_EQUALS(expected, trackExecution(code));
+    }
+
+    void while8() {
+        const char code[] = "int foo(int *arr) {\n"
+                            "  while (arr != 42)\n"
+                            "    *arr = 0;\n"
+                            "}";
+        const char expected[] = "1:19: $2=ArrayValue([$1],[:]=?,null)\n"
+                                "1:19: $1=IntRange(1:ffffffffffffffff)\n"
+                                "1:19: 0:memory:{arr=($2,[$1],[:]=?)}\n"
+                                "2:3: 0: Split. Then:0 Else:1\n"
+                                "3:0: 0:memory:{arr=($2,[$1],[:]=?,[0]=0)} constraints:{($2)!=(42)}\n"
+                                "3:0: 1:memory:{arr=($3,[$1],[:]=?)} constraints:{($2)==(42)}\n"
+                                "3:13: 0:memory:{arr=($2,[$1],[:]=?,[0]=0)} constraints:{($2)!=(42)}\n";
+        ASSERT_EQUALS(expected, trackExecution(code));
+    }
 
     void array1() {
         ASSERT_EQUALS("(= 5 0)\nz3::unsat\n",

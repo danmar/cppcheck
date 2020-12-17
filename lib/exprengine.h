@@ -287,6 +287,8 @@ namespace ExprEngine {
         bool isGreaterThan(DataBase *dataBase, int value) const OVERRIDE;
         virtual bool isLessThan(DataBase *dataBase, int value) const OVERRIDE;
         bool isTrue(DataBase *dataBase) const;
+        bool isAlwaysFalse(DataBase *dataBase) const;
+        bool isAlwaysTrue(DataBase *dataBase) const;
 
         std::string getExpr(DataBase *dataBase) const;
 
