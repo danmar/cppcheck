@@ -977,7 +977,7 @@ static bool conditionAlwaysFalse(ExprEngine::ValuePtr condValue, ExprEngine::Dat
     if (auto v = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue))
         return v->isAlwaysFalse(dataBase);
     if (auto v = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue))
-        return v->isEqual(dataBase, 0);
+        return v->hasValue(0);
     if (std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(condValue))
         return false;
     return false;
@@ -989,7 +989,7 @@ static bool conditionAlwaysTrue(ExprEngine::ValuePtr condValue, ExprEngine::Data
     if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue))
         return b->isAlwaysTrue(dataBase);
     if (auto v = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue))
-        return !v->isEqual(dataBase, 0);
+        return !v->hasValue(0);
     if (std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(condValue))
         return true;
     return false;

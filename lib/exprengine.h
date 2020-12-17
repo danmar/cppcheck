@@ -155,6 +155,9 @@ namespace ExprEngine {
         bool isEqual(DataBase *dataBase, int value) const OVERRIDE;
         bool isGreaterThan(DataBase *dataBase, int value) const OVERRIDE;
         bool isLessThan(DataBase *dataBase, int value) const OVERRIDE;
+        bool hasValue(int value) const {
+            return minValue == value && maxValue == value;
+        }
 
         int128_t minValue;
         int128_t maxValue;
