@@ -3479,6 +3479,21 @@ private:
               "  return d;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10037
+        check("struct a {\n"
+              "    int* p;\n"
+              "};\n"
+              "void g(a*);\n"
+              "void f() {\n"
+              "    struct a b;\n"
+              "    uint32_t p = (uint32_t) -1;\n"
+              "    b.p = (void *) &p;\n"
+              "    int r = g(&b);\n"
+              "    if (r == 0)\n"
+              "        if (p != (uint32_t) -1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {

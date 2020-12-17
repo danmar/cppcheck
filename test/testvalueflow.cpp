@@ -146,6 +146,10 @@ private:
         return !val.isTokValue();
     }
 
+    static bool isNotLifetimeValue(const ValueFlow::Value& val) {
+        return !val.isLifetimeValue();
+    }
+
     bool testValueOfXKnown(const char code[], unsigned int linenr, int value) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -450,6 +454,7 @@ private:
 
     void valueFlowLifetime() {
         const char *code;
+        std::list<ValueFlow::Value> values;
 
         LOAD_LIB_2(settings.library, "std.cfg");
 
@@ -481,6 +486,15 @@ private:
                 "    auto it = x;\n"
                 "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 4, "v . begin", ValueFlow::Value::LIFETIME));
+
+        code  = "void f() {\n"
+                "    int i = 0;\n"
+                "    void* x = (void*)&i;\n"
+                "}\n";
+        values = tokenValues(code, "( void * )");
+        values.remove_if(&isNotLifetimeValue);
+        ASSERT_EQUALS(true, values.size() == 1);
+        ASSERT_EQUALS(true, values.front().tokvalue->str() == "i");
     }
 
     void valueFlowArrayElement() {
