@@ -1623,6 +1623,9 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
             if (bodyVariable->isGlobal() ||
                 (std::find(pointersToGlobals.begin(), pointersToGlobals.end(), bodyVariable) != pointersToGlobals.end()))
             {
+                if (bodyVariable->isPointer() || bodyVariable->isArray()) {
+                    return false; // TODO: Update astutils.cpp:1544 isVariableChanged() and remove this. Unhandled case: `*(global_arr + 1) = new_val`
+                }
                 const int depth = 20;
                 if (isVariableChanged(bodyToken, depth, mSettings, mTokenizer->isCPP())) {
                     return false;

@@ -762,8 +762,7 @@ private:
             "void f() {\n"
             "   C c;\n"
             "}");
-        // TODO: update astutils.cpp:1544 isVariableChanged() - array change through pointer arithmetic is not handled
-        TODO_ASSERT_EQUALS("", "[test.cpp:12]: (style) Unused variable: c\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         // changing local variable
         functionVariableUsage(
@@ -1065,7 +1064,8 @@ private:
             "void f() {\n"
             "   C c;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:13]: (style) Unused variable: c\n", errout.str());
+        // TODO: see TODO for global vars under CheckUnusedVar::isFunctionWithoutSideEffects()
+        TODO_ASSERT_EQUALS("[test.cpp:13]: (style) Unused variable: c\n", "", errout.str());
 
         // global struct variable modification
         functionVariableUsage(
@@ -1135,7 +1135,8 @@ private:
             "void f() {\n"
             "   C c;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:13]: (style) Unused variable: c\n", errout.str());
+        // TODO: see TODO for global vars under CheckUnusedVar::isFunctionWithoutSideEffects()
+        TODO_ASSERT_EQUALS("[test.cpp:13]: (style) Unused variable: c\n", "", errout.str());
     }
 
     // #5355 - False positive: Variable is not assigned a value.
