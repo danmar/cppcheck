@@ -5973,9 +5973,13 @@ static void valueFlowIteratorInfer(TokenList *tokenlist, const Settings *setting
 static std::vector<ValueFlow::Value> getInitListSize(const Token* tok)
 {
     std::vector<const Token*> args = getArguments(tok);
-    if ((args.size() == 1 && astIsContainer(args[0]) && args[0]->valueType()->container == tok->valueType()->container) || (args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1]))) {
+    if ((args.size() == 1 && astIsContainer(args[0]) && args[0]->valueType()->container == tok->valueType()->container) ||
+        (args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1]))) {
         std::vector<ValueFlow::Value> values;
-        std::copy_if(args[0]->values().begin(), args[0]->values().end(), std::back_inserter(values), std::mem_fn(&ValueFlow::Value::isContainerSizeValue));
+        std::copy_if(args[0]->values().begin(),
+                     args[0]->values().end(),
+                     std::back_inserter(values),
+                     std::mem_fn(&ValueFlow::Value::isContainerSizeValue));
         return values;
     }
     ValueFlow::Value value(args.size());
@@ -5996,7 +6000,8 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
             continue;
         if (var->nameToken()->hasKnownValue())
             continue;
-        if (!Token::Match(var->nameToken(), "%name% ;") && !(Token::Match(var->nameToken(), "%name% {") && Token::simpleMatch(var->nameToken()->next()->link(), "} ;")))
+        if (!Token::Match(var->nameToken(), "%name% ;") &&
+            !(Token::Match(var->nameToken(), "%name% {") && Token::simpleMatch(var->nameToken()->next()->link(), "} ;")))
             continue;
         std::vector<ValueFlow::Value> values{ValueFlow::Value{0}};
         values.back().valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
@@ -6010,7 +6015,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
             const Token* initList = var->nameToken()->next();
             values = getInitListSize(initList);
         }
-        for(const ValueFlow::Value& value:values)
+        for (const ValueFlow::Value& value : values)
             valueFlowContainerForward(var->nameToken()->next(), var, value, tokenlist);
     }
 
@@ -6026,10 +6031,10 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                     valueFlowContainerForward(containerTok->next(), containerTok->variable(), value, tokenlist);
                 }
             } else if (Token::Match(tok, "%name%|;|{|}|> %var% = {") && Token::simpleMatch(tok->linkAt(3), "} ;")) {
-                const Token *containerTok = tok->next();
+                const Token* containerTok = tok->next();
                 if (astIsContainer(containerTok)) {
                     std::vector<ValueFlow::Value> values = getInitListSize(tok->tokAt(3));
-                    for(const ValueFlow::Value& value:values)
+                    for (const ValueFlow::Value& value : values)
                         valueFlowContainerForward(containerTok->next(), containerTok->variable(), value, tokenlist);
                 }
             } else if (Token::Match(tok, "%var% . %name% (") && tok->valueType() && tok->valueType()->container) {

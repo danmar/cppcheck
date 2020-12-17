@@ -4707,32 +4707,37 @@ private:
                "  std::vector<int> ints{};\n"
                "  ints.front();\n"
                "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 0));
+        ASSERT_EQUALS("",
+                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 0));
 
         code = "void f() {\n"
                "  std::vector<int> ints{1};\n"
                "  ints.front();\n"
                "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 1));
+        ASSERT_EQUALS("",
+                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 1));
 
         code = "void f() {\n"
                "  std::vector<int> ints{1};\n"
                "  std::vector<int> ints2{ints.begin(), ints.end()};\n"
                "  ints2.front();\n"
                "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints2 . front", ValueFlow::Value::CONTAINER_SIZE), 1));
+        ASSERT_EQUALS(
+            "", isKnownContainerSizeValue(tokenValues(code, "ints2 . front", ValueFlow::Value::CONTAINER_SIZE), 1));
 
         code = "void f() {\n"
                "  std::vector<int> ints = {};\n"
                "  ints.front();\n"
                "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 0));
+        ASSERT_EQUALS("",
+                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 0));
 
         code = "void f() {\n"
                "  std::vector<int> ints = {1};\n"
                "  ints.front();\n"
                "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 1));
+        ASSERT_EQUALS("",
+                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 1));
     }
 
     void valueFlowDynamicBufferSize() {
