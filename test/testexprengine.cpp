@@ -50,6 +50,7 @@ private:
         TEST_CASE(expr9);
         TEST_CASE(exprAssign1);
         TEST_CASE(exprAssign2); // Truncation
+        TEST_CASE(exprNot);
 
         TEST_CASE(getValueConst1);
 
@@ -83,8 +84,11 @@ private:
         TEST_CASE(array3);
         TEST_CASE(array4);
         TEST_CASE(array5);
+        TEST_CASE(array6);
+        TEST_CASE(array7);
         TEST_CASE(arrayInit1);
         TEST_CASE(arrayInit2);
+        TEST_CASE(arrayInit3);
         TEST_CASE(arrayUninit);
         TEST_CASE(arrayInLoop);
 
@@ -96,6 +100,7 @@ private:
         TEST_CASE(functionCall2);
         TEST_CASE(functionCall3);
         TEST_CASE(functionCall4);
+        TEST_CASE(functionCall5);
 
         TEST_CASE(functionCallContract1);
 
@@ -103,6 +108,7 @@ private:
 
         TEST_CASE(pointer1);
         TEST_CASE(pointer2);
+        TEST_CASE(pointer3);
         TEST_CASE(pointerAlias1);
         TEST_CASE(pointerAlias2);
         TEST_CASE(pointerAlias3);
@@ -112,6 +118,8 @@ private:
         TEST_CASE(structMember1);
         TEST_CASE(structMember2);
         TEST_CASE(structMember3);
+
+        TEST_CASE(pointerToStructInLoop);
 
         TEST_CASE(ternaryOperator1);
 #endif
@@ -332,13 +340,15 @@ private:
         Settings settings;
         LOAD_LIB_2(settings.library, "std.cfg");
 
-        ASSERT_EQUALS("1:26: $3=IntRange(0:2147483647)\n"
+        ASSERT_EQUALS("1:26: $4=ArrayValue([$3],[:]=$2)\n"
+                      "1:26: $3=IntRange(0:2147483647)\n"
                       "1:26: $2=IntRange(-128:127)\n"
                       "1:27: 0:memory:{s=($4,[$3],[:]=$2)}\n",
                       trackExecution("void foo() { std::string s; }", &settings));
 
 
-        ASSERT_EQUALS("1:52: $3=IntRange(0:2147483647)\n"
+        ASSERT_EQUALS("1:52: $4=ArrayValue([$3],[:]=$2)\n"
+                      "1:52: $3=IntRange(0:2147483647)\n"
                       "1:52: $2=IntRange(-128:127)\n"
                       "1:66: 0:memory:{s=($4,[$3],[:]=$2)}\n",
                       trackExecution("std::string getName(int); void foo() { std::string s = getName(1); }", &settings));
@@ -352,6 +362,9 @@ private:
         ASSERT_EQUALS("2", getRange("void f(unsigned char x) { x = 258; int a = x }", "a=x"));
     }
 
+    void exprNot() {
+        ASSERT_EQUALS("($1)==(0)", getRange("void f(unsigned char a) { return !a; }", "!a"));
+    }
 
     void getValueConst1() { // Data::getValue
         ASSERT_EQUALS("512", getRange("const int x=512; void func() { x=x }", "x=x"));
@@ -585,8 +598,8 @@ private:
                             "    *len = 0;\n"
                             "  *len == 0;\n"
                             "}";
-        // Currently the *len gets a BailoutValue in the loop
-        ASSERT_EQUALS("", expr(code, "=="));
+        ASSERT_EQUALS("(= 0 0)\n"
+                      "z3::sat\n", expr(code, "=="));
     }
 
     void while5() {
@@ -605,8 +618,8 @@ private:
     }
 
     void array2() {
-        ASSERT_EQUALS("(and (>= |$3:4| 0) (<= |$3:4| 255))\n"
-                      "(= |$3:4| 365)\n"
+        ASSERT_EQUALS("(and (>= |$4:4| 0) (<= |$4:4| 255))\n"
+                      "(= |$4:4| 365)\n"
                       "z3::unsat\n",
                       expr("void dostuff(unsigned char *); int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4] == 365; }", "=="));
     }
@@ -624,6 +637,7 @@ private:
         const char code[] = "int buf[10];\n"
                             "void f() { int x = buf[0]; }";
         ASSERT_EQUALS("2:16: $2:0=IntRange(-2147483648:2147483647)\n"
+                      "2:20: $1=ArrayValue([10],[:]=$2)\n"
                       "2:20: $2=IntRange(-2147483648:2147483647)\n"
                       "2:26: 0:memory:{buf=($1,[10],[:]=$2) x=$2:0}\n",
                       trackExecution(code));
@@ -637,8 +651,32 @@ private:
                             "}";
         ASSERT_EQUALS("1:14: $1=IntRange(-2147483648:2147483647)\n"
                       "1:14: 0:memory:{x=$1}\n"
+                      "2:7: $2=ArrayValue([3][4][5],[:]=?)\n"
                       "2:19: 0:memory:{x=$1 buf=($2,[3][4][5],[:]=?)}\n"
                       "3:20: 0:memory:{x=$1 buf=($2,[3][4][5],[:]=?,[((20)*($1))+(7)]=10)}\n",
+                      trackExecution(code));
+    }
+
+    void array6() {
+        const char code[] = "void foo(int *x) {\n"
+                            "  *x = 2;\n"
+                            "  if (*x == 21) {}"
+                            "}";
+        ASSERT_EQUALS("(= 2 21)\n"
+                      "z3::unsat\n",
+                      expr(code, "=="));
+    }
+
+    void array7() {
+        const char code[] = "void foo(unsigned char *x) {\n"
+                            "  *x = 2;\n"
+                            "  *x = 1;\n"
+                            "}";
+        ASSERT_EQUALS("1:28: $2=ArrayValue([$1],[:]=?,null)\n"
+                      "1:28: $1=IntRange(1:ffffffffffffffff)\n"
+                      "1:28: 0:memory:{x=($2,[$1],[:]=?)}\n"
+                      "2:9: 0:memory:{x=($2,[$1],[:]=?,[0]=2)}\n"
+                      "3:9: 0:memory:{x=($2,[$1],[:]=?,[0]=1)}\n",
                       trackExecution(code));
     }
 
@@ -648,6 +686,10 @@ private:
 
     void arrayInit2() {
         ASSERT_EQUALS("66", getRange("void f() { char str[] = \"hello\"; str[0] = \'B\'; }", "str[0]=\'B\'"));
+    }
+
+    void arrayInit3() {
+        ASSERT_EQUALS("-32768:32767", getRange("void f() { short buf[5] = {2, 1, 0, 3, 4}; ret = buf[2]; }", "buf[2]"));
     }
 
     void arrayUninit() {
@@ -703,6 +745,14 @@ private:
         ASSERT_EQUALS("1:2147483647", getRange("void f() { sizeof(data); }", "sizeof(data)"));
     }
 
+    void functionCall5() { // unknown result from function, pointer type..
+        ASSERT_EQUALS("1:36: $3=ArrayValue([$2],[:]=bailout,null)\n"
+                      "1:36: $2=IntRange(1:2147483647)\n"
+                      "1:36: bailout=BailoutValue(bailout)\n"
+                      "1:46: 0:memory:{p=($3,[$2],[:]=bailout)}\n",
+                      trackExecution("char *foo(int); void bar() { char *p = foo(1); }"));
+    }
+
     void functionCallContract1() {
         const char code[] = "void foo(int x);\n"
                             "void bar(unsigned short x) { foo(x); }";
@@ -743,6 +793,15 @@ private:
                       "(= $3 7)\n"
                       "z3::sat\n",
                       expr(code, "=="));
+    }
+
+    void pointer3() {
+        const char code[] = "void f(void *p) {\n"
+                            "    double *data = (double *)p;\n"
+                            "    return *data;"
+                            "}";
+        ASSERT_EQUALS("[$1],[:]=?,null", getRange(code, "p"));
+        ASSERT_EQUALS("[$4],[:]=?,null", getRange(code, "data"));
     }
 
     void pointerAlias1() {
@@ -806,6 +865,20 @@ private:
                                 "z3::sat\n";
 
         ASSERT_EQUALS(expected, expr(code, "=="));
+    }
+
+    void pointerToStructInLoop() {
+        const char code[] = "struct S { int x; };\n"
+                            "void foo(struct S *s) {\n"
+                            "  while (1)\n"
+                            "    s->x = 42; \n"
+                            "}";
+
+        const char expected[] = "(and (>= $3 (- 2147483648)) (<= $3 2147483647))\n"
+                                "(= $3 42)\n"
+                                "z3::sat\n";
+
+        TODO_ASSERT_EQUALS(expected, "", expr(code, "=="));
     }
 
 

@@ -159,7 +159,7 @@ namespace {
 
 static std::string str(ExprEngine::ValuePtr val)
 {
-    const char *typestr;
+    const char *typestr = "???UnknownValueType???";
     switch (val->type) {
     case ExprEngine::ValueType::AddressOfValue:
         typestr = "AddressOfValue";
@@ -268,7 +268,7 @@ namespace {
             if (tok->index() == 0)
                 return;
             const std::string &symbolicExpression = value->getSymbolicExpression();
-            if (symbolicExpression[0] != '$')
+            if (std::isdigit(symbolicExpression[0]) || value->type == ExprEngine::ValueType::BinOpResult || value->type == ExprEngine::ValueType::UninitValue)
                 return;
             if (mSymbols.find(symbolicExpression) != mSymbols.end())
                 return;
@@ -891,8 +891,12 @@ ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
         size.push_back(std::make_shared<ExprEngine::IntRange>(data->getNewSymbolName(), 1, ExprEngine::ArrayValue::MAXSIZE));
     }
 
+    const Token *initToken = var ? var->nameToken() : nullptr;
+    while (initToken && initToken->str() != "=")
+        initToken = initToken->astParent();
+
     ValuePtr val;
-    if (var && !var->isGlobal() && !var->isStatic() && !(var->isArgument() && var->isConst()))
+    if (var && !var->isGlobal() && !var->isStatic() && !(var->isArgument() && var->isConst()) && !initToken)
         val = std::make_shared<ExprEngine::UninitValue>();
     else if (var && var->valueType()) {
         ::ValueType vt(*var->valueType());
@@ -925,6 +929,16 @@ void ExprEngine::ArrayValue::assign(ExprEngine::ValuePtr index, ExprEngine::Valu
     if (!index)
         data.clear();
     if (value) {
+        if (index) {
+            // Remove old item that will be "overwritten"
+            for (size_t i = 0; i < data.size(); ++i) {
+                if (data[i].index && data[i].index->name == index->name) {
+                    data.erase(data.begin() + i);
+                    break;
+                }
+            }
+        }
+
         ExprEngine::ArrayValue::IndexAndValue indexAndValue = {index, value};
         data.push_back(indexAndValue);
     }
@@ -1050,8 +1064,15 @@ std::string ExprEngine::ArrayValue::getSymbolicExpression() const
     for (const auto &indexAndValue : data) {
         ostr << ",["
              << (!indexAndValue.index ? std::string(":") : indexAndValue.index->name)
-             << "]="
-             << indexAndValue.value->name;
+             << "]=";
+        if (indexAndValue.value->type == ExprEngine::ValueType::StructValue)
+            ostr << "("
+                 << indexAndValue.value->name
+                 << ","
+                 << indexAndValue.value->getSymbolicExpression()
+                 << ")";
+        else
+            ostr << indexAndValue.value->name;
     }
     return ostr.str();
 }
@@ -1628,6 +1649,12 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, 
 
 static ExprEngine::ValuePtr getValueRangeFromValueType(const ValueType *valueType, Data &data)
 {
+    if (valueType && valueType->pointer) {
+        ExprEngine::ValuePtr val = std::make_shared<ExprEngine::BailoutValue>();
+        auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ExprEngine::ArrayValue::MAXSIZE);
+        return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), bufferSize, val, true, true, false);
+    }
+
     if (!valueType || valueType->pointer)
         return ExprEngine::ValuePtr();
     if (valueType->container) {
@@ -1787,6 +1814,10 @@ static void assignExprValue(const Token *expr, ExprEngine::ValuePtr value, Data 
             auto val = std::dynamic_pointer_cast<ExprEngine::AddressOfValue>(pval);
             if (val)
                 data.assignValue(expr, val->varId, value);
+        } else if (pval && pval->type == ExprEngine::ValueType::ArrayValue) {
+            auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(pval);
+            auto indexValue = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
+            arrayValue->assign(indexValue, value);
         } else if (pval && pval->type == ExprEngine::ValueType::BinOpResult) {
             auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(pval);
             if (b && b->binop == "+") {
@@ -1826,10 +1857,9 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
             if (rhsValue)
                 call(data.callbacks, tok->astOperand2(), rhsValue, &data);
         }
+        if (!rhsValue)
+            rhsValue = std::make_shared<ExprEngine::BailoutValue>();
     }
-
-    if (!rhsValue)
-        rhsValue = std::make_shared<ExprEngine::BailoutValue>();
 
     ExprEngine::ValuePtr assignValue;
     if (tok->str() == "=")
@@ -2093,7 +2123,7 @@ static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
 
         ::ValueType vt(*tok->valueType());
         vt.pointer = 0;
-        auto range = getValueRangeFromValueType(&vt, data);
+        auto range = std::make_shared<ExprEngine::UninitValue>();
 
         if (tok->valueType()->pointer == 0)
             return range;
@@ -2267,6 +2297,17 @@ static ExprEngine::ValuePtr executeDeref(const Token *tok, Data &data)
     return ExprEngine::ValuePtr();
 }
 
+static ExprEngine::ValuePtr executeNot(const Token *tok, Data &data)
+{
+    ExprEngine::ValuePtr v = executeExpression(tok->astOperand1(), data);
+    if (!v)
+        return v;
+    ExprEngine::ValuePtr zero = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
+    auto result = simplifyValue(std::make_shared<ExprEngine::BinOpResult>("==", v, zero));
+    call(data.callbacks, tok, result, &data);
+    return result;
+}
+
 static ExprEngine::ValuePtr executeVariable(const Token *tok, Data &data)
 {
     auto val = data.getValue(tok->varId(), tok->valueType(), tok);
@@ -2344,6 +2385,9 @@ static ExprEngine::ValuePtr executeExpression1(const Token *tok, Data &data)
 
     if (tok->isUnaryOp("*"))
         return executeDeref(tok, data);
+
+    if (tok->isUnaryOp("!"))
+        return executeNot(tok, data);
 
     if (tok->varId())
         return executeVariable(tok, data);
@@ -2611,8 +2655,19 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                         if (!structVal1)
                             structVal1 = createVariableValue(*structToken->variable(), data);
                         auto structVal = std::dynamic_pointer_cast<ExprEngine::StructValue>(structVal1);
-                        if (!structVal)
-                            throw ExprEngineException(tok2, "Unhandled assignment in loop");
+                        if (!structVal) {
+                            // Handle pointer to a struct
+                            if (auto structPtr = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(structVal1)) {
+                                if (structPtr->pointer && !structPtr->data.empty()) {
+                                    auto indexValue = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
+                                    for (auto val: structPtr->read(indexValue)) {
+                                        structVal = std::dynamic_pointer_cast<ExprEngine::StructValue>(val.second);
+                                    }
+                                }
+                            }
+                            if (!structVal)
+                                throw ExprEngineException(tok2, "Unhandled assignment in loop");
+                        }
 
                         data.assignStructMember(tok2, &*structVal, memberName, memberValue);
                         continue;
@@ -2688,7 +2743,7 @@ void ExprEngine::executeAllFunctions(ErrorLogger *errorLogger, const Tokenizer *
     }
 }
 
-static ExprEngine::ValuePtr createStructVal(const Scope *structScope, bool uninitData, Data &data)
+static ExprEngine::ValuePtr createStructVal(const Token *tok, const Scope *structScope, bool uninitData, Data &data)
 {
     if (!structScope)
         return ExprEngine::ValuePtr();
@@ -2708,7 +2763,7 @@ static ExprEngine::ValuePtr createStructVal(const Scope *structScope, bool unini
         if (member.valueType() && member.valueType()->isIntegral()) {
             ExprEngine::ValuePtr memberValue = createVariableValue(member, data);
             if (memberValue)
-                structValue->member[member.name()] = memberValue;
+                data.assignStructMember(tok, structValue.get(), member.name(), memberValue);
         }
     }
     return structValue;
@@ -2734,7 +2789,7 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
         auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0UL);
         ExprEngine::ValuePtr pointerValue;
         if (valueType->type == ValueType::Type::RECORD)
-            pointerValue = createStructVal(valueType->typeScope, var.isLocal() && !var.isStatic(), data);
+            pointerValue = createStructVal(var.nameToken(), valueType->typeScope, var.isLocal() && !var.isStatic(), data);
         else {
             ValueType vt(*valueType);
             vt.pointer = 0;
@@ -2765,10 +2820,10 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
         }
         if (var.isArgument() && var.isConst())
             uninitData = false;
-        return createStructVal(valueType->typeScope, uninitData, data);
+        return createStructVal(var.nameToken(), valueType->typeScope, uninitData, data);
     }
     if (valueType->smartPointerType) {
-        auto structValue = createStructVal(valueType->smartPointerType->classScope, var.isLocal() && !var.isStatic(), data);
+        auto structValue = createStructVal(var.nameToken(), valueType->smartPointerType->classScope, var.isLocal() && !var.isStatic(), data);
         auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0UL);
         return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, structValue, true, true, false);
     }
@@ -2801,7 +2856,7 @@ void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorL
         execute(functionScope->bodyStart, functionScope->bodyEnd, data);
     } catch (const ExprEngineException &e) {
         if (settings->debugBugHunting)
-            report << "ExprEngineException tok.line:" << e.tok->linenr() << " what:" << e.what << "\n";
+            report << "ExprEngineException " << e.tok->linenr() << ":" << e.tok->column() << ": " << e.what << "\n";
         trackExecution.setAbortLine(e.tok->linenr());
         auto bailoutValue = std::make_shared<BailoutValue>();
         for (const Token *tok = e.tok; tok != functionScope->bodyEnd; tok = tok->next()) {

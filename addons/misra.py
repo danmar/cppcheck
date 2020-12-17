@@ -30,6 +30,7 @@ try:
 except ImportError:
     pass
 
+import misra_9
 
 def grouped(iterable, n):
     """s -> (s0,s1,s2,...sn-1), (sn,sn+1,sn+2,...s2n-1), (s2n,s2n+1,s2n+2,...s3n-1), ..."""
@@ -1496,263 +1497,19 @@ class MisraChecker:
                 self.reportError(token, 8, 14)
 
     def misra_9_2(self, data):
-        # Holds information about a struct or union's element definition.
-        class ElementDef:
-            def __init__(self, elementType, name, valueType = None, dimensions = None):
-                self.elementType = elementType
-                self.name = name
-                self.valueType = valueType
-                self.dimensions = dimensions
+        misra_9.misra_9_x(self, data, 902)
 
-        # Return an array containing the size of each dimension of an array declaration,
-        # or coordinates of a designator in an array initializer,
-        # and the name token's valueType, if it exist.
-        #
-        # In the examples below, the ^ indicates the initial token passed to the function.
-        #
-        # Ex:   int arr[1][2][3] = .....
-        #                    ^
-        #       returns: [1,2,3], valueType
-        #
-        # Ex:   int arr[3][4] = { [1][2] = 5 }
-        #                            ^
-        #       returns [1,2], None
-        def getArrayDimensionsAndValueType(token):
-            dimensions = []
+    def misra_9_3(self, data):
+        misra_9.misra_9_x(self, data, 903)
 
-            while token.str == '*':
-                if token.astOperand2 is not None:
-                    token = token.astOperand2
-                else:
-                    token = token.astOperand1
+    def misra_9_4(self, data):
+        misra_9.misra_9_x(self, data, 904)
 
-            while token and token.str == '[':
-                if token.astOperand2 is not None:
-                    dimensions.insert(0, token.astOperand2.getKnownIntValue())
-                    token = token.astOperand1
-                elif token.astOperand1 is not None:
-                    dimensions.insert(0, token.astOperand1.getKnownIntValue())
-                    break
-                else:
-                    dimensions = None
-                    break
-
-            valueType = token.valueType if token else None
-
-            return dimensions, valueType
-
-        # Returns a list of the struct elements as StructElementDef in the order they are declared.
-        def getRecordElements(valueType):
-            if not valueType or not valueType.typeScope:
-                return []
-
-            elements = []
-            for variable in valueType.typeScope.varlist:
-                if variable.isArray:
-                    dimensions, arrayValueType = getArrayDimensionsAndValueType(variable.nameToken.astParent)
-                    elements.append(ElementDef('array', variable.nameToken.str, arrayValueType, dimensions))
-                elif variable.isClass:
-                    elements.append(ElementDef('class', variable.nameToken.str, variable.nameToken.valueType))
-                else:
-                    elements.append(ElementDef('element', variable.nameToken.str))
-
-            return elements
-
-        # Checks if the initializer conforms to the dimensions of the array declaration
-        # at a given level.
-        # Parameters:
-        #   token:      root node of the initializer tree
-        #   dimensions: dimension sizes of the array declaration
-        #   valueType:  the array type
-        def checkArrayInitializer(token, dimensions, valueType):
-            level = 0
-            levelOffsets = [] # Calculated when designators in initializers are used
-            elements = getRecordElements(valueType) if valueType.type == 'record' else None
-
-            isFirstElement = False
-            while token:
-                if token.str == ',':
-                    token = token.astOperand1
-                    isFirstElement = False
-                    continue
-
-                if token.isAssignmentOp and not token.valueType:
-                    designator, _ = getArrayDimensionsAndValueType(token.astOperand1)
-                    # Calculate level offset based on designator in initializer
-                    levelOffsets[-1] = len(designator) - 1
-                    token = token.astOperand2
-                    isFirstElement = False
-
-                effectiveLevel = sum(levelOffsets) + level
-
-                # Zero initializer is ok at any level
-                isZeroInitializer = (isFirstElement and token.str == '0')
-                # String initializer is ok at one level below value level unless array to pointers
-                isStringInitializer = token.isString and effectiveLevel == len(dimensions) - 1 and valueType.pointer == len(dimensions)
-
-                if effectiveLevel == len(dimensions) or isZeroInitializer or isStringInitializer:
-                    if not isZeroInitializer and not isStringInitializer:
-                        isFirstElement = False
-                        if valueType.type == 'record':
-                            if token.isName:
-                                if not token.valueType.typeScope  == valueType.typeScope:
-                                    self.reportError(token, 9, 2)
-                                    return False
-                            else:
-                                if not checkObjectInitializer(token, elements):
-                                    return False
-                        elif token.str == '{':
-                            self.reportError(token, 9, 2)
-                            return False
-                        # String initializer is not ok at this level, unless array to pointers
-                        # (should be pointer to const-qualified char, but that check is out of scope for 9.2)
-                        elif token.isString and valueType.pointer == len(dimensions):
-                            self.reportError(token, 9, 2)
-                            return False
-
-                    # Done evaluating leaf node - go back up to find next astOperand2
-                    while token:
-                        # Done checking once level is back to 0 (or we run out of parents)
-                        if level == 0 or not token.astParent:
-                            return True
-
-                        if  token.astParent.astOperand1 == token and token.astParent.astOperand2:
-                            token = token.astParent.astOperand2
-                            break
-                        else:
-                            token = token.astParent
-                            if token.str == '{':
-                                level = level - 1
-                                levelOffsets.pop()
-                                effectiveLevel = sum(levelOffsets) + level
-
-                elif token.str == '{' :
-                    if not token.astOperand1:
-                        # Empty initializer
-                        self.reportError(token, 9, 2)
-                        return False
-
-                    token = token.astOperand1
-                    level = level + 1
-                    levelOffsets.append(0)
-                    isFirstElement = True
-                else:
-                    self.reportError(token, 9, 2)
-                    return False
-
-            return True
-
-        # Checks if the initializer conforms to the elements of the struct or union
-        # Parameters:
-        #   token:      root node of the initializer tree
-        #   elements:   the elements as specified in the declaration
-        def checkObjectInitializer(token, elements):
-            if not token:
-                return True
-
-            # Initializer must start with a curly bracket
-            if not token.str == '{':
-                self.reportError(token, 9, 2)
-                return False
-
-            # Empty initializer is not ok { }
-            if not token.astOperand1:
-                self.reportError(token, 9, 2)
-                return False
-
-            token = token.astOperand1
-
-            # Zero initializer is ok { 0 }
-            if token.str == '0' :
-                return True
-
-            pos = None
-            while(token):
-                if token.str == ',':
-                    token = token.astOperand1
-                else:
-                    if pos is None:
-                        pos = 0
-
-                    if token.isAssignmentOp:
-                        if token.astOperand1.str == '.':
-                            elementName = token.astOperand1.astOperand1.str
-                            pos = next((i for i, element in enumerate(elements) if element.name == elementName), len(elements))
-                        token = token.astOperand2
-
-                    if pos >= len(elements):
-                        self.reportError(token, 9, 2)
-                        return False
-
-                    element = elements[pos]
-                    if element.elementType == 'class':
-                        if token.isName:
-                            if not token.valueType.typeScope  == element.valueType.typeScope:
-                                self.reportError(token, 9, 2)
-                                return False
-                        else:
-                            subElements = getRecordElements(element.valueType)
-                            if not checkObjectInitializer(token, subElements):
-                                return False
-                    elif element.elementType == 'array':
-                        if not checkArrayInitializer(token, element.dimensions, element.valueType):
-                            return False
-                    elif token.str == '{':
-                        self.reportError(token, 9, 2)
-                        return False
-
-                    # The assignment represents the astOperand
-                    if token.astParent.isAssignmentOp:
-                        token = token.astParent
-
-                    if not token == token.astParent.astOperand2:
-                        pos = pos + 1
-                        token = token.astParent.astOperand2
-                    else:
-                        token = None
-
-            return True
-
-        # ------
-        for variable in data.variables:
-            if not variable.nameToken:
-                continue
-
-            nameToken = variable.nameToken
-
-            # Check if declaration and initialization is
-            # split into two separate statements in ast.
-            if nameToken.next and nameToken.next.isSplittedVarDeclEq:
-                nameToken = nameToken.next.next
-
-            # Find declarations with initializer assignment
-            eq = nameToken
-            while not eq.isAssignmentOp and eq.astParent:
-                eq = eq.astParent
-
-            # We are only looking for initializers
-            if not eq.isAssignmentOp or eq.astOperand2.isName:
-                continue
-
-            if variable.isArray :
-                dimensions, valueType = getArrayDimensionsAndValueType(eq.astOperand1)
-                if dimensions is None:
-                    continue
-
-                checkArrayInitializer(eq.astOperand2, dimensions, valueType)
-            elif variable.isClass:
-                if not nameToken.valueType:
-                    continue
-
-                valueType = nameToken.valueType
-                if valueType.type == 'record':
-                    elements = getRecordElements(valueType)
-                    checkObjectInitializer(eq.astOperand2, elements)
-
-    def misra_9_5(self, rawTokens):
-        for token in rawTokens:
-            if simpleMatch(token, '[ ] = { ['):
-                self.reportError(token, 9, 5)
+    def misra_9_5(self, data, rawTokens):
+        misra_9.misra_9_x(self, data, 905, rawTokens)
+        #for token in rawTokens:
+        #    if simpleMatch(token, '[ ] = { ['):
+        #        self.reportError(token, 9, 5)
 
     def misra_10_1(self, data):
         for token in data.tokenlist:
@@ -3365,8 +3122,10 @@ class MisraChecker:
             if cfgNumber == 0:
                 self.executeCheck(814, self.misra_8_14, data.rawTokens)
             self.executeCheck(902, self.misra_9_2, cfg)
+            self.executeCheck(903, self.misra_9_3, cfg)
+            self.executeCheck(904, self.misra_9_4, cfg)
             if cfgNumber == 0:
-                self.executeCheck(905, self.misra_9_5, data.rawTokens)
+                self.executeCheck(905, self.misra_9_5, cfg, data.rawTokens)
             self.executeCheck(1001, self.misra_10_1, cfg)
             self.executeCheck(1002, self.misra_10_2, cfg)
             self.executeCheck(1004, self.misra_10_4, cfg)

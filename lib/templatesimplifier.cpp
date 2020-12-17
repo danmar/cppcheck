@@ -915,20 +915,20 @@ void TemplateSimplifier::getTemplateInstantiations()
                                         tok->insertToken("float");
                                     else if (suffix == 'l' || suffix == 'L') {
                                         tok->insertToken("double");
-                                        tok->insertToken("long");
+                                        tok->next()->isLong(true);
                                     } else
                                         tok->insertToken("double");
                                 } else if (num.isInt()) {
                                     std::string suffix = MathLib::getSuffix(tok->strAt(3));
                                     if (suffix.find("LL") != std::string::npos) {
                                         tok->insertToken("long");
-                                        tok->insertToken("long");
+                                        tok->next()->isLong(true);
                                     } else if (suffix.find('L') != std::string::npos)
                                         tok->insertToken("long");
                                     else
                                         tok->insertToken("int");
                                     if (suffix.find('U') != std::string::npos)
-                                        tok->insertToken("unsigned");
+                                        tok->next()->isUnsigned(true);
                                 }
                                 break;
                             }

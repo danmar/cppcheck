@@ -4,7 +4,7 @@ on: [pull_request, create]
 jobs:
   test:
     if: github.repository == 'danmar/cppcheck'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: irc pull request
         uses: rectalogic/notify-irc@v1

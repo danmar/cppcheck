@@ -140,6 +140,7 @@ private:
         TEST_CASE(valueFlowCrashConstructorInitialization);
 
         TEST_CASE(valueFlowUnknownMixedOperators);
+        TEST_CASE(valueFlowIdempotent);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -5013,6 +5014,42 @@ private:
                           "}" ;
 
         ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
+    }
+
+    void valueFlowIdempotent() {
+        const char *code;
+
+        code = "void f(bool a, bool b) {\n"
+               "    bool x = true;\n"
+               "    if (a)\n"
+               "        x = x && b;\n"
+               "    bool result = x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 5U, 1));
+
+        code = "void f(bool a, bool b) {\n"
+               "    bool x = false;\n"
+               "    if (a)\n"
+               "        x = x && b;\n"
+               "    bool result = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 0));
+
+        code = "void f(bool a, bool b) {\n"
+               "    bool x = true;\n"
+               "    if (a)\n"
+               "        x = x || b;\n"
+               "    bool result = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
+
+        code = "void f(bool a, bool b) {\n"
+               "    bool x = false;\n"
+               "    if (a)\n"
+               "        x = x || b;\n"
+               "    bool result = x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 5U, 0));
     }
 };
 
