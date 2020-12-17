@@ -1620,9 +1620,7 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
                 return false;
             }
             // check if global variable is changed
-            if (bodyVariable->isGlobal() ||
-                (std::find(pointersToGlobals.begin(), pointersToGlobals.end(), bodyVariable) != pointersToGlobals.end()))
-            {
+            if (bodyVariable->isGlobal() || (pointersToGlobals.find(bodyVariable) != pointersToGlobals.end()) ) {
                 if (bodyVariable->isPointer() || bodyVariable->isArray()) {
                     return false; // TODO: Update astutils.cpp:1544 isVariableChanged() and remove this. Unhandled case: `*(global_arr + 1) = new_val`
                 }
