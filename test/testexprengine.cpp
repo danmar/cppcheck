@@ -108,6 +108,7 @@ private:
 
         TEST_CASE(pointer1);
         TEST_CASE(pointer2);
+        TEST_CASE(pointer3);
         TEST_CASE(pointerAlias1);
         TEST_CASE(pointerAlias2);
         TEST_CASE(pointerAlias3);
@@ -792,6 +793,15 @@ private:
                       "(= $3 7)\n"
                       "z3::sat\n",
                       expr(code, "=="));
+    }
+
+    void pointer3() {
+        const char code[] = "void f(void *p) {\n"
+                            "    double *data = (double *)p;\n"
+                            "    return *data;"
+                            "}";
+        ASSERT_EQUALS("[$1],[:]=?,null", getRange(code, "p"));
+        ASSERT_EQUALS("[$4],[:]=?,null", getRange(code, "data"));
     }
 
     void pointerAlias1() {

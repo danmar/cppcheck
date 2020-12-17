@@ -5018,7 +5018,7 @@ private:
 
     void valueFlowIdempotent() {
         const char *code;
-        
+
         code = "void f(bool a, bool b) {\n"
                "    bool x = true;\n"
                "    if (a)\n"

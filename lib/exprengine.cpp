@@ -2123,7 +2123,7 @@ static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
 
         ::ValueType vt(*tok->valueType());
         vt.pointer = 0;
-        auto range = getValueRangeFromValueType(&vt, data);
+        auto range = std::make_shared<ExprEngine::UninitValue>();
 
         if (tok->valueType()->pointer == 0)
             return range;
