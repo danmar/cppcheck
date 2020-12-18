@@ -64,7 +64,12 @@ private:
         TEST_CASE(if5);
         TEST_CASE(ifAlwaysTrue1);
         TEST_CASE(ifAlwaysTrue2);
-        TEST_CASE(ifAlwaysFalse);
+        TEST_CASE(ifAlwaysTrue3);
+        TEST_CASE(ifAlwaysTrue4);
+        TEST_CASE(ifAlwaysFalse1);
+        TEST_CASE(ifAlwaysFalse2);
+        TEST_CASE(ifAlwaysFalse3);
+        TEST_CASE(ifAlwaysFalse4);
         TEST_CASE(ifelse1);
         TEST_CASE(ifif);
         TEST_CASE(ifreturn);
@@ -463,6 +468,18 @@ private:
 
     void ifAlwaysTrue2() {
         const char code[] = "int foo() {\n"
+                            "  if (1.0)\n"
+                            "    a = 0;\n"
+                            "  return a == 0;\n"
+                            "}";
+        const char expected[] = "(distinct 1 0)\n"
+                                "(= 0 0)\n"
+                                "z3::sat\n";
+        TODO_ASSERT_EQUALS(expected, "", expr(code, "=="));
+    }
+
+    void ifAlwaysTrue3() {
+        const char code[] = "int foo() {\n"
                             "  int a = 42;\n"
                             "  if (\"foo\")\n"
                             "    a = 0;\n"
@@ -474,7 +491,22 @@ private:
         TODO_ASSERT_EQUALS(expected, "", expr(code, "=="));
     }
 
-    void ifAlwaysFalse() {
+    void ifAlwaysTrue4() { // Known local variable
+        const char code[] = "int foo() {\n"
+                            "  float a = 42.0;\n"
+                            "  if (a == 42.0)\n"
+                            "    a = 0.3;\n"
+                            "  return a == 0.3;\n"
+                            "}";
+        const char expected[] = "(= |42.0| |42.0|)\n"
+                                "z3::sat\n"
+                                "(= |42.0| |42.0|)\n"
+                                "(= |0.3| |0.3|)\n"
+                                "z3::sat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
+
+    void ifAlwaysFalse1() {
         const char code[] = "int foo() {\n"
                             "  int a = 42;\n"
                             "  if (0)\n"
@@ -485,6 +517,43 @@ private:
                                 "(= 42 0)\n"
                                 "z3::unsat\n";
         ASSERT_EQUALS(expected, expr(code, "=="));
+    }
+
+    void ifAlwaysFalse2() {
+        const char code[] = "int foo() {\n"
+                            "  if (0.0)\n"
+                            "    a = 0;\n"
+                            "  return a == 0;\n"
+                            "}";
+        const char expected[] = "(distinct 1 0)\n"
+                                "(= 0 0)\n"
+                                "z3::sat\n";
+        TODO_ASSERT_EQUALS(expected, "", expr(code, "=="));
+    }
+
+    void ifAlwaysFalse3() {
+        const char code[] = "int foo() {\n"
+                            "  int a = 42;\n"
+                            "  if (\"\")\n"
+                            "    a = 0;\n"
+                            "  return a == 0;\n"
+                            "}";
+        const char expected[] = "(distinct 1 0)\n"
+                                "(= 0 0)\n"
+                                "z3::sat\n";
+        TODO_ASSERT_EQUALS(expected, "", expr(code, "=="));
+    }
+
+    void ifAlwaysFalse4() { // Known local variable
+        const char code[] = "int foo() {\n"
+                            "  float a = 42.0;\n"
+                            "  if (a != 42.0)\n"
+                            "    a = 0.3;\n"
+                            "  return a == 0.3;\n"
+                            "}";
+        const char expected[] = "(= |42.0| |42.0|)\n"
+                                "z3::unsat\n";
+        TODO_ASSERT_EQUALS(expected, "", expr(code, "=="));
     }
 
     void ifelse1() {
@@ -659,7 +728,7 @@ private:
                                 "(and (>= |$2:0| (- 128)) (<= |$2:0| 127))\n"
                                 "(= $8 0)\n"
                                 "z3::sat\n";
-        ASSERT_EQUALS(expected, expr(code, "=="));
+        TODO_ASSERT_EQUALS(expected, "", expr(code, "=="));
     }
 
     void while5() {

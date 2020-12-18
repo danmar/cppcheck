@@ -595,6 +595,14 @@ namespace {
                 if (!binop.empty())
                     return std::make_shared<ExprEngine::BinOpResult>(binop, b->op1, b->op2);
             }
+            if (std::dynamic_pointer_cast<ExprEngine::FloatRange>(v)) {
+                auto zero = std::make_shared<ExprEngine::FloatRange>("0.0", 0.0, 0.0);
+                return std::make_shared<ExprEngine::BinOpResult>("==", v, zero);
+            }
+            if (std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(v)) {
+                auto zero = std::make_shared<ExprEngine::StringLiteralValue>("", "");
+                return std::make_shared<ExprEngine::BinOpResult>("==", v, zero);
+            }
             auto zero = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
             return std::make_shared<ExprEngine::BinOpResult>("==", v, zero);
         }
@@ -973,39 +981,28 @@ static bool isNonOverlapping(ExprEngine::ValuePtr v1, ExprEngine::ValuePtr v2)
 
 static bool conditionAlwaysFalse(ExprEngine::ValuePtr condValue, ExprEngine::DataBase *dataBase)
 {
-    // TODO: This is not finished
-    if (auto v = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue))
-        return v->isAlwaysFalse(dataBase);
     if (auto v = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue))
         return v->hasValue(0);
-    if (std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(condValue))
-        return false;
+    if (auto v = std::dynamic_pointer_cast<ExprEngine::FloatRange>(condValue))
+        return v->hasValue(0);
+    if (auto v = std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(condValue))
+        return !v->size();
+    if (auto v = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue))
+        return v->isAlwaysFalse(dataBase);
     return false;
 }
 
 static bool conditionAlwaysTrue(ExprEngine::ValuePtr condValue, ExprEngine::DataBase *dataBase)
 {
-    // TODO: This is not finished
-    if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue))
-        return b->isAlwaysTrue(dataBase);
     if (auto v = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue))
         return !v->hasValue(0);
-    if (std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(condValue))
-        return true;
+    if (auto v = std::dynamic_pointer_cast<ExprEngine::FloatRange>(condValue))
+        return !v->hasValue(0);
+    if (auto v = std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(condValue))
+        return v->size();
+    if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue))
+        return b->isAlwaysTrue(dataBase);
     return false;
-}
-
-static void conditionAddConstraints(ExprEngine::ValuePtr condValue, Data &ifData, Data &elseData)
-{
-    // TODO: This is not finished
-    if (std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(condValue)) {
-        auto nullstr = std::make_shared<ExprEngine::StringLiteralValue>(ifData.getNewSymbolName(), "");
-        ifData.addConstraint(condValue, nullstr, true);
-        elseData.addConstraint(condValue, nullstr, false);
-    } else {
-        ifData.addConstraint(condValue, true);
-        elseData.addConstraint(condValue, false);
-    }
 }
 
 ExprEngine::ConditionalValue::Vector ExprEngine::ArrayValue::read(ExprEngine::ValuePtr index) const
@@ -2548,7 +2545,8 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             Data elseData(data);
             bool alwaysFalse = conditionAlwaysFalse(condValue, &data);
             bool alwaysTrue = alwaysFalse ? false : conditionAlwaysTrue(condValue, &data);
-            conditionAddConstraints(condValue, thenData, elseData);
+            thenData.addConstraint(condValue, true);
+            elseData.addConstraint(condValue, false);
 
             Data::ifSplit(tok, thenData, elseData);
 
@@ -2659,7 +2657,8 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             Data noexecData(data);
             bool alwaysFalse = conditionAlwaysFalse(condValue, &data);
             bool alwaysTrue = alwaysFalse ? false : conditionAlwaysTrue(condValue, &data);
-            conditionAddConstraints(condValue, bodyData, noexecData);
+            bodyData.addConstraint(condValue, true);
+            noexecData.addConstraint(condValue, false);
 
             Data::ifSplit(tok, bodyData, noexecData);
 

@@ -179,6 +179,10 @@ namespace ExprEngine {
         bool isEqual(DataBase *dataBase, int value) const OVERRIDE;
         bool isGreaterThan(DataBase *dataBase, int value) const OVERRIDE;
         bool isLessThan(DataBase *dataBase, int value) const OVERRIDE;
+        bool hasValue(long double value) const {
+            return std::equal_to<long double>()(minValue, value) &&
+                   std::equal_to<long double>()(maxValue, value);
+        }
 
         long double minValue;
         long double maxValue;
