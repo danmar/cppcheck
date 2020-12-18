@@ -552,8 +552,9 @@ private:
                             "  return a == 0.3;\n"
                             "}";
         const char expected[] = "(= |42.0| |42.0|)\n"
-                                "z3::unsat\n";
-        TODO_ASSERT_EQUALS(expected, "", expr(code, "=="));
+                                "(= |42.0| |0.3|)\n"
+                                "z3::sat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
     void ifelse1() {
@@ -723,12 +724,11 @@ private:
                             "    *len = 0;\n"
                             "  *len == 0;\n"
                             "}";
-        const char expected[] = "(= |$2:0| 0)\n"
-                                "(and (>= $8 (- 2147483648)) (<= $8 2147483647))\n"
+        const char expected[] = "(distinct |$2:0| 0)\n"
                                 "(and (>= |$2:0| (- 128)) (<= |$2:0| 127))\n"
-                                "(= $8 0)\n"
+                                "(= 0 0)\n"
                                 "z3::sat\n";
-        TODO_ASSERT_EQUALS(expected, "", expr(code, "=="));
+        ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
     void while5() {
