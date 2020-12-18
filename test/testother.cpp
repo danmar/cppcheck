@@ -710,6 +710,18 @@ private:
               "    return 1/a->x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10049
+        check("int f(int argc) {\n"
+              "    int quotient, remainder;\n"
+              "    remainder = argc % 2;\n"
+              "    argc = 2;\n"
+              "    quotient = argc;\n"
+              "    if (quotient != 0) \n"
+              "        return quotient;\n"
+              "    return remainder;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nanInArithmeticExpression() {
