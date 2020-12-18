@@ -2428,6 +2428,10 @@ static std::string execute(const Token *start, const Token *end, Data &data)
     };
     Recursion updateRecursion(&data.recursion, data.recursion);
 
+    const std::time_t stopTime = (data.settings->bugHuntingCheckFunctionMaxTime > 0) ?
+                                 (data.startTime + data.settings->bugHuntingCheckFunctionMaxTime) :
+                                 ~0ULL;
+
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (Token::Match(tok, "[;{}]")) {
             data.trackProgramState(tok);
@@ -2438,6 +2442,8 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                 if (Token::Match(prev, "[;{}] return|throw"))
                     return data.str();
             }
+            if (std::time(nullptr) > stopTime)
+                return "";
         }
 
         if (Token::simpleMatch(tok, "__CPPCHECK_BAILOUT__ ;"))
@@ -2850,6 +2856,10 @@ void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorL
 
     data.contractConstraints(function, executeExpression1);
 
+    const std::time_t stopTime = (data.settings->bugHuntingCheckFunctionMaxTime > 0) ?
+                                 (data.startTime + data.settings->bugHuntingCheckFunctionMaxTime) :
+                                 ~0ULL;
+
     try {
         execute(functionScope->bodyStart, functionScope->bodyEnd, data);
     } catch (const ExprEngineException &e) {
@@ -2858,6 +2868,8 @@ void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorL
         trackExecution.setAbortLine(e.tok->linenr());
         auto bailoutValue = std::make_shared<BailoutValue>();
         for (const Token *tok = e.tok; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (std::time(nullptr) >= stopTime)
+                break;
             if (Token::Match(tok, "return|throw|while|if|for (")) {
                 tok = tok->next();
                 continue;
