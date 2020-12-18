@@ -2121,8 +2121,6 @@ static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
         if (!tok->valueType() || expr->valueType()->pointer < tok->valueType()->pointer)
             return std::make_shared<ExprEngine::UninitValue>();
 
-        ::ValueType vt(*tok->valueType());
-        vt.pointer = 0;
         auto range = std::make_shared<ExprEngine::UninitValue>();
 
         if (tok->valueType()->pointer == 0)

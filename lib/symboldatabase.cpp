@@ -2286,6 +2286,24 @@ static std::string qualifiedName(const Scope *scope)
 
 static bool usingNamespace(const Scope *scope, const Token *first, const Token *second, int &offset)
 {
+    // check if qualifications match first before checking if using is needed
+    const Token *tok1 = first;
+    const Token *tok2 = second;
+    bool match = false;
+    while (Token::Match(tok1, "%type% :: %type%") && Token::Match(tok2, "%type% :: %type%")) {
+        if (tok1->str() == tok2->str()) {
+            tok1 = tok1->tokAt(2);
+            tok2 = tok2->tokAt(2);
+            match = true;
+        } else {
+            match = false;
+            break;
+        }
+    }
+
+    if (match)
+        return false;
+
     offset = 0;
     std::string name = first->str();
 
@@ -3155,6 +3173,8 @@ static std::string scopeToString(const Scope* scope, const Tokenizer* tokenizer)
     std::ostringstream oss;
     if (scope) {
         oss << scope->type << " ";
+        if (!scope->className.empty())
+            oss << scope->className << " ";
         if (scope->classDef)
             oss << tokenizer->list.fileLine(scope->classDef) << " ";
     }
