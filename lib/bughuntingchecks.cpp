@@ -46,16 +46,21 @@ static void arrayIndex(const Token *tok, const ExprEngine::Value &value, ExprEng
 {
     if (!Token::simpleMatch(tok->astParent(), "["))
         return;
+    int nr = 0;
     const Token *buf = tok->astParent()->astOperand1();
-    if (!buf || !buf->variable() || !buf->variable()->isArray())
+    while (Token::simpleMatch(buf, "[")) {
+        ++nr;
+        buf = buf->astOperand1();
+    }
+    if (!buf || !buf->variable() || !buf->variable()->isArray() || buf == buf->variable()->nameToken())
         // TODO
         return;
     const Token *index = tok->astParent()->astOperand2();
     if (tok != index)
         // TODO
         return;
-    if (buf->variable()->dimensions().size() == 1 && buf->variable()->dimensions()[0].known) {
-        const MathLib::bigint bufSize = buf->variable()->dimensions()[0].num;
+    if (buf->variable()->dimensions().size() > nr && buf->variable()->dimensions()[nr].known) {
+        const MathLib::bigint bufSize = buf->variable()->dimensions()[nr].num;
         if (value.isGreaterThan(dataBase, bufSize - 1)) {
             const bool bailout = (value.type == ExprEngine::ValueType::BailoutValue);
             dataBase->reportError(tok,
