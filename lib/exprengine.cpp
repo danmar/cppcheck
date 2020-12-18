@@ -2428,9 +2428,7 @@ static std::string execute(const Token *start, const Token *end, Data &data)
     };
     Recursion updateRecursion(&data.recursion, data.recursion);
 
-    const std::time_t stopTime = (data.settings->bugHuntingCheckFunctionMaxTime > 0) ?
-                                 (data.startTime + data.settings->bugHuntingCheckFunctionMaxTime) :
-                                 ~0ULL;
+    const std::time_t stopTime = data.startTime + data.settings->bugHuntingCheckFunctionMaxTime;
 
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (Token::Match(tok, "[;{}]")) {
@@ -2856,9 +2854,7 @@ void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorL
 
     data.contractConstraints(function, executeExpression1);
 
-    const std::time_t stopTime = (data.settings->bugHuntingCheckFunctionMaxTime > 0) ?
-                                 (data.startTime + data.settings->bugHuntingCheckFunctionMaxTime) :
-                                 ~0ULL;
+    const std::time_t stopTime = data.startTime + data.settings->bugHuntingCheckFunctionMaxTime;
 
     try {
         execute(functionScope->bodyStart, functionScope->bodyEnd, data);

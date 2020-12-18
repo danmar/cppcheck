@@ -31,7 +31,7 @@ const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
 Settings::Settings()
     : mEnabled(0),
       bugHunting(false),
-      bugHuntingCheckFunctionMaxTime(0),
+      bugHuntingCheckFunctionMaxTime(INT_MAX),
       checkAllConfigurations(true),
       checkConfiguration(false),
       checkHeaders(true),
