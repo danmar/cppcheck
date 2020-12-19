@@ -145,6 +145,7 @@ private:
 
         // loops
         TEST_CASE(loop1);
+        TEST_CASE(loop2);
 
         // mismatching allocation/deallocation
         TEST_CASE(mismatchAllocDealloc);
@@ -1557,6 +1558,16 @@ private:
               "    else { a = p; }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void loop2() {
+        // test malloc-ing and never calling free
+        check("void f() {\n"
+              "    while (1) {\n"
+              "        char *p = malloc(10);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.c:4]: (error) Memory leak: p\n", errout.str());
     }
 
     void mismatchAllocDealloc() {
