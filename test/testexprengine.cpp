@@ -468,14 +468,15 @@ private:
 
     void ifAlwaysTrue2() {
         const char code[] = "int foo() {\n"
+                            "  int a = 42;\n"
                             "  if (1.0)\n"
                             "    a = 0;\n"
                             "  return a == 0;\n"
                             "}";
-        const char expected[] = "(distinct 1 0)\n"
+        const char expected[] = "(distinct |1.0| (_ +zero 11 53))\n"
                                 "(= 0 0)\n"
                                 "z3::sat\n";
-        TODO_ASSERT_EQUALS(expected, "", expr(code, "=="));
+        ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
     void ifAlwaysTrue3() {
@@ -521,14 +522,15 @@ private:
 
     void ifAlwaysFalse2() {
         const char code[] = "int foo() {\n"
+                            "  int a = 42;\n"
                             "  if (0.0)\n"
                             "    a = 0;\n"
                             "  return a == 0;\n"
                             "}";
-        const char expected[] = "(distinct 1 0)\n"
-                                "(= 0 0)\n"
-                                "z3::sat\n";
-        TODO_ASSERT_EQUALS(expected, "", expr(code, "=="));
+        const char expected[] = "(= |0.0| |0.0|)\n"
+                                "(= 42 0)\n"
+                                "z3::unsat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
     void ifAlwaysFalse3() {

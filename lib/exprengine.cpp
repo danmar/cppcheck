@@ -984,7 +984,7 @@ static bool conditionAlwaysFalse(ExprEngine::ValuePtr condValue, ExprEngine::Dat
     if (auto v = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue))
         return v->hasValue(0);
     if (auto v = std::dynamic_pointer_cast<ExprEngine::FloatRange>(condValue))
-        return v->hasValue(0);
+        return v->hasValue(0.0);
     if (auto v = std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(condValue))
         return !v->size();
     if (auto v = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue))
@@ -997,7 +997,7 @@ static bool conditionAlwaysTrue(ExprEngine::ValuePtr condValue, ExprEngine::Data
     if (auto v = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue))
         return !v->hasValue(0);
     if (auto v = std::dynamic_pointer_cast<ExprEngine::FloatRange>(condValue))
-        return !v->hasValue(0);
+        return !v->hasValue(0.0);
     if (auto v = std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(condValue))
         return v->size();
     if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue))
@@ -1287,6 +1287,11 @@ public:
     z3::expr bool_expr(z3::expr e) {
         if (e.is_bool())
             return e;
+        if (e.is_fpa()) {
+            // Workaround for z3 bug: https://github.com/Z3Prover/z3/pull/4906
+            z3::expr fpa_null = context.fpa_val(0.0);
+            return e != fpa_null;
+        }
         return e != 0;
     }
 
