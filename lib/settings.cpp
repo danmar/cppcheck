@@ -20,6 +20,8 @@
 
 #include "valueflow.h"
 
+#include <fstream>
+
 std::atomic<bool> Settings::mTerminated;
 
 const char Settings::SafeChecks::XmlRootName[] = "safe-checks";
@@ -154,4 +156,49 @@ bool Settings::isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck) 
     if (!inconclusive && (inconclusiveCheck || value->isInconclusive()))
         return false;
     return true;
+}
+
+static std::vector<std::string> getSummaryFiles(const std::string &filename)
+{
+    std::vector<std::string> ret;
+    std::ifstream fin(filename);
+    if (!fin.is_open())
+        return ret;
+    std::string line;
+    while (std::getline(fin, line)) {
+        std::string::size_type dotA = line.find(".a");
+        std::string::size_type colon = line.find(":");
+        if (colon > line.size() || dotA > colon)
+            continue;
+        std::string f = line.substr(0,colon);
+        f[dotA + 1] = 's';
+        ret.push_back(f);
+    }
+    return ret;
+}
+
+void Settings::loadSummaries()
+{
+    if (buildDir.empty())
+        return;
+
+    std::vector<std::string> summaryFiles = getSummaryFiles(buildDir + "/files.txt");
+    for (const std::string &filename: summaryFiles) {
+        std::ifstream fin(buildDir + '/' + filename);
+        if (!fin.is_open())
+            continue;
+        std::string line;
+        while (std::getline(fin, line)) {
+            // Get function name
+            const std::string::size_type pos1 = 0;
+            const std::string::size_type pos2 = line.find(" ", pos1);
+            const std::string functionName = (pos2 == std::string::npos) ? line : line.substr(0, pos2);
+
+            // noreturn..
+            if (line.find(" noreturn:[") != std::string::npos || line.find(" call:[") != std::string::npos)
+                summaryNoreturn[functionName] = true;
+            else if (summaryNoreturn.find(functionName) == summaryNoreturn.end())
+                summaryNoreturn[functionName] = false;
+        }
+    }
 }

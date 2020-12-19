@@ -585,6 +585,8 @@ public:
 
     bool hasIfdef(const Token *start, const Token *end) const;
 
+    std::string createSummaries(const std::string &configuration) const;
+
 private:
 
     /**

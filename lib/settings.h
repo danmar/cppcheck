@@ -415,6 +415,11 @@ public:
     static bool terminated() {
         return Settings::mTerminated;
     }
+
+    std::map<std::string, bool> summaryNoreturn;
+
+    void loadSummaries();
+
 };
 
 /// @}

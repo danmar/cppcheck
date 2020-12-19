@@ -896,6 +896,8 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     }
 
     if (!settings.buildDir.empty()) {
+        settings.loadSummaries();
+
         std::list<std::string> fileNames;
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i)
             fileNames.emplace_back(i->first);
