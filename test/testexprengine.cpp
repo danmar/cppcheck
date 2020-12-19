@@ -488,8 +488,8 @@ private:
                                 "(= 0 0)\n"
                                 "z3::sat\n";
 #else
-        const char expected[] = "(distinct |1.0| 0.0)\n"
-                                "(distinct |1.0| 0.0)\n"
+        const char expected[] = "(distinct |1.0| |0.0|)\n"
+                                "(distinct |1.0| |0.0|)\n"
                                 "(distinct |1.0| 0.0)\n"
                                 "(= 0 0)\n"
                                 "z3::sat\n";
