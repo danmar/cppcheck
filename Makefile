@@ -143,7 +143,7 @@ ifndef INCLUDE_FOR_CLI
 endif
 
 ifndef INCLUDE_FOR_TEST
-    INCLUDE_FOR_TEST=-Ilib -Icli -isystem externals/simplecpp -isystem externals/tinyxml2
+    INCLUDE_FOR_TEST=-Ilib -Icli -isystem externals/simplecpp -isystem externals/tinyxml2 -isystem externals
 endif
 
 BIN=$(DESTDIR)$(PREFIX)/bin

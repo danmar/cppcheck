@@ -28,6 +28,14 @@
 #include <limits>
 #include <string>
 
+#define GET_VERSION_INT(A,B,C)     ((A) * 10000 + (B) * 100 + (C))
+
+#ifdef USE_Z3
+#include <z3++.h>
+#include <z3_version.h>
+#define Z3_VERSION_INT             GET_VERSION_INT(Z3_MAJOR_VERSION, Z3_MINOR_VERSION, Z3_BUILD_NUMBER)
+#endif // USE_Z3
+
 class TestExprEngine : public TestFixture {
 public:
     TestExprEngine() : TestFixture("TestExprEngine") {
@@ -473,9 +481,15 @@ private:
                             "    a = 0;\n"
                             "  return a == 0;\n"
                             "}";
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
         const char expected[] = "(distinct |1.0| (_ +zero 11 53))\n"
                                 "(= 0 0)\n"
                                 "z3::sat\n";
+#else
+        const char expected[] = "(distinct |1.0| 0.0)\n"
+                                "(= 0 0)\n"
+                                "z3::sat\n";
+#endif // Z3_VERSION_INT
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
