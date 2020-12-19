@@ -741,26 +741,51 @@ static void findTokenValue(const Token* const tok, std::function<bool(const Valu
         f(*x);
 }
 
-bool isEqualKnownValue(const Token * const tok1, const Token * const tok2)
+static bool isSameLifetime(const Token * const tok1, const Token * const tok2)
+{
+    ValueFlow::Value v1 = getLifetimeObjValue(tok1);
+    ValueFlow::Value v2 = getLifetimeObjValue(tok2);
+    if (!v1.isLifetimeValue() || !v2.isLifetimeValue())
+        return false;
+    return v1.tokvalue == v2.tokvalue;
+}
+
+static bool compareKnownValue(const Token * const tok1, const Token * const tok2, std::function<bool(const ValueFlow::Value&, const ValueFlow::Value&, bool)> compare)
 {
     bool result = false;
+    bool sameLifetime = isSameLifetime(tok1, tok2);
     findTokenValue(tok1, std::mem_fn(&ValueFlow::Value::isKnown), [&](const ValueFlow::Value& v1) {
+        if (v1.isNonValue() || v1.isContainerSizeValue())
+            return;
         findTokenValue(tok2, std::mem_fn(&ValueFlow::Value::isKnown), [&](const ValueFlow::Value& v2) {
-            result = v1.equalValue(v2);
+            if (v1.valueType == v2.valueType) {
+                result = compare(v1, v2, sameLifetime);
+            }
         });
     });
     return result;
 }
 
+bool isEqualKnownValue(const Token * const tok1, const Token * const tok2)
+{
+    return compareKnownValue(tok1, tok2, [&](const ValueFlow::Value& v1, const ValueFlow::Value& v2, bool sameLifetime) {
+        bool r = v1.equalValue(v2);
+        if (v1.isIteratorValue()) {
+            r &= sameLifetime;
+        }
+        return r;
+    });
+}
+
 bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
 {
-    bool result = false;
-    findTokenValue(tok1, std::mem_fn(&ValueFlow::Value::isKnown), [&](const ValueFlow::Value& v1) {
-        findTokenValue(tok2, std::mem_fn(&ValueFlow::Value::isKnown), [&](const ValueFlow::Value& v2) {
-            result = !v1.equalValue(v2);
-        });
+    return compareKnownValue(tok1, tok2, [&](const ValueFlow::Value& v1, const ValueFlow::Value& v2, bool sameLifetime) {
+        bool r = v1.equalValue(v2);
+        if (v1.isIteratorValue()) {
+            r &= sameLifetime;
+        }
+        return !r;
     });
-    return result;
 }
 
 static bool isSameConstantValue(bool macro, const Token * const tok1, const Token * const tok2)
