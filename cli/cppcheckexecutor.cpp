@@ -901,7 +901,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         std::list<std::string> fileNames;
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i)
             fileNames.emplace_back(i->first);
-        AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.project.fileSettings);
+        AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, settings.project.fileSettings);
     }
 
     unsigned int returnValue = 0;
