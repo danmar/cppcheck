@@ -4936,6 +4936,16 @@ private:
                "    }\n"
                "}\n";
         valueOfTok(code, "a");
+
+        code = "class A{\n"
+               "  void f() {\n"
+               "    std::string c{s()};\n"
+               "  }\n"
+               "  std::string s() {\n"
+               "    return \"\";\n"
+               "  }\n"
+               "};\n";
+        valueOfTok(code, "c");
     }
 
     void valueFlowHang() {
