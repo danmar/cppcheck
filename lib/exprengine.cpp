@@ -599,10 +599,6 @@ namespace {
                 auto zero = std::make_shared<ExprEngine::FloatRange>("0.0", 0.0, 0.0);
                 return std::make_shared<ExprEngine::BinOpResult>("==", v, zero);
             }
-            if (std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(v)) {
-                auto zero = std::make_shared<ExprEngine::StringLiteralValue>("", "");
-                return std::make_shared<ExprEngine::BinOpResult>("==", v, zero);
-            }
             auto zero = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
             return std::make_shared<ExprEngine::BinOpResult>("==", v, zero);
         }
@@ -985,8 +981,6 @@ static bool conditionAlwaysFalse(ExprEngine::ValuePtr condValue, ExprEngine::Dat
         return v->hasValue(0);
     if (auto v = std::dynamic_pointer_cast<ExprEngine::FloatRange>(condValue))
         return v->hasValue(0.0);
-    if (auto v = std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(condValue))
-        return !v->size();
     if (auto v = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue))
         return v->isAlwaysFalse(dataBase);
     return false;
@@ -998,8 +992,6 @@ static bool conditionAlwaysTrue(ExprEngine::ValuePtr condValue, ExprEngine::Data
         return !v->hasValue(0);
     if (auto v = std::dynamic_pointer_cast<ExprEngine::FloatRange>(condValue))
         return !v->hasValue(0.0);
-    if (auto v = std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(condValue))
-        return v->size();
     if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue))
         return b->isAlwaysTrue(dataBase);
     return false;
