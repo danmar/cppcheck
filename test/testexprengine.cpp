@@ -467,6 +467,8 @@ private:
                             "  return a == 0;\n"
                             "}";
         const char expected[] = "(distinct 1 0)\n"
+                                "(distinct 1 0)\n"
+                                "(distinct 1 0)\n"
                                 "(= 0 0)\n"
                                 "z3::sat\n";
         ASSERT_EQUALS(expected, expr(code, "=="));
@@ -480,11 +482,15 @@ private:
                             "  return a == 0;\n"
                             "}";
 #if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
-        const char expected[] = "(distinct |1.0| (_ +zero 11 53))\n"
+        const char expected[] = "(distinct |1.0| |0.0|)\n"
+                                "(distinct |1.0| |0.0|)\n"
+                                "(distinct |1.0| (_ +zero 11 53))\n"
                                 "(= 0 0)\n"
                                 "z3::sat\n";
 #else
         const char expected[] = "(distinct |1.0| 0.0)\n"
+                                "(distinct |1.0| 0.0)\n"
+                                "(distinct |1.0| 0.0)\n"
                                 "(= 0 0)\n"
                                 "z3::sat\n";
 #endif // Z3_VERSION_INT
@@ -701,6 +707,8 @@ private:
                             "  ab.a == 0;\n"
                             "}";
         const char expected[] = "(distinct 1 0)\n"
+                                "(distinct 1 0)\n"
+                                "(distinct 1 0)\n"
                                 "(= 3 0)\n"
                                 "z3::unsat\n";
         ASSERT_EQUALS(expected, expr(code, "=="));
@@ -713,6 +721,8 @@ private:
                             "  *len == 0;\n"
                             "}";
         const char expected[] = "(distinct |$2:0| 0)\n"
+                                "(distinct |$2:0| 0)\n"
+                                "(distinct |$2:0| 0)\n"
                                 "(and (>= |$2:0| (- 128)) (<= |$2:0| 127))\n"
                                 "(= 0 0)\n"
                                 "z3::sat\n";
@@ -737,8 +747,8 @@ private:
                                 "1:19: $1=IntRange(1:ffffffffffffffff)\n"
                                 "1:19: 0:memory:{arr=($2,[$1],[:]=?)}\n"
                                 "2:3: 0: Split. Then:0 Else:1\n"
-                                "3:0: 0:memory:{arr=($2,[$1],[:]=?,[0]=0)} constraints:{1}\n"
-                                "3:13: 0:memory:{arr=($2,[$1],[:]=?,[0]=0)} constraints:{1}\n";
+                                "3:0: 0:memory:{arr=($2,[$1],[:]=?,[0]=0)} constraints:{(1)!=(0) (1)!=(0) 1}\n"
+                                "3:13: 0:memory:{arr=($2,[$1],[:]=?,[0]=0)} constraints:{(1)!=(0) (1)!=(0) 1}\n";
         ASSERT_EQUALS(expected, trackExecution(code));
     }
 

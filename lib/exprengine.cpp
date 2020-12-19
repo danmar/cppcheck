@@ -977,10 +977,20 @@ static bool isNonOverlapping(ExprEngine::ValuePtr v1, ExprEngine::ValuePtr v2)
 
 static bool conditionAlwaysFalse(ExprEngine::ValuePtr condValue, ExprEngine::DataBase *dataBase)
 {
-    if (auto v = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue))
-        return v->hasValue(0);
-    if (auto v = std::dynamic_pointer_cast<ExprEngine::FloatRange>(condValue))
-        return v->hasValue(0.0);
+    if (auto v = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue)) {
+        if (v->hasValue(0))
+            return true;
+        Data *data = dynamic_cast<Data *>(dataBase);
+        data->addConstraint(condValue, std::make_shared<ExprEngine::IntRange>("0", 0, 0), false);
+        return v->isEqual(dataBase, 0);
+    }
+    if (auto v = std::dynamic_pointer_cast<ExprEngine::FloatRange>(condValue)) {
+        if (v->hasValue(0.0))
+            return true;
+        Data *data = dynamic_cast<Data *>(dataBase);
+        data->addConstraint(condValue, std::make_shared<ExprEngine::FloatRange>("0.0", 0.0, 0.0), false);
+        return v->isEqual(dataBase, 0);
+    }
     if (auto v = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue))
         return v->isAlwaysFalse(dataBase);
     return false;
@@ -988,10 +998,20 @@ static bool conditionAlwaysFalse(ExprEngine::ValuePtr condValue, ExprEngine::Dat
 
 static bool conditionAlwaysTrue(ExprEngine::ValuePtr condValue, ExprEngine::DataBase *dataBase)
 {
-    if (auto v = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue))
-        return !v->hasValue(0);
-    if (auto v = std::dynamic_pointer_cast<ExprEngine::FloatRange>(condValue))
-        return !v->hasValue(0.0);
+    if (auto v = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue)) {
+        if (v->hasValue(0))
+            return false;
+        Data *data = dynamic_cast<Data *>(dataBase);
+        data->addConstraint(condValue, std::make_shared<ExprEngine::IntRange>("0", 0, 0), false);
+        return !v->isEqual(dataBase, 0);
+    }
+    if (auto v = std::dynamic_pointer_cast<ExprEngine::FloatRange>(condValue)) {
+        if (v->hasValue(0.0))
+            return false;
+        Data *data = dynamic_cast<Data *>(dataBase);
+        data->addConstraint(condValue, std::make_shared<ExprEngine::FloatRange>("0.0", 0.0, 0.0), false);
+        return !v->isEqual(dataBase, 0);
+    }
     if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue))
         return b->isAlwaysTrue(dataBase);
     return false;
@@ -1282,13 +1302,13 @@ public:
 #if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
         if (e.is_fpa()) {
             // Workaround for z3 bug: https://github.com/Z3Prover/z3/pull/4906
-            z3::expr fpa_null = context.fpa_val(0.0);
-            return e != fpa_null;
+            z3::expr null = context.fpa_val(0.0);
+            return e != null;
         }
 #else
         if (e.is_real()) {
-            z3::expr fpa_null = context.real_val(0);
-            return e != fpa_null;
+            z3::expr null = context.real_val(0);
+            return e != null;
         }
 #endif // Z3_VERSION_INT
         return e != 0;
@@ -1415,7 +1435,13 @@ bool ExprEngine::FloatRange::isEqual(DataBase *dataBase, int value) const
         z3::expr e = exprData.addFloat(name);
         exprData.addConstraints(solver, data);
         exprData.addAssertions(solver);
-        solver.add(e >= value && e <= value);
+        // Workaround for z3 bug: https://github.com/Z3Prover/z3/pull/4906
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
+        z3::expr val_e = exprData.context.fpa_val(static_cast<double>(value));
+#else
+        z3::expr val_e = exprData.context.real_val(value);
+#endif // Z3_VERSION_INT
+        solver.add(e == val_e);
         return solver.check() != z3::unsat;
     } catch (const z3::exception &exception) {
         std::cerr << "z3: " << exception << std::endl;
