@@ -384,7 +384,7 @@ private:
         const Token *tok = Token::findmatch(tokenizer.tokens(), tokstr);
         if (!tok)
             return result;
-        for(const ValueFlow::Value& value:tok->values()) {
+        for (const ValueFlow::Value& value:tok->values()) {
             if (!value.isLifetimeValue())
                 continue;
             if (!value.tokvalue)

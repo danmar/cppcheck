@@ -3125,7 +3125,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         std::list<ValueFlow::Value> values = tok->values();
         // Only forward lifetime values
         values.remove_if(&isNotLifetimeValue);
-        for(const ValueFlow::Value& value:values)
+        for (const ValueFlow::Value& value:values)
             setTokenValue(parent, value, tokenlist->getSettings());
         valueFlowForwardLifetime(parent, tokenlist, errorLogger, settings);
     }
