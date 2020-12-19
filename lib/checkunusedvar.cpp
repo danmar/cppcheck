@@ -1609,17 +1609,33 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
     }
 
     bool sideEffectReturnFound = false;
+    std::set<const Variable*> pointersToGlobals;
     for (Token* bodyToken = func.functionScope->bodyStart->next(); bodyToken != func.functionScope->bodyEnd;
-         bodyToken = bodyToken->next()) {
+            bodyToken = bodyToken->next())
+    {
+        // check variable inside function body
         const Variable* bodyVariable = bodyToken->variable();
         if (bodyVariable) {
-            // check variable for side-effects
             if (!isVariableWithoutSideEffects(*bodyVariable)) {
                 return false;
             }
             // check if global variable is changed
-            if (bodyVariable->isGlobal()) {
-                return false; // TODO: analyze global variable usage
+            if (bodyVariable->isGlobal() || (pointersToGlobals.find(bodyVariable) != pointersToGlobals.end()) ) {
+                if (bodyVariable->isPointer() || bodyVariable->isArray()) {
+                    return false; // TODO: Update astutils.cpp:1544 isVariableChanged() and remove this. Unhandled case: `*(global_arr + 1) = new_val`
+                }
+                const int depth = 20;
+                if (isVariableChanged(bodyToken, depth, mSettings, mTokenizer->isCPP())) {
+                    return false;
+                }
+                // check if pointer to global variable assigned to another variable (another_var = &global_var)
+                if (Token::simpleMatch(bodyToken->tokAt(-1), "&") && Token::simpleMatch(bodyToken->tokAt(-2), "=")) {
+                    const Token* assigned_var_token = bodyToken->tokAt(-3);
+                    if (assigned_var_token && assigned_var_token->variable())
+                    {
+                        pointersToGlobals.insert(assigned_var_token->variable());
+                    }
+                }
             }
         }
 
