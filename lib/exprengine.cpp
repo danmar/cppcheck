@@ -1618,7 +1618,7 @@ bool ExprEngine::BinOpResult::isAlwaysFalse(DataBase *dataBase) const
 
 bool ExprEngine::BinOpResult::isAlwaysTrue(DataBase *dataBase) const
 {
-    return !isAlwaysFalse(dataBase) && !isEqual(dataBase, 0);
+    return !isEqual(dataBase, 0);
 }
 
 std::string ExprEngine::BinOpResult::getExpr(ExprEngine::DataBase *dataBase) const
