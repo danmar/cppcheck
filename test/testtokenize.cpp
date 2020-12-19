@@ -507,6 +507,7 @@ private:
         TEST_CASE(noCrash2);
 
         TEST_CASE(noCrash3);
+        TEST_CASE(noCrash4);
 
         // --check-config
         TEST_CASE(checkConfiguration);
@@ -8624,6 +8625,17 @@ private:
 
     void noCrash3() {
         ASSERT_NO_THROW(tokenizeAndStringify("void a(X<int> x, typename Y1::Y2<int, A::B::C, 2> y, Z z = []{});"));
+    }
+
+    void noCrash4() {
+        ASSERT_NO_THROW(tokenizeAndStringify("class A{\n"
+                                             "  void f() {\n"
+                                             "    std::string c{s()};\n"
+                                             "  }\n"
+                                             "  std::string s() {\n"
+                                             "    return \"\";\n"
+                                             "  }\n"
+                                             "};\n"));
     }
 
     void checkConfig(const char code[]) {

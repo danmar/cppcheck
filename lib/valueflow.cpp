@@ -5970,10 +5970,10 @@ static void valueFlowIteratorInfer(TokenList *tokenlist, const Settings *setting
     }
 }
 
-static std::vector<ValueFlow::Value> getInitListSize(const Token* tok)
+static std::vector<ValueFlow::Value> getInitListSize(const Token* tok, const Library::Container *container)
 {
     std::vector<const Token*> args = getArguments(tok);
-    if ((args.size() == 1 && astIsContainer(args[0]) && args[0]->valueType()->container == tok->valueType()->container) ||
+    if ((args.size() == 1 && astIsContainer(args[0]) && args[0]->valueType()->container == container) ||
         (args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1]))) {
         std::vector<ValueFlow::Value> values;
         std::copy_if(args[0]->values().begin(),
@@ -6013,7 +6013,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                 continue;
         } else if (Token::simpleMatch(var->nameToken()->next(), "{")) {
             const Token* initList = var->nameToken()->next();
-            values = getInitListSize(initList);
+            values = getInitListSize(initList, var->valueType()->container);
         }
         for (const ValueFlow::Value& value : values)
             valueFlowContainerForward(var->nameToken()->next(), var, value, tokenlist);
@@ -6033,7 +6033,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
             } else if (Token::Match(tok, "%name%|;|{|}|> %var% = {") && Token::simpleMatch(tok->linkAt(3), "} ;")) {
                 const Token* containerTok = tok->next();
                 if (astIsContainer(containerTok)) {
-                    std::vector<ValueFlow::Value> values = getInitListSize(tok->tokAt(3));
+                    std::vector<ValueFlow::Value> values = getInitListSize(tok->tokAt(3), containerTok->valueType()->container);
                     for (const ValueFlow::Value& value : values)
                         valueFlowContainerForward(containerTok->next(), containerTok->variable(), value, tokenlist);
                 }
