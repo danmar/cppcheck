@@ -147,6 +147,10 @@ private:
         return !val.isTokValue();
     }
 
+    static bool isNotLifetimeValue(const ValueFlow::Value& val) {
+        return !val.isLifetimeValue();
+    }
+
     bool testValueOfXKnown(const char code[], unsigned int linenr, int value) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -371,6 +375,25 @@ private:
         return values;
     }
 
+    std::vector<std::string> lifetimeValues(const char code[], const char tokstr[], const Settings *s = nullptr) {
+        std::vector<std::string> result;
+        Tokenizer tokenizer(s ? s : &settings, this);
+        std::istringstream istr(code);
+        errout.str("");
+        tokenizer.tokenize(istr, "test.cpp");
+        const Token *tok = Token::findmatch(tokenizer.tokens(), tokstr);
+        if (!tok)
+            return result;
+        for(const ValueFlow::Value& value:tok->values()) {
+            if (!value.isLifetimeValue())
+                continue;
+            if (!value.tokvalue)
+                continue;
+            result.push_back(value.tokvalue->expressionString());
+        }
+        return result;
+    }
+
     ValueFlow::Value valueOfTok(const char code[], const char tokstr[]) {
         std::list<ValueFlow::Value> values = tokenValues(code, tokstr);
         return values.size() == 1U && !values.front().isTokValue() ? values.front() : ValueFlow::Value();
@@ -451,6 +474,7 @@ private:
 
     void valueFlowLifetime() {
         const char *code;
+        std::vector<std::string> lifetimes;
 
         LOAD_LIB_2(settings.library, "std.cfg");
 
@@ -482,6 +506,14 @@ private:
                 "    auto it = x;\n"
                 "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 4, "v . begin", ValueFlow::Value::LIFETIME));
+
+        code  = "void f() {\n"
+                "    int i = 0;\n"
+                "    void* x = (void*)&i;\n"
+                "}\n";
+        lifetimes = lifetimeValues(code, "( void * )");
+        ASSERT_EQUALS(true, lifetimes.size() == 1);
+        ASSERT_EQUALS(true, lifetimes.front() == "i");
     }
 
     void valueFlowArrayElement() {
