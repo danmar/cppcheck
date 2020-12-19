@@ -198,6 +198,7 @@ void Settings::loadSummaries()
             if (line.find(" noreturn:[") != std::string::npos || line.find(" call:[") != std::string::npos)
                 summaryNoreturn[functionName] = true;
             else if (summaryNoreturn.find(functionName) == summaryNoreturn.end())
+                // cppcheck-suppress stlFindInsert
                 summaryNoreturn[functionName] = false;
         }
     }
