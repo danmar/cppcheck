@@ -416,7 +416,7 @@ public:
         return Settings::mTerminated;
     }
 
-    std::map<std::string, bool> summaryNoreturn;
+    std::set<std::string> summaryReturn;
 
     void loadSummaries();
 

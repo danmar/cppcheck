@@ -20,6 +20,7 @@
 
 #include "valueflow.h"
 
+#include <algorithm>
 #include <fstream>
 
 std::atomic<bool> Settings::mTerminated;
@@ -177,11 +178,53 @@ static std::vector<std::string> getSummaryFiles(const std::string &filename)
     return ret;
 }
 
+static std::vector<std::string> getSummaryData(const std::string &line, const std::string &data)
+{
+    std::vector<std::string> ret;
+    const std::string::size_type start = line.find(" " + data + ":[");
+    if (start == std::string::npos)
+        return ret;
+    const std::string::size_type end = line.find("]", start);
+    if (end >= line.size())
+        return ret;
+
+    std::string::size_type pos1 = start + 3 + data.size();
+    while (pos1 < end) {
+        std::string::size_type pos2 = line.find_first_of(",]",pos1);
+        ret.push_back(line.substr(pos1, pos2-pos1-1));
+        pos1 = pos2 + 1;
+    }
+
+    return ret;
+}
+
+static void removeFunctionCalls(const std::string& calledFunction,
+                                std::map<std::string, std::vector<std::string>> &functionCalledBy,
+                                std::map<std::string, std::vector<std::string>> &functionCalls,
+                                std::vector<std::string> &add)
+{
+    std::vector<std::string> calledBy = functionCalledBy[calledFunction];
+    functionCalledBy.erase(calledFunction);
+    for (const std::string &c: calledBy) {
+        std::vector<std::string> &calls = functionCalls[c];
+        calls.erase(std::remove(calls.begin(), calls.end(), calledFunction), calls.end());
+        if (calls.empty()) {
+            add.push_back(calledFunction);
+            removeFunctionCalls(c, functionCalledBy, functionCalls, add);
+        }
+    }
+}
+
 void Settings::loadSummaries()
 {
     if (buildDir.empty())
         return;
 
+    std::vector<std::string> return1;
+    std::map<std::string, std::vector<std::string>> functionCalls;
+    std::map<std::string, std::vector<std::string>> functionCalledBy;
+
+    // extract "functionNoreturn" and "functionCalledBy" from summaries
     std::vector<std::string> summaryFiles = getSummaryFiles(buildDir + "/files.txt");
     for (const std::string &filename: summaryFiles) {
         std::ifstream fin(buildDir + '/' + filename);
@@ -193,13 +236,23 @@ void Settings::loadSummaries()
             const std::string::size_type pos1 = 0;
             const std::string::size_type pos2 = line.find(" ", pos1);
             const std::string functionName = (pos2 == std::string::npos) ? line : line.substr(0, pos2);
-
-            // noreturn..
-            if (line.find(" noreturn:[") != std::string::npos || line.find(" call:[") != std::string::npos)
-                summaryNoreturn[functionName] = true;
-            else
-                // If there is a value for function already keep it, otherwise insert false
-                summaryNoreturn.insert(std::pair<std::string,bool>(functionName, false));
+            std::vector<std::string> call = getSummaryData(line, "call");
+            functionCalls[functionName] = call;
+            if (call.empty())
+                return1.push_back(functionName);
+            else {
+                for (const std::string &c: call) {
+                    functionCalledBy[c].push_back(functionName);
+                }
+            }
         }
+    }
+    summaryReturn.insert(return1.cbegin(), return1.cend());
+
+    // recursively set "summaryNoreturn"
+    for (const std::string &f: return1) {
+        std::vector<std::string> return2;
+        removeFunctionCalls(f, functionCalledBy, functionCalls, return2);
+        summaryReturn.insert(return2.cbegin(), return2.cend());
     }
 }

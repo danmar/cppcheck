@@ -8724,10 +8724,8 @@ bool Tokenizer::isScopeNoReturn(const Token *endScopeToken, bool *unknown) const
 {
     std::string unknownFunc;
     const bool ret = mSettings->library.isScopeNoReturn(endScopeToken,&unknownFunc);
-    if (!unknownFunc.empty()) {
-        const std::map<std::string, bool>::const_iterator it = mSettings->summaryNoreturn.find(unknownFunc);
-        if (it != mSettings->summaryNoreturn.end() && !it->second)
-            return false;
+    if (!unknownFunc.empty() && mSettings->summaryReturn.find(unknownFunc) != mSettings->summaryReturn.end()) {
+        return false;
     }
     if (unknown)
         *unknown = !unknownFunc.empty();
