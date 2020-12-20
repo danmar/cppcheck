@@ -1243,9 +1243,9 @@ public:
         if (auto floatRange = std::dynamic_pointer_cast<ExprEngine::FloatRange>(v)) {
             if (std::isdigit(floatRange->name[0]))
 #if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
-                return context.fpa_val(double(floatRange->minValue));
+                return context.fpa_val(static_cast<double>(floatRange->minValue));
 #else
-                return context.real_val(floatRange->name.c_str());
+                return context.real_val(static_cast<uint64_t>(floatRange->minValue));
 #endif
 
             auto it = valueExpr.find(v->name);
