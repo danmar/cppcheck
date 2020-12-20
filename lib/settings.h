@@ -419,7 +419,6 @@ public:
     std::set<std::string> summaryReturn;
 
     void loadSummaries();
-
 };
 
 /// @}
