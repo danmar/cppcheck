@@ -155,9 +155,7 @@ namespace ExprEngine {
         bool isEqual(DataBase *dataBase, int value) const OVERRIDE;
         bool isGreaterThan(DataBase *dataBase, int value) const OVERRIDE;
         bool isLessThan(DataBase *dataBase, int value) const OVERRIDE;
-        bool hasValue(int value) const {
-            return minValue == value && maxValue == value;
-        }
+        bool hasValue(DataBase *dataBase, int value) const;
 
         int128_t minValue;
         int128_t maxValue;
@@ -179,10 +177,7 @@ namespace ExprEngine {
         bool isEqual(DataBase *dataBase, int value) const OVERRIDE;
         bool isGreaterThan(DataBase *dataBase, int value) const OVERRIDE;
         bool isLessThan(DataBase *dataBase, int value) const OVERRIDE;
-        bool hasValue(long double value) const {
-            return std::equal_to<long double>()(minValue, value) &&
-                   std::equal_to<long double>()(maxValue, value);
-        }
+        bool hasValue(DataBase *dataBase, long double value) const;
 
         long double minValue;
         long double maxValue;
@@ -293,6 +288,7 @@ namespace ExprEngine {
         bool isEqual(DataBase *dataBase, int value) const OVERRIDE;
         bool isGreaterThan(DataBase *dataBase, int value) const OVERRIDE;
         virtual bool isLessThan(DataBase *dataBase, int value) const OVERRIDE;
+        bool canBeTrue(DataBase *dataBase) const;
         bool isTrue(DataBase *dataBase) const;
         bool isAlwaysFalse(DataBase *dataBase) const;
         bool isAlwaysTrue(DataBase *dataBase) const;

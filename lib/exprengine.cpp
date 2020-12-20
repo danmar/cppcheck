@@ -978,16 +978,10 @@ static bool isNonOverlapping(ExprEngine::ValuePtr v1, ExprEngine::ValuePtr v2)
 static bool conditionAlwaysFalse(ExprEngine::ValuePtr condValue, ExprEngine::DataBase *dataBase)
 {
     if (auto v = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue)) {
-        if (v->hasValue(0))
-            return true;
-        auto zero = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
-        return ExprEngine::BinOpResult("==", v, zero).isTrue(dataBase);
+        return v->hasValue(dataBase, 0);
     }
     if (auto v = std::dynamic_pointer_cast<ExprEngine::FloatRange>(condValue)) {
-        if (v->hasValue(0.0))
-            return true;
-        auto zero = std::make_shared<ExprEngine::FloatRange>("0.0", 0.0, 0.0);
-        return ExprEngine::BinOpResult("==", v, zero).isTrue(dataBase);
+        return v->hasValue(dataBase, 0.0);
     }
     if (auto v = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue))
         return v->isAlwaysFalse(dataBase);
@@ -997,16 +991,10 @@ static bool conditionAlwaysFalse(ExprEngine::ValuePtr condValue, ExprEngine::Dat
 static bool conditionAlwaysTrue(ExprEngine::ValuePtr condValue, ExprEngine::DataBase *dataBase)
 {
     if (auto v = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue)) {
-        if (v->hasValue(0))
-            return false;
-        auto zero = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
-        return ExprEngine::BinOpResult("!=", v, zero).isTrue(dataBase);
+        return !v->hasValue(dataBase, 0);
     }
     if (auto v = std::dynamic_pointer_cast<ExprEngine::FloatRange>(condValue)) {
-        if (v->hasValue(0.0))
-            return false;
-        auto zero = std::make_shared<ExprEngine::FloatRange>("0.0", 0.0, 0.0);
-        return ExprEngine::BinOpResult("!=", v, zero).isTrue(dataBase);
+        return !v->hasValue(dataBase, 0.0);
     }
     if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue))
         return b->isAlwaysTrue(dataBase);
@@ -1420,6 +1408,14 @@ bool ExprEngine::IntRange::isLessThan(DataBase *dataBase, int value) const
 #endif
 }
 
+bool ExprEngine::IntRange::hasValue(DataBase *dataBase, int value) const
+{
+    auto min_val = std::make_shared<ExprEngine::IntRange>(str(minValue), minValue, minValue);
+    auto max_val = std::make_shared<ExprEngine::IntRange>(str(maxValue), maxValue, maxValue);
+    auto zero = std::make_shared<ExprEngine::IntRange>(std::to_string(value), value, value);
+    return ExprEngine::BinOpResult("==", min_val, zero).isTrue(dataBase) && ExprEngine::BinOpResult("==", max_val, zero).isTrue(dataBase);
+}
+
 bool ExprEngine::FloatRange::isEqual(DataBase *dataBase, int value) const
 {
     const Data *data = dynamic_cast<Data *>(dataBase);
@@ -1527,6 +1523,13 @@ bool ExprEngine::FloatRange::isLessThan(DataBase *dataBase, int value) const
 #endif
 }
 
+bool ExprEngine::FloatRange::hasValue(DataBase *dataBase, long double value) const
+{
+    auto min_val = std::make_shared<ExprEngine::IntRange>(std::to_string(minValue), minValue, minValue);
+    auto max_val = std::make_shared<ExprEngine::IntRange>(std::to_string(maxValue), maxValue, maxValue);
+    auto zero = std::make_shared<ExprEngine::IntRange>(std::to_string(value), value, value);
+    return ExprEngine::BinOpResult("==", min_val, zero).isTrue(dataBase) && ExprEngine::BinOpResult("==", max_val, zero).isTrue(dataBase);
+}
 
 bool ExprEngine::BinOpResult::isEqual(ExprEngine::DataBase *dataBase, int value) const
 {
@@ -1606,7 +1609,7 @@ bool ExprEngine::BinOpResult::isLessThan(ExprEngine::DataBase *dataBase, int val
 #endif
 }
 
-bool ExprEngine::BinOpResult::isTrue(ExprEngine::DataBase *dataBase) const
+bool ExprEngine::BinOpResult::canBeTrue(ExprEngine::DataBase *dataBase) const
 {
 #ifdef USE_Z3
     try {
@@ -1631,9 +1634,34 @@ bool ExprEngine::BinOpResult::isTrue(ExprEngine::DataBase *dataBase) const
 #endif
 }
 
+bool ExprEngine::BinOpResult::isTrue(ExprEngine::DataBase *dataBase) const
+{
+#ifdef USE_Z3
+    try {
+        ExprData exprData;
+        z3::solver solver(exprData.context);
+        z3::expr e = exprData.getExpr(this);
+        exprData.addConstraints(solver, dynamic_cast<const Data *>(dataBase));
+        exprData.addAssertions(solver);
+        solver.add(exprData.int_expr(e) != 0);
+        return solver.check() == z3::sat;
+    } catch (const z3::exception &exception) {
+        std::cerr << "z3:" << exception << std::endl;
+        return false;
+    } catch (const ExprData::BailoutValueException &) {
+        return false;
+    } catch (const ExprEngineException &) {
+        return false;
+    }
+#else
+    (void)dataBase;
+    return false;
+#endif
+}
+
 bool ExprEngine::BinOpResult::isAlwaysFalse(DataBase *dataBase) const
 {
-    return !isTrue(dataBase);
+    return !canBeTrue(dataBase);
 }
 
 bool ExprEngine::BinOpResult::isAlwaysTrue(DataBase *dataBase) const

@@ -73,6 +73,7 @@ private:
         TEST_CASE(ifAlwaysTrue1);
         TEST_CASE(ifAlwaysTrue2);
         TEST_CASE(ifAlwaysTrue3);
+        TEST_CASE(ifAlwaysTrue4);
         TEST_CASE(ifAlwaysFalse1);
         TEST_CASE(ifAlwaysFalse2);
         TEST_CASE(ifAlwaysFalse3);
@@ -503,6 +504,21 @@ private:
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
+    void ifAlwaysTrue4() { // Unknown return value
+        const char code[] = "int globalReturnsTrue() { return 1 + 2; }\n"
+                            "static int foo() {\n"
+                            "  int a = 0;\n"
+                            "  if (globalReturnsTrue())\n"
+                            "      a = 42;\n"
+                            "  return a == 42;\n"
+                            "}";
+        const char expected[] = "(distinct $1 0)\n"
+                                "(and (>= $1 (- 2147483648)) (<= $1 2147483647))\n"
+                                "(= 42 42)\n"
+                                "z3::sat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
+
     void ifAlwaysFalse1() {
         const char code[] = "int foo() {\n"
                             "  int a = 42;\n"
@@ -711,10 +727,9 @@ private:
                             "    *len = 0;\n"
                             "  *len == 0;\n"
                             "}";
-        const char expected[] = "(= |$2:0| 0)\n"
-                                "(and (>= $8 (- 2147483648)) (<= $8 2147483647))\n"
+        const char expected[] = "(distinct |$2:0| 0)\n"
                                 "(and (>= |$2:0| (- 128)) (<= |$2:0| 127))\n"
-                                "(= $8 0)\n"
+                                "(= 0 0)\n"
                                 "z3::sat\n";
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
