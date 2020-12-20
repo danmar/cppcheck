@@ -980,16 +980,14 @@ static bool conditionAlwaysFalse(ExprEngine::ValuePtr condValue, ExprEngine::Dat
     if (auto v = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue)) {
         if (v->hasValue(0))
             return true;
-        Data *data = dynamic_cast<Data *>(dataBase);
-        data->addConstraint(condValue, std::make_shared<ExprEngine::IntRange>("0", 0, 0), false);
-        return v->isEqual(dataBase, 0);
+        auto zero = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
+        return ExprEngine::BinOpResult("==", v, zero).isTrue(dataBase);
     }
     if (auto v = std::dynamic_pointer_cast<ExprEngine::FloatRange>(condValue)) {
         if (v->hasValue(0.0))
             return true;
-        Data *data = dynamic_cast<Data *>(dataBase);
-        data->addConstraint(condValue, std::make_shared<ExprEngine::FloatRange>("0.0", 0.0, 0.0), false);
-        return v->isEqual(dataBase, 0);
+        auto zero = std::make_shared<ExprEngine::FloatRange>("0.0", 0.0, 0.0);
+        return ExprEngine::BinOpResult("==", v, zero).isTrue(dataBase);
     }
     if (auto v = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue))
         return v->isAlwaysFalse(dataBase);
@@ -1001,16 +999,14 @@ static bool conditionAlwaysTrue(ExprEngine::ValuePtr condValue, ExprEngine::Data
     if (auto v = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue)) {
         if (v->hasValue(0))
             return false;
-        Data *data = dynamic_cast<Data *>(dataBase);
-        data->addConstraint(condValue, std::make_shared<ExprEngine::IntRange>("0", 0, 0), false);
-        return !v->isEqual(dataBase, 0);
+        auto zero = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
+        return ExprEngine::BinOpResult("!=", v, zero).isTrue(dataBase);
     }
     if (auto v = std::dynamic_pointer_cast<ExprEngine::FloatRange>(condValue)) {
         if (v->hasValue(0.0))
             return false;
-        Data *data = dynamic_cast<Data *>(dataBase);
-        data->addConstraint(condValue, std::make_shared<ExprEngine::FloatRange>("0.0", 0.0, 0.0), false);
-        return !v->isEqual(dataBase, 0);
+        auto zero = std::make_shared<ExprEngine::FloatRange>("0.0", 0.0, 0.0);
+        return ExprEngine::BinOpResult("!=", v, zero).isTrue(dataBase);
     }
     if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue))
         return b->isAlwaysTrue(dataBase);
@@ -1257,6 +1253,12 @@ public:
         }
 
         if (auto floatRange = std::dynamic_pointer_cast<ExprEngine::FloatRange>(v)) {
+            if (floatRange->name[0] != '$')
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
+                return context.fpa_val(static_cast<double>(floatRange->minValue));
+#else
+                return context.real_val(static_cast<double>(floatRange->minValue));
+#endif // Z3_VERSION_INT
             auto it = valueExpr.find(v->name);
             if (it != valueExpr.end())
                 return it->second;

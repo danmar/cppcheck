@@ -467,8 +467,6 @@ private:
                             "  return a == 0;\n"
                             "}";
         const char expected[] = "(distinct 1 0)\n"
-                                "(distinct 1 0)\n"
-                                "(distinct 1 0)\n"
                                 "(= 0 0)\n"
                                 "z3::sat\n";
         ASSERT_EQUALS(expected, expr(code, "=="));
@@ -481,19 +479,9 @@ private:
                             "    a = 0;\n"
                             "  return a == 0;\n"
                             "}";
-#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
-        const char expected[] = "(distinct |1.0| |0.0|)\n"
-                                "(distinct |1.0| |0.0|)\n"
-                                "(distinct |1.0| (_ +zero 11 53))\n"
+        const char expected[] = "(distinct (fp #b0 #b01111111111 #x0000000000000) (_ +zero 11 53))\n"
                                 "(= 0 0)\n"
                                 "z3::sat\n";
-#else
-        const char expected[] = "(distinct |1.0| |0.0|)\n"
-                                "(distinct |1.0| |0.0|)\n"
-                                "(distinct |1.0| 0.0)\n"
-                                "(= 0 0)\n"
-                                "z3::sat\n";
-#endif // Z3_VERSION_INT
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
@@ -504,10 +492,13 @@ private:
                             "    a = 0.3;\n"
                             "  return a == 0.3;\n"
                             "}";
-        const char expected[] = "(= |42.0| |42.0|)\n"
+        const char expected[] = "(= (fp #b0 #b10000000100 #x5000000000000\n"
+                                "(fp #b0 #b10000000100 #x5000000000000))\n"
                                 "z3::sat\n"
-                                "(= |42.0| |42.0|)\n"
-                                "(= |0.3| |0.3|)\n"
+                                "(= (fp #b0 #b10000000100 #x5000000000000\n"
+                                "(fp #b0 #b10000000100 #x5000000000000))\n"
+                                "(= (fp #b0 #b01111111101 #x3333333333333\n"
+                                "(fp #b0 #b01111111101 #x3333333333333))\n"
                                 "z3::sat\n";
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
@@ -532,7 +523,7 @@ private:
                             "    a = 0;\n"
                             "  return a == 0;\n"
                             "}";
-        const char expected[] = "(= |0.0| |0.0|)\n"
+        const char expected[] = "(= (_ +zero 11 53) (_ +zero 11 53))\n"
                                 "(= 42 0)\n"
                                 "z3::unsat\n";
         ASSERT_EQUALS(expected, expr(code, "=="));
@@ -545,9 +536,11 @@ private:
                             "    a = 0.3;\n"
                             "  return a == 0.3;\n"
                             "}";
-        const char expected[] = "(= |42.0| |42.0|)\n"
-                                "(= |42.0| |0.3|)\n"
-                                "z3::sat\n";
+        const char expected[] = "(= (fp #b0 #b10000000100 #x5000000000000\n"
+                                "(fp #b0 #b10000000100 #x5000000000000))\n"
+                                "(= (fp #b0 #b10000000100 #x5000000000000\n"
+                                "(fp #b0 #b01111111101 #x3333333333333))\n"
+                                "z3::unsat\n";
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
@@ -707,8 +700,6 @@ private:
                             "  ab.a == 0;\n"
                             "}";
         const char expected[] = "(distinct 1 0)\n"
-                                "(distinct 1 0)\n"
-                                "(distinct 1 0)\n"
                                 "(= 3 0)\n"
                                 "z3::unsat\n";
         ASSERT_EQUALS(expected, expr(code, "=="));
@@ -720,11 +711,10 @@ private:
                             "    *len = 0;\n"
                             "  *len == 0;\n"
                             "}";
-        const char expected[] = "(distinct |$2:0| 0)\n"
-                                "(distinct |$2:0| 0)\n"
-                                "(distinct |$2:0| 0)\n"
+        const char expected[] = "(= |$2:0| 0)\n"
+                                "(and (>= $8 (- 2147483648)) (<= $8 2147483647))\n"
                                 "(and (>= |$2:0| (- 128)) (<= |$2:0| 127))\n"
-                                "(= 0 0)\n"
+                                "(= $8 0)\n"
                                 "z3::sat\n";
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
@@ -747,8 +737,8 @@ private:
                                 "1:19: $1=IntRange(1:ffffffffffffffff)\n"
                                 "1:19: 0:memory:{arr=($2,[$1],[:]=?)}\n"
                                 "2:3: 0: Split. Then:0 Else:1\n"
-                                "3:0: 0:memory:{arr=($2,[$1],[:]=?,[0]=0)} constraints:{(1)!=(0) (1)!=(0) 1}\n"
-                                "3:13: 0:memory:{arr=($2,[$1],[:]=?,[0]=0)} constraints:{(1)!=(0) (1)!=(0) 1}\n";
+                                "3:0: 0:memory:{arr=($2,[$1],[:]=?,[0]=0)} constraints:{1}\n"
+                                "3:13: 0:memory:{arr=($2,[$1],[:]=?,[0]=0)} constraints:{1}\n";
         ASSERT_EQUALS(expected, trackExecution(code));
     }
 
@@ -884,7 +874,7 @@ private:
 
     void floatValue3() {
         const char code[] = "void foo(float f) { return f > 12.0; }";
-        const char expected[] = "(> $1 |12.0|)\n"
+        const char expected[] = "(> $1 (fp #b0 #b10000000010 #x8000000000000))\n"
                                 "z3::sat\n";
         ASSERT_EQUALS(expected, expr(code, ">"));
     }
