@@ -65,6 +65,8 @@ private:
         TEST_CASE(ifelse1);
         TEST_CASE(ifif);
         TEST_CASE(ifreturn);
+        TEST_CASE(ifIntRangeAlwaysFalse);
+        TEST_CASE(ifIntRangeAlwaysTrue);
 
         TEST_CASE(istream);
 
@@ -483,6 +485,40 @@ private:
         ASSERT_EQUALS("(<= $1 5)\n"
                       "(and (>= $1 0) (<= $1 255))\n"
                       "(= $1 13)\n"
+                      "z3::unsat\n",
+                      expr(code, "=="));
+    }
+
+    void ifIntRangeAlwaysFalse() {
+        const char code[] = "void foo(unsigned char x) {\n"
+                            "  if (x > 0)\n"
+                            "      return;\n"
+                            "  if (x) {\n"  // <-- condition should be "always false".
+                            "      x++;\n"
+                            "  }\n"
+                            "  return x == 0;\n" // <- sat
+                            "}";
+        ASSERT_EQUALS("(<= $1 0)\n"
+                      "(= $1 0)\n"
+                      "(and (>= $1 0) (<= $1 255))\n"
+                      "(= $1 0)\n"
+                      "z3::sat\n",
+                      expr(code, "=="));
+    }
+
+    void ifIntRangeAlwaysTrue() {
+        const char code[] = "void foo(unsigned char x) {\n"
+                            "  if (x < 1)\n"
+                            "      return;\n"
+                            "  if (x) {\n"  // <-- condition should be "always true".
+                            "      x++;\n"
+                            "  }\n"
+                            "  return x == 0;\n" // <- unsat
+                            "}";
+        ASSERT_EQUALS("(>= $1 1)\n"
+                      "(distinct $1 0)\n"
+                      "(and (>= $1 0) (<= $1 255))\n"
+                      "(= (+ $1 1) 0)\n"
                       "z3::unsat\n",
                       expr(code, "=="));
     }
