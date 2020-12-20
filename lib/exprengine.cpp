@@ -2499,11 +2499,11 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             const Token *cond = tok->next()->astOperand2(); // TODO: C++17 condition
             const ExprEngine::ValuePtr condValue = executeExpression(cond, data);
 
-            bool alwaysFalse = false;
-            bool alwaysTrue = false;
+            bool canBeFalse = true;
+            bool canBeTrue = true;
             if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue)) {
-                alwaysFalse = !b->isTrue(&data);
-                alwaysTrue = !alwaysFalse && !b->isEqual(&data, 0);
+                canBeFalse = b->isEqual(&data, 0);
+                canBeTrue = b->isTrue(&data);
             }
 
             Data &thenData(data);
@@ -2529,10 +2529,10 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                 }
             };
 
-            if (!alwaysFalse)
+            if (canBeTrue)
                 exec(thenStart->next(), end, thenData);
 
-            if (!alwaysTrue) {
+            if (canBeFalse) {
                 if (Token::simpleMatch(thenEnd, "} else {")) {
                     const Token *elseStart = thenEnd->tokAt(2);
                     exec(elseStart->next(), end, elseData);
@@ -2544,11 +2544,8 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             if (exceptionToken)
                 throw ExprEngineException(exceptionToken, exceptionMessage);
 
-            if (alwaysTrue)
-                return thenData.str();
-            else if (alwaysFalse)
-                return elseData.str();
-            return thenData.str() + elseData.str();
+            return (canBeTrue ? thenData.str() : std::string()) +
+                   (canBeFalse ? elseData.str() : std::string());
         }
 
         else if (Token::simpleMatch(tok, "switch (")) {
