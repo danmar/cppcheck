@@ -21,14 +21,16 @@
 #define summariesH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+
 #include <set>
 #include <string>
 
 class Tokenizer;
 
 namespace Summaries {
-    std::string create(const Tokenizer *tokenizer, const std::string &cfg);
-    void loadReturn(const std::string &buildDir, std::set<std::string> &summaryReturn);
+    CPPCHECKLIB std::string create(const Tokenizer *tokenizer, const std::string &cfg);
+    CPPCHECKLIB void loadReturn(const std::string &buildDir, std::set<std::string> &summaryReturn);
 }
 
 //---------------------------------------------------------------------------
