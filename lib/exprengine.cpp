@@ -1241,12 +1241,13 @@ public:
         }
 
         if (auto floatRange = std::dynamic_pointer_cast<ExprEngine::FloatRange>(v)) {
-            if (floatRange->name[0] != '$')
+            if (std::isdigit(floatRange->name[0]))
 #if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
-                return context.fpa_val(static_cast<double>(floatRange->minValue));
+                return context.fpa_val(double(floatRange->minValue));
 #else
-                return context.real_val(static_cast<int>(floatRange->minValue));
-#endif // Z3_VERSION_INT
+                return context.real_val(floatRange->name.c_str());
+#endif
+
             auto it = valueExpr.find(v->name);
             if (it != valueExpr.end())
                 return it->second;
@@ -2225,9 +2226,7 @@ static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
         if (!tok->valueType() || expr->valueType()->pointer < tok->valueType()->pointer)
             return std::make_shared<ExprEngine::UninitValue>();
 
-        ::ValueType vt(*tok->valueType());
-        vt.pointer = 0;
-        auto range = getValueRangeFromValueType(&vt, data);
+        auto range = std::make_shared<ExprEngine::UninitValue>();
 
         if (tok->valueType()->pointer == 0)
             return range;
@@ -2534,6 +2533,8 @@ static std::string execute(const Token *start, const Token *end, Data &data)
     };
     Recursion updateRecursion(&data.recursion, data.recursion);
 
+    const std::time_t stopTime = data.startTime + data.settings->bugHuntingCheckFunctionMaxTime;
+
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (Token::Match(tok, "[;{}]")) {
             data.trackProgramState(tok);
@@ -2544,6 +2545,8 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                 if (Token::Match(prev, "[;{}] return|throw"))
                     return data.str();
             }
+            if (std::time(nullptr) > stopTime)
+                return "";
         }
 
         if (Token::simpleMatch(tok, "__CPPCHECK_BAILOUT__ ;"))
@@ -2601,6 +2604,13 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             const Token *cond = tok->next()->astOperand2(); // TODO: C++17 condition
             const ExprEngine::ValuePtr condValue = executeExpression(cond, data);
 
+            bool canBeFalse = true;
+            bool canBeTrue = true;
+            if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue)) {
+                canBeFalse = b->isEqual(&data, 0);
+                canBeTrue = b->isTrue(&data);
+            }
+
             Data &thenData(data);
             Data elseData(data);
             bool alwaysFalse = conditionAlwaysFalse(condValue, &data);
@@ -2626,10 +2636,10 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                 }
             };
 
-            if (!alwaysFalse)
+            if (canBeTrue)
                 exec(thenStart->next(), end, thenData);
 
-            if (!alwaysTrue) {
+            if (canBeFalse) {
                 if (Token::simpleMatch(thenEnd, "} else {")) {
                     const Token *elseStart = thenEnd->tokAt(2);
                     exec(elseStart->next(), end, elseData);
@@ -2641,11 +2651,8 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             if (exceptionToken)
                 throw ExprEngineException(exceptionToken, exceptionMessage);
 
-            if (alwaysTrue)
-                return thenData.str();
-            else if (alwaysFalse)
-                return elseData.str();
-            return thenData.str() + elseData.str();
+            return (canBeTrue ? thenData.str() : std::string()) +
+                   (canBeFalse ? elseData.str() : std::string());
         }
 
         else if (Token::simpleMatch(tok, "switch (")) {
@@ -2989,6 +2996,8 @@ void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorL
 
     data.contractConstraints(function, executeExpression1);
 
+    const std::time_t stopTime = data.startTime + data.settings->bugHuntingCheckFunctionMaxTime;
+
     try {
         execute(functionScope->bodyStart, functionScope->bodyEnd, data);
     } catch (const ExprEngineException &e) {
@@ -2997,6 +3006,8 @@ void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorL
         trackExecution.setAbortLine(e.tok->linenr());
         auto bailoutValue = std::make_shared<BailoutValue>();
         for (const Token *tok = e.tok; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (std::time(nullptr) >= stopTime)
+                break;
             if (Token::Match(tok, "return|throw|while|if|for (")) {
                 tok = tok->next();
                 continue;

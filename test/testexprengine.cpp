@@ -121,11 +121,13 @@ private:
         TEST_CASE(functionCall5);
 
         TEST_CASE(functionCallContract1);
+        TEST_CASE(functionCallContract2);
 
         TEST_CASE(int1);
 
         TEST_CASE(pointer1);
         TEST_CASE(pointer2);
+        TEST_CASE(pointer3);
         TEST_CASE(pointerAlias1);
         TEST_CASE(pointerAlias2);
         TEST_CASE(pointerAlias3);
@@ -973,6 +975,19 @@ private:
                       functionCallContractExpr(code, s));
     }
 
+    void functionCallContract2() {
+        const char code[] = "void foo(float x);\n"
+                            "void bar(float x) { foo(x); }";
+
+        Settings s;
+        s.functionContracts["foo(x)"] = "x >= 0.5";
+
+        ASSERT_EQUALS("checkContract:{\n"
+                      "(ite (>= $2 (/ 1.0 2.0)) false true)\n"
+                      "}\n",
+                      functionCallContractExpr(code, s));
+    }
+
 
     void int1() {
         ASSERT_EQUALS("(and (>= $1 (- 2147483648)) (<= $1 2147483647))\n"
@@ -997,6 +1012,15 @@ private:
                       "(= $3 7)\n"
                       "z3::sat\n",
                       expr(code, "=="));
+    }
+
+    void pointer3() {
+        const char code[] = "void f(void *p) {\n"
+                            "    double *data = (double *)p;\n"
+                            "    return *data;"
+                            "}";
+        ASSERT_EQUALS("[$1],[:]=?,null", getRange(code, "p"));
+        ASSERT_EQUALS("[$4],[:]=?,null", getRange(code, "data"));
     }
 
     void pointerAlias1() {

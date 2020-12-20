@@ -219,6 +219,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--bug-hunting") == 0)
                 mSettings->bugHunting = true;
 
+            // TODO: Rename or move this parameter?
+            else if (std::strncmp(argv[i], "--bug-hunting-check-function-max-time=", 38) == 0)
+                mSettings->bugHuntingCheckFunctionMaxTime = std::atoi(argv[i] + 38);
+
             // Check configuration
             else if (std::strcmp(argv[i], "--check-config") == 0)
                 mSettings->checkConfiguration = true;

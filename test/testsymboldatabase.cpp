@@ -31,6 +31,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <list>
 #include <map>
 #include <set>
@@ -331,6 +332,7 @@ private:
         TEST_CASE(symboldatabase85);
         TEST_CASE(symboldatabase86);
         TEST_CASE(symboldatabase87); // #9922 'extern const char ( * x [ 256 ] ) ;'
+        TEST_CASE(symboldatabase88); // #10040 (using namespace)
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4780,6 +4782,27 @@ private:
         GET_SYMBOL_DB("extern const char ( * x [ 256 ] ) ;");
         const Token *xtok = Token::findsimplematch(tokenizer.tokens(), "x");
         ASSERT(xtok->variable());
+    }
+
+    void symboldatabase88() { // #10040 (using namespace)
+        check("namespace external {\n"
+              "namespace ns {\n"
+              "enum class s { O };\n"
+              "}\n"
+              "}\n"
+              "namespace internal {\n"
+              "namespace ns1 {\n"
+              "template <typename T>\n"
+              "void make(external::ns::s) {\n"
+              "}\n"
+              "}\n"
+              "}\n"
+              "using namespace external::ns;\n"
+              "struct A { };\n"
+              "static void make(external::ns::s ss) {\n"
+              "  internal::ns1::make<A>(ss);\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void createSymbolDatabaseFindAllScopes1() {

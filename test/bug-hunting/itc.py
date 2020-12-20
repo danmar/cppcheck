@@ -44,6 +44,7 @@ def get_error_lines(filename):
 def check(filename):
     cmd = [CPPCHECK_PATH,
            '--bug-hunting',
+           '--bug-hunting-check-function-max-time=10'
            '--platform=unix64',
            filename]
     if RUN_CLANG:

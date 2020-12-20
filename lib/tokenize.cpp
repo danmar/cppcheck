@@ -19,6 +19,7 @@
 //---------------------------------------------------------------------------
 #include "tokenize.h"
 
+#include "analyzerinfo.h"
 #include "check.h"
 #include "errorlogger.h"
 #include "library.h"
@@ -2376,6 +2377,9 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     } else {
         mSymbolDatabase->setValueTypeInTokenList(true);
     }
+
+    if (!mSettings->buildDir.empty())
+        createSummaries(configuration);
 
     if (mTimerResults) {
         Timer t("Tokenizer::simplifyTokens1::ValueFlow", mSettings->showtime, mTimerResults);
@@ -8720,6 +8724,9 @@ bool Tokenizer::isScopeNoReturn(const Token *endScopeToken, bool *unknown) const
 {
     std::string unknownFunc;
     const bool ret = mSettings->library.isScopeNoReturn(endScopeToken,&unknownFunc);
+    if (!unknownFunc.empty() && mSettings->summaryReturn.find(unknownFunc) != mSettings->summaryReturn.end()) {
+        return false;
+    }
     if (unknown)
         *unknown = !unknownFunc.empty();
     if (!unknownFunc.empty() && mSettings->checkLibrary && mSettings->isEnabled(Settings::INFORMATION)) {
@@ -12062,5 +12069,62 @@ bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
             return true;
     }
     return false;
+}
+
+std::string Tokenizer::createSummaries(const std::string &configuration) const
+{
+    std::ostringstream ostr;
+    for (const Scope *scope : mSymbolDatabase->functionScopes) {
+        const Function *f = scope->function;
+        if (!f)
+            continue;
+
+        // Summarize function
+        std::set<std::string> noreturn;
+        std::set<std::string> globalVars;
+        std::set<std::string> calledFunctions;
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (tok->variable() && tok->variable()->isGlobal())
+                globalVars.insert(tok->variable()->name());
+            if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
+                calledFunctions.insert(tok->str());
+                if (Token::simpleMatch(tok->linkAt(1), ") ; }"))
+                    noreturn.insert(tok->str());
+            }
+        }
+
+        // Write summary for function
+        auto join = [](const std::set<std::string> &data) -> std::string {
+            std::string ret;
+            const char *sep = "";
+            for (std::string d: data)
+            {
+                ret += sep + d;
+                sep = ",";
+            }
+            return ret;
+        };
+
+        ostr << f->name();
+        if (!globalVars.empty())
+            ostr << " global:[" << join(globalVars) << "]";
+        if (!calledFunctions.empty())
+            ostr << " call:[" << join(calledFunctions) << "]";
+        if (!noreturn.empty())
+            ostr << " noreturn:[" << join(noreturn) << "]";
+        ostr << std::endl;
+    }
+
+    if (!mSettings->buildDir.empty()) {
+        std::string filename = AnalyzerInformation::getAnalyzerInfoFile(mSettings->buildDir, list.getSourceFilePath(), configuration);
+        std::string::size_type pos = filename.rfind(".a");
+        if (pos != std::string::npos) {
+            filename[pos+1] = 's';
+            std::ofstream fout(filename);
+            fout << ostr.str();
+        }
+    }
+
+    return ostr.str();
 }
 
