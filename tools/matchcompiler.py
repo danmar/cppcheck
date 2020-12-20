@@ -92,7 +92,7 @@ class MatchCompiler:
         elif tok == '%bool%':
             return 'tok->isBoolean()'
         elif tok == '%char%':
-            return '(tok->tokType()==Token::eChar)'
+            return '(tok->tokType() == Token::eChar)'
         elif tok == '%comp%':
             return 'tok->isComparisonOp()'
         elif tok == '%num%':
@@ -102,24 +102,24 @@ class MatchCompiler:
         elif tok == '%op%':
             return 'tok->isOp()'
         elif tok == '%or%':
-            return '(tok->tokType() == Token::eBitOp && tok->str()==MatchCompiler::makeConstString("|") )'
+            return '(tok->tokType() == Token::eBitOp && tok->str() == MatchCompiler::makeConstString("|") )'
         elif tok == '%oror%':
-            return '(tok->tokType() == Token::eLogicalOp && tok->str()==MatchCompiler::makeConstString("||"))'
+            return '(tok->tokType() == Token::eLogicalOp && tok->str() == MatchCompiler::makeConstString("||"))'
         elif tok == '%str%':
-            return '(tok->tokType()==Token::eString)'
+            return '(tok->tokType() == Token::eString)'
         elif tok == '%type%':
-            return '(tok->isName() && tok->varId()==0U && (tok->str() != "delete" || !tok->isKeyword()))'
+            return '(tok->isName() && tok->varId() == 0U && (tok->str() != "delete" || !tok->isKeyword()))'
         elif tok == '%name%':
             return 'tok->isName()'
         elif tok == '%var%':
             return '(tok->varId() != 0)'
         elif tok == '%varid%':
-            return '(tok->isName() && tok->varId()==varid)'
+            return '(tok->isName() && tok->varId() == varid)'
         elif (len(tok) > 2) and (tok[0] == "%"):
             print("unhandled:" + tok)
 
         return (
-            '(tok->str()==MatchCompiler::makeConstString("' + tok + '"))'
+            '(tok->str() == MatchCompiler::makeConstString("' + tok + '"))'
         )
 
     def _compilePattern(self, pattern, nr, varid,
@@ -155,7 +155,7 @@ class MatchCompiler:
 
             # [abc]
             if (len(tok) > 2) and (tok[0] == '[') and (tok[-1] == ']'):
-                ret += '    if (!tok || tok->str().size()!=1U || !strchr("' + tok[1:-1] + '", tok->str()[0]))\n'
+                ret += '    if (!tok || tok->str().size() != 1U || !strchr("' + tok[1:-1] + '", tok->str()[0]))\n'
                 ret += '        ' + returnStatement
 
             # a|b|c
