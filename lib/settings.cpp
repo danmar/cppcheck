@@ -199,7 +199,7 @@ void Settings::loadSummaries()
                 summaryNoreturn[functionName] = true;
             else
                 // If there is a value for function already keep it, otherwise insert false
-                summaryNoreturn.emplace(std::pair<std::string,bool>(functionName, false));
+                summaryNoreturn.insert(std::pair<std::string,bool>(functionName, false));
         }
     }
 }
