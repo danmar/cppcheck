@@ -1245,7 +1245,7 @@ public:
 #if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
                 return context.fpa_val(static_cast<double>(floatRange->minValue));
 #else
-                return context.real_val(static_cast<double>(floatRange->minValue));
+                return context.real_val(static_cast<int>(floatRange->minValue));
 #endif // Z3_VERSION_INT
             auto it = valueExpr.find(v->name);
             if (it != valueExpr.end())

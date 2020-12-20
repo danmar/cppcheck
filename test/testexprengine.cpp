@@ -480,9 +480,15 @@ private:
                             "    a = 0;\n"
                             "  return a == 0;\n"
                             "}";
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
         const char expected[] = "(distinct (fp #b0 #b01111111111 #x0000000000000) (_ +zero 11 53))\n"
                                 "(= 0 0)\n"
                                 "z3::sat\n";
+#else
+        const char expected[] = "(distinct 1.0 0.0)\n"
+                                "(= 0 0)\n"
+                                "z3::sat\n";
+#endif // Z3_VERSION_INT
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
@@ -493,6 +499,7 @@ private:
                             "    a = 0.3;\n"
                             "  return a == 0.3;\n"
                             "}";
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
         const char expected[] = "(= (fp #b0 #b10000000100 #x5000000000000\n"
                                 "(fp #b0 #b10000000100 #x5000000000000))\n"
                                 "z3::sat\n"
@@ -501,6 +508,13 @@ private:
                                 "(= (fp #b0 #b01111111101 #x3333333333333\n"
                                 "(fp #b0 #b01111111101 #x3333333333333))\n"
                                 "z3::sat\n";
+#else
+        const char expected[] = "(= 42.0 42.0)\n"
+                                "z3::sat\n"
+                                "(= 42.0 42.0)\n"
+                                "(= 0.0 0.0)\n"
+                                "z3::sat\n";
+#endif // Z3_VERSION_INT
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
@@ -539,9 +553,15 @@ private:
                             "    a = 0;\n"
                             "  return a == 0;\n"
                             "}";
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
         const char expected[] = "(= (_ +zero 11 53) (_ +zero 11 53))\n"
                                 "(= 42 0)\n"
                                 "z3::unsat\n";
+#else
+        const char expected[] = "(= 0.0 0.0)\n"
+                                "(= 42 0)\n"
+                                "z3::unsat\n";
+#endif // Z3_VERSION_INT
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
@@ -552,11 +572,17 @@ private:
                             "    a = 0.3;\n"
                             "  return a == 0.3;\n"
                             "}";
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
         const char expected[] = "(= (fp #b0 #b10000000100 #x5000000000000\n"
                                 "(fp #b0 #b10000000100 #x5000000000000))\n"
                                 "(= (fp #b0 #b10000000100 #x5000000000000\n"
                                 "(fp #b0 #b01111111101 #x3333333333333))\n"
                                 "z3::unsat\n";
+#else
+        const char expected[] = "(= 42.0 42.0)\n"
+                                "(= 42.0 0.0)\n"
+                                "z3::unsat\n";
+#endif // Z3_VERSION_INT
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
@@ -889,8 +915,13 @@ private:
 
     void floatValue3() {
         const char code[] = "void foo(float f) { return f > 12.0; }";
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
         const char expected[] = "(> $1 (fp #b0 #b10000000010 #x8000000000000))\n"
                                 "z3::sat\n";
+#else
+        const char expected[] = "(> $1 12.0)\n"
+                                "z3::sat\n";
+#endif // Z3_VERSION_INT
         ASSERT_EQUALS(expected, expr(code, ">"));
     }
 
