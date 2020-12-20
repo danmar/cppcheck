@@ -1213,7 +1213,7 @@ public:
         if (auto floatRange = std::dynamic_pointer_cast<ExprEngine::FloatRange>(v)) {
             if (std::isdigit(floatRange->name[0]))
 #if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
-                return context.fpa_val(double(floatRange->minValue));
+                return context.fpa_val(static_cast<double>(floatRange->minValue));
 #else
                 return context.real_val(floatRange->name.c_str());
 #endif
@@ -1260,6 +1260,18 @@ public:
     z3::expr bool_expr(z3::expr e) {
         if (e.is_bool())
             return e;
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
+        if (e.is_fpa()) {
+            // Workaround for z3 bug: https://github.com/Z3Prover/z3/pull/4906
+            z3::expr null = context.fpa_val(0.0);
+            return e != null;
+        }
+#else
+        if (e.is_real()) {
+            z3::expr null = context.real_val(0);
+            return e != null;
+        }
+#endif // Z3_VERSION_INT
         return e != 0;
     }
 
