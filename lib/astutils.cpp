@@ -744,13 +744,13 @@ static void findTokenValue(const Token* const tok, std::function<bool(const Valu
 static bool isSameLifetime(const Token * const tok1, const Token * const tok2)
 {
 #ifdef _MSC_VER
+    return true;
+#else
     ValueFlow::Value v1 = getLifetimeObjValue(tok1);
     ValueFlow::Value v2 = getLifetimeObjValue(tok2);
     if (!v1.isLifetimeValue() || !v2.isLifetimeValue())
         return false;
     return v1.tokvalue == v2.tokvalue;
-#else
-    return true;
 #endif
 }
 
