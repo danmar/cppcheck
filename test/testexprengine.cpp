@@ -105,6 +105,7 @@ private:
         TEST_CASE(functionCall5);
 
         TEST_CASE(functionCallContract1);
+        TEST_CASE(functionCallContract2);
 
         TEST_CASE(int1);
 
@@ -151,6 +152,7 @@ private:
             }
             replace(line, "(fp.gt ", "(> ");
             replace(line, "(fp.lt ", "(< ");
+            replace(line, "(fp #b0 #b10000000010 #x899999999999a)", "12.3");
             int par = 0;
             for (char pos : line) {
                 if (pos == '(')
@@ -751,8 +753,8 @@ private:
     }
 
     void floatValue3() {
-        const char code[] = "void foo(float f) { return f > 12.0; }";
-        const char expected[] = "(> $1 |12.0|)\n"
+        const char code[] = "void foo(float f) { return f > 12.3; }";
+        const char expected[] = "(> $1 12.3)\n"
                                 "z3::sat\n";
         ASSERT_EQUALS(expected, expr(code, ">"));
     }
@@ -801,6 +803,19 @@ private:
                       "(= $2 $1)\n"
                       "(and (>= $2 (- 2147483648)) (<= $2 2147483647))\n"
                       "(and (>= $1 0) (<= $1 65535))\n"
+                      "}\n",
+                      functionCallContractExpr(code, s));
+    }
+
+    void functionCallContract2() {
+        const char code[] = "void foo(float x);\n"
+                            "void bar(float x) { foo(x); }";
+
+        Settings s;
+        s.functionContracts["foo(x)"] = "x < 12.3";
+
+        ASSERT_EQUALS("checkContract:{\n"
+                      "(ite (< $2 12.3) false true)\n"
                       "}\n",
                       functionCallContractExpr(code, s));
     }
