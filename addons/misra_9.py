@@ -335,7 +335,7 @@ class InitializerParser:
         if new != self.root:
             # Mark all elements up to self.root root as designated
             parent = new
-            while parent != self.root:
+            while parent and parent != self.root:
                 parent.isDesignated = True
                 parent = parent.parent
             self.rootStack.append((self.root, new))
@@ -361,14 +361,15 @@ class InitializerParser:
             else:
                 self.token = self.token.astParent
                 if self.token.str == '{':
-                    self.ed = self.root.getLastValueElement()
-                    self.ed.markAsCurrent()
-                    
-                    # Cleanup if root is dummy node representing excess levels in initializer
-                    if self.root and self.root.name == '<-':
-                        self.root.children[0].parent = self.root.parent
+                    if self.root:
+                        self.ed = self.root.getLastValueElement()
+                        self.ed.markAsCurrent()
 
-                    self.root = self.root.parent
+                        # Cleanup if root is dummy node representing excess levels in initializer
+                        if self.root.name == '<-':
+                            self.root.children[0].parent = self.root.parent
+
+                        self.root = self.root.parent
 
                 if self.token.astParent == None:
                     self.token = None
@@ -459,6 +460,9 @@ def createRecordChildrenDefs(ed):
         ed.addChild(child)
 
 def getElementByDesignator(ed, token):
+    if not token.str in [ '.', '[' ]:
+        return None
+
     while token.str in [ '.', '[' ]:
         token = token.astOperand1
 
@@ -466,26 +470,26 @@ def getElementByDesignator(ed, token):
         token = token.astParent
 
         if token.str == '[':
+            if not ed.isArray:
+                ed.markStuctureViolation(token)
+
             chIndex = -1
             if token.astOperand2 is not None:
                 chIndex = token.astOperand2.getKnownIntValue()
             elif token.astOperand1 is not None:
                 chIndex = token.astOperand1.getKnownIntValue()
 
-            if not ed.isArray:
-                ed.markStuctureViolation(token)
-
-            ed = ed.getChildByIndex(chIndex)
+            ed = ed.getChildByIndex(chIndex) if chIndex is not None else None
 
         elif token.str == '.':
+            if not ed.isRecord:
+                ed.markStuctureViolation(token)
+
             name = ""
             if token.astOperand2 is not None:
                 name = token.astOperand2.str
             elif token.astOperand1 is not None:
                 name = token.astOperand1.str
-
-            if not ed.isRecord:
-                ed.markStuctureViolation(token)
 
             ed = ed.getChildByName(name)
 
