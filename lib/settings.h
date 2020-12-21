@@ -415,6 +415,10 @@ public:
     static bool terminated() {
         return Settings::mTerminated;
     }
+
+    std::set<std::string> summaryReturn;
+
+    void loadSummaries();
 };
 
 /// @}

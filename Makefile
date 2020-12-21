@@ -203,6 +203,7 @@ LIBOBJ =      $(libcppdir)/analyzerinfo.o \
               $(libcppdir)/programmemory.o \
               $(libcppdir)/reverseanalyzer.o \
               $(libcppdir)/settings.o \
+              $(libcppdir)/summaries.o \
               $(libcppdir)/suppressions.o \
               $(libcppdir)/symboldatabase.o \
               $(libcppdir)/templatesimplifier.o \
@@ -270,6 +271,7 @@ TESTOBJ =     test/options.o \
               test/teststl.o \
               test/teststring.o \
               test/testsuite.o \
+              test/testsummaries.o \
               test/testsuppressions.o \
               test/testsymboldatabase.o \
               test/testthreadexecutor.o \
@@ -542,8 +544,11 @@ $(libcppdir)/programmemory.o: lib/programmemory.cpp lib/astutils.h lib/config.h 
 $(libcppdir)/reverseanalyzer.o: lib/reverseanalyzer.cpp lib/analyzer.h lib/astutils.h lib/config.h lib/errortypes.h lib/forwardanalyzer.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/reverseanalyzer.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/utils.h lib/valueflow.h lib/valueptr.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/reverseanalyzer.o $(libcppdir)/reverseanalyzer.cpp
 
-$(libcppdir)/settings.o: lib/settings.cpp lib/config.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h lib/valueflow.h
+$(libcppdir)/settings.o: lib/settings.cpp lib/config.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/summaries.h lib/suppressions.h lib/timer.h lib/utils.h lib/valueflow.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/settings.o $(libcppdir)/settings.cpp
+
+$(libcppdir)/summaries.o: lib/summaries.cpp lib/config.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/summaries.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/utils.h lib/valueflow.h
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/summaries.o $(libcppdir)/summaries.cpp
 
 $(libcppdir)/suppressions.o: lib/suppressions.cpp externals/tinyxml2/tinyxml2.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/mathlib.h lib/path.h lib/suppressions.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/suppressions.o $(libcppdir)/suppressions.cpp
@@ -560,7 +565,7 @@ $(libcppdir)/timer.o: lib/timer.cpp lib/config.h lib/timer.h
 $(libcppdir)/token.o: lib/token.cpp lib/astutils.h lib/config.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenlist.h lib/utils.h lib/valueflow.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/token.o $(libcppdir)/token.cpp
 
-$(libcppdir)/tokenize.o: lib/tokenize.cpp externals/simplecpp/simplecpp.h lib/check.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h
+$(libcppdir)/tokenize.o: lib/tokenize.cpp externals/simplecpp/simplecpp.h lib/analyzerinfo.h lib/check.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o $(libcppdir)/tokenize.o $(libcppdir)/tokenize.cpp
 
 $(libcppdir)/tokenlist.o: lib/tokenlist.cpp externals/simplecpp/simplecpp.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenlist.h lib/utils.h lib/valueflow.h
@@ -730,6 +735,9 @@ test/teststring.o: test/teststring.cpp lib/check.h lib/checkstring.h lib/config.
 
 test/testsuite.o: test/testsuite.cpp lib/config.h lib/errorlogger.h lib/errortypes.h lib/suppressions.h test/options.h test/redirect.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testsuite.o test/testsuite.cpp
+
+test/testsummaries.o: test/testsummaries.cpp lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/summaries.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h test/testsuite.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testsummaries.o test/testsummaries.cpp
 
 test/testsuppressions.o: test/testsuppressions.cpp cli/threadexecutor.h lib/analyzerinfo.h lib/check.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testsuppressions.o test/testsuppressions.cpp

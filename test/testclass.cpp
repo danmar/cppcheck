@@ -557,6 +557,20 @@ private:
                                   "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #9957
+        checkDuplInheritedMembers("class Base {\n"
+                                  "    public:\n"
+                                  "        int i;\n"
+                                  "};\n"
+                                  "class Derived1: public Base {\n"
+                                  "    public:\n"
+                                  "        int j;\n"
+                                  "};\n"
+                                  "class Derived2 : public Derived1 {\n"
+                                  "    int i;\n"  
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:10]: (warning) The class 'Derived2' defines member variable with name 'i' also defined in its parent class 'Base'.\n", errout.str());        
+
     }
 
     void checkCopyConstructor(const char code[]) {

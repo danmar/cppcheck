@@ -444,8 +444,9 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         qDebug() << "Checking project file" << mProjectFile->getFilename();
 
     if (!checkSettings.buildDir.empty()) {
+        checkSettings.loadSummaries();
         std::list<std::string> sourcefiles;
-        AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, p.fileSettings);
+        AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, p.fileSettings);
     }
 
     //mThread->SetanalyzeProject(true);
@@ -510,10 +511,11 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
         qDebug() << "Checking project file" << mProjectFile->getFilename();
 
     if (!checkSettings.buildDir.empty()) {
+        checkSettings.loadSummaries();
         std::list<std::string> sourcefiles;
         foreach (QString s, fileNames)
             sourcefiles.push_back(s.toStdString());
-        AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.project.fileSettings);
+        AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, checkSettings.project.fileSettings);
     }
 
     mThread->setCheckFiles(true);
@@ -1175,7 +1177,8 @@ void MainWindow::clearResults()
     if (mProjectFile && !mProjectFile->getBuildDir().isEmpty()) {
         QDir dir(QFileInfo(mProjectFile->getFilename()).absolutePath() + '/' + mProjectFile->getBuildDir());
         for (const QString& f: dir.entryList(QDir::Files)) {
-            dir.remove(f);
+            if (!f.endsWith("files.txt") && !QRegExp(".*.s[0-9]+$").exactMatch(f))
+                dir.remove(f);
         }
     }
     mUI.mResults->clear(true);

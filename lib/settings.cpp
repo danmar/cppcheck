@@ -17,7 +17,7 @@
  */
 
 #include "settings.h"
-
+#include "summaries.h"
 #include "valueflow.h"
 
 std::atomic<bool> Settings::mTerminated;
@@ -154,4 +154,9 @@ bool Settings::isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck) 
     if (!inconclusive && (inconclusiveCheck || value->isInconclusive()))
         return false;
     return true;
+}
+
+void Settings::loadSummaries()
+{
+    Summaries::loadReturn(buildDir, summaryReturn);
 }

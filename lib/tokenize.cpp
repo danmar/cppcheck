@@ -27,6 +27,7 @@
 #include "preprocessor.h"
 #include "settings.h"
 #include "standards.h"
+#include "summaries.h"
 #include "symboldatabase.h"
 #include "templatesimplifier.h"
 #include "timer.h"
@@ -2376,6 +2377,9 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     } else {
         mSymbolDatabase->setValueTypeInTokenList(true);
     }
+
+    if (!mSettings->buildDir.empty())
+        Summaries::create(this, configuration);
 
     if (mTimerResults) {
         Timer t("Tokenizer::simplifyTokens1::ValueFlow", mSettings->showtime, mTimerResults);
@@ -8720,6 +8724,9 @@ bool Tokenizer::isScopeNoReturn(const Token *endScopeToken, bool *unknown) const
 {
     std::string unknownFunc;
     const bool ret = mSettings->library.isScopeNoReturn(endScopeToken,&unknownFunc);
+    if (!unknownFunc.empty() && mSettings->summaryReturn.find(unknownFunc) != mSettings->summaryReturn.end()) {
+        return false;
+    }
     if (unknown)
         *unknown = !unknownFunc.empty();
     if (!unknownFunc.empty() && mSettings->checkLibrary && mSettings->isEnabled(Settings::INFORMATION)) {
@@ -12063,4 +12070,3 @@ bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
     }
     return false;
 }
-

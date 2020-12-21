@@ -44,7 +44,7 @@ static std::string getFilename(const std::string &fullpath)
     return fullpath.substr(pos1,pos2);
 }
 
-void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::list<std::string> &sourcefiles, const std::list<ImportProject::FileSettings> &fileSettings)
+void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::list<std::string> &sourcefiles, const std::string &userDefines, const std::list<ImportProject::FileSettings> &fileSettings)
 {
     std::map<std::string, unsigned int> fileCount;
 
@@ -53,6 +53,8 @@ void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::
     for (const std::string &f : sourcefiles) {
         const std::string afile = getFilename(f);
         fout << afile << ".a" << (++fileCount[afile]) << "::" << Path::simplifyPath(Path::fromNativeSeparators(f)) << '\n';
+        if (!userDefines.empty())
+            fout << afile << ".a" << (++fileCount[afile]) << ":" << userDefines << ":" << Path::simplifyPath(Path::fromNativeSeparators(f)) << '\n';
     }
 
     for (const ImportProject::FileSettings &fs : fileSettings) {

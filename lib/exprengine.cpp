@@ -595,6 +595,10 @@ namespace {
                 if (!binop.empty())
                     return std::make_shared<ExprEngine::BinOpResult>(binop, b->op1, b->op2);
             }
+            if (std::dynamic_pointer_cast<ExprEngine::FloatRange>(v)) {
+                auto zero = std::make_shared<ExprEngine::FloatRange>("0.0", 0.0, 0.0);
+                return std::make_shared<ExprEngine::BinOpResult>("==", v, zero);
+            }
             auto zero = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
             return std::make_shared<ExprEngine::BinOpResult>("==", v, zero);
         }
@@ -1211,6 +1215,13 @@ public:
         }
 
         if (auto floatRange = std::dynamic_pointer_cast<ExprEngine::FloatRange>(v)) {
+            if (floatRange->name[0] != '$')
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
+                return context.fpa_val(static_cast<double>(floatRange->minValue));
+#else
+                return context.real_val(floatRange->name.c_str());
+#endif
+
             auto it = valueExpr.find(v->name);
             if (it != valueExpr.end())
                 return it->second;
@@ -1253,6 +1264,20 @@ public:
     z3::expr bool_expr(z3::expr e) {
         if (e.is_bool())
             return e;
+
+        // Workaround for z3 bug: https://github.com/Z3Prover/z3/issues/4905
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
+        if (e.is_fpa()) {
+            z3::expr null = context.fpa_val(0.0);
+            return e != null;
+        }
+#else
+        if (e.is_real()) {
+            z3::expr null = context.real_val(0);
+            return e != null;
+        }
+#endif // Z3_VERSION_INT
+
         return e != 0;
     }
 
@@ -1377,7 +1402,13 @@ bool ExprEngine::FloatRange::isEqual(DataBase *dataBase, int value) const
         z3::expr e = exprData.addFloat(name);
         exprData.addConstraints(solver, data);
         exprData.addAssertions(solver);
-        solver.add(e >= value && e <= value);
+        // Workaround for z3 bug: https://github.com/Z3Prover/z3/issues/4905
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
+        z3::expr val_e = exprData.context.fpa_val(static_cast<double>(value));
+#else
+        z3::expr val_e = exprData.context.real_val(value);
+#endif // Z3_VERSION_INT
+        solver.add(e == val_e);
         return solver.check() != z3::unsat;
     } catch (const z3::exception &exception) {
         std::cerr << "z3: " << exception << std::endl;
@@ -2499,11 +2530,14 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             const Token *cond = tok->next()->astOperand2(); // TODO: C++17 condition
             const ExprEngine::ValuePtr condValue = executeExpression(cond, data);
 
-            bool alwaysFalse = false;
-            bool alwaysTrue = false;
+            bool canBeFalse = true;
+            bool canBeTrue = true;
             if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue)) {
-                alwaysFalse = !b->isTrue(&data);
-                alwaysTrue = !alwaysFalse && !b->isEqual(&data, 0);
+                canBeFalse = b->isEqual(&data, 0);
+                canBeTrue = b->isTrue(&data);
+            } else if (auto i = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue)) {
+                canBeFalse = i->isEqual(&data, 0);
+                canBeTrue = ExprEngine::BinOpResult("!=", i, std::make_shared<ExprEngine::IntRange>("0", 0, 0)).isTrue(&data);
             }
 
             Data &thenData(data);
@@ -2529,10 +2563,10 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                 }
             };
 
-            if (!alwaysFalse)
+            if (canBeTrue)
                 exec(thenStart->next(), end, thenData);
 
-            if (!alwaysTrue) {
+            if (canBeFalse) {
                 if (Token::simpleMatch(thenEnd, "} else {")) {
                     const Token *elseStart = thenEnd->tokAt(2);
                     exec(elseStart->next(), end, elseData);
@@ -2544,11 +2578,8 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             if (exceptionToken)
                 throw ExprEngineException(exceptionToken, exceptionMessage);
 
-            if (alwaysTrue)
-                return thenData.str();
-            else if (alwaysFalse)
-                return elseData.str();
-            return thenData.str() + elseData.str();
+            return (canBeTrue ? thenData.str() : std::string()) +
+                   (canBeFalse ? elseData.str() : std::string());
         }
 
         else if (Token::simpleMatch(tok, "switch (")) {
