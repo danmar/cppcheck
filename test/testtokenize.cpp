@@ -520,10 +520,6 @@ private:
         TEST_CASE(checkHeader1);
 
         TEST_CASE(removeExtraTemplateKeywords);
-
-        TEST_CASE(createSummaries1);
-        TEST_CASE(createSummariesGlobal);
-        TEST_CASE(createSummariesNoreturn);
     }
 
     std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -8752,30 +8748,6 @@ private:
         const char code2[] = "typename GridView::template Codim<0>::Iterator it = gv.template begin<0>();";
         const char expected2[] = "GridView :: Codim < 0 > :: Iterator it ; it = gv . begin < 0 > ( ) ;";
         ASSERT_EQUALS(expected2, tokenizeAndStringify(code2, false));
-    }
-
-    std::string createSummaries(const char code[], const char filename[] = "test.cpp") {
-        // Clear the error buffer..
-        errout.str("");
-
-        // tokenize..
-        Settings settings;
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
-        return tokenizer.createSummaries("");
-    }
-
-    void createSummaries1() {
-        ASSERT_EQUALS("foo\n", createSummaries("void foo() {}"));
-    }
-
-    void createSummariesGlobal() {
-        ASSERT_EQUALS("foo global:[x]\n", createSummaries("int x; void foo() { x=0; }"));
-    }
-
-    void createSummariesNoreturn() {
-        ASSERT_EQUALS("foo call:[bar] noreturn:[bar]\n", createSummaries("void foo() { bar(); }"));
     }
 };
 

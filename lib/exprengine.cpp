@@ -1247,7 +1247,6 @@ public:
 #else
                 return context.real_val(static_cast<uint64_t>(floatRange->minValue));
 #endif
-
             auto it = valueExpr.find(v->name);
             if (it != valueExpr.end())
                 return it->second;
@@ -2609,6 +2608,9 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue)) {
                 canBeFalse = b->isEqual(&data, 0);
                 canBeTrue = b->isTrue(&data);
+            } else if (auto i = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue)) {
+                canBeFalse = i->isEqual(&data, 0);
+                canBeTrue = ExprEngine::BinOpResult("!=", i, std::make_shared<ExprEngine::IntRange>("0", 0, 0)).isTrue(&data);
             }
 
             Data &thenData(data);
