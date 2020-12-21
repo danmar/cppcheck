@@ -595,6 +595,10 @@ namespace {
                 if (!binop.empty())
                     return std::make_shared<ExprEngine::BinOpResult>(binop, b->op1, b->op2);
             }
+            if (std::dynamic_pointer_cast<ExprEngine::FloatRange>(v)) {
+                auto zero = std::make_shared<ExprEngine::FloatRange>("0.0", 0.0, 0.0);
+                return std::make_shared<ExprEngine::BinOpResult>("==", v, zero);
+            }
             auto zero = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
             return std::make_shared<ExprEngine::BinOpResult>("==", v, zero);
         }
@@ -1253,6 +1257,20 @@ public:
     z3::expr bool_expr(z3::expr e) {
         if (e.is_bool())
             return e;
+
+        // Workaround for z3 bug: https://github.com/Z3Prover/z3/issues/4905
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
+        if (e.is_fpa()) {
+            z3::expr null = context.fpa_val(0.0);
+            return e != null;
+        }
+#else
+        if (e.is_real()) {
+            z3::expr null = context.real_val(0);
+            return e != null;
+        }
+#endif // Z3_VERSION_INT
+
         return e != 0;
     }
 
@@ -1377,7 +1395,13 @@ bool ExprEngine::FloatRange::isEqual(DataBase *dataBase, int value) const
         z3::expr e = exprData.addFloat(name);
         exprData.addConstraints(solver, data);
         exprData.addAssertions(solver);
-        solver.add(e >= value && e <= value);
+        // Workaround for z3 bug: https://github.com/Z3Prover/z3/issues/4905
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
+        z3::expr val_e = exprData.context.fpa_val(static_cast<double>(value));
+#else
+        z3::expr val_e = exprData.context.real_val(value);
+#endif // Z3_VERSION_INT
+        solver.add(e == val_e);
         return solver.check() != z3::unsat;
     } catch (const z3::exception &exception) {
         std::cerr << "z3: " << exception << std::endl;
