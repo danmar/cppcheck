@@ -333,6 +333,7 @@ private:
         TEST_CASE(symboldatabase86);
         TEST_CASE(symboldatabase87); // #9922 'extern const char ( * x [ 256 ] ) ;'
         TEST_CASE(symboldatabase88); // #10040 (using namespace)
+        TEST_CASE(symboldatabase89); // valuetype name
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4803,6 +4804,27 @@ private:
               "  internal::ns1::make<A>(ss);\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase89() { // valuetype name
+        GET_SYMBOL_DB("namespace external {\n"
+                      "namespace ns1 {\n"
+                      "class A {\n"
+                      "public:\n"
+                      "  struct S { };\n"
+                      "  A(const S&) { }\n"
+                      "};\n"
+                      "static const A::S AS = A::S();\n"
+                      "}\n"
+                      "}\n"
+                      "using namespace external::ns1;\n"
+                      "A a{AS};");
+        const Token *vartok1 = Token::findsimplematch(tokenizer.tokens(), "A a");
+        ASSERT(vartok1);
+        ASSERT(vartok1->next());
+        ASSERT(vartok1->next()->variable());
+        ASSERT(vartok1->next()->variable()->valueType());
+        ASSERT(vartok1->next()->variable()->valueType()->str() == "external::ns1::A");
     }
 
     void createSymbolDatabaseFindAllScopes1() {

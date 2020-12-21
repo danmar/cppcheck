@@ -6623,7 +6623,7 @@ std::string ValueType::str() const
         while (scope && scope->type != Scope::eGlobal) {
             if (scope->type == Scope::eClass || scope->type == Scope::eStruct || scope->type == Scope::eNamespace)
                 className = scope->className + "::" + className;
-            scope = scope->definedType ? scope->definedType->enclosingScope : scope->nestedIn;
+            scope = (scope->definedType && scope->definedType->enclosingScope) ? scope->definedType->enclosingScope : scope->nestedIn;
         }
         ret += ' ' + className;
     } else if (type == ValueType::Type::CONTAINER && container) {
