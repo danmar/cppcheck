@@ -73,6 +73,9 @@ jobs:
           dir Build\gui
           del Build\gui\cppcheck-gui.ilk
           del Build\gui\cppcheck-gui.pdb
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
           
       - name: Build CLI x64 debug configuration using MSBuild
         run: msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE /p:Platform=x64
