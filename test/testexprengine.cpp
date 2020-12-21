@@ -153,6 +153,7 @@ private:
             replace(line, "(fp.gt ", "(> ");
             replace(line, "(fp.lt ", "(< ");
             replace(line, "(fp #b0 #b10000000010 #x899999999999a)", "12.3");
+            replace(line, "(/ 123.0 10.0)", "12.3");
             int par = 0;
             for (char pos : line) {
                 if (pos == '(')
