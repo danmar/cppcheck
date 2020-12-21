@@ -5341,6 +5341,7 @@ private:
         check("int f8(int a) {return (a == (int)1) ? 1 : 1; }");
         ASSERT_EQUALS("[test.cpp:1]: (style) Same value in both branches of ternary operator.\n", errout.str());
 
+#ifndef _MSC_VER
         check("struct Foo {\n"
               "  std::vector<int> bar{1,2,3};\n"
               "  std::vector<int> baz{4,5,6};\n"
@@ -5357,6 +5358,7 @@ private:
               "  std::vector<int> v = b ? bar : baz;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+#endif
     }
 
     void duplicateExpressionTemplate() { // #6930
