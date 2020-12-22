@@ -43,6 +43,13 @@
 
 struct InternalError;
 
+#define GET_SYMBOL_DB_STD(code) \
+    Tokenizer tokenizer(&settings1, this); \
+    LOAD_LIB_2(settings1.library, "std.cfg"); \
+    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.cpp"); \
+    ASSERT(db); \
+    do {} while(false)
+
 #define GET_SYMBOL_DB(code) \
     Tokenizer tokenizer(&settings1, this); \
     const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.cpp"); \
@@ -202,6 +209,7 @@ private:
         TEST_CASE(testConstructors);
         TEST_CASE(functionDeclarationTemplate);
         TEST_CASE(functionDeclarations);
+        TEST_CASE(functionDeclarations2);
         TEST_CASE(constructorInitialization);
         TEST_CASE(memberFunctionOfUnknownClassMacro1);
         TEST_CASE(memberFunctionOfUnknownClassMacro2);
@@ -1877,6 +1885,29 @@ private:
             ASSERT(foo_int && foo_int->tokenDef->strAt(2) == "int");
 
             ASSERT(&foo_int->argumentList.front() == db->getVariableFromVarId(1));
+        }
+    }
+
+    void functionDeclarations2() {
+        GET_SYMBOL_DB_STD("std::array<int,2> foo(int x);");
+
+        // 1 scopes: Global
+        ASSERT(db && db->scopeList.size() == 1);
+
+        if (db) {
+            const Scope *scope = &db->scopeList.front();
+
+            ASSERT(scope && scope->functionList.size() == 1);
+
+            const Function *foo = &scope->functionList.front();
+
+            ASSERT(foo);
+            ASSERT(foo->tokenDef->str() == "foo");
+            ASSERT(!foo->hasBody());
+
+            const Token*parenthesis = foo->tokenDef->next();
+            ASSERT(parenthesis->str() == "(" && parenthesis->previous()->str() == "foo");
+            ASSERT(parenthesis->valueType()->type == ValueType::Type::CONTAINER);
         }
     }
 
