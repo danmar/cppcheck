@@ -666,10 +666,14 @@ private:
                             "    x = x + 34;\n"
                             "  x == 340;\n"
                             "}";
-        ASSERT_EQUALS("(and (>= $2 (- 2147483648)) (<= $2 2147483647))\n"
-                      "(= (+ $2 34) 340)\n"
-                      "z3::sat\n",
-                      expr(code, "=="));
+        const char expected[] = "(< 0 $1)\n"
+                                "(and (>= $2 (- 2147483648)) (<= $2 2147483647))\n"
+                                "(and (>= $1 (- 2147483648)) (<= $1 2147483647))\n"
+                                "(= (+ $2 34) 340)\n"
+                                "z3::sat\n"
+                                "(= 0 340)\n"
+                                "z3::unsat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
     void while2() {
@@ -679,10 +683,14 @@ private:
                             "    x++;\n"
                             "  x == 1;\n"
                             "}";
-        ASSERT_EQUALS("(and (>= $2 (- 2147483648)) (<= $2 2147483647))\n"
-                      "(= (+ $2 1) 1)\n"
-                      "z3::sat\n",
-                      expr(code, "=="));
+        const char expected[] = "(< 0 $1)\n"
+                                "(and (>= $2 (- 2147483648)) (<= $2 2147483647))\n"
+                                "(and (>= $1 (- 2147483648)) (<= $1 2147483647))\n"
+                                "(= (+ $2 1) 1)\n"
+                                "z3::sat\n"
+                                "(= 0 1)\n"
+                                "z3::unsat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
     void while3() {
@@ -704,8 +712,14 @@ private:
                             "    *len = 0;\n"
                             "  *len == 0;\n"
                             "}";
-        ASSERT_EQUALS("(= 0 0)\n"
-                      "z3::sat\n", expr(code, "=="));
+        const char expected[] = "(distinct |$2:0| 0)\n"
+                                "(and (>= |$2:0| (- 128)) (<= |$2:0| 127))\n"
+                                "(= 0 0)\n"
+                                "z3::sat\n"
+                                "(and (>= $8 (- 2147483648)) (<= $8 2147483647))\n"
+                                "(= $8 0)\n"
+                                "z3::sat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
     void while5() {

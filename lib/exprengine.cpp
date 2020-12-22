@@ -141,6 +141,7 @@
 #include <limits>
 #include <memory>
 #include <iostream>
+#include <tuple>
 #ifdef USE_Z3
 #include <z3++.h>
 #include <z3_version.h>
@@ -2457,6 +2458,25 @@ static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data);
 
+static std::tuple<bool, bool> checkConditionBranches(const ExprEngine::ValuePtr &condValue, Data &data) {
+    bool canBeFalse = true;
+    bool canBeTrue = true;
+    if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue)) {
+        canBeFalse = b->isEqual(&data, 0);
+        canBeTrue = b->isTrue(&data);
+    } else if (auto i = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue)) {
+        canBeFalse = i->isEqual(&data, 0);
+        canBeTrue = ExprEngine::BinOpResult("!=", i, std::make_shared<ExprEngine::IntRange>("0", 0, 0)).isTrue(&data);
+    } else if (std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(condValue)) {
+        canBeFalse = false;
+        canBeTrue = true;
+    } else if (auto f = std::dynamic_pointer_cast<ExprEngine::FloatRange>(condValue)) {
+        canBeFalse = f->isEqual(&data, 0);
+        canBeTrue = ExprEngine::BinOpResult("!=", f, std::make_shared<ExprEngine::FloatRange>("0.0", 0.0, 0.0)).isTrue(&data);
+    }
+    return std::make_tuple(canBeFalse, canBeTrue);
+}
+
 static std::string execute(const Token *start, const Token *end, Data &data)
 {
     if (data.recursion > 20)
@@ -2547,21 +2567,8 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             const Token *cond = tok->next()->astOperand2(); // TODO: C++17 condition
             const ExprEngine::ValuePtr condValue = executeExpression(cond, data);
 
-            bool canBeFalse = true;
-            bool canBeTrue = true;
-            if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue)) {
-                canBeFalse = b->isEqual(&data, 0);
-                canBeTrue = b->isTrue(&data);
-            } else if (auto i = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue)) {
-                canBeFalse = i->isEqual(&data, 0);
-                canBeTrue = ExprEngine::BinOpResult("!=", i, std::make_shared<ExprEngine::IntRange>("0", 0, 0)).isTrue(&data);
-            } else if (std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(condValue)) {
-                canBeFalse = false;
-                canBeTrue = true;
-            } else if (auto f = std::dynamic_pointer_cast<ExprEngine::FloatRange>(condValue)) {
-                canBeFalse = f->isEqual(&data, 0);
-                canBeTrue = ExprEngine::BinOpResult("!=", f, std::make_shared<ExprEngine::FloatRange>("0.0", 0.0, 0.0)).isTrue(&data);
-            }
+            bool canBeFalse, canBeTrue;
+            std::tie(canBeFalse, canBeTrue) = checkConditionBranches(condValue, data);
 
             Data &thenData(data);
             Data elseData(data);
@@ -2669,109 +2676,148 @@ static std::string execute(const Token *start, const Token *end, Data &data)
         }
 
         if (Token::Match(tok, "for|while (") && Token::simpleMatch(tok->linkAt(1), ") {")) {
+            const Token *cond = tok->next()->astOperand2();
+            const ExprEngine::ValuePtr condValue = executeExpression(cond, data);
+
+            bool canBeFalse, canBeTrue;
+            std::tie(canBeFalse, canBeTrue) = checkConditionBranches(condValue, data);
+
+            Data &bodyData(data);
+            Data noexecData(data);
+            if (canBeFalse && canBeTrue) { // Avoid that constraints are overspecified
+                bodyData.addConstraint(condValue, true);
+            }
+
+            Data::ifSplit(tok, bodyData, noexecData);
+
             const Token *bodyStart = tok->linkAt(1)->next();
             const Token *bodyEnd = bodyStart->link();
 
             // TODO this is very rough code
-            std::set<int> changedVariables;
-            for (const Token *tok2 = tok; tok2 != bodyEnd; tok2 = tok2->next()) {
-                if (Token::Match(tok2, "%assign%")) {
-                    const Token *lhs = tok2->astOperand1();
-                    while (Token::simpleMatch(lhs, "["))
-                        lhs = lhs->astOperand1();
-                    if (!lhs)
-                        throw ExprEngineException(tok2, "Unhandled assignment in loop");
-                    if (Token::Match(lhs, ". %name% =|[") && Token::simpleMatch(lhs->astOperand1(), ".")) {
-                        const Token *structToken = lhs;
-                        while (Token::Match(structToken, ".|["))
-                            structToken = structToken->astOperand1();
-                        if (Token::Match(structToken, "%var%")) {
-                            data.assignValue(structToken, structToken->varId(), std::make_shared<ExprEngine::BailoutValue>());
-                            changedVariables.insert(structToken->varId());
-                            continue;
-                        }
-                    }
-                    if (Token::Match(lhs, ". %name% =|[") && lhs->astOperand1() && lhs->astOperand1()->valueType()) {
-                        const Token *structToken = lhs->astOperand1();
-                        if (!structToken->valueType() || !structToken->varId())
+            if (canBeTrue) {
+                std::set<int> changedVariables;
+                for (const Token *tok2 = tok; tok2 != bodyEnd; tok2 = tok2->next()) {
+                    if (Token::Match(tok2, "%assign%")) {
+                        const Token *lhs = tok2->astOperand1();
+                        while (Token::simpleMatch(lhs, "["))
+                            lhs = lhs->astOperand1();
+                        if (!lhs)
                             throw ExprEngineException(tok2, "Unhandled assignment in loop");
-                        const Scope *structScope = structToken->valueType()->typeScope;
-                        if (!structScope)
-                            throw ExprEngineException(tok2, "Unhandled assignment in loop");
-                        const std::string &memberName = tok2->previous()->str();
-                        ExprEngine::ValuePtr memberValue;
-                        for (const Variable &member : structScope->varlist) {
-                            if (memberName == member.name() && member.valueType()) {
-                                memberValue = createVariableValue(member, data);
-                                break;
+                        if (Token::Match(lhs, ". %name% =|[") && Token::simpleMatch(lhs->astOperand1(), ".")) {
+                            const Token *structToken = lhs;
+                            while (Token::Match(structToken, ".|["))
+                                structToken = structToken->astOperand1();
+                            if (Token::Match(structToken, "%var%")) {
+                                bodyData.assignValue(structToken, structToken->varId(), std::make_shared<ExprEngine::BailoutValue>());
+                                changedVariables.insert(structToken->varId());
+                                continue;
                             }
                         }
-                        if (!memberValue)
-                            throw ExprEngineException(tok2, "Unhandled assignment in loop");
-
-                        ExprEngine::ValuePtr structVal1 = data.getValue(structToken->varId(), structToken->valueType(), structToken);
-                        if (!structVal1)
-                            structVal1 = createVariableValue(*structToken->variable(), data);
-                        auto structVal = std::dynamic_pointer_cast<ExprEngine::StructValue>(structVal1);
-                        if (!structVal) {
-                            // Handle pointer to a struct
-                            if (auto structPtr = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(structVal1)) {
-                                if (structPtr->pointer && !structPtr->data.empty()) {
-                                    auto indexValue = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
-                                    for (auto val: structPtr->read(indexValue)) {
-                                        structVal = std::dynamic_pointer_cast<ExprEngine::StructValue>(val.second);
-                                    }
+                        if (Token::Match(lhs, ". %name% =|[") && lhs->astOperand1() && lhs->astOperand1()->valueType()) {
+                            const Token *structToken = lhs->astOperand1();
+                            if (!structToken->valueType() || !structToken->varId())
+                                throw ExprEngineException(tok2, "Unhandled assignment in loop");
+                            const Scope *structScope = structToken->valueType()->typeScope;
+                            if (!structScope)
+                                throw ExprEngineException(tok2, "Unhandled assignment in loop");
+                            const std::string &memberName = tok2->previous()->str();
+                            ExprEngine::ValuePtr memberValue;
+                            for (const Variable &member : structScope->varlist) {
+                                if (memberName == member.name() && member.valueType()) {
+                                    memberValue = createVariableValue(member, bodyData);
+                                    break;
                                 }
                             }
-                            if (!structVal)
+                            if (!memberValue)
                                 throw ExprEngineException(tok2, "Unhandled assignment in loop");
-                        }
 
-                        data.assignStructMember(tok2, &*structVal, memberName, memberValue);
-                        continue;
-                    }
-                    if (lhs->isUnaryOp("*") && lhs->astOperand1()->varId()) {
-                        const Token *varToken = tok2->astOperand1()->astOperand1();
-                        ExprEngine::ValuePtr val = data.getValue(varToken->varId(), varToken->valueType(), varToken);
-                        if (val && val->type == ExprEngine::ValueType::ArrayValue) {
-                            // Try to assign "any" value
-                            auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(val);
-                            arrayValue->assign(std::make_shared<ExprEngine::IntRange>("0", 0, 0), std::make_shared<ExprEngine::BailoutValue>());
+                            ExprEngine::ValuePtr structVal1 = bodyData.getValue(structToken->varId(), structToken->valueType(), structToken);
+                            if (!structVal1)
+                                structVal1 = createVariableValue(*structToken->variable(), bodyData);
+                            auto structVal = std::dynamic_pointer_cast<ExprEngine::StructValue>(structVal1);
+                            if (!structVal) {
+                                // Handle pointer to a struct
+                                if (auto structPtr = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(structVal1)) {
+                                    if (structPtr->pointer && !structPtr->data.empty()) {
+                                        auto indexValue = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
+                                        for (auto val: structPtr->read(indexValue)) {
+                                            structVal = std::dynamic_pointer_cast<ExprEngine::StructValue>(val.second);
+                                        }
+                                    }
+                                }
+                                if (!structVal)
+                                    throw ExprEngineException(tok2, "Unhandled assignment in loop");
+                            }
+
+                            bodyData.assignStructMember(tok2, &*structVal, memberName, memberValue);
                             continue;
                         }
+                        if (lhs->isUnaryOp("*") && lhs->astOperand1()->varId()) {
+                            const Token *varToken = tok2->astOperand1()->astOperand1();
+                            ExprEngine::ValuePtr val = bodyData.getValue(varToken->varId(), varToken->valueType(), varToken);
+                            if (val && val->type == ExprEngine::ValueType::ArrayValue) {
+                                // Try to assign "any" value
+                                auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(val);
+                                arrayValue->assign(std::make_shared<ExprEngine::IntRange>("0", 0, 0), std::make_shared<ExprEngine::BailoutValue>());
+                                continue;
+                            }
+                        }
+                        if (!lhs->variable())
+                            throw ExprEngineException(tok2, "Unhandled assignment in loop");
+                        // give variable "any" value
+                        int varid = lhs->varId();
+                        if (changedVariables.find(varid) != changedVariables.end())
+                            continue;
+                        changedVariables.insert(varid);
+                        auto oldValue = bodyData.getValue(varid, nullptr, nullptr);
+                        if (oldValue && oldValue->isUninit())
+                            call(bodyData.callbacks, lhs, oldValue, &bodyData);
+                        if (oldValue && oldValue->type == ExprEngine::ValueType::ArrayValue) {
+                            // Try to assign "any" value
+                            auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(oldValue);
+                            arrayValue->assign(std::make_shared<ExprEngine::IntRange>(bodyData.getNewSymbolName(), 0, ~0ULL), std::make_shared<ExprEngine::BailoutValue>());
+                            continue;
+                        }
+                        bodyData.assignValue(tok2, varid, getValueRangeFromValueType(lhs->valueType(), bodyData));
+                        continue;
+                    } else if (Token::Match(tok2, "++|--") && tok2->astOperand1() && tok2->astOperand1()->variable()) {
+                        // give variable "any" value
+                        const Token *vartok = tok2->astOperand1();
+                        int varid = vartok->varId();
+                        if (changedVariables.find(varid) != changedVariables.end())
+                            continue;
+                        changedVariables.insert(varid);
+                        auto oldValue = bodyData.getValue(varid, nullptr, nullptr);
+                        if (oldValue && oldValue->type == ExprEngine::ValueType::UninitValue)
+                            call(bodyData.callbacks, tok2, oldValue, &bodyData);
+                        bodyData.assignValue(tok2, varid, getValueRangeFromValueType(vartok->valueType(), bodyData));
                     }
-                    if (!lhs->variable())
-                        throw ExprEngineException(tok2, "Unhandled assignment in loop");
-                    // give variable "any" value
-                    int varid = lhs->varId();
-                    if (changedVariables.find(varid) != changedVariables.end())
-                        continue;
-                    changedVariables.insert(varid);
-                    auto oldValue = data.getValue(varid, nullptr, nullptr);
-                    if (oldValue && oldValue->isUninit())
-                        call(data.callbacks, lhs, oldValue, &data);
-                    if (oldValue && oldValue->type == ExprEngine::ValueType::ArrayValue) {
-                        // Try to assign "any" value
-                        auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(oldValue);
-                        arrayValue->assign(std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 0, ~0ULL), std::make_shared<ExprEngine::BailoutValue>());
-                        continue;
-                    }
-                    data.assignValue(tok2, varid, getValueRangeFromValueType(lhs->valueType(), data));
-                    continue;
-                } else if (Token::Match(tok2, "++|--") && tok2->astOperand1() && tok2->astOperand1()->variable()) {
-                    // give variable "any" value
-                    const Token *vartok = tok2->astOperand1();
-                    int varid = vartok->varId();
-                    if (changedVariables.find(varid) != changedVariables.end())
-                        continue;
-                    changedVariables.insert(varid);
-                    auto oldValue = data.getValue(varid, nullptr, nullptr);
-                    if (oldValue && oldValue->type == ExprEngine::ValueType::UninitValue)
-                        call(data.callbacks, tok2, oldValue, &data);
-                    data.assignValue(tok2, varid, getValueRangeFromValueType(vartok->valueType(), data));
                 }
             }
-            tok = tok->linkAt(1);
+
+            const Token *exceptionToken = nullptr;
+            std::string exceptionMessage;
+            auto exec = [&](const Token *tok1, const Token *tok2, Data& data) {
+                try {
+                    execute(tok1, tok2, data);
+                } catch (ExprEngineException &e) {
+                    if (!exceptionToken || (e.tok && precedes(e.tok, exceptionToken))) {
+                        exceptionToken = e.tok;
+                        exceptionMessage = e.what;
+                    }
+                }
+            };
+
+            if (canBeTrue)
+                exec(bodyStart->next(), end, bodyData);
+            if (canBeFalse)
+                exec(bodyEnd, end, noexecData);
+
+            if (exceptionToken)
+                throw ExprEngineException(exceptionToken, exceptionMessage);
+
+            return (canBeTrue ? bodyData.str() : std::string()) +
+                   (canBeFalse ? noexecData.str() : std::string());
         }
 
         if (Token::simpleMatch(tok, "} else {"))
