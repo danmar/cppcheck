@@ -838,7 +838,7 @@ private:
 
     void floatValue5() { // float < int
         const char code[] = "void foo(float f) { if (f < 1){} }";
-        const char expected[] = "(< $1 f1)\n" // TODO: The "f1" should be something like (float)1
+        const char expected[] = "(< $1 (to_real 1))\n"
                                 "z3::sat\n";
         ASSERT_EQUALS(expected, expr(code, "<"));
     }

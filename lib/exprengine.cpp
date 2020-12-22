@@ -1279,39 +1279,25 @@ public:
     // these will be cleaner and hopefully more robust.
 
     z3::expr z3_fp_const(const std::string &name) {
-#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
-        return context.fpa_const(name.c_str(), 11, 53);
-#else
         return context.real_const(name.c_str());
-#endif
     }
 
     z3::expr z3_fp_val(long double value, std::string name) {
-#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
-        (void)name;
-        return context.fpa_val(static_cast<double>(value));
-#else
         (void)value;
         while (name.size() > 1 && (name.back() == 'f' || name.back() == 'F' || name.back() == 'l' || name.back() == 'L'))
             name.erase(name.size() - 1);
         return context.real_val(name.c_str());
-#endif
     }
 
     bool z3_is_fp(z3::expr e) const {
-#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
-        return e.is_fpa();
-#else
         return e.is_real();
-#endif
     }
 
-    int floatSymbol = 0;
     void z3_to_fp(z3::expr &e) {
         if (e.is_int())
-            // TODO: Is there a better way to promote e?
-            e = z3_fp_const("f" + std::to_string(++floatSymbol));
-    }
+            e = z3::to_real(e);
+	}
+
 
     z3::expr z3_int_val(int128_t value) {
 #if Z3_VERSION_INT >= GET_VERSION_INT(4,7,1)
