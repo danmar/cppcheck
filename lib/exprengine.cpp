@@ -1155,6 +1155,14 @@ public:
         auto op1 = getExpr(b->op1);
         auto op2 = getExpr(b->op2);
 
+        // floating point promotion
+        if (b->binop != "&&" && b->binop != "||" && b->binop != "<<" && b->binop != ">>") {
+            if (z3_is_fp(op1) || z3_is_fp(op2)) {
+                z3_to_fp(op1);
+                z3_to_fp(op2);
+            }
+        }
+
         if (b->binop == "+")
             return op1 + op2;
         if (b->binop == "-")
@@ -1296,6 +1304,13 @@ public:
 #else
         return e.is_real();
 #endif
+    }
+
+    int floatSymbol = 0;
+    void z3_to_fp(z3::expr &e) {
+        if (e.is_int())
+            // TODO: Is there a better way to promote e?
+            e = z3_fp_const("f" + std::to_string(++floatSymbol));
     }
 
     z3::expr z3_int_val(int128_t value) {

@@ -103,6 +103,7 @@ private:
         TEST_CASE(floatValue2);
         TEST_CASE(floatValue3);
         TEST_CASE(floatValue4);
+        TEST_CASE(floatValue5);
 
         TEST_CASE(functionCall1);
         TEST_CASE(functionCall2);
@@ -835,6 +836,12 @@ private:
         ASSERT_EQUALS(expected, expr(code, ">"));
     }
 
+    void floatValue5() { // float < int
+        const char code[] = "void foo(float f) { if (f < 1){} }";
+        const char expected[] = "(< $1 f1)\n" // TODO: The "f1" should be something like (float)1
+                                "z3::sat\n";
+        ASSERT_EQUALS(expected, expr(code, "<"));
+    }
 
     void functionCall1() {
         ASSERT_EQUALS("-2147483648:2147483647", getRange("int atoi(const char *p); void f() { int x = atoi(a); x = x; }", "x=x"));
