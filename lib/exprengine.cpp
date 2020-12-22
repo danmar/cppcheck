@@ -1387,13 +1387,13 @@ bool ExprEngine::IntRange::isLessThan(DataBase *dataBase, int value) const
 
 bool ExprEngine::FloatRange::isEqual(DataBase *dataBase, int value) const
 {
-    const Data *data = dynamic_cast<Data *>(dataBase);
-    if (data->constraints.empty())
-        return true;
     if (MathLib::isFloat(name)) {
         float f = MathLib::toDoubleNumber(name);
         return value >= f - 0.00001 && value <= f + 0.00001;
     }
+    const Data *data = dynamic_cast<Data *>(dataBase);
+    if (data->constraints.empty())
+        return true;
 #ifdef USE_Z3
     // Check the value against the constraints
     ExprData exprData;
@@ -2538,6 +2538,12 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             } else if (auto i = std::dynamic_pointer_cast<ExprEngine::IntRange>(condValue)) {
                 canBeFalse = i->isEqual(&data, 0);
                 canBeTrue = ExprEngine::BinOpResult("!=", i, std::make_shared<ExprEngine::IntRange>("0", 0, 0)).isTrue(&data);
+            } else if (std::dynamic_pointer_cast<ExprEngine::StringLiteralValue>(condValue)) {
+                canBeFalse = false;
+                canBeTrue = true;
+            } else if (auto f = std::dynamic_pointer_cast<ExprEngine::FloatRange>(condValue)) {
+                canBeFalse = f->isEqual(&data, 0);
+                canBeTrue = ExprEngine::BinOpResult("!=", f, std::make_shared<ExprEngine::FloatRange>("0.0", 0.0, 0.0)).isTrue(&data);
             }
 
             Data &thenData(data);

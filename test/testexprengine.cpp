@@ -62,6 +62,11 @@ private:
         TEST_CASE(if3);
         TEST_CASE(if4);
         TEST_CASE(if5);
+        TEST_CASE(ifAlwaysTrue1);
+        TEST_CASE(ifAlwaysTrue2);
+        TEST_CASE(ifAlwaysTrue3);
+        TEST_CASE(ifAlwaysFalse1);
+        TEST_CASE(ifAlwaysFalse2);
         TEST_CASE(ifelse1);
         TEST_CASE(ifif);
         TEST_CASE(ifreturn);
@@ -152,6 +157,7 @@ private:
             }
             replace(line, "(fp.gt ", "(> ");
             replace(line, "(fp.lt ", "(< ");
+            replace(line, "(_ +zero 11 53)", "0.0");
             replace(line, "(fp #b0 #b10000000010 #x899999999999a)", "12.3");
             replace(line, "(/ 123.0 10.0)", "12.3");
             int par = 0;
@@ -448,6 +454,73 @@ private:
                       expr("void foo(const int *x) { if (f1() && *x > 12) dostuff(*x == 5); }", "=="));
     }
 
+    void ifAlwaysTrue1() {
+        const char code[] = "int foo() {\n"
+                            "  int a = 42;\n"
+                            "  if (1) {\n"
+                            "    a = 0;\n"
+                            "  }\n"
+                            "  return a == 0;\n"
+                            "}";
+        const char expected[] = "(distinct 1 0)\n"
+                                "(= 0 0)\n"
+                                "z3::sat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
+
+    void ifAlwaysTrue2() {
+        const char code[] = "int foo() {\n"
+                            "  int a = 42;\n"
+                            "  if (12.3) {\n"
+                            "    a = 0;\n"
+                            "  }\n"
+                            "  return a == 0;\n"
+                            "}";
+        const char expected[] = "(distinct 12.3 0.0)\n"
+                                "(= 0 0)\n"
+                                "z3::sat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
+
+    void ifAlwaysTrue3() {
+        const char code[] = "int foo() {\n"
+                            "  int a = 42;\n"
+                            "  if (\"test\") {\n"
+                            "    a = 0;\n"
+                            "  }\n"
+                            "  return a == 0;\n"
+                            "}";
+        // String literals are always true. z3 will not be involved.
+        ASSERT_EQUALS("", expr(code, "=="));
+    }
+
+    void ifAlwaysFalse1() {
+        const char code[] = "int foo() {\n"
+                            "  int a = 42;\n"
+                            "  if (0) {\n"
+                            "    a = 0;\n"
+                            "  }\n"
+                            "  return a == 0;\n"
+                            "}";
+        const char expected[] = "(= 0 0)\n"
+                                "(= 42 0)\n"
+                                "z3::unsat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
+
+    void ifAlwaysFalse2() {
+        const char code[] = "int foo() {\n"
+                            "  int a = 42;\n"
+                            "  if (0.0) {\n"
+                            "    a = 0;\n"
+                            "  }\n"
+                            "  return a == 0;\n"
+                            "}";
+        const char expected[] = "(= 0.0 0.0)\n"
+                                "(= 42 0)\n"
+                                "z3::unsat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
 
     void ifelse1() {
         ASSERT_EQUALS("(<= $1 5)\n"
