@@ -2454,9 +2454,9 @@ void CheckClass::checkDuplInheritedMembersRecursive(const Type* typeCurrent, con
             for (const Variable &parentClassVarIt : parentClassIt.type->classScope->varlist) {
                 if (classVarIt.name() == parentClassVarIt.name() && !parentClassVarIt.isPrivate()) { // Check if the class and its parent have a common variable
                     duplInheritedMembersError(classVarIt.nameToken(), parentClassVarIt.nameToken(),
-                                                typeCurrent->name(), parentClassIt.type->name(), classVarIt.name(),
-                                                typeCurrent->classScope->type == Scope::eStruct,
-                                                parentClassIt.type->classScope->type == Scope::eStruct);
+                                              typeCurrent->name(), parentClassIt.type->name(), classVarIt.name(),
+                                              typeCurrent->classScope->type == Scope::eStruct,
+                                              parentClassIt.type->classScope->type == Scope::eStruct);
                 }
             }
         }
