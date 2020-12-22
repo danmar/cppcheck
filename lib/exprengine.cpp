@@ -1297,7 +1297,7 @@ public:
     void z3_to_fp(z3::expr &e) {
         if (e.is_int())
             e = z3::to_real(e);
-	}
+    }
 
 
     z3::expr z3_int_val(int128_t value) {
@@ -2461,7 +2461,8 @@ static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data);
 
-static std::tuple<bool, bool> checkConditionBranches(const ExprEngine::ValuePtr &condValue, const Data &data) {
+static std::tuple<bool, bool> checkConditionBranches(const ExprEngine::ValuePtr &condValue, const Data &data)
+{
     bool canBeFalse = true;
     bool canBeTrue = true;
     if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue)) {
