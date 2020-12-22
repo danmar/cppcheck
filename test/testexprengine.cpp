@@ -102,6 +102,7 @@ private:
         TEST_CASE(floatValue1);
         TEST_CASE(floatValue2);
         TEST_CASE(floatValue3);
+        TEST_CASE(floatValue4);
 
         TEST_CASE(functionCall1);
         TEST_CASE(functionCall2);
@@ -822,6 +823,13 @@ private:
 
     void floatValue3() {
         const char code[] = "void foo(float f) { return f > 12.3; }";
+        const char expected[] = "(> $1 12.3)\n"
+                                "z3::sat\n";
+        ASSERT_EQUALS(expected, expr(code, ">"));
+    }
+
+    void floatValue4() {
+        const char code[] = "void foo(float f) { return f > 12.3f; }";
         const char expected[] = "(> $1 12.3)\n"
                                 "z3::sat\n";
         ASSERT_EQUALS(expected, expr(code, ">"));

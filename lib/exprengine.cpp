@@ -1278,12 +1278,14 @@ public:
 #endif
     }
 
-    z3::expr z3_fp_val(long double value, const std::string &name) {
+    z3::expr z3_fp_val(long double value, std::string name) {
 #if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
         (void)name;
         return context.fpa_val(static_cast<double>(value));
 #else
         (void)value;
+        while (name.size() > 1 && (name.back() == 'f' || name.back() == 'F' || name.back() == 'l' || name.back() == 'L'))
+            name.erase(name.size() - 1);
         return context.real_val(name.c_str());
 #endif
     }
