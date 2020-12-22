@@ -1307,12 +1307,12 @@ public:
 };
 #endif
 
-bool ExprEngine::IntRange::isEqual(DataBase *dataBase, int value) const
+bool ExprEngine::IntRange::isEqual(const DataBase *dataBase, int value) const
 {
     if (value < minValue || value > maxValue)
         return false;
 
-    const Data *data = dynamic_cast<Data *>(dataBase);
+    const Data *data = dynamic_cast<const Data *>(dataBase);
     if (data->constraints.empty())
         return true;
 #ifdef USE_Z3
@@ -1339,12 +1339,12 @@ bool ExprEngine::IntRange::isEqual(DataBase *dataBase, int value) const
 #endif
 }
 
-bool ExprEngine::IntRange::isGreaterThan(DataBase *dataBase, int value) const
+bool ExprEngine::IntRange::isGreaterThan(const DataBase *dataBase, int value) const
 {
     if (maxValue <= value)
         return false;
 
-    const Data *data = dynamic_cast<Data *>(dataBase);
+    const Data *data = dynamic_cast<const Data *>(dataBase);
     if (data->constraints.empty())
         return true;
 #ifdef USE_Z3
@@ -1371,12 +1371,12 @@ bool ExprEngine::IntRange::isGreaterThan(DataBase *dataBase, int value) const
 #endif
 }
 
-bool ExprEngine::IntRange::isLessThan(DataBase *dataBase, int value) const
+bool ExprEngine::IntRange::isLessThan(const DataBase *dataBase, int value) const
 {
     if (minValue >= value)
         return false;
 
-    const Data *data = dynamic_cast<Data *>(dataBase);
+    const Data *data = dynamic_cast<const Data *>(dataBase);
     if (data->constraints.empty())
         return true;
 #ifdef USE_Z3
@@ -1403,13 +1403,13 @@ bool ExprEngine::IntRange::isLessThan(DataBase *dataBase, int value) const
 #endif
 }
 
-bool ExprEngine::FloatRange::isEqual(DataBase *dataBase, int value) const
+bool ExprEngine::FloatRange::isEqual(const DataBase *dataBase, int value) const
 {
     if (MathLib::isFloat(name)) {
         float f = MathLib::toDoubleNumber(name);
         return value >= f - 0.00001 && value <= f + 0.00001;
     }
-    const Data *data = dynamic_cast<Data *>(dataBase);
+    const Data *data = dynamic_cast<const Data *>(dataBase);
     if (data->constraints.empty())
         return true;
 #ifdef USE_Z3
@@ -1442,12 +1442,12 @@ bool ExprEngine::FloatRange::isEqual(DataBase *dataBase, int value) const
 #endif
 }
 
-bool ExprEngine::FloatRange::isGreaterThan(DataBase *dataBase, int value) const
+bool ExprEngine::FloatRange::isGreaterThan(const DataBase *dataBase, int value) const
 {
     if (value < minValue || value > maxValue)
         return false;
 
-    const Data *data = dynamic_cast<Data *>(dataBase);
+    const Data *data = dynamic_cast<const Data *>(dataBase);
     if (data->constraints.empty())
         return true;
     if (MathLib::isFloat(name))
@@ -1476,12 +1476,12 @@ bool ExprEngine::FloatRange::isGreaterThan(DataBase *dataBase, int value) const
 #endif
 }
 
-bool ExprEngine::FloatRange::isLessThan(DataBase *dataBase, int value) const
+bool ExprEngine::FloatRange::isLessThan(const DataBase *dataBase, int value) const
 {
     if (value < minValue || value > maxValue)
         return false;
 
-    const Data *data = dynamic_cast<Data *>(dataBase);
+    const Data *data = dynamic_cast<const Data *>(dataBase);
     if (data->constraints.empty())
         return true;
     if (MathLib::isFloat(name))
@@ -1511,7 +1511,7 @@ bool ExprEngine::FloatRange::isLessThan(DataBase *dataBase, int value) const
 }
 
 
-bool ExprEngine::BinOpResult::isEqual(ExprEngine::DataBase *dataBase, int value) const
+bool ExprEngine::BinOpResult::isEqual(const ExprEngine::DataBase *dataBase, int value) const
 {
 #ifdef USE_Z3
     try {
@@ -1537,7 +1537,7 @@ bool ExprEngine::BinOpResult::isEqual(ExprEngine::DataBase *dataBase, int value)
 #endif
 }
 
-bool ExprEngine::BinOpResult::isGreaterThan(ExprEngine::DataBase *dataBase, int value) const
+bool ExprEngine::BinOpResult::isGreaterThan(const ExprEngine::DataBase *dataBase, int value) const
 {
 #ifdef USE_Z3
     try {
@@ -1563,7 +1563,7 @@ bool ExprEngine::BinOpResult::isGreaterThan(ExprEngine::DataBase *dataBase, int 
 #endif
 }
 
-bool ExprEngine::BinOpResult::isLessThan(ExprEngine::DataBase *dataBase, int value) const
+bool ExprEngine::BinOpResult::isLessThan(const ExprEngine::DataBase *dataBase, int value) const
 {
 #ifdef USE_Z3
     try {
@@ -1589,7 +1589,7 @@ bool ExprEngine::BinOpResult::isLessThan(ExprEngine::DataBase *dataBase, int val
 #endif
 }
 
-bool ExprEngine::BinOpResult::isTrue(ExprEngine::DataBase *dataBase) const
+bool ExprEngine::BinOpResult::isTrue(const ExprEngine::DataBase *dataBase) const
 {
 #ifdef USE_Z3
     try {
@@ -2458,7 +2458,7 @@ static ExprEngine::ValuePtr executeExpression(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data);
 
-static std::tuple<bool, bool> checkConditionBranches(const ExprEngine::ValuePtr &condValue, Data &data) {
+static std::tuple<bool, bool> checkConditionBranches(const ExprEngine::ValuePtr &condValue, const Data &data) {
     bool canBeFalse = true;
     bool canBeTrue = true;
     if (auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(condValue)) {
