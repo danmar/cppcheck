@@ -2647,15 +2647,9 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                     caseData.addConstraint(condValue, caseValue, true);
                     defaultData.addConstraint(condValue, caseValue, false);
                     exec(tok2->tokAt(2), end, caseData);
-                    // After 1 minute processing a function.. only check first case..
-                    if (std::time(nullptr) > data.startTime + 60)
-                        break;
                 } else if (Token::Match(tok2, "case %name% :") && !Token::Match(tok2->tokAt(3), ";| case")) {
                     Data caseData(data);
                     exec(tok2->tokAt(2), end, caseData);
-                    // After 1 minute processing a function.. only check first case..
-                    if (std::time(nullptr) > data.startTime + 60)
-                        break;
                 } else if (Token::simpleMatch(tok2, "default :"))
                     defaultStart = tok2;
             }
