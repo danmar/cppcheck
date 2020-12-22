@@ -1146,11 +1146,7 @@ public:
     }
 
     z3::expr addFloat(const std::string &name) {
-#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
-        z3::expr e = context.fpa_const(name.c_str(), 11, 53);
-#else
-        z3::expr e = context.real_const(name.c_str());
-#endif
+        fpa_const(name);
         valueExpr.emplace(name, e);
         return e;
     }
@@ -1203,11 +1199,7 @@ public:
             throw BailoutValueException();
         if (auto intRange = std::dynamic_pointer_cast<ExprEngine::IntRange>(v)) {
             if (intRange->name[0] != '$')
-#if Z3_VERSION_INT >= GET_VERSION_INT(4,7,1)
-                return context.int_val(int64_t(intRange->minValue));
-#else
-                return context.int_val((long long)(intRange->minValue));
-#endif
+                return z3_int_val(intRange->minValue);
             auto it = valueExpr.find(v->name);
             if (it != valueExpr.end())
                 return it->second;
@@ -1216,11 +1208,7 @@ public:
 
         if (auto floatRange = std::dynamic_pointer_cast<ExprEngine::FloatRange>(v)) {
             if (floatRange->name[0] != '$')
-#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
-                return context.fpa_val(static_cast<double>(floatRange->minValue));
-#else
-                return context.real_val(floatRange->name.c_str());
-#endif
+                return z3_fp_val(floatRange->minValue, floatRange->name);
 
             auto it = valueExpr.find(v->name);
             if (it != valueExpr.end())
@@ -1266,17 +1254,8 @@ public:
             return e;
 
         // Workaround for z3 bug: https://github.com/Z3Prover/z3/issues/4905
-#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
-        if (e.is_fpa()) {
-            z3::expr null = context.fpa_val(0.0);
-            return e != null;
-        }
-#else
-        if (e.is_real()) {
-            z3::expr null = context.real_val(0);
-            return e != null;
-        }
-#endif // Z3_VERSION_INT
+        if (z3_is_fp(e))
+            return e != z3_fp_val(0.0, "0.0");
 
         return e != 0;
     }
@@ -1285,6 +1264,44 @@ public:
         if (e.is_bool())
             return z3::ite(e, context.int_val(1), context.int_val(0));
         return e;
+    }
+
+    // Wrapper functions for Z3 interface. Instead of having ifdefs embedded
+    // in the code we have wrapper functions with ifdefs. The code that use
+    // these will be cleaner and hopefully more robust.
+
+    z3::expr z3_fp_const(const std::string &name) {
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
+        return context.fpa_const(name.c_str(), 11, 53);
+#else
+        return context.real_const(name.c_str());
+#endif
+    }
+
+    z3::expr z3_fp_val(long double value, const std::string &name) {
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
+        (void)name;
+        return context.fpa_val(static_cast<double>(value));
+#else
+        (void)value;
+        return context.real_val(name.c_str());
+#endif
+    }
+
+    bool z3_is_fp(z3::expr e) const {
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,8,0)
+        return e.is_fpa();
+#else
+        return e.is_real();
+#endif
+    }
+
+    z3::expr z3_int_val(int128_t val) {
+#if Z3_VERSION_INT >= GET_VERSION_INT(4,7,1)
+        return context.int_val(int64_t(value));
+#else
+        return context.int_val((long long)(value));
+#endif
     }
 };
 #endif
