@@ -1146,7 +1146,7 @@ public:
     }
 
     z3::expr addFloat(const std::string &name) {
-        fpa_const(name);
+        z3::expr e = z3_fp_const(name);
         valueExpr.emplace(name, e);
         return e;
     }
@@ -1296,7 +1296,7 @@ public:
 #endif
     }
 
-    z3::expr z3_int_val(int128_t val) {
+    z3::expr z3_int_val(int128_t value) {
 #if Z3_VERSION_INT >= GET_VERSION_INT(4,7,1)
         return context.int_val(int64_t(value));
 #else
