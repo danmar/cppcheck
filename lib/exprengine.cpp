@@ -2679,8 +2679,9 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             const Token *cond = tok->next()->astOperand2();
             const ExprEngine::ValuePtr condValue = executeExpression(cond, data);
 
-            bool canBeFalse, canBeTrue;
-            std::tie(canBeFalse, canBeTrue) = checkConditionBranches(condValue, data);
+            bool canBeFalse = false, canBeTrue = true;
+            if (tok->str() == "while")
+                std::tie(canBeFalse, canBeTrue) = checkConditionBranches(condValue, data);
 
             Data &bodyData(data);
             Data noexecData(data);
