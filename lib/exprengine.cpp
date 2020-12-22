@@ -2565,8 +2565,10 @@ static std::string execute(const Token *start, const Token *end, Data &data)
 
             Data &thenData(data);
             Data elseData(data);
-            thenData.addConstraint(condValue, true);
-            elseData.addConstraint(condValue, false);
+            if (canBeFalse && canBeTrue) { // Avoid that constraints are overspecified
+                thenData.addConstraint(condValue, true);
+                elseData.addConstraint(condValue, false);
+            }
 
             Data::ifSplit(tok, thenData, elseData);
 

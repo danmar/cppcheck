@@ -462,8 +462,7 @@ private:
                             "  }\n"
                             "  return a == 0;\n"
                             "}";
-        const char expected[] = "(distinct 1 0)\n"
-                                "(= 0 0)\n"
+        const char expected[] = "(= 0 0)\n"
                                 "z3::sat\n";
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
@@ -476,8 +475,7 @@ private:
                             "  }\n"
                             "  return a == 0;\n"
                             "}";
-        const char expected[] = "(distinct 12.3 0.0)\n"
-                                "(= 0 0)\n"
+        const char expected[] = "(= 0 0)\n"
                                 "z3::sat\n";
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
@@ -491,7 +489,9 @@ private:
                             "  return a == 0;\n"
                             "}";
         // String literals are always true. z3 will not be involved.
-        ASSERT_EQUALS("", expr(code, "=="));
+        ASSERT_EQUALS("(= 0 0)\n"
+                      "z3::sat\n",
+                      expr(code, "=="));
     }
 
     void ifAlwaysFalse1() {
@@ -502,8 +502,7 @@ private:
                             "  }\n"
                             "  return a == 0;\n"
                             "}";
-        const char expected[] = "(= 0 0)\n"
-                                "(= 42 0)\n"
+        const char expected[] = "(= 42 0)\n"
                                 "z3::unsat\n";
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
@@ -516,8 +515,7 @@ private:
                             "  }\n"
                             "  return a == 0;\n"
                             "}";
-        const char expected[] = "(= 0.0 0.0)\n"
-                                "(= 42 0)\n"
+        const char expected[] = "(= 42 0)\n"
                                 "z3::unsat\n";
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
@@ -539,11 +537,9 @@ private:
                             "}";
 
         ASSERT_EQUALS("(> $1 5)\n"
-                      "(> $1 5)\n"
                       "(and (>= $1 0) (<= $1 255))\n"
                       "(= $1 13)\n"
                       "z3::sat\n"
-                      "(<= $1 5)\n"
                       "(<= $1 5)\n"
                       "(and (>= $1 0) (<= $1 255))\n"
                       "(= $1 13)\n"
@@ -575,7 +571,6 @@ private:
                             "  return x == 0;\n" // <- sat
                             "}";
         ASSERT_EQUALS("(<= $1 0)\n"
-                      "(= $1 0)\n"
                       "(and (>= $1 0) (<= $1 255))\n"
                       "(= $1 0)\n"
                       "z3::sat\n",
@@ -592,7 +587,6 @@ private:
                             "  return x == 0;\n" // <- unsat
                             "}";
         ASSERT_EQUALS("(>= $1 1)\n"
-                      "(distinct $1 0)\n"
                       "(and (>= $1 0) (<= $1 255))\n"
                       "(= (+ $1 1) 0)\n"
                       "z3::unsat\n",
