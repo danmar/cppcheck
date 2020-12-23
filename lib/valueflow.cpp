@@ -4140,14 +4140,19 @@ struct ConditionHandler {
         Condition() : vartok(nullptr), true_values(), false_values(), inverted(false) {}
     };
 
-    virtual bool forward(Token* start, const Token* stop, const Token* exprTok, const std::list<ValueFlow::Value>& values, TokenList* tokenlist, const Settings* settings) const = 0;
+    virtual bool forward(Token* start,
+                         const Token* stop,
+                         const Token* exprTok,
+                         const std::list<ValueFlow::Value>& values,
+                         TokenList* tokenlist,
+                         const Settings* settings) const = 0;
 
     virtual Condition parse(const Token* tok, const Settings* settings) const = 0;
 
-    void afterCondition(TokenList *tokenlist,
-                            SymbolDatabase *symboldatabase,
-                            ErrorLogger *errorLogger,
-                            const Settings *settings) const
+    void afterCondition(TokenList* tokenlist,
+                        SymbolDatabase* symboldatabase,
+                        ErrorLogger* errorLogger,
+                        const Settings* settings) const
     {
         for (const Scope *scope : symboldatabase->functionScopes) {
             std::set<unsigned> aliased;
@@ -4392,21 +4397,25 @@ struct ConditionHandler {
             }
         }
     }
-    virtual ~ConditionHandler()
-    {}
+    virtual ~ConditionHandler() {}
 };
 
 static void valueFlowCondition(const ValuePtr<ConditionHandler>& handler,
-                            TokenList *tokenlist,
-                            SymbolDatabase *symboldatabase,
-                            ErrorLogger *errorLogger,
-                            const Settings *settings)
+                               TokenList* tokenlist,
+                               SymbolDatabase* symboldatabase,
+                               ErrorLogger* errorLogger,
+                               const Settings* settings)
 {
     handler->afterCondition(tokenlist, symboldatabase, errorLogger, settings);
 }
 
 struct SimpleConditionHandler : ConditionHandler {
-    virtual bool forward(Token* start, const Token* stop, const Token* exprTok, const std::list<ValueFlow::Value>& values, TokenList* tokenlist, const Settings* settings) const OVERRIDE
+    virtual bool forward(Token* start,
+                         const Token* stop,
+                         const Token* exprTok,
+                         const std::list<ValueFlow::Value>& values,
+                         TokenList* tokenlist,
+                         const Settings* settings) const OVERRIDE
     {
         return valueFlowForward(start->next(), stop, exprTok, values, tokenlist, settings).isModified();
     }
@@ -5914,8 +5923,7 @@ static std::list<ValueFlow::Value> getIteratorValues(std::list<ValueFlow::Value>
     return values;
 }
 
-struct IteratorConditionHandler : SimpleConditionHandler
-{
+struct IteratorConditionHandler : SimpleConditionHandler {
     virtual Condition parse(const Token* tok, const Settings*) const OVERRIDE
     {
         Condition cond;
@@ -6106,7 +6114,12 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
 }
 
 struct ContainerConditionHandler : ConditionHandler {
-    virtual bool forward(Token* start, const Token* stop, const Token* exprTok, const std::list<ValueFlow::Value>& values, TokenList* tokenlist, const Settings*) const OVERRIDE
+    virtual bool forward(Token* start,
+                         const Token* stop,
+                         const Token* exprTok,
+                         const std::list<ValueFlow::Value>& values,
+                         TokenList* tokenlist,
+                         const Settings*) const OVERRIDE
     {
         // TODO: Forward multiple values
         if (values.empty())
