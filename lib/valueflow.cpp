@@ -4148,11 +4148,14 @@ struct ConditionHandler {
                          const Settings* settings) const = 0;
 
     virtual Condition parse(const Token* tok, const Settings* settings) const = 0;
-    
-    void traverseCondition(TokenList* tokenlist,
-                        SymbolDatabase* symboldatabase,
-                        ErrorLogger* errorLogger,
-                        const Settings* settings, const std::function<void(const Condition& cond, Token* tok, const Scope *scope, const std::vector<const Variable*>& vars)>& f) const
+
+    void traverseCondition(
+        TokenList* tokenlist,
+        SymbolDatabase* symboldatabase,
+        ErrorLogger* errorLogger,
+        const Settings* settings,
+        const std::function<
+            void(const Condition& cond, Token* tok, const Scope* scope, const std::vector<const Variable*>& vars)>& f) const
     {
         for (const Scope *scope : symboldatabase->functionScopes) {
             std::set<unsigned> aliased;
@@ -4199,13 +4202,18 @@ struct ConditionHandler {
             }
         }
     }
-    
+
     void afterCondition(TokenList* tokenlist,
                         SymbolDatabase* symboldatabase,
                         ErrorLogger* errorLogger,
                         const Settings* settings) const
     {
-        traverseCondition(tokenlist, symboldatabase, errorLogger, settings, [&](const Condition& cond, Token* tok, const Scope *scope, const std::vector<const Variable*>& vars) {
+        traverseCondition(
+            tokenlist,
+            symboldatabase,
+            errorLogger,
+            settings,
+            [&](const Condition& cond, Token* tok, const Scope* scope, const std::vector<const Variable*>& vars) {
                 const Token* top = tok->astTop();
 
                 std::list<ValueFlow::Value> thenValues;
