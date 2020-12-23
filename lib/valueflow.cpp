@@ -4406,12 +4406,12 @@ static void valueFlowCondition(const ValuePtr<ConditionHandler>& handler,
 }
 
 struct SimpleConditionHandler : ConditionHandler {
-    virtual bool forward(Token* start, const Token* stop, const Token* exprTok, const std::list<ValueFlow::Value>& values, TokenList* tokenlist, const Settings* settings) const
+    virtual bool forward(Token* start, const Token* stop, const Token* exprTok, const std::list<ValueFlow::Value>& values, TokenList* tokenlist, const Settings* settings) const OVERRIDE
     {
         return valueFlowForward(start->next(), stop, exprTok, values, tokenlist, settings).isModified();
     }
 
-    virtual Condition parse(const Token* tok, const Settings*) const
+    virtual Condition parse(const Token* tok, const Settings*) const OVERRIDE
     {
         Condition cond;
         ValueFlow::Value true_value;
@@ -5916,7 +5916,7 @@ static std::list<ValueFlow::Value> getIteratorValues(std::list<ValueFlow::Value>
 
 struct IteratorConditionHandler : SimpleConditionHandler
 {
-    virtual Condition parse(const Token* tok, const Settings*) const
+    virtual Condition parse(const Token* tok, const Settings*) const OVERRIDE
     {
         Condition cond;
 
@@ -6106,7 +6106,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
 }
 
 struct ContainerConditionHandler : ConditionHandler {
-    virtual bool forward(Token* start, const Token* stop, const Token* exprTok, const std::list<ValueFlow::Value>& values, TokenList* tokenlist, const Settings*) const
+    virtual bool forward(Token* start, const Token* stop, const Token* exprTok, const std::list<ValueFlow::Value>& values, TokenList* tokenlist, const Settings*) const OVERRIDE
     {
         // TODO: Forward multiple values
         if (values.empty())
@@ -6117,7 +6117,7 @@ struct ContainerConditionHandler : ConditionHandler {
         return valueFlowContainerForward(start->next(), stop, var, values.front(), tokenlist).isModified();
     }
 
-    virtual Condition parse(const Token* tok, const Settings*) const
+    virtual Condition parse(const Token* tok, const Settings*) const OVERRIDE
     {
         Condition cond;
         ValueFlow::Value true_value;
