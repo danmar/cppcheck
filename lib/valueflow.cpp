@@ -4148,11 +4148,11 @@ struct ConditionHandler {
                          const Settings* settings) const = 0;
 
     virtual Condition parse(const Token* tok, const Settings* settings) const = 0;
-
-    void afterCondition(TokenList* tokenlist,
+    
+    void traverseCondition(TokenList* tokenlist,
                         SymbolDatabase* symboldatabase,
                         ErrorLogger* errorLogger,
-                        const Settings* settings) const
+                        const Settings* settings, const std::function<void(const Condition& cond, Token* tok, const Scope *scope, const std::vector<const Variable*>& vars)>& f) const
     {
         for (const Scope *scope : symboldatabase->functionScopes) {
             std::set<unsigned> aliased;
@@ -4195,6 +4195,18 @@ struct ConditionHandler {
                                 "variable is aliased so we just skip all valueflow after condition");
                     continue;
                 }
+                f(cond, tok, scope, vars);
+            }
+        }
+    }
+    
+    void afterCondition(TokenList* tokenlist,
+                        SymbolDatabase* symboldatabase,
+                        ErrorLogger* errorLogger,
+                        const Settings* settings) const
+    {
+        traverseCondition(tokenlist, symboldatabase, errorLogger, settings, [&](const Condition& cond, Token* tok, const Scope *scope, const std::vector<const Variable*>& vars) {
+                const Token* top = tok->astTop();
 
                 std::list<ValueFlow::Value> thenValues;
                 std::list<ValueFlow::Value> elseValues;
@@ -4252,7 +4264,7 @@ struct ConditionHandler {
                                 return ChildrenToVisit::op1_and_op2;
                             });
                             if (assign)
-                                break;
+                                return;
                         }
                     }
                 }
@@ -4278,7 +4290,7 @@ struct ConditionHandler {
                     }
 
                     if (mixedOperators) {
-                        continue;
+                        return;
                     }
                 }
 
@@ -4288,7 +4300,7 @@ struct ConditionHandler {
                         isVariablesChanged(top, top->link(), 0, vars, settings, tokenlist->isCPP())) {
                         if (settings->debugwarnings)
                             bailout(tokenlist, errorLogger, tok, "assignment in condition");
-                        continue;
+                        return;
                     }
 
                     // start token of conditional code
@@ -4336,7 +4348,7 @@ struct ConditionHandler {
                                     startTokens[changeBlock]->link(),
                                     "valueFlowAfterCondition: " + cond.vartok->expressionString() +
                                     " is changed in conditional block");
-                        continue;
+                        return;
                     }
 
                     // After conditional code..
@@ -4352,7 +4364,7 @@ struct ConditionHandler {
                         if (!dead_if && unknownFunction) {
                             if (settings->debugwarnings)
                                 bailout(tokenlist, errorLogger, unknownFunction, "possible noreturn scope");
-                            continue;
+                            return;
                         }
 
                         if (Token::simpleMatch(after, "} else {")) {
@@ -4362,12 +4374,12 @@ struct ConditionHandler {
                             if (!dead_else && unknownFunction) {
                                 if (settings->debugwarnings)
                                     bailout(tokenlist, errorLogger, unknownFunction, "possible noreturn scope");
-                                continue;
+                                return;
                             }
                         }
 
                         if (dead_if && dead_else)
-                            continue;
+                            return;
 
                         std::list<ValueFlow::Value> values;
                         if (dead_if) {
@@ -4394,8 +4406,7 @@ struct ConditionHandler {
                         }
                     }
                 }
-            }
-        }
+            });
     }
     virtual ~ConditionHandler() {}
 };
