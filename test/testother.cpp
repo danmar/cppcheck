@@ -5340,6 +5340,23 @@ private:
 
         check("int f8(int a) {return (a == (int)1) ? 1 : 1; }");
         ASSERT_EQUALS("[test.cpp:1]: (style) Same value in both branches of ternary operator.\n", errout.str());
+
+        check("struct Foo {\n"
+              "  std::vector<int> bar{1,2,3};\n"
+              "  std::vector<int> baz{4,5,6};\n"
+              "};\n"
+              "void f() {\n"
+              "  Foo foo;\n"
+              "  it = true ? foo.bar.begin() : foo.baz.begin();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b) {\n"
+              "  std::vector<int> bar{1,2,3};\n"
+              "  std::vector<int> baz{4,5,6};\n"
+              "  std::vector<int> v = b ? bar : baz;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionTemplate() { // #6930
