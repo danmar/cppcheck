@@ -62,9 +62,16 @@ private:
         TEST_CASE(if3);
         TEST_CASE(if4);
         TEST_CASE(if5);
+        TEST_CASE(ifAlwaysTrue1);
+        TEST_CASE(ifAlwaysTrue2);
+        TEST_CASE(ifAlwaysTrue3);
+        TEST_CASE(ifAlwaysFalse1);
+        TEST_CASE(ifAlwaysFalse2);
         TEST_CASE(ifelse1);
         TEST_CASE(ifif);
         TEST_CASE(ifreturn);
+        TEST_CASE(ifIntRangeAlwaysFalse);
+        TEST_CASE(ifIntRangeAlwaysTrue);
 
         TEST_CASE(istream);
 
@@ -95,6 +102,8 @@ private:
         TEST_CASE(floatValue1);
         TEST_CASE(floatValue2);
         TEST_CASE(floatValue3);
+        TEST_CASE(floatValue4);
+        TEST_CASE(floatValue5);
 
         TEST_CASE(functionCall1);
         TEST_CASE(functionCall2);
@@ -103,6 +112,7 @@ private:
         TEST_CASE(functionCall5);
 
         TEST_CASE(functionCallContract1);
+        TEST_CASE(functionCallContract2);
 
         TEST_CASE(int1);
 
@@ -149,6 +159,9 @@ private:
             }
             replace(line, "(fp.gt ", "(> ");
             replace(line, "(fp.lt ", "(< ");
+            replace(line, "(_ +zero 11 53)", "0.0");
+            replace(line, "(fp #b0 #b10000000010 #x899999999999a)", "12.3");
+            replace(line, "(/ 123.0 10.0)", "12.3");
             int par = 0;
             for (char pos : line) {
                 if (pos == '(')
@@ -443,6 +456,71 @@ private:
                       expr("void foo(const int *x) { if (f1() && *x > 12) dostuff(*x == 5); }", "=="));
     }
 
+    void ifAlwaysTrue1() {
+        const char code[] = "int foo() {\n"
+                            "  int a = 42;\n"
+                            "  if (1) {\n"
+                            "    a = 0;\n"
+                            "  }\n"
+                            "  return a == 0;\n"
+                            "}";
+        const char expected[] = "(= 0 0)\n"
+                                "z3::sat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
+
+    void ifAlwaysTrue2() {
+        const char code[] = "int foo() {\n"
+                            "  int a = 42;\n"
+                            "  if (12.3) {\n"
+                            "    a = 0;\n"
+                            "  }\n"
+                            "  return a == 0;\n"
+                            "}";
+        const char expected[] = "(= 0 0)\n"
+                                "z3::sat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
+
+    void ifAlwaysTrue3() {
+        const char code[] = "int foo() {\n"
+                            "  int a = 42;\n"
+                            "  if (\"test\") {\n"
+                            "    a = 0;\n"
+                            "  }\n"
+                            "  return a == 0;\n"
+                            "}";
+        // String literals are always true. z3 will not be involved.
+        ASSERT_EQUALS("(= 0 0)\n"
+                      "z3::sat\n",
+                      expr(code, "=="));
+    }
+
+    void ifAlwaysFalse1() {
+        const char code[] = "int foo() {\n"
+                            "  int a = 42;\n"
+                            "  if (0) {\n"
+                            "    a = 0;\n"
+                            "  }\n"
+                            "  return a == 0;\n"
+                            "}";
+        const char expected[] = "(= 42 0)\n"
+                                "z3::unsat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
+
+    void ifAlwaysFalse2() {
+        const char code[] = "int foo() {\n"
+                            "  int a = 42;\n"
+                            "  if (0.0) {\n"
+                            "    a = 0;\n"
+                            "  }\n"
+                            "  return a == 0;\n"
+                            "}";
+        const char expected[] = "(= 42 0)\n"
+                                "z3::unsat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
 
     void ifelse1() {
         ASSERT_EQUALS("(<= $1 5)\n"
@@ -461,11 +539,9 @@ private:
                             "}";
 
         ASSERT_EQUALS("(> $1 5)\n"
-                      "(> $1 5)\n"
                       "(and (>= $1 0) (<= $1 255))\n"
                       "(= $1 13)\n"
                       "z3::sat\n"
-                      "(<= $1 5)\n"
                       "(<= $1 5)\n"
                       "(and (>= $1 0) (<= $1 255))\n"
                       "(= $1 13)\n"
@@ -483,6 +559,38 @@ private:
         ASSERT_EQUALS("(<= $1 5)\n"
                       "(and (>= $1 0) (<= $1 255))\n"
                       "(= $1 13)\n"
+                      "z3::unsat\n",
+                      expr(code, "=="));
+    }
+
+    void ifIntRangeAlwaysFalse() {
+        const char code[] = "void foo(unsigned char x) {\n"
+                            "  if (x > 0)\n"
+                            "      return;\n"
+                            "  if (x) {\n"  // <-- condition should be "always false".
+                            "      x++;\n"
+                            "  }\n"
+                            "  return x == 0;\n" // <- sat
+                            "}";
+        ASSERT_EQUALS("(<= $1 0)\n"
+                      "(and (>= $1 0) (<= $1 255))\n"
+                      "(= $1 0)\n"
+                      "z3::sat\n",
+                      expr(code, "=="));
+    }
+
+    void ifIntRangeAlwaysTrue() {
+        const char code[] = "void foo(unsigned char x) {\n"
+                            "  if (x < 1)\n"
+                            "      return;\n"
+                            "  if (x) {\n"  // <-- condition should be "always true".
+                            "      x++;\n"
+                            "  }\n"
+                            "  return x == 0;\n" // <- unsat
+                            "}";
+        ASSERT_EQUALS("(>= $1 1)\n"
+                      "(and (>= $1 0) (<= $1 255))\n"
+                      "(= (+ $1 1) 0)\n"
                       "z3::unsat\n",
                       expr(code, "=="));
     }
@@ -560,10 +668,14 @@ private:
                             "    x = x + 34;\n"
                             "  x == 340;\n"
                             "}";
-        ASSERT_EQUALS("(and (>= $2 (- 2147483648)) (<= $2 2147483647))\n"
-                      "(= (+ $2 34) 340)\n"
-                      "z3::sat\n",
-                      expr(code, "=="));
+        const char expected[] = "(< 0 $1)\n"
+                                "(and (>= $2 (- 2147483648)) (<= $2 2147483647))\n"
+                                "(and (>= $1 (- 2147483648)) (<= $1 2147483647))\n"
+                                "(= (+ $2 34) 340)\n"
+                                "z3::sat\n"
+                                "(= 0 340)\n"
+                                "z3::unsat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
     void while2() {
@@ -573,10 +685,14 @@ private:
                             "    x++;\n"
                             "  x == 1;\n"
                             "}";
-        ASSERT_EQUALS("(and (>= $2 (- 2147483648)) (<= $2 2147483647))\n"
-                      "(= (+ $2 1) 1)\n"
-                      "z3::sat\n",
-                      expr(code, "=="));
+        const char expected[] = "(< 0 $1)\n"
+                                "(and (>= $2 (- 2147483648)) (<= $2 2147483647))\n"
+                                "(and (>= $1 (- 2147483648)) (<= $1 2147483647))\n"
+                                "(= (+ $2 1) 1)\n"
+                                "z3::sat\n"
+                                "(= 0 1)\n"
+                                "z3::unsat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
     void while3() {
@@ -598,8 +714,14 @@ private:
                             "    *len = 0;\n"
                             "  *len == 0;\n"
                             "}";
-        ASSERT_EQUALS("(= 0 0)\n"
-                      "z3::sat\n", expr(code, "=="));
+        const char expected[] = "(distinct |$2:0| 0)\n"
+                                "(and (>= |$2:0| (- 128)) (<= |$2:0| 127))\n"
+                                "(= 0 0)\n"
+                                "z3::sat\n"
+                                "(and (>= $8 (- 2147483648)) (<= $8 2147483647))\n"
+                                "(= $8 0)\n"
+                                "z3::sat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
     void while5() {
@@ -715,12 +837,25 @@ private:
     }
 
     void floatValue3() {
-        const char code[] = "void foo(float f) { return f > 12.0; }";
-        const char expected[] = "(> $1 |12.0|)\n"
+        const char code[] = "void foo(float f) { return f > 12.3; }";
+        const char expected[] = "(> $1 12.3)\n"
                                 "z3::sat\n";
         ASSERT_EQUALS(expected, expr(code, ">"));
     }
 
+    void floatValue4() {
+        const char code[] = "void foo(float f) { return f > 12.3f; }";
+        const char expected[] = "(> $1 12.3)\n"
+                                "z3::sat\n";
+        ASSERT_EQUALS(expected, expr(code, ">"));
+    }
+
+    void floatValue5() { // float < int
+        const char code[] = "void foo(float f) { if (f < 1){} }";
+        const char expected[] = "(< $1 (to_real 1))\n"
+                                "z3::sat\n";
+        ASSERT_EQUALS(expected, expr(code, "<"));
+    }
 
     void functionCall1() {
         ASSERT_EQUALS("-2147483648:2147483647", getRange("int atoi(const char *p); void f() { int x = atoi(a); x = x; }", "x=x"));
@@ -765,6 +900,19 @@ private:
                       "(= $2 $1)\n"
                       "(and (>= $2 (- 2147483648)) (<= $2 2147483647))\n"
                       "(and (>= $1 0) (<= $1 65535))\n"
+                      "}\n",
+                      functionCallContractExpr(code, s));
+    }
+
+    void functionCallContract2() {
+        const char code[] = "void foo(float x);\n"
+                            "void bar(float x) { foo(x); }";
+
+        Settings s;
+        s.functionContracts["foo(x)"] = "x < 12.3";
+
+        ASSERT_EQUALS("checkContract:{\n"
+                      "(ite (< $2 12.3) false true)\n"
                       "}\n",
                       functionCallContractExpr(code, s));
     }

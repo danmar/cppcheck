@@ -2439,22 +2439,28 @@ void CheckClass::checkDuplInheritedMembers()
     // Iterate over all classes
     for (const Type &classIt : mSymbolDatabase->typeList) {
         // Iterate over the parent classes
-        for (const Type::BaseInfo &parentClassIt : classIt.derivedFrom) {
-            // Check if there is info about the 'Base' class
-            if (!parentClassIt.type || !parentClassIt.type->classScope)
-                continue;
-            // Check if they have a member variable in common
-            for (const Variable &classVarIt : classIt.classScope->varlist) {
-                for (const Variable &parentClassVarIt : parentClassIt.type->classScope->varlist) {
-                    if (classVarIt.name() == parentClassVarIt.name() && !parentClassVarIt.isPrivate()) { // Check if the class and its parent have a common variable
-                        duplInheritedMembersError(classVarIt.nameToken(), parentClassVarIt.nameToken(),
-                                                  classIt.name(), parentClassIt.type->name(), classVarIt.name(),
-                                                  classIt.classScope->type == Scope::eStruct,
-                                                  parentClassIt.type->classScope->type == Scope::eStruct);
-                    }
+        checkDuplInheritedMembersRecursive(&classIt, &classIt);
+    }
+}
+
+void CheckClass::checkDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase)
+{
+    for (const Type::BaseInfo &parentClassIt : typeBase->derivedFrom) {
+        // Check if there is info about the 'Base' class
+        if (!parentClassIt.type || !parentClassIt.type->classScope)
+            continue;
+        // Check if they have a member variable in common
+        for (const Variable &classVarIt : typeCurrent->classScope->varlist) {
+            for (const Variable &parentClassVarIt : parentClassIt.type->classScope->varlist) {
+                if (classVarIt.name() == parentClassVarIt.name() && !parentClassVarIt.isPrivate()) { // Check if the class and its parent have a common variable
+                    duplInheritedMembersError(classVarIt.nameToken(), parentClassVarIt.nameToken(),
+                                              typeCurrent->name(), parentClassIt.type->name(), classVarIt.name(),
+                                              typeCurrent->classScope->type == Scope::eStruct,
+                                              parentClassIt.type->classScope->type == Scope::eStruct);
                 }
             }
         }
+        checkDuplInheritedMembersRecursive(typeCurrent, parentClassIt.type);
     }
 }
 

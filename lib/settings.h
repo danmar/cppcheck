@@ -83,6 +83,10 @@ public:
     /** @brief Bug hunting */
     bool bugHunting;
 
+    /** @brief Max time for bug hunting analysis in seconds, after
+     * timeout the analysis will just stop. */
+    int bugHuntingCheckFunctionMaxTime;
+
     /** Filename for bug hunting report */
     std::string bugHuntingReport;
 
@@ -411,6 +415,10 @@ public:
     static bool terminated() {
         return Settings::mTerminated;
     }
+
+    std::set<std::string> summaryReturn;
+
+    void loadSummaries();
 };
 
 /// @}

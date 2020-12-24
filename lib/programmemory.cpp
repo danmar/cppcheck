@@ -5,6 +5,7 @@
 #include "symboldatabase.h"
 #include <algorithm>
 #include <cassert>
+#include <limits>
 #include <memory>
 
 void ProgramMemory::setValue(nonneg int varid, const ValueFlow::Value &value)

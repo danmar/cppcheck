@@ -41,6 +41,7 @@ private:
         TEST_CASE(arrayIndexOutOfBounds3);
         TEST_CASE(arrayIndexOutOfBounds4);
         TEST_CASE(arrayIndexOutOfBounds5);
+        TEST_CASE(arrayIndexOutOfBoundsDim1);
         TEST_CASE(bufferOverflowMemCmp1);
         TEST_CASE(bufferOverflowMemCmp2);
         TEST_CASE(bufferOverflowStrcpy1);
@@ -151,6 +152,14 @@ private:
                       "[test.cpp:9]: (error) Array index out of bounds, cannot determine that i is not negative\n"
                       "[test.cpp:9]: (error) Cannot determine that 'buf[i]' is initialized\n",
                       errout.str());
+    }
+
+    void arrayIndexOutOfBoundsDim1() { // itc test case
+        check("void overrun_st_008 () {\n"
+              "    int buf[5][6];\n"
+              "    buf[5][5] = 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index out of bounds, cannot determine that 5 is less than 5\n", errout.str());
     }
 
     void bufferOverflowMemCmp1() {
