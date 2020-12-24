@@ -31,6 +31,7 @@
 #include "utils.h"
 
 class Library;
+class Scope;
 class Settings;
 class Token;
 class Variable;
@@ -113,6 +114,9 @@ const Token* getCondTok(const Token* tok);
 
 Token* getCondTokFromEnd(Token* endBlock);
 const Token* getCondTokFromEnd(const Token* endBlock);
+
+/// For a "break", locate the outer loop/switch scope that is finished
+const Scope *findBreakScope(const Scope *scope);
 
 /**
  * Extract for loop values: loopvar varid, init value, step value, last value (inclusive)

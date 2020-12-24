@@ -505,12 +505,6 @@ struct ForwardTraversal {
         return nullptr;
     }
 
-    static const Scope* findBreakScope(const Scope* scope) {
-        while (scope && scope->type != Scope::eWhile && scope->type != Scope::eFor && scope->type != Scope::eSwitch)
-            scope = scope->nestedIn;
-        return scope;
-    }
-
     static Token* skipTo(Token* tok, const Token* dest, const Token* end = nullptr) {
         if (end && dest->index() > end->index())
             return nullptr;

@@ -494,6 +494,12 @@ const Token* getCondTokFromEnd(const Token* endBlock)
     return getCondTokFromEndImpl(endBlock);
 }
 
+const Scope *findBreakScope(const Scope *s) {
+    while (s && !s->isLoopScope() && s->type != Scope::ScopeType::eSwitch)
+        s = s->nestedIn;
+    return s;
+}
+
 bool extractForLoopValues(const Token *forToken,
                           nonneg int * const varid,
                           bool * const knownInitValue,
@@ -2240,8 +2246,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             if (tok->scope() == expr->scope())
                 mValueFlowKnown = false;
 
-            Scope::ScopeType scopeType = tok->scope()->type;
-            if (scopeType == Scope::eWhile || scopeType == Scope::eFor || scopeType == Scope::eDo) {
+            if (tok->scope()->isLoopScope()) {
                 // check condition
                 const Token *conditionStart = nullptr;
                 const Token *conditionEnd = nullptr;
@@ -2508,12 +2513,10 @@ FwdAnalysis::Result FwdAnalysis::check(const Token* expr, const Token* startToke
 
     // Break => continue checking in outer scope
     while (mWhat!=What::ValueFlow && result.type == FwdAnalysis::Result::Type::BREAK) {
-        const Scope *s = result.token->scope();
-        while (s->type == Scope::eIf)
-            s = s->nestedIn;
-        if (s->type != Scope::eSwitch && s->type != Scope::eWhile && s->type != Scope::eFor)
-            break;
-        result = checkRecursive(expr, s->bodyEnd->next(), endToken, exprVarIds, local, false);
+        const Scope *breakScope = findBreakScope(result.token->scope());
+        if (!breakScope)
+	    break;
+        result = checkRecursive(expr, breakScope->bodyEnd->next(), endToken, exprVarIds, local, false);
     }
 
     return result;

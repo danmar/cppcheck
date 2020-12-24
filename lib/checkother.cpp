@@ -981,7 +981,7 @@ void CheckOther::checkVariableScope()
 bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& used)
 {
     const Scope* scope = tok->next()->scope();
-    bool loopVariable = scope->type == Scope::eFor || scope->type == Scope::eWhile || scope->type == Scope::eDo;
+    bool loopVariable = scope->isLoopScope();
     bool noContinue = true;
     const Token* forHeadEnd = nullptr;
     const Token* end = tok->link();
