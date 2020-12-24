@@ -98,6 +98,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdio>
 #include <cstring>
 #include <functional>
 #include <iterator>
@@ -105,6 +106,7 @@
 #include <map>
 #include <set>
 #include <stack>
+#include <stdexcept>
 #include <tuple>
 #include <vector>
 
@@ -333,6 +335,43 @@ static bool isComputableValue(const Token* parent, const ValueFlow::Value& value
     return true;
 }
 
+uint32_t convertToMultiCharInt(const std::string& x)
+{
+    assert(x.size() < 5);
+    uint32_t y = 0;
+    int shift = (x.size()*8)-8;
+    for(size_t i = 0;i < x.size();++i)
+    {
+        y |= (uint32_t(uint8_t(x[i])) << shift);
+        shift -= 8;
+    }
+    return y;
+}
+
+template<class T, class U>
+static T calculate(const std::string& s, T x, U y)
+{
+    switch(convertToMultiCharInt(s)) {
+        case '+': return x + y;
+        case '-': return x - y;
+        case '*': return x * y;
+        case '/': return x / y;
+        case '%': return x % y;
+        case '&': return x & y;
+        case '|': return x | y;
+        case '^': return x ^ y;
+        case '>': return x > y;
+        case '<': return x < y;
+        case '&&': return x && y;
+        case '||': return x || y;
+        case '==': return x == y;
+        case '!=': return x != y;
+        case '>=': return x >= y;
+        case '<=': return x <= y;
+    }
+    throw std::runtime_error("Unknown operator: " + s);
+}
+
 /** Set token value for cast */
 static void setTokenValueCast(Token *parent, const ValueType &valueType, const ValueFlow::Value &value, const Settings *settings);
 
@@ -351,23 +390,32 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
 
     if (value.isContainerSizeValue()) {
         // .empty, .size, +"abc", +'a'
-        if (parent->str() == "+" && parent->astOperand1() && parent->astOperand2()) {
+        if (Token::Match(parent, "+|==|!=") && parent->astOperand1() && parent->astOperand2()) {
             for (const ValueFlow::Value &value1 : parent->astOperand1()->values()) {
                 for (const ValueFlow::Value &value2 : parent->astOperand2()->values()) {
                     if (value1.path != value2.path)
                         continue;
                     ValueFlow::Value result;
-                    result.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+                    if (Token::Match(parent, "%comp%"))
+                        result.valueType = ValueFlow::Value::ValueType::INT;
+                    else
+                        result.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+
                     if (value1.isContainerSizeValue() && value2.isContainerSizeValue())
-                        result.intvalue = value1.intvalue + value2.intvalue;
+                        result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
                     else if (value1.isContainerSizeValue() && value2.isTokValue() && value2.tokvalue->tokType() == Token::eString)
-                        result.intvalue = value1.intvalue + Token::getStrLength(value2.tokvalue);
+                        result.intvalue = calculate(parent->str(), value1.intvalue, Token::getStrLength(value2.tokvalue));
                     else if (value2.isContainerSizeValue() && value1.isTokValue() && value1.tokvalue->tokType() == Token::eString)
-                        result.intvalue = Token::getStrLength(value1.tokvalue) + value2.intvalue;
+                        result.intvalue = calculate(parent->str(), Token::getStrLength(value1.tokvalue), value2.intvalue);
                     else
                         continue;
 
                     combineValueProperties(value1, value2, &result);
+
+                    if (Token::simpleMatch(parent, "==") && result.intvalue)
+                        continue;
+                    if (Token::simpleMatch(parent, "!=") && !result.intvalue)
+                        continue;
 
                     setTokenValue(parent, result, settings);
                 }
