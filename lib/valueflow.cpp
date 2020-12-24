@@ -4130,7 +4130,7 @@ static std::vector<const Variable*> getExprVariables(const Token* expr,
     return result;
 }
 
-struct ValueFlowConditionHandler {
+struct ConditionHandler {
     struct Condition {
         const Token *vartok;
         std::list<ValueFlow::Value> true_values;
@@ -4139,14 +4139,24 @@ struct ValueFlowConditionHandler {
 
         Condition() : vartok(nullptr), true_values(), false_values(), inverted(false) {}
     };
-    std::function<bool(Token* start, const Token* stop, const Token* exprTok, const std::list<ValueFlow::Value>& values, bool constValue)>
-    forward;
-    std::function<Condition(Token *tok)> parse;
 
-    void afterCondition(TokenList *tokenlist,
-                        SymbolDatabase *symboldatabase,
-                        ErrorLogger *errorLogger,
-                        const Settings *settings) const {
+    virtual bool forward(Token* start,
+                         const Token* stop,
+                         const Token* exprTok,
+                         const std::list<ValueFlow::Value>& values,
+                         TokenList* tokenlist,
+                         const Settings* settings) const = 0;
+
+    virtual Condition parse(const Token* tok, const Settings* settings) const = 0;
+
+    void traverseCondition(
+        TokenList* tokenlist,
+        SymbolDatabase* symboldatabase,
+        ErrorLogger* errorLogger,
+        const Settings* settings,
+        const std::function<
+            void(const Condition& cond, Token* tok, const Scope* scope, const std::vector<const Variable*>& vars)>& f) const
+    {
         for (const Scope *scope : symboldatabase->functionScopes) {
             std::set<unsigned> aliased;
             for (Token *tok = const_cast<Token *>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
@@ -4162,7 +4172,7 @@ struct ValueFlowConditionHandler {
                 if (!Token::Match(top->previous(), "if|while|for (") && !Token::Match(tok->astParent(), "&&|%oror%"))
                     continue;
 
-                Condition cond = parse(tok);
+                Condition cond = parse(tok, settings);
                 if (!cond.vartok)
                     continue;
                 if (cond.vartok->variable() && cond.vartok->variable()->isVolatile())
@@ -4188,6 +4198,23 @@ struct ValueFlowConditionHandler {
                                 "variable is aliased so we just skip all valueflow after condition");
                     continue;
                 }
+                f(cond, tok, scope, vars);
+            }
+        }
+    }
+
+    void afterCondition(TokenList* tokenlist,
+                        SymbolDatabase* symboldatabase,
+                        ErrorLogger* errorLogger,
+                        const Settings* settings) const
+    {
+        traverseCondition(
+            tokenlist,
+            symboldatabase,
+            errorLogger,
+            settings,
+            [&](const Condition& cond, Token* tok, const Scope* scope, const std::vector<const Variable*>& vars) {
+                const Token* top = tok->astTop();
 
                 std::list<ValueFlow::Value> thenValues;
                 std::list<ValueFlow::Value> elseValues;
@@ -4245,7 +4272,7 @@ struct ValueFlowConditionHandler {
                                 return ChildrenToVisit::op1_and_op2;
                             });
                             if (assign)
-                                break;
+                                return;
                         }
                     }
                 }
@@ -4271,7 +4298,7 @@ struct ValueFlowConditionHandler {
                     }
 
                     if (mixedOperators) {
-                        continue;
+                        return;
                     }
                 }
 
@@ -4281,7 +4308,7 @@ struct ValueFlowConditionHandler {
                         isVariablesChanged(top, top->link(), 0, vars, settings, tokenlist->isCPP())) {
                         if (settings->debugwarnings)
                             bailout(tokenlist, errorLogger, tok, "assignment in condition");
-                        continue;
+                        return;
                     }
 
                     // start token of conditional code
@@ -4317,7 +4344,7 @@ struct ValueFlowConditionHandler {
                         valueFlowSetConditionToKnown(tok, values, i == 0);
 
                         // TODO: The endToken should not be startTokens[i]->link() in the valueFlowForwardVariable call
-                        if (forward(startTokens[i], startTokens[i]->link(), cond.vartok, values, true))
+                        if (forward(startTokens[i], startTokens[i]->link(), cond.vartok, values, tokenlist, settings))
                             changeBlock = i;
                         changeKnownToPossible(values);
                     }
@@ -4329,7 +4356,7 @@ struct ValueFlowConditionHandler {
                                     startTokens[changeBlock]->link(),
                                     "valueFlowAfterCondition: " + cond.vartok->expressionString() +
                                     " is changed in conditional block");
-                        continue;
+                        return;
                     }
 
                     // After conditional code..
@@ -4345,7 +4372,7 @@ struct ValueFlowConditionHandler {
                         if (!dead_if && unknownFunction) {
                             if (settings->debugwarnings)
                                 bailout(tokenlist, errorLogger, unknownFunction, "possible noreturn scope");
-                            continue;
+                            return;
                         }
 
                         if (Token::simpleMatch(after, "} else {")) {
@@ -4355,12 +4382,12 @@ struct ValueFlowConditionHandler {
                             if (!dead_else && unknownFunction) {
                                 if (settings->debugwarnings)
                                     bailout(tokenlist, errorLogger, unknownFunction, "possible noreturn scope");
-                                continue;
+                                return;
                             }
                         }
 
                         if (dead_if && dead_else)
-                            continue;
+                            return;
 
                         std::list<ValueFlow::Value> values;
                         if (dead_if) {
@@ -4383,30 +4410,38 @@ struct ValueFlowConditionHandler {
                                 valueFlowSetConditionToKnown(tok, values, true);
                                 valueFlowSetConditionToKnown(tok, values, false);
                             }
-                            // TODO: constValue could be true if there are no assignments in the conditional blocks and
-                            //       perhaps if there are no && and no || in the condition
-                            bool constValue = false;
-                            forward(after, scope->bodyEnd, cond.vartok, values, constValue);
+                            forward(after, scope->bodyEnd, cond.vartok, values, tokenlist, settings);
                         }
                     }
                 }
-            }
-        }
+            });
     }
+    virtual ~ConditionHandler() {}
 };
 
-static void valueFlowAfterCondition(TokenList *tokenlist,
-                                    SymbolDatabase *symboldatabase,
-                                    ErrorLogger *errorLogger,
-                                    const Settings *settings)
+static void valueFlowCondition(const ValuePtr<ConditionHandler>& handler,
+                               TokenList* tokenlist,
+                               SymbolDatabase* symboldatabase,
+                               ErrorLogger* errorLogger,
+                               const Settings* settings)
 {
-    ValueFlowConditionHandler handler;
-    handler.forward =
-    [&](Token* start, const Token* stop, const Token* vartok, const std::list<ValueFlow::Value>& values, bool) {
-        return valueFlowForward(start->next(), stop, vartok, values, tokenlist, settings).isModified();
-    };
-    handler.parse = [&](const Token *tok) {
-        ValueFlowConditionHandler::Condition cond;
+    handler->afterCondition(tokenlist, symboldatabase, errorLogger, settings);
+}
+
+struct SimpleConditionHandler : ConditionHandler {
+    virtual bool forward(Token* start,
+                         const Token* stop,
+                         const Token* exprTok,
+                         const std::list<ValueFlow::Value>& values,
+                         TokenList* tokenlist,
+                         const Settings* settings) const OVERRIDE
+    {
+        return valueFlowForward(start->next(), stop, exprTok, values, tokenlist, settings).isModified();
+    }
+
+    virtual Condition parse(const Token* tok, const Settings*) const OVERRIDE
+    {
+        Condition cond;
         ValueFlow::Value true_value;
         ValueFlow::Value false_value;
         const Token *vartok = parseCompareInt(tok, true_value, false_value);
@@ -4439,9 +4474,8 @@ static void valueFlowAfterCondition(TokenList *tokenlist,
         cond.vartok = vartok;
 
         return cond;
-    };
-    handler.afterCondition(tokenlist, symboldatabase, errorLogger, settings);
-}
+    }
+};
 
 static bool isInBounds(const ValueFlow::Value& value, MathLib::bigint x)
 {
@@ -5908,18 +5942,10 @@ static std::list<ValueFlow::Value> getIteratorValues(std::list<ValueFlow::Value>
     return values;
 }
 
-static void valueFlowIteratorAfterCondition(TokenList *tokenlist,
-        SymbolDatabase *symboldatabase,
-        ErrorLogger *errorLogger,
-        const Settings *settings)
-{
-    ValueFlowConditionHandler handler;
-    handler.forward =
-    [&](Token* start, const Token* stop, const Token* vartok, const std::list<ValueFlow::Value>& values, bool) {
-        return valueFlowForward(start->next(), stop, vartok, values, tokenlist, settings).isModified();
-    };
-    handler.parse = [&](const Token *tok) {
-        ValueFlowConditionHandler::Condition cond;
+struct IteratorConditionHandler : SimpleConditionHandler {
+    virtual Condition parse(const Token* tok, const Settings*) const OVERRIDE
+    {
+        Condition cond;
 
         ValueFlow::Value true_value;
         ValueFlow::Value false_value;
@@ -5946,9 +5972,8 @@ static void valueFlowIteratorAfterCondition(TokenList *tokenlist,
         }
 
         return cond;
-    };
-    handler.afterCondition(tokenlist, symboldatabase, errorLogger, settings);
-}
+    }
+};
 
 static void valueFlowIteratorInfer(TokenList *tokenlist, const Settings *settings)
 {
@@ -6107,24 +6132,26 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
     }
 }
 
-static void valueFlowContainerAfterCondition(TokenList *tokenlist,
-        SymbolDatabase *symboldatabase,
-        ErrorLogger *errorLogger,
-        const Settings *settings)
-{
-    ValueFlowConditionHandler handler;
-    handler.forward =
-    [&](Token* start, const Token* stop, const Token* vartok, const std::list<ValueFlow::Value>& values, bool) {
+struct ContainerConditionHandler : ConditionHandler {
+    virtual bool forward(Token* start,
+                         const Token* stop,
+                         const Token* exprTok,
+                         const std::list<ValueFlow::Value>& values,
+                         TokenList* tokenlist,
+                         const Settings*) const OVERRIDE
+    {
         // TODO: Forward multiple values
         if (values.empty())
             return false;
-        const Variable* var = vartok->variable();
+        const Variable* var = exprTok->variable();
         if (!var)
             return false;
         return valueFlowContainerForward(start->next(), stop, var, values.front(), tokenlist).isModified();
-    };
-    handler.parse = [&](const Token *tok) {
-        ValueFlowConditionHandler::Condition cond;
+    }
+
+    virtual Condition parse(const Token* tok, const Settings*) const OVERRIDE
+    {
+        Condition cond;
         ValueFlow::Value true_value;
         ValueFlow::Value false_value;
         const Token *vartok = parseCompareInt(tok, true_value, false_value);
@@ -6182,9 +6209,8 @@ static void valueFlowContainerAfterCondition(TokenList *tokenlist,
             return cond;
         }
         return cond;
-    };
-    handler.afterCondition(tokenlist, symboldatabase, errorLogger, settings);
-}
+    }
+};
 
 static void valueFlowFwdAnalysis(const TokenList *tokenlist, const Settings *settings)
 {
@@ -6600,7 +6626,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowTerminatingCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);
-        valueFlowAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowCondition(SimpleConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings);
         valueFlowInferCondition(tokenlist, settings);
         valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
@@ -6613,10 +6639,10 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         if (tokenlist->isCPP()) {
             valueFlowSmartPointer(tokenlist, errorLogger, settings);
             valueFlowIterators(tokenlist, settings);
-            valueFlowIteratorAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
+            valueFlowCondition(IteratorConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings);
             valueFlowIteratorInfer(tokenlist, settings);
             valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings);
-            valueFlowContainerAfterCondition(tokenlist, symboldatabase, errorLogger, settings);
+            valueFlowCondition(ContainerConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings);
         }
         valueFlowSafeFunctions(tokenlist, symboldatabase, errorLogger, settings);
         n--;
