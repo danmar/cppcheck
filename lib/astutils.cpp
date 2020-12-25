@@ -2429,6 +2429,14 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 return result1;
             if (mWhat == What::ValueFlow && result1.type == Result::Type::WRITE)
                 mValueFlowKnown = false;
+            if (mWhat == What::Reassign && result1.type == Result::Type::BREAK) {
+                const Token *scopeEndToken = findNextTokenFromBreak(result1.token);
+                if (scopeEndToken) {
+                    const Result &result2 = checkRecursive(expr, scopeEndToken->next(), endToken, exprVarIds, local, inInnerClass, depth);
+                    if (result2.type == Result::Type::BAILOUT)
+                        return result2;
+                }
+            }
             if (Token::simpleMatch(tok->linkAt(1), "} else {")) {
                 const Token *elseStart = tok->linkAt(1)->tokAt(2);
                 const Result &result2 = checkRecursive(expr, elseStart, elseStart->link(), exprVarIds, local, inInnerClass, depth);

@@ -184,6 +184,7 @@ private:
         TEST_CASE(redundantVarAssignment_pointer);
         TEST_CASE(redundantVarAssignment_pointer_parameter);
         TEST_CASE(redundantVarAssignment_array);
+        TEST_CASE(redundantVarAssignment_switch_break);
         TEST_CASE(redundantInitialization);
         TEST_CASE(redundantMemWrite);
 
@@ -7417,6 +7418,34 @@ private:
               "    dostuff(arr);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void redundantVarAssignment_switch_break() {
+        // #10058
+        check("void f(int a, int b) {\n"
+              "    int ret = 0;\n"
+              "    switch (a) {\n"
+              "    case 1:\n"
+              "        ret = 543;\n"
+              "        if (b) break;\n"
+              "        ret = 1;\n"
+              "        break;\n"
+              "    }"
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a, int b) {\n"
+              "    int ret = 0;\n"
+              "    switch (a) {\n"
+              "    case 1:\n"
+              "        ret = 543;\n"
+              "        if (b) break;\n"
+              "        ret = 1;\n"
+              "        break;\n"
+              "    }"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:7]: (style) Variable 'ret' is reassigned a value before the old one has been used.\n", errout.str());
     }
 
     void redundantInitialization() {
