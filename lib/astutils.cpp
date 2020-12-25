@@ -494,10 +494,18 @@ const Token* getCondTokFromEnd(const Token* endBlock)
     return getCondTokFromEndImpl(endBlock);
 }
 
-const Scope *findBreakScope(const Scope *s) {
-    while (s && !s->isLoopScope() && s->type != Scope::ScopeType::eSwitch)
-        s = s->nestedIn;
-    return s;
+const Token *findNextTokenFromBreak(const Token *breakToken)
+{
+    const Scope *scope = breakToken->scope();
+    while (scope) {
+        if (scope->isLoopScope() || scope->type == Scope::ScopeType::eSwitch) {
+            if (scope->type == Scope::ScopeType::eDo && Token::simpleMatch(scope->bodyEnd, "} while ("))
+                return scope->bodyEnd->linkAt(2)->next();
+            return scope->bodyEnd;
+        }
+        scope = scope->nestedIn;
+    }
+    return nullptr;
 }
 
 bool extractForLoopValues(const Token *forToken,
@@ -2513,10 +2521,10 @@ FwdAnalysis::Result FwdAnalysis::check(const Token* expr, const Token* startToke
 
     // Break => continue checking in outer scope
     while (mWhat!=What::ValueFlow && result.type == FwdAnalysis::Result::Type::BREAK) {
-        const Scope *breakScope = findBreakScope(result.token->scope());
-        if (!breakScope)
-	    break;
-        result = checkRecursive(expr, breakScope->bodyEnd->next(), endToken, exprVarIds, local, false);
+        const Token *scopeEndToken = findNextTokenFromBreak(result.token);
+        if (!scopeEndToken)
+            break;
+        result = checkRecursive(expr, scopeEndToken->next(), endToken, exprVarIds, local, false);
     }
 
     return result;

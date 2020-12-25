@@ -297,10 +297,10 @@ struct ForwardTraversal {
                 if (!tok)
                     return Progress::Break;
             } else if (tok->str() ==  "break") {
-                const Scope* scope = findBreakScope(tok->scope());
-                if (!scope)
+                const Token *scopeEndToken = findNextTokenFromBreak(tok);
+                if (!scopeEndToken)
                     return Progress::Break;
-                tok = skipTo(tok, scope->bodyEnd, end);
+                tok = skipTo(tok, scopeEndToken, end);
                 if (!analyzer->lowerToPossible())
                     return Progress::Break;
                 // TODO: Don't break, instead move to the outer scope

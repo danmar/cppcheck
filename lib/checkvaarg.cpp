@@ -139,10 +139,9 @@ void CheckVaarg::va_list_usage()
             } else if (Token::Match(tok, "throw|return"))
                 exitOnEndOfStatement = true;
             else if (tok->str() == "break") {
-                const Scope *breakScope = findBreakScope(tok->scope());
-                if (!breakScope)
+                tok = findNextTokenFromBreak(tok);
+                if (!tok)
                     return;
-                tok = breakScope->bodyEnd;
             } else if (tok->str() == "goto" || (mTokenizer->isCPP() && tok->str() == "try")) {
                 open = false;
                 break;
