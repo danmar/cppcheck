@@ -220,21 +220,26 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
 static std::string readUntil(const std::string &command, std::string::size_type *pos, const char until[])
 {
     std::string ret;
+    bool escapedString = false;
     bool str = false;
     bool escape = false;
     for (; *pos < command.size() && (str || !std::strchr(until, command[*pos])); (*pos)++) {
-        if (escape) {
+        if (escape)
             escape = false;
-            if (!std::strchr("\\\"\'", command[*pos]))
-                ret += '\\';
-            ret += command[*pos];
-        } else if (str && command[*pos] == '\\')
-            escape = true;
-        else {
-            if (command[*pos] == '\"')
-                str = !str;
-            ret += command[*pos];
-        }
+        else if (command[*pos] == '\\') {
+            if (str)
+                escape = true;
+            else if (command[*pos + 1] == '"') {
+                if (escapedString)
+                    return ret + "\\\"";
+                escapedString = true;
+                ret += "\\\"";
+                (*pos)++;
+                continue;
+            }
+        } else if (command[*pos] == '\"')
+            str = !str;
+        ret += command[*pos];
     }
     return ret;
 }
@@ -246,6 +251,8 @@ static std::string unescape(const std::string &in)
     for (char c: in) {
         if (escape) {
             escape = false;
+            if (!std::strchr("\\\"\'",c))
+                out += "\\";
             out += c;
         } else if (c == '\\')
             escape = true;
@@ -258,8 +265,6 @@ static std::string unescape(const std::string &in)
 void ImportProject::FileSettings::parseCommand(std::string command)
 {
     std::string defs;
-
-    command = unescape(command);
 
     // Parse command..
     std::string::size_type pos = 0;
@@ -280,8 +285,12 @@ void ImportProject::FileSettings::parseCommand(std::string command)
         }
         const std::string fval = readUntil(command, &pos, " =");
         if (F=='D') {
-            const std::string defval = readUntil(command, &pos, " ");
+            std::string defval = readUntil(command, &pos, " ");
             defs += fval;
+            if (defval.size() >= 3 && defval.compare(0,2,"=\"")==0 && defval.back()=='\"')
+                defval = "=" + unescape(defval.substr(2, defval.size() - 3));
+            else if (defval.size() >= 5 && defval.compare(0,3,"=\\\"")==0 && endsWith(defval,"\\\"",2))
+                defval = "=\"" + unescape(defval.substr(3, defval.size() - 5)) + "\"";
             if (!defval.empty())
                 defs += defval;
             defs += ';';
