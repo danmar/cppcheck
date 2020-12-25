@@ -220,8 +220,7 @@ static CppcheckLibraryData::MemoryResource loadMemoryResource(QXmlStreamReader &
             }
             dealloc.name = xmlReader.readElementText();
             memoryresource.dealloc.append(dealloc);
-        }
-        else if (elementName == "use")
+        } else if (elementName == "use")
             memoryresource.use.append(xmlReader.readElementText());
         else
             unhandledElement(xmlReader);
@@ -456,7 +455,7 @@ static void writeMemoryResource(QXmlStreamWriter &xmlWriter, const CppcheckLibra
         if (alloc.isRealloc) {
             xmlWriter.writeStartElement("realloc");
         } else {
-        xmlWriter.writeStartElement("alloc");
+            xmlWriter.writeStartElement("alloc");
         }
         xmlWriter.writeAttribute("init", alloc.init ? "true" : "false");
         if (alloc.arg != -1) {
@@ -476,7 +475,7 @@ static void writeMemoryResource(QXmlStreamWriter &xmlWriter, const CppcheckLibra
         xmlWriter.writeStartElement("dealloc");
         if (dealloc.arg != -1) {
             xmlWriter.writeAttribute("arg", QString("%1").arg(dealloc.arg));
-    	}
+        }
         xmlWriter.writeCharacters(dealloc.name);
         xmlWriter.writeEndElement();
     }
