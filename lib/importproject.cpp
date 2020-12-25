@@ -239,7 +239,8 @@ static std::string readUntil(const std::string &command, std::string::size_type 
     return ret;
 }
 
-static std::string unescape(const std::string &in) {
+static std::string unescape(const std::string &in)
+{
     std::string out;
     bool escape = false;
     for (char c: in) {
