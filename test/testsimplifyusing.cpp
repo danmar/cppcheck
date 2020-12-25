@@ -75,6 +75,7 @@ private:
         TEST_CASE(simplifyUsing9388);
         TEST_CASE(simplifyUsing9518);
         TEST_CASE(simplifyUsing9757);
+        TEST_CASE(simplifyUsing10008);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -645,6 +646,21 @@ private:
                            "class MappedType<Type_t::Nil> { } ; "
                            "std :: string to_string ( Example :: Type_t type ) { "
                            "switch ( type ) { } }";
+        ASSERT_EQUALS(exp, tok(code, false));
+    }
+
+    void simplifyUsing10008() {
+        const char code[] = "namespace ns {\n"
+                            "    using ArrayType = std::vector<int>;\n"
+                            "}\n"
+                            "using namespace ns;\n"
+                            "static void f() {\n"
+                            "    const ArrayType arr;\n"
+                            "}";
+        const char exp[] = "using namespace ns ; "
+                           "static void f ( ) { "
+                           "const std :: vector < int > arr ; "
+                           "}";
         ASSERT_EQUALS(exp, tok(code, false));
     }
 };

@@ -1696,8 +1696,10 @@ void Tokenizer::simplifyTypedef()
 
 namespace {
     struct ScopeInfo3 {
-        ScopeInfo3(const std::string &name_, const Token *bodyEnd_) : name(name_), bodyEnd(bodyEnd_) {}
+        ScopeInfo3(const std::string &name_, const Token *bodyStart_, const Token *bodyEnd_)
+            : name(name_), bodyStart(bodyStart_), bodyEnd(bodyEnd_) {}
         const std::string name;
+        const Token * const bodyStart;
         const Token * const bodyEnd;
         std::set<std::string> usingNamespaces;
     };
@@ -1716,6 +1718,9 @@ namespace {
     {
         if (!tok)
             return;
+        if (tok->str() == "{" && !scopeInfo->empty() && tok == scopeInfo->back().bodyStart)
+            return;
+
         while (tok->str() == "}" && !scopeInfo->empty() && tok == scopeInfo->back().bodyEnd)
             scopeInfo->pop_back();
         if (!Token::Match(tok, "namespace|class|struct|union %name% {|:|::|<")) {
@@ -1762,13 +1767,13 @@ namespace {
                             scope = tok1->strAt(-3) + " :: " + scope;
                             tok1 = tok1->tokAt(-2);
                         }
-                        scopeInfo->emplace_back(scope, tok->link());
+                        scopeInfo->emplace_back(scope, tok, tok->link());
                         added = true;
                     }
                 }
 
                 if (all && !added)
-                    scopeInfo->emplace_back("", tok->link());
+                    scopeInfo->emplace_back("", tok, tok->link());
             }
             return;
         }
@@ -1791,7 +1796,7 @@ namespace {
                 tok = tok->next();
         }
         if (tok && tok->str() == "{") {
-            scopeInfo->emplace_back(classname,tok->link());
+            scopeInfo->emplace_back(classname, tok, tok->link());
         }
     }
 
@@ -1878,14 +1883,16 @@ namespace {
             return true;
 
         // check using namespace
-        if (!scopeList1.back().usingNamespaces.empty()) {
-            if (qualification.empty()) {
-                if (scopeList1.back().usingNamespaces.find(scope) != scopeList1.back().usingNamespaces.end())
-                    return true;
-            } else {
-                for (auto ns : scopeList1.back().usingNamespaces) {
-                    if (scope == ns + " :: " + qualification)
+        for (std::list<ScopeInfo3>::const_reverse_iterator it = scopeList1.crbegin(); it != scopeList1.crend(); ++it) {
+            if (!it->usingNamespaces.empty()) {
+                if (qualification.empty()) {
+                    if (it->usingNamespaces.find(scope) != it->usingNamespaces.end())
                         return true;
+                } else {
+                    for (auto ns : it->usingNamespaces) {
+                        if (scope == ns + " :: " + qualification)
+                            return true;
+                    }
                 }
             }
         }
@@ -1945,7 +1952,7 @@ bool Tokenizer::simplifyUsing()
     };
     std::list<Using> usingList;
 
-    scopeList.emplace_back("", nullptr);
+    scopeList.emplace_back("", nullptr, nullptr);
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (mErrorLogger && !list.getFiles().empty())
@@ -1975,7 +1982,7 @@ bool Tokenizer::simplifyUsing()
             continue;
 
         std::list<ScopeInfo3> scopeList1;
-        scopeList1.emplace_back("", nullptr);
+        scopeList1.emplace_back("", nullptr, nullptr);
         std::string name = tok->strAt(1);
         const Token *nameToken = tok->next();
         std::string scope = getScopeName(scopeList);
