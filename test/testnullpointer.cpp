@@ -107,6 +107,7 @@ private:
         TEST_CASE(nullpointer64);
         TEST_CASE(nullpointer65); // #9980
         TEST_CASE(nullpointer66); // #10024
+        TEST_CASE(nullpointer67); // #10062
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2046,6 +2047,33 @@ private:
               "    if (v)\n"
               "      MyFree(&v);\n"
               "    return ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer67() {
+        check("int result;\n"
+              "\n"
+              "int test_b(void) {\n"
+              "    char **string = NULL;\n"
+              "\n"
+              "    /* The bug disappears if \"result =\" is omitted. */\n"
+              "    result = some_other_call(&string);\n"
+              "    if (string && string[0])\n"
+              "        return 0;\n"
+              "    return -1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int result;\n"
+              "\n"
+              "int test_b(void) {\n"
+              "    char **string = NULL;\n"
+              "\n"
+              "    some_other_call(&string);\n"
+              "    if (string && string[0])\n"
+              "        return 0;\n"
+              "    return -1;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
