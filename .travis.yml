@@ -51,7 +51,7 @@ matrix:
     - name: "misc"
       compiler: clang
       script:
-        - make -j 2 -s
+        - make -j$(nproc) -s
 # run extra tests
         - tools/generate_and_run_more_tests.sh
 # check for missing CWE entries
@@ -79,7 +79,7 @@ matrix:
         - git clean -dfx
 # check what happens if we want to install it to some other dir,
         - echo $CXXFLAGS
-        - make -s MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck -j 2
+        - make -s MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck -j$(nproc)
         - sudo make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck install
 # check if it actually works:
         - /usr/bin/cppcheck ./cli
@@ -148,7 +148,7 @@ matrix:
       compiler: gcc
       script:
         - make clean
-        - make USE_Z3=yes -j2 all
+        - make USE_Z3=yes -j$(nproc) all
         - ./testrunner TestExprEngine
         # FIXME: this is slowish
         #- python3 test/bug-hunting/cve.py
@@ -169,7 +169,7 @@ matrix:
       - true
       script:
         - echo "If the following command fails, run 'make dmake; make run-dmake' and commit the resulting change."
-        - make -s dmake -j2
+        - make -s dmake -j$(nproc)
         - make -s run-dmake
         - git diff --exit-code
 # check if cppcheck builds on trusty
@@ -180,9 +180,9 @@ matrix:
         - travis_retry sudo apt-get update -qq
         - travis_retry sudo apt-get install libxml2-utils libpcre3
       script:
-        - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck check -j 2 -s
+        - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck check -j$(nproc) -s
         - make clean
-        - CXX=clang++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck check -j 2 -s
+        - CXX=clang++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck check -j $(nproc) -s
 
 script:
 # fail the entire job as soon as one of the subcommands exits non-zero to save time and resources
@@ -192,13 +192,13 @@ script:
 # check with TEST_MATHLIB_VALUE enabled
   - touch lib/mathlib.cpp test/testmathlib.cpp
   - echo $CXXFLAGS
-  - make -s check -j2 CPPFLAGS=-DTEST_MATHLIB_VALUE
+  - make -s check -j$(nproc) CPPFLAGS=-DTEST_MATHLIB_VALUE
   - touch lib/mathlib.cpp test/testmathlib.cpp
 # syntax checking of cppcheck source code with -DNONNEG
   - ls lib/*.cpp | xargs -n 1 -P 2 g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/picojson -Iexternals/simplecpp -Iexternals/tinyxml2 -DNONNEG
 # compile cppcheck, default build
   - echo $CXXFLAGS
-  - make -s check -j2
+  - make -s check -j$(nproc)
 # Testing cli
   - cp -R . ../cppcheck\ 2
   - cd ../cppcheck\ 2/test/cli # path with space
