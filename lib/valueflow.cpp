@@ -1340,7 +1340,7 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->isIncompleteVar()) {
                 if (settings->debugwarnings)
-					bailoutIncompleteVar(tokenlist, errorLogger, tok, "Skipping function due to incomplete variable " + tok->str());
+                    bailoutIncompleteVar(tokenlist, errorLogger, tok, "Skipping function due to incomplete variable " + tok->str());
                 skipFunction = true;
                 break;
             }
