@@ -7880,8 +7880,8 @@ private:
         ASSERT_EQUALS("xMACROtype.T=value.1=,{({=",
                       testAst("x = { MACRO( { .type=T, .value=1 } ) }")); // don't hang: MACRO({..})
         ASSERT_EQUALS("fori10=i{;;( i--", testAst("for (i=10;i;({i--;}) ) {}"));
-        ASSERT_EQUALS("c{0{,{(",
-                      testAst("c({{}, {0}}, {0.0f});"));
+        ASSERT_EQUALS("c{1{,{2.3f{,(",
+                      testAst("c({{}, {1}}, {2.3f});"));
 
         // function pointer
         TODO_ASSERT_EQUALS("todo", "va_argapvoid((,(*0=", testAst("*va_arg(ap, void(**) ()) = 0;"));
@@ -7924,6 +7924,7 @@ private:
         ASSERT_EQUALS("a{b{,{return", testAst("return{{a},{b}};"));
         ASSERT_EQUALS("stdvector::", testAst("std::vector<std::vector<int>>{{},{}}"));
         ASSERT_EQUALS("abR{{,P(,((", testAst("a(b(R{},{},P()));"));
+        ASSERT_EQUALS("f1{2{,3{,{x,(", testAst("f({{1},{2},{3}},x);"));
     }
 
     void astbrackets() { // []
