@@ -668,11 +668,14 @@ private:
                             "    a += 8;\n"
                             "  for (int i = 0; i < 1; i++)\n"
                             "    a += 23;\n"
+                            "  for (int i = 100; i >= 1; i--)\n"
+                            "    a += 23;\n"
                             "  return a == 42;\n"
                             "}";
-        ASSERT_EQUALS("(= 42 42)\n"
-                      "z3::sat\n",
-                      expr(code, "=="));
+        const char expected[] = "(and (>= $4 (- 2147483648)) (<= $4 2147483647))\n"
+                                "(= (+ $4 23) 42)\n"
+                                "z3::sat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
     void while1() {
