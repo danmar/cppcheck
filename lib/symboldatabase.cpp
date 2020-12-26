@@ -5912,7 +5912,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
                 }
                 type = type->next();
             }
-            if (type->str() == "(" && type->previous()->function())
+            if (type && type->str() == "(" && type->previous()->function())
                 // we are past the end of the type
                 type = type->previous();
             continue;

@@ -1491,7 +1491,7 @@ void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
         }
 
         const int level = (pos1 - 1) / 2;
-        if (level == 0 || tree.empty())
+        if (level == 0 || level > tree.size())
             continue;
 
         AstNodePtr newNode = std::make_shared<AstNode>(nodeType, ext, &data);
