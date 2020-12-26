@@ -549,7 +549,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
     biguint ret = 0;
     std::istringstream istr(str);
     istr >> ret;
-    return ret;
+    return static_cast<bigint>(ret);
 }
 
 // in-place conversion of (sub)string to double. Requires no heap.

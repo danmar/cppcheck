@@ -274,7 +274,7 @@ static ValueFlow::Value castValue(ValueFlow::Value value, const ValueType::Sign 
         const MathLib::biguint one = 1;
         value.intvalue &= (one << bit) - 1;
         if (sign == ValueType::Sign::SIGNED && value.intvalue & (one << (bit - 1))) {
-            value.intvalue |= ~((one << bit) - 1ULL);
+            value.intvalue |= static_cast<long long>(~((one << bit) - 1ULL));
         }
     }
     return value;
@@ -792,7 +792,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     if (value1.tokvalue->tokType() == Token::eString) {
                         const std::string s = value1.tokvalue->strValue();
                         const MathLib::bigint index = value2.intvalue;
-                        if (index == s.size()) {
+                        if (static_cast<std::string::size_type>(index) == s.size()) {
                             result.intvalue = 0;
                             setTokenValue(parent, result, settings);
                         } else if (index >= 0 && index < s.size()) {
@@ -3997,9 +3997,9 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
         if (value.isIntValue() && sz > 0 && sz < 8) {
             const MathLib::biguint unsignedMaxValue = (1ULL << (sz * 8)) - 1ULL;
             const MathLib::biguint signBit = 1ULL << (sz * 8 - 1);
-            value.intvalue &= unsignedMaxValue;
+            value.intvalue &= static_cast<long long>(unsignedMaxValue);
             if (valueType->sign == ValueType::Sign::SIGNED && (value.intvalue & signBit))
-                value.intvalue |= ~unsignedMaxValue;
+                value.intvalue |= static_cast<long long>(~unsignedMaxValue);
         }
     }
     return values;
