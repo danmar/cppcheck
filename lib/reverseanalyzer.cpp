@@ -128,6 +128,9 @@ struct ReverseTraversal {
                 break;
             // Evaluate LHS of assignment before RHS
             if (Token* assignTok = assignExpr(tok)) {
+                // If assignTok has broken ast then stop
+                if (!assignTok->astOperand1() || !assignTok->astOperand2())
+                    break;
                 Token* assignTop = assignTok;
                 bool continueB = true;
                 while (assignTop->isAssignmentOp()) {
