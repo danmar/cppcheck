@@ -79,6 +79,7 @@ private:
         TEST_CASE(switch2);
 
         TEST_CASE(for1);
+        TEST_CASE(forAlwaysFalse1);
 
         TEST_CASE(while1);
         TEST_CASE(while2);
@@ -660,6 +661,22 @@ private:
                       expr(code, "=="));
     }
 
+    void forAlwaysFalse1() {
+        const char code[] = "int f() {\n"
+                            "  int a = 19;\n"
+                            "  for (int i = 0; i < 0; i++)\n"
+                            "    a += 8;\n"
+                            "  for (int i = 0; i < 1; i++)\n"
+                            "    a += 23;\n"
+                            "  for (int i = 100; i >= 1; i--)\n"
+                            "    a += 23;\n"
+                            "  return a == 42;\n"
+                            "}";
+        const char expected[] = "(and (>= $4 (- 2147483648)) (<= $4 2147483647))\n"
+                                "(= (+ $4 23) 42)\n"
+                                "z3::sat\n";
+        ASSERT_EQUALS(expected, expr(code, "=="));
+    }
 
     void while1() {
         const char code[] = "void f(int y) {\n"
