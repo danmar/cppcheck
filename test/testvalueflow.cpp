@@ -4776,7 +4776,8 @@ private:
                "    if (str == \"123\")\n"
                "        bool x = str.empty();\n"
                "}\n";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "str . empty", ValueFlow::Value::CONTAINER_SIZE), 3));
+        ASSERT_EQUALS("",
+                      isKnownContainerSizeValue(tokenValues(code, "str . empty", ValueFlow::Value::CONTAINER_SIZE), 3));
 
         code = "void f(std::string str) {\n"
                "    if (str == \"123\") {\n"

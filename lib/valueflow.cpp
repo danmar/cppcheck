@@ -339,53 +339,64 @@ uint32_t convertToMultiCharInt(const std::string& x)
 {
     assert(x.size() < 5);
     uint32_t y = 0;
-    int shift = (x.size()*8)-8;
-    for(size_t i = 0;i < x.size();++i)
-    {
+    int shift = (x.size() * 8) - 8;
+    for (size_t i = 0; i < x.size(); ++i) {
         y |= (uint32_t(uint8_t(x[i])) << shift);
         shift -= 8;
     }
     return y;
 }
 
-template<class T>
+template <class T>
 T asInt(T x)
 {
     return x;
 }
 
-MathLib::bigint asInt(float x)
-{
-    return x;
-}
+MathLib::bigint asInt(float x) { return x; }
 
-MathLib::bigint asInt(double x)
-{
-    return x;
-}
+MathLib::bigint asInt(double x) { return x; }
 
-template<class T, class U>
+template <class T, class U>
 static T calculate(const std::string& s, T x, U y)
 {
-    switch(convertToMultiCharInt(s)) {
-        case '+': return x + y;
-        case '-': return x - y;
-        case '*': return x * y;
-        case '/': return x / y;
-        case '%': return asInt(x) % asInt(y);
-        case '&': return asInt(x) & asInt(y);
-        case '|': return asInt(x) | asInt(y);
-        case '^': return asInt(x) ^ asInt(y);
-        case '>': return x > y;
-        case '<': return x < y;
-        case '<<': return asInt(x) << asInt(y);
-        case '>>': return asInt(x) >> asInt(y);
-        case '&&': return x && y;
-        case '||': return x || y;
-        case '==': return x == y;
-        case '!=': return x != y;
-        case '>=': return x >= y;
-        case '<=': return x <= y;
+    switch (convertToMultiCharInt(s)) {
+    case '+':
+        return x + y;
+    case '-':
+        return x - y;
+    case '*':
+        return x * y;
+    case '/':
+        return x / y;
+    case '%':
+        return asInt(x) % asInt(y);
+    case '&':
+        return asInt(x) & asInt(y);
+    case '|':
+        return asInt(x) | asInt(y);
+    case '^':
+        return asInt(x) ^ asInt(y);
+    case '>':
+        return x > y;
+    case '<':
+        return x < y;
+    case '<<':
+        return asInt(x) << asInt(y);
+    case '>>':
+        return asInt(x) >> asInt(y);
+    case '&&':
+        return x && y;
+    case '||':
+        return x || y;
+    case '==':
+        return x == y;
+    case '!=':
+        return x != y;
+    case '>=':
+        return x >= y;
+    case '<=':
+        return x <= y;
     }
     throw std::runtime_error("Unknown operator: " + s);
 }
@@ -440,8 +451,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             }
         }
 
-
-        else if (Token::Match(parent, ". %name% (") && parent->astParent() == parent->tokAt(2) && parent->astOperand1() && parent->astOperand1()->valueType()) {
+        else if (Token::Match(parent, ". %name% (") && parent->astParent() == parent->tokAt(2) &&
+                 parent->astOperand1() && parent->astOperand1()->valueType()) {
             const Library::Container *c = parent->astOperand1()->valueType()->container;
             const Library::Container::Yield yields = c ? c->getYield(parent->strAt(1)) : Library::Container::Yield::NO_YIELD;
             if (yields == Library::Container::Yield::SIZE) {
@@ -606,17 +617,17 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     const bool isFloat = value1.isFloatValue() || value2.isFloatValue();
                     if (isFloat && Token::Match(parent, "&|^|%|<<|>>|%or%"))
                         continue;
-                    if (Token::Match(parent, "<<|>>") && !(value1.intvalue >= 0 && value2.intvalue >= 0 && value2.intvalue < MathLib::bigint_bits))
+                    if (Token::Match(parent, "<<|>>") &&
+                        !(value1.intvalue >= 0 && value2.intvalue >= 0 && value2.intvalue < MathLib::bigint_bits))
                         continue;
                     if (Token::Match(parent, "/|%") && floatValue2 == 0)
                         continue;
                     if (Token::Match(parent, "==|!=")) {
-                        if ((value1.isIntValue() && value2.isTokValue()) ||
-                                (value1.isTokValue() && value2.isIntValue())) {
+                        if ((value1.isIntValue() && value2.isTokValue()) || (value1.isTokValue() && value2.isIntValue())) {
                             if (parent->str() == "==")
-                                    result.intvalue = 0;
+                                result.intvalue = 0;
                             else if (parent->str() == "!=")
-                                    result.intvalue = 1;
+                                result.intvalue = 1;
                         } else if (value1.isIntValue() && value2.isIntValue()) {
                             result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
                         } else {
@@ -641,7 +652,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                             result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
                         }
                         // If the bound comes from the second value then invert the bound when subtracting
-                        if (Token::simpleMatch(parent, "-") && value2.bound == result.bound && value2.bound != ValueFlow::Value::Bound::Point)
+                        if (Token::simpleMatch(parent, "-") && value2.bound == result.bound &&
+                            value2.bound != ValueFlow::Value::Bound::Point)
                             result.invertBound();
                         setTokenValue(parent, result, settings);
                     }
