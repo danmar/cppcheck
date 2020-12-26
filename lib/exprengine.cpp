@@ -198,7 +198,7 @@ static std::string str(ExprEngine::ValuePtr val)
     case ExprEngine::ValueType::BailoutValue:
         typestr = "BailoutValue";
         break;
-    };
+    }
 
     std::ostringstream ret;
     ret << val->name << "=" << typestr << "(" << val->getRange() << ")";
