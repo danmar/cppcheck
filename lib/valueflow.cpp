@@ -108,21 +108,25 @@
 #include <tuple>
 #include <vector>
 
-static void bailoutInternal(TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what, const std::string &file, int line, const std::string &function)
+static void bailoutInternal(const std::string& type, TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what, const std::string &file, int line, const std::string &function)
 {
     std::list<ErrorMessage::FileLocation> callstack(1, ErrorMessage::FileLocation(tok, tokenlist));
     ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::debug,
-                        Path::stripDirectoryPart(file) + ":" + MathLib::toString(line) + ":" + function + " bailout: " + what, "valueFlowBailout", false);
+                        Path::stripDirectoryPart(file) + ":" + MathLib::toString(line) + ":" + function + " bailout: " + what, type, false);
     errorLogger->reportErr(errmsg);
 }
 
 #if (defined __cplusplus) && __cplusplus >= 201103L
-#define bailout(tokenlist, errorLogger, tok, what) bailoutInternal(tokenlist, errorLogger, tok, what, __FILE__, __LINE__, __func__)
+#define bailout2(type, tokenlist, errorLogger, tok, what) bailoutInternal(type, tokenlist, errorLogger, tok, what, __FILE__, __LINE__, __func__)
 #elif (defined __GNUC__) || (defined __clang__) || (defined _MSC_VER)
-#define bailout(tokenlist, errorLogger, tok, what) bailoutInternal(tokenlist, errorLogger, tok, what, __FILE__, __LINE__, __FUNCTION__)
+#define bailout2(type, tokenlist, errorLogger, tok, what) bailoutInternal(type, tokenlist, errorLogger, tok, what, __FILE__, __LINE__, __FUNCTION__)
 #else
-#define bailout(tokenlist, errorLogger, tok, what) bailoutInternal(tokenlist, errorLogger, tok, what, __FILE__, __LINE__, "(valueFlow)")
+#define bailout2(type, tokenlist, errorLogger, tok, what) bailoutInternal(type, tokenlist, errorLogger, tok, what, __FILE__, __LINE__, "(valueFlow)")
 #endif
+
+#define bailout(tokenlist, errorLogger, tok, what) bailout2("valueFlowBailout", tokenlist, errorLogger, tok, what)
+
+#define bailoutIncompleteVar(tokenlist, errorLogger, tok, what) bailout2("valueFlowBailoutIncompleteVar", tokenlist, errorLogger, tok, what)
 
 static void changeKnownToPossible(std::list<ValueFlow::Value> &values, int indirect=-1)
 {
@@ -1336,7 +1340,7 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->isIncompleteVar()) {
                 if (settings->debugwarnings)
-                    bailout(tokenlist, errorLogger, tok, "Skipping function due to incomplete variable " + tok->str());
+					bailoutIncompleteVar(tokenlist, errorLogger, tok, "Skipping function due to incomplete variable " + tok->str());
                 skipFunction = true;
                 break;
             }
