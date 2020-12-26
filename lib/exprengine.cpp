@@ -2520,7 +2520,7 @@ static std::string execute(const Token *start, const Token *end, Data &data)
             // This is intended for testing
             throw ExprEngineException(tok, "__CPPCHECK_BAILOUT__");
 
-        if (Token::simpleMatch(tok, "while (") && (tok->linkAt(1), ") ;") && tok->next()->astOperand1()->hasKnownIntValue() && tok->next()->astOperand1()->getKnownIntValue() == 0) {
+        if (Token::simpleMatch(tok, "while (") && Token::simpleMatch(tok->linkAt(1), ") ;") && tok->next()->astOperand1()->hasKnownIntValue() && tok->next()->astOperand1()->getKnownIntValue() == 0) {
             tok = tok->tokAt(4);
             continue;
         }

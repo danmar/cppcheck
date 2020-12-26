@@ -47,6 +47,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options(-Wno-missing-braces)
    add_compile_options(-Wno-unused-function)
    add_compile_options_safe(-Wextra-semi-stmt)
+   add_compile_options_safe(-Wcomma)
 
    if(ENABLE_COVERAGE OR ENABLE_COVERAGE_XML)
       message(FATAL_ERROR "Do not use clang for generate code coverage. Use gcc.")
