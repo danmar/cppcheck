@@ -2669,6 +2669,10 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                 data.assignValue(tok, varid, loopValues);
                 tok = tok->linkAt(1);
                 loopValues->loopScope = tok->next()->scope();
+                // Check whether the condition expression is always false
+                if (tok->next() && (initValue > lastValue)) {
+                    tok = tok->next()->link();
+                }
                 continue;
             }
         }
