@@ -171,7 +171,7 @@ private:
                     es >> std::oct >> c;
                     ++from;
                     ++from;
-                    myErr.push_back(c);
+                    myErr.push_back(static_cast<char>(c));
                 } else {
                     myErr.push_back(*from);
                 }

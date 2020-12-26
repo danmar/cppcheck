@@ -22,7 +22,7 @@ if(ANALYZE_UNDEFINED)
     add_compile_options(-fno-sanitize-recover=all)
     add_compile_options(-fno-omit-frame-pointer)
 
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined -fsanitize=nullability -fsanitize=integer")
 endif()
 
 if(ANALYZE_DATAFLOW)

@@ -58,8 +58,21 @@ protected:
     bool assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg = emptyString) const;
     bool assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const char actual[], const std::string &msg = emptyString) const;
     bool assertEquals(const char * const filename, const unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg = emptyString) const;
-    bool assertEquals(const char * const filename, const unsigned int linenr, const long long expected, const long long actual, const std::string &msg = emptyString) const;
-    void assertEqualsDouble(const char * const filename, const unsigned int linenr, const double expected, const double actual, const double tolerance, const std::string &msg = emptyString) const;
+
+    template<typename T>
+    bool assertEquals(const char * const filename, const unsigned int linenr, const T expected, const T actual, const std::string &msg = emptyString) const
+	{
+		if (expected != actual) {
+			std::ostringstream ostr1;
+			ostr1 << expected;
+			std::ostringstream ostr2;
+			ostr2 << actual;
+			assertEquals(filename, linenr, ostr1.str(), ostr2.str(), msg);
+		}
+		return expected == actual;
+	}
+
+	void assertEqualsDouble(const char * const filename, const unsigned int linenr, const double expected, const double actual, const double tolerance, const std::string &msg = emptyString) const;
 
     void todoAssertEquals(const char * const filename, const unsigned int linenr, const std::string &wanted,
                           const std::string &current, const std::string &actual) const;

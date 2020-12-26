@@ -395,16 +395,16 @@ private:
         Settings settings;
 
         tok.str("\"\"");
-        ASSERT_EQUALS(sizeof(""), Token::getStrSize(&tok, &settings));
+        ASSERT_EQUALS(sizeof(""), static_cast<size_t>(Token::getStrSize(&tok, &settings)));
 
         tok.str("\"abc\"");
-        ASSERT_EQUALS(sizeof("abc"), Token::getStrSize(&tok, &settings));
+        ASSERT_EQUALS(sizeof("abc"),  static_cast<size_t>(Token::getStrSize(&tok, &settings)));
 
         tok.str("\"\\0abc\"");
-        ASSERT_EQUALS(sizeof("\0abc"), Token::getStrSize(&tok, &settings));
+        ASSERT_EQUALS(sizeof("\0abc"),  static_cast<size_t>(Token::getStrSize(&tok, &settings)));
 
         tok.str("\"\\\\\"");
-        ASSERT_EQUALS(sizeof("\\"), Token::getStrSize(&tok, &settings));
+        ASSERT_EQUALS(sizeof("\\"),  static_cast<size_t>(Token::getStrSize(&tok, &settings)));
     }
 
     void getCharAt() const {

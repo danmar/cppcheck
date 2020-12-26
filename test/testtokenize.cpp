@@ -5935,7 +5935,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         const Token *x = Token::findsimplematch(tokenizer.tokens(), "x");
-        ASSERT_EQUALS(1, x->bits());
+        ASSERT_EQUALS(static_cast<unsigned char>(1), x->bits());
     }
 
     void simplifyNamespaceStd() {

@@ -925,7 +925,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         mSettings->checkAllConfigurations = true;
 
     if (mSettings->force)
-        mSettings->maxConfigs = ~0U;
+        mSettings->maxConfigs = static_cast<int>(~0U);
 
     else if ((def || mSettings->preprocessOnly) && !maxconfigs)
         mSettings->maxConfigs = 1U;

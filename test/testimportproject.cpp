@@ -78,7 +78,7 @@ private:
         std::list<std::string> in(1, "../include");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         fs.setIncludePaths("abc/def/", in, variables);
-        ASSERT_EQUALS(1U, fs.includePaths.size());
+        ASSERT_EQUALS(1UL, fs.includePaths.size());
         ASSERT_EQUALS("abc/include/", fs.includePaths.front());
     }
 
@@ -88,7 +88,7 @@ private:
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         variables["SolutionDir"] = "c:/abc/";
         fs.setIncludePaths("/home/fred", in, variables);
-        ASSERT_EQUALS(1U, fs.includePaths.size());
+        ASSERT_EQUALS(1UL, fs.includePaths.size());
         ASSERT_EQUALS("c:/abc/other/", fs.includePaths.front());
     }
 
@@ -98,7 +98,7 @@ private:
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         variables["SolutionDir"] = "c:/abc/";
         fs.setIncludePaths("/home/fred", in, variables);
-        ASSERT_EQUALS(1U, fs.includePaths.size());
+        ASSERT_EQUALS(1UL, fs.includePaths.size());
         ASSERT_EQUALS("c:/abc/other/", fs.includePaths.front());
     }
 
@@ -111,7 +111,7 @@ private:
         std::istringstream istr(json);
         TestImporter importer;
         importer.importCompileCommands(istr);
-        ASSERT_EQUALS(1, importer.fileSettings.size());
+        ASSERT_EQUALS(1UL, importer.fileSettings.size());
         ASSERT_EQUALS("TEST1=1;TEST2=2", importer.fileSettings.begin()->defines);
     }
 
@@ -124,7 +124,7 @@ private:
         std::istringstream istr(json);
         TestImporter importer;
         importer.importCompileCommands(istr);
-        ASSERT_EQUALS(1, importer.fileSettings.size());
+        ASSERT_EQUALS(1UL, importer.fileSettings.size());
         ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.begin()->filename);
     }
 
@@ -137,7 +137,7 @@ private:
         std::istringstream istr(json);
         TestImporter importer;
         importer.importCompileCommands(istr);
-        ASSERT_EQUALS(1, importer.fileSettings.size());
+        ASSERT_EQUALS(1UL, importer.fileSettings.size());
         ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.begin()->filename);
     }
 
@@ -150,7 +150,7 @@ private:
         std::istringstream istr(json);
         TestImporter importer;
         importer.importCompileCommands(istr);
-        ASSERT_EQUALS(0, importer.fileSettings.size());
+        ASSERT_EQUALS(0UL, importer.fileSettings.size());
     }
 
     void importCompileCommands5() const {
@@ -168,7 +168,7 @@ private:
         std::istringstream istr(json);
         TestImporter importer;
         importer.importCompileCommands(istr);
-        ASSERT_EQUALS(2, importer.fileSettings.size());
+        ASSERT_EQUALS(2UL, importer.fileSettings.size());
         ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/src/", importer.fileSettings.begin()->includePaths.front());
     }
 
@@ -187,7 +187,7 @@ private:
         std::istringstream istr(json);
         TestImporter importer;
         importer.importCompileCommands(istr);
-        ASSERT_EQUALS(2, importer.fileSettings.size());
+        ASSERT_EQUALS(2UL, importer.fileSettings.size());
         ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/second src/", importer.fileSettings.begin()->includePaths.front());
     }
 
@@ -203,9 +203,9 @@ private:
         std::istringstream istr(json);
         TestImporter importer;
         importer.importCompileCommands(istr);
-        ASSERT_EQUALS(1, importer.fileSettings.size());
+        ASSERT_EQUALS(1UL, importer.fileSettings.size());
         ASSERT_EQUALS("FILESDIR=\"/some/path\"", importer.fileSettings.begin()->defines);
-        ASSERT_EQUALS(1, importer.fileSettings.begin()->includePaths.size());
+        ASSERT_EQUALS(1UL, importer.fileSettings.begin()->includePaths.size());
         ASSERT_EQUALS("/home/danielm/cppcheck 2/b/lib/", importer.fileSettings.begin()->includePaths.front());
         // TODO ASSERT_EQUALS("/home/danielm/cppcheck 2/externals/", importer.fileSettings.begin()->includePaths.back());
     }
@@ -221,9 +221,9 @@ private:
         std::istringstream istr(json);
         TestImporter importer;
         importer.importCompileCommands(istr);
-        ASSERT_EQUALS(1, importer.fileSettings.size());
+        ASSERT_EQUALS(1UL, importer.fileSettings.size());
         ASSERT_EQUALS("FILESDIR=\"C:\\Program Files\\Cppcheck\"", importer.fileSettings.begin()->defines);
-        ASSERT_EQUALS(2, importer.fileSettings.begin()->includePaths.size());
+        ASSERT_EQUALS(2UL, importer.fileSettings.begin()->includePaths.size());
         ASSERT_EQUALS("C:/Users/danielm/cppcheck/build/lib/", importer.fileSettings.begin()->includePaths.front());
         ASSERT_EQUALS("C:/Users/danielm/cppcheck/lib/", importer.fileSettings.begin()->includePaths.back());
     }
@@ -235,7 +235,7 @@ private:
         std::istringstream istr(json);
         TestImporter importer;
         importer.importCompileCommands(istr);
-        ASSERT_EQUALS(1, importer.fileSettings.size());
+        ASSERT_EQUALS(1UL, importer.fileSettings.size());
         ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.begin()->filename);
     }
 
@@ -245,7 +245,7 @@ private:
         std::istringstream istr(json);
         TestImporter importer;
         importer.importCompileCommands(istr);
-        ASSERT_EQUALS(0, importer.fileSettings.size());
+        ASSERT_EQUALS(0UL, importer.fileSettings.size());
     }
 
     void importCppcheckGuiProject() const {
@@ -268,9 +268,9 @@ private:
         Settings s;
         TestImporter project;
         ASSERT_EQUALS(true, project.importCppcheckGuiProject(istr, &s));
-        ASSERT_EQUALS(1, project.guiProject.pathNames.size());
+        ASSERT_EQUALS(1UL, project.guiProject.pathNames.size());
         ASSERT_EQUALS("cli/", project.guiProject.pathNames[0]);
-        ASSERT_EQUALS(1, s.includePaths.size());
+        ASSERT_EQUALS(1UL, s.includePaths.size());
         ASSERT_EQUALS("lib/", s.includePaths.front());
     }
 
@@ -282,14 +282,14 @@ private:
         project.fileSettings = {fs1, fs2};
 
         project.ignorePaths({"*foo", "bar*"});
-        ASSERT_EQUALS(2, project.fileSettings.size());
+        ASSERT_EQUALS(2UL, project.fileSettings.size());
 
         project.ignorePaths({"foo/*"});
-        ASSERT_EQUALS(1, project.fileSettings.size());
+        ASSERT_EQUALS(1UL, project.fileSettings.size());
         ASSERT_EQUALS("qwe/rty", project.fileSettings.front().filename);
 
         project.ignorePaths({ "*e/r*" });
-        ASSERT_EQUALS(0, project.fileSettings.size());
+        ASSERT_EQUALS(0UL, project.fileSettings.size());
     }
 };
 

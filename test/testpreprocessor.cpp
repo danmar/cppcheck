@@ -300,7 +300,7 @@ private:
             preprocess(filedata, actual, "file.cpp");
 
             // Compare results..
-            ASSERT_EQUALS(1U, actual.size());
+            ASSERT_EQUALS(1UL, actual.size());
             ASSERT_EQUALS("\ncpp", actual[""]);
         }
 
@@ -311,7 +311,7 @@ private:
             preprocess(filedata, actual, "file.c");
 
             // Compare results..
-            ASSERT_EQUALS(1U, actual.size());
+            ASSERT_EQUALS(1UL, actual.size());
             ASSERT_EQUALS("\n\n\nc", actual[""]);
         }
     }
@@ -490,7 +490,7 @@ private:
         preprocess(filedata, actual);
 
         // Expected configurations: "" and "ABC"
-        ASSERT_EQUALS(2, actual.size());
+        ASSERT_EQUALS(2UL, actual.size());
         ASSERT_EQUALS("\n\n\nint main ( ) { }", actual[""]);
         ASSERT_EQUALS("\n#line 1 \"abc.h\"\nclass A { } ;\n#line 4 \"file.c\"\n int main ( ) { }", actual["ABC"]);
     }
@@ -1145,7 +1145,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1UL, actual.size());
         ASSERT_EQUALS("int main ( ) { const char * a = \"#define A\" ; }", actual[""]);
     }
 
@@ -1248,7 +1248,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1UL, actual.size());
         ASSERT_EQUALS("int main ( )\n{\nconst char * a = \"#include <string>\" ;\nreturn 0 ;\n}", actual[""]);
     }
 
@@ -1312,7 +1312,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1UL, actual.size());
         ASSERT_EQUALS("\nint main ( )\n{\nif ( $'ABCD' == 0 ) ;\nreturn 0 ;\n}", actual[""]);
     }
 
@@ -1376,7 +1376,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1UL, actual.size());
         ASSERT_EQUALS("\nvoid f ( )\n{\n}", actual[""]);
     }
 
@@ -1395,7 +1395,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1UL, actual.size());
         ASSERT_EQUALS("asm ( )\n;\n\naaa\nasm ( ) ;\n\n\nbbb", actual[""]);
     }
 
@@ -1410,7 +1410,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1UL, actual.size());
         ASSERT_EQUALS("asm ( )\n;\n\nbbb", actual[""]);
     }
 
@@ -1425,7 +1425,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(2, actual.size());
+        ASSERT_EQUALS(2UL, actual.size());
         const std::string expected("void f ( ) {\n\n\n}");
         ASSERT_EQUALS(expected, actual[""]);
         ASSERT_EQUALS(expected, actual["A"]);
@@ -1536,7 +1536,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1UL, actual.size());
         ASSERT_EQUALS("\nvoid f ( ) {\n$g $( ) ;\n}", actual[""]);
         ASSERT_EQUALS("", errout.str());
     }
@@ -1554,7 +1554,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(2, actual.size());
+        ASSERT_EQUALS(2UL, actual.size());
         ASSERT_EQUALS("\n\n\n\n\n$20", actual[""]);
         ASSERT_EQUALS("\n\n\n\n\n$10", actual["A"]);
         ASSERT_EQUALS("", errout.str());
@@ -1575,7 +1575,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1UL, actual.size());
         ASSERT_EQUALS("", actual[""]);
         ASSERT_EQUALS("[file.c:6]: (error) failed to expand 'BC', Wrong number of parameters for macro 'BC'.\n", errout.str());
     }
@@ -1592,7 +1592,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1UL, actual.size());
         ASSERT_EQUALS("\nvoid f ( )\n{\n$printf $( \"\\n\" $) ;\n}", actual[""]);
         ASSERT_EQUALS("", errout.str());
     }
@@ -1612,7 +1612,7 @@ private:
         // Compare results..
         ASSERT_EQUALS("", actual[""]);
         ASSERT_EQUALS("\nA\n\n\nA", actual["ABC"]);
-        ASSERT_EQUALS(2, actual.size());
+        ASSERT_EQUALS(2UL, actual.size());
     }
 
     void define_if1() {
@@ -1795,7 +1795,7 @@ private:
         preprocess(filedata, actual);
 
         // Compare results..
-        ASSERT_EQUALS(1U, actual.size());
+        ASSERT_EQUALS(1UL, actual.size());
         ASSERT_EQUALS("", actual[""]);
     }
 
@@ -1823,7 +1823,7 @@ private:
         std::map<std::string, std::string> actual;
         preprocess(filedata, actual);
 
-        ASSERT_EQUALS(1U, actual.size());
+        ASSERT_EQUALS(1UL, actual.size());
         ASSERT_EQUALS("\n\n\n123 ;", actual[""]);
     }
 
@@ -1897,7 +1897,7 @@ private:
 
         // B will always be defined if A is defined; the following test
         // cases should be fixed whenever this other bug is fixed
-        ASSERT_EQUALS(2U, actual.size());
+        ASSERT_EQUALS(2UL, actual.size());
 
         ASSERT_EQUALS_MSG(true, (actual.find("A") != actual.end()), "A is expected to be checked but it was not checked");
 
@@ -1932,7 +1932,7 @@ private:
         errout.str("");
         preprocessor.preprocess(src, processedFile, cfg, "test.c", paths);
         ASSERT_EQUALS("", errout.str());
-        ASSERT_EQUALS(false, Preprocessor::missingIncludeFlag);
+        ASSERT_EQUALS(false, Preprocessor::missingIncludeFlag.load());
     }
 
     void predefine1() {

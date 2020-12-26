@@ -400,22 +400,22 @@ private:
     }
 
     void valueFlowNumber() {
-        ASSERT_EQUALS(123, valueOfTok("x=123;", "123").intvalue);
+        ASSERT_EQUALS(123LL, valueOfTok("x=123;", "123").intvalue);
         ASSERT_EQUALS_DOUBLE(192.0, valueOfTok("x=0x0.3p10;", "0x0.3p10").floatValue, 1e-5); // 3 * 16^-1 * 2^10 = 192
         ASSERT(std::fabs(valueOfTok("x=0.5;", "0.5").floatValue - 0.5f) < 0.1f);
-        ASSERT_EQUALS(10, valueOfTok("enum {A=10,B=15}; x=A+0;", "+").intvalue);
-        ASSERT_EQUALS(0, valueOfTok("x=false;", "false").intvalue);
-        ASSERT_EQUALS(1, valueOfTok("x=true;", "true").intvalue);
-        ASSERT_EQUALS(0, valueOfTok("x(NULL);", "NULL").intvalue);
-        ASSERT_EQUALS((int)('a'), valueOfTok("x='a';", "'a'").intvalue);
-        ASSERT_EQUALS((int)('\n'), valueOfTok("x='\\n';", "'\\n'").intvalue);
-        ASSERT_EQUALS(0xFFFFFFFF00000000, valueOfTok("x=0xFFFFFFFF00000000;","0xFFFFFFFF00000000").intvalue); // #7701
+        ASSERT_EQUALS(10LL, valueOfTok("enum {A=10,B=15}; x=A+0;", "+").intvalue);
+        ASSERT_EQUALS(0LL, valueOfTok("x=false;", "false").intvalue);
+        ASSERT_EQUALS(1LL, valueOfTok("x=true;", "true").intvalue);
+        ASSERT_EQUALS(0LL, valueOfTok("x(NULL);", "NULL").intvalue);
+        ASSERT_EQUALS((long long)('a'), valueOfTok("x='a';", "'a'").intvalue);
+        ASSERT_EQUALS((long long)('\n'), valueOfTok("x='\\n';", "'\\n'").intvalue);
+        ASSERT_EQUALS(static_cast<long long>(0xFFFFFFFF00000000), valueOfTok("x=0xFFFFFFFF00000000;","0xFFFFFFFF00000000").intvalue); // #7701
 
         // scope
         {
             const char code[] = "namespace N { enum E {e0,e1}; }\n"
                                 "void foo() { x = N::e1; }";
-            ASSERT_EQUALS(1, valueOfTok(code, "::").intvalue);
+            ASSERT_EQUALS(1LL, valueOfTok(code, "::").intvalue);
         }
     }
 
@@ -548,13 +548,13 @@ private:
                 "    const char *x = \"abcd\";\n"
                 "    return x[0];\n"
                 "}";
-        ASSERT_EQUALS((int)('a'), valueOfTok(code, "[").intvalue);
+        ASSERT_EQUALS((long long)('a'), valueOfTok(code, "[").intvalue);
 
         code  = "char f() {\n"
                 "    const char *x = \"\";\n"
                 "    return x[0];\n"
                 "}";
-        ASSERT_EQUALS(0, valueOfTok(code, "[").intvalue);
+        ASSERT_EQUALS(0LL, valueOfTok(code, "[").intvalue);
     }
 
     void valueFlowMove() {
@@ -658,26 +658,26 @@ private:
         const char *code;
 
         // Different operators
-        ASSERT_EQUALS(5, valueOfTok("3 +  (a ? b : 2);", "+").intvalue);
-        ASSERT_EQUALS(1, valueOfTok("3 -  (a ? b : 2);", "-").intvalue);
-        ASSERT_EQUALS(6, valueOfTok("3 *  (a ? b : 2);", "*").intvalue);
-        ASSERT_EQUALS(6, valueOfTok("13 / (a ? b : 2);", "/").intvalue);
-        ASSERT_EQUALS(1, valueOfTok("13 % (a ? b : 2);", "%").intvalue);
-        ASSERT_EQUALS(0, valueOfTok("3 == (a ? b : 2);", "==").intvalue);
-        ASSERT_EQUALS(1, valueOfTok("3 != (a ? b : 2);", "!=").intvalue);
-        ASSERT_EQUALS(1, valueOfTok("3 >  (a ? b : 2);", ">").intvalue);
-        ASSERT_EQUALS(1, valueOfTok("3 >= (a ? b : 2);", ">=").intvalue);
-        ASSERT_EQUALS(0, valueOfTok("3 <  (a ? b : 2);", "<").intvalue);
-        ASSERT_EQUALS(0, valueOfTok("3 <= (a ? b : 2);", "<=").intvalue);
+        ASSERT_EQUALS(5LL, valueOfTok("3 +  (a ? b : 2);", "+").intvalue);
+        ASSERT_EQUALS(1LL, valueOfTok("3 -  (a ? b : 2);", "-").intvalue);
+        ASSERT_EQUALS(6LL, valueOfTok("3 *  (a ? b : 2);", "*").intvalue);
+        ASSERT_EQUALS(6LL, valueOfTok("13 / (a ? b : 2);", "/").intvalue);
+        ASSERT_EQUALS(1LL, valueOfTok("13 % (a ? b : 2);", "%").intvalue);
+        ASSERT_EQUALS(0LL, valueOfTok("3 == (a ? b : 2);", "==").intvalue);
+        ASSERT_EQUALS(1LL, valueOfTok("3 != (a ? b : 2);", "!=").intvalue);
+        ASSERT_EQUALS(1LL, valueOfTok("3 >  (a ? b : 2);", ">").intvalue);
+        ASSERT_EQUALS(1LL, valueOfTok("3 >= (a ? b : 2);", ">=").intvalue);
+        ASSERT_EQUALS(0LL, valueOfTok("3 <  (a ? b : 2);", "<").intvalue);
+        ASSERT_EQUALS(0LL, valueOfTok("3 <= (a ? b : 2);", "<=").intvalue);
 
-        ASSERT_EQUALS(1, valueOfTok("(UNKNOWN_TYPE)1;","(").intvalue);
+        ASSERT_EQUALS(1LL, valueOfTok("(UNKNOWN_TYPE)1;","(").intvalue);
         ASSERT(tokenValues("(UNKNOWN_TYPE)1000;","(").empty()); // don't know if there is truncation, sign extension
-        ASSERT_EQUALS(255, valueOfTok("(unsigned char)~0;", "(").intvalue);
-        ASSERT_EQUALS(0, valueOfTok("(int)0;", "(").intvalue);
-        ASSERT_EQUALS(3, valueOfTok("(int)(1+2);", "(").intvalue);
-        ASSERT_EQUALS(0, valueOfTok("(UNKNOWN_TYPE*)0;","(").intvalue);
-        ASSERT_EQUALS(100, valueOfTok("(int)100.0;", "(").intvalue);
-        ASSERT_EQUALS(10, valueOfTok("x = static_cast<int>(10);", "( 10 )").intvalue);
+        ASSERT_EQUALS(255LL, valueOfTok("(unsigned char)~0;", "(").intvalue);
+        ASSERT_EQUALS(0LL, valueOfTok("(int)0;", "(").intvalue);
+        ASSERT_EQUALS(3LL, valueOfTok("(int)(1+2);", "(").intvalue);
+        ASSERT_EQUALS(0LL, valueOfTok("(UNKNOWN_TYPE*)0;","(").intvalue);
+        ASSERT_EQUALS(100LL, valueOfTok("(int)100.0;", "(").intvalue);
+        ASSERT_EQUALS(10LL, valueOfTok("x = static_cast<int>(10);", "( 10 )").intvalue);
 
         // Don't calculate if there is UB
         ASSERT(tokenValues(";-1<<10;","<<").empty());
@@ -692,19 +692,19 @@ private:
                 "    a = x+456;\n"
                 "    if (x==123) {}"
                 "}";
-        ASSERT_EQUALS(579, valueOfTok(code, "+").intvalue);
+        ASSERT_EQUALS(579LL, valueOfTok(code, "+").intvalue);
 
         code  = "void f(int x, int y) {\n"
                 "    a = x+y;\n"
                 "    if (x==123 || y==456) {}"
                 "}";
-        ASSERT_EQUALS(0, valueOfTok(code, "+").intvalue);
+        ASSERT_EQUALS(0LL, valueOfTok(code, "+").intvalue);
 
         code  = "void f(int x) {\n"
                 "    a = x+x;\n"
                 "    if (x==123) {}"
                 "}";
-        ASSERT_EQUALS(246, valueOfTok(code, "+").intvalue);
+        ASSERT_EQUALS(246LL, valueOfTok(code, "+").intvalue);
 
         code  = "void f(int x, int y) {\n"
                 "    a = x*x;\n"
@@ -712,15 +712,15 @@ private:
                 "    if (x==4) {}\n"
                 "}";
         std::list<ValueFlow::Value> values = tokenValues(code,"*");
-        ASSERT_EQUALS(2U, values.size());
-        ASSERT_EQUALS(4, values.front().intvalue);
-        ASSERT_EQUALS(16, values.back().intvalue);
+        ASSERT_EQUALS(2UL, values.size());
+        ASSERT_EQUALS(4LL, values.front().intvalue);
+        ASSERT_EQUALS(16LL, values.back().intvalue);
 
         code  = "void f(int x) {\n"
                 "    if (x == 3) {}\n"
                 "    a = x * (1 - x - 1);\n"
                 "}";
-        ASSERT_EQUALS(-9, valueOfTok(code, "*").intvalue);
+        ASSERT_EQUALS(-9LL, valueOfTok(code, "*").intvalue);
 
         // addition of different variables with known values
         code = "int f(int x) {\n"
@@ -728,30 +728,30 @@ private:
                "  while (x!=3) { x+=a; }\n"
                "  return x/a;\n"
                "}\n";
-        ASSERT_EQUALS(3, valueOfTok(code, "/").intvalue);
+        ASSERT_EQUALS(3LL, valueOfTok(code, "/").intvalue);
 
         // ? :
         code = "x = y ? 2 : 3;\n";
         values = tokenValues(code,"?");
-        ASSERT_EQUALS(2U, values.size());
-        ASSERT_EQUALS(2, values.front().intvalue);
-        ASSERT_EQUALS(3, values.back().intvalue);
+        ASSERT_EQUALS(2UL, values.size());
+        ASSERT_EQUALS(2LL, values.front().intvalue);
+        ASSERT_EQUALS(3LL, values.back().intvalue);
 
         code = "void f(int a) { x = a ? 2 : 3; }\n";
         values = tokenValues(code,"?");
-        ASSERT_EQUALS(2U, values.size());
-        ASSERT_EQUALS(2, values.front().intvalue);
-        ASSERT_EQUALS(3, values.back().intvalue);
+        ASSERT_EQUALS(2UL, values.size());
+        ASSERT_EQUALS(2LL, values.front().intvalue);
+        ASSERT_EQUALS(3LL, values.back().intvalue);
 
         code = "x = (2<5) ? 2 : 3;\n";
         values = tokenValues(code, "?");
-        ASSERT_EQUALS(1U, values.size());
-        ASSERT_EQUALS(2, values.front().intvalue);
+        ASSERT_EQUALS(1UL, values.size());
+        ASSERT_EQUALS(2LL, values.front().intvalue);
 
         code = "x = 123 ? : 456;\n";
         values = tokenValues(code, "?");
-        ASSERT_EQUALS(1U, values.size());
-        ASSERT_EQUALS(123, values.empty() ? 0 : values.front().intvalue);
+        ASSERT_EQUALS(1UL, values.size());
+        ASSERT_EQUALS(123LL, values.empty() ? 0 : values.front().intvalue);
 
         code  = "int f() {\n"
                 "    const int i = 1;\n"
@@ -764,8 +764,8 @@ private:
         code  = "x = ~0U;";
         settings.platform(cppcheck::Platform::Native); // ensure platform is native
         values = tokenValues(code,"~");
-        ASSERT_EQUALS(1U, values.size());
-        ASSERT_EQUALS(~0U, values.back().intvalue);
+        ASSERT_EQUALS(1UL, values.size());
+        ASSERT_EQUALS(static_cast<long long>(~0U), values.back().intvalue);
 
         // !
         code  = "void f(int x) {\n"
@@ -773,8 +773,8 @@ private:
                 "    if (x==0) {}\n"
                 "}";
         values = tokenValues(code,"!");
-        ASSERT_EQUALS(1U, values.size());
-        ASSERT_EQUALS(1, values.back().intvalue);
+        ASSERT_EQUALS(1UL, values.size());
+        ASSERT_EQUALS(1LL, values.back().intvalue);
 
         // unary minus
         code  = "void f(int x) {\n"
@@ -782,8 +782,8 @@ private:
                 "    if (x==10) {}\n"
                 "}";
         values = tokenValues(code,"-");
-        ASSERT_EQUALS(1U, values.size());
-        ASSERT_EQUALS(-10, values.back().intvalue);
+        ASSERT_EQUALS(1UL, values.size());
+        ASSERT_EQUALS(-10LL, values.back().intvalue);
 
         // Logical and
         code = "void f(bool b) {\n"
@@ -841,11 +841,11 @@ private:
                "    return a || b;\n"
                "}\n";
         values = tokenValues(code, "%oror%");
-        ASSERT_EQUALS(1, values.size());
+        ASSERT_EQUALS(1UL, values.size());
         if (!values.empty()) {
             ASSERT_EQUALS(true, values.front().isIntValue());
             ASSERT_EQUALS(true, values.front().isKnown());
-            ASSERT_EQUALS(1, values.front().intvalue);
+            ASSERT_EQUALS(1LL, values.front().intvalue);
         }
 
         // function call => calculation
@@ -860,30 +860,30 @@ private:
         ASSERT_EQUALS(true, values.empty());
         if (!values.empty()) {
             /* todo.. */
-            ASSERT_EQUALS(2U, values.size());
-            ASSERT_EQUALS(2, values.front().intvalue);
-            ASSERT_EQUALS(22, values.back().intvalue);
+            ASSERT_EQUALS(2UL, values.size());
+            ASSERT_EQUALS(2LL, values.front().intvalue);
+            ASSERT_EQUALS(22LL, values.back().intvalue);
         }
 
         // Comparison of string
         values = tokenValues("f(\"xyz\" == \"xyz\");", "=="); // implementation defined
-        ASSERT_EQUALS(0U, values.size()); // <- no value
+        ASSERT_EQUALS(0UL, values.size()); // <- no value
 
         values = tokenValues("f(\"xyz\" == 0);", "==");
-        ASSERT_EQUALS(1U, values.size());
-        ASSERT_EQUALS(0, values.front().intvalue);
+        ASSERT_EQUALS(1UL, values.size());
+        ASSERT_EQUALS(0LL, values.front().intvalue);
 
         values = tokenValues("f(0 == \"xyz\");", "==");
-        ASSERT_EQUALS(1U, values.size());
-        ASSERT_EQUALS(0, values.front().intvalue);
+        ASSERT_EQUALS(1UL, values.size());
+        ASSERT_EQUALS(0LL, values.front().intvalue);
 
         values = tokenValues("f(\"xyz\" != 0);", "!=");
-        ASSERT_EQUALS(1U, values.size());
-        ASSERT_EQUALS(1, values.front().intvalue);
+        ASSERT_EQUALS(1UL, values.size());
+        ASSERT_EQUALS(1LL, values.front().intvalue);
 
         values = tokenValues("f(0 != \"xyz\");", "!=");
-        ASSERT_EQUALS(1U, values.size());
-        ASSERT_EQUALS(1, values.front().intvalue);
+        ASSERT_EQUALS(1UL, values.size());
+        ASSERT_EQUALS(1LL, values.front().intvalue);
     }
 
     void valueFlowSizeof() {
@@ -896,14 +896,14 @@ private:
                 "    x = sizeof(*a);\n"
                 "}";
         values = tokenValues(code,"( *");
-        ASSERT_EQUALS(1U, values.size());
-        ASSERT_EQUALS(1, values.back().intvalue);
+        ASSERT_EQUALS(1UL, values.size());
+        ASSERT_EQUALS(1LL, values.back().intvalue);
 
         code = "enum testEnum : uint32_t { a };\n"
                "sizeof(testEnum);";
         values = tokenValues(code,"( testEnum");
-        ASSERT_EQUALS(1U, values.size());
-        ASSERT_EQUALS(4, values.back().intvalue);
+        ASSERT_EQUALS(1UL, values.size());
+        ASSERT_EQUALS(4LL, values.back().intvalue);
 
 #define CHECK3(A, B, C)                          \
         do {                                     \
@@ -911,8 +911,8 @@ private:
                "    x = sizeof(" A ");\n"        \
                "}";                              \
         values = tokenValues(code,"( " C " )");  \
-        ASSERT_EQUALS(1U, values.size());        \
-        ASSERT_EQUALS(B, values.back().intvalue);\
+        ASSERT_EQUALS(1UL, values.size());        \
+        ASSERT_EQUALS(B * 1LL, values.back().intvalue);\
         } while(false)
 #define CHECK(A, B) CHECK3(A, B, A)
 
@@ -949,8 +949,8 @@ private:
                 "    x = sizeof(a) / sizeof(a[0]);\n"
                 "}";
         values = tokenValues(code,"/");
-        ASSERT_EQUALS(1U, values.size());
-        ASSERT_EQUALS(10, values.back().intvalue);
+        ASSERT_EQUALS(1UL, values.size());
+        ASSERT_EQUALS(10LL, values.back().intvalue);
 
 #define CHECK(A, B, C, D)                         \
         do {                                      \
@@ -959,8 +959,8 @@ private:
                "    x = sizeof(" C ");\n"         \
                "}";                               \
         values = tokenValues(code,"( " C " )");   \
-        ASSERT_EQUALS(1U, values.size());         \
-        ASSERT_EQUALS(D, values.back().intvalue); \
+        ASSERT_EQUALS(1UL, values.size());         \
+        ASSERT_EQUALS(D * 1LL, values.back().intvalue); \
         } while(false)
 
         // enums
@@ -1035,8 +1035,8 @@ private:
                "    x = sizeof(arrE);\n"              \
                "}";                                   \
         values = tokenValues(code,"( arrE )");        \
-        ASSERT_EQUALS(1U, values.size());             \
-        ASSERT_EQUALS(B * 2U, values.back().intvalue);\
+        ASSERT_EQUALS(1UL, values.size());             \
+        ASSERT_EQUALS(B * 2LL, values.back().intvalue);\
         } while(false)
 
         // enum array
@@ -1070,8 +1070,8 @@ private:
                "    x = sizeof(arrE);\n"              \
                "}";                                   \
         values = tokenValues(code,"( arrE )");        \
-        ASSERT_EQUALS(1U, values.size());             \
-        ASSERT_EQUALS(B * 2U, values.back().intvalue);\
+        ASSERT_EQUALS(1UL, values.size());             \
+        ASSERT_EQUALS(B * 2LL, values.back().intvalue);\
         } while(false)
 
         // enum array
@@ -1100,8 +1100,8 @@ private:
         code = "uint16_t arr[10];\n"
                "x = sizeof(arr);";
         values = tokenValues(code,"( arr )");
-        ASSERT_EQUALS(1U, values.size());
-        ASSERT_EQUALS(10 * sizeof(std::uint16_t), values.back().intvalue);
+        ASSERT_EQUALS(1UL, values.size());
+        ASSERT_EQUALS(static_cast<long long>(10 * sizeof(std::uint16_t)), values.back().intvalue);
     }
 
     void valueFlowErrorPath() {
@@ -2165,7 +2165,7 @@ private:
                "}\n"
                "Fred::Fred(std::unique_ptr<Wilma> wilma)\n"
                "    : mWilma(std::move(wilma)) {}\n";
-        ASSERT_EQUALS(0, tokenValues(code, "mWilma (").size());
+        ASSERT_EQUALS(0UL, tokenValues(code, "mWilma (").size());
 
         code = "void g(unknown*);\n"
                "int f() {\n"
@@ -3039,10 +3039,10 @@ private:
                "  x = 0 + foo.x;\n" // <- foo.x is 1
                "}";
         values = tokenValues(code, "+");
-        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(1UL, values.size());
         ASSERT_EQUALS(true, values.front().isKnown());
         ASSERT_EQUALS(true, values.front().isIntValue());
-        ASSERT_EQUALS(1, values.front().intvalue);
+        ASSERT_EQUALS(1LL, values.front().intvalue);
 
         code = "void f() {\n"
                "  S s;\n"
@@ -3052,9 +3052,9 @@ private:
                "    s.x++;\n"
                "}";
         values = tokenValues(code, "<");
-        ASSERT_EQUALS(1, values.size());
+        ASSERT_EQUALS(1UL, values.size());
         ASSERT(values.front().isPossible());
-        ASSERT_EQUALS(true, values.front().intvalue);
+        ASSERT_EQUALS(1LL, values.front().intvalue);
 
         code = "void f() {\n"
                "  S s;\n"
@@ -3092,9 +3092,9 @@ private:
                "  }\n"
                "}";
         values = tokenValues(code, ">");
-        ASSERT_EQUALS(1, values.size());
+        ASSERT_EQUALS(1UL, values.size());
         ASSERT(values.front().isPossible());
-        ASSERT_EQUALS(true, values.front().intvalue);
+        ASSERT_EQUALS(1LL, values.front().intvalue);
 
         code = "void foo() {\n"
                "    struct ISO_PVD_s pvd;\n"
@@ -3130,7 +3130,7 @@ private:
         TODO_ASSERT_EQUALS(true, false, testConditionalValueOfX(code, 6U, 14));
 
         ValueFlow::Value value1 = valueOfTok(code, "-");
-        ASSERT_EQUALS(13, value1.intvalue);
+        ASSERT_EQUALS(13LL, value1.intvalue);
         ASSERT(!value1.isKnown());
 
         ValueFlow::Value value2 = valueOfTok(code, "+");
@@ -3407,7 +3407,7 @@ private:
                "}\n";
         value = valueOfTok(code, "x <");
         ASSERT(value.isPossible());
-        ASSERT_EQUALS(value.intvalue, 0);
+        ASSERT_EQUALS(0LL, value.intvalue);
 
         code = "void f() {\n"
                "    unsigned int x = 0;\n"
@@ -3415,7 +3415,7 @@ private:
                "}\n";
         value = valueOfTok(code, "x <");
         ASSERT(value.isPossible());
-        ASSERT_EQUALS(0, value.intvalue);
+        ASSERT_EQUALS(0LL, value.intvalue);
 
         code = "void f() {\n"
                "    unsigned int x = 1;\n"
@@ -3423,7 +3423,7 @@ private:
                "}\n";
         value = valueOfTok(code, "x <");
         ASSERT(value.isPossible());
-        ASSERT_EQUALS(0, value.intvalue);
+        ASSERT_EQUALS(0LL, value.intvalue);
     }
 
     void valueFlowSubFunction() {
@@ -3482,7 +3482,7 @@ private:
                "void f2() {\n"
                "    x = 10 - f1(2);\n"
                "}";
-        ASSERT_EQUALS(7, valueOfTok(code, "-").intvalue);
+        ASSERT_EQUALS(7LL, valueOfTok(code, "-").intvalue);
         ASSERT_EQUALS(true, valueOfTok(code, "-").isKnown());
 
         code = "int add(int x, int y) {\n"
@@ -3491,12 +3491,12 @@ private:
                "void f2() {\n"
                "    x = 1 * add(10+1,4);\n"
                "}";
-        ASSERT_EQUALS(15, valueOfTok(code, "*").intvalue);
+        ASSERT_EQUALS(15LL, valueOfTok(code, "*").intvalue);
         ASSERT_EQUALS(true, valueOfTok(code, "*").isKnown());
 
         code = "int one() { return 1; }\n"
                "void f() { x = 1 * one(); }";
-        ASSERT_EQUALS(1, valueOfTok(code, "*").intvalue);
+        ASSERT_EQUALS(1LL, valueOfTok(code, "*").intvalue);
         ASSERT_EQUALS(true, valueOfTok(code, "*").isKnown());
 
         code = "int add(int x, int y) {\n"
@@ -3505,7 +3505,7 @@ private:
                "void f2() {\n"
                "    x = 1 * add(1,add(2,3));\n"
                "}";
-        ASSERT_EQUALS(6, valueOfTok(code, "*").intvalue);
+        ASSERT_EQUALS(6LL, valueOfTok(code, "*").intvalue);
         ASSERT_EQUALS(true, valueOfTok(code, "*").isKnown());
 
         code = "int f(int i, X x) {\n"
@@ -3525,7 +3525,7 @@ private:
                "        x = 10 - f1(2);\n"
                "    }\n"
                "};";
-        ASSERT_EQUALS(7, valueOfTok(code, "-").intvalue);
+        ASSERT_EQUALS(7LL, valueOfTok(code, "-").intvalue);
         ASSERT_EQUALS(true, valueOfTok(code, "-").isKnown());
 
         code = "class A\n"
@@ -3537,7 +3537,7 @@ private:
                "        x = 10 - f1(2);\n"
                "    }\n"
                "};";
-        ASSERT_EQUALS(7, valueOfTok(code, "-").intvalue);
+        ASSERT_EQUALS(7LL, valueOfTok(code, "-").intvalue);
         ASSERT_EQUALS(false, valueOfTok(code, "-").isKnown());
     }
 
@@ -3570,7 +3570,7 @@ private:
                "  return x + 2;\n" // <- known value
                "}";
         value = valueOfTok(code, "+");
-        ASSERT_EQUALS(3, value.intvalue);
+        ASSERT_EQUALS(3LL, value.intvalue);
         ASSERT(value.isKnown());
 
         {
@@ -3579,7 +3579,7 @@ private:
                    "  if (x == 15) { x += 7; }\n" // <- condition is true
                    "}";
             value = valueOfTok(code, "==");
-            ASSERT_EQUALS(1, value.intvalue);
+            ASSERT_EQUALS(1LL, value.intvalue);
             ASSERT(value.isKnown());
 
             code = "int f() {\n"
@@ -3599,7 +3599,7 @@ private:
                "  return x + 2;\n" // <- possible value
                "}";
         value = valueOfTok(code, "+");
-        ASSERT_EQUALS(9, value.intvalue);
+        ASSERT_EQUALS(9LL, value.intvalue);
         ASSERT(value.isPossible());
 
         code = "void f(int c) {\n"
@@ -3644,7 +3644,7 @@ private:
                "  if (x < 0) {}\n"
                "}\n";
         value = valueOfTok(code, "<");
-        ASSERT_EQUALS(0, value.intvalue);
+        ASSERT_EQUALS(0LL, value.intvalue);
         ASSERT(value.isKnown());
 
         code = "void dostuff(int & x);\n"
@@ -3662,7 +3662,7 @@ private:
                "  if (x < 0) {}\n"
                "}\n";
         value = valueOfTok(code, "<");
-        ASSERT_EQUALS(0, value.intvalue);
+        ASSERT_EQUALS(0LL, value.intvalue);
         ASSERT(value.isKnown());
 
         code = "void f() {\n"
@@ -3717,7 +3717,7 @@ private:
                "  }\n"
                "}";
         value = valueOfTok(code, "!");
-        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT_EQUALS(1LL, value.intvalue);
         ASSERT(value.isKnown());
 
         code = "void f() {\n"
@@ -3749,7 +3749,7 @@ private:
                "  }\n"
                "}";
         value = valueOfTok(code, "!");
-        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT_EQUALS(1LL, value.intvalue);
         ASSERT(value.isPossible());
 
         code = "void f() {\n"
@@ -3763,7 +3763,7 @@ private:
                "  return x + 1;\n" // <- known value
                "}\n";
         value = valueOfTok(code, "+");
-        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT_EQUALS(1LL, value.intvalue);
         ASSERT(value.isKnown());
 
         code = "void f() {\n"
@@ -3772,7 +3772,7 @@ private:
                "  a = x + 1;\n" // <- possible value
                "}";
         value = valueOfTok(code, "+");
-        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT_EQUALS(1LL, value.intvalue);
         ASSERT(value.isPossible());
 
         // in conditional code
@@ -3782,7 +3782,7 @@ private:
                "  }\n"
                "}";
         value = valueOfTok(code, "+");
-        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT_EQUALS(1LL, value.intvalue);
         ASSERT(value.isKnown());
 
         code = "void f(int x) {\n"
@@ -3791,7 +3791,7 @@ private:
                "  }\n"
                "}";
         value = valueOfTok(code, "+");
-        ASSERT_EQUALS(16, value.intvalue);
+        ASSERT_EQUALS(16LL, value.intvalue);
         ASSERT(value.isKnown());
 
         // after condition
@@ -3800,7 +3800,7 @@ private:
                "  return x + 1;\n" // <- possible value
                "}";
         value = valueOfTok(code, "+");
-        ASSERT_EQUALS(5, value.intvalue);
+        ASSERT_EQUALS(5LL, value.intvalue);
         ASSERT(value.isPossible());
 
         code = "int f(int x) {\n"
@@ -3808,7 +3808,7 @@ private:
                "  else if (x >= 2) {}\n" // <- known value
                "}";
         value = valueOfTok(code, ">=");
-        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT_EQUALS(1LL, value.intvalue);
         ASSERT(value.isKnown());
 
         code = "int f(int x) {\n"
@@ -3829,14 +3829,14 @@ private:
         // calculation with known result
         code = "int f(int x) { a = x & 0; }"; // <- & is 0
         value = valueOfTok(code, "&");
-        ASSERT_EQUALS(0, value.intvalue);
+        ASSERT_EQUALS(0LL, value.intvalue);
         ASSERT(value.isKnown());
 
         // template parameters are not known
         code = "template <int X> void f() { a = X; }\n"
                "f<1>();";
         value = valueOfTok(code, "1");
-        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT_EQUALS(1LL, value.intvalue);
         ASSERT_EQUALS(false, value.isKnown());
     }
 
@@ -4006,7 +4006,7 @@ private:
                "    y += 10;\n"
                "    x = dostuff(sizeof(*x)*y);\n"
                "}";
-        ASSERT_EQUALS(0U, tokenValues(code, "x )").size());
+        ASSERT_EQUALS(0UL, tokenValues(code, "x )").size());
 
         // #8036
         code = "void foo() {\n"
@@ -4147,7 +4147,7 @@ private:
                "  d = szHdr;\n"
                "}";
         values = tokenValues(code, "szHdr ; }");
-        ASSERT_EQUALS(0, values.size());
+        ASSERT_EQUALS(0UL, values.size());
 
         // #9933
         code = "struct MyStruct { size_t value; }\n"
@@ -4158,7 +4158,7 @@ private:
                "    if (x.value < 432) {}\n"
                "}";
         values = tokenValues(code, "x . value");
-        ASSERT_EQUALS(0, values.size());
+        ASSERT_EQUALS(0UL, values.size());
     }
 
     void valueFlowTerminatingCond() {
@@ -4653,7 +4653,7 @@ private:
                "    ptr->getMessage (&v);\n"
                "    if (v.size () > 0) {}\n" // <- v has unknown size!
                "}";
-        ASSERT_EQUALS(0U, tokenValues(code, "v . size ( )").size());
+        ASSERT_EQUALS(0UL, tokenValues(code, "v . size ( )").size());
 
         // if
         code = "bool f(std::vector<int>&) {\n" // #9532
@@ -4665,20 +4665,20 @@ private:
                "        return 0;\n"
                "    return v[0];\n"
                "}\n";
-        ASSERT_EQUALS(0U, tokenValues(code, "v [ 0 ]").size());
+        ASSERT_EQUALS(0UL, tokenValues(code, "v [ 0 ]").size());
 
         // container size => yields
         code = "void f() {\n"
                "  std::string s = \"abcd\";\n"
                "  s.size();\n"
                "}";
-        ASSERT_EQUALS(4, tokenValues(code, "( ) ;").front().intvalue);
+        ASSERT_EQUALS(4LL, tokenValues(code, "( ) ;").front().intvalue);
 
         code = "void f() {\n"
                "  std::string s;\n"
                "  s.empty();\n"
                "}";
-        ASSERT_EQUALS(1, tokenValues(code, "( ) ;").front().intvalue);
+        ASSERT_EQUALS(1LL, tokenValues(code, "( ) ;").front().intvalue);
 
         // Calculations
         code = "void f() {\n"
@@ -4734,7 +4734,7 @@ private:
                "        return str.front();\n"
                "    }\n"
                "}\n";
-        ASSERT_EQUALS(0U, tokenValues(code, "str . front").size());
+        ASSERT_EQUALS(0UL, tokenValues(code, "str . front").size());
 
         code = "void f() {\n"
                "  std::vector<int> ints{};\n"
@@ -4824,23 +4824,23 @@ private:
                "  return x + 0;\n"
                "}";
         values = tokenValues(code, "+", &s);
-        ASSERT_EQUALS(2, values.size());
-        ASSERT_EQUALS(-0x8000, values.front().intvalue);
-        ASSERT_EQUALS(0x7fff, values.back().intvalue);
+        ASSERT_EQUALS(2UL, values.size());
+        ASSERT_EQUALS(-0x8000LL, values.front().intvalue);
+        ASSERT_EQUALS(0x7fffLL, values.back().intvalue);
 
         code = "short f(std::string x) {\n"
                "  return x[10];\n"
                "}";
         values = tokenValues(code, "x [", &s);
-        ASSERT_EQUALS(2, values.size());
-        ASSERT_EQUALS(0, values.front().intvalue);
-        ASSERT_EQUALS(1000000, values.back().intvalue);
+        ASSERT_EQUALS(2UL, values.size());
+        ASSERT_EQUALS(0LL, values.front().intvalue);
+        ASSERT_EQUALS(1000000LL, values.back().intvalue);
 
         code = "int f(float x) {\n"
                "  return x;\n"
                "}";
         values = tokenValues(code, "x ;", &s);
-        ASSERT_EQUALS(2, values.size());
+        ASSERT_EQUALS(2UL, values.size());
         ASSERT(values.front().floatValue < -1E20);
         ASSERT(values.back().floatValue > 1E20);
 
@@ -4848,17 +4848,17 @@ private:
                "  return x + 0;\n"
                "}";
         values = tokenValues(code, "+", &s);
-        ASSERT_EQUALS(2, values.size());
-        ASSERT_EQUALS(0, values.front().intvalue);
-        ASSERT_EQUALS(100, values.back().intvalue);
+        ASSERT_EQUALS(2UL, values.size());
+        ASSERT_EQUALS(0LL, values.front().intvalue);
+        ASSERT_EQUALS(100LL, values.back().intvalue);
 
         code = "unsigned short f(unsigned short x) [[expects: x <= 100]] {\n"
                "  return x + 0;\n"
                "}";
         values = tokenValues(code, "+", &s);
-        ASSERT_EQUALS(2, values.size());
-        ASSERT_EQUALS(0, values.front().intvalue);
-        ASSERT_EQUALS(100, values.back().intvalue);
+        ASSERT_EQUALS(2UL, values.size());
+        ASSERT_EQUALS(0LL, values.front().intvalue);
+        ASSERT_EQUALS(100LL, values.back().intvalue);
     }
 
 
@@ -4871,9 +4871,9 @@ private:
 
         code = "x = rand();";
         values = tokenValues(code, "(", &s);
-        ASSERT_EQUALS(2, values.size());
-        ASSERT_EQUALS(INT_MIN, values.front().intvalue);
-        ASSERT_EQUALS(INT_MAX, values.back().intvalue);
+        ASSERT_EQUALS(2UL, values.size());
+        ASSERT_EQUALS(static_cast<long long>(INT_MIN), values.front().intvalue);
+        ASSERT_EQUALS(static_cast<long long>(INT_MAX), values.back().intvalue);
     }
 
     void valueFlowPointerAliasDeref() {
