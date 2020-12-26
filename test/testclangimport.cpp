@@ -1015,7 +1015,7 @@ private:
         GET_SYMBOL_DB(clang);
 
         // Enum scope and type
-        ASSERT_EQUALS(3, db->scopeList.size());
+        ASSERT_EQUALS(3UL, db->scopeList.size());
         const Scope &enumScope = db->scopeList.back();
         ASSERT_EQUALS(Scope::ScopeType::eEnum, enumScope.type);
         ASSERT_EQUALS("abc", enumScope.className);
@@ -1039,7 +1039,7 @@ private:
         GET_SYMBOL_DB(clang);
 
         // There is a function foo that has 2 arguments
-        ASSERT_EQUALS(1, db->functionScopes.size());
+        ASSERT_EQUALS(1UL, db->functionScopes.size());
         const Scope *scope = db->functionScopes[0];
         const Function *func = scope->function;
         ASSERT_EQUALS(2, func->argCount());
@@ -1058,12 +1058,12 @@ private:
         GET_SYMBOL_DB(clang);
 
         // There is a function foo that has 2 arguments
-        ASSERT_EQUALS(1, db->functionScopes.size());
+        ASSERT_EQUALS(1UL, db->functionScopes.size());
         const Scope *scope = db->functionScopes[0];
         const Function *func = scope->function;
         ASSERT_EQUALS(2, func->argCount());
-        ASSERT_EQUALS(0, (long long)func->getArgumentVar(0)->nameToken());
-        ASSERT_EQUALS(0, (long long)func->getArgumentVar(1)->nameToken());
+        ASSERT(func->getArgumentVar(0)->nameToken() == nullptr);
+        ASSERT(func->getArgumentVar(1)->nameToken() == nullptr);
     }
 
     void symbolDatabaseFunction3() { // #9640
@@ -1075,7 +1075,7 @@ private:
         GET_SYMBOL_DB(clang);
 
         // There is a function foo that has 2 arguments
-        ASSERT_EQUALS(1, db->functionScopes.size());
+        ASSERT_EQUALS(1UL, db->functionScopes.size());
         const Scope *scope = db->functionScopes[0];
         const Function *func = scope->function;
         ASSERT_EQUALS(2, func->argCount());
@@ -1090,8 +1090,8 @@ private:
         GET_SYMBOL_DB(clang);
 
         // There is a function f that is const
-        ASSERT_EQUALS(2, db->scopeList.size());
-        ASSERT_EQUALS(1, db->scopeList.back().functionList.size());
+        ASSERT_EQUALS(2UL, db->scopeList.size());
+        ASSERT_EQUALS(1UL, db->scopeList.back().functionList.size());
         const Function &func = db->scopeList.back().functionList.back();
         ASSERT(func.isConst());
     }
@@ -1175,7 +1175,7 @@ private:
         ASSERT(!!tok);
         tok = tok->next();
         ASSERT(tok->hasKnownIntValue());
-        ASSERT_EQUALS(44, tok->getKnownIntValue());
+        ASSERT_EQUALS(44LL, tok->getKnownIntValue());
     }
 
     void valueFlow2() {
@@ -1191,7 +1191,7 @@ private:
         ASSERT(!!tok);
         tok = tok->next();
         ASSERT(tok->hasKnownIntValue());
-        ASSERT_EQUALS(10, tok->getKnownIntValue());
+        ASSERT_EQUALS(10LL, tok->getKnownIntValue());
     }
 
     void valueType1() {

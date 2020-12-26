@@ -201,17 +201,6 @@ bool TestFixture::assertEquals(const char * const filename, const unsigned int l
     return assertEquals(filename, linenr, expected, std::string(actual), msg);
 }
 
-bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const long long expected, const long long actual, const std::string &msg) const
-{
-    if (expected != actual) {
-        std::ostringstream ostr1;
-        ostr1 << expected;
-        std::ostringstream ostr2;
-        ostr2 << actual;
-        assertEquals(filename, linenr, ostr1.str(), ostr2.str(), msg);
-    }
-    return expected == actual;
-}
 
 void TestFixture::assertEqualsDouble(const char * const filename, const unsigned int linenr, const double expected, const double actual, const double tolerance, const std::string &msg) const
 {

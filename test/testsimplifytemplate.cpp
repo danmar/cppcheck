@@ -5268,16 +5268,16 @@ private:
 
     void instantiateMatch() {
         // Ticket #8175
-        ASSERT_EQUALS(false,
+        ASSERT_EQUALS(0U,
                       instantiateMatch("ConvertHelper < From, To > c ;",
                                        2, ":: %name% ("));
-        ASSERT_EQUALS(true,
+        ASSERT_EQUALS(1U,
                       instantiateMatch("ConvertHelper < From, To > :: Create ( ) ;",
                                        2, ":: %name% ("));
-        ASSERT_EQUALS(false,
+        ASSERT_EQUALS(0U,
                       instantiateMatch("integral_constant < bool, sizeof ( ConvertHelper < From, To > :: Create ( ) ) > ;",
                                        2, ":: %name% ("));
-        ASSERT_EQUALS(false,
+        ASSERT_EQUALS(0U,
                       instantiateMatch("integral_constant < bool, sizeof ( ns :: ConvertHelper < From, To > :: Create ( ) ) > ;",
                                        2, ":: %name% ("));
     }
