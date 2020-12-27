@@ -641,7 +641,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         }
 
         std::set<unsigned long long> checksums;
-        unsigned int checkCount = 0;
+        int checkCount = 0;
         bool hasValidConfig = false;
         std::list<std::string> configurationError;
         for (const std::string &currCfg : configurations) {
@@ -1259,7 +1259,7 @@ Settings &CppCheck::settings()
     return mSettings;
 }
 
-void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t numberOfConfigurations)
+void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfConfigurations)
 {
     if (!mSettings.isEnabled(Settings::INFORMATION) && !mTooManyConfigs)
         return;
