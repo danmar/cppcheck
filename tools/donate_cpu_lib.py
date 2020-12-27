@@ -484,6 +484,7 @@ def get_libraries():
                        'sdl': ['<SDL.h>', '<SDL/SDL.h>', '<SDL2/SDL.h>'],
                        'sqlite3': ['<sqlite3.h>', '"sqlite3.h"'],
                        'tinyxml2': ['<tinyxml2', '"tinyxml2'],
+                       'wxsqlite3': ['<wx/wxsqlite3', '"wx/wxsqlite3'],
                        'wxwidgets': ['<wx/', '"wx/'],
                        'zlib': ['<zlib.h>'],
                       }
