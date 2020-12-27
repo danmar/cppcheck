@@ -251,116 +251,116 @@ private:
 
     void toLongNumber() const {
         // from hex
-        ASSERT_EQUALS(0,      MathLib::toLongNumber("0x0"));
-        ASSERT_EQUALS(0,      MathLib::toLongNumber("-0x0"));
-        ASSERT_EQUALS(0,      MathLib::toLongNumber("+0x0"));
-        ASSERT_EQUALS(10,     MathLib::toLongNumber("0xa"));
-        ASSERT_EQUALS(10995,  MathLib::toLongNumber("0x2AF3"));
-        ASSERT_EQUALS(-10,    MathLib::toLongNumber("-0xa"));
-        ASSERT_EQUALS(-10995, MathLib::toLongNumber("-0x2AF3"));
-        ASSERT_EQUALS(10,     MathLib::toLongNumber("+0xa"));
-        ASSERT_EQUALS(10995,  MathLib::toLongNumber("+0x2AF3"));
+        ASSERT_EQUALS(0LL,      MathLib::toLongNumber("0x0"));
+        ASSERT_EQUALS(0LL,      MathLib::toLongNumber("-0x0"));
+        ASSERT_EQUALS(0LL,      MathLib::toLongNumber("+0x0"));
+        ASSERT_EQUALS(10LL,     MathLib::toLongNumber("0xa"));
+        ASSERT_EQUALS(10995LL,  MathLib::toLongNumber("0x2AF3"));
+        ASSERT_EQUALS(-10LL,    MathLib::toLongNumber("-0xa"));
+        ASSERT_EQUALS(-10995LL, MathLib::toLongNumber("-0x2AF3"));
+        ASSERT_EQUALS(10LL,     MathLib::toLongNumber("+0xa"));
+        ASSERT_EQUALS(10995LL,  MathLib::toLongNumber("+0x2AF3"));
 
         // from octal
-        ASSERT_EQUALS(8,    MathLib::toLongNumber("010"));
-        ASSERT_EQUALS(8,    MathLib::toLongNumber("+010"));
-        ASSERT_EQUALS(-8,   MathLib::toLongNumber("-010"));
-        ASSERT_EQUALS(125,  MathLib::toLongNumber("0175"));
-        ASSERT_EQUALS(125,  MathLib::toLongNumber("+0175"));
-        ASSERT_EQUALS(-125, MathLib::toLongNumber("-0175"));
+        ASSERT_EQUALS(8LL,    MathLib::toLongNumber("010"));
+        ASSERT_EQUALS(8LL,    MathLib::toLongNumber("+010"));
+        ASSERT_EQUALS(-8LL,   MathLib::toLongNumber("-010"));
+        ASSERT_EQUALS(125LL,  MathLib::toLongNumber("0175"));
+        ASSERT_EQUALS(125LL,  MathLib::toLongNumber("+0175"));
+        ASSERT_EQUALS(-125LL, MathLib::toLongNumber("-0175"));
 
         // from binary
-        ASSERT_EQUALS(0,    MathLib::toLongNumber("0b0"));
-        ASSERT_EQUALS(1,    MathLib::toLongNumber("0b1"));
-        ASSERT_EQUALS(1,    MathLib::toLongNumber("0b1U"));
-        ASSERT_EQUALS(1,    MathLib::toLongNumber("0b1L"));
-        ASSERT_EQUALS(1,    MathLib::toLongNumber("0b1LU"));
-        ASSERT_EQUALS(1,    MathLib::toLongNumber("0b1LL"));
-        ASSERT_EQUALS(1,    MathLib::toLongNumber("0b1LLU"));
-        ASSERT_EQUALS(1,    MathLib::toLongNumber("+0b1"));
-        ASSERT_EQUALS(-1,   MathLib::toLongNumber("-0b1"));
-        ASSERT_EQUALS(215,  MathLib::toLongNumber("0b11010111"));
-        ASSERT_EQUALS(-215, MathLib::toLongNumber("-0b11010111"));
-        ASSERT_EQUALS(215,  MathLib::toLongNumber("0B11010111"));
+        ASSERT_EQUALS(0LL,    MathLib::toLongNumber("0b0"));
+        ASSERT_EQUALS(1LL,    MathLib::toLongNumber("0b1"));
+        ASSERT_EQUALS(1LL,    MathLib::toLongNumber("0b1U"));
+        ASSERT_EQUALS(1LL,    MathLib::toLongNumber("0b1L"));
+        ASSERT_EQUALS(1LL,    MathLib::toLongNumber("0b1LU"));
+        ASSERT_EQUALS(1LL,    MathLib::toLongNumber("0b1LL"));
+        ASSERT_EQUALS(1LL,    MathLib::toLongNumber("0b1LLU"));
+        ASSERT_EQUALS(1LL,    MathLib::toLongNumber("+0b1"));
+        ASSERT_EQUALS(-1LL,   MathLib::toLongNumber("-0b1"));
+        ASSERT_EQUALS(215LL,  MathLib::toLongNumber("0b11010111"));
+        ASSERT_EQUALS(-215LL, MathLib::toLongNumber("-0b11010111"));
+        ASSERT_EQUALS(215LL,  MathLib::toLongNumber("0B11010111"));
 
         // from base 10
-        ASSERT_EQUALS(10,  MathLib::toLongNumber("10"));
-        ASSERT_EQUALS(10,  MathLib::toLongNumber("10."));
-        ASSERT_EQUALS(10,  MathLib::toLongNumber("10.0"));
-        ASSERT_EQUALS(100, MathLib::toLongNumber("10E+1"));
-        ASSERT_EQUALS(1,   MathLib::toLongNumber("10E-1"));
-        ASSERT_EQUALS(100, MathLib::toLongNumber("+10E+1"));
-        ASSERT_EQUALS(-1,  MathLib::toLongNumber("-10E-1"));
-        ASSERT_EQUALS(100, MathLib::toLongNumber("+10.E+1"));
-        ASSERT_EQUALS(-1,  MathLib::toLongNumber("-10.E-1"));
-        ASSERT_EQUALS(100, MathLib::toLongNumber("+10.0E+1"));
-        ASSERT_EQUALS(-1,  MathLib::toLongNumber("-10.0E-1"));
+        ASSERT_EQUALS(10LL,  MathLib::toLongNumber("10"));
+        ASSERT_EQUALS(10LL,  MathLib::toLongNumber("10."));
+        ASSERT_EQUALS(10LL,  MathLib::toLongNumber("10.0"));
+        ASSERT_EQUALS(100LL, MathLib::toLongNumber("10E+1"));
+        ASSERT_EQUALS(1LL,   MathLib::toLongNumber("10E-1"));
+        ASSERT_EQUALS(100LL, MathLib::toLongNumber("+10E+1"));
+        ASSERT_EQUALS(-1LL,  MathLib::toLongNumber("-10E-1"));
+        ASSERT_EQUALS(100LL, MathLib::toLongNumber("+10.E+1"));
+        ASSERT_EQUALS(-1LL,  MathLib::toLongNumber("-10.E-1"));
+        ASSERT_EQUALS(100LL, MathLib::toLongNumber("+10.0E+1"));
+        ASSERT_EQUALS(-1LL,  MathLib::toLongNumber("-10.0E-1"));
 
         // from char
-        ASSERT_EQUALS((int)('A'),    MathLib::toLongNumber("'A'"));
-        ASSERT_EQUALS((int)('\x10'), MathLib::toLongNumber("'\\x10'"));
-        ASSERT_EQUALS((int)('\100'), MathLib::toLongNumber("'\\100'"));
-        ASSERT_EQUALS((int)('\200'), MathLib::toLongNumber("'\\200'"));
-        ASSERT_EQUALS((int)(L'A'),   MathLib::toLongNumber("L'A'"));
+        ASSERT_EQUALS((MathLib::bigint)('A'),    MathLib::toLongNumber("'A'"));
+        ASSERT_EQUALS((MathLib::bigint)('\x10'), MathLib::toLongNumber("'\\x10'"));
+        ASSERT_EQUALS((MathLib::bigint)('\100'), MathLib::toLongNumber("'\\100'"));
+        ASSERT_EQUALS((MathLib::bigint)('\200'), MathLib::toLongNumber("'\\200'"));
+        ASSERT_EQUALS((MathLib::bigint)(L'A'),   MathLib::toLongNumber("L'A'"));
 #ifdef __GNUC__
         // BEGIN Implementation-specific results
-        ASSERT_EQUALS((int)('AB'),    MathLib::toLongNumber("'AB'"));
-        ASSERT_EQUALS((int)('ABC'),    MathLib::toLongNumber("'ABC'"));
-        ASSERT_EQUALS((int)('ABCD'),    MathLib::toLongNumber("'ABCD'"));
-        ASSERT_EQUALS((int)('ABCDE'),    MathLib::toLongNumber("'ABCDE'"));
+        ASSERT_EQUALS((MathLib::bigint)('AB'),    MathLib::toLongNumber("'AB'"));
+        ASSERT_EQUALS((MathLib::bigint)('ABC'),    MathLib::toLongNumber("'ABC'"));
+        ASSERT_EQUALS((MathLib::bigint)('ABCD'),    MathLib::toLongNumber("'ABCD'"));
+        ASSERT_EQUALS((MathLib::bigint)('ABCDE'),    MathLib::toLongNumber("'ABCDE'"));
         // END Implementation-specific results
 #endif
-        ASSERT_EQUALS((int)('\0'),   MathLib::toLongNumber("'\\0'"));
-        ASSERT_EQUALS(0x1B,   MathLib::toLongNumber("'\\e'"));
-        ASSERT_EQUALS((int)('\r'),   MathLib::toLongNumber("'\\r'"));
-        ASSERT_EQUALS((int)('\x12'), MathLib::toLongNumber("'\\x12'"));
+        ASSERT_EQUALS((MathLib::bigint)('\0'),   MathLib::toLongNumber("'\\0'"));
+        ASSERT_EQUALS((MathLib::bigint)(0x1B),   MathLib::toLongNumber("'\\e'"));
+        ASSERT_EQUALS((MathLib::bigint)('\r'),   MathLib::toLongNumber("'\\r'"));
+        ASSERT_EQUALS((MathLib::bigint)('\x12'), MathLib::toLongNumber("'\\x12'"));
         // may cause some compile problems: ASSERT_EQUALS((int)('\x123'), MathLib::toLongNumber("'\\x123'"));
         // may cause some compile problems: ASSERT_EQUALS((int)('\x1234'), MathLib::toLongNumber("'\\x1234'"));
-        ASSERT_EQUALS((int)('\3'),  MathLib::toLongNumber("'\\3'"));
-        ASSERT_EQUALS((int)('\34'),  MathLib::toLongNumber("'\\34'"));
-        ASSERT_EQUALS((int)('\034'), MathLib::toLongNumber("'\\034'"));
-        ASSERT_EQUALS((int)('\x34'), MathLib::toLongNumber("'\\x34'"));
-        ASSERT_EQUALS((int)('\134'), MathLib::toLongNumber("'\\134'"));
-        ASSERT_EQUALS((int)('\134t'), MathLib::toLongNumber("'\\134t'")); // Ticket #7452
+        ASSERT_EQUALS((MathLib::bigint)('\3'),  MathLib::toLongNumber("'\\3'"));
+        ASSERT_EQUALS((MathLib::bigint)('\34'),  MathLib::toLongNumber("'\\34'"));
+        ASSERT_EQUALS((MathLib::bigint)('\034'), MathLib::toLongNumber("'\\034'"));
+        ASSERT_EQUALS((MathLib::bigint)('\x34'), MathLib::toLongNumber("'\\x34'"));
+        ASSERT_EQUALS((MathLib::bigint)('\134'), MathLib::toLongNumber("'\\134'"));
+        ASSERT_EQUALS((MathLib::bigint)('\134t'), MathLib::toLongNumber("'\\134t'")); // Ticket #7452
         ASSERT_THROW(MathLib::toLongNumber("'\\9'"), InternalError);
         ASSERT_THROW(MathLib::toLongNumber("'\\934'"), InternalError);
         // that is not gcc/clang encoding
-        ASSERT_EQUALS(959657011, MathLib::toLongNumber("'\\u9343'"));
-        ASSERT_EQUALS(1714631779, MathLib::toLongNumber("'\\U0001f34c'"));
+        ASSERT_EQUALS(959657011LL, MathLib::toLongNumber("'\\u9343'"));
+        ASSERT_EQUALS(1714631779LL, MathLib::toLongNumber("'\\U0001f34c'"));
         {
             // some unit-testing for a utility function
-            ASSERT_EQUALS(0, MathLib::characterLiteralToLongNumber(std::string()));
-            ASSERT_EQUALS(32, MathLib::characterLiteralToLongNumber(std::string(" ")));
-            ASSERT_EQUALS(538976288, MathLib::characterLiteralToLongNumber(std::string("          ")));
+            ASSERT_EQUALS(0LL, MathLib::characterLiteralToLongNumber(std::string()));
+            ASSERT_EQUALS(32LL, MathLib::characterLiteralToLongNumber(std::string(" ")));
+            ASSERT_EQUALS(538976288LL, MathLib::characterLiteralToLongNumber(std::string("          ")));
             ASSERT_THROW(MathLib::characterLiteralToLongNumber(std::string("\\u")), InternalError);
         }
 
-        ASSERT_EQUALS(-8552249625308161526, MathLib::toLongNumber("0x89504e470d0a1a0a"));
-        ASSERT_EQUALS(-8481036456200365558, MathLib::toLongNumber("0x8a4d4e470d0a1a0a"));
+        ASSERT_EQUALS(-8552249625308161526LL, MathLib::toLongNumber("0x89504e470d0a1a0a"));
+        ASSERT_EQUALS(-8481036456200365558LL, MathLib::toLongNumber("0x8a4d4e470d0a1a0a"));
         ASSERT_EQUALS(9894494448401390090ULL, MathLib::toULongNumber("0x89504e470d0a1a0a"));
         ASSERT_EQUALS(9965707617509186058ULL, MathLib::toULongNumber("0x8a4d4e470d0a1a0a"));
 
         // zero input
-        ASSERT_EQUALS(0,  MathLib::toULongNumber("0"));
-        ASSERT_EQUALS(0,  MathLib::toULongNumber("-0"));
-        ASSERT_EQUALS(0,  MathLib::toULongNumber("+0"));
-        ASSERT_EQUALS(0U, MathLib::toULongNumber("0U"));
-        ASSERT_EQUALS(0,  MathLib::toULongNumber("-0x0"));
+        ASSERT_EQUALS(0ULL,  MathLib::toULongNumber("0"));
+        ASSERT_EQUALS(0ULL,  MathLib::toULongNumber("-0"));
+        ASSERT_EQUALS(0ULL,  MathLib::toULongNumber("+0"));
+        ASSERT_EQUALS(0ULL, MathLib::toULongNumber("0U"));
+        ASSERT_EQUALS(0ULL,  MathLib::toULongNumber("-0x0"));
 
-        ASSERT_EQUALS(1U,     MathLib::toULongNumber("1U"));
-        ASSERT_EQUALS(10000U, MathLib::toULongNumber("1e4"));
-        ASSERT_EQUALS(10000U, MathLib::toULongNumber("1e4"));
-        ASSERT_EQUALS(0xFF00000000000000UL, MathLib::toULongNumber("0xFF00000000000000UL"));
-        ASSERT_EQUALS(0x0A00000000000000UL, MathLib::toULongNumber("0x0A00000000000000UL"));
-        ASSERT_EQUALS(0,  MathLib::toULongNumber("0b0"));
-        ASSERT_EQUALS(1,  MathLib::toULongNumber("0b1"));
-        ASSERT_EQUALS(1,  MathLib::toULongNumber("0b1U"));
-        ASSERT_EQUALS(1,  MathLib::toULongNumber("0b1L"));
-        ASSERT_EQUALS(1,  MathLib::toULongNumber("0b1LU"));
-        ASSERT_EQUALS(1,  MathLib::toULongNumber("0b1LL"));
-        ASSERT_EQUALS(1,  MathLib::toULongNumber("0b1LLU"));
-        ASSERT_EQUALS(9U, MathLib::toULongNumber("011"));
-        ASSERT_EQUALS(5U, MathLib::toULongNumber("0b101"));
+        ASSERT_EQUALS(1ULL,     MathLib::toULongNumber("1U"));
+        ASSERT_EQUALS(10000ULL, MathLib::toULongNumber("1e4"));
+        ASSERT_EQUALS(10000ULL, MathLib::toULongNumber("1e4"));
+        ASSERT_EQUALS(0xFF00000000000000ULL, MathLib::toULongNumber("0xFF00000000000000UL"));
+        ASSERT_EQUALS(0x0A00000000000000ULL, MathLib::toULongNumber("0x0A00000000000000UL"));
+        ASSERT_EQUALS(0ULL,  MathLib::toULongNumber("0b0"));
+        ASSERT_EQUALS(1ULL,  MathLib::toULongNumber("0b1"));
+        ASSERT_EQUALS(1ULL,  MathLib::toULongNumber("0b1U"));
+        ASSERT_EQUALS(1ULL,  MathLib::toULongNumber("0b1L"));
+        ASSERT_EQUALS(1ULL,  MathLib::toULongNumber("0b1LU"));
+        ASSERT_EQUALS(1ULL,  MathLib::toULongNumber("0b1LL"));
+        ASSERT_EQUALS(1ULL,  MathLib::toULongNumber("0b1LLU"));
+        ASSERT_EQUALS(9ULL, MathLib::toULongNumber("011"));
+        ASSERT_EQUALS(5ULL, MathLib::toULongNumber("0b101"));
 
         // from long long
         /*

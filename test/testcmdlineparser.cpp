@@ -278,7 +278,7 @@ private:
         const char * const argvsp[] = {"cppcheck", "-rp=C:/foo;C:\\bar", "file.cpp"};
         ASSERT(defParser.parseFromArgs(3, argvsp));
         ASSERT_EQUALS(true, settings.relativePaths);
-        ASSERT_EQUALS(2, settings.basePaths.size());
+        ASSERT_EQUALS(2UL, settings.basePaths.size());
         ASSERT_EQUALS("C:/foo", settings.basePaths[0]);
         ASSERT_EQUALS("C:/bar", settings.basePaths[1]);
 
@@ -288,7 +288,7 @@ private:
         const char * const argvlp[] = {"cppcheck", "--relative-paths=C:/foo;C:\\bar", "file.cpp"};
         ASSERT(defParser.parseFromArgs(3, argvlp));
         ASSERT_EQUALS(true, settings.relativePaths);
-        ASSERT_EQUALS(2, settings.basePaths.size());
+        ASSERT_EQUALS(2UL, settings.basePaths.size());
         ASSERT_EQUALS("C:/foo", settings.basePaths[0]);
         ASSERT_EQUALS("C:/bar", settings.basePaths[1]);
     }
@@ -637,7 +637,7 @@ private:
         const char * const argv[] = {"cppcheck", "-j", "3", "file.cpp"};
         settings.jobs = 0;
         ASSERT(defParser.parseFromArgs(4, argv));
-        ASSERT_EQUALS(3, settings.jobs);
+        ASSERT_EQUALS(3U, settings.jobs);
     }
 
     void jobsMissingCount() {
@@ -945,7 +945,7 @@ private:
         CmdLineParser parser(&settings);
         // Fails since no ignored path given
         ASSERT_EQUALS(false, parser.parseFromArgs(2, argv));
-        ASSERT_EQUALS(0, parser.getIgnoredPaths().size());
+        ASSERT_EQUALS(0UL, parser.getIgnoredPaths().size());
     }
 
     /*
@@ -982,7 +982,7 @@ private:
         const char * const argv[] = {"cppcheck", "-i", "src", "-i", "module", "file.cpp"};
         CmdLineParser parser(&settings);
         ASSERT(parser.parseFromArgs(6, argv));
-        ASSERT_EQUALS(2, parser.getIgnoredPaths().size());
+        ASSERT_EQUALS(2UL, parser.getIgnoredPaths().size());
         ASSERT_EQUALS("src/", parser.getIgnoredPaths()[0]);
         ASSERT_EQUALS("module/", parser.getIgnoredPaths()[1]);
     }
@@ -992,7 +992,7 @@ private:
             const char * const argv[] = {"cppcheck", "-ifoo.cpp", "file.cpp"};
             CmdLineParser parser(&settings);
             ASSERT(parser.parseFromArgs(3, argv));
-            ASSERT_EQUALS(1, parser.getIgnoredPaths().size());
+            ASSERT_EQUALS(1UL, parser.getIgnoredPaths().size());
             ASSERT_EQUALS("foo.cpp", parser.getIgnoredPaths()[0]);
         }
     */
@@ -1001,7 +1001,7 @@ private:
         const char * const argv[] = {"cppcheck", "-isrc/foo.cpp", "file.cpp"};
         CmdLineParser parser(&settings);
         ASSERT(parser.parseFromArgs(3, argv));
-        ASSERT_EQUALS(1, parser.getIgnoredPaths().size());
+        ASSERT_EQUALS(1UL, parser.getIgnoredPaths().size());
         ASSERT_EQUALS("src/foo.cpp", parser.getIgnoredPaths()[0]);
     }
 
@@ -1024,7 +1024,7 @@ private:
         const char * const argv[] = {"cppcheck", "-U_WIN32", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.parseFromArgs(3, argv));
-        ASSERT_EQUALS(1, settings.userUndefs.size());
+        ASSERT_EQUALS(1UL, settings.userUndefs.size());
         ASSERT(settings.userUndefs.find("_WIN32") != settings.userUndefs.end());
     }
 
@@ -1033,7 +1033,7 @@ private:
         const char * const argv[] = {"cppcheck", "-U_WIN32", "-UNODEBUG", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.parseFromArgs(4, argv));
-        ASSERT_EQUALS(2, settings.userUndefs.size());
+        ASSERT_EQUALS(2UL, settings.userUndefs.size());
         ASSERT(settings.userUndefs.find("_WIN32") != settings.userUndefs.end());
         ASSERT(settings.userUndefs.find("NODEBUG") != settings.userUndefs.end());
     }

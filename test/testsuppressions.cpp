@@ -565,28 +565,28 @@ private:
 
         errMsg = "";
         suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId]", &errMsg);
-        ASSERT_EQUALS(1, suppressions.size());
+        ASSERT_EQUALS(1UL, suppressions.size());
         ASSERT_EQUALS("errorId", suppressions[0].errorId);
         ASSERT_EQUALS("", suppressions[0].symbolName);
         ASSERT_EQUALS("", errMsg);
 
         errMsg = "";
         suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId symbolName=arr]", &errMsg);
-        ASSERT_EQUALS(1, suppressions.size());
+        ASSERT_EQUALS(1UL, suppressions.size());
         ASSERT_EQUALS("errorId", suppressions[0].errorId);
         ASSERT_EQUALS("arr", suppressions[0].symbolName);
         ASSERT_EQUALS("", errMsg);
 
         errMsg = "";
         suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId symbolName=]", &errMsg);
-        ASSERT_EQUALS(1, suppressions.size());
+        ASSERT_EQUALS(1UL, suppressions.size());
         ASSERT_EQUALS("errorId", suppressions[0].errorId);
         ASSERT_EQUALS("", suppressions[0].symbolName);
         ASSERT_EQUALS("", errMsg);
 
         errMsg = "";
         suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId1, errorId2 symbolName=arr]", &errMsg);
-        ASSERT_EQUALS(2, suppressions.size());
+        ASSERT_EQUALS(2UL, suppressions.size());
         ASSERT_EQUALS("errorId1", suppressions[0].errorId);
         ASSERT_EQUALS("", suppressions[0].symbolName);
         ASSERT_EQUALS("errorId2", suppressions[1].errorId);
@@ -595,32 +595,32 @@ private:
 
         errMsg = "";
         suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[]", &errMsg);
-        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(0UL, suppressions.size());
         ASSERT_EQUALS(true, errMsg.empty());
 
         errMsg = "";
         suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId", &errMsg);
-        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(0UL, suppressions.size());
         ASSERT_EQUALS(false, errMsg.empty());
 
         errMsg = "";
         suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress errorId", &errMsg);
-        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(0UL, suppressions.size());
         ASSERT_EQUALS(false, errMsg.empty());
 
         errMsg = "";
         suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId1 errorId2 symbolName=arr]", &errMsg);
-        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(0UL, suppressions.size());
         ASSERT_EQUALS(false, errMsg.empty());
 
         errMsg = "";
         suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId1, errorId2 symbol=arr]", &errMsg);
-        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(0UL, suppressions.size());
         ASSERT_EQUALS(false, errMsg.empty());
 
         errMsg = "";
         suppressions=ss.parseMultiSuppressComment("// cppcheck-suppress[errorId1, errorId2 symbolName]", &errMsg);
-        ASSERT_EQUALS(0, suppressions.size());
+        ASSERT_EQUALS(0UL, suppressions.size());
         ASSERT_EQUALS(false, errMsg.empty());
     }
 
@@ -631,17 +631,17 @@ private:
 
         errMsg = "";
         suppressions=ss.parseMultiSuppressComment("//cppcheck-suppress[errorId1, errorId2 symbolName=arr]", &errMsg);
-        ASSERT_EQUALS(2, suppressions.size());
+        ASSERT_EQUALS(2UL, suppressions.size());
         ASSERT_EQUALS(true, errMsg.empty());
 
         errMsg = "";
         suppressions=ss.parseMultiSuppressComment("//cppcheck-suppress[errorId1, errorId2 symbolName=arr] some text", &errMsg);
-        ASSERT_EQUALS(2, suppressions.size());
+        ASSERT_EQUALS(2UL, suppressions.size());
         ASSERT_EQUALS(true, errMsg.empty());
 
         errMsg = "";
         suppressions=ss.parseMultiSuppressComment("/*cppcheck-suppress[errorId1, errorId2 symbolName=arr]*/", &errMsg);
-        ASSERT_EQUALS(2, suppressions.size());
+        ASSERT_EQUALS(2UL, suppressions.size());
         ASSERT_EQUALS(true, errMsg.empty());
     }
 
@@ -654,7 +654,7 @@ private:
         settings.exitCode = 1;
 
         const char code[] = "int f() { int a; return a; }";
-        ASSERT_EQUALS(0, cppCheck.check("test.c", code)); // <- no unsuppressed error is seen
+        ASSERT_EQUALS(0U, cppCheck.check("test.c", code)); // <- no unsuppressed error is seen
         ASSERT_EQUALS("[test.c:1]: (error) Uninitialized variable: a\n", errout.str()); // <- report error so ThreadExecutor can suppress it and make sure the global suppression is matched.
     }
 
@@ -763,28 +763,28 @@ private:
     }
 
     void unusedFunction() {
-        ASSERT_EQUALS(0, checkSuppression("void f() {}", "unusedFunction"));
+        ASSERT_EQUALS(0U, checkSuppression("void f() {}", "unusedFunction"));
     }
 
     void suppressingSyntaxErrorAndExitCode() {
         std::map<std::string, std::string> files;
         files["test.cpp"] = "fi if;";
 
-        ASSERT_EQUALS(0, checkSuppression(files, "*:test.cpp"));
+        ASSERT_EQUALS(0U, checkSuppression(files, "*:test.cpp"));
         ASSERT_EQUALS("", errout.str());
 
         // multi files, but only suppression one
         std::map<std::string, std::string> mfiles;
         mfiles["test.cpp"] = "fi if;";
         mfiles["test2.cpp"] = "fi if";
-        ASSERT_EQUALS(1, checkSuppression(mfiles, "*:test.cpp"));
+        ASSERT_EQUALS(1U, checkSuppression(mfiles, "*:test.cpp"));
         ASSERT_EQUALS("[test2.cpp:1]: (error) syntax error\n", errout.str());
 
         // multi error in file, but only suppression one error
         std::map<std::string, std::string> file2;
         file2["test.cpp"] = "fi fi\n"
                             "if if;";
-        ASSERT_EQUALS(1, checkSuppression(file2, "*:test.cpp:1"));  // suppress all error at line 1 of test.cpp
+        ASSERT_EQUALS(1U, checkSuppression(file2, "*:test.cpp:1"));  // suppress all error at line 1 of test.cpp
         ASSERT_EQUALS("[test.cpp:2]: (error) syntax error\n", errout.str());
 
         // multi error in file, but only suppression one error (2)
@@ -794,7 +794,7 @@ private:
                             "    int b = y/0;\n"
                             "}\n"
                             "f(0, 1);\n";
-        ASSERT_EQUALS(1, checkSuppression(file3, "zerodiv:test.cpp:3"));  // suppress 'errordiv' at line 3 of test.cpp
+        ASSERT_EQUALS(1U, checkSuppression(file3, "zerodiv:test.cpp:3"));  // suppress 'errordiv' at line 3 of test.cpp
     }
 
 };

@@ -115,7 +115,7 @@ private:
 
         Library library;
         ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
-        ASSERT_EQUALS(library.functions.size(), 1U);
+        ASSERT_EQUALS(1UL, library.functions.size());
         ASSERT(library.functions.at("foo").argumentChecks.empty());
         ASSERT(library.isnotnoreturn(tokenList.front()));
     }
@@ -483,7 +483,7 @@ private:
         // arg1: type=strlen arg2
         const std::vector<Library::ArgumentChecks::MinSize> *minsizes = library.argminsizes(tokenList.front(),1);
         ASSERT_EQUALS(true, minsizes != nullptr);
-        ASSERT_EQUALS(1U, minsizes ? minsizes->size() : 1U);
+        ASSERT_EQUALS(1UL, minsizes ? minsizes->size() : 1U);
         if (minsizes && minsizes->size() == 1U) {
             const Library::ArgumentChecks::MinSize &m = minsizes->front();
             ASSERT_EQUALS(Library::ArgumentChecks::MinSize::STRLEN, m.type);
@@ -493,7 +493,7 @@ private:
         // arg2: type=argvalue arg3
         minsizes = library.argminsizes(tokenList.front(), 2);
         ASSERT_EQUALS(true, minsizes != nullptr);
-        ASSERT_EQUALS(1U, minsizes ? minsizes->size() : 1U);
+        ASSERT_EQUALS(1UL, minsizes ? minsizes->size() : 1U);
         if (minsizes && minsizes->size() == 1U) {
             const Library::ArgumentChecks::MinSize &m = minsizes->front();
             ASSERT_EQUALS(Library::ArgumentChecks::MinSize::ARGVALUE, m.type);
@@ -503,11 +503,11 @@ private:
         // arg4: type=value
         minsizes = library.argminsizes(tokenList.front(), 4);
         ASSERT_EQUALS(true, minsizes != nullptr);
-        ASSERT_EQUALS(1U, minsizes ? minsizes->size() : 1U);
+        ASSERT_EQUALS(1UL, minsizes ? minsizes->size() : 1U);
         if (minsizes && minsizes->size() == 1U) {
             const Library::ArgumentChecks::MinSize &m = minsizes->front();
             ASSERT_EQUALS(Library::ArgumentChecks::MinSize::VALUE, m.type);
-            ASSERT_EQUALS(500, m.value);
+            ASSERT_EQUALS(500LL, m.value);
         }
     }
 
@@ -521,7 +521,7 @@ private:
 
         Library library;
         ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
-        ASSERT_EQUALS(library.functions.size(), 2U);
+        ASSERT_EQUALS(2UL, library.functions.size());
         ASSERT(library.functions.at("Foo::foo").argumentChecks.empty());
         ASSERT(library.functions.at("bar").argumentChecks.empty());
 
@@ -550,7 +550,7 @@ private:
 
         Library library;
         ASSERT_EQUALS(true, Library::OK == (readLibrary(library, xmldata)).errorcode);
-        ASSERT_EQUALS(library.functions.size(), 1U);
+        ASSERT_EQUALS(1UL, library.functions.size());
 
         {
             Tokenizer tokenizer(&settings, nullptr);
@@ -614,7 +614,7 @@ private:
         const Library::WarnInfo* a = library.getWarnInfo(tokenList.front());
         const Library::WarnInfo* b = library.getWarnInfo(tokenList.front()->tokAt(4));
 
-        ASSERT_EQUALS(2, library.functionwarn.size());
+        ASSERT_EQUALS(2UL, library.functionwarn.size());
         ASSERT(a && b);
         if (a && b) {
             ASSERT_EQUALS("Message", a->message);

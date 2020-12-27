@@ -467,34 +467,34 @@ private:
         ASSERT(v != nullptr);
 
         ASSERT(v->isArray());
-        ASSERT_EQUALS(1U, v->dimensions().size());
-        ASSERT_EQUALS(12U, v->dimension(0));
+        ASSERT_EQUALS(1UL, v->dimensions().size());
+        ASSERT_EQUALS(12LL, v->dimension(0));
     }
 
     void stlarray1() {
         GET_SYMBOL_DB("std::array<int, 16 + 4> arr;");
         ASSERT(db != nullptr);
 
-        ASSERT_EQUALS(2, db->variableList().size()); // the first one is not used
+        ASSERT_EQUALS(2UL, db->variableList().size()); // the first one is not used
         const Variable * v = db->getVariableFromVarId(1);
         ASSERT(v != nullptr);
 
         ASSERT(v->isArray());
-        ASSERT_EQUALS(1U, v->dimensions().size());
-        ASSERT_EQUALS(20U, v->dimension(0));
+        ASSERT_EQUALS(1UL, v->dimensions().size());
+        ASSERT_EQUALS(20LL, v->dimension(0));
     }
 
     void stlarray2() {
         GET_SYMBOL_DB("constexpr int sz = 16; std::array<int, sz + 4> arr;");
         ASSERT(db != nullptr);
 
-        ASSERT_EQUALS(3, db->variableList().size()); // the first one is not used
+        ASSERT_EQUALS(3UL, db->variableList().size()); // the first one is not used
         const Variable * v = db->getVariableFromVarId(2);
         ASSERT(v != nullptr);
 
         ASSERT(v->isArray());
-        ASSERT_EQUALS(1U, v->dimensions().size());
-        ASSERT_EQUALS(20U, v->dimension(0));
+        ASSERT_EQUALS(1UL, v->dimensions().size());
+        ASSERT_EQUALS(20LL, v->dimension(0));
     }
 
     void test_isVariableDeclarationCanHandleNull() {
@@ -1185,7 +1185,7 @@ private:
         ASSERT(db != nullptr);
 
         ASSERT(db->scopeList.back().type == Scope::eFor);
-        ASSERT_EQUALS(2, db->variableList().size());
+        ASSERT_EQUALS(2UL, db->variableList().size());
 
         const Variable* e = db->getVariableFromVarId(1);
         ASSERT(e && e->isReference() && e->isLocal());
@@ -1302,7 +1302,7 @@ private:
                       "const decltype(x) b;\n"
                       "decltype(x) *c;\n");
         ASSERT(db);
-        ASSERT_EQUALS(4, db->scopeList.front().varlist.size());
+        ASSERT_EQUALS(4UL, db->scopeList.front().varlist.size());
 
         const Variable *a = Token::findsimplematch(tokenizer.tokens(), "a")->variable();
         ASSERT(a);
@@ -1683,7 +1683,7 @@ private:
 
         ASSERT(db != nullptr);
 
-        ASSERT_EQUALS(10, db->variableList().size() - 1);
+        ASSERT_EQUALS(10UL, db->variableList().size() - 1);
         ASSERT_EQUALS(true, db->getVariableFromVarId(1) && db->getVariableFromVarId(1)->dimensions().size() == 1);
         ASSERT_EQUALS(true, db->getVariableFromVarId(2) != nullptr);
         ASSERT_EQUALS(true, db->getVariableFromVarId(3) && db->getVariableFromVarId(3)->dimensions().size() == 0);
@@ -1702,7 +1702,7 @@ private:
 
         ASSERT(db != nullptr);
 
-        ASSERT_EQUALS(1, db->variableList().size() - 1);
+        ASSERT_EQUALS(1UL, db->variableList().size() - 1);
         ASSERT_EQUALS(true, db->getVariableFromVarId(1) != nullptr);
 
         ASSERT_EQUALS("pFun", db->getVariableFromVarId(1)->name());
@@ -1964,7 +1964,7 @@ private:
         ASSERT(db != nullptr);
 
         // 3 scopes: Global, function, if
-        ASSERT_EQUALS(3, db->scopeList.size());
+        ASSERT_EQUALS(3UL, db->scopeList.size());
 
         ASSERT(findFunctionByName("func", &db->scopeList.back()) != nullptr);
         ASSERT(findFunctionByName("if", &db->scopeList.back()) == nullptr);
@@ -2068,9 +2068,9 @@ private:
         ASSERT(db && db->functionScopes.size()==1U);
 
         const Function * const f = db->functionScopes.front()->function;
-        ASSERT_EQUALS(1U, f->argCount());
-        ASSERT_EQUALS(0U, f->initializedArgCount());
-        ASSERT_EQUALS(1U, f->minArgCount());
+        ASSERT_EQUALS(1, f->argCount());
+        ASSERT_EQUALS(0, f->initializedArgCount());
+        ASSERT_EQUALS(1, f->minArgCount());
         const Variable * const arg1 = f->getArgumentVar(0);
         ASSERT_EQUALS("char", arg1->typeStartToken()->str());
         ASSERT_EQUALS("char", arg1->typeEndToken()->str());
@@ -2097,7 +2097,7 @@ private:
     void functionArgs1() {
         {
             GET_SYMBOL_DB("void f(std::vector<std::string>, const std::vector<int> & v) { }");
-            ASSERT_EQUALS(1+1, db->variableList().size());
+            ASSERT_EQUALS(1UL+1UL, db->variableList().size());
             const Variable* v = db->getVariableFromVarId(1);
             ASSERT(v && v->isReference() && v->isConst() && v->isArgument());
             const Scope* f = db->findScopeByName("f");
@@ -2108,7 +2108,7 @@ private:
         }
         {
             GET_SYMBOL_DB("void g(std::map<std::string, std::vector<int> > m) { }");
-            ASSERT_EQUALS(1+1, db->variableList().size());
+            ASSERT_EQUALS(1UL+1UL, db->variableList().size());
             const Variable* m = db->getVariableFromVarId(1);
             ASSERT(m && !m->isReference() && !m->isConst() && m->isArgument() && m->isClass());
             const Scope* g = db->findScopeByName("g");
@@ -2146,9 +2146,9 @@ private:
         const Variable *a = db->getVariableFromVarId(1);
         ASSERT_EQUALS("a", a->nameToken()->str());
         ASSERT_EQUALS(2UL, a->dimensions().size());
-        ASSERT_EQUALS(0UL, a->dimension(0));
+        ASSERT_EQUALS(0LL, a->dimension(0));
         ASSERT_EQUALS(false, a->dimensions()[0].known);
-        ASSERT_EQUALS(4UL, a->dimension(1));
+        ASSERT_EQUALS(4LL, a->dimension(1));
         ASSERT_EQUALS(true, a->dimensions()[1].known);
     }
 
@@ -2161,11 +2161,11 @@ private:
         const Variable *first = &func->argumentList.front();
         ASSERT_EQUALS(0UL, first->name().size());
         ASSERT_EQUALS(1UL, first->dimensions().size());
-        ASSERT_EQUALS(10UL, first->dimension(0));
+        ASSERT_EQUALS(10LL, first->dimension(0));
         const Variable *second = &func->argumentList.back();
         ASSERT_EQUALS(0UL, second->name().size());
         ASSERT_EQUALS(1UL, second->dimensions().size());
-        ASSERT_EQUALS(10UL, second->dimension(0));
+        ASSERT_EQUALS(10LL, second->dimension(0));
     }
 
     void functionArgs5() { // #7650
@@ -2302,11 +2302,11 @@ private:
                       "};\n"
                       "Fred::Fred(Whitespace whitespace) { }");
         ASSERT_EQUALS(true, db != nullptr);
-        ASSERT_EQUALS(3, db->scopeList.size());
+        ASSERT_EQUALS(3UL, db->scopeList.size());
         std::list<Scope>::const_iterator scope = db->scopeList.begin();
         ++scope;
         ASSERT_EQUALS((unsigned int)Scope::eClass, (unsigned int)scope->type);
-        ASSERT_EQUALS(1, scope->functionList.size());
+        ASSERT_EQUALS(1UL, scope->functionList.size());
         ASSERT(scope->functionList.begin()->functionScope != nullptr);
         const Scope * functionScope = scope->functionList.begin()->functionScope;
         ++scope;
@@ -2320,11 +2320,11 @@ private:
                       "};\n"
                       "void Fred::foo(char b[16]) { }");
         ASSERT_EQUALS(true, db != nullptr);
-        ASSERT_EQUALS(3, db->scopeList.size());
+        ASSERT_EQUALS(3UL, db->scopeList.size());
         std::list<Scope>::const_iterator scope = db->scopeList.begin();
         ++scope;
         ASSERT_EQUALS((unsigned int)Scope::eClass, (unsigned int)scope->type);
-        ASSERT_EQUALS(1, scope->functionList.size());
+        ASSERT_EQUALS(1UL, scope->functionList.size());
         ASSERT(scope->functionList.begin()->functionScope != nullptr);
         const Scope * functionScope = scope->functionList.begin()->functionScope;
         ++scope;
@@ -2399,11 +2399,11 @@ private:
             "};\n";
         GET_SYMBOL_DB(code);
         ASSERT(db);
-        ASSERT_EQUALS(2, db->scopeList.size());
+        ASSERT_EQUALS(2UL, db->scopeList.size());
         const Scope& classScope = db->scopeList.back();
         ASSERT_EQUALS(Scope::eClass, classScope.type);
         ASSERT_EQUALS("Class", classScope.className);
-        ASSERT_EQUALS(1, classScope.functionList.size());
+        ASSERT_EQUALS(1UL, classScope.functionList.size());
         const Function& method = classScope.functionList.front();
         ASSERT_EQUALS("Method", method.name());
         ASSERT_EQUALS(1, method.argCount());
@@ -2440,7 +2440,7 @@ private:
                       "class derived : base { void f(); };\n"
                       "void derived::f() {}");
         ASSERT(db != nullptr);
-        ASSERT_EQUALS(4, db->scopeList.size());
+        ASSERT_EQUALS(4UL, db->scopeList.size());
         const Function *function = db->scopeList.back().function;
         ASSERT_EQUALS(true, function && function->isImplicitlyVirtual(false));
     }
@@ -2477,7 +2477,7 @@ private:
         ASSERT_EQUALS("X", scope->className);
 
         // The class has a constructor but the implementation _is not_ seen
-        ASSERT_EQUALS(1U, scope->functionList.size());
+        ASSERT_EQUALS(1UL, scope->functionList.size());
         const Function *function = &(scope->functionList.front());
         ASSERT_EQUALS(false, function->hasBody());
     }
@@ -2511,7 +2511,7 @@ private:
         ASSERT_EQUALS("X", scope->className);
 
         // The class has a constructor and the implementation _is_ seen
-        ASSERT_EQUALS(1U, scope->functionList.size());
+        ASSERT_EQUALS(1UL, scope->functionList.size());
         const Function *function = &(scope->functionList.front());
         ASSERT_EQUALS("X", function->tokenDef->str());
         ASSERT_EQUALS(true, function->hasBody());
@@ -2520,7 +2520,7 @@ private:
     void namespaces3() { // #3854 - namespace with unknown macro
         GET_SYMBOL_DB("namespace fred UNKNOWN_MACRO(default) {\n"
                       "}");
-        ASSERT_EQUALS(2U, db->scopeList.size());
+        ASSERT_EQUALS(2UL, db->scopeList.size());
         ASSERT_EQUALS(Scope::eGlobal, db->scopeList.front().type);
         ASSERT_EQUALS(Scope::eNamespace, db->scopeList.back().type);
     }
@@ -2532,7 +2532,7 @@ private:
         const Variable *fredA = db->getVariableFromVarId(2U);
         ASSERT_EQUALS("fredA", fredA->name());
         const Type *fredAType = fredA->type();
-        ASSERT_EQUALS(2U, fredAType->classDef->linenr());
+        ASSERT_EQUALS(2, fredAType->classDef->linenr());
     }
 
     void tryCatch1() {
@@ -2765,9 +2765,9 @@ private:
     // ticket 3435 (std::vector)
     void symboldatabase23() {
         GET_SYMBOL_DB("class A { std::vector<int*> ints; };");
-        ASSERT_EQUALS(2U, db->scopeList.size());
+        ASSERT_EQUALS(2UL, db->scopeList.size());
         const Scope &scope = db->scopeList.back();
-        ASSERT_EQUALS(1U, scope.varlist.size());
+        ASSERT_EQUALS(1UL, scope.varlist.size());
         const Variable &var = scope.varlist.front();
         ASSERT_EQUALS(std::string("ints"), var.name());
         ASSERT_EQUALS(true, var.isClass());
@@ -2782,7 +2782,7 @@ private:
                       "Fred::Fred() { }\n"
                       "Fred::~Fred() { }");
         // Global scope, Fred, Fred::Fred, Fred::~Fred
-        ASSERT_EQUALS(4U, db->scopeList.size());
+        ASSERT_EQUALS(4UL, db->scopeList.size());
 
         // Find the scope for the Fred struct..
         const Scope *fredScope = nullptr;
@@ -2793,7 +2793,7 @@ private:
         ASSERT(fredScope != nullptr);
 
         // The struct Fred has two functions, a constructor and a destructor
-        ASSERT_EQUALS(2U, fredScope->functionList.size());
+        ASSERT_EQUALS(2UL, fredScope->functionList.size());
 
         // Get linenumbers where the bodies for the constructor and destructor are..
         unsigned int constructor = 0;
@@ -3002,7 +3002,7 @@ private:
         ASSERT(db != nullptr);
         const Scope * const fscope = db ? db->findScopeByName("f") : nullptr;
         ASSERT(fscope != nullptr);
-        ASSERT_EQUALS(0U, fscope ? fscope->varlist.size() : ~0U);  // "x" is not a variable
+        ASSERT_EQUALS(0UL, fscope ? fscope->varlist.size() : ~0U);  // "x" is not a variable
     }
 
     void symboldatabase43() { // ticket #4738
@@ -3020,8 +3020,8 @@ private:
                       "    int l ( 1 );\n"
                       "}");
         ASSERT(db != nullptr);
-        ASSERT_EQUALS(4U, db->variableList().size() - 1);
-        ASSERT_EQUALS(2U, db->scopeList.size());
+        ASSERT_EQUALS(4UL, db->variableList().size() - 1);
+        ASSERT_EQUALS(2UL, db->scopeList.size());
         for (std::size_t i = 1U; i < db->variableList().size(); i++)
             ASSERT(db->getVariableFromVarId(i) != nullptr);
     }
@@ -3042,11 +3042,11 @@ private:
                       "}");
 
         ASSERT(db != nullptr);
-        ASSERT_EQUALS(4U, db->variableList().size() - 1);
+        ASSERT_EQUALS(4UL, db->variableList().size() - 1);
         for (std::size_t i = 1U; i < db->variableList().size(); i++)
             ASSERT(db->getVariableFromVarId(i) != nullptr);
 
-        ASSERT_EQUALS(4U, db->scopeList.size());
+        ASSERT_EQUALS(4UL, db->scopeList.size());
         std::list<Scope>::const_iterator scope = db->scopeList.begin();
         ASSERT_EQUALS(Scope::eGlobal, scope->type);
         ++scope;
@@ -3064,7 +3064,7 @@ private:
                       "}");
 
         ASSERT(db != nullptr);
-        ASSERT_EQUALS(4U, db->scopeList.size());
+        ASSERT_EQUALS(4UL, db->scopeList.size());
         std::list<Scope>::const_iterator scope = db->scopeList.begin();
         ASSERT_EQUALS(Scope::eGlobal, scope->type);
         ++scope;
@@ -3169,8 +3169,8 @@ private:
                       "}");
 
         ASSERT(db != nullptr);
-        ASSERT_EQUALS(2, db->scopeList.size());
-        ASSERT_EQUALS(2, db->variableList().size()-1);
+        ASSERT_EQUALS(2UL, db->scopeList.size());
+        ASSERT_EQUALS(2UL, db->variableList().size()-1);
         ASSERT(db->getVariableFromVarId(1) != nullptr);
         ASSERT(db->getVariableFromVarId(2) != nullptr);
     }
@@ -3194,7 +3194,7 @@ private:
                       "};");
 
         ASSERT(db != nullptr);
-        ASSERT_EQUALS(1U, db->functionScopes.size());
+        ASSERT_EQUALS(1UL, db->functionScopes.size());
         ASSERT_EQUALS("getReg", db->functionScopes.front()->className);
         ASSERT_EQUALS(true, db->functionScopes.front()->function->hasOverrideSpecifier());
     }
@@ -3205,7 +3205,7 @@ private:
                       "}");
 
         ASSERT(db != nullptr);
-        ASSERT_EQUALS(1U, db->functionScopes.size());
+        ASSERT_EQUALS(1UL, db->functionScopes.size());
         ASSERT_EQUALS("testfunc", db->functionScopes.front()->className);
     }
 
@@ -3220,7 +3220,7 @@ private:
                           "}");
 
             ASSERT(db != nullptr);
-            ASSERT_EQUALS(0U, db->functionScopes.size());
+            ASSERT_EQUALS(0UL, db->functionScopes.size());
             ASSERT(db->scopeList.back().type == Scope::eClass && db->scopeList.back().className == "NestedClass");
             ASSERT(db->scopeList.back().functionList.size() == 1U && !db->scopeList.back().functionList.front().hasBody());
         }
@@ -3231,7 +3231,7 @@ private:
                           "}");
 
             ASSERT(db != nullptr);
-            ASSERT_EQUALS(1U, db->functionScopes.size());
+            ASSERT_EQUALS(1UL, db->functionScopes.size());
             ASSERT(db->scopeList.back().type == Scope::eFunction && db->scopeList.back().className == "f2");
             ASSERT(db->scopeList.back().function && db->scopeList.back().function->hasBody());
         }
@@ -3240,8 +3240,8 @@ private:
                             "friend f2() { }\n");
 
             ASSERT(db != nullptr);
-            ASSERT_EQUALS(2U, db->scopeList.size());
-            ASSERT_EQUALS(2U, db->scopeList.begin()->functionList.size());
+            ASSERT_EQUALS(2UL, db->scopeList.size());
+            ASSERT_EQUALS(2UL, db->scopeList.begin()->functionList.size());
         }
     }
 
@@ -4318,8 +4318,8 @@ private:
         GET_SYMBOL_DB("class Base { virtual int f() const = 0; };\n"
                       "class Derived : Base { virtual int f() const final { return 6; } };");
 
-        ASSERT_EQUALS(4, db->scopeList.size());
-        ASSERT_EQUALS(1, db->functionScopes.size());
+        ASSERT_EQUALS(4UL, db->scopeList.size());
+        ASSERT_EQUALS(1UL, db->functionScopes.size());
 
         const Scope *f1 = db->functionScopes[0];
         ASSERT(f1->function->hasFinalSpecifier());
@@ -4340,8 +4340,8 @@ private:
                       "auto optional<T>::value() const & -> T const & {}\n"
                       "optional<int> i;");
 
-        ASSERT_EQUALS(5, db->scopeList.size());
-        ASSERT_EQUALS(3, db->functionScopes.size());
+        ASSERT_EQUALS(5UL, db->scopeList.size());
+        ASSERT_EQUALS(3UL, db->functionScopes.size());
 
         const Scope *f = db->functionScopes[0];
         ASSERT(f->function->hasBody());
@@ -4367,7 +4367,7 @@ private:
                       "  using namespace bar::baz;\n"
                       "  auto func(int arg) -> bar::quux {}\n"
                       "}");
-        ASSERT_EQUALS(2, db->mVariableList.size());
+        ASSERT_EQUALS(2UL, db->mVariableList.size());
     }
 
     void symboldatabase77() { // #8663
@@ -4376,7 +4376,7 @@ private:
                       "  using T3 = typename T1::template T3<T2>;\n"
                       "  T3 t;\n"
                       "}");
-        ASSERT_EQUALS(2, db->mVariableList.size());
+        ASSERT_EQUALS(2UL, db->mVariableList.size());
     }
 
     void symboldatabase78() { // #9147
@@ -4692,7 +4692,7 @@ private:
                       "enum MyEnums { E1=O1+1, E2, E3=O3+1 };");
         ASSERT(db != nullptr);
 
-        ASSERT_EQUALS(3U, db->scopeList.size());
+        ASSERT_EQUALS(3UL, db->scopeList.size());
 
         // Assert that all enum values are known
         std::list<Scope>::const_iterator scope = db->scopeList.begin();
@@ -4700,7 +4700,7 @@ private:
         // Offsets
         ++scope;
         ASSERT_EQUALS((unsigned int)Scope::eEnum, (unsigned int)scope->type);
-        ASSERT_EQUALS(4U, scope->enumeratorList.size());
+        ASSERT_EQUALS(4UL, scope->enumeratorList.size());
 
         ASSERT(scope->enumeratorList[0].name->enumerator() == &scope->enumeratorList[0]);
         ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[0].name->tokType());
@@ -4709,7 +4709,7 @@ private:
         ASSERT(scope->enumeratorList[0].start == nullptr);
         ASSERT(scope->enumeratorList[0].end == nullptr);
         ASSERT_EQUALS(true, scope->enumeratorList[0].value_known);
-        ASSERT_EQUALS(0, scope->enumeratorList[0].value);
+        ASSERT_EQUALS(0LL, scope->enumeratorList[0].value);
 
         ASSERT(scope->enumeratorList[1].name->enumerator() == &scope->enumeratorList[1]);
         ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[1].name->tokType());
@@ -4718,7 +4718,7 @@ private:
         ASSERT(scope->enumeratorList[1].start == nullptr);
         ASSERT(scope->enumeratorList[1].end == nullptr);
         ASSERT_EQUALS(true, scope->enumeratorList[1].value_known);
-        ASSERT_EQUALS(1, scope->enumeratorList[1].value);
+        ASSERT_EQUALS(1LL, scope->enumeratorList[1].value);
 
         ASSERT(scope->enumeratorList[2].name->enumerator() == &scope->enumeratorList[2]);
         ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[2].name->tokType());
@@ -4727,7 +4727,7 @@ private:
         ASSERT(scope->enumeratorList[2].start != nullptr);
         ASSERT(scope->enumeratorList[2].end != nullptr);
         ASSERT_EQUALS(true, scope->enumeratorList[2].value_known);
-        ASSERT_EQUALS(5, scope->enumeratorList[2].value);
+        ASSERT_EQUALS(5LL, scope->enumeratorList[2].value);
 
         ASSERT(scope->enumeratorList[3].name->enumerator() == &scope->enumeratorList[3]);
         ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[3].name->tokType());
@@ -4736,12 +4736,12 @@ private:
         ASSERT(scope->enumeratorList[3].start == nullptr);
         ASSERT(scope->enumeratorList[3].end == nullptr);
         ASSERT_EQUALS(true, scope->enumeratorList[3].value_known);
-        ASSERT_EQUALS(6, scope->enumeratorList[3].value);
+        ASSERT_EQUALS(6LL, scope->enumeratorList[3].value);
 
         // MyEnums
         ++scope;
         ASSERT_EQUALS((unsigned int)Scope::eEnum, (unsigned int)scope->type);
-        ASSERT_EQUALS(3U, scope->enumeratorList.size());
+        ASSERT_EQUALS(3UL, scope->enumeratorList.size());
 
         ASSERT(scope->enumeratorList[0].name->enumerator() == &scope->enumeratorList[0]);
         ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[0].name->tokType());
@@ -4750,7 +4750,7 @@ private:
         ASSERT(scope->enumeratorList[0].start != nullptr);
         ASSERT(scope->enumeratorList[0].end != nullptr);
         ASSERT_EQUALS(true, scope->enumeratorList[0].value_known);
-        ASSERT_EQUALS(1, scope->enumeratorList[0].value);
+        ASSERT_EQUALS(1LL, scope->enumeratorList[0].value);
 
         ASSERT(scope->enumeratorList[1].name->enumerator() == &scope->enumeratorList[1]);
         ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[1].name->tokType());
@@ -4759,7 +4759,7 @@ private:
         ASSERT(scope->enumeratorList[1].start == nullptr);
         ASSERT(scope->enumeratorList[1].end == nullptr);
         ASSERT_EQUALS(true, scope->enumeratorList[1].value_known);
-        ASSERT_EQUALS(2, scope->enumeratorList[1].value);
+        ASSERT_EQUALS(2LL, scope->enumeratorList[1].value);
 
         ASSERT(scope->enumeratorList[2].name->enumerator() == &scope->enumeratorList[2]);
         ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[2].name->tokType());
@@ -4768,7 +4768,7 @@ private:
         ASSERT(scope->enumeratorList[2].start != nullptr);
         ASSERT(scope->enumeratorList[2].end != nullptr);
         ASSERT_EQUALS(true, scope->enumeratorList[2].value_known);
-        ASSERT_EQUALS(6, scope->enumeratorList[2].value);
+        ASSERT_EQUALS(6LL, scope->enumeratorList[2].value);
     }
 
     void enum5() {
@@ -4780,50 +4780,50 @@ private:
                       "int e[A + B];\n");
         ASSERT(db != nullptr);
 
-        ASSERT_EQUALS(2U, db->scopeList.size());
+        ASSERT_EQUALS(2UL, db->scopeList.size());
 
         // Assert that all enum values are known
         std::list<Scope>::const_iterator scope = db->scopeList.begin();
 
         ++scope;
         ASSERT_EQUALS((unsigned int)Scope::eEnum, (unsigned int)scope->type);
-        ASSERT_EQUALS(2U, scope->enumeratorList.size());
+        ASSERT_EQUALS(2UL, scope->enumeratorList.size());
         ASSERT_EQUALS(true, scope->enumeratorList[0].value_known);
-        ASSERT_EQUALS(10, scope->enumeratorList[0].value);
+        ASSERT_EQUALS(10LL, scope->enumeratorList[0].value);
         ASSERT_EQUALS(true, scope->enumeratorList[1].value_known);
-        ASSERT_EQUALS(2, scope->enumeratorList[1].value);
+        ASSERT_EQUALS(2LL, scope->enumeratorList[1].value);
 
         ASSERT(db->variableList().size() == 6); // the first one is not used
         const Variable * v = db->getVariableFromVarId(1);
         ASSERT(v != nullptr);
 
         ASSERT(v->isArray());
-        ASSERT_EQUALS(1U, v->dimensions().size());
-        ASSERT_EQUALS(12U, v->dimension(0));
+        ASSERT_EQUALS(1UL, v->dimensions().size());
+        ASSERT_EQUALS(12LL, v->dimension(0));
         v = db->getVariableFromVarId(2);
         ASSERT(v != nullptr);
 
         ASSERT(v->isArray());
-        ASSERT_EQUALS(1U, v->dimensions().size());
-        ASSERT_EQUALS(10U, v->dimension(0));
+        ASSERT_EQUALS(1UL, v->dimensions().size());
+        ASSERT_EQUALS(10LL, v->dimension(0));
         v = db->getVariableFromVarId(3);
         ASSERT(v != nullptr);
 
         ASSERT(v->isArray());
-        ASSERT_EQUALS(1U, v->dimensions().size());
-        ASSERT_EQUALS(12U, v->dimension(0));
+        ASSERT_EQUALS(1UL, v->dimensions().size());
+        ASSERT_EQUALS(12LL, v->dimension(0));
         v = db->getVariableFromVarId(4);
         ASSERT(v != nullptr);
 
         ASSERT(v->isArray());
-        ASSERT_EQUALS(1U, v->dimensions().size());
-        ASSERT_EQUALS(12U, v->dimension(0));
+        ASSERT_EQUALS(1UL, v->dimensions().size());
+        ASSERT_EQUALS(12LL, v->dimension(0));
         v = db->getVariableFromVarId(5);
         ASSERT(v != nullptr);
 
         ASSERT(v->isArray());
-        ASSERT_EQUALS(1U, v->dimensions().size());
-        ASSERT_EQUALS(12U, v->dimension(0));
+        ASSERT_EQUALS(1UL, v->dimensions().size());
+        ASSERT_EQUALS(12LL, v->dimension(0));
     }
 
     void enum6() {
@@ -4850,8 +4850,8 @@ private:
         v = db->getVariableFromVarId(id++); \
         ASSERT(v != nullptr); \
         ASSERT(v->isArray()); \
-        ASSERT_EQUALS(1U, v->dimensions().size()); \
-        ASSERT_EQUALS(S, v->dimension(0))
+        ASSERT_EQUALS(1UL, v->dimensions().size()); \
+        ASSERT_EQUALS(S * 1LL, v->dimension(0))
 
     void enum7() {
         GET_SYMBOL_DB("enum E { X };\n"
@@ -4903,11 +4903,11 @@ private:
         const Enumerator *X2 = db->scopeList.back().findEnumerator("X2");
         ASSERT(X2);
         ASSERT(X2->value_known);
-        ASSERT_EQUALS(X2->value, 2);
+        ASSERT_EQUALS(2LL, X2->value);
         const Enumerator *X3 = db->scopeList.back().findEnumerator("X3");
         ASSERT(X3);
         ASSERT(X3->value_known);
-        ASSERT_EQUALS(X3->value, 3);
+        ASSERT_EQUALS(3LL, X3->value);
         const Enumerator *X4 = db->scopeList.back().findEnumerator("X4");
         ASSERT(X4);
         ASSERT(!X4->value_known);
@@ -4922,11 +4922,11 @@ private:
         const Enumerator *X0 = db->scopeList.back().findEnumerator("X0");
         ASSERT(X0);
         ASSERT(X0->value_known);
-        ASSERT_EQUALS(X0->value, 7);
+        ASSERT_EQUALS(7LL, X0->value);
         const Enumerator *X1 = db->scopeList.back().findEnumerator("X1");
         ASSERT(X1);
         ASSERT(X1->value_known);
-        ASSERT_EQUALS(X1->value, 8);
+        ASSERT_EQUALS(8LL, X1->value);
     }
 
     void sizeOfType() {
@@ -5030,7 +5030,7 @@ private:
                           "   }\n"
                           "};");
             ASSERT(db && db->findScopeByName("Bar") && !db->findScopeByName("Bar")->functionList.empty() && !db->findScopeByName("Bar")->functionList.front().isImplicitlyVirtual(false));
-            ASSERT_EQUALS(1, db->findScopeByName("Bar")->functionList.size());
+            ASSERT_EQUALS(1UL, db->findScopeByName("Bar")->functionList.size());
         }
 
         // #5590

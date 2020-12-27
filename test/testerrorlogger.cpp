@@ -113,7 +113,7 @@ private:
     void ErrorMessageConstruct() const {
         std::list<ErrorMessage::FileLocation> locs(1, fooCpp5);
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.", "errorId", false);
-        ASSERT_EQUALS(1, msg.callStack.size());
+        ASSERT_EQUALS(1UL, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Programming error.", msg.verboseMessage());
         ASSERT_EQUALS("[foo.cpp:5]: (error) Programming error.", msg.toString(false));
@@ -123,7 +123,7 @@ private:
     void ErrorMessageConstructLocations() const {
         std::list<ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8 };
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.", "errorId", false);
-        ASSERT_EQUALS(2, msg.callStack.size());
+        ASSERT_EQUALS(2UL, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Programming error.", msg.verboseMessage());
         ASSERT_EQUALS("[foo.cpp:5] -> [bar.cpp:8]: (error) Programming error.", msg.toString(false));
@@ -133,7 +133,7 @@ private:
     void ErrorMessageVerbose() const {
         std::list<ErrorMessage::FileLocation> locs(1, fooCpp5);
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", false);
-        ASSERT_EQUALS(1, msg.callStack.size());
+        ASSERT_EQUALS(1UL, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
         ASSERT_EQUALS("[foo.cpp:5]: (error) Programming error.", msg.toString(false));
@@ -143,7 +143,7 @@ private:
     void ErrorMessageVerboseLocations() const {
         std::list<ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8 };
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", false);
-        ASSERT_EQUALS(2, msg.callStack.size());
+        ASSERT_EQUALS(2UL, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
         ASSERT_EQUALS("[foo.cpp:5] -> [bar.cpp:8]: (error) Programming error.", msg.toString(false));
@@ -153,7 +153,7 @@ private:
     void CustomFormat() const {
         std::list<ErrorMessage::FileLocation> locs(1, fooCpp5);
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", false);
-        ASSERT_EQUALS(1, msg.callStack.size());
+        ASSERT_EQUALS(1UL, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
         ASSERT_EQUALS("foo.cpp:5,error,errorId,Programming error.", msg.toString(false, "{file}:{line},{severity},{id},{message}"));
@@ -163,7 +163,7 @@ private:
     void CustomFormat2() const {
         std::list<ErrorMessage::FileLocation> locs(1, fooCpp5);
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", false);
-        ASSERT_EQUALS(1, msg.callStack.size());
+        ASSERT_EQUALS(1UL, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
         ASSERT_EQUALS("Programming error. - foo.cpp(5):(error,errorId)", msg.toString(false, "{message} - {file}({line}):({severity},{id})"));
@@ -174,7 +174,7 @@ private:
         // Check that first location from location stack is used in template
         std::list<ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8 };
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error.\nVerbose error", "errorId", false);
-        ASSERT_EQUALS(2, msg.callStack.size());
+        ASSERT_EQUALS(2UL, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
         ASSERT_EQUALS("Programming error. - bar.cpp(8):(error,errorId)", msg.toString(false, "{message} - {file}({line}):({severity},{id})"));
@@ -306,7 +306,7 @@ private:
         ASSERT_EQUALS("[]:;,()", msg2.callStack.front().getfile(false));
         ASSERT_EQUALS(":/,;", msg2.callStack.front().getOrigFile(false));
         ASSERT_EQUALS(654, msg2.callStack.front().line);
-        ASSERT_EQUALS(33, msg2.callStack.front().column);
+        ASSERT_EQUALS(33U, msg2.callStack.front().column);
         ASSERT_EQUALS("abcd:/,", msg2.callStack.front().getinfo());
     }
 

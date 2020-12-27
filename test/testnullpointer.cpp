@@ -3194,7 +3194,7 @@ private:
 
             std::list<const Token *> null;
             CheckNullPointer::parseFunctionCall(*xtok, null, &library);
-            ASSERT_EQUALS(0U, null.size());
+            ASSERT_EQUALS(0UL, null.size());
         }
 
         // for 1st parameter null pointer is not ok..
@@ -3208,7 +3208,7 @@ private:
 
             std::list<const Token *> null;
             CheckNullPointer::parseFunctionCall(*xtok, null, &library);
-            ASSERT_EQUALS(1U, null.size());
+            ASSERT_EQUALS(1UL, null.size());
             ASSERT_EQUALS("a", null.front()->str());
         }
     }
