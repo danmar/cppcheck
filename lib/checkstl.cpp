@@ -1637,13 +1637,18 @@ void CheckStl::missingComparison()
             }
 
             const Token *incrementToken = nullptr;
+            bool bComparedInAdvance = false;
 
             // Parse loop..
             for (const Token *tok3 = scope.bodyStart; tok3 != scope.bodyEnd; tok3 = tok3->next()) {
-                if (Token::Match(tok3, "%varid% ++", iteratorId))
-                    incrementToken = tok3;
-                else if (Token::Match(tok3->previous(), "++ %varid% !!.", iteratorId))
-                    incrementToken = tok3;
+                if (Token::Match(tok3, "%varid% ++", iteratorId) || 
+                    Token::Match(tok3->previous(), "++ %varid% !!.", iteratorId))
+                {
+                    if (!bComparedInAdvance)
+                        incrementToken = tok3;
+                    else
+                        bComparedInAdvance = false;
+                }
                 else if (Token::Match(tok3, "%varid% !=|==", iteratorId))
                     incrementToken = nullptr;
                 else if (tok3->str() == "break" || tok3->str() == "return")
@@ -1654,6 +1659,8 @@ void CheckStl::missingComparison()
                     if (!tok3)
                         break;
                 }
+                else if (Token::Match(tok3, "%varid% + 1 )| !=|==", iteratorId))
+                    bComparedInAdvance = true;
             }
             if (incrementToken)
                 missingComparisonError(incrementToken, tok2->tokAt(16));

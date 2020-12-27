@@ -2986,6 +2986,14 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::vector<std::string> &v) {\n"
+              "    for(std::vector<std::string>::const_iterator it = v.begin(); it != v.end(); ++it) {\n"
+              "        if(it+1 != v.end())\n"
+              "            ++it;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void missingInnerComparison2() {
