@@ -843,8 +843,7 @@ static void compileTerm(Token *&tok, AST_state& state)
                     Token *end = tok->link();
                     compileUnaryOp(tok, state, compileExpression);
                     tok = end;
-                }
-                else {
+                } else {
                     state.op.push(tok);
                     tok = tok->tokAt(2);
                 }

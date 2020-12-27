@@ -887,7 +887,7 @@ public:
         }
     };
 
-	void stringify(std::ostream& os, const stringifyOptions& options) const;
+    void stringify(std::ostream& os, const stringifyOptions& options) const;
 
     /**
      * Stringify a token
@@ -898,9 +898,9 @@ public:
      */
     void stringify(std::ostream& os, bool varid, bool attributes, bool macro) const;
 
-	std::string stringifyList(const stringifyOptions& options, const std::vector<std::string>* fileNames = nullptr, const Token* end = nullptr) const;
-	std::string stringifyList(const Token* end, bool attributes = true) const;
-	std::string stringifyList(bool varid = false) const;
+    std::string stringifyList(const stringifyOptions& options, const std::vector<std::string>* fileNames = nullptr, const Token* end = nullptr) const;
+    std::string stringifyList(const Token* end, bool attributes = true) const;
+    std::string stringifyList(bool varid = false) const;
 
     /**
      * Stringify a list of token, from current instance on.
