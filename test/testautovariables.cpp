@@ -2563,6 +2563,7 @@ private:
               "        f(std::move(w));\n"
               "    }\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
 
         //Make sure we can still take the address of a reference without warning
         check("int* foo() {\n"
