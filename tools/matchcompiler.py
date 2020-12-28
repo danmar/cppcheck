@@ -330,8 +330,8 @@ class MatchCompiler:
         # ret += '            std::cout << "tok: " << tok->str();\n'
         # ret += '        if (tok->next())\n'
         # ret += '            std::cout << "tok next: " << tok->next()->str();\n'
-        ret += '        throw InternalError(tok, "Internal error.' +\
-            'compiled match returned different result than parsed match: ' + pattern + '");\n'
+        ret += '        throw InternalError(tok, "Internal error. ' +\
+            'Compiled match returned different result than parsed match: ' + pattern + '");\n'
         ret += '    }\n'
         ret += '    return res_compiled_match;\n'
         ret += '}\n'
@@ -459,7 +459,7 @@ class MatchCompiler:
         # We also need to verify builds in 'release' mode
         ret += '    if (res_parsed_findmatch != res_compiled_findmatch) {\n'
         ret += '        throw InternalError(tok, "Internal error. ' +\
-            'compiled findmatch returned different result than parsed findmatch: ' + pattern + '");\n'
+            'Compiled findmatch returned different result than parsed findmatch: ' + pattern + '");\n'
         ret += '    }\n'
         ret += '    return res_compiled_findmatch;\n'
         ret += '}\n'
