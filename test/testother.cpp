@@ -8914,6 +8914,14 @@ private:
 
         check("class C { C(); void foo() { static int C = 0; } }"); // #9195 - shadow constructor
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "  std::vector<T> a(10);\n"
+              "  for (int i = 0; i < 10; i++)\n"
+              "    bar(*a[4]);\n"
+              "}\n"
+        );
+        ASSERT_EQUALS("", errout.str());
     }
 
     void knownArgument() {
