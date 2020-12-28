@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.3"
+CLIENT_VERSION = "1.3.4"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 60 * 60
@@ -478,6 +478,7 @@ def get_libraries():
                        'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'],
                        'openmp': ['<omp.h>'],
                        'openssl': ['<openssl/'],
+                       'pcre': ['<pcre.h>', '"pcre.h"'],
                        'python': ['<Python.h>', '"Python.h"'],
                        'qt': ['<QApplication>', '<QList>', '<QKeyEvent>', '<qlist.h>', '<QObject>', '<QFlags>', '<QFileDialog>', '<QTest>', '<QMessageBox>', '<QMetaType>', '<QString>', '<qobjectdefs.h>', '<qstring.h>', '<QWidget>', '<QtWidgets>', '<QtGui'],
                        'ruby': ['<ruby.h>', '<ruby/', '"ruby.h"'],
