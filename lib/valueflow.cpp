@@ -335,18 +335,6 @@ static bool isComputableValue(const Token* parent, const ValueFlow::Value& value
     return true;
 }
 
-uint32_t convertToMultiCharInt(const std::string& x)
-{
-    assert(x.size() < 5);
-    uint32_t y = 0;
-    int shift = (x.size() * 8) - 8;
-    for (size_t i = 0; i < x.size(); ++i) {
-        y |= (uint32_t(uint8_t(x[i])) << shift);
-        shift -= 8;
-    }
-    return y;
-}
-
 template <class T>
 T asInt(T x)
 {
@@ -360,7 +348,7 @@ MathLib::bigint asInt(double x) { return x; }
 template <class T, class U>
 static T calculate(const std::string& s, T x, U y)
 {
-    switch (convertToMultiCharInt(s)) {
+    switch (MathLib::encodeMultiChar(s)) {
     case '+':
         return x + y;
     case '-':
