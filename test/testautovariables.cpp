@@ -2563,6 +2563,20 @@ private:
               "        f(std::move(w));\n"
               "    }\n"
               "};\n");
+
+        //Make sure we can still take the address of a reference without warning
+        check("int* foo() {\n"
+              "  int& x = getX();\n"
+              "  return &x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        check("struct C {\n"
+              "  int* m_x;\n"
+              "  void foo() {\n"
+              "    const int& x = getX();\n"
+              "    m_x = &x;\n"
+              "  }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
