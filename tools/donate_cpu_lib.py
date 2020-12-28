@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.5"
+CLIENT_VERSION = "1.3.6"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 60 * 60
@@ -458,7 +458,7 @@ def upload_info(package, info_output, server_address):
 def get_libraries():
     libraries = ['posix', 'gnu']
     library_includes = {'boost': ['<boost/'],
-                       'bsd': ['<sys/queue.h>','<sys/tree.h>','<bsd/'],
+                       'bsd': ['<sys/queue.h>','<sys/tree.h>','<bsd/','<fts.h>','<db.h>','<err.h>','<vis.h>'],
                        'cairo': ['<cairo.h>'],
                        'cppunit': ['<cppunit/'],
                        'icu': ['<unicode/', '"unicode/'],
