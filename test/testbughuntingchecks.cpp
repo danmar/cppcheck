@@ -46,6 +46,9 @@ private:
         TEST_CASE(bufferOverflowMemCmp2);
         TEST_CASE(bufferOverflowStrcpy1);
         TEST_CASE(bufferOverflowStrcpy2);
+
+        TEST_CASE(divisionByZeroNoReturn);
+
         TEST_CASE(uninit);
         TEST_CASE(uninit_array);
         TEST_CASE(uninit_function_par);
@@ -61,6 +64,7 @@ private:
     }
 
     void check(const char code[]) {
+        settings.bugHunting = settings.library.bugHunting = true;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
@@ -190,6 +194,18 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Buffer read/write, when calling 'strcpy' it cannot be determined that 1st argument is not overflowed\n", errout.str());
     }
+
+
+    void divisionByZeroNoReturn() {
+        // Don't know if function is noreturn or not..
+        check("int f(int leftarg, int rightarg) {\n"
+              "  if (rightarg == 0)\n"
+              "    raise (SIGFPE);\n"  // <- maybe noreturn
+              "  return leftarg / rightarg;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) There is division, cannot determine that there can't be a division by zero.\n", errout.str());
+    }
+
 
     void uninit() {
         check("void foo() { int x; x = x + 1; }");

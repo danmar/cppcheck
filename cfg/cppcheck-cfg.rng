@@ -101,7 +101,13 @@
 
         <interleave>
           <optional>
-            <element name="noreturn"><ref name="DATA-BOOL"/></element>
+            <element name="noreturn">
+              <choice>
+                <value>true</value>
+                <value>false</value>
+                <value>maybe</value>
+              </choice>
+            </element>
           </optional>
           <optional>
             <element name="pure"><empty/></element>

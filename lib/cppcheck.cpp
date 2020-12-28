@@ -934,6 +934,7 @@ void CppCheck::checkRawTokens(const Tokenizer &tokenizer)
 
 void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 {
+    mSettings.library.bugHunting = mSettings.bugHunting;
     if (mSettings.bugHunting)
         ExprEngine::runChecks(this, &tokenizer, &mSettings);
     else {
