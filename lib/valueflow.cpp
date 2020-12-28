@@ -80,6 +80,7 @@
 #include "analyzer.h"
 #include "astutils.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "forwardanalyzer.h"
 #include "library.h"
 #include "mathlib.h"
@@ -385,7 +386,7 @@ static T calculate(const std::string& s, T x, U y)
     case '<=':
         return x <= y;
     }
-    throw std::runtime_error("Unknown operator: " + s);
+    throw InternalError(nullptr, "Unknown operator: " + s);
 }
 
 /** Set token value for cast */
