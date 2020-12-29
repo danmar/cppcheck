@@ -893,11 +893,22 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         return nameToken;
     }
     if (nodeType == EnumDecl) {
+        int colIndex = mExtTokens.size() - 1;
+        while (colIndex > 0 && mExtTokens[colIndex].compare(0,4,"col:") != 0)
+            --colIndex;
+        if (colIndex == 0 || colIndex + 2 >= mExtTokens.size() || mExtTokens[colIndex + 1] != "referenced")
+            return nullptr;
+
         mData->enumValue = 0;
         Token *enumtok = addtoken(tokenList, "enum");
         Token *nametok = nullptr;
-        if (mExtTokens[mExtTokens.size() - 3].compare(0,4,"col:") == 0)
-            nametok = addtoken(tokenList, mExtTokens.back());
+        {
+            int nameIndex = mExtTokens.size() - 1;
+            while (nameIndex > 0 && mExtTokens[nameIndex][0] == '\'')
+                --nameIndex;
+            if (nameIndex > colIndex + 1)
+                nametok = addtoken(tokenList, mExtTokens[nameIndex]);
+        }
         Scope *enumscope = createScope(tokenList, Scope::ScopeType::eEnum, children, enumtok);
         if (nametok)
             enumscope->className = nametok->str();

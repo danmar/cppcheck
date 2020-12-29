@@ -71,7 +71,8 @@ private:
         TEST_CASE(cxxThrowExpr);
         TEST_CASE(defaultStmt);
         TEST_CASE(doStmt);
-        TEST_CASE(enumDecl);
+        TEST_CASE(enumDecl1);
+        TEST_CASE(enumDecl2);
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
@@ -668,12 +669,18 @@ private:
         ASSERT_EQUALS("void foo ( ) { do { ++ x ; } while ( 1 ) ; }", parse(clang));
     }
 
-    void enumDecl() {
+    void enumDecl1() {
         const char clang[] = "`-EnumDecl 0x2660660 <line:3:1, col:16> col:6 referenced abc\n"
                              "  |-EnumConstantDecl 0x2660720 <col:11> col:11 referenced a 'abc'\n"
                              "  |-EnumConstantDecl 0x2660768 <col:13> col:13 b 'abc'\n"
                              "  `-EnumConstantDecl 0x26607b0 <col:15> col:15 c 'abc'";
         ASSERT_EQUALS("enum abc { a , b , c }", parse(clang));
+    }
+
+    void enumDecl2() {
+        // enum syntax_option_type : unsigned int { };
+        const char clang[] = "`-EnumDecl 0xb55d50 <2.cpp:4:3, col:44> col:8 syntax_option_type 'unsigned int'";
+        ASSERT_EQUALS("", parse(clang));
     }
 
     void forStmt() {
