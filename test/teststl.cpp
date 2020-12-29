@@ -4741,6 +4741,17 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("namespace ns {\n"
+              "    using ArrayType = std::vector<int>;\n"
+              "}\n"
+              "using namespace ns;\n"
+              "static void f() {\n"
+              "    const ArrayType arr;\n"
+              "    for (const auto &a : arr) {}\n"
+              "}",
+              true);
+        ASSERT_EQUALS("[test.cpp:7]: (style) Iterating over container 'arr' that is always empty.\n", errout.str());
     }
 
     void checkMutexes() {

@@ -140,16 +140,16 @@ public:
     public:
         /**
          * Constructor used for instantiations.
-         * \param tok template instantiation name token "name<...>"
-         * \param s full qualification of template(scope)
+         * \param token template instantiation name token "name<...>"
+         * \param scope full qualification of template(scope)
          */
         TokenAndName(Token *token, const std::string &scope);
         /**
          * Constructor used for declarations.
-         * \param tok template declaration token "template < ... >"
-         * \param s full qualification of template(scope)
-         * \param nt template name token "template < ... > class name"
-         * \param pe template parameter end token ">"
+         * \param token template declaration token "template < ... >"
+         * \param scope full qualification of template(scope)
+         * \param nameToken template name token "template < ... > class name"
+         * \param paramEnd template parameter end token ">"
          */
         TokenAndName(Token *token, const std::string &scope, const Token *nameToken, const Token *paramEnd);
         TokenAndName(const TokenAndName& other);

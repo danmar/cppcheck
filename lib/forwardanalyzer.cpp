@@ -297,10 +297,10 @@ struct ForwardTraversal {
                 if (!tok)
                     return Progress::Break;
             } else if (tok->str() ==  "break") {
-                const Scope* scope = findBreakScope(tok->scope());
-                if (!scope)
+                const Token *scopeEndToken = findNextTokenFromBreak(tok);
+                if (!scopeEndToken)
                     return Progress::Break;
-                tok = skipTo(tok, scope->bodyEnd, end);
+                tok = skipTo(tok, scopeEndToken, end);
                 if (!analyzer->lowerToPossible())
                     return Progress::Break;
                 // TODO: Don't break, instead move to the outer scope
@@ -503,12 +503,6 @@ struct ForwardTraversal {
             tok = tok->astParent();
         }
         return nullptr;
-    }
-
-    static const Scope* findBreakScope(const Scope* scope) {
-        while (scope && scope->type != Scope::eWhile && scope->type != Scope::eFor && scope->type != Scope::eSwitch)
-            scope = scope->nestedIn;
-        return scope;
     }
 
     static Token* skipTo(Token* tok, const Token* dest, const Token* end = nullptr) {

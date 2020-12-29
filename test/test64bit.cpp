@@ -48,6 +48,7 @@ private:
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
+        LOAD_LIB_2(settings.library, "std.cfg");
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -102,6 +103,32 @@ private:
         check("int foo(int *p) {\n" // #6096
               "    bool a = p;\n"
               "    return a;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::array<int,2> f();\n"
+              "void g() {\n"
+              "    std::array<int, 2> a = f();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::array<int,2> f(int x);\n"
+              "void g(int i) {\n"
+              "    std::array<int, 2> a = f(i);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("typedef std::array<int, 2> Array;\n"
+              "Array f(int x);\n"
+              "void g(int i) {\n"
+              "    Array a = f(i);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("typedef std::array<int, 2> Array;\n"
+              "Array f();\n"
+              "void g(int i) {\n"
+              "    Array a = f();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

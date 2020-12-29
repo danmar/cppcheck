@@ -839,9 +839,11 @@ static void compileTerm(Token *&tok, AST_state& state)
             tok = tok->next();
         } else if (state.cpp && iscpp11init(tok)) {
             if (state.op.empty() || Token::Match(tok->previous(), "[{,]") || Token::Match(tok->tokAt(-2), "%name% (")) {
-                if (Token::Match(tok, "{ !!}"))
+                if (Token::Match(tok, "{ !!}")) {
+                    Token *end = tok->link();
                     compileUnaryOp(tok, state, compileExpression);
-                else {
+                    tok = end;
+                } else {
                     state.op.push(tok);
                     tok = tok->tokAt(2);
                 }

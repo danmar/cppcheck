@@ -494,6 +494,20 @@ const Token* getCondTokFromEnd(const Token* endBlock)
     return getCondTokFromEndImpl(endBlock);
 }
 
+const Token *findNextTokenFromBreak(const Token *breakToken)
+{
+    const Scope *scope = breakToken->scope();
+    while (scope) {
+        if (scope->isLoopScope() || scope->type == Scope::ScopeType::eSwitch) {
+            if (scope->type == Scope::ScopeType::eDo && Token::simpleMatch(scope->bodyEnd, "} while ("))
+                return scope->bodyEnd->linkAt(2)->next();
+            return scope->bodyEnd;
+        }
+        scope = scope->nestedIn;
+    }
+    return nullptr;
+}
+
 bool extractForLoopValues(const Token *forToken,
                           nonneg int * const varid,
                           bool * const knownInitValue,
@@ -2240,8 +2254,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             if (tok->scope() == expr->scope())
                 mValueFlowKnown = false;
 
-            Scope::ScopeType scopeType = tok->scope()->type;
-            if (scopeType == Scope::eWhile || scopeType == Scope::eFor || scopeType == Scope::eDo) {
+            if (tok->scope()->isLoopScope()) {
                 // check condition
                 const Token *conditionStart = nullptr;
                 const Token *conditionEnd = nullptr;
@@ -2416,6 +2429,14 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 return result1;
             if (mWhat == What::ValueFlow && result1.type == Result::Type::WRITE)
                 mValueFlowKnown = false;
+            if (mWhat == What::Reassign && result1.type == Result::Type::BREAK) {
+                const Token *scopeEndToken = findNextTokenFromBreak(result1.token);
+                if (scopeEndToken) {
+                    const Result &result2 = checkRecursive(expr, scopeEndToken->next(), endToken, exprVarIds, local, inInnerClass, depth);
+                    if (result2.type == Result::Type::BAILOUT)
+                        return result2;
+                }
+            }
             if (Token::simpleMatch(tok->linkAt(1), "} else {")) {
                 const Token *elseStart = tok->linkAt(1)->tokAt(2);
                 const Result &result2 = checkRecursive(expr, elseStart, elseStart->link(), exprVarIds, local, inInnerClass, depth);
@@ -2508,12 +2529,10 @@ FwdAnalysis::Result FwdAnalysis::check(const Token* expr, const Token* startToke
 
     // Break => continue checking in outer scope
     while (mWhat!=What::ValueFlow && result.type == FwdAnalysis::Result::Type::BREAK) {
-        const Scope *s = result.token->scope();
-        while (s->type == Scope::eIf)
-            s = s->nestedIn;
-        if (s->type != Scope::eSwitch && s->type != Scope::eWhile && s->type != Scope::eFor)
+        const Token *scopeEndToken = findNextTokenFromBreak(result.token);
+        if (!scopeEndToken)
             break;
-        result = checkRecursive(expr, s->bodyEnd->next(), endToken, exprVarIds, local, false);
+        result = checkRecursive(expr, scopeEndToken->next(), endToken, exprVarIds, local, false);
     }
 
     return result;
