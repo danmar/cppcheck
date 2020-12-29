@@ -1523,6 +1523,12 @@ void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
     if (!tree.empty())
         tree[0]->createTokens1(tokenList);
 
+    // Validation
+    for (const Token *tok = tokenList->front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "(|)|[|]|{|}") && !tok->link())
+            throw InternalError(tok, "Token::link() is not set properly");
+    }
+
     symbolDatabase->clangSetVariables(data.getVariableList());
     tokenList->clangSetOrigFiles();
     setTypes(tokenList);
