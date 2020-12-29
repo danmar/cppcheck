@@ -73,6 +73,7 @@ private:
         TEST_CASE(doStmt);
         TEST_CASE(enumDecl1);
         TEST_CASE(enumDecl2);
+        TEST_CASE(enumDecl3);
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
@@ -678,9 +679,15 @@ private:
     }
 
     void enumDecl2() {
-        // enum syntax_option_type : unsigned int { };
         const char clang[] = "`-EnumDecl 0xb55d50 <2.cpp:4:3, col:44> col:8 syntax_option_type 'unsigned int'";
-        ASSERT_EQUALS("", parse(clang));
+        ASSERT_EQUALS("enum syntax_option_type : unsigned int { }", parse(clang));
+    }
+
+    void enumDecl3() {
+        const char clang[] = "|-EnumDecl 0x1586e48 <2.cpp:1:3, line:5:3> line:1:8 __syntax_option\n"
+                             "| |-EnumConstantDecl 0x1586f18 <line:3:5> col:5 referenced _S_polynomial '__syntax_option'\n"
+                             "| `-EnumConstantDecl 0x1586f68 <line:4:5> col:5 _S_syntax_last '__syntax_option'";
+        ASSERT_EQUALS("enum __syntax_option { _S_polynomial , _S_syntax_last }", parse(clang));
     }
 
     void forStmt() {

@@ -596,9 +596,9 @@ Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType 
     scope->classDef = def;
     scope->check = nestedIn->check;
     scope->bodyStart = addtoken(tokenList, "{");
+    tokenList->back()->scope(scope);
     mData->scopeAccessControl[scope] = scope->defaultAccess();
     if (!children2.empty()) {
-        tokenList->back()->scope(scope);
         for (AstNodePtr astNode: children2) {
             if (astNode->nodeType == "VisibilityAttr")
                 continue;
@@ -894,9 +894,9 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == EnumDecl) {
         int colIndex = mExtTokens.size() - 1;
-        while (colIndex > 0 && mExtTokens[colIndex].compare(0,4,"col:") != 0)
+        while (colIndex > 0 && mExtTokens[colIndex].compare(0,4,"col:") != 0 && mExtTokens[colIndex].compare(0,5,"line:") != 0)
             --colIndex;
-        if (colIndex == 0 || colIndex + 2 >= mExtTokens.size() || mExtTokens[colIndex + 1] != "referenced")
+        if (colIndex == 0)
             return nullptr;
 
         mData->enumValue = 0;
@@ -904,10 +904,14 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         Token *nametok = nullptr;
         {
             int nameIndex = mExtTokens.size() - 1;
-            while (nameIndex > 0 && mExtTokens[nameIndex][0] == '\'')
+            while (nameIndex > colIndex && mExtTokens[nameIndex][0] == '\'')
                 --nameIndex;
-            if (nameIndex > colIndex + 1)
+            if (nameIndex > colIndex)
                 nametok = addtoken(tokenList, mExtTokens[nameIndex]);
+            if (mExtTokens.back()[0] == '\'') {
+                addtoken(tokenList, ":");
+                addTypeTokens(tokenList, mExtTokens.back());
+            }
         }
         Scope *enumscope = createScope(tokenList, Scope::ScopeType::eEnum, children, enumtok);
         if (nametok)
