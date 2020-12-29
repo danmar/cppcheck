@@ -350,6 +350,8 @@ unsigned int CppCheck::check(const std::string &path)
         if (!mSettings.buildDir.empty()) {
             std::ofstream fout(clangcmd);
             fout << exe << " " << args2 << " " << redirect2 << std::endl;
+        } else if (mSettings.verbose && !mSettings.quiet) {
+            mErrorLogger.reportOut(exe + " " + args2);
         }
 
         std::string output2;
