@@ -419,6 +419,8 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
         temp.mSettings.includePaths.insert(temp.mSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
         temp.check(Path::simplifyPath(fs.filename));
     }
+    if (mSettings.clang)
+        return temp.check(fs.filename);
     std::ifstream fin(fs.filename);
     unsigned int returnValue = temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
     mSettings.nomsg.addSuppressions(temp.mSettings.nomsg.getSuppressions());
