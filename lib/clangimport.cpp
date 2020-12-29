@@ -497,6 +497,9 @@ const ::Type * clangimport::AstNode::addTypeTokens(TokenList *tokenList, const s
         return addTypeTokens(tokenList, str.substr(0, str.find("\':\'") + 1), scope);
     }
 
+    if (str.compare(0, 16, "'enum (anonymous") == 0)
+        return nullptr;
+
     std::string type;
     if (str.find(" (") != std::string::npos) {
         if (str.find("<") != std::string::npos)

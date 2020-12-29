@@ -74,6 +74,7 @@ private:
         TEST_CASE(enumDecl1);
         TEST_CASE(enumDecl2);
         TEST_CASE(enumDecl3);
+        TEST_CASE(enumDecl4);
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
@@ -688,6 +689,16 @@ private:
                              "| |-EnumConstantDecl 0x1586f18 <line:3:5> col:5 referenced _S_polynomial '__syntax_option'\n"
                              "| `-EnumConstantDecl 0x1586f68 <line:4:5> col:5 _S_syntax_last '__syntax_option'";
         ASSERT_EQUALS("enum __syntax_option { _S_polynomial , _S_syntax_last }", parse(clang));
+    }
+
+    void enumDecl4() {
+        const char clang[] = "|-EnumDecl 0xace1f8 <e1.cpp:3:1, col:51> col:1\n"
+                             "| |-EnumConstantDecl 0xace2c8 <col:7> col:7 A '(anonymous enum at e1.cpp:3:1)'\n"
+                             "| |-EnumConstantDecl 0xace318 <col:16> col:16 B '(anonymous enum at e1.cpp:3:1)'\n"
+                             "| `-EnumConstantDecl 0xace3b8 <col:46> col:46 referenced C '(anonymous enum at e1.cpp:3:1)'\n"
+                             "`-VarDecl 0xace470 <col:1, col:66> col:53 x 'enum (anonymous enum at e1.cpp:3:1)':'(anonymous enum at e1.cpp:3:1)' cinit\n"
+                             "  `-DeclRefExpr 0xace520 <col:66> '(anonymous enum at e1.cpp:3:1)' EnumConstant 0xace3b8 'C' '(anonymous enum at e1.cpp:3:1)'";
+        ASSERT_EQUALS("enum { A , B , C } x@1 = C ;", parse(clang));
     }
 
     void forStmt() {
