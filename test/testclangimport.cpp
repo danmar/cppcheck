@@ -81,6 +81,7 @@ private:
         TEST_CASE(funcdecl3);
         TEST_CASE(funcdecl4);
         TEST_CASE(funcdecl5);
+        TEST_CASE(funcdecl6);
         TEST_CASE(functionTemplateDecl1);
         TEST_CASE(functionTemplateDecl2);
         TEST_CASE(initListExpr);
@@ -762,6 +763,12 @@ private:
     void funcdecl5() {
         const char clang[] = "`-FunctionDecl 0x59d670 <1.c:1:1, col:28> col:20 foo 'void (void)' static inline";
         ASSERT_EQUALS("static inline void foo ( ) ;", parse(clang));
+    }
+
+    void funcdecl6() {
+        const char clang[] = "`-FunctionDecl 0x196eea8 <1.cpp:3:5, col:27> col:12 foo 'void **(int)'\n"
+                             "  `-ParmVarDecl 0x196eda0 <col:17, col:21> col:21 count 'int'";
+        ASSERT_EQUALS("void * * foo ( int count@1 ) ;", parse(clang));
     }
 
     void functionTemplateDecl1() {

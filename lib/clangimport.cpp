@@ -515,6 +515,8 @@ const ::Type * clangimport::AstNode::addTypeTokens(TokenList *tokenList, const s
         type.erase(type.find("(*)("));
         type += "*";
     }
+    if (type.find("(") != std::string::npos)
+        type.erase(type.find("("));
 
     std::stack<Token *> lpar;
     for (const std::string &s: splitString(type)) {
