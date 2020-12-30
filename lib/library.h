@@ -140,7 +140,7 @@ public:
 
     /** add noreturn function setting */
     void setnoreturn(const std::string& funcname, bool noreturn) {
-        mNoReturn[funcname] = noreturn;
+        mNoReturn[funcname] = noreturn ? FalseTrueMaybe::True : FalseTrueMaybe::False;
     }
 
     static bool isCompliantValidationExpression(const char* p);
@@ -496,6 +496,8 @@ public:
     enum class TypeCheck { def, check, suppress };
     TypeCheck getTypeCheck(const std::string &check, const std::string &typeName) const;
 
+    bool bugHunting;
+
 private:
     // load a <function> xml node
     Error loadFunction(const tinyxml2::XMLElement * const node, const std::string &name, std::set<std::string> &unknown_elements);
@@ -554,12 +556,13 @@ private:
         int mOffset;
         std::set<std::string> mBlocks;
     };
+    enum class FalseTrueMaybe { False, True, Maybe };
     int mAllocId;
     std::set<std::string> mFiles;
     std::map<std::string, AllocFunc> mAlloc; // allocation functions
     std::map<std::string, AllocFunc> mDealloc; // deallocation functions
     std::map<std::string, AllocFunc> mRealloc; // reallocation functions
-    std::map<std::string, bool> mNoReturn; // is function noreturn?
+    std::map<std::string, FalseTrueMaybe> mNoReturn; // is function noreturn?
     std::map<std::string, std::string> mReturnValue;
     std::map<std::string, std::string> mReturnValueType;
     std::map<std::string, int> mReturnValueContainer;

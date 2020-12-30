@@ -1067,6 +1067,10 @@ public:
         return type != eClass && type != eStruct && type != eUnion && type != eGlobal && type != eNamespace && type != eEnum;
     }
 
+    bool isLoopScope() const {
+        return type == Scope::ScopeType::eFor || type == Scope::ScopeType::eWhile || type == Scope::ScopeType::eDo;
+    }
+
     bool isLocal() const {
         return (type == eIf || type == eElse ||
                 type == eFor || type == eWhile || type == eDo ||

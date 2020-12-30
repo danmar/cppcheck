@@ -71,13 +71,17 @@ private:
         TEST_CASE(cxxThrowExpr);
         TEST_CASE(defaultStmt);
         TEST_CASE(doStmt);
-        TEST_CASE(enumDecl);
+        TEST_CASE(enumDecl1);
+        TEST_CASE(enumDecl2);
+        TEST_CASE(enumDecl3);
+        TEST_CASE(enumDecl4);
         TEST_CASE(forStmt);
         TEST_CASE(funcdecl1);
         TEST_CASE(funcdecl2);
         TEST_CASE(funcdecl3);
         TEST_CASE(funcdecl4);
         TEST_CASE(funcdecl5);
+        TEST_CASE(funcdecl6);
         TEST_CASE(functionTemplateDecl1);
         TEST_CASE(functionTemplateDecl2);
         TEST_CASE(initListExpr);
@@ -101,6 +105,7 @@ private:
         TEST_CASE(vardecl4);
         TEST_CASE(vardecl5);
         TEST_CASE(vardecl6);
+        TEST_CASE(vardecl7);
         TEST_CASE(whileStmt1);
         TEST_CASE(whileStmt2);
 
@@ -668,12 +673,34 @@ private:
         ASSERT_EQUALS("void foo ( ) { do { ++ x ; } while ( 1 ) ; }", parse(clang));
     }
 
-    void enumDecl() {
+    void enumDecl1() {
         const char clang[] = "`-EnumDecl 0x2660660 <line:3:1, col:16> col:6 referenced abc\n"
                              "  |-EnumConstantDecl 0x2660720 <col:11> col:11 referenced a 'abc'\n"
                              "  |-EnumConstantDecl 0x2660768 <col:13> col:13 b 'abc'\n"
                              "  `-EnumConstantDecl 0x26607b0 <col:15> col:15 c 'abc'";
         ASSERT_EQUALS("enum abc { a , b , c }", parse(clang));
+    }
+
+    void enumDecl2() {
+        const char clang[] = "`-EnumDecl 0xb55d50 <2.cpp:4:3, col:44> col:8 syntax_option_type 'unsigned int'";
+        ASSERT_EQUALS("enum syntax_option_type : unsigned int { }", parse(clang));
+    }
+
+    void enumDecl3() {
+        const char clang[] = "|-EnumDecl 0x1586e48 <2.cpp:1:3, line:5:3> line:1:8 __syntax_option\n"
+                             "| |-EnumConstantDecl 0x1586f18 <line:3:5> col:5 referenced _S_polynomial '__syntax_option'\n"
+                             "| `-EnumConstantDecl 0x1586f68 <line:4:5> col:5 _S_syntax_last '__syntax_option'";
+        ASSERT_EQUALS("enum __syntax_option { _S_polynomial , _S_syntax_last }", parse(clang));
+    }
+
+    void enumDecl4() {
+        const char clang[] = "|-EnumDecl 0xace1f8 <e1.cpp:3:1, col:51> col:1\n"
+                             "| |-EnumConstantDecl 0xace2c8 <col:7> col:7 A '(anonymous enum at e1.cpp:3:1)'\n"
+                             "| |-EnumConstantDecl 0xace318 <col:16> col:16 B '(anonymous enum at e1.cpp:3:1)'\n"
+                             "| `-EnumConstantDecl 0xace3b8 <col:46> col:46 referenced C '(anonymous enum at e1.cpp:3:1)'\n"
+                             "`-VarDecl 0xace470 <col:1, col:66> col:53 x 'enum (anonymous enum at e1.cpp:3:1)':'(anonymous enum at e1.cpp:3:1)' cinit\n"
+                             "  `-DeclRefExpr 0xace520 <col:66> '(anonymous enum at e1.cpp:3:1)' EnumConstant 0xace3b8 'C' '(anonymous enum at e1.cpp:3:1)'";
+        ASSERT_EQUALS("enum { A , B , C } x@1 = C ;", parse(clang));
     }
 
     void forStmt() {
@@ -736,6 +763,12 @@ private:
     void funcdecl5() {
         const char clang[] = "`-FunctionDecl 0x59d670 <1.c:1:1, col:28> col:20 foo 'void (void)' static inline";
         ASSERT_EQUALS("static inline void foo ( ) ;", parse(clang));
+    }
+
+    void funcdecl6() {
+        const char clang[] = "`-FunctionDecl 0x196eea8 <1.cpp:3:5, col:27> col:12 foo 'void **(int)'\n"
+                             "  `-ParmVarDecl 0x196eda0 <col:17, col:21> col:21 count 'int'";
+        ASSERT_EQUALS("void * * foo ( int count@1 ) ;", parse(clang));
     }
 
     void functionTemplateDecl1() {
@@ -965,6 +998,11 @@ private:
         const char clang[] = "`-VarDecl 0x278e170 <1.c:1:1, col:16> col:12 x 'int' static cinit\n"
                              "  `-IntegerLiteral 0x278e220 <col:16> 'int' 3";
         ASSERT_EQUALS("static int x@1 = 3 ;", parse(clang));
+    }
+
+    void vardecl7() {
+        const char clang[] = "`-VarDecl 0x2071f20 <1.cpp:2:1, col:23> col:9 start 'void *(*)(void *)'";
+        ASSERT_EQUALS("void * * start@1 ;", parse(clang));
     }
 
     void whileStmt1() {

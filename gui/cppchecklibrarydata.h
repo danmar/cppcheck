@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -136,12 +136,31 @@ public:
     struct MemoryResource {
         QString type; // "memory" or "resource"
         struct Alloc {
-            Alloc() : init(false) {}
+            Alloc() :
+                isRealloc(false),
+                init(false),
+                arg(-1),        // -1: Has no optional "arg" attribute
+                reallocArg(-1)  // -1: Has no optional "realloc-arg" attribute
+            {}
+
+            bool isRealloc;
             bool init;
+            int arg;
+            int reallocArg;
+            QString bufferSize;
             QString name;
         };
+        struct Dealloc {
+            Dealloc() :
+                arg(-1)        // -1: Has no optional "arg" attribute
+            {}
+
+            int arg;
+            QString name;
+        };
+
         QList<struct Alloc> alloc;
-        QStringList dealloc;
+        QList<struct Dealloc> dealloc;
         QStringList use;
     };
 
@@ -181,4 +200,4 @@ public:
     QStringList undefines;
 };
 
-#endif // LIBRARYDATA_H
+#endif // CPPCHECKLIBRARYDATA_H

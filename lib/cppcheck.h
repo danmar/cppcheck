@@ -118,7 +118,7 @@ public:
      */
     void getErrorMessages();
 
-    void tooManyConfigsError(const std::string &file, const std::size_t numberOfConfigurations);
+    void tooManyConfigsError(const std::string &file, const int numberOfConfigurations);
     void purgedConfigurationMessage(const std::string &file, const std::string& configuration);
 
     void dontSimplify() {

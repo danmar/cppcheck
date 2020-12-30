@@ -369,7 +369,7 @@ void CheckBool::pointerArithBool()
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (scope.type != Scope::eIf && scope.type != Scope::eWhile && scope.type != Scope::eDo && scope.type != Scope::eFor)
+        if (scope.type != Scope::eIf && !scope.isLoopScope())
             continue;
         const Token* tok = scope.classDef->next()->astOperand2();
         if (scope.type == Scope::eFor) {

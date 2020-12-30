@@ -94,7 +94,7 @@ public:
     static void reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal);
 
     /**
-     * @param exception_output Output file
+     * @param exceptionOutput Output file
      */
     static void setExceptionOutput(FILE* exceptionOutput);
     /**
@@ -111,7 +111,7 @@ public:
     /**
      * Execute a shell command and read the output from it. Returns true if command terminated successfully.
      */
-    static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output);
+    static bool executeCommand(std::string exe, std::vector<std::string> args, const std::string &redirect, std::string *output);
 
 protected:
 

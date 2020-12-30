@@ -31,6 +31,7 @@
 #include "utils.h"
 
 class Library;
+class Scope;
 class Settings;
 class Token;
 class Variable;
@@ -113,6 +114,10 @@ const Token* getCondTok(const Token* tok);
 
 Token* getCondTokFromEnd(Token* endBlock);
 const Token* getCondTokFromEnd(const Token* endBlock);
+
+/// For a "break" token, locate the next token to execute. The token will
+/// be either a "}" or a ";".
+const Token *findNextTokenFromBreak(const Token *breakToken);
 
 /**
  * Extract for loop values: loopvar varid, init value, step value, last value (inclusive)

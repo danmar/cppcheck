@@ -350,6 +350,8 @@ unsigned int CppCheck::check(const std::string &path)
         if (!mSettings.buildDir.empty()) {
             std::ofstream fout(clangcmd);
             fout << exe << " " << args2 << " " << redirect2 << std::endl;
+        } else if (mSettings.verbose && !mSettings.quiet) {
+            mErrorLogger.reportOut(exe + " " + args2);
         }
 
         std::string output2;
@@ -417,7 +419,7 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
         temp.mSettings.platform(fs.platformType);
     if (mSettings.clang) {
         temp.mSettings.includePaths.insert(temp.mSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
-        temp.check(Path::simplifyPath(fs.filename));
+        return temp.check(Path::simplifyPath(fs.filename));
     }
     std::ifstream fin(fs.filename);
     unsigned int returnValue = temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
@@ -641,7 +643,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         }
 
         std::set<unsigned long long> checksums;
-        unsigned int checkCount = 0;
+        int checkCount = 0;
         bool hasValidConfig = false;
         std::list<std::string> configurationError;
         for (const std::string &currCfg : configurations) {
@@ -934,6 +936,7 @@ void CppCheck::checkRawTokens(const Tokenizer &tokenizer)
 
 void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 {
+    mSettings.library.bugHunting = mSettings.bugHunting;
     if (mSettings.bugHunting)
         ExprEngine::runChecks(this, &tokenizer, &mSettings);
     else {
@@ -1259,7 +1262,7 @@ Settings &CppCheck::settings()
     return mSettings;
 }
 
-void CppCheck::tooManyConfigsError(const std::string &file, const std::size_t numberOfConfigurations)
+void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfConfigurations)
 {
     if (!mSettings.isEnabled(Settings::INFORMATION) && !mTooManyConfigs)
         return;

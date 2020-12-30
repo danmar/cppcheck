@@ -3690,7 +3690,7 @@ void TemplateSimplifier::simplifyTemplates(
         if (mTemplateDeclarations.empty() && mTemplateForwardDeclarations.empty())
             return;
 
-        if (passCount != 0 && mSettings->debugtemplate && mSettings->debugnormal) {
+        if (mSettings->debugtemplate && mSettings->debugnormal) {
             std::string title("Template Simplifier pass " + std::to_string(passCount + 1));
             mTokenList.front()->printOut(title.c_str(), mTokenList.getFiles());
         }
