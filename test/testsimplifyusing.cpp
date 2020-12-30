@@ -76,6 +76,7 @@ private:
         TEST_CASE(simplifyUsing9518);
         TEST_CASE(simplifyUsing9757);
         TEST_CASE(simplifyUsing10008);
+        TEST_CASE(simplifyUsing10054);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -662,6 +663,205 @@ private:
                            "const std :: vector < int > arr ; "
                            "}";
         ASSERT_EQUALS(exp, tok(code, false));
+    }
+
+    void simplifyUsing10054() { // debug: Executable scope 'x' with unknown function.
+        {
+            // original example: using "namespace external::ns1;" but redundant qualification
+            const char code[] = "namespace external {\n"
+                                "    namespace ns1 {\n"
+                                "        template <int size> struct B { };\n"
+                                "        using V = B<sizeof(bool)>;\n"
+                                "    }\n"
+                                "}\n"
+                                "namespace ns {\n"
+                                "    struct A {\n"
+                                "        void f(external::ns1::V);\n"
+                                "    };\n"
+                                "}\n"
+                                "using namespace external::ns1;\n"
+                                "namespace ns {\n"
+                                "    void A::f(external::ns1::V) {}\n"
+                                "}";
+            const char exp[]  = "namespace external { "
+                                "namespace ns1 { "
+                                "struct B<1> ; "
+                                "} "
+                                "} "
+                                "namespace ns { "
+                                "struct A { "
+                                "void f ( external :: ns1 :: B<1> ) ; "
+                                "} ; "
+                                "} "
+                                "using namespace external :: ns1 ; "
+                                "namespace ns { "
+                                "void A :: f ( external :: ns1 :: B<1> ) { } "
+                                "} "
+                                "struct external :: ns1 :: B<1> { } ;";
+            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            // no using "namespace external::ns1;"
+            const char code[] = "namespace external {\n"
+                                "    namespace ns1 {\n"
+                                "        template <int size> struct B { };\n"
+                                "        using V = B<sizeof(bool)>;\n"
+                                "    }\n"
+                                "}\n"
+                                "namespace ns {\n"
+                                "    struct A {\n"
+                                "        void f(external::ns1::V);\n"
+                                "    };\n"
+                                "}\n"
+                                "namespace ns {\n"
+                                "    void A::f(external::ns1::V) {}\n"
+                                "}";
+            const char exp[]  = "namespace external { "
+                                "namespace ns1 { "
+                                "struct B<1> ; "
+                                "} "
+                                "} "
+                                "namespace ns { "
+                                "struct A { "
+                                "void f ( external :: ns1 :: B<1> ) ; "
+                                "} ; "
+                                "} "
+                                "namespace ns { "
+                                "void A :: f ( external :: ns1 :: B<1> ) { } "
+                                "} "
+                                "struct external :: ns1 :: B<1> { } ;";
+            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            // using "namespace external::ns1;" without redundant qualification
+            const char code[] = "namespace external {\n"
+                                "    namespace ns1 {\n"
+                                "        template <int size> struct B { };\n"
+                                "        using V = B<sizeof(bool)>;\n"
+                                "    }\n"
+                                "}\n"
+                                "namespace ns {\n"
+                                "    struct A {\n"
+                                "        void f(external::ns1::V);\n"
+                                "    };\n"
+                                "}\n"
+                                "using namespace external::ns1;\n"
+                                "namespace ns {\n"
+                                "    void A::f(V) {}\n"
+                                "}";
+            const char exp[]  = "namespace external { "
+                                "namespace ns1 { "
+                                "struct B<1> ; "
+                                "} "
+                                "} "
+                                "namespace ns { "
+                                "struct A { "
+                                "void f ( external :: ns1 :: B<1> ) ; "
+                                "} ; "
+                                "} "
+                                "using namespace external :: ns1 ; "
+                                "namespace ns { "
+                                "void A :: f ( external :: ns1 :: B<1> ) { } "
+                                "} "
+                                "struct external :: ns1 :: B<1> { } ;";
+            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            // using "namespace external::ns1;" without redundant qualification on declaration and definition
+            const char code[] = "namespace external {\n"
+                                "    namespace ns1 {\n"
+                                "        template <int size> struct B { };\n"
+                                "        using V = B<sizeof(bool)>;\n"
+                                "    }\n"
+                                "}\n"
+                                "using namespace external::ns1;\n"
+                                "namespace ns {\n"
+                                "    struct A {\n"
+                                "        void f(V);\n"
+                                "    };\n"
+                                "}\n"
+                                "namespace ns {\n"
+                                "    void A::f(V) {}\n"
+                                "}";
+            const char exp[]  = "namespace external { "
+                                "namespace ns1 { "
+                                "struct B<1> ; "
+                                "} "
+                                "} "
+                                "using namespace external :: ns1 ; "
+                                "namespace ns { "
+                                "struct A { "
+                                "void f ( external :: ns1 :: B<1> ) ; "
+                                "} ; "
+                                "} "
+                                "namespace ns { "
+                                "void A :: f ( external :: ns1 :: B<1> ) { } "
+                                "} "
+                                "struct external :: ns1 :: B<1> { } ;";
+            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            const char code[] = "namespace external {\n"
+                                "    template <int size> struct B { };\n"
+                                "    namespace ns1 {\n"
+                                "        using V = B<sizeof(bool)>;\n"
+                                "    }\n"
+                                "}\n"
+                                "namespace ns {\n"
+                                "    struct A {\n"
+                                "        void f(external::ns1::V);\n"
+                                "    };\n"
+                                "}\n"
+                                "namespace ns {\n"
+                                "    void A::f(external::ns1::V) {}\n"
+                                "}";
+            const char exp[]  = "namespace external { "
+                                "struct B<1> ; "
+                                "} "
+                                "namespace ns { "
+                                "struct A { "
+                                "void f ( external :: B<1> ) ; "
+                                "} ; "
+                                "} "
+                                "namespace ns { "
+                                "void A :: f ( external :: B<1> ) { } "
+                                "} "
+                                "struct external :: B<1> { } ;";
+            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            const char code[] = "template <int size> struct B { };\n"
+                                "namespace external {\n"
+                                "    namespace ns1 {\n"
+                                "        using V = B<sizeof(bool)>;\n"
+                                "    }\n"
+                                "}\n"
+                                "namespace ns {\n"
+                                "    struct A {\n"
+                                "        void f(external::ns1::V);\n"
+                                "    };\n"
+                                "}\n"
+                                "namespace ns {\n"
+                                "    void A::f(external::ns1::V) {}\n"
+                                "}";
+            const char exp[]  = "struct B<1> ; "
+                                "namespace ns { "
+                                "struct A { "
+                                "void f ( B<1> ) ; "
+                                "} ; "
+                                "} "
+                                "namespace ns { "
+                                "void A :: f ( B<1> ) { } "
+                                "} "
+                                "struct B<1> { } ;";
+            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 };
 
