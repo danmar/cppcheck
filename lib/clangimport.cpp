@@ -22,10 +22,12 @@
 #include "tokenize.h"
 #include "utils.h"
 
+#include <cstring>
 #include <algorithm>
-#include <memory>
-#include <vector>
 #include <iostream>
+#include <memory>
+#include <stack>
+#include <vector>
 
 static const std::string AccessSpecDecl = "AccessSpecDecl";
 static const std::string ArraySubscriptExpr = "ArraySubscriptExpr";
@@ -110,8 +112,8 @@ static std::vector<std::string> splitString(const std::string &line)
     std::string::size_type pos1 = line.find_first_not_of(" ");
     while (pos1 < line.size()) {
         std::string::size_type pos2;
-        if (line[pos1] == '*') {
-            ret.push_back("*");
+        if (std::strchr("*()", line[pos1])) {
+            ret.push_back(line.substr(pos1,1));
             pos1 = line.find_first_not_of(" ", pos1 + 1);
             continue;
         }
@@ -509,8 +511,21 @@ const ::Type * clangimport::AstNode::addTypeTokens(TokenList *tokenList, const s
     } else
         type = unquote(str);
 
-    for (const std::string &s: splitString(type))
-        addtoken(tokenList, s, false);
+    if (type.find("(*)(") != std::string::npos) {
+        type.erase(type.find("(*)("));
+        type += "*";
+    }
+
+    std::stack<Token *> lpar;
+    for (const std::string &s: splitString(type)) {
+        Token *tok = addtoken(tokenList, s, false);
+        if (tok->str() == "(")
+            lpar.push(tok);
+        else if (tok->str() == ")") {
+            Token::createMutualLinks(tok, lpar.top());
+            lpar.pop();
+        }
+    }
 
     // Set Type
     if (!scope) {
@@ -1379,20 +1394,19 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
 Token * clangimport::AstNode::createTokensVarDecl(TokenList *tokenList)
 {
     const std::string addr = mExtTokens.front();
-    const Token *startToken = nullptr;
     if (contains(mExtTokens, "static"))
-        startToken = addtoken(tokenList, "static");
+        addtoken(tokenList, "static");
     int typeIndex = mExtTokens.size() - 1;
     while (typeIndex > 1 && std::isalpha(mExtTokens[typeIndex][0]))
         typeIndex--;
     const std::string type = mExtTokens[typeIndex];
     const std::string name = mExtTokens[typeIndex - 1];
+    const Token *startToken = tokenList->back();
     const ::Type *recordType = addTypeTokens(tokenList, type);
-    if (!startToken && tokenList->back()) {
-        startToken = tokenList->back();
-        while (Token::Match(startToken->previous(), "%type%|*|&|&&"))
-            startToken = startToken->previous();
-    }
+    if (!startToken)
+        startToken = tokenList->front();
+    else if (startToken->str() != "static")
+        startToken = startToken->next();
     Token *vartok1 = addtoken(tokenList, name);
     Scope *scope = const_cast<Scope *>(tokenList->back()->scope());
     scope->varlist.push_back(Variable(vartok1, unquote(type), startToken, vartok1->previous(), 0, scope->defaultAccess(), recordType, scope));

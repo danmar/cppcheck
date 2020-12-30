@@ -104,6 +104,7 @@ private:
         TEST_CASE(vardecl4);
         TEST_CASE(vardecl5);
         TEST_CASE(vardecl6);
+        TEST_CASE(vardecl7);
         TEST_CASE(whileStmt1);
         TEST_CASE(whileStmt2);
 
@@ -990,6 +991,11 @@ private:
         const char clang[] = "`-VarDecl 0x278e170 <1.c:1:1, col:16> col:12 x 'int' static cinit\n"
                              "  `-IntegerLiteral 0x278e220 <col:16> 'int' 3";
         ASSERT_EQUALS("static int x@1 = 3 ;", parse(clang));
+    }
+
+    void vardecl7() {
+        const char clang[] = "`-VarDecl 0x2071f20 <1.cpp:2:1, col:23> col:9 start 'void *(*)(void *)'";
+        ASSERT_EQUALS("void * * start@1 ;", parse(clang));
     }
 
     void whileStmt1() {
