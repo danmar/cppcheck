@@ -3400,9 +3400,11 @@ void SymbolDatabase::printOut(const char *title) const
 
         if (scope->type == Scope::eEnum) {
             std::cout << "    enumType: ";
-            if (scope->enumType)
-                scope->enumType->stringify(std::cout, false, true, false);
-            else
+            if (scope->enumType) {
+                std::string s;
+                scope->enumType->stringify(s, false, true, false);
+                std::cout << s;
+            } else
                 std::cout << "int";
             std::cout << std::endl;
             std::cout << "    enumClass: " << scope->enumClass << std::endl;
