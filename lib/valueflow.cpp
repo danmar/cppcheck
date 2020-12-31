@@ -4262,7 +4262,14 @@ struct ConditionHandler {
             if (Token::Match(top, "%assign%"))
                 return;
 
-            if ((Token::simpleMatch(tok->astParent(), "?") || Token::Match(top->previous(), "if (")) && tok->astParent()->isExpandedMacro()) {
+            if (Token::simpleMatch(tok->astParent(), "?") && tok->astParent()->isExpandedMacro()) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok, "variable '" + cond.vartok->expressionString() + "', condition is defined in macro");
+                return;
+            }
+
+            // if,macro => bailout
+            if (Token::simpleMatch(top->previous(), "if (") && top->previous()->isExpandedMacro()) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok, "variable '" + cond.vartok->expressionString() + "', condition is defined in macro");
                 return;
@@ -4291,13 +4298,6 @@ struct ConditionHandler {
                             bailout(tokenlist, errorLogger, tok, "variable '" + cond.vartok->expressionString() + "' used in loop");
                         return;
                     }
-                }
-
-                // if,macro => bailout
-                else if (Token::simpleMatch(top->previous(), "if (") && top->previous()->isExpandedMacro()) {
-                    if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok, "variable '" + cond.vartok->expressionString() + "', condition is defined in macro");
-                    return;
                 }
             }
 
