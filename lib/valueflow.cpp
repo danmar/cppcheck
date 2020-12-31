@@ -4181,7 +4181,7 @@ struct ConditionHandler {
                          const Token* exprTok,
                          const std::list<ValueFlow::Value>& values,
                          TokenList* tokenlist,
-                         const Settings* settings) const {}
+                         const Settings* settings) const = 0;
 
     virtual Condition parse(const Token* tok, const Settings* settings) const = 0;
 
@@ -5931,6 +5931,20 @@ static Analyzer::Action valueFlowContainerForward(Token* tok,
     return valueFlowContainerForward(tok, endOfVarScope, var, std::move(value), tokenlist);
 }
 
+static void valueFlowContainerReverse(Token* tok,
+                             const Token* const varToken,
+                             const std::list<ValueFlow::Value>& values,
+                             TokenList* tokenlist,
+                             const Settings* settings)
+{
+    const Variable* var = varToken->variable();
+    auto aliases = getAliasesFromValues(values);
+    for(const ValueFlow::Value& value:values) {
+        ContainerVariableAnalyzer a(var, value, aliases, tokenlist);
+        valueFlowGenericReverse(tok, a, settings);
+    }
+}
+
 static bool isContainerSizeChanged(const Token *tok, int depth)
 {
     if (!tok)
@@ -6274,6 +6288,19 @@ struct ContainerConditionHandler : ConditionHandler {
         if (!var)
             return false;
         return valueFlowContainerForward(start->next(), stop, var, values.front(), tokenlist).isModified();
+    }
+
+    virtual void reverse(Token* start,
+                         const Token* exprTok,
+                         const std::list<ValueFlow::Value>& values,
+                         TokenList* tokenlist,
+                         const Settings* settings) const OVERRIDE 
+    {
+        if (values.empty())
+            return;
+        if (!exprTok->variable())
+            return;
+        return valueFlowContainerReverse(start, exprTok, values, tokenlist, settings);
     }
 
     virtual Condition parse(const Token* tok, const Settings*) const OVERRIDE {
