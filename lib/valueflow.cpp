@@ -4262,6 +4262,12 @@ struct ConditionHandler {
             if (Token::Match(top, "%assign%"))
                 return;
 
+            if ((Token::simpleMatch(tok->astParent(), "?") || Token::Match(top->previous(), "if (")) && tok->astParent()->isExpandedMacro()) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok, "variable '" + cond.vartok->expressionString() + "', condition is defined in macro");
+                return;
+            }
+
             // bailout: for/while-condition, variable is changed in while loop
             if (Token::Match(top->previous(), "for|while (") && Token::simpleMatch(top->link(), ") {")) {
 
@@ -4312,7 +4318,8 @@ struct ConditionHandler {
             }
             if (values.empty())
                 return;
-            reverse(tok, cond.vartok, values, tokenlist, settings);
+            Token* startTok = tok->astParent() ? tok->astParent() : tok->previous();
+            reverse(startTok, cond.vartok, values, tokenlist, settings);
         });
     }
 
