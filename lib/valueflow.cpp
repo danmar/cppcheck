@@ -106,6 +106,7 @@
 #include <set>
 #include <stack>
 #include <tuple>
+#include <unistd.h>
 #include <vector>
 
 static void bailoutInternal(const std::string& type, TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what, const std::string &file, int line, const std::string &function)
@@ -2636,6 +2637,28 @@ static void valueFlowReverse(TokenList* tokenlist,
     }
 }
 
+static void valueFlowReverse(Token* tok,
+                             const Token* const varToken,
+                             const std::list<ValueFlow::Value>& values,
+                             TokenList* tokenlist,
+                             const Settings* settings)
+{
+    const Variable* var = varToken->variable();
+    ValuePtr<Analyzer> a;
+    if (var) {
+        auto aliases = getAliasesFromValues(values);
+        for (const ValueFlow::Value& v : values) {
+            VariableAnalyzer a(var, v, aliases, tokenlist);
+            valueFlowGenericReverse(tok, a, settings);
+        }
+    } else {
+        for (const ValueFlow::Value& v : values) {
+            ExpressionAnalyzer a(varToken, v, tokenlist);
+            valueFlowGenericReverse(tok, a, settings);
+        }
+    }
+}
+
 static int getArgumentPos(const Variable *var, const Function *f)
 {
     auto arg_it = std::find_if(f->argumentList.begin(), f->argumentList.end(), [&](const Variable &v) {
@@ -4152,6 +4175,12 @@ struct ConditionHandler {
                          TokenList* tokenlist,
                          const Settings* settings) const = 0;
 
+    virtual void reverse(Token* start,
+                         const Token* exprTok,
+                         const std::list<ValueFlow::Value>& values,
+                         TokenList* tokenlist,
+                         const Settings* settings) const {}
+
     virtual Condition parse(const Token* tok, const Settings* settings) const = 0;
 
     void traverseCondition(
@@ -4205,6 +4234,77 @@ struct ConditionHandler {
                 f(cond, tok, scope, vars);
             }
         }
+    }
+
+    void beforeCondition(TokenList* tokenlist,
+                        SymbolDatabase* symboldatabase,
+                        ErrorLogger* errorLogger,
+                        const Settings* settings) const {
+        traverseCondition(
+            tokenlist,
+            symboldatabase,
+            errorLogger,
+            settings,
+        [&](const Condition& cond, Token* tok, const Scope* scope, const std::vector<const Variable*>& vars) {
+            if (cond.vartok->exprId() == 0)
+                return;
+            const Token* top = tok->astTop();
+
+            if (Token::Match(top, "%assign%"))
+                return;
+
+            // bailout: for/while-condition, variable is changed in while loop
+            if (Token::Match(top->previous(), "for|while (") && Token::simpleMatch(top->link(), ") {")) {
+
+                // Variable changed in 3rd for-expression
+                if (Token::simpleMatch(top->previous(), "for (")) {
+                    if (top->astOperand2() && top->astOperand2()->astOperand2() && 
+                        isExpressionChanged(cond.vartok, top->astOperand2()->astOperand2(), top->link(), settings, tokenlist->isCPP())) {
+                        if (settings->debugwarnings)
+                            bailout(tokenlist, errorLogger, tok, "variable '" + cond.vartok->expressionString() + "' used in loop");
+                        return;
+                    }
+                }
+
+                // Variable changed in loop code
+                if (Token::Match(top->previous(), "for|while (")) {
+                    const Token * const start = top->link()->next();
+                    const Token * const end   = start->link();
+
+                    if (isExpressionChanged(cond.vartok, start,end,settings, tokenlist->isCPP())) {
+                        if (settings->debugwarnings)
+                            bailout(tokenlist, errorLogger, tok, "variable '" + cond.vartok->expressionString() + "' used in loop");
+                        return;
+                    }
+                }
+
+                // if,macro => bailout
+                else if (Token::simpleMatch(top->previous(), "if (") && top->previous()->isExpandedMacro()) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist, errorLogger, tok, "variable '" + cond.vartok->expressionString() + "', condition is defined in macro");
+                    return;
+                }
+            }
+
+
+            std::list<ValueFlow::Value> values = cond.true_values;
+            if (cond.true_values != cond.false_values)
+                values.insert(values.end(), cond.false_values.begin(), cond.false_values.end());
+            
+            // extra logic for unsigned variables 'i>=1' => possible value can also be 0
+            if (Token::Match(tok, "<|>")) {
+                values.remove_if([](const ValueFlow::Value& v) {
+                    if (v.isIntValue())
+                        return v.intvalue != 0;
+                    return false;
+                });
+                if (cond.vartok->valueType() && cond.vartok->valueType()->sign != ValueType::Sign::UNSIGNED)
+                    return;
+            }
+            if (values.empty())
+                return;
+            reverse(tok, cond.vartok, values, tokenlist, settings);
+        });
     }
 
     void afterCondition(TokenList* tokenlist,
@@ -4428,6 +4528,7 @@ static void valueFlowCondition(const ValuePtr<ConditionHandler>& handler,
                                ErrorLogger* errorLogger,
                                const Settings* settings)
 {
+    handler->beforeCondition(tokenlist, symboldatabase, errorLogger, settings);
     handler->afterCondition(tokenlist, symboldatabase, errorLogger, settings);
 }
 
@@ -4439,6 +4540,15 @@ struct SimpleConditionHandler : ConditionHandler {
                          TokenList* tokenlist,
                          const Settings* settings) const OVERRIDE {
         return valueFlowForward(start->next(), stop, exprTok, values, tokenlist, settings).isModified();
+    }
+
+    virtual void reverse(Token* start,
+                         const Token* exprTok,
+                         const std::list<ValueFlow::Value>& values,
+                         TokenList* tokenlist,
+                         const Settings* settings) const OVERRIDE 
+    {
+        return valueFlowReverse(start, exprTok, values, tokenlist, settings);
     }
 
     virtual Condition parse(const Token* tok, const Settings*) const OVERRIDE {
