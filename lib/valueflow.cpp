@@ -1691,106 +1691,6 @@ static bool isConditionKnown(const Token* tok, bool then)
     return (parent && parent->str() == "(");
 }
 
-static void valueFlowBeforeCondition(TokenList *tokenlist, SymbolDatabase *symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
-{
-    for (const Scope * scope : symboldatabase->functionScopes) {
-        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
-            MathLib::bigint num = 0;
-            const Token *vartok = nullptr;
-            if (tok->isComparisonOp() && tok->astOperand1() && tok->astOperand2()) {
-                if (tok->astOperand1()->isName() && tok->astOperand2()->hasKnownIntValue()) {
-                    vartok = tok->astOperand1();
-                    num = tok->astOperand2()->values().front().intvalue;
-                } else if (tok->astOperand1()->hasKnownIntValue() && tok->astOperand2()->isName()) {
-                    vartok = tok->astOperand2();
-                    num = tok->astOperand1()->values().front().intvalue;
-                } else {
-                    continue;
-                }
-            } else if (Token::Match(tok->previous(), "if|while ( %name% %oror%|&&|)") ||
-                       Token::Match(tok, "%oror%|&& %name% %oror%|&&|)")) {
-                vartok = tok->next();
-                num = 0;
-            } else if (Token::simpleMatch(tok, "!") && Token::Match(tok->astOperand1(), "%name%")) {
-                vartok = tok->astOperand1();
-                num = 0;
-            } else if (Token::simpleMatch(tok->astParent(), "?") && Token::Match(tok, "%name%")) {
-                vartok = tok;
-                num = 0;
-            } else {
-                continue;
-            }
-
-            int varid = vartok->varId();
-            const Variable * const var = vartok->variable();
-
-            if (varid == 0U || !var)
-                continue;
-
-            if (Token::simpleMatch(tok->astParent(), "?") && tok->astParent()->isExpandedMacro()) {
-                if (settings->debugwarnings)
-                    bailout(tokenlist, errorLogger, tok, "variable " + var->name() + ", condition is defined in macro");
-                continue;
-            }
-
-            // bailout: for/while-condition, variable is changed in while loop
-            for (const Token *tok2 = tok; tok2; tok2 = tok2->astParent()) {
-                if (tok2->astParent() || tok2->str() != "(" || !Token::simpleMatch(tok2->link(), ") {"))
-                    continue;
-
-                // Variable changed in 3rd for-expression
-                if (Token::simpleMatch(tok2->previous(), "for (")) {
-                    if (tok2->astOperand2() && tok2->astOperand2()->astOperand2() && isVariableChanged(tok2->astOperand2()->astOperand2(), tok2->link(), varid, var->isGlobal(), settings, tokenlist->isCPP())) {
-                        varid = 0U;
-                        if (settings->debugwarnings)
-                            bailout(tokenlist, errorLogger, tok, "variable " + var->name() + " used in loop");
-                    }
-                }
-
-                // Variable changed in loop code
-                if (Token::Match(tok2->previous(), "for|while (")) {
-                    const Token * const start = tok2->link()->next();
-                    const Token * const end   = start->link();
-
-                    if (isVariableChanged(start,end,varid,var->isGlobal(),settings, tokenlist->isCPP())) {
-                        varid = 0U;
-                        if (settings->debugwarnings)
-                            bailout(tokenlist, errorLogger, tok, "variable " + var->name() + " used in loop");
-                    }
-                }
-
-                // if,macro => bailout
-                else if (Token::simpleMatch(tok2->previous(), "if (") && tok2->previous()->isExpandedMacro()) {
-                    varid = 0U;
-                    if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok, "variable " + var->name() + ", condition is defined in macro");
-                }
-            }
-            if (varid == 0U)
-                continue;
-
-            // extra logic for unsigned variables 'i>=1' => possible value can also be 0
-            if (Token::Match(tok, "<|>")) {
-                if (num != 0)
-                    continue;
-                if (var->valueType() && var->valueType()->sign != ValueType::Sign::UNSIGNED)
-                    continue;
-            }
-            ValueFlow::Value val(tok, num);
-            val.varId = varid;
-            ValueFlow::Value val2;
-            if (num==1U && Token::Match(tok,"<=|>=")) {
-                if (var->isUnsigned()) {
-                    val2 = ValueFlow::Value(tok,0);
-                    val2.varId = varid;
-                }
-            }
-            Token* startTok = tok->astParent() ? tok->astParent() : tok->previous();
-            valueFlowReverse(tokenlist, startTok, vartok, val, val2, errorLogger, settings);
-        }
-    }
-}
-
 static void valueFlowAST(Token *tok, nonneg int varid, const ValueFlow::Value &value, const Settings *settings)
 {
     if (!tok)
@@ -6777,7 +6677,6 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowRightShift(tokenlist, settings);
         valueFlowOppositeCondition(symboldatabase, settings);
         valueFlowTerminatingCondition(tokenlist, symboldatabase, errorLogger, settings);
-        // valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowCondition(SimpleConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings);
         valueFlowInferCondition(tokenlist, settings);
