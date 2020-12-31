@@ -1192,7 +1192,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         createScope(tokenList, Scope::ScopeType::eWhile, body, whiletok);
         return nullptr;
     }
-    throw InternalError(tokenList->back(), "ClangImport::AstNode::createTokens: Unhandled nodeType: nodeType");
+    return addtoken(tokenList, "?" + nodeType + "?");
 }
 
 Token * clangimport::AstNode::createTokensCall(TokenList *tokenList)
