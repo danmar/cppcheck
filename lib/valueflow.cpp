@@ -4149,7 +4149,7 @@ struct ConditionHandler {
             symboldatabase,
             errorLogger,
             settings,
-        [&](const Condition& cond, Token* tok, const Scope* scope, const std::vector<const Variable*>& vars) {
+        [&](const Condition& cond, Token* tok, const Scope*, const std::vector<const Variable*>&) {
             if (cond.vartok->exprId() == 0)
                 return;
 
