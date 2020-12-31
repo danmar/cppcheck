@@ -5697,28 +5697,6 @@ static bool isContainerSizeChangedByFunction(const Token *tok, int depth = 20)
     return (isChanged || inconclusive);
 }
 
-static void valueFlowContainerReverse(Token *tok, nonneg int containerId, const ValueFlow::Value &value, const Settings *settings)
-{
-    while (nullptr != (tok = tok->previous())) {
-        if (Token::Match(tok, "[{}]"))
-            break;
-        if (Token::Match(tok, "return|break|continue"))
-            break;
-        if (tok->varId() != containerId)
-            continue;
-        if (Token::Match(tok, "%name% ="))
-            break;
-        if (isContainerSizeChangedByFunction(tok))
-            break;
-        if (!tok->valueType() || !tok->valueType()->container)
-            break;
-        if (Token::Match(tok, "%name% . %name% (") && tok->valueType()->container->getAction(tok->strAt(2)) != Library::Container::Action::NO_ACTION)
-            break;
-        if (!hasContainerSizeGuard(tok, containerId))
-            setTokenValue(tok, value, settings);
-    }
-}
-
 struct ContainerVariableAnalyzer : VariableAnalyzer {
     ContainerVariableAnalyzer() : VariableAnalyzer() {}
 
@@ -6169,7 +6147,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
             value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
 
             // possible value before condition
-            valueFlowContainerReverse(const_cast<Token *>(scope.classDef), tok->varId(), value, settings);
+            valueFlowContainerReverse(const_cast<Token *>(scope.classDef), tok, {value}, tokenlist, settings);
         }
     }
 }
