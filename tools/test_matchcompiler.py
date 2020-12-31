@@ -39,6 +39,10 @@ class MatchCompilerTest(unittest.TestCase):
         output = self.mc._replaceTokenMatch(input, 0, "foo.cpp")
         self.assertEqual(output, 'if (match1(tok)) {')
 
+        input = 'if (Token::simpleMatch(tok, "foobar")) {'
+        output = self.mc._replaceTokenMatch(input, 0, "foo.cpp")
+        self.assertEqual(output, 'if (match1(tok)) {')
+
         input = 'if (Token::Match(tok->next()->next(), "foobar %type% %num%")) {'
         output = self.mc._replaceTokenMatch(input, 0, "foo.cpp")
         self.assertEqual(output, 'if (match2(tok->next()->next())) {')
@@ -59,6 +63,25 @@ class MatchCompilerTest(unittest.TestCase):
         output = self.mc._replaceTokenMatch(input, 0, "foo.cpp")
         self.assertEqual(
             output, 'if (Token::Match(tok, "extern \"C\" " + varname)) {')
+
+        # test that multiple patterns on the same line are replaced
+        input = 'if (Token::Match(tok, "foo") && Token::Match(tok->next(), "baz")) {'
+        output = self.mc._replaceTokenMatch(input, 0, "foo.cpp")
+        self.assertEqual(output, 'if (match4(tok) && match5(tok->next())) {')
+
+        # test that second pattern is replaced, even if there is a bailout on the first pattern
+        input = 'if (Token::Match(tok, foo) && Token::Match(tok->next(), "foobaz")) {'
+        output = self.mc._replaceTokenMatch(input, 0, "foo.cpp")
+        self.assertEqual(output, 'if (Token::Match(tok, foo) && match6(tok->next())) {')
+
+        # test mixing Match and simpleMatch on the same line
+        input = 'if (Token::Match(tok, "a") && Token::simpleMatch(tok->next(), "b")) {'
+        output = self.mc._replaceTokenMatch(input, 0, "foo.cpp")
+        self.assertEqual(output, 'if (match7(tok) && match8(tok->next())) {')
+
+        input = 'if (Token::simpleMatch(tok, "a") && Token::Match(tok->next(), "b")) {'
+        output = self.mc._replaceTokenMatch(input, 0, "foo.cpp")
+        self.assertEqual(output, 'if (match7(tok) && match8(tok->next())) {')
 
     def test_replaceTokenMatchWithVarId(self):
         input = 'if (Token::Match(tok, "foobar %varid%", 123)) {'
