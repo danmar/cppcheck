@@ -328,6 +328,7 @@ unsigned int CppCheck::check(const std::string &path)
         const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "");
         const std::string clangcmd = analyzerInfo + ".clang-cmd";
         const std::string clangStderr = analyzerInfo + ".clang-stderr";
+        const std::string clangAst = analyzerInfo + ".clang-ast";
         std::string exe = mSettings.clangExecutable;
 #ifdef _WIN32
         // append .exe if it is not a path
@@ -377,15 +378,27 @@ unsigned int CppCheck::check(const std::string &path)
                 return 0;
         }
 
-        //std::cout << "Checking Clang ast dump:\n" << result2.second << std::endl;
-        std::istringstream ast(output2);
-        Tokenizer tokenizer(&mSettings, this);
-        tokenizer.list.appendFileIfNew(path);
-        clangimport::parseClangAstDump(&tokenizer, ast);
-        ValueFlow::setValues(&tokenizer.list, const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase()), this, &mSettings);
-        if (mSettings.debugnormal)
-            tokenizer.printDebugOutput(1);
-        checkNormalTokens(tokenizer);
+        if (!mSettings.buildDir.empty()) {
+            std::ofstream fout(clangAst);
+            fout << output2 << std::endl;
+        }
+
+        try {
+            std::istringstream ast(output2);
+            Tokenizer tokenizer(&mSettings, this);
+            tokenizer.list.appendFileIfNew(path);
+            clangimport::parseClangAstDump(&tokenizer, ast);
+            ValueFlow::setValues(&tokenizer.list, const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase()), this, &mSettings);
+            if (mSettings.debugnormal)
+                tokenizer.printDebugOutput(1);
+            checkNormalTokens(tokenizer);
+        } catch (const InternalError &e) {
+            internalError(path, e.errorMessage);
+            mExitCode = 1; // e.g. reflect a syntax error
+        } catch (const std::exception &e) {
+            internalError(path, e.what());
+        }
+
         return mExitCode;
     }
 
