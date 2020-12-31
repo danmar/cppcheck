@@ -1519,7 +1519,7 @@ private:
                 "    M;\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
-                                          "[test.cpp:4]: (debug) valueflow.cpp:1260:valueFlowBeforeCondition bailout: variable x, condition is defined in macro\n", errout.str());
+                                          "[test.cpp:4]: (debug) valueflow.cpp:1260:operator() bailout: variable 'x', condition is defined in macro\n", errout.str());
 
         bailout("#define FREE(obj) ((obj) ? (free((char *) (obj)), (obj) = 0) : 0)\n" // #8349
                 "void f(int *x) {\n"
@@ -1527,7 +1527,7 @@ private:
                 "    FREE(x);\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
-                                          "[test.cpp:4]: (debug) valueflow.cpp:1260:valueFlowBeforeCondition bailout: variable x, condition is defined in macro\n", errout.str());
+                                          "[test.cpp:4]: (debug) valueflow.cpp:1260:operator() bailout: variable 'x', condition is defined in macro\n", errout.str());
     }
 
     void valueFlowBeforeConditionGoto() {
