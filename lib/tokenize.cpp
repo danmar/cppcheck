@@ -4747,11 +4747,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         if (Settings::terminated())
             return false;
 
-        // sometimes the "simplifyTemplates" fail and then unsimplified
-        // function calls etc remain. These have the "wrong" syntax. So
-        // this function will just fix so that the syntax is corrected.
         validate(); // #6847 - invalid code
-        mTemplateSimplifier->cleanupAfterSimplify();
     }
 
     // Simplify pointer to standard types (C only)

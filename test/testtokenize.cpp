@@ -4315,13 +4315,13 @@ private:
     void unsigned3() {
         {
             const char code[] = "; foo<unsigned>();";
-            const char expected[] = "; foo<int> ( ) ;";
+            const char expected[] = "; foo < unsigned int > ( ) ;";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         }
 
         {
             const char code[] = "; foo<unsigned int>();";
-            const char expected[] = "; foo<int> ( ) ;";
+            const char expected[] = "; foo < unsigned int > ( ) ;";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         }
     }
