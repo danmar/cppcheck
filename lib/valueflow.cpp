@@ -109,6 +109,8 @@
 #include <unistd.h>
 #include <vector>
 
+#include <iostream>
+
 static void bailoutInternal(const std::string& type, TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what, const std::string &file, int line, const std::string &function)
 {
     std::list<ErrorMessage::FileLocation> callstack(1, ErrorMessage::FileLocation(tok, tokenlist));
@@ -4202,7 +4204,9 @@ struct ConditionHandler {
                 if (!top)
                     continue;
 
-                if (!Token::Match(top->previous(), "if|while|for (") && !Token::Match(tok->astParent(), "&&|%oror%"))
+                if (!Token::Match(top->previous(), "if|while|for (") && 
+                    !Token::Match(tok->astParent(), "&&|%oror%") && 
+                    !Token::simpleMatch(tok->astParent(), "?"))
                     continue;
 
                 Condition cond = parse(tok, settings);
@@ -4248,6 +4252,11 @@ struct ConditionHandler {
         [&](const Condition& cond, Token* tok, const Scope* scope, const std::vector<const Variable*>& vars) {
             if (cond.vartok->exprId() == 0)
                 return;
+
+            // If condition is known then dont propogate value
+            if (tok->hasKnownIntValue())
+                return;
+
             const Token* top = tok->astTop();
 
             if (Token::Match(top, "%assign%"))
@@ -4317,6 +4326,8 @@ struct ConditionHandler {
             errorLogger,
             settings,
         [&](const Condition& cond, Token* tok, const Scope* scope, const std::vector<const Variable*>& vars) {
+            if (Token::simpleMatch(tok->astParent(), "?"))
+                return;
             const Token* top = tok->astTop();
 
             std::list<ValueFlow::Value> thenValues;
@@ -4570,7 +4581,7 @@ struct SimpleConditionHandler : ConditionHandler {
         if (tok->str() == "!") {
             vartok = tok->astOperand1();
 
-        } else if (tok->astParent() && (Token::Match(tok->astParent(), "%oror%|&&") ||
+        } else if (tok->astParent() && (Token::Match(tok->astParent(), "%oror%|&&|?") ||
                                         Token::Match(tok->astParent()->previous(), "if|while ("))) {
             if (Token::simpleMatch(tok, "="))
                 vartok = tok->astOperand1();
@@ -6732,7 +6743,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowRightShift(tokenlist, settings);
         valueFlowOppositeCondition(symboldatabase, settings);
         valueFlowTerminatingCondition(tokenlist, symboldatabase, errorLogger, settings);
-        valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
+        // valueFlowBeforeCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowCondition(SimpleConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings);
         valueFlowInferCondition(tokenlist, settings);
