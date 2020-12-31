@@ -207,7 +207,7 @@ private:
         TEST_CASE(template162);
         TEST_CASE(template163); // #9685 syntax error
         TEST_CASE(template164); // #9394
-        TEST_CASE(template162); // #10032 syntax error
+        TEST_CASE(template165); // #10032 syntax error
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -997,8 +997,8 @@ private:
     }
 
     void template_unhandled() {
-        // An unhandled template usage should be simplified..
-        ASSERT_EQUALS("x<int> ( ) ;", tok("x<int>();"));
+        // An unhandled template usage should not be simplified..
+        ASSERT_EQUALS("x < int > ( ) ;", tok("x<int>();"));
     }
 
     void template38() { // #4832 - Crash on C++11 right angle brackets

@@ -1702,6 +1702,7 @@ namespace {
         const Token * const bodyStart;
         const Token * const bodyEnd;
         std::set<std::string> usingNamespaces;
+        std::set<std::string> recordTypes;
     };
 
     std::string getScopeName(const std::list<ScopeInfo3> &scopeInfo)
@@ -1778,12 +1779,16 @@ namespace {
             return;
         }
 
+        const bool record = Token::Match(tok, "class|struct|union %name%");
         tok = tok->next();
         std::string classname = tok->str();
         while (Token::Match(tok, "%name% :: %name%")) {
             tok = tok->tokAt(2);
             classname += " :: " + tok->str();
         }
+        // add record type to scope info
+        if (record)
+            scopeInfo->back().recordTypes.insert(classname);
         tok = tok->next();
         if (tok && tok->str() == ":") {
             while (tok && !Token::Match(tok, ";|{"))
@@ -1968,6 +1973,11 @@ bool Tokenizer::simplifyUsing()
 
         // skip template declarations
         if (Token::Match(tok, "template < !!>")) {
+            // add template record type to scope info
+            const Token *end = tok->next()->findClosingBracket();
+            if (end && Token::Match(end->next(), "class|struct|union %name%"))
+                scopeList.back().recordTypes.insert(end->strAt(2));
+
             Token *endToken = TemplateSimplifier::findTemplateDeclarationEnd(tok);
             if (endToken)
                 tok = endToken;
@@ -2088,7 +2098,9 @@ bool Tokenizer::simplifyUsing()
 
             // remove the qualification
             std::string fullScope = scope;
+            std::string removed;
             while (tok1->strAt(-1) == "::") {
+                removed = (tok1->strAt(-2) + " :: ") + removed;
                 if (fullScope == tok1->strAt(-2)) {
                     tok1->deletePrevious();
                     tok1->deletePrevious();
@@ -2220,6 +2232,32 @@ bool Tokenizer::simplifyUsing()
                         substitute = true;
                     }
                 } else {
+                    // add some qualification back if needed
+                    std::string removed1 = removed;
+                    std::string::size_type idx = removed1.rfind(" ::");
+                    if (idx != std::string::npos)
+                        removed1.resize(idx);
+                    if (removed1 == scope && !removed1.empty()) {
+                        for (std::list<ScopeInfo3>::const_reverse_iterator it = scopeList.crbegin(); it != scopeList.crend(); ++it) {
+                            if (it->recordTypes.find(start->str()) != it->recordTypes.end()) {
+                                std::string::size_type spaceIdx = 0;
+                                std::string::size_type startIdx = 0;
+                                while ((spaceIdx = removed1.find(" ", startIdx)) != std::string::npos) {
+                                    tok1->previous()->insertToken(removed1.substr(startIdx, spaceIdx - startIdx).c_str());
+                                    startIdx = spaceIdx + 1;
+                                }
+                                tok1->previous()->insertToken(removed1.substr(startIdx).c_str());
+                                tok1->previous()->insertToken("::");
+                                break;
+                            }
+                            idx = removed1.rfind(" ::");
+                            if (idx == std::string::npos)
+                                break;
+
+                            removed1.resize(idx);
+                        }
+                    }
+
                     // just replace simple type aliases
                     TokenList::copyTokens(tok1, start, usingEnd->previous());
                     tok1->deleteThis();
@@ -4709,11 +4747,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         if (Settings::terminated())
             return false;
 
-        // sometimes the "simplifyTemplates" fail and then unsimplified
-        // function calls etc remain. These have the "wrong" syntax. So
-        // this function will just fix so that the syntax is corrected.
         validate(); // #6847 - invalid code
-        mTemplateSimplifier->cleanupAfterSimplify();
     }
 
     // Simplify pointer to standard types (C only)
