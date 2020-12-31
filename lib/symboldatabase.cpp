@@ -2983,7 +2983,7 @@ void SymbolDatabase::debugMessage(const Token *tok, const std::string &type, con
         const std::list<const Token*> locationList(1, tok);
         const ErrorMessage errmsg(locationList, &mTokenizer->list,
                                   Severity::debug,
-								  type,
+                                  type,
                                   msg,
                                   false);
         if (mErrorLogger)
