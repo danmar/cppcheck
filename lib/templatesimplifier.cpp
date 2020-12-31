@@ -245,58 +245,6 @@ TemplateSimplifier::~TemplateSimplifier()
 {
 }
 
-void TemplateSimplifier::cleanupAfterSimplify()
-{
-    bool goback = false;
-    for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
-        if (goback) {
-            tok = tok->previous();
-            goback = false;
-        }
-        if (tok->str() == "(")
-            tok = tok->link();
-
-        else if (Token::Match(tok, "template < > %name%")) {
-            const Token *end = tok;
-            while (end) {
-                if (end->str() == ";")
-                    break;
-                if (end->str() == "{") {
-                    end = end->link()->next();
-                    break;
-                }
-                if (!Token::Match(end, "%name%|::|<|>|,")) {
-                    end = nullptr;
-                    break;
-                }
-                end = end->next();
-            }
-            if (end) {
-                Token::eraseTokens(tok,end);
-                tok->deleteThis();
-            }
-        }
-
-        else if (Token::Match(tok, "%type% <") &&
-                 (!tok->previous() || tok->previous()->str() == ";")) {
-            const Token *tok2 = tok->tokAt(2);
-            std::string type;
-            while (Token::Match(tok2, "%type%|%num% ,")) {
-                type += tok2->str() + ",";
-                tok2 = tok2->tokAt(2);
-            }
-            if (Token::Match(tok2, "%type%|%num% > (")) {
-                type += tok2->str();
-                tok->str(tok->str() + "<" + type + ">");
-                Token::eraseTokens(tok, tok2->tokAt(2));
-                if (tok == mTokenList.front())
-                    goback = true;
-            }
-        }
-    }
-}
-
-
 void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
 {
     // check for more complicated syntax errors when using templates..

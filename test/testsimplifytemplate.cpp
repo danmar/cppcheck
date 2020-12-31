@@ -997,8 +997,8 @@ private:
     }
 
     void template_unhandled() {
-        // An unhandled template usage should be simplified..
-        ASSERT_EQUALS("x<int> ( ) ;", tok("x<int>();"));
+        // An unhandled template usage should not be simplified..
+        ASSERT_EQUALS("x < int > ( ) ;", tok("x<int>();"));
     }
 
     void template38() { // #4832 - Crash on C++11 right angle brackets
