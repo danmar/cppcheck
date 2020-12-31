@@ -3,7 +3,6 @@
 
 import json
 import os
-import re
 from testutils import cppcheck
 
 def create_unused_function_compile_commands():
