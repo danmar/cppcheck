@@ -1319,7 +1319,7 @@ public:
     /**
      * @brief output a debug message
      */
-    void debugMessage(const Token *tok, const std::string &msg) const;
+    void debugMessage(const Token *tok, const std::string &type, const std::string &msg) const;
 
     void printOut(const char * title = nullptr) const;
     void printVariable(const Variable *var, const char *indent) const;

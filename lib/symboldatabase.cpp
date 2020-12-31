@@ -928,7 +928,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
         if (retry == 100 && mSettings->debugwarnings) {
             for (const Scope& scope : scopeList) {
                 if (scope.isClassOrStruct() && scope.definedType->needInitialization == Type::NeedInitialization::Unknown)
-                    debugMessage(scope.classDef, "SymbolDatabase::SymbolDatabase couldn't resolve all user defined types.");
+                    debugMessage(scope.classDef, "debug", "SymbolDatabase couldn't resolve all user defined types.");
             }
         }
     }
@@ -1744,7 +1744,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
              Token::simpleMatch(tok->linkAt(1), ") {") &&
              (!tok->previous() || Token::Match(tok->previous(), ";|}"))) {
         if (mTokenizer->isC()) {
-            debugMessage(tok, "SymbolDatabase::isFunction found C function '" + tok->str() + "' without a return type.");
+            debugMessage(tok, "debug", "SymbolDatabase::isFunction found C function '" + tok->str() + "' without a return type.");
             *funcStart = tok;
             *argStart = tok->next();
             *declEnd = tok->linkAt(1)->next();
@@ -2977,13 +2977,13 @@ const std::string& Type::name() const
     return emptyString;
 }
 
-void SymbolDatabase::debugMessage(const Token *tok, const std::string &msg) const
+void SymbolDatabase::debugMessage(const Token *tok, const std::string &type, const std::string &msg) const
 {
     if (tok && mSettings->debugwarnings) {
         const std::list<const Token*> locationList(1, tok);
         const ErrorMessage errmsg(locationList, &mTokenizer->list,
                                   Severity::debug,
-                                  "debug",
+								  type,
                                   msg,
                                   false);
         if (mErrorLogger)
@@ -3712,7 +3712,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
                     endTok = nameTok->previous();
 
                     if (hasBody())
-                        symbolDatabase->debugMessage(nameTok, "Function::addArguments found argument \'" + nameTok->str() + "\' with varid 0.");
+                        symbolDatabase->debugMessage(nameTok, "varid0", "Function::addArguments found argument \'" + nameTok->str() + "\' with varid 0.");
                 } else
                     endTok = typeTok;
             } else
@@ -4140,7 +4140,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
 
         if (vartok->varId() == 0) {
             if (!vartok->isBoolean())
-                check->debugMessage(vartok, "Scope::checkVariable found variable \'" + vartok->str() + "\' with varid 0.");
+                check->debugMessage(vartok, "varid0", "Scope::checkVariable found variable \'" + vartok->str() + "\' with varid 0.");
             return tok;
         }
 
@@ -4933,7 +4933,7 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
                     tok1 = tok1->linkAt(-2)->tokAt(-1);
                 else {
                     if (mSettings->debugwarnings)
-                        debugMessage(tok1->tokAt(-2), "SymbolDatabase::findFunction found '>' without link.");
+                        debugMessage(tok1->tokAt(-2), "debug", "SymbolDatabase::findFunction found '>' without link.");
                     return nullptr;
                 }
             } else
@@ -6344,7 +6344,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
     if (reportDebugWarnings && mSettings->debugwarnings) {
         for (Token *tok = tokens; tok; tok = tok->next()) {
             if (tok->str() == "auto" && !tok->valueType())
-                debugMessage(tok, "auto token with no type.");
+                debugMessage(tok, "debug", "auto token with no type.");
         }
     }
 
