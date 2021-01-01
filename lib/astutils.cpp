@@ -1681,6 +1681,23 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
             return true;
         return false;
     }
+
+    if (indirect > 0)
+    {
+        // check for `*(ptr + 1) = new_value` case
+        parent = tok2->astParent();
+        while (parent && parent->isArithmeticalOp() && parent->isBinaryOp()) {
+            parent = parent->astParent();
+        }
+        if (Token::simpleMatch(parent, "*"))
+        {
+            if (parent->astParent() && parent->astParent()->isAssignmentOp() &&
+                (parent->astParent()->astOperand1() == parent)) {
+                return true;
+            }
+        }
+    }
+
     return false;
 }
 
