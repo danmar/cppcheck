@@ -1201,7 +1201,7 @@ Token * clangimport::AstNode::createTokensCall(TokenList *tokenList)
     Token *f;
     if (nodeType == CXXOperatorCallExpr) {
         firstParam = 2;
-        Token *obj = children[1]->createTokens(tokenList);
+        Token *obj = getChild(1)->createTokens(tokenList);
         Token *dot = addtoken(tokenList, ".");
         Token *op = getChild(0)->createTokens(tokenList);
         dot->astOperand1(obj);
