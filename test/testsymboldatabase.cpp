@@ -395,6 +395,7 @@ private:
         TEST_CASE(findFunction30);
         TEST_CASE(findFunction31);
         TEST_CASE(findFunction32); // C: relax type matching
+        TEST_CASE(findFunction33); // #9885 variadic function
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -6063,6 +6064,129 @@ private:
         ASSERT(foo->function());
         ASSERT(foo->function()->tokenDef);
         ASSERT_EQUALS(1, foo->function()->tokenDef->linenr());
+    }
+
+    void findFunction33() {
+        {
+            GET_SYMBOL_DB("class Base {\n"
+                          "    int i{};\n"
+                          "public:\n"
+                          "    void foo(...) const { bar(); }\n"
+                          "    int bar() const { return i; }\n"
+                          "};\n"
+                          "class Derived : public Base {\n"
+                          "public:\n"
+                          "    void doIt() const {\n"
+                          "        foo();\n"
+                          "    }\n"
+                          "};");
+            (void)db;
+            const Token *foo = Token::findsimplematch(tokenizer.tokens(), "foo ( ) ;");
+            ASSERT(foo);
+            ASSERT(foo->function());
+            ASSERT(foo->function()->tokenDef);
+            ASSERT_EQUALS(4, foo->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("class Base {\n"
+                          "    int i{};\n"
+                          "public:\n"
+                          "    void foo(...) const { bar(); }\n"
+                          "    int bar() const { return i; }\n"
+                          "};\n"
+                          "class Derived : public Base {\n"
+                          "public:\n"
+                          "    void doIt() const {\n"
+                          "        foo(1);\n"
+                          "    }\n"
+                          "};");
+            (void)db;
+            const Token *foo = Token::findsimplematch(tokenizer.tokens(), "foo ( 1 ) ;");
+            ASSERT(foo);
+            ASSERT(foo->function());
+            ASSERT(foo->function()->tokenDef);
+            ASSERT_EQUALS(4, foo->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("class Base {\n"
+                          "    int i{};\n"
+                          "public:\n"
+                          "    void foo(...) const { bar(); }\n"
+                          "    int bar() const { return i; }\n"
+                          "};\n"
+                          "class Derived : public Base {\n"
+                          "public:\n"
+                          "    void doIt() const {\n"
+                          "        foo(1,2);\n"
+                          "    }\n"
+                          "};");
+            (void)db;
+            const Token *foo = Token::findsimplematch(tokenizer.tokens(), "foo ( 1 , 2 ) ;");
+            ASSERT(foo);
+            ASSERT(foo->function());
+            ASSERT(foo->function()->tokenDef);
+            ASSERT_EQUALS(4, foo->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("class Base {\n"
+                          "    int i{};\n"
+                          "public:\n"
+                          "    void foo(int, ...) const { bar(); }\n"
+                          "    int bar() const { return i; }\n"
+                          "};\n"
+                          "class Derived : public Base {\n"
+                          "public:\n"
+                          "    void doIt() const {\n"
+                          "        foo(1);\n"
+                          "    }\n"
+                          "};");
+            (void)db;
+            const Token *foo = Token::findsimplematch(tokenizer.tokens(), "foo ( 1 ) ;");
+            ASSERT(foo);
+            ASSERT(foo->function());
+            ASSERT(foo->function()->tokenDef);
+            ASSERT_EQUALS(4, foo->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("class Base {\n"
+                          "    int i{};\n"
+                          "public:\n"
+                          "    void foo(int,...) const { bar(); }\n"
+                          "    int bar() const { return i; }\n"
+                          "};\n"
+                          "class Derived : public Base {\n"
+                          "public:\n"
+                          "    void doIt() const {\n"
+                          "        foo(1,2);\n"
+                          "    }\n"
+                          "};");
+            (void)db;
+            const Token *foo = Token::findsimplematch(tokenizer.tokens(), "foo ( 1 , 2 ) ;");
+            ASSERT(foo);
+            ASSERT(foo->function());
+            ASSERT(foo->function()->tokenDef);
+            ASSERT_EQUALS(4, foo->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("class Base {\n"
+                          "    int i{};\n"
+                          "public:\n"
+                          "    void foo(int,...) const { bar(); }\n"
+                          "    int bar() const { return i; }\n"
+                          "};\n"
+                          "class Derived : public Base {\n"
+                          "public:\n"
+                          "    void doIt() const {\n"
+                          "        foo(1, 2, 3);\n"
+                          "    }\n"
+                          "};");
+            (void)db;
+            const Token *foo = Token::findsimplematch(tokenizer.tokens(), "foo ( 1 , 2 , 3 ) ;");
+            ASSERT(foo);
+            ASSERT(foo->function());
+            ASSERT(foo->function()->tokenDef);
+            ASSERT_EQUALS(4, foo->function()->tokenDef->linenr());
+        }
     }
 
     void findFunctionContainer() {
