@@ -1722,9 +1722,9 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 if (value.isImpossible())
                     out << "!";
                 if (value.bound == ValueFlow::Value::Bound::Lower)
-                    out << ">";
+                    out << ">=";
                 if (value.bound == ValueFlow::Value::Bound::Upper)
-                    out << "<";
+                    out << "<=";
                 switch (value.valueType) {
                 case ValueFlow::Value::INT:
                     if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
