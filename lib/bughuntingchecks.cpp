@@ -72,7 +72,8 @@ static void arrayIndex(const Token *tok, const ExprEngine::Value &value, ExprEng
                                   bailout);
         }
     }
-    if (value.isLessThan(dataBase, 0)) {
+    bool isUnsigned = tok->valueType() && tok->valueType()->sign == ::ValueType::Sign::UNSIGNED;
+    if (!isUnsigned && value.isLessThan(dataBase, 0)) {
         const bool bailout = (value.type == ExprEngine::ValueType::BailoutValue);
         dataBase->reportError(tok,
                               Severity::SeverityType::error,
