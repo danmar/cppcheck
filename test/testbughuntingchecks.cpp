@@ -158,13 +158,14 @@ private:
                       "[test.cpp:9]: (error) Cannot determine that 'buf[i]' is initialized\n",
                       errout.str());
     }
+
     void arrayIndexOutOfBounds6() {
         check("int buf[5];\n"
               "uint16_t foo(size_t offset) {\n"
               "    uint8_t c = (offset & 0xc0) >> 6;\n"
               "    return 2 * buf[c];\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array index out of bounds, cannot determine that c is less than 5\n", errout.str());
     }
 
     void arrayIndexOutOfBoundsDim1() { // itc test case
