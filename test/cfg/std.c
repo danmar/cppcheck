@@ -4476,9 +4476,6 @@ void invalidPrintfArgType_printf(void)
     printf("%"PRIi16"\n", n);
 }
 
-
-#define AssertAlwaysTrue(C)  if (C) {}
-
 void valueFlow(void)
 {
     const char abc[] = "abc";
@@ -4488,41 +4485,41 @@ void valueFlow(void)
 
     // When adding functions below, please sort alphabetically.
 
-    // TODO cppcheck-suppress knownConditionTrueFalse
-    AssertAlwaysTrue(strlen(abc) == 3);
-    // TODO cppcheck-suppress knownConditionTrueFalse
-    AssertAlwaysTrue(abs(three) == 3);
-    // TODO cppcheck-suppress knownConditionTrueFalse
-    AssertAlwaysTrue(abs(minusThree) == 3);
-    // TODO cppcheck-suppress knownConditionTrueFalse
-    AssertAlwaysTrue(isblank(blank) == 1);
-    // TODO cppcheck-suppress knownConditionTrueFalse
-    AssertAlwaysTrue(isblank(tab) == 1);
-    // TODO cppcheck-suppress knownConditionTrueFalse
-    AssertAlwaysTrue(isblank(c0) == 0);
-    // TODO cppcheck-suppress knownConditionTrueFalse
-    AssertAlwaysTrue(isdigit(c0) == 1);
-    // TODO cppcheck-suppress knownConditionTrueFalse
-    AssertAlwaysTrue(isdigit(ca) == 0);
+    // cppcheck-suppress knownConditionTrueFalse
+    if (strlen(abc) == 3) {}
+    // cppcheck-suppress knownConditionTrueFalse
+    if (abs(three) == 3) {}
+    // cppcheck-suppress knownConditionTrueFalse
+    if (abs(minusThree) == 3) {}
+    // cppcheck-suppress knownConditionTrueFalse
+    if (isblank(blank) == 1) {}
+    // cppcheck-suppress knownConditionTrueFalse
+    if (isblank(tab) == 1) {}
+    // cppcheck-suppress knownConditionTrueFalse
+    if (isblank(c0) == 0) {}
+    // cppcheck-suppress knownConditionTrueFalse
+    if (isdigit(c0) == 1) {}
+    // cppcheck-suppress knownConditionTrueFalse
+    if (isdigit(ca) == 0) {}
 
-    // TODO cppcheck-suppress knownConditionTrueFalse
-    AssertAlwaysTrue(iswblank(wblank) == 1);
-    // TODO cppcheck-suppress knownConditionTrueFalse
-    AssertAlwaysTrue(iswblank(wtab) == 1);
-    // TODO cppcheck-suppress knownConditionTrueFalse
-    AssertAlwaysTrue(iswblank(w0) == 0);
+    // cppcheck-suppress knownConditionTrueFalse
+    if (iswblank(wblank) == 1) {}
+    // cppcheck-suppress knownConditionTrueFalse
+    if (iswblank(wtab) == 1) {}
+    // cppcheck-suppress knownConditionTrueFalse
+    if (iswblank(w0) == 0) {}
 
-    // TODO cppcheck-suppress knownConditionTrueFalse
-    AssertAlwaysTrue(iswdigit(w0) == 0);
-    // TODO cppcheck-suppress knownConditionTrueFalse
-    AssertAlwaysTrue(iswdigit(wtab) == 1);
+    // cppcheck-suppress knownConditionTrueFalse
+    if (iswdigit(w0) == 0) {}
+    // cppcheck-suppress knownConditionTrueFalse
+    if (iswdigit(wtab) == 1) {}
 
-    // TODO cppcheck-suppress knownConditionTrueFalse
-    AssertAlwaysTrue(labs(three) == 3);
-    // TODO cppcheck-suppress knownConditionTrueFalse
-    AssertAlwaysTrue(labs(minusThree) == 3);
-    // TODO cppcheck-suppress knownConditionTrueFalse
-    AssertAlwaysTrue(llabs(three) == 3);
-    // TODO cppcheck-suppress knownConditionTrueFalse
-    AssertAlwaysTrue(llabs(minusThree) == 3);
+    // cppcheck-suppress knownConditionTrueFalse
+    if (labs(three) == 3) {}
+    // cppcheck-suppress knownConditionTrueFalse
+    if (labs(minusThree) == 3) {}
+    // cppcheck-suppress knownConditionTrueFalse
+    if (llabs(three) == 3) {}
+    // cppcheck-suppress knownConditionTrueFalse
+    if (llabs(minusThree) == 3) {}
 }
