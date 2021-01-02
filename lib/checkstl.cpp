@@ -899,7 +899,7 @@ struct InvalidContainerAnalyzer
                 });
                 std::vector<const Token*> args = getArguments(tok);
                 for(Info::Reference& r:result) {
-                    r.errorPath.push_back(epi);
+                    r.errorPath.push_front(epi);
                     const Variable* var = r.tok->variable();
                     if (!var)
                         continue;
@@ -913,8 +913,11 @@ struct InvalidContainerAnalyzer
                 }
             }
         } else if (astIsContainer(tok)) {
-            if (isInvalidMethod(tok))
-                result.push_back(Info::Reference{tok, ErrorPath{}});
+            if (isInvalidMethod(tok)) {
+                ErrorPath ep;
+                ep.emplace_front(tok, "After calling '" + tok->strAt(2) + "', iterators or references to the container's data may be invalid .");
+                result.push_back(Info::Reference{tok, ep});
+            }
         }
         return result;
     }
@@ -1031,8 +1034,8 @@ void CheckStl::invalidContainer()
                 });
                 if (!info.tok)
                     continue;
-                errorPath.insert(errorPath.end(), r.errorPath.begin(), r.errorPath.end());
                 errorPath.insert(errorPath.end(), info.errorPath.begin(), info.errorPath.end());
+                errorPath.insert(errorPath.end(), r.errorPath.begin(), r.errorPath.end());
                 if (v) {
                     invalidContainerError(info.tok, r.tok, v, errorPath);
                 } else {
@@ -1103,8 +1106,6 @@ void CheckStl::invalidContainerLoopError(const Token *tok, const Token * loopTok
 void CheckStl::invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val, ErrorPath errorPath)
 {
     const bool inconclusive = val ? val->isInconclusive() : false;
-    std::string method = contTok ? contTok->strAt(2) : "erase";
-    errorPath.emplace_back(contTok, "After calling '" + method + "', iterators or references to the container's data may be invalid .");
     if (val)
         errorPath.insert(errorPath.begin(), val->errorPath.begin(), val->errorPath.end());
     std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
@@ -1114,10 +1115,7 @@ void CheckStl::invalidContainerError(const Token *tok, const Token * contTok, co
 
 void CheckStl::invalidContainerReferenceError(const Token* tok, const Token* contTok, ErrorPath errorPath)
 {
-    std::string method = contTok ? contTok->strAt(2) : "erase";
     std::string name = contTok ? contTok->expressionString() : "x";
-    errorPath.emplace_back(
-        contTok, "After calling '" + method + "', iterators or references to the container's data may be invalid .");
     std::string msg = "Reference to " + name;
     errorPath.emplace_back(tok, "");
     reportError(errorPath, Severity::error, "invalidContainerReference", msg + " that may be invalid.", CWE664, false);
