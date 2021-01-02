@@ -877,7 +877,7 @@ struct InvalidContainerAnalyzer
     std::vector<Info::Reference> invalidatesContainer(const Token* tok) const {
         std::vector<Info::Reference> result;
         if (Token::Match(tok, "%name% (")) {
-            const Function* f = tok->next()->function();
+            const Function* f = tok->function();
             if (!f)
                 return {};
             ErrorPathItem epi = std::make_pair(tok, "Calling function " + tok->str());
