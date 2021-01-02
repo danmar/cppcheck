@@ -1821,7 +1821,7 @@ static const std::string& invertAssign(const std::string& assign)
     static std::unordered_map<std::string, std::string> lookup = {
         {"+=", "-="}, {"-=", "+="}, {"*=", "/="}, {"/=", "*="}, {"<<=", ">>="}, {">>=", "<<="}, {"^=", "^="}
     };
-    static std::string empty = "";
+    static std::string empty;
     auto it = lookup.find(assign);
     if (it == lookup.end())
         return empty;
