@@ -263,7 +263,7 @@ static bool isEscapeScope(const Token* tok, TokenList * tokenlist, bool unknown 
 static ValueFlow::Value castValue(ValueFlow::Value value, const ValueType::Sign sign, nonneg int bit)
 {
     if (value.isFloatValue()) {
-        value.valueType = ValueFlow::Value::INT;
+        value.valueType = ValueFlow::Value::ValueType::INT;
         if (value.floatValue >= std::numeric_limits<int>::min() && value.floatValue <= std::numeric_limits<int>::max()) {
             value.intvalue = value.floatValue;
         } else { // don't perform UB
@@ -431,7 +431,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
 
     // cast..
     if (const Token *castType = getCastTypeStartToken(parent)) {
-        if (((tok->valueType() == nullptr && value.isImpossible()) || astIsPointer(tok)) && value.valueType == ValueFlow::Value::INT &&
+        if (((tok->valueType() == nullptr && value.isImpossible()) || astIsPointer(tok)) && value.valueType == ValueFlow::Value::ValueType::INT &&
             Token::simpleMatch(parent->astOperand1(), "dynamic_cast"))
             return;
         const ValueType &valueType = ValueType::parseDecl(castType, settings);
@@ -546,7 +546,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                         if (value1.isTokValue() || value2.isTokValue())
                             break;
                         if (value1.isFloatValue() || value2.isFloatValue()) {
-                            result.valueType = ValueFlow::Value::FLOAT;
+                            result.valueType = ValueFlow::Value::ValueType::FLOAT;
                             result.floatValue = floatValue1 + floatValue2;
                         } else {
                             result.intvalue = value1.intvalue + value2.intvalue;
@@ -557,7 +557,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                         if (value1.isTokValue() || value2.isTokValue())
                             break;
                         if (value1.isFloatValue() || value2.isFloatValue()) {
-                            result.valueType = ValueFlow::Value::FLOAT;
+                            result.valueType = ValueFlow::Value::ValueType::FLOAT;
                             result.floatValue = floatValue1 - floatValue2;
                         } else {
                             // Avoid overflow
@@ -575,7 +575,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                         if (value1.isTokValue() || value2.isTokValue())
                             break;
                         if (value1.isFloatValue() || value2.isFloatValue()) {
-                            result.valueType = ValueFlow::Value::FLOAT;
+                            result.valueType = ValueFlow::Value::ValueType::FLOAT;
                             result.floatValue = floatValue1 * floatValue2;
                         } else {
                             result.intvalue = value1.intvalue * value2.intvalue;
@@ -586,7 +586,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                         if (value1.isTokValue() || value2.isTokValue() || value2.intvalue == 0)
                             break;
                         if (value1.isFloatValue() || value2.isFloatValue()) {
-                            result.valueType = ValueFlow::Value::FLOAT;
+                            result.valueType = ValueFlow::Value::ValueType::FLOAT;
                             result.floatValue = floatValue1 / floatValue2;
                         } else {
                             result.intvalue = value1.intvalue / value2.intvalue;
@@ -905,7 +905,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
         setTokenValue(tok, value, settings);
     } else if (tok->isNumber() && MathLib::isFloat(tok->str())) {
         ValueFlow::Value value;
-        value.valueType = ValueFlow::Value::FLOAT;
+        value.valueType = ValueFlow::Value::ValueType::FLOAT;
         value.floatValue = MathLib::toDoubleNumber(tok->str());
         if (!tok->isTemplateArg())
             value.setKnown();
@@ -1085,7 +1085,7 @@ static void valueFlowString(TokenList *tokenlist)
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         if (tok->tokType() == Token::eString) {
             ValueFlow::Value strvalue;
-            strvalue.valueType = ValueFlow::Value::TOK;
+            strvalue.valueType = ValueFlow::Value::ValueType::TOK;
             strvalue.tokvalue = tok;
             strvalue.setKnown();
             setTokenValue(tok, strvalue, tokenlist->getSettings());
@@ -1103,7 +1103,7 @@ static void valueFlowArray(TokenList *tokenlist)
             const std::map<int, const Token *>::const_iterator it = constantArrays.find(tok->varId());
             if (it != constantArrays.end()) {
                 ValueFlow::Value value;
-                value.valueType = ValueFlow::Value::TOK;
+                value.valueType = ValueFlow::Value::ValueType::TOK;
                 value.tokvalue = it->second;
                 value.setKnown();
                 setTokenValue(tok, value, tokenlist->getSettings());
@@ -1118,7 +1118,7 @@ static void valueFlowArray(TokenList *tokenlist)
                      tok->astParent()->astOperand1()->variable() &&
                      tok->astParent()->astOperand1()->variable()->isPointer()) {
                 ValueFlow::Value value;
-                value.valueType = ValueFlow::Value::TOK;
+                value.valueType = ValueFlow::Value::ValueType::TOK;
                 value.tokvalue = tok;
                 value.setKnown();
                 setTokenValue(tok, value, tokenlist->getSettings());
@@ -1220,7 +1220,7 @@ static void valueFlowPointerAlias(TokenList *tokenlist)
             continue;
 
         ValueFlow::Value value;
-        value.valueType = ValueFlow::Value::TOK;
+        value.valueType = ValueFlow::Value::ValueType::TOK;
         value.tokvalue = tok;
         setTokenValue(tok, value, tokenlist->getSettings());
     }
@@ -3229,7 +3229,7 @@ struct LifetimeStore {
             er.emplace_back(argtok, message);
 
             ValueFlow::Value value;
-            value.valueType = ValueFlow::Value::LIFETIME;
+            value.valueType = ValueFlow::Value::ValueType::LIFETIME;
             value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
             value.tokvalue = lt.token;
             value.errorPath = std::move(er);
@@ -3263,7 +3263,7 @@ struct LifetimeStore {
             const Variable *var = getLifetimeVariable(argtok, er);
             if (var && var->isArgument()) {
                 ValueFlow::Value value;
-                value.valueType = ValueFlow::Value::LIFETIME;
+                value.valueType = ValueFlow::Value::ValueType::LIFETIME;
                 value.lifetimeScope = ValueFlow::Value::LifetimeScope::Argument;
                 value.tokvalue = var->nameToken();
                 value.errorPath = er;
@@ -3293,7 +3293,7 @@ struct LifetimeStore {
                 er.insert(er.end(), errorPath.begin(), errorPath.end());
 
                 ValueFlow::Value value;
-                value.valueType = ValueFlow::Value::LIFETIME;
+                value.valueType = ValueFlow::Value::ValueType::LIFETIME;
                 value.lifetimeScope = v.lifetimeScope;
                 value.path = v.path;
                 value.tokvalue = lt.token;
@@ -3992,7 +3992,7 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
     for (ValueFlow::Value &value : values) {
         if (value.isFloatValue()) {
             value.intvalue = value.floatValue;
-            value.valueType = ValueFlow::Value::INT;
+            value.valueType = ValueFlow::Value::ValueType::INT;
         }
 
         if (value.isIntValue() && sz > 0 && sz < 8) {
@@ -4066,7 +4066,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             // Remove container size if its not a container
             if (!astIsContainer(tok->astOperand2()))
                 values.remove_if([&](const ValueFlow::Value& value) {
-                return value.valueType == ValueFlow::Value::CONTAINER_SIZE;
+                return value.valueType == ValueFlow::Value::ValueType::CONTAINER_SIZE;
             });
             if (values.empty())
                 continue;
@@ -4534,7 +4534,7 @@ static const ValueFlow::Value* proveNotEqual(const std::list<ValueFlow::Value>& 
 {
     const ValueFlow::Value* result = nullptr;
     for (const ValueFlow::Value& value : values) {
-        if (value.valueType != ValueFlow::Value::INT)
+        if (value.valueType != ValueFlow::Value::ValueType::INT)
             continue;
         if (result && !isInBounds(value, result->intvalue))
             continue;
@@ -5167,7 +5167,7 @@ static bool evaluate(const Token *expr, const std::vector<std::list<ValueFlow::V
             if (argvalue.isTokValue() && argvalue.tokvalue->tokType() == Token::eString) {
                 ValueFlow::Value res(argvalue); // copy all "inconclusive", "condition", etc attributes
                 // set return value..
-                res.valueType = ValueFlow::Value::INT;
+                res.valueType = ValueFlow::Value::ValueType::INT;
                 res.tokvalue = nullptr;
                 res.intvalue = Token::getStrLength(argvalue.tokvalue);
                 result->emplace_back(std::move(res));
@@ -5549,7 +5549,7 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
 
         ValueFlow::Value uninitValue;
         uninitValue.setKnown();
-        uninitValue.valueType = ValueFlow::Value::UNINIT;
+        uninitValue.valueType = ValueFlow::Value::ValueType::UNINIT;
         uninitValue.tokvalue = vardecl;
         std::list<ValueFlow::Value> values;
         values.push_back(uninitValue);
@@ -5923,10 +5923,10 @@ static void valueFlowIterators(TokenList *tokenlist, const Settings *settings)
             ValueFlow::Value v(0);
             v.setKnown();
             if (yield == Library::Container::Yield::START_ITERATOR) {
-                v.valueType = ValueFlow::Value::ITERATOR_START;
+                v.valueType = ValueFlow::Value::ValueType::ITERATOR_START;
                 setTokenValue(tok->astParent()->tokAt(2), v, settings);
             } else if (yield == Library::Container::Yield::END_ITERATOR) {
-                v.valueType = ValueFlow::Value::ITERATOR_END;
+                v.valueType = ValueFlow::Value::ValueType::ITERATOR_END;
                 setTokenValue(tok->astParent()->tokAt(2), v, settings);
             }
         }
@@ -6157,8 +6157,8 @@ struct ContainerConditionHandler : ConditionHandler {
             vartok = vartok->tokAt(-3);
             if (!isContainerSize(vartok))
                 return cond;
-            true_value.valueType = ValueFlow::Value::CONTAINER_SIZE;
-            false_value.valueType = ValueFlow::Value::CONTAINER_SIZE;
+            true_value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+            false_value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             cond.true_values.push_back(true_value);
             cond.false_values.push_back(false_value);
             cond.vartok = vartok;
@@ -6508,7 +6508,7 @@ static void valueFlowUnknownFunctionReturn(TokenList *tokenlist, const Settings 
 }
 
 ValueFlow::Value::Value(const Token* c, long long val)
-    : valueType(INT),
+    : valueType(ValueType::INT),
       bound(Bound::Point),
       intvalue(val),
       tokvalue(nullptr),
@@ -6538,24 +6538,24 @@ void ValueFlow::Value::assumeCondition(const Token* tok)
 std::string ValueFlow::Value::infoString() const
 {
     switch (valueType) {
-    case INT:
+    case ValueType::INT:
         return MathLib::toString(intvalue);
-    case TOK:
+    case ValueType::TOK:
         return tokvalue->str();
-    case FLOAT:
+    case ValueType::FLOAT:
         return MathLib::toString(floatValue);
-    case MOVED:
+    case ValueType::MOVED:
         return "<Moved>";
-    case UNINIT:
+    case ValueType::UNINIT:
         return "<Uninit>";
-    case BUFFER_SIZE:
-    case CONTAINER_SIZE:
+    case ValueType::BUFFER_SIZE:
+    case ValueType::CONTAINER_SIZE:
         return "size=" + MathLib::toString(intvalue);
-    case ITERATOR_START:
+    case ValueType::ITERATOR_START:
         return "start=" + MathLib::toString(intvalue);
-    case ITERATOR_END:
+    case ValueType::ITERATOR_END:
         return "end=" + MathLib::toString(intvalue);
-    case LIFETIME:
+    case ValueType::LIFETIME:
         return "lifetime=" + tokvalue->str();
     }
     throw InternalError(nullptr, "Invalid ValueFlow Value type");

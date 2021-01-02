@@ -1669,37 +1669,37 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             if (xml) {
                 out << "      <value ";
                 switch (value.valueType) {
-                case ValueFlow::Value::INT:
+                case ValueFlow::Value::ValueType::INT:
                     if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
                         out << "intvalue=\"" << (MathLib::biguint)value.intvalue << '\"';
                     else
                         out << "intvalue=\"" << value.intvalue << '\"';
                     break;
-                case ValueFlow::Value::TOK:
+                case ValueFlow::Value::ValueType::TOK:
                     out << "tokvalue=\"" << value.tokvalue << '\"';
                     break;
-                case ValueFlow::Value::FLOAT:
+                case ValueFlow::Value::ValueType::FLOAT:
                     out << "floatvalue=\"" << value.floatValue << '\"';
                     break;
-                case ValueFlow::Value::MOVED:
+                case ValueFlow::Value::ValueType::MOVED:
                     out << "movedvalue=\"" << ValueFlow::Value::toString(value.moveKind) << '\"';
                     break;
-                case ValueFlow::Value::UNINIT:
+                case ValueFlow::Value::ValueType::UNINIT:
                     out << "uninit=\"1\"";
                     break;
-                case ValueFlow::Value::BUFFER_SIZE:
+                case ValueFlow::Value::ValueType::BUFFER_SIZE:
                     out << "buffer-size=\"" << value.intvalue << "\"";
                     break;
-                case ValueFlow::Value::CONTAINER_SIZE:
+                case ValueFlow::Value::ValueType::CONTAINER_SIZE:
                     out << "container-size=\"" << value.intvalue << '\"';
                     break;
-                case ValueFlow::Value::ITERATOR_START:
+                case ValueFlow::Value::ValueType::ITERATOR_START:
                     out << "iterator-start=\"" << value.intvalue << '\"';
                     break;
-                case ValueFlow::Value::ITERATOR_END:
+                case ValueFlow::Value::ValueType::ITERATOR_END:
                     out << "iterator-end=\"" << value.intvalue << '\"';
                     break;
-                case ValueFlow::Value::LIFETIME:
+                case ValueFlow::Value::ValueType::LIFETIME:
                     out << "lifetime=\"" << value.tokvalue << '\"';
                     break;
                 }
@@ -1726,35 +1726,35 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 if (value.bound == ValueFlow::Value::Bound::Upper)
                     out << "<=";
                 switch (value.valueType) {
-                case ValueFlow::Value::INT:
+                case ValueFlow::Value::ValueType::INT:
                     if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
                         out << (MathLib::biguint)value.intvalue;
                     else
                         out << value.intvalue;
                     break;
-                case ValueFlow::Value::TOK:
+                case ValueFlow::Value::ValueType::TOK:
                     out << value.tokvalue->str();
                     break;
-                case ValueFlow::Value::FLOAT:
+                case ValueFlow::Value::ValueType::FLOAT:
                     out << value.floatValue;
                     break;
-                case ValueFlow::Value::MOVED:
+                case ValueFlow::Value::ValueType::MOVED:
                     out << ValueFlow::Value::toString(value.moveKind);
                     break;
-                case ValueFlow::Value::UNINIT:
+                case ValueFlow::Value::ValueType::UNINIT:
                     out << "Uninit";
                     break;
-                case ValueFlow::Value::BUFFER_SIZE:
-                case ValueFlow::Value::CONTAINER_SIZE:
+                case ValueFlow::Value::ValueType::BUFFER_SIZE:
+                case ValueFlow::Value::ValueType::CONTAINER_SIZE:
                     out << "size=" << value.intvalue;
                     break;
-                case ValueFlow::Value::ITERATOR_START:
+                case ValueFlow::Value::ValueType::ITERATOR_START:
                     out << "start=" << value.intvalue;
                     break;
-                case ValueFlow::Value::ITERATOR_END:
+                case ValueFlow::Value::ValueType::ITERATOR_END:
                     out << "end=" << value.intvalue;
                     break;
-                case ValueFlow::Value::LIFETIME:
+                case ValueFlow::Value::ValueType::LIFETIME:
                     out << "lifetime=" << value.tokvalue->str();
                     break;
                 }

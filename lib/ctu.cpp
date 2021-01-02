@@ -93,7 +93,7 @@ std::string CTU::FileInfo::FunctionCall::toXmlString() const
     out << "<function-call"
         << toBaseXmlString()
         << " " << ATTR_CALL_ARGEXPR << "=\"" << callArgumentExpression << "\""
-        << " " << ATTR_CALL_ARGVALUETYPE << "=\"" << callValueType << "\""
+        << " " << ATTR_CALL_ARGVALUETYPE << "=\"" << static_cast<int>(callValueType) << "\""
         << " " << ATTR_CALL_ARGVALUE << "=\"" << callArgValue << "\"";
     if (warning)
         out << " " << ATTR_WARNING << "=\"true\"";

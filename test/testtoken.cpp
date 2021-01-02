@@ -1127,7 +1127,7 @@ private:
 
         // pointer points at buffer that is 2 bytes
         ValueFlow::Value v2(2);
-        v2.valueType = ValueFlow::Value::BUFFER_SIZE;
+        v2.valueType = ValueFlow::Value::ValueType::BUFFER_SIZE;
         v2.setKnown();
 
         Token token;
