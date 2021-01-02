@@ -702,7 +702,7 @@ static bool areAllParamsTypes(const std::vector<const Token *> &params)
     if (params.empty())
         return false;
 
-    for (auto param : params) {
+    for (const auto *param : params) {
         if (!Token::Match(param->previous(), "typename|class %name% ,|>"))
             return false;
     }
