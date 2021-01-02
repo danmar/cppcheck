@@ -30,6 +30,7 @@
 #include "errortypes.h"
 #include "utils.h"
 
+class Function;
 class Library;
 class Scope;
 class Settings;
@@ -233,6 +234,8 @@ int numberOfArguments(const Token *start);
  * Get arguments (AST)
  */
 std::vector<const Token *> getArguments(const Token *ftok);
+
+int getArgumentPos(const Variable *var, const Function *f);
 
 const Token *findLambdaStartToken(const Token *last);
 

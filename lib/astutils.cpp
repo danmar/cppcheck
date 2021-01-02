@@ -1877,6 +1877,16 @@ std::vector<const Token *> getArguments(const Token *ftok)
     return astFlatten(startTok, ",");
 }
 
+int getArgumentPos(const Variable *var, const Function *f)
+{
+    auto arg_it = std::find_if(f->argumentList.begin(), f->argumentList.end(), [&](const Variable &v) {
+        return v.nameToken() == var->nameToken();
+    });
+    if (arg_it == f->argumentList.end())
+        return -1;
+    return std::distance(f->argumentList.begin(), arg_it);
+}
+
 const Token *findLambdaStartToken(const Token *last)
 {
     if (!last || last->str() != "}")

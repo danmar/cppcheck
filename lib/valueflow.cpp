@@ -1955,20 +1955,6 @@ static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, cons
     return false;
 }
 
-struct SelectMapKeys {
-    template<class Pair>
-    typename Pair::first_type operator()(const Pair& p) const {
-        return p.first;
-    }
-};
-
-struct SelectMapValues {
-    template<class Pair>
-    typename Pair::second_type operator()(const Pair& p) const {
-        return p.second;
-    }
-};
-
 struct ValueFlowAnalyzer : Analyzer {
     const TokenList* tokenlist;
     ProgramMemoryState pms;
@@ -2634,16 +2620,6 @@ static void valueFlowReverse(TokenList* tokenlist,
         VariableAnalyzer a(var, v, aliases, tokenlist);
         valueFlowGenericReverse(tok, a, settings);
     }
-}
-
-static int getArgumentPos(const Variable *var, const Function *f)
-{
-    auto arg_it = std::find_if(f->argumentList.begin(), f->argumentList.end(), [&](const Variable &v) {
-        return v.nameToken() == var->nameToken();
-    });
-    if (arg_it == f->argumentList.end())
-        return -1;
-    return std::distance(f->argumentList.begin(), arg_it);
 }
 
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
