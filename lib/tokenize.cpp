@@ -5170,7 +5170,7 @@ void Tokenizer::simplifyHeadersAndUnusedTemplates()
         if (!tok->previous() || Token::Match(tok->previous(), "[;{}]")) {
             // Remove unused function declarations
             if (isIncluded && removeUnusedIncludedFunctions) {
-                while (1) {
+                while (true) {
                     Token *start = tok;
                     while (start && functionStart.find(start->str()) != functionStart.end())
                         start = start->next();
@@ -9856,7 +9856,7 @@ void Tokenizer::findGarbageCode() const
                 syntaxError(tok);
         }
         if (Token::Match(tok, "%or%|%oror%|~|^|!|%comp%|+|-|/|%")) {
-            std::string code = "";
+            std::string code;
             if (Token::Match(tok->next(), ")|]|}"))
                 code = tok->str() + tok->next()->str();
             if (Token::simpleMatch(tok->next(), "( )"))

@@ -88,7 +88,7 @@ namespace {
         }
 
         std::string parseAddonInfo(const picojson::value &json, const std::string &fileName, const std::string &exename) {
-            std::string json_error = picojson::get_last_error();
+            const std::string& json_error = picojson::get_last_error();
             if (!json_error.empty()) {
                 return "Loading " + fileName + " failed. " + json_error;
             }
@@ -1434,7 +1434,7 @@ void CppCheck::getErrorMessages()
 
 void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
 {
-    std::string allIncludes = "";
+    std::string allIncludes;
     for (const std::string &inc : fileSettings.includePaths) {
         allIncludes = allIncludes + "-I\"" + inc + "\" ";
     }

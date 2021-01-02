@@ -73,17 +73,17 @@ int main(int argc, char *argv[])
     TranslationHandler* th = new TranslationHandler(&app);
     th->setLanguage(settings->value(SETTINGS_LANGUAGE, th->suggestLanguage()).toString());
 
-    if (!CheckArgs(app.arguments()))
+    if (!CheckArgs(QApplication::arguments()))
         return 0;
 
-    app.setWindowIcon(QIcon(":cppcheck-gui.png"));
+    QApplication::setWindowIcon(QIcon(":cppcheck-gui.png"));
 
     // Register this metatype that is used to transfer error info
     qRegisterMetaType<ErrorItem>("ErrorItem");
 
     MainWindow window(th, settings);
     window.show();
-    return app.exec();
+    return QApplication::exec();
 }
 
 // Check only arguments needing action before GUI is shown.
