@@ -4423,6 +4423,32 @@ private:
               "    return info.ret;\n"
               "}\n",true);
         ASSERT_EQUALS("", errout.str());
+
+        // #9133
+        check("struct Fred {\n"
+              "    std::vector<int> v;\n"
+              "    void foo();\n"
+              "    void bar();\n"
+              "};\n"
+              "void Fred::foo() {\n"
+              "    std::vector<int>::iterator it = v.begin();\n"
+              "    bar();\n"
+              "    it++;\n"
+              "}\n"
+              "void Fred::bar() {\n"
+              "    v.push_back(0);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:8] -> [test.cpp:12] -> [test.cpp:2] -> [test.cpp:9]: (error) Using iterator to local container 'v' that may be invalid.\n", errout.str());
+
+        check("void foo(std::vector<int>& v) {\n"
+              "    std::vector<int>::iterator it = v.begin();\n"
+              "    bar(v);\n"
+              "    it++;\n"
+              "}\n"
+              "void bar(std::vector<int>& v) {\n"
+              "    v.push_back(0);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:7] -> [test.cpp:1] -> [test.cpp:4]: (error) Using iterator to local container 'v' that may be invalid.\n", errout.str());
     }
 
     void invalidContainerLoop() {
