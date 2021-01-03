@@ -2430,8 +2430,9 @@ static Analyzer::Action valueFlowForwardVariable(Token* const startToken,
         TokenList* const tokenlist,
         const Settings* const settings)
 {
+    auto aliases = getAliasesFromValues(values);
     return valueFlowForwardVariable(
-               startToken, endToken, var, std::move(values), getAliasesFromValues(values), tokenlist, settings);
+               startToken, endToken, var, std::move(values), std::move(aliases), tokenlist, settings);
 }
 
 // Old deprecated version
@@ -2777,7 +2778,7 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, bool escape, Valu
             for (const Token* returnTok : returns) {
                 if (returnTok == tok)
                     continue;
-                for (LifetimeToken& lt : getLifetimeTokens(returnTok, escape, std::move(errorPath), depth - 1)) {
+                for (LifetimeToken& lt : getLifetimeTokens(returnTok, escape, errorPath, depth - 1)) {
                     const Token* argvarTok = lt.token;
                     const Variable* argvar = argvarTok->variable();
                     if (!argvar)
