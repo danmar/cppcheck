@@ -4617,7 +4617,8 @@ void Scope::findFunctionInBase(const std::string & name, nonneg int args, std::v
 
                 for (std::multimap<std::string, const Function *>::const_iterator it = base->classScope->functionMap.find(name); it != base->classScope->functionMap.end() && it->first == name; ++it) {
                     const Function *func = it->second;
-                    if (args == func->argCount() || (args < func->argCount() && args >= func->minArgCount())) {
+                    if ((func->isVariadic() && args >= (func->argCount() - 1)) ||
+                        (args == func->argCount() || (args < func->argCount() && args >= func->minArgCount()))) {
                         matches.push_back(func);
                     }
                 }
