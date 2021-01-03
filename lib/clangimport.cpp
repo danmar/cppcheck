@@ -296,7 +296,7 @@ namespace clangimport {
     };
 
     class AstNode;
-    typedef std::shared_ptr<AstNode> AstNodePtr;
+    using AstNodePtr = std::shared_ptr<AstNode>;
 
     class AstNode {
     public:

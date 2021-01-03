@@ -1334,7 +1334,7 @@ static void valueFlowSameExpressions(TokenList *tokenlist)
 static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     const bool cpp = symboldatabase->isCPP();
-    typedef std::pair<const Token*, const Scope*> Condition;
+    using Condition = std::pair<const Token*, const Scope*>;
     for (const Scope * scope : symboldatabase->functionScopes) {
         bool skipFunction = false;
         std::vector<Condition> conds;
