@@ -183,7 +183,7 @@ void CheckType::checkIntegerOverflow()
             continue;
 
         // max value according to platform settings.
-        const MathLib::bigint maxvalue = (((MathLib::bigint)1) << (bits - 1)) - 1;
+        const MathLib::bigint maxvalue = (((MathLib::biguint)1) << (bits - 1)) - 1;
 
         // is there a overflow result value
         const ValueFlow::Value *value = tok->getValueGE(maxvalue + 1, mSettings);
@@ -193,8 +193,8 @@ void CheckType::checkIntegerOverflow()
             continue;
 
         // For left shift, it's common practice to shift into the sign bit
-        if (tok->str() == "<<" && value->intvalue > 0 && value->intvalue < (((MathLib::bigint)1) << bits))
-            continue;
+        //if (tok->str() == "<<" && value->intvalue > 0 && value->intvalue < (((MathLib::bigint)1) << bits))
+        //    continue;
 
         integerOverflowError(tok, *value);
     }
