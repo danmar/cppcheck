@@ -254,7 +254,7 @@ void CheckType::checkIntegerOverflowOptimisations()
 
         const Token *expr = lhs->astOperand1();
         const Token *other = lhs->astOperand2();
-        if (expr->varId() != lhs->astSibling()->varId())
+        if (expr->varId() == 0 || expr->varId() != lhs->astSibling()->varId())
             continue;
 
         // x [+-] c cmp x
