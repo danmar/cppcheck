@@ -228,14 +228,17 @@ void CheckType::integerOverflowError(const Token *tok, const ValueFlow::Value &v
 
 void CheckType::checkIntegerOverflowOptimisations()
 {
-    // Various patterns are defined here:
+    // Interesting blogs:
     // https://kristerw.blogspot.com/2016/02/how-undefined-signed-overflow-enables.html
+    // https://research.checkpoint.com/2020/optout-compiler-undefined-behavior-optimizations/
 
-    // These optimisations seem to generate "unwanted" output
     // x + c < x       ->   false
     // x + c <= x      ->   false
     // x + c > x       ->   true
     // x + c >= x      ->   true
+
+    // x + y < x       ->   y < 0
+
 
     if (!mSettings->isEnabled(Settings::PORTABILITY))
         return;
@@ -244,20 +247,38 @@ void CheckType::checkIntegerOverflowOptimisations()
         if (!Token::Match(tok, "<|<=|>=|>") || !tok->isBinaryOp())
             continue;
 
-        if (Token::Match(tok->astOperand1(), "[+-]") &&
-            tok->astOperand1()->valueType() &&
-            tok->astOperand1()->valueType()->isIntegral() &&
-            tok->astOperand1()->valueType()->sign == ValueType::Sign::SIGNED &&
-            tok->astOperand1()->isBinaryOp() &&
-            tok->astOperand1()->astOperand2()->isNumber() &&
-            Token::Match(tok->astOperand1()->astOperand1(), "%var%") &&
-            tok->astOperand1()->astOperand1()->str() == tok->astOperand2()->str()) {
+        const std::string cmp = tok->str();
+        const Token * const lhs = tok->astOperand1();
+        if (!Token::Match(lhs, "[+-]") || !lhs->isBinaryOp() || !lhs->valueType() || !lhs->valueType()->isIntegral() || lhs->valueType()->sign != ValueType::Sign::SIGNED)
+            continue;
+
+        const Token *expr = lhs->astOperand1();
+        const Token *other = lhs->astOperand2();
+        if (expr->varId() != lhs->astSibling()->varId())
+            continue;
+
+        // x [+-] c cmp x
+        if (other->isNumber() && other->getKnownIntValue() > 0) {
             bool result;
             if (tok->astOperand1()->str() == "+")
-                result = Token::Match(tok, ">|>=");
+                result = (cmp == ">" || cmp == ">=");
             else
-                result = Token::Match(tok, "<|<=");
+                result = (cmp == "<" || cmp == "<=");
             integerOverflowOptimisationError(tok, result ? "true" : "false");
+        }
+
+        // x + y cmp x
+        if (lhs->str() == "+" && other->varId() > 0) {
+            const std::string result = other->str() + cmp + "0";
+            integerOverflowOptimisationError(tok, result);
+        }
+
+        // x - y cmp x
+        if (lhs->str() == "-" && other->varId() > 0) {
+            std::string cmp2 = cmp;
+            cmp2[0] = (cmp[0] == '<') ? '>' : '<';
+            const std::string result = other->str() + cmp2 + "0";
+            integerOverflowOptimisationError(tok, result);
         }
     }
 }
