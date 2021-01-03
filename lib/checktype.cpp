@@ -222,6 +222,55 @@ void CheckType::integerOverflowError(const Token *tok, const ValueFlow::Value &v
                 value.isInconclusive());
 }
 
+//---------------------------------------------------------------------------------
+// Checking for code patterns that might be optimised differently by the compilers
+//---------------------------------------------------------------------------------
+
+void CheckType::checkIntegerOverflowOptimisations()
+{
+    // Various patterns are defined here:
+    // https://kristerw.blogspot.com/2016/02/how-undefined-signed-overflow-enables.html
+
+    // These optimisations seem to generate "unwanted" output
+    // x + c < x       ->   false
+    // x + c <= x      ->   false
+    // x + c > x       ->   true
+    // x + c >= x      ->   true
+
+    if (!mSettings->isEnabled(Settings::PORTABILITY))
+        return;
+
+    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "<|<=|>=|>") || !tok->isBinaryOp())
+            continue;
+
+        if (Token::Match(tok->astOperand1(), "[+-]") &&
+            tok->astOperand1()->valueType() &&
+            tok->astOperand1()->valueType()->isIntegral() &&
+            tok->astOperand1()->valueType()->sign == ValueType::Sign::SIGNED &&
+            tok->astOperand1()->isBinaryOp() &&
+            tok->astOperand1()->astOperand2()->isNumber() &&
+            Token::Match(tok->astOperand1()->astOperand1(), "%var%") &&
+            tok->astOperand1()->astOperand1()->str() == tok->astOperand2()->str()) {
+            bool result;
+            if (tok->astOperand1()->str() == "+")
+                result = Token::Match(tok, ">|>=");
+            else
+                result = Token::Match(tok, "<|<=");
+            integerOverflowOptimisationError(tok, result ? "true" : "false");
+        }
+    }
+}
+
+void CheckType::integerOverflowOptimisationError(const Token *tok, const std::string &replace)
+{
+    const std::string expr = tok ? tok->expressionString() : "x+c<x";
+    const std::string errmsg =
+        "There is a danger that '" + expr + "' will be optimised into '" + replace + "'. Signed integer overflow is undefined behavior.\n"
+        "There is a danger that '" + expr + "' will be optimised into '" + replace + "'. Your code could work differently depending on what compiler/flags/version/etc is used. Signed integer overflow is undefined behavior and assuming that it will never happen; the result of '" + expr + "' is always '" + replace + "'.";
+    reportError(tok, Severity::portability, "integerOverflowOptimization", errmsg, CWE190, false);
+}
+
 //---------------------------------------------------------------------------
 // Checking for sign conversion when operand can be negative
 //---------------------------------------------------------------------------
