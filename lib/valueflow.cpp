@@ -106,10 +106,7 @@
 #include <set>
 #include <stack>
 #include <tuple>
-#include <unistd.h>
 #include <vector>
-
-#include <iostream>
 
 static void bailoutInternal(const std::string& type, TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what, const std::string &file, int line, const std::string &function)
 {
