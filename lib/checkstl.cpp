@@ -18,18 +18,18 @@
 
 #include "checkstl.h"
 
+#include "astutils.h"
 #include "check.h"
 #include "checknullpointer.h"
 #include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
+#include "pathanalysis.h"
 #include "settings.h"
 #include "standards.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "utils.h"
-#include "astutils.h"
-#include "pathanalysis.h"
 #include "valueflow.h"
 
 #include <algorithm>
@@ -846,8 +846,7 @@ static bool isInvalidMethod(const Token * tok)
     return false;
 }
 
-struct InvalidContainerAnalyzer
-{
+struct InvalidContainerAnalyzer {
     struct Info {
         struct Reference {
             const Token* tok;
@@ -855,18 +854,21 @@ struct InvalidContainerAnalyzer
         };
         std::unordered_map<int, Reference> expressions;
         ErrorPath errorPath;
-        void add(const std::vector<Reference>& refs) {
-            for(const Reference r:refs) {
+        void add(const std::vector<Reference>& refs)
+        {
+            for (const Reference r : refs) {
                 add(r);
             }
         }
-        void add(const Reference& r) {
+        void add(const Reference& r)
+        {
             if (!r.tok)
                 return;
             expressions.insert(std::make_pair(r.tok->exprId(), r));
         }
 
-        std::vector<Reference> invalidTokens() const {
+        std::vector<Reference> invalidTokens() const
+        {
             std::vector<Reference> result;
             std::transform(expressions.begin(), expressions.end(), std::back_inserter(result), SelectMapValues{});
             return result;
@@ -874,7 +876,8 @@ struct InvalidContainerAnalyzer
     };
     std::unordered_map<const Function*, Info> invalidMethods;
 
-    std::vector<Info::Reference> invalidatesContainer(const Token* tok) const {
+    std::vector<Info::Reference> invalidatesContainer(const Token* tok) const
+    {
         std::vector<Info::Reference> result;
         if (Token::Match(tok, "%name% (")) {
             const Function* f = tok->function();
@@ -898,7 +901,7 @@ struct InvalidContainerAnalyzer
                     return true;
                 });
                 std::vector<const Token*> args = getArguments(tok);
-                for(Info::Reference& r:result) {
+                for (Info::Reference& r : result) {
                     r.errorPath.push_front(epi);
                     const Variable* var = r.tok->variable();
                     if (!var)
@@ -915,19 +918,22 @@ struct InvalidContainerAnalyzer
         } else if (astIsContainer(tok)) {
             if (isInvalidMethod(tok)) {
                 ErrorPath ep;
-                ep.emplace_front(tok, "After calling '" + tok->strAt(2) + "', iterators or references to the container's data may be invalid .");
+                ep.emplace_front(tok,
+                                 "After calling '" + tok->strAt(2) +
+                                     "', iterators or references to the container's data may be invalid .");
                 result.push_back(Info::Reference{tok, ep});
             }
         }
         return result;
     }
 
-    void analyze(const SymbolDatabase* symboldatabase) {
+    void analyze(const SymbolDatabase* symboldatabase)
+    {
         for (const Scope* scope : symboldatabase->functionScopes) {
             const Function* f = scope->function;
             if (!f)
                 continue;
-            for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
                 if (Token::Match(tok, "if|while|for|goto|return"))
                     break;
                 std::vector<Info::Reference> c = invalidatesContainer(tok);
@@ -961,7 +967,7 @@ void CheckStl::invalidContainer()
     analyzer.analyze(symbolDatabase);
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            for(const InvalidContainerAnalyzer::Info::Reference& r:analyzer.invalidatesContainer(tok)) {
+            for (const InvalidContainerAnalyzer::Info::Reference& r : analyzer.invalidatesContainer(tok)) {
                 if (!astIsContainer(r.tok))
                     continue;
                 std::set<nonneg int> skipVarIds;
@@ -978,60 +984,61 @@ void CheckStl::invalidContainer()
                 }
                 if (Token::Match(assignExpr, "%assign%") && Token::Match(assignExpr->astOperand1(), "%var%"))
                     skipVarIds.insert(assignExpr->astOperand1()->varId());
-                const Token * endToken = nextAfterAstRightmostLeaf(tok->next()->astParent());
+                const Token* endToken = nextAfterAstRightmostLeaf(tok->next()->astParent());
                 if (!endToken)
                     endToken = tok->next();
                 const ValueFlow::Value* v = nullptr;
                 ErrorPath errorPath;
-                PathAnalysis::Info info = PathAnalysis{endToken, library} .forwardFind([&](const PathAnalysis::Info& info) {
-                    if (!info.tok->variable())
-                        return false;
-                    if (info.tok->varId() == 0)
-                        return false;
-                    if (skipVarIds.count(info.tok->varId()) > 0)
-                        return false;
-                    // if (Token::simpleMatch(info.tok->next(), "."))
-                    // return false;
-                    if (Token::Match(info.tok->astParent(), "%assign%") && astIsLHS(info.tok))
-                        skipVarIds.insert(info.tok->varId());
-                    if (info.tok->variable()->isReference() &&
-                        !isVariableDecl(info.tok) &&
-                        reaches(info.tok->variable()->nameToken(), tok, library, nullptr)) {
+                PathAnalysis::Info info =
+                    PathAnalysis{endToken, library}.forwardFind([&](const PathAnalysis::Info& info) {
+                        if (!info.tok->variable())
+                            return false;
+                        if (info.tok->varId() == 0)
+                            return false;
+                        if (skipVarIds.count(info.tok->varId()) > 0)
+                            return false;
+                        // if (Token::simpleMatch(info.tok->next(), "."))
+                        // return false;
+                        if (Token::Match(info.tok->astParent(), "%assign%") && astIsLHS(info.tok))
+                            skipVarIds.insert(info.tok->varId());
+                        if (info.tok->variable()->isReference() && !isVariableDecl(info.tok) &&
+                            reaches(info.tok->variable()->nameToken(), tok, library, nullptr)) {
 
-                        ErrorPath ep;
-                        bool addressOf = false;
-                        const Variable* var = getLifetimeVariable(info.tok, ep, &addressOf);
-                        // Check the reference is created before the change
-                        if (var && var->declarationId() == r.tok->varId() && !addressOf) {
-                            // An argument always reaches
-                            if (var->isArgument() || (!var->isReference() && !var->isRValueReference() &&
-                                                      !isVariableDecl(tok) && reaches(var->nameToken(), tok, library, &ep))) {
+                            ErrorPath ep;
+                            bool addressOf = false;
+                            const Variable* var = getLifetimeVariable(info.tok, ep, &addressOf);
+                            // Check the reference is created before the change
+                            if (var && var->declarationId() == r.tok->varId() && !addressOf) {
+                                // An argument always reaches
+                                if (var->isArgument() ||
+                                    (!var->isReference() && !var->isRValueReference() && !isVariableDecl(tok) &&
+                                     reaches(var->nameToken(), tok, library, &ep))) {
+                                    errorPath = ep;
+                                    return true;
+                                }
+                            }
+                        }
+                        for (const ValueFlow::Value& val : info.tok->values()) {
+                            if (!val.isLocalLifetimeValue())
+                                continue;
+                            if (val.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)
+                                continue;
+                            if (val.lifetimeKind == ValueFlow::Value::LifetimeKind::SubObject)
+                                continue;
+                            if (!val.tokvalue->variable())
+                                continue;
+                            if (val.tokvalue->varId() != r.tok->varId())
+                                continue;
+                            ErrorPath ep;
+                            // Check the iterator is created before the change
+                            if (val.tokvalue != tok && reaches(val.tokvalue, tok, library, &ep)) {
+                                v = &val;
                                 errorPath = ep;
                                 return true;
                             }
                         }
-                    }
-                    for (const ValueFlow::Value& val:info.tok->values()) {
-                        if (!val.isLocalLifetimeValue())
-                            continue;
-                        if (val.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)
-                            continue;
-                        if (val.lifetimeKind == ValueFlow::Value::LifetimeKind::SubObject)
-                            continue;
-                        if (!val.tokvalue->variable())
-                            continue;
-                        if (val.tokvalue->varId() != r.tok->varId())
-                            continue;
-                        ErrorPath ep;
-                        // Check the iterator is created before the change
-                        if (val.tokvalue != tok && reaches(val.tokvalue, tok, library, &ep)) {
-                            v = &val;
-                            errorPath = ep;
-                            return true;
-                        }
-                    }
-                    return false;
-                });
+                        return false;
+                    });
                 if (!info.tok)
                     continue;
                 errorPath.insert(errorPath.end(), info.errorPath.begin(), info.errorPath.end());

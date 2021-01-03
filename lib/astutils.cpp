@@ -1877,9 +1877,9 @@ std::vector<const Token *> getArguments(const Token *ftok)
     return astFlatten(startTok, ",");
 }
 
-int getArgumentPos(const Variable *var, const Function *f)
+int getArgumentPos(const Variable* var, const Function* f)
 {
-    auto arg_it = std::find_if(f->argumentList.begin(), f->argumentList.end(), [&](const Variable &v) {
+    auto arg_it = std::find_if(f->argumentList.begin(), f->argumentList.end(), [&](const Variable& v) {
         return v.nameToken() == var->nameToken();
     });
     if (arg_it == f->argumentList.end())

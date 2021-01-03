@@ -235,7 +235,7 @@ int numberOfArguments(const Token *start);
  */
 std::vector<const Token *> getArguments(const Token *ftok);
 
-int getArgumentPos(const Variable *var, const Function *f);
+int getArgumentPos(const Variable* var, const Function* f);
 
 const Token *findLambdaStartToken(const Token *last);
 
