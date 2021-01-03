@@ -175,6 +175,7 @@ private:
         TEST_CASE(simplifyTypedef132); // ticket #9739 - using
         TEST_CASE(simplifyTypedef133); // ticket #9812 - using
         TEST_CASE(simplifyTypedef134);
+        TEST_CASE(simplifyTypedef135); // ticket #10068
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2673,6 +2674,38 @@ private:
                             "namespace foo { int64 i; }\n"
                             "int32 j;";
         ASSERT_EQUALS("namespace foo { long long i ; } int j ;", tok(code, false));
+    }
+
+    void simplifyTypedef135() {
+        const char code[] = "namespace clangimport {\n"
+                            "    class AstNode;\n"
+                            "    typedef std::shared_ptr<AstNode> AstNodePtr;\n"
+                            "    class AstNode {\n"
+                            "    public:\n"
+                            "        AstNode() {}\n"
+                            "    private:\n"
+                            "        void createTokens();\n"
+                            "    };\n"
+                            "}\n"
+                            "void clangimport::AstNode::createTokens() {\n"
+                            "    AstNodePtr range;\n"
+                            "    range->createTokens();\n"
+                            "}";
+        const char expected[] = "namespace clangimport { "
+                                "class AstNode ; "
+                                "class AstNode { "
+                                "public: "
+                                "AstNode ( ) "
+                                "{ } "
+                                "private: "
+                                "void createTokens ( ) ; "
+                                "} ; "
+                                "} "
+                                "void clangimport :: AstNode :: createTokens ( ) { "
+                                "std :: shared_ptr < AstNode > range ; "
+                                "range . createTokens ( ) ; "
+                                "}";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyTypedefFunction1() {

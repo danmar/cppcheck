@@ -1089,10 +1089,13 @@ void Tokenizer::simplifyTypedef()
                             syntaxError(func);
 
                         // check for qualifier
-                        if (func->previous()->str() == "::") {
+                        if (Token::Match(func->tokAt(-2), "%name% ::")) {
+                            int offset = -2;
+                            while (Token::Match(func->tokAt(offset - 2), "%name% ::"))
+                                offset -= 2;
                             // check for available and matching class name
                             if (!spaceInfo.empty() && classLevel < spaceInfo.size() &&
-                                func->strAt(-2) == spaceInfo[classLevel].className) {
+                                func->strAt(offset) == spaceInfo[classLevel].className) {
                                 memberScope = 0;
                                 inMemberFunc = true;
                             }
