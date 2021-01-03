@@ -32,7 +32,7 @@ Settings::Settings()
     : bugHunting(false),
       bugHuntingCheckFunctionMaxTime(60),
       checkAllConfigurations(true),
-      checkConfiguration(false),
+      checkConfiguration(CheckConfig::Disabled),
       checkHeaders(true),
       checkLibrary(false),
       checkUnusedTemplates(true),

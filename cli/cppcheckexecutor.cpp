@@ -967,7 +967,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
 
     cppcheck.analyseWholeProgram(mSettings->buildDir, mFiles);
 
-    if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
+    if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration != Settings::CheckConfig::Disabled) {
         const bool enableUnusedFunctionCheck = cppcheck.isUnusedFunctionCheckEnabled();
 
         if (settings.jointSuppressionReport) {
@@ -983,7 +983,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
             returnValue = settings.exitCode;
     }
 
-    if (!settings.checkConfiguration) {
+    if (settings.checkConfiguration == Settings::CheckConfig::Disabled) {
         cppcheck.tooManyConfigsError("",0U);
 
         if (settings.checks.isEnabled(Checks::missingInclude) && (Preprocessor::missingIncludeFlag || Preprocessor::missingSystemIncludeFlag)) {

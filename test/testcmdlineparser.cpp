@@ -141,6 +141,8 @@ private:
         //TEST_CASE(ignorefilepaths2);
 
         TEST_CASE(checkconfig);
+		TEST_CASE(checkconfigAnalysis);
+		TEST_CASE(checkconfigUnknown);
         TEST_CASE(unknownParam);
 
         TEST_CASE(undefs_noarg);
@@ -1007,10 +1009,24 @@ private:
     void checkconfig() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--check-config", "file.cpp"};
-        settings.checkConfiguration = false;
+        settings.checkConfiguration = Settings::CheckConfig::Disabled;
         ASSERT(defParser.parseFromArgs(3, argv));
-        ASSERT_EQUALS(true, settings.checkConfiguration);
+        ASSERT_EQUALS(static_cast<int>(Settings::CheckConfig::CheckOnly), static_cast<int>(settings.checkConfiguration));
     }
+
+	void checkconfigAnalysis() {
+		REDIRECT;
+		const char * const argv[] = {"cppcheck", "--check-config=analysis", "file.cpp"};
+		settings.checkConfiguration = Settings::CheckConfig::Disabled;
+		ASSERT(defParser.parseFromArgs(3, argv));
+		ASSERT_EQUALS(static_cast<int>(Settings::CheckConfig::Analysis), static_cast<int>(settings.checkConfiguration));
+	}
+
+	void checkconfigUnknown() {
+		REDIRECT;
+		const char * const argv[] = {"cppcheck", "--check-config=unknown", "file.cpp"};
+		ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
+	}
 
     void unknownParam() {
         REDIRECT;

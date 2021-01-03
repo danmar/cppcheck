@@ -9811,7 +9811,7 @@ void Tokenizer::simplifyComma()
 
 void Tokenizer::checkConfiguration() const
 {
-    if (!mSettings->checkConfiguration)
+    if (mSettings->checkConfiguration == Settings::CheckConfig::Disabled)
         return;
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "%name% ("))

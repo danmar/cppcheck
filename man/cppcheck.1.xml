@@ -240,10 +240,10 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
            control the term elements. -->
       <varlistentry>
         <term>
-          <option>--check-config</option>
+          <option>--check-config=&lt;id&gt;</option>
         </term>
         <listitem>
-          <para>Check Cppcheck configuration. The normal code analysis is disabled by this flag.</para>
+          <para>Check Cppcheck configuration. The normal code analysis is disabled by this flag. To enable the analysis provide the optional mode 'analysis'</para>
         </listitem>
       </varlistentry>
       <varlistentry>
