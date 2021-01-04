@@ -856,7 +856,7 @@ struct InvalidContainerAnalyzer {
         ErrorPath errorPath;
         void add(const std::vector<Reference>& refs)
         {
-            for (const Reference r : refs) {
+            for (const Reference& r : refs) {
                 add(r);
             }
         }
