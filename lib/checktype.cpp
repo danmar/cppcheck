@@ -247,7 +247,7 @@ void CheckType::checkIntegerOverflowOptimisations()
         if (!Token::Match(tok, "<|<=|>=|>") || !tok->isBinaryOp())
             continue;
 
-        const std::string cmp = tok->str();
+        const std::string &cmp = tok->str();
         const Token * const lhs = tok->astOperand1();
         if (!Token::Match(lhs, "[+-]") || !lhs->isBinaryOp() || !lhs->valueType() || !lhs->valueType()->isIntegral() || lhs->valueType()->sign != ValueType::Sign::SIGNED)
             continue;
