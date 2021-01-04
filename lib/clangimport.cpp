@@ -337,7 +337,7 @@ namespace clangimport {
         const ::Type *addTypeTokens(TokenList *tokenList, const std::string &str, const Scope *scope = nullptr);
         void addFullScopeNameTokens(TokenList *tokenList, const Scope *recordScope);
         Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode, const Token *def);
-        Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children, const Token *def);
+        Scope *createScope(TokenList *tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children2, const Token *def);
         Token *createTokensCall(TokenList *tokenList);
         void createTokensFunctionDecl(TokenList *tokenList);
         void createTokensForCXXRecord(TokenList *tokenList);
