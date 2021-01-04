@@ -1,4 +1,5 @@
 #include "forwardanalyzer.h"
+#include "analyzer.h"
 #include "astutils.h"
 #include "settings.h"
 #include "symboldatabase.h"
@@ -19,11 +20,11 @@ struct ForwardTraversal {
     bool analyzeOnly;
 
     struct Branch {
-        Analyzer::Action action;
-        bool check;
-        bool escape;
-        bool escapeUnknown;
-        const Token* endBlock;
+        Analyzer::Action action = Analyzer::Action::None;
+        bool check = false;
+        bool escape = false;
+        bool escapeUnknown = false;
+        const Token* endBlock = nullptr;
         bool isEscape() const {
             return escape || escapeUnknown;
         }
