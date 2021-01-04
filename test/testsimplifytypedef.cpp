@@ -2685,12 +2685,14 @@ private:
                             "        AstNode() {}\n"
                             "    private:\n"
                             "        void createTokens();\n"
+                            "        void createScope(const std::vector<AstNodePtr> &children);\n"
                             "    };\n"
                             "}\n"
                             "void clangimport::AstNode::createTokens() {\n"
                             "    AstNodePtr range;\n"
                             "    range->createTokens();\n"
-                            "}";
+                            "}\n"
+                            "void clangimport::AstNode::createScope(const std::vector<AstNodePtr> & children2) { }";
         const char expected[] = "namespace clangimport { "
                                 "class AstNode ; "
                                 "class AstNode { "
@@ -2699,12 +2701,14 @@ private:
                                 "{ } "
                                 "private: "
                                 "void createTokens ( ) ; "
+                                "void createScope ( const std :: vector < std :: shared_ptr < AstNode > > & children ) ; "
                                 "} ; "
                                 "} "
                                 "void clangimport :: AstNode :: createTokens ( ) { "
                                 "std :: shared_ptr < AstNode > range ; "
                                 "range . createTokens ( ) ; "
-                                "}";
+                                "} "
+                                "void clangimport :: AstNode :: createScope ( const std :: vector < std :: shared_ptr < AstNode > > & children2 ) { }";
         ASSERT_EQUALS(expected, tok(code));
     }
 

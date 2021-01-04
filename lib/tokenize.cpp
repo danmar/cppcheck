@@ -1069,17 +1069,8 @@ void Tokenizer::simplifyTypedef()
                     }
 
                     // check for member functions
-                    else if (isCPP() && Token::Match(tok2, ")|] const| {")) {
-                        const Token *temp = tok2;
-                        while (temp && temp->str() == "]" && temp->link() && temp->link()->previous())
-                            temp = temp->link()->previous();
-                        if (!temp || !temp->link() || !temp->link()->previous())
-                            continue;
-                        const Token *func = temp->link()->previous();
-                        if (temp->str() != ")")
-                            continue;
-                        if (!func->previous()) // Ticket #4239
-                            continue;
+                    else if (isCPP() && tok2->str() == "(" && isFunctionHead(tok2, "{")) {
+                        const Token *func = tok2->previous();
 
                         /** @todo add support for multi-token operators */
                         if (func->previous()->str() == "operator")
