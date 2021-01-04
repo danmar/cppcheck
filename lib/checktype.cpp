@@ -20,6 +20,7 @@
 //---------------------------------------------------------------------------
 #include "checktype.h"
 
+#include "astutils.h"
 #include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
@@ -229,6 +230,7 @@ void CheckType::integerOverflowError(const Token *tok, const ValueFlow::Value &v
 void CheckType::checkIntegerOverflowOptimisations()
 {
     // Interesting blogs:
+    // https://www.airs.com/blog/archives/120
     // https://kristerw.blogspot.com/2016/02/how-undefined-signed-overflow-enables.html
     // https://research.checkpoint.com/2020/optout-compiler-undefined-behavior-optimizations/
 
@@ -247,38 +249,58 @@ void CheckType::checkIntegerOverflowOptimisations()
         if (!Token::Match(tok, "<|<=|>=|>") || !tok->isBinaryOp())
             continue;
 
-        const std::string &cmp = tok->str();
-        const Token * const lhs = tok->astOperand1();
-        if (!Token::Match(lhs, "[+-]") || !lhs->isBinaryOp() || !lhs->valueType() || !lhs->valueType()->isIntegral() || lhs->valueType()->sign != ValueType::Sign::SIGNED)
-            continue;
+        const Token *lhsTokens[2] = {tok->astOperand1(), tok->astOperand2()};
+        for (const Token *lhs: lhsTokens) {
+            std::string cmp = tok->str();
+            if (lhs == tok->astOperand2())
+                cmp[0] = (cmp[0] == '<') ? '>' : '<';
 
-        const Token *expr = lhs->astOperand1();
-        const Token *other = lhs->astOperand2();
-        if (expr->varId() == 0 || expr->varId() != lhs->astSibling()->varId())
-            continue;
+            if (!Token::Match(lhs, "[+-]") || !lhs->isBinaryOp() || !lhs->valueType() || !lhs->valueType()->isIntegral() || lhs->valueType()->sign != ValueType::Sign::SIGNED)
+                continue;
 
-        // x [+-] c cmp x
-        if (other->isNumber() && other->getKnownIntValue() > 0) {
-            bool result;
-            if (tok->astOperand1()->str() == "+")
-                result = (cmp == ">" || cmp == ">=");
-            else
-                result = (cmp == "<" || cmp == "<=");
-            integerOverflowOptimisationError(tok, result ? "true" : "false");
-        }
+            const Token *exprTokens[2] = {lhs->astOperand1(), lhs->astOperand2()};
+            for (const Token *expr: exprTokens) {
+                if (lhs->str() == "-" && expr == lhs->astOperand2())
+                    continue; // TODO?
 
-        // x + y cmp x
-        if (lhs->str() == "+" && other->varId() > 0) {
-            const std::string result = other->str() + cmp + "0";
-            integerOverflowOptimisationError(tok, result);
-        }
+                if (expr->hasKnownIntValue())
+                    continue;
 
-        // x - y cmp x
-        if (lhs->str() == "-" && other->varId() > 0) {
-            std::string cmp2 = cmp;
-            cmp2[0] = (cmp[0] == '<') ? '>' : '<';
-            const std::string result = other->str() + cmp2 + "0";
-            integerOverflowOptimisationError(tok, result);
+                if (!isSameExpression(mTokenizer->isCPP(),
+                                      false,
+                                      expr,
+                                      lhs->astSibling(),
+                                      mSettings->library,
+                                      false,
+                                      false))
+                    continue;
+
+                const Token * const other = expr->astSibling();
+
+                // x [+-] c cmp x
+                if (other->isNumber() && other->getKnownIntValue() > 0) {
+                    bool result;
+                    if (lhs->str() == "+")
+                        result = (cmp == ">" || cmp == ">=");
+                    else
+                        result = (cmp == "<" || cmp == "<=");
+                    integerOverflowOptimisationError(tok, result ? "true" : "false");
+                }
+
+                // x + y cmp x
+                if (lhs->str() == "+" && other->varId() > 0) {
+                    const std::string result = other->str() + cmp + "0";
+                    integerOverflowOptimisationError(tok, result);
+                }
+
+                // x - y cmp x
+                if (lhs->str() == "-" && other->varId() > 0) {
+                    std::string cmp2 = cmp;
+                    cmp2[0] = (cmp[0] == '<') ? '>' : '<';
+                    const std::string result = other->str() + cmp2 + "0";
+                    integerOverflowOptimisationError(tok, result);
+                }
+            }
         }
     }
 }
