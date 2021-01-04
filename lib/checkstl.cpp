@@ -1663,18 +1663,12 @@ void CheckStl::missingComparison()
                         if (Token::simpleMatch(tok3->astSibling(), "1"))
                         {
                             const Token* tokenGrandParent = tok3->astParent()->astParent();
-                            if (Token::simpleMatch(tokenGrandParent, "==") ||
-                                Token::simpleMatch(tokenGrandParent, "!="))
-                            {
+                            if (Token::Match(tokenGrandParent, "==|!="))
                                 bComparedInAdvance = true;
-                            }
                         }
                     }
-                    else if (Token::simpleMatch(tok3->astParent(), "!=") ||
-                             Token::simpleMatch(tok3->astParent(), "=="))
-                    {
+                    else if (Token::Match(tok3->astParent(), "==|!="))
                         incrementToken = nullptr;
-                    }
                 }
                 else if (tok3->str() == "break" || tok3->str() == "return")
                     incrementToken = nullptr;
