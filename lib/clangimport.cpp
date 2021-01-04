@@ -810,6 +810,8 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
                 break;
             }
         }
+        if (!range)
+            throw InternalError(tokenList->back(), "Failed to import CXXForRangeStmt. Range?");
         Token *expr2 = range->createTokens(tokenList);
         Token *par2 = addtoken(tokenList, ")");
 
