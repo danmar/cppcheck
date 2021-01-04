@@ -4104,8 +4104,7 @@ struct ConditionHandler {
                 if (!top)
                     continue;
 
-                if (!Token::Match(top->previous(), "if|while|for (") && !Token::Match(tok->astParent(), "&&|%oror%") &&
-                    !Token::simpleMatch(tok->astParent(), "?"))
+                if (!Token::Match(top->previous(), "if|while|for (") && !Token::Match(tok->astParent(), "&&|%oror%|?"))
                     continue;
 
                 Condition cond = parse(tok, settings);
@@ -4319,7 +4318,7 @@ struct ConditionHandler {
                         const Token* parent = tok2->astParent();
                         if (Token::Match(parent, "%oror%|&&")) {
                             if (op.empty()) {
-                                op = parent->str() == "&&" ? "&&" : "||";
+                                op = parent->str();
                             } else if (op != parent->str()) {
                                 mixedOperators = true;
                                 break;
