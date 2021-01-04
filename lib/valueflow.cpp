@@ -105,11 +105,14 @@
 #include <map>
 #include <set>
 #include <stack>
+#include <string>
 #include <tuple>
 #include <vector>
 
-static void bailoutInternal(const std::string& type, TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what, const std::string &file, int line, const std::string &function)
+static void bailoutInternal(const std::string& type, TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what, const std::string &file, int line, std::string function)
 {
+    if (function.find("operator") != std::string::npos)
+        function = "(valueFlow)";
     std::list<ErrorMessage::FileLocation> callstack(1, ErrorMessage::FileLocation(tok, tokenlist));
     ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::debug,
                         Path::stripDirectoryPart(file) + ":" + MathLib::toString(line) + ":" + function + " bailout: " + what, type, false);
