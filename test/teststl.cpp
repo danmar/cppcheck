@@ -1351,6 +1351,20 @@ private:
               "    return a;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (error) Iterator 'b.begin()' from different container 'a' are used together.\n", errout.str());
+
+        // #9973
+        check("void f() {\n"
+              "    std::list<int> l1;\n"
+              "    std::list<int> l2;\n"
+              "    std::list<int>& l = l2;\n"
+              "    for (auto it = l.begin(); it != l.end(); ++it) {\n"
+              "        if (*it == 1) {\n"
+              "            l.erase(it);\n"
+              "            break;\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Dereferencing invalid pointer
@@ -4727,6 +4741,17 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("namespace ns {\n"
+              "    using ArrayType = std::vector<int>;\n"
+              "}\n"
+              "using namespace ns;\n"
+              "static void f() {\n"
+              "    const ArrayType arr;\n"
+              "    for (const auto &a : arr) {}\n"
+              "}",
+              true);
+        ASSERT_EQUALS("[test.cpp:7]: (style) Iterating over container 'arr' that is always empty.\n", errout.str());
     }
 
     void checkMutexes() {

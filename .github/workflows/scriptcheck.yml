@@ -7,18 +7,12 @@ on: [push, pull_request]
 jobs:
   build:
 
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-      fail-fast: false # not worthwhile...
-
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v2
 
       - name: Install missing software on ubuntu
-        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install shellcheck
@@ -27,6 +21,8 @@ jobs:
           sudo pip3 install pexpect
           sudo pip3 install pylint
           sudo pip3 install unittest2
+          sudo pip install pytest
+          sudo pip3 install pytest
           
       - name: run Shellcheck
         run: |
@@ -46,3 +42,10 @@ jobs:
       - name: check .json files
         run: |
           find . -name '*.json' | xargs -n 1 python3 -m json.tool > /dev/null
+
+      - name: test addons
+        run: |
+          make -s
+          PYTHONPATH=./addons python -m pytest addons/test/test-*.py
+          PYTHONPATH=./addons python3 -m pytest addons/test/test-*.py
+

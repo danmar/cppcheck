@@ -160,16 +160,16 @@ void CheckOther::clarifyCalculation()
             if (!tok->astOperand1()->isArithmeticalOp() && tok->astOperand1()->tokType() != Token::eBitOp)
                 continue;
 
-            // bit operation in lhs and pointer in rhs => no clarification is needed
-            if (tok->astOperand1()->tokType() == Token::eBitOp && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->pointer > 0)
+            // non-pointer calculation in lhs and pointer in rhs => no clarification is needed
+            if (tok->astOperand1()->isBinaryOp() && Token::Match(tok->astOperand1(), "%or%|&|%|*|/") && tok->astOperand2()->valueType() && tok->astOperand2()->valueType()->pointer > 0)
                 continue;
 
             // bit operation in lhs and char literals in rhs => probably no mistake
             if (tok->astOperand1()->tokType() == Token::eBitOp && Token::Match(tok->astOperand2()->astOperand1(), "%char%") && Token::Match(tok->astOperand2()->astOperand2(), "%char%"))
                 continue;
 
-            // bitand operation in lhs with known integer value => probably no mistake
-            if (tok->astOperand1()->str() == "&" && tok->astOperand1()->isBinaryOp()) {
+            // 2nd operand in lhs has known integer value => probably no mistake
+            if (tok->astOperand1()->isBinaryOp() && tok->astOperand1()->astOperand2()->hasKnownIntValue()) {
                 const Token *op = tok->astOperand1()->astOperand2();
                 if (op->isNumber())
                     continue;
@@ -262,8 +262,9 @@ void CheckOther::checkSuspiciousSemicolon()
             // Ensure the semicolon is at the same line number as the if/for/while statement
             // and the {..} block follows it without an extra empty line.
             if (Token::simpleMatch(scope.bodyStart, "{ ; } {") &&
-                scope.bodyStart->previous()->linenr() == scope.bodyStart->tokAt(2)->linenr()
-                && scope.bodyStart->linenr()+1 >= scope.bodyStart->tokAt(3)->linenr()) {
+                scope.bodyStart->previous()->linenr() == scope.bodyStart->tokAt(2)->linenr() &&
+                scope.bodyStart->linenr()+1 >= scope.bodyStart->tokAt(3)->linenr() &&
+                !scope.bodyStart->tokAt(3)->isExpandedMacro()) {
                 suspiciousSemicolonError(scope.classDef);
             }
         }
@@ -273,7 +274,7 @@ void CheckOther::checkSuspiciousSemicolon()
 void CheckOther::suspiciousSemicolonError(const Token* tok)
 {
     reportError(tok, Severity::warning, "suspiciousSemicolon",
-                "Suspicious use of ; at the end of '" + (tok ? tok->str() : std::string()) + "' statement.", CWE398, true);
+                "Suspicious use of ; at the end of '" + (tok ? tok->str() : std::string()) + "' statement.", CWE398, false);
 }
 
 
@@ -543,7 +544,7 @@ void CheckOther::redundantCopyError(const Token *tok1, const Token* tok2, const 
 void CheckOther::redundantCopyInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)
 {
     const std::list<const Token *> callstack = { tok1, tok2 };
-    reportError(callstack, Severity::warning, "redundantCopyInSwitch",
+    reportError(callstack, Severity::style, "redundantCopyInSwitch",
                 "$symbol:" + var + "\n"
                 "Buffer '$symbol' is being written before its old content has been used. 'break;' missing?", CWE563, false);
 }
@@ -574,7 +575,7 @@ void CheckOther::redundantInitializationError(const Token *tok1, const Token* to
 void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)
 {
     const ErrorPath errorPath = { ErrorPathItem(tok1, "$symbol is assigned"), ErrorPathItem(tok2, "$symbol is overwritten") };
-    reportError(errorPath, Severity::warning, "redundantAssignInSwitch",
+    reportError(errorPath, Severity::style, "redundantAssignInSwitch",
                 "$symbol:" + var + "\n"
                 "Variable '$symbol' is reassigned a value before the old one has been used. 'break;' missing?", CWE563, false);
 }
@@ -714,7 +715,7 @@ void CheckOther::checkRedundantAssignmentInSwitch()
 
 void CheckOther::redundantBitwiseOperationInSwitchError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::warning,
+    reportError(tok, Severity::style,
                 "redundantBitwiseOperationInSwitch",
                 "$symbol:" + varname + "\n"
                 "Redundant bitwise operation on '$symbol' in 'switch' statement. 'break;' missing?");
@@ -894,19 +895,8 @@ void CheckOther::checkVariableScope()
 
     // In C it is common practice to declare local variables at the
     // start of functions.
-    if (mTokenizer->isC()) {
-        // Try to autodetect what coding style is used. If a local variable is
-        // declared in an inner scope then we will warn about all variables.
-        bool limitScope = false;
-        for (const Variable* var : symbolDatabase->variableList()) {
-            if (var && var->isLocal() && var->nameToken()->scope()->type != Scope::ScopeType::eFunction) {
-                limitScope = true;
-                break;
-            }
-        }
-        if (!limitScope)
-            return;
-    }
+    if (mSettings->daca && mTokenizer->isC())
+        return;
 
     for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || !var->isLocal() || (!var->isPointer() && !var->isReference() && !var->typeStartToken()->isStandardType()))
@@ -991,7 +981,7 @@ void CheckOther::checkVariableScope()
 bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& used)
 {
     const Scope* scope = tok->next()->scope();
-    bool loopVariable = scope->type == Scope::eFor || scope->type == Scope::eWhile || scope->type == Scope::eDo;
+    bool loopVariable = scope->isLoopScope();
     bool noContinue = true;
     const Token* forHeadEnd = nullptr;
     const Token* end = tok->link();
@@ -1275,7 +1265,7 @@ void CheckOther::checkPassByReference()
 
         bool inconclusive = false;
 
-        if (var->valueType()->type == ValueType::Type::CONTAINER) {
+        if (var->valueType() && var->valueType()->type == ValueType::Type::CONTAINER) {
         } else if (var->type() && !var->type()->isEnumType()) { // Check if type is a struct or class.
             // Ensure that it is a large object.
             if (!var->type()->classScope)
@@ -1370,6 +1360,8 @@ void CheckOther::checkConstVariable()
         if (!var->isReference())
             continue;
         if (var->isRValueReference())
+            continue;
+        if (var->isPointer())
             continue;
         if (var->isConst())
             continue;
@@ -1640,9 +1632,9 @@ static bool isConstTop(const Token *tok)
 {
     if (!tok)
         return false;
-    if (tok == tok->astTop())
+    if (!tok->astParent())
         return true;
-    if (Token::simpleMatch(tok->astParent(), ";") && tok->astTop() &&
+    if (Token::simpleMatch(tok->astParent(), ";") &&
         Token::Match(tok->astTop()->previous(), "for|if (") && Token::simpleMatch(tok->astTop()->astOperand2(), ";")) {
         if (Token::simpleMatch(tok->astParent()->astParent(), ";"))
             return tok->astParent()->astOperand2() == tok;
@@ -1663,6 +1655,29 @@ void CheckOther::checkIncompleteStatement()
             continue;
         if (!isConstTop(tok))
             continue;
+        if (tok->str() == "," && Token::simpleMatch(tok->astTop()->previous(), "for ("))
+            continue;
+
+        // Do not warn for statement when both lhs and rhs has side effects:
+        //   dostuff() || x=213;
+        if (Token::Match(tok, "%oror%|&&")) {
+            bool warn = false;
+            visitAstNodes(tok, [&warn](const Token *child) {
+                if (Token::Match(child, "%oror%|&&"))
+                    return ChildrenToVisit::op1_and_op2;
+                if (child->isAssignmentOp())
+                    return ChildrenToVisit::none;
+                if (child->tokType() == Token::Type::eIncDecOp)
+                    return ChildrenToVisit::none;
+                if (Token::Match(child->previous(), "%name% ("))
+                    return ChildrenToVisit::none;
+                warn = true;
+                return ChildrenToVisit::done;
+            });
+            if (!warn)
+                continue;
+        }
+
         const Token *rtok = nextAfterAstRightmostLeaf(tok);
         if (!Token::simpleMatch(tok->astParent(), ";") && !Token::simpleMatch(rtok, ";") &&
             !Token::Match(tok->previous(), ";|}|{ %any% ;"))
@@ -2123,7 +2138,7 @@ void CheckOther::checkDuplicateExpression()
                         if (assignment && warningEnabled)
                             selfAssignmentError(tok, tok->astOperand1()->expressionString());
                         else if (styleEnabled) {
-                            if (mTokenizer->isCPP() && mSettings->standards.cpp==Standards::CPP11 && tok->str() == "==") {
+                            if (mTokenizer->isCPP() && mSettings->standards.cpp >= Standards::CPP11 && tok->str() == "==") {
                                 const Token* parent = tok->astParent();
                                 while (parent && parent->astParent()) {
                                     parent = parent->astParent();
@@ -2662,6 +2677,9 @@ void CheckOther::checkRedundantPointerOp()
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (!tok->isUnaryOp("&") || !tok->astOperand1()->isUnaryOp("*"))
+            continue;
+
+        if (tok->isExpandedMacro())
             continue;
 
         // variable
@@ -3223,7 +3241,7 @@ void CheckOther::knownArgumentError(const Token *tok, const Token *ftok, const V
     const std::string &expr = tok->expressionString();
     const std::string &fun = ftok->str();
 
-    const char *id;;
+    const char *id;
     std::string errmsg = "Argument '" + expr + "' to function " + fun + " is always " + std::to_string(intvalue) + ". ";
     if (!isVariableExpressionHidden) {
         id = "knownArgument";

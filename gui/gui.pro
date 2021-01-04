@@ -13,10 +13,15 @@ QT += printsupport
 QT += help
 
 # Build online help
-#onlinehelp.target = online-help.qhc
-#onlinehelp.commands = qhelpgenerator $$PWD/help/online-help.qhp -o online-help.qch ; qhelpgenerator $$PWD/help/online-help.qhcp -o online-help.qhc
-#QMAKE_EXTRA_TARGETS += onlinehelp
-#PRE_TARGETDEPS += online-help.qhc
+onlinehelp.target = online-help.qhc
+equals(QT_MAJOR_VERSION, 5):lessThan(QT_MINOR_VERSION, 12) {
+    # qcollectiongenerator is used in case of QT version < 5.12
+    onlinehelp.commands = qcollectiongenerator $$PWD/help/online-help.qhcp -o $$PWD/help/online-help.qhc
+} else {
+    onlinehelp.commands = qhelpgenerator $$PWD/help/online-help.qhcp -o $$PWD/help/online-help.qhc
+}
+QMAKE_EXTRA_TARGETS += onlinehelp
+PRE_TARGETDEPS += online-help.qhc
 
 contains(LINKCORE, [yY][eE][sS]) {
     LIBS += -l../bin/cppcheck-core

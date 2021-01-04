@@ -94,6 +94,7 @@ private:
         TEST_CASE(varid61); // #4988 inline function
         TEST_CASE(varid62);
         TEST_CASE(varid63);
+        TEST_CASE(varid64); // #9928 - extern const char (*x[256])
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
@@ -134,6 +135,8 @@ private:
         TEST_CASE(varid_namespace_1);   // #7272
         TEST_CASE(varid_namespace_2);   // #7000
         TEST_CASE(varid_namespace_3);   // #8627
+        TEST_CASE(varid_namespace_4);
+        TEST_CASE(varid_namespace_5);
         TEST_CASE(varid_initList);
         TEST_CASE(varid_initListWithBaseTemplate);
         TEST_CASE(varid_initListWithScope);
@@ -193,6 +196,12 @@ private:
         TEST_CASE(varidclass20);   // #7578: int (*p)[2]
         TEST_CASE(varid_classnameshaddowsvariablename); // #3990
 
+        TEST_CASE(varidenum1);
+        TEST_CASE(varidenum2);
+        TEST_CASE(varidenum3);
+        TEST_CASE(varidenum4);
+        TEST_CASE(varidenum5);
+
         TEST_CASE(varidnamespace1);
         TEST_CASE(varidnamespace2);
         TEST_CASE(usingNamespace1);
@@ -202,6 +211,7 @@ private:
         TEST_CASE(setVarIdStructMembers1);
 
         TEST_CASE(decltype1);
+        TEST_CASE(decltype2);
 
         TEST_CASE(exprid1);
     }
@@ -213,6 +223,7 @@ private:
         settings.platform(Settings::Unix64);
         settings.standards.c   = Standards::C89;
         settings.standards.cpp = Standards::CPP11;
+        settings.checkUnusedTemplates = true;
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -231,6 +242,7 @@ private:
         settings.platform(Settings::Unix64);
         settings.standards.c   = Standards::C89;
         settings.standards.cpp = Standards::CPP11;
+        settings.checkUnusedTemplates = true;
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -249,6 +261,7 @@ private:
         settings.platform(Settings::Unix64);
         settings.standards.c   = Standards::C89;
         settings.standards.cpp = Standards::CPP11;
+        settings.checkUnusedTemplates = true;
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -1147,6 +1160,12 @@ private:
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
+    void varid64() {
+        const char code[] = "extern const char (*x[256]);";
+        const char expected[] = "1: extern const char ( * x@1 [ 256 ] ) ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
     void varid_for_1() {
         const char code[] = "void foo(int a, int b) {\n"
                             "  for (int a=1,b=2;;) {}\n"
@@ -1951,6 +1970,44 @@ private:
 
         ASSERT_EQUALS("5: int type@2 ;", getLine(actual,5));
         ASSERT_EQUALS("11: type@2 = 0 ;", getLine(actual,11));
+    }
+
+    void varid_namespace_4() {
+        const char code[] = "namespace X {\n"
+                            "  struct foo { int x;};\n"
+                            "  struct bar: public foo {\n"
+                            "    void dostuff();\n"
+                            "  };\n"
+                            "  void bar::dostuff() { int x2 = x * 2; }\n"
+                            "}";
+        ASSERT_EQUALS("1: namespace X {\n"
+                      "2: struct foo { int x@1 ; } ;\n"
+                      "3: struct bar : public foo {\n"
+                      "4: void dostuff ( ) ;\n"
+                      "5: } ;\n"
+                      "6: void bar :: dostuff ( ) { int x2@2 ; x2@2 = x@1 * 2 ; }\n"
+                      "7: }\n", tokenize(code, "test.cpp"));
+    }
+
+    void varid_namespace_5() {
+        const char code[] = "namespace X {\n"
+                            "  struct foo { int x;};\n"
+                            "  namespace Y {\n"
+                            "    struct bar: public foo {\n"
+                            "      void dostuff();\n"
+                            "    };\n"
+                            "    void bar::dostuff() { int x2 = x * 2; }\n"
+                            "  }\n"
+                            "}";
+        ASSERT_EQUALS("1: namespace X {\n"
+                      "2: struct foo { int x@1 ; } ;\n"
+                      "3: namespace Y {\n"
+                      "4: struct bar : public foo {\n"
+                      "5: void dostuff ( ) ;\n"
+                      "6: } ;\n"
+                      "7: void bar :: dostuff ( ) { int x2@2 ; x2@2 = x@1 * 2 ; }\n"
+                      "8: }\n"
+                      "9: }\n", tokenize(code, "test.cpp"));
     }
 
     void varid_initList() {
@@ -3077,6 +3134,70 @@ private:
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
+    void varidenum1() {
+        const char code[] = "const int eStart = 6;\n"
+                            "enum myEnum {\n"
+                            "  A = eStart;\n"
+                            "};\n";
+        const char expected[] = "1: const int eStart@1 = 6 ;\n"
+                                "2: enum myEnum {\n"
+                                "3: A = eStart@1 ;\n"
+                                "4: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidenum2() {
+        const char code[] = "const int eStart = 6;\n"
+                            "enum myEnum {\n"
+                            "  A = f(eStart);\n"
+                            "};\n";
+        const char expected[] = "1: const int eStart@1 = 6 ;\n"
+                                "2: enum myEnum {\n"
+                                "3: A = f ( eStart@1 ) ;\n"
+                                "4: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidenum3() {
+        const char code[] = "const int eStart = 6;\n"
+                            "enum myEnum {\n"
+                            "  A = f(eStart, x);\n"
+                            "};\n";
+        const char expected[] = "1: const int eStart@1 = 6 ;\n"
+                                "2: enum myEnum {\n"
+                                "3: A = f ( eStart@1 , x ) ;\n"
+                                "4: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidenum4() {
+        const char code[] = "const int eStart = 6;\n"
+                            "enum myEnum {\n"
+                            "  A = f(x, eStart);\n"
+                            "};\n";
+        const char expected[] = "1: const int eStart@1 = 6 ;\n"
+                                "2: enum myEnum {\n"
+                                "3: A = f ( x , eStart@1 ) ;\n"
+                                "4: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidenum5() {
+        const char code[] = "const int eStart = 6;\n"
+                            "enum myEnum {\n"
+                            "  A = f(x, eStart, y);\n"
+                            "};\n";
+        const char expected[] = "1: const int eStart@1 = 6 ;\n"
+                                "2: enum myEnum {\n"
+                                "3: A = f ( x , eStart@1 , y ) ;\n"
+                                "4: } ;\n";
+        const char current[] = "1: const int eStart@1 = 6 ;\n"
+                               "2: enum myEnum {\n"
+                               "3: A = f ( x , eStart , y ) ;\n"
+                               "4: } ;\n";
+        TODO_ASSERT_EQUALS(expected, current, tokenize(code));
+    }
+
     void varid_classnameshaddowsvariablename() {
         const char code[] = "class Data;\n"
                             "void strange_declarated(const Data& Data);\n"
@@ -3199,6 +3320,12 @@ private:
     void decltype1() {
         const char code[] = "void foo(int x, decltype(A::b) *p);";
         const char expected[] = "1: void foo ( int x@1 , decltype ( A :: b ) * p@2 ) ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void decltype2() {
+        const char code[] = "int x; decltype(x) y;";
+        const char expected[] = "1: int x@1 ; decltype ( x@1 ) y@2 ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 

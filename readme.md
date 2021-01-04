@@ -18,8 +18,8 @@ A manual is available [online](http://cppcheck.sourceforge.net/manual.pdf).
 
 Cppcheck is a hobby project with limited resources. You can help us by donating CPU (1 core or as many as you like). It is simple:
 
- 1. Download (and extract) Cppcheck source code
- 2. Run script: python cppcheck/tools/donate-cpu.py
+ 1. Download (and extract) Cppcheck source code.
+ 2. Run script: python cppcheck/tools/donate-cpu.py.
 
 The script will analyse debian source code and upload the results to a cppcheck server. We need these results both to improve Cppcheck and to detect regressions.
 
@@ -53,16 +53,16 @@ cmake ..
 cmake --build .
 ```
 
-If you want to compile the GUI you can use the flag
+If you want to compile the GUI you can use the flag.
 -DBUILD_GUI=ON
 
-For rules support (requires pcre) use the flag
+For rules support (requires pcre) use the flag.
 -DHAVE_RULES=ON
 
 For release builds it is recommended that you use:
 -DUSE_MATCHCOMPILER=ON
 
-Using cmake you can generate project files for Visual Studio, XCode, etc.
+Using cmake you can generate project files for Visual Studio,XCode,etc.
 
 ### qmake
 
@@ -118,13 +118,13 @@ Flags:
 If you just want to build Cppcheck without dependencies then you can use this command:
 
 ```shell
-g++ -o cppcheck -std=c++11 -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
+g++ -o cppcheck -std=c++11 -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml2 -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml2/*.cpp
 ```
 
 If you want to use `--rule` and `--rule-file` then dependencies are needed:
 
 ```shell
-g++ -o cppcheck -std=c++11 -lpcre -DHAVE_RULES -Ilib -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
+g++ -o cppcheck -std=c++11 -lpcre -DHAVE_RULES -Ilib -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml2 cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml2/*.cpp
 ```
 
 ### MinGW

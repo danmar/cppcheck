@@ -219,6 +219,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--bug-hunting") == 0)
                 mSettings->bugHunting = true;
 
+            // TODO: Rename or move this parameter?
+            else if (std::strncmp(argv[i], "--bug-hunting-check-function-max-time=", 38) == 0)
+                mSettings->bugHuntingCheckFunctionMaxTime = std::atoi(argv[i] + 38);
+
             // Check configuration
             else if (std::strcmp(argv[i], "--check-config") == 0)
                 mSettings->checkConfiguration = true;
@@ -576,6 +580,15 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings->plistOutput = "./";
                 else if (!endsWith(mSettings->plistOutput,'/'))
                     mSettings->plistOutput += '/';
+
+                const std::string plistOutput = Path::toNativeSeparators(mSettings->plistOutput);
+                if (!FileLister::isDirectory(plistOutput)) {
+                    std::string message("cppcheck: error: plist folder does not exist: \"");
+                    message += plistOutput;
+                    message += "\".";
+                    printMessage(message);
+                    return false;
+                }
             }
 
             // --project
@@ -912,7 +925,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         mSettings->checkAllConfigurations = true;
 
     if (mSettings->force)
-        mSettings->maxConfigs = ~0U;
+        mSettings->maxConfigs = INT_MAX;
 
     else if ((def || mSettings->preprocessOnly) && !maxconfigs)
         mSettings->maxConfigs = 1U;
@@ -1098,7 +1111,7 @@ void CmdLineParser::printHelp()
               "                         If used together with a Visual Studio Solution (*.sln)\n"
               "                         or Visual Studio Project (*.vcxproj) you can limit\n"
               "                         the configuration cppcheck should check.\n"
-              "                         For example: ""--project-configuration=Release|Win32"""
+              "                         For example: '--project-configuration=Release|Win32'\n"
               "    --max-configs=<limit>\n"
               "                         Maximum number of configurations to check in a file\n"
               "                         before skipping it. Default is '12'. If used together\n"
@@ -1119,6 +1132,18 @@ void CmdLineParser::printHelp()
               "                                 64 bit Windows\n"
               "                          * avr8\n"
               "                                 8 bit AVR microcontrollers\n"
+              "                          * elbrus-e1cp\n"
+              "                                 Elbrus e1c+ architecture\n"
+              "                          * pic8\n"
+              "                                 8 bit PIC microcontrollers\n"
+              "                                 Baseline and mid-range architectures\n"
+              "                          * pic8-enhanced\n"
+              "                                 8 bit PIC microcontrollers\n"
+              "                                 Enhanced mid-range and high end (PIC18) architectures\n"
+              "                          * pic16\n"
+              "                                 16 bit PIC microcontrollers\n"
+              "                          * mips32\n"
+              "                                 32 bit MIPS microcontrollers\n"
               "                          * native\n"
               "                                 Type sizes of host system are assumed, but no\n"
               "                                 further assumptions.\n"

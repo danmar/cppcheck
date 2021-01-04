@@ -9,29 +9,37 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-      fail-fast: false # not worthwhile...
+        os: [ubuntu-18.04, ubuntu-20.04, macos-10.15]
+      fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install missing software on ubuntu
-        if: matrix.os == 'ubuntu-latest'
+      - name: Install missing software on ubuntu 18.04
+        if: matrix.os == 'ubuntu-18.04'
         run: |
           sudo apt-get update
           sudo apt-get install libxml2-utils
           sudo apt-get install z3 libz3-dev
           cp externals/z3_version_old.h externals/z3_version.h
 
-      - name: Install missing software on macos
-        if: matrix.os == 'macos-latest'
+      - name: Install missing software on ubuntu 20.04
+        if: matrix.os == 'ubuntu-20.04' 
         run: |
-          brew install z3
+          sudo apt-get update
+          sudo apt-get install libxml2-utils
+          sudo apt-get install z3 libz3-dev
+
+      - name: Install missing software on macos
+        if: contains(matrix.os, 'macos')
+        run: |
+          brew install coreutils z3
+          cp externals/z3_version_old.h externals/z3_version.h
           
       - name: Install Qt
-        if: matrix.os == 'ubuntu-latest'
+        if: contains(matrix.os, 'ubuntu')
         uses: jurplel/install-qt-action@v2
         with:
           modules: 'qtcharts'
@@ -44,7 +52,7 @@ jobs:
           make -j$(nproc) check
           cd ..
 
-      - name: Unsigned char
+      - name: Build and test with Unsigned char
         run: |
           make clean
           make -j$(nproc) CXXFLAGS=-funsigned-char testrunner
@@ -53,7 +61,6 @@ jobs:
       - name: Build cppcheck
         run: |
           make clean
-          cp externals/z3_version_old.h externals/z3_version.h
           make -j$(nproc) USE_Z3=yes HAVE_RULES=yes
 
       - name: Build test
@@ -67,48 +74,61 @@ jobs:
       - name: Validate
         run: |
           make -j$(nproc) validateCFG validatePlatforms
+          
+      - name: Test addons
+        run: |
+          ./cppcheck --addon=threadsafety addons/test/threadsafety
+          ./cppcheck --addon=threadsafety --std=c++03 addons/test/threadsafety
 
       - name: Build GUI on ubuntu
-        if: matrix.os == 'ubuntu-latest'
+        if: contains(matrix.os, 'ubuntu')
         run: |
           pushd gui
           qmake HAVE_QCHART=yes
           make -j$(nproc)
 
       - name: Run GUI tests on ubuntu
-        if: matrix.os == 'ubuntu-latest'
+        if: contains(matrix.os, 'ubuntu')
         run: |
           pushd gui/test/projectfile
           qmake
           make -j$(nproc)
           ./test-projectfile
 
+      - name: Generate Qt help file on ubuntu
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          pushd gui/help
+          qhelpgenerator online-help.qhcp -o online-help.qhc
+
       # Run self check after "Build GUI" to include generated headers in analysis
       - name: Self check
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-20.04'
         run: |
           # compile with verification and ast matchers
           make clean
           make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2" MATCHCOMPILER=yes VERIFY=1
           # self check lib/cli
           mkdir b1
-          ./cppcheck -q -j$(nproc) --template=gcc --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling cli lib
+          ./cppcheck -q -j$(nproc) --template=gcc --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling cli lib
           # check gui with qt settings
           mkdir b2
-          ./cppcheck -q -j$(nproc) --template=gcc --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ --enable=style,performance,portability,warning,internal --exception-handling gui/*.cpp
+          ./cppcheck -q -j$(nproc) --template=gcc --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,internal --exception-handling gui/*.cpp
           # self check test and tools
-          ./cppcheck -q -j$(nproc) --template=gcc -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,internal --exception-handling test/*.cpp tools
+          ./cppcheck -q -j$(nproc) --template=gcc -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,internal --exception-handling test/*.cpp tools
 
       - name: Build triage on ubuntu
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-20.04'
         run: |
           pushd tools/triage
           qmake
           make -j$(nproc)
 
-      - name: Fuzzer
+      - name: Build Fuzzer
+        if: matrix.os == 'ubuntu-20.04'
         run: |
-          g++ -fsyntax-only -std=c++11 -Ilib oss-fuzz/*.cpp
+          pushd oss-fuzz
+          make -j$(nproc) CXX=clang++ CXXFLAGS="-fsanitize=address" fuzz-client translate
 
       - uses: actions/upload-artifact@v2
         with:

@@ -1,7 +1,7 @@
 #include <stddef.h>
-#include <inttypes.h>
+#include <stdint.h>
 
-uint32_t ui32Good (int a)
+uint32_t ui32Good (int abc)
 {
     uint32_t ui32good;
     int32_t i32good;

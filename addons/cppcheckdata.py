@@ -15,6 +15,8 @@ from fnmatch import fnmatch
 
 EXIT_CODE = 0
 
+current_dumpfile_suppressions = []
+
 class Directive:
     """
     Directive class. Contains information about each preprocessor directive in the source code.
@@ -318,6 +320,18 @@ class Token:
                 return value
         return None
 
+    def getKnownIntValue(self):
+        """
+        If token has a known int value then return that.
+        Otherwise returns None
+        """
+        if not self.values:
+            return None
+        for value in self.values:
+            if value.valueKind == 'known':
+                return value.intvalue
+        return None
+
 
 class Scope:
     """
@@ -347,6 +361,8 @@ class Scope:
     nestedIn = None
     type = None
     isExecutable = None
+    varlistId = None
+    varlist = None
 
     def __init__(self, element):
         self.Id = element.get('id')
@@ -362,6 +378,8 @@ class Scope:
         self.type = element.get('type')
         self.isExecutable = (self.type in ('Function', 'If', 'Else', 'For', 'While', 'Do',
                                            'Switch', 'Try', 'Catch', 'Unconditional', 'Lambda'))
+        self.varlistId = list()
+        self.varlist = list()
 
     def __repr__(self):
         attrs = ["Id", "className", "functionId", "bodyStartId", "bodyEndId",
@@ -376,6 +394,8 @@ class Scope:
         self.bodyEnd = IdMap[self.bodyEndId]
         self.nestedIn = IdMap[self.nestedInId]
         self.function = IdMap[self.functionId]
+        for v in self.varlistId:
+            self.varlist.append(IdMap[v])
 
 
 class Function:
@@ -636,12 +656,11 @@ class Suppression:
 
     def isMatch(self, file, line, message, errorId):
         if ((self.fileName is None or fnmatch(file, self.fileName))
-                and (self.lineNumber is None or line == self.lineNumber)
+                and (self.lineNumber is None or int(line) == int(self.lineNumber))
                 and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
                 and fnmatch(errorId, self.errorId)):
             return True
-        else:
-            return False
+        return False
 
 
 class Configuration:
@@ -871,6 +890,9 @@ class CppcheckData:
                     self.suppressions.append(Suppression(suppressions_node))
                 suppressions_done = True
 
+        global current_dumpfile_suppressions
+        current_dumpfile_suppressions = self.suppressions
+
         # Set links between rawTokens.
         for i in range(len(self.rawTokens)-1):
             self.rawTokens[i+1].previous = self.rawTokens[i]
@@ -893,13 +915,8 @@ class CppcheckData:
         cfg_function = None
         cfg_valueflow = None
 
-        # Scopes contains <varlist> with all occurred variables. Some of them
-        # appearaed in <variables> node for this configuration.
-        # Others are arguments of functions.
-        # They have similar tag <var> but doesn't contain any attributes. So we
-        # set set a special state when iterate <varlist> node to prevent
-        # overriding of cfg.variables list with empty values.
-        iter_varlist = False
+        # Iterating <varlist> in a <scope>.
+        iter_scope_varlist = False
 
         # Use iterable objects to traverse XML tree for dump files incrementally.
         # Iterative approach is required to avoid large memory consumption.
@@ -943,9 +960,9 @@ class CppcheckData:
                 cfg.scopes.append(Scope(node))
             elif node.tag == 'varlist':
                 if event == 'start':
-                    iter_varlist = True
+                    iter_scope_varlist = True
                 elif event == 'end':
-                    iter_varlist = False
+                    iter_scope_varlist = False
 
             # Parse functions
             elif node.tag == 'functionList' and event == 'start':
@@ -966,11 +983,14 @@ class CppcheckData:
 
             # Parse variables
             elif node.tag == 'var' and event == 'start':
-                var = Variable(node)
-                if var.nameTokenId:
-                    cfg.variables.append(var)
-                elif not iter_varlist:
-                    cfg_arguments.append(var)
+                if iter_scope_varlist:
+                    cfg.scopes[-1].varlistId.append(node.get('id'))
+                else:
+                    var = Variable(node)
+                    if var.nameTokenId:
+                        cfg.variables.append(var)
+                    else:
+                        cfg_arguments.append(var)
 
             # Parse valueflows (list of values)
             elif node.tag == 'valueflow' and event == 'start':
@@ -1096,6 +1116,12 @@ def simpleMatch(token, pattern):
     return True
 
 
+def is_suppressed(location, message, errorId):
+    for suppression in current_dumpfile_suppressions:
+        if suppression.isMatch(location.file, location.linenr, message, errorId):
+            return True
+    return False
+
 def reportError(location, severity, message, addon, errorId, extra=''):
     if '--cli' in sys.argv:
         msg = { 'file': location.file,
@@ -1108,6 +1134,8 @@ def reportError(location, severity, message, addon, errorId, extra=''):
                 'extra': extra}
         sys.stdout.write(json.dumps(msg) + '\n')
     else:
+        if is_suppressed(location, message, '%s-%s' % (addon, errorId)):
+            return
         loc = '[%s:%i]' % (location.file, location.linenr)
         if len(extra) > 0:
             message += ' (' + extra + ')'

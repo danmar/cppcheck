@@ -76,13 +76,7 @@ public:
         bool msc;
         bool useMfc;
 
-        void parseCommand(const std::string &command);
-
-        void parseCommandStd(const std::string& command, std::string::size_type *pos, std::string& defs);
-        void parseCommandDefine(const std::string& command, std::string::size_type *pos, std::string& defs);
-        void parseCommandUndefine(const std::string& command,  std::string::size_type *pos);
-        void parseCommandInclude(const std::string& command,  std::string::size_type *pos);
-        void parseCommandSystemInclude(const std::string& command,  std::string::size_type *pos);
+        void parseCommand(std::string command);
         void setDefines(std::string defs);
         void setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
     };

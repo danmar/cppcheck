@@ -41,6 +41,9 @@ private:
         settings.library.setalloc("malloc", id, -1);
         settings.library.setrealloc("realloc", id, -1);
         settings.library.setdealloc("free", id, 1);
+        while (!Library::ismemory(++id));
+        settings.library.setalloc("socket", id, -1);
+        settings.library.setdealloc("close", id, 1);
         while (!Library::isresource(++id));
         settings.library.setalloc("fopen", id, -1);
         settings.library.setrealloc("freopen", id, -1, 3);
@@ -135,6 +138,7 @@ private:
         TEST_CASE(ifelse14); // #9130 - if (x == (char*)NULL)
         TEST_CASE(ifelse15); // #9206 - if (global_ptr = malloc(1))
         TEST_CASE(ifelse16); // #9635 - if (p = malloc(4), p == NULL)
+        TEST_CASE(ifelse17); //  if (!!(!p))
 
         // switch
         TEST_CASE(switch1);
@@ -184,8 +188,6 @@ private:
 
         TEST_CASE(smartPtrInContainer); // #8262
 
-        TEST_CASE(recursiveCountLimit); // #5872 #6157 #9097
-
         TEST_CASE(functionCallCastConfig); // #9652
     }
 
@@ -213,32 +215,6 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-
-        // Check for leaks..
-        CheckLeakAutoVar c;
-        settings.checkLibrary = true;
-        settings.addEnabled("information");
-        c.runChecks(&tokenizer, &settings, this);
-    }
-
-    void checkP(const char code[], bool cpp = false) {
-        // Clear the error buffer..
-        errout.str("");
-
-        // Raw tokens..
-        std::vector<std::string> files(1, cpp?"test.cpp":"test.c");
-        std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-        // Preprocess..
-        simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
-
-        // Tokenizer..
-        Tokenizer tokenizer(&settings, this);
-        tokenizer.createTokens(std::move(tokens2));
-        tokenizer.simplifyTokens1("");
 
         // Check for leaks..
         CheckLeakAutoVar c;
@@ -1392,10 +1368,19 @@ private:
     }
 
     void ifelse8() { // #5747
-        check("void f() {\n"
+        check("int f() {\n"
               "    int fd = socket(AF_INET, SOCK_PACKET, 0 );\n"
               "    if (fd == -1)\n"
-              "        return;\n"
+              "        return -1;\n"
+              "    return fd;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    int fd = socket(AF_INET, SOCK_PACKET, 0 );\n"
+              "    if (fd != -1)\n"
+              "        return fd;\n"
+              "    return -1;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1501,6 +1486,24 @@ private:
               "        return;\n"
               "    free(p);\n"
               "    return;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void ifelse17() {
+        check("int *f() {\n"
+              "    int *p = realloc(nullptr, 10);\n"
+              "    if (!p)\n"
+              "        return NULL;\n"
+              "    return p;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int *f() {\n"
+              "    int *p = realloc(nullptr, 10);\n"
+              "    if (!!(!p))\n"
+              "        return NULL;\n"
+              "    return p;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -2043,25 +2046,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void recursiveCountLimit() { // #5872 #6157 #9097
-        ASSERT_THROW(checkP("#define ONE     else if (0) { }\n"
-                            "#define TEN     ONE ONE ONE ONE ONE ONE ONE ONE ONE ONE\n"
-                            "#define HUN     TEN TEN TEN TEN TEN TEN TEN TEN TEN TEN\n"
-                            "#define THOU    HUN HUN HUN HUN HUN HUN HUN HUN HUN HUN\n"
-                            "void foo() {\n"
-                            "  if (0) { }\n"
-                            "  THOU THOU\n"
-                            "}"), InternalError);
-        ASSERT_NO_THROW(checkP("#define ONE     if (0) { }\n"
-                               "#define TEN     ONE ONE ONE ONE ONE ONE ONE ONE ONE ONE\n"
-                               "#define HUN     TEN TEN TEN TEN TEN TEN TEN TEN TEN TEN\n"
-                               "#define THOU    HUN HUN HUN HUN HUN HUN HUN HUN HUN HUN\n"
-                               "void foo() {\n"
-                               "  if (0) { }\n"
-                               "  THOU THOU\n"
-                               "}"));
-    }
-
     void functionCallCastConfig() { // #9652
         Settings settingsFunctionCall = settings;
 
@@ -2091,6 +2075,67 @@ private:
 
 REGISTER_TEST(TestLeakAutoVar)
 
+class TestLeakAutoVarRecursiveCountLimit : public TestFixture {
+public:
+    TestLeakAutoVarRecursiveCountLimit() : TestFixture("TestLeakAutoVarRecursiveCountLimit") {
+    }
+
+private:
+    Settings settings;
+
+    void checkP(const char code[], bool cpp = false) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Raw tokens..
+        std::vector<std::string> files(1, cpp?"test.cpp":"test.c");
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+        // Tokenizer..
+        Tokenizer tokenizer(&settings, this);
+        tokenizer.createTokens(std::move(tokens2));
+        tokenizer.simplifyTokens1("");
+
+        // Check for leaks..
+        CheckLeakAutoVar c;
+        settings.checkLibrary = true;
+        settings.addEnabled("information");
+        c.runChecks(&tokenizer, &settings, this);
+    }
+
+    void run() OVERRIDE {
+        LOAD_LIB_2(settings.library, "std.cfg");
+
+        TEST_CASE(recursiveCountLimit); // #5872 #6157 #9097
+    }
+
+    void recursiveCountLimit() { // #5872 #6157 #9097
+        ASSERT_THROW(checkP("#define ONE     else if (0) { }\n"
+                            "#define TEN     ONE ONE ONE ONE ONE ONE ONE ONE ONE ONE\n"
+                            "#define HUN     TEN TEN TEN TEN TEN TEN TEN TEN TEN TEN\n"
+                            "#define THOU    HUN HUN HUN HUN HUN HUN HUN HUN HUN HUN\n"
+                            "void foo() {\n"
+                            "  if (0) { }\n"
+                            "  THOU THOU\n"
+                            "}"), InternalError);
+        ASSERT_NO_THROW(checkP("#define ONE     if (0) { }\n"
+                               "#define TEN     ONE ONE ONE ONE ONE ONE ONE ONE ONE ONE\n"
+                               "#define HUN     TEN TEN TEN TEN TEN TEN TEN TEN TEN TEN\n"
+                               "#define THOU    HUN HUN HUN HUN HUN HUN HUN HUN HUN HUN\n"
+                               "void foo() {\n"
+                               "  if (0) { }\n"
+                               "  THOU THOU\n"
+                               "}"));
+    }
+};
+
+REGISTER_TEST(TestLeakAutoVarRecursiveCountLimit)
 
 class TestLeakAutoVarStrcpy: public TestFixture {
 public:

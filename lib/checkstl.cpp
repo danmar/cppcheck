@@ -796,9 +796,15 @@ void CheckStl::mismatchingContainerIterator()
                 continue;
             if (val.lifetimeKind != ValueFlow::Value::LifetimeKind::Iterator)
                 continue;
-            if (isSameExpression(true, false, tok, val.tokvalue, mSettings->library, false, false))
-                continue;
-            mismatchingContainerIteratorError(tok, iterTok);
+            for (const LifetimeToken& lt:getLifetimeTokens(tok)) {
+                if (lt.inconclusive)
+                    continue;
+                const Token* contTok = lt.token;
+                if (isSameExpression(true, false, contTok, val.tokvalue, mSettings->library, false, false))
+                    continue;
+                mismatchingContainerIteratorError(tok, iterTok);
+            }
+
         }
     }
 }
@@ -1033,7 +1039,7 @@ void CheckStl::stlOutOfBounds()
     for (const Scope &scope : symbolDatabase->scopeList) {
         const Token* tok = scope.classDef;
         // only interested in conditions
-        if ((scope.type != Scope::eFor && scope.type != Scope::eWhile && scope.type != Scope::eIf && scope.type != Scope::eDo) || !tok)
+        if ((!scope.isLoopScope() && scope.type != Scope::eIf) || !tok)
             continue;
 
         const Token *condition = nullptr;
@@ -1995,7 +2001,7 @@ void CheckStl::checkDereferenceInvalidIterator()
     // Iterate over "if", "while", and "for" conditions where there may
     // be an iterator that is dereferenced before being checked for validity.
     for (const Scope &scope : mTokenizer->getSymbolDatabase()->scopeList) {
-        if (!(scope.type == Scope::eIf || scope.type == Scope::eDo || scope.type == Scope::eWhile || scope.type == Scope::eFor))
+        if (!(scope.type == Scope::eIf || scope.isLoopScope()))
             continue;
 
         const Token* const tok = scope.classDef;

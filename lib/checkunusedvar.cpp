@@ -1134,6 +1134,10 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                         variables.read(tok2->varId(), tok);
                 }
             }
+        } else if (tok->variable() && tok->variable()->isClass() && tok->variable()->type() &&
+                   (tok->variable()->type()->needInitialization == Type::NeedInitialization::False) &&
+                   tok->next()->str() == ";") {
+            variables.write(tok->varId(), tok);
         }
     }
 }
@@ -1229,6 +1233,10 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     continue;
 
                 if (op1Var->nameToken()->isAttributeUnused())
+                    continue;
+
+                // Avoid FP for union..
+                if (op1Var->type() && op1Var->type()->isUnionType())
                     continue;
 
                 // Bailout for unknown template classes, we have no idea what side effects such assignments have
@@ -1467,7 +1475,6 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
 {
     // a type that has no side effects (no constructors and no members with constructors)
     /** @todo false negative: check constructors for side effects */
-
     const std::pair<std::map<const Type *,bool>::iterator,bool> found=mIsRecordTypeWithoutSideEffectsMap.insert(
                 std::pair<const Type *,bool>(type,false)); //Initialize with side effects for possible recursions
     bool & withoutSideEffects = found.first->second;
@@ -1485,8 +1492,40 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
         if (f.argDef && Token::simpleMatch(f.argDef->link(), ") ="))
             continue; // ignore default/deleted constructors
         const bool emptyBody = (f.functionScope && Token::simpleMatch(f.functionScope->bodyStart, "{ }"));
-        const bool hasInitList = f.argDef && Token::simpleMatch(f.argDef->link(), ") :");
-        if (!emptyBody || hasInitList)
+
+        Token* nextToken = f.argDef->link();
+        if (Token::simpleMatch(nextToken, ") :")) {
+            // validating initialization list
+            nextToken = nextToken->next(); // goto ":"
+
+            for (const Token *initListToken = nextToken; Token::Match(initListToken, "[:,] %var% [({]"); initListToken = initListToken->linkAt(2)->next()) {
+                const Token* varToken = initListToken->next();
+                const Variable* variable = varToken->variable();
+                if (variable && !isVariableWithoutSideEffects(*variable)) {
+                    return withoutSideEffects = false;
+                }
+
+                const Token* valueEnd = initListToken->linkAt(2);
+                for (const Token* valueToken = initListToken->tokAt(3); valueToken != valueEnd; valueToken = valueToken->next()) {
+                    const Variable* initValueVar = valueToken->variable();
+                    if (initValueVar && !isVariableWithoutSideEffects(*initValueVar)) {
+                        return withoutSideEffects = false;
+                    }
+                    if ((valueToken->tokType() == Token::Type::eName) ||
+                        (valueToken->tokType() == Token::Type::eLambda) ||
+                        (valueToken->tokType() == Token::Type::eOther)) {
+                        return withoutSideEffects = false;
+                    }
+                    const Function* initValueFunc = valueToken->function();
+                    if (initValueFunc && !isFunctionWithoutSideEffects(*initValueFunc, valueToken,
+                    std::list<const Function*> {})) {
+                        return withoutSideEffects = false;
+                    }
+                }
+            }
+        }
+
+        if (!emptyBody)
             return (withoutSideEffects = false);
     }
 
@@ -1498,22 +1537,34 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
 
     // Is there a member variable with possible side effects
     for (const Variable& var : type->classScope->varlist) {
-        if (var.isPointer())
-            continue;
-
-        const Type* variableType = var.type();
-        if (variableType) {
-            if (!isRecordTypeWithoutSideEffects(variableType))
-                return (withoutSideEffects = false);
-        } else {
-            ValueType::Type valueType = var.valueType()->type;
-            if ((valueType == ValueType::Type::UNKNOWN_TYPE) || (valueType == ValueType::Type::NONSTD))
-                return (withoutSideEffects = false);
+        withoutSideEffects = isVariableWithoutSideEffects(var);
+        if (!withoutSideEffects) {
+            return withoutSideEffects;
         }
     }
 
 
     return (withoutSideEffects = true);
+}
+
+bool CheckUnusedVar::isVariableWithoutSideEffects(const Variable& var)
+{
+    if (var.isPointer())
+        return true;
+
+    const Type* variableType = var.type();
+    if (variableType) {
+        if (!isRecordTypeWithoutSideEffects(variableType))
+            return false;
+    } else {
+        if (WRONG_DATA(!var.valueType(), var.typeStartToken()))
+            return false;
+        ValueType::Type valueType = var.valueType()->type;
+        if ((valueType == ValueType::Type::UNKNOWN_TYPE) || (valueType == ValueType::Type::NONSTD))
+            return false;
+    }
+
+    return true;
 }
 
 bool CheckUnusedVar::isEmptyType(const Type* type)
@@ -1540,4 +1591,83 @@ bool CheckUnusedVar::isEmptyType(const Type* type)
 
     emptyType=false;   // unknown types are assumed to be nonempty
     return emptyType;
+}
+
+bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const Token* functionUsageToken,
+        std::list<const Function*> checkedFuncs)
+{
+    // no body to analyze
+    if (!func.hasBody()) {
+        return false;
+    }
+
+    for (const Token* argsToken = functionUsageToken->next(); !Token::simpleMatch(argsToken, ")"); argsToken = argsToken->next()) {
+        const Variable* argVar = argsToken->variable();
+        if (argVar && argVar->isGlobal()) {
+            return false; // TODO: analyze global variable usage
+        }
+    }
+
+    bool sideEffectReturnFound = false;
+    std::set<const Variable*> pointersToGlobals;
+    for (Token* bodyToken = func.functionScope->bodyStart->next(); bodyToken != func.functionScope->bodyEnd;
+         bodyToken = bodyToken->next()) {
+        // check variable inside function body
+        const Variable* bodyVariable = bodyToken->variable();
+        if (bodyVariable) {
+            if (!isVariableWithoutSideEffects(*bodyVariable)) {
+                return false;
+            }
+            // check if global variable is changed
+            if (bodyVariable->isGlobal() || (pointersToGlobals.find(bodyVariable) != pointersToGlobals.end())) {
+                const int depth = 20;
+                if (isVariableChanged(bodyToken, depth, mSettings, mTokenizer->isCPP())) {
+                    return false;
+                }
+                // check if pointer to global variable assigned to another variable (another_var = &global_var)
+                if (Token::simpleMatch(bodyToken->tokAt(-1), "&") && Token::simpleMatch(bodyToken->tokAt(-2), "=")) {
+                    const Token* assigned_var_token = bodyToken->tokAt(-3);
+                    if (assigned_var_token && assigned_var_token->variable()) {
+                        pointersToGlobals.insert(assigned_var_token->variable());
+                    }
+                }
+            }
+        }
+
+        // check nested function
+        const Function* bodyFunction = bodyToken->function();
+        if (bodyFunction) {
+            if (std::find(checkedFuncs.begin(), checkedFuncs.end(), bodyFunction) != checkedFuncs.end()) { // recursion found
+                continue;
+            }
+            checkedFuncs.push_back(bodyFunction);
+            if (!isFunctionWithoutSideEffects(*bodyFunction, bodyToken, checkedFuncs)) {
+                return false;
+            }
+        }
+
+        // check returned value
+        if (Token::simpleMatch(bodyToken, "return")) {
+            const Token* returnValueToken = bodyToken->next();
+            // TODO: handle complex return expressions
+            if (!Token::simpleMatch(returnValueToken->next(), ";")) {
+                sideEffectReturnFound = true;
+                continue;
+            }
+            // simple one-token return
+            const Variable* returnVariable = returnValueToken->variable();
+            if (returnValueToken->isLiteral() ||
+                (returnVariable && isVariableWithoutSideEffects(*returnVariable))) {
+                continue;
+            }
+            sideEffectReturnFound = true;
+        }
+
+        // unknown name
+        if (bodyToken->isNameOnly()) {
+            return false;
+        }
+    }
+
+    return !sideEffectReturnFound;
 }

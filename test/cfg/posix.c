@@ -200,6 +200,14 @@ void memleak_mmap(int fd)
     // cppcheck-suppress memleak
 }
 
+void * memleak_mmap2() // #8327
+{
+    void * data = mmap(NULL, 10, PROT_READ, MAP_PRIVATE, 1, 0);
+    if (data != MAP_FAILED)
+        return data;
+    return NULL;
+}
+
 void resourceLeak_fdopen(int fd)
 {
     // cppcheck-suppress unreadVariable
@@ -289,11 +297,11 @@ void ignoredReturnValue(void *addr, int fd)
     // cppcheck-suppress leakReturnValNotUsed
     mmap(addr, 255, PROT_NONE, MAP_PRIVATE, fd, 0);
     // cppcheck-suppress ignoredReturnValue
-    setuid(42);
-    // cppcheck-suppress ignoredReturnValue
     getuid();
     // cppcheck-suppress ignoredReturnValue
     access("filename", 1);
+    // no ignoredReturnValue shall be shown for
+    setuid(42);
 }
 
 

@@ -17,7 +17,7 @@ CPPCHECK_OPT='--check-library --enable=information --enable=style --error-exitco
 
 # Compiler settings
 CXX=g++
-CXX_OPT='-fsyntax-only -std=c++0x -Wno-format -Wno-format-security'
+CXX_OPT='-fsyntax-only -std=c++0x -Wno-format -Wno-format-security -Wno-deprecated-declarations'
 CC=gcc
 CC_OPT='-Wno-format -Wno-nonnull -Wno-implicit-function-declaration -Wno-deprecated-declarations -Wno-format-security -Wno-nonnull -fsyntax-only'
 
@@ -391,6 +391,28 @@ else
     fi
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --library=opencv2 ${DIR}opencv2.cpp
+
+# cppunit.cpp
+set +e
+pkg-config --version
+PKGCONFIG_RETURNCODE=$?
+set -e
+
+if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
+    echo "pkg-config needed to retrieve cppunit configuration is not available, skipping syntax check."
+else
+    set +e
+    CPPUNIT=$(pkg-config cppunit)
+    CPPUNIT_RETURNCODE=$?
+    set -e
+    if [ $CPPUNIT_RETURNCODE -ne 0 ]; then
+        echo "cppunit not found, skipping syntax check for cppunit"
+    else
+        echo "cppunit found, checking syntax with ${CXX} now."
+        ${CXX} ${CXX_OPT} -Wno-deprecated-declarations ${DIR}cppunit.cpp
+    fi
+fi
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=cppunit -f ${DIR}cppunit.cpp
 
 # Check the syntax of the defines in the configuration files
 set +e

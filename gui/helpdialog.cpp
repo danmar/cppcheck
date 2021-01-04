@@ -33,6 +33,11 @@ static QString getHelpFile()
           << datadir
           << (QApplication::applicationDirPath() + "/help")
           << QApplication::applicationDirPath();
+#ifdef FILESDIR
+    const QString filesdir = FILESDIR;
+    paths << (filesdir + "/help")
+          << filesdir;
+#endif
     for (QString p: paths) {
         QString filename = p + "/online-help.qhc";
         if (QFileInfo(filename).exists())
@@ -61,6 +66,8 @@ HelpDialog::HelpDialog(QWidget *parent) :
     }
 
     mHelpEngine = new QHelpEngine(helpFile);
+    // Disable the timestamp check of online-help.qhc by setting _q_readonly
+    mHelpEngine->setProperty("_q_readonly", QVariant::fromValue<bool>(true));
     mHelpEngine->setupData();
 
     mUi->contents->addWidget(mHelpEngine->contentWidget());

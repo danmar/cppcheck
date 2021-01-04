@@ -48,7 +48,9 @@ HEADERS += $${PWD}/analyzerinfo.h \
            $${PWD}/platform.h \
            $${PWD}/preprocessor.h \
            $${PWD}/programmemory.h \
+           $${PWD}/reverseanalyzer.h \
            $${PWD}/settings.h \
+           $${PWD}/summaries.h \
            $${PWD}/suppressions.h \
            $${PWD}/symboldatabase.h \
            $${PWD}/templatesimplifier.h \
@@ -104,7 +106,9 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/platform.cpp \
            $${PWD}/preprocessor.cpp \
            $${PWD}/programmemory.cpp \
+           $${PWD}/reverseanalyzer.cpp \
            $${PWD}/settings.cpp \
+           $${PWD}/summaries.cpp \
            $${PWD}/suppressions.cpp \
            $${PWD}/symboldatabase.cpp \
            $${PWD}/templatesimplifier.cpp \

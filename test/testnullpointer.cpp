@@ -101,6 +101,13 @@ private:
         TEST_CASE(nullpointer58); // #9807
         TEST_CASE(nullpointer59); // #9897
         TEST_CASE(nullpointer60); // #9842
+        TEST_CASE(nullpointer61);
+        TEST_CASE(nullpointer62);
+        TEST_CASE(nullpointer63);
+        TEST_CASE(nullpointer64);
+        TEST_CASE(nullpointer65); // #9980
+        TEST_CASE(nullpointer66); // #10024
+        TEST_CASE(nullpointer67); // #10062
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -692,13 +699,16 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(int *p)\n"
+        check("void foo(int *p, bool x)\n"
               "{\n"
               "    int var1 = x ? *p : 5;\n"
               "    if (!p)\n"
               "        ;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (warning) Either the condition '!p' is redundant or there is possible null pointer dereference: p.\n", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:3]: (warning) Either the condition '!p' is redundant or there is possible null pointer dereference: p.\n",
+            "",
+            errout.str());
 
         // while
         check("void f(int *p) {\n"
@@ -1888,6 +1898,182 @@ private:
               "    s1 = s1 ? s1 + 1 : &uuid[5];\n"
               "    if (!strcmp(\"00000000000000000000000000000000\", s1) )\n"
               "        return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer61() {
+        check("struct a {\n"
+              "  int *e;\n"
+              "};\n"
+              "struct f {\n"
+              "  a *g() const;\n"
+              "};\n"
+              "void h() {\n"
+              "  for (f b;;) {\n"
+              "    a *c = b.g();\n"
+              "    int *d = c->e;\n"
+              "    if (d)\n"
+              "      ;\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "  A* g() const;\n"
+              "  A* h() const;\n"
+              "};\n"
+              "void f(A* a) {\n"
+              "  if (!a->h())\n"
+              "    return;\n"
+              "  const A *b = a;\n"
+              "  while (b && !b->h())\n"
+              "      b = b->g();\n"
+              "  if (!b || b == b->g()->h())\n"
+              "      return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer62() {
+        check("struct A {\n"
+              "  bool f()() const;\n"
+              "};\n"
+              "void a(A *x) {\n"
+              "  std::string b = x && x->f() ? \"\" : \"\";\n"
+              "  if (x) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "  bool f()() const;\n"
+              "};\n"
+              "void a(A *x) {\n"
+              "  std::string b = (!x || x->f()) ? \"\" : \"\";\n"
+              "  if (x) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "  A * aa;\n"
+              "};\n"
+              "void b(A*);\n"
+              "void a(A *x) {\n"
+              "  b(x ? x->aa : nullptr);\n"
+              "  if (!x) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer63() {
+        check("struct A {\n"
+              "    A* a() const;\n"
+              "    A* b() const;\n"
+              "};\n"
+              "A* f(A*);\n"
+              "void g(const A* x) {\n"
+              "    A *d = x->a();\n"
+              "    d = f(d->b()) ? d->a() : nullptr;\n"
+              "    if (d && f(d->b())) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer64() {
+        check("struct A {\n"
+              "  A* f() const;\n"
+              "  int g() const;\n"
+              "};\n"
+              "bool a;\n"
+              "bool b(A* c) {\n"
+              "    if (c->g() == 0)\n"
+              "      ;\n"
+              "    A *aq = c;\n"
+              "    if (c->g() == 0)\n"
+              "      c = c->f();\n"
+              "    if (c)\n"
+              "      for (A *d = c; d != aq; d = d->f()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "  A* g() const;\n"
+              "  A* h() const;\n"
+              "};\n"
+              "bool i(A*);\n"
+              "void f(A* x) {\n"
+              "  if (i(x->g())) {\n"
+              "    A *y = x->g();\n"
+              "    x = x->g()->h();\n"
+              "    if (x && x->g()) {\n"
+              "        y = x->g()->h();\n"
+              "    }\n"
+              "    if (!y) {}\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer65() {
+        check("struct A {\n"
+              "    double get();\n"
+              "};\n"
+              "double x;\n"
+              "double run(A** begin, A** end) {\n"
+              "    A* a = nullptr;\n"
+              "    while (begin != end) {\n"
+              "        a = *begin;\n"
+              "        x = a->get();\n"
+              "        ++begin;\n"
+              "    }\n"
+              "    x = 0;\n"
+              "    if (a)\n"
+              "        return a->get();\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer66() {
+        check("int f() {\n"
+              "    int ret = 0;\n"
+              "    int *v = nullptr;\n"
+              "    if (!MyAlloc(&v)) {\n"
+              "        ret = -1;\n"
+              "        goto done;\n"
+              "    }\n"
+              "    DoSomething(*v);\n"
+              "done:\n"
+              "    if (v)\n"
+              "      MyFree(&v);\n"
+              "    return ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer67() {
+        check("int result;\n"
+              "\n"
+              "int test_b(void) {\n"
+              "    char **string = NULL;\n"
+              "\n"
+              "    /* The bug disappears if \"result =\" is omitted. */\n"
+              "    result = some_other_call(&string);\n"
+              "    if (string && string[0])\n"
+              "        return 0;\n"
+              "    return -1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int result;\n"
+              "\n"
+              "int test_b(void) {\n"
+              "    char **string = NULL;\n"
+              "\n"
+              "    some_other_call(&string);\n"
+              "    if (string && string[0])\n"
+              "        return 0;\n"
+              "    return -1;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

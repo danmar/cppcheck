@@ -31,6 +31,7 @@
 #include "utils.h"
 
 class Library;
+class Scope;
 class Settings;
 class Token;
 class Variable;
@@ -48,6 +49,8 @@ enum class ChildrenToVisit {
  */
 void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *)> visitor);
 void visitAstNodes(Token *ast, std::function<ChildrenToVisit(Token *)> visitor);
+
+const Token* findAstNode(const Token* ast, const std::function<bool(const Token*)>& pred);
 
 std::vector<const Token*> astFlatten(const Token* tok, const char* op);
 
@@ -90,6 +93,9 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
 
 bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknown = false);
 
+const Token* previousBeforeAstLeftmostLeaf(const Token* tok);
+Token* previousBeforeAstLeftmostLeaf(Token* tok);
+
 const Token * nextAfterAstRightmostLeaf(const Token * tok);
 Token* nextAfterAstRightmostLeaf(Token* tok);
 
@@ -108,6 +114,10 @@ const Token* getCondTok(const Token* tok);
 
 Token* getCondTokFromEnd(Token* endBlock);
 const Token* getCondTokFromEnd(const Token* endBlock);
+
+/// For a "break" token, locate the next token to execute. The token will
+/// be either a "}" or a ";".
+const Token *findNextTokenFromBreak(const Token *breakToken);
 
 /**
  * Extract for loop values: loopvar varid, init value, step value, last value (inclusive)
@@ -200,6 +210,13 @@ bool isThisChanged(const Token* start, const Token* end, int indirect, const Set
 
 const Token* findVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
+
+bool isExpressionChanged(const Token* expr,
+                         const Token* start,
+                         const Token* end,
+                         const Settings* settings,
+                         bool cpp,
+                         int depth = 20);
 
 /// If token is an alias if another variable
 bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive = nullptr);

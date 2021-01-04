@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -173,6 +173,11 @@ public:
      */
     static std::string stripDirectoryPart(const std::string &file);
 
+    /**
+      * @brief Checks if a File exists
+      * @param file Path to be checked if it is a File
+      * @return true if given path is a File
+      */
     static bool fileExists(const std::string &file);
 };
 

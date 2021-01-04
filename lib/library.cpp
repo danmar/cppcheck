@@ -56,7 +56,7 @@ static void gettokenlistfromvalid(const std::string& valid, TokenList& tokenList
     }
 }
 
-Library::Library() : mAllocId(0)
+Library::Library() : bugHunting(false), mAllocId(0)
 {
 }
 
@@ -646,18 +646,26 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
 
     for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
         const std::string functionnodename = functionnode->Name();
-        if (functionnodename == "noreturn")
-            mNoReturn[name] = (strcmp(functionnode->GetText(), "true") == 0);
-        else if (functionnodename == "pure")
+        if (functionnodename == "noreturn") {
+            if (strcmp(functionnode->GetText(), "false") == 0)
+                mNoReturn[name] = FalseTrueMaybe::False;
+            else if (strcmp(functionnode->GetText(), "maybe") == 0)
+                mNoReturn[name] = FalseTrueMaybe::Maybe;
+            else
+                mNoReturn[name] = FalseTrueMaybe::True; // Safe
+        } else if (functionnodename == "pure")
             func.ispure = true;
         else if (functionnodename == "const") {
             func.ispure = true;
             func.isconst = true; // a constant function is pure
         } else if (functionnodename == "leak-ignore")
             func.leakignore = true;
-        else if (functionnodename == "use-retval")
-            func.useretval = true;
-        else if (functionnodename == "returnValue") {
+        else if (functionnodename == "use-retval") {
+            func.useretval = Library::UseRetValType::DEFAULT;
+            if (const char *type = functionnode->Attribute("type"))
+                if (std::strcmp(type, "error-code") == 0)
+                    func.useretval = Library::UseRetValType::ERROR_CODE;
+        } else if (functionnodename == "returnValue") {
             if (const char *expr = functionnode->GetText())
                 mReturnValue[name] = expr;
             if (const char *type = functionnode->Attribute("type"))
@@ -1278,14 +1286,14 @@ bool Library::formatstr_secure(const Token* ftok) const
     return functions.at(getFunctionName(ftok)).formatstr_secure;
 }
 
-bool Library::isUseRetVal(const Token* ftok) const
+Library::UseRetValType Library::getUseRetValType(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))
-        return false;
+        return Library::UseRetValType::NONE;
     const std::map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
     if (it != functions.cend())
         return it->second.useretval;
-    return false;
+    return Library::UseRetValType::NONE;
 }
 
 const std::string& Library::returnValue(const Token *ftok) const
@@ -1399,14 +1407,19 @@ bool Library::isFunctionConst(const Token *ftok) const
     const std::map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
     return (it != functions.end() && it->second.isconst);
 }
+
 bool Library::isnoreturn(const Token *ftok) const
 {
     if (ftok->function() && ftok->function()->isAttributeNoreturn())
         return true;
     if (isNotLibraryFunction(ftok))
         return false;
-    const std::map<std::string, bool>::const_iterator it = mNoReturn.find(getFunctionName(ftok));
-    return (it != mNoReturn.end() && it->second);
+    const std::map<std::string, FalseTrueMaybe>::const_iterator it = mNoReturn.find(getFunctionName(ftok));
+    if (it == mNoReturn.end())
+        return false;
+    if (it->second == FalseTrueMaybe::Maybe)
+        return !bugHunting; // in bugHunting "maybe" means function is not noreturn
+    return it->second == FalseTrueMaybe::True;
 }
 
 bool Library::isnotnoreturn(const Token *ftok) const
@@ -1415,8 +1428,12 @@ bool Library::isnotnoreturn(const Token *ftok) const
         return false;
     if (isNotLibraryFunction(ftok))
         return false;
-    const std::map<std::string, bool>::const_iterator it = mNoReturn.find(getFunctionName(ftok));
-    return (it != mNoReturn.end() && !it->second);
+    const std::map<std::string, FalseTrueMaybe>::const_iterator it = mNoReturn.find(getFunctionName(ftok));
+    if (it == mNoReturn.end())
+        return false;
+    if (it->second == FalseTrueMaybe::Maybe)
+        return bugHunting; // in bugHunting "maybe" means function is not noreturn
+    return it->second == FalseTrueMaybe::False;
 }
 
 bool Library::markupFile(const std::string &path) const

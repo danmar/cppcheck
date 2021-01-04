@@ -1,7 +1,7 @@
-misra_21.6:misra-suppressions1-test.c:7
-misra_14_4
-misra.5.2
-MISRA_16_4:misra-suppressions1-test.c
-MISRA.16.6:misra-suppressions1-test.c
-MISRA_4_1:misra-suppressions2-test.c
-MISRA.19_2:misra-suppressions2-test.c
+misra-c2012-21.6:*/misra-suppressions1-test.c:7
+misra-c2012-14.4
+misra-c2012-5.2
+misra-c2012-16.4:*/misra-suppressions1-test.c
+misra-c2012-16.6:*/misra-suppressions1-test.c
+misra-c2012-4.1:*/misra-suppressions2-test.c
+misra-c2012-19.2:*/misra-suppressions2-test.c

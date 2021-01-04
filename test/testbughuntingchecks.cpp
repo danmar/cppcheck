@@ -36,6 +36,20 @@ private:
         settings.inconclusive = true;
         LOAD_LIB_2(settings.library, "std.cfg");
         TEST_CASE(checkAssignment);
+        TEST_CASE(arrayIndexOutOfBounds1);
+        TEST_CASE(arrayIndexOutOfBounds2);
+        TEST_CASE(arrayIndexOutOfBounds3);
+        TEST_CASE(arrayIndexOutOfBounds4);
+        TEST_CASE(arrayIndexOutOfBounds5);
+        TEST_CASE(arrayIndexOutOfBounds6);
+        TEST_CASE(arrayIndexOutOfBoundsDim1);
+        TEST_CASE(bufferOverflowMemCmp1);
+        TEST_CASE(bufferOverflowMemCmp2);
+        TEST_CASE(bufferOverflowStrcpy1);
+        TEST_CASE(bufferOverflowStrcpy2);
+
+        TEST_CASE(divisionByZeroNoReturn);
+
         TEST_CASE(uninit);
         TEST_CASE(uninit_array);
         TEST_CASE(uninit_function_par);
@@ -51,6 +65,7 @@ private:
     }
 
     void check(const char code[]) {
+        settings.bugHunting = settings.library.bugHunting = true;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
@@ -66,6 +81,141 @@ private:
               "void foo(S *s, int any) { s->x = any; }");
         ASSERT_EQUALS("[test.cpp:2]: (error) There is assignment, cannot determine that value is greater or equal with 0\n", errout.str());
     }
+
+    void arrayIndexOutOfBounds1() {
+        check("void foo(int x) {\n"
+              "  int p[8];"
+              "  p[x] = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Array index out of bounds, cannot determine that x is less than 8\n"
+                      "[test.cpp:2]: (error) Array index out of bounds, cannot determine that x is not negative\n",
+                      errout.str());
+    }
+
+    void arrayIndexOutOfBounds2() { // loop
+        check("void foo(int n) {\n"
+              "  int p[8];\n"
+              "  for (int i = 0; i < n; i++)\n"
+              "    p[i] = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array index out of bounds, cannot determine that i is less than 8\n"
+                      "[test.cpp:4]: (error) Array index out of bounds, cannot determine that i is not negative\n",
+                      errout.str());
+
+        // .. with unknown expression
+        check("void foo(int n) {\n"
+              "  int p[8];\n"
+              "  crx_data_header_t *d =\n"
+              "    &libraw_internal_data.unpacker_data.crx_header[framei];\n"
+              "  for (int i = 0; i < n; i++)\n"
+              "    p[i] = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Array index out of bounds, cannot determine that i is less than 8\n"
+                      "[test.cpp:6]: (error) Array index out of bounds, cannot determine that i is not negative\n",
+                      errout.str());
+    }
+
+    void arrayIndexOutOfBounds3() { // struct
+        check("struct S { int x; };\n"
+              "void foo(short i) {\n"
+              "  S s[8];\n"
+              "  if (s[i].x == 0) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array index out of bounds, cannot determine that i is less than 8\n"
+                      "[test.cpp:4]: (error) Array index out of bounds, cannot determine that i is not negative\n"
+                      "[test.cpp:4]: (error) Cannot determine that 's[i]' is initialized\n",
+                      errout.str());
+    }
+
+    void arrayIndexOutOfBounds4() { // ensure there are warnings for bailout value
+        check("void foo(short i) {\n"
+              "    int buf[8];\n"
+              "\n"
+              "    data *d = x;\n"
+              "    switch (d->layout) { case 0: break; }\n"
+              "\n"
+              "    if (buf[i] > 0) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array index out of bounds, cannot determine that i is less than 8\n"
+                      "[test.cpp:7]: (error) Array index out of bounds, cannot determine that i is not negative\n"
+                      "[test.cpp:7]: (error) Cannot determine that 'buf[i]' is initialized\n",
+                      errout.str());
+    }
+
+    void arrayIndexOutOfBounds5() {
+        check("struct {\n"
+              "    struct { int z; } y;\n"
+              "} x;\n"
+              "\n"
+              "void foo(int i) {\n"
+              "    for (int c = 0; c <= i; c++)\n"
+              "        x.y.z = 13;\n"
+              "    int buf[10];\n"
+              "    if (buf[i] > 0) { }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array index out of bounds, cannot determine that i is less than 10\n"
+                      "[test.cpp:9]: (error) Array index out of bounds, cannot determine that i is not negative\n"
+                      "[test.cpp:9]: (error) Cannot determine that 'buf[i]' is initialized\n",
+                      errout.str());
+    }
+
+    void arrayIndexOutOfBounds6() {
+        check("int buf[5];\n"
+              "uint16_t foo(size_t offset) {\n"
+              "    uint8_t c = (offset & 0xc0) >> 6;\n"
+              "    return 2 * buf[c];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array index out of bounds, cannot determine that c is less than 5\n", errout.str());
+    }
+
+    void arrayIndexOutOfBoundsDim1() { // itc test case
+        check("void overrun_st_008 () {\n"
+              "    int buf[5][6];\n"
+              "    buf[5][5] = 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index out of bounds, cannot determine that 5 is less than 5\n", errout.str());
+    }
+
+    void bufferOverflowMemCmp1() {
+        // CVE-2020-24265
+        check("void foo(const char *pktdata, int datalen) {\n"
+              "  if (memcmp(pktdata, \"MGC\", 3)) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Buffer read/write, when calling 'memcmp' it cannot be determined that 1st argument is not overflowed\n", errout.str());
+    }
+
+    void bufferOverflowMemCmp2() {
+        check("void foo(const char *pktdata, unsigned int datalen) {\n"
+              "  if (memcmp(pktdata, \"MGC\", datalen)) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Buffer read/write, when calling 'memcmp' it cannot be determined that 1st argument is not overflowed\n", errout.str());
+    }
+
+    void bufferOverflowStrcpy1() {
+        check("void foo(char *p) {\n"
+              "  strcpy(p, \"hello\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Buffer read/write, when calling 'strcpy' it cannot be determined that 1st argument is not overflowed\n", errout.str());
+    }
+
+    void bufferOverflowStrcpy2() {
+        check("void foo(char *p, const char *q) {\n"
+              "  strcpy(p, q);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Buffer read/write, when calling 'strcpy' it cannot be determined that 1st argument is not overflowed\n", errout.str());
+    }
+
+
+    void divisionByZeroNoReturn() {
+        // Don't know if function is noreturn or not..
+        check("int f(int leftarg, int rightarg) {\n"
+              "  if (rightarg == 0)\n"
+              "    raise (SIGFPE);\n"  // <- maybe noreturn
+              "  return leftarg / rightarg;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) There is division, cannot determine that there can't be a division by zero.\n", errout.str());
+    }
+
 
     void uninit() {
         check("void foo() { int x; x = x + 1; }");
@@ -92,7 +242,7 @@ private:
         // constant parameters should point at initialized data
 
         check("char foo(char id[]) { return id[0]; }");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that 'id[0]' is initialized\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Cannot determine that 'id[0]' is initialized (you can use 'const' to say data must be initialized)\n", errout.str());
 
         check("char foo(const char id[]) { return id[0]; }");
         ASSERT_EQUALS("", errout.str());
@@ -106,6 +256,15 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (error, inconclusive) Cannot determine that 'data[0]' is initialized. It is inconclusive if there would be a problem in the function call.\n", errout.str());
 
         check("void foo(int *p) { if (p) *p=0; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class C {\n"
+              "public:\n"
+              "  C();\n"
+              "  int x;\n"
+              "};\n"
+              "\n"
+              "void foo(const C &c) { int x = c.x; }");
         ASSERT_EQUALS("", errout.str());
     }
 

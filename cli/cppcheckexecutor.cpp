@@ -896,10 +896,12 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     }
 
     if (!settings.buildDir.empty()) {
+        settings.loadSummaries();
+
         std::list<std::string> fileNames;
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i)
             fileNames.emplace_back(i->first);
-        AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.project.fileSettings);
+        AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, settings.project.fileSettings);
     }
 
     unsigned int returnValue = 0;
@@ -1168,7 +1170,7 @@ bool CppCheckExecutor::tryLoadLibrary(Library& destination, const char* basepath
  * Execute a shell command and read the output from it. Returns true if command terminated successfully.
  */
 // cppcheck-suppress passedByValue
-bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output)
+bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> args, const std::string &redirect, std::string *output)
 {
     output->clear();
 

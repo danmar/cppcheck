@@ -169,7 +169,19 @@ public:
      * - All executable code.
      * - Unused types/variables/etc
      */
-    void simplifyHeaders();
+    void simplifyHeadersAndUnusedTemplates();
+
+    /**
+     * Remove extra "template" keywords that are not used by Cppcheck
+     */
+    void removeExtraTemplateKeywords();
+
+
+    /** Split up template right angle brackets.
+     * foo < bar < >> => foo < bar < > >
+     */
+    void splitTemplateRightAngleBrackets(bool check);
+
 
     /**
      * Deletes dead code between 'begin' and 'end'.
@@ -251,6 +263,9 @@ public:
     void removeMacrosInGlobalScope();
 
     void addSemicolonAfterUnknownMacro();
+
+    // Remove C99 and CPP11 _Pragma(str)
+    void removePragma();
 
     /** Remove undefined macro in class definition:
       * class DLLEXPORT Fred { };

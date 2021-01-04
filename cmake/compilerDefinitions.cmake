@@ -11,8 +11,7 @@ if (UNIX)
     # TODO: check if this can be enabled again for Clang - also done in Makefile
     if (CMAKE_BUILD_TYPE MATCHES "Debug" AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
         add_definitions(-D_GLIBCXX_DEBUG)
-    endif()
-    add_definitions(-DFILESDIR="${FILESDIR}")
+    endif()    
 endif()
 
 if (HAVE_RULES)
@@ -26,3 +25,6 @@ endif()
 if (ENABLE_CHECK_INTERNAL)
     add_definitions(-DCHECK_INTERNAL)
 endif()
+
+file(TO_CMAKE_PATH ${FILESDIR} _filesdir)
+add_definitions(-DFILESDIR="${_filesdir}")

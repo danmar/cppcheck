@@ -33,6 +33,7 @@ else()
 endif()
 
 option(BUILD_TESTS          "Build tests"                                                   OFF)
+option(REGISTER_TESTS       "Register tests in CTest"                                       ON)
 option(ENABLE_CHECK_INTERNAL "Enable internal checks"                                       OFF)
 option(ENABLE_OSS_FUZZ      "Enable the OSS-Fuzz related targets"                           ON)
 option(BUILD_GUI            "Build the qt application"                                      OFF)
@@ -40,13 +41,16 @@ option(WITH_QCHART          "When building GUI(need BUILD_GUI=ON), use Qt5 Chart
 
 option(HAVE_RULES           "Usage of rules (needs PCRE library and headers)"               OFF)
 option(USE_Z3               "Usage of z3 library"                                           OFF)
+option(USE_BUNDLED_TINYXML2 "Usage of bundled tinyxml2 library"                             ON)
 
-# precompiled headers do not emit compiler warnings so we cannot use them right now
-#if (CMAKE_VERSION VERSION_EQUAL "3.16" OR CMAKE_VERSION VERSION_GREATER "3.16")
-#    set(CMAKE_DISABLE_PRECOMPILE_HEADERS Off CACHE BOOL "Disable precompiled headers")
-#else()
+if (CMAKE_VERSION VERSION_EQUAL "3.16" OR CMAKE_VERSION VERSION_GREATER "3.16")
+    set(CMAKE_DISABLE_PRECOMPILE_HEADERS Off CACHE BOOL "Disable precompiled headers")
+    # need to disable the prologue or it will be treated like a system header and not emit any warnings
+    # see https://gitlab.kitware.com/cmake/cmake/-/issues/21219
+    set(CMAKE_PCH_PROLOGUE "")
+else()
     set(CMAKE_DISABLE_PRECOMPILE_HEADERS On CACHE BOOL "Disable precompiled headers")
-#endif()
+endif()
 
 set(CMAKE_INCLUDE_DIRS_CONFIGCMAKE ${CMAKE_INSTALL_PREFIX}/include      CACHE PATH "Output directory for headers")
 set(CMAKE_LIB_DIRS_CONFIGCMAKE     ${CMAKE_INSTALL_PREFIX}/lib          CACHE PATH "Output directory for libraries")

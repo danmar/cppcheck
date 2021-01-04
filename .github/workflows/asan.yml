@@ -7,12 +7,7 @@ on: [push, pull_request]
 jobs:
   build:
 
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-      fail-fast: false # not worthwhile...
-
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v2
@@ -20,20 +15,18 @@ jobs:
       - name: Install missing software on ubuntu
         run: |
           sudo apt-get update
-          sudo apt-get install libxml2-utils
-          sudo apt-get install z3 libz3-dev
-          cp externals/z3_version_old.h externals/z3_version.h
+          sudo apt-get install libz3-4 libz3-dev
 
       - name: Build
         run: |
-          cp externals/z3_version_old.h externals/z3_version.h
-          CXXFLAGS="-fsanitize=address -Og -g3" make cppcheck testrunner -j$(nproc) USE_Z3=yes
+          CC=clang CXX=clang++ CXXFLAGS="-fsanitize=address -O1 -g3 -DCPPCHK_GLIBCXX_DEBUG" make cppcheck testrunner -j$(nproc) USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes
 
       - name: Run tests
         run: |
-          ./testrunner
+          ASAN_OPTIONS=detect_stack_use_after_return=1 ./testrunner
 
-      - name: Bughunting lib
-        run: |
-          ./cppcheck -D__CPPCHECK__ --bug-hunting -j$(nproc) lib
+# This takes too long time right now
+#      - name: Bughunting lib
+#        run: |
+#          ASAN_OPTIONS=detect_stack_use_after_return=1 ./cppcheck -D__CPPCHECK__ --bug-hunting -j$(nproc) lib
 

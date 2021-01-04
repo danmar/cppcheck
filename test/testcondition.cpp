@@ -700,6 +700,18 @@ private:
               "    else if ( value & (int)Value2 ) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(size_t x) {\n"
+              "    if (x == sizeof(int)) {}\n"
+              "    else { if (x == sizeof(long))} {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(size_t x) {\n"
+              "    if (x == sizeof(long)) {}\n"
+              "    else { if (x == sizeof(long long))} {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void oppositeElseIfCondition() {
@@ -3002,8 +3014,8 @@ private:
               "  if (sizeof(char) != x) {}\n"
               "  if (x != sizeof(char)) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'sizeof(char)!=x' is always true\n"
-                      "[test.cpp:4]: (style) Condition 'x!=sizeof(char)' is always true\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'sizeof(char)!=x' is always true\n"
+                           "[test.cpp:4]: (style) Condition 'x!=sizeof(char)' is always true\n", "", errout.str());
 
         // Don't warn in assertions. Condition is often 'always true' by intention.
         // If platform,defines,etc cause an 'always false' assertion then that is not very dangerous neither
@@ -3453,6 +3465,35 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct a {\n"
+              "  int *b();\n"
+              "};\n"
+              "bool g(a c, a* d) {\n"
+              "  a *v, *e = v = &c;\n"
+              "  if (!v)\n"
+              "    return true;\n"
+              "  int *f = v->b();\n"
+              "  if (f)\n"
+              "    v = nullptr;\n"
+              "  if (v == nullptr && e) {}\n"
+              "  return d;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10037
+        check("struct a {\n"
+              "    int* p;\n"
+              "};\n"
+              "void g(a*);\n"
+              "void f() {\n"
+              "    struct a b;\n"
+              "    uint32_t p = (uint32_t) -1;\n"
+              "    b.p = (void *) &p;\n"
+              "    int r = g(&b);\n"
+              "    if (r == 0)\n"
+              "        if (p != (uint32_t) -1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
@@ -3829,6 +3870,23 @@ private:
               "    if (b) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int *i) {\n"
+              "  if (*i == 0) {\n"
+              "    *i = 1;\n"
+              "  }\n"
+              "  if (*i == 0) {\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // do not crash
+        check("void assign(const MMA& other) {\n"
+              "    if (mPA.cols != other.mPA.cols || mPA.rows != other.mPA.rows)\n"
+              "        ;\n"
+              "    if (other.mPA.cols > 0 && other.mPA.rows > 0)\n"
+              "        ;\n"
+              "}");
     }
 
     void checkInvalidTestForOverflow() {

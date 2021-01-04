@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.1"
+CLIENT_VERSION = "1.3.6"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 60 * 60
@@ -307,30 +307,34 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         if cppcheck_path == 'cppcheck':
             # re-run within gdb to get a stacktrace
             cmd = 'gdb --batch --eval-command=run --eval-command="bt 50" --return-child-result --args ' + cppcheck_cmd + " -j1"
-            dummy, stdout, stderr, elapsed_time = run_command(cmd)
-            gdb_pos = stdout.find(" received signal")
+            dummy, st_stdout, dummy, dummy = run_command(cmd)
+            gdb_pos = st_stdout.find(" received signal")
             if not gdb_pos == -1:
-                last_check_pos = stdout.rfind('Checking ', 0, gdb_pos)
+                last_check_pos = st_stdout.rfind('Checking ', 0, gdb_pos)
                 if last_check_pos == -1:
-                    stacktrace = stdout[gdb_pos:]
+                    stacktrace = st_stdout[gdb_pos:]
                 else:
-                    stacktrace = stdout[last_check_pos:]
+                    stacktrace = st_stdout[last_check_pos:]
+        # if no stacktrace was generated return the original stdout
+        if not stacktrace:
+            stacktrace = stdout
         return returncode, stacktrace, '', returncode, options, ''
     if returncode != 0:
         print('Error!')
         if returncode > 0:
             returncode = -100-returncode
         return returncode, stdout, '', returncode, options, ''
-    if stderr.find('Internal error: Child process crashed with signal ') > 0:
+    err_s = 'Internal error: Child process crashed with signal '
+    err_pos = stderr.find(err_s)
+    if err_pos != -1:
         print('Error!')
-        s = 'Internal error: Child process crashed with signal '
-        pos1 = stderr.find(s)
-        pos2 = stderr.find(' [cppcheckError]', pos1)
-        signr = int(stderr[pos1+len(s):pos2])
+        pos2 = stderr.find(' [cppcheckError]', err_pos)
+        signr = int(stderr[err_pos+len(err_s):pos2])
         return -signr, '', '', -signr, options, ''
-    if stderr.find('#### ThreadExecutor') > 0:
+    thr_pos = stderr.find('#### ThreadExecutor')
+    if thr_pos != -1:
         print('Thread!')
-        return -222, '', '', -222, options, ''
+        return -222, stderr[thr_pos:], '', -222, options, ''
     information_messages_list = []
     issue_messages_list = []
     count = 0
@@ -454,10 +458,13 @@ def upload_info(package, info_output, server_address):
 def get_libraries():
     libraries = ['posix', 'gnu']
     library_includes = {'boost': ['<boost/'],
+                       'bsd': ['<sys/queue.h>','<sys/tree.h>','<bsd/','<fts.h>','<db.h>','<err.h>','<vis.h>'],
                        'cairo': ['<cairo.h>'],
                        'cppunit': ['<cppunit/'],
+                       'icu': ['<unicode/', '"unicode/'],
+                       'ginac': ['<ginac/','"ginac/'],
                        'googletest': ['<gtest/gtest.h>'],
-                       'gtk': ['<gtk/gtk.h>', '<glib.h>', '<glib/', '<gnome.h>'],
+                       'gtk': ['<gtk', '<glib.h>', '<glib-', '<glib/', '<gnome'],
                        'kde': ['<KGlobal>', '<KApplication>', '<KDE/'],
                        'libcerror': ['<libcerror.h>'],
                        'libcurl': ['<curl/curl.h>'],
@@ -472,12 +479,14 @@ def get_libraries():
                        'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'],
                        'openmp': ['<omp.h>'],
                        'openssl': ['<openssl/'],
+                       'pcre': ['<pcre.h>', '"pcre.h"'],
                        'python': ['<Python.h>', '"Python.h"'],
-                       'qt': ['<QApplication>', '<QList>', '<qlist.h>', '<QObject>', '<QString>', '<qstring.h>', '<QWidget>', '<QtWidgets>', '<QtGui'],
+                       'qt': ['<QApplication>', '<QList>', '<QKeyEvent>', '<qlist.h>', '<QObject>', '<QFlags>', '<QFileDialog>', '<QTest>', '<QMessageBox>', '<QMetaType>', '<QString>', '<qobjectdefs.h>', '<qstring.h>', '<QWidget>', '<QtWidgets>', '<QtGui'],
                        'ruby': ['<ruby.h>', '<ruby/', '"ruby.h"'],
                        'sdl': ['<SDL.h>', '<SDL/SDL.h>', '<SDL2/SDL.h>'],
                        'sqlite3': ['<sqlite3.h>', '"sqlite3.h"'],
                        'tinyxml2': ['<tinyxml2', '"tinyxml2'],
+                       'wxsqlite3': ['<wx/wxsqlite3', '"wx/wxsqlite3'],
                        'wxwidgets': ['<wx/', '"wx/'],
                        'zlib': ['<zlib.h>'],
                       }

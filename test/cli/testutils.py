@@ -1,6 +1,7 @@
 
 import logging
 import os
+import shutil
 import subprocess
 
 # Create Cppcheck project file
@@ -47,6 +48,14 @@ def cppcheck(args):
         exe = '../../cppcheck.exe'
     elif os.path.isfile('../../../cppcheck.exe'):
         exe = '../../../cppcheck.exe'
+    elif os.path.isfile('../../bin/cppcheck.exe'):
+        exe = '../../bin/cppcheck.exe'
+    elif os.path.isfile('../../../bin/cppcheck.exe'):
+        exe = '../../../bin/cppcheck.exe'
+    elif os.path.isfile('../../bin/cppcheck'):
+        exe = '../../bin/cppcheck'
+    elif os.path.isfile('../../../bin/cppcheck'):
+        exe = '../../../bin/cppcheck'
     elif os.path.isfile('../../cppcheck'):
         exe = '../../cppcheck'
     else:
@@ -58,4 +67,3 @@ def cppcheck(args):
     stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
     return p.returncode, stdout, stderr
-

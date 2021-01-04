@@ -964,7 +964,9 @@ void CheckClass::initializationListUsage()
             const Variable* var = tok->variable();
             if (!var || var->scope() != owner || var->isStatic())
                 continue;
-            if (var->isPointer() || var->isReference() || var->isEnumType() || var->valueType()->type > ValueType::Type::ITERATOR)
+            if (var->isPointer() || var->isReference() || var->isEnumType())
+                continue;
+            if (!WRONG_DATA(!var->valueType(), tok) && var->valueType()->type > ValueType::Type::ITERATOR)
                 continue;
 
             // bailout: multi line lambda in rhs => do not warn
@@ -1887,7 +1889,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
     for (const Variable &var : scope->varlist) {
         if (var.name() == tok->str()) {
             if (tok->varId() == 0)
-                mSymbolDatabase->debugMessage(tok, "CheckClass::isMemberVar found used member variable \'" + tok->str() + "\' with varid 0");
+                mSymbolDatabase->debugMessage(tok, "varid0", "CheckClass::isMemberVar found used member variable \'" + tok->str() + "\' with varid 0");
 
             return !var.isStatic();
         }
@@ -1925,7 +1927,9 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
                     else
                         break;
                 }
-                if (argsPassed == func.argCount() || (argsPassed < func.argCount() && argsPassed >= func.minArgCount()))
+                if (argsPassed == func.argCount() ||
+                    (func.isVariadic() && argsPassed >= (func.argCount() - 1)) ||
+                    (argsPassed < func.argCount() && argsPassed >= func.minArgCount()))
                     return true;
             }
         }
@@ -1981,6 +1985,9 @@ static const std::set<std::string> stl_containers_not_const = { "map", "unordere
 
 bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed) const
 {
+    if (mTokenizer->hasIfdef(func->functionScope->bodyStart, func->functionScope->bodyEnd))
+        return false;
+
     // if the function doesn't have any assignment nor function call,
     // it can be a const function..
     for (const Token *tok1 = func->functionScope->bodyStart; tok1 && tok1 != func->functionScope->bodyEnd; tok1 = tok1->next()) {
@@ -2432,22 +2439,28 @@ void CheckClass::checkDuplInheritedMembers()
     // Iterate over all classes
     for (const Type &classIt : mSymbolDatabase->typeList) {
         // Iterate over the parent classes
-        for (const Type::BaseInfo &parentClassIt : classIt.derivedFrom) {
-            // Check if there is info about the 'Base' class
-            if (!parentClassIt.type || !parentClassIt.type->classScope)
-                continue;
-            // Check if they have a member variable in common
-            for (const Variable &classVarIt : classIt.classScope->varlist) {
-                for (const Variable &parentClassVarIt : parentClassIt.type->classScope->varlist) {
-                    if (classVarIt.name() == parentClassVarIt.name() && !parentClassVarIt.isPrivate()) { // Check if the class and its parent have a common variable
-                        duplInheritedMembersError(classVarIt.nameToken(), parentClassVarIt.nameToken(),
-                                                  classIt.name(), parentClassIt.type->name(), classVarIt.name(),
-                                                  classIt.classScope->type == Scope::eStruct,
-                                                  parentClassIt.type->classScope->type == Scope::eStruct);
-                    }
+        checkDuplInheritedMembersRecursive(&classIt, &classIt);
+    }
+}
+
+void CheckClass::checkDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase)
+{
+    for (const Type::BaseInfo &parentClassIt : typeBase->derivedFrom) {
+        // Check if there is info about the 'Base' class
+        if (!parentClassIt.type || !parentClassIt.type->classScope)
+            continue;
+        // Check if they have a member variable in common
+        for (const Variable &classVarIt : typeCurrent->classScope->varlist) {
+            for (const Variable &parentClassVarIt : parentClassIt.type->classScope->varlist) {
+                if (classVarIt.name() == parentClassVarIt.name() && !parentClassVarIt.isPrivate()) { // Check if the class and its parent have a common variable
+                    duplInheritedMembersError(classVarIt.nameToken(), parentClassVarIt.nameToken(),
+                                              typeCurrent->name(), parentClassIt.type->name(), classVarIt.name(),
+                                              typeCurrent->classScope->type == Scope::eStruct,
+                                              parentClassIt.type->classScope->type == Scope::eStruct);
                 }
             }
         }
+        checkDuplInheritedMembersRecursive(typeCurrent, parentClassIt.type);
     }
 }
 

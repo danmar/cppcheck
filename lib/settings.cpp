@@ -17,7 +17,7 @@
  */
 
 #include "settings.h"
-
+#include "summaries.h"
 #include "valueflow.h"
 
 std::atomic<bool> Settings::mTerminated;
@@ -31,11 +31,12 @@ const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
 Settings::Settings()
     : mEnabled(0),
       bugHunting(false),
+      bugHuntingCheckFunctionMaxTime(60),
       checkAllConfigurations(true),
       checkConfiguration(false),
       checkHeaders(true),
       checkLibrary(false),
-      checkUnusedTemplates(false),
+      checkUnusedTemplates(true),
       clang(false),
       clangExecutable("clang"),
       clangTidy(false),
@@ -153,4 +154,9 @@ bool Settings::isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck) 
     if (!inconclusive && (inconclusiveCheck || value->isInconclusive()))
         return false;
     return true;
+}
+
+void Settings::loadSummaries()
+{
+    Summaries::loadReturn(buildDir, summaryReturn);
 }

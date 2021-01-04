@@ -5,6 +5,7 @@
 #include "symboldatabase.h"
 #include <algorithm>
 #include <cassert>
+#include <limits>
 #include <memory>
 
 void ProgramMemory::setValue(nonneg int varid, const ValueFlow::Value &value)
@@ -204,6 +205,8 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                 if (p.first != tok2->next()->varId())
                     continue;
                 const Token *vartok = tok2->tokAt(3);
+                if (vartok == tok)
+                    continue;
                 pm.setValue(vartok->varId(), p.second);
                 setvar = true;
             }
@@ -505,18 +508,16 @@ void execute(const Token *expr,
         else {
             bool error2 = false;
             execute(expr->astOperand2(), programMemory, result, &error2);
-            if (error1 && error2)
+            if (error1 || error2)
                 *error = true;
-            if (error2)
-                *result = 1;
-            else
-                *result = !!*result;
         }
     }
 
     else if (expr->str() == "||") {
         execute(expr->astOperand1(), programMemory, result, error);
-        if (*result == 0 && *error == false)
+        if (*result == 1 && *error == false)
+            *result = 1;
+        else if (*result == 0 && *error == false)
             execute(expr->astOperand2(), programMemory, result, error);
     }
 

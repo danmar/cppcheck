@@ -85,6 +85,7 @@
           <Directory Id='CfgsFolder' Name='cfg'>
             <Component Id='MandatoryCfgs' Guid='$(var.mandatoryCfgsGUID)'>
               <File Id='std.cfg' Name='std.cfg' Source='$(var.CfgsDir)\std.cfg' />
+              <File Id='windows.cfg' Name='windows.cfg' Source='$(var.CfgsDir)\windows.cfg' />
             </Component>
             <Component Id='OptionalCfgs' Guid='$(var.optionalCfgsGUID)'>
               <File Id='avr.cfg' Name='avr.cfg' Source='$(var.CfgsDir)\avr.cfg' />
@@ -104,6 +105,7 @@
               <File Id='mfc.cfg' Name='mfc.cfg' Source='$(var.CfgsDir)\mfc.cfg' />
               <File Id='microsoft_atl.cfg' Name='microsoft_atl.cfg' Source='$(var.CfgsDir)\microsoft_atl.cfg' />
               <File Id='microsoft_sal.cfg' Name='microsoft_sal.cfg' Source='$(var.CfgsDir)\microsoft_sal.cfg' />
+              <File Id='microsoft_unittest.cfg' Name='microsoft_unittest.cfg' Source='$(var.CfgsDir)\microsoft_unittest.cfg' />
               <File Id='motif.cfg' Name='motif.cfg' Source='$(var.CfgsDir)\motif.cfg' />
               <File Id='nspr.cfg' Name='nspr.cfg' Source='$(var.CfgsDir)\nspr.cfg' />
               <File Id='opencv2.cfg' Name='opencv2.cfg' Source='$(var.CfgsDir)\opencv2.cfg' />
@@ -118,7 +120,6 @@
               <File Id='sfml.cfg' Name='sfml.cfg' Source='$(var.CfgsDir)\sfml.cfg' />
               <File Id='sqlite3.cfg' Name='sqlite3.cfg' Source='$(var.CfgsDir)\sqlite3.cfg' />
               <File Id='tinyxml2.cfg' Name='tinyxml2.cfg' Source='$(var.CfgsDir)\tinyxml2.cfg' />
-              <File Id='windows.cfg' Name='windows.cfg' Source='$(var.CfgsDir)\windows.cfg' />
               <File Id='wxwidgets.cfg' Name='wxwidgets.cfg' Source='$(var.CfgsDir)\wxwidgets.cfg' />
               <File Id='zlib.cfg' Name='zlib.cfg' Source='$(var.CfgsDir)\zlib.cfg' />
             </Component>
@@ -131,6 +132,11 @@
               <File Id='arm64wchar_t2.xml' Name='arm64-wchar_t2.xml' Source='$(var.PtfsDir)\arm64-wchar_t2.xml' />
               <File Id='arm64wchar_t4.xml' Name='arm64-wchar_t4.xml' Source='$(var.PtfsDir)\arm64-wchar_t4.xml' />
               <File Id='avr8.xml' Name='avr8.xml' Source='$(var.PtfsDir)\avr8.xml' />
+              <File Id='elbrus_e1cp.xml' Name='elbrus-e1cp.xml' Source='$(var.PtfsDir)\elbrus-e1cp.xml' />
+              <File Id='pic8.xml' Name='pic8.xml' Source='$(var.PtfsDir)\pic8.xml' />
+              <File Id='pic8_enhanced.xml' Name='pic8-enhanced.xml' Source='$(var.PtfsDir)\pic8-enhanced.xml' />
+              <File Id='pic16.xml' Name='pic16.xml' Source='$(var.PtfsDir)\pic16.xml' />
+              <File Id='mips32.xml' Name='mips32.xml' Source='$(var.PtfsDir)\mips32.xml' />
               <File Id='cray_sv1.xml' Name='cray_sv1.xml' Source='$(var.PtfsDir)\cray_sv1.xml' />
               <File Id='msp430_eabi_large_datamodel.xml' Name='msp430_eabi_large_datamodel.xml' Source='$(var.PtfsDir)\msp430_eabi_large_datamodel.xml' />
               <File Id='unix32unsigned.xml' Name='unix32-unsigned.xml' Source='$(var.PtfsDir)\unix32-unsigned.xml' />
@@ -155,6 +161,10 @@
             <File Id='authors.txt' Name='authors.txt' DiskId='1' Source='..\authors' />
             <File Id='readme.txt' Name='readme.txt' DiskId='1' Source='..\readme.txt' />
             <File Id='GPLv3.txt' Name='GPLv3.txt' DiskId='1' Source='GPLv3.txt' />
+            <File Id='picojson_license.txt' Name='picojson-license.txt' DiskId='1' Source='../externals/picojson/LICENSE' />
+            <File Id='simplecpp_license.txt' Name='simplecpp-license.txt' DiskId='1' Source='../externals/simplecpp/LICENSE' />
+            <File Id='tinyxml2_license.txt' Name='tinyxml2-license.txt' DiskId='1' Source='../externals/tinyxml2/LICENSE' />
+            <File Id='z3_license.txt' Name='z3-license.txt' DiskId='1' Source='../externals/z3-LICENSE' />
           </Component>
         </Directory>
         <Merge Id="CRT" Language="0" SourceFile="$(var.CrtMergeModule)" DiskId="1" />

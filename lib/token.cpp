@@ -293,18 +293,14 @@ void Token::deleteThis()
         takeData(mNext);
         mNext->link(nullptr); // mark as unlinked
         deleteNext();
-    } else if (mPrevious && mPrevious->mPrevious) { // Copy previous to this and delete previous
+    } else if (mPrevious) { // Copy previous to this and delete previous
         takeData(mPrevious);
-
-        Token* toDelete = mPrevious;
-        mPrevious = mPrevious->mPrevious;
-        mPrevious->mNext = this;
-
-        delete toDelete;
+        mPrevious->link(nullptr);
+        deletePrevious();
     } else {
         // We are the last token in the list, we can't delete
         // ourselves, so just make us empty
-        str("");
+        str(";");
     }
 }
 
@@ -403,7 +399,7 @@ static int multiComparePercent(const Token *tok, const char*& haystack, nonneg i
         // Type (%type%)
     {
         haystack += 5;
-        if (tok->isName() && tok->varId() == 0 && (tok->str() != "delete" || !tok->isKeyword())) // HACK: this is legacy behaviour, it should return false for all keywords, ecxcept types
+        if (tok->isName() && tok->varId() == 0 && (tok->str() != "delete" || !tok->isKeyword())) // HACK: this is legacy behaviour, it should return false for all keywords, except types
             return 1;
     }
     break;
@@ -865,9 +861,27 @@ const Token * Token::findClosingBracket() const
     if (mStr != "<")
         return nullptr;
 
+    if (!mPrevious)
+        return nullptr;
+
+    if (!(mPrevious->isName() ||
+          Token::Match(mPrevious->previous(), "operator %op% <") ||
+          Token::Match(mPrevious->tokAt(-2), "operator [([] [)]] <")))
+        return nullptr;
+
     const Token *closing = nullptr;
     const bool templateParameter(strAt(-1) == "template");
     std::set<std::string> templateParameters;
+
+    bool isDecl = true;
+    for (const Token *prev = previous(); prev; prev = prev->previous()) {
+        if (prev->str() == "=")
+            isDecl = false;
+        if (Token::simpleMatch(prev, "template <"))
+            isDecl = true;
+        if (Token::Match(prev, "[;{}]"))
+            break;
+    }
 
     unsigned int depth = 0;
     for (closing = this; closing != nullptr; closing = closing->next()) {
@@ -886,6 +900,8 @@ const Token * Token::findClosingBracket() const
             if (--depth == 0)
                 return closing;
         } else if (closing->str() == ">>" || closing->str() == ">>=") {
+            if (!isDecl && depth == 1)
+                continue;
             if (depth <= 2)
                 return closing;
             depth -= 2;
@@ -1140,14 +1156,14 @@ void Token::printOut(const char *title) const
 {
     if (title && title[0])
         std::cout << "\n### " << title << " ###\n";
-    std::cout << stringifyList(stringifyOptions::forDebugExprId(), nullptr, nullptr) << std::endl;
+    std::cout << stringifyList(stringifyOptions::forPrintOut(), nullptr, nullptr) << std::endl;
 }
 
 void Token::printOut(const char *title, const std::vector<std::string> &fileNames) const
 {
     if (title && title[0])
         std::cout << "\n### " << title << " ###\n";
-    std::cout << stringifyList(stringifyOptions::forDebugExprId(), &fileNames, nullptr) << std::endl;
+    std::cout << stringifyList(stringifyOptions::forPrintOut(), &fileNames, nullptr) << std::endl;
 }
 
 void Token::printLines(int lines) const
@@ -1190,9 +1206,9 @@ void Token::stringify(std::ostream& os, const stringifyOptions& options) const
         }
     }
     if (options.varid && mImpl->mVarId != 0)
-        os << '@' << mImpl->mVarId;
-    if (options.exprid && mImpl->mExprId != 0)
-        os << '@' << mImpl->mExprId;
+        os << "@" << (options.idtype ? "var" : "") << mImpl->mVarId;
+    else if (options.exprid && mImpl->mExprId != 0)
+        os << "@" << (options.idtype ? "expr" : "") << mImpl->mExprId;
 }
 
 void Token::stringify(std::ostream& os, bool varid, bool attributes, bool macro) const
@@ -1242,6 +1258,14 @@ std::string Token::stringifyList(const stringifyOptions& options, const std::vec
                 ret << tok->linenr() << ": ";
             } else if (this == tok && options.linenumbers) {
                 ret << tok->linenr() << ": ";
+            } else if (lineNumber > tok->linenr()) {
+                lineNumber = tok->linenr();
+                ret << '\n';
+                if (options.linenumbers) {
+                    ret << lineNumber << ':';
+                    if (lineNumber == tok->linenr())
+                        ret << ' ';
+                }
             } else {
                 while (lineNumber < tok->linenr()) {
                     ++lineNumber;
@@ -1257,7 +1281,7 @@ std::string Token::stringifyList(const stringifyOptions& options, const std::vec
         }
 
         tok->stringify(ret, options); // print token
-        if (tok->next() != end && (!options.linebreaks || (tok->next()->linenr() <= tok->linenr() && tok->next()->fileIndex() == tok->fileIndex())))
+        if (tok->next() != end && (!options.linebreaks || (tok->next()->linenr() == tok->linenr() && tok->next()->fileIndex() == tok->fileIndex())))
             ret << ' ';
     }
     if (options.linebreaks && (options.files || options.linenumbers))
@@ -1361,8 +1385,7 @@ std::pair<const Token *, const Token *> Token::findExpressionStartEndTokens() co
 
     // find start node in AST tree
     const Token *start = top;
-    while (start->astOperand1() &&
-           (start->astOperand2() || !start->isUnaryPreOp() || Token::simpleMatch(start, "( )") || start->str() == "{"))
+    while (start->astOperand1() && precedes(start->astOperand1(), start))
         start = start->astOperand1();
 
     // find end node in AST tree
@@ -1517,14 +1540,15 @@ static void astStringXml(const Token *tok, nonneg int indent, std::ostream &out)
     }
 }
 
-void Token::printAst(bool verbose, bool xml, std::ostream &out) const
+void Token::printAst(bool verbose, bool xml, const std::vector<std::string> &fileNames, std::ostream &out) const
 {
+    if (!xml)
+        out << "\n\n##AST" << std::endl;
+
     std::set<const Token *> printed;
     for (const Token *tok = this; tok; tok = tok->next()) {
         if (!tok->mImpl->mAstParent && tok->mImpl->mAstOperand1) {
-            if (printed.empty() && !xml)
-                out << "\n\n##AST" << std::endl;
-            else if (printed.find(tok) != printed.end())
+            if (printed.find(tok) != printed.end())
                 continue;
             printed.insert(tok);
 
@@ -1534,7 +1558,7 @@ void Token::printAst(bool verbose, bool xml, std::ostream &out) const
                 astStringXml(tok, 2U, out);
                 out << "</ast>" << std::endl;
             } else if (verbose)
-                out << tok->astStringVerbose() << std::endl;
+                out << "[" << fileNames[tok->fileIndex()] << ":" << tok->linenr() << "]" << std::endl << tok->astStringVerbose() << std::endl;
             else
                 out << tok->astString(" ") << std::endl;
             if (tok->str() == "(")
@@ -1560,7 +1584,7 @@ void Token::astStringVerboseRecursive(std::string& ret, const nonneg int indent1
         ret += " \'" + mImpl->mValueType->str() + '\'';
     if (function()) {
         std::ostringstream ostr;
-        ostr << "0x" << std::hex << function();
+        ostr << std::hex << function();
         ret += " f:" + ostr.str();
     }
     ret += '\n';
@@ -1645,37 +1669,37 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             if (xml) {
                 out << "      <value ";
                 switch (value.valueType) {
-                case ValueFlow::Value::INT:
+                case ValueFlow::Value::ValueType::INT:
                     if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
                         out << "intvalue=\"" << (MathLib::biguint)value.intvalue << '\"';
                     else
                         out << "intvalue=\"" << value.intvalue << '\"';
                     break;
-                case ValueFlow::Value::TOK:
+                case ValueFlow::Value::ValueType::TOK:
                     out << "tokvalue=\"" << value.tokvalue << '\"';
                     break;
-                case ValueFlow::Value::FLOAT:
+                case ValueFlow::Value::ValueType::FLOAT:
                     out << "floatvalue=\"" << value.floatValue << '\"';
                     break;
-                case ValueFlow::Value::MOVED:
+                case ValueFlow::Value::ValueType::MOVED:
                     out << "movedvalue=\"" << ValueFlow::Value::toString(value.moveKind) << '\"';
                     break;
-                case ValueFlow::Value::UNINIT:
+                case ValueFlow::Value::ValueType::UNINIT:
                     out << "uninit=\"1\"";
                     break;
-                case ValueFlow::Value::BUFFER_SIZE:
+                case ValueFlow::Value::ValueType::BUFFER_SIZE:
                     out << "buffer-size=\"" << value.intvalue << "\"";
                     break;
-                case ValueFlow::Value::CONTAINER_SIZE:
+                case ValueFlow::Value::ValueType::CONTAINER_SIZE:
                     out << "container-size=\"" << value.intvalue << '\"';
                     break;
-                case ValueFlow::Value::ITERATOR_START:
+                case ValueFlow::Value::ValueType::ITERATOR_START:
                     out << "iterator-start=\"" << value.intvalue << '\"';
                     break;
-                case ValueFlow::Value::ITERATOR_END:
+                case ValueFlow::Value::ValueType::ITERATOR_END:
                     out << "iterator-end=\"" << value.intvalue << '\"';
                     break;
-                case ValueFlow::Value::LIFETIME:
+                case ValueFlow::Value::ValueType::LIFETIME:
                     out << "lifetime=\"" << value.tokvalue << '\"';
                     break;
                 }
@@ -1698,39 +1722,39 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 if (value.isImpossible())
                     out << "!";
                 if (value.bound == ValueFlow::Value::Bound::Lower)
-                    out << ">";
+                    out << ">=";
                 if (value.bound == ValueFlow::Value::Bound::Upper)
-                    out << "<";
+                    out << "<=";
                 switch (value.valueType) {
-                case ValueFlow::Value::INT:
+                case ValueFlow::Value::ValueType::INT:
                     if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
                         out << (MathLib::biguint)value.intvalue;
                     else
                         out << value.intvalue;
                     break;
-                case ValueFlow::Value::TOK:
+                case ValueFlow::Value::ValueType::TOK:
                     out << value.tokvalue->str();
                     break;
-                case ValueFlow::Value::FLOAT:
+                case ValueFlow::Value::ValueType::FLOAT:
                     out << value.floatValue;
                     break;
-                case ValueFlow::Value::MOVED:
+                case ValueFlow::Value::ValueType::MOVED:
                     out << ValueFlow::Value::toString(value.moveKind);
                     break;
-                case ValueFlow::Value::UNINIT:
+                case ValueFlow::Value::ValueType::UNINIT:
                     out << "Uninit";
                     break;
-                case ValueFlow::Value::BUFFER_SIZE:
-                case ValueFlow::Value::CONTAINER_SIZE:
+                case ValueFlow::Value::ValueType::BUFFER_SIZE:
+                case ValueFlow::Value::ValueType::CONTAINER_SIZE:
                     out << "size=" << value.intvalue;
                     break;
-                case ValueFlow::Value::ITERATOR_START:
+                case ValueFlow::Value::ValueType::ITERATOR_START:
                     out << "start=" << value.intvalue;
                     break;
-                case ValueFlow::Value::ITERATOR_END:
+                case ValueFlow::Value::ValueType::ITERATOR_END:
                     out << "end=" << value.intvalue;
                     break;
-                case ValueFlow::Value::LIFETIME:
+                case ValueFlow::Value::ValueType::LIFETIME:
                     out << "lifetime=" << value.tokvalue->str();
                     break;
                 }

@@ -1,5 +1,12 @@
 // To test:
 // ~/cppcheck/cppcheck --dump cert-test.c && python ../cert.py -verify cert-test.c.dump
+
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
 struct S {
     short a;
     short b;
@@ -18,17 +25,17 @@ void api01()
     {
         char name[String_Size];
         struct bad_node_s* next;      // cert-API01-C
-    }
+    };
     struct good_node_s
     {
         struct good_node_s* next;
         char name[String_Size];
-    }
+    };
     struct also_good_node_s
     {
         struct also_good_node_s* next;
         char *name;
-    }
+    };
 }
 
 void dostuff(int *data);
@@ -61,7 +68,7 @@ void exp42()
     memcmp(&s3, &s4, sizeof(struct S));
 }
 
-void exp46()
+void exp46(int x, int y, int z)
 {
     if ((x == y) & z) {} // cert-EXP46-c
 }
@@ -103,9 +110,9 @@ void msc24()
     s.fopen = 123;
 
     f = fopen ("myfile.txt","w+");  //cert-MSC24-C
-    setbuf ( f , buffer )   //cert-MSC24-C
+    setbuf ( f , buffer );   //cert-MSC24-C
     for ( i='A' ; i<='Z' ; i++)
-        fputc ( n, f);
+        fputc ( i, f);
     rewind (f);             //cert-MSC24-C
     fclose (f);
 
@@ -113,8 +120,8 @@ void msc24()
     timeinfo = localtime ( &rawtime );
     printf ( "The current date/time is: %s", asctime (timeinfo) ); //cert-MSC24-C
 
-    n = atof (buffer);              //cert-MSC24-C
-    m = sin (n*pi/180);
+    float n = atof (buffer);              //cert-MSC24-C
+    float m = sin (n*M_PI/180);
 
     i = atoi (buffer);      //cert-MSC24-C
 
@@ -172,11 +179,11 @@ void str05()
 
 void str07(char *buf, const char *newBuf)
 {
-    const char *str="test";
+    const char *str = "test";
     strcat(buf,"bla");
     strcat(buf, str);    //cert-STR07-C
     strcat(buf, newBuf); //cert-STR07-C
-    strcpy(str, newBuf); //cert-STR07-C
+    strcpy(buf, newBuf); //cert-STR07-C
 }
 
 void str11()

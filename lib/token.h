@@ -342,7 +342,7 @@ public:
      * @param tok token with C-string
      * @param settings Settings
      **/
-    static nonneg int getStrSize(const Token *tok, const Settings *const);
+    static nonneg int getStrSize(const Token *tok, const Settings *const settings);
 
     /**
      * @return char of C-string at index (possible escaped "\\n")
@@ -432,6 +432,9 @@ public:
     }
     bool isBoolean() const {
         return mTokType == eBoolean;
+    }
+    bool isIncDecOp() const {
+        return mTokType == eIncDecOp;
     }
     bool isBinaryOp() const {
         return astOperand1() != nullptr && astOperand2() != nullptr;
@@ -850,6 +853,7 @@ public:
     struct stringifyOptions {
         bool varid = false;
         bool exprid = false;
+        bool idtype = false; // distinguish varid / exprid
         bool attributes = false;
         bool macro = false;
         bool linenumbers = false;
@@ -874,21 +878,33 @@ public:
             options.exprid = true;
             return options;
         }
+        static stringifyOptions forPrintOut() {
+            stringifyOptions options = forDebug();
+            options.exprid = true;
+            options.varid = true;
+            options.idtype = true;
+            return options;
+        }
     };
+
+    void stringify(std::ostream& os, const stringifyOptions& options) const;
 
     /**
      * Stringify a token
      * @param os The result is shifted into that output stream
-     * @param varid Print varids. (Style: "varname@id")
+     * @param varid Print varids. (Style: "varname\@id")
      * @param attributes Print attributes of tokens like "unsigned" in front of it.
      * @param macro Prints $ in front of the token if it was expanded from a macro.
      */
-    void stringify(std::ostream& os, const stringifyOptions& options) const;
     void stringify(std::ostream& os, bool varid, bool attributes, bool macro) const;
+
+    std::string stringifyList(const stringifyOptions& options, const std::vector<std::string>* fileNames = nullptr, const Token* end = nullptr) const;
+    std::string stringifyList(const Token* end, bool attributes = true) const;
+    std::string stringifyList(bool varid = false) const;
 
     /**
      * Stringify a list of token, from current instance on.
-     * @param varid Print varids. (Style: "varname@id")
+     * @param varid Print varids. (Style: "varname\@id")
      * @param attributes Print attributes of tokens like "unsigned" in front of it.
      * @param linenumbers Print line number in front of each line
      * @param linebreaks Insert "\\n" into string when line number changes
@@ -897,10 +913,7 @@ public:
      * @param end Stringification ends before this token is reached. 0 to stringify until end of list.
      * @return Stringified token list as a string
      */
-    std::string stringifyList(const stringifyOptions& options, const std::vector<std::string>* fileNames = nullptr, const Token* end = nullptr) const;
     std::string stringifyList(bool varid, bool attributes, bool linenumbers, bool linebreaks, bool files, const std::vector<std::string>* fileNames = nullptr, const Token* end = nullptr) const;
-    std::string stringifyList(const Token* end, bool attributes = true) const;
-    std::string stringifyList(bool varid = false) const;
 
     /**
      * Remove the contents for this token from the token list.
@@ -1340,7 +1353,7 @@ public:
 
     std::string expressionString() const;
 
-    void printAst(bool verbose, bool xml, std::ostream &out) const;
+    void printAst(bool verbose, bool xml, const std::vector<std::string> &fileNames, std::ostream &out) const;
 
     void printValueFlow(bool xml, std::ostream &out) const;
 

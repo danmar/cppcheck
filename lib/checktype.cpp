@@ -27,6 +27,7 @@
 #include "token.h"
 #include "tokenize.h"
 
+#include <cmath>
 #include <cstddef>
 #include <list>
 #include <ostream>
@@ -182,7 +183,7 @@ void CheckType::checkIntegerOverflow()
             continue;
 
         // max value according to platform settings.
-        const MathLib::bigint maxvalue = (((MathLib::bigint)1) << (bits - 1)) - 1;
+        const MathLib::bigint maxvalue = (((MathLib::biguint)1) << (bits - 1)) - 1;
 
         // is there a overflow result value
         const ValueFlow::Value *value = tok->getValueGE(maxvalue + 1, mSettings);
@@ -192,8 +193,8 @@ void CheckType::checkIntegerOverflow()
             continue;
 
         // For left shift, it's common practice to shift into the sign bit
-        if (tok->str() == "<<" && value->intvalue > 0 && value->intvalue < (((MathLib::bigint)1) << bits))
-            continue;
+        //if (tok->str() == "<<" && value->intvalue > 0 && value->intvalue < (((MathLib::bigint)1) << bits))
+        //    continue;
 
         integerOverflowError(tok, *value);
     }
@@ -219,6 +220,76 @@ void CheckType::integerOverflowError(const Token *tok, const ValueFlow::Value &v
                 msg,
                 CWE190,
                 value.isInconclusive());
+}
+
+//---------------------------------------------------------------------------------
+// Checking for code patterns that might be optimised differently by the compilers
+//---------------------------------------------------------------------------------
+
+void CheckType::checkIntegerOverflowOptimisations()
+{
+    // Interesting blogs:
+    // https://kristerw.blogspot.com/2016/02/how-undefined-signed-overflow-enables.html
+    // https://research.checkpoint.com/2020/optout-compiler-undefined-behavior-optimizations/
+
+    // x + c < x       ->   false
+    // x + c <= x      ->   false
+    // x + c > x       ->   true
+    // x + c >= x      ->   true
+
+    // x + y < x       ->   y < 0
+
+
+    if (!mSettings->isEnabled(Settings::PORTABILITY))
+        return;
+
+    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "<|<=|>=|>") || !tok->isBinaryOp())
+            continue;
+
+        const std::string &cmp = tok->str();
+        const Token * const lhs = tok->astOperand1();
+        if (!Token::Match(lhs, "[+-]") || !lhs->isBinaryOp() || !lhs->valueType() || !lhs->valueType()->isIntegral() || lhs->valueType()->sign != ValueType::Sign::SIGNED)
+            continue;
+
+        const Token *expr = lhs->astOperand1();
+        const Token *other = lhs->astOperand2();
+        if (expr->varId() == 0 || expr->varId() != lhs->astSibling()->varId())
+            continue;
+
+        // x [+-] c cmp x
+        if (other->isNumber() && other->getKnownIntValue() > 0) {
+            bool result;
+            if (tok->astOperand1()->str() == "+")
+                result = (cmp == ">" || cmp == ">=");
+            else
+                result = (cmp == "<" || cmp == "<=");
+            integerOverflowOptimisationError(tok, result ? "true" : "false");
+        }
+
+        // x + y cmp x
+        if (lhs->str() == "+" && other->varId() > 0) {
+            const std::string result = other->str() + cmp + "0";
+            integerOverflowOptimisationError(tok, result);
+        }
+
+        // x - y cmp x
+        if (lhs->str() == "-" && other->varId() > 0) {
+            std::string cmp2 = cmp;
+            cmp2[0] = (cmp[0] == '<') ? '>' : '<';
+            const std::string result = other->str() + cmp2 + "0";
+            integerOverflowOptimisationError(tok, result);
+        }
+    }
+}
+
+void CheckType::integerOverflowOptimisationError(const Token *tok, const std::string &replace)
+{
+    const std::string expr = tok ? tok->expressionString() : "x+c<x";
+    const std::string errmsg =
+        "There is a danger that '" + expr + "' will be optimised into '" + replace + "'. Signed integer overflow is undefined behavior.\n"
+        "There is a danger that '" + expr + "' will be optimised into '" + replace + "'. Your code could work differently depending on what compiler/flags/version/etc is used. Signed integer overflow is undefined behavior and assuming that it will never happen; the result of '" + expr + "' is always '" + replace + "'.";
+    reportError(tok, Severity::portability, "integerOverflowOptimization", errmsg, CWE190, false);
 }
 
 //---------------------------------------------------------------------------
@@ -425,9 +496,9 @@ void CheckType::checkFloatToIntegerOverflow(const Token *tok, const ValueType *v
             continue;
         if (!mSettings->isEnabled(&f, false))
             continue;
-        if (f.floatValue > ~0ULL)
+        if (f.floatValue >= std::exp2(mSettings->long_long_bit))
             floatToIntegerOverflowError(tok, f);
-        else if ((-f.floatValue) > (1ULL<<62))
+        else if ((-f.floatValue) > std::exp2(mSettings->long_long_bit - 1))
             floatToIntegerOverflowError(tok, f);
         else if (mSettings->platformType != Settings::Unspecified) {
             int bits = 0;

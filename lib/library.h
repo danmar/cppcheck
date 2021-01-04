@@ -140,7 +140,7 @@ public:
 
     /** add noreturn function setting */
     void setnoreturn(const std::string& funcname, bool noreturn) {
-        mNoReturn[funcname] = noreturn;
+        mNoReturn[funcname] = noreturn ? FalseTrueMaybe::True : FalseTrueMaybe::False;
     }
 
     static bool isCompliantValidationExpression(const char* p);
@@ -179,7 +179,8 @@ public:
     bool isNotLibraryFunction(const Token *ftok) const;
     bool matchArguments(const Token *ftok, const std::string &functionName) const;
 
-    bool isUseRetVal(const Token* ftok) const;
+    enum class UseRetValType { NONE, DEFAULT, ERROR_CODE };
+    UseRetValType getUseRetValType(const Token* ftok) const;
 
     const std::string& returnValue(const Token *ftok) const;
     const std::string& returnValueType(const Token *ftok) const;
@@ -306,12 +307,12 @@ public:
         bool leakignore;
         bool isconst;
         bool ispure;
-        bool useretval;
+        UseRetValType useretval;
         bool ignore;  // ignore functions/macros from a library (gtk, qt etc)
         bool formatstr;
         bool formatstr_scan;
         bool formatstr_secure;
-        Function() : use(false), leakignore(false), isconst(false), ispure(false), useretval(false), ignore(false), formatstr(false), formatstr_scan(false), formatstr_secure(false) {}
+        Function() : use(false), leakignore(false), isconst(false), ispure(false), useretval(UseRetValType::NONE), ignore(false), formatstr(false), formatstr_scan(false), formatstr_secure(false) {}
     };
 
     const Function *getFunction(const Token *ftok) const;
@@ -495,6 +496,8 @@ public:
     enum class TypeCheck { def, check, suppress };
     TypeCheck getTypeCheck(const std::string &check, const std::string &typeName) const;
 
+    bool bugHunting;
+
 private:
     // load a <function> xml node
     Error loadFunction(const tinyxml2::XMLElement * const node, const std::string &name, std::set<std::string> &unknown_elements);
@@ -553,12 +556,13 @@ private:
         int mOffset;
         std::set<std::string> mBlocks;
     };
+    enum class FalseTrueMaybe { False, True, Maybe };
     int mAllocId;
     std::set<std::string> mFiles;
     std::map<std::string, AllocFunc> mAlloc; // allocation functions
     std::map<std::string, AllocFunc> mDealloc; // deallocation functions
     std::map<std::string, AllocFunc> mRealloc; // reallocation functions
-    std::map<std::string, bool> mNoReturn; // is function noreturn?
+    std::map<std::string, FalseTrueMaybe> mNoReturn; // is function noreturn?
     std::map<std::string, std::string> mReturnValue;
     std::map<std::string, std::string> mReturnValueType;
     std::map<std::string, int> mReturnValueContainer;

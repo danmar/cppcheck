@@ -101,7 +101,13 @@
 
         <interleave>
           <optional>
-            <element name="noreturn"><ref name="DATA-BOOL"/></element>
+            <element name="noreturn">
+              <choice>
+                <value>true</value>
+                <value>false</value>
+                <value>maybe</value>
+              </choice>
+            </element>
           </optional>
           <optional>
             <element name="pure"><empty/></element>
@@ -116,14 +122,20 @@
             <element name="leak-ignore"><empty/></element>
           </optional>
           <optional>
-            <element name="use-retval"><empty/></element>
+            <element name="use-retval"><empty/>
+              <optional>
+                <attribute name="type">
+                    <value>error-code</value>
+                </attribute>
+              </optional>
+            </element>
           </optional>
           <optional>
             <element name="returnValue">
               <optional>
                 <attribute name="type">
                   <data type="string">
-                    <param name="pattern">([a-zA-Z_][a-zA-Z_0-9]*[ ])*([a-zA-Z_][a-zA-Z_0-9]*::)*([a-zA-Z_][a-zA-Z_0-9]*([ ]?[*&amp;])*)+</param>
+                    <param name="pattern">([a-zA-Z_][a-zA-Z_0-9:]*[ ])*([a-zA-Z_][a-zA-Z_0-9]*::)*([a-zA-Z_][a-zA-Z_0-9]*([ ]?[*&amp;])*)+</param>
                   </data>
                 </attribute>
               </optional>

@@ -49,11 +49,11 @@ public:
     };
 
     struct CPPCHECKLIB Suppression {
-        Suppression() : lineNumber(NO_LINE), hash(0), matched(false) {}
+        Suppression() : lineNumber(NO_LINE), hash(0), thisAndNextLine(false), matched(false) {}
         Suppression(const Suppression &other) {
             *this = other;
         }
-        Suppression(const std::string &id, const std::string &file, int line=NO_LINE) : errorId(id), fileName(file), lineNumber(line), hash(0), matched(false) {}
+        Suppression(const std::string &id, const std::string &file, int line=NO_LINE) : errorId(id), fileName(file), lineNumber(line), hash(0), thisAndNextLine(false), matched(false) {}
 
         Suppression & operator=(const Suppression &other) {
             errorId = other.errorId;
@@ -61,6 +61,7 @@ public:
             lineNumber = other.lineNumber;
             symbolName = other.symbolName;
             hash = other.hash;
+            thisAndNextLine = other.thisAndNextLine;
             matched = other.matched;
             return *this;
         }
@@ -76,6 +77,8 @@ public:
                 return symbolName < other.symbolName;
             if (hash != other.hash)
                 return hash < other.hash;
+            if (thisAndNextLine != other.thisAndNextLine)
+                return thisAndNextLine;
             return false;
         }
 
@@ -90,10 +93,20 @@ public:
         bool isSuppressed(const ErrorMessage &errmsg) const;
 
         bool isMatch(const ErrorMessage &errmsg);
+
         std::string getText() const;
 
         bool isLocal() const {
             return !fileName.empty() && fileName.find_first_of("?*") == std::string::npos;
+        }
+
+        bool isSameParameters(const Suppression &other) const {
+            return errorId == other.errorId &&
+                   fileName == other.fileName &&
+                   lineNumber == other.lineNumber &&
+                   symbolName == other.symbolName &&
+                   hash == other.hash &&
+                   thisAndNextLine == other.thisAndNextLine;
         }
 
         std::string errorId;
@@ -101,6 +114,7 @@ public:
         int lineNumber;
         std::string symbolName;
         std::size_t hash;
+        bool thisAndNextLine; // Special case for backwards compatibility: { // cppcheck-suppress something
         bool matched;
 
         enum { NO_LINE = -1 };
@@ -144,6 +158,13 @@ public:
     std::string addSuppression(const Suppression &suppression);
 
     /**
+     * @brief Combine list of suppressions into the current suppressions.
+     * @param suppressions list of suppression details
+     * @return error message. empty upon success
+     */
+    std::string addSuppressions(const std::list<Suppression> &suppressions);
+
+    /**
      * @brief Returns true if this message should not be shown to the user.
      * @param errmsg error message
      * @return true if this error is suppressed.
@@ -174,6 +195,12 @@ public:
      * @return list of unmatched suppressions
      */
     std::list<Suppression> getUnmatchedGlobalSuppressions(const bool unusedFunctionChecking) const;
+
+    /**
+     * @brief Returns list of all suppressions.
+     * @return list of suppressions
+     */
+    std::list<Suppression> getSuppressions() const;
 
 private:
     /** @brief List of error which the user doesn't want to see. */

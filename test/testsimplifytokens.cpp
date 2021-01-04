@@ -46,6 +46,12 @@ private:
         settings1.addEnabled("style");
         settings_windows.addEnabled("portability");
 
+        // If there are unused templates, keep those
+        settings0.checkUnusedTemplates = true;
+        settings1.checkUnusedTemplates = true;
+        settings_std.checkUnusedTemplates = true;
+        settings_windows.checkUnusedTemplates = true;
+
         // Make sure the Tokenizer::simplifyTokenList works.
         // The order of the simplifications is important. So this test
         // case shall make sure the simplifications are done in the
@@ -2883,7 +2889,7 @@ private:
         {
             const char code[] = "namespace std { }";
 
-            ASSERT_EQUALS("", tok(code));
+            ASSERT_EQUALS(";", tok(code));
         }
 
         {

@@ -64,6 +64,7 @@ namespace ExprEngine {
         AddressOfValue,
         BinOpResult,
         IntegerTruncation,
+        FunctionCallArgumentValues,
         BailoutValue
     };
 
@@ -102,17 +103,17 @@ namespace ExprEngine {
         virtual std::string getSymbolicExpression() const {
             return name;
         }
-        virtual bool isEqual(DataBase *dataBase, int value) const {
+        virtual bool isEqual(const DataBase *dataBase, int value) const {
             (void)dataBase;
             (void)value;
             return false;
         }
-        virtual bool isGreaterThan(DataBase *dataBase, int value) const {
+        virtual bool isGreaterThan(const DataBase *dataBase, int value) const {
             (void)dataBase;
             (void)value;
             return false;
         }
-        virtual bool isLessThan(DataBase *dataBase, int value) const {
+        virtual bool isLessThan(const DataBase *dataBase, int value) const {
             (void)dataBase;
             (void)value;
             return false;
@@ -128,7 +129,7 @@ namespace ExprEngine {
     class UninitValue: public Value {
     public:
         UninitValue() : Value("?", ValueType::UninitValue) {}
-        bool isEqual(DataBase *dataBase, int value) const OVERRIDE {
+        bool isEqual(const DataBase *dataBase, int value) const OVERRIDE {
             (void)dataBase;
             (void)value;
             return true;
@@ -151,9 +152,9 @@ namespace ExprEngine {
                 return str(minValue);
             return str(minValue) + ":" + str(maxValue);
         }
-        bool isEqual(DataBase *dataBase, int value) const OVERRIDE;
-        bool isGreaterThan(DataBase *dataBase, int value) const OVERRIDE;
-        bool isLessThan(DataBase *dataBase, int value) const OVERRIDE;
+        bool isEqual(const DataBase *dataBase, int value) const OVERRIDE;
+        bool isGreaterThan(const DataBase *dataBase, int value) const OVERRIDE;
+        bool isLessThan(const DataBase *dataBase, int value) const OVERRIDE;
 
         int128_t minValue;
         int128_t maxValue;
@@ -172,9 +173,9 @@ namespace ExprEngine {
             return std::to_string(minValue) + ":" + std::to_string(maxValue);
         }
 
-        bool isEqual(DataBase *dataBase, int value) const OVERRIDE;
-        bool isGreaterThan(DataBase *dataBase, int value) const OVERRIDE;
-        bool isLessThan(DataBase *dataBase, int value) const OVERRIDE;
+        bool isEqual(const DataBase *dataBase, int value) const OVERRIDE;
+        bool isGreaterThan(const DataBase *dataBase, int value) const OVERRIDE;
+        bool isLessThan(const DataBase *dataBase, int value) const OVERRIDE;
 
         long double minValue;
         long double maxValue;
@@ -194,7 +195,7 @@ namespace ExprEngine {
     // Array or pointer
     class ArrayValue: public Value {
     public:
-        const int MAXSIZE = 0x100000;
+        enum { MAXSIZE = 0x7fffffff };
 
         ArrayValue(const std::string &name, ValuePtr size, ValuePtr value, bool pointer, bool nullPointer, bool uninitPointer);
         ArrayValue(DataBase *data, const Variable *var);
@@ -239,6 +240,10 @@ namespace ExprEngine {
 
         std::string getSymbolicExpression() const OVERRIDE;
 
+        std::string getRange() const OVERRIDE {
+            return getSymbolicExpression();
+        }
+
         ValuePtr getValueOfMember(const std::string &n) const {
             auto it = member.find(n);
             return (it == member.end()) ? ValuePtr() : it->second;
@@ -278,9 +283,10 @@ namespace ExprEngine {
             , op2(op2) {
         }
 
-        bool isEqual(DataBase *dataBase, int value) const OVERRIDE;
-        bool isGreaterThan(DataBase *dataBase, int value) const OVERRIDE;
-        virtual bool isLessThan(DataBase *dataBase, int value) const OVERRIDE;
+        bool isEqual(const DataBase *dataBase, int value) const OVERRIDE;
+        bool isGreaterThan(const DataBase *dataBase, int value) const OVERRIDE;
+        virtual bool isLessThan(const DataBase *dataBase, int value) const OVERRIDE;
+        bool isTrue(const DataBase *dataBase) const;
 
         std::string getExpr(DataBase *dataBase) const;
 
@@ -311,10 +317,20 @@ namespace ExprEngine {
         char sign;
     };
 
+    class FunctionCallArgumentValues: public Value {
+    public:
+        explicit FunctionCallArgumentValues(const std::vector<ExprEngine::ValuePtr> &argValues)
+            : Value("argValues", ValueType::FunctionCallArgumentValues)
+            , argValues(argValues)
+        {}
+
+        const std::vector<ExprEngine::ValuePtr> argValues;
+    };
+
     class BailoutValue : public Value {
     public:
         BailoutValue() : Value("bailout", ValueType::BailoutValue) {}
-        bool isEqual(DataBase * /*dataBase*/, int /*value*/) const OVERRIDE {
+        bool isEqual(const DataBase * /*dataBase*/, int /*value*/) const OVERRIDE {
             return true;
         }
         bool isUninit() const OVERRIDE {

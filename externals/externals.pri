@@ -1,9 +1,11 @@
 INCLUDEPATH += $${PWD} \
+               $${PWD}/picojson \
                $${PWD}/simplecpp \
-               $${PWD}/tinyxml
+               $${PWD}/tinyxml2
 
-HEADERS += $${PWD}/simplecpp/simplecpp.h \
-           $${PWD}/tinyxml/tinyxml2.h
+HEADERS += $${PWD}/picojson/picojson.h \
+           $${PWD}/simplecpp/simplecpp.h \
+           $${PWD}/tinyxml2/tinyxml2.h
 
 SOURCES += $${PWD}/simplecpp/simplecpp.cpp \
-           $${PWD}/tinyxml/tinyxml2.cpp
+           $${PWD}/tinyxml2/tinyxml2.cpp

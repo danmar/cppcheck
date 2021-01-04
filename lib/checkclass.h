@@ -38,6 +38,7 @@ class Scope;
 class Settings;
 class SymbolDatabase;
 class Token;
+class Type;
 
 /// @addtogroup Checks
 /// @{
@@ -185,6 +186,7 @@ private:
     void overrideError(const Function *funcInBase, const Function *funcInDerived);
     void thisUseAfterFree(const Token *self, const Token *free, const Token *use);
     void unsafeClassRefMemberError(const Token *tok, const std::string &varname);
+    void checkDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckClass c(nullptr, settings, errorLogger);

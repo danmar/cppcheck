@@ -59,9 +59,9 @@ install:
   - pip install pytest
   - SET p=x86
   - IF "%platform%"=="x64" SET p=x64
-  - curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-4.8.7/z3-4.8.7-%p%-win.zip -o z3-4.8.7-win.zip
-  - 7z x z3-4.8.7-win.zip -oexternals -r -y
-  - move externals\z3-4.8.7-%p%-win externals\z3
+  - curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-4.8.9/z3-4.8.9-%p%-win.zip -o z3-4.8.9-win.zip
+  - 7z x z3-4.8.9-win.zip -oexternals -r -y
+  - move externals\z3-4.8.9-%p%-win externals\z3
 
 build_script:
   - ECHO Building %configuration% %platform% with MSVC %VisualStudioVersion% using %PlatformToolset% PlatformToolset
@@ -79,6 +79,7 @@ build_script:
   - ECHO MYQTDIR=%MYQTDIR%
   - 'IF defined MYQTDIR cd gui'
   - 'IF defined MYQTDIR set QTDIR=%MYQTDIR%'
+  - 'IF defined MYQTDIR set PATH=%PATH%;%QTDIR%\bin'
   - 'IF defined MYQTDIR %QTDIR%\bin\qmake'
   - 'IF defined MYQTDIR nmake'
   - 'IF defined MYQTDIR cd ..'

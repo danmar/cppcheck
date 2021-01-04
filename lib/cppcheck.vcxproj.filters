@@ -116,7 +116,7 @@
     <ClCompile Include="library.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\externals\tinyxml\tinyxml2.cpp">
+    <ClCompile Include="..\externals\tinyxml2\tinyxml2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="valueflow.cpp">
@@ -177,6 +177,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="summaries.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bughuntingchecks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="reverseanalyzer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -292,7 +301,7 @@
     <ClInclude Include="library.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\externals\tinyxml\tinyxml2.h">
+    <ClInclude Include="..\externals\tinyxml2\tinyxml2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="valueflow.h">
@@ -344,6 +353,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="precompiled.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="summaries.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bughuntingchecks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

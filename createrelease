@@ -6,8 +6,11 @@
 # - ensure latest build was successful
 # - ensure cfg files etc are included (win_installer/cppcheck.wxs)
 #
-# self check:
-# ./cppcheck -D__CPPCHECK__ --library=cppcheck-lib --enable=style --inconclusive --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h cli gui/*.cpp lib
+# self check, fix critical issues:
+# ./cppcheck -D__CPPCHECK__ --library=cppcheck-lib --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h cli gui/*.cpp --suppress=functionConst --suppress=functionStatic -q lib
+#
+# check --bug-hunting output:
+# ./cppcheck -D__CPPCHECK__ --bug-hunting lib
 #
 # Update translations
 #   lupdate gui.pro
@@ -29,7 +32,7 @@
 # sed -i "s/MINOR [0-9][0-9]*/MINOR 1/" lib/version.h
 # sed -i "s/[12].[0-9][0-9]* dev/2.1/" win_installer/productInfo.wxi
 # sed -i "s/[12].[0-9][0-9]*/2.1/" win_installer/productInfo.wxi
-# sed -i "s/Version [12].[0-9]+/Version 2.1/" */*.md
+# sed -i "s/subtitle: Version 2[.0-9]*/subtitle: Version 2.2/" man/*.md
 # Verify:
 # grep '\.99' */*.[ch]* && grep '[0-9][0-9] dev' */*.[ch]*
 # git commit -a -m "1.43: Set versions"
@@ -68,6 +71,10 @@
 # run daca with new release
 # 1. edit tools/donate-cpu-server.py. Update OLD_VERSION and VERSION
 # 2. scp tools/donate-cpu-server.py danielmarjamaki@cppcheck1.osuosl.org:/var/daca@home/
+#
+# self check, fix stylistic issues:
+# ./cppcheck -D__CPPCHECK__ --library=cppcheck-lib --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h cli gui/*.cpp lib
+
 
 # Tag to use
 tag=$1

@@ -30,6 +30,7 @@ try:
 except ImportError:
     pass
 
+import misra_9
 
 def grouped(iterable, n):
     """s -> (s0,s1,s2,...sn-1), (sn,sn+1,sn+2,...s2n-1), (s2n,s2n+1,s2n+2,...s3n-1), ..."""
@@ -59,11 +60,7 @@ def isUnsignedType(ty):
 
 
 def simpleMatch(token, pattern):
-    for p in pattern.split(' '):
-        if not token or token.str != p:
-            return False
-        token = token.next
-    return True
+    return cppcheckdata.simpleMatch(token, pattern)
 
 
 def rawlink(rawtoken):
@@ -850,6 +847,45 @@ def isNoReturnScope(tok):
     return False
 
 
+# Return the token which the value is assigned to
+def getAssignedVariableToken(valueToken):
+    if not valueToken:
+        return None
+    if not valueToken.astParent:
+        return None
+    operator = valueToken.astParent
+    if operator.isAssignmentOp:
+        return operator.astOperand1
+    if operator.isArithmeticalOp:
+        return getAssignedVariableToken(operator)
+    return None
+
+# If the value is used as a return value, return the function definition
+def getFunctionUsingReturnValue(valueToken):
+    if not valueToken:
+        return None
+    if not valueToken.astParent:
+        return None
+    operator = valueToken.astParent
+    if operator.str == 'return':
+        return operator.scope.function
+    if operator.isArithmeticalOp:
+        return getFunctionUsingReturnValue(operator)
+    return None
+
+# Return true if the token follows a specific sequence of token str values
+def tokenFollowsSequence(token, sequence):
+    if not token:
+        return False
+    for i in reversed(sequence):
+        prev = token.previous
+        if not prev:
+            return False
+        if prev.str != i:
+            return False
+        token = prev
+    return True
+
 class Define:
     def __init__(self, directive):
         self.args = []
@@ -1023,7 +1059,7 @@ class MisraSettings(object):
 
 class MisraChecker:
 
-    def __init__(self, settings, stdversion="c90"):
+    def __init__(self, settings, stdversion="c89"):
         """
         :param settings: misra.py script settings.
         """
@@ -1053,9 +1089,6 @@ class MisraChecker:
         # should not be None for both.
         self.suppressedRules = dict()
 
-        # List of suppression extracted from the dumpfile
-        self.dumpfileSuppressions = None
-
         # Prefix to ignore when matching suppression files.
         self.filePrefix = None
 
@@ -1070,8 +1103,8 @@ class MisraChecker:
 
     def __repr__(self):
         attrs = ["settings", "verify_expected", "verify_actual", "violations",
-                 "ruleTexts", "suppressedRules", "dumpfileSuppressions",
-                 "filePrefix", "suppressionStats", "stdversion", "severity"]
+                 "ruleTexts", "suppressedRules", "filePrefix",
+                 "suppressionStats", "stdversion", "severity"]
         return "{}({})".format(
             "MisraChecker",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -1213,7 +1246,7 @@ class MisraChecker:
                     if hasExternalLinkage(variable1) or hasExternalLinkage(variable2):
                         continue
                     if (variable1.nameToken.str[:num_sign_chars] == variable2.nameToken.str[:num_sign_chars] and
-                            variable1.Id != variable2.Id):
+                            variable1 is not variable2):
                         if int(variable1.nameToken.linenr) > int(variable2.nameToken.linenr):
                             self.reportError(variable1.nameToken, 5, 2)
                         else:
@@ -1290,17 +1323,144 @@ class MisraChecker:
             if scope.className and scope.className[:num_sign_chars] in macroNames:
                 self.reportError(scope.bodyStart, 5, 5)
 
+
+    def misra_6_1(self, data):
+        # Bitfield type must be bool or explicity signed/unsigned int
+        for token in data.tokenlist:
+            if not token.valueType:
+                continue
+            if token.valueType.bits == 0:
+                continue
+            if not token.variable:
+                continue
+            if not token.scope:
+                continue
+            if token.scope.type not in 'Struct':
+                continue
+
+            if data.standards.c == 'c89':
+                if token.valueType.type != 'int':
+                    self.reportError(token, 6, 1)
+            elif data.standards.c == 'c99':
+                if token.valueType.type == 'bool':
+                    continue
+
+            isExplicitlySignedOrUnsigned = False
+            typeToken = token.variable.typeStartToken
+            while typeToken:
+                if typeToken.isUnsigned or typeToken.isSigned:
+                    isExplicitlySignedOrUnsigned = True
+                    break
+
+                if typeToken is token.variable.typeEndToken:
+                    break
+
+                typeToken = typeToken.next
+
+            if not isExplicitlySignedOrUnsigned:
+                self.reportError(token, 6, 1)
+
+
+    def misra_6_2(self, data):
+        # Bitfields of size 1 can not be signed
+        for token in data.tokenlist:
+            if not token.valueType:
+                continue
+            if not token.scope:
+                continue
+            if token.scope.type not in 'Struct':
+                continue
+            if token.valueType.bits == 1 and token.valueType.sign == 'signed':
+                self.reportError(token, 6, 2)
+
+
     def misra_7_1(self, rawTokens):
         compiled = re.compile(r'^0[0-7]+$')
         for tok in rawTokens:
             if compiled.match(tok.str):
                 self.reportError(tok, 7, 1)
 
+    def misra_7_2(self, data):
+        # Large constant numbers that are assigned to a variable should have an
+        # u/U suffix if the variable type is unsigned.
+        def reportErrorIfMissingSuffix(variable, value):
+            if 'U' in value.str.upper():
+                return
+            if value and value.isNumber:
+                if variable and variable.valueType and variable.valueType.sign == 'unsigned':
+                    if variable.valueType.type in ['char', 'short', 'int', 'long', 'long long']:
+                        limit = 1 << (bitsOfEssentialType(variable.valueType.type) -1)
+                        v = value.getKnownIntValue()
+                        if v is not None and v >= limit:
+                            self.reportError(value, 7, 2)
+
+        for token in data.tokenlist:
+            # Check normal variable assignment
+            if token.valueType and token.isNumber:
+                variable = getAssignedVariableToken(token)
+                reportErrorIfMissingSuffix(variable, token)
+
+            # Check use as function parameter
+            if isFunctionCall(token) and token.astOperand1 and token.astOperand1.function:
+                functionDeclaration = token.astOperand1.function
+
+                if functionDeclaration.tokenDef:
+                    if functionDeclaration.tokenDef is token.astOperand1:
+                        # Token is not a function call, but it is the definition of the function
+                        continue
+
+                    parametersUsed = getArguments(token)
+                    for i in range(len(parametersUsed)):
+                        usedParameter = parametersUsed[i]
+                        if usedParameter.isNumber:
+                            parameterDefinition = functionDeclaration.argument.get(i+1)
+                            if parameterDefinition and parameterDefinition.nameToken:
+                                reportErrorIfMissingSuffix(parameterDefinition.nameToken, usedParameter)
+
     def misra_7_3(self, rawTokens):
         compiled = re.compile(r'^[0-9.uU]+l')
         for tok in rawTokens:
             if compiled.match(tok.str):
                 self.reportError(tok, 7, 3)
+
+    def misra_7_4(self, data):
+        # A string literal shall not be assigned to an object unless the object's type
+        # is constant.
+        def reportErrorIfVariableIsNotConst(variable, stringLiteral):
+            if variable.valueType:
+                if (variable.valueType.constness % 2) != 1:
+                    self.reportError(stringLiteral, 7, 4)
+
+        for token in data.tokenlist:
+            if token.isString:
+                # Check normal variable assignment
+                variable = getAssignedVariableToken(token)
+                if variable:
+                    reportErrorIfVariableIsNotConst(variable, token)
+
+                # Check use as return value
+                function = getFunctionUsingReturnValue(token)
+                if function:
+                    # "Primitive" test since there is no info available on return value type
+                    if not tokenFollowsSequence(function.tokenDef, ['const', 'char', '*']):
+                        self.reportError(token, 7, 4)
+
+            # Check use as function parameter
+            if isFunctionCall(token) and token.astOperand1 and token.astOperand1.function:
+                functionDeclaration = token.astOperand1.function
+
+                if functionDeclaration.tokenDef:
+                    if functionDeclaration.tokenDef is token.astOperand1:
+                        # Token is not a function call, but it is the definition of the function
+                        continue
+
+                    parametersUsed = getArguments(token)
+                    for i in range(len(parametersUsed)):
+                        usedParameter = parametersUsed[i]
+                        parameterDefinition = functionDeclaration.argument.get(i+1)
+
+                        if usedParameter.isString and parameterDefinition.nameToken:
+                            reportErrorIfVariableIsNotConst(parameterDefinition.nameToken, usedParameter)
 
     def misra_8_11(self, data):
         for var in data.variables:
@@ -1336,10 +1496,20 @@ class MisraChecker:
             if token.str == 'restrict':
                 self.reportError(token, 8, 14)
 
-    def misra_9_5(self, rawTokens):
-        for token in rawTokens:
-            if simpleMatch(token, '[ ] = { ['):
-                self.reportError(token, 9, 5)
+    def misra_9_2(self, data):
+        misra_9.misra_9_x(self, data, 902)
+
+    def misra_9_3(self, data):
+        misra_9.misra_9_x(self, data, 903)
+
+    def misra_9_4(self, data):
+        misra_9.misra_9_x(self, data, 904)
+
+    def misra_9_5(self, data, rawTokens):
+        misra_9.misra_9_x(self, data, 905, rawTokens)
+        #for token in rawTokens:
+        #    if simpleMatch(token, '[ ] = { ['):
+        #        self.reportError(token, 9, 5)
 
     def misra_10_1(self, data):
         for token in data.tokenlist:
@@ -1364,6 +1534,41 @@ class MisraChecker:
                     e2_et = getEssentialType(token.astOperand2)
                     if e1_et == 'char' and e2_et == 'char':
                         self.reportError(token, 10, 1)
+
+    def misra_10_2(self, data):
+        def isEssentiallySignedOrUnsigned(op):
+            if op and op.valueType:
+                if op.valueType.sign in ['unsigned', 'signed']:
+                    return True
+            return False
+
+        def isEssentiallyChar(op):
+            if op.isName:
+                return getEssentialType(op) == 'char'
+            return op.isChar
+
+        for token in data.tokenlist:
+            if not token.isArithmeticalOp or token.str not in ['+', '-']:
+                continue
+
+            operand1 = token.astOperand1
+            operand2 = token.astOperand2
+            if not operand1 or not operand2:
+                continue
+            if not operand1.isChar and not operand2.isChar:
+                continue
+
+            if token.str == '+':
+                if isEssentiallyChar(operand1) and not isEssentiallySignedOrUnsigned(operand2):
+                    self.reportError(token, 10, 2)
+                if isEssentiallyChar(operand2) and not isEssentiallySignedOrUnsigned(operand1):
+                    self.reportError(token, 10, 2)
+
+            if token.str == '-':
+                if not isEssentiallyChar(operand1):
+                    self.reportError(token, 10, 2)
+                if not isEssentiallyChar(operand2) and not isEssentiallySignedOrUnsigned(operand2):
+                    self.reportError(token, 10, 2)
 
     def misra_10_4(self, data):
         op = {'+', '-', '*', '/', '%', '&', '|', '^', '+=', '-=', ':'}
@@ -1590,9 +1795,8 @@ class MisraChecker:
                     continue
                 if (token.astOperand2.values and vt1.pointer > 0 and
                         vt2.pointer == 0 and token.astOperand2.values):
-                    for val in token.astOperand2.values:
-                        if val.intvalue == 0:
-                            self.reportError(token, 11, 9)
+                    if token.astOperand2.getValue(0):
+                        self.reportError(token, 11, 9)
 
     def misra_12_1_sizeof(self, rawTokens):
         state = 0
@@ -1854,6 +2058,35 @@ class MisraChecker:
                             self.reportError(token, 15, 3)
                             break
                         t = t.next
+
+    def misra_15_4(self, data):
+        # Return a list of scopes affected by a break or goto
+        def getLoopsAffectedByBreak(knownLoops, scope, isGoto):
+            if scope and scope.type and scope.type not in ['Global', 'Function']:
+                if not isGoto and scope.type == 'Switch':
+                    return
+                if scope.type in ['For', 'While', 'Do']:
+                    knownLoops.append(scope)
+                    if not isGoto:
+                        return
+                getLoopsAffectedByBreak(knownLoops, scope.nestedIn, isGoto)
+
+        loopWithBreaks = {}
+        for token in data.tokenlist:
+            if token.str not in ['break', 'goto']:
+                continue
+
+            affectedLoopScopes = []
+            getLoopsAffectedByBreak(affectedLoopScopes, token.scope, token.str == 'goto')
+            for scope in affectedLoopScopes:
+                if scope in loopWithBreaks:
+                    loopWithBreaks[scope] += 1
+                else:
+                    loopWithBreaks[scope] = 1
+
+        for scope, breakCount in loopWithBreaks.items():
+            if breakCount > 1:
+                self.reportError(scope.bodyStart, 15, 4)
 
     def misra_15_5(self, data):
         for token in data.tokenlist:
@@ -2619,29 +2852,6 @@ class MisraChecker:
             return False
         return None in self.suppressedRules[rule_num]
 
-    def parseSuppressions(self):
-        """
-        Parse the suppression list provided by cppcheck looking for
-        rules that start with 'misra' or MISRA.  The MISRA rule number
-        follows using either '_' or '.' to separate the numbers.
-        Examples:
-            misra_6.0
-            misra_7_0
-            misra.21.11
-        """
-        rule_pattern = re.compile(r'^(misra|MISRA)[_.]([0-9]+)[_.]([0-9]+)')
-
-        for each in self.dumpfileSuppressions:
-            res = rule_pattern.match(each.errorId)
-
-            if res:
-                num1 = int(res.group(2)) * 100
-                ruleNum = num1 + int(res.group(3))
-                linenr = None
-                if each.lineNumber:
-                    linenr = int(each.lineNumber)
-                self.addSuppressedRule(ruleNum, each.fileName, linenr, each.symbolName)
-
     def showSuppressedRules(self):
         """
         Print out rules in suppression list sorted by Rule Number
@@ -2867,9 +3077,6 @@ class MisraChecker:
         filename = '.'.join(dumpfile.split('.')[:-1])
         data = cppcheckdata.parsedump(dumpfile)
 
-        self.dumpfileSuppressions = data.suppressions
-        self.parseSuppressions()
-
         typeBits['CHAR'] = data.platform.char_bit
         typeBits['SHORT'] = data.platform.short_bit
         typeBits['INT'] = data.platform.int_bit
@@ -2902,17 +3109,25 @@ class MisraChecker:
             self.executeCheck(502, self.misra_5_2, cfg)
             self.executeCheck(504, self.misra_5_4, cfg)
             self.executeCheck(505, self.misra_5_5, cfg)
-            # 6.1 require updates in Cppcheck (type info for bitfields are lost)
-            # 6.2 require updates in Cppcheck (type info for bitfields are lost)
+            self.executeCheck(601, self.misra_6_1, cfg)
+            self.executeCheck(602, self.misra_6_2, cfg)
             if cfgNumber == 0:
                 self.executeCheck(701, self.misra_7_1, data.rawTokens)
+            self.executeCheck(702, self.misra_7_2, cfg)
+            if cfgNumber == 0:
                 self.executeCheck(703, self.misra_7_3, data.rawTokens)
+            self.executeCheck(704, self.misra_7_4, cfg)
             self.executeCheck(811, self.misra_8_11, cfg)
             self.executeCheck(812, self.misra_8_12, cfg)
             if cfgNumber == 0:
                 self.executeCheck(814, self.misra_8_14, data.rawTokens)
-                self.executeCheck(905, self.misra_9_5, data.rawTokens)
+            self.executeCheck(902, self.misra_9_2, cfg)
+            self.executeCheck(903, self.misra_9_3, cfg)
+            self.executeCheck(904, self.misra_9_4, cfg)
+            if cfgNumber == 0:
+                self.executeCheck(905, self.misra_9_5, cfg, data.rawTokens)
             self.executeCheck(1001, self.misra_10_1, cfg)
+            self.executeCheck(1002, self.misra_10_2, cfg)
             self.executeCheck(1004, self.misra_10_4, cfg)
             self.executeCheck(1006, self.misra_10_6, cfg)
             self.executeCheck(1008, self.misra_10_8, cfg)
@@ -2940,6 +3155,7 @@ class MisraChecker:
             self.executeCheck(1501, self.misra_15_1, cfg)
             self.executeCheck(1502, self.misra_15_2, cfg)
             self.executeCheck(1503, self.misra_15_3, cfg)
+            self.executeCheck(1504, self.misra_15_4, cfg)
             self.executeCheck(1505, self.misra_15_5, cfg)
             if cfgNumber == 0:
                 self.executeCheck(1506, self.misra_15_6, data.rawTokens)

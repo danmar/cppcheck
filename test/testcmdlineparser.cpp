@@ -106,6 +106,8 @@ private:
         TEST_CASE(stdc99);
         TEST_CASE(stdcpp11);
         TEST_CASE(platform);
+        TEST_CASE(plistEmpty);
+        TEST_CASE(plistDoesNotExist);
         TEST_CASE(suppressionsOld); // TODO: Create and test real suppression file
         TEST_CASE(suppressions);
         TEST_CASE(suppressionsNoFile);
@@ -715,6 +717,22 @@ private:
         settings.platform(Settings::Unspecified);
         ASSERT(defParser.parseFromArgs(3, argv));
         ASSERT(settings.platformType == Settings::Win64);
+    }
+
+    void plistEmpty() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--plist-output=", "file.cpp"};
+        settings.plistOutput = "";
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT(settings.plistOutput == "./");
+    }
+
+    void plistDoesNotExist() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--plist-output=./cppcheck_reports", "file.cpp"};
+        settings.plistOutput = "";
+        // Fails since folder pointed by --plist-output= does not exist
+        ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
     }
 
     void suppressionsOld() {

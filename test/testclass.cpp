@@ -171,6 +171,8 @@ private:
         TEST_CASE(const66); // ticket #7714
         TEST_CASE(const67); // ticket #9193
         TEST_CASE(const68); // ticket #6471
+        TEST_CASE(const69); // ticket #9806
+        TEST_CASE(const70); // variadic template can receive more arguments than in its definition
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -554,6 +556,20 @@ private:
                                   "   };\n"
                                   "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #9957
+        checkDuplInheritedMembers("class Base {\n"
+                                  "    public:\n"
+                                  "        int i;\n"
+                                  "};\n"
+                                  "class Derived1: public Base {\n"
+                                  "    public:\n"
+                                  "        int j;\n"
+                                  "};\n"
+                                  "class Derived2 : public Derived1 {\n"
+                                  "    int i;\n"
+                                  "};");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:10]: (warning) The class 'Derived2' defines member variable with name 'i' also defined in its parent class 'Base'.\n", errout.str());
 
     }
 
@@ -5531,6 +5547,38 @@ private:
                    "    }\n"
                    "    void* m_data;\n"
                    "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const69() { // #9806
+        checkConst("struct A {\n"
+                   "    int a = 0;\n"
+                   "    template <typename... Args> void call(const Args &... args) { a = 1; }\n"
+                   "    template <typename T, typename... Args> auto call(const Args &... args) -> T {\n"
+                   "        a = 2;\n"
+                   "        return T{};\n"
+                   "    }\n"
+                   "};\n"
+                   "\n"
+                   "struct B : public A {\n"
+                   "    void test() {\n"
+                   "        call();\n"
+                   "        call<int>(1, 2, 3);\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const70() {
+        checkConst("struct A {\n"
+                   "    template <typename... Args> void call(Args ... args) {\n"
+                   "        func(this);\n"
+                   "    }\n"
+                   "\n"
+                   "    void test() {\n"
+                   "        call(1, 2);\n"
+                   "    }\n"
+                   "};");
         ASSERT_EQUALS("", errout.str());
     }
 

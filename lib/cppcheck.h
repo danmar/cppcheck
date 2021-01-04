@@ -113,19 +113,12 @@ public:
     virtual void reportStatus(unsigned int fileindex, unsigned int filecount, std::size_t sizedone, std::size_t sizetotal);
 
     /**
-     * @brief Terminate checking. The checking will be terminated as soon as possible.
-     */
-    void terminate() {
-        Settings::terminate();
-    }
-
-    /**
      * @brief Call all "getErrorMessages" in all registered Check classes.
      * Also print out XML header and footer.
      */
     void getErrorMessages();
 
-    void tooManyConfigsError(const std::string &file, const std::size_t numberOfConfigurations);
+    void tooManyConfigsError(const std::string &file, const int numberOfConfigurations);
     void purgedConfigurationMessage(const std::string &file, const std::string& configuration);
 
     void dontSimplify() {

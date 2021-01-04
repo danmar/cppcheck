@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,13 +46,6 @@ class CPPCHECKLIB TemplateSimplifier {
 public:
     explicit TemplateSimplifier(Tokenizer *tokenizer);
     ~TemplateSimplifier();
-
-    /**
-     * Used after simplifyTemplates to perform a little cleanup.
-     * Sometimes the simplifyTemplates isn't fully successful and then
-     * there are function calls etc with "wrong" syntax.
-     */
-    void cleanupAfterSimplify();
 
     /**
      */
@@ -140,16 +133,16 @@ public:
     public:
         /**
          * Constructor used for instantiations.
-         * \param tok template instantiation name token "name<...>"
-         * \param s full qualification of template(scope)
+         * \param token template instantiation name token "name<...>"
+         * \param scope full qualification of template(scope)
          */
         TokenAndName(Token *token, const std::string &scope);
         /**
          * Constructor used for declarations.
-         * \param tok template declaration token "template < ... >"
-         * \param s full qualification of template(scope)
-         * \param nt template name token "template < ... > class name"
-         * \param pe template parameter end token ">"
+         * \param token template declaration token "template < ... >"
+         * \param scope full qualification of template(scope)
+         * \param nameToken template name token "template < ... > class name"
+         * \param paramEnd template parameter end token ">"
          */
         TokenAndName(Token *token, const std::string &scope, const Token *nameToken, const Token *paramEnd);
         TokenAndName(const TokenAndName& other);
@@ -330,11 +323,6 @@ public:
      * @param end token following last argument token
      */
     void simplifyTemplateArgs(Token *start, Token *end);
-
-    /** Fix angle brackets.
-     * foo < bar < >> => foo < bar < > >
-     */
-    void fixAngleBrackets();
 
 private:
     /**

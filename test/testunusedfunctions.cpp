@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,6 +46,7 @@ private:
         TEST_CASE(template1);
         TEST_CASE(template2);
         TEST_CASE(template3);
+        TEST_CASE(template4); // #9805
         TEST_CASE(throwIsNotAFunction);
         TEST_CASE(unusedError);
         TEST_CASE(unusedMain);
@@ -227,6 +228,26 @@ private:
               "};\n"
               "template<typename T> void X::foo( T t ) const { }\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) The function 'bar' is never used.\n", errout.str());
+    }
+
+    void template4() { // #9805
+        check("struct A {\n"
+              "    int a = 0;\n"
+              "    void f() { a = 1; }\n"
+              "    template <typename T, typename... Args> auto call(const Args &... args) -> T {\n"
+              "        a = 2;\n"
+              "        return T{};\n"
+              "    }\n"
+              "};\n"
+              "\n"
+              "struct B : public A {\n"
+              "    void test() {\n"
+              "        f();\n"
+              "        call<int>(1, 2, 3);\n"
+              "        test();\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void throwIsNotAFunction() {

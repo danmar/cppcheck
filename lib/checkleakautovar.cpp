@@ -55,7 +55,7 @@ static const int NEW = -1;
 
 /**
  * @brief Is variable type some class with automatic deallocation?
- * @param vartok variable token
+ * @param var variable token
  * @return true unless it can be seen there is no automatic deallocation
  */
 static bool isAutoDealloc(const Variable *var)
@@ -510,6 +510,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                         varInfo2.erase(vartok->varId());
                     } else if (astIsVariableComparison(tok3, "==", "-1", &vartok)) {
                         varInfo1.erase(vartok->varId());
+                    } else if (astIsVariableComparison(tok3, "!=", "-1", &vartok)) {
+                        varInfo2.erase(vartok->varId());
                     }
                     return ChildrenToVisit::none;
                 });

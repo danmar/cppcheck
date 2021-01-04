@@ -131,20 +131,13 @@ public:
         return classDef ? classDef->str() : emptyString;
     }
 
-    bool isClassType() const {
-        return classDef && classDef->str() == "class";
-    }
-
-    bool isEnumType() const {
-        return classDef && classDef->str() == "enum";
-    }
+    bool isClassType() const;
+    bool isEnumType() const;
+    bool isStructType() const;
+    bool isUnionType() const;
 
     bool isTypeAlias() const {
         return classDef && classDef->str() == "using";
-    }
-
-    bool isStructType() const {
-        return classDef && classDef->str() == "struct";
     }
 
     const Token *initBaseInfo(const Token *tok, const Token *tok1);
@@ -243,9 +236,9 @@ public:
         evaluate(settings);
     }
 
-    Variable(const Token *name_, const std::string &clangType, const Token *start,
-             nonneg int index_, AccessControl access_, const Type *type_,
-             const Scope *scope_);
+    Variable(const Token *name_, const std::string &clangType, const Token *typeStart,
+             const Token *typeEnd, nonneg int index_, AccessControl access_,
+             const Type *type_, const Scope *scope_);
 
     ~Variable();
 
@@ -746,7 +739,7 @@ public:
     enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction, eLambda };
 
     Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef);
-    explicit Function(const Token *tokenDef);
+    Function(const Token *tokenDef, const std::string &clangType);
 
     const std::string &name() const {
         return tokenDef->str();
@@ -985,6 +978,7 @@ private:
     void hasTrailingReturnType(bool state) {
         return setFlag(fHasTrailingReturnType, state);
     }
+    const Token *setFlags(const Token *tok1, const Scope *scope);
 };
 
 class CPPCHECKLIB Scope {
@@ -1071,6 +1065,10 @@ public:
 
     bool isExecutable() const {
         return type != eClass && type != eStruct && type != eUnion && type != eGlobal && type != eNamespace && type != eEnum;
+    }
+
+    bool isLoopScope() const {
+        return type == Scope::ScopeType::eFor || type == Scope::ScopeType::eWhile || type == Scope::ScopeType::eDo;
     }
 
     bool isLocal() const {
@@ -1321,7 +1319,7 @@ public:
     /**
      * @brief output a debug message
      */
-    void debugMessage(const Token *tok, const std::string &msg) const;
+    void debugMessage(const Token *tok, const std::string &type, const std::string &msg) const;
 
     void printOut(const char * title = nullptr) const;
     void printVariable(const Variable *var, const char *indent) const;

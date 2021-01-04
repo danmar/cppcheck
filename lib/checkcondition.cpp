@@ -460,23 +460,8 @@ void CheckCondition::duplicateCondition()
         if (!cond2)
             continue;
 
-        bool modified = false;
-        visitAstNodes(cond1, [&](const Token* tok3) {
-            if (exprDependsOnThis(tok3)) {
-                if (isThisChanged(scope.classDef->next(), cond2, false, mSettings, mTokenizer->isCPP())) {
-                    modified = true;
-                    return ChildrenToVisit::done;
-                }
-            }
-            if (tok3->varId() > 0 &&
-                isVariableChanged(scope.classDef->next(), cond2, tok3->varId(), false, mSettings, mTokenizer->isCPP())) {
-                modified = true;
-                return ChildrenToVisit::done;
-            }
-            return ChildrenToVisit::op1_and_op2;
-        });
         ErrorPath errorPath;
-        if (!modified &&
+        if (!isExpressionChanged(cond1, scope.classDef->next(), cond2, mSettings, mTokenizer->isCPP()) &&
             isSameExpression(mTokenizer->isCPP(), true, cond1, cond2, mSettings->library, true, true, &errorPath))
             duplicateConditionError(cond1, cond2, errorPath);
     }
@@ -1119,7 +1104,7 @@ void CheckCondition::checkIncorrectLogicOperator()
                     const std::string cond2 = expr1;
 
                     const std::string cond1VerboseMsg = expr1VerboseMsg + " " + tok->str() + " " + expr2VerboseMsg + " " + tok->astOperand2()->str() + " " + expr3VerboseMsg;
-                    const std::string cond2VerboseMsg = expr1VerboseMsg;
+                    const std::string& cond2VerboseMsg = expr1VerboseMsg;
                     // for the --verbose message, transform the actual condition and print it
                     const std::string msg = tok2->expressionString() + ". '" + cond1 + "' is equivalent to '" + cond2 + "'\n"
                                             "The condition '" + cond1VerboseMsg + "' is equivalent to '" + cond2VerboseMsg + "'.";
@@ -1472,7 +1457,6 @@ void CheckCondition::alwaysTrueFalse()
 
             // don't warn when condition checks sizeof result
             bool hasSizeof = false;
-            bool hasNonNumber = false;
             visitAstNodes(tok, [&](const Token * tok2) {
                 if (!tok2)
                     return ChildrenToVisit::none;
@@ -1484,11 +1468,10 @@ void CheckCondition::alwaysTrueFalse()
                 }
                 if (tok2->isComparisonOp() || tok2->isArithmeticalOp()) {
                     return ChildrenToVisit::op1_and_op2;
-                } else
-                    hasNonNumber = true;
+                }
                 return ChildrenToVisit::none;
             });
-            if (!hasNonNumber && hasSizeof)
+            if (hasSizeof)
                 continue;
 
             alwaysTrueFalseError(tok, &tok->values().front());

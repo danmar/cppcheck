@@ -25,8 +25,10 @@
 #include "mathlib.h"
 #include "utils.h"
 
+#include <functional>
 #include <list>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -49,6 +51,13 @@ namespace ValueFlow {
         template <class T>
         void operator()(T& x) const {
             x--;
+        }
+    };
+
+    struct equalVisitor {
+        template <class T, class U>
+        void operator()(bool& result, T x, U y) const {
+            result = !(x > y || x < y);
         }
     };
     class CPPCHECKLIB Value {
@@ -111,19 +120,19 @@ namespace ValueFlow {
             return true;
         }
 
-        template <class F>
-        void visitValue(F f) {
-            switch (valueType) {
+        template <class T, class F>
+        static void visitValue(T& self, F f) {
+            switch (self.valueType) {
             case ValueType::INT:
             case ValueType::BUFFER_SIZE:
             case ValueType::CONTAINER_SIZE:
             case ValueType::ITERATOR_START:
             case ValueType::ITERATOR_END: {
-                f(intvalue);
+                f(self.intvalue);
                 break;
             }
             case ValueType::FLOAT: {
-                f(floatValue);
+                f(self.floatValue);
                 break;
             }
             case ValueType::UNINIT:
@@ -151,11 +160,18 @@ namespace ValueFlow {
             return !(*this == rhs);
         }
 
+        template <class T, REQUIRES("T must be an arithmetic type", std::is_arithmetic<T>)>
+        bool equalTo(const T& x) const {
+            bool result = false;
+            visitValue(*this, std::bind(equalVisitor{}, std::ref(result), x, std::placeholders::_1));
+            return result;
+        }
+
         void decreaseRange() {
             if (bound == Bound::Lower)
-                visitValue(increment{});
+                visitValue(*this, increment{});
             else if (bound == Bound::Upper)
-                visitValue(decrement{});
+                visitValue(*this, decrement{});
         }
 
         void invertBound() {
@@ -174,7 +190,7 @@ namespace ValueFlow {
 
         std::string infoString() const;
 
-        enum ValueType { INT, TOK, FLOAT, MOVED, UNINIT, CONTAINER_SIZE, LIFETIME, BUFFER_SIZE, ITERATOR_START, ITERATOR_END } valueType;
+        enum class ValueType { INT, TOK, FLOAT, MOVED, UNINIT, CONTAINER_SIZE, LIFETIME, BUFFER_SIZE, ITERATOR_START, ITERATOR_END } valueType;
         bool isIntValue() const {
             return valueType == ValueType::INT;
         }
@@ -383,6 +399,6 @@ std::string lifetimeType(const Token *tok, const ValueFlow::Value *val);
 
 std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ValueFlow::Value::ErrorPath &errorPath);
 
-ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive = false);
+CPPCHECKLIB ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive = false);
 
 #endif // valueflowH

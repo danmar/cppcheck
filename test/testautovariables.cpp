@@ -127,6 +127,7 @@ private:
         TEST_CASE(extendedLifetime);
 
         TEST_CASE(danglingReference);
+        TEST_CASE(danglingTempReference);
 
         // global namespace
         TEST_CASE(testglobalnamespace);
@@ -1745,7 +1746,7 @@ private:
               "    const auto& str_cref2 = g(std::string(\"hello\"));\n"
               "    std::cout << str_cref2 << std::endl;\n"
               "}\n");
-        ASSERT_EQUALS("error", errout.str());
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1] -> [test.cpp:2] -> [test.cpp:5] -> [test.cpp:6]: (error) Using reference to dangling temporary.\n", errout.str());
 
         // Lifetime extended
         check("std::string g(const std::string& str_cref) {\n"
@@ -1761,6 +1762,22 @@ private:
               "    char c = 0;\n"
               "    char&& cr = std::move(c);\n"
               "    return cr;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9987
+        check("void g(std::vector<int>);\n"
+              "void f() {\n"
+              "    std::vector<int>&& v = {};\n"
+              "    g(std::move(v));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(std::vector<int>);\n"
+              "std::vector<int> h();\n"
+              "void f() {\n"
+              "    std::vector<int>&& v = h();\n"
+              "    g(std::move(v));\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -2547,6 +2564,21 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        //Make sure we can still take the address of a reference without warning
+        check("int* foo() {\n"
+              "  int& x = getX();\n"
+              "  return &x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        check("struct C {\n"
+              "  int* m_x;\n"
+              "  void foo() {\n"
+              "    const int& x = getX();\n"
+              "    m_x = &x;\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {
@@ -2859,6 +2891,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3] -> [test.cpp:5]: (error) Reference to temporary returned.\n",
                       errout.str());
+
+        check("const std::string& getState() {\n"
+              "    static const std::string& state = \"\";\n"
+              "    return state;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidLifetime() {

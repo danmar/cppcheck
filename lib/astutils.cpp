@@ -67,6 +67,19 @@ void visitAstNodes(Token *ast, std::function<ChildrenToVisit(Token *)> visitor)
     visitAstNodesGeneric(ast, std::move(visitor));
 }
 
+const Token* findAstNode(const Token* ast, const std::function<bool(const Token*)>& pred)
+{
+    const Token* result = nullptr;
+    visitAstNodes(ast, [&](const Token* tok) {
+        if (pred(tok)) {
+            result = tok;
+            return ChildrenToVisit::done;
+        }
+        return ChildrenToVisit::op1_and_op2;
+    });
+    return result;
+}
+
 static void astFlattenRecursive(const Token *tok, std::vector<const Token *> *result, const char* op, nonneg int depth = 0)
 {
     ++depth;
@@ -213,7 +226,12 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
             ret = tok->astOperand1();
         }
     } else if (comp == "!=" && rhs == std::string("0")) {
-        ret = tok;
+        if (tok->str() == "!") {
+            ret = tok->astOperand1();
+            // handle (!(x==0)) as (x!=0)
+            astIsVariableComparison(ret, "==", "0", &ret);
+        } else
+            ret = tok;
     } else if (comp == "==" && rhs == std::string("0")) {
         if (tok->str() == "!") {
             ret = tok->astOperand1();
@@ -299,6 +317,24 @@ static bool hasToken(const Token * startTok, const Token * stopTok, const Token 
             return true;
     }
     return false;
+}
+
+template <class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
+static T* previousBeforeAstLeftmostLeafGeneric(T* tok)
+{
+    T* leftmostLeaf = tok;
+    while (leftmostLeaf && leftmostLeaf->astOperand1())
+        leftmostLeaf = leftmostLeaf->astOperand1();
+    return leftmostLeaf->previous();
+}
+
+const Token* previousBeforeAstLeftmostLeaf(const Token* tok)
+{
+    return previousBeforeAstLeftmostLeafGeneric(tok);
+}
+Token* previousBeforeAstLeftmostLeaf(Token* tok)
+{
+    return previousBeforeAstLeftmostLeafGeneric(tok);
 }
 
 template <class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
@@ -456,6 +492,20 @@ Token* getCondTokFromEnd(Token* endBlock)
 const Token* getCondTokFromEnd(const Token* endBlock)
 {
     return getCondTokFromEndImpl(endBlock);
+}
+
+const Token *findNextTokenFromBreak(const Token *breakToken)
+{
+    const Scope *scope = breakToken->scope();
+    while (scope) {
+        if (scope->isLoopScope() || scope->type == Scope::ScopeType::eSwitch) {
+            if (scope->type == Scope::ScopeType::eDo && Token::simpleMatch(scope->bodyEnd, "} while ("))
+                return scope->bodyEnd->linkAt(2)->next();
+            return scope->bodyEnd;
+        }
+        scope = scope->nestedIn;
+    }
+    return nullptr;
 }
 
 bool extractForLoopValues(const Token *forToken,
@@ -705,26 +755,51 @@ static void findTokenValue(const Token* const tok, std::function<bool(const Valu
         f(*x);
 }
 
-bool isEqualKnownValue(const Token * const tok1, const Token * const tok2)
+static bool isSameLifetime(const Token * const tok1, const Token * const tok2)
+{
+    ValueFlow::Value v1 = getLifetimeObjValue(tok1);
+    ValueFlow::Value v2 = getLifetimeObjValue(tok2);
+    if (!v1.isLifetimeValue() || !v2.isLifetimeValue())
+        return false;
+    return v1.tokvalue == v2.tokvalue;
+}
+
+static bool compareKnownValue(const Token * const tok1, const Token * const tok2, std::function<bool(const ValueFlow::Value&, const ValueFlow::Value&, bool)> compare)
 {
     bool result = false;
+    bool sameLifetime = isSameLifetime(tok1, tok2);
     findTokenValue(tok1, std::mem_fn(&ValueFlow::Value::isKnown), [&](const ValueFlow::Value& v1) {
+        if (v1.isNonValue() || v1.isContainerSizeValue())
+            return;
         findTokenValue(tok2, std::mem_fn(&ValueFlow::Value::isKnown), [&](const ValueFlow::Value& v2) {
-            result = v1.equalValue(v2);
+            if (v1.valueType == v2.valueType) {
+                result = compare(v1, v2, sameLifetime);
+            }
         });
     });
     return result;
 }
 
+bool isEqualKnownValue(const Token * const tok1, const Token * const tok2)
+{
+    return compareKnownValue(tok1, tok2, [&](const ValueFlow::Value& v1, const ValueFlow::Value& v2, bool sameLifetime) {
+        bool r = v1.equalValue(v2);
+        if (v1.isIteratorValue()) {
+            r &= sameLifetime;
+        }
+        return r;
+    });
+}
+
 bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
 {
-    bool result = false;
-    findTokenValue(tok1, std::mem_fn(&ValueFlow::Value::isKnown), [&](const ValueFlow::Value& v1) {
-        findTokenValue(tok2, std::mem_fn(&ValueFlow::Value::isKnown), [&](const ValueFlow::Value& v2) {
-            result = !v1.equalValue(v2);
-        });
+    return compareKnownValue(tok1, tok2, [&](const ValueFlow::Value& v1, const ValueFlow::Value& v2, bool sameLifetime) {
+        bool r = v1.equalValue(v2);
+        if (v1.isIteratorValue()) {
+            r &= sameLifetime;
+        }
+        return !r;
     });
-    return result;
 }
 
 static bool isSameConstantValue(bool macro, const Token * const tok1, const Token * const tok2)
@@ -1345,6 +1420,8 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
             parent = parent->astParent();
         while (parent && parent->isCast())
             parent = parent->astParent();
+        if (Token::Match(parent, "[+-]") && parent->valueType() && parent->valueType()->pointer)
+            parent = parent->astParent();
 
         // passing variable to subfunction?
         if (Token::Match(parent, "[(,{]"))
@@ -1604,6 +1681,21 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
             return true;
         return false;
     }
+
+    if (indirect > 0) {
+        // check for `*(ptr + 1) = new_value` case
+        parent = tok2->astParent();
+        while (parent && parent->isArithmeticalOp() && parent->isBinaryOp()) {
+            parent = parent->astParent();
+        }
+        if (Token::simpleMatch(parent, "*")) {
+            if (parent->astParent() && parent->astParent()->isAssignmentOp() &&
+                (parent->astParent()->astOperand1() == parent)) {
+                return true;
+            }
+        }
+    }
+
     return false;
 }
 
@@ -1663,7 +1755,7 @@ Token* findVariableChanged(Token *start, const Token *end, int indirect, const n
             // Is aliased function call
             if (Token::Match(tok, "%var% (") && std::any_of(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
                 bool aliased = false;
-                // If we cant find the expression then assume it was modified
+                // If we can't find the expression then assume it was modified
                 if (!getExprTok())
                     return tok;
                 visitAstNodes(getExprTok(), [&](const Token* childTok) {
@@ -1750,6 +1842,27 @@ bool isThisChanged(const Token* start, const Token* end, int indirect, const Set
             return true;
     }
     return false;
+}
+
+bool isExpressionChanged(const Token* expr, const Token* start, const Token* end, const Settings* settings, bool cpp, int depth)
+{
+    const Token* result = findAstNode(expr, [&](const Token* tok) {
+        if (exprDependsOnThis(tok) && isThisChanged(start, end, false, settings, cpp)) {
+            return true;
+        }
+        bool global = false;
+        if (tok->variable()) {
+            if (tok->variable()->isConst())
+                return false;
+            global = !tok->variable()->isLocal() && !tok->variable()->isArgument();
+        }
+        if (tok->exprId() > 0 &&
+            isVariableChanged(
+                start, end, tok->valueType() ? tok->valueType()->pointer : 0, tok->exprId(), global, settings, cpp, depth))
+            return true;
+        return false;
+    });
+    return result;
 }
 
 int numberOfArguments(const Token *start)
@@ -2156,8 +2269,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             if (tok->scope() == expr->scope())
                 mValueFlowKnown = false;
 
-            Scope::ScopeType scopeType = tok->scope()->type;
-            if (scopeType == Scope::eWhile || scopeType == Scope::eFor || scopeType == Scope::eDo) {
+            if (tok->scope()->isLoopScope()) {
                 // check condition
                 const Token *conditionStart = nullptr;
                 const Token *conditionEnd = nullptr;
@@ -2332,6 +2444,14 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 return result1;
             if (mWhat == What::ValueFlow && result1.type == Result::Type::WRITE)
                 mValueFlowKnown = false;
+            if (mWhat == What::Reassign && result1.type == Result::Type::BREAK) {
+                const Token *scopeEndToken = findNextTokenFromBreak(result1.token);
+                if (scopeEndToken) {
+                    const Result &result2 = checkRecursive(expr, scopeEndToken->next(), endToken, exprVarIds, local, inInnerClass, depth);
+                    if (result2.type == Result::Type::BAILOUT)
+                        return result2;
+                }
+            }
             if (Token::simpleMatch(tok->linkAt(1), "} else {")) {
                 const Token *elseStart = tok->linkAt(1)->tokAt(2);
                 const Result &result2 = checkRecursive(expr, elseStart, elseStart->link(), exprVarIds, local, inInnerClass, depth);
@@ -2424,12 +2544,10 @@ FwdAnalysis::Result FwdAnalysis::check(const Token* expr, const Token* startToke
 
     // Break => continue checking in outer scope
     while (mWhat!=What::ValueFlow && result.type == FwdAnalysis::Result::Type::BREAK) {
-        const Scope *s = result.token->scope();
-        while (s->type == Scope::eIf)
-            s = s->nestedIn;
-        if (s->type != Scope::eSwitch && s->type != Scope::eWhile && s->type != Scope::eFor)
+        const Token *scopeEndToken = findNextTokenFromBreak(result.token);
+        if (!scopeEndToken)
             break;
-        result = checkRecursive(expr, s->bodyEnd->next(), endToken, exprVarIds, local, false);
+        result = checkRecursive(expr, scopeEndToken->next(), endToken, exprVarIds, local, false);
     }
 
     return result;

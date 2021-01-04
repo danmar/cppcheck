@@ -42,6 +42,11 @@ private:
         settings0.addEnabled("style");
         settings2.addEnabled("style");
 
+        // If there are unused templates, keep those
+        settings0.checkUnusedTemplates = true;
+        settings1.checkUnusedTemplates = true;
+        settings2.checkUnusedTemplates = true;
+
         TEST_CASE(simplifyTypedef1);
         TEST_CASE(simplifyTypedef2);
         TEST_CASE(simplifyTypedef3);
@@ -169,6 +174,7 @@ private:
         TEST_CASE(simplifyTypedef131); // ticket #9446
         TEST_CASE(simplifyTypedef132); // ticket #9739 - using
         TEST_CASE(simplifyTypedef133); // ticket #9812 - using
+        TEST_CASE(simplifyTypedef134);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -1153,8 +1159,7 @@ private:
 
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:31]: (debug) valueflow.cpp:3109:valueFlowFunctionReturn bailout: function return; nontrivial function body\n"
-            "[test.cpp:28]: (debug) valueflow.cpp:3109:valueFlowFunctionReturn bailout: function return; nontrivial function body\n",
+            "[test.cpp:31]: (debug) valueflow.cpp:3109:valueFlowFunctionReturn bailout: function return; nontrivial function body\n",
             errout.str());
     }
 
@@ -1797,7 +1802,7 @@ private:
 
     void simplifyTypedef75() { // ticket #2426
         const char code[] = "typedef _Packed struct S { long l; };";
-        ASSERT_EQUALS("", tok(code, true, Settings::Native, false));
+        ASSERT_EQUALS(";", tok(code, true, Settings::Native, false));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2047,7 +2052,7 @@ private:
         const char code[] = "typedef long Long;\n"
                             "namespace NS {\n"
                             "}";
-        ASSERT_EQUALS("", tok(code));
+        ASSERT_EQUALS(";", tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2158,7 +2163,7 @@ private:
                             "    return fred;\n"
                             "}";
         tok(code);
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:2]: (debug) valueflow.cpp:3109:valueFlowFunctionReturn bailout: function return; nontrivial function body\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("", errout.str());
     }
 
     void simplifyTypedef101() { // ticket #3003 (segmentation fault)
@@ -2348,7 +2353,7 @@ private:
                                 "typename TrafoConfig > "
                                 "class AsmTraits1 { "
                                 "enum Anonymous0 { "
-                                "domain_dim = SpaceType :: TrafoType :: template Evaluator < SpaceType :: TrafoType :: ShapeType , DataType > :: Type :: domain_dim , "
+                                "domain_dim = SpaceType :: TrafoType :: Evaluator < SpaceType :: TrafoType :: ShapeType , DataType > :: Type :: domain_dim , "
                                 "} ; } ;";
         ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
@@ -2532,7 +2537,8 @@ private:
                             "template <long, class> struct c; "
                             "template <int g> struct d { enum { e = c<g, b>::f }; };";
         const char exp [] = "class a ; "
-                            "template < long , class > struct c ;";
+                            "template < long , class > struct c ; "
+                            "template < int g > struct d { enum Anonymous0 { e = c < g , int ( a :: * ) > :: f } ; } ;";
         ASSERT_EQUALS(exp, tok(code, false));
     }
 
@@ -2659,6 +2665,14 @@ private:
                             "using array_p = const array_t *;\n"
                             "array_p x;\n";
         ASSERT_EQUALS("using array_p = const unsigned char ( * ) [ 16 ] ; array_p x ;", tok(code, false));
+    }
+
+    void simplifyTypedef134() {
+        const char code[] = "namespace foo { typedef long long int64; }\n"
+                            "typedef int int32;\n"
+                            "namespace foo { int64 i; }\n"
+                            "int32 j;";
+        ASSERT_EQUALS("namespace foo { long long i ; } int j ;", tok(code, false));
     }
 
     void simplifyTypedefFunction1() {

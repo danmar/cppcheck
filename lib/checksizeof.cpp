@@ -177,6 +177,9 @@ void CheckSizeof::checkSizeofForPointerSize()
             while (Token::Match(variable2, "%var% ::|."))
                 variable2 = variable2->tokAt(2);
 
+            if (!variable)
+                continue;
+
             // Ensure the variables are in the symbol database
             // Also ensure the variables are pointers
             // Only keep variables which are pointers
@@ -293,7 +296,7 @@ void CheckSizeof::sizeofCalculation()
         if (tok->isExpandedMacro() && tok->previous()) {
             const Token *cast_end = (tok->previous()->str() == "(") ? tok->previous() : tok;
             if (Token::simpleMatch(cast_end->tokAt(-3), "( void )") ||
-                Token::simpleMatch(cast_end->previous(), "static_cast<void>")) {
+                Token::simpleMatch(cast_end->tokAt(-4), "static_cast < void >")) {
                 continue;
             }
         }
@@ -334,7 +337,7 @@ void CheckSizeof::sizeofFunction()
             if (tok->isExpandedMacro() && tok->previous()) {
                 const Token *cast_end = (tok->previous()->str() == "(") ? tok->previous() : tok;
                 if (Token::simpleMatch(cast_end->tokAt(-3), "( void )") ||
-                    Token::simpleMatch(cast_end->previous(), "static_cast<void>")) {
+                    Token::simpleMatch(cast_end->tokAt(-4), "static_cast < void >")) {
                     continue;
                 }
             }
