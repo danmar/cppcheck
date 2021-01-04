@@ -19,7 +19,7 @@ struct ForwardTraversal {
     bool analyzeOnly;
 
     struct Branch {
-        Action action;
+        Analyzer::Action action;
         bool check;
         bool escape;
         bool escapeUnknown;
