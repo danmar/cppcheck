@@ -882,7 +882,7 @@ struct InvalidContainerAnalyzer {
         if (Token::Match(tok, "%name% (")) {
             const Function* f = tok->function();
             if (!f)
-                return {};
+                return result;
             ErrorPathItem epi = std::make_pair(tok, "Calling function " + tok->str());
             const bool dependsOnThis = exprDependsOnThis(tok->next());
             auto it = invalidMethods.find(f);
