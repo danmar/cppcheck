@@ -1637,23 +1637,41 @@ void CheckStl::missingComparison()
             }
 
             const Token *incrementToken = nullptr;
+            bool bComparedInAdvance = false;
 
             // Parse loop..
-            for (const Token *tok3 = scope.bodyStart; tok3 != scope.bodyEnd; tok3 = tok3->next()) {
-                if (Token::Match(tok3, "%varid% ++", iteratorId))
-                    incrementToken = tok3;
-                else if (Token::Match(tok3->previous(), "++ %varid% !!.", iteratorId))
-                    incrementToken = tok3;
-                else if (Token::Match(tok3, "%varid% !=|==", iteratorId))
-                    incrementToken = nullptr;
+            for (const Token *tok3 = scope.bodyStart; tok3 != scope.bodyEnd; tok3 = tok3->next()) 
+            {
+                if (tok3->varId() == iteratorId)
+                {
+                    if (Token::Match(tok3, "%varid% = %name% . insert ( ++| %varid% ++| ,", iteratorId)) 
+                    {
+                        // skip insertion..
+                        tok3 = tok3->linkAt(6);
+                        if (!tok3)
+                            break;
+                    }                    
+                    else if (Token::simpleMatch(tok3->astParent(), "++"))
+                    {
+                        if (!bComparedInAdvance)
+                            incrementToken = tok3;
+                        else
+                            bComparedInAdvance = false;
+                    }
+                    else if (Token::simpleMatch(tok3->astParent(), "+"))
+                    {
+                        if (Token::simpleMatch(tok3->astSibling(), "1"))
+                        {
+                            const Token* tokenGrandParent = tok3->astParent()->astParent();
+                            if (Token::Match(tokenGrandParent, "==|!="))
+                                bComparedInAdvance = true;
+                        }
+                    }
+                    else if (Token::Match(tok3->astParent(), "==|!="))
+                        incrementToken = nullptr;
+                }
                 else if (tok3->str() == "break" || tok3->str() == "return")
                     incrementToken = nullptr;
-                else if (Token::Match(tok3, "%varid% = %name% . insert ( ++| %varid% ++| ,", iteratorId)) {
-                    // skip insertion..
-                    tok3 = tok3->linkAt(6);
-                    if (!tok3)
-                        break;
-                }
             }
             if (incrementToken)
                 missingComparisonError(incrementToken, tok2->tokAt(16));
