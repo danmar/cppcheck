@@ -890,7 +890,7 @@ void CheckBufferOverrun::objectIndex()
                 continue;
 
             std::vector<ValueFlow::Value> values = getLifetimeObjValues(obj, false, true);
-            for(const ValueFlow::Value& v:values) {
+            for (const ValueFlow::Value& v:values) {
                 if (v.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
                     continue;
                 const Variable *var = v.tokvalue->variable();

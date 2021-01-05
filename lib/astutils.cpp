@@ -648,7 +648,8 @@ bool exprDependsOnThis(const Token* expr, nonneg int depth)
     return exprDependsOnThis(expr->astOperand1(), depth) || exprDependsOnThis(expr->astOperand2(), depth);
 }
 
-static bool hasUnknownVars(const Token* startTok) {
+static bool hasUnknownVars(const Token* startTok)
+{
     bool result = false;
     visitAstNodes(startTok, [&](const Token* tok) {
         if (tok->varId() > 0 && !tok->variable()) {
