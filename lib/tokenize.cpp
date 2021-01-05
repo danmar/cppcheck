@@ -1069,17 +1069,8 @@ void Tokenizer::simplifyTypedef()
                     }
 
                     // check for member functions
-                    else if (isCPP() && Token::Match(tok2, ")|] const| {")) {
-                        const Token *temp = tok2;
-                        while (temp && temp->str() == "]" && temp->link() && temp->link()->previous())
-                            temp = temp->link()->previous();
-                        if (!temp || !temp->link() || !temp->link()->previous())
-                            continue;
-                        const Token *func = temp->link()->previous();
-                        if (temp->str() != ")")
-                            continue;
-                        if (!func->previous()) // Ticket #4239
-                            continue;
+                    else if (isCPP() && tok2->str() == "(" && isFunctionHead(tok2, "{")) {
+                        const Token *func = tok2->previous();
 
                         /** @todo add support for multi-token operators */
                         if (func->previous()->str() == "operator")
@@ -1089,10 +1080,13 @@ void Tokenizer::simplifyTypedef()
                             syntaxError(func);
 
                         // check for qualifier
-                        if (func->previous()->str() == "::") {
+                        if (Token::Match(func->tokAt(-2), "%name% ::")) {
+                            int offset = -2;
+                            while (Token::Match(func->tokAt(offset - 2), "%name% ::"))
+                                offset -= 2;
                             // check for available and matching class name
                             if (!spaceInfo.empty() && classLevel < spaceInfo.size() &&
-                                func->strAt(-2) == spaceInfo[classLevel].className) {
+                                func->strAt(offset) == spaceInfo[classLevel].className) {
                                 memberScope = 0;
                                 inMemberFunc = true;
                             }
