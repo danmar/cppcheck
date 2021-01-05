@@ -3494,6 +3494,23 @@ private:
               "        if (p != (uint32_t) -1) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9890
+        check("int g(int);\n"
+              "bool h(int*);\n"
+              "int f(int *x) {\n"
+              "    int y = g(0);\n"
+              "    if (!y) {\n"
+              "        if (h(x)) {\n"
+              "            y = g(1);\n"
+              "            if (y) {}\n"
+              "            return 0;\n"
+              "        }\n"
+              "        if (!y) {}\n"
+              "    }\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:11]: (style) Condition '!y' is always true\n", errout.str());
     }
 
     void alwaysTrueInfer() {
