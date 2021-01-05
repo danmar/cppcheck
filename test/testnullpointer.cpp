@@ -2112,6 +2112,16 @@ private:
               "    if (c->b) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    A* b;\n"
+              "};\n"
+              "void f(A* c) {\n"
+              "    A* d = c->b;\n"
+              "    A *e = c;\n"
+              "    while (nullptr != (e = e->b)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_addressOf() { // address of

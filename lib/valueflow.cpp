@@ -4199,8 +4199,9 @@ struct ConditionHandler {
 
                     // Variable changed in loop code
                     if (Token::Match(top->previous(), "for|while (")) {
-                        const Token* const start = top->link()->next();
-                        const Token* const end = start->link();
+                        const Token* const start = top;
+                        const Token* const block = top->link()->next();
+                        const Token* const end = block->link();
 
                         if (isExpressionChanged(cond.vartok, start, end, settings, tokenlist->isCPP())) {
                             if (settings->debugwarnings)
