@@ -1433,7 +1433,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->varId() > 0) {
                 tok->exprId(tok->varId());
-            } else if (Token::Match(tok, "(|.|%cop%")) {
+            } else if (Token::Match(tok, "(|.|[|%cop%")) {
                 exprs[tok->str()].push_back(tok);
                 tok->exprId(id++);
             }
