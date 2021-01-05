@@ -8915,12 +8915,16 @@ private:
         check("class C { C(); void foo() { static int C = 0; } }"); // #9195 - shadow constructor
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo() {\n"
-              "  std::vector<T> a(10);\n"
-              "  for (int i = 0; i < 10; i++)\n"
+        check("void bar(int) {}\n"
+              "void foo() {\n"
+              "  std::vector<int*> a(10);\n"
+              "  {"
               "    bar(*a[4]);\n"
+              "  }"
               "}\n"
         );
+        //The point is to ensure that the second occurence of a is not treated as a new variable declaration.
+        //If accessing the uninitialized data results in a warning this case would have to be refined further.
         ASSERT_EQUALS("", errout.str());
     }
 

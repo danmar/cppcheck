@@ -187,6 +187,29 @@ public:
     explicit Token(TokensFrontBack *tokensFrontBack = nullptr);
     ~Token();
 
+    auto toend() const
+    {
+        struct TokenEnumeration
+        {
+            Token const * mt;
+            TokenEnumeration(Token const * t) : mt(t) {}
+
+            struct TokenIterator
+            {
+                const Token* mt;
+                TokenIterator(const Token* t) : mt(t) {}
+                TokenIterator& operator++() { mt = mt->next(); return *this; }
+                bool operator==(const TokenIterator& b) { return mt == b.mt; }
+                bool operator!=(const TokenIterator& b) { return mt != b.mt; }
+                const Token* operator*() { return mt; }
+            };
+
+            auto begin() { return TokenIterator(mt); }
+            auto end() { return TokenIterator(mt->mTokensFrontBack->back); }
+        };
+        return TokenEnumeration(this);
+    }
+
     template<typename T>
     void str(T&& s) {
         mStr = s;

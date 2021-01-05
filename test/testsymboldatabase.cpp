@@ -166,6 +166,7 @@ private:
         TEST_CASE(isVariablePointerToVolatilePointer);
         TEST_CASE(isVariablePointerToConstVolatilePointer);
         TEST_CASE(isVariableMultiplePointersAndQualifiers);
+        TEST_CASE(isVariableDeclarationVsCall);
         TEST_CASE(variableVolatile);
         TEST_CASE(isVariableDecltype);
 
@@ -1279,6 +1280,167 @@ private:
         ASSERT(false == v.isArray());
         ASSERT(true == v.isPointer());
         ASSERT(false == v.isReference());
+    }
+
+    /*
+    * Verify that isVariableDeclaration can correctly differentiate between a function call and a variable declaration
+    * or use the user provided default determination when differentiation is not possible.
+    * See https://trac.cppcheck.net/ticket/9960
+    */
+    void isVariableDeclarationVsCall() {
+
+        //Note that isVariableDeclaration is called fairly early in the process of interpreting the code
+        //so to make sure it can't take advantage of information gained later in the process we don't
+        //test it directly here but rather test the results it generated.
+
+        //Test a simple case where foo has been declared as a function so it's definitely a function call
+        {
+            givenACodeSampleToTokenize var("int* a[5] = { new int, new int, new int, new int, new int };\n"
+                "void foo(auto x){}\n"
+                "int main() {\n"
+                "foo(a);\n" //From context this is definitely a function call
+                "}\n");
+            const Function* f = Token::findmatch(var.tokens(), "foo")->function();
+            const Variable* v = Token::findmatch(var.tokens(), "a")->variable();
+            for (auto t : var.tokens()->toend())
+            {
+                if (t->str() == "foo") { //foo is always a function
+                    ASSERT(f == t->function());
+                }
+
+                if (t->str() == "a") { //a is a variable
+                    ASSERT(v, t->variable());
+                }
+                else if (t->str() != "x") { //x is not
+                    ASSERT(nullptr == t->variable());
+                }
+            }
+        }
+
+        //Test a more complicated case where foo has been declared as a function so it's definitely a function call
+        {
+            givenACodeSampleToTokenize var("int* a[5] = { new int, new int, new int, new int, new int };\n"
+                "void foo(int x){}\n"
+                "int main() {\n"
+                "foo(*a[4]);\n" //From context this is definitely a function call
+                "}\n");
+            const Function* f = Token::findmatch(var.tokens(), "foo")->function();
+            const Variable* v = Token::findmatch(var.tokens(), "a")->variable();
+            for (auto t : var.tokens()->toend())
+            {
+                if (t->str() == "foo") { //foo is always a function
+                    ASSERT(f == t->function());
+                }
+
+                if (t->str() == "a") { //a is a variable
+                    ASSERT(v, t->variable());
+                }
+                else if (t->str() != "x") { //x is not
+                    ASSERT(nullptr == t->variable());
+                }
+            }
+        }
+
+        //Test a case where foo has been declared as a function in an awkward scope so it's definitely a function call
+        //{
+        //    givenACodeSampleToTokenize var("int* a[5] = { new int, new int, new int, new int, new int };\n"
+        //                                   "namespace X::Y {\n"
+        //                                   "template <typename T, int N1>\n"
+        //                                   "struct bar {\n"
+        //                                   "  template<int N2> static void foo(int x){}\n"
+        //                                   "};\n"
+        //                                   "}\n"
+        //                                   "int main() {\n"
+        //                                   "X::Y::bar<int, 1>::foo<4>(*a[4]);\n" //From context this is definitely a function call
+        //                                   "}\n");
+        //    const Function* f = Token::findmatch(var.tokens(), "foo")->function();
+        //    const Variable* v = Token::findmatch(var.tokens(), "a")->variable();
+        //    for (auto t : var.tokens()->toend())
+        //    {
+        //        if (t->str() == "foo") { //foo is always a function
+        //            ASSERT(f == t->function());
+        //        }
+        //
+        //        if (t->str() == "a") { //a is a variable
+        //            ASSERT(v, t->variable());
+        //        }
+        //        else if (t->str() != "x") { //x is not
+        //            ASSERT(nullptr == t->variable());
+        //        }
+        //    }
+        //}
+
+        //Test the simple case where foo has been declared as a type so it's definitely a variable declaration
+        //{
+        //    givenACodeSampleToTokenize var("struct foo{}\n"
+        //        "int main() {\n"
+        //        "foo(a);\n" //From context this is definitely a (weird) variable declaration
+        //        "}\n");
+        //    for (auto t : var.tokens()->toend())
+        //    {
+        //        if (t->str() == "a") { //a is a variable
+        //            ASSERT(nullptr != t->variable());
+        //        }
+        //        else {
+        //            ASSERT(nullptr == t->variable());
+        //        }
+        //
+        //        if (t->str() != "main") {
+        //            ASSERT(nullptr == t->function());
+        //        }
+        //    }
+        //}
+
+        //Test a more complicated where foo has been declared as a type so it's definitely a variable declaration
+        {
+            givenACodeSampleToTokenize var("struct foo{}\n"
+                "int main() {\n"
+                "foo(*a[4]);\n" //From context this is definitely a variable declaration
+                "}\n");
+
+            for (auto t : var.tokens()->toend())
+            {
+                if (t->str() == "a") { //a is a variable
+                    ASSERT(nullptr != t->variable());
+                }
+                else {
+                    ASSERT(nullptr == t->variable());
+                }
+
+                if (t->str() != "main") {
+                    ASSERT(nullptr == t->function());
+                }
+            }
+        }
+
+        //Test a more complicated where foo has been declared as a type so it's definitely a variable declaration
+        {
+            givenACodeSampleToTokenize var(
+                "namespace X::Y {\n"
+                "    template <typename T, int N1>\n"
+                "    struct bar {\n"
+                "        template <int N2>\n"
+                "        struct foo {};\n"
+                "    };\n"
+                "}\n"
+                "int main() {\n"
+                "X::Y::bar<int, 1>::foo<4>(*a[4]);\n" //From context this is definitely a variable declaration
+                "}\n");
+
+            for (auto t : var.tokens()->toend())
+            {
+                if (t->str() == "a") { //a is a variable
+                    ASSERT(nullptr != t->variable());
+                }
+                else {
+                    ASSERT(nullptr == t->variable());
+                }
+
+                if (t->str() != "main") {
+                    ASSERT(nullptr == t->function());
+                }
+            }
+        }
     }
 
     void variableVolatile() {
