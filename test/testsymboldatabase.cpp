@@ -342,6 +342,7 @@ private:
         TEST_CASE(symboldatabase87); // #9922 'extern const char ( * x [ 256 ] ) ;'
         TEST_CASE(symboldatabase88); // #10040 (using namespace)
         TEST_CASE(symboldatabase89); // valuetype name
+        TEST_CASE(symboldatabase90);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4643,6 +4644,18 @@ private:
         ASSERT(vartok1->next()->variable());
         ASSERT(vartok1->next()->variable()->valueType());
         ASSERT(vartok1->next()->variable()->valueType()->str() == "external::ns1::A");
+    }
+
+    void symboldatabase90() {
+        GET_SYMBOL_DB("struct Fred {\n"
+                      "    void foo(const int * const x);\n"
+                      "};\n"
+                      "void Fred::foo(const int * x) { }");
+        ASSERT_EQUALS("", errout.str());
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "foo ( const int * x )");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT(functok->function()->name() == "foo");
     }
 
     void createSymbolDatabaseFindAllScopes1() {
