@@ -889,21 +889,28 @@ void CheckBufferOverrun::objectIndex()
             if (idx->hasKnownIntValue() && idx->getKnownIntValue() == 0)
                 continue;
 
-            ValueFlow::Value v = getLifetimeObjValue(obj);
-            if (!v.isLocalLifetimeValue())
-                continue;
-            if (v.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
-                continue;
-            const Variable *var = v.tokvalue->variable();
-            if (var->isReference())
-                continue;
-            if (var->isRValueReference())
-                continue;
-            if (var->isArray())
-                continue;
-            if (var->isPointer())
-                continue;
-            objectIndexError(tok, &v, idx->hasKnownIntValue());
+            std::vector<ValueFlow::Value> values = getLifetimeObjValues(obj, false, true);
+            for(const ValueFlow::Value& v:values) {
+                if (v.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
+                    continue;
+                const Variable *var = v.tokvalue->variable();
+                if (var->isReference())
+                    continue;
+                if (var->isRValueReference())
+                    continue;
+                if (var->isArray())
+                    continue;
+                if (var->isPointer()) {
+                    if (!var->valueType())
+                        continue;
+                    if (!obj->valueType())
+                        continue;
+                    if (var->valueType()->pointer > obj->valueType()->pointer)
+                        continue;
+                }
+                objectIndexError(tok, &v, idx->hasKnownIntValue());
+                break;
+            }
         }
     }
 }

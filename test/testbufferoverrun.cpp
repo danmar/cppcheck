@@ -4484,6 +4484,18 @@ private:
               "  return m[1][1];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void print(char** test);\n"
+              "int main(){\n"
+              "    char* test = \"abcdef\";\n"
+              "    print(&test);\n"
+              "    return 0;\n"
+              "}\n"
+              "void print(char** test){\n"
+              "    for(int i=0;i<strlen(*test);i++)\n"
+              "        printf(\"%c\",*test[i]);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4] -> [test.cpp:9]: (warning) The address of local variable 'test' might be accessed at non-zero index.\n", errout.str());
     }
 };
 

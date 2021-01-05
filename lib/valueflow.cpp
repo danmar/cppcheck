@@ -98,6 +98,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <functional>
 #include <iterator>
@@ -2703,11 +2704,11 @@ std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, Error
     return msg;
 }
 
-ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive)
+std::vector<ValueFlow::Value> getLifetimeObjValues(const Token *tok, bool inconclusive, bool subfunction)
 {
-    ValueFlow::Value result;
+    std::vector<ValueFlow::Value> result;
     auto pred = [&](const ValueFlow::Value &v) {
-        if (!v.isLocalLifetimeValue())
+        if (!v.isLocalLifetimeValue() && !(subfunction && v.isSubFunctionLifetimeValue()))
             return false;
         if (!inconclusive && v.isInconclusive())
             return false;
@@ -2715,14 +2716,17 @@ ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive)
             return false;
         return true;
     };
-    auto it = std::find_if(tok->values().begin(), tok->values().end(), pred);
-    if (it == tok->values().end())
-        return result;
-    result = *it;
-    // There should only be one lifetime
-    if (std::find_if(std::next(it), tok->values().end(), pred) != tok->values().end())
-        return ValueFlow::Value{};
+    std::copy_if(tok->values().begin(), tok->values().end(), std::back_inserter(result), pred);
     return result;
+}
+
+ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive)
+{
+    std::vector<ValueFlow::Value> values = getLifetimeObjValues(tok, inconclusive, false);
+    // There should only be one lifetime
+    if (values.size() != 1)
+        return ValueFlow::Value{};
+    return values.front();
 }
 
 std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, bool escape, ValueFlow::Value::ErrorPath errorPath, int depth)
