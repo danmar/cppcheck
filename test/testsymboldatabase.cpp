@@ -1311,7 +1311,7 @@ private:
                 if (t->str() == "a") { //a is a variable
                     ASSERT(v == t->variable());
                 }
-                else if (t->str() != "x") { //x is not
+                else if (t->str() != "x") { //x is too but everything else is not
                     ASSERT(nullptr == t->variable());
                 }
             }
@@ -1335,7 +1335,7 @@ private:
                 if (t->str() == "a") { //a is a variable
                     ASSERT(v == t->variable());
                 }
-                else if (t->str() != "x") { //x is not
+                else if (t->str() != "x") { //x is too but everything else is not
                     ASSERT(nullptr == t->variable());
                 }
             }
@@ -1364,7 +1364,7 @@ private:
         //        if (t->str() == "a") { //a is a variable
         //            ASSERT(v == t->variable());
         //        }
-        //        else if (t->str() != "x") { //x is not
+        //        else if (t->str() != "x") { //x is too but everything else is not
         //            ASSERT(nullptr == t->variable());
         //        }
         //    }
