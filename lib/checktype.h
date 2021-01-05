@@ -54,7 +54,6 @@ public:
         CheckType checkType(tokenizer, settings, errorLogger);
         checkType.checkTooBigBitwiseShift();
         checkType.checkIntegerOverflow();
-        checkType.checkIntegerOverflowOptimisations();
         checkType.checkSignConversion();
         checkType.checkLongCast();
         checkType.checkFloatToIntegerOverflow();
@@ -65,9 +64,6 @@ public:
 
     /** @brief %Check for integer overflow */
     void checkIntegerOverflow();
-
-    /** @brief Check for overflow code patterns that will be optimized */
-    void checkIntegerOverflowOptimisations();
 
     /** @brief %Check for dangerous sign conversion */
     void checkSignConversion();
@@ -85,7 +81,6 @@ private:
     void tooBigBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);
     void tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);
     void integerOverflowError(const Token *tok, const ValueFlow::Value &value);
-    void integerOverflowOptimisationError(const Token *tok, const std::string &replace);
     void signConversionError(const Token *tok, const ValueFlow::Value *negativeValue, const bool constvalue);
     void longCastAssignError(const Token *tok);
     void longCastReturnError(const Token *tok);
@@ -113,7 +108,6 @@ private:
         return "Type checks\n"
                "- bitwise shift by too many bits (only enabled when --platform is used)\n"
                "- signed integer overflow (only enabled when --platform is used)\n"
-               "- expression that can be optimised 'out' because signed integer overflow is undefined behavior.\n"
                "- dangerous sign conversion, when signed value can be negative\n"
                "- possible loss of information when assigning int result to long variable\n"
                "- possible loss of information when returning int result as long return value\n"

@@ -35,7 +35,6 @@ private:
     void run() OVERRIDE {
         TEST_CASE(checkTooBigShift_Unix32);
         TEST_CASE(checkIntegerOverflow);
-        TEST_CASE(checkIntegerOverflowOptimisations);
         TEST_CASE(signConversion);
         TEST_CASE(longCastAssign);
         TEST_CASE(longCastReturn);
@@ -247,63 +246,6 @@ private:
               "   return 123456U * x;\n"
               "}",&settings);
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void checkIntegerOverflowOptimisations() {
-        Settings settings;
-        settings.addEnabled("warning");
-
-        // x + c < x
-
-        check("int f(int x) { return x + 10 > x; }", &settings);
-        ASSERT_EQUALS("[test.cpp:1]: (portability) There is a danger that 'x+10>x' will be optimised into 'true'. Signed integer overflow is undefined behavior.\n", errout.str());
-
-        check("int f(int x) { return x + 10 >= x; }", &settings);
-        ASSERT_EQUALS("[test.cpp:1]: (portability) There is a danger that 'x+10>=x' will be optimised into 'true'. Signed integer overflow is undefined behavior.\n", errout.str());
-
-        check("int f(int x) { return x + 10 < x; }", &settings);
-        ASSERT_EQUALS("[test.cpp:1]: (portability) There is a danger that 'x+10<x' will be optimised into 'false'. Signed integer overflow is undefined behavior.\n", errout.str());
-
-        check("int f(int x) { return x + 10 <= x; }", &settings);
-        ASSERT_EQUALS("[test.cpp:1]: (portability) There is a danger that 'x+10<=x' will be optimised into 'false'. Signed integer overflow is undefined behavior.\n", errout.str());
-
-        check("int f(int x) { return x - 10 > x; }", &settings);
-        ASSERT_EQUALS("[test.cpp:1]: (portability) There is a danger that 'x-10>x' will be optimised into 'false'. Signed integer overflow is undefined behavior.\n", errout.str());
-
-        check("int f(int x) { return x - 10 >= x; }", &settings);
-        ASSERT_EQUALS("[test.cpp:1]: (portability) There is a danger that 'x-10>=x' will be optimised into 'false'. Signed integer overflow is undefined behavior.\n", errout.str());
-
-        check("int f(int x) { return x - 10 < x; }", &settings);
-        ASSERT_EQUALS("[test.cpp:1]: (portability) There is a danger that 'x-10<x' will be optimised into 'true'. Signed integer overflow is undefined behavior.\n", errout.str());
-
-        check("int f(int x) { return x - 10 <= x; }", &settings);
-        ASSERT_EQUALS("[test.cpp:1]: (portability) There is a danger that 'x-10<=x' will be optimised into 'true'. Signed integer overflow is undefined behavior.\n", errout.str());
-
-        // x + y < x
-        check("int f(int x, int y) { return x + y < x; }", &settings);
-        ASSERT_EQUALS("[test.cpp:1]: (portability) There is a danger that 'x+y<x' will be optimised into 'y<0'. Signed integer overflow is undefined behavior.\n", errout.str());
-
-        check("int f(int x, int y) { return x + y <= x; }", &settings);
-        ASSERT_EQUALS("[test.cpp:1]: (portability) There is a danger that 'x+y<=x' will be optimised into 'y<=0'. Signed integer overflow is undefined behavior.\n", errout.str());
-
-        check("int f(int x, int y) { return x + y > x; }", &settings);
-        ASSERT_EQUALS("[test.cpp:1]: (portability) There is a danger that 'x+y>x' will be optimised into 'y>0'. Signed integer overflow is undefined behavior.\n", errout.str());
-
-        check("int f(int x, int y) { return x + y >= x; }", &settings);
-        ASSERT_EQUALS("[test.cpp:1]: (portability) There is a danger that 'x+y>=x' will be optimised into 'y>=0'. Signed integer overflow is undefined behavior.\n", errout.str());
-
-        // x - y < x
-        check("int f(int x, int y) { return x - y < x; }", &settings);
-        ASSERT_EQUALS("[test.cpp:1]: (portability) There is a danger that 'x-y<x' will be optimised into 'y>0'. Signed integer overflow is undefined behavior.\n", errout.str());
-
-        check("int f(int x, int y) { return x - y <= x; }", &settings);
-        ASSERT_EQUALS("[test.cpp:1]: (portability) There is a danger that 'x-y<=x' will be optimised into 'y>=0'. Signed integer overflow is undefined behavior.\n", errout.str());
-
-        check("int f(int x, int y) { return x - y > x; }", &settings);
-        ASSERT_EQUALS("[test.cpp:1]: (portability) There is a danger that 'x-y>x' will be optimised into 'y<0'. Signed integer overflow is undefined behavior.\n", errout.str());
-
-        check("int f(int x, int y) { return x - y >= x; }", &settings);
-        ASSERT_EQUALS("[test.cpp:1]: (portability) There is a danger that 'x-y>=x' will be optimised into 'y<=0'. Signed integer overflow is undefined behavior.\n", errout.str());
     }
 
     void signConversion() {
