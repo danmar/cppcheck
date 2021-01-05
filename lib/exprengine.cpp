@@ -394,7 +394,7 @@ namespace {
             }
         }
 
-        typedef std::map<nonneg int, ExprEngine::ValuePtr> Memory;
+        using Memory = std::map<nonneg int, ExprEngine::ValuePtr>;
         Memory memory;
         int * const symbolValueIndex;
         ErrorLogger *errorLogger;
@@ -1108,8 +1108,8 @@ std::string ExprEngine::IntegerTruncation::getSymbolicExpression() const
 
 class ExprData {
 public:
-    typedef std::map<std::string, z3::expr> ValueExpr;
-    typedef std::vector<z3::expr> AssertionList;
+    using ValueExpr = std::map<std::string, z3::expr>;
+    using AssertionList = std::vector<z3::expr>;
 
     class BailoutValueException: public ExprEngineException {
     public:

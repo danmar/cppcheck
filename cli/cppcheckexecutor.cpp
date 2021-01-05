@@ -357,7 +357,7 @@ static bool IsAddressOnStack(const void* ptr)
  */
 
 #define DECLARE_SIGNAL(x) std::make_pair(x, #x)
-typedef std::map<int, std::string> Signalmap_t;
+using Signalmap_t = std::map<int, std::string>;
 static const Signalmap_t listofsignals = {
     DECLARE_SIGNAL(SIGABRT),
     DECLARE_SIGNAL(SIGBUS),

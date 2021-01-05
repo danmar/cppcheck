@@ -2022,7 +2022,7 @@ namespace {
         for (const Scope &scope : symbolDatabase->scopeList) {
             // only add const functions that do not have a non-const overloaded version
             // since it is pretty much impossible to tell which is being called.
-            typedef std::map<std::string, std::list<const Function*> > StringFunctionMap;
+            using StringFunctionMap = std::map<std::string, std::list<const Function*> >;
             StringFunctionMap functionsByName;
             for (const Function &func : scope.functionList) {
                 functionsByName[func.tokenDef->str()].push_back(&func);
