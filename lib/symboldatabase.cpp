@@ -4229,9 +4229,7 @@ bool isFunctionCallInsteadOfVariableDeclaration(const Token* tok, const Scope& s
         return false; //It's probably neither but it's not a function call
     if (tok->str() != "(") //X y isn't a function call
         return false;
-    if (tok->astOperand2() == nullptr) //X() isn't a variable declaration
-        return true;
-    if (tok->astOperand2()->str() == ",")// X(a, b) isn't a variable declaration
+    if (tok->astOperand2() != nullptr && tok->astOperand2()->str() == ",")// X(a, b) isn't a variable declaration
         return true;
     return db.findFunction(start, &scope) != nullptr;
 }
