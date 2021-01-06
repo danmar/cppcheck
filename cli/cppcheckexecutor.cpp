@@ -278,6 +278,7 @@ static void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool l
         char **symbolStringList = backtrace_symbols(callstackArray, currentdepth);
         if (symbolStringList) {
             fputs("Callstack:\n", output);
+            char demangle_buffer[2048]= {0};
             for (int i = offset; i < maxdepth; ++i) {
                 const char * const symbolString = symbolStringList[i];
                 char * realnameString = nullptr;
@@ -292,12 +293,11 @@ static void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool l
                     if (plus && (plus>(firstBracketName+1))) {
                         char input_buffer[1024]= {0};
                         strncpy(input_buffer, firstBracketName+1, plus-firstBracketName-1);
-                        char output_buffer[2048]= {0};
-                        size_t length = getArrayLength(output_buffer);
+                        size_t length = getArrayLength(demangle_buffer);
                         int status=0;
                         // We're violating the specification - passing stack address instead of malloc'ed heap.
                         // Benefit is that no further heap is required, while there is sufficient stack...
-                        realnameString = abi::__cxa_demangle(input_buffer, output_buffer, &length, &status); // non-NULL on success
+                        realnameString = abi::__cxa_demangle(input_buffer, demangle_buffer, &length, &status); // non-NULL on success
                     }
                 }
                 const int ordinal=i-offset;
