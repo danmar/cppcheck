@@ -451,8 +451,7 @@ struct ForwardTraversal {
                         if (!thenBranch.isConclusiveEscape()) {
                             if (!analyzer->lowerToInconclusive())
                                 return Progress::Break;
-                        }
-                        else if (thenBranch.check) {
+                        } else if (thenBranch.check) {
                             return Progress::Break;
                         } else {
                             if (analyzer->isConditional() && stopUpdates())
