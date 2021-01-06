@@ -1558,7 +1558,8 @@ void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
             throw InternalError(tok, "Token::link() is not set properly");
     }
 
-    tokenList->front()->assignIndexes();
+    if (tokenList->front())
+        tokenList->front()->assignIndexes();
     symbolDatabase->clangSetVariables(data.getVariableList());
     symbolDatabase->createSymbolDatabaseExprIds();
     tokenList->clangSetOrigFiles();

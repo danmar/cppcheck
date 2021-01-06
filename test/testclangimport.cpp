@@ -109,6 +109,7 @@ private:
         TEST_CASE(whileStmt1);
         TEST_CASE(whileStmt2);
 
+        TEST_CASE(tokenIndex);
         TEST_CASE(symbolDatabaseEnum1);
         TEST_CASE(symbolDatabaseFunction1);
         TEST_CASE(symbolDatabaseFunction2);
@@ -1028,16 +1029,25 @@ private:
     }
 
 
-#define GET_SYMBOL_DB(clang) \
+#define GET_SYMBOL_DB(AST) \
     Settings settings; \
     settings.clang = true; \
     settings.platform(cppcheck::Platform::PlatformType::Unix64); \
     Tokenizer tokenizer(&settings, this); \
-    std::istringstream istr(clang); \
+    std::istringstream istr(AST); \
     clangimport::parseClangAstDump(&tokenizer, istr); \
     const SymbolDatabase *db = tokenizer.getSymbolDatabase(); \
-    ASSERT(db); \
-    do {} while(false)
+    ASSERT(db)
+
+    void tokenIndex() {
+        const char clang[] = "`-FunctionDecl 0x1e07dd0 <67.cpp:1:1, col:13> col:6 foo 'void ()'\n"
+                             "  `-CompoundStmt 0x1e07eb8 <col:12, col:13>";
+        ASSERT_EQUALS("void foo ( ) { }", parse(clang));
+
+        GET_SYMBOL_DB(clang);
+        const Token *tok = tokenizer.tokens();
+        ASSERT_EQUALS(tok->index() + 1, tok->next()->index());
+    }
 
     void symbolDatabaseEnum1() {
         const char clang[] = "|-NamespaceDecl 0x29ad5f8 <1.cpp:1:1, line:3:1> line:1:11 ns\n"
