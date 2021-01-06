@@ -854,6 +854,9 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
             unknowns = 0;
 
             for (Scope& scope : scopeList) {
+                if (!scope.isClassOrStructOrUnion())
+                    continue;
+
                 if (!scope.definedType) {
                     mBlankTypes.emplace_back();
                     scope.definedType = &mBlankTypes.back();
