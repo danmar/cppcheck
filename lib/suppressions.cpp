@@ -43,6 +43,16 @@ static bool isAcceptedErrorIdChar(char c)
     }
 }
 
+std::size_t Hash::getHash() const
+{
+    if (mComputed)
+        return mHash;
+
+    mHash = mComputation();
+    mComputed = true;
+    return mHash;
+}
+
 std::string Suppressions::parseFile(std::istream &istr)
 {
     // Change '\r' to '\n' in the istr
@@ -306,7 +316,7 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::string *e
 
 bool Suppressions::Suppression::isSuppressed(const Suppressions::ErrorMessage &errmsg) const
 {
-    if (hash > 0 && hash != errmsg.hash)
+    if (hash > 0 && hash != errmsg.hash.getHash())
         return false;
     if (!errorId.empty() && !matchglob(errorId, errmsg.errorId))
         return false;

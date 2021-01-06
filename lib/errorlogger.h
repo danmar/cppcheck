@@ -197,7 +197,7 @@ public:
     bool inconclusive;
 
     /** Warning hash */
-    std::size_t hash;
+    Hash hash;
 
     /** set short and verbose messages */
     void setmsg(const std::string &msg);

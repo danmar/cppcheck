@@ -22,6 +22,7 @@
 
 #include "config.h"
 
+#include <functional>
 #include <istream>
 #include <list>
 #include <string>
@@ -30,12 +31,26 @@
 /// @addtogroup Core
 /// @{
 
+class Hash {
+public:
+    Hash(std::function<std::size_t()> computation): mComputation(computation), mComputed(false) {}
+
+    Hash(std::size_t hash = 0):mHash(hash), mComputed(true) {}
+
+    std::size_t getHash() const;
+private:
+    mutable std::size_t mHash;
+    std::function<std::size_t()> mComputation;
+    mutable bool mComputed;
+};
+
+
 /** @brief class for handling suppressions */
 class CPPCHECKLIB Suppressions {
 public:
 
     struct CPPCHECKLIB ErrorMessage {
-        std::size_t hash;
+        Hash hash;
         std::string errorId;
         void setFileName(const std::string &s);
         const std::string &getFileName() const {
