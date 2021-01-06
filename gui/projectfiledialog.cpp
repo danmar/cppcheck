@@ -114,7 +114,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
             Library lib;
             const QString fullfilename = sp + "/" + library;
             const Library::Error err = lib.load(nullptr, fullfilename.toLatin1());
-            if (err.errorcode != Library::OK)
+            if (err.errorcode != Library::ErrorCode::OK)
                 continue;
             // Working std.cfg found
             stdLibraryFilename = fullfilename;
@@ -135,12 +135,12 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
                 Library lib;
                 const QString fullfilename = sp + "/" + library;
                 Library::Error err = lib.load(nullptr, fullfilename.toLatin1());
-                if (err.errorcode != Library::OK) {
+                if (err.errorcode != Library::ErrorCode::OK) {
                     // Some libraries depend on std.cfg so load it first and test again
                     lib.load(nullptr, stdLibraryFilename.toLatin1());
                     err = lib.load(nullptr, fullfilename.toLatin1());
                 }
-                if (err.errorcode != Library::OK)
+                if (err.errorcode != Library::ErrorCode::OK)
                     continue;
             }
             library.chop(4);
