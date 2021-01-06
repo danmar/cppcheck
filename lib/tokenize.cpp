@@ -12019,12 +12019,14 @@ void Tokenizer::simplifyNamespaceAliases()
                         }
                     }
 
-                    tok2->str(tokNameStart->str());
-                    Token * tok3 = tokNameStart;
-                    while (tok3 != tokNameEnd) {
-                        tok2->insertToken(tok3->next()->str());
-                        tok2 = tok2->next();
-                        tok3 = tok3->next();
+                    if (tok2->strAt(1) == "::") {
+                        tok2->str(tokNameStart->str());
+                        Token * tok3 = tokNameStart;
+                        while (tok3 != tokNameEnd) {
+                            tok2->insertToken(tok3->next()->str());
+                            tok2 = tok2->next();
+                            tok3 = tok3->next();
+                        }
                     }
                 }
                 tok2 = tok2->next();
