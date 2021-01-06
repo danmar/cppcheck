@@ -2356,10 +2356,14 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
 
     int arg_path_length = path_length;
     int offset = 0;
+    int openParen = 0;
 
     while (first->str() == second->str() &&
            first->isLong() == second->isLong() &&
            first->isUnsigned() == second->isUnsigned()) {
+
+        if (first->str() == "(")
+            openParen++;
 
         // skip optional type information
         if (Token::Match(first->next(), "struct|enum|union|class"))
@@ -2377,7 +2381,10 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
 
         // at end of argument list
         if (first->str() == ")") {
-            return true;
+            if (openParen == 1)
+                return true;
+            else
+                --openParen;
         }
 
         // skip default value assignment
@@ -2483,8 +2490,11 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             std::string param = path;
 
             if (Token::simpleMatch(second->next(), param.c_str(), param.size())) {
-                second = second->tokAt(int(arg_path_length));
-                arg_path_length = 0;
+                // check for redundant qualification before skipping it
+                if (!Token::simpleMatch(first->next(), param.c_str(), param.size())) {
+                    second = second->tokAt(int(arg_path_length));
+                    arg_path_length = 0;
+                }
             }
 
             // nested or base class variable
