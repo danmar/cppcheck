@@ -35,7 +35,7 @@ jobs:
 
       - name: Build cppcheck
         run: |
-          CXXFLAGS="-O1 -g" make -j$(nproc) USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes
+          CXXFLAGS="-O1 -g" make -j$(nproc) USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes CPPFLAGS="-DCHECK_INTERNAL"
      
       - name: Run valgrind on cppcheck self-check
         run: |
