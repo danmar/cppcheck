@@ -2546,7 +2546,6 @@ static void valueFlowReverse(Token* tok,
                              const Settings* settings)
 {
     const Variable* var = varToken->variable();
-    ValuePtr<Analyzer> a;
     if (var) {
         auto aliases = getAliasesFromValues(values);
         for (const ValueFlow::Value& v : values) {
