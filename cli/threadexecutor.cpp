@@ -97,13 +97,13 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
 
     if (type != REPORT_OUT && type != REPORT_ERROR && type != REPORT_INFO && type != CHILD_END) {
         std::cerr << "#### ThreadExecutor::handleRead error, type was:" << type << std::endl;
-        std::exit(0);
+        std::exit(EXIT_FAILURE);
     }
 
     unsigned int len = 0;
     if (read(rpipe, &len, sizeof(len)) <= 0) {
         std::cerr << "#### ThreadExecutor::handleRead error, type was:" << type << std::endl;
-        std::exit(0);
+        std::exit(EXIT_FAILURE);
     }
 
     // Don't rely on incoming data being null-terminated.
@@ -112,7 +112,7 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
     const ssize_t readIntoBuf = read(rpipe, buf, len);
     if (readIntoBuf <= 0) {
         std::cerr << "#### ThreadExecutor::handleRead error, type was:" << type << std::endl;
-        std::exit(0);
+        std::exit(EXIT_FAILURE);
     }
     buf[readIntoBuf] = 0;
 
@@ -232,7 +232,7 @@ unsigned int ThreadExecutor::check()
                 std::ostringstream oss;
                 oss << resultOfCheck;
                 writeToPipe(CHILD_END, oss.str());
-                std::exit(0);
+                std::exit(EXIT_SUCCESS);
             }
 
             close(pipes[1]);
@@ -300,10 +300,10 @@ unsigned int ThreadExecutor::check()
                 }
 
                 if (WIFEXITED(stat)) {
-                    const int exitstaus = WEXITSTATUS(stat);
-                    if (exitstaus != 0) {
+                    const int exitstatus = WEXITSTATUS(stat);
+                    if (exitstatus != EXIT_SUCCESS) {
                         std::ostringstream oss;
-                        oss << "Child process exited with " << exitstaus;
+                        oss << "Child process exited with " << exitstatus;
                         reportInternalChildErr(childname, oss.str());
                     }
                 } else if (WIFSIGNALED(stat)) {
@@ -334,7 +334,7 @@ void ThreadExecutor::writeToPipe(PipeSignal type, const std::string &data)
         delete [] out;
         out = nullptr;
         std::cerr << "#### ThreadExecutor::writeToPipe, Failed to write to pipe" << std::endl;
-        std::exit(0);
+        std::exit(EXIT_FAILURE);
     }
 
     delete [] out;
