@@ -90,6 +90,8 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
         if (errno == EAGAIN)
             return 0;
 
+        // need to increment so a missing pipe (i.e. premature exit of forked process) results in an error exitcode
+        ++result;
         return -1;
     }
 
