@@ -33,13 +33,13 @@ jobs:
           sudo apt-get install libz3-dev libz3-4 libz3-4-dbgsym
           sudo apt-get install libc6-dbg-amd64-cross
 
-      - name: Build cppcheck
+      - name: Build cppcheck debug
         run: |
-          CXXFLAGS="-O1 -g" make -j$(nproc) USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes CPPFLAGS="-DCHECK_INTERNAL"
+          CXXFLAGS="-O1 -g" make -j$(nproc) USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes CPPFLAGS="-DCHECK_INTERNAL" VERIFY=1
      
       - name: Run valgrind on cppcheck self-check
         run: |
-          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --gen-suppressions=all --log-fd=9 --error-exitcode=42 ./cppcheck --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings cli lib gui 9>memcheck_cppcheck.log
+          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --gen-suppressions=all --log-fd=9 --error-exitcode=42 ./cppcheck --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings cli lib 9>memcheck_cppcheck.log
           cat memcheck_cppcheck.log
           
       - uses: actions/upload-artifact@v2
