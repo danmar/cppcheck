@@ -5,8 +5,10 @@ name: valgrind
 on: [push, pull_request]
 
 jobs:
-  build:
 
+  test-cppcheck:
+
+    name: Run valgrind on cppcheck
     runs-on: ubuntu-20.04
 
     steps:
@@ -34,17 +36,55 @@ jobs:
       - name: Build cppcheck
         run: |
           CXXFLAGS="-O1 -g" make -j$(nproc) USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes
-
-      - name: Build test
+     
+      - name: Run valgrind on cppcheck self-check
         run: |
-          CXXFLAGS="-O1 -g" make -j$(nproc) testrunner USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes
-
-      - name: Run valgrind
-        run: |
-          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --suppressions=valgrind/testrunner.supp --gen-suppressions=all --log-fd=9 --error-exitcode=42 ./testrunner TestGarbage TestOther TestSimplifyTemplate 9>memcheck.log
-          cat memcheck.log
+          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --gen-suppressions=all --log-fd=9 --error-exitcode=42 ./cppcheck --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings cli lib gui 9>memcheck_cppcheck.log
+          cat memcheck_cppcheck.log
           
       - uses: actions/upload-artifact@v2
         with:
           name: Logs
           path: ./*.log
+
+   
+  test-testrunner:
+
+      name: Run valgrind on testrunner
+      runs-on: ubuntu-20.04
+
+      steps:
+        - uses: actions/checkout@v2
+        
+        - name: Prepare
+          run: |
+            sudo apt-get update
+            sudo apt-get install debian-goodies ubuntu-dbgsym-keyring
+
+        - name: Add debug repos on ubuntu
+          run:  |
+           echo "deb http://ddebs.ubuntu.com $(lsb_release -cs) main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ddebs.list
+           echo "deb http://ddebs.ubuntu.com $(lsb_release -cs)-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ddebs.list
+           echo "deb http://ddebs.ubuntu.com $(lsb_release -cs)-proposed main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ddebs.list
+
+        - name: Install missing software
+          run: |
+           sudo apt-get update
+           sudo apt-get install libxml2-utils
+           sudo apt-get install valgrind
+           sudo apt-get install libz3-dev libz3-4 libz3-4-dbgsym
+           sudo apt-get install libc6-dbg-amd64-cross
+
+        - name: Build test
+          run: |
+            CXXFLAGS="-O1 -g" make -j$(nproc) testrunner USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes
+
+        - name: Run valgrind on testrunner
+          run: |
+            valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --suppressions=valgrind/testrunner.supp --gen-suppressions=all --log-fd=9 --error-exitcode=42 ./testrunner TestGarbage TestOther TestSimplifyTemplate 9>memcheck_testrunner.log
+            cat memcheck_testrunner.log
+          
+        - uses: actions/upload-artifact@v2
+          with:
+            name: Logs
+            path: ./*.log
