@@ -365,6 +365,21 @@ private:
             "test.cpp:2:note:condition 'v.size()==1'\n"
             "test.cpp:3:note:Access out of bounds\n",
             errout.str());
+
+        check("struct T {\n"
+              "  std::vector<int>* v;\n"
+              "};\n"
+              "struct S {\n"
+              "  T t;\n"
+              "};\n"
+              "long g(S& s);\n"
+              "int f() {\n"
+              "  std::vector<int> ArrS;\n"
+              "  S s = { { &ArrS } };\n"
+              "  g(s);\n"
+              "  return ArrS[0];\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
