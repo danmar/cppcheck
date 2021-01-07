@@ -886,6 +886,12 @@ void CheckBufferOverrun::objectIndex()
             const Token *idx = tok->astOperand2();
             if (!idx || !obj)
                 continue;
+            const ValueFlow::Value* vidx = nullptr;
+            if (idx->hasKnownIntValue()) {
+                if (idx->getKnownIntValue() == 0)
+                    continue;
+                vidx = &idx->values().front();
+            }
             if (idx->hasKnownIntValue() && idx->getKnownIntValue() == 0)
                 continue;
 
@@ -908,8 +914,27 @@ void CheckBufferOverrun::objectIndex()
                     if (var->valueType()->pointer > obj->valueType()->pointer)
                         continue;
                 }
-                objectIndexError(tok, &v, idx->hasKnownIntValue());
-                break;
+                if (v.path != 0) {
+                    for(const ValueFlow::Value& vidx:idx->values()) {
+                        if (!vidx.isIntValue())
+                            continue;
+                        if (vidx.isImpossible()) {
+                            if (vidx.intvalue != 0)
+                                continue;
+                        } else {
+                            if (vidx.intvalue == 0)
+                                continue;
+                        }
+                        if (vidx.path != v.path) {
+                            if (vidx.path != 0 && v.path != 0)
+                                continue;
+                        }
+                        objectIndexError(tok, &v, idx->hasKnownIntValue());
+                        break;
+                    }
+                } else {
+                    objectIndexError(tok, &v, idx->hasKnownIntValue());
+                }
             }
         }
     }
