@@ -386,6 +386,10 @@ std::string clangimport::AstNode::getSpelling() const
         if (typeIndex <= 0)
             return "";
     }
+    if (nodeType == DeclRefExpr) {
+        while (typeIndex > 0 && std::isalpha(mExtTokens[typeIndex][0]))
+            typeIndex--;
+    }
     const std::string &str = mExtTokens[typeIndex - 1];
     if (str.compare(0,4,"col:") == 0)
         return "";
@@ -887,7 +891,10 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         return t;
     }
     if (nodeType == DeclRefExpr) {
-        const std::string addr = mExtTokens[mExtTokens.size() - 3];
+        int addrIndex = mExtTokens.size() - 1;
+        while (addrIndex > 1 && mExtTokens[addrIndex].compare(0,2,"0x") != 0)
+            --addrIndex;
+        const std::string addr = mExtTokens[addrIndex];
         std::string name = unquote(getSpelling());
         Token *reftok = addtoken(tokenList, name.empty() ? "<NoName>" : name);
         mData->ref(addr, reftok);
@@ -1169,8 +1176,14 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         Token *par1 = addtoken(tokenList, "(");
         if (children.empty())
             addTypeTokens(tokenList, mExtTokens.back());
-        else
-            addTypeTokens(tokenList, getChild(0)->getType());
+        else {
+            AstNodePtr child = getChild(0);
+            if (child && child->nodeType == ParenExpr)
+                child = child->getChild(0);
+            Token *expr = child->createTokens(tokenList);
+            child->setValueType(expr);
+            par1->astOperand2(expr);
+        }
         Token *par2 = addtoken(tokenList, ")");
         par1->link(par2);
         par2->link(par1);
