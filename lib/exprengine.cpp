@@ -2668,10 +2668,12 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                 auto loopValues = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), initValue, lastValue);
                 data.assignValue(tok, varid, loopValues);
                 tok = tok->linkAt(1);
-                loopValues->loopScope = tok->next()->scope();
-                // Check whether the condition expression is always false
-                if (tok->next() && (initValue > lastValue)) {
-                    tok = tok->next()->link();
+                if (tok->next()) {
+                    loopValues->loopScope = tok->next()->scope();
+                    // Check whether the condition expression is always false
+                    if (initValue > lastValue) {
+                        tok = tok->next()->link();
+                    }
                 }
                 continue;
             }
