@@ -823,6 +823,7 @@ class CppcheckData:
         filename          Path to Cppcheck dump file
         rawTokens         List of rawToken elements
         suppressions      List of Suppressions
+        files             Source files for elements occurred in this configuration
 
     To iterate through all configurations use such code:
     @code
@@ -860,8 +861,8 @@ class CppcheckData:
         self.rawTokens = []
         self.platform = None
         self.suppressions = []
+        self.files = []
 
-        files = []  # source files for elements occurred in this configuration
         platform_done = False
         rawtokens_done = False
         suppressions_done = False
@@ -878,10 +879,10 @@ class CppcheckData:
             elif node.tag == 'rawtokens' and event == 'end':
                 for rawtokens_node in node:
                     if rawtokens_node.tag == 'file':
-                        files.append(rawtokens_node.get('name'))
+                        self.files.append(rawtokens_node.get('name'))
                     elif rawtokens_node.tag == 'tok':
                         tok = Token(rawtokens_node)
-                        tok.file = files[int(rawtokens_node.get('fileIndex'))]
+                        tok.file = self.files[int(rawtokens_node.get('fileIndex'))]
                         self.rawTokens.append(tok)
                 rawtokens_done = True
             elif node.tag == 'suppressions' and event == 'end':
