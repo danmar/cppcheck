@@ -852,15 +852,14 @@ class CppcheckData:
     @endcode
     """
 
-    rawTokens = []
-    platform = None
-    suppressions = []
-
     def __init__(self, filename):
         """
         :param filename: Path to Cppcheck dump file
         """
         self.filename = filename
+        self.rawTokens = []
+        self.platform = None
+        self.suppressions = []
 
         files = []  # source files for elements occurred in this configuration
         platform_done = False
