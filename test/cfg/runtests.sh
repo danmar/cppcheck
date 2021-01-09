@@ -17,7 +17,7 @@ CPPCHECK_OPT='--check-library --enable=information --enable=style --error-exitco
 
 # Compiler settings
 CXX=g++
-CXX_OPT='-fsyntax-only -std=c++0x -Wno-format -Wno-format-security'
+CXX_OPT='-fsyntax-only -std=c++0x -Wno-format -Wno-format-security -Wno-deprecated-declarations'
 CC=gcc
 CC_OPT='-Wno-format -Wno-nonnull -Wno-implicit-function-declaration -Wno-deprecated-declarations -Wno-format-security -Wno-nonnull -fsyntax-only'
 

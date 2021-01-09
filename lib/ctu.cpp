@@ -93,7 +93,7 @@ std::string CTU::FileInfo::FunctionCall::toXmlString() const
     out << "<function-call"
         << toBaseXmlString()
         << " " << ATTR_CALL_ARGEXPR << "=\"" << callArgumentExpression << "\""
-        << " " << ATTR_CALL_ARGVALUETYPE << "=\"" << callValueType << "\""
+        << " " << ATTR_CALL_ARGVALUETYPE << "=\"" << static_cast<int>(callValueType) << "\""
         << " " << ATTR_CALL_ARGVALUE << "=\"" << callArgValue << "\"";
     if (warning)
         out << " " << ATTR_WARNING << "=\"true\"";
@@ -445,7 +445,7 @@ static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(co
     return ret;
 }
 
-std::list<CTU::FileInfo::UnsafeUsage> CTU::getUnsafeUsage(const Tokenizer *tokenizer, const Settings *settings, const Check *check, bool (*isUnsafeUsage)(const Check *check, const Token *argtok, MathLib::bigint *_value))
+std::list<CTU::FileInfo::UnsafeUsage> CTU::getUnsafeUsage(const Tokenizer *tokenizer, const Settings *settings, const Check *check, bool (*isUnsafeUsage)(const Check *check, const Token *argtok, MathLib::bigint *value))
 {
     std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
 
@@ -461,8 +461,8 @@ std::list<CTU::FileInfo::UnsafeUsage> CTU::getUnsafeUsage(const Tokenizer *token
         for (int argnr = 0; argnr < function->argCount(); ++argnr) {
             for (const std::pair<const Token *, MathLib::bigint> &v : getUnsafeFunction(tokenizer, settings, &scope, argnr, check, isUnsafeUsage)) {
                 const Token *tok = v.first;
-                MathLib::bigint value = v.second;
-                unsafeUsage.emplace_back(CTU::getFunctionId(tokenizer, function), argnr+1, tok->str(), CTU::FileInfo::Location(tokenizer,tok), value);
+                MathLib::bigint val = v.second;
+                unsafeUsage.emplace_back(CTU::getFunctionId(tokenizer, function), argnr+1, tok->str(), CTU::FileInfo::Location(tokenizer,tok), val);
             }
         }
     }

@@ -648,6 +648,19 @@ bool exprDependsOnThis(const Token* expr, nonneg int depth)
     return exprDependsOnThis(expr->astOperand1(), depth) || exprDependsOnThis(expr->astOperand2(), depth);
 }
 
+static bool hasUnknownVars(const Token* startTok)
+{
+    bool result = false;
+    visitAstNodes(startTok, [&](const Token* tok) {
+        if (tok->varId() > 0 && !tok->variable()) {
+            result = true;
+            return ChildrenToVisit::done;
+        }
+        return ChildrenToVisit::op1_and_op2;
+    });
+    return result;
+}
+
 /// This takes a token that refers to a variable and it will return the token
 /// to the expression that the variable is assigned to. If its not valid to
 /// make such substitution then it will return the original token.
@@ -671,11 +684,7 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
     const Token * varTok = getVariableInitExpression(var);
     if (!varTok)
         return tok;
-    // Bailout. If variable value depends on value of "this".
-    if (exprDependsOnThis(varTok))
-        return tok;
-    // Skip array access
-    if (Token::simpleMatch(varTok, "["))
+    if (hasUnknownVars(varTok))
         return tok;
     if (var->isVolatile())
         return tok;
@@ -692,44 +701,14 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
         return tok;
     if (precedes(varTok, endToken) && isAliased(varTok, endToken, tok->varId()))
         return tok;
-    if (varTok->exprId() != 0 && isVariableChanged(nextAfterAstRightmostLeaf(varTok), endToken, varTok->exprId(), false, nullptr, cpp))
+    const Token* startToken = nextAfterAstRightmostLeaf(varTok);
+    if (!startToken)
+        startToken = varTok;
+    if (varTok->exprId() == 0) {
+        if (!varTok->isLiteral())
+            return tok;
+    } else if (isExpressionChanged(varTok, startToken, endToken, nullptr, cpp)) {
         return tok;
-    // Start at beginning of initialization
-    const Token * startToken = varTok;
-    while (Token::Match(startToken, "%op%|.|(|{") && startToken->astOperand1())
-        startToken = startToken->astOperand1();
-    // Skip if the variable its referring to is modified
-    for (const Token * tok2 = startToken; tok2 != endToken; tok2 = tok2->next()) {
-        if (Token::simpleMatch(tok2, ";"))
-            break;
-        if (tok2->astParent() && tok2->isUnaryOp("*"))
-            return tok;
-        if (tok2->tokType() == Token::eIncDecOp ||
-            tok2->isAssignmentOp() ||
-            Token::Match(tok2, "%name% .|[|++|--|%assign%")) {
-            return tok;
-        }
-        if (Token::Match(tok2, "%name% ("))
-            // Bailout when function call is seen
-            return tok;
-        if (const Variable * var2 = tok2->variable()) {
-            if (!var2->scope())
-                return tok;
-            const Token * endToken2 = var2->scope() != tok->scope() ? var2->scope()->bodyEnd : endToken;
-            if (!var2->isLocal() && !var2->isConst() && !var2->isArgument())
-                return tok;
-            if (var2->isStatic() && !var2->isConst())
-                return tok;
-            if (!var2->isConst() && (!precedes(tok2, endToken2) || isVariableChanged(tok2, endToken2, tok2->varId(), false, nullptr, cpp)))
-                return tok;
-            if (precedes(tok2, endToken2) && isAliased(tok2, endToken2, tok2->varId()))
-                return tok;
-            // Recognized as a variable but the declaration is unknown
-        } else if (tok2->varId() > 0) {
-            return tok;
-        } else if (tok2->tokType() == Token::eName && !Token::Match(tok2, "sizeof|decltype|typeof") && !tok2->function()) {
-            return tok;
-        }
     }
     return varTok;
 }
@@ -1681,6 +1660,21 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
             return true;
         return false;
     }
+
+    if (indirect > 0) {
+        // check for `*(ptr + 1) = new_value` case
+        parent = tok2->astParent();
+        while (parent && parent->isArithmeticalOp() && parent->isBinaryOp()) {
+            parent = parent->astParent();
+        }
+        if (Token::simpleMatch(parent, "*")) {
+            if (parent->astParent() && parent->astParent()->isAssignmentOp() &&
+                (parent->astParent()->astOperand1() == parent)) {
+                return true;
+            }
+        }
+    }
+
     return false;
 }
 

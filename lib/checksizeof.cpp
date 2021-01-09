@@ -296,7 +296,7 @@ void CheckSizeof::sizeofCalculation()
         if (tok->isExpandedMacro() && tok->previous()) {
             const Token *cast_end = (tok->previous()->str() == "(") ? tok->previous() : tok;
             if (Token::simpleMatch(cast_end->tokAt(-3), "( void )") ||
-                Token::simpleMatch(cast_end->previous(), "static_cast<void>")) {
+                Token::simpleMatch(cast_end->tokAt(-4), "static_cast < void >")) {
                 continue;
             }
         }
@@ -337,7 +337,7 @@ void CheckSizeof::sizeofFunction()
             if (tok->isExpandedMacro() && tok->previous()) {
                 const Token *cast_end = (tok->previous()->str() == "(") ? tok->previous() : tok;
                 if (Token::simpleMatch(cast_end->tokAt(-3), "( void )") ||
-                    Token::simpleMatch(cast_end->previous(), "static_cast<void>")) {
+                    Token::simpleMatch(cast_end->tokAt(-4), "static_cast < void >")) {
                     continue;
                 }
             }

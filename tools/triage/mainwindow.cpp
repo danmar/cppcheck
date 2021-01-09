@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
     mFSmodel.setFilter(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
     ui->directoryTree->setModel(&mFSmodel);
     QHeaderView * header =  ui->directoryTree->header();
-    for(int i = 1; i < header->length(); ++i)   // hide all except [0]
+    for (int i = 1; i < header->length(); ++i)  // hide all except [0]
         header->hideSection(i);
     ui->directoryTree->setRootIndex(mFSmodel.index(WORK_FOLDER));
 
@@ -276,9 +276,9 @@ void MainWindow::findInFilesClicked()
     const QString text = ui->filterEdit->text();
 
     QStringList filter;
-    if(ui->hFilesFilter->isChecked())
+    if (ui->hFilesFilter->isChecked())
         filter.append(hFiles);
-    if(ui->srcFilesFilter->isChecked())
+    if (ui->srcFilesFilter->isChecked())
         filter.append(srcFiles);
 
     QMimeDatabase mimeDatabase;

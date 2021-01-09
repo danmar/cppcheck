@@ -38,7 +38,7 @@ struct CompareFixtures {
     }
 };
 
-typedef std::set<TestFixture*, CompareFixtures> TestSet;
+using TestSet = std::set<TestFixture*, CompareFixtures>;
 class TestRegistry {
     TestSet _tests;
 public:

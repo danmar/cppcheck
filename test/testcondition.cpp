@@ -3494,6 +3494,23 @@ private:
               "        if (p != (uint32_t) -1) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9890
+        check("int g(int);\n"
+              "bool h(int*);\n"
+              "int f(int *x) {\n"
+              "    int y = g(0);\n"
+              "    if (!y) {\n"
+              "        if (h(x)) {\n"
+              "            y = g(1);\n"
+              "            if (y) {}\n"
+              "            return 0;\n"
+              "        }\n"
+              "        if (!y) {}\n"
+              "    }\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:11]: (style) Condition '!y' is always true\n", errout.str());
     }
 
     void alwaysTrueInfer() {
@@ -3893,32 +3910,85 @@ private:
         check("void f(char *p, unsigned int x) {\n"
               "    assert((p + x) < p);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow '(p+x)<p'. Condition is always false unless there is overflow, and overflow is undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow '(p+x)<p'; pointer overflow is undefined behavior. Some mainstream compilers remove such overflow tests when optimising the code and assume it's always false.\n", errout.str());
 
         check("void f(char *p, unsigned int x) {\n"
               "    assert((p + x) >= p);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow '(p+x)>=p'. Condition is always true unless there is overflow, and overflow is undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow '(p+x)>=p'; pointer overflow is undefined behavior. Some mainstream compilers remove such overflow tests when optimising the code and assume it's always true.\n", errout.str());
 
         check("void f(char *p, unsigned int x) {\n"
               "    assert(p > (p + x));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow 'p>(p+x)'. Condition is always false unless there is overflow, and overflow is undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow 'p>(p+x)'; pointer overflow is undefined behavior. Some mainstream compilers remove such overflow tests when optimising the code and assume it's always false.\n", errout.str());
 
         check("void f(char *p, unsigned int x) {\n"
               "    assert(p <= (p + x));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow 'p<=(p+x)'. Condition is always true unless there is overflow, and overflow is undefined behaviour.\n", errout.str());
-
-        check("void f(signed int x) {\n"
-              "    assert(x + 100 < x);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow 'x+100<x'. Condition is always false unless there is overflow, and overflow is undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow 'p<=(p+x)'; pointer overflow is undefined behavior. Some mainstream compilers remove such overflow tests when optimising the code and assume it's always true.\n", errout.str());
 
         check("void f(signed int x) {\n" // unsigned overflow => don't warn
               "    assert(x + 100U < x);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+
+        // x + c < x
+
+#define MSG(EXPR, RESULT)   "[test.cpp:1]: (warning) Invalid test for overflow '" EXPR "'; signed integer overflow is undefined behavior. Some mainstream compilers remove such overflow tests when optimising the code and assume it's always " RESULT ".\n"
+
+        check("int f(int x) { return x + 10 > x; }");
+        ASSERT_EQUALS(MSG("x+10>x", "true"), errout.str());
+
+        check("int f(int x) { return x + 10 >= x; }");
+        ASSERT_EQUALS(MSG("x+10>=x", "true"), errout.str());
+
+        check("int f(int x) { return x + 10 < x; }");
+        ASSERT_EQUALS(MSG("x+10<x", "false"), errout.str());
+
+        check("int f(int x) { return x + 10 <= x; }");
+        ASSERT_EQUALS(MSG("x+10<=x", "false"), errout.str());
+
+        check("int f(int x) { return x - 10 > x; }");
+        ASSERT_EQUALS(MSG("x-10>x", "false"), errout.str());
+
+        check("int f(int x) { return x - 10 >= x; }");
+        ASSERT_EQUALS(MSG("x-10>=x", "false"), errout.str());
+
+        check("int f(int x) { return x - 10 < x; }");
+        ASSERT_EQUALS(MSG("x-10<x", "true"), errout.str());
+
+        check("int f(int x) { return x - 10 <= x; }");
+        ASSERT_EQUALS(MSG("x-10<=x", "true"), errout.str());
+
+        // x + y < x
+#undef MSG
+#define MSG(EXPR, RESULT)   "[test.cpp:1]: (warning) Invalid test for overflow '" EXPR "'; signed integer overflow is undefined behavior. Some mainstream compilers removes handling of overflows when optimising the code and change the code to '" RESULT "'.\n"
+
+        check("int f(int x, int y) { return x + y < x; }");
+        ASSERT_EQUALS(MSG("x+y<x", "y<0"), errout.str());
+
+        check("int f(int x, int y) { return x + y <= x; }");
+        ASSERT_EQUALS(MSG("x+y<=x", "y<=0"), errout.str());
+
+        check("int f(int x, int y) { return x + y > x; }");
+        ASSERT_EQUALS(MSG("x+y>x", "y>0"), errout.str());
+
+        check("int f(int x, int y) { return x + y >= x; }");
+        ASSERT_EQUALS(MSG("x+y>=x", "y>=0"), errout.str());
+
+        // x - y < x
+        check("int f(int x, int y) { return x - y < x; }");
+        ASSERT_EQUALS(MSG("x-y<x", "y>0"), errout.str());
+
+        check("int f(int x, int y) { return x - y <= x; }");
+        ASSERT_EQUALS(MSG("x-y<=x", "y>=0"), errout.str());
+
+        check("int f(int x, int y) { return x - y > x; }");
+        ASSERT_EQUALS(MSG("x-y>x", "y<0"), errout.str());
+
+        check("int f(int x, int y) { return x - y >= x; }");
+        ASSERT_EQUALS(MSG("x-y>=x", "y<=0"), errout.str());
     }
 
     void checkConditionIsAlwaysTrueOrFalseInsideIfWhile() {
