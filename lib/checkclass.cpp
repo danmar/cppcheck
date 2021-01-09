@@ -2497,6 +2497,7 @@ void CheckClass::checkCopyCtorAndEqOperator()
     // The message must be clarified. How is the behaviour different?
     return;
 
+    // cppcheck-suppress unreachableCode - remove when code is enabled again
     if (!mSettings->isEnabled(Settings::WARNING))
         return;
 

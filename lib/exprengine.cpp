@@ -750,7 +750,7 @@ namespace {
             std::vector<std::string> constraints;
         };
 
-        void parsestr(const std::string &s, std::vector<ImportData> *importData) const {
+        static void parsestr(const std::string &s, std::vector<ImportData> *importData) {
             std::string line;
             std::istringstream istr(s);
             while (std::getline(istr, line)) {

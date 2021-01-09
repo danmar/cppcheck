@@ -1446,7 +1446,7 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::li
             const CTU::FileInfo::FunctionCall *functionCall = nullptr;
 
             const std::list<ErrorMessage::FileLocation> &locationList =
-                ctu->getErrorPath(CTU::FileInfo::InvalidValueType::uninit,
+                CTU::FileInfo::getErrorPath(CTU::FileInfo::InvalidValueType::uninit,
                                   unsafeUsage,
                                   callsMap,
                                   "Using argument ARG",

@@ -849,6 +849,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings->templateFormat = "{file} +{line}: {severity}: {message}";
                 else if (mSettings->templateFormat == "cppcheck1")
                     mSettings->templateFormat = "{callstack}: ({severity}{inconclusive:, inconclusive}) {message}";
+                else if (mSettings->templateFormat == "selfcheck") {
+                    mSettings->templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\\n{code}";
+                    mSettings->templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
+                }
             }
 
             else if (std::strcmp(argv[i], "--template-location") == 0 ||

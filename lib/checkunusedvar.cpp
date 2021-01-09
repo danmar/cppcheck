@@ -521,15 +521,13 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
                                 if (var1->_assignments.find(scope) == var1->_assignments.end() ||
                                     scope->type == Scope::eSwitch) {
                                     // nothing to replace
+                                    // cppcheck-suppress duplicateBranch - remove when TODO below is address
                                     if (var1->_assignments.empty())
                                         replace = false;
 
                                     // this variable has previous assignments
                                     else {
-                                        /**
-                                         * @todo determine if existing aliases should be replaced or merged
-                                         */
-
+                                        // TODO: determine if existing aliases should be replaced or merged
                                         replace = false;
                                     }
                                 }

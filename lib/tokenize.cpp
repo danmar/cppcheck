@@ -3182,7 +3182,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
 
 void Tokenizer::setVarIdStructMembers(Token **tok1,
                                       std::map<int, std::map<std::string, int> >& structMembers,
-                                      nonneg int *varId)
+                                      nonneg int *varId) const
 {
     Token *tok = *tok1;
 
@@ -9572,7 +9572,7 @@ static bool isCPPAttribute(const Token * tok)
     return Token::simpleMatch(tok, "[ [") && tok->link() && tok->link()->previous() == tok->linkAt(1);
 }
 
-void Tokenizer::reportUnknownMacros()
+void Tokenizer::reportUnknownMacros() const
 {
     // Report unknown macros used in expressions "%name% %num%"
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
@@ -12005,6 +12005,7 @@ void Tokenizer::simplifyNamespaceAliases()
                             continue;
                         } else {
                             // conflicting declaration (syntax error)
+                            // cppcheck-suppress duplicateBranch - remove when TODO below is addressed
                             if (endScope == scope) {
                                 // delete conflicting declaration
                                 tok2 = deleteAlias(tok2->previous());

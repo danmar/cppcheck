@@ -664,7 +664,7 @@ private:
     void validate() const;
 
     /** Detect unknown macros and throw unknownMacro */
-    void reportUnknownMacros();
+    void reportUnknownMacros() const;
 
     /** Detect garbage code and call syntaxError() if found. */
     void findGarbageCode() const;
@@ -809,7 +809,7 @@ private:
 
     void setVarIdStructMembers(Token **tok1,
                                std::map<int, std::map<std::string, int> >& structMembers,
-                               nonneg int *varId);
+                               nonneg int *varId) const;
 
     void setVarIdClassFunction(const std::string &classname,
                                Token * const startToken,
