@@ -2,12 +2,10 @@ unusedPrivateFunction:test/testbufferoverrun.cpp
 unusedPrivateFunction:test/testcmdlineparser.cpp
 redundantNextPrevious:test/testtoken.cpp
 simplePatternError:test/testtoken.cpp
-noValidConfiguration
 shadowFunction
 functionConst
 functionStatic
 bitwiseOnBoolean
-hidingInheritedPublic
 
 # temporary suppressions - fix the warnings!
 duplicateBranch:lib/checkunusedvar.cpp
