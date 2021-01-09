@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -232,6 +232,7 @@ static CppcheckLibraryData::PodType loadPodType(const QXmlStreamReader &xmlReade
 {
     CppcheckLibraryData::PodType podtype;
     podtype.name = xmlReader.attributes().value("name").toString();
+    podtype.stdtype = xmlReader.attributes().value("stdtype").toString();
     podtype.size = xmlReader.attributes().value("size").toString();
     podtype.sign = xmlReader.attributes().value("sign").toString();
     return podtype;
@@ -524,6 +525,8 @@ QString CppcheckLibraryData::toString() const
     foreach (const PodType &podtype, podtypes) {
         xmlWriter.writeStartElement("podtype");
         xmlWriter.writeAttribute("name", podtype.name);
+        if (!podtype.stdtype.isEmpty())
+            xmlWriter.writeAttribute("stdtype", podtype.stdtype);
         if (!podtype.sign.isEmpty())
             xmlWriter.writeAttribute("sign", podtype.sign);
         if (!podtype.size.isEmpty())
