@@ -209,6 +209,7 @@ private:
         TEST_CASE(template164); // #9394
         TEST_CASE(template165); // #10032 syntax error
         TEST_CASE(template166); // #10081 hang
+        TEST_CASE(template167);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -4186,6 +4187,34 @@ private:
         const char exp[]  = "void foo<T,(T::s<3)?0:3> ( ) ; "
                             "foo<T,(T::s<3)?0:3> ( ) ; "
                             "void foo<T,(T::s<3)?0:3> ( ) { }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template167() {
+        const char code[] = "struct MathLib {\n"
+                            "    template<class T> static std::string toString(T value) {\n"
+                            "        return std::string{};\n"
+                            "    }\n"
+                            "};\n"
+                            "template<> std::string MathLib::toString(double value);\n"
+                            "template<> std::string MathLib::toString(double value) {\n"
+                            "    return std::string{std::to_string(value)};\n"
+                            "}\n"
+                            "void foo() {\n"
+                            "    std::string str = MathLib::toString(1.0);\n"
+                            "}";
+        const char exp[]  = "struct MathLib { "
+                            "static std :: string toString<double> ( double value ) ; "
+                            "template < class T > static std :: string toString ( T value ) { "
+                            "return std :: string { } ; "
+                            "} "
+                            "} ; "
+                            "std :: string MathLib :: toString<double> ( double value ) { "
+                            "return std :: string { std :: to_string ( value ) } ; "
+                            "} "
+                            "void foo ( ) { "
+                            "std :: string str ; str = MathLib :: toString<double> ( 1.0 ) ; "
+                            "}";
         ASSERT_EQUALS(exp, tok(code));
     }
 
