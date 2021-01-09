@@ -2548,16 +2548,6 @@ static void valueFlowReverse(Token* tok,
     }
 }
 
-static int getArgumentPos(const Variable *var, const Function *f)
-{
-    auto arg_it = std::find_if(f->argumentList.begin(), f->argumentList.end(), [&](const Variable &v) {
-        return v.nameToken() == var->nameToken();
-    });
-    if (arg_it == f->argumentList.end())
-        return -1;
-    return std::distance(f->argumentList.begin(), arg_it);
-}
-
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
 {
     std::string result;
