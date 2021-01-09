@@ -1614,7 +1614,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
     return tok;
 }
 
-void TokenList::createAst()
+void TokenList::createAst() const
 {
     for (Token *tok = mTokensFrontBack.front; tok; tok = tok ? tok->next() : nullptr) {
         tok = createAstAtToken(tok, isCPP());
