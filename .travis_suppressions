@@ -15,6 +15,7 @@ duplicateBranch:lib/tokenize.cpp
 missingOverride
 redundantAssignment:lib/tokenlist.cpp
 unreachableCode:lib/checkbufferoverrun.cpp
+# disabled because of #8388
 unreachableCode:lib/checkclass.cpp
 unreachableCode:test/testother.cpp
 unusedPrivateFunction:lib/checkbufferoverrun.h
