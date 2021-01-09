@@ -1389,6 +1389,11 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (!tok->hasKnownIntValue())
                 continue;
+            if (Token::Match(tok->previous(), "%name% (") && tok->previous()->function()) {
+                const Function* f = tok->previous()->function();
+                if (f->functionScope && Token::Match(f->functionScope->bodyStart, "{ return true|false ;"))
+                    continue;
+            }
             {
                 // is this a condition..
                 const Token *parent = tok->astParent();
