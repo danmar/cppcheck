@@ -1575,7 +1575,7 @@ void TemplateSimplifier::expandTemplate(
         Token * start;
         Token * end;
         auto it = mTemplateForwardDeclarationsMap.find(dst);
-        if (it != mTemplateForwardDeclarationsMap.end()) {
+        if (!isSpecialization && it != mTemplateForwardDeclarationsMap.end()) {
             dst = it->second;
             dstStart = dst->previous();
             const Token * temp1 = dst->tokAt(1)->findClosingBracket();
@@ -1583,6 +1583,14 @@ void TemplateSimplifier::expandTemplate(
             start = temp1->next();
             end = temp2->linkAt(1)->next();
         } else {
+            if (it != mTemplateForwardDeclarationsMap.end()) {
+                std::list<TokenAndName>::iterator it1 = std::find_if(mTemplateForwardDeclarations.begin(),
+                                                        mTemplateForwardDeclarations.end(),
+                                                        FindToken(it->second));
+                if (it1 != mTemplateForwardDeclarations.end())
+                    mMemberFunctionsToDelete.push_back(*it1);
+            }
+
             auto it2 = mTemplateSpecializationMap.find(dst);
             if (it2 != mTemplateSpecializationMap.end()) {
                 dst = it2->second;
@@ -3734,6 +3742,15 @@ void TemplateSimplifier::simplifyTemplates(
             if (it != mTemplateDeclarations.end()) {
                 removeTemplate(it->token());
                 mTemplateDeclarations.erase(it);
+            } else {
+                const std::list<TokenAndName>::iterator it1 = std::find_if(mTemplateForwardDeclarations.begin(),
+                        mTemplateForwardDeclarations.end(),
+                        FindToken(mMemberFunctionsToDelete.begin()->token()));
+                // multiple functions can share the same declaration so make sure it hasn't already been deleted
+                if (it1 != mTemplateForwardDeclarations.end()) {
+                    removeTemplate(it1->token());
+                    mTemplateForwardDeclarations.erase(it1);
+                }
             }
             mMemberFunctionsToDelete.erase(mMemberFunctionsToDelete.begin());
         }
