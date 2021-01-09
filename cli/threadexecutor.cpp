@@ -519,7 +519,7 @@ void ThreadExecutor::reportErr(const ErrorMessage &msg)
 
 void ThreadExecutor::reportInfo(const ErrorMessage &msg)
 {
-
+    report(msg, MessageType::REPORT_INFO);
 }
 
 void ThreadExecutor::bughuntingReport(const std::string  &/*str*/)
