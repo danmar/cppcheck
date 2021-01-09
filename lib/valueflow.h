@@ -190,7 +190,7 @@ namespace ValueFlow {
 
         std::string infoString() const;
 
-        enum ValueType { INT, TOK, FLOAT, MOVED, UNINIT, CONTAINER_SIZE, LIFETIME, BUFFER_SIZE, ITERATOR_START, ITERATOR_END } valueType;
+        enum class ValueType { INT, TOK, FLOAT, MOVED, UNINIT, CONTAINER_SIZE, LIFETIME, BUFFER_SIZE, ITERATOR_START, ITERATOR_END } valueType;
         bool isIntValue() const {
             return valueType == ValueType::INT;
         }
@@ -400,5 +400,7 @@ std::string lifetimeType(const Token *tok, const ValueFlow::Value *val);
 std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ValueFlow::Value::ErrorPath &errorPath);
 
 CPPCHECKLIB ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive = false);
+
+CPPCHECKLIB std::vector<ValueFlow::Value> getLifetimeObjValues(const Token *tok, bool inconclusive = false, bool subfunction = false);
 
 #endif // valueflowH

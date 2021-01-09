@@ -428,7 +428,7 @@ private:
                 "    if (a) x = \"123\";\n"
                 "    return x;\n"
                 "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4, "\"123\"", ValueFlow::Value::TOK));
+        ASSERT_EQUALS(true, testValueOfX(code, 4, "\"123\"", ValueFlow::Value::ValueType::TOK));
 
         // valueFlowSubFunction
         code  = "void dostuff(const char *x) {\n"
@@ -436,7 +436,7 @@ private:
                 "}\n"
                 "\n"
                 "void test() { dostuff(\"abc\"); }";
-        ASSERT_EQUALS(true, testValueOfX(code, 2, "\"abc\"", ValueFlow::Value::TOK));
+        ASSERT_EQUALS(true, testValueOfX(code, 2, "\"abc\"", ValueFlow::Value::ValueType::TOK));
     }
 
     void valueFlowPointerAlias() {
@@ -449,7 +449,7 @@ private:
                 "    if (a) x = &ret[0];\n"
                 "    return x;\n"
                 "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 5, "& ret [ 0 ]", ValueFlow::Value::TOK));
+        ASSERT_EQUALS(true, testValueOfX(code, 5, "& ret [ 0 ]", ValueFlow::Value::ValueType::TOK));
 
         // dead pointer
         code  = "void f() {\n"
@@ -457,7 +457,7 @@ private:
                 "  if (cond) { int i; x = &i; }\n"
                 "  *x = 0;\n"  // <- x can point at i
                 "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4, "& i", ValueFlow::Value::TOK));
+        ASSERT_EQUALS(true, testValueOfX(code, 4, "& i", ValueFlow::Value::ValueType::TOK));
 
         code  = "void f() {\n"
                 "  struct X *x;\n"
@@ -483,14 +483,14 @@ private:
                 "    auto x = [&]() { return a + 1; };\n"
                 "    auto b = x;\n"
                 "}\n";
-        ASSERT_EQUALS(true, testValueOfX(code, 4, "a + 1", ValueFlow::Value::LIFETIME));
+        ASSERT_EQUALS(true, testValueOfX(code, 4, "a + 1", ValueFlow::Value::ValueType::LIFETIME));
 
         code  = "void f() {\n"
                 "    int a = 1;\n"
                 "    auto x = [=]() { return a + 1; };\n"
                 "    auto b = x;\n"
                 "}\n";
-        ASSERT_EQUALS(false, testValueOfX(code, 4, "a ;", ValueFlow::Value::LIFETIME));
+        ASSERT_EQUALS(false, testValueOfX(code, 4, "a ;", ValueFlow::Value::ValueType::LIFETIME));
 
         code  = "void f(int v) {\n"
                 "    int a = v;\n"
@@ -498,14 +498,14 @@ private:
                 "    auto x = [=]() { return p + 1; };\n"
                 "    auto b = x;\n"
                 "}\n";
-        ASSERT_EQUALS(true, testValueOfX(code, 5, "a ;", ValueFlow::Value::LIFETIME));
+        ASSERT_EQUALS(true, testValueOfX(code, 5, "a ;", ValueFlow::Value::ValueType::LIFETIME));
 
         code  = "void f() {\n"
                 "    std::vector<int> v;\n"
                 "    auto x = v.begin();\n"
                 "    auto it = x;\n"
                 "}\n";
-        ASSERT_EQUALS(true, testValueOfX(code, 4, "v . begin", ValueFlow::Value::LIFETIME));
+        ASSERT_EQUALS(true, testValueOfX(code, 4, "v . begin", ValueFlow::Value::ValueType::LIFETIME));
 
         code  = "void f() {\n"
                 "    int i = 0;\n"
@@ -523,26 +523,26 @@ private:
                 "    const int x[] = {43,23,12};\n"
                 "    return x;\n"
                 "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 3U, "{ 43 , 23 , 12 }", ValueFlow::Value::TOK));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, "{ 43 , 23 , 12 }", ValueFlow::Value::ValueType::TOK));
 
         code  = "void f() {\n"
                 "    const char x[] = \"abcd\";\n"
                 "    return x;\n"
                 "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 3U, "\"abcd\"", ValueFlow::Value::TOK));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, "\"abcd\"", ValueFlow::Value::ValueType::TOK));
 
         code  = "void f() {\n"
                 "    char x[32] = \"abcd\";\n"
                 "    return x;\n"
                 "}";
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, "\"abcd\"", ValueFlow::Value::TOK));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, "\"abcd\"", ValueFlow::Value::ValueType::TOK));
 
         code = "void f() {\n"
                "  int a[10];\n"
                "  int *x = a;\n" // <- a value is a
                "  *x = 0;\n"     // .. => x value is a
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4, "a", ValueFlow::Value::TOK));
+        ASSERT_EQUALS(true, testValueOfX(code, 4, "a", ValueFlow::Value::ValueType::TOK));
 
         code  = "char f() {\n"
                 "    const char *x = \"abcd\";\n"
@@ -1518,16 +1518,20 @@ private:
                 "    a = x;\n"
                 "    M;\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
-                                          "[test.cpp:4]: (debug) valueflow.cpp:1260:valueFlowBeforeCondition bailout: variable x, condition is defined in macro\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
+            "[test.cpp:4]: (debug) valueflow.cpp:1260:(valueFlow) bailout: variable 'x', condition is defined in macro\n",
+            errout.str());
 
         bailout("#define FREE(obj) ((obj) ? (free((char *) (obj)), (obj) = 0) : 0)\n" // #8349
                 "void f(int *x) {\n"
                 "    a = x;\n"
                 "    FREE(x);\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
-                                          "[test.cpp:4]: (debug) valueflow.cpp:1260:valueFlowBeforeCondition bailout: variable x, condition is defined in macro\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
+            "[test.cpp:4]: (debug) valueflow.cpp:1260:(valueFlow) bailout: variable 'x', condition is defined in macro\n",
+            errout.str());
     }
 
     void valueFlowBeforeConditionGoto() {
@@ -1729,7 +1733,7 @@ private:
                "    a = ((x[0] == 'U') ?\n"
                "        x[1] : 0);\n" // <- x is not ""
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 4U, "\"\"", ValueFlow::Value::TOK));
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, "\"\"", ValueFlow::Value::ValueType::TOK));
 
         code = "void f() {\n" // #6973
                "    char *x = getenv (\"LC_ALL\");\n"
@@ -1742,10 +1746,10 @@ private:
                "          x[2] ))\n"          // x can't be ""
                "    {}\n"
                "}\n";
-        ASSERT_EQUALS(true, testValueOfX(code, 6U, "\"\"", ValueFlow::Value::TOK));
-        ASSERT_EQUALS(false, testValueOfX(code, 7U, "\"\"", ValueFlow::Value::TOK));
-        ASSERT_EQUALS(false, testValueOfX(code, 8U, "\"\"", ValueFlow::Value::TOK));
-        ASSERT_EQUALS(false, testValueOfX(code, 9U, "\"\"", ValueFlow::Value::TOK));
+        ASSERT_EQUALS(true, testValueOfX(code, 6U, "\"\"", ValueFlow::Value::ValueType::TOK));
+        ASSERT_EQUALS(false, testValueOfX(code, 7U, "\"\"", ValueFlow::Value::ValueType::TOK));
+        ASSERT_EQUALS(false, testValueOfX(code, 8U, "\"\"", ValueFlow::Value::ValueType::TOK));
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, "\"\"", ValueFlow::Value::ValueType::TOK));
 
         code = "void f() {\n" // #7599
                "  t *x = 0;\n"
@@ -4691,27 +4695,27 @@ private:
                "  ints.clear();\n"
                "  ints.front();\n"
                "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 0));
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
 
         code = "void f(const std::vector<int> &ints) {\n"
                "  ints.resize(3);\n"
                "  ints.front();\n"
                "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 3));
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 3));
 
         code = "void f(const std::vector<int> &ints) {\n"
                "  ints.resize(3);\n"
                "  ints.push_back(3);\n"
                "  ints.front();\n"
                "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 4));
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 4));
 
         code = "void f(const std::vector<int> &ints) {\n"
                "  ints.resize(3);\n"
                "  ints.pop_back();\n"
                "  ints.front();\n"
                "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 2));
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 2));
 
         code = "int f(bool b) {\n"
                "    std::map<int, int> m;\n"
@@ -4719,7 +4723,7 @@ private:
                "        m[0] = 1;\n"
                "    return m.at(0);\n"
                "}\n";
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "m . at", ValueFlow::Value::CONTAINER_SIZE), 0));
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "m . at", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
 
         code = "struct Base {\n"
                "    virtual bool GetString(std::string &) const { return false; }\n"
@@ -4741,14 +4745,14 @@ private:
                "  ints.front();\n"
                "}";
         ASSERT_EQUALS("",
-                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 0));
+                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
 
         code = "void f() {\n"
                "  std::vector<int> ints{1};\n"
                "  ints.front();\n"
                "}";
         ASSERT_EQUALS("",
-                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 1));
+                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 1));
 
         code = "void f() {\n"
                "  std::vector<int> ints{1};\n"
@@ -4756,28 +4760,28 @@ private:
                "  ints2.front();\n"
                "}";
         ASSERT_EQUALS(
-            "", isKnownContainerSizeValue(tokenValues(code, "ints2 . front", ValueFlow::Value::CONTAINER_SIZE), 1));
+            "", isKnownContainerSizeValue(tokenValues(code, "ints2 . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 1));
 
         code = "void f() {\n"
                "  std::vector<int> ints = {};\n"
                "  ints.front();\n"
                "}";
         ASSERT_EQUALS("",
-                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 0));
+                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
 
         code = "void f() {\n"
                "  std::vector<int> ints = {1};\n"
                "  ints.front();\n"
                "}";
         ASSERT_EQUALS("",
-                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::CONTAINER_SIZE), 1));
+                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 1));
 
         code = "void f(std::string str) {\n"
                "    if (str == \"123\")\n"
                "        bool x = str.empty();\n"
                "}\n";
         ASSERT_EQUALS("",
-                      isKnownContainerSizeValue(tokenValues(code, "str . empty", ValueFlow::Value::CONTAINER_SIZE), 3));
+                      isKnownContainerSizeValue(tokenValues(code, "str . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 3));
 
         code = "void f(std::string str) {\n"
                "    if (str == \"123\") {\n"
@@ -4830,34 +4834,34 @@ private:
                "  void* x = malloc(10);\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 3U, 10,  ValueFlow::Value::BUFFER_SIZE));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 10,  ValueFlow::Value::ValueType::BUFFER_SIZE));
 
         code = "void* f() {\n"
                "  void* x = calloc(4, 5);\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 3U, 20,  ValueFlow::Value::BUFFER_SIZE));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 20,  ValueFlow::Value::ValueType::BUFFER_SIZE));
 
         code = "void* f() {\n"
                "  const char* y = \"abcd\";\n"
                "  const char* x = strdup(y);\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 5,  ValueFlow::Value::BUFFER_SIZE));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 5,  ValueFlow::Value::ValueType::BUFFER_SIZE));
 
         code = "void* f() {\n"
                "  void* y = malloc(10);\n"
                "  void* x = realloc(y, 20);\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 20,  ValueFlow::Value::BUFFER_SIZE));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 20,  ValueFlow::Value::ValueType::BUFFER_SIZE));
 
         code = "void* f() {\n"
                "  void* y = calloc(10, 4);\n"
                "  void* x = reallocarray(y, 20, 5);\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 100,  ValueFlow::Value::BUFFER_SIZE));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 100,  ValueFlow::Value::ValueType::BUFFER_SIZE));
     }
 
     void valueFlowSafeFunctionParameterValues() {

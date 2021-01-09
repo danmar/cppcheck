@@ -798,7 +798,7 @@ bool MainWindow::tryLoadLibrary(Library *library, const QString& filename)
 {
     const Library::Error error = loadLibrary(library, filename);
     if (error.errorcode != Library::ErrorCode::OK) {
-        if (error.errorcode == Library::UNKNOWN_ELEMENT) {
+        if (error.errorcode == Library::ErrorCode::UNKNOWN_ELEMENT) {
             QMessageBox::information(this, tr("Information"), tr("The library '%1' contains unknown elements:\n%2").arg(filename).arg(error.reason.c_str()));
             return true;
         }
@@ -1000,7 +1000,7 @@ Settings MainWindow::getCppcheckSettings()
         result.jobs = 1;
     }
 
-    result.terminate(false);
+    Settings::terminate(false);
 
     return result;
 }

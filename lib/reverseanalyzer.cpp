@@ -153,7 +153,7 @@ struct ReverseTraversal {
                     Analyzer::Action lhsAction =
                         analyzer->analyze(assignTok->astOperand1(), Analyzer::Direction::Reverse);
                     // Assignment from
-                    if (rhsAction.isRead()) {
+                    if (rhsAction.isRead() && !lhsAction.isInvalid()) {
                         const std::string info = "Assignment from '" + assignTok->expressionString() + "'";
                         ValuePtr<Analyzer> a = analyzer->reanalyze(assignTok->astOperand1(), info);
                         if (a) {

@@ -35,6 +35,7 @@ class Settings;
 class Token;
 class Tokenizer;
 class ErrorLogger;
+class ValueType;
 
 /// @addtogroup Checks
 /// @{
@@ -155,7 +156,7 @@ private:
 
     void alwaysTrueFalseError(const Token *tok, const ValueFlow::Value *value);
 
-    void invalidTestForOverflow(const Token* tok, bool result);
+    void invalidTestForOverflow(const Token* tok, const ValueType *valueType, const std::string &replace);
     void pointerAdditionResultNotNullError(const Token *tok, const Token *calc);
 
     void duplicateConditionalAssignError(const Token *condTok, const Token* assignTok);
@@ -179,7 +180,7 @@ private:
         c.moduloAlwaysTrueFalseError(nullptr, "1");
         c.clarifyConditionError(nullptr, true, false);
         c.alwaysTrueFalseError(nullptr, nullptr);
-        c.invalidTestForOverflow(nullptr, false);
+        c.invalidTestForOverflow(nullptr, nullptr, "false");
         c.pointerAdditionResultNotNullError(nullptr, nullptr);
         c.duplicateConditionalAssignError(nullptr, nullptr);
     }
@@ -202,7 +203,7 @@ private:
                "- Mutual exclusion over || always evaluating to true\n"
                "- Comparisons of modulo results that are always true/false.\n"
                "- Known variable values => condition is always true/false\n"
-               "- Invalid test for overflow (for example 'ptr+u < ptr'). Condition is always false unless there is overflow, and overflow is undefined behaviour.\n";
+               "- Invalid test for overflow. Some mainstream compilers remove such overflow tests when optimising code.\n";
     }
 };
 /// @}

@@ -394,7 +394,7 @@ namespace {
             }
         }
 
-        typedef std::map<nonneg int, ExprEngine::ValuePtr> Memory;
+        using Memory = std::map<nonneg int, ExprEngine::ValuePtr>;
         Memory memory;
         int * const symbolValueIndex;
         ErrorLogger *errorLogger;
@@ -1108,8 +1108,8 @@ std::string ExprEngine::IntegerTruncation::getSymbolicExpression() const
 
 class ExprData {
 public:
-    typedef std::map<std::string, z3::expr> ValueExpr;
-    typedef std::vector<z3::expr> AssertionList;
+    using ValueExpr = std::map<std::string, z3::expr>;
+    using AssertionList = std::vector<z3::expr>;
 
     class BailoutValueException: public ExprEngineException {
     public:
@@ -2388,13 +2388,13 @@ static ExprEngine::ValuePtr executeNumber(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr executeStringLiteral(const Token *tok, Data &data)
 {
-    std::string s = tok->str();
+    const std::string& s = tok->str();
     return std::make_shared<ExprEngine::StringLiteralValue>(data.getNewSymbolName(), s.substr(1, s.size()-2));
 }
 
 static ExprEngine::ValuePtr executeExpression1(const Token *tok, Data &data)
 {
-    if (data.settings->terminated())
+    if (Settings::terminated())
         throw TerminateExpression();
 
     if (tok->str() == "return")
@@ -2668,10 +2668,12 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                 auto loopValues = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), initValue, lastValue);
                 data.assignValue(tok, varid, loopValues);
                 tok = tok->linkAt(1);
-                loopValues->loopScope = tok->next()->scope();
-                // Check whether the condition expression is always false
-                if (tok->next() && (initValue > lastValue)) {
-                    tok = tok->next()->link();
+                if (tok->next()) {
+                    loopValues->loopScope = tok->next()->scope();
+                    // Check whether the condition expression is always false
+                    if (initValue > lastValue) {
+                        tok = tok->next()->link();
+                    }
                 }
                 continue;
             }

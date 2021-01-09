@@ -1069,17 +1069,8 @@ void Tokenizer::simplifyTypedef()
                     }
 
                     // check for member functions
-                    else if (isCPP() && Token::Match(tok2, ")|] const| {")) {
-                        const Token *temp = tok2;
-                        while (temp && temp->str() == "]" && temp->link() && temp->link()->previous())
-                            temp = temp->link()->previous();
-                        if (!temp || !temp->link() || !temp->link()->previous())
-                            continue;
-                        const Token *func = temp->link()->previous();
-                        if (temp->str() != ")")
-                            continue;
-                        if (!func->previous()) // Ticket #4239
-                            continue;
+                    else if (isCPP() && tok2->str() == "(" && isFunctionHead(tok2, "{")) {
+                        const Token *func = tok2->previous();
 
                         /** @todo add support for multi-token operators */
                         if (func->previous()->str() == "operator")
@@ -1089,10 +1080,13 @@ void Tokenizer::simplifyTypedef()
                             syntaxError(func);
 
                         // check for qualifier
-                        if (func->previous()->str() == "::") {
+                        if (Token::Match(func->tokAt(-2), "%name% ::")) {
+                            int offset = -2;
+                            while (Token::Match(func->tokAt(offset - 2), "%name% ::"))
+                                offset -= 2;
                             // check for available and matching class name
                             if (!spaceInfo.empty() && classLevel < spaceInfo.size() &&
-                                func->strAt(-2) == spaceInfo[classLevel].className) {
+                                func->strAt(offset) == spaceInfo[classLevel].className) {
                                 memberScope = 0;
                                 inMemberFunc = true;
                             }
@@ -2243,10 +2237,10 @@ bool Tokenizer::simplifyUsing()
                                 std::string::size_type spaceIdx = 0;
                                 std::string::size_type startIdx = 0;
                                 while ((spaceIdx = removed1.find(" ", startIdx)) != std::string::npos) {
-                                    tok1->previous()->insertToken(removed1.substr(startIdx, spaceIdx - startIdx).c_str());
+                                    tok1->previous()->insertToken(removed1.substr(startIdx, spaceIdx - startIdx));
                                     startIdx = spaceIdx + 1;
                                 }
-                                tok1->previous()->insertToken(removed1.substr(startIdx).c_str());
+                                tok1->previous()->insertToken(removed1.substr(startIdx));
                                 tok1->previous()->insertToken("::");
                                 break;
                             }
@@ -4747,11 +4741,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         if (Settings::terminated())
             return false;
 
-        // sometimes the "simplifyTemplates" fail and then unsimplified
-        // function calls etc remain. These have the "wrong" syntax. So
-        // this function will just fix so that the syntax is corrected.
         validate(); // #6847 - invalid code
-        mTemplateSimplifier->cleanupAfterSimplify();
     }
 
     // Simplify pointer to standard types (C only)
@@ -5174,7 +5164,7 @@ void Tokenizer::simplifyHeadersAndUnusedTemplates()
         if (!tok->previous() || Token::Match(tok->previous(), "[;{}]")) {
             // Remove unused function declarations
             if (isIncluded && removeUnusedIncludedFunctions) {
-                while (1) {
+                while (true) {
                     Token *start = tok;
                     while (start && functionStart.find(start->str()) != functionStart.end())
                         start = start->next();
@@ -5259,7 +5249,7 @@ void Tokenizer::splitTemplateRightAngleBrackets(bool check)
             vars.insert(tok->strAt(2));
 
         // Ticket #6181: normalize C++11 template parameter list closing syntax
-        if (tok->previous() && tok->str() == "<" && mTemplateSimplifier->templateParameters(tok) && vars.find(tok->previous()->str()) == vars.end()) {
+        if (tok->previous() && tok->str() == "<" && TemplateSimplifier::templateParameters(tok) && vars.find(tok->previous()->str()) == vars.end()) {
             Token *endTok = tok->findClosingBracket();
             if (check) {
                 if (Token::Match(endTok, ">>|>>="))
@@ -9860,7 +9850,7 @@ void Tokenizer::findGarbageCode() const
                 syntaxError(tok);
         }
         if (Token::Match(tok, "%or%|%oror%|~|^|!|%comp%|+|-|/|%")) {
-            std::string code = "";
+            std::string code;
             if (Token::Match(tok->next(), ")|]|}"))
                 code = tok->str() + tok->next()->str();
             if (Token::simpleMatch(tok->next(), "( )"))
@@ -12029,12 +12019,14 @@ void Tokenizer::simplifyNamespaceAliases()
                         }
                     }
 
-                    tok2->str(tokNameStart->str());
-                    Token * tok3 = tokNameStart;
-                    while (tok3 != tokNameEnd) {
-                        tok2->insertToken(tok3->next()->str());
-                        tok2 = tok2->next();
-                        tok3 = tok3->next();
+                    if (tok2->strAt(1) == "::") {
+                        tok2->str(tokNameStart->str());
+                        Token * tok3 = tokNameStart;
+                        while (tok3 != tokNameEnd) {
+                            tok2->insertToken(tok3->next()->str());
+                            tok2 = tok2->next();
+                            tok3 = tok3->next();
+                        }
                     }
                 }
                 tok2 = tok2->next();

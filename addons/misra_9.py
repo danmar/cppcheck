@@ -430,7 +430,7 @@ def createArrayChildrenDefs(ed, token, rawTokens = None):
             if foundToken and foundToken.next and foundToken.next.str == ']':
                 ed.markAsFlexibleArray(token)
 
-        if token.astOperand2 is not None:
+        if (token.astOperand2 is not None) and (token.astOperand2.getKnownIntValue() is not None):
             for i in range(token.astOperand2.getKnownIntValue()):
                 createChild(ed, token, i)
         else:

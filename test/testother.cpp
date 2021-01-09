@@ -4953,13 +4953,13 @@ private:
               "    const int i = sizeof(int);\n"
               "    if ( i != sizeof (int)){}\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'i != sizeof(int)' is always false because 'i' and 'sizeof(int)' represent the same value.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'i != sizeof(int)' is always false because 'i' and 'sizeof(int)' represent the same value.\n", errout.str());
 
         check("void f() {\n"
               "    const int i = sizeof(int);\n"
               "    if ( sizeof (int) != i){}\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'sizeof(int) != i' is always false because 'sizeof(int)' and 'i' represent the same value.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'sizeof(int) != i' is always false because 'sizeof(int)' and 'i' represent the same value.\n", errout.str());
 
         check("void f(int a = 1) { if ( a != 1){}}\n");
         ASSERT_EQUALS("", errout.str());
@@ -5100,7 +5100,7 @@ private:
         check("struct A { int f() const; };\n"
               "A g();\n"
               "void foo() {\n"
-              "    for (const A x = A();;) {\n"
+              "    for (A x = A();;) {\n"
               "        const int a = x.f();\n"
               "        x = g();\n"
               "        if (x.f() == a) break;\n"
@@ -5506,6 +5506,30 @@ private:
               "  if (!b && g()) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool *a) {\n"
+              "    const bool b = a[42];\n"
+              "    if( b == !(a[42]) ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n", errout.str());
+
+        check("void f(bool *a) {\n"
+              "    const bool b = a[42];\n"
+              "    if( a[42] == !(b) ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n", errout.str());
+
+        check("void f(bool *a) {\n"
+              "    const bool b = *a;\n"
+              "    if( b == !(*a) ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n", errout.str());
+
+        check("void f(bool *a) {\n"
+              "    const bool b = *a;\n"
+              "    if( *a == !(b) ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n", errout.str());
     }
 
     void duplicateVarExpression() {

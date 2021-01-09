@@ -32,7 +32,7 @@
 */
 
 namespace {
-    typedef std::pair<std::string, struct TimerResultsData> dataElementType;
+    using dataElementType = std::pair<std::string, struct TimerResultsData>;
     bool more_second_sec(const dataElementType& lhs, const dataElementType& rhs)
     {
         return lhs.second.seconds() > rhs.second.seconds();

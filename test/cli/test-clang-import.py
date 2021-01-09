@@ -12,7 +12,6 @@ def get_debug_section(title, stdout):
     s = re.sub(r'nestedIn: Struct', 'nestedIn: Class', s)
     s = re.sub(r'classDef: struct', 'classDef: class', s)
     s = re.sub(r'isInline: [a-z]+', 'isInline: ---', s)
-    s = re.sub(r'definedType: .*', 'definedType: ---', s)
     s = re.sub(r'needInitialization: .*', 'needInitialization: ---', s)
     s = re.sub(r'functionOf: .*', 'functionOf: ---', s)
     s = re.sub(r'0x12345678 Struct', '0x12345678 Class', s)

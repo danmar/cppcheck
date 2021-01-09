@@ -444,6 +444,10 @@ void misra_9_struct_initializers() {
     dummy_struct dsd[]     = { [0] = 1 };                     // 9.5
 }
 
+void misra_9_broken_initializers() {
+    char a[UNKNOWN_MACRO] = { 19, 23, 0 };             // 18.8
+}
+
 void misra_9_2() {
     union misra_9_2_union {     // 19.2
         char c;
