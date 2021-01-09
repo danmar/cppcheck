@@ -390,7 +390,7 @@ std::string clangimport::AstNode::getSpelling() const
         while (typeIndex > 0 && std::isalpha(mExtTokens[typeIndex][0]))
             typeIndex--;
     }
-    const std::string &str = mExtTokens[typeIndex > 0 ? typeIndex - 1 : 0];
+    const std::string &str = mExtTokens[std::max(typeIndex - 1, 0)];
     if (str.compare(0,4,"col:") == 0)
         return "";
     if (str.compare(0,8,"<invalid") == 0)
