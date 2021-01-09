@@ -266,14 +266,6 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<int, Var
     }
 
     else if (tok->isComparisonOp()) {
-        if (tok->hasKnownIntValue()) {
-            if (tok->values().front().intvalue)
-                *alwaysTrue = true;
-            else
-                *alwaysFalse = true;
-            return;
-        }
-
         if (variableValue.empty()) {
             return;
         }
