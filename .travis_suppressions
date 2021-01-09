@@ -1,21 +1,12 @@
 unusedPrivateFunction:test/testbufferoverrun.cpp
 unusedPrivateFunction:test/testcmdlineparser.cpp
-redundantNextPrevious:test/testtoken.cpp
-simplePatternError:test/testtoken.cpp
 shadowFunction
 functionConst
 functionStatic
 bitwiseOnBoolean
 
 # temporary suppressions - fix the warnings!
-duplicateBranch:lib/checkunusedvar.cpp
-duplicateBranch:lib/tokenize.cpp
 missingOverride
-redundantAssignment:lib/tokenlist.cpp
-unreachableCode:lib/checkbufferoverrun.cpp
-# disabled because of #8388
-unreachableCode:lib/checkclass.cpp
-unreachableCode:test/testother.cpp
 unusedPrivateFunction:lib/checkbufferoverrun.h
 unusedPrivateFunction:test/test*.cpp
 useStlAlgorithm

@@ -12005,6 +12005,7 @@ void Tokenizer::simplifyNamespaceAliases()
                             continue;
                         } else {
                             // conflicting declaration (syntax error)
+                            // cppcheck-suppress duplicateBranch - remove when TODO below is addressed
                             if (endScope == scope) {
                                 // delete conflicting declaration
                                 tok2 = deleteAlias(tok2->previous());
