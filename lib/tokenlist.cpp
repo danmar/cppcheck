@@ -1465,7 +1465,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
                     compileExpression(tok2, state1);
                     if (Token::Match(tok2, ";|)"))
                         break;
-                    init1 = nullptr; // cppcheck-suppress redundantAssignment ; FALSE POSITIVE
+                    init1 = nullptr;
                 }
                 if (!tok2) // #7109 invalid code
                     return nullptr;
