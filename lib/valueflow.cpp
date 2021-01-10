@@ -227,26 +227,35 @@ static bool isSaturated(MathLib::bigint value)
     return value == std::numeric_limits<MathLib::bigint>::max() || value == std::numeric_limits<MathLib::bigint>::min();
 }
 
-const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value)
+const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value, const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate)
 {
     if (!tok->astOperand1() || !tok->astOperand2())
         return nullptr;
     if (tok->isComparisonOp()) {
-        if (tok->astOperand1()->hasKnownIntValue()) {
-            MathLib::bigint value = tok->astOperand1()->values().front().intvalue;
-            if (isSaturated(value))
+        std::vector<MathLib::bigint> value1 = evaluate(tok->astOperand1());
+        std::vector<MathLib::bigint> value2 = evaluate(tok->astOperand2());
+        if (!value1.empty()) {
+            if (isSaturated(value1.front()))
                 return nullptr;
-            setConditionalValues(tok, true, value, true_value, false_value);
+            setConditionalValues(tok, true, value1.front(), true_value, false_value);
             return tok->astOperand2();
-        } else if (tok->astOperand2()->hasKnownIntValue()) {
-            MathLib::bigint value = tok->astOperand2()->values().front().intvalue;
-            if (isSaturated(value))
+        } else if (!value2.empty()) {
+            if (isSaturated(value2.front()))
                 return nullptr;
-            setConditionalValues(tok, false, value, true_value, false_value);
+            setConditionalValues(tok, false, value2.front(), true_value, false_value);
             return tok->astOperand1();
         }
     }
     return nullptr;
+}
+
+const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value)
+{
+    return parseCompareInt(tok, true_value, false_value, [](const Token* t) -> std::vector<MathLib::bigint> {
+        if (t->hasKnownIntValue())
+            return {t->values().front().intvalue};
+        return {};
+    });
 }
 
 
@@ -5033,7 +5042,12 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
     }
 
     virtual void forkScope(const Token* endBlock) OVERRIDE {
-        ProgramMemory pm = pms.get(endBlock->link()->next(), getProgramState());
+        ProgramMemory pm = {getProgramState()};
+        const Scope* scope = endBlock->scope();
+        const Token* condTok = getCondTokFromEnd(endBlock);
+        if (scope && condTok)
+            programMemoryParseCondition(pm, condTok, nullptr, getSettings(), scope->type != Scope::eElse);
+        // ProgramMemory pm = pms.get(endBlock->link()->next(), getProgramState());
         for(const auto& p:pm.values) {
             int varid = p.first;
             ValueFlow::Value value = p.second;
