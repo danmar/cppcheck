@@ -142,7 +142,7 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
             execute(t, &pm, &result, &error);
             if (!error)
                 return {result};
-            return {};
+            return std::vector<MathLib::bigint>{};
         });
         if (!vartok)
             return;
