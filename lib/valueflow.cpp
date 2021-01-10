@@ -345,7 +345,12 @@ static bool isComputableValue(const Token* parent, const ValueFlow::Value& value
 
 template<class T>
 static bool isEqual(T x, T y) {
-    T diff = (x > y) ? x - y : y - x;
+    return x == y;
+}
+
+template<>
+bool isEqual<double>(double x, double y) {
+    const double diff = (x > y) ? x - y : y - x;
     return !((diff / 2) < diff);
 }
 
