@@ -1385,10 +1385,15 @@ void CheckCondition::alwaysTrueFalse()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (tok->link()) // don't write false positives when templates are used
+            if (Token::simpleMatch(tok, "<") && tok->link()) // don't write false positives when templates are used
                 continue;
             if (!tok->hasKnownIntValue())
                 continue;
+            if (Token::Match(tok->previous(), "%name% (") && tok->previous()->function()) {
+                const Function* f = tok->previous()->function();
+                if (f->functionScope && Token::Match(f->functionScope->bodyStart, "{ return true|false ;"))
+                    continue;
+            }
             {
                 // is this a condition..
                 const Token *parent = tok->astParent();

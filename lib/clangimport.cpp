@@ -389,6 +389,8 @@ std::string clangimport::AstNode::getSpelling() const
     if (nodeType == DeclRefExpr) {
         while (typeIndex > 0 && std::isalpha(mExtTokens[typeIndex][0]))
             typeIndex--;
+        if (typeIndex <= 0)
+            return "";
     }
     const std::string &str = mExtTokens[typeIndex - 1];
     if (str.compare(0,4,"col:") == 0)
