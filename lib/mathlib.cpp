@@ -346,7 +346,7 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
     return ret;
 }
 
-static unsigned int encodeMultiChar(const std::string& str)
+unsigned int MathLib::encodeMultiChar(const std::string& str)
 {
     unsigned int retval = 0;
     for (char it : str) {

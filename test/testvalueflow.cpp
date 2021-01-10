@@ -4775,6 +4775,53 @@ private:
                "}";
         ASSERT_EQUALS("",
                       isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 1));
+
+        code = "void f(std::string str) {\n"
+               "    if (str == \"123\")\n"
+               "        bool x = str.empty();\n"
+               "}\n";
+        ASSERT_EQUALS("",
+                      isKnownContainerSizeValue(tokenValues(code, "str . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 3));
+
+        code = "void f(std::string str) {\n"
+               "    if (str == \"123\") {\n"
+               "        bool x = (str == \"\");\n"
+               "        bool a = x;\n"
+               "     }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "void f(std::string str) {\n"
+               "    if (str == \"123\") {\n"
+               "        bool x = (str != \"\");\n"
+               "        bool a = x;\n"
+               "     }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
+
+        code = "void f(std::string str) {\n"
+               "    if (str == \"123\") {\n"
+               "        bool x = (str == \"321\");\n"
+               "        bool a = x;\n"
+               "     }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
+
+        code = "void f(std::string str) {\n"
+               "    if (str == \"123\") {\n"
+               "        bool x = (str != \"321\");\n"
+               "        bool a = x;\n"
+               "     }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 0));
+
+        code = "void f(std::string str) {\n"
+               "    if (str.size() == 1) {\n"
+               "        bool x = (str == \"123\");\n"
+               "        bool a = x;\n"
+               "     }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
     }
 
     void valueFlowDynamicBufferSize() {

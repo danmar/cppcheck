@@ -125,6 +125,8 @@ public:
      */
     static bool isOctalDigit(char c);
 
+    static unsigned int encodeMultiChar(const std::string& str);
+
     /**
      * \param[in] str character literal
      * @return Number of internal representation of the character literal

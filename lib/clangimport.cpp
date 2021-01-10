@@ -392,7 +392,7 @@ std::string clangimport::AstNode::getSpelling() const
         if (typeIndex <= 0)
             return "";
     }
-    const std::string &str = mExtTokens[typeIndex - 1];
+    const std::string &str = mExtTokens[std::max(typeIndex - 1, 0)];
     if (str.compare(0,4,"col:") == 0)
         return "";
     if (str.compare(0,8,"<invalid") == 0)
