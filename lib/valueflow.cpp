@@ -343,24 +343,19 @@ static bool isComputableValue(const Token* parent, const ValueFlow::Value& value
     return true;
 }
 
+template<class T>
+static bool isEqual(T x, T y) {
+    T diff = (x > y) ? x - y : y - x;
+    return !((diff / 2) < diff);
+}
+
+template<class T>
+static bool isZero(T x) {
+    return isEqual<T>(x, T(0));
+}
+
 template <class T>
-T asInt(T x)
-{
-    return x;
-}
-
-MathLib::bigint asInt(float x)
-{
-    return x;
-}
-
-MathLib::bigint asInt(double x)
-{
-    return x;
-}
-
-template <class T, class U>
-static T calculate(const std::string& s, T x, U y)
+static T calculate(const std::string& s, T x, T y)
 {
     switch (MathLib::encodeMultiChar(s)) {
     case '+':
@@ -372,29 +367,29 @@ static T calculate(const std::string& s, T x, U y)
     case '/':
         return x / y;
     case '%':
-        return asInt(x) % asInt(y);
+        return MathLib::bigint(x) % MathLib::bigint(y);
     case '&':
-        return asInt(x) & asInt(y);
+        return MathLib::bigint(x) & MathLib::bigint(y);
     case '|':
-        return asInt(x) | asInt(y);
+        return MathLib::bigint(x) | MathLib::bigint(y);
     case '^':
-        return asInt(x) ^ asInt(y);
+        return MathLib::bigint(x) ^ MathLib::bigint(y);
     case '>':
         return x > y;
     case '<':
         return x < y;
     case '<<':
-        return asInt(x) << asInt(y);
+        return MathLib::bigint(x) << MathLib::bigint(y);
     case '>>':
-        return asInt(x) >> asInt(y);
+        return MathLib::bigint(x) >> MathLib::bigint(y);
     case '&&':
-        return x && y;
+        return !isZero(x) && !isZero(y);
     case '||':
-        return x || y;
+        return !isZero(x) || !isZero(y);
     case '==':
-        return x == y;
+        return isEqual(x, y);
     case '!=':
-        return x != y;
+        return !isEqual(x, y);
     case '>=':
         return x >= y;
     case '<=':
@@ -435,9 +430,9 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     if (value1.isContainerSizeValue() && value2.isContainerSizeValue())
                         result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
                     else if (value1.isContainerSizeValue() && value2.isTokValue() && value2.tokvalue->tokType() == Token::eString)
-                        result.intvalue = calculate(parent->str(), value1.intvalue, Token::getStrLength(value2.tokvalue));
+                        result.intvalue = calculate(parent->str(), value1.intvalue, MathLib::bigint(Token::getStrLength(value2.tokvalue)));
                     else if (value2.isContainerSizeValue() && value1.isTokValue() && value1.tokvalue->tokType() == Token::eString)
-                        result.intvalue = calculate(parent->str(), Token::getStrLength(value1.tokvalue), value2.intvalue);
+                        result.intvalue = calculate(parent->str(), MathLib::bigint(Token::getStrLength(value1.tokvalue)), value2.intvalue);
                     else
                         continue;
 
@@ -622,7 +617,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     if (Token::Match(parent, "<<|>>") &&
                         !(value1.intvalue >= 0 && value2.intvalue >= 0 && value2.intvalue < MathLib::bigint_bits))
                         continue;
-                    if (Token::Match(parent, "/|%") && floatValue2 == 0)
+                    if (Token::Match(parent, "/|%") && isZero<double>(floatValue2))
                         continue;
                     if (Token::Match(parent, "==|!=")) {
                         if ((value1.isIntValue() && value2.isTokValue()) || (value1.isTokValue() && value2.isIntValue())) {
@@ -5583,28 +5578,6 @@ static void valueFlowUninit(TokenList *tokenlist, SymbolDatabase * /*symbolDatab
                                  errorLogger,
                                  settings);
     }
-}
-
-static bool hasContainerSizeGuard(const Token *tok, nonneg int containerId)
-{
-    for (; tok && tok->astParent(); tok = tok->astParent()) {
-        const Token *parent = tok->astParent();
-        if (tok != parent->astOperand2())
-            continue;
-        if (!Token::Match(parent, "%oror%|&&|?"))
-            continue;
-        // is container found in lhs?
-        bool found = false;
-        visitAstNodes(parent->astOperand1(),
-        [&](const Token *t) {
-            if (t->varId() == containerId)
-                found = true;
-            return found ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
-        });
-        if (found)
-            return true;
-    }
-    return false;
 }
 
 static bool isContainerSize(const Token* tok)
