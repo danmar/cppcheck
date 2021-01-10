@@ -4896,11 +4896,12 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
 struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
     std::unordered_map<nonneg int, ValueFlow::Value> values;
     std::unordered_map<nonneg int, const Variable*> vars;
+    SymbolDatabase* symboldatabase;
 
     MultiValueFlowAnalyzer() : ValueFlowAnalyzer(), values(), vars() {}
 
-    MultiValueFlowAnalyzer(const std::unordered_map<const Variable*, ValueFlow::Value>& args, const TokenList* t)
-        : ValueFlowAnalyzer(t), values(), vars() {
+    MultiValueFlowAnalyzer(const std::unordered_map<const Variable*, ValueFlow::Value>& args, const TokenList* t, SymbolDatabase* s)
+        : ValueFlowAnalyzer(t), values(), vars(), symboldatabase(s) {
         for (const auto& p:args) {
             values[p.first->declarationId()] = p.second;
             vars[p.first->declarationId()] = p.first;
@@ -5030,9 +5031,25 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
             ps[p.first] = p.second;
         return ps;
     }
+
+    virtual void forkScope(const Token* endBlock) OVERRIDE {
+        ProgramMemory pm = pms.get(endBlock->link()->next(), getProgramState());
+        for(const auto& p:pm.values) {
+            int varid = p.first;
+            ValueFlow::Value value = p.second;
+            if (vars.count(varid) != 0)
+                continue;
+            if (value.isImpossible())
+                continue;
+            value.setPossible();
+            values[varid] = value;
+            if (symboldatabase)
+                vars[varid] = symboldatabase->getVariableFromVarId(varid);
+        }
+    }
 };
 
-static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, const Scope* functionScope, const std::unordered_map<const Variable*, std::list<ValueFlow::Value>>& vars)
+static void valueFlowInjectParameter(TokenList* tokenlist, SymbolDatabase* symboldatabase, ErrorLogger* errorLogger, const Settings* settings, const Scope* functionScope, const std::unordered_map<const Variable*, std::list<ValueFlow::Value>>& vars)
 {
     using Args = std::vector<std::unordered_map<const Variable*, ValueFlow::Value>>;
     Args args(1);
@@ -5084,7 +5101,7 @@ static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLog
         }
         if (skip)
             continue;
-        MultiValueFlowAnalyzer a(arg, tokenlist);
+        MultiValueFlowAnalyzer a(arg, tokenlist, symboldatabase);
         valueFlowGenericForward(const_cast<Token*>(functionScope->bodyStart), functionScope->bodyEnd, a, settings);
     }
 }
@@ -5458,7 +5475,7 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
 
                 argvars[argvar] = argvalues;
             }
-            valueFlowInjectParameter(tokenlist, errorLogger, settings, calledFunctionScope, argvars);
+            valueFlowInjectParameter(tokenlist, symboldatabase, errorLogger, settings, calledFunctionScope, argvars);
         }
     }
 }

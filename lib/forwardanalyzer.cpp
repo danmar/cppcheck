@@ -218,6 +218,7 @@ struct ForwardTraversal {
     void forkScope(Token* endBlock, bool isModified = false) {
         if (analyzer->updateScope(endBlock, isModified)) {
             ForwardTraversal ft = *this;
+            ft.analyzer->forkScope(endBlock);
             ft.updateRange(endBlock->link(), endBlock);
         }
     }

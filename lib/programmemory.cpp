@@ -170,22 +170,10 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Scope* scop
         return;
     assert(scope != scope->nestedIn);
     fillProgramMemoryFromConditions(pm, scope->nestedIn, endTok, settings);
-    if (scope->type == Scope::eIf || scope->type == Scope::eWhile || scope->type == Scope::eElse) {
-        const Token * bodyStart = scope->bodyStart;
-        if (scope->type == Scope::eElse) {
-            if (!Token::simpleMatch(bodyStart->tokAt(-2), "} else {"))
-                return;
-            bodyStart = bodyStart->linkAt(-2);
-        }
-        const Token * condEndTok = bodyStart->previous();
-        if (!Token::simpleMatch(condEndTok, ") {"))
+    if (scope->type == Scope::eIf || scope->type == Scope::eWhile || scope->type == Scope::eElse || scope->type == Scope::eFor) {
+        const Token* condTok = getCondTokFromEnd(scope->bodyEnd);
+        if (!condTok)
             return;
-        const Token * condStartTok = condEndTok->link();
-        if (!condStartTok)
-            return;
-        if (!Token::Match(condStartTok->previous(), "if|while ("))
-            return;
-        const Token * condTok = condStartTok->astOperand2();
         programMemoryParseCondition(pm, condTok, endTok, settings, scope->type != Scope::eElse);
     }
 }
