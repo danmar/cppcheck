@@ -704,11 +704,11 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
     const Token* startToken = nextAfterAstRightmostLeaf(varTok);
     if (!startToken)
         startToken = varTok;
-    if (!precedes(startToken, endToken))
-        return tok;
     if (varTok->exprId() == 0) {
         if (!varTok->isLiteral())
             return tok;
+    } else if (!precedes(startToken, endToken)) {
+        return tok;
     } else if (isExpressionChanged(varTok, startToken, endToken, nullptr, cpp)) {
         return tok;
     }
