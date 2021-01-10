@@ -5043,6 +5043,25 @@ private:
                "   if (i2) { }\n"
                "}\n";
         valueOfTok(code, "p");
+
+        code = "struct a;\n"
+               "namespace e {\n"
+               "struct f {\n"
+               "  struct g {\n"
+               "    enum {} h;\n"
+               "    int arg;\n"
+               "  };\n"
+               "  std::vector<g> i;\n"
+               "};\n"
+               "} // namespace e\n"
+               "void fn1() {\n"
+               "  std::vector<a *> arguments;\n"
+               "  e::f b;\n"
+               "  for (e::f::g c : b.i)\n"
+               "    if (c.h)\n"
+               "      a *const d = arguments[c.arg];\n"
+               "}\n";
+        valueOfTok(code, "c");
     }
 
     void valueFlowHang() {
