@@ -592,11 +592,11 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
 
                 const std::list<ErrorMessage::FileLocation> &locationList =
                     CTU::FileInfo::getErrorPath(CTU::FileInfo::InvalidValueType::null,
-                                      unsafeUsage,
-                                      callsMap,
-                                      "Dereferencing argument ARG that is null",
-                                      nullptr,
-                                      warning);
+                                                unsafeUsage,
+                                                callsMap,
+                                                "Dereferencing argument ARG that is null",
+                                                nullptr,
+                                                warning);
                 if (locationList.empty())
                     continue;
 

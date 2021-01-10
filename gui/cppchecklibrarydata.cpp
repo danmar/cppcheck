@@ -281,8 +281,7 @@ QString CppcheckLibraryData::open(QIODevice &file)
     }
     if (xmlReader.hasError()) {
         return xmlReader.errorString();
-    }
-    else {
+    } else {
         return QString();
     }
 }

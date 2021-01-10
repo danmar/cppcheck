@@ -2102,7 +2102,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
-    
+
     void nullpointer68() {
         check("struct A {\n"
               "    A* b;\n"

@@ -1439,11 +1439,11 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::li
 
             const std::list<ErrorMessage::FileLocation> &locationList =
                 CTU::FileInfo::getErrorPath(CTU::FileInfo::InvalidValueType::uninit,
-                                  unsafeUsage,
-                                  callsMap,
-                                  "Using argument ARG",
-                                  &functionCall,
-                                  false);
+                                            unsafeUsage,
+                                            callsMap,
+                                            "Using argument ARG",
+                                            &functionCall,
+                                            false);
             if (locationList.empty())
                 continue;
 

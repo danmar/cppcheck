@@ -839,11 +839,11 @@ bool CheckBufferOverrun::analyseWholeProgram1(const std::map<std::string, std::l
 
     const std::list<ErrorMessage::FileLocation> &locationList =
         CTU::FileInfo::getErrorPath(CTU::FileInfo::InvalidValueType::bufferOverflow,
-                          unsafeUsage,
-                          callsMap,
-                          "Using argument ARG",
-                          &functionCall,
-                          false);
+                                    unsafeUsage,
+                                    callsMap,
+                                    "Using argument ARG",
+                                    &functionCall,
+                                    false);
     if (locationList.empty())
         return false;
 
