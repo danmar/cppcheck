@@ -1306,93 +1306,6 @@ static void valueFlowSameExpressions(TokenList *tokenlist)
     }
 }
 
-static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
-{
-    const bool cpp = symboldatabase->isCPP();
-    using Condition = std::pair<const Token*, const Scope*>;
-    for (const Scope * scope : symboldatabase->functionScopes) {
-        bool skipFunction = false;
-        std::vector<Condition> conds;
-        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-            if (tok->isIncompleteVar()) {
-                if (settings->debugwarnings)
-                    bailoutIncompleteVar(tokenlist, errorLogger, tok, "Skipping function due to incomplete variable " + tok->str());
-                skipFunction = true;
-                break;
-            }
-            if (!Token::simpleMatch(tok, "if ("))
-                continue;
-            // Skip known values
-            if (tok->next()->hasKnownValue())
-                continue;
-            const Token * condTok = tok->next();
-            if (!Token::simpleMatch(condTok->link(), ") {"))
-                continue;
-            const Token * blockTok = condTok->link()->tokAt(1);
-            // Check if the block terminates early
-            if (!isEscapeScope(blockTok, tokenlist))
-                continue;
-            // Check if any variables are modified in scope
-            if (isExpressionChanged(condTok->astOperand2(), blockTok->link(), scope->bodyEnd, settings, cpp))
-                continue;
-            // TODO: Handle multiple conditions
-            if (Token::Match(condTok->astOperand2(), "%oror%|%or%|&|&&"))
-                continue;
-            const Scope * condScope = nullptr;
-            for (const Scope * parent = condTok->scope(); parent; parent = parent->nestedIn) {
-                if (parent->type == Scope::eIf ||
-                    parent->type == Scope::eWhile ||
-                    parent->type == Scope::eSwitch) {
-                    condScope = parent;
-                    break;
-                }
-            }
-            conds.emplace_back(condTok->astOperand2(), condScope);
-        }
-        if (skipFunction)
-            break;
-        for (Condition cond:conds) {
-            if (!cond.first)
-                continue;
-            Token *const startToken = cond.first->findExpressionStartEndTokens().second->next();
-            for (Token* tok = startToken; tok != scope->bodyEnd; tok = tok->next()) {
-                if (!Token::Match(tok, "%comp%"))
-                    continue;
-                // Skip known values
-                if (tok->hasKnownValue())
-                    continue;
-                if (cond.second) {
-                    bool bail = true;
-                    for (const Scope * parent = tok->scope()->nestedIn; parent; parent = parent->nestedIn) {
-                        if (parent == cond.second) {
-                            bail = false;
-                            break;
-                        }
-                    }
-                    if (bail)
-                        continue;
-                }
-                ErrorPath errorPath;
-                if (isOppositeCond(true, cpp, tok, cond.first, settings->library, true, true, &errorPath)) {
-                    ValueFlow::Value val(1);
-                    val.setKnown();
-                    val.condition = cond.first;
-                    val.errorPath = errorPath;
-                    val.errorPath.emplace_back(cond.first, "Assuming condition '" + cond.first->expressionString() + "' is false");
-                    setTokenValue(tok, val, tokenlist->getSettings());
-                } else if (isSameExpression(cpp, true, tok, cond.first, settings->library, true, true, &errorPath)) {
-                    ValueFlow::Value val(0);
-                    val.setKnown();
-                    val.condition = cond.first;
-                    val.errorPath = errorPath;
-                    val.errorPath.emplace_back(cond.first, "Assuming condition '" + cond.first->expressionString() + "' is false");
-                    setTokenValue(tok, val, tokenlist->getSettings());
-                }
-            }
-        }
-    }
-}
-
 static bool getExpressionRange(const Token *expr, MathLib::bigint *minvalue, MathLib::bigint *maxvalue)
 {
     if (expr->hasKnownIntValue()) {
@@ -2389,6 +2302,20 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
 
     virtual bool isGlobal() const OVERRIDE {
         return !local;
+    }
+};
+
+struct OppositeExpressionAnalyzer : ExpressionAnalyzer {
+    bool isNot;
+
+    OppositeExpressionAnalyzer() : ExpressionAnalyzer(), isNot(false) {}
+
+    OppositeExpressionAnalyzer(bool pIsNot, const Token* e, const ValueFlow::Value& val, const TokenList* t)
+        : ExpressionAnalyzer(e, val, t), isNot(pIsNot) 
+        {}
+
+    virtual bool match(const Token* tok) const OVERRIDE {
+        return isOppositeCond(isNot, isCPP(), expr, tok, getSettings()->library, true, true);
     }
 };
 
@@ -3803,6 +3730,58 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
                                          tokenlist,
                                          errorLogger,
                                          settings);
+        }
+    }
+}
+
+static const Token* findIncompleteVar(const Token* start, const Token* end)
+{
+    for (const Token* tok = start; tok != end; tok = tok->next()) {
+        if (tok->isIncompleteVar())
+            return tok;
+    }
+    return nullptr;
+}
+
+static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+{
+    for (const Scope * scope : symboldatabase->functionScopes) {
+        if (const Token* incompleteTok = findIncompleteVar(scope->bodyStart, scope->bodyEnd)) {
+            if (incompleteTok->isIncompleteVar()) {
+                if (settings->debugwarnings)
+                    bailoutIncompleteVar(tokenlist, errorLogger, incompleteTok, "Skipping function due to incomplete variable " + incompleteTok->str());
+                break;
+            }
+        }
+
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (!Token::simpleMatch(tok, "if ("))
+                continue;
+            // Skip known values
+            if (tok->next()->hasKnownValue())
+                continue;
+            const Token * parenTok = tok->next();
+            if (!Token::simpleMatch(parenTok->link(), ") {"))
+                continue;
+            const Token * blockTok = parenTok->link()->tokAt(1);
+            // Check if the block terminates early
+            if (!isEscapeScope(blockTok, tokenlist))
+                continue;
+
+            const Token* condTok = parenTok->astOperand2();
+            ValueFlow::Value v1(0);
+            v1.setKnown();
+            v1.condition = condTok;
+            v1.errorPath.emplace_back(condTok, "Assuming condition '" + condTok->expressionString() + "' is true");
+            ExpressionAnalyzer a1(condTok, v1, tokenlist);
+            valueFlowGenericForward(blockTok->link()->next(), scope->bodyEnd, a1, settings);
+
+            ValueFlow::Value v2(1);
+            v2.setKnown();
+            v2.condition = condTok;
+            v2.errorPath.emplace_back(condTok, "Assuming condition '" + condTok->expressionString() + "' is false");
+            OppositeExpressionAnalyzer a2(true, condTok, v2, tokenlist);
+            valueFlowGenericForward(blockTok->link()->next(), scope->bodyEnd, a2, settings);
         }
     }
 }
