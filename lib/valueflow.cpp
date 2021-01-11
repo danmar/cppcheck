@@ -256,7 +256,7 @@ const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, Val
     return parseCompareInt(tok, true_value, false_value, [](const Token* t) -> std::vector<MathLib::bigint> {
         if (t->hasKnownIntValue())
             return {t->values().front().intvalue};
-        return {};
+        return std::vector<MathLib::bigint>{};
     });
 }
 
