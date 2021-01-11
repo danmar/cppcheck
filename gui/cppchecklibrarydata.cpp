@@ -35,6 +35,14 @@ static std::string unhandledElement(const QXmlStreamReader &xmlReader)
     throw std::runtime_error(QObject::tr("line %1: Unhandled element %2").arg(xmlReader.lineNumber()).arg(xmlReader.name().toString()).toStdString());
 }
 
+static std::string mandatoryAttibuteMissing(const QXmlStreamReader &xmlReader, QString attributeName)
+{
+    throw std::runtime_error(QObject::tr("line %1: Mandatory attribute '%2' missing in '%3'")
+                             .arg(xmlReader.lineNumber())
+                             .arg(attributeName)
+                             .arg(xmlReader.name().toString()).toStdString());
+}
+
 static CppcheckLibraryData::Container loadContainer(QXmlStreamReader &xmlReader)
 {
     CppcheckLibraryData::Container container;
@@ -232,6 +240,9 @@ static CppcheckLibraryData::PodType loadPodType(const QXmlStreamReader &xmlReade
 {
     CppcheckLibraryData::PodType podtype;
     podtype.name = xmlReader.attributes().value("name").toString();
+    if (podtype.name.isEmpty()) {
+        mandatoryAttibuteMissing(xmlReader, "name");
+    }
     podtype.stdtype = xmlReader.attributes().value("stdtype").toString();
     podtype.size = xmlReader.attributes().value("size").toString();
     podtype.sign = xmlReader.attributes().value("sign").toString();
