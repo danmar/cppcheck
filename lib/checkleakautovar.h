@@ -39,7 +39,7 @@ class Tokenizer;
 
 class CPPCHECKLIB VarInfo {
 public:
-    enum AllocStatus { OWNED = -2, DEALLOC = -1, NOALLOC = 0, ALLOC = 1 };
+    enum AllocStatus { REALLOC = -3, OWNED = -2, DEALLOC = -1, NOALLOC = 0, ALLOC = 1 };
     struct AllocInfo {
         AllocStatus status;
         /** Allocation type. If it is a positive value then it corresponds to
@@ -47,6 +47,7 @@ public:
          * checkleakautovar allocation type.
          */
         int type;
+        int reallocedFromType = -1;
         const Token * allocTok;
         AllocInfo(int type_ = 0, AllocStatus status_ = NOALLOC, const Token* allocTok_ = nullptr) : status(status_), type(type_), allocTok(allocTok_) {}
 
@@ -78,6 +79,16 @@ public:
         possibleUsage.swap(other.possibleUsage);
         conditionalAlloc.swap(other.conditionalAlloc);
         referenced.swap(other.referenced);
+    }
+
+    void reallocToAlloc(nonneg int varid) {
+        const AllocInfo& alloc = alloctype[varid];
+        if (alloc.reallocedFromType >= 0) {
+            const std::map<int, VarInfo::AllocInfo>::iterator it = alloctype.find(alloc.reallocedFromType);
+            if (it != alloctype.end() && it->second.status == REALLOC) {
+                it->second.status = ALLOC;
+            }
+        }
     }
 
     /** set possible usage for all variables */
