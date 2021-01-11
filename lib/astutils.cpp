@@ -707,6 +707,8 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
     if (varTok->exprId() == 0) {
         if (!varTok->isLiteral())
             return tok;
+    } else if (!precedes(startToken, endToken)) {
+        return tok;
     } else if (isExpressionChanged(varTok, startToken, endToken, nullptr, cpp)) {
         return tok;
     }
@@ -1804,6 +1806,8 @@ bool isVariablesChanged(const Token* start,
 
 bool isThisChanged(const Token* start, const Token* end, int indirect, const Settings* settings, bool cpp)
 {
+    if (!precedes(start, end))
+        return false;
     for (const Token* tok = start; tok != end; tok = tok->next()) {
         if (!exprDependsOnThis(tok))
             continue;
@@ -1825,6 +1829,8 @@ bool isThisChanged(const Token* start, const Token* end, int indirect, const Set
 
 bool isExpressionChanged(const Token* expr, const Token* start, const Token* end, const Settings* settings, bool cpp, int depth)
 {
+    if (!precedes(start, end))
+        return false;
     const Token* result = findAstNode(expr, [&](const Token* tok) {
         if (exprDependsOnThis(tok) && isThisChanged(start, end, false, settings, cpp)) {
             return true;

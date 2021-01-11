@@ -3476,6 +3476,18 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 7));
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 8));
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 9));
+
+        code = "int f(int i, int j) {\n"
+               "    if (i == j) {\n"
+               "        int x = i;\n"
+               "        return x;\n"
+               "    }\n"
+               "    return 0;\n"
+               "}\n"
+               "int g(int x) {\n"
+               "    f(x, -1);\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, -1));
     }
     void valueFlowFunctionReturn() {
         const char *code;
@@ -5058,6 +5070,25 @@ private:
                "   if (i2) { }\n"
                "}\n";
         valueOfTok(code, "p");
+
+        code = "struct a;\n"
+               "namespace e {\n"
+               "struct f {\n"
+               "  struct g {\n"
+               "    enum {} h;\n"
+               "    int arg;\n"
+               "  };\n"
+               "  std::vector<g> i;\n"
+               "};\n"
+               "} // namespace e\n"
+               "void fn1() {\n"
+               "  std::vector<a *> arguments;\n"
+               "  e::f b;\n"
+               "  for (e::f::g c : b.i)\n"
+               "    if (c.h)\n"
+               "      a *const d = arguments[c.arg];\n"
+               "}\n";
+        valueOfTok(code, "c");
     }
 
     void valueFlowHang() {

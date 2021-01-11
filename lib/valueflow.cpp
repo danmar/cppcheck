@@ -229,26 +229,35 @@ static bool isSaturated(MathLib::bigint value)
     return value == std::numeric_limits<MathLib::bigint>::max() || value == std::numeric_limits<MathLib::bigint>::min();
 }
 
-const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value)
+const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value, const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate)
 {
     if (!tok->astOperand1() || !tok->astOperand2())
         return nullptr;
     if (tok->isComparisonOp()) {
-        if (tok->astOperand1()->hasKnownIntValue()) {
-            MathLib::bigint value = tok->astOperand1()->values().front().intvalue;
-            if (isSaturated(value))
+        std::vector<MathLib::bigint> value1 = evaluate(tok->astOperand1());
+        std::vector<MathLib::bigint> value2 = evaluate(tok->astOperand2());
+        if (!value1.empty()) {
+            if (isSaturated(value1.front()))
                 return nullptr;
-            setConditionalValues(tok, true, value, true_value, false_value);
+            setConditionalValues(tok, true, value1.front(), true_value, false_value);
             return tok->astOperand2();
-        } else if (tok->astOperand2()->hasKnownIntValue()) {
-            MathLib::bigint value = tok->astOperand2()->values().front().intvalue;
-            if (isSaturated(value))
+        } else if (!value2.empty()) {
+            if (isSaturated(value2.front()))
                 return nullptr;
-            setConditionalValues(tok, false, value, true_value, false_value);
+            setConditionalValues(tok, false, value2.front(), true_value, false_value);
             return tok->astOperand1();
         }
     }
     return nullptr;
+}
+
+const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value)
+{
+    return parseCompareInt(tok, true_value, false_value, [](const Token* t) -> std::vector<MathLib::bigint> {
+        if (t->hasKnownIntValue())
+            return {t->values().front().intvalue};
+        return std::vector<MathLib::bigint>{};
+    });
 }
 
 
@@ -4845,11 +4854,12 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
 struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
     std::unordered_map<nonneg int, ValueFlow::Value> values;
     std::unordered_map<nonneg int, const Variable*> vars;
+    SymbolDatabase* symboldatabase;
 
-    MultiValueFlowAnalyzer() : ValueFlowAnalyzer(), values(), vars() {}
+    MultiValueFlowAnalyzer() : ValueFlowAnalyzer(), values(), vars(), symboldatabase(nullptr) {}
 
-    MultiValueFlowAnalyzer(const std::unordered_map<const Variable*, ValueFlow::Value>& args, const TokenList* t)
-        : ValueFlowAnalyzer(t), values(), vars() {
+    MultiValueFlowAnalyzer(const std::unordered_map<const Variable*, ValueFlow::Value>& args, const TokenList* t, SymbolDatabase* s)
+        : ValueFlowAnalyzer(t), values(), vars(), symboldatabase(s) {
         for (const auto& p:args) {
             values[p.first->declarationId()] = p.second;
             vars[p.first->declarationId()] = p.first;
@@ -4979,9 +4989,30 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
             ps[p.first] = p.second;
         return ps;
     }
+
+    virtual void forkScope(const Token* endBlock) OVERRIDE {
+        ProgramMemory pm = {getProgramState()};
+        const Scope* scope = endBlock->scope();
+        const Token* condTok = getCondTokFromEnd(endBlock);
+        if (scope && condTok)
+            programMemoryParseCondition(pm, condTok, nullptr, getSettings(), scope->type != Scope::eElse);
+        // ProgramMemory pm = pms.get(endBlock->link()->next(), getProgramState());
+        for(const auto& p:pm.values) {
+            int varid = p.first;
+            ValueFlow::Value value = p.second;
+            if (vars.count(varid) != 0)
+                continue;
+            if (value.isImpossible())
+                continue;
+            value.setPossible();
+            values[varid] = value;
+            if (symboldatabase)
+                vars[varid] = symboldatabase->getVariableFromVarId(varid);
+        }
+    }
 };
 
-static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, const Scope* functionScope, const std::unordered_map<const Variable*, std::list<ValueFlow::Value>>& vars)
+static void valueFlowInjectParameter(TokenList* tokenlist, SymbolDatabase* symboldatabase, ErrorLogger* errorLogger, const Settings* settings, const Scope* functionScope, const std::unordered_map<const Variable*, std::list<ValueFlow::Value>>& vars)
 {
     using Args = std::vector<std::unordered_map<const Variable*, ValueFlow::Value>>;
     Args args(1);
@@ -5033,7 +5064,7 @@ static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLog
         }
         if (skip)
             continue;
-        MultiValueFlowAnalyzer a(arg, tokenlist);
+        MultiValueFlowAnalyzer a(arg, tokenlist, symboldatabase);
         valueFlowGenericForward(const_cast<Token*>(functionScope->bodyStart), functionScope->bodyEnd, a, settings);
     }
 }
@@ -5407,7 +5438,7 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
 
                 argvars[argvar] = argvalues;
             }
-            valueFlowInjectParameter(tokenlist, errorLogger, settings, calledFunctionScope, argvars);
+            valueFlowInjectParameter(tokenlist, symboldatabase, errorLogger, settings, calledFunctionScope, argvars);
         }
     }
 }

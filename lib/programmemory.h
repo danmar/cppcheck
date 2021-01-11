@@ -38,6 +38,8 @@ struct ProgramMemory {
     void insert(const ProgramMemory &pm);
 };
 
+void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings, bool then);
+
 struct ProgramMemoryState {
     ProgramMemory state;
     std::map<nonneg int, const Token*> origins;
