@@ -116,12 +116,12 @@ namespace CTU {
         void loadFromXml(const tinyxml2::XMLElement *xmlElement);
         std::map<std::string, std::list<const CallBase *>> getCallsMap() const;
 
-        std::list<ErrorMessage::FileLocation> getErrorPath(InvalidValueType invalidValue,
+        static std::list<ErrorMessage::FileLocation> getErrorPath(InvalidValueType invalidValue,
                 const UnsafeUsage &unsafeUsage,
                 const std::map<std::string, std::list<const CallBase *>> &callsMap,
                 const char info[],
                 const FunctionCall * * const functionCallPtr,
-                bool warning) const;
+                bool warning);
     };
 
     extern int maxCtuDepth;

@@ -1518,16 +1518,20 @@ private:
                 "    a = x;\n"
                 "    M;\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
-                                          "[test.cpp:4]: (debug) valueflow.cpp:1260:valueFlowBeforeCondition bailout: variable x, condition is defined in macro\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
+            "[test.cpp:4]: (debug) valueflow.cpp:1260:(valueFlow) bailout: variable 'x', condition is defined in macro\n",
+            errout.str());
 
         bailout("#define FREE(obj) ((obj) ? (free((char *) (obj)), (obj) = 0) : 0)\n" // #8349
                 "void f(int *x) {\n"
                 "    a = x;\n"
                 "    FREE(x);\n"
                 "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
-                                          "[test.cpp:4]: (debug) valueflow.cpp:1260:valueFlowBeforeCondition bailout: variable x, condition is defined in macro\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
+            "[test.cpp:4]: (debug) valueflow.cpp:1260:(valueFlow) bailout: variable 'x', condition is defined in macro\n",
+            errout.str());
     }
 
     void valueFlowBeforeConditionGoto() {
@@ -3472,6 +3476,18 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 7));
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 8));
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 9));
+
+        code = "int f(int i, int j) {\n"
+               "    if (i == j) {\n"
+               "        int x = i;\n"
+               "        return x;\n"
+               "    }\n"
+               "    return 0;\n"
+               "}\n"
+               "int g(int x) {\n"
+               "    f(x, -1);\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, -1));
     }
     void valueFlowFunctionReturn() {
         const char *code;
@@ -4184,7 +4200,8 @@ private:
                "    }\n"
                "    if (i != j) {}\n"
                "}\n";
-        ASSERT_EQUALS(false, valueOfTok(code, "!=").intvalue == 1);
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 1);
+        ASSERT_EQUALS(false, valueOfTok(code, "!=").isKnown());
 
         code = "void f(int i, int j, bool a) {\n"
                "    if (i != j) {}\n"
@@ -4239,6 +4256,20 @@ private:
                "    if ( this->FileIndex < 0 ) {}\n"
                "}";
         ASSERT_EQUALS(false, valueOfTok(code, "<").intvalue == 1);
+
+        code = "int f(int p) {\n"
+               "    int v = 0;\n"
+               "    for (int i = 0; i < 1; ++i) {\n"
+               "        if (p == 0)\n"
+               "            v = 1;\n"
+               "        if (v == 1)\n"
+               "            break;\n"
+               "    }\n"
+               "    int x = v;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 10U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 10U, 1));
     }
 
     static std::string isPossibleContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {
@@ -4771,6 +4802,53 @@ private:
                "}";
         ASSERT_EQUALS("",
                       isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 1));
+
+        code = "void f(std::string str) {\n"
+               "    if (str == \"123\")\n"
+               "        bool x = str.empty();\n"
+               "}\n";
+        ASSERT_EQUALS("",
+                      isKnownContainerSizeValue(tokenValues(code, "str . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 3));
+
+        code = "void f(std::string str) {\n"
+               "    if (str == \"123\") {\n"
+               "        bool x = (str == \"\");\n"
+               "        bool a = x;\n"
+               "     }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "void f(std::string str) {\n"
+               "    if (str == \"123\") {\n"
+               "        bool x = (str != \"\");\n"
+               "        bool a = x;\n"
+               "     }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
+
+        code = "void f(std::string str) {\n"
+               "    if (str == \"123\") {\n"
+               "        bool x = (str == \"321\");\n"
+               "        bool a = x;\n"
+               "     }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
+
+        code = "void f(std::string str) {\n"
+               "    if (str == \"123\") {\n"
+               "        bool x = (str != \"321\");\n"
+               "        bool a = x;\n"
+               "     }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 0));
+
+        code = "void f(std::string str) {\n"
+               "    if (str.size() == 1) {\n"
+               "        bool x = (str == \"123\");\n"
+               "        bool a = x;\n"
+               "     }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
     }
 
     void valueFlowDynamicBufferSize() {
@@ -4992,6 +5070,25 @@ private:
                "   if (i2) { }\n"
                "}\n";
         valueOfTok(code, "p");
+
+        code = "struct a;\n"
+               "namespace e {\n"
+               "struct f {\n"
+               "  struct g {\n"
+               "    enum {} h;\n"
+               "    int arg;\n"
+               "  };\n"
+               "  std::vector<g> i;\n"
+               "};\n"
+               "} // namespace e\n"
+               "void fn1() {\n"
+               "  std::vector<a *> arguments;\n"
+               "  e::f b;\n"
+               "  for (e::f::g c : b.i)\n"
+               "    if (c.h)\n"
+               "      a *const d = arguments[c.arg];\n"
+               "}\n";
+        valueOfTok(code, "c");
     }
 
     void valueFlowHang() {

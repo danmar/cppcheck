@@ -750,7 +750,7 @@ namespace {
             std::vector<std::string> constraints;
         };
 
-        void parsestr(const std::string &s, std::vector<ImportData> *importData) const {
+        static void parsestr(const std::string &s, std::vector<ImportData> *importData) {
             std::string line;
             std::istringstream istr(s);
             while (std::getline(istr, line)) {
@@ -2668,10 +2668,12 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                 auto loopValues = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), initValue, lastValue);
                 data.assignValue(tok, varid, loopValues);
                 tok = tok->linkAt(1);
-                loopValues->loopScope = tok->next()->scope();
-                // Check whether the condition expression is always false
-                if (tok->next() && (initValue > lastValue)) {
-                    tok = tok->next()->link();
+                if (tok->next()) {
+                    loopValues->loopScope = tok->next()->scope();
+                    // Check whether the condition expression is always false
+                    if (initValue > lastValue) {
+                        tok = tok->next()->link();
+                    }
                 }
                 continue;
             }

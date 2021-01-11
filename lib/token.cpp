@@ -2150,7 +2150,7 @@ const ::Type *Token::typeOf(const Token *tok)
         if (!function)
             return nullptr;
         return function->retType;
-    } else if (Token::Match(tok->previous(), "%type% (|{")) {
+    } else if (Token::Match(tok->previous(), "%type%|= (|{")) {
         return typeOf(tok->previous());
     } else if (Token::simpleMatch(tok, "=")) {
         return Token::typeOf(tok->astOperand1());

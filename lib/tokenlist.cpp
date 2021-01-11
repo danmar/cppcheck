@@ -1465,7 +1465,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
                     compileExpression(tok2, state1);
                     if (Token::Match(tok2, ";|)"))
                         break;
-                    init1 = nullptr; // cppcheck-suppress redundantAssignment ; FALSE POSITIVE
+                    init1 = nullptr;
                 }
                 if (!tok2) // #7109 invalid code
                     return nullptr;
@@ -1614,7 +1614,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
     return tok;
 }
 
-void TokenList::createAst()
+void TokenList::createAst() const
 {
     for (Token *tok = mTokensFrontBack.front; tok; tok = tok ? tok->next() : nullptr) {
         tok = createAstAtToken(tok, isCPP());
