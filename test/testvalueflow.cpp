@@ -4188,7 +4188,8 @@ private:
                "    }\n"
                "    if (i != j) {}\n"
                "}\n";
-        ASSERT_EQUALS(false, valueOfTok(code, "!=").intvalue == 1);
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 1);
+        ASSERT_EQUALS(false, valueOfTok(code, "!=").isKnown());
 
         code = "void f(int i, int j, bool a) {\n"
                "    if (i != j) {}\n"
@@ -4243,6 +4244,20 @@ private:
                "    if ( this->FileIndex < 0 ) {}\n"
                "}";
         ASSERT_EQUALS(false, valueOfTok(code, "<").intvalue == 1);
+
+        code = "int f(int p) {\n"
+               "    int v = 0;\n"
+               "    for (int i = 0; i < 1; ++i) {\n"
+               "        if (p == 0)\n"
+               "            v = 1;\n"
+               "        if (v == 1)\n"
+               "            break;\n"
+               "    }\n"
+               "    int x = v;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 10U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 10U, 1));
     }
 
     static std::string isPossibleContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {
