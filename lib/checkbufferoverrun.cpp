@@ -920,18 +920,18 @@ void CheckBufferOverrun::objectIndex()
                     std::copy_if(idx->values().begin(),
                                  idx->values().end(),
                                  std::back_inserter(idxValues),
-                                 [&](const ValueFlow::Value& vidx) {
-                                     if (!vidx.isIntValue())
-                                         return false;
-                                     return vidx.path == v.path || vidx.path == 0;
-                                 });
+                    [&](const ValueFlow::Value& vidx) {
+                        if (!vidx.isIntValue())
+                            return false;
+                        return vidx.path == v.path || vidx.path == 0;
+                    });
                     if (idxValues.empty() ||
-                        std::any_of(idxValues.begin(), idxValues.end(), [&](const ValueFlow::Value& vidx) {
-                            if (vidx.isImpossible())
-                                return (vidx.intvalue == 0);
-                            else
-                                return (vidx.intvalue != 0);
-                        })) {
+                    std::any_of(idxValues.begin(), idxValues.end(), [&](const ValueFlow::Value& vidx) {
+                    if (vidx.isImpossible())
+                            return (vidx.intvalue == 0);
+                        else
+                            return (vidx.intvalue != 0);
+                    })) {
                         objectIndexError(tok, &v, idx->hasKnownIntValue());
                     }
                 } else {

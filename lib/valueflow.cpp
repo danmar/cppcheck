@@ -353,18 +353,21 @@ static bool isComputableValue(const Token* parent, const ValueFlow::Value& value
 }
 
 template<class T>
-static bool isEqual(T x, T y) {
+static bool isEqual(T x, T y)
+{
     return x == y;
 }
 
 template<>
-bool isEqual<double>(double x, double y) {
+bool isEqual<double>(double x, double y)
+{
     const double diff = (x > y) ? x - y : y - x;
     return !((diff / 2) < diff);
 }
 
 template<class T>
-static bool isZero(T x) {
+static bool isZero(T x)
+{
     return isEqual<T>(x, T(0));
 }
 
@@ -2306,8 +2309,8 @@ struct OppositeExpressionAnalyzer : ExpressionAnalyzer {
     OppositeExpressionAnalyzer() : ExpressionAnalyzer(), isNot(false) {}
 
     OppositeExpressionAnalyzer(bool pIsNot, const Token* e, const ValueFlow::Value& val, const TokenList* t)
-        : ExpressionAnalyzer(e, val, t), isNot(pIsNot) 
-        {}
+        : ExpressionAnalyzer(e, val, t), isNot(pIsNot)
+    {}
 
     virtual bool match(const Token* tok) const OVERRIDE {
         return isOppositeCond(isNot, isCPP(), expr, tok, getSettings()->library, true, true);
@@ -4973,7 +4976,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         if (scope && condTok)
             programMemoryParseCondition(pm, condTok, nullptr, getSettings(), scope->type != Scope::eElse);
         // ProgramMemory pm = pms.get(endBlock->link()->next(), getProgramState());
-        for(const auto& p:pm.values) {
+        for (const auto& p:pm.values) {
             int varid = p.first;
             ValueFlow::Value value = p.second;
             if (vars.count(varid) != 0)
