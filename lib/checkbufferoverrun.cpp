@@ -33,11 +33,12 @@
 #include "utils.h"
 #include "valueflow.h"
 
-#include <tinyxml2.h>
 #include <algorithm>
 #include <cstdlib>
+#include <iterator>
 #include <numeric> // std::accumulate
 #include <sstream>
+#include <tinyxml2.h>
 
 //---------------------------------------------------------------------------
 
@@ -886,6 +887,12 @@ void CheckBufferOverrun::objectIndex()
             const Token *idx = tok->astOperand2();
             if (!idx || !obj)
                 continue;
+            const ValueFlow::Value* vidx = nullptr;
+            if (idx->hasKnownIntValue()) {
+                if (idx->getKnownIntValue() == 0)
+                    continue;
+                vidx = &idx->values().front();
+            }
             if (idx->hasKnownIntValue() && idx->getKnownIntValue() == 0)
                 continue;
 
@@ -908,8 +915,28 @@ void CheckBufferOverrun::objectIndex()
                     if (var->valueType()->pointer > obj->valueType()->pointer)
                         continue;
                 }
-                objectIndexError(tok, &v, idx->hasKnownIntValue());
-                break;
+                if (v.path != 0) {
+                    std::vector<ValueFlow::Value> idxValues;
+                    std::copy_if(idx->values().begin(),
+                                 idx->values().end(),
+                                 std::back_inserter(idxValues),
+                                 [&](const ValueFlow::Value& vidx) {
+                                     if (!vidx.isIntValue())
+                                         return false;
+                                     return vidx.path == v.path || vidx.path == 0;
+                                 });
+                    if (idxValues.empty() ||
+                        std::any_of(idxValues.begin(), idxValues.end(), [&](const ValueFlow::Value& vidx) {
+                            if (vidx.isImpossible())
+                                return (vidx.intvalue == 0);
+                            else
+                                return (vidx.intvalue != 0);
+                        })) {
+                        objectIndexError(tok, &v, idx->hasKnownIntValue());
+                    }
+                } else {
+                    objectIndexError(tok, &v, idx->hasKnownIntValue());
+                }
             }
         }
     }
