@@ -386,8 +386,6 @@ struct ForwardTraversal {
                 Token* endBlock = endCond->next()->link();
                 Token* condTok = getCondTok(tok);
                 Token* initTok = getInitTok(tok);
-                if (!condTok)
-                    return Progress::Break;
                 if (initTok && updateRecursive(initTok) == Progress::Break)
                     return Progress::Break;
                 if (Token::Match(tok, "for|while (")) {
