@@ -228,8 +228,11 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->checkConfiguration = true;
 
             // Check library definitions
-            else if (std::strcmp(argv[i], "--check-library") == 0)
+            else if (std::strcmp(argv[i], "--check-library") == 0) {
                 mSettings->checkLibrary = true;
+                // need to add "information" or no messages will be shown at all
+                mSettings->addEnabled("information");
+            }
 
             else if (std::strncmp(argv[i], "--clang", 7) == 0) {
                 mSettings->clang = true;
