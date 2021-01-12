@@ -7338,6 +7338,11 @@ bool Tokenizer::simplifyCAlternativeTokens()
         const std::map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok->str());
         if (cOpIt != cAlternativeTokens.end()) {
             alt.push_back(tok);
+
+            // Is this a variable declaration..
+            if (isC() && Token::Match(tok->previous(), "%type%|* %name% [;,=]"))
+                return false;
+
             if (!Token::Match(tok->previous(), "%name%|%num%|%char%|)|]|> %name% %name%|%num%|%char%|%op%|("))
                 continue;
             if (Token::Match(tok->next(), "%assign%|%or%|%oror%|&&|*|/|%|^") && !Token::Match(tok->previous(), "%num%|%char%|) %name% *"))

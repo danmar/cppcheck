@@ -6307,6 +6307,17 @@ private:
                       tokenizeAndStringify("void f(const char *str) { while (*str=='!' or *str=='['){} }"));
         // #9920
         ASSERT_EQUALS("result = ch != s . end ( ) && * ch == ':' ;", tokenizeAndStringify("result = ch != s.end() and *ch == ':';", false, true, Settings::Native, "test.c"));
+
+        // #8975
+        ASSERT_EQUALS("void foo ( ) {\n"
+                      "char * or ;\n"
+                      "while ( ( * or != 0 ) && ( * or != '|' ) ) { or ++ ; }\n"
+                      "}",
+                      tokenizeAndStringify(
+                          "void foo() {\n"
+                          "  char *or;\n"
+                          "  while ((*or != 0) && (*or != '|')) or++;\n"
+                          "}", false, true, Settings::Native, "test.c"));
     }
 
     void simplifyCalculations() {
