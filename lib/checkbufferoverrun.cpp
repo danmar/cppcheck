@@ -33,6 +33,7 @@
 #include "utils.h"
 #include "valueflow.h"
 
+#include <iterator>
 #include <tinyxml2.h>
 #include <algorithm>
 #include <cstdlib>
@@ -915,22 +916,19 @@ void CheckBufferOverrun::objectIndex()
                         continue;
                 }
                 if (v.path != 0) {
-                    for(const ValueFlow::Value& vidx:idx->values()) {
+                    std::vector<ValueFlow::Value> idxValues;
+                    std::copy_if(idx->values().begin(), idx->values().end(), std::back_inserter(idxValues), [&](const ValueFlow::Value& vidx) {
                         if (!vidx.isIntValue())
-                            continue;
-                        if (vidx.isImpossible()) {
-                            if (vidx.intvalue != 0)
-                                continue;
-                        } else {
-                            if (vidx.intvalue == 0)
-                                continue;
-                        }
-                        if (vidx.path != v.path) {
-                            if (vidx.path != 0 && v.path != 0)
-                                continue;
-                        }
+                            return false;
+                        return vidx.path == v.path || vidx.path == 0;
+                    });
+                    if (idxValues.empty() || std::any_of(idxValues.begin(), idxValues.end(), [&](const ValueFlow::Value& vidx) {
+                        if (vidx.isImpossible())
+                            return (vidx.intvalue == 0);
+                        else
+                            return (vidx.intvalue != 0);
+                    })) {
                         objectIndexError(tok, &v, idx->hasKnownIntValue());
-                        break;
                     }
                 } else {
                     objectIndexError(tok, &v, idx->hasKnownIntValue());
