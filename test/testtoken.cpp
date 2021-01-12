@@ -120,13 +120,13 @@ private:
         Token *last = token->tokAt(2);
         ASSERT_EQUALS(token->str(), "1");
         ASSERT_EQUALS(token->next()->str(), "2");
-        // cppcheck-suppress redundantNextPrevious - this is itentional
+        // cppcheck-suppress redundantNextPrevious - this is intentional
         ASSERT_EQUALS(token->tokAt(2)->str(), "3");
         ASSERT_EQUALS_MSG(true, last->next() == nullptr, "Null was expected");
 
         ASSERT_EQUALS(last->str(), "3");
         ASSERT_EQUALS(last->previous()->str(), "2");
-        // cppcheck-suppress redundantNextPrevious - this is itentional
+        // cppcheck-suppress redundantNextPrevious - this is intentional
         ASSERT_EQUALS(last->tokAt(-2)->str(), "1");
         ASSERT_EQUALS_MSG(true, token->previous() == nullptr, "Null was expected");
 
@@ -721,24 +721,24 @@ private:
 
     void matchOr() const {
         givenACodeSampleToTokenize bitwiseOr(";|;", true);
-        // cppcheck-suppress simplePatternError - this is itentional
+        // cppcheck-suppress simplePatternError - this is intentional
         ASSERT_EQUALS(true,  Token::Match(bitwiseOr.tokens(), "; %or%"));
         ASSERT_EQUALS(true,  Token::Match(bitwiseOr.tokens(), "; %op%"));
-        // cppcheck-suppress simplePatternError - this is itentional
+        // cppcheck-suppress simplePatternError - this is intentional
         ASSERT_EQUALS(false, Token::Match(bitwiseOr.tokens(), "; %oror%"));
 
         givenACodeSampleToTokenize bitwiseOrAssignment(";|=;");
-        // cppcheck-suppress simplePatternError - this is itentional
+        // cppcheck-suppress simplePatternError - this is intentional
         ASSERT_EQUALS(false,  Token::Match(bitwiseOrAssignment.tokens(), "; %or%"));
         ASSERT_EQUALS(true,  Token::Match(bitwiseOrAssignment.tokens(), "; %op%"));
-        // cppcheck-suppress simplePatternError - this is itentional
+        // cppcheck-suppress simplePatternError - this is intentional
         ASSERT_EQUALS(false, Token::Match(bitwiseOrAssignment.tokens(), "; %oror%"));
 
         givenACodeSampleToTokenize logicalOr(";||;", true);
-        // cppcheck-suppress simplePatternError - this is itentional
+        // cppcheck-suppress simplePatternError - this is intentional
         ASSERT_EQUALS(false, Token::Match(logicalOr.tokens(), "; %or%"));
         ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "; %op%"));
-        // cppcheck-suppress simplePatternError - this is itentional
+        // cppcheck-suppress simplePatternError - this is intentional
         ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "; %oror%"));
         ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "; &&|%oror%"));
         ASSERT_EQUALS(true,  Token::Match(logicalOr.tokens(), "; %oror%|&&"));

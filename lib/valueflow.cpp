@@ -4091,7 +4091,7 @@ struct ConditionHandler {
             if (cond.vartok->exprId() == 0)
                 return;
 
-            // If condition is known then dont propogate value
+            // If condition is known then don't propagate value
             if (tok->hasKnownIntValue())
                 return;
 
