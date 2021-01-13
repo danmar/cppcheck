@@ -116,8 +116,8 @@ struct ReverseTraversal {
         return nullptr;
     }
 
-    void traverse(Token* start) {
-        for (Token* tok = start->previous(); tok; tok = tok->previous()) {
+    void traverse(Token* start, const Token* end=nullptr) {
+        for (Token* tok = start->previous(); tok != end; tok = tok->previous()) {
             if (tok == start || (tok->str() == "{" && (tok->scope()->type == Scope::ScopeType::eFunction ||
                                  tok->scope()->type == Scope::ScopeType::eLambda))) {
                 break;
@@ -283,4 +283,10 @@ void valueFlowGenericReverse(Token* start, const ValuePtr<Analyzer>& a, const Se
 {
     ReverseTraversal rt{a, settings};
     rt.traverse(start);
+}
+
+void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings* settings)
+{
+    ReverseTraversal rt{a, settings};
+    rt.traverse(start, end);
 }
