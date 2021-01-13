@@ -4051,7 +4051,7 @@ private:
                "  return((n=42) && *n == 'A');\n"
                "}";
         values = tokenValues(code, "n ==");
-        ASSERT_EQUALS(true, values.size() != 1U || !values.front().isUninitValue());
+        ASSERT_EQUALS(true, values.empty());
 
         // #8233
         code = "void foo() {\n"

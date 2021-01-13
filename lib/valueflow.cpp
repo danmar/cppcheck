@@ -431,6 +431,11 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     if (!parent)
         return;
 
+    if (Token::simpleMatch(parent, "=") && astIsRHS(tok) && !value.isLifetimeValue()) {
+        setTokenValue(parent, value, settings);
+        return;
+    }
+
     if (value.isContainerSizeValue()) {
         // .empty, .size, +"abc", +'a'
         if (Token::Match(parent, "+|==|!=") && parent->astOperand1() && parent->astOperand2()) {

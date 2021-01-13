@@ -377,7 +377,7 @@ void execute(const Token *expr,
     if (!expr)
         *error = true;
 
-    else if (expr->hasKnownIntValue()) {
+    else if (expr->hasKnownIntValue() && !expr->isAssignmentOp()) {
         *result = expr->values().front().intvalue;
     }
 
