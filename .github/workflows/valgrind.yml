@@ -39,7 +39,7 @@ jobs:
      
       - name: Run valgrind on cppcheck self-check
         run: |
-          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --gen-suppressions=all --log-fd=9 --error-exitcode=42 ./cppcheck --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings cli lib 9>memcheck_cppcheck.log
+          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --gen-suppressions=all --log-fd=9 --error-exitcode=42 ./cppcheck --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings cli lib -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli --inconclusive 9>memcheck_cppcheck.log
           cat memcheck_cppcheck.log
           
       - uses: actions/upload-artifact@v2
