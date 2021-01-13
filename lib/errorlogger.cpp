@@ -120,7 +120,7 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
 }
 
 
-ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, const CWE &cwe, bool inconclusive)
+ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, const CWE &cwe, bool inconclusive, bool bugHunting)
     : id(id), incomplete(false), severity(severity), cwe(cwe.id), inconclusive(inconclusive)
 {
     // Format callstack
@@ -142,10 +142,10 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
         hashWarning << std::hex << (tok ? tok->index() : 0) << " ";
     hashWarning << mShortMessage;
 
-    hash = calculateWarningHash(list, hashWarning.str());
+    hash = bugHunting ? calculateWarningHash(list, hashWarning.str()) : 0;
 }
 
-ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive)
+ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive, bool bugHunting)
     : id(id), incomplete(false), severity(severity), cwe(cwe.id), inconclusive(inconclusive)
 {
     // Format callstack
@@ -174,7 +174,7 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
         hashWarning << std::hex << (e.first ? e.first->index() : 0) << " ";
     hashWarning << mShortMessage;
 
-    hash = calculateWarningHash(tokenList, hashWarning.str());
+    hash = bugHunting ? calculateWarningHash(tokenList, hashWarning.str()) : 0;
 }
 
 ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)

@@ -147,14 +147,16 @@ public:
                  const std::string& id,
                  const std::string& msg,
                  const CWE &cwe,
-                 bool inconclusive);
+                 bool inconclusive,
+                 bool bugHunting);
     ErrorMessage(const ErrorPath &errorPath,
                  const TokenList *tokenList,
                  Severity::SeverityType severity,
                  const char id[],
                  const std::string &msg,
                  const CWE &cwe,
-                 bool inconclusive);
+                 bool inconclusive,
+                 bool bugHunting);
     ErrorMessage();
     explicit ErrorMessage(const tinyxml2::XMLElement * const errmsg);
 
