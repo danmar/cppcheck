@@ -51,7 +51,7 @@ ErrorItem::ErrorItem(const ErrorMessage &errmsg)
     , summary(QString::fromStdString(errmsg.shortMessage()))
     , message(QString::fromStdString(errmsg.verboseMessage()))
     , cwe(errmsg.cwe.id)
-    , hash(errmsg.hash)
+    , hash(errmsg.hash.getHash())
     , symbolNames(QString::fromStdString(errmsg.symbolNames()))
 {
     for (std::list<ErrorMessage::FileLocation>::const_iterator loc = errmsg.callStack.begin();
