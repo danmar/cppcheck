@@ -11384,6 +11384,11 @@ void Tokenizer::simplifyOperatorName()
                 }
                 op += ")";
                 par = par->next();
+                if (Token::simpleMatch(par, "...")) {
+                    op.clear();
+                    par = nullptr;
+                    break;
+                }
                 done = false;
             } else if (Token::Match(par, "\"\" %name% (|;|<")) {
                 op += "\"\"";
