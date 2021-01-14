@@ -1729,7 +1729,7 @@ void CheckStl::missingComparison()
             }
 
             const Token *incrementToken = nullptr;
-            bool bComparedInAdvance = false;
+            MathLib::bigint comparedInAdvance = 0;
 
             // Parse loop..
             for (const Token *tok3 = scope.bodyStart; tok3 != scope.bodyEnd; tok3 = tok3->next()) {
@@ -1740,15 +1740,19 @@ void CheckStl::missingComparison()
                         if (!tok3)
                             break;
                     } else if (Token::simpleMatch(tok3->astParent(), "++")) {
-                        if (!bComparedInAdvance)
+                        if (comparedInAdvance == 0)
                             incrementToken = tok3;
                         else
-                            bComparedInAdvance = false;
+                            comparedInAdvance -= 1;
                     } else if (Token::simpleMatch(tok3->astParent(), "+")) {
-                        if (Token::simpleMatch(tok3->astSibling(), "1")) {
+                        if (Token::Match(tok3->astSibling(), "%num%")) {
                             const Token* tokenGrandParent = tok3->astParent()->astParent();
                             if (Token::Match(tokenGrandParent, "==|!="))
-                                bComparedInAdvance = true;
+                            {
+                                auto incrNum = MathLib::toLongNumber(tok3->astSibling()->str());
+                                if (incrNum > comparedInAdvance)
+                                    comparedInAdvance = incrNum;
+                            }
                         }
                     } else if (Token::Match(tok3->astParent(), "==|!="))
                         incrementToken = nullptr;
