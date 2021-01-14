@@ -94,6 +94,7 @@ jobs:
           qmake
           make -j$(nproc)
           ./test-projectfile
+          popd
           pushd gui/test/cppchecklibrarydata
           qmake
           make -j$(nproc)
