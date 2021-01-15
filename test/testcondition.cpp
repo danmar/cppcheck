@@ -1921,6 +1921,19 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #9702
+        check("struct A {\n"
+              "    void DoTest() {\n"
+              "        if (!IsSet()) {\n"
+              "            m_value = true;\n"
+              "            if (IsSet());\n"
+              "        }\n"
+              "    }\n"
+              "    bool IsSet() const { return m_value; }\n"
+              "    bool m_value = false;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void oppositeInnerConditionPointers() {
