@@ -1559,7 +1559,7 @@ void CheckStl::checkFindInsert()
             if (!containerTok)
                 continue;
             // In < C++17 we only warn for small simple types
-            if (!(keyTok->valueType()->isIntegral() || keyTok->valueType()->pointer > 0) && mSettings->standards.cpp < Standards::CPP17)
+            if (mSettings->standards.cpp < Standards::CPP17 && !(keyTok && keyTok->valueType() && (keyTok->valueType()->isIntegral() || keyTok->valueType()->pointer > 0)))
                 continue;
 
             const Token *thenTok = tok->next()->link()->next();
