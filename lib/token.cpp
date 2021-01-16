@@ -53,7 +53,7 @@ Token::~Token()
     delete mImpl;
 }
 
-static const std::set<std::string> controlFlowKeywords = {
+static const std::unordered_set<std::string> controlFlowKeywords = {
     "goto",
     "do",
     "if",
@@ -127,7 +127,7 @@ void Token::update_property_info()
     update_property_isStandardType();
 }
 
-static const std::set<std::string> stdTypes = { "bool"
+static const std::unordered_set<std::string> stdTypes = { "bool"
                                                 , "_Bool"
                                                 , "char"
                                                 , "double"

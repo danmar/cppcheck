@@ -112,7 +112,7 @@ struct Filepointer {
 };
 
 namespace {
-    const std::set<std::string> whitelist = { "clearerr", "feof", "ferror", "fgetpos", "ftell", "setbuf", "setvbuf", "ungetc", "ungetwc" };
+    const std::unordered_set<std::string> whitelist = { "clearerr", "feof", "ferror", "fgetpos", "ftell", "setbuf", "setvbuf", "ungetc", "ungetwc" };
 }
 
 void CheckIO::checkFileUsage()

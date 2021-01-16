@@ -54,7 +54,7 @@ static const CWE CWE772(772U);  // Missing Release of Resource after Effective L
  * This list contains function names with const parameters e.g.: atof(const char *)
  * TODO: This list should be replaced by <leak-ignore/> in .cfg files.
  */
-static const std::set<std::string> call_func_white_list = {
+static const std::unordered_set<std::string> call_func_white_list = {
     "_open", "_wopen", "access", "adjtime", "asctime_r", "asprintf", "chdir", "chmod", "chown"
     , "creat", "ctime_r", "execl", "execle", "execlp", "execv", "execve", "fchmod", "fcntl"
     , "fdatasync", "fclose", "flock", "fmemopen", "fnmatch", "fopen", "fopencookie", "for", "free"

@@ -30,6 +30,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -422,7 +423,7 @@ public:
 
     std::vector<std::string> defines; // to provide some library defines
 
-    std::set<std::string> smartPointers;
+    std::unordered_set<std::string> smartPointers;
     bool isSmartPointer(const Token *tok) const;
 
     struct PodType {
