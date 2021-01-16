@@ -551,11 +551,14 @@ bool extractForLoopValues(const Token *forToken,
 
 static const Token * getVariableInitExpression(const Variable * var)
 {
-    if (!var || !var->declEndToken())
+    if (!var)
         return nullptr;
-    if (Token::Match(var->declEndToken(), "; %varid% =", var->declarationId()))
-        return var->declEndToken()->tokAt(2)->astOperand2();
-    return var->declEndToken()->astOperand2();
+    const Token *varDeclEndToken = var->declEndToken();
+    if (!varDeclEndToken)
+        return nullptr;
+    if (Token::Match(varDeclEndToken, "; %varid% =", var->declarationId()))
+        return varDeclEndToken->tokAt(2)->astOperand2();
+    return varDeclEndToken->astOperand2();
 }
 
 static bool isInLoopCondition(const Token * tok)
