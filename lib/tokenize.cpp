@@ -455,7 +455,7 @@ static Token *splitDefinitionFromTypedef(Token *tok, nonneg int *unnamedCount)
     tok1 = tok1->link();
 
     if (!hasName) { // unnamed
-        if (tok1 && tok1->next()) {
+        if (tok1->next()) {
             // use typedef name if available
             if (Token::Match(tok1->next(), "%type%"))
                 name = tok1->next()->str();
