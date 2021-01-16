@@ -2003,9 +2003,19 @@ bool Tokenizer::simplifyUsing()
         // Move struct defined in using out of using.
         // using T = struct t { }; => struct t { }; using T = struct t;
         // fixme: this doesn't handle attributes
-        if (Token::Match(start, "struct|union|enum %name%| {")) {
-            if (start->strAt(1) != "{") {
-                Token *structEnd = start->linkAt(2);
+        if (Token::Match(start, "class|struct|union|enum %name%| {|:")) {
+            if (Token::Match(start->next(), "%name%")) {
+                Token *structEnd;
+                if (start->strAt(2) == "{")
+                    structEnd = start->linkAt(2);
+                else {
+                    structEnd = start->tokAt(3);
+                    while (structEnd && structEnd->str() != "{")
+                        structEnd = structEnd->next();
+                    if (!structEnd)
+                        continue;
+                    structEnd = structEnd->link();
+                }
                 structEnd->insertToken(";", "");
                 TokenList::copyTokens(structEnd->next(), tok, start->next());
                 usingStart = structEnd->tokAt(2);
@@ -2131,7 +2141,7 @@ bool Tokenizer::simplifyUsing()
                 if (Token::Match(type, "%type%"))
                     type = type->next();
             } else if (Token::Match(type, "%type%")) {
-                while (Token::Match(type, "const|struct|union|enum %type%") ||
+                while (Token::Match(type, "const|class|struct|union|enum %type%") ||
                        (type->next() && type->next()->isStandardType()))
                     type = type->next();
 

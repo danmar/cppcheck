@@ -63,6 +63,7 @@ private:
         TEST_CASE(simplifyUsing14);
         TEST_CASE(simplifyUsing15);
         TEST_CASE(simplifyUsing16);
+        TEST_CASE(simplifyUsing17);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -426,6 +427,26 @@ private:
 
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyUsing17() {
+        const char code[] = "class C1 {};\n"
+                            "typedef class S1 {} S1;\n"
+                            "typedef class S2 : public C1 {} S2;\n"
+                            "typedef class {} S3;\n"
+                            "S1 s1;\n"
+                            "S2 s2;\n"
+                            "S3 s3;";
+
+        const char expected[] = "class C1 { } ; "
+                                "class S1 { } ; "
+                                "class S2 : public C1 { } ; "
+                                "class S3 { } ; "
+                                "class S1 s1 ; "
+                                "class S2 s2 ; "
+                                "class S3 s3 ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void simplifyUsing8970() {
