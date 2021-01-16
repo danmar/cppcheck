@@ -171,7 +171,7 @@ struct ReverseTraversal {
                                                     assignTok->astOperand2()->scope()->bodyEnd,
                                                     a,
                                                     settings);
-                            valueFlowGenericReverse(assignTok->astOperand1()->previous(), a, settings);
+                            valueFlowGenericReverse(assignTok->astOperand1()->previous(), end, a, settings);
                         }
                     }
                 }

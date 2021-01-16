@@ -4175,8 +4175,8 @@ struct ConditionHandler {
                 const Token* const end = block->link();
 
                 if (isExpressionChanged(cond.vartok, start, end, settings, tokenlist->isCPP())) {
-                    // Start at the end of the loop body
                     if (!Token::Match(tok, "%assign%|++|--")) {
+                        // Start at the end of the loop body
                         Token* bodyTok = top->link()->next();
                         reverse(bodyTok->link(), bodyTok, cond.vartok, values, tokenlist, settings);
                     }
