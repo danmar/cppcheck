@@ -1174,44 +1174,49 @@ void Token::printLines(int lines) const
     std::cout << stringifyList(stringifyOptions::forDebugExprId(), nullptr, end) << std::endl;
 }
 
-void Token::stringify(std::ostream& os, const stringifyOptions& options) const
+void Token::stringify(std::string& os, const stringifyOptions& options) const
 {
     if (options.attributes) {
         if (isUnsigned())
-            os << "unsigned ";
+            os += "unsigned ";
         else if (isSigned())
-            os << "signed ";
+            os += "signed ";
         if (isComplex())
-            os << "_Complex ";
+            os += "_Complex ";
         if (isLong()) {
             if (!(mTokType == eString || mTokType == eChar))
-                os << "long ";
+                os += "long ";
         }
     }
     if (options.macro && isExpandedMacro())
-        os << "$";
+        os += '$';
     if (isName() && mStr.find(' ') != std::string::npos) {
         for (char i : mStr) {
             if (i != ' ')
-                os << i;
+                os += i;
         }
     } else if (mStr[0] != '\"' || mStr.find('\0') == std::string::npos)
-        os << mStr;
+        os += mStr;
     else {
         for (char i : mStr) {
             if (i == '\0')
-                os << "\\0";
+                os += "\\0";
             else
-                os << i;
+                os += i;
         }
     }
-    if (options.varid && mImpl->mVarId != 0)
-        os << "@" << (options.idtype ? "var" : "") << mImpl->mVarId;
-    else if (options.exprid && mImpl->mExprId != 0)
-        os << "@" << (options.idtype ? "expr" : "") << mImpl->mExprId;
+    if (options.varid && mImpl->mVarId != 0) {
+        os += '@';
+        os += (options.idtype ? "var" : "");
+        os += std::to_string(mImpl->mVarId);
+    } else if (options.exprid && mImpl->mExprId != 0) {
+        os += '@';
+        os += (options.idtype ? "expr" : "");
+        os += std::to_string(mImpl->mExprId);
+    }
 }
 
-void Token::stringify(std::ostream& os, bool varid, bool attributes, bool macro) const
+void Token::stringify(std::string& os, bool varid, bool attributes, bool macro) const
 {
     stringifyOptions options;
     options.varid = varid;
@@ -1225,7 +1230,7 @@ std::string Token::stringifyList(const stringifyOptions& options, const std::vec
     if (this == end)
         return "";
 
-    std::ostringstream ret;
+    std::string ret;
 
     unsigned int lineNumber = mImpl->mLineNumber - (options.linenumbers ? 1U : 0U);
     unsigned int fileIndex = options.files ? ~0U : mImpl->mFileIndex;
@@ -1239,12 +1244,12 @@ std::string Token::stringifyList(const stringifyOptions& options, const std::vec
 
             fileIndex = tok->mImpl->mFileIndex;
             if (options.files) {
-                ret << "\n\n##file ";
+                ret += "\n\n##file ";
                 if (fileNames && fileNames->size() > tok->mImpl->mFileIndex)
-                    ret << fileNames->at(tok->mImpl->mFileIndex);
+                    ret += fileNames->at(tok->mImpl->mFileIndex);
                 else
-                    ret << fileIndex;
-                ret << '\n';
+                    ret += std::to_string(fileIndex);
+                ret += '\n';
             }
 
             lineNumber = lineNumbers[fileIndex];
@@ -1253,27 +1258,34 @@ std::string Token::stringifyList(const stringifyOptions& options, const std::vec
 
         if (options.linebreaks && (lineNumber != tok->linenr() || fileChange)) {
             if (lineNumber+4 < tok->linenr() && fileIndex == tok->mImpl->mFileIndex) {
-                ret << '\n' << lineNumber+1 << ":\n|\n";
-                ret << tok->linenr()-1 << ":\n";
-                ret << tok->linenr() << ": ";
+                ret += '\n';
+                ret += std::to_string(lineNumber+1);
+                ret += ":\n|\n";
+                ret += std::to_string(tok->linenr()-1);
+                ret += ":\n";
+                ret += std::to_string(tok->linenr());
+                ret += ": ";
             } else if (this == tok && options.linenumbers) {
-                ret << tok->linenr() << ": ";
+                ret += std::to_string(tok->linenr());
+                ret += ": ";
             } else if (lineNumber > tok->linenr()) {
                 lineNumber = tok->linenr();
-                ret << '\n';
+                ret += '\n';
                 if (options.linenumbers) {
-                    ret << lineNumber << ':';
+                    ret += std::to_string(lineNumber);
+                    ret += ':';
                     if (lineNumber == tok->linenr())
-                        ret << ' ';
+                        ret += ' ';
                 }
             } else {
                 while (lineNumber < tok->linenr()) {
                     ++lineNumber;
-                    ret << '\n';
+                    ret += '\n';
                     if (options.linenumbers) {
-                        ret << lineNumber << ':';
+                        ret += std::to_string(lineNumber);
+                        ret += ':';
                         if (lineNumber == tok->linenr())
-                            ret << ' ';
+                            ret += ' ';
                     }
                 }
             }
@@ -1282,11 +1294,11 @@ std::string Token::stringifyList(const stringifyOptions& options, const std::vec
 
         tok->stringify(ret, options); // print token
         if (tok->next() != end && (!options.linebreaks || (tok->next()->linenr() == tok->linenr() && tok->next()->fileIndex() == tok->fileIndex())))
-            ret << ' ';
+            ret += ' ';
     }
     if (options.linebreaks && (options.files || options.linenumbers))
-        ret << '\n';
-    return ret.str();
+        ret += '\n';
+    return ret;
 }
 std::string Token::stringifyList(bool varid, bool attributes, bool linenumbers, bool linebreaks, bool files, const std::vector<std::string>* fileNames, const Token* end) const
 {
@@ -1472,38 +1484,38 @@ bool Token::isUnaryPreOp() const
 
 static std::string stringFromTokenRange(const Token* start, const Token* end)
 {
-    std::ostringstream ret;
+    std::string ret;
     if (end)
         end = end->next();
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         if (tok->isUnsigned())
-            ret << "unsigned ";
+            ret += "unsigned ";
         if (tok->isLong() && !tok->isLiteral())
-            ret << "long ";
+            ret += "long ";
         if (tok->tokType() == Token::eString) {
             for (unsigned char c: tok->str()) {
                 if (c == '\n')
-                    ret << "\\n";
+                    ret += "\\n";
                 else if (c == '\r')
-                    ret << "\\r";
+                    ret += "\\r";
                 else if (c == '\t')
-                    ret << "\\t";
+                    ret += "\\t";
                 else if (c >= ' ' && c <= 126)
-                    ret << c;
+                    ret += c;
                 else {
                     char str[10];
                     sprintf(str, "\\x%02x", c);
-                    ret << str;
+                    ret += str;
                 }
             }
         } else if (tok->originalName().empty() || tok->isUnsigned() || tok->isLong()) {
-            ret << tok->str();
+            ret += tok->str();
         } else
-            ret << tok->originalName();
+            ret += tok->originalName();
         if (Token::Match(tok, "%name%|%num% %name%|%num%"))
-            ret << ' ';
+            ret += ' ';
     }
-    return ret.str();
+    return ret;
 }
 
 std::string Token::expressionString() const

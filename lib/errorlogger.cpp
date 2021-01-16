@@ -622,11 +622,12 @@ bool ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
 
 std::string ErrorLogger::callStackToString(const std::list<ErrorMessage::FileLocation> &callStack)
 {
-    std::ostringstream ostr;
+    std::string str;
     for (std::list<ErrorMessage::FileLocation>::const_iterator tok = callStack.begin(); tok != callStack.end(); ++tok) {
-        ostr << (tok == callStack.begin() ? "" : " -> ") << tok->stringify();
+        str += (tok == callStack.begin() ? "" : " -> ");
+        str += tok->stringify();
     }
-    return ostr.str();
+    return str;
 }
 
 
@@ -663,12 +664,15 @@ void ErrorMessage::FileLocation::setfile(const std::string &file)
 
 std::string ErrorMessage::FileLocation::stringify() const
 {
-    std::ostringstream oss;
-    oss << '[' << Path::toNativeSeparators(mFileName);
-    if (line != Suppressions::Suppression::NO_LINE)
-        oss << ':' << line;
-    oss << ']';
-    return oss.str();
+    std::string str;
+    str += '[';
+    str += Path::toNativeSeparators(mFileName);
+    if (line != Suppressions::Suppression::NO_LINE) {
+        str += ':';
+        str += std::to_string(line);
+    }
+    str += ']';
+    return str;
 }
 
 std::string ErrorLogger::toxml(const std::string &str)

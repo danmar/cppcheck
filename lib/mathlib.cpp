@@ -294,24 +294,13 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
 {
     // hexadecimal numbers:
     if (isIntHex(str)) {
-        if (str[0] == '-') {
-            biguint ret = 0;
-            std::istringstream istr(str);
-            istr >> std::hex >> ret;
-            return ret;
-        } else {
-            unsigned long long ret = 0;
-            std::istringstream istr(str);
-            istr >> std::hex >> ret;
-            return (biguint)ret;
-        }
+        const biguint ret = std::stoull(str, nullptr, 16);
+        return ret;
     }
 
     // octal numbers:
     if (isOct(str)) {
-        biguint ret = 0;
-        std::istringstream istr(str);
-        istr >> std::oct >> ret;
+        const biguint ret = std::stoull(str, nullptr, 8);
         return ret;
     }
 
@@ -340,9 +329,7 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
             return static_cast<biguint>(doubleval);
     }
 
-    biguint ret = 0;
-    std::istringstream istr(str);
-    istr >> ret;
+    const biguint ret = std::stoull(str, nullptr, 10);
     return ret;
 }
 
@@ -488,23 +475,17 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
     // hexadecimal numbers:
     if (isIntHex(str)) {
         if (str[0] == '-') {
-            bigint ret = 0;
-            std::istringstream istr(str);
-            istr >> std::hex >> ret;
+            const bigint ret = std::stoll(str, nullptr, 16);
             return ret;
         } else {
-            unsigned long long ret = 0;
-            std::istringstream istr(str);
-            istr >> std::hex >> ret;
+            const biguint ret = std::stoull(str, nullptr, 16);
             return (bigint)ret;
         }
     }
 
     // octal numbers:
     if (isOct(str)) {
-        bigint ret = 0;
-        std::istringstream istr(str);
-        istr >> std::oct >> ret;
+        const bigint ret = std::stoll(str, nullptr, 8);
         return ret;
     }
 
@@ -540,15 +521,11 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
     }
 
     if (str[0] == '-') {
-        bigint ret = 0;
-        std::istringstream istr(str);
-        istr >> ret;
+        const bigint ret = std::stoll(str, nullptr, 10);
         return ret;
     }
 
-    biguint ret = 0;
-    std::istringstream istr(str);
-    istr >> ret;
+    const biguint ret = std::stoull(str, nullptr, 10);
     return ret;
 }
 
