@@ -4305,6 +4305,73 @@ private:
                "}\n";
         ASSERT_EQUALS(true, valueOfTok(code, "> 0").isKnown());
         ASSERT_EQUALS(true, valueOfTok(code, "> 0").intvalue == 1);
+
+        //  FP #10110
+        code = "enum FENUMS { NONE = 0, CB = 8 };\n"
+               "bool calc(int x) {\n"
+               "    if (!x) {\n"
+               "        return false;\n"
+               "    }\n"
+               "\n"
+               "    if (x & CB) {\n"
+               "        return true;\n"
+               "    }\n"
+               "    return false;\n"
+               "}\n";
+        ASSERT_EQUALS(false, valueOfTok(code, "& CB").isKnown());
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 7U, 0));
+
+        code = "enum FENUMS { NONE = 0, CB = 8 };\n"
+               "bool calc(int x) {\n"
+               "    if (x) {\n"
+               "        return false;\n"
+               "    }\n"
+               "\n"
+               "    if ((!x) & CB) {\n"
+               "        return true;\n"
+               "    }\n"
+               "    return false;\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "& CB").isKnown());
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 7U, 0));
+
+        code = "enum FENUMS { NONE = 0, CB = 8 };\n"
+               "bool calc(int x) {\n"
+               "    if (!!x) {\n"
+               "        return false;\n"
+               "    }\n"
+               "\n"
+               "    if (x & CB) {\n"
+               "        return true;\n"
+               "    }\n"
+               "    return false;\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "& CB").isKnown());
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 7U, 0));
+
+        code = "bool calc(bool x) {\n"
+               "    if (!x) {\n"
+               "        return false;\n"
+               "    }\n"
+               "\n"
+               "    if (x) {\n"
+               "        return true;\n"
+               "    }\n"
+               "    return false;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 1));
+
+        code = "bool calc(bool x) {\n"
+               "    if (x) {\n"
+               "        return false;\n"
+               "    }\n"
+               "\n"
+               "    if (!x) {\n"
+               "        return true;\n"
+               "    }\n"
+               "    return false;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 0));
     }
 
     static std::string isPossibleContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {
