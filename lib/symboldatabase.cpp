@@ -4208,7 +4208,7 @@ const Token* skipTypeOrFunctionIdentifier(const Token* tok)
 {
     if (tok == nullptr)
         return nullptr;
-    while (tok->next() != nullptr && (tok->next()->str() == "::" || tok->next()->str() == "<"))
+    while (Token::Match(tok->next(), "::|<"))
     {
         if (tok->next()->str() == "::")
             tok = tok->tokAt(2);
