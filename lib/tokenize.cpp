@@ -9676,7 +9676,7 @@ void Tokenizer::findGarbageCode() const
 {
     const bool isCPP11 = isCPP() && mSettings->standards.cpp >= Standards::CPP11;
 
-    static const std::set<std::string> nonConsecutiveKeywords{ "break",
+    static const std::unordered_set<std::string> nonConsecutiveKeywords{ "break",
         "continue",
         "for",
         "goto",
@@ -9757,7 +9757,7 @@ void Tokenizer::findGarbageCode() const
     }
 
     // Keywords in global scope
-    static const std::set<std::string> nonGlobalKeywords{"break",
+    static const std::unordered_set<std::string> nonGlobalKeywords{"break",
                                             "continue",
                                             "for",
                                             "goto",
@@ -10528,7 +10528,7 @@ void Tokenizer::simplifyCPPAttribute()
     }
 }
 
-static const std::set<std::string> keywords = {
+static const std::unordered_set<std::string> keywords = {
     "inline"
     , "_inline"
     , "__inline"
