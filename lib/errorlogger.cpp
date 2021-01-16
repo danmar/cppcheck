@@ -622,11 +622,12 @@ bool ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
 
 std::string ErrorLogger::callStackToString(const std::list<ErrorMessage::FileLocation> &callStack)
 {
-    std::ostringstream ostr;
+    std::string str;
     for (std::list<ErrorMessage::FileLocation>::const_iterator tok = callStack.begin(); tok != callStack.end(); ++tok) {
-        ostr << (tok == callStack.begin() ? "" : " -> ") << tok->stringify();
+        str += (tok == callStack.begin() ? "" : " -> ");
+        str += tok->stringify();
     }
-    return ostr.str();
+    return str;
 }
 
 
