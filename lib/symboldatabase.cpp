@@ -1308,7 +1308,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
 
 void SymbolDatabase::createSymbolDatabaseIncompleteVars()
 {
-    const std::set<std::string> cpp20keywords = {
+    static const std::set<std::string> cpp20keywords = {
         "alignas",
         "alignof",
         "axiom",
@@ -1321,7 +1321,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         "reflexpr",
         "requires",
     };
-    const std::set<std::string> cppkeywords = {
+    static const std::set<std::string> cppkeywords = {
         "asm",
         "auto",
         "catch",
