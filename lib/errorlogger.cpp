@@ -663,12 +663,15 @@ void ErrorMessage::FileLocation::setfile(const std::string &file)
 
 std::string ErrorMessage::FileLocation::stringify() const
 {
-    std::ostringstream oss;
-    oss << '[' << Path::toNativeSeparators(mFileName);
-    if (line != Suppressions::Suppression::NO_LINE)
-        oss << ':' << line;
-    oss << ']';
-    return oss.str();
+    std::string str;
+    str += '[';
+    str += Path::toNativeSeparators(mFileName);
+    if (line != Suppressions::Suppression::NO_LINE) {
+        str += ':';
+        str += std::to_string(line);
+    }
+    str += ']';
+    return str;
 }
 
 std::string ErrorLogger::toxml(const std::string &str)
