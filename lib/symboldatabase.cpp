@@ -4204,7 +4204,7 @@ static const Token* skipPointersAndQualifiers(const Token* tok)
     return tok;
 }
 
-const Token* skipTypeOrFunctionIdentifier(const Token* tok)
+static const Token* skipTypeOrFunctionIdentifier(const Token* tok)
 {
     if (tok == nullptr)
         return nullptr;
