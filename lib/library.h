@@ -30,6 +30,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -317,7 +318,7 @@ public:
     };
 
     const Function *getFunction(const Token *ftok) const;
-    std::map<std::string, Function> functions;
+    std::unordered_map<std::string, Function> functions;
     bool isUse(const std::string& functionName) const;
     bool isLeakIgnore(const std::string& functionName) const;
     bool isFunctionConst(const std::string& functionName, bool pure) const;
