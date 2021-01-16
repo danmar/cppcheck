@@ -1484,38 +1484,38 @@ bool Token::isUnaryPreOp() const
 
 static std::string stringFromTokenRange(const Token* start, const Token* end)
 {
-    std::ostringstream ret;
+    std::string ret;
     if (end)
         end = end->next();
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         if (tok->isUnsigned())
-            ret << "unsigned ";
+            ret += "unsigned ";
         if (tok->isLong() && !tok->isLiteral())
-            ret << "long ";
+            ret += "long ";
         if (tok->tokType() == Token::eString) {
             for (unsigned char c: tok->str()) {
                 if (c == '\n')
-                    ret << "\\n";
+                    ret += "\\n";
                 else if (c == '\r')
-                    ret << "\\r";
+                    ret += "\\r";
                 else if (c == '\t')
-                    ret << "\\t";
+                    ret += "\\t";
                 else if (c >= ' ' && c <= 126)
-                    ret << c;
+                    ret += c;
                 else {
                     char str[10];
                     sprintf(str, "\\x%02x", c);
-                    ret << str;
+                    ret += str;
                 }
             }
         } else if (tok->originalName().empty() || tok->isUnsigned() || tok->isLong()) {
-            ret << tok->str();
+            ret += tok->str();
         } else
-            ret << tok->originalName();
+            ret += tok->originalName();
         if (Token::Match(tok, "%name%|%num% %name%|%num%"))
-            ret << ' ';
+            ret += ' ';
     }
-    return ret.str();
+    return ret;
 }
 
 std::string Token::expressionString() const
