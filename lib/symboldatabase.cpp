@@ -753,12 +753,6 @@ void SymbolDatabase::createSymbolDatabaseClassInfo()
 
 void SymbolDatabase::createSymbolDatabaseVariableInfo()
 {
-    // fill in variable info
-    for (Scope& scope : scopeList) {
-        // find variables
-        scope.getVariableList(mSettings);
-    }
-
     // fill in function arguments
     for (Scope& scope : scopeList) {
         std::list<Function>::iterator func;
@@ -767,6 +761,14 @@ void SymbolDatabase::createSymbolDatabaseVariableInfo()
             // add arguments
             func->addArguments(this, &scope);
         }
+    }
+
+    // fill in variable info. This must be done after arguments so that function declarations already have a populated argument list.
+    // This is required in order to be able to match function calls with declarations so that we don't confuse function calls with
+    // variable declarations.
+    for (Scope& scope : scopeList) {
+        // find variables
+        scope.getVariableList(mSettings);
     }
 }
 
@@ -4221,8 +4223,42 @@ static const Token* skipPointersAndQualifiers(const Token* tok)
     return tok;
 }
 
+static const Token* skipTypeOrFunctionIdentifier(const Token* tok)
+{
+    if (tok == nullptr)
+        return nullptr;
+    while (Token::Match(tok->next(), "::|<"))
+    {
+        if (tok->next()->str() == "::")
+            tok = tok->tokAt(2);
+        else
+            tok = tok->linkAt(1);
+        if (tok == nullptr)
+            return nullptr;
+    }
+    return tok->next();
+}
+
+//Could this token be the first token of a call to a function instead of the declaration of a variable
+bool isFunctionCallInsteadOfVariableDeclaration(const Token* tok, const Scope& scope, const SymbolDatabase& db)
+{
+    auto start = tok;
+    tok = skipTypeOrFunctionIdentifier(tok);
+    if (tok == nullptr)
+        return false; //It's probably neither but it's not a function call
+    if (tok->str() != "(") //X y isn't a function call
+        return false;
+    return db.findFunction(start, &scope) != nullptr;
+}
+
 bool Scope::isVariableDeclaration(const Token* const tok, const Token*& vartok, const Token*& typetok) const
 {
+    if (!tok)
+        return false;
+
+    if (isFunctionCallInsteadOfVariableDeclaration(tok, *this, *this->check))
+        return false;
+
     const bool isCPP = check && check->mTokenizer->isCPP();
 
     if (isCPP && Token::Match(tok, "throw|new"))
@@ -4269,23 +4305,21 @@ bool Scope::isVariableDeclaration(const Token* const tok, const Token*& vartok, 
     if (localVarTok->str() == "const")
         localVarTok = localVarTok->next();
 
-    if (Token::Match(localVarTok, "%name% ;|=") || (localVarTok && localVarTok->varId() && localVarTok->strAt(1) == ":")) {
-        vartok = localVarTok;
-        typetok = localTypeTok;
-    } else if (Token::Match(localVarTok, "%name% )|[") && localVarTok->str() != "operator") {
-        vartok = localVarTok;
-        typetok = localTypeTok;
-    } else if (localVarTok && localVarTok->varId() && Token::Match(localVarTok, "%name% (|{") &&
-               Token::Match(localVarTok->next()->link(), ")|} ;")) {
-        vartok = localVarTok;
-        typetok = localTypeTok;
-    } else if (type == eCatch &&
-               Token::Match(localVarTok, "%name% )")) {
-        vartok = localVarTok;
-        typetok = localTypeTok;
-    }
+    if (!localVarTok)
+        return false;
 
-    return nullptr != vartok;
+    if (Token::Match(localVarTok, "%name% ;|=")
+        || (localVarTok->varId() && localVarTok->strAt(1) == ":")
+        || (Token::Match(localVarTok, "%name% )|[") && localVarTok->str() != "operator")
+        || (localVarTok->varId() && Token::Match(localVarTok, "%name% (|{") &&
+            Token::Match(localVarTok->next()->link(), ")|} ;"))
+        || (type == eCatch && Token::Match(localVarTok, "%name% )"))) {
+        vartok = localVarTok;
+        typetok = localTypeTok;
+        return true;
+    }
+    
+    return false;
 }
 
 const Token * Scope::addEnum(const Token * tok, bool isCpp)
@@ -4931,10 +4965,12 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
 //---------------------------------------------------------------------------
 
-const Function* SymbolDatabase::findFunction(const Token *tok) const
+const Function* SymbolDatabase::findFunction(const Token *tok, const Scope* currScope) const
 {
+    if (!currScope)
+        currScope = tok->scope();
+
     // find the scope this function is in
-    const Scope *currScope = tok->scope();
     while (currScope && currScope->isExecutable()) {
         if (currScope->functionOf)
             currScope = currScope->functionOf;
