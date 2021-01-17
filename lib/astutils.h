@@ -142,6 +142,11 @@ bool isEqualKnownValue(const Token * const tok1, const Token * const tok2);
 bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2);
 
 /**
+ * Is token used a boolean, that is to say cast to a bool, or used as a condition in a if/while/for
+ */
+bool isUsedAsBool(const Token * const tok);
+
+/**
  * Are two conditions opposite
  * @param isNot  do you want to know if cond1 is !cond2 or if cond1 and cond2 are non-overlapping. true: cond1==!cond2  false: cond1==true => cond2==false
  * @param cpp    c++ file

@@ -2340,8 +2340,6 @@ struct OppositeExpressionAnalyzer : ExpressionAnalyzer {
     {}
 
     virtual bool match(const Token* tok) const OVERRIDE {
-        if (tok->isName() && !tok->isBoolean())
-            return false;
         return isOppositeCond(isNot, isCPP(), expr, tok, getSettings()->library, true, true);
     }
 };
