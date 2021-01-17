@@ -288,8 +288,6 @@ struct ForwardTraversal {
         const bool isDoWhile = precedes(endBlock, condTok);
         Analyzer::Action bodyAnalysis = analyzeScope(endBlock);
         Analyzer::Action allAnalysis = bodyAnalysis;
-        bool checkThen = true;
-        bool checkElse = false;
         if (condTok)
             allAnalysis |= analyzeRecursive(condTok);
         if (initTok)
@@ -309,6 +307,8 @@ struct ForwardTraversal {
             if (updateRecursive(condTok) == Progress::Break)
                 return Break();
 
+            bool checkThen = true;
+            bool checkElse = false;
             std::tie(checkThen, checkElse) = evalCond(condTok);
             // condition is false, we don't enter the loop
             if (checkElse)
