@@ -1961,7 +1961,7 @@ struct ValueFlowAnalyzer : Analyzer {
                 if (isModified(tok).isModified())
                     a = Action::Invalid;
                 if (Token::Match(tok->astParent(), "%assign%") && astIsLHS(tok))
-                    a |= Action::Read;
+                    a |= Action::Invalid;
                 return a;
             }
             return Action::None;
