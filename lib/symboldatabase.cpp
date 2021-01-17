@@ -1310,7 +1310,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
 
 void SymbolDatabase::createSymbolDatabaseIncompleteVars()
 {
-    const std::set<std::string> cpp20keywords = {
+    static const std::unordered_set<std::string> cpp20keywords = {
         "alignas",
         "alignof",
         "axiom",
@@ -1323,7 +1323,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         "reflexpr",
         "requires",
     };
-    const std::set<std::string> cppkeywords = {
+    static const std::unordered_set<std::string> cppkeywords = {
         "asm",
         "auto",
         "catch",
@@ -3402,9 +3402,11 @@ void SymbolDatabase::printOut(const char *title) const
 
         if (scope->type == Scope::eEnum) {
             std::cout << "    enumType: ";
-            if (scope->enumType)
-                scope->enumType->stringify(std::cout, false, true, false);
-            else
+            if (scope->enumType) {
+                std::string s;
+                scope->enumType->stringify(s, false, true, false);
+                std::cout << s;
+            } else
                 std::cout << "int";
             std::cout << std::endl;
             std::cout << "    enumClass: " << scope->enumClass << std::endl;
@@ -5415,8 +5417,8 @@ namespace {
     "register", "return", "short", "signed", "sizeof", "static", "struct", "switch", "typedef", \
     "union", "unsigned", "void", "volatile", "while"
 
-    const std::set<std::string> c_keywords = { C_KEYWORDS, "restrict" };
-    const std::set<std::string> cpp_keywords = {
+    const std::unordered_set<std::string> c_keywords = { C_KEYWORDS, "restrict" };
+    const std::unordered_set<std::string> cpp_keywords = {
         C_KEYWORDS,
         "alignas", "alignof", "and", "and_eq", "asm", "bitand", "bitor", "bool", "catch", "char8_t", "char16_t",
         "char32_t", "class", "compl", "concept", "consteval", "constexpr", "constinit", "const_cast", "co_await",
@@ -6455,17 +6457,17 @@ bool ValueType::fromLibraryType(const std::string &typestr, const Settings *sett
             type = ValueType::Type::LONG;
         else if (podtype->size == settings->sizeof_long_long)
             type = ValueType::Type::LONGLONG;
-        else if (podtype->stdtype == Library::PodType::BOOL)
+        else if (podtype->stdtype == Library::PodType::Type::BOOL)
             type = ValueType::Type::BOOL;
-        else if (podtype->stdtype == Library::PodType::CHAR)
+        else if (podtype->stdtype == Library::PodType::Type::CHAR)
             type = ValueType::Type::CHAR;
-        else if (podtype->stdtype == Library::PodType::SHORT)
+        else if (podtype->stdtype == Library::PodType::Type::SHORT)
             type = ValueType::Type::SHORT;
-        else if (podtype->stdtype == Library::PodType::INT)
+        else if (podtype->stdtype == Library::PodType::Type::INT)
             type = ValueType::Type::INT;
-        else if (podtype->stdtype == Library::PodType::LONG)
+        else if (podtype->stdtype == Library::PodType::Type::LONG)
             type = ValueType::Type::LONG;
-        else if (podtype->stdtype == Library::PodType::LONGLONG)
+        else if (podtype->stdtype == Library::PodType::Type::LONGLONG)
             type = ValueType::Type::LONGLONG;
         else
             type = ValueType::Type::UNKNOWN_INT;

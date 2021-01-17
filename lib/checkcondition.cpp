@@ -594,12 +594,14 @@ void CheckCondition::multiCondition2()
         if (!Token::simpleMatch(scope.classDef->linkAt(1), ") {"))
             continue;
 
+        bool functionCall = false;
         bool nonConstFunctionCall = false;
         bool nonlocal = false; // nonlocal variable used in condition
         std::set<int> vars; // variables used in condition
         visitAstNodes(condTok,
         [&](const Token *cond) {
             if (Token::Match(cond, "%name% (")) {
+                functionCall = true;
                 nonConstFunctionCall = isNonConstFunctionCall(cond, mSettings->library);
                 if (nonConstFunctionCall)
                     return ChildrenToVisit::done;
@@ -755,7 +757,8 @@ void CheckCondition::multiCondition2()
                         break;
                 }
                 if ((tok->varId() && vars.find(tok->varId()) != vars.end()) ||
-                    (!tok->varId() && nonlocal)) {
+                    (!tok->varId() && nonlocal) ||
+                    (functionCall && tok->variable() && !tok->variable()->isLocal())) {
                     if (Token::Match(tok, "%name% %assign%|++|--"))
                         break;
                     if (Token::Match(tok->astParent(), "*|.|[")) {
@@ -1385,10 +1388,15 @@ void CheckCondition::alwaysTrueFalse()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (tok->link()) // don't write false positives when templates are used
+            if (Token::simpleMatch(tok, "<") && tok->link()) // don't write false positives when templates are used
                 continue;
             if (!tok->hasKnownIntValue())
                 continue;
+            if (Token::Match(tok->previous(), "%name% (") && tok->previous()->function()) {
+                const Function* f = tok->previous()->function();
+                if (f->functionScope && Token::Match(f->functionScope->bodyStart, "{ return true|false ;"))
+                    continue;
+            }
             {
                 // is this a condition..
                 const Token *parent = tok->astParent();

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -798,7 +798,7 @@ bool MainWindow::tryLoadLibrary(Library *library, const QString& filename)
 {
     const Library::Error error = loadLibrary(library, filename);
     if (error.errorcode != Library::ErrorCode::OK) {
-        if (error.errorcode == Library::UNKNOWN_ELEMENT) {
+        if (error.errorcode == Library::ErrorCode::UNKNOWN_ELEMENT) {
             QMessageBox::information(this, tr("Information"), tr("The library '%1' contains unknown elements:\n%2").arg(filename).arg(error.reason.c_str()));
             return true;
         }
@@ -1459,6 +1459,9 @@ void MainWindow::setLanguage(const QString &code)
         //Translate everything that is visible here
         mUI.retranslateUi(this);
         mUI.mResults->translate();
+        mLineEditFilter->setPlaceholderText(QCoreApplication::translate("MainWindow", "Quick Filter:"));
+        if (mProjectFile)
+            formatAndSetTitle(tr("Project:") + ' ' + mProjectFile->getFilename());
     }
 }
 

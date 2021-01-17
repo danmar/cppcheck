@@ -176,6 +176,7 @@ private:
         TEST_CASE(simplifyTypedef133); // ticket #9812 - using
         TEST_CASE(simplifyTypedef134);
         TEST_CASE(simplifyTypedef135); // ticket #10068
+        TEST_CASE(simplifyTypedef136);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2710,6 +2711,30 @@ private:
                                 "} "
                                 "void clangimport :: AstNode :: createScope ( const std :: vector < std :: shared_ptr < AstNode > > & children2 ) { }";
         ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyTypedef136() {
+        const char code[] = "class C1 {};\n"
+                            "typedef class S1 {} S1;\n"
+                            "typedef class S2 : public C1 {} S2;\n"
+                            "typedef class {} S3;\n"
+                            "typedef class : public C1 {} S4;\n"
+                            "S1 s1;\n"
+                            "S2 s2;\n"
+                            "S3 s3;\n"
+                            "S4 s4;";
+
+        const char expected[] = "class C1 { } ; "
+                                "class S1 { } ; "
+                                "class S2 : public C1 { } ; "
+                                "class S3 { } ; "
+                                "class S4 : public C1 { } ; "
+                                "class S1 s1 ; "
+                                "class S2 s2 ; "
+                                "class S3 s3 ; "
+                                "class S4 s4 ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void simplifyTypedefFunction1() {
