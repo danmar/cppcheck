@@ -53,7 +53,10 @@ void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *
 void visitAstNodes(Token *ast, std::function<ChildrenToVisit(Token *)> visitor);
 
 const Token* findAstNode(const Token* ast, const std::function<bool(const Token*)>& pred);
-const Token* findExpression(MathLib::bigint exprid, const Token* start, const Token* end, const std::function<bool(const Token*)>& pred);
+const Token* findExpression(MathLib::bigint exprid,
+                            const Token* start,
+                            const Token* end,
+                            const std::function<bool(const Token*)>& pred);
 
 std::vector<const Token*> astFlatten(const Token* tok, const char* op);
 

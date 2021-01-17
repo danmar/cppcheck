@@ -4176,9 +4176,10 @@ struct ConditionHandler {
 
                 if (isExpressionChanged(cond.vartok, start, end, settings, tokenlist->isCPP())) {
                     // If its reassigned in loop then analyze from the end
-                    if (!Token::Match(tok, "%assign%|++|--") && findExpression(cond.vartok->exprId(), start, end, [&](const Token* tok2) {
-                        return Token::Match(tok2->astParent(), "%assign%") && astIsLHS(tok2);
-                    })) {
+                    if (!Token::Match(tok, "%assign%|++|--") &&
+                        findExpression(cond.vartok->exprId(), start, end, [&](const Token* tok2) {
+                            return Token::Match(tok2->astParent(), "%assign%") && astIsLHS(tok2);
+                        })) {
                         // Start at the end of the loop body
                         Token* bodyTok = top->link()->next();
                         reverse(bodyTok->link(), bodyTok, cond.vartok, values, tokenlist, settings);
@@ -4440,7 +4441,8 @@ struct SimpleConditionHandler : ConditionHandler {
                          const Token* exprTok,
                          const std::list<ValueFlow::Value>& values,
                          TokenList* tokenlist,
-                         const Settings* settings) const OVERRIDE {
+                         const Settings* settings) const OVERRIDE
+    {
         return valueFlowReverse(start, endToken, exprTok, values, tokenlist, settings);
     }
 
@@ -6158,7 +6160,8 @@ struct ContainerConditionHandler : ConditionHandler {
                          const Token* exprTok,
                          const std::list<ValueFlow::Value>& values,
                          TokenList* tokenlist,
-                         const Settings* settings) const OVERRIDE {
+                         const Settings* settings) const OVERRIDE
+    {
         if (values.empty())
             return;
         if (!exprTok->variable())

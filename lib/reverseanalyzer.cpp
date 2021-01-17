@@ -116,7 +116,8 @@ struct ReverseTraversal {
         return nullptr;
     }
 
-    void traverse(Token* start, const Token* end=nullptr) {
+    void traverse(Token* start, const Token* end = nullptr)
+    {
         if (start == end)
             return;
         for (Token* tok = start->previous(); tok != end; tok = tok->previous()) {
