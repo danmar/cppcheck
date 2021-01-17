@@ -1319,7 +1319,7 @@ public:
     /**
      * @brief output a debug message
      */
-    void debugMessage(const Token *tok, const std::string &msg) const;
+    void debugMessage(const Token *tok, const std::string &type, const std::string &msg) const;
 
     void printOut(const char * title = nullptr) const;
     void printVariable(const Variable *var, const char *indent) const;
@@ -1352,6 +1352,7 @@ public:
     void setArrayDimensionsUsingValueFlow();
 
     void clangSetVariables(const std::vector<const Variable *> &variableList);
+    void createSymbolDatabaseExprIds();
 
 private:
     friend class Scope;
@@ -1375,7 +1376,6 @@ private:
     void createSymbolDatabaseEnums();
     void createSymbolDatabaseEscapeFunctions();
     void createSymbolDatabaseIncompleteVars();
-    void createSymbolDatabaseExprIds();
 
     void addClassFunction(Scope **scope, const Token **tok, const Token *argStart);
     Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);

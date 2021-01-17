@@ -342,6 +342,8 @@ private:
         TEST_CASE(symboldatabase87); // #9922 'extern const char ( * x [ 256 ] ) ;'
         TEST_CASE(symboldatabase88); // #10040 (using namespace)
         TEST_CASE(symboldatabase89); // valuetype name
+        TEST_CASE(symboldatabase90);
+        TEST_CASE(symboldatabase91);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -395,6 +397,7 @@ private:
         TEST_CASE(findFunction30);
         TEST_CASE(findFunction31);
         TEST_CASE(findFunction32); // C: relax type matching
+        TEST_CASE(findFunction33); // #9885 variadic function
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -4644,6 +4647,32 @@ private:
         ASSERT(vartok1->next()->variable()->valueType()->str() == "external::ns1::A");
     }
 
+    void symboldatabase90() {
+        GET_SYMBOL_DB("struct Fred {\n"
+                      "    void foo(const int * const x);\n"
+                      "};\n"
+                      "void Fred::foo(const int * x) { }");
+        ASSERT_EQUALS("", errout.str());
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "foo ( const int * x )");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT(functok->function()->name() == "foo");
+    }
+
+    void symboldatabase91() {
+        GET_SYMBOL_DB("namespace Fred {\n"
+                      "    struct Value {};\n"
+                      "    void foo(const std::vector<std::function<void(const Fred::Value &)>> &callbacks);\n"
+                      "}\n"
+                      "void Fred::foo(const std::vector<std::function<void(const Fred::Value &)>> &callbacks) { }");
+        ASSERT_EQUALS("", errout.str());
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(),
+                               "foo ( const std :: vector < std :: function < void ( const Fred :: Value & ) > > & callbacks ) { }");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT(functok->function()->name() == "foo");
+    }
+
     void createSymbolDatabaseFindAllScopes1() {
         GET_SYMBOL_DB("void f() { union {int x; char *p;} a={0}; }");
         ASSERT(db->scopeList.size() == 3);
@@ -6065,6 +6094,129 @@ private:
         ASSERT_EQUALS(1, foo->function()->tokenDef->linenr());
     }
 
+    void findFunction33() {
+        {
+            GET_SYMBOL_DB("class Base {\n"
+                          "    int i{};\n"
+                          "public:\n"
+                          "    void foo(...) const { bar(); }\n"
+                          "    int bar() const { return i; }\n"
+                          "};\n"
+                          "class Derived : public Base {\n"
+                          "public:\n"
+                          "    void doIt() const {\n"
+                          "        foo();\n"
+                          "    }\n"
+                          "};");
+            (void)db;
+            const Token *foo = Token::findsimplematch(tokenizer.tokens(), "foo ( ) ;");
+            ASSERT(foo);
+            ASSERT(foo->function());
+            ASSERT(foo->function()->tokenDef);
+            ASSERT_EQUALS(4, foo->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("class Base {\n"
+                          "    int i{};\n"
+                          "public:\n"
+                          "    void foo(...) const { bar(); }\n"
+                          "    int bar() const { return i; }\n"
+                          "};\n"
+                          "class Derived : public Base {\n"
+                          "public:\n"
+                          "    void doIt() const {\n"
+                          "        foo(1);\n"
+                          "    }\n"
+                          "};");
+            (void)db;
+            const Token *foo = Token::findsimplematch(tokenizer.tokens(), "foo ( 1 ) ;");
+            ASSERT(foo);
+            ASSERT(foo->function());
+            ASSERT(foo->function()->tokenDef);
+            ASSERT_EQUALS(4, foo->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("class Base {\n"
+                          "    int i{};\n"
+                          "public:\n"
+                          "    void foo(...) const { bar(); }\n"
+                          "    int bar() const { return i; }\n"
+                          "};\n"
+                          "class Derived : public Base {\n"
+                          "public:\n"
+                          "    void doIt() const {\n"
+                          "        foo(1,2);\n"
+                          "    }\n"
+                          "};");
+            (void)db;
+            const Token *foo = Token::findsimplematch(tokenizer.tokens(), "foo ( 1 , 2 ) ;");
+            ASSERT(foo);
+            ASSERT(foo->function());
+            ASSERT(foo->function()->tokenDef);
+            ASSERT_EQUALS(4, foo->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("class Base {\n"
+                          "    int i{};\n"
+                          "public:\n"
+                          "    void foo(int, ...) const { bar(); }\n"
+                          "    int bar() const { return i; }\n"
+                          "};\n"
+                          "class Derived : public Base {\n"
+                          "public:\n"
+                          "    void doIt() const {\n"
+                          "        foo(1);\n"
+                          "    }\n"
+                          "};");
+            (void)db;
+            const Token *foo = Token::findsimplematch(tokenizer.tokens(), "foo ( 1 ) ;");
+            ASSERT(foo);
+            ASSERT(foo->function());
+            ASSERT(foo->function()->tokenDef);
+            ASSERT_EQUALS(4, foo->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("class Base {\n"
+                          "    int i{};\n"
+                          "public:\n"
+                          "    void foo(int,...) const { bar(); }\n"
+                          "    int bar() const { return i; }\n"
+                          "};\n"
+                          "class Derived : public Base {\n"
+                          "public:\n"
+                          "    void doIt() const {\n"
+                          "        foo(1,2);\n"
+                          "    }\n"
+                          "};");
+            (void)db;
+            const Token *foo = Token::findsimplematch(tokenizer.tokens(), "foo ( 1 , 2 ) ;");
+            ASSERT(foo);
+            ASSERT(foo->function());
+            ASSERT(foo->function()->tokenDef);
+            ASSERT_EQUALS(4, foo->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("class Base {\n"
+                          "    int i{};\n"
+                          "public:\n"
+                          "    void foo(int,...) const { bar(); }\n"
+                          "    int bar() const { return i; }\n"
+                          "};\n"
+                          "class Derived : public Base {\n"
+                          "public:\n"
+                          "    void doIt() const {\n"
+                          "        foo(1, 2, 3);\n"
+                          "    }\n"
+                          "};");
+            (void)db;
+            const Token *foo = Token::findsimplematch(tokenizer.tokens(), "foo ( 1 , 2 , 3 ) ;");
+            ASSERT(foo);
+            ASSERT(foo->function());
+            ASSERT(foo->function()->tokenDef);
+            ASSERT_EQUALS(4, foo->function()->tokenDef->linenr());
+        }
+    }
+
     void findFunctionContainer() {
         {
             GET_SYMBOL_DB("void dostuff(std::vector<int> v);\n"
@@ -6857,7 +7009,7 @@ private:
             Settings settingsWin64;
             settingsWin64.platformType = Settings::Win64;
             const Library::PodType u32 = { 4, 'u' };
-            const Library::PodType podtype2 = { 0, 'u', Library::PodType::INT };
+            const Library::PodType podtype2 = { 0, 'u', Library::PodType::Type::INT };
             settingsWin64.library.mPodTypes["u32"] = u32;
             settingsWin64.library.mPodTypes["xyz::x"] = u32;
             settingsWin64.library.mPodTypes["podtype2"] = podtype2;

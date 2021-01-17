@@ -278,6 +278,7 @@ static void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool l
         char **symbolStringList = backtrace_symbols(callstackArray, currentdepth);
         if (symbolStringList) {
             fputs("Callstack:\n", output);
+            char demangle_buffer[2048]= {0};
             for (int i = offset; i < maxdepth; ++i) {
                 const char * const symbolString = symbolStringList[i];
                 char * realnameString = nullptr;
@@ -292,12 +293,11 @@ static void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool l
                     if (plus && (plus>(firstBracketName+1))) {
                         char input_buffer[1024]= {0};
                         strncpy(input_buffer, firstBracketName+1, plus-firstBracketName-1);
-                        char output_buffer[2048]= {0};
-                        size_t length = getArrayLength(output_buffer);
+                        size_t length = getArrayLength(demangle_buffer);
                         int status=0;
                         // We're violating the specification - passing stack address instead of malloc'ed heap.
                         // Benefit is that no further heap is required, while there is sufficient stack...
-                        realnameString = abi::__cxa_demangle(input_buffer, output_buffer, &length, &status); // non-NULL on success
+                        realnameString = abi::__cxa_demangle(input_buffer, demangle_buffer, &length, &status); // non-NULL on success
                     }
                 }
                 const int ordinal=i-offset;
@@ -357,7 +357,7 @@ static bool IsAddressOnStack(const void* ptr)
  */
 
 #define DECLARE_SIGNAL(x) std::make_pair(x, #x)
-typedef std::map<int, std::string> Signalmap_t;
+using Signalmap_t = std::map<int, std::string>;
 static const Signalmap_t listofsignals = {
     DECLARE_SIGNAL(SIGABRT),
     DECLARE_SIGNAL(SIGBUS),
@@ -1126,35 +1126,35 @@ bool CppCheckExecutor::tryLoadLibrary(Library& destination, const char* basepath
 {
     const Library::Error err = destination.load(basepath, filename);
 
-    if (err.errorcode == Library::UNKNOWN_ELEMENT)
+    if (err.errorcode == Library::ErrorCode::UNKNOWN_ELEMENT)
         std::cout << "cppcheck: Found unknown elements in configuration file '" << filename << "': " << err.reason << std::endl;
-    else if (err.errorcode != Library::OK) {
+    else if (err.errorcode != Library::ErrorCode::OK) {
         std::cout << "cppcheck: Failed to load library configuration file '" << filename << "'. ";
         switch (err.errorcode) {
-        case Library::OK:
+        case Library::ErrorCode::OK:
             break;
-        case Library::FILE_NOT_FOUND:
+        case Library::ErrorCode::FILE_NOT_FOUND:
             std::cout << "File not found";
             break;
-        case Library::BAD_XML:
+        case Library::ErrorCode::BAD_XML:
             std::cout << "Bad XML";
             break;
-        case Library::UNKNOWN_ELEMENT:
+        case Library::ErrorCode::UNKNOWN_ELEMENT:
             std::cout << "Unexpected element";
             break;
-        case Library::MISSING_ATTRIBUTE:
+        case Library::ErrorCode::MISSING_ATTRIBUTE:
             std::cout << "Missing attribute";
             break;
-        case Library::BAD_ATTRIBUTE_VALUE:
+        case Library::ErrorCode::BAD_ATTRIBUTE_VALUE:
             std::cout << "Bad attribute value";
             break;
-        case Library::UNSUPPORTED_FORMAT:
+        case Library::ErrorCode::UNSUPPORTED_FORMAT:
             std::cout << "File is of unsupported format version";
             break;
-        case Library::DUPLICATE_PLATFORM_TYPE:
+        case Library::ErrorCode::DUPLICATE_PLATFORM_TYPE:
             std::cout << "Duplicate platform type";
             break;
-        case Library::PLATFORM_TYPE_REDEFINED:
+        case Library::ErrorCode::PLATFORM_TYPE_REDEFINED:
             std::cout << "Platform type redefined";
             break;
         }
@@ -1169,7 +1169,7 @@ bool CppCheckExecutor::tryLoadLibrary(Library& destination, const char* basepath
 /**
  * Execute a shell command and read the output from it. Returns true if command terminated successfully.
  */
-// cppcheck-suppress passedByValue
+// cppcheck-suppress passedByValue - "exe" copy needed in _WIN32 code
 bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> args, const std::string &redirect, std::string *output)
 {
     output->clear();

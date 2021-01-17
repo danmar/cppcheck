@@ -39,6 +39,7 @@
 #include <utility>
 
 // CWE ids used
+static const struct CWE uncheckedErrorConditionCWE(391U);
 static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
 static const struct CWE CWE570(570U);   // Expression is Always False
 static const struct CWE CWE571(571U);   // Expression is Always True
@@ -593,12 +594,14 @@ void CheckCondition::multiCondition2()
         if (!Token::simpleMatch(scope.classDef->linkAt(1), ") {"))
             continue;
 
+        bool functionCall = false;
         bool nonConstFunctionCall = false;
         bool nonlocal = false; // nonlocal variable used in condition
         std::set<int> vars; // variables used in condition
         visitAstNodes(condTok,
         [&](const Token *cond) {
             if (Token::Match(cond, "%name% (")) {
+                functionCall = true;
                 nonConstFunctionCall = isNonConstFunctionCall(cond, mSettings->library);
                 if (nonConstFunctionCall)
                     return ChildrenToVisit::done;
@@ -754,7 +757,8 @@ void CheckCondition::multiCondition2()
                         break;
                 }
                 if ((tok->varId() && vars.find(tok->varId()) != vars.end()) ||
-                    (!tok->varId() && nonlocal)) {
+                    (!tok->varId() && nonlocal) ||
+                    (functionCall && tok->variable() && !tok->variable()->isLocal())) {
                     if (Token::Match(tok, "%name% %assign%|++|--"))
                         break;
                     if (Token::Match(tok->astParent(), "*|.|[")) {
@@ -1104,7 +1108,7 @@ void CheckCondition::checkIncorrectLogicOperator()
                     const std::string cond2 = expr1;
 
                     const std::string cond1VerboseMsg = expr1VerboseMsg + " " + tok->str() + " " + expr2VerboseMsg + " " + tok->astOperand2()->str() + " " + expr3VerboseMsg;
-                    const std::string cond2VerboseMsg = expr1VerboseMsg;
+                    const std::string& cond2VerboseMsg = expr1VerboseMsg;
                     // for the --verbose message, transform the actual condition and print it
                     const std::string msg = tok2->expressionString() + ". '" + cond1 + "' is equivalent to '" + cond2 + "'\n"
                                             "The condition '" + cond1VerboseMsg + "' is equivalent to '" + cond2VerboseMsg + "'.";
@@ -1384,10 +1388,15 @@ void CheckCondition::alwaysTrueFalse()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (tok->link()) // don't write false positives when templates are used
+            if (Token::simpleMatch(tok, "<") && tok->link()) // don't write false positives when templates are used
                 continue;
             if (!tok->hasKnownIntValue())
                 continue;
+            if (Token::Match(tok->previous(), "%name% (") && tok->previous()->function()) {
+                const Function* f = tok->previous()->function();
+                if (f->functionScope && Token::Match(f->functionScope->bodyStart, "{ return true|false ;"))
+                    continue;
+            }
             {
                 // is this a condition..
                 const Token *parent = tok->astParent();
@@ -1494,63 +1503,103 @@ void CheckCondition::alwaysTrueFalseError(const Token *tok, const ValueFlow::Val
 
 void CheckCondition::checkInvalidTestForOverflow()
 {
+    // Interesting blogs:
+    // https://www.airs.com/blog/archives/120
+    // https://kristerw.blogspot.com/2016/02/how-undefined-signed-overflow-enables.html
+    // https://research.checkpoint.com/2020/optout-compiler-undefined-behavior-optimizations/
+
+    // x + c < x       ->   false
+    // x + c <= x      ->   false
+    // x + c > x       ->   true
+    // x + c >= x      ->   true
+
+    // x + y < x       ->   y < 0
+
+
     if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "<|<=|>=|>") || !tok->isBinaryOp())
+            continue;
 
-        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-            if (!tok->isComparisonOp() || !tok->astOperand1() || !tok->astOperand2())
+        const Token *lhsTokens[2] = {tok->astOperand1(), tok->astOperand2()};
+        for (const Token *lhs: lhsTokens) {
+            std::string cmp = tok->str();
+            if (lhs == tok->astOperand2())
+                cmp[0] = (cmp[0] == '<') ? '>' : '<';
+
+            if (!Token::Match(lhs, "[+-]") || !lhs->isBinaryOp())
                 continue;
 
-            const Token *calcToken, *exprToken;
-            bool result;
-            if (Token::Match(tok, "<|>=") && tok->astOperand1()->str() == "+") {
-                calcToken = tok->astOperand1();
-                exprToken = tok->astOperand2();
-                result = (tok->str() == ">=");
-            } else if (Token::Match(tok, ">|<=") && tok->astOperand2()->str() == "+") {
-                calcToken = tok->astOperand2();
-                exprToken = tok->astOperand1();
-                result = (tok->str() == "<=");
-            } else
+            const bool isSignedInteger = lhs->valueType() && lhs->valueType()->isIntegral() && lhs->valueType()->sign == ValueType::Sign::SIGNED;
+            const bool isPointer = lhs->valueType() && lhs->valueType()->pointer > 0;
+            if (!isSignedInteger && !isPointer)
                 continue;
 
-            // Only warn for signed integer overflows and pointer overflows.
-            if (!(calcToken->valueType() && (calcToken->valueType()->pointer || calcToken->valueType()->sign == ValueType::Sign::SIGNED)))
-                continue;
-            if (!(exprToken->valueType() && (exprToken->valueType()->pointer || exprToken->valueType()->sign == ValueType::Sign::SIGNED)))
-                continue;
+            const Token *exprTokens[2] = {lhs->astOperand1(), lhs->astOperand2()};
+            for (const Token *expr: exprTokens) {
+                if (lhs->str() == "-" && expr == lhs->astOperand2())
+                    continue; // TODO?
 
-            const Token *termToken;
-            if (isSameExpression(mTokenizer->isCPP(), true, exprToken, calcToken->astOperand1(), mSettings->library, true, false))
-                termToken = calcToken->astOperand2();
-            else if (isSameExpression(mTokenizer->isCPP(), true, exprToken, calcToken->astOperand2(), mSettings->library, true, false))
-                termToken = calcToken->astOperand1();
-            else
-                continue;
+                if (expr->hasKnownIntValue())
+                    continue;
 
-            if (!termToken)
-                continue;
+                if (!isSameExpression(mTokenizer->isCPP(),
+                                      true,
+                                      expr,
+                                      lhs->astSibling(),
+                                      mSettings->library,
+                                      true,
+                                      false))
+                    continue;
 
-            // Only warn when termToken is always positive
-            if (termToken->valueType() && termToken->valueType()->sign == ValueType::Sign::UNSIGNED)
-                invalidTestForOverflow(tok, result);
-            else if (termToken->isNumber() && MathLib::isPositive(termToken->str()))
-                invalidTestForOverflow(tok, result);
+                const Token * const other = expr->astSibling();
+
+                // x [+-] c cmp x
+                if ((other->isNumber() && other->getKnownIntValue() > 0) ||
+                    (!other->isNumber() && other->valueType() && other->valueType()->isIntegral() && other->valueType()->sign == ValueType::Sign::UNSIGNED)) {
+                    bool result;
+                    if (lhs->str() == "+")
+                        result = (cmp == ">" || cmp == ">=");
+                    else
+                        result = (cmp == "<" || cmp == "<=");
+                    invalidTestForOverflow(tok, lhs->valueType(), result ? "true" : "false");
+                    continue;
+                }
+
+                // x + y cmp x
+                if (lhs->str() == "+" && other->varId() > 0) {
+                    const std::string result = other->str() + cmp + "0";
+                    invalidTestForOverflow(tok, lhs->valueType(), result);
+                    continue;
+                }
+
+                // x - y cmp x
+                if (lhs->str() == "-" && other->varId() > 0) {
+                    std::string cmp2 = cmp;
+                    cmp2[0] = (cmp[0] == '<') ? '>' : '<';
+                    const std::string result = other->str() + cmp2 + "0";
+                    invalidTestForOverflow(tok, lhs->valueType(), result);
+                    continue;
+                }
+            }
         }
     }
 }
 
-void CheckCondition::invalidTestForOverflow(const Token* tok, bool result)
+void CheckCondition::invalidTestForOverflow(const Token* tok, const ValueType *valueType, const std::string &replace)
 {
-    const std::string errmsg = "Invalid test for overflow '" +
-                               (tok ? tok->expressionString() : std::string("x + u < x")) +
-                               "'. Condition is always " +
-                               std::string(result ? "true" : "false") +
-                               " unless there is overflow, and overflow is undefined behaviour.";
-    reportError(tok, Severity::warning, "invalidTestForOverflow", errmsg, (result ? CWE571 : CWE570), false);
+    const std::string expr = (tok ? tok->expressionString() : std::string("x + c < x"));
+    const std::string overflow = (valueType && valueType->pointer) ? "pointer overflow" : "signed integer overflow";
+
+    std::string errmsg =
+        "Invalid test for overflow '" +  expr + "'; " + overflow + " is undefined behavior.";
+    if (replace == "false" || replace == "true")
+        errmsg += " Some mainstream compilers remove such overflow tests when optimising the code and assume it's always " + replace + ".";
+    else
+        errmsg += " Some mainstream compilers removes handling of overflows when optimising the code and change the code to '" + replace + "'.";
+    reportError(tok, Severity::warning, "invalidTestForOverflow", errmsg, uncheckedErrorConditionCWE, false);
 }
 
 

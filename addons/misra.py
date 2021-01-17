@@ -1325,7 +1325,7 @@ class MisraChecker:
 
 
     def misra_6_1(self, data):
-        # Bitfield type must be bool or explicity signed/unsigned int
+        # Bitfield type must be bool or explicitly signed/unsigned int
         for token in data.tokenlist:
             if not token.valueType:
                 continue

@@ -228,8 +228,11 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->checkConfiguration = true;
 
             // Check library definitions
-            else if (std::strcmp(argv[i], "--check-library") == 0)
+            else if (std::strcmp(argv[i], "--check-library") == 0) {
                 mSettings->checkLibrary = true;
+                // need to add "information" or no messages will be shown at all
+                mSettings->addEnabled("information");
+            }
 
             else if (std::strncmp(argv[i], "--clang", 7) == 0) {
                 mSettings->clang = true;
@@ -849,6 +852,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings->templateFormat = "{file} +{line}: {severity}: {message}";
                 else if (mSettings->templateFormat == "cppcheck1")
                     mSettings->templateFormat = "{callstack}: ({severity}{inconclusive:, inconclusive}) {message}";
+                else if (mSettings->templateFormat == "selfcheck") {
+                    mSettings->templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\\n{code}";
+                    mSettings->templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
+                }
             }
 
             else if (std::strcmp(argv[i], "--template-location") == 0 ||

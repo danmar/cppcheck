@@ -25,6 +25,7 @@
 #include "token.h"
 
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 class Settings;
@@ -156,7 +157,7 @@ public:
     /**
      * Create abstract syntax tree.
      */
-    void createAst();
+    void createAst() const;
 
     /**
      * Check abstract syntax tree.
@@ -211,7 +212,7 @@ private:
     /** settings */
     const Settings* mSettings;
 
-    std::set<std::string> mKeywords;
+    std::unordered_set<std::string> mKeywords;
 
     /** File is known to be C/C++ code */
     bool mIsC;

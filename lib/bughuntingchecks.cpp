@@ -72,7 +72,8 @@ static void arrayIndex(const Token *tok, const ExprEngine::Value &value, ExprEng
                                   bailout);
         }
     }
-    if (value.isLessThan(dataBase, 0)) {
+    bool isUnsigned = tok->valueType() && tok->valueType()->sign == ::ValueType::Sign::UNSIGNED;
+    if (!isUnsigned && value.isLessThan(dataBase, 0)) {
         const bool bailout = (value.type == ExprEngine::ValueType::BailoutValue);
         dataBase->reportError(tok,
                               Severity::SeverityType::error,
@@ -129,7 +130,7 @@ static void bufferOverflow(const Token *tok, const ExprEngine::Value &value, Exp
         }
 
         for (const Library::ArgumentChecks::MinSize &minsize: checks.minsizes) {
-            if (minsize.type == Library::ArgumentChecks::MinSize::ARGVALUE && minsize.arg > 0 && minsize.arg <= arguments.size()) {
+            if (minsize.type == Library::ArgumentChecks::MinSize::Type::ARGVALUE && minsize.arg > 0 && minsize.arg <= arguments.size()) {
                 ExprEngine::ValuePtr otherValue = functionCallArguments->argValues[minsize.arg - 1];
                 if (!otherValue || otherValue->type == ExprEngine::ValueType::BailoutValue) {
                     overflowArgument = argnr;
@@ -140,7 +141,7 @@ static void bufferOverflow(const Token *tok, const ExprEngine::Value &value, Exp
                     overflowArgument = argnr;
                     break;
                 }
-            } else if (minsize.type == Library::ArgumentChecks::MinSize::STRLEN && minsize.arg > 0 && minsize.arg <= arguments.size()) {
+            } else if (minsize.type == Library::ArgumentChecks::MinSize::Type::STRLEN && minsize.arg > 0 && minsize.arg <= arguments.size()) {
                 if (func->formatstr) {
                     // TODO: implement this properly. check if minsize refers to a format string and check max length of that..
                     overflowArgument = argnr;
@@ -582,32 +583,32 @@ static void checkFunctionCall(const Token *tok, const ExprEngine::Value &value, 
         bool err = false;
         std::string bad;
         switch (invalidArgValue.type) {
-        case Library::InvalidArgValue::eq:
+        case Library::InvalidArgValue::Type::eq:
             if (!tok->hasKnownIntValue() || tok->getKnownIntValue() == MathLib::toLongNumber(invalidArgValue.op1))
                 err = value.isEqual(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
             bad = "equals " + invalidArgValue.op1;
             break;
-        case Library::InvalidArgValue::le:
+        case Library::InvalidArgValue::Type::le:
             if (!tok->hasKnownIntValue() || tok->getKnownIntValue() <= MathLib::toLongNumber(invalidArgValue.op1))
                 err = value.isLessThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1) + 1);
             bad = "less equal " + invalidArgValue.op1;
             break;
-        case Library::InvalidArgValue::lt:
+        case Library::InvalidArgValue::Type::lt:
             if (!tok->hasKnownIntValue() || tok->getKnownIntValue() < MathLib::toLongNumber(invalidArgValue.op1))
                 err = value.isLessThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
             bad = "less than " + invalidArgValue.op1;
             break;
-        case Library::InvalidArgValue::ge:
+        case Library::InvalidArgValue::Type::ge:
             if (!tok->hasKnownIntValue() || tok->getKnownIntValue() >= MathLib::toLongNumber(invalidArgValue.op1))
                 err = value.isGreaterThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1) - 1);
             bad = "greater equal " + invalidArgValue.op1;
             break;
-        case Library::InvalidArgValue::gt:
+        case Library::InvalidArgValue::Type::gt:
             if (!tok->hasKnownIntValue() || tok->getKnownIntValue() > MathLib::toLongNumber(invalidArgValue.op1))
                 err = value.isGreaterThan(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
             bad = "greater than " + invalidArgValue.op1;
             break;
-        case Library::InvalidArgValue::range:
+        case Library::InvalidArgValue::Type::range:
             // TODO
             err = value.isEqual(dataBase, MathLib::toLongNumber(invalidArgValue.op1));
             err |= value.isEqual(dataBase, MathLib::toLongNumber(invalidArgValue.op2));

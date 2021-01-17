@@ -326,7 +326,7 @@ private:
         checkUninitVar("int f() {\n"
                        "    int a,b,c;\n"
                        "    a = b = c;\n"
-                       "}", "test.cpp", /*verify=*/ false);
+                       "}", "test.cpp", /*debugwarnings=*/ false);
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: c\n", errout.str());
 
         checkUninitVar("static void foo()\n"

@@ -30,6 +30,8 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -52,11 +54,11 @@ class CPPCHECKLIB Library {
 public:
     Library();
 
-    enum ErrorCode { OK, FILE_NOT_FOUND, BAD_XML, UNKNOWN_ELEMENT, MISSING_ATTRIBUTE, BAD_ATTRIBUTE_VALUE, UNSUPPORTED_FORMAT, DUPLICATE_PLATFORM_TYPE, PLATFORM_TYPE_REDEFINED };
+    enum class ErrorCode { OK, FILE_NOT_FOUND, BAD_XML, UNKNOWN_ELEMENT, MISSING_ATTRIBUTE, BAD_ATTRIBUTE_VALUE, UNSUPPORTED_FORMAT, DUPLICATE_PLATFORM_TYPE, PLATFORM_TYPE_REDEFINED };
 
     class Error {
     public:
-        Error() : errorcode(OK) {}
+        Error() : errorcode(ErrorCode::OK) {}
         explicit Error(ErrorCode e) : errorcode(e) {}
         template<typename T>
         Error(ErrorCode e, T&& r) : errorcode(e), reason(r) {}
@@ -283,7 +285,7 @@ public:
 
         class MinSize {
         public:
-            enum Type { NONE, STRLEN, ARGVALUE, SIZEOF, MUL, VALUE };
+            enum class Type { NONE, STRLEN, ARGVALUE, SIZEOF, MUL, VALUE };
             MinSize(Type t, int a) : type(t), arg(a), arg2(0), value(0) {}
             Type type;
             int arg;
@@ -316,7 +318,7 @@ public:
     };
 
     const Function *getFunction(const Token *ftok) const;
-    std::map<std::string, Function> functions;
+    std::unordered_map<std::string, Function> functions;
     bool isUse(const std::string& functionName) const;
     bool isLeakIgnore(const std::string& functionName) const;
     bool isFunctionConst(const std::string& functionName, bool pure) const;
@@ -349,7 +351,7 @@ public:
     }
 
     struct InvalidArgValue {
-        enum Type {le, lt, eq, ge, gt, range} type;
+        enum class Type {le, lt, eq, ge, gt, range} type;
         std::string op1;
         std::string op2;
         bool isInt() const {
@@ -422,16 +424,16 @@ public:
 
     std::vector<std::string> defines; // to provide some library defines
 
-    std::set<std::string> smartPointers;
+    std::unordered_set<std::string> smartPointers;
     bool isSmartPointer(const Token *tok) const;
 
     struct PodType {
         unsigned int   size;
         char           sign;
-        enum { NO, BOOL, CHAR, SHORT, INT, LONG, LONGLONG } stdtype;
+        enum class Type { NO, BOOL, CHAR, SHORT, INT, LONG, LONGLONG } stdtype;
     };
     const struct PodType *podtype(const std::string &name) const {
-        const std::map<std::string, struct PodType>::const_iterator it = mPodTypes.find(name);
+        const std::unordered_map<std::string, struct PodType>::const_iterator it = mPodTypes.find(name);
         return (it != mPodTypes.end()) ? &(it->second) : nullptr;
     }
 
@@ -575,7 +577,7 @@ private:
     std::map<std::string, ExportedFunctions> mExporters; // keywords that export variables/functions to libraries (meta-code/macros)
     std::map<std::string, std::set<std::string> > mImporters; // keywords that import variables/functions
     std::map<std::string, int> mReflection; // invocation of reflection
-    std::map<std::string, struct PodType> mPodTypes; // pod types
+    std::unordered_map<std::string, struct PodType> mPodTypes; // pod types
     std::map<std::string, PlatformType> mPlatformTypes; // platform independent typedefs
     std::map<std::string, Platform> mPlatforms; // platform dependent typedefs
     std::map<std::pair<std::string,std::string>, TypeCheck> mTypeChecks;

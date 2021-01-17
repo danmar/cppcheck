@@ -445,7 +445,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         }
 
         // skip std::
-        if (tok && tok->str() == "::")
+        if (tok->str() == "::")
             tok = tok->next();
         while (Token::Match(tok, "%name% ::")) {
             tok = tok->tokAt(2);
@@ -702,7 +702,7 @@ static bool areAllParamsTypes(const std::vector<const Token *> &params)
     if (params.empty())
         return false;
 
-    for (auto param : params) {
+    for (const auto *param : params) {
         if (!Token::Match(param->previous(), "typename|class %name% ,|>"))
             return false;
     }
@@ -985,7 +985,11 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
     // template parameters with default value has syntax such as:
     //     x = y
     // this list will contain all the '=' tokens for such arguments
-    std::list<Token *> eq;
+    struct Default {
+        Token *eq;
+        Token *end;
+    };
+    std::list<Default> eq;
     // and this set the position of parameters with a default value
     std::set<std::size_t> defaultedArgPos;
 
@@ -1012,9 +1016,11 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
 
         // end of template parameters?
         if (tok->str() == ">") {
-            if (templateParmDepth<2)
+            if (templateParmDepth<2) {
+                if (!eq.empty())
+                    eq.back().end = tok;
                 break;
-            else
+            } else
                 --templateParmDepth;
         }
 
@@ -1023,13 +1029,16 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
             typeParameterNames[tok->strAt(1)] = templatepar - 1;
 
         // next template parameter
-        if (tok->str() == "," && (1 == templateParmDepth)) // Ticket #5823: Properly count parameters
+        if (tok->str() == "," && (1 == templateParmDepth)) { // Ticket #5823: Properly count parameters
+            if (!eq.empty())
+                eq.back().end = tok;
             ++templatepar;
+        }
 
         // default parameter value?
         else if (Token::Match(tok, "= !!>")) {
             if (defaultedArgPos.insert(templatepar).second) {
-                eq.push_back(tok);
+                eq.push_back(Default{tok, nullptr});
             } else {
                 // Ticket #5605: Syntax error (two equal signs for the same parameter), bail out
                 eq.clear();
@@ -1085,25 +1094,30 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
 
         if (tok && tok->str() == ">") {
             tok = tok->previous();
-            std::list<Token *>::const_iterator it = eq.begin();
+            std::list<Default>::const_iterator it = eq.begin();
             for (std::size_t i = (templatepar - eq.size()); it != eq.end() && i < usedpar; ++i)
                 ++it;
             int count = 0;
             while (it != eq.end()) {
-                int indentlevel = 0;
+                // check for end
+                if (!it->end) {
+                    if (mSettings->debugwarnings) {
+                        const std::list<const Token*> locationList(1, it->eq);
+                        const ErrorMessage errmsg(locationList, &mTokenizer->list,
+                                                  Severity::debug,
+                                                  "noparamend",
+                                                  "TemplateSimplifier couldn't find end of template parameter.",
+                                                  false);
+                    }
+                    break;
+                }
+
                 if ((usedpar + count) && usedpar <= (instantiationArgs.size() + count)) {
                     tok->insertToken(",");
                     tok = tok->next();
                 }
-                const Token *from = (*it)->next();
                 std::stack<Token *> links;
-                while (from && (!links.empty() || indentlevel || !Token::Match(from, ",|>"))) {
-                    if (from->str() == "<" &&
-                        (from->strAt(1) == ">" || (from->previous()->isName() &&
-                                                   typeParameterNames.find(from->strAt(-1)) == typeParameterNames.end())))
-                        ++indentlevel;
-                    else if (from->str() == ">" && (links.empty() || links.top()->str() == "<" || indentlevel))
-                        --indentlevel;
+                for (const Token* from = it->eq->next(); from && from != it->end; from = from->next()) {
                     auto entry = typeParameterNames.find(from->str());
                     if (entry != typeParameterNames.end() && entry->second < instantiationArgs.size()) {
                         for (const Token *tok1 : instantiationArgs[entry->second]) {
@@ -1128,7 +1142,6 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
                             links.pop();
                         }
                     }
-                    from = from->next();
                 }
                 ++it;
                 count++;
@@ -1139,7 +1152,8 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
         simplifyTemplateArgs(instantiation.token()->next(), instantiationEnd);
     }
 
-    for (Token * const eqtok : eq) {
+    for (const auto & entry : eq) {
+        Token *const eqtok = entry.eq;
         Token *tok2;
         int indentlevel = 0;
         for (tok2 = eqtok->next(); tok2; tok2 = tok2->next()) {
@@ -1509,7 +1523,7 @@ void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, c
 
 bool TemplateSimplifier::alreadyHasNamespace(const TokenAndName &templateDeclaration, const Token *tok)
 {
-    std::string scope = templateDeclaration.scope();
+    const std::string& scope = templateDeclaration.scope();
 
     // get the length in tokens of the namespace
     std::string::size_type pos = 0;
@@ -1561,7 +1575,7 @@ void TemplateSimplifier::expandTemplate(
         Token * start;
         Token * end;
         auto it = mTemplateForwardDeclarationsMap.find(dst);
-        if (it != mTemplateForwardDeclarationsMap.end()) {
+        if (!isSpecialization && it != mTemplateForwardDeclarationsMap.end()) {
             dst = it->second;
             dstStart = dst->previous();
             const Token * temp1 = dst->tokAt(1)->findClosingBracket();
@@ -1569,6 +1583,14 @@ void TemplateSimplifier::expandTemplate(
             start = temp1->next();
             end = temp2->linkAt(1)->next();
         } else {
+            if (it != mTemplateForwardDeclarationsMap.end()) {
+                std::list<TokenAndName>::iterator it1 = std::find_if(mTemplateForwardDeclarations.begin(),
+                                                        mTemplateForwardDeclarations.end(),
+                                                        FindToken(it->second));
+                if (it1 != mTemplateForwardDeclarations.end())
+                    mMemberFunctionsToDelete.push_back(*it1);
+            }
+
             auto it2 = mTemplateSpecializationMap.find(dst);
             if (it2 != mTemplateSpecializationMap.end()) {
                 dst = it2->second;
@@ -3720,6 +3742,15 @@ void TemplateSimplifier::simplifyTemplates(
             if (it != mTemplateDeclarations.end()) {
                 removeTemplate(it->token());
                 mTemplateDeclarations.erase(it);
+            } else {
+                const std::list<TokenAndName>::iterator it1 = std::find_if(mTemplateForwardDeclarations.begin(),
+                        mTemplateForwardDeclarations.end(),
+                        FindToken(mMemberFunctionsToDelete.begin()->token()));
+                // multiple functions can share the same declaration so make sure it hasn't already been deleted
+                if (it1 != mTemplateForwardDeclarations.end()) {
+                    removeTemplate(it1->token());
+                    mTemplateForwardDeclarations.erase(it1);
+                }
             }
             mMemberFunctionsToDelete.erase(mMemberFunctionsToDelete.begin());
         }

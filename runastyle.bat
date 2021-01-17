@@ -30,6 +30,8 @@
 %ASTYLE% --options=%RCFILE% -r gui/test/*.h
 %ASTYLE% --options=%RCFILE% lib/*.cpp
 %ASTYLE% --options=%RCFILE% lib/*.h
+%ASTYLE% --options=%RCFILE% oss-fuzz/*.cpp
+%ASTYLE% --options=%RCFILE% oss-fuzz/*.h
 %ASTYLE% --options=%RCFILE% test/*.cpp
 %ASTYLE% --options=%RCFILE% test/cfg/*.c
 %ASTYLE% --options=%RCFILE% test/cfg/*.cpp

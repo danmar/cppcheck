@@ -521,15 +521,13 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
                                 if (var1->_assignments.find(scope) == var1->_assignments.end() ||
                                     scope->type == Scope::eSwitch) {
                                     // nothing to replace
+                                    // cppcheck-suppress duplicateBranch - remove when TODO below is address
                                     if (var1->_assignments.empty())
                                         replace = false;
 
                                     // this variable has previous assignments
                                     else {
-                                        /**
-                                         * @todo determine if existing aliases should be replaced or merged
-                                         */
-
+                                        // TODO: determine if existing aliases should be replaced or merged
                                         replace = false;
                                     }
                                 }
@@ -1620,9 +1618,6 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
             }
             // check if global variable is changed
             if (bodyVariable->isGlobal() || (pointersToGlobals.find(bodyVariable) != pointersToGlobals.end())) {
-                if (bodyVariable->isPointer() || bodyVariable->isArray()) {
-                    return false; // TODO: Update astutils.cpp:1544 isVariableChanged() and remove this. Unhandled case: `*(global_arr + 1) = new_val`
-                }
                 const int depth = 20;
                 if (isVariableChanged(bodyToken, depth, mSettings, mTokenizer->isCPP())) {
                     return false;

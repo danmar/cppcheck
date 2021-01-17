@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -115,7 +115,7 @@ void ResultsView::setAddedVariableContracts(const QStringList &added)
     mUI.mListAddedVariables->clear();
     mUI.mListAddedVariables->addItems(added);
     for (const QString& var: added) {
-        for (auto item: mUI.mListMissingVariables->findItems(var, Qt::MatchExactly))
+        for (auto *item: mUI.mListMissingVariables->findItems(var, Qt::MatchExactly))
             delete item;
         mVariableContracts.insert(var);
     }
@@ -364,6 +364,7 @@ void ResultsView::saveSettings(QSettings *settings)
 
 void ResultsView::translate()
 {
+    mUI.retranslateUi(this);
     mUI.mTree->translate();
 }
 
@@ -549,11 +550,11 @@ void ResultsView::variableDoubleClicked(QListWidgetItem* item)
 
 void ResultsView::editVariablesFilter(const QString &text)
 {
-    for (auto item: mUI.mListAddedVariables->findItems(".*", Qt::MatchRegExp)) {
+    for (auto *item: mUI.mListAddedVariables->findItems(".*", Qt::MatchRegExp)) {
         QString varname = item->text().mid(0, item->text().indexOf(" "));
         item->setHidden(!varname.contains(text));
     }
-    for (auto item: mUI.mListMissingVariables->findItems(".*", Qt::MatchRegExp))
+    for (auto *item: mUI.mListMissingVariables->findItems(".*", Qt::MatchRegExp))
         item->setHidden(!item->text().contains(text));
 }
 
@@ -578,7 +579,7 @@ bool ResultsView::eventFilter(QObject *target, QEvent *event)
         if (target == mUI.mListAddedVariables) {
             QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
             if (keyEvent->key() == Qt::Key_Delete) {
-                for (auto i: mUI.mListAddedVariables->selectedItems()) {
+                for (auto *i: mUI.mListAddedVariables->selectedItems()) {
                     emit deleteVariableContract(i->text().mid(0, i->text().indexOf(" ")));
                     delete i;
                 }
@@ -589,7 +590,7 @@ bool ResultsView::eventFilter(QObject *target, QEvent *event)
         if (target == mUI.mListAddedContracts) {
             QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
             if (keyEvent->key() == Qt::Key_Delete) {
-                for (auto i: mUI.mListAddedContracts->selectedItems()) {
+                for (auto *i: mUI.mListAddedContracts->selectedItems()) {
                     emit deleteFunctionContract(i->text());
                     delete i;
                 }

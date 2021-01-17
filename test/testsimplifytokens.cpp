@@ -4973,6 +4973,27 @@ private:
                                "}"
                                "namespace AB = A::B;" //duplicate declaration
                                "}"));
+
+        // variable and namespace alias with same name
+        ASSERT_EQUALS("namespace external { namespace ns { "
+                      "class A { "
+                      "public: "
+                      "static void f ( const std :: string & json ) ; "
+                      "} ; "
+                      "} } "
+                      "namespace external { namespace ns { "
+                      "void A :: f ( const std :: string & json ) { } "
+                      "} }",
+                      tok("namespace external::ns {"
+                          "    class A {"
+                          "    public:"
+                          "        static void f(const std::string& json);"
+                          "    };"
+                          "}"
+                          "namespace json = rapidjson;"
+                          "namespace external::ns {"
+                          "    void A::f(const std::string& json) { }"
+                          "}"));
     }
 };
 

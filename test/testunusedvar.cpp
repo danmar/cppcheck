@@ -751,8 +751,106 @@ private:
         functionVariableUsage(
             "int x[] = {0, 1, 3};\n"
             "int func() {\n"
+            "   *(x) = 2;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // pointer arithmetic on global array
+        functionVariableUsage(
+            "int x[] = {0, 1, 3};\n"
+            "int func() {\n"
             "   *(x + 1) = 2;\n"
             "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage(
+            "int x[][] = {{0, 1}, {2, 3}};\n"
+            "int func() {\n"
+            "   *((x + 1) + 1) = 4;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage(
+            "int x[] = {0, 1, 3};\n"
+            "int func() {\n"
+            "   int local = *(x + 1);\n"
+            "   (void) local;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:13]: (style) Unused variable: c\n", errout.str());
+
+        functionVariableUsage(
+            "int x[] = {0, 1, 3};\n"
+            "int func() {\n"
+            "   int* local = x + 2;\n"
+            "   (void) local;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:13]: (style) Unused variable: c\n", errout.str());
+
+        functionVariableUsage(
+            "int x[] = {0, 1, 3};\n"
+            "int func() {\n"
+            "   int* local = x + 2;\n"
+            "   return *local;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func()) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage(
+            "int x[] = {0, 1, 3};\n"
+            "int func() {\n"
+            "   return *(x + 1);\n"
             "}\n"
             "class C {\n"
             "public:\n"
@@ -1064,8 +1162,7 @@ private:
             "void f() {\n"
             "   C c;\n"
             "}");
-        // TODO: see TODO for global vars under CheckUnusedVar::isFunctionWithoutSideEffects()
-        TODO_ASSERT_EQUALS("[test.cpp:13]: (style) Unused variable: c\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:13]: (style) Unused variable: c\n", errout.str());
 
         // global struct variable modification
         functionVariableUsage(
@@ -1135,8 +1232,7 @@ private:
             "void f() {\n"
             "   C c;\n"
             "}");
-        // TODO: see TODO for global vars under CheckUnusedVar::isFunctionWithoutSideEffects()
-        TODO_ASSERT_EQUALS("[test.cpp:13]: (style) Unused variable: c\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:13]: (style) Unused variable: c\n", errout.str());
     }
 
     // #5355 - False positive: Variable is not assigned a value.

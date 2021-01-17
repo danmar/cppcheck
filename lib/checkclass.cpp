@@ -1889,7 +1889,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
     for (const Variable &var : scope->varlist) {
         if (var.name() == tok->str()) {
             if (tok->varId() == 0)
-                mSymbolDatabase->debugMessage(tok, "CheckClass::isMemberVar found used member variable \'" + tok->str() + "\' with varid 0");
+                mSymbolDatabase->debugMessage(tok, "varid0", "CheckClass::isMemberVar found used member variable \'" + tok->str() + "\' with varid 0");
 
             return !var.isStatic();
         }
@@ -2497,6 +2497,7 @@ void CheckClass::checkCopyCtorAndEqOperator()
     // The message must be clarified. How is the behaviour different?
     return;
 
+    // cppcheck-suppress unreachableCode - remove when code is enabled again
     if (!mSettings->isEnabled(Settings::WARNING))
         return;
 
