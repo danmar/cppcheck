@@ -270,14 +270,11 @@ struct ForwardTraversal {
         return a;
     }
 
-    void continueUpdateRangeAfterLoop(std::vector<ForwardTraversal>& ftv, bool checkThen, Token* start, const Token* endToken)
+    void continueUpdateRangeAfterLoop(std::vector<ForwardTraversal>& ftv, Token* start, const Token* endToken)
     {
         for (ForwardTraversal& ft : ftv) {
-            if (!checkThen)
-                ft.updateRange(start, endToken);
-            // If value is being modified conditionally then continue analysis
-            // else if (!analyzer->isConditional() && ft.analyzer->isConditional())
-            else if (ft.terminate == Terminate::None)
+            // If analysis has terminated normally, then continue analysis
+            if (ft.terminate == Terminate::None)
                 ft.updateRange(start, endToken);
         }
     }
@@ -323,12 +320,12 @@ struct ForwardTraversal {
             Token* writeTok = findRange(endBlock->link(), endBlock, std::mem_fn(&Analyzer::Action::isModified));
             const Token* nextStatement = Token::findmatch(writeTok, ";|}", endBlock);
             if (!Token::Match(nextStatement, ";|} break ;")) {
-                continueUpdateRangeAfterLoop(ftv, checkThen, endBlock, endToken);
+                continueUpdateRangeAfterLoop(ftv, endBlock, endToken);
                 return Break(Terminate::Bail);
             }
         } else {
             if (stepTok && updateRecursive(stepTok) == Progress::Break) {
-                continueUpdateRangeAfterLoop(ftv, checkThen, endBlock, endToken);
+                continueUpdateRangeAfterLoop(ftv, endBlock, endToken);
                 return Break(Terminate::Bail);
             }
         }
