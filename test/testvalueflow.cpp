@@ -2591,6 +2591,16 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 10U, 1));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 10U, 0));
+
+        code = "int f(int a, int b) {\n"
+               "  if (!a && !b)\n"
+               "    return;\n"
+               "  if ((!a && b) || (a && !b))\n"
+               "    return;\n"
+               "  int x = a;\n" // <- a is _not_ 0
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 7U, 0));
     }
 
     void valueFlowAfterConditionExpr() {
