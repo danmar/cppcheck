@@ -2125,7 +2125,7 @@ private:
                "  }\n"
                "  a = x;\n" // <- x can't be 0
                "}\n";
-        ASSERT_EQUALS(true, testValueOfX(code, 9U, 0)); // x can be 0 at line 9
+        ASSERT_EQUALS(true, testValueOfX(code, 9U, 0));       // x can be 0 at line 9
         ASSERT_EQUALS(false, testValueOfXKnown(code, 9U, 0)); // x can't be known at line 9
 
         code = "void f(const int *buf) {\n"

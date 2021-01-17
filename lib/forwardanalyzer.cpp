@@ -11,7 +11,7 @@
 
 struct ForwardTraversal {
     enum class Progress { Continue, Break, Skip };
-    enum class Terminate { None, Bail, Escape, Modified, Inconclusive, Conditional};
+    enum class Terminate { None, Bail, Escape, Modified, Inconclusive, Conditional };
     ForwardTraversal(const ValuePtr<Analyzer>& analyzer, const Settings* settings)
         : analyzer(analyzer), settings(settings), actions(Analyzer::Action::None), analyzeOnly(false)
     {}
@@ -21,7 +21,8 @@ struct ForwardTraversal {
     bool analyzeOnly;
     Terminate terminate = Terminate::None;
 
-    Progress Break(Terminate t = Terminate::None) {
+    Progress Break(Terminate t = Terminate::None)
+    {
         if (!analyzeOnly && t != Terminate::None)
             terminate = t;
         return Progress::Break;
@@ -224,7 +225,8 @@ struct ForwardTraversal {
         ft.updateRange(start, end);
     }
 
-    std::vector<ForwardTraversal> forkScope(Token* endBlock, bool isModified = false) {
+    std::vector<ForwardTraversal> forkScope(Token* endBlock, bool isModified = false)
+    {
         if (analyzer->updateScope(endBlock, isModified)) {
             ForwardTraversal ft = *this;
             ft.analyzer->forkScope(endBlock);
@@ -232,7 +234,6 @@ struct ForwardTraversal {
             return {ft};
         }
         return std::vector<ForwardTraversal>{};
-
     }
 
     static bool hasGoto(const Token* endBlock) {
@@ -269,8 +270,9 @@ struct ForwardTraversal {
         return a;
     }
 
-    void continueUpdateRangeAfterLoop(std::vector<ForwardTraversal>& ftv, bool checkThen, Token* start, const Token* endToken) {
-        for(ForwardTraversal& ft:ftv) {
+    void continueUpdateRangeAfterLoop(std::vector<ForwardTraversal>& ftv, bool checkThen, Token* start, const Token* endToken)
+    {
+        for (ForwardTraversal& ft : ftv) {
             if (!checkThen)
                 ft.updateRange(start, endToken);
             // If value is being modified conditionally then continue analysis
@@ -280,7 +282,12 @@ struct ForwardTraversal {
         }
     }
 
-    Progress updateLoop(const Token* endToken, Token* endBlock, Token* condTok, Token* initTok = nullptr, Token* stepTok = nullptr) {
+    Progress updateLoop(const Token* endToken,
+                        Token* endBlock,
+                        Token* condTok,
+                        Token* initTok = nullptr,
+                        Token* stepTok = nullptr)
+    {
         const bool isDoWhile = precedes(endBlock, condTok);
         Analyzer::Action bodyAnalysis = analyzeScope(endBlock);
         Analyzer::Action allAnalysis = bodyAnalysis;
@@ -307,7 +314,7 @@ struct ForwardTraversal {
 
             std::tie(checkThen, checkElse) = evalCond(condTok);
             // condition is false, we don't enter the loop
-            if (checkElse) 
+            if (checkElse)
                 return Progress::Continue;
         }
 
@@ -430,7 +437,6 @@ struct ForwardTraversal {
                         Token* stepTok = getStepTok(tok);
                         if (updateLoop(end, endBlock, condTok, initTok, stepTok) == Progress::Break)
                             return Break();
-
                     }
                     tok = endBlock;
                 } else {
