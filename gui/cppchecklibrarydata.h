@@ -171,6 +171,8 @@ public:
         QString sign;
     };
 
+    using TypeChecks = QList<QPair<QString, QString>>;
+
     void clear() {
         containers.clear();
         defines.clear();
@@ -201,7 +203,7 @@ public:
     QList<struct Function> functions;
     QList<struct MemoryResource> memoryresource;
     QList<struct PodType> podtypes;
-    QList<QPair<QString, QString>> typeChecks;
+    QList<TypeChecks> typeChecks;
     QStringList undefines;
     QStringList smartPointers;
 };

@@ -103,9 +103,9 @@ static QString loadSmartPointer(const QXmlStreamReader &xmlReader)
     return xmlReader.attributes().value("class-name").toString();
 }
 
-static QList<QPair<QString, QString>> loadTypeChecks(QXmlStreamReader &xmlReader)
+static CppcheckLibraryData::TypeChecks loadTypeChecks(QXmlStreamReader &xmlReader)
 {
-    QList<QPair<QString, QString>> typeChecks;
+    CppcheckLibraryData::TypeChecks typeChecks;
     QXmlStreamReader::TokenType type;
     while ((type = xmlReader.readNext()) != QXmlStreamReader::EndElement ||
            xmlReader.name().toString() != "type-checks") {
@@ -516,18 +516,21 @@ static void writeMemoryResource(QXmlStreamWriter &xmlWriter, const CppcheckLibra
     xmlWriter.writeEndElement();
 }
 
-static void writeTypeChecks(QXmlStreamWriter &xmlWriter, const QList<QPair<QString, QString>> &typeChecks)
+static void writeTypeChecks(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::TypeChecks &typeChecks)
 {
     QPair<QString, QString> check;
-
     xmlWriter.writeStartElement("type-checks");
-    xmlWriter.writeStartElement("unusedvar");
+    if (!typeChecks.isEmpty()) {
+        xmlWriter.writeStartElement("unusedvar");
+    }
     foreach (check, typeChecks) {
         xmlWriter.writeStartElement(check.first);
         xmlWriter.writeCharacters(check.second);
         xmlWriter.writeEndElement();
     }
-    xmlWriter.writeEndElement();
+    if (!typeChecks.isEmpty()) {
+        xmlWriter.writeEndElement();
+    }
     xmlWriter.writeEndElement();
 }
 
@@ -578,8 +581,8 @@ QString CppcheckLibraryData::toString() const
         xmlWriter.writeEndElement();
     }
 
-    if (!typeChecks.isEmpty()) {
-        writeTypeChecks(xmlWriter, typeChecks);
+    foreach (const TypeChecks check, typeChecks) {
+        writeTypeChecks(xmlWriter, check);
     }
 
     foreach (const QString &smartPtr, smartPointers) {

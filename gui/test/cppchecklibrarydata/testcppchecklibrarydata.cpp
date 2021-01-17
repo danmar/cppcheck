@@ -103,12 +103,20 @@ void TestCppcheckLibraryData::typechecksValid()
     // Do size and content checks against swapped data.
     QCOMPARE(libraryData.typeChecks.size(), 3);
 
-    QCOMPARE(libraryData.typeChecks[0].first, "suppress");
-    QCOMPARE(libraryData.typeChecks[0].second, "std::insert_iterator");
-    QCOMPARE(libraryData.typeChecks[1].first, "check");
-    QCOMPARE(libraryData.typeChecks[1].second, "std::pair");
-    QCOMPARE(libraryData.typeChecks[2].first, "check");
-    QCOMPARE(libraryData.typeChecks[2].second, "std::tuple");
+    CppcheckLibraryData::TypeChecks check = libraryData.typeChecks[0];
+    QCOMPARE(check.size(), 2);
+    QCOMPARE(check[0].first, "suppress");
+    QCOMPARE(check[0].second, "std::insert_iterator");
+    QCOMPARE(check[1].first, "check");
+    QCOMPARE(check[1].second, "std::pair");
+
+    check = libraryData.typeChecks[1];
+    QCOMPARE(check.isEmpty(), true);
+
+    check = libraryData.typeChecks[2];
+    QCOMPARE(check.size(), 1);
+    QCOMPARE(check[0].first, "check");
+    QCOMPARE(check[0].second, "std::tuple");
 
     // Save library data to file
     saveCfgFile(TempCfgFile, libraryData);
@@ -124,8 +132,13 @@ void TestCppcheckLibraryData::typechecksValid()
     QCOMPARE(libraryData.typeChecks.size(), fileLibraryData.typeChecks.size());
     QCOMPARE(libraryData.typeChecks.size(), 3);
     for (int idx=0; idx < libraryData.typeChecks.size(); idx++) {
-        QCOMPARE(libraryData.typeChecks[idx].first, fileLibraryData.typeChecks[idx].first);
-        QCOMPARE(libraryData.typeChecks[idx].second, fileLibraryData.typeChecks[idx].second);
+        CppcheckLibraryData::TypeChecks lhs = libraryData.typeChecks[idx];
+        CppcheckLibraryData::TypeChecks rhs = fileLibraryData.typeChecks[idx];
+        QCOMPARE(lhs.size(), lhs.size());
+        for (int num=0; num < lhs.size(); num++) {
+            QCOMPARE(lhs[num].first, rhs[num].first);
+            QCOMPARE(lhs[num].second, rhs[num].second);
+        }
     }
 }
 
