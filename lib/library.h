@@ -564,7 +564,7 @@ private:
     std::map<std::string, AllocFunc> mAlloc; // allocation functions
     std::map<std::string, AllocFunc> mDealloc; // deallocation functions
     std::map<std::string, AllocFunc> mRealloc; // reallocation functions
-    std::map<std::string, FalseTrueMaybe> mNoReturn; // is function noreturn?
+    std::unordered_map<std::string, FalseTrueMaybe> mNoReturn; // is function noreturn?
     std::map<std::string, std::string> mReturnValue;
     std::map<std::string, std::string> mReturnValueType;
     std::map<std::string, int> mReturnValueContainer;
