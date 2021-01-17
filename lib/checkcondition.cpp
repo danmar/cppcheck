@@ -594,12 +594,14 @@ void CheckCondition::multiCondition2()
         if (!Token::simpleMatch(scope.classDef->linkAt(1), ") {"))
             continue;
 
+        bool functionCall = false;
         bool nonConstFunctionCall = false;
         bool nonlocal = false; // nonlocal variable used in condition
         std::set<int> vars; // variables used in condition
         visitAstNodes(condTok,
         [&](const Token *cond) {
             if (Token::Match(cond, "%name% (")) {
+                functionCall = true;
                 nonConstFunctionCall = isNonConstFunctionCall(cond, mSettings->library);
                 if (nonConstFunctionCall)
                     return ChildrenToVisit::done;
@@ -755,7 +757,8 @@ void CheckCondition::multiCondition2()
                         break;
                 }
                 if ((tok->varId() && vars.find(tok->varId()) != vars.end()) ||
-                    (!tok->varId() && nonlocal)) {
+                    (!tok->varId() && nonlocal) ||
+                    (functionCall && tok->variable() && !tok->variable()->isLocal())) {
                     if (Token::Match(tok, "%name% %assign%|++|--"))
                         break;
                     if (Token::Match(tok->astParent(), "*|.|[")) {

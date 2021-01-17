@@ -1308,7 +1308,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
 
 void SymbolDatabase::createSymbolDatabaseIncompleteVars()
 {
-    const std::set<std::string> cpp20keywords = {
+    static const std::unordered_set<std::string> cpp20keywords = {
         "alignas",
         "alignof",
         "axiom",
@@ -1321,7 +1321,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         "reflexpr",
         "requires",
     };
-    const std::set<std::string> cppkeywords = {
+    static const std::unordered_set<std::string> cppkeywords = {
         "asm",
         "auto",
         "catch",
@@ -3400,9 +3400,11 @@ void SymbolDatabase::printOut(const char *title) const
 
         if (scope->type == Scope::eEnum) {
             std::cout << "    enumType: ";
-            if (scope->enumType)
-                scope->enumType->stringify(std::cout, false, true, false);
-            else
+            if (scope->enumType) {
+                std::string s;
+                scope->enumType->stringify(s, false, true, false);
+                std::cout << s;
+            } else
                 std::cout << "int";
             std::cout << std::endl;
             std::cout << "    enumClass: " << scope->enumClass << std::endl;
@@ -5379,8 +5381,8 @@ namespace {
     "register", "return", "short", "signed", "sizeof", "static", "struct", "switch", "typedef", \
     "union", "unsigned", "void", "volatile", "while"
 
-    const std::set<std::string> c_keywords = { C_KEYWORDS, "restrict" };
-    const std::set<std::string> cpp_keywords = {
+    const std::unordered_set<std::string> c_keywords = { C_KEYWORDS, "restrict" };
+    const std::unordered_set<std::string> cpp_keywords = {
         C_KEYWORDS,
         "alignas", "alignof", "and", "and_eq", "asm", "bitand", "bitor", "bool", "catch", "char8_t", "char16_t",
         "char32_t", "class", "compl", "concept", "consteval", "constexpr", "constinit", "const_cast", "co_await",

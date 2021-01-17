@@ -1558,6 +1558,9 @@ void CheckStl::checkFindInsert()
             std::tie(containerTok, keyTok) = isMapFind(condTok->astOperand1());
             if (!containerTok)
                 continue;
+            // In < C++17 we only warn for small simple types
+            if (mSettings->standards.cpp < Standards::CPP17 && !(keyTok && keyTok->valueType() && (keyTok->valueType()->isIntegral() || keyTok->valueType()->pointer > 0)))
+                continue;
 
             const Token *thenTok = tok->next()->link()->next();
             const Token *valueTok = findInsertValue(thenTok, containerTok, keyTok, mSettings->library);

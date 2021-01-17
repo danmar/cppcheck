@@ -421,19 +421,41 @@ namespace {
 
 static Token *splitDefinitionFromTypedef(Token *tok, nonneg int *unnamedCount)
 {
-    Token *tok1;
     std::string name;
     bool isConst = false;
+    Token *tok1 = tok->next();
 
-    if (tok->next()->str() == "const") {
-        tok->deleteNext();
+    // skip const if present
+    if (tok1->str() == "const") {
+        tok1->deleteThis();
         isConst = true;
     }
 
-    if (tok->strAt(2) == "{") { // unnamed
-        tok1 = tok->linkAt(2);
+    // skip "class|struct|union|enum"
+    tok1 = tok1->next();
 
-        if (tok1 && tok1->next()) {
+    const bool hasName = Token::Match(tok1, "%name%");
+
+    // skip name
+    if (hasName) {
+        name = tok1->str();
+        tok1 = tok1->next();
+    }
+
+    // skip base classes if present
+    if (tok1->str() == ":") {
+        tok1 = tok1->next();
+        while (tok1 && tok1->str() != "{")
+            tok1 = tok1->next();
+        if (!tok1)
+            return nullptr;
+    }
+
+    // skip to end
+    tok1 = tok1->link();
+
+    if (!hasName) { // unnamed
+        if (tok1->next()) {
             // use typedef name if available
             if (Token::Match(tok1->next(), "%type%"))
                 name = tok1->next()->str();
@@ -442,23 +464,6 @@ static Token *splitDefinitionFromTypedef(Token *tok, nonneg int *unnamedCount)
             tok->next()->insertToken(name);
         } else
             return nullptr;
-    } else if (tok->strAt(3) == ":") {
-        tok1 = tok->tokAt(4);
-        while (tok1 && tok1->str() != "{")
-            tok1 = tok1->next();
-        if (!tok1)
-            return nullptr;
-
-        tok1 = tok1->link();
-
-        name = tok->strAt(2);
-    } else { // has a name
-        tok1 = tok->linkAt(3);
-
-        if (!tok1)
-            return nullptr;
-
-        name = tok->strAt(2);
     }
 
     tok1->insertToken(";");
@@ -623,21 +628,11 @@ void Tokenizer::simplifyTypedef()
 
         // pull struct, union, enum or class definition out of typedef
         // use typedef name for unnamed struct, union, enum or class
-        if (Token::Match(tok->next(), "const| struct|enum|union|class %type%| {")) {
+        if (Token::Match(tok->next(), "const| struct|enum|union|class %type%| {|:")) {
             Token *tok1 = splitDefinitionFromTypedef(tok, &mUnnamedCount);
             if (!tok1)
                 continue;
             tok = tok1;
-        } else if (Token::Match(tok->next(), "const| struct|class %type% :")) {
-            Token *tok1 = tok;
-            while (tok1 && tok1->str() != ";" && tok1->str() != "{")
-                tok1 = tok1->next();
-            if (tok1 && tok1->str() == "{") {
-                tok1 = splitDefinitionFromTypedef(tok, &mUnnamedCount);
-                if (!tok1)
-                    continue;
-                tok = tok1;
-            }
         }
 
         /** @todo add support for union */
@@ -2003,25 +1998,31 @@ bool Tokenizer::simplifyUsing()
         // Move struct defined in using out of using.
         // using T = struct t { }; => struct t { }; using T = struct t;
         // fixme: this doesn't handle attributes
-        if (Token::Match(start, "struct|union|enum %name%| {")) {
-            if (start->strAt(1) != "{") {
-                Token *structEnd = start->linkAt(2);
-                structEnd->insertToken(";", "");
-                TokenList::copyTokens(structEnd->next(), tok, start->next());
-                usingStart = structEnd->tokAt(2);
-                nameToken = usingStart->next();
-                if (usingStart->strAt(2) == "=")
-                    start = usingStart->tokAt(3);
-                else
-                    start = usingStart->linkAt(2)->tokAt(3);
-                usingEnd = findSemicolon(start);
-                tok->deleteThis();
-                tok->deleteThis();
-                tok->deleteThis();
-                tok = usingStart;
-            } else {
-                Token *structEnd = start->linkAt(1);
-                structEnd->insertToken(";", "");
+        if (Token::Match(start, "class|struct|union|enum %name%| {|:")) {
+            Token *structEnd = start->tokAt(1);
+            const bool hasName = Token::Match(structEnd, "%name%");
+
+            // skip over name if present
+            if (hasName)
+                structEnd = structEnd->next();
+
+            // skip over base class information
+            if (structEnd->str() == ":") {
+                structEnd = structEnd->next(); // skip over ":"
+                while (structEnd && structEnd->str() != "{")
+                    structEnd = structEnd->next();
+                if (!structEnd)
+                    continue;
+            }
+
+            // use link to go to end
+            structEnd = structEnd->link();
+
+            // add ';' after end of struct
+            structEnd->insertToken(";", "");
+
+            // add name for anonymous struct
+            if (!hasName) {
                 std::string newName;
                 if (structEnd->strAt(2) == ";")
                     newName = name;
@@ -2030,19 +2031,23 @@ bool Tokenizer::simplifyUsing()
                 TokenList::copyTokens(structEnd->next(), tok, start);
                 structEnd->tokAt(5)->insertToken(newName, "");
                 start->insertToken(newName, "");
+            } else
+                TokenList::copyTokens(structEnd->next(), tok, start->next());
 
-                usingStart = structEnd->tokAt(2);
-                nameToken = usingStart->next();
-                if (usingStart->strAt(2) == "=")
-                    start = usingStart->tokAt(3);
-                else
-                    start = usingStart->linkAt(2)->tokAt(3);
-                usingEnd = findSemicolon(start);
-                tok->deleteThis();
-                tok->deleteThis();
-                tok->deleteThis();
-                tok = usingStart;
-            }
+            // add using after end of struct
+            usingStart = structEnd->tokAt(2);
+            nameToken = usingStart->next();
+            if (usingStart->strAt(2) == "=")
+                start = usingStart->tokAt(3);
+            else
+                start = usingStart->linkAt(2)->tokAt(3);
+            usingEnd = findSemicolon(start);
+
+            // delete original using before struct
+            tok->deleteThis();
+            tok->deleteThis();
+            tok->deleteThis();
+            tok = usingStart;
         }
 
         // remove 'typename' and 'template'
@@ -2131,7 +2136,7 @@ bool Tokenizer::simplifyUsing()
                 if (Token::Match(type, "%type%"))
                     type = type->next();
             } else if (Token::Match(type, "%type%")) {
-                while (Token::Match(type, "const|struct|union|enum %type%") ||
+                while (Token::Match(type, "const|class|struct|union|enum %type%") ||
                        (type->next() && type->next()->isStandardType()))
                     type = type->next();
 
@@ -3369,15 +3374,15 @@ void Tokenizer::setVarId()
 
 // Variable declarations can't start with "return" etc.
 #define NOTSTART_C "NOT", "case", "default", "goto", "not", "return", "sizeof", "typedef"
-static const std::set<std::string> notstart_c = { NOTSTART_C };
-static const std::set<std::string> notstart_cpp = { NOTSTART_C,
+static const std::unordered_set<std::string> notstart_c = { NOTSTART_C };
+static const std::unordered_set<std::string> notstart_cpp = { NOTSTART_C,
                                                     "delete", "friend", "new", "throw", "using", "virtual", "explicit", "const_cast", "dynamic_cast", "reinterpret_cast", "static_cast", "template"
                                                   };
 
 void Tokenizer::setVarIdPass1()
 {
     // Variable declarations can't start with "return" etc.
-    const std::set<std::string>& notstart = (isC()) ? notstart_c : notstart_cpp;
+    const std::unordered_set<std::string>& notstart = (isC()) ? notstart_c : notstart_cpp;
 
     VariableMap variableMap;
     std::map<int, std::map<std::string, int> > structMembers;
@@ -9676,7 +9681,7 @@ void Tokenizer::findGarbageCode() const
 {
     const bool isCPP11 = isCPP() && mSettings->standards.cpp >= Standards::CPP11;
 
-    const std::set<std::string> nonConsecutiveKeywords{ "break",
+    static const std::unordered_set<std::string> nonConsecutiveKeywords{ "break",
         "continue",
         "for",
         "goto",
@@ -9757,7 +9762,7 @@ void Tokenizer::findGarbageCode() const
     }
 
     // Keywords in global scope
-    std::set<std::string> nonGlobalKeywords{"break",
+    static const std::unordered_set<std::string> nonGlobalKeywords{"break",
                                             "continue",
                                             "for",
                                             "goto",
@@ -10528,7 +10533,7 @@ void Tokenizer::simplifyCPPAttribute()
     }
 }
 
-static const std::set<std::string> keywords = {
+static const std::unordered_set<std::string> keywords = {
     "inline"
     , "_inline"
     , "__inline"
@@ -11384,6 +11389,11 @@ void Tokenizer::simplifyOperatorName()
                 }
                 op += ")";
                 par = par->next();
+                if (Token::simpleMatch(par, "...")) {
+                    op.clear();
+                    par = nullptr;
+                    break;
+                }
                 done = false;
             } else if (Token::Match(par, "\"\" %name% (|;|<")) {
                 op += "\"\"";

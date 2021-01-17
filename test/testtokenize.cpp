@@ -427,6 +427,7 @@ private:
         TEST_CASE(simplifyOperatorName25);
         TEST_CASE(simplifyOperatorName26);
         TEST_CASE(simplifyOperatorName27);
+        TEST_CASE(simplifyOperatorName28);
 
         TEST_CASE(simplifyOverloadedOperators1);
         TEST_CASE(simplifyOverloadedOperators2); // (*this)(123)
@@ -6734,6 +6735,14 @@ private:
                             "x = \"abc\"i;";
         ASSERT_EQUALS("int operator\"\"i ( const char * , int ) ;\n"
                       "x = operator\"\"i ( \"abc\" , 3 ) ;",
+                      tokenizeAndStringify(code));
+    }
+
+    void simplifyOperatorName28() {
+        const char code[] = "template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };\n"
+                            "int main() { }";
+        ASSERT_EQUALS("template < class ... Ts > struct overloaded : Ts ... { using Ts :: operator ( ) ... ; } ;\n"
+                      "int main ( ) { }",
                       tokenizeAndStringify(code));
     }
 

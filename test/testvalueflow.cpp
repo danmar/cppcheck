@@ -2606,6 +2606,16 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 10U, 1));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 10U, 0));
+
+        code = "int f(int a, int b) {\n"
+               "  if (!a && !b)\n"
+               "    return;\n"
+               "  if ((!a && b) || (a && !b))\n"
+               "    return;\n"
+               "  int x = a;\n" // <- a is _not_ 0
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 7U, 0));
     }
 
     void valueFlowAfterConditionExpr() {
@@ -4066,7 +4076,7 @@ private:
                "  return((n=42) && *n == 'A');\n"
                "}";
         values = tokenValues(code, "n ==");
-        ASSERT_EQUALS(true, values.size() != 1U || !values.front().isUninitValue());
+        ASSERT_EQUALS(true, values.empty());
 
         // #8233
         code = "void foo() {\n"
@@ -4285,6 +4295,16 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 10U, 0));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 10U, 1));
+
+        code = "void f() {\n"
+               "    const int size = arrayInfo.num(0);\n"
+               "    if (size <= 0)\n"
+               "        return;\n"
+               "    for (;;)\n"
+               "        if (size > 0) {}\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "> 0").isKnown());
+        ASSERT_EQUALS(true, valueOfTok(code, "> 0").intvalue == 1);
     }
 
     static std::string isPossibleContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {
