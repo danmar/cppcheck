@@ -4286,25 +4286,20 @@ bool Scope::isVariableDeclaration(const Token* const tok, const Token*& vartok, 
     if (localVarTok->str() == "const")
         localVarTok = localVarTok->next();
 
-    if (Token::Match(localVarTok, "%name% ;|=") || (localVarTok && localVarTok->varId() && localVarTok->strAt(1) == ":")) {
+    if (!localVarTok)
+        return false;
+
+    if (Token::Match(localVarTok, "%name% ;|=")
+        || (localVarTok->varId() && localVarTok->strAt(1) == ":")
+        || (Token::Match(localVarTok, "%name% )|[") && localVarTok->str() != "operator")
+        || (localVarTok->varId() && Token::Match(localVarTok, "%name% (|{") &&
+            Token::Match(localVarTok->next()->link(), ")|} ;"))
+        || (type == eCatch && Token::Match(localVarTok, "%name% )"))) {
         vartok = localVarTok;
         typetok = localTypeTok;
-        return nullptr != vartok && vartok->isName();
-    } else if (Token::Match(localVarTok, "%name% )|[") && localVarTok->str() != "operator") {
-        vartok = localVarTok;
-        typetok = localTypeTok;
-        return nullptr != vartok && vartok->isName();
-    } else if (localVarTok && localVarTok->varId() && Token::Match(localVarTok, "%name% (|{") &&
-               Token::Match(localVarTok->next()->link(), ")|} ;")) {
-        vartok = localVarTok;
-        typetok = localTypeTok;
-        return nullptr != vartok && vartok->isName();
-    } else if (type == eCatch &&
-               Token::Match(localVarTok, "%name% )")) {
-        vartok = localVarTok;
-        typetok = localTypeTok;
-        return nullptr != vartok && vartok->isName();
+        return true;
     }
+    
     return false;
 }
 
