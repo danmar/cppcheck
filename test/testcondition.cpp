@@ -730,10 +730,9 @@ private:
               "    if (x) {}\n"
               "    else if (!y) {}\n"
               "}");
-        ASSERT_EQUALS("test.cpp:4:style:Expression is always true because 'else if' condition is opposite to previous condition at line 3.\n"
-                      "test.cpp:2:note:'y' is assigned value 'x' here.\n"
-                      "test.cpp:3:note:first condition\n"
-                      "test.cpp:4:note:else if condition is opposite to first condition\n", errout.str());
+        ASSERT_EQUALS("test.cpp:4:style:Condition '!y' is always true\n"
+                      "test.cpp:3:note:condition 'x'\n"
+                      "test.cpp:4:note:Condition '!y' is always true\n", errout.str());
     }
 
     void checkBadBitmaskCheck() {

@@ -514,7 +514,7 @@ void CheckCondition::multiCondition()
                 if (isOverlappingCond(cond1, tok2->astOperand2(), true))
                     overlappingElseIfConditionError(tok2, cond1->linenr());
                 else if (isOppositeCond(true, mTokenizer->isCPP(), cond1, tok2->astOperand2(), mSettings->library, true, true, &errorPath))
-                    oppositeElseIfConditionError(cond1, tok2, errorPath);
+                    oppositeElseIfConditionError(cond1, tok2->astOperand2(), errorPath);
             }
         }
     }
