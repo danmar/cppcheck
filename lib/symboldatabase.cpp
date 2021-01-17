@@ -4234,6 +4234,9 @@ bool isFunctionCallInsteadOfVariableDeclaration(const Token* tok, const Scope& s
 
 bool Scope::isVariableDeclaration(const Token* const tok, const Token*& vartok, const Token*& typetok) const
 {
+    if (!tok)
+        return false;
+
     if (isFunctionCallInsteadOfVariableDeclaration(tok, *this, *this->check))
         return false;
 
