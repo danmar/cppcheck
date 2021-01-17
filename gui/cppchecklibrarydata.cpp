@@ -103,9 +103,9 @@ static QString loadSmartPointer(const QXmlStreamReader &xmlReader)
     return xmlReader.attributes().value("class-name").toString();
 }
 
-static CppcheckLibraryData::TypeChecks loadTypeChecks(QXmlStreamReader &xmlReader)
+static QList<QPair<QString, QString>> loadTypeChecks(QXmlStreamReader &xmlReader)
 {
-    CppcheckLibraryData::TypeChecks typeChecks;
+    QList<QPair<QString, QString>> typeChecks;
     QXmlStreamReader::TokenType type;
     while ((type = xmlReader.readNext()) != QXmlStreamReader::EndElement ||
            xmlReader.name().toString() != "type-checks") {
@@ -114,7 +114,7 @@ static CppcheckLibraryData::TypeChecks loadTypeChecks(QXmlStreamReader &xmlReade
         const QString elementName = xmlReader.name().toString();
         if (elementName == "suppress" || elementName == "check") {
             QPair<QString, QString> entry(elementName, xmlReader.readElementText());
-            typeChecks.typeCheckList.append(entry);
+            typeChecks.append(entry);
         }
     }
     return typeChecks;
@@ -516,20 +516,18 @@ static void writeMemoryResource(QXmlStreamWriter &xmlWriter, const CppcheckLibra
     xmlWriter.writeEndElement();
 }
 
-static void writeTypeChecks(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::TypeChecks &tc)
+static void writeTypeChecks(QXmlStreamWriter &xmlWriter, const QList<QPair<QString, QString>> &typeChecks)
 {
+    QPair<QString, QString> check;
+
     xmlWriter.writeStartElement("type-checks");
-    if (!tc.typeCheckList.isEmpty()) {
-        xmlWriter.writeStartElement("unusedvar");
-    }
-    for (int idx=0; idx < tc.typeCheckList.size(); ++idx) {
-        xmlWriter.writeStartElement(tc.typeCheckList[idx].first);
-        xmlWriter.writeCharacters(tc.typeCheckList[idx].second);
+    xmlWriter.writeStartElement("unusedvar");
+    foreach (check, typeChecks) {
+        xmlWriter.writeStartElement(check.first);
+        xmlWriter.writeCharacters(check.second);
         xmlWriter.writeEndElement();
     }
-    if (!tc.typeCheckList.isEmpty()) {
-        xmlWriter.writeEndElement();
-    }
+    xmlWriter.writeEndElement();
     xmlWriter.writeEndElement();
 }
 
@@ -580,8 +578,8 @@ QString CppcheckLibraryData::toString() const
         xmlWriter.writeEndElement();
     }
 
-    foreach (const TypeChecks &check, typeChecks) {
-        writeTypeChecks(xmlWriter, check);
+    if (!typeChecks.isEmpty()) {
+        writeTypeChecks(xmlWriter, typeChecks);
     }
 
     foreach (const QString &smartPtr, smartPointers) {

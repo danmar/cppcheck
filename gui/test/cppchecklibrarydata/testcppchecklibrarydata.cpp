@@ -101,15 +101,14 @@ void TestCppcheckLibraryData::typechecksValid()
     libraryData.swap(fileLibraryData);
 
     // Do size and content checks against swapped data.
-    QCOMPARE(libraryData.typeChecks.size(), 2);
-    QCOMPARE(libraryData.typeChecks[0].typeCheckList.size(), 2);
+    QCOMPARE(libraryData.typeChecks.size(), 3);
 
-    QCOMPARE(libraryData.typeChecks[0].typeCheckList[0].first, "suppress");
-    QCOMPARE(libraryData.typeChecks[0].typeCheckList[0].second, "std::insert_iterator");
-    QCOMPARE(libraryData.typeChecks[0].typeCheckList[1].first, "check");
-    QCOMPARE(libraryData.typeChecks[0].typeCheckList[1].second, "std::pair");
-
-    QCOMPARE(libraryData.typeChecks[1].typeCheckList.isEmpty(), true);
+    QCOMPARE(libraryData.typeChecks[0].first, "suppress");
+    QCOMPARE(libraryData.typeChecks[0].second, "std::insert_iterator");
+    QCOMPARE(libraryData.typeChecks[1].first, "check");
+    QCOMPARE(libraryData.typeChecks[1].second, "std::pair");
+    QCOMPARE(libraryData.typeChecks[2].first, "check");
+    QCOMPARE(libraryData.typeChecks[2].second, "std::tuple");
 
     // Save library data to file
     saveCfgFile(TempCfgFile, libraryData);
@@ -123,12 +122,10 @@ void TestCppcheckLibraryData::typechecksValid()
 
     // Verify no data got lost or modified
     QCOMPARE(libraryData.typeChecks.size(), fileLibraryData.typeChecks.size());
-    QCOMPARE(libraryData.typeChecks.size(), 2);
+    QCOMPARE(libraryData.typeChecks.size(), 3);
     for (int idx=0; idx < libraryData.typeChecks.size(); idx++) {
-        for (int num=0; num < libraryData.typeChecks[idx].typeCheckList.size(); num++) {
-            QCOMPARE(libraryData.typeChecks[idx].typeCheckList[num].first, fileLibraryData.typeChecks[idx].typeCheckList[num].first);
-            QCOMPARE(libraryData.typeChecks[idx].typeCheckList[num].second, fileLibraryData.typeChecks[idx].typeCheckList[num].second);
-        }
+        QCOMPARE(libraryData.typeChecks[idx].first, fileLibraryData.typeChecks[idx].first);
+        QCOMPARE(libraryData.typeChecks[idx].second, fileLibraryData.typeChecks[idx].second);
     }
 }
 

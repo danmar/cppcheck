@@ -171,10 +171,6 @@ public:
         QString sign;
     };
 
-    struct TypeChecks {
-        QList<QPair<QString, QString>> typeCheckList;
-    };
-
     void clear() {
         containers.clear();
         defines.clear();
@@ -185,7 +181,6 @@ public:
         smartPointers.clear();
         typeChecks.clear();
     }
-
 
     void swap(CppcheckLibraryData &other) {
         containers.swap(other.containers);
@@ -206,7 +201,7 @@ public:
     QList<struct Function> functions;
     QList<struct MemoryResource> memoryresource;
     QList<struct PodType> podtypes;
-    QList<struct TypeChecks> typeChecks;
+    QList<QPair<QString, QString>> typeChecks;
     QStringList undefines;
     QStringList smartPointers;
 };
