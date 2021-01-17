@@ -124,8 +124,6 @@ struct Analyzer {
     virtual void forkScope(const Token* endBlock) {}
     /// If the value is conditional
     virtual bool isConditional() const = 0;
-    /// If the value represents a non value type
-    virtual bool isNonValue() const = 0;
     /// The condition that will be assumed during analysis
     virtual void assume(const Token* tok, bool state, const Token* at = nullptr) = 0;
     /// Return analyzer for expression at token
