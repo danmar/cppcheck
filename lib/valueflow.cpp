@@ -1725,7 +1725,24 @@ static const ValueFlow::Value* getKnownValue(const Token* tok, ValueFlow::Value:
     return nullptr;
 }
 
-static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, const Settings* settings, int depth = 20)
+static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, const Settings* settings, int depth = 20);
+
+static bool bifurcateVariableChanged(const Variable* var, const std::set<nonneg int>& varids, const Token* start, const Token* end, const Settings* settings, int depth = 20)
+{
+    bool result = false;
+    const Token* tok = start;
+    while((tok = findVariableChanged(tok->next(), end, var->isPointer(), var->declarationId(), var->isGlobal(), settings, true))) {
+        if (Token::Match(tok->astParent(), "%assign%")) {
+            if (!bifurcate(tok->astParent()->astOperand2(), varids, settings, depth - 1))
+                return true;
+        } else {
+            result = true;
+        }
+    }
+    return result;
+}
+
+static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, const Settings* settings, int depth)
 {
     if (depth < 0)
         return false;
@@ -1749,7 +1766,7 @@ static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, cons
         if (Token::Match(start, "; %varid% =", var->declarationId()))
             start = start->tokAt(2);
         if (var->isConst() ||
-            !isVariableChanged(start->next(), tok, var->declarationId(), var->isGlobal(), settings, true))
+            !bifurcateVariableChanged(var, varids, start, tok, settings, depth))
             return var->isArgument() || bifurcate(start->astOperand2(), varids, settings, depth - 1);
         return false;
     }
@@ -2103,6 +2120,10 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
         if (value.condition)
             return !value.isKnown() && !value.isImpossible();
         return false;
+    }
+
+    virtual bool isNonValue() const OVERRIDE {
+        return value.isNonValue();
     }
 
     virtual bool updateScope(const Token* endBlock, bool) const OVERRIDE {
@@ -4922,6 +4943,14 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
                 return !p.second.isImpossible();
         }
         return false;
+    }
+
+    virtual bool isNonValue() const OVERRIDE {
+        for (auto&& p:values) {
+            if (!p.second.isNonValue())
+                return false;
+        }
+        return true;
     }
 
     virtual bool updateScope(const Token* endBlock, bool) const OVERRIDE {
