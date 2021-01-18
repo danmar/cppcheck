@@ -24,6 +24,7 @@
 #include "symboldatabase.h"
 #include "tokenlist.h"
 #include "utils.h"
+#include "tokenrange.h"
 
 #include <algorithm>
 #include <cassert>
@@ -51,6 +52,11 @@ Token::Token(TokensFrontBack *tokensFrontBack) :
 Token::~Token()
 {
     delete mImpl;
+}
+
+TokenRange<const Token> Token::toEnd() const
+{
+    return TokenRange<const Token>(this, nullptr);
 }
 
 static const std::set<std::string> controlFlowKeywords = {

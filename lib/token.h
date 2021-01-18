@@ -44,6 +44,9 @@ class ValueType;
 class Variable;
 class TokenList;
 
+template <typename T>
+class TokenRange;
+
 /**
  * @brief This struct stores pointers to the front and back tokens of the list this token is in.
  */
@@ -187,29 +190,7 @@ public:
     explicit Token(TokensFrontBack *tokensFrontBack = nullptr);
     ~Token();
 
-    struct TokenEnumeration
-    {
-        Token const* mt;
-        TokenEnumeration(Token const* t) : mt(t) {}
-
-        struct TokenIterator
-        {
-            const Token* mt;
-            TokenIterator(const Token* t) : mt(t) {}
-            TokenIterator& operator++() { mt = mt->next(); return *this; }
-            bool operator==(const TokenIterator& b) { return mt == b.mt; }
-            bool operator!=(const TokenIterator& b) { return mt != b.mt; }
-            const Token* operator*() { return mt; }
-        };
-
-        TokenIterator begin() { return TokenIterator(mt); }
-        TokenIterator end() { return TokenIterator(mt->mTokensFrontBack->back); }
-    };
-
-    TokenEnumeration toend() const
-    {
-        return TokenEnumeration(this);
-    }
+    TokenRange<const Token> toEnd() const;
 
     template<typename T>
     void str(T&& s) {
