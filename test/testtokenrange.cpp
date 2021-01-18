@@ -48,7 +48,7 @@ private:
     void enumerationToEnd() const {
         givenACodeSampleToTokenize var("void a(){} void main(){ if(true){a();} }");
         const Token* expected = var.tokens();
-        for (auto t : TokenRange<const Token>{var.tokens(), nullptr }) {
+        for (auto t : ConstTokenRange{var.tokens(), nullptr }) {
             ASSERT_EQUALS(expected, t);
             expected = t->next();
         }
@@ -71,7 +71,7 @@ private:
         givenACodeSampleToTokenize var("void a(){} void main(){ if(true){a();} }");
         const Token* expected = var.tokens()->tokAt(4);
         const Token* end = var.tokens()->tokAt(10);
-        for (auto t : TokenRange<const Token>{ expected, end }) {
+        for (auto t : ConstTokenRange{ expected, end }) {
             ASSERT_EQUALS(expected, t);
             expected = t->next();
         }
@@ -88,7 +88,7 @@ private:
         const Scope& scope = *std::next(sd->scopeList.begin(), 3); //The scope of the if block
 
         std::ostringstream contents;
-        for (auto t : TokenRange<const Token>{ scope.bodyStart->next(), scope.bodyEnd })
+        for (auto t : ConstTokenRange{ scope.bodyStart->next(), scope.bodyEnd })
         {
             contents << t->str();
         }
@@ -97,7 +97,7 @@ private:
 
     void exampleAlgorithms() const {
         givenACodeSampleToTokenize var("void a(){} void main(){ if(true){a();} }");
-        TokenRange<const Token> range{ var.tokens(), nullptr };
+        ConstTokenRange range{ var.tokens(), nullptr };
         ASSERT_EQUALS(true, std::all_of(range.begin(), range.end(), [](const Token*) {return true;}));
         ASSERT_EQUALS(true, std::any_of(range.begin(), range.end(), [](const Token* t) {return t->str() == "true";}));
         ASSERT_EQUALS("true", (*std::find_if(range.begin(), range.end(), [](const Token* t) {return t->str() == "true";}))->str());

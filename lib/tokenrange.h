@@ -23,16 +23,14 @@
 
 #include "config.h"
 
-template<typename T>
-class TokenRange
+template<typename T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
+class TokenRangeBase
 {
-    static_assert(std::is_convertible<T*, const Token*>::value, "T must be a Token to use TokenRange");
-
     T* mFront;
     T* mBack;
 
 public:
-    TokenRange(T* front, T* back) : mFront(front), mBack(back) {}
+    TokenRangeBase(T* front, T* back) : mFront(front), mBack(back) {}
 
     struct TokenIterator
     {
@@ -53,6 +51,15 @@ public:
 
     TokenIterator begin() { return TokenIterator(mFront); }
     TokenIterator end() { return TokenIterator(mBack); }
+};
+
+class TokenRange : public TokenRangeBase<Token> {
+public:
+    using TokenRangeBase<Token>::TokenRangeBase;
+};
+
+class ConstTokenRange : public TokenRangeBase<const Token> {
+    using TokenRangeBase<const Token>::TokenRangeBase;
 };
 
 #endif // tokenrangeH

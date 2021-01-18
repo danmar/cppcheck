@@ -44,8 +44,7 @@ class ValueType;
 class Variable;
 class TokenList;
 
-template <typename T>
-class TokenRange;
+class ConstTokenRange;
 
 /**
  * @brief This struct stores pointers to the front and back tokens of the list this token is in.
@@ -190,7 +189,7 @@ public:
     explicit Token(TokensFrontBack *tokensFrontBack = nullptr);
     ~Token();
 
-    TokenRange<const Token> toEnd() const;
+    ConstTokenRange toEnd() const;
 
     template<typename T>
     void str(T&& s) {
