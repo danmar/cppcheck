@@ -633,7 +633,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
                     bool newFunc = true; // Is this function already in the database?
                     for (std::multimap<std::string, const Function *>::const_iterator i = scope->functionMap.find(tok->str()); i != scope->functionMap.end() && i->first == tok->str(); ++i) {
-                        if (Function::argsMatch(scope, i->second->argDef, argStart, emptyString, 0)) {
+                        if (i->second->argsMatch(scope, i->second->argDef, argStart, emptyString, 0)) {
                             newFunc = false;
                             break;
                         }
@@ -2348,7 +2348,39 @@ static bool usingNamespace(const Scope *scope, const Token *first, const Token *
     return false;
 }
 
-bool Function::argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length)
+static bool typesMatch(
+    const Scope *first_scope,
+    const Token *first_token,
+    const Scope *second_scope,
+    const Token *second_token,
+    const Token **new_first,
+    const Token **new_second)
+{
+    // get first type
+    const Type * first_type = first_scope->check->findType(first_token, first_scope);
+    if (first_type) {
+        // get second type
+        const Type * second_type = second_scope->check->findType(second_token, second_scope);
+        // check if types match
+        if (first_type == second_type) {
+            const Token* tok1 = first_token;
+            while (tok1 && tok1->str() != first_type->name())
+                tok1 = tok1->next();
+            const Token *tok2 = second_token;
+            while (tok2 && tok2->str() != second_type->name())
+                tok2 = tok2->next();
+            // update parser token positions
+            if (tok1 && tok2) {
+                *new_first = tok1;
+                *new_second = tok2;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool Function::argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length) const
 {
     const bool isCPP = scope->check->isCPP();
     if (!isCPP) // C does not support overloads
@@ -2484,6 +2516,10 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         // using namespace
         else if (usingNamespace(scope, first->next(), second->next(), offset))
             first = first->tokAt(offset);
+
+        // same type with different qualification
+        else if (typesMatch(scope, first->next(), nestedIn, second->next(), &first, &second))
+            ;
 
         // variable with class path
         else if (arg_path_length && Token::Match(first->next(), "%name%") && first->strAt(1) != "const") {
@@ -2641,7 +2677,7 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
             const Function *f = i->second;
             if (f->hasBody())
                 continue;
-            if (Function::argsMatch(scope, f->argDef, argStart, emptyString, 0)) {
+            if (f->argsMatch(scope, f->argDef, argStart, emptyString, 0)) {
                 function = const_cast<Function *>(i->second);
                 break;
             }
@@ -2793,7 +2829,7 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
             for (std::multimap<std::string, const Function *>::iterator it = scope1->functionMap.find((*tok)->str()); it != scope1->functionMap.end() && it->first == (*tok)->str(); ++it) {
                 Function * func = const_cast<Function *>(it->second);
                 if (!func->hasBody()) {
-                    if (Function::argsMatch(scope1, func->argDef, (*tok)->next(), path, path_length)) {
+                    if (func->argsMatch(scope1, func->argDef, (*tok)->next(), path, path_length)) {
                         if (func->type == Function::eDestructor && destructor) {
                             func->hasBody(true);
                         } else if (func->type != Function::eDestructor && !destructor) {
@@ -2974,6 +3010,8 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
                     base.name += tok2->str();
                 }
             }
+
+            base.type = classScope->check->findType(base.nameTok, classScope);
 
             // save pattern for base class name
             derivedFrom.push_back(base);
@@ -4482,6 +4520,8 @@ const Type* SymbolDatabase::findVariableTypeInBase(const Scope* scope, const Tok
         for (const Type::BaseInfo & i : derivedFrom) {
             const Type *base = i.type;
             if (base && base->classScope) {
+                if (base->classScope == scope)
+                    return nullptr;
                 const Type * type = base->classScope->findType(typeTok->str());
                 if (type)
                     return type;
@@ -4648,6 +4688,30 @@ void Scope::findFunctionInBase(const std::string & name, nonneg int args, std::v
             }
         }
     }
+}
+
+const Scope *Scope::findRecordInBase(const std::string & name) const
+{
+    if (isClassOrStruct() && definedType && !definedType->derivedFrom.empty()) {
+        const std::vector<Type::BaseInfo> &derivedFrom = definedType->derivedFrom;
+        for (const Type::BaseInfo & i : derivedFrom) {
+            const Type *base = i.type;
+            if (base && base->classScope) {
+                if (base->classScope == this) // Recursive class; tok should have been found already
+                    continue;
+
+                if (base->name() == name) {
+                    return base->classScope;
+                }
+
+                const ::Type * type = base->classScope->findType(name);
+                if (type)
+                    return type->classScope;
+            }
+        }
+    }
+
+    return nullptr;
 }
 
 //---------------------------------------------------------------------------
@@ -5219,9 +5283,14 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
             }
         } else {
             const Type * type = scope->findType(tok->str());
+            const Scope *scope1;
             if (type)
                 return type;
-            else
+            else if ((scope1 = scope->findRecordInBase(tok->str()))) {
+                type = scope1->definedType;
+                if (type)
+                    return type;
+            } else
                 break;
         }
     }
@@ -5251,9 +5320,14 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
                     }
                 } else {
                     const Type * type = scope->findType(tok->str());
+                    const Scope *scope1;
                     if (type)
                         return type;
-                    else
+                    else if ((scope1 = scope->findRecordInBase(tok->str()))) {
+                        type = scope1->definedType;
+                        if (type)
+                            return type;
+                    } else
                         break;
                 }
             }
@@ -5345,7 +5419,7 @@ Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *n
     for (std::multimap<std::string, const Function *>::const_iterator it = ns->functionMap.find(func->str());
          it != ns->functionMap.end() && it->first == func->str(); ++it) {
 
-        if (Function::argsMatch(ns, it->second->argDef, func->next(), path, path_length) &&
+        if (it->second->argsMatch(ns, it->second->argDef, func->next(), path, path_length) &&
             it->second->isDestructor() == destructor) {
             function = it->second;
             break;

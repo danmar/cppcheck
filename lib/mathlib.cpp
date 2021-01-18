@@ -603,7 +603,7 @@ double MathLib::toDoubleNumber(const std::string &str)
     return ret;
 }
 
-template<> std::string MathLib::toString(double value)
+template<> std::string MathLib::toString<double>(double value)
 {
     std::ostringstream result;
     result.precision(12);
