@@ -1730,7 +1730,30 @@ static const ValueFlow::Value* getKnownValue(const Token* tok, ValueFlow::Value:
     return nullptr;
 }
 
-static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, const Settings* settings, int depth = 20)
+static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, const Settings* settings, int depth = 20);
+
+static bool bifurcateVariableChanged(const Variable* var,
+                                     const std::set<nonneg int>& varids,
+                                     const Token* start,
+                                     const Token* end,
+                                     const Settings* settings,
+                                     int depth = 20)
+{
+    bool result = false;
+    const Token* tok = start;
+    while ((tok = findVariableChanged(
+                tok->next(), end, var->isPointer(), var->declarationId(), var->isGlobal(), settings, true))) {
+        if (Token::Match(tok->astParent(), "%assign%")) {
+            if (!bifurcate(tok->astParent()->astOperand2(), varids, settings, depth - 1))
+                return true;
+        } else {
+            result = true;
+        }
+    }
+    return result;
+}
+
+static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, const Settings* settings, int depth)
 {
     if (depth < 0)
         return false;
@@ -1753,8 +1776,7 @@ static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, cons
             return false;
         if (Token::Match(start, "; %varid% =", var->declarationId()))
             start = start->tokAt(2);
-        if (var->isConst() ||
-            !isVariableChanged(start->next(), tok, var->declarationId(), var->isGlobal(), settings, true))
+        if (var->isConst() || !bifurcateVariableChanged(var, varids, start, tok, settings, depth))
             return var->isArgument() || bifurcate(start->astOperand2(), varids, settings, depth - 1);
         return false;
     }
@@ -1949,7 +1971,7 @@ struct ValueFlowAnalyzer : Analyzer {
                 if (isModified(tok).isModified())
                     a = Action::Invalid;
                 if (Token::Match(tok->astParent(), "%assign%") && astIsLHS(tok))
-                    a |= Action::Read;
+                    a |= Action::Invalid;
                 return a;
             }
             return Action::None;

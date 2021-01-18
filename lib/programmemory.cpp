@@ -209,8 +209,8 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                 setvar = true;
             }
         }
-        if (!setvar && (Token::Match(tok2, ";|{|}|%type% %var% =") ||
-                        Token::Match(tok2, "[;{}] const| %type% %var% ("))) {
+        if (!setvar && (Token::Match(tok2, ";|{|}|%type% %var% =") || Token::Match(tok2, "[;{}] const| %type% %var% (") ||
+                        Token::Match(tok2->previous(), "for ( %var% ="))) {
             const Token *vartok = tok2->next();
             while (vartok->next()->isName())
                 vartok = vartok->next();
