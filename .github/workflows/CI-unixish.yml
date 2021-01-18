@@ -94,6 +94,11 @@ jobs:
           qmake
           make -j$(nproc)
           ./test-projectfile
+          popd
+          pushd gui/test/cppchecklibrarydata
+          qmake
+          make -j$(nproc)
+          ./test-cppchecklibrarydata
 
       - name: Generate Qt help file on ubuntu
         if: contains(matrix.os, 'ubuntu')

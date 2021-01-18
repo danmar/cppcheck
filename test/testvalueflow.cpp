@@ -2125,7 +2125,22 @@ private:
                "  }\n"
                "  a = x;\n" // <- x can't be 0
                "}\n";
-        ASSERT_EQUALS(false, testValueOfX(code, 9U, 0)); // x can't be 0 at line 9
+        ASSERT_EQUALS(true, testValueOfX(code, 9U, 0));       // x can be 0 at line 9
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 9U, 0)); // x can't be known at line 9
+
+        code = "void f(const int *buf) {\n"
+               "  int x = 0;\n"
+               "  for (int i = 0; i < 10; i++) {\n"
+               "    if (buf[i] == 123) {\n"
+               "      x = i;\n"
+               "      ;\n" // <- no break
+               "    } else {\n"
+               "      x = 1;\n"
+               "    }\n"
+               "  }\n"
+               "  a = x;\n" // <- x can't be 0
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 11U, 0)); // x can't be 0 at line 11
 
         code = "void f(const int *buf) {\n"
                "  int x = 0;\n"

@@ -3,7 +3,7 @@
 
 It is important that everybody in the Cppcheck team has a consistent idea about how this tool should work.
 
-This is a static analyser tool.
+This is a static analyzer tool.
 
 
 ## Normal analysis - No false positives
@@ -22,6 +22,10 @@ Reporting issues in Trac:
  - If you see a false negative; report that as an enhancement.
  - If you see a false positive; report that as a defect.
 
+### Inconclusive messages
+
+Inconclusive messages will be created if cppcheck cannot be sure there is an issue to warn but 50-50 probability. User shall enable inconclusive messages if they are willing to spend substantially more time on message verification in order to find more issues within a high false positive rate.
+Inconclusive messages shall not be used for new checks which are just being developed. There `settings.experimental` can be used.
 
 ## Bug hunting - Soundy analysis
 
