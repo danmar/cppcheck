@@ -37,10 +37,10 @@ public:
     struct TokenIterator
     {
         using iterator_category = std::forward_iterator_tag;
-        using value_type = Token*;
+        using value_type = T*;
         using difference_type = std::ptrdiff_t;
-        using pointer = Token**;
-        using reference = Token*&;
+        using pointer = void;
+        using reference = T*;
 
         T* mt;
         TokenIterator() : mt(nullptr) {}
