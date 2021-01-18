@@ -3004,8 +3004,11 @@ private:
 
         check("void f(const std::vector<std::string> &v) {\n"
               "    for(std::vector<std::string>::const_iterator it = v.begin(); it != v.end(); ++it) {\n"
-              "        if(it+1 != v.end())\n"
+              "        if(it+2 != v.end())\n"
+              "        {\n"
               "            ++it;\n"
+              "            ++it;\n"
+              "        }\n"
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -4726,6 +4729,21 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        // #9218 - not small type => do not warn if cpp standard is < c++17
+        {
+            const char code[] = "void f1(std::set<LargeType>& s, const LargeType& x) {\n"
+                                "    if (s.find(x) == s.end()) {\n"
+                                "        s.insert(x);\n"
+                                "    }\n"
+                                "}\n";
+            check(code, true, Standards::CPP11);
+            ASSERT_EQUALS("", errout.str());
+            check(code, true, Standards::CPP14);
+            ASSERT_EQUALS("", errout.str());
+            check(code, true, Standards::CPP17);
+            ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout.str());
+        }
     }
 
     void checkKnownEmptyContainer() {

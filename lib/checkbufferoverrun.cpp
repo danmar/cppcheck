@@ -887,11 +887,9 @@ void CheckBufferOverrun::objectIndex()
             const Token *idx = tok->astOperand2();
             if (!idx || !obj)
                 continue;
-            const ValueFlow::Value* vidx = nullptr;
             if (idx->hasKnownIntValue()) {
                 if (idx->getKnownIntValue() == 0)
                     continue;
-                vidx = &idx->values().front();
             }
             if (idx->hasKnownIntValue() && idx->getKnownIntValue() == 0)
                 continue;

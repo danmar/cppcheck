@@ -159,7 +159,7 @@ MathLib::value operator^(const MathLib::value &v1, const MathLib::value &v2);
 MathLib::value operator<<(const MathLib::value &v1, const MathLib::value &v2);
 MathLib::value operator>>(const MathLib::value &v1, const MathLib::value &v2);
 
-template<> CPPCHECKLIB std::string MathLib::toString(double value); // Declare specialization to avoid linker problems
+template<> CPPCHECKLIB std::string MathLib::toString<double>(double value); // Declare specialization to avoid linker problems
 
 /// @}
 //---------------------------------------------------------------------------

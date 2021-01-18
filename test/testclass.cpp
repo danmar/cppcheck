@@ -5391,14 +5391,14 @@ private:
                    "int MixerParticipant::GetAudioFrame() {\n"
                    "    return 0;\n"
                    "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (performance, inconclusive) Technically the member function 'MixerParticipant::GetAudioFrame' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
 
         checkConst("class MixerParticipant : public MixerParticipant {\n"
                    "    bool InitializeFileReader() {\n"
                    "       printf(\"music\");\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'MixerParticipant::InitializeFileReader' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
 
         // Based on an example from SVN source code causing an endless recursion within CheckClass::isConstMemberFunc()
         // A more complete example including a template declaration like

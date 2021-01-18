@@ -2125,7 +2125,22 @@ private:
                "  }\n"
                "  a = x;\n" // <- x can't be 0
                "}\n";
-        ASSERT_EQUALS(false, testValueOfX(code, 9U, 0)); // x can't be 0 at line 9
+        ASSERT_EQUALS(true, testValueOfX(code, 9U, 0));       // x can be 0 at line 9
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 9U, 0)); // x can't be known at line 9
+
+        code = "void f(const int *buf) {\n"
+               "  int x = 0;\n"
+               "  for (int i = 0; i < 10; i++) {\n"
+               "    if (buf[i] == 123) {\n"
+               "      x = i;\n"
+               "      ;\n" // <- no break
+               "    } else {\n"
+               "      x = 1;\n"
+               "    }\n"
+               "  }\n"
+               "  a = x;\n" // <- x can't be 0
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 11U, 0)); // x can't be 0 at line 11
 
         code = "void f(const int *buf) {\n"
                "  int x = 0;\n"
@@ -2591,6 +2606,16 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 10U, 1));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 10U, 0));
+
+        code = "int f(int a, int b) {\n"
+               "  if (!a && !b)\n"
+               "    return;\n"
+               "  if ((!a && b) || (a && !b))\n"
+               "    return;\n"
+               "  int x = a;\n" // <- a is _not_ 0
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 7U, 0));
     }
 
     void valueFlowAfterConditionExpr() {
@@ -4051,7 +4076,7 @@ private:
                "  return((n=42) && *n == 'A');\n"
                "}";
         values = tokenValues(code, "n ==");
-        ASSERT_EQUALS(true, values.size() != 1U || !values.front().isUninitValue());
+        ASSERT_EQUALS(true, values.empty());
 
         // #8233
         code = "void foo() {\n"
@@ -4270,6 +4295,16 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 10U, 0));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 10U, 1));
+
+        code = "void f() {\n"
+               "    const int size = arrayInfo.num(0);\n"
+               "    if (size <= 0)\n"
+               "        return;\n"
+               "    for (;;)\n"
+               "        if (size > 0) {}\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "> 0").isKnown());
+        ASSERT_EQUALS(true, valueOfTok(code, "> 0").intvalue == 1);
     }
 
     static std::string isPossibleContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {

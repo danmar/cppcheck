@@ -4440,6 +4440,32 @@ private:
                         "    return static_cast<char>(c);\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f(int x)\n"
+                        "{\n"
+                        "   int i;\n"
+                        "   char value;\n"
+                        "   for(i = 0; i < 1; i++) {\n"
+                        "       if(x > 1)\n"
+                        "           value = 0;\n"
+                        "    }\n"
+                        "    printf(\"\", value);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:9]: (error) Uninitialized variable: value\n", errout.str());
+
+        valueFlowUninit("void f(int x)\n"
+                        "{\n"
+                        "   int i;\n"
+                        "   char value;\n"
+                        "   for(i = 0; i < 1; i++) {\n"
+                        "       if(x > 1)\n"
+                        "           value = 0;\n"
+                        "       else\n"
+                        "           value = 1;\n"
+                        "    }\n"
+                        "    printf(\"\", value);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_ipa() {

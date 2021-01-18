@@ -193,13 +193,13 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Token* tok,
     fillProgramMemoryFromConditions(pm, tok->scope(), tok, settings);
 }
 
-static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok, const ProgramMemory& state, ProgramMemory::Map vars)
+static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok, const ProgramMemory& state, const ProgramMemory::Map& vars)
 {
     int indentlevel = 0;
     for (const Token *tok2 = tok; tok2; tok2 = tok2->previous()) {
         bool setvar = false;
         if (Token::Match(tok2, "[;{}] %var% = %var% ;")) {
-            for (auto&& p:vars) {
+            for (const auto& p:vars) {
                 if (p.first != tok2->next()->varId())
                     continue;
                 const Token *vartok = tok2->tokAt(3);
@@ -209,8 +209,8 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                 setvar = true;
             }
         }
-        if (!setvar && (Token::Match(tok2, ";|{|}|%type% %var% =") ||
-                        Token::Match(tok2, "[;{}] const| %type% %var% ("))) {
+        if (!setvar && (Token::Match(tok2, ";|{|}|%type% %var% =") || Token::Match(tok2, "[;{}] const| %type% %var% (") ||
+                        Token::Match(tok2->previous(), "for ( %var% ="))) {
             const Token *vartok = tok2->next();
             while (vartok->next()->isName())
                 vartok = vartok->next();
@@ -293,7 +293,6 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
 {
     ProgramMemory pm;
     fillProgramMemoryFromConditions(pm, tok, nullptr);
-    ProgramMemory local;
     for (const auto& p:vars) {
         nonneg int varid = p.first;
         const ValueFlow::Value &value = p.second;
@@ -301,7 +300,7 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
         if (value.varId)
             pm.setIntValue(value.varId, value.varvalue);
     }
-    local = pm;
+    ProgramMemory local = pm;
     fillProgramMemoryFromAssignments(pm, tok, local, vars);
     replace(pm, tok);
 }
@@ -377,7 +376,7 @@ void execute(const Token *expr,
     if (!expr)
         *error = true;
 
-    else if (expr->hasKnownIntValue()) {
+    else if (expr->hasKnownIntValue() && !expr->isAssignmentOp()) {
         *result = expr->values().front().intvalue;
     }
 
