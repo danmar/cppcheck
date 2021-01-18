@@ -23,14 +23,14 @@ before_install:
  - travis_retry sudo apt-get install -qq python3-pip libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet python3-dev liblua5.3-dev libcurl3 libcairo2-dev libsigc++-2.0-dev tidy libopencv-dev libz3-dev
 # Python 2 modules 
  - travis_retry python2 -m pip install --user pytest==4.6.4
- - travis_retry python2 -m pip install --user pylint
+# - travis_retry python2 -m pip install --user pylint
  - travis_retry python2 -m pip install --user unittest2
  - travis_retry python2 -m pip install --user pexpect # imported by tools/ci.py
  - travis_retry python2 -m pip install --user pygments
 # Python 3 modules
  - travis_retry python3 -m pip install --user setuptools --upgrade
  - travis_retry python3 -m pip install --user pytest
- - travis_retry python3 -m pip install --user pylint
+# - travis_retry python3 -m pip install --user pylint
  - travis_retry python3 -m pip install --user unittest2
  - travis_retry python3 -m pip install --user pexpect # imported by tools/ci.py
  - travis_retry python3 -m pip install --user requests # imported by tools/pr.py
