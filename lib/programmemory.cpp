@@ -1,5 +1,6 @@
 
 #include "programmemory.h"
+#include "mathlib.h"
 #include "token.h"
 #include "astutils.h"
 #include "symboldatabase.h"
@@ -124,16 +125,25 @@ bool conditionIsTrue(const Token *condition, const ProgramMemory &programMemory)
     return !error && result == 1;
 }
 
-static void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings, bool then)
+void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings, bool then)
 {
     if (Token::Match(tok, "==|>=|<=|<|>|!=")) {
-        if (then && !Token::Match(tok, "==|>=|<="))
+        if (then && !Token::Match(tok, "==|>=|<=|<|>"))
             return;
         if (!then && !Token::Match(tok, "<|>|!="))
             return;
         ValueFlow::Value truevalue;
         ValueFlow::Value falsevalue;
-        const Token* vartok = parseCompareInt(tok, truevalue, falsevalue);
+        const Token* vartok = parseCompareInt(tok, truevalue, falsevalue, [&](const Token* t) -> std::vector<MathLib::bigint> {
+            if (t->hasKnownIntValue())
+                return {t->values().front().intvalue};
+            MathLib::bigint result = 0;
+            bool error = false;
+            execute(t, &pm, &result, &error);
+            if (!error)
+                return {result};
+            return std::vector<MathLib::bigint>{};
+        });
         if (!vartok)
             return;
         if (vartok->varId() == 0)
@@ -170,22 +180,10 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Scope* scop
         return;
     assert(scope != scope->nestedIn);
     fillProgramMemoryFromConditions(pm, scope->nestedIn, endTok, settings);
-    if (scope->type == Scope::eIf || scope->type == Scope::eWhile || scope->type == Scope::eElse) {
-        const Token * bodyStart = scope->bodyStart;
-        if (scope->type == Scope::eElse) {
-            if (!Token::simpleMatch(bodyStart->tokAt(-2), "} else {"))
-                return;
-            bodyStart = bodyStart->linkAt(-2);
-        }
-        const Token * condEndTok = bodyStart->previous();
-        if (!Token::simpleMatch(condEndTok, ") {"))
+    if (scope->type == Scope::eIf || scope->type == Scope::eWhile || scope->type == Scope::eElse || scope->type == Scope::eFor) {
+        const Token* condTok = getCondTokFromEnd(scope->bodyEnd);
+        if (!condTok)
             return;
-        const Token * condStartTok = condEndTok->link();
-        if (!condStartTok)
-            return;
-        if (!Token::Match(condStartTok->previous(), "if|while ("))
-            return;
-        const Token * condTok = condStartTok->astOperand2();
         programMemoryParseCondition(pm, condTok, endTok, settings, scope->type != Scope::eElse);
     }
 }
@@ -195,13 +193,13 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Token* tok,
     fillProgramMemoryFromConditions(pm, tok->scope(), tok, settings);
 }
 
-static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok, const ProgramMemory& state, ProgramMemory::Map vars)
+static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok, const ProgramMemory& state, const ProgramMemory::Map& vars)
 {
     int indentlevel = 0;
     for (const Token *tok2 = tok; tok2; tok2 = tok2->previous()) {
         bool setvar = false;
         if (Token::Match(tok2, "[;{}] %var% = %var% ;")) {
-            for (auto&& p:vars) {
+            for (const auto& p:vars) {
                 if (p.first != tok2->next()->varId())
                     continue;
                 const Token *vartok = tok2->tokAt(3);
@@ -211,8 +209,8 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                 setvar = true;
             }
         }
-        if (!setvar && (Token::Match(tok2, ";|{|}|%type% %var% =") ||
-                        Token::Match(tok2, "[;{}] const| %type% %var% ("))) {
+        if (!setvar && (Token::Match(tok2, ";|{|}|%type% %var% =") || Token::Match(tok2, "[;{}] const| %type% %var% (") ||
+                        Token::Match(tok2->previous(), "for ( %var% ="))) {
             const Token *vartok = tok2->next();
             while (vartok->next()->isName())
                 vartok = vartok->next();
@@ -295,7 +293,6 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
 {
     ProgramMemory pm;
     fillProgramMemoryFromConditions(pm, tok, nullptr);
-    ProgramMemory local;
     for (const auto& p:vars) {
         nonneg int varid = p.first;
         const ValueFlow::Value &value = p.second;
@@ -303,7 +300,7 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
         if (value.varId)
             pm.setIntValue(value.varId, value.varvalue);
     }
-    local = pm;
+    ProgramMemory local = pm;
     fillProgramMemoryFromAssignments(pm, tok, local, vars);
     replace(pm, tok);
 }
@@ -379,7 +376,7 @@ void execute(const Token *expr,
     if (!expr)
         *error = true;
 
-    else if (expr->hasKnownIntValue()) {
+    else if (expr->hasKnownIntValue() && !expr->isAssignmentOp()) {
         *result = expr->values().front().intvalue;
     }
 

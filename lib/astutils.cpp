@@ -551,11 +551,14 @@ bool extractForLoopValues(const Token *forToken,
 
 static const Token * getVariableInitExpression(const Variable * var)
 {
-    if (!var || !var->declEndToken())
+    if (!var)
         return nullptr;
-    if (Token::Match(var->declEndToken(), "; %varid% =", var->declarationId()))
-        return var->declEndToken()->tokAt(2)->astOperand2();
-    return var->declEndToken()->astOperand2();
+    const Token *varDeclEndToken = var->declEndToken();
+    if (!varDeclEndToken)
+        return nullptr;
+    if (Token::Match(varDeclEndToken, "; %varid% =", var->declarationId()))
+        return varDeclEndToken->tokAt(2)->astOperand2();
+    return varDeclEndToken->astOperand2();
 }
 
 static bool isInLoopCondition(const Token * tok)
@@ -707,6 +710,8 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
     if (varTok->exprId() == 0) {
         if (!varTok->isLiteral())
             return tok;
+    } else if (!precedes(startToken, endToken)) {
+        return tok;
     } else if (isExpressionChanged(varTok, startToken, endToken, nullptr, cpp)) {
         return tok;
     }
@@ -727,13 +732,6 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
     errors->push_back(item);
 }
 
-static void findTokenValue(const Token* const tok, std::function<bool(const ValueFlow::Value &)> pred, std::function<void(const ValueFlow::Value &)> f)
-{
-    auto x = std::find_if(tok->values().begin(), tok->values().end(), pred);
-    if (x != tok->values().end())
-        f(*x);
-}
-
 static bool isSameLifetime(const Token * const tok1, const Token * const tok2)
 {
     ValueFlow::Value v1 = getLifetimeObjValue(tok1);
@@ -745,18 +743,23 @@ static bool isSameLifetime(const Token * const tok1, const Token * const tok2)
 
 static bool compareKnownValue(const Token * const tok1, const Token * const tok2, std::function<bool(const ValueFlow::Value&, const ValueFlow::Value&, bool)> compare)
 {
-    bool result = false;
-    bool sameLifetime = isSameLifetime(tok1, tok2);
-    findTokenValue(tok1, std::mem_fn(&ValueFlow::Value::isKnown), [&](const ValueFlow::Value& v1) {
-        if (v1.isNonValue() || v1.isContainerSizeValue())
-            return;
-        findTokenValue(tok2, std::mem_fn(&ValueFlow::Value::isKnown), [&](const ValueFlow::Value& v2) {
-            if (v1.valueType == v2.valueType) {
-                result = compare(v1, v2, sameLifetime);
-            }
-        });
-    });
-    return result;
+    static const auto isKnownFn = std::mem_fn(&ValueFlow::Value::isKnown);
+
+    const auto v1 = std::find_if(tok1->values().begin(), tok1->values().end(), isKnownFn);
+    if (v1 == tok1->values().end()) {
+        return false;
+    }
+    if (v1->isNonValue() || v1->isContainerSizeValue())
+        return false;
+    const auto v2 = std::find_if(tok2->values().begin(), tok2->values().end(), isKnownFn);
+    if (v2 == tok2->values().end()) {
+        return false;
+    }
+    if (v1->valueType != v2->valueType) {
+        return false;
+    }
+    const bool sameLifetime = isSameLifetime(tok1, tok2);
+    return compare(*v1, *v2, sameLifetime);
 }
 
 bool isEqualKnownValue(const Token * const tok1, const Token * const tok2)
@@ -1804,6 +1807,8 @@ bool isVariablesChanged(const Token* start,
 
 bool isThisChanged(const Token* start, const Token* end, int indirect, const Settings* settings, bool cpp)
 {
+    if (!precedes(start, end))
+        return false;
     for (const Token* tok = start; tok != end; tok = tok->next()) {
         if (!exprDependsOnThis(tok))
             continue;
@@ -1825,6 +1830,8 @@ bool isThisChanged(const Token* start, const Token* end, int indirect, const Set
 
 bool isExpressionChanged(const Token* expr, const Token* start, const Token* end, const Settings* settings, bool cpp, int depth)
 {
+    if (!precedes(start, end))
+        return false;
     const Token* result = findAstNode(expr, [&](const Token* tok) {
         if (exprDependsOnThis(tok) && isThisChanged(start, end, false, settings, cpp)) {
             return true;
@@ -1869,6 +1876,16 @@ std::vector<const Token *> getArguments(const Token *ftok)
     if (!startTok && tok->next() != tok->link())
         startTok = tok->astOperand1();
     return astFlatten(startTok, ",");
+}
+
+int getArgumentPos(const Variable* var, const Function* f)
+{
+    auto arg_it = std::find_if(f->argumentList.begin(), f->argumentList.end(), [&](const Variable& v) {
+        return v.nameToken() == var->nameToken();
+    });
+    if (arg_it == f->argumentList.end())
+        return -1;
+    return std::distance(f->argumentList.begin(), arg_it);
 }
 
 const Token *findLambdaStartToken(const Token *last)

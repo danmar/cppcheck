@@ -365,6 +365,21 @@ private:
             "test.cpp:2:note:condition 'v.size()==1'\n"
             "test.cpp:3:note:Access out of bounds\n",
             errout.str());
+
+        check("struct T {\n"
+              "  std::vector<int>* v;\n"
+              "};\n"
+              "struct S {\n"
+              "  T t;\n"
+              "};\n"
+              "long g(S& s);\n"
+              "int f() {\n"
+              "  std::vector<int> ArrS;\n"
+              "  S s = { { &ArrS } };\n"
+              "  g(s);\n"
+              "  return ArrS[0];\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
@@ -2989,8 +3004,11 @@ private:
 
         check("void f(const std::vector<std::string> &v) {\n"
               "    for(std::vector<std::string>::const_iterator it = v.begin(); it != v.end(); ++it) {\n"
-              "        if(it+1 != v.end())\n"
+              "        if(it+2 != v.end())\n"
+              "        {\n"
               "            ++it;\n"
+              "            ++it;\n"
+              "        }\n"
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -4431,6 +4449,38 @@ private:
               "    return info.ret;\n"
               "}\n",true);
         ASSERT_EQUALS("", errout.str());
+
+        // #9133
+        check("struct Fred {\n"
+              "    std::vector<int> v;\n"
+              "    void foo();\n"
+              "    void bar();\n"
+              "};\n"
+              "void Fred::foo() {\n"
+              "    std::vector<int>::iterator it = v.begin();\n"
+              "    bar();\n"
+              "    it++;\n"
+              "}\n"
+              "void Fred::bar() {\n"
+              "    v.push_back(0);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:8] -> [test.cpp:12] -> [test.cpp:2] -> [test.cpp:9]: (error) Using iterator to local container 'v' that may be invalid.\n",
+            errout.str());
+
+        check("void foo(std::vector<int>& v) {\n"
+              "    std::vector<int>::iterator it = v.begin();\n"
+              "    bar(v);\n"
+              "    it++;\n"
+              "}\n"
+              "void bar(std::vector<int>& v) {\n"
+              "    v.push_back(0);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:7] -> [test.cpp:1] -> [test.cpp:4]: (error) Using iterator to local container 'v' that may be invalid.\n",
+            errout.str());
     }
 
     void invalidContainerLoop() {
@@ -4679,6 +4729,21 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        // #9218 - not small type => do not warn if cpp standard is < c++17
+        {
+            const char code[] = "void f1(std::set<LargeType>& s, const LargeType& x) {\n"
+                                "    if (s.find(x) == s.end()) {\n"
+                                "        s.insert(x);\n"
+                                "    }\n"
+                                "}\n";
+            check(code, true, Standards::CPP11);
+            ASSERT_EQUALS("", errout.str());
+            check(code, true, Standards::CPP14);
+            ASSERT_EQUALS("", errout.str());
+            check(code, true, Standards::CPP17);
+            ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout.str());
+        }
     }
 
     void checkKnownEmptyContainer() {

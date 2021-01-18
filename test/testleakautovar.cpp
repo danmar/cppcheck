@@ -86,6 +86,8 @@ private:
         TEST_CASE(realloc1);
         TEST_CASE(realloc2);
         TEST_CASE(realloc3);
+        TEST_CASE(realloc4);
+        TEST_CASE(realloc5); // #9292, #9990
         TEST_CASE(freopen1);
         TEST_CASE(freopen2);
 
@@ -108,6 +110,7 @@ private:
         TEST_CASE(doublefree8);
         TEST_CASE(doublefree9);
         TEST_CASE(doublefree10); // #8706
+        TEST_CASE(doublefree11);
 
         // exit
         TEST_CASE(exit1);
@@ -139,6 +142,8 @@ private:
         TEST_CASE(ifelse15); // #9206 - if (global_ptr = malloc(1))
         TEST_CASE(ifelse16); // #9635 - if (p = malloc(4), p == NULL)
         TEST_CASE(ifelse17); //  if (!!(!p))
+        TEST_CASE(ifelse18);
+        TEST_CASE(ifelse19);
 
         // switch
         TEST_CASE(switch1);
@@ -465,6 +470,40 @@ private:
               "    char *q = (char*) realloc(p, 20);\n"
               "}");
         ASSERT_EQUALS("[test.c:4]: (error) Memory leak: q\n", errout.str());
+    }
+
+    void realloc4() {
+        check("void f(void *p) {\n"
+              "    void * q = realloc(p, 10);\n"
+              "    if (q == NULL)\n"
+              "        return;\n"
+              "}");
+        ASSERT_EQUALS("[test.c:5]: (error) Memory leak: q\n", errout.str());
+    }
+
+    void realloc5() {
+        // #9292
+        check("void * f(void * ptr, size_t size) {\n"
+              "    void *datap = realloc(ptr, size);\n"
+              "    if (size && !datap)\n"
+              "        free(ptr);\n"
+              "    return datap;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9990
+        check("void f() {\n"
+              "    void * p1 = malloc(10);\n"
+              "    if (!p1)\n"
+              "        return;\n"
+              "    void * p2 = realloc(p1, 42);\n"
+              "    if (!p2) {\n"
+              "        free(p1);\n"
+              "        return;\n"
+              "    }\n"
+              "    free(p2);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void freopen1() {
@@ -1196,6 +1235,22 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void doublefree11() {
+        check("void f() {\n"
+              "    void * p = malloc(5);\n"
+              "    void * q = realloc(p, 10);\n"
+              "    if (q == NULL) {\n"
+              "        free(p);\n"
+              "        return;\n"
+              "    }\n"
+              "    free(p);\n"
+              "    if (q == NULL)\n"
+              "        return;\n"
+              "    free(q)\n"
+              "}");
+        ASSERT_EQUALS("[test.c:3] -> [test.c:8]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+    }
+
     void exit1() {
         check("void f() {\n"
               "    char *p = malloc(10);\n"
@@ -1504,6 +1559,39 @@ private:
               "    if (!!(!p))\n"
               "        return NULL;\n"
               "    return p;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void ifelse18() {
+        check("void f() {\n"
+              "    void * p = malloc(10);\n"
+              "    void * q = realloc(p, 20);\n"
+              "    if (q == 0)\n"
+              "        return;\n"
+              "    free(q);\n"
+              "}");
+        ASSERT_EQUALS("[test.c:5]: (error) Memory leak: p\n", errout.str());
+
+        check("void f() {\n"
+              "    void * p = malloc(10);\n"
+              "    void * q = realloc(p, 20);\n"
+              "    if (q != 0) {\n"
+              "        free(q);\n"
+              "        return;\n"
+              "    } else\n"
+              "        return;\n"
+              "}");
+        ASSERT_EQUALS("[test.c:8]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void ifelse19() {
+        check("void f() {\n"
+              "    static char * a;\n"
+              "    char * b = realloc(a, 10);\n"
+              "    if (!b)\n"
+              "        return;\n"
+              "    a = b;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

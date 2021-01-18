@@ -138,9 +138,9 @@ extern std::ostringstream output;
 #define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance_##CLASSNAME; }
 
 #ifdef _WIN32
-#define LOAD_LIB_2( LIB, NAME ) do { { if (((LIB).load("./testrunner", "../cfg/" NAME).errorcode != Library::OK) && ((LIB).load("./testrunner", "cfg/" NAME).errorcode != Library::OK)) { complainMissingLib(NAME); return; } } } while(false)
+#define LOAD_LIB_2( LIB, NAME ) do { { if (((LIB).load("./testrunner", "../cfg/" NAME).errorcode != Library::ErrorCode::OK) && ((LIB).load("./testrunner", "cfg/" NAME).errorcode != Library::ErrorCode::OK)) { complainMissingLib(NAME); return; } } } while(false)
 #else
-#define LOAD_LIB_2( LIB, NAME ) do { { if (((LIB).load("./testrunner", "cfg/" NAME).errorcode != Library::OK) && ((LIB).load("./bin/testrunner", "bin/cfg/" NAME).errorcode != Library::OK)) { complainMissingLib(NAME); return; } } } while(false)
+#define LOAD_LIB_2( LIB, NAME ) do { { if (((LIB).load("./testrunner", "cfg/" NAME).errorcode != Library::ErrorCode::OK) && ((LIB).load("./bin/testrunner", "bin/cfg/" NAME).errorcode != Library::ErrorCode::OK)) { complainMissingLib(NAME); return; } } } while(false)
 #endif
 
 #endif

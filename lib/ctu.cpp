@@ -532,7 +532,7 @@ std::list<ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(InvalidValueTy
         const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap,
         const char info[],
         const FunctionCall * * const functionCallPtr,
-        bool warning) const
+        bool warning)
 {
     std::list<ErrorMessage::FileLocation> locationList;
 

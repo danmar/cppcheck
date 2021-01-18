@@ -33,11 +33,12 @@
 #include "utils.h"
 #include "valueflow.h"
 
-#include <tinyxml2.h>
 #include <algorithm>
 #include <cstdlib>
+#include <iterator>
 #include <numeric> // std::accumulate
 #include <sstream>
+#include <tinyxml2.h>
 
 //---------------------------------------------------------------------------
 
@@ -826,24 +827,24 @@ bool CheckBufferOverrun::analyseWholeProgram(const CTU::FileInfo *ctu, const std
         if (!fi)
             continue;
         for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeArrayIndex)
-            foundErrors |= analyseWholeProgram1(ctu, callsMap, unsafeUsage, 1, errorLogger);
+            foundErrors |= analyseWholeProgram1(callsMap, unsafeUsage, 1, errorLogger);
         for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafePointerArith)
-            foundErrors |= analyseWholeProgram1(ctu, callsMap, unsafeUsage, 2, errorLogger);
+            foundErrors |= analyseWholeProgram1(callsMap, unsafeUsage, 2, errorLogger);
     }
     return foundErrors;
 }
 
-bool CheckBufferOverrun::analyseWholeProgram1(const CTU::FileInfo *ctu, const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage, int type, ErrorLogger &errorLogger)
+bool CheckBufferOverrun::analyseWholeProgram1(const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage, int type, ErrorLogger &errorLogger)
 {
     const CTU::FileInfo::FunctionCall *functionCall = nullptr;
 
     const std::list<ErrorMessage::FileLocation> &locationList =
-        ctu->getErrorPath(CTU::FileInfo::InvalidValueType::bufferOverflow,
-                          unsafeUsage,
-                          callsMap,
-                          "Using argument ARG",
-                          &functionCall,
-                          false);
+        CTU::FileInfo::getErrorPath(CTU::FileInfo::InvalidValueType::bufferOverflow,
+                                    unsafeUsage,
+                                    callsMap,
+                                    "Using argument ARG",
+                                    &functionCall,
+                                    false);
     if (locationList.empty())
         return false;
 
@@ -886,6 +887,10 @@ void CheckBufferOverrun::objectIndex()
             const Token *idx = tok->astOperand2();
             if (!idx || !obj)
                 continue;
+            if (idx->hasKnownIntValue()) {
+                if (idx->getKnownIntValue() == 0)
+                    continue;
+            }
             if (idx->hasKnownIntValue() && idx->getKnownIntValue() == 0)
                 continue;
 
@@ -908,8 +913,28 @@ void CheckBufferOverrun::objectIndex()
                     if (var->valueType()->pointer > obj->valueType()->pointer)
                         continue;
                 }
-                objectIndexError(tok, &v, idx->hasKnownIntValue());
-                break;
+                if (v.path != 0) {
+                    std::vector<ValueFlow::Value> idxValues;
+                    std::copy_if(idx->values().begin(),
+                                 idx->values().end(),
+                                 std::back_inserter(idxValues),
+                    [&](const ValueFlow::Value& vidx) {
+                        if (!vidx.isIntValue())
+                            return false;
+                        return vidx.path == v.path || vidx.path == 0;
+                    });
+                    if (idxValues.empty() ||
+                    std::any_of(idxValues.begin(), idxValues.end(), [&](const ValueFlow::Value& vidx) {
+                    if (vidx.isImpossible())
+                            return (vidx.intvalue == 0);
+                        else
+                            return (vidx.intvalue != 0);
+                    })) {
+                        objectIndexError(tok, &v, idx->hasKnownIntValue());
+                    }
+                } else {
+                    objectIndexError(tok, &v, idx->hasKnownIntValue());
+                }
             }
         }
     }

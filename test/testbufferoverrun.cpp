@@ -4496,6 +4496,17 @@ private:
               "        printf(\"%c\",*test[i]);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4] -> [test.cpp:9]: (warning) The address of local variable 'test' might be accessed at non-zero index.\n", errout.str());
+
+        check("void Bar(uint8_t data);\n"
+              "void Foo(const uint8_t * const data, const uint8_t length) {\n"
+              "        for(uint8_t index = 0U; index < length ; ++index)\n"
+              "            Bar(data[index]);\n"
+              "}\n"
+              "void test() {\n"
+              "    const uint8_t data = 0U;\n"
+              "    Foo(&data,1U);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

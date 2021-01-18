@@ -416,24 +416,47 @@ namespace {
         const Token * bodyEnd;  // for body contains typedef define
         const Token * bodyEnd2; // for body contains typedef using
         bool isNamespace;
+        std::set<std::string> recordTypes;
     };
 }
 
 static Token *splitDefinitionFromTypedef(Token *tok, nonneg int *unnamedCount)
 {
-    Token *tok1;
     std::string name;
     bool isConst = false;
+    Token *tok1 = tok->next();
 
-    if (tok->next()->str() == "const") {
-        tok->deleteNext();
+    // skip const if present
+    if (tok1->str() == "const") {
+        tok1->deleteThis();
         isConst = true;
     }
 
-    if (tok->strAt(2) == "{") { // unnamed
-        tok1 = tok->linkAt(2);
+    // skip "class|struct|union|enum"
+    tok1 = tok1->next();
 
-        if (tok1 && tok1->next()) {
+    const bool hasName = Token::Match(tok1, "%name%");
+
+    // skip name
+    if (hasName) {
+        name = tok1->str();
+        tok1 = tok1->next();
+    }
+
+    // skip base classes if present
+    if (tok1->str() == ":") {
+        tok1 = tok1->next();
+        while (tok1 && tok1->str() != "{")
+            tok1 = tok1->next();
+        if (!tok1)
+            return nullptr;
+    }
+
+    // skip to end
+    tok1 = tok1->link();
+
+    if (!hasName) { // unnamed
+        if (tok1->next()) {
             // use typedef name if available
             if (Token::Match(tok1->next(), "%type%"))
                 name = tok1->next()->str();
@@ -442,23 +465,6 @@ static Token *splitDefinitionFromTypedef(Token *tok, nonneg int *unnamedCount)
             tok->next()->insertToken(name);
         } else
             return nullptr;
-    } else if (tok->strAt(3) == ":") {
-        tok1 = tok->tokAt(4);
-        while (tok1 && tok1->str() != "{")
-            tok1 = tok1->next();
-        if (!tok1)
-            return nullptr;
-
-        tok1 = tok1->link();
-
-        name = tok->strAt(2);
-    } else { // has a name
-        tok1 = tok->linkAt(3);
-
-        if (!tok1)
-            return nullptr;
-
-        name = tok->strAt(2);
     }
 
     tok1->insertToken(";");
@@ -573,8 +579,12 @@ void Tokenizer::simplifyTypedef()
     std::vector<Space> spaceInfo;
     bool isNamespace = false;
     std::string className;
+    std::string fullClassName;
     bool hasClass = false;
     bool goback = false;
+
+    // add global namespace
+    spaceInfo.emplace_back(Space{});
 
     // Convert "using a::b;" to corresponding typedef statements
     simplifyUsingToTypedef();
@@ -604,9 +614,18 @@ void Tokenizer::simplifyTypedef()
                 isNamespace = (tok->str() == "namespace");
                 hasClass = true;
                 className = tok->next()->str();
+                const Token *tok1 = tok->next();
+                fullClassName = className;
+                while (Token::Match(tok1, "%name% :: %name%")) {
+                    tok1 = tok1->tokAt(2);
+                    fullClassName += " :: " + tok1->str();
+                }
             } else if (hasClass && tok->str() == ";") {
                 hasClass = false;
             } else if (hasClass && tok->str() == "{") {
+                if (!isNamespace)
+                    spaceInfo.back().recordTypes.insert(fullClassName);
+
                 Space info;
                 info.isNamespace = isNamespace;
                 info.className = className;
@@ -615,7 +634,7 @@ void Tokenizer::simplifyTypedef()
                 spaceInfo.push_back(info);
 
                 hasClass = false;
-            } else if (!spaceInfo.empty() && tok->str() == "}" && spaceInfo.back().bodyEnd == tok) {
+            } else if (spaceInfo.size() > 1 && tok->str() == "}" && spaceInfo.back().bodyEnd == tok) {
                 spaceInfo.pop_back();
             }
             continue;
@@ -623,21 +642,11 @@ void Tokenizer::simplifyTypedef()
 
         // pull struct, union, enum or class definition out of typedef
         // use typedef name for unnamed struct, union, enum or class
-        if (Token::Match(tok->next(), "const| struct|enum|union|class %type%| {")) {
+        if (Token::Match(tok->next(), "const| struct|enum|union|class %type%| {|:")) {
             Token *tok1 = splitDefinitionFromTypedef(tok, &mUnnamedCount);
             if (!tok1)
                 continue;
             tok = tok1;
-        } else if (Token::Match(tok->next(), "const| struct|class %type% :")) {
-            Token *tok1 = tok;
-            while (tok1 && tok1->str() != ";" && tok1->str() != "{")
-                tok1 = tok1->next();
-            if (tok1 && tok1->str() == "{") {
-                tok1 = splitDefinitionFromTypedef(tok, &mUnnamedCount);
-                if (!tok1)
-                    continue;
-                tok = tok1;
-            }
         }
 
         /** @todo add support for union */
@@ -1038,10 +1047,19 @@ void Tokenizer::simplifyTypedef()
             int memberScope = 0;
             bool globalScope = false;
             int classLevel = spaceInfo.size();
+            std::string removed;
+            std::string classPath;
+            for (size_t i = 1; i < spaceInfo.size(); ++i) {
+                if (!classPath.empty())
+                    classPath += " :: ";
+                classPath += spaceInfo[i].className;
+            }
 
             for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
                 if (Settings::terminated())
                     return;
+
+                removed.clear();
 
                 if (tok2->link()) { // Pre-check for performance
                     // check for end of scope
@@ -1053,7 +1071,7 @@ void Tokenizer::simplifyTypedef()
                                 inMemberFunc = false;
                         }
 
-                        if (classLevel > 0 && tok2 == spaceInfo[classLevel - 1].bodyEnd2) {
+                        if (classLevel > 1 && tok2 == spaceInfo[classLevel - 1].bodyEnd2) {
                             --classLevel;
                             pattern.clear();
 
@@ -1085,7 +1103,7 @@ void Tokenizer::simplifyTypedef()
                             while (Token::Match(func->tokAt(offset - 2), "%name% ::"))
                                 offset -= 2;
                             // check for available and matching class name
-                            if (!spaceInfo.empty() && classLevel < spaceInfo.size() &&
+                            if (spaceInfo.size() > 1 && classLevel < spaceInfo.size() &&
                                 func->strAt(offset) == spaceInfo[classLevel].className) {
                                 memberScope = 0;
                                 inMemberFunc = true;
@@ -1131,7 +1149,7 @@ void Tokenizer::simplifyTypedef()
                     // check for qualifier
                     if (tok2->previous()->str() == "::") {
                         // check for available and matching class name
-                        if (!spaceInfo.empty() && classLevel < spaceInfo.size() &&
+                        if (spaceInfo.size() > 1 && classLevel < spaceInfo.size() &&
                             tok2->strAt(-2) == spaceInfo[classLevel].className) {
                             tok2 = tok2->next();
                             simplifyType = true;
@@ -1150,7 +1168,7 @@ void Tokenizer::simplifyTypedef()
                         int back = classLevel - 1;
                         bool good = true;
                         // check for extra qualification
-                        while (back >= 0) {
+                        while (back >= 1) {
                             Token *qualificationTok = start->tokAt(-2);
                             if (!Token::Match(qualificationTok, "%type% ::"))
                                 break;
@@ -1164,25 +1182,33 @@ void Tokenizer::simplifyTypedef()
                             }
                         }
                         // check global namespace
-                        if (good && back == 0 && start->strAt(-1) == "::")
+                        if (good && back == 1 && start->strAt(-1) == "::")
                             good = false;
 
                         if (good) {
                             // remove any extra qualification if present
                             while (count) {
+                                if (!removed.empty())
+                                    removed.insert(0, " ");
+                                removed.insert(0, tok2->strAt(-2) + " " + tok2->strAt(-1));
                                 tok2->tokAt(-3)->deleteNext(2);
                                 --count;
                             }
 
                             // remove global namespace if present
                             if (tok2->strAt(-1) == "::") {
+                                removed.insert(0, ":: ");
                                 tok2->tokAt(-2)->deleteNext();
                                 globalScope = true;
                             }
 
                             // remove qualification if present
                             for (int i = classLevel; i < spaceInfo.size(); ++i) {
-                                tok2->deleteNext(2);
+                                if (!removed.empty())
+                                    removed += " ";
+                                removed += (tok2->str() + " " + tok2->strAt(1));
+                                tok2->deleteThis();
+                                tok2->deleteThis();
                             }
                             simplifyType = true;
                         }
@@ -1190,7 +1216,7 @@ void Tokenizer::simplifyTypedef()
                         if (tok2->strAt(-1) == "::") {
                             int relativeSpaceInfoSize = spaceInfo.size();
                             Token * tokBeforeType = tok2->previous();
-                            while (relativeSpaceInfoSize != 0 &&
+                            while (relativeSpaceInfoSize > 1 &&
                                    tokBeforeType && tokBeforeType->str() == "::" &&
                                    tokBeforeType->strAt(-1) == spaceInfo[relativeSpaceInfoSize-1].className) {
                                 tokBeforeType = tokBeforeType->tokAt(-2);
@@ -1307,6 +1333,33 @@ void Tokenizer::simplifyTypedef()
                         }
                     }
 
+                    // add some qualification back if needed
+                    Token *start = tok2;
+                    std::string removed1 = removed;
+                    std::string::size_type idx = removed1.rfind(" ::");
+
+                    if (idx != std::string::npos)
+                        removed1.resize(idx);
+                    if (removed1 == classPath && !removed1.empty()) {
+                        for (std::vector<Space>::const_reverse_iterator it = spaceInfo.crbegin(); it != spaceInfo.crend(); ++it) {
+                            if (it->recordTypes.find(start->str()) != it->recordTypes.end()) {
+                                std::string::size_type spaceIdx = 0;
+                                std::string::size_type startIdx = 0;
+                                while ((spaceIdx = removed1.find(" ", startIdx)) != std::string::npos) {
+                                    tok2->previous()->insertToken(removed1.substr(startIdx, spaceIdx - startIdx));
+                                    startIdx = spaceIdx + 1;
+                                }
+                                tok2->previous()->insertToken(removed1.substr(startIdx));
+                                tok2->previous()->insertToken("::");
+                                break;
+                            }
+                            idx = removed1.rfind(" ::");
+                            if (idx == std::string::npos)
+                                break;
+
+                            removed1.resize(idx);
+                        }
+                    }
                     // add remainder of type
                     tok2 = TokenList::copyTokens(tok2, typeStart->next(), typeEnd);
 
@@ -2003,25 +2056,31 @@ bool Tokenizer::simplifyUsing()
         // Move struct defined in using out of using.
         // using T = struct t { }; => struct t { }; using T = struct t;
         // fixme: this doesn't handle attributes
-        if (Token::Match(start, "struct|union|enum %name%| {")) {
-            if (start->strAt(1) != "{") {
-                Token *structEnd = start->linkAt(2);
-                structEnd->insertToken(";", "");
-                TokenList::copyTokens(structEnd->next(), tok, start->next());
-                usingStart = structEnd->tokAt(2);
-                nameToken = usingStart->next();
-                if (usingStart->strAt(2) == "=")
-                    start = usingStart->tokAt(3);
-                else
-                    start = usingStart->linkAt(2)->tokAt(3);
-                usingEnd = findSemicolon(start);
-                tok->deleteThis();
-                tok->deleteThis();
-                tok->deleteThis();
-                tok = usingStart;
-            } else {
-                Token *structEnd = start->linkAt(1);
-                structEnd->insertToken(";", "");
+        if (Token::Match(start, "class|struct|union|enum %name%| {|:")) {
+            Token *structEnd = start->tokAt(1);
+            const bool hasName = Token::Match(structEnd, "%name%");
+
+            // skip over name if present
+            if (hasName)
+                structEnd = structEnd->next();
+
+            // skip over base class information
+            if (structEnd->str() == ":") {
+                structEnd = structEnd->next(); // skip over ":"
+                while (structEnd && structEnd->str() != "{")
+                    structEnd = structEnd->next();
+                if (!structEnd)
+                    continue;
+            }
+
+            // use link to go to end
+            structEnd = structEnd->link();
+
+            // add ';' after end of struct
+            structEnd->insertToken(";", "");
+
+            // add name for anonymous struct
+            if (!hasName) {
                 std::string newName;
                 if (structEnd->strAt(2) == ";")
                     newName = name;
@@ -2030,19 +2089,23 @@ bool Tokenizer::simplifyUsing()
                 TokenList::copyTokens(structEnd->next(), tok, start);
                 structEnd->tokAt(5)->insertToken(newName, "");
                 start->insertToken(newName, "");
+            } else
+                TokenList::copyTokens(structEnd->next(), tok, start->next());
 
-                usingStart = structEnd->tokAt(2);
-                nameToken = usingStart->next();
-                if (usingStart->strAt(2) == "=")
-                    start = usingStart->tokAt(3);
-                else
-                    start = usingStart->linkAt(2)->tokAt(3);
-                usingEnd = findSemicolon(start);
-                tok->deleteThis();
-                tok->deleteThis();
-                tok->deleteThis();
-                tok = usingStart;
-            }
+            // add using after end of struct
+            usingStart = structEnd->tokAt(2);
+            nameToken = usingStart->next();
+            if (usingStart->strAt(2) == "=")
+                start = usingStart->tokAt(3);
+            else
+                start = usingStart->linkAt(2)->tokAt(3);
+            usingEnd = findSemicolon(start);
+
+            // delete original using before struct
+            tok->deleteThis();
+            tok->deleteThis();
+            tok->deleteThis();
+            tok = usingStart;
         }
 
         // remove 'typename' and 'template'
@@ -2131,7 +2194,7 @@ bool Tokenizer::simplifyUsing()
                 if (Token::Match(type, "%type%"))
                     type = type->next();
             } else if (Token::Match(type, "%type%")) {
-                while (Token::Match(type, "const|struct|union|enum %type%") ||
+                while (Token::Match(type, "const|class|struct|union|enum %type%") ||
                        (type->next() && type->next()->isStandardType()))
                     type = type->next();
 
@@ -3182,7 +3245,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
 
 void Tokenizer::setVarIdStructMembers(Token **tok1,
                                       std::map<int, std::map<std::string, int> >& structMembers,
-                                      nonneg int *varId)
+                                      nonneg int *varId) const
 {
     Token *tok = *tok1;
 
@@ -3369,15 +3432,15 @@ void Tokenizer::setVarId()
 
 // Variable declarations can't start with "return" etc.
 #define NOTSTART_C "NOT", "case", "default", "goto", "not", "return", "sizeof", "typedef"
-static const std::set<std::string> notstart_c = { NOTSTART_C };
-static const std::set<std::string> notstart_cpp = { NOTSTART_C,
+static const std::unordered_set<std::string> notstart_c = { NOTSTART_C };
+static const std::unordered_set<std::string> notstart_cpp = { NOTSTART_C,
                                                     "delete", "friend", "new", "throw", "using", "virtual", "explicit", "const_cast", "dynamic_cast", "reinterpret_cast", "static_cast", "template"
                                                   };
 
 void Tokenizer::setVarIdPass1()
 {
     // Variable declarations can't start with "return" etc.
-    const std::set<std::string>& notstart = (isC()) ? notstart_c : notstart_cpp;
+    const std::unordered_set<std::string>& notstart = (isC()) ? notstart_c : notstart_cpp;
 
     VariableMap variableMap;
     std::map<int, std::map<std::string, int> > structMembers;
@@ -7338,6 +7401,11 @@ bool Tokenizer::simplifyCAlternativeTokens()
         const std::map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok->str());
         if (cOpIt != cAlternativeTokens.end()) {
             alt.push_back(tok);
+
+            // Is this a variable declaration..
+            if (isC() && Token::Match(tok->previous(), "%type%|* %name% [;,=]"))
+                return false;
+
             if (!Token::Match(tok->previous(), "%name%|%num%|%char%|)|]|> %name% %name%|%num%|%char%|%op%|("))
                 continue;
             if (Token::Match(tok->next(), "%assign%|%or%|%oror%|&&|*|/|%|^") && !Token::Match(tok->previous(), "%num%|%char%|) %name% *"))
@@ -9572,7 +9640,7 @@ static bool isCPPAttribute(const Token * tok)
     return Token::simpleMatch(tok, "[ [") && tok->link() && tok->link()->previous() == tok->linkAt(1);
 }
 
-void Tokenizer::reportUnknownMacros()
+void Tokenizer::reportUnknownMacros() const
 {
     // Report unknown macros used in expressions "%name% %num%"
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
@@ -9671,7 +9739,7 @@ void Tokenizer::findGarbageCode() const
 {
     const bool isCPP11 = isCPP() && mSettings->standards.cpp >= Standards::CPP11;
 
-    const std::set<std::string> nonConsecutiveKeywords{ "break",
+    static const std::unordered_set<std::string> nonConsecutiveKeywords{ "break",
         "continue",
         "for",
         "goto",
@@ -9752,7 +9820,7 @@ void Tokenizer::findGarbageCode() const
     }
 
     // Keywords in global scope
-    std::set<std::string> nonGlobalKeywords{"break",
+    static const std::unordered_set<std::string> nonGlobalKeywords{"break",
                                             "continue",
                                             "for",
                                             "goto",
@@ -10523,7 +10591,7 @@ void Tokenizer::simplifyCPPAttribute()
     }
 }
 
-static const std::set<std::string> keywords = {
+static const std::unordered_set<std::string> keywords = {
     "inline"
     , "_inline"
     , "__inline"
@@ -11379,6 +11447,11 @@ void Tokenizer::simplifyOperatorName()
                 }
                 op += ")";
                 par = par->next();
+                if (Token::simpleMatch(par, "...")) {
+                    op.clear();
+                    par = nullptr;
+                    break;
+                }
                 done = false;
             } else if (Token::Match(par, "\"\" %name% (|;|<")) {
                 op += "\"\"";
@@ -12005,6 +12078,7 @@ void Tokenizer::simplifyNamespaceAliases()
                             continue;
                         } else {
                             // conflicting declaration (syntax error)
+                            // cppcheck-suppress duplicateBranch - remove when TODO below is addressed
                             if (endScope == scope) {
                                 // delete conflicting declaration
                                 tok2 = deleteAlias(tok2->previous());
