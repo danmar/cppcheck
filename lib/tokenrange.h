@@ -49,8 +49,8 @@ public:
         T* operator*() { return mt; }
     };
 
-    TokenIterator begin() { return TokenIterator(mFront); }
-    TokenIterator end() { return TokenIterator(mBack); }
+    TokenIterator begin() const { return TokenIterator(mFront); }
+    TokenIterator end() const { return TokenIterator(mBack); }
 };
 
 class TokenRange : public TokenRangeBase<Token> {
