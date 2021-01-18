@@ -117,3 +117,6 @@ compile_commands.json
 
 # qmake
 /gui/.qmake.stash
+
+#vs code
+.vscode
