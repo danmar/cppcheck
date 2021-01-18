@@ -416,6 +416,7 @@ namespace {
         const Token * bodyEnd;  // for body contains typedef define
         const Token * bodyEnd2; // for body contains typedef using
         bool isNamespace;
+        std::set<std::string> recordTypes;
     };
 }
 
@@ -578,8 +579,12 @@ void Tokenizer::simplifyTypedef()
     std::vector<Space> spaceInfo;
     bool isNamespace = false;
     std::string className;
+    std::string fullClassName;
     bool hasClass = false;
     bool goback = false;
+
+    // add global namespace
+    spaceInfo.emplace_back(Space{});
 
     // Convert "using a::b;" to corresponding typedef statements
     simplifyUsingToTypedef();
@@ -609,9 +614,18 @@ void Tokenizer::simplifyTypedef()
                 isNamespace = (tok->str() == "namespace");
                 hasClass = true;
                 className = tok->next()->str();
+                const Token *tok1 = tok->next();
+                fullClassName = className;
+                while (Token::Match(tok1, "%name% :: %name%")) {
+                    tok1 = tok1->tokAt(2);
+                    fullClassName += " :: " + tok1->str();
+                }
             } else if (hasClass && tok->str() == ";") {
                 hasClass = false;
             } else if (hasClass && tok->str() == "{") {
+                if (!isNamespace)
+                    spaceInfo.back().recordTypes.insert(fullClassName);
+
                 Space info;
                 info.isNamespace = isNamespace;
                 info.className = className;
@@ -620,7 +634,7 @@ void Tokenizer::simplifyTypedef()
                 spaceInfo.push_back(info);
 
                 hasClass = false;
-            } else if (!spaceInfo.empty() && tok->str() == "}" && spaceInfo.back().bodyEnd == tok) {
+            } else if (spaceInfo.size() > 1 && tok->str() == "}" && spaceInfo.back().bodyEnd == tok) {
                 spaceInfo.pop_back();
             }
             continue;
@@ -1033,10 +1047,19 @@ void Tokenizer::simplifyTypedef()
             int memberScope = 0;
             bool globalScope = false;
             int classLevel = spaceInfo.size();
+            std::string removed;
+            std::string classPath;
+            for (size_t i = 1; i < spaceInfo.size(); ++i) {
+                if (!classPath.empty())
+                    classPath += " :: ";
+                classPath += spaceInfo[i].className;
+            }
 
             for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
                 if (Settings::terminated())
                     return;
+
+                removed.clear();
 
                 if (tok2->link()) { // Pre-check for performance
                     // check for end of scope
@@ -1048,7 +1071,7 @@ void Tokenizer::simplifyTypedef()
                                 inMemberFunc = false;
                         }
 
-                        if (classLevel > 0 && tok2 == spaceInfo[classLevel - 1].bodyEnd2) {
+                        if (classLevel > 1 && tok2 == spaceInfo[classLevel - 1].bodyEnd2) {
                             --classLevel;
                             pattern.clear();
 
@@ -1080,7 +1103,7 @@ void Tokenizer::simplifyTypedef()
                             while (Token::Match(func->tokAt(offset - 2), "%name% ::"))
                                 offset -= 2;
                             // check for available and matching class name
-                            if (!spaceInfo.empty() && classLevel < spaceInfo.size() &&
+                            if (spaceInfo.size() > 1 && classLevel < spaceInfo.size() &&
                                 func->strAt(offset) == spaceInfo[classLevel].className) {
                                 memberScope = 0;
                                 inMemberFunc = true;
@@ -1126,7 +1149,7 @@ void Tokenizer::simplifyTypedef()
                     // check for qualifier
                     if (tok2->previous()->str() == "::") {
                         // check for available and matching class name
-                        if (!spaceInfo.empty() && classLevel < spaceInfo.size() &&
+                        if (spaceInfo.size() > 1 && classLevel < spaceInfo.size() &&
                             tok2->strAt(-2) == spaceInfo[classLevel].className) {
                             tok2 = tok2->next();
                             simplifyType = true;
@@ -1145,7 +1168,7 @@ void Tokenizer::simplifyTypedef()
                         int back = classLevel - 1;
                         bool good = true;
                         // check for extra qualification
-                        while (back >= 0) {
+                        while (back >= 1) {
                             Token *qualificationTok = start->tokAt(-2);
                             if (!Token::Match(qualificationTok, "%type% ::"))
                                 break;
@@ -1159,25 +1182,33 @@ void Tokenizer::simplifyTypedef()
                             }
                         }
                         // check global namespace
-                        if (good && back == 0 && start->strAt(-1) == "::")
+                        if (good && back == 1 && start->strAt(-1) == "::")
                             good = false;
 
                         if (good) {
                             // remove any extra qualification if present
                             while (count) {
+                                if (!removed.empty())
+                                    removed.insert(0, " ");
+                                removed.insert(0, tok2->strAt(-2) + " " + tok2->strAt(-1));
                                 tok2->tokAt(-3)->deleteNext(2);
                                 --count;
                             }
 
                             // remove global namespace if present
                             if (tok2->strAt(-1) == "::") {
+                                removed.insert(0, ":: ");
                                 tok2->tokAt(-2)->deleteNext();
                                 globalScope = true;
                             }
 
                             // remove qualification if present
                             for (int i = classLevel; i < spaceInfo.size(); ++i) {
-                                tok2->deleteNext(2);
+                                if (!removed.empty())
+                                    removed += " ";
+                                removed += (tok2->str() + " " + tok2->strAt(1));
+                                tok2->deleteThis();
+                                tok2->deleteThis();
                             }
                             simplifyType = true;
                         }
@@ -1185,7 +1216,7 @@ void Tokenizer::simplifyTypedef()
                         if (tok2->strAt(-1) == "::") {
                             int relativeSpaceInfoSize = spaceInfo.size();
                             Token * tokBeforeType = tok2->previous();
-                            while (relativeSpaceInfoSize != 0 &&
+                            while (relativeSpaceInfoSize > 1 &&
                                    tokBeforeType && tokBeforeType->str() == "::" &&
                                    tokBeforeType->strAt(-1) == spaceInfo[relativeSpaceInfoSize-1].className) {
                                 tokBeforeType = tokBeforeType->tokAt(-2);
@@ -1302,6 +1333,33 @@ void Tokenizer::simplifyTypedef()
                         }
                     }
 
+                    // add some qualification back if needed
+                    Token *start = tok2;
+                    std::string removed1 = removed;
+                    std::string::size_type idx = removed1.rfind(" ::");
+
+                    if (idx != std::string::npos)
+                        removed1.resize(idx);
+                    if (removed1 == classPath && !removed1.empty()) {
+                        for (std::vector<Space>::const_reverse_iterator it = spaceInfo.crbegin(); it != spaceInfo.crend(); ++it) {
+                            if (it->recordTypes.find(start->str()) != it->recordTypes.end()) {
+                                std::string::size_type spaceIdx = 0;
+                                std::string::size_type startIdx = 0;
+                                while ((spaceIdx = removed1.find(" ", startIdx)) != std::string::npos) {
+                                    tok2->previous()->insertToken(removed1.substr(startIdx, spaceIdx - startIdx));
+                                    startIdx = spaceIdx + 1;
+                                }
+                                tok2->previous()->insertToken(removed1.substr(startIdx));
+                                tok2->previous()->insertToken("::");
+                                break;
+                            }
+                            idx = removed1.rfind(" ::");
+                            if (idx == std::string::npos)
+                                break;
+
+                            removed1.resize(idx);
+                        }
+                    }
                     // add remainder of type
                     tok2 = TokenList::copyTokens(tok2, typeStart->next(), typeEnd);
 
