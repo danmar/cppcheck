@@ -3764,7 +3764,7 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
             }
 
             // Check else block
-            if (Token::Match(startTok->link(), "} else {")) {
+            if (Token::simpleMatch(startTok->link(), "} else {")) {
                 startTok = startTok->link()->tokAt(2);
                 for(const Token* condTok2:conds) {
                     ExpressionAnalyzer a1(condTok2, MakeConditionValue(0, condTok2, false), tokenlist);
