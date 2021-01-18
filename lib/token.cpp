@@ -54,6 +54,10 @@ Token::~Token()
     delete mImpl;
 }
 
+/*
+* Get a TokenRange which starts at this token and contains every token following it in order
+* e.g. for the sequence of tokens A B C D E, C.toEnd() would yield the Range C D E
+*/
 TokenRange<const Token> Token::toEnd() const
 {
     return TokenRange<const Token>(this, nullptr);
