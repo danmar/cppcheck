@@ -42,7 +42,7 @@ public:
 
         T* mt;
         TokenIterator() : mt(nullptr) {}
-        TokenIterator(T* t) : mt(t) {}
+        explicit TokenIterator(T* t) : mt(t) {}
         TokenIterator& operator++() { mt = mt->next(); return *this; }
         bool operator==(const TokenIterator& b) const { return mt == b.mt; }
         bool operator!=(const TokenIterator& b) const { return mt != b.mt; }
