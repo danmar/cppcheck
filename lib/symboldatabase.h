@@ -895,7 +895,7 @@ public:
     const Token *templateDef;         ///< points to 'template <' before function
     const Token *functionPointerUsage; ///< function pointer usage
 
-    static bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length);
+    bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length) const;
 
     static bool returnsReference(const Function* function, bool unknown = false);
 
@@ -1149,6 +1149,8 @@ public:
     const Variable *getVariable(const std::string &varname) const;
 
     const Token * addEnum(const Token * tok, bool isCpp);
+
+    const Scope *findRecordInBase(const std::string &name) const;
 
 private:
     /**

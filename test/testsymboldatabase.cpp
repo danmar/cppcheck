@@ -398,6 +398,7 @@ private:
         TEST_CASE(findFunction31);
         TEST_CASE(findFunction32); // C: relax type matching
         TEST_CASE(findFunction33); // #9885 variadic function
+        TEST_CASE(findFunction34); // #10061
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -6215,6 +6216,26 @@ private:
             ASSERT(foo->function()->tokenDef);
             ASSERT_EQUALS(4, foo->function()->tokenDef->linenr());
         }
+    }
+
+    void findFunction34() {
+        GET_SYMBOL_DB("namespace cppcheck {\n"
+                      "    class Platform {\n"
+                      "    public:\n"
+                      "        enum PlatformType { Unspecified };\n"
+                      "    };\n"
+                      "}\n"
+                      "class ImportProject {\n"
+                      "    void selectOneVsConfig(cppcheck::Platform::PlatformType);\n"
+                      "};\n"
+                      "class Settings : public cppcheck::Platform { };\n"
+                      "void ImportProject::selectOneVsConfig(Settings::PlatformType) { }");
+        (void)db;
+        const Token *foo = Token::findsimplematch(tokenizer.tokens(), "selectOneVsConfig ( Settings :: PlatformType ) { }");
+        ASSERT(foo);
+        ASSERT(foo->function());
+        ASSERT(foo->function()->tokenDef);
+        ASSERT_EQUALS(8, foo->function()->tokenDef->linenr());
     }
 
     void findFunctionContainer() {
