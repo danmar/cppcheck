@@ -6498,7 +6498,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
     if (reportDebugWarnings && mSettings->debugwarnings) {
         for (Token *tok = tokens; tok; tok = tok->next()) {
             if (tok->str() == "auto" && !tok->valueType())
-                debugMessage(tok, "debug", "auto token with no type.");
+                debugMessage(tok, "autoNoType", "auto token with no type.");
         }
     }
 
