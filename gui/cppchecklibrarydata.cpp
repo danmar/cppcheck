@@ -106,6 +106,28 @@ static QString loadUndefine(const QXmlStreamReader &xmlReader)
     return xmlReader.attributes().value("name").toString();
 }
 
+static QString loadSmartPointer(const QXmlStreamReader &xmlReader)
+{
+    return xmlReader.attributes().value("class-name").toString();
+}
+
+static CppcheckLibraryData::TypeChecks loadTypeChecks(QXmlStreamReader &xmlReader)
+{
+    CppcheckLibraryData::TypeChecks typeChecks;
+    QXmlStreamReader::TokenType type;
+    while ((type = xmlReader.readNext()) != QXmlStreamReader::EndElement ||
+           xmlReader.name().toString() != "type-checks") {
+        if (type != QXmlStreamReader::StartElement)
+            continue;
+        const QString elementName = xmlReader.name().toString();
+        if (elementName == "suppress" || elementName == "check") {
+            QPair<QString, QString> entry(elementName, xmlReader.readElementText());
+            typeChecks.append(entry);
+        }
+    }
+    return typeChecks;
+}
+
 static CppcheckLibraryData::Function::Arg loadFunctionArg(QXmlStreamReader &xmlReader)
 {
     CppcheckLibraryData::Function::Arg arg;
@@ -279,6 +301,10 @@ QString CppcheckLibraryData::open(QIODevice &file)
                     memoryresource.append(loadMemoryResource(xmlReader));
                 else if (elementName == "podtype")
                     podtypes.append(loadPodType(xmlReader));
+                else if (elementName == "smart-pointer")
+                    smartPointers.append(loadSmartPointer(xmlReader));
+                else if (elementName == "type-checks")
+                    typeChecks.append(loadTypeChecks(xmlReader));
                 else
                     unhandledElement(xmlReader);
             } catch (std::runtime_error &e) {
@@ -501,6 +527,24 @@ static void writeMemoryResource(QXmlStreamWriter &xmlWriter, const CppcheckLibra
     xmlWriter.writeEndElement();
 }
 
+static void writeTypeChecks(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::TypeChecks &typeChecks)
+{
+    QPair<QString, QString> check;
+    xmlWriter.writeStartElement("type-checks");
+    if (!typeChecks.isEmpty()) {
+        xmlWriter.writeStartElement("unusedvar");
+    }
+    foreach (check, typeChecks) {
+        xmlWriter.writeStartElement(check.first);
+        xmlWriter.writeCharacters(check.second);
+        xmlWriter.writeEndElement();
+    }
+    if (!typeChecks.isEmpty()) {
+        xmlWriter.writeEndElement();
+    }
+    xmlWriter.writeEndElement();
+}
+
 QString CppcheckLibraryData::toString() const
 {
     QString outputString;
@@ -545,6 +589,16 @@ QString CppcheckLibraryData::toString() const
             xmlWriter.writeAttribute("sign", podtype.sign);
         if (!podtype.size.isEmpty())
             xmlWriter.writeAttribute("size", podtype.size);
+        xmlWriter.writeEndElement();
+    }
+
+    foreach (const TypeChecks check, typeChecks) {
+        writeTypeChecks(xmlWriter, check);
+    }
+
+    foreach (const QString &smartPtr, smartPointers) {
+        xmlWriter.writeStartElement("smart-pointer");
+        xmlWriter.writeAttribute("class-name", smartPtr);
         xmlWriter.writeEndElement();
     }
 

@@ -171,6 +171,8 @@ public:
         QString sign;
     };
 
+    using TypeChecks = QList<QPair<QString, QString>>;
+
     void clear() {
         containers.clear();
         defines.clear();
@@ -178,8 +180,9 @@ public:
         functions.clear();
         memoryresource.clear();
         podtypes.clear();
+        smartPointers.clear();
+        typeChecks.clear();
     }
-
 
     void swap(CppcheckLibraryData &other) {
         containers.swap(other.containers);
@@ -188,6 +191,8 @@ public:
         functions.swap(other.functions);
         memoryresource.swap(other.memoryresource);
         podtypes.swap(other.podtypes);
+        smartPointers.swap(other.smartPointers);
+        typeChecks.swap(other.typeChecks);
     }
 
     QString open(QIODevice &file);
@@ -198,7 +203,9 @@ public:
     QList<struct Function> functions;
     QList<struct MemoryResource> memoryresource;
     QList<struct PodType> podtypes;
+    QList<TypeChecks> typeChecks;
     QStringList undefines;
+    QStringList smartPointers;
 };
 
 #endif // CPPCHECKLIBRARYDATA_H
