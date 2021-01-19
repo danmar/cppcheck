@@ -26,7 +26,7 @@ jobs:
           
       - name: run Shellcheck
         run: |
-          find . -name "*.sh" | xargs shellcheck || true
+          find . -name "*.sh" | xargs shellcheck
 
       - name: run pylint
         run: |
