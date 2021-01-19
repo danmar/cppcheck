@@ -1797,10 +1797,21 @@ private:
               "    c.x = nullptr;\n"
               "    if(b) c.x = b;\n"
               "    bool d = !c.x;\n"
-              "    if (!d) c.x = &a;\n"
+              "    if (d) c.x = &a;\n"
               "    return *c.x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int* x; };\n"
+              "int f(int a, int* b) {\n"
+              "    A c;\n"
+              "    c.x = nullptr;\n"
+              "    if(b) c.x = b;\n"
+              "    bool d = !c.x;\n"
+              "    if (!d) c.x = &a;\n"
+              "    return *c.x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Possible null pointer dereference: c.x\n", errout.str());
     }
 
     void nullpointer53() {

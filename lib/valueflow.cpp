@@ -1802,7 +1802,7 @@ struct ValueFlowAnalyzer : Analyzer {
 
     virtual bool isAlias(const Token* tok, bool& inconclusive) const = 0;
 
-    using ProgramState = std::unordered_map<nonneg int, ValueFlow::Value>;
+    using ProgramState = std::unordered_map<MathLib::bigint, ValueFlow::Value>;
 
     virtual ProgramState getProgramState() const = 0;
 
@@ -2311,18 +2311,14 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
         return unknown;
     }
 
-    virtual std::vector<int> evaluate(const Token* tok) const OVERRIDE {
-        if (tok->hasKnownIntValue())
-            return {static_cast<int>(tok->values().front().intvalue)};
-        return std::vector<int> {};
+    virtual ProgramState getProgramState() const OVERRIDE {
+        ProgramState ps;
+        ps[expr->exprId()] = value;
+        return ps;
     }
 
     virtual bool match(const Token* tok) const OVERRIDE {
         return isSameExpression(isCPP(), true, expr, tok, getSettings()->library, true, true);
-    }
-
-    virtual ProgramState getProgramState() const OVERRIDE {
-        return ProgramState{};
     }
 
     virtual bool isGlobal() const OVERRIDE {
@@ -5005,6 +5001,8 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         // ProgramMemory pm = pms.get(endBlock->link()->next(), getProgramState());
         for (const auto& p:pm.values) {
             int varid = p.first;
+            if (!symboldatabase->isVarId(varid))
+                continue;
             ValueFlow::Value value = p.second;
             if (vars.count(varid) != 0)
                 continue;
