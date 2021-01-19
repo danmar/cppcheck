@@ -43,6 +43,7 @@ jobs:
         uses: jurplel/install-qt-action@v2
         with:
           modules: 'qtcharts'
+          mirror: 'http://mirrors.ocf.berkeley.edu/qt/'
 
       - name: Test CMake build
         run: |
