@@ -399,6 +399,7 @@ private:
         TEST_CASE(findFunction32); // C: relax type matching
         TEST_CASE(findFunction33); // #9885 variadic function
         TEST_CASE(findFunction34); // #10061
+        TEST_CASE(findFunction35);
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -6236,6 +6237,29 @@ private:
         ASSERT(foo->function());
         ASSERT(foo->function()->tokenDef);
         ASSERT_EQUALS(8, foo->function()->tokenDef->linenr());
+    }
+
+    void findFunction35() {
+        GET_SYMBOL_DB("namespace clangimport {\n"
+                      "    class AstNode {\n"
+                      "    public:\n"
+                      "        AstNode();\n"
+                      "        void createTokens();\n"
+                      "    };\n"
+                      "}\n"
+                      "::clangimport::AstNode::AstNode() { }\n"
+                      "void ::clangimport::AstNode::createTokens() { }");
+        (void)db;
+        const Token *foo = Token::findsimplematch(tokenizer.tokens(), "AstNode ( ) { }");
+        ASSERT(foo);
+        ASSERT(foo->function());
+        ASSERT(foo->function()->tokenDef);
+        ASSERT_EQUALS(4, foo->function()->tokenDef->linenr());
+        foo = Token::findsimplematch(tokenizer.tokens(), "createTokens ( ) { }");
+        ASSERT(foo);
+        ASSERT(foo->function());
+        ASSERT(foo->function()->tokenDef);
+        ASSERT_EQUALS(5, foo->function()->tokenDef->linenr());
     }
 
     void findFunctionContainer() {
