@@ -15,7 +15,7 @@ curl --insecure \
   --form token=e74RRnWR6BVsn5LKdclfcA \
   --form email=daniel.marjamaki@gmail.com \
   --form file=@cppcheck.tgz \
-  --form version=`git log -1 --format=oneline | sed -r 's/([a-f0-9]{7}).*/\1/'` \
+  --form version=$(git log -1 --format=oneline | sed -r 's/([a-f0-9]{7}).*/\1/') \
   --form description="Development" \
   https://scan.coverity.com/builds?project=cppcheck
 
