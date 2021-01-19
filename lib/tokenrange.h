@@ -46,7 +46,7 @@ public:
         TokenIterator& operator++() { mt = mt->next(); return *this; }
         bool operator==(const TokenIterator& b) const { return mt == b.mt; }
         bool operator!=(const TokenIterator& b) const { return mt != b.mt; }
-        T* operator*() { return mt; }
+        T* operator*() const { return mt; }
     };
 
     TokenIterator begin() const { return TokenIterator(mFront); }
