@@ -507,12 +507,10 @@ void CheckCondition::multiCondition()
                 break;
             tok2 = tok2->tokAt(4);
 
-            if (tok2->astOperand2() &&
-                !cond1->hasKnownIntValue() &&
-                !tok2->astOperand2()->hasKnownIntValue()) {
+            if (tok2->astOperand2()) {
                 ErrorPath errorPath;
                 if (isOverlappingCond(cond1, tok2->astOperand2(), true))
-                    overlappingElseIfConditionError(tok2, cond1->linenr());
+                    overlappingElseIfConditionError(tok2->astOperand2(), cond1->linenr());
                 else if (isOppositeCond(true, mTokenizer->isCPP(), cond1, tok2->astOperand2(), mSettings->library, true, true, &errorPath))
                     oppositeElseIfConditionError(cond1, tok2->astOperand2(), errorPath);
             }
