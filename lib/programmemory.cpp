@@ -1,19 +1,16 @@
 
 #include "programmemory.h"
-#include "mathlib.h"
-#include "token.h"
 #include "astutils.h"
+#include "mathlib.h"
 #include "symboldatabase.h"
+#include "token.h"
 #include <algorithm>
 #include <cassert>
 #include <cstdio>
 #include <limits>
 #include <memory>
 
-void ProgramMemory::setValue(MathLib::bigint exprid, const ValueFlow::Value &value)
-{
-    values[exprid] = value;
-}
+void ProgramMemory::setValue(MathLib::bigint exprid, const ValueFlow::Value& value) { values[exprid] = value; }
 const ValueFlow::Value* ProgramMemory::getValue(MathLib::bigint exprid) const
 {
     const ProgramMemory::Map::const_iterator it = values.find(exprid);
@@ -64,10 +61,7 @@ void ProgramMemory::setUnknown(MathLib::bigint exprid)
     values[exprid].valueType = ValueFlow::Value::ValueType::UNINIT;
 }
 
-bool ProgramMemory::hasValue(MathLib::bigint exprid)
-{
-    return values.find(exprid) != values.end();
-}
+bool ProgramMemory::hasValue(MathLib::bigint exprid) { return values.find(exprid) != values.end(); }
 
 void ProgramMemory::swap(ProgramMemory &pm)
 {
@@ -86,7 +80,7 @@ bool ProgramMemory::empty() const
 
 void ProgramMemory::replace(const ProgramMemory &pm)
 {
-    for (auto&& p:pm.values) {
+    for (auto&& p : pm.values) {
         values[p.first] = p.second;
     }
 }
@@ -154,7 +148,7 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
             return;
         if (endTok && isExpressionChanged(vartok, tok->next(), endTok, settings, true))
             return;
-        pm.setIntValue(vartok->exprId(),  then ? truevalue.intvalue : falsevalue.intvalue);
+        pm.setIntValue(vartok->exprId(), then ? truevalue.intvalue : falsevalue.intvalue);
     } else if (Token::simpleMatch(tok, "!")) {
         programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, !then);
     } else if (then && Token::simpleMatch(tok, "&&")) {
@@ -197,7 +191,8 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
 {
     int indentlevel = 0;
     for (const Token *tok2 = tok; tok2; tok2 = tok2->previous()) {
-        if ((Token::simpleMatch(tok2, "=") || Token::Match(tok2->previous(), "%var% (|{")) && tok2->astOperand1() && tok2->astOperand2()) {
+        if ((Token::simpleMatch(tok2, "=") || Token::Match(tok2->previous(), "%var% (|{")) && tok2->astOperand1() &&
+            tok2->astOperand2()) {
             bool setvar = false;
             const Token* vartok = tok2->astOperand1();
             const Token* valuetok = tok2->astOperand2();
@@ -220,7 +215,8 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                         pm.setUnknown(vartok->exprId());
                 }
             }
-        } else if (tok2->exprId() > 0 && Token::Match(tok2, ".|(|[|*|%var%") && !pm.hasValue(tok2->exprId()) && isVariableChanged(tok2, 0, nullptr, true)) {
+        } else if (tok2->exprId() > 0 && Token::Match(tok2, ".|(|[|*|%var%") && !pm.hasValue(tok2->exprId()) &&
+                   isVariableChanged(tok2, 0, nullptr, true)) {
             pm.setUnknown(tok2->exprId());
         }
 
@@ -349,7 +345,7 @@ ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars)
     return programMemory;
 }
 
-ProgramMemory getProgramMemory(const Token *tok, MathLib::bigint exprid, const ValueFlow::Value &value)
+ProgramMemory getProgramMemory(const Token* tok, MathLib::bigint exprid, const ValueFlow::Value& value)
 {
     ProgramMemory programMemory;
     programMemory.replace(getInitialProgramState(tok, value.tokvalue));

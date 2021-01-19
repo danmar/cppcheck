@@ -14,7 +14,7 @@ struct ProgramMemory {
     using Map = std::unordered_map<MathLib::bigint, ValueFlow::Value>;
     Map values;
 
-    void setValue(MathLib::bigint exprid, const ValueFlow::Value &value);
+    void setValue(MathLib::bigint exprid, const ValueFlow::Value& value);
     const ValueFlow::Value* getValue(MathLib::bigint exprid) const;
 
     bool getIntValue(MathLib::bigint exprid, MathLib::bigint* result) const;
@@ -79,7 +79,7 @@ bool conditionIsTrue(const Token *condition, const ProgramMemory &programMemory)
 /**
  * Get program memory by looking backwards from given token.
  */
-ProgramMemory getProgramMemory(const Token *tok, MathLib::bigint exprid, const ValueFlow::Value &value);
+ProgramMemory getProgramMemory(const Token* tok, MathLib::bigint exprid, const ValueFlow::Value& value);
 
 ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars);
 

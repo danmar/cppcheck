@@ -2311,7 +2311,8 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
         return unknown;
     }
 
-    virtual ProgramState getProgramState() const OVERRIDE {
+    virtual ProgramState getProgramState() const OVERRIDE
+    {
         ProgramState ps;
         ps[expr->exprId()] = value;
         return ps;
