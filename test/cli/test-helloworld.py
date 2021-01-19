@@ -72,7 +72,8 @@ def test_addon_relative_path():
     ret, stdout, stderr = cppcheck(['--addon=misra', '--template=cppcheck1', prjpath])
     filename = os.path.join(prjpath, 'main.c')
     assert ret == 0
-    assert stdout == 'Checking %s ...\n' % filename
+    assert stdout == ('Checking %s ...\n'
+                      'Checking %s: SOME_CONFIG...\n' % (filename, filename))
     assert stderr == ('[%s:5]: (error) Division by zero.\n'
                       '[%s:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
 
