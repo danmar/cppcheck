@@ -25,7 +25,7 @@ pandoc $1.md -o $1.pdf -s --number-sections --toc \
     --listings \
     -f markdown \
     -V mainfont="$MainFont" \
-    -V monofont="$Consolas" \
+    -V monofont="$MonoFont" \
     -V geometry:a4paper \
     -V geometry:margin=2.4cm \
     -V subparagraph \
