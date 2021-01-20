@@ -2724,7 +2724,7 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
 
     // back up to head of path
     while (tok1 && tok1->previous() && tok1->previous()->str() == "::" && tok1->tokAt(-2) &&
-           (tok1->tokAt(-2)->isName() ||
+           ((tok1->tokAt(-2)->isName() && !tok1->tokAt(-2)->isStandardType()) ||
             (tok1->strAt(-2) == ">" && tok1->linkAt(-2) && Token::Match(tok1->linkAt(-2)->previous(), "%name%")))) {
         count++;
         const Token * tok2 = tok1->tokAt(-2);
@@ -2744,6 +2744,12 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
     // syntax error?
     if (!tok1)
         return;
+
+    // add global namespace if present
+    if (tok1->strAt(-1) == "::") {
+        path_length++;
+        path.insert(0, ":: ");
+    }
 
     std::list<Scope>::iterator it1;
 
