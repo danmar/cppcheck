@@ -26,7 +26,7 @@ jobs:
           
       - name: run Shellcheck
         run: |
-          find . -name "*.sh" | xargs shellcheck || true
+          find . -name "*.sh" | xargs shellcheck --exclude SC2002,SC2013,SC2034,SC2035,SC2043,SC2046,SC2086,SC2089,SC2090,SC2129,SC2211,SC2231
 
       - name: run pylint
         run: |
