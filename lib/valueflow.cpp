@@ -3802,23 +3802,22 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
 // std::vector<const Variable*> vars = getLHSVariables(parent);
 // const Token* endOfVarScope = getEndOfVarScope(tok, vars);
 
-static void valueFlowForwardAssign(Token * const               tok,
-                                   const Token*      expr,
+static void valueFlowForwardAssign(Token* const tok,
+                                   const Token* expr,
                                    std::vector<const Variable*> vars,
                                    std::list<ValueFlow::Value> values,
-                                   const bool                  init,
-                                   TokenList * const           tokenlist,
-                                   ErrorLogger * const         errorLogger,
-                                   const Settings * const      settings)
+                                   const bool init,
+                                   TokenList* const tokenlist,
+                                   ErrorLogger* const errorLogger,
+                                   const Settings* const settings)
 {
     const Token* endOfVarScope = getEndOfVarScope(tok, vars);
     if (std::any_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
         valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         values.remove_if(std::mem_fn(&ValueFlow::Value::isLifetimeValue));
     }
-    if (std::all_of(vars.begin(), vars.end(), [&](const Variable* var) {
-        return !var->isPointer() && !var->isSmartPointer();
-    }))
+    if (std::all_of(
+            vars.begin(), vars.end(), [&](const Variable* var) { return !var->isPointer() && !var->isSmartPointer(); }))
         values.remove_if(std::mem_fn(&ValueFlow::Value::isTokValue));
     if (tok->astParent()) {
         for (ValueFlow::Value& value : values) {
@@ -3858,14 +3857,14 @@ static void valueFlowForwardAssign(Token * const               tok,
     valueFlowForward(const_cast<Token*>(nextExpression), endOfVarScope, expr, values, tokenlist, settings);
 }
 
-static void valueFlowForwardAssign(Token * const               tok,
-                                   const Variable * const      var,
+static void valueFlowForwardAssign(Token* const tok,
+                                   const Variable* const var,
                                    const std::list<ValueFlow::Value>& values,
                                    const bool,
-                                   const bool                  init,
-                                   TokenList * const           tokenlist,
-                                   ErrorLogger * const         errorLogger,
-                                   const Settings * const      settings)
+                                   const bool init,
+                                   TokenList* const tokenlist,
+                                   ErrorLogger* const errorLogger,
+                                   const Settings* const settings)
 {
     valueFlowForwardAssign(tok, var->nameToken(), {var}, values, init, tokenlist, errorLogger, settings);
 }
@@ -3957,7 +3956,8 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             if (values.empty())
                 continue;
             const bool init = vars.size() == 1 && vars.front()->nameToken() == tok->astOperand1();
-            valueFlowForwardAssign(tok->astOperand2(), tok->astOperand1(), vars, values, init, tokenlist, errorLogger, settings);
+            valueFlowForwardAssign(
+                tok->astOperand2(), tok->astOperand1(), vars, values, init, tokenlist, errorLogger, settings);
         }
     }
 }
