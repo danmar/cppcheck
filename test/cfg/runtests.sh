@@ -401,7 +401,7 @@ set -e
 if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
     echo "pkg-config needed to retrieve cppunit configuration is not available, skipping syntax check."
 else
-    if pkg-config cppunit; then
+    if ! pkg-config cppunit; then
         echo "cppunit not found, skipping syntax check for cppunit"
     else
         echo "cppunit found, checking syntax with ${CXX} now."
