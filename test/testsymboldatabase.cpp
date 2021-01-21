@@ -400,6 +400,7 @@ private:
         TEST_CASE(findFunction33); // #9885 variadic function
         TEST_CASE(findFunction34); // #10061
         TEST_CASE(findFunction35);
+        TEST_CASE(findFunction36); // #10122
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -6260,6 +6261,27 @@ private:
         ASSERT(foo->function());
         ASSERT(foo->function()->tokenDef);
         ASSERT_EQUALS(5, foo->function()->tokenDef->linenr());
+    }
+
+    void findFunction36() { // #10122
+        GET_SYMBOL_DB("namespace external {\n"
+                      "    enum class T { };\n"
+                      "}\n"
+                      "namespace ns {\n"
+                      "    class A {\n"
+                      "    public:\n"
+                      "        void f(external::T);\n"
+                      "    };\n"
+                      "}\n"
+                      "namespace ns {\n"
+                      "    void A::f(external::T link_type) { }\n"
+                      "}");
+        ASSERT_EQUALS("", errout.str());
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "f ( external :: T link_type )");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT(functok->function()->name() == "f");
+        ASSERT_EQUALS(7, functok->function()->tokenDef->linenr());
     }
 
     void findFunctionContainer() {

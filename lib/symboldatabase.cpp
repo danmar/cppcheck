@@ -2371,8 +2371,8 @@ static bool typesMatch(
                 tok2 = tok2->next();
             // update parser token positions
             if (tok1 && tok2) {
-                *new_first = tok1;
-                *new_second = tok2;
+                *new_first = tok1->previous();
+                *new_second = tok2->previous();
                 return true;
             }
         }
