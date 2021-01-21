@@ -1105,7 +1105,7 @@ void CheckStl::invalidContainerLoopError(const Token *tok, const Token * loopTok
     reportError(errorPath, Severity::error, "invalidContainerLoop", msg, CWE664, false);
 }
 
-void CheckStl::invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val, ErrorPath errorPath)
+void CheckStl::invalidContainerError(const Token *tok, const Token * /*contTok*/, const ValueFlow::Value *val, ErrorPath errorPath)
 {
     const bool inconclusive = val ? val->isInconclusive() : false;
     if (val)
