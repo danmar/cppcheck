@@ -1893,13 +1893,14 @@ struct ValueFlowAnalyzer : Analyzer {
             } else {
                 if (rhsValue && !value->isImpossible() && value->equalValue(*rhsValue))
                     a = Action::Idempotent;
+                a |= Action::Incremental;
             }
             return a;
         }
 
         // increment/decrement
         if (Token::Match(tok->previous(), "++|-- %name%") || Token::Match(tok, "%name% ++|--")) {
-            return Action::Read | Action::Write;
+            return Action::Read | Action::Write | Action::Incremental;
         }
         return Action::None;
     }
@@ -5706,17 +5707,17 @@ struct ContainerVariableAnalyzer : VariableAnalyzer {
         if (tok->valueType()->container->stdStringLike && Token::simpleMatch(parent, "+=") && astIsLHS(tok) && parent->astOperand2()) {
             const Token* rhs = parent->astOperand2();
             if (rhs->tokType() == Token::eString)
-                return Action::Read | Action::Write;
+                return Action::Read | Action::Write | Action::Incremental;
             if (rhs->valueType() && rhs->valueType()->container && rhs->valueType()->container->stdStringLike) {
                 if (std::any_of(rhs->values().begin(), rhs->values().end(), [&](const ValueFlow::Value &rhsval) {
                 return rhsval.isKnown() && rhsval.isContainerSizeValue();
                 }))
-                return Action::Read | Action::Write;
+                return Action::Read | Action::Write | Action::Incremental;
             }
         } else if (Token::Match(tok, "%name% . %name% (")) {
             Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
             if (action == Library::Container::Action::PUSH || action == Library::Container::Action::POP)
-                return Action::Read | Action::Write;
+                return Action::Read | Action::Write | Action::Incremental;
         }
         return Action::None;
     }

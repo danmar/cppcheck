@@ -380,6 +380,22 @@ private:
               "  return ArrS[0];\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("extern void Bar(const double, const double);\n"
+                    "void f(std::vector<double> &r, const double ) {\n"
+                    "    std::vector<double> result;\n"
+                    "    double d = 0.0;\n"
+                    "    const double inc = 0.1;\n"
+                    "    for(unsigned int i = 0; i < 10; ++i) {\n"
+                    "        result.push_back(d);\n"
+                    "        d = (i + 1) * inc;\n"
+                    "    }\n"
+                    "    Bar(1.0, d);\n"
+                    "    Bar(10U, result.size());\n"
+                    "    Bar(0.0, result[0]);\n"
+                    "    Bar(0.34, result[1]);\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
