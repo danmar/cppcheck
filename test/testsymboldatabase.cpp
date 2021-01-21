@@ -6296,7 +6296,7 @@ private:
                       "using ::ns::V;\n"
                       "void A::f(const V&) { }");
         ASSERT_EQUALS("", errout.str());
-        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "f ( const V & )");
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "f ( const :: ns :: V & )");
         ASSERT(functok);
         ASSERT(functok->function());
         ASSERT(functok->function()->name() == "f");
