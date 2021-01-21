@@ -3932,10 +3932,6 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             if (aliased.find(exprid) != aliased.end())
                 continue;
             std::vector<const Variable*> vars = getLHSVariables(tok);
-            if (not std::all_of(vars.begin(), vars.end(), [&](const Variable* var) {
-                return var->isLocal() || var->isGlobal() || var->isArgument();
-            }))
-                continue;
 
             // Rhs values..
             if (!tok->astOperand2() || tok->astOperand2()->values().empty())
