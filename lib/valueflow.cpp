@@ -3799,9 +3799,6 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
     }
 }
 
-// std::vector<const Variable*> vars = getLHSVariables(parent);
-// const Token* endOfVarScope = getEndOfVarScope(tok, vars);
-
 static void valueFlowForwardAssign(Token* const tok,
                                    const Token* expr,
                                    std::vector<const Variable*> vars,
