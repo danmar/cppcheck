@@ -1907,7 +1907,7 @@ namespace {
         std::string::size_type index = scope.size();
         std::string::size_type new_index = std::string::npos;
         bool match = true;
-        while (tok2->strAt(-1) == "::") {
+        while (Token::Match(tok2->tokAt(-2), "%name% ::") && !tok2->tokAt(-2)->isKeyword()) {
             std::string last;
             if (match && !scope1.empty()) {
                 new_index = scope1.rfind(' ', index - 1);
