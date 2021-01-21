@@ -3725,7 +3725,7 @@ static const Token* findIncompleteVar(const Token* start, const Token* end)
     return nullptr;
 }
 
-ValueFlow::Value makeConditionValue(long long val, const Token* condTok, bool assume)
+static ValueFlow::Value makeConditionValue(long long val, const Token* condTok, bool assume)
 {
     ValueFlow::Value v(val);
     v.setKnown();
