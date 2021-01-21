@@ -561,8 +561,11 @@ void Tokenizer::simplifyUsingToTypedef()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // using a::b;  =>   typedef  a::b  b;
-        if (Token::Match(tok, "[;{}] using %name% :: %name% ::|;") && !tok->tokAt(2)->isKeyword()) {
-            Token *endtok = tok->tokAt(5);
+        if ((Token::Match(tok, "[;{}] using %name% :: %name% ::|;") && !tok->tokAt(2)->isKeyword()) ||
+            (Token::Match(tok, "[;{}] using :: %name% :: %name% ::|;") && !tok->tokAt(3)->isKeyword())) {
+             Token *endtok = tok->tokAt(5);
+            if (Token::Match(endtok, "%name%"))
+                endtok = endtok->next();
             while (Token::Match(endtok, ":: %name%"))
                 endtok = endtok->tokAt(2);
             if (endtok && endtok->str() == ";") {

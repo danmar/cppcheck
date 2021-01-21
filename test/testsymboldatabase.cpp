@@ -401,6 +401,7 @@ private:
         TEST_CASE(findFunction34); // #10061
         TEST_CASE(findFunction35);
         TEST_CASE(findFunction36); // #10122
+        TEST_CASE(findFunction37); // #10124
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -6282,6 +6283,24 @@ private:
         ASSERT(functok->function());
         ASSERT(functok->function()->name() == "f");
         ASSERT_EQUALS(7, functok->function()->tokenDef->linenr());
+    }
+
+    void findFunction37() { // #10124
+        GET_SYMBOL_DB("namespace ns {\n"
+                      "    class V { };\n"
+                      "}\n"
+                      "class A {\n"
+                      "public:\n"
+                      "    void f(const ns::V&);\n"
+                      "};\n"
+                      "using ::ns::V;\n"
+                      "void A::f(const V&) { }");
+        ASSERT_EQUALS("", errout.str());
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "f ( const V & )");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT(functok->function()->name() == "f");
+        ASSERT_EQUALS(6, functok->function()->tokenDef->linenr());
     }
 
     void findFunctionContainer() {
