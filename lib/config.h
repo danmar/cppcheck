@@ -46,6 +46,15 @@
 #  define NORETURN
 #endif
 
+// fallthrough
+#if defined(__clang__)
+#  define FALLTHROUGH [[clang::fallthrough]]
+#elif (defined(__GNUC__) && (__GNUC__ >= 7))
+#  define FALLTHROUGH __attribute__((fallthrough))
+#else
+#  define FALLTHROUGH
+#endif
+
 #define REQUIRES(msg, ...) class=typename std::enable_if<__VA_ARGS__::value>::type
 
 #include <string>

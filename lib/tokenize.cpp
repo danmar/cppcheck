@@ -561,8 +561,11 @@ void Tokenizer::simplifyUsingToTypedef()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // using a::b;  =>   typedef  a::b  b;
-        if (Token::Match(tok, "[;{}] using %name% :: %name% ::|;") && !tok->tokAt(2)->isKeyword()) {
-            Token *endtok = tok->tokAt(5);
+        if ((Token::Match(tok, "[;{}] using %name% :: %name% ::|;") && !tok->tokAt(2)->isKeyword()) ||
+            (Token::Match(tok, "[;{}] using :: %name% :: %name% ::|;") && !tok->tokAt(3)->isKeyword())) {
+             Token *endtok = tok->tokAt(5);
+            if (Token::Match(endtok, "%name%"))
+                endtok = endtok->next();
             while (Token::Match(endtok, ":: %name%"))
                 endtok = endtok->tokAt(2);
             if (endtok && endtok->str() == ";") {
@@ -1904,7 +1907,7 @@ namespace {
         std::string::size_type index = scope.size();
         std::string::size_type new_index = std::string::npos;
         bool match = true;
-        while (tok2->strAt(-1) == "::") {
+        while (Token::Match(tok2->tokAt(-2), "%name% ::") && !tok2->tokAt(-2)->isKeyword()) {
             std::string last;
             if (match && !scope1.empty()) {
                 new_index = scope1.rfind(' ', index - 1);

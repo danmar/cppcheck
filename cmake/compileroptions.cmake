@@ -51,6 +51,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wdocumentation)
    add_compile_options_safe(-Wdocumentation-pedantic)
    add_compile_options_safe(-Wno-documentation-unknown-command)
+   add_compile_options_safe(-Wimplicit-fallthrough)
 
    if(ENABLE_COVERAGE OR ENABLE_COVERAGE_XML)
       message(FATAL_ERROR "Do not use clang for generate code coverage. Use gcc.")

@@ -320,12 +320,14 @@ struct ForwardTraversal {
             Token* writeTok = findRange(endBlock->link(), endBlock, std::mem_fn(&Analyzer::Action::isModified));
             const Token* nextStatement = Token::findmatch(writeTok, ";|}", endBlock);
             if (!Token::Match(nextStatement, ";|} break ;")) {
-                continueUpdateRangeAfterLoop(ftv, endBlock, endToken);
+                if (!allAnalysis.isIncremental())
+                    continueUpdateRangeAfterLoop(ftv, endBlock, endToken);
                 return Break(Terminate::Bail);
             }
         } else {
             if (stepTok && updateRecursive(stepTok) == Progress::Break) {
-                continueUpdateRangeAfterLoop(ftv, endBlock, endToken);
+                if (!allAnalysis.isIncremental())
+                    continueUpdateRangeAfterLoop(ftv, endBlock, endToken);
                 return Break(Terminate::Bail);
             }
         }

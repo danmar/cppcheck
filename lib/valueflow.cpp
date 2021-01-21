@@ -1802,7 +1802,7 @@ struct ValueFlowAnalyzer : Analyzer {
 
     virtual bool isAlias(const Token* tok, bool& inconclusive) const = 0;
 
-    using ProgramState = std::unordered_map<nonneg int, ValueFlow::Value>;
+    using ProgramState = std::unordered_map<MathLib::bigint, ValueFlow::Value>;
 
     virtual ProgramState getProgramState() const = 0;
 
@@ -1893,13 +1893,14 @@ struct ValueFlowAnalyzer : Analyzer {
             } else {
                 if (rhsValue && !value->isImpossible() && value->equalValue(*rhsValue))
                     a = Action::Idempotent;
+                a |= Action::Incremental;
             }
             return a;
         }
 
         // increment/decrement
         if (Token::Match(tok->previous(), "++|-- %name%") || Token::Match(tok, "%name% ++|--")) {
-            return Action::Read | Action::Write;
+            return Action::Read | Action::Write | Action::Incremental;
         }
         return Action::None;
     }
@@ -2311,18 +2312,15 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
         return unknown;
     }
 
-    virtual std::vector<int> evaluate(const Token* tok) const OVERRIDE {
-        if (tok->hasKnownIntValue())
-            return {static_cast<int>(tok->values().front().intvalue)};
-        return std::vector<int> {};
+    virtual ProgramState getProgramState() const OVERRIDE
+    {
+        ProgramState ps;
+        ps[expr->exprId()] = value;
+        return ps;
     }
 
     virtual bool match(const Token* tok) const OVERRIDE {
         return isSameExpression(isCPP(), true, expr, tok, getSettings()->library, true, true);
-    }
-
-    virtual ProgramState getProgramState() const OVERRIDE {
-        return ProgramState{};
     }
 
     virtual bool isGlobal() const OVERRIDE {
@@ -5001,6 +4999,8 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         // ProgramMemory pm = pms.get(endBlock->link()->next(), getProgramState());
         for (const auto& p:pm.values) {
             int varid = p.first;
+            if (!symboldatabase->isVarId(varid))
+                continue;
             ValueFlow::Value value = p.second;
             if (vars.count(varid) != 0)
                 continue;
@@ -5703,17 +5703,17 @@ struct ContainerVariableAnalyzer : VariableAnalyzer {
         if (tok->valueType()->container->stdStringLike && Token::simpleMatch(parent, "+=") && astIsLHS(tok) && parent->astOperand2()) {
             const Token* rhs = parent->astOperand2();
             if (rhs->tokType() == Token::eString)
-                return Action::Read | Action::Write;
+                return Action::Read | Action::Write | Action::Incremental;
             if (rhs->valueType() && rhs->valueType()->container && rhs->valueType()->container->stdStringLike) {
                 if (std::any_of(rhs->values().begin(), rhs->values().end(), [&](const ValueFlow::Value &rhsval) {
                 return rhsval.isKnown() && rhsval.isContainerSizeValue();
                 }))
-                return Action::Read | Action::Write;
+                return Action::Read | Action::Write | Action::Incremental;
             }
         } else if (Token::Match(tok, "%name% . %name% (")) {
             Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
             if (action == Library::Container::Action::PUSH || action == Library::Container::Action::POP)
-                return Action::Read | Action::Write;
+                return Action::Read | Action::Write | Action::Incremental;
         }
         return Action::None;
     }
