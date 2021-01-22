@@ -1427,37 +1427,6 @@ static void valueFlowRightShift(TokenList *tokenList, const Settings* settings)
     }
 }
 
-static void valueFlowOppositeCondition(SymbolDatabase *symboldatabase, const Settings *settings)
-{
-    for (const Scope &scope : symboldatabase->scopeList) {
-        if (scope.type != Scope::eIf)
-            continue;
-        Token *tok = const_cast<Token *>(scope.classDef);
-        if (!Token::simpleMatch(tok, "if ("))
-            continue;
-        const Token *cond1 = tok->next()->astOperand2();
-        if (!cond1 || !cond1->isComparisonOp())
-            continue;
-        const bool cpp = symboldatabase->isCPP();
-        Token *tok2 = tok->linkAt(1);
-        while (Token::simpleMatch(tok2, ") {")) {
-            tok2 = tok2->linkAt(1);
-            if (!Token::simpleMatch(tok2, "} else { if ("))
-                break;
-            Token *ifOpenBraceTok = tok2->tokAt(4);
-            Token *cond2 = ifOpenBraceTok->astOperand2();
-            if (!cond2 || !cond2->isComparisonOp())
-                continue;
-            if (isOppositeCond(true, cpp, cond1, cond2, settings->library, true, true)) {
-                ValueFlow::Value value(1);
-                value.setKnown();
-                setTokenValue(cond2, value, settings);
-            }
-            tok2 = ifOpenBraceTok->link();
-        }
-    }
-}
-
 static void valueFlowEnumValue(SymbolDatabase * symboldatabase, const Settings * settings)
 {
 
@@ -3756,7 +3725,19 @@ static const Token* findIncompleteVar(const Token* start, const Token* end)
     return nullptr;
 }
 
-static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+static ValueFlow::Value makeConditionValue(long long val, const Token* condTok, bool assume)
+{
+    ValueFlow::Value v(val);
+    v.setKnown();
+    v.condition = condTok;
+    if (assume)
+        v.errorPath.emplace_back(condTok, "Assuming condition '" + condTok->expressionString() + "' is true");
+    else
+        v.errorPath.emplace_back(condTok, "Assuming condition '" + condTok->expressionString() + "' is false");
+    return v;
+}
+// 
+static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (const Scope * scope : symboldatabase->functionScopes) {
         if (const Token* incompleteTok = findIncompleteVar(scope->bodyStart, scope->bodyEnd)) {
@@ -3773,28 +3754,58 @@ static void valueFlowTerminatingCondition(TokenList *tokenlist, SymbolDatabase* 
             // Skip known values
             if (tok->next()->hasKnownValue())
                 continue;
-            const Token * parenTok = tok->next();
+            Token * parenTok = tok->next();
             if (!Token::simpleMatch(parenTok->link(), ") {"))
                 continue;
-            const Token * blockTok = parenTok->link()->tokAt(1);
-            // Check if the block terminates early
-            if (!isEscapeScope(blockTok, tokenlist))
-                continue;
-
+            Token * blockTok = parenTok->link()->tokAt(1);
             const Token* condTok = parenTok->astOperand2();
-            ValueFlow::Value v1(0);
-            v1.setKnown();
-            v1.condition = condTok;
-            v1.errorPath.emplace_back(condTok, "Assuming condition '" + condTok->expressionString() + "' is true");
-            ExpressionAnalyzer a1(condTok, v1, tokenlist);
-            valueFlowGenericForward(blockTok->link()->next(), scope->bodyEnd, a1, settings);
 
-            ValueFlow::Value v2(1);
-            v2.setKnown();
-            v2.condition = condTok;
-            v2.errorPath.emplace_back(condTok, "Assuming condition '" + condTok->expressionString() + "' is false");
-            OppositeExpressionAnalyzer a2(true, condTok, v2, tokenlist);
-            valueFlowGenericForward(blockTok->link()->next(), scope->bodyEnd, a2, settings);
+            Token* startTok = blockTok;
+            // Inner condition
+            {
+                std::vector<const Token*> conds = {condTok};
+                if (Token::simpleMatch(condTok, "&&")) {
+                    std::vector<const Token*> args = astFlatten(condTok, "&&");
+                    conds.insert(conds.end(), args.begin(), args.end());
+                }
+                for(const Token* condTok2:conds) {
+                    ExpressionAnalyzer a1(condTok2, makeConditionValue(1, condTok2, true), tokenlist);
+                    valueFlowGenericForward(startTok, startTok->link(), a1, settings);
+
+                    OppositeExpressionAnalyzer a2(true, condTok2, makeConditionValue(0, condTok2, true), tokenlist);
+                    valueFlowGenericForward(startTok, startTok->link(), a2, settings);
+                }
+            }
+
+            std::vector<const Token*> conds = {condTok};
+            if (Token::simpleMatch(condTok, "||")) {
+                std::vector<const Token*> args = astFlatten(condTok, "||");
+                conds.insert(conds.end(), args.begin(), args.end());
+            }
+
+            // Check else block
+            if (Token::simpleMatch(startTok->link(), "} else {")) {
+                startTok = startTok->link()->tokAt(2);
+                for(const Token* condTok2:conds) {
+                    ExpressionAnalyzer a1(condTok2, makeConditionValue(0, condTok2, false), tokenlist);
+                    valueFlowGenericForward(startTok, startTok->link(), a1, settings);
+
+                    OppositeExpressionAnalyzer a2(true, condTok2, makeConditionValue(1, condTok2, false), tokenlist);
+                    valueFlowGenericForward(startTok, startTok->link(), a2, settings);
+                }
+            }
+
+            // Check if the block terminates early
+            if (isEscapeScope(blockTok, tokenlist)) {
+                for(const Token* condTok2:conds) {
+                    ExpressionAnalyzer a1(condTok2, makeConditionValue(0, condTok2, false), tokenlist);
+                    valueFlowGenericForward(startTok->link()->next(), scope->bodyEnd, a1, settings);
+
+                    OppositeExpressionAnalyzer a2(true, condTok2, makeConditionValue(1, condTok2, false), tokenlist);
+                    valueFlowGenericForward(startTok->link()->next(), scope->bodyEnd, a2, settings);
+                }
+            }
+
         }
     }
 }
@@ -6624,6 +6635,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowBitAnd(tokenlist);
     valueFlowSameExpressions(tokenlist);
+    valueFlowConditionExpressions(tokenlist, symboldatabase, errorLogger, settings);
     valueFlowFwdAnalysis(tokenlist, settings);
 
     std::size_t values = 0;
@@ -6633,8 +6645,6 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowPointerAliasDeref(tokenlist);
         valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);
-        valueFlowOppositeCondition(symboldatabase, settings);
-        valueFlowTerminatingCondition(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowCondition(SimpleConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings);
         valueFlowInferCondition(tokenlist, settings);
