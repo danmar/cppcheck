@@ -45,37 +45,50 @@ private:
         TEST_CASE(exampleAlgorithms);
     }
 
-    void enumerationToEnd() const {
-        givenACodeSampleToTokenize var("void a(){} void main(){ if(true){a();} }");
-        const Token* expected = var.tokens();
-        for (auto t : ConstTokenRange{var.tokens(), nullptr }) {
-            ASSERT_EQUALS(expected, t);
-            expected = t->next();
+    std::string testTokenRange(ConstTokenRange range, const Token* start, const Token* end) const
+    {
+        auto tokenToString = [](const Token* t) { return t ? t->str() : "<null>"; };
+        int index = 0;
+        const Token* expected = start;
+        for (auto t : range)
+        {
+            if (expected != t) {
+                std::ostringstream message;
+                message << "Failed to match token " << tokenToString(expected) << " at position " << index << ". Got " << tokenToString(t) << " instead";
+                return message.str();
+            }
+            index++;
+            expected = expected->next();
         }
-        const Token* const terminator = nullptr;
-        ASSERT_EQUALS(terminator, expected);
+        if (expected != end) {
+            std::ostringstream message;
+            message << "Failed to terminate on " << tokenToString(end) << ". Instead terminated on " << tokenToString(expected) << " at position " << index << ".";
+            return message.str();
+        }
+        return "";
+    }
+
+    void enumerationToEnd() const {
+        std::istringstream istr("void a(){} void main(){ if(true){a();} }");
+        TokenList tokenList(nullptr);
+        tokenList.createTokens(istr, "test.cpp");
+        ASSERT_EQUALS("", testTokenRange(ConstTokenRange{ tokenList.front(), nullptr }, tokenList.front(), nullptr));
     }
 
     void toEndHelper() const {
-        givenACodeSampleToTokenize var("void a(){} void main(){ if(true){a();} }");
-        const Token* expected = var.tokens();
-        for (auto t : var.tokens()->toEnd()) {
-            ASSERT_EQUALS(expected, t);
-            expected = t->next();
-        }
-        const Token* const terminator = nullptr;
-        ASSERT_EQUALS(terminator, expected);
+        std::istringstream istr("void a(){} void main(){ if(true){a();} }");
+        TokenList tokenList(nullptr);
+        tokenList.createTokens(istr, "test.cpp");
+        ASSERT_EQUALS("", testTokenRange(tokenList.front()->toEnd(), tokenList.front(), nullptr));
     }
 
     void partialEnumeration() const {
-        givenACodeSampleToTokenize var("void a(){} void main(){ if(true){a();} }");
-        const Token* expected = var.tokens()->tokAt(4);
-        const Token* end = var.tokens()->tokAt(10);
-        for (auto t : ConstTokenRange{ expected, end }) {
-            ASSERT_EQUALS(expected, t);
-            expected = t->next();
-        }
-        ASSERT_EQUALS(expected, end);
+        std::istringstream istr("void a(){} void main(){ if(true){a();} }");
+        TokenList tokenList(nullptr);
+        tokenList.createTokens(istr, "test.cpp");
+        const Token* start = tokenList.front()->tokAt(4);
+        const Token* end = tokenList.front()->tokAt(10);
+        ASSERT_EQUALS("", testTokenRange(ConstTokenRange{ start, end }, start, end));
     }
 
     void scopeExample() const {
@@ -96,8 +109,10 @@ private:
     }
 
     void exampleAlgorithms() const {
-        givenACodeSampleToTokenize var("void a(){} void main(){ if(true){a();} }");
-        ConstTokenRange range{ var.tokens(), nullptr };
+        std::istringstream istr("void a(){} void main(){ if(true){a();} }");
+        TokenList tokenList(nullptr);
+        tokenList.createTokens(istr, "test.cpp");
+        ConstTokenRange range{ tokenList.front(), nullptr };
         ASSERT_EQUALS(true, std::all_of(range.begin(), range.end(), [](const Token*) {return true;}));
         ASSERT_EQUALS(true, std::any_of(range.begin(), range.end(), [](const Token* t) {return t->str() == "true";}));
         ASSERT_EQUALS("true", (*std::find_if(range.begin(), range.end(), [](const Token* t) {return t->str() == "true";}))->str());
