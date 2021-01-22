@@ -250,8 +250,7 @@ struct ForwardTraversal {
         return Token::findsimplematch(endBlock->link(), "goto", endBlock);
     }
 
-    bool hasInnerReturnScope(const Token* start, const Token* end) const
-    {
+    bool hasInnerReturnScope(const Token* start, const Token* end) const {
         for(const Token* tok=start;tok != end;tok = tok->previous()) {
             if (Token::simpleMatch(tok, "}")) {
                 const Token* ftok = nullptr;
