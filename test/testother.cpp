@@ -4000,6 +4000,12 @@ private:
         check("void f(int i) { i = !!i; }");
         ASSERT_EQUALS("", errout.str());
 
+        check("void foo() {\n"
+              "    int x = 1;\n"
+              "    int &ref = x;\n"
+              "    ref = x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Redundant assignment of 'ref' to itself.\n", errout.str());
     }
 
     void trac1132() {
