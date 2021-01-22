@@ -13,17 +13,18 @@ struct ForwardTraversal {
     enum class Progress { Continue, Break, Skip };
     enum class Terminate { None, Bail, Escape, Modified, Inconclusive, Conditional };
     ForwardTraversal(const ValuePtr<Analyzer>& analyzer, const Settings* settings)
-        : analyzer(analyzer), settings(settings), actions(Analyzer::Action::None), analyzeOnly(false)
+        : analyzer(analyzer), settings(settings), actions(Analyzer::Action::None), analyzeOnly(false), analyzeTerminate(false)
     {}
     ValuePtr<Analyzer> analyzer;
     const Settings* settings;
     Analyzer::Action actions;
     bool analyzeOnly;
+    bool analyzeTerminate;
     Terminate terminate = Terminate::None;
 
     Progress Break(Terminate t = Terminate::None)
     {
-        if (!analyzeOnly && t != Terminate::None)
+        if ((!analyzeOnly || analyzeTerminate) && t != Terminate::None)
             terminate = t;
         return Progress::Break;
     }
@@ -228,8 +229,10 @@ struct ForwardTraversal {
     ForwardTraversal forkScope(Token* endBlock, bool analyze = false) const {
         ForwardTraversal ft = *this;
         ft.analyzer->forkScope(endBlock);
-        if (!analyzeOnly)
-            ft.analyzeOnly = analyze;
+        if (analyze) {
+            ft.analyzeOnly = true;
+            ft.analyzeTerminate = true;
+        }
         ft.updateRange(endBlock->link(), endBlock);
         return ft;
     }
