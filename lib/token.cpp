@@ -128,17 +128,17 @@ void Token::update_property_info()
 }
 
 static const std::unordered_set<std::string> stdTypes = { "bool"
-                                                , "_Bool"
-                                                , "char"
-                                                , "double"
-                                                , "float"
-                                                , "int"
-                                                , "long"
-                                                , "short"
-                                                , "size_t"
-                                                , "void"
-                                                , "wchar_t"
-                                              };
+                                                          , "_Bool"
+                                                          , "char"
+                                                          , "double"
+                                                          , "float"
+                                                          , "int"
+                                                          , "long"
+                                                          , "short"
+                                                          , "size_t"
+                                                          , "void"
+                                                          , "wchar_t"
+                                                        };
 
 void Token::update_property_isStandardType()
 {

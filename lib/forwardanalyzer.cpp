@@ -21,8 +21,7 @@ struct ForwardTraversal {
     bool analyzeOnly;
     Terminate terminate = Terminate::None;
 
-    Progress Break(Terminate t = Terminate::None)
-    {
+    Progress Break(Terminate t = Terminate::None) {
         if (!analyzeOnly && t != Terminate::None)
             terminate = t;
         return Progress::Break;
@@ -225,15 +224,14 @@ struct ForwardTraversal {
         ft.updateRange(start, end);
     }
 
-    std::vector<ForwardTraversal> forkScope(Token* endBlock, bool isModified = false)
-    {
+    std::vector<ForwardTraversal> forkScope(Token* endBlock, bool isModified = false) {
         if (analyzer->updateScope(endBlock, isModified)) {
             ForwardTraversal ft = *this;
             ft.analyzer->forkScope(endBlock);
             ft.updateRange(endBlock->link(), endBlock);
             return {ft};
         }
-        return std::vector<ForwardTraversal>{};
+        return std::vector<ForwardTraversal> {};
     }
 
     static bool hasGoto(const Token* endBlock) {
@@ -270,8 +268,7 @@ struct ForwardTraversal {
         return a;
     }
 
-    void continueUpdateRangeAfterLoop(std::vector<ForwardTraversal>& ftv, Token* start, const Token* endToken)
-    {
+    void continueUpdateRangeAfterLoop(std::vector<ForwardTraversal>& ftv, Token* start, const Token* endToken) {
         for (ForwardTraversal& ft : ftv) {
             // If analysis has terminated normally, then continue analysis
             if (ft.terminate == Terminate::None)
@@ -283,8 +280,7 @@ struct ForwardTraversal {
                         Token* endBlock,
                         Token* condTok,
                         Token* initTok = nullptr,
-                        Token* stepTok = nullptr)
-    {
+                        Token* stepTok = nullptr) {
         const bool isDoWhile = precedes(endBlock, condTok);
         Analyzer::Action bodyAnalysis = analyzeScope(endBlock);
         Analyzer::Action allAnalysis = bodyAnalysis;

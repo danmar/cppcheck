@@ -1741,7 +1741,7 @@ void CheckStl::missingComparison()
                         if (!tok3)
                             break;
                     } else if (Token::simpleMatch(tok3->astParent(), "++"))
-                            incrementToken = tok3;
+                        incrementToken = tok3;
                     else if (Token::simpleMatch(tok3->astParent(), "+")) {
                         if (Token::Match(tok3->astSibling(), "%num%")) {
                             const Token* tokenGrandParent = tok3->astParent()->astParent();

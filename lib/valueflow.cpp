@@ -1742,7 +1742,7 @@ static bool bifurcateVariableChanged(const Variable* var,
     bool result = false;
     const Token* tok = start;
     while ((tok = findVariableChanged(
-                tok->next(), end, var->isPointer(), var->declarationId(), var->isGlobal(), settings, true))) {
+                      tok->next(), end, var->isPointer(), var->declarationId(), var->isGlobal(), settings, true))) {
         if (Token::Match(tok->astParent(), "%assign%")) {
             if (!bifurcate(tok->astParent()->astOperand2(), varids, settings, depth - 1))
                 return true;
@@ -2312,8 +2312,7 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
         return unknown;
     }
 
-    virtual ProgramState getProgramState() const OVERRIDE
-    {
+    virtual ProgramState getProgramState() const OVERRIDE {
         ProgramState ps;
         ps[expr->exprId()] = value;
         return ps;

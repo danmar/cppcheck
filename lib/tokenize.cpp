@@ -563,7 +563,7 @@ void Tokenizer::simplifyUsingToTypedef()
         // using a::b;  =>   typedef  a::b  b;
         if ((Token::Match(tok, "[;{}] using %name% :: %name% ::|;") && !tok->tokAt(2)->isKeyword()) ||
             (Token::Match(tok, "[;{}] using :: %name% :: %name% ::|;") && !tok->tokAt(3)->isKeyword())) {
-             Token *endtok = tok->tokAt(5);
+            Token *endtok = tok->tokAt(5);
             if (Token::Match(endtok, "%name%"))
                 endtok = endtok->next();
             while (Token::Match(endtok, ":: %name%"))
@@ -3437,8 +3437,8 @@ void Tokenizer::setVarId()
 #define NOTSTART_C "NOT", "case", "default", "goto", "not", "return", "sizeof", "typedef"
 static const std::unordered_set<std::string> notstart_c = { NOTSTART_C };
 static const std::unordered_set<std::string> notstart_cpp = { NOTSTART_C,
-                                                    "delete", "friend", "new", "throw", "using", "virtual", "explicit", "const_cast", "dynamic_cast", "reinterpret_cast", "static_cast", "template"
-                                                  };
+                                                              "delete", "friend", "new", "throw", "using", "virtual", "explicit", "const_cast", "dynamic_cast", "reinterpret_cast", "static_cast", "template"
+                                                            };
 
 void Tokenizer::setVarIdPass1()
 {
@@ -9824,15 +9824,15 @@ void Tokenizer::findGarbageCode() const
 
     // Keywords in global scope
     static const std::unordered_set<std::string> nonGlobalKeywords{"break",
-                                            "continue",
-                                            "for",
-                                            "goto",
-                                            "if",
-                                            "return",
-                                            "switch",
-                                            "while",
-                                            "try",
-                                            "catch"};
+        "continue",
+        "for",
+        "goto",
+        "if",
+        "return",
+        "switch",
+        "while",
+        "try",
+        "catch"};
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (tok->str() == "{")
             tok = tok->link();

@@ -65,8 +65,8 @@ void TestCppcheckLibraryData::podtypeValid()
     QCOMPARE(libraryData.podtypes[0].sign.isEmpty(), true);
     QCOMPARE(libraryData.podtypes[0].size.isEmpty(), true);
 
-    QCOMPARE(libraryData.podtypes[1].name, "ulong");    
-    QCOMPARE(libraryData.podtypes[1].stdtype, "uint32_t");    
+    QCOMPARE(libraryData.podtypes[1].name, "ulong");
+    QCOMPARE(libraryData.podtypes[1].stdtype, "uint32_t");
     QCOMPARE(libraryData.podtypes[1].sign, "u");
     QCOMPARE(libraryData.podtypes[1].size, "4");
 
