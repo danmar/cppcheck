@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <functional>
-#include <iostream>
 
 struct ForwardTraversal {
     enum class Progress { Continue, Break, Skip };
