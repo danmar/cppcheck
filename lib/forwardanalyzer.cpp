@@ -225,12 +225,19 @@ struct ForwardTraversal {
         ft.updateRange(start, end);
     }
 
-    std::vector<ForwardTraversal> forkScope(Token* endBlock, bool isModified = false)
+    ForwardTraversal forkScope(Token* endBlock, bool analyze = false) const {
+        ForwardTraversal ft = *this;
+        ft.analyzer->forkScope(endBlock);
+        if (!analyzeOnly)
+            ft.analyzeOnly = analyze;
+        ft.updateRange(endBlock->link(), endBlock);
+        return ft;
+    }
+
+    std::vector<ForwardTraversal> tryForkScope(Token* endBlock, bool isModified = false)
     {
         if (analyzer->updateScope(endBlock, isModified)) {
-            ForwardTraversal ft = *this;
-            ft.analyzer->forkScope(endBlock);
-            ft.updateRange(endBlock->link(), endBlock);
+            ForwardTraversal ft = forkScope(endBlock);
             return {ft};
         }
         return std::vector<ForwardTraversal>{};
@@ -240,11 +247,15 @@ struct ForwardTraversal {
         return Token::findsimplematch(endBlock->link(), "goto", endBlock);
     }
 
-    bool isEscapeScope(const Token* endBlock, bool& unknown) {
+    bool isEscapeScope(Token* endBlock, bool& unknown) {
         const Token* ftok = nullptr;
         bool r = isReturnScope(endBlock, &settings->library, &ftok);
-        if (!r && ftok)
-            unknown = true;
+        if (!r) {
+            if (ftok)
+                unknown = true;
+            ForwardTraversal ft = forkScope(endBlock, true);
+            return ft.terminate == Terminate::Escape;
+        }
         return r;
     }
 
@@ -261,7 +272,7 @@ struct ForwardTraversal {
 
     Analyzer::Action checkScope(Token* endBlock) {
         Analyzer::Action a = analyzeScope(endBlock);
-        forkScope(endBlock, a.isModified());
+        tryForkScope(endBlock, a.isModified());
         return a;
     }
 
@@ -315,7 +326,7 @@ struct ForwardTraversal {
                 return Progress::Continue;
         }
 
-        std::vector<ForwardTraversal> ftv = forkScope(endBlock, allAnalysis.isModified());
+        std::vector<ForwardTraversal> ftv = tryForkScope(endBlock, allAnalysis.isModified());
         if (bodyAnalysis.isModified()) {
             Token* writeTok = findRange(endBlock->link(), endBlock, std::mem_fn(&Analyzer::Action::isModified));
             const Token* nextStatement = Token::findmatch(writeTok, ";|}", endBlock);
