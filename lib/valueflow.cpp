@@ -3759,6 +3759,8 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
                 continue;
             Token * blockTok = parenTok->link()->tokAt(1);
             const Token* condTok = parenTok->astOperand2();
+            if (condTok->hasKnownIntValue())
+                continue;
 
             Token* startTok = blockTok;
             // Inner condition
