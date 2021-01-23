@@ -7493,7 +7493,7 @@ Token * Tokenizer::initVar(Token * tok)
             return tok;
 
         tok = tok->next();
-    } else if (!tok->isStandardType() && tok->next()->str() != "*")
+    } else if (!tok->isStandardType() && tok->str() != "auto" && tok->next()->str() != "*")
         return tok;
 
     // goto variable name..
