@@ -29,8 +29,6 @@
 
 class options;
 
-std::string writestr(const std::string& str, bool gccStyle = false);
-
 class TestFixture : public ErrorLogger {
 private:
     static std::ostringstream errmsg;
@@ -43,6 +41,8 @@ private:
     std::string mTemplateFormat;
     std::string mTemplateLocation;
     std::string mTestname;
+
+    static std::string writestr(const std::string& str, bool gccStyle = false);
 
 protected:
     std::string testToRun;
