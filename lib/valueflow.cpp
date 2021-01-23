@@ -2432,6 +2432,7 @@ static void valueFlowReverse(TokenList* tokenlist,
 }
 
 static void valueFlowReverse(Token* tok,
+                             const Token* const endToken,
                              const Token* const varToken,
                              const std::list<ValueFlow::Value>& values,
                              TokenList* tokenlist,
@@ -2442,14 +2443,23 @@ static void valueFlowReverse(Token* tok,
         auto aliases = getAliasesFromValues(values);
         for (const ValueFlow::Value& v : values) {
             VariableAnalyzer a(var, v, aliases, tokenlist);
-            valueFlowGenericReverse(tok, a, settings);
+            valueFlowGenericReverse(tok, endToken, a, settings);
         }
     } else {
         for (const ValueFlow::Value& v : values) {
             ExpressionAnalyzer a(varToken, v, tokenlist);
-            valueFlowGenericReverse(tok, a, settings);
+            valueFlowGenericReverse(tok, endToken, a, settings);
         }
     }
+}
+
+static void valueFlowReverse(Token* tok,
+                             const Token* const varToken,
+                             const std::list<ValueFlow::Value>& values,
+                             TokenList* tokenlist,
+                             const Settings* settings)
+{
+    valueFlowReverse(tok, nullptr, varToken, values, tokenlist, settings);
 }
 
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
@@ -4058,6 +4068,7 @@ struct ConditionHandler {
                          const Settings* settings) const = 0;
 
     virtual void reverse(Token* start,
+                         const Token* endToken,
                          const Token* exprTok,
                          const std::list<ValueFlow::Value>& values,
                          TokenList* tokenlist,
@@ -4139,6 +4150,8 @@ struct ConditionHandler {
 
             if (Token::Match(top, "%assign%"))
                 return;
+            if (Token::Match(cond.vartok->astParent(), "%assign%|++|--"))
+                return;
 
             if (Token::simpleMatch(tok->astParent(), "?") && tok->astParent()->isExpandedMacro()) {
                 if (settings->debugwarnings)
@@ -4159,6 +4172,23 @@ struct ConditionHandler {
                 return;
             }
 
+            std::list<ValueFlow::Value> values = cond.true_values;
+            if (cond.true_values != cond.false_values)
+                values.insert(values.end(), cond.false_values.begin(), cond.false_values.end());
+
+            // extra logic for unsigned variables 'i>=1' => possible value can also be 0
+            if (Token::Match(tok, "<|>")) {
+                values.remove_if([](const ValueFlow::Value& v) {
+                    if (v.isIntValue())
+                        return v.intvalue != 0;
+                    return false;
+                });
+                if (cond.vartok->valueType() && cond.vartok->valueType()->sign != ValueType::Sign::UNSIGNED)
+                    return;
+            }
+            if (values.empty())
+                return;
+
             // bailout: for/while-condition, variable is changed in while loop
             if (Token::Match(top->previous(), "for|while (") && Token::simpleMatch(top->link(), ") {")) {
 
@@ -4177,40 +4207,31 @@ struct ConditionHandler {
                 }
 
                 // Variable changed in loop code
-                if (Token::Match(top->previous(), "for|while (")) {
-                    const Token* const start = top;
-                    const Token* const block = top->link()->next();
-                    const Token* const end = block->link();
+                const Token* const start = top;
+                const Token* const block = top->link()->next();
+                const Token* const end = block->link();
 
-                    if (isExpressionChanged(cond.vartok, start, end, settings, tokenlist->isCPP())) {
-                        if (settings->debugwarnings)
-                            bailout(tokenlist,
-                                    errorLogger,
-                                    tok,
-                                    "variable '" + cond.vartok->expressionString() + "' used in loop");
-                        return;
+                if (isExpressionChanged(cond.vartok, start, end, settings, tokenlist->isCPP())) {
+                    // If its reassigned in loop then analyze from the end
+                    if (!Token::Match(tok, "%assign%|++|--") &&
+                        findExpression(cond.vartok->exprId(), start, end, [&](const Token* tok2) {
+                            return Token::Match(tok2->astParent(), "%assign%") && astIsLHS(tok2);
+                        })) {
+                        // Start at the end of the loop body
+                        Token* bodyTok = top->link()->next();
+                        reverse(bodyTok->link(), bodyTok, cond.vartok, values, tokenlist, settings);
                     }
+                    if (settings->debugwarnings)
+                        bailout(tokenlist,
+                                errorLogger,
+                                tok,
+                                "variable '" + cond.vartok->expressionString() + "' used in loop");
+                    return;
                 }
             }
 
-            std::list<ValueFlow::Value> values = cond.true_values;
-            if (cond.true_values != cond.false_values)
-                values.insert(values.end(), cond.false_values.begin(), cond.false_values.end());
-
-            // extra logic for unsigned variables 'i>=1' => possible value can also be 0
-            if (Token::Match(tok, "<|>")) {
-                values.remove_if([](const ValueFlow::Value& v) {
-                    if (v.isIntValue())
-                        return v.intvalue != 0;
-                    return false;
-                });
-                if (cond.vartok->valueType() && cond.vartok->valueType()->sign != ValueType::Sign::UNSIGNED)
-                    return;
-            }
-            if (values.empty())
-                return;
             Token* startTok = tok->astParent() ? tok->astParent() : tok->previous();
-            reverse(startTok, cond.vartok, values, tokenlist, settings);
+            reverse(startTok, nullptr, cond.vartok, values, tokenlist, settings);
         });
     }
 
@@ -4453,11 +4474,13 @@ struct SimpleConditionHandler : ConditionHandler {
     }
 
     virtual void reverse(Token* start,
+                         const Token* endToken,
                          const Token* exprTok,
                          const std::list<ValueFlow::Value>& values,
                          TokenList* tokenlist,
-                         const Settings* settings) const OVERRIDE {
-        return valueFlowReverse(start, exprTok, values, tokenlist, settings);
+                         const Settings* settings) const OVERRIDE
+    {
+        return valueFlowReverse(start, endToken, exprTok, values, tokenlist, settings);
     }
 
     virtual Condition parse(const Token* tok, const Settings*) const OVERRIDE {
@@ -5803,6 +5826,7 @@ static Analyzer::Action valueFlowContainerForward(Token* tok,
 }
 
 static void valueFlowContainerReverse(Token* tok,
+                                      const Token* const endToken,
                                       const Token* const varToken,
                                       const std::list<ValueFlow::Value>& values,
                                       TokenList* tokenlist,
@@ -5812,8 +5836,17 @@ static void valueFlowContainerReverse(Token* tok,
     auto aliases = getAliasesFromValues(values);
     for (const ValueFlow::Value& value : values) {
         ContainerVariableAnalyzer a(var, value, aliases, tokenlist);
-        valueFlowGenericReverse(tok, a, settings);
+        valueFlowGenericReverse(tok, endToken, a, settings);
     }
+}
+
+static void valueFlowContainerReverse(Token* tok,
+                                      const Token* const varToken,
+                                      const std::list<ValueFlow::Value>& values,
+                                      TokenList* tokenlist,
+                                      const Settings* settings)
+{
+    valueFlowContainerReverse(tok, nullptr, varToken, values, tokenlist, settings);
 }
 
 static bool isContainerSizeChanged(const Token *tok, int depth)
@@ -6162,15 +6195,17 @@ struct ContainerConditionHandler : ConditionHandler {
     }
 
     virtual void reverse(Token* start,
+                         const Token* endTok,
                          const Token* exprTok,
                          const std::list<ValueFlow::Value>& values,
                          TokenList* tokenlist,
-                         const Settings* settings) const OVERRIDE {
+                         const Settings* settings) const OVERRIDE
+    {
         if (values.empty())
             return;
         if (!exprTok->variable())
             return;
-        return valueFlowContainerReverse(start, exprTok, values, tokenlist, settings);
+        return valueFlowContainerReverse(start, endTok, exprTok, values, tokenlist, settings);
     }
 
     virtual Condition parse(const Token* tok, const Settings*) const OVERRIDE {

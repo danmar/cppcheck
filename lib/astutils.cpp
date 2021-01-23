@@ -81,6 +81,24 @@ const Token* findAstNode(const Token* ast, const std::function<bool(const Token*
     return result;
 }
 
+const Token* findExpression(MathLib::bigint exprid,
+                            const Token* start,
+                            const Token* end,
+                            const std::function<bool(const Token*)>& pred)
+{
+    if (!precedes(start, end))
+        return nullptr;
+    if (exprid == 0)
+        return nullptr;
+    for (const Token* tok = start; tok != end; tok = tok->next()) {
+        if (tok->exprId() != exprid)
+            continue;
+        if (pred(tok))
+            return tok;
+    }
+    return nullptr;
+}
+
 static void astFlattenRecursive(const Token *tok, std::vector<const Token *> *result, const char* op, nonneg int depth = 0)
 {
     ++depth;

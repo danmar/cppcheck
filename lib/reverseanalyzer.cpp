@@ -116,8 +116,11 @@ struct ReverseTraversal {
         return nullptr;
     }
 
-    void traverse(Token* start) {
-        for (Token* tok = start->previous(); tok; tok = tok->previous()) {
+    void traverse(Token* start, const Token* end = nullptr)
+    {
+        if (start == end)
+            return;
+        for (Token* tok = start->previous(); tok != end; tok = tok->previous()) {
             if (tok == start || (tok->str() == "{" && (tok->scope()->type == Scope::ScopeType::eFunction ||
                                  tok->scope()->type == Scope::ScopeType::eLambda))) {
                 break;
@@ -171,7 +174,7 @@ struct ReverseTraversal {
                                                     assignTok->astOperand2()->scope()->bodyEnd,
                                                     a,
                                                     settings);
-                            valueFlowGenericReverse(assignTok->astOperand1()->previous(), a, settings);
+                            valueFlowGenericReverse(assignTok->astOperand1()->previous(), end, a, settings);
                         }
                     }
                 }
@@ -283,4 +286,10 @@ void valueFlowGenericReverse(Token* start, const ValuePtr<Analyzer>& a, const Se
 {
     ReverseTraversal rt{a, settings};
     rt.traverse(start);
+}
+
+void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings* settings)
+{
+    ReverseTraversal rt{a, settings};
+    rt.traverse(start, end);
 }
