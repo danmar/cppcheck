@@ -22,7 +22,7 @@
         <location filename="about.ui" line="81"/>
         <source>Copyright © 2007-%1 Cppcheck team.</source>
         <oldsource>Copyright © 2007-2019 Cppcheck team.</oldsource>
-        <translation type="unfinished">Copyright © 2007-2019 Cppcheck-Team.</translation>
+        <translation>Copyright © 2007-%1 Cppcheck-Team.</translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>
@@ -2310,7 +2310,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="resultsview.ui" line="196"/>
         <source>Variables</source>
-        <translation type="unfinished"></translation>
+        <translation>Variablen</translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="217"/>
@@ -2345,7 +2345,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="scratchpad.ui" line="37"/>
         <source>Optionally enter a filename (mainly for automatic language detection) and click on &quot;Check&quot;:</source>
-        <translation>Optional einen Dateinamen (hauptsächlich für automatische Spracherkennung) eingeben und auf &quot;Check&quot; klicken:</translation>
+        <translation>Optional einen Dateinamen (hauptsächlich für automatische Spracherkennung) eingeben und auf &quot;Prüfe&quot; klicken:</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="71"/>
