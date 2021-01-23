@@ -39,7 +39,8 @@ public:
 private:
     void run() OVERRIDE {
         TEST_CASE(enumerationToEnd);
-        TEST_CASE(toEndHelper);
+        TEST_CASE(untilHelperToEnd);
+        TEST_CASE(untilHelperPartWay);
         TEST_CASE(partialEnumeration);
         TEST_CASE(scopeExample);
         TEST_CASE(exampleAlgorithms);
@@ -75,11 +76,20 @@ private:
         ASSERT_EQUALS("", testTokenRange(ConstTokenRange{ tokenList.front(), nullptr }, tokenList.front(), nullptr));
     }
 
-    void toEndHelper() const {
+    void untilHelperToEnd() const {
         std::istringstream istr("void a(){} void main(){ if(true){a();} }");
         TokenList tokenList(nullptr);
         tokenList.createTokens(istr, "test.cpp");
-        ASSERT_EQUALS("", testTokenRange(tokenList.front()->toEnd(), tokenList.front(), nullptr));
+        ASSERT_EQUALS("", testTokenRange(tokenList.front()->until(nullptr), tokenList.front(), nullptr));
+    }
+
+    void untilHelperPartWay() const {
+        std::istringstream istr("void a(){} void main(){ if(true){a();} }");
+        TokenList tokenList(nullptr);
+        tokenList.createTokens(istr, "test.cpp");
+        const Token* start = tokenList.front()->tokAt(4);
+        const Token* end = start->tokAt(8);
+        ASSERT_EQUALS("", testTokenRange(start->until(end), start, end));
     }
 
     void partialEnumeration() const {

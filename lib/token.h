@@ -189,7 +189,7 @@ public:
     explicit Token(TokensFrontBack *tokensFrontBack = nullptr);
     ~Token();
 
-    ConstTokenRange toEnd() const;
+    ConstTokenRange until(const Token * t) const;
 
     template<typename T>
     void str(T&& s) {
