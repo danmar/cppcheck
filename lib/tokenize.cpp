@@ -1996,6 +1996,36 @@ bool Tokenizer::isMemberFunction(const Token *openParen) const
            isFunctionHead(openParen, "{|:");
 }
 
+static bool scopesMatch(const std::string &scope1, const std::string &scope2, const std::list<ScopeInfo3> &scopeList)
+{
+    if (scope1.empty() || scope2.empty())
+        return false;
+
+    // check if scopes match
+    if (scope1 == scope2)
+        return true;
+
+    if (scopeList.size() < 2)
+        return false;
+
+    // check if scopes only differ by global qualification
+    if (scope1 == (":: " + scope2)) {
+        std::string::size_type end = scope2.find_first_of(' ');
+        if (end == std::string::npos)
+            end = scope2.size();
+        if ((++scopeList.begin())->name == scope2.substr(0, end))
+            return true;
+    } else if (scope2 == (":: " + scope1)) {
+        std::string::size_type end = scope1.find_first_of(' ');
+        if (end == std::string::npos)
+            end = scope1.size();
+        if ((++scopeList.begin())->name == scope1.substr(0, end))
+            return true;
+    }
+
+    return false;
+}
+
 bool Tokenizer::simplifyUsing()
 {
     bool substitute = false;
@@ -2159,7 +2189,7 @@ bool Tokenizer::simplifyUsing()
             // remove the qualification
             std::string fullScope = scope;
             std::string removed;
-            while (tok1->strAt(-1) == "::") {
+            while (Token::Match(tok1->tokAt(-2), "%name% ::") && !tok1->tokAt(-2)->isKeyword()) {
                 removed = (tok1->strAt(-2) + " :: ") + removed;
                 if (fullScope == tok1->strAt(-2)) {
                     tok1->deletePrevious();
@@ -2178,6 +2208,12 @@ bool Tokenizer::simplifyUsing()
                     } else
                         break;
                 }
+            }
+
+            // remove global namespace if present
+            if (tok1->strAt(-1) == "::") {
+                removed.insert(0, ":: ");
+                tok1->deletePrevious();
             }
 
             Token * arrayStart = nullptr;
@@ -2297,7 +2333,7 @@ bool Tokenizer::simplifyUsing()
                     std::string::size_type idx = removed1.rfind(" ::");
                     if (idx != std::string::npos)
                         removed1.resize(idx);
-                    if (removed1 == scope && !removed1.empty()) {
+                    if (scopesMatch(removed1, scope, scopeList)) {
                         for (std::list<ScopeInfo3>::const_reverse_iterator it = scopeList.crbegin(); it != scopeList.crend(); ++it) {
                             if (it->recordTypes.find(start->str()) != it->recordTypes.end()) {
                                 std::string::size_type spaceIdx = 0;
