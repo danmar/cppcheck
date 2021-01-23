@@ -751,7 +751,7 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
     errors->push_back(item);
 }
 
-const Token* followReferences(const Token* tok, ErrorPath* errors, int depth = 20)
+static const Token* followReferences(const Token* tok, ErrorPath* errors, int depth = 20)
 {
     if (!tok)
         return nullptr;

@@ -2453,15 +2453,6 @@ static void valueFlowReverse(Token* tok,
     }
 }
 
-static void valueFlowReverse(Token* tok,
-                             const Token* const varToken,
-                             const std::list<ValueFlow::Value>& values,
-                             TokenList* tokenlist,
-                             const Settings* settings)
-{
-    valueFlowReverse(tok, nullptr, varToken, values, tokenlist, settings);
-}
-
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
 {
     std::string result;
