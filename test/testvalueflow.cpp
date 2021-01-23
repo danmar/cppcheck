@@ -122,7 +122,7 @@ private:
 
         TEST_CASE(valueFlowUninit);
 
-        TEST_CASE(valueFlowTerminatingCond);
+        TEST_CASE(valueFlowConditionExpressions);
 
         TEST_CASE(valueFlowContainerSize);
 
@@ -1266,7 +1266,7 @@ private:
                 "    if (x == 123) {}\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable y\n",
+            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y\n",
             errout.str());
     }
 
@@ -1383,7 +1383,7 @@ private:
                 "    y = ((x<0) ? x : ((x==2)?3:4));\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable y\n",
+            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y\n",
             errout.str());
 
         bailout("int f(int x) {\n"
@@ -1448,7 +1448,7 @@ private:
                 "    if (x == 123) {}\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable b\n",
+            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable b\n",
             errout.str());
 
         code = "void f(int x, bool abc) {\n"
@@ -1497,7 +1497,7 @@ private:
                 "    };\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n",
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n",
             errout.str());
 
         bailout("void f(int x, int y) {\n"
@@ -1507,7 +1507,7 @@ private:
                 "    };\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n",
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n",
             errout.str());
     }
 
@@ -1519,7 +1519,7 @@ private:
                 "    M;\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n"
             "[test.cpp:4]: (debug) valueflow.cpp:1260:(valueFlow) bailout: variable 'x', condition is defined in macro\n",
             errout.str());
 
@@ -1529,7 +1529,7 @@ private:
                 "    FREE(x);\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n"
             "[test.cpp:4]: (debug) valueflow.cpp:1260:(valueFlow) bailout: variable 'x', condition is defined in macro\n",
             errout.str());
     }
@@ -1543,7 +1543,7 @@ private:
                 "    if (x==123){}\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n",
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n",
             errout.str());
 
         // #5721 - FP
@@ -4202,7 +4202,7 @@ private:
         ASSERT_EQUALS(0, values.size());
     }
 
-    void valueFlowTerminatingCond() {
+    void valueFlowConditionExpressions() {
         const char* code;
 
         // opposite condition
@@ -4271,6 +4271,60 @@ private:
                "    if(i != j) {}\n"
                "}\n";
         ASSERT_EQUALS(false, valueOfTok(code, "!=").intvalue == 1);
+
+        code = "void f(bool b, int i, int j) {\n"
+               "    if (b || i == j) return;\n"
+               "    if(i != j) {}\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 1);
+
+        code = "void f(bool b, int i, int j) {\n"
+               "    if (b && i == j) return;\n"
+               "    if(i != j) {}\n"
+               "}\n";
+        ASSERT_EQUALS(true, tokenValues(code, "!=").empty());
+
+        code = "void f(int i, int j) {\n"
+               "    if (i == j) {\n"
+               "        if (i != j) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 0);
+
+        code = "void f(int i, int j) {\n"
+               "    if (i == j) {} else {\n"
+               "        if (i != j) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 1);
+
+        code = "void f(bool b, int i, int j) {\n"
+               "    if (b && i == j) {\n"
+               "        if (i != j) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 0);
+
+        code = "void f(bool b, int i, int j) {\n"
+               "    if (b || i == j) {\n"
+               "        if (i != j) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, tokenValues(code, "!=").empty());
+
+        code = "void f(bool b, int i, int j) {\n"
+               "    if (b || i == j) {} else {\n"
+               "        if (i != j) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 1);
+
+        code = "void f(bool b, int i, int j) {\n"
+               "    if (b && i == j) {} else {\n"
+               "        if (i != j) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, tokenValues(code, "!=").empty());
 
         code = "void foo()\n" // #8924
                "{\n"
