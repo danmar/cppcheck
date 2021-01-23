@@ -32,6 +32,7 @@ private slots:
     void podtypeValid();
     void typechecksValid();
     void smartPointerValid();
+    void platformTypeValid();
 
 private:
     void loadCfgFile(QString filename, CppcheckLibraryData &data, QString &result, bool removeFile = false);

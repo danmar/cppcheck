@@ -39,6 +39,14 @@ void TestCppcheckLibraryData::unhandledElement()
     loadCfgFile(":/files/unhandled_element.cfg", fileLibraryData, result);
     QCOMPARE(result.isNull(), false);
     qDebug() << result;
+
+    loadCfgFile(":/files/platform_type_unhandled_element.cfg", fileLibraryData, result);
+    QCOMPARE(result.isNull(), false);
+    qDebug() << result;
+
+    loadCfgFile(":/files/memory_resource_unhandled_element.cfg", fileLibraryData, result);
+    QCOMPARE(result.isNull(), false);
+    qDebug() << result;
 }
 
 void TestCppcheckLibraryData::mandatoryAttributeMissing()
@@ -134,11 +142,8 @@ void TestCppcheckLibraryData::typechecksValid()
     for (int idx=0; idx < libraryData.typeChecks.size(); idx++) {
         CppcheckLibraryData::TypeChecks lhs = libraryData.typeChecks[idx];
         CppcheckLibraryData::TypeChecks rhs = fileLibraryData.typeChecks[idx];
-        QCOMPARE(lhs.size(), lhs.size());
-        for (int num=0; num < lhs.size(); num++) {
-            QCOMPARE(lhs[num].first, rhs[num].first);
-            QCOMPARE(lhs[num].second, rhs[num].second);
-        }
+        QCOMPARE(lhs.size(), rhs.size());
+        QCOMPARE(lhs, rhs);
     }
 }
 
@@ -171,8 +176,64 @@ void TestCppcheckLibraryData::smartPointerValid()
     // Verify no data got lost or modified
     QCOMPARE(libraryData.smartPointers.size(), fileLibraryData.smartPointers.size());
     QCOMPARE(libraryData.smartPointers.size(), 3);
-    for (int i=0; i < libraryData.smartPointers.size(); i++) {
-        QCOMPARE(libraryData.smartPointers[i], fileLibraryData.smartPointers[i]);
+    QCOMPARE(libraryData.smartPointers, fileLibraryData.smartPointers);
+}
+
+void TestCppcheckLibraryData::platformTypeValid()
+{
+    // Load library data from file
+    loadCfgFile(":/files/platform_type_valid.cfg", fileLibraryData, result);
+    QCOMPARE(result.isNull(), true);
+
+    // Swap libray data read from file to other object
+    libraryData.swap(fileLibraryData);
+
+    // Do size and content checks against swapped data.
+    QCOMPARE(libraryData.platformTypes.size(), 3);
+
+    QCOMPARE(libraryData.platformTypes[0].name, "platform");
+    QCOMPARE(libraryData.platformTypes[0].value, "with attribute and empty");
+    QCOMPARE(libraryData.platformTypes[0].types.size(), 0);
+    QCOMPARE(libraryData.platformTypes[0].platforms.size(), 2);
+    QCOMPARE(libraryData.platformTypes[0].platforms[0], "win64");
+    QCOMPARE(libraryData.platformTypes[0].platforms[1].isEmpty(), true);
+
+    QCOMPARE(libraryData.platformTypes[1].name, "types");
+    QCOMPARE(libraryData.platformTypes[1].value, "all");
+    QCOMPARE(libraryData.platformTypes[1].types.size(), 5);
+    QCOMPARE(libraryData.platformTypes[1].types,
+            QStringList({"unsigned", "long", "pointer", "const_ptr", "ptr_ptr"}));
+    QCOMPARE(libraryData.platformTypes[1].platforms.isEmpty(), true);
+
+    QCOMPARE(libraryData.platformTypes[2].name, "types and platform");
+    QCOMPARE(libraryData.platformTypes[2].value.isEmpty(), true);
+    QCOMPARE(libraryData.platformTypes[2].types.size(), 2);
+    QCOMPARE(libraryData.platformTypes[2].types, QStringList({"pointer", "ptr_ptr"}));
+    QCOMPARE(libraryData.platformTypes[2].platforms.size(), 1);
+    QCOMPARE(libraryData.platformTypes[2].platforms[0], "win32");
+
+    // Save library data to file
+    saveCfgFile(TempCfgFile, libraryData);
+
+    fileLibraryData.clear();
+    QCOMPARE(fileLibraryData.platformTypes.size(), 0);
+
+    // Reload library data from file
+    loadCfgFile(TempCfgFile, fileLibraryData, result, true);
+    QCOMPARE(result.isNull(), true);
+
+    // Verify no data got lost or modified
+    QCOMPARE(libraryData.platformTypes.size(), fileLibraryData.platformTypes.size());
+    QCOMPARE(libraryData.platformTypes.size(), 3);
+    for (int idx=0; idx < libraryData.platformTypes.size(); idx++) {
+        CppcheckLibraryData::PlatformType lhs = libraryData.platformTypes[idx];
+        CppcheckLibraryData::PlatformType rhs = fileLibraryData.platformTypes[idx];
+        QCOMPARE(lhs.name, rhs.name);
+        QCOMPARE(lhs.value, rhs.value);
+        QCOMPARE(lhs.types.size(), rhs.types.size());
+        QCOMPARE(lhs.types, rhs.types);
+        QCOMPARE(lhs.platforms.size(), rhs.platforms.size());
+        QCOMPARE(lhs.platforms, rhs.platforms);
     }
 }
 
