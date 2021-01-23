@@ -29,6 +29,11 @@ ScratchPad::ScratchPad(MainWindow& mainWindow)
     connect(mUI.mCheckButton, &QPushButton::clicked, this, &ScratchPad::checkButtonClicked);
 }
 
+void ScratchPad::translate()
+{
+    mUI.retranslateUi(this);
+}
+
 void ScratchPad::checkButtonClicked()
 {
     QString filename = mUI.lineEdit->text();

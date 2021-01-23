@@ -1462,6 +1462,8 @@ void MainWindow::setLanguage(const QString &code)
         mLineEditFilter->setPlaceholderText(QCoreApplication::translate("MainWindow", "Quick Filter:"));
         if (mProjectFile)
             formatAndSetTitle(tr("Project:") + ' ' + mProjectFile->getFilename());
+        if (mScratchPad)
+            mScratchPad->translate();
     }
 }
 
