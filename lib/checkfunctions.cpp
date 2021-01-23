@@ -204,7 +204,7 @@ void CheckFunctions::checkIgnoredReturnValue()
             else if (Token::Match(tok, "[(<]") && tok->link())
                 tok = tok->link();
 
-            if (tok->varId() || !Token::Match(tok, "%name% ("))
+            if (tok->varId() || !Token::Match(tok, "%name% (") || tok->isKeyword())
                 continue;
 
             if (tok->next()->astParent())
