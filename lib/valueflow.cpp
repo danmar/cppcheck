@@ -1540,7 +1540,7 @@ static void valueFlowGlobalStaticVar(TokenList *tokenList, const Settings *setti
 static Analyzer::Action valueFlowForwardVariable(Token* const startToken,
         const Token* const endToken,
         const Variable* const var,
-        std::list<ValueFlow::Value> values,
+        const std::list<ValueFlow::Value>& values,
         TokenList* const tokenlist,
         const Settings* const settings);
 
@@ -1548,7 +1548,7 @@ static void valueFlowReverse(TokenList* tokenlist,
                              Token* tok,
                              const Token* const varToken,
                              ValueFlow::Value val,
-                             ValueFlow::Value val2,
+                             const ValueFlow::Value& val2,
                              ErrorLogger* errorLogger,
                              const Settings* settings);
 
@@ -2139,7 +2139,7 @@ struct VariableAnalyzer : SingleValueFlowAnalyzer {
 
     VariableAnalyzer(const Variable* v,
                      const ValueFlow::Value& val,
-                     std::vector<const Variable*> paliases,
+                     const std::vector<const Variable*>& paliases,
                      const TokenList* t)
         : SingleValueFlowAnalyzer(val, t), var(v) {
         varids[var->declarationId()] = var;
@@ -2165,7 +2165,7 @@ struct VariableAnalyzer : SingleValueFlowAnalyzer {
     }
 };
 
-static std::vector<const Variable*> getAliasesFromValues(std::list<ValueFlow::Value> values, bool address=false)
+static std::vector<const Variable*> getAliasesFromValues(const std::list<ValueFlow::Value>& values, bool address=false)
 {
     std::vector<const Variable*> aliases;
     for (const ValueFlow::Value& v : values) {
@@ -2193,13 +2193,13 @@ static std::vector<const Variable*> getAliasesFromValues(std::list<ValueFlow::Va
 static Analyzer::Action valueFlowForwardVariable(Token* const startToken,
         const Token* const endToken,
         const Variable* const var,
-        std::list<ValueFlow::Value> values,
-        std::vector<const Variable*> aliases,
+        const std::list<ValueFlow::Value>& values,
+        const std::vector<const Variable*>& aliases,
         TokenList* const tokenlist,
         const Settings* const settings)
 {
     Analyzer::Action actions;
-    for (ValueFlow::Value& v : values) {
+    for (const ValueFlow::Value& v : values) {
         VariableAnalyzer a(var, v, aliases, tokenlist);
         actions |= valueFlowGenericForward(startToken, endToken, a, settings);
     }
@@ -2209,13 +2209,12 @@ static Analyzer::Action valueFlowForwardVariable(Token* const startToken,
 static Analyzer::Action valueFlowForwardVariable(Token* const startToken,
         const Token* const endToken,
         const Variable* const var,
-        std::list<ValueFlow::Value> values,
+        const std::list<ValueFlow::Value>& values,
         TokenList* const tokenlist,
         const Settings* const settings)
 {
-    auto aliases = getAliasesFromValues(values);
     return valueFlowForwardVariable(
-               startToken, endToken, var, std::move(values), std::move(aliases), tokenlist, settings);
+               startToken, endToken, var, values, getAliasesFromValues(values), tokenlist, settings);
 }
 
 // Old deprecated version
@@ -2223,14 +2222,14 @@ static bool valueFlowForwardVariable(Token* const startToken,
                                      const Token* const endToken,
                                      const Variable* const var,
                                      const nonneg int,
-                                     std::list<ValueFlow::Value> values,
+                                     const std::list<ValueFlow::Value>& values,
                                      const bool,
                                      const bool,
                                      TokenList* const tokenlist,
                                      ErrorLogger* const,
                                      const Settings* const settings)
 {
-    valueFlowForwardVariable(startToken, endToken, var, std::move(values), tokenlist, settings);
+    valueFlowForwardVariable(startToken, endToken, var, values, tokenlist, settings);
     return true;
 }
 
@@ -2416,11 +2415,11 @@ static void valueFlowReverse(TokenList* tokenlist,
                              Token* tok,
                              const Token* const varToken,
                              ValueFlow::Value val,
-                             ValueFlow::Value val2,
+                             const ValueFlow::Value& val2,
                              ErrorLogger* /*errorLogger*/,
                              const Settings* settings)
 {
-    std::list<ValueFlow::Value> values = {val};
+    std::list<ValueFlow::Value> values = {std::move(val)};
     if (val2.varId != 0)
         values.push_back(val2);
     const Variable* var = varToken->variable();
@@ -5705,9 +5704,9 @@ struct ContainerVariableAnalyzer : VariableAnalyzer {
 
     ContainerVariableAnalyzer(const Variable* v,
                               const ValueFlow::Value& val,
-                              std::vector<const Variable*> paliases,
+                              const std::vector<const Variable*>& paliases,
                               const TokenList* t)
-        : VariableAnalyzer(v, val, std::move(paliases), t)
+        : VariableAnalyzer(v, val, paliases, t)
     {}
 
     virtual bool match(const Token* tok) const OVERRIDE {
@@ -5793,7 +5792,7 @@ struct ContainerVariableAnalyzer : VariableAnalyzer {
 static Analyzer::Action valueFlowContainerForward(Token* tok,
         const Token* endToken,
         const Variable* var,
-        ValueFlow::Value value,
+        const ValueFlow::Value& value,
         TokenList* tokenlist)
 {
     ContainerVariableAnalyzer a(var, value, getAliasesFromValues({value}), tokenlist);
@@ -5801,7 +5800,7 @@ static Analyzer::Action valueFlowContainerForward(Token* tok,
 }
 static Analyzer::Action valueFlowContainerForward(Token* tok,
         const Variable* var,
-        ValueFlow::Value value,
+        const ValueFlow::Value& value,
         TokenList* tokenlist)
 {
     const Token * endOfVarScope = nullptr;
@@ -5809,7 +5808,7 @@ static Analyzer::Action valueFlowContainerForward(Token* tok,
         endOfVarScope = var->scope()->bodyEnd;
     if (!endOfVarScope)
         endOfVarScope = tok->scope()->bodyEnd;
-    return valueFlowContainerForward(tok, endOfVarScope, var, std::move(value), tokenlist);
+    return valueFlowContainerForward(tok, endOfVarScope, var, value, tokenlist);
 }
 
 static void valueFlowContainerReverse(Token* tok,

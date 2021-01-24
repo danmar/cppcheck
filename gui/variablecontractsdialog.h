@@ -11,7 +11,7 @@ class VariableContractsDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit VariableContractsDialog(QWidget *parent, QString var);
+    explicit VariableContractsDialog(QWidget *parent, const QString& var);
     ~VariableContractsDialog();
 
     QString getVarname() const;

@@ -3,7 +3,7 @@
 
 #include <QRegExpValidator>
 
-VariableContractsDialog::VariableContractsDialog(QWidget *parent, QString var) :
+VariableContractsDialog::VariableContractsDialog(QWidget *parent, const QString& var) :
     QDialog(parent),
     mUI(new Ui::VariableContractsDialog)
 {
@@ -13,7 +13,7 @@ VariableContractsDialog::VariableContractsDialog(QWidget *parent, QString var) :
 
     this->setWindowTitle(mVarName);
 
-    auto getMinMax = [](QString var, QString minmax) {
+    auto getMinMax = [](const QString& var, const QString& minmax) {
         if (var.indexOf(" " + minmax + ":") < 0)
             return QString();
         int pos1 = var.indexOf(" " + minmax + ":") + 2 + minmax.length();
