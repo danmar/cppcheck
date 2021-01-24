@@ -5718,8 +5718,7 @@ struct ContainerVariableAnalyzer : VariableAnalyzer {
             return Action::None;
         if (d == Direction::Reverse)
             return Action::None;
-        const ValueFlow::Value* value = getValue(tok);
-        if (!value)
+        if (!getValue(tok))
             return Action::None;
         if (!tok->valueType() || !tok->valueType()->container)
             return Action::None;
