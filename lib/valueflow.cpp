@@ -4093,18 +4093,20 @@ struct ConditionHandler {
                 std::vector<const Variable*> vars = getExprVariables(cond.vartok, tokenlist, symboldatabase, settings);
                 if (std::any_of(vars.begin(), vars.end(), [](const Variable* var) {
                 return !var;
-            }))
-                continue;
-                if (!vars.empty() && (vars.front()))
-                    if (std::any_of(vars.begin(), vars.end(), [&](const Variable* var) {
+            })) {
+                    continue;
+                }
+                if (!vars.empty() && (vars.front())) {
+                    if (std::any_of(vars.begin(), vars.end(), [&](const Variable *var) {
                     return var && aliased.find(var->declarationId()) != aliased.end();
                     })) {
-                    if (settings->debugwarnings)
-                        bailout(tokenlist,
-                                errorLogger,
-                                cond.vartok,
-                                "variable is aliased so we just skip all valueflow after condition");
-                    continue;
+                        if (settings->debugwarnings)
+                            bailout(tokenlist,
+                                    errorLogger,
+                                    cond.vartok,
+                                    "variable is aliased so we just skip all valueflow after condition");
+                        continue;
+                    }
                 }
                 f(cond, tok, scope, vars);
             }
