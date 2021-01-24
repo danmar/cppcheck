@@ -1662,8 +1662,26 @@ static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign
     return true;
 }
 
+template<class T>
+struct SingleRange {
+    T* x;
+    T* begin() const {
+        return x;
+    }
+    T* end() const {
+        return x+1;
+    }
+};
+
+template<class T>
+SingleRange<T> MakeSingleRange(T& x)
+{
+    return {&x};
+}
+
 // Check if its an alias of the variable or is being aliased to this variable
-static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, const std::list<ValueFlow::Value>& values, bool* inconclusive = nullptr)
+template<typename V>
+static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, const V& values, bool* inconclusive = nullptr)
 {
     if (tok->varId() == varid)
         return false;
@@ -2069,7 +2087,7 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
                 const Variable* var = p.second;
                 if (tok->varId() == varid)
                     return true;
-                if (isAliasOf(var, tok, varid, {value}, &inconclusive))
+                if (isAliasOf(var, tok, varid, MakeSingleRange(value), &inconclusive))
                     return true;
             }
         }
