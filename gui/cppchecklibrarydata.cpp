@@ -283,8 +283,7 @@ static CppcheckLibraryData::PlatformType loadPlatformType(QXmlStreamReader &xmlR
         if (type != QXmlStreamReader::StartElement)
             continue;
         const QString elementName = xmlReader.name().toString();
-        if (elementName == "unsigned" || elementName == "long" || elementName == "pointer" ||
-            elementName == "const_ptr" || elementName == "ptr_ptr") {
+        if (QStringList({"unsigned", "long", "pointer", "const_ptr", "ptr_ptr"}).contains(elementName)) {
             platformType.types.append(elementName);
         } else if (elementName == "platform") {
             platformType.platforms.append(xmlReader.attributes().value("type").toString());

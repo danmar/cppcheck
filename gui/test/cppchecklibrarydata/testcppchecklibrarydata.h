@@ -33,6 +33,7 @@ private slots:
     void typechecksValid();
     void smartPointerValid();
     void platformTypeValid();
+    void memoryResourceValid();
 
 private:
     void loadCfgFile(QString filename, CppcheckLibraryData &data, QString &result, bool removeFile = false);

@@ -237,6 +237,106 @@ void TestCppcheckLibraryData::platformTypeValid()
     }
 }
 
+void TestCppcheckLibraryData::memoryResourceValid()
+{
+    // Load library data from file
+    loadCfgFile(":/files/memory_resource_valid.cfg", fileLibraryData, result);
+    QCOMPARE(result.isNull(), true);
+
+    // Swap libray data read from file to other object
+    libraryData.swap(fileLibraryData);
+
+    // Do size and content checks against swapped data.
+    QCOMPARE(libraryData.memoryresource.size(), 2);
+    QCOMPARE(libraryData.memoryresource[0].type, "memory");
+    QCOMPARE(libraryData.memoryresource[0].alloc.size(), 4);
+    QCOMPARE(libraryData.memoryresource[0].dealloc.size(), 1);
+    QCOMPARE(libraryData.memoryresource[0].use.size(), 0);
+
+    QCOMPARE(libraryData.memoryresource[0].alloc[0].name, "malloc");
+    QCOMPARE(libraryData.memoryresource[0].alloc[0].bufferSize, "malloc");
+    QCOMPARE(libraryData.memoryresource[0].alloc[0].isRealloc, false);
+    QCOMPARE(libraryData.memoryresource[0].alloc[0].init, false);
+    QCOMPARE(libraryData.memoryresource[0].alloc[0].arg, -1);
+    QCOMPARE(libraryData.memoryresource[0].alloc[0].reallocArg, -1);
+
+    QCOMPARE(libraryData.memoryresource[0].alloc[1].name, "calloc");
+    QCOMPARE(libraryData.memoryresource[0].alloc[1].bufferSize, "calloc");
+    QCOMPARE(libraryData.memoryresource[0].alloc[1].isRealloc, false);
+    QCOMPARE(libraryData.memoryresource[0].alloc[1].init, true);
+    QCOMPARE(libraryData.memoryresource[0].alloc[1].arg, -1);
+    QCOMPARE(libraryData.memoryresource[0].alloc[1].reallocArg, -1);
+
+    QCOMPARE(libraryData.memoryresource[0].alloc[2].name, "realloc");
+    QCOMPARE(libraryData.memoryresource[0].alloc[2].bufferSize, "malloc:2");
+    QCOMPARE(libraryData.memoryresource[0].alloc[2].isRealloc, true);
+    QCOMPARE(libraryData.memoryresource[0].alloc[2].init, false);
+    QCOMPARE(libraryData.memoryresource[0].alloc[2].arg, -1);
+    QCOMPARE(libraryData.memoryresource[0].alloc[2].reallocArg, -1);
+
+    QCOMPARE(libraryData.memoryresource[0].alloc[3].name, "UuidToString");
+    QCOMPARE(libraryData.memoryresource[0].alloc[3].bufferSize.isEmpty(), true);
+    QCOMPARE(libraryData.memoryresource[0].alloc[3].isRealloc, false);
+    QCOMPARE(libraryData.memoryresource[0].alloc[3].init, false);
+    QCOMPARE(libraryData.memoryresource[0].alloc[3].arg, 2);
+    QCOMPARE(libraryData.memoryresource[0].alloc[3].reallocArg, -1);
+
+    QCOMPARE(libraryData.memoryresource[0].dealloc[0].name, "HeapFree");
+    QCOMPARE(libraryData.memoryresource[0].dealloc[0].arg, 3);
+
+    QCOMPARE(libraryData.memoryresource[1].type, "resource");
+    QCOMPARE(libraryData.memoryresource[1].alloc.size(), 1);
+    QCOMPARE(libraryData.memoryresource[1].dealloc.size(), 1);
+    QCOMPARE(libraryData.memoryresource[1].use.size(), 0);
+
+    QCOMPARE(libraryData.memoryresource[1].alloc[0].name, "_wfopen_s");
+    QCOMPARE(libraryData.memoryresource[1].alloc[0].bufferSize.isEmpty(), true);
+    QCOMPARE(libraryData.memoryresource[1].alloc[0].isRealloc, false);
+    QCOMPARE(libraryData.memoryresource[1].alloc[0].init, true);
+    QCOMPARE(libraryData.memoryresource[1].alloc[0].arg, 1);
+    QCOMPARE(libraryData.memoryresource[1].alloc[0].reallocArg, -1);
+
+    QCOMPARE(libraryData.memoryresource[1].dealloc[0].name, "fclose");
+    QCOMPARE(libraryData.memoryresource[1].dealloc[0].arg, -1);
+
+    // Save library data to file
+    saveCfgFile(TempCfgFile, libraryData);
+
+    fileLibraryData.clear();
+    QCOMPARE(fileLibraryData.memoryresource.size(), 0);
+
+    // Reload library data from file
+    loadCfgFile(TempCfgFile, fileLibraryData, result, true);
+    QCOMPARE(result.isNull(), true);
+
+    // Verify no data got lost or modified
+    QCOMPARE(libraryData.memoryresource.size(), fileLibraryData.memoryresource.size());
+    QCOMPARE(libraryData.memoryresource.size(), 2);
+
+    for (int idx=0; idx < libraryData.memoryresource.size(); idx++) {
+        CppcheckLibraryData::MemoryResource lhs = libraryData.memoryresource[idx];
+        CppcheckLibraryData::MemoryResource rhs = fileLibraryData.memoryresource[idx];
+
+        QCOMPARE(lhs.type, rhs.type);
+        QCOMPARE(lhs.alloc.size(), rhs.alloc.size());
+        QCOMPARE(lhs.dealloc.size(), rhs.dealloc.size());
+        QCOMPARE(lhs.use, rhs.use);
+
+        for (int num=0; num < lhs.alloc.size(); num++) {
+            QCOMPARE(lhs.alloc[num].name, rhs.alloc[num].name);
+            QCOMPARE(lhs.alloc[num].bufferSize, rhs.alloc[num].bufferSize);
+            QCOMPARE(lhs.alloc[num].isRealloc, rhs.alloc[num].isRealloc);
+            QCOMPARE(lhs.alloc[num].init, rhs.alloc[num].init);
+            QCOMPARE(lhs.alloc[num].arg, rhs.alloc[num].arg);
+            QCOMPARE(lhs.alloc[num].reallocArg, rhs.alloc[num].reallocArg);
+        }
+        for (int num=0; num < lhs.dealloc.size(); num++) {
+            QCOMPARE(lhs.dealloc[num].name, rhs.dealloc[num].name);
+            QCOMPARE(lhs.dealloc[num].arg, rhs.dealloc[num].arg);
+        }
+    }
+}
+
 void TestCppcheckLibraryData::loadCfgFile(QString filename, CppcheckLibraryData &data, QString &result, bool removeFile)
 {
     QFile file(filename);
