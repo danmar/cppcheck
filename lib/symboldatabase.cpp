@@ -1421,14 +1421,14 @@ void SymbolDatabase::createSymbolDatabaseEscapeFunctions()
 
 void SymbolDatabase::createSymbolDatabaseExprIds()
 {
-    MathLib::bigint base = 0;
+    nonneg int base = 0;
     // Find highest varId
     for (const Variable *var : mVariableList) {
         if (!var)
             continue;
         base = std::max<MathLib::bigint>(base, var->declarationId());
     }
-    MathLib::bigint id = base+1;
+    nonneg int id = base + 1;
     for (const Scope * scope : functionScopes) {
         std::unordered_map<std::string, std::vector<Token*>> exprs;
 
@@ -1439,6 +1439,10 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
             } else if (Token::Match(tok, "(|.|[|%cop%")) {
                 exprs[tok->str()].push_back(tok);
                 tok->exprId(id++);
+
+                if (id == std::numeric_limits<nonneg int>::max()) {
+                    throw InternalError(nullptr, "Ran out of expression ids.", InternalError::INTERNAL);
+                }
             }
         }
 
@@ -1453,7 +1457,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                         continue;
                     if (!isSameExpression(isCPP(), true, tok1, tok2, mSettings->library, true, false))
                         continue;
-                    MathLib::bigint cid = std::min(tok1->exprId(), tok2->exprId());
+                    nonneg int cid = std::min(tok1->exprId(), tok2->exprId());
                     tok1->exprId(cid);
                     tok2->exprId(cid);
                 }
