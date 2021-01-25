@@ -22,7 +22,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.8"
+SERVER_VERSION = "1.3.9"
 
 OLD_VERSION = '2.3'
 
@@ -72,7 +72,8 @@ def overviewReport() -> str:
     html += '<a href="diff.html">Diff report</a><br>\n'
     html += '<a href="head.html">HEAD report</a><br>\n'
     html += '<a href="latest.html">Latest results</a><br>\n'
-    html += '<a href="time.html">Time report</a><br>\n'
+    html += '<a href="time_lt.html">Time report (improved)</a><br>\n'
+    html += '<a href="time_gt.html">Time report (regressed)</a><br>\n'
     html += '<a href="check_library_function_report.html">checkLibraryFunction report</a><br>\n'
     html += '<a href="check_library_noreturn_report.html">checkLibraryNoReturn report</a><br>\n'
     html += '<a href="check_library_use_ignore_report.html">checkLibraryUseIgnore report</a><br>\n'
@@ -377,7 +378,6 @@ def generate_package_diff_statistics(filename: str) -> None:
         if not line.endswith(']'):
             continue
 
-        version = None
         if line.startswith(OLD_VERSION + ' '):
             version = OLD_VERSION
         elif line.startswith('head '):
@@ -612,8 +612,9 @@ def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
     return text
 
 
-def timeReport(resultPath: str) -> str:
-    html = '<html><head><title>Time report</title></head><body>\n'
+# TODO: sort the results by factor
+def timeReport(resultPath: str, show_gt: bool) -> str:
+    html = '<html><head><title>Time report ({})</title></head><body>\n'.format('regressed' if show_gt else 'improved')
     html += '<h1>Time report</h1>\n'
     html += '<pre>\n'
     column_width = [40, 10, 10, 10, 10]
@@ -645,9 +646,9 @@ def timeReport(resultPath: str) -> str:
             total_time_base += time_base
             total_time_head += time_head
             suspicious_time_difference = False
-            if time_base > 1 and time_base*2 < time_head:
+            if show_gt and time_base > 1 and time_base*2 < time_head:
                 suspicious_time_difference = True
-            elif time_head > 1 and time_head*2 < time_base:
+            elif not show_gt and time_head > 1 and time_head*2 < time_base:
                 suspicious_time_difference = True
             if suspicious_time_difference:
                 if time_base > 0.0:
@@ -659,7 +660,12 @@ def timeReport(resultPath: str) -> str:
             break
 
     html += '\n'
-    html += '(listed above are all suspicious timings with a factor &lt;0.50 or &gt;2.00)\n'
+    html += '(listed above are all suspicious timings with a factor '
+    if show_gt:
+        html += '&gt;2.00'
+    else:
+        html += '&lt;0.50'
+    html += ')\n'
     html += '\n'
     if total_time_base > 0.0:
         total_time_factor = total_time_head / total_time_base
@@ -839,8 +845,11 @@ class HttpClientThread(Thread):
                 messageId = url[5:]
                 text = headMessageIdReport(self.resultPath, messageId)
                 httpGetResponse(self.connection, text, 'text/plain')
-            elif url == 'time.html':
-                text = timeReport(self.resultPath)
+            elif url == 'time_lt.html':
+                text = timeReport(self.resultPath, False)
+                httpGetResponse(self.connection, text, 'text/html')
+            elif url == 'time_gt.html':
+                text = timeReport(self.resultPath, True)
                 httpGetResponse(self.connection, text, 'text/html')
             elif url == 'check_library_function_report.html':
                 text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryFunction')
@@ -950,7 +959,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                         time.sleep(0.2)
                         t += 0.2
                 connection.close()
-            except socket.error as e:
+            except socket.error:
                 pass
 
             pos = data.find('\n')
@@ -1019,7 +1028,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                         time.sleep(0.2)
                         t += 0.2
                 connection.close()
-            except socket.error as e:
+            except socket.error:
                 pass
 
             pos = data.find('\n')
