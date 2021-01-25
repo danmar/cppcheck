@@ -314,7 +314,7 @@ public:
     /** Is there some possible alias for given expression */
     bool possiblyAliased(const Token *expr, const Token *startToken) const;
 
-    std::set<int> getExprVarIds(const Token* expr, bool* localOut = nullptr, bool* unknownVarIdOut = nullptr) const;
+    std::set<nonneg int> getExprVarIds(const Token* expr, bool* localOut = nullptr, bool* unknownVarIdOut = nullptr) const;
 private:
     static bool isEscapedAlias(const Token* expr);
 
@@ -327,7 +327,7 @@ private:
     };
 
     struct Result check(const Token *expr, const Token *startToken, const Token *endToken);
-    struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<int> &exprVarIds, bool local, bool inInnerClass, int depth=0);
+    struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local, bool inInnerClass, int depth=0);
 
     // Is expression a l-value global data?
     bool isGlobalData(const Token *expr) const;
