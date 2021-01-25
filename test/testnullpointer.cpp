@@ -110,6 +110,7 @@ private:
         TEST_CASE(nullpointer67); // #10062
         TEST_CASE(nullpointer68);
         TEST_CASE(nullpointer69);         // #8143
+        TEST_CASE(nullpointer70);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2177,6 +2178,41 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void nullpointer70() {
+        check("struct Token {\n"
+              "    const Token* nextArgument() const;\n"
+              "    const Token* next() const;\n"
+              "    int varId() const;\n"
+              "};\n"
+              "int f(const Token *first, const Token* second) const {\n"
+              "    first = first->nextArgument();\n"
+              "    if (first)\n"
+              "        first = first->next();\n"
+              "    if (second->next()->varId() == 0) {\n"
+              "        second = second->nextArgument();\n"
+              "        if (!first || !second)\n"
+              "            return 0;\n"
+              "    } else if (!first) {\n"
+              "        return 0;\n"
+              "    }\n"
+              "    return first->varId();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Token {\n"
+              "    const Token* nextArgument() const;\n"
+              "    const Token* next() const;\n"
+              "    int varId() const;\n"
+              "};\n"
+              "int f(const Token *first) const {\n"
+              "    first = first->nextArgument();\n"
+              "    if (first)\n"
+              "        first = first->next();\n"
+              "    first->str();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:10]: (warning) Either the condition 'first' is redundant or there is possible null pointer dereference: first.\n", errout.str());
+    }
+    
     void nullpointer_addressOf() { // address of
         check("void f() {\n"
               "  struct X *x = 0;\n"
