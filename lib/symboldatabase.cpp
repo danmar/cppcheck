@@ -1440,7 +1440,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                 exprs[tok->str()].push_back(tok);
                 tok->exprId(id++);
 
-                if (id == std::numeric_limits<nonneg MathLib::bigint>::max()) {
+                if (id == std::numeric_limits<nonneg int>::max()) {
                     throw InternalError(nullptr, "Ran out of expression ids.", InternalError::INTERNAL);
                 }
             }
