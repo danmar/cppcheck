@@ -65,7 +65,7 @@ struct TokenImpl {
     nonneg int mFileIndex;
     nonneg int mLineNumber;
     nonneg int mColumn;
-    MathLib::bigint mExprId;
+    nonneg int mExprId;
 
     // AST..
     Token *mAstOperand1;
@@ -811,10 +811,10 @@ public:
         }
     }
 
-    MathLib::bigint exprId() const {
+    nonneg int exprId() const {
         return mImpl->mExprId;
     }
-    void exprId(MathLib::bigint id) {
+    void exprId(nonneg int id) {
         mImpl->mExprId = id;
     }
 

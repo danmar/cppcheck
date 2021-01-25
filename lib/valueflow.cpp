@@ -1771,7 +1771,7 @@ struct ValueFlowAnalyzer : Analyzer {
 
     virtual bool isAlias(const Token* tok, bool& inconclusive) const = 0;
 
-    using ProgramState = std::unordered_map<MathLib::bigint, ValueFlow::Value>;
+    using ProgramState = std::unordered_map<nonneg int, ValueFlow::Value>;
 
     virtual ProgramState getProgramState() const = 0;
 

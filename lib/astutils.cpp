@@ -81,7 +81,7 @@ const Token* findAstNode(const Token* ast, const std::function<bool(const Token*
     return result;
 }
 
-const Token* findExpression(MathLib::bigint exprid,
+const Token* findExpression(const nonneg int exprid,
                             const Token* start,
                             const Token* end,
                             const std::function<bool(const Token*)>& pred)
