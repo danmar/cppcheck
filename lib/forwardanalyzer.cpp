@@ -22,8 +22,7 @@ struct ForwardTraversal {
     bool analyzeTerminate;
     Terminate terminate = Terminate::None;
 
-    Progress Break(Terminate t = Terminate::None)
-    {
+    Progress Break(Terminate t = Terminate::None) {
         if ((!analyzeOnly || analyzeTerminate) && t != Terminate::None)
             terminate = t;
         return Progress::Break;
@@ -237,8 +236,7 @@ struct ForwardTraversal {
         return ft;
     }
 
-    std::vector<ForwardTraversal> tryForkScope(Token* endBlock, bool isModified = false)
-    {
+    std::vector<ForwardTraversal> tryForkScope(Token* endBlock, bool isModified = false) {
         if (analyzer->updateScope(endBlock, isModified)) {
             ForwardTraversal ft = forkScope(endBlock);
             return {ft};
@@ -251,7 +249,7 @@ struct ForwardTraversal {
     }
 
     bool hasInnerReturnScope(const Token* start, const Token* end) const {
-        for(const Token* tok=start;tok != end;tok = tok->previous()) {
+        for (const Token* tok=start; tok != end; tok = tok->previous()) {
             if (Token::simpleMatch(tok, "}")) {
                 const Token* ftok = nullptr;
                 bool r = isReturnScope(tok, &settings->library, &ftok);

@@ -3736,7 +3736,7 @@ static ValueFlow::Value makeConditionValue(long long val, const Token* condTok, 
         v.errorPath.emplace_back(condTok, "Assuming condition '" + condTok->expressionString() + "' is false");
     return v;
 }
-// 
+//
 static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (const Scope * scope : symboldatabase->functionScopes) {
@@ -3770,7 +3770,7 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
                     std::vector<const Token*> args = astFlatten(condTok, "&&");
                     conds.insert(conds.end(), args.begin(), args.end());
                 }
-                for(const Token* condTok2:conds) {
+                for (const Token* condTok2:conds) {
                     ExpressionAnalyzer a1(condTok2, makeConditionValue(1, condTok2, true), tokenlist);
                     valueFlowGenericForward(startTok, startTok->link(), a1, settings);
 
@@ -3788,7 +3788,7 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
             // Check else block
             if (Token::simpleMatch(startTok->link(), "} else {")) {
                 startTok = startTok->link()->tokAt(2);
-                for(const Token* condTok2:conds) {
+                for (const Token* condTok2:conds) {
                     ExpressionAnalyzer a1(condTok2, makeConditionValue(0, condTok2, false), tokenlist);
                     valueFlowGenericForward(startTok, startTok->link(), a1, settings);
 
@@ -3799,7 +3799,7 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
 
             // Check if the block terminates early
             if (isEscapeScope(blockTok, tokenlist)) {
-                for(const Token* condTok2:conds) {
+                for (const Token* condTok2:conds) {
                     ExpressionAnalyzer a1(condTok2, makeConditionValue(0, condTok2, false), tokenlist);
                     valueFlowGenericForward(startTok->link()->next(), scope->bodyEnd, a1, settings);
 
@@ -3827,8 +3827,10 @@ static void valueFlowForwardAssign(Token* const tok,
         values.remove_if(std::mem_fn(&ValueFlow::Value::isLifetimeValue));
     }
     if (std::all_of(
-            vars.begin(), vars.end(), [&](const Variable* var) { return !var->isPointer() && !var->isSmartPointer(); }))
-        values.remove_if(std::mem_fn(&ValueFlow::Value::isTokValue));
+    vars.begin(), vars.end(), [&](const Variable* var) {
+    return !var->isPointer() && !var->isSmartPointer();
+    }))
+    values.remove_if(std::mem_fn(&ValueFlow::Value::isTokValue));
     if (tok->astParent()) {
         for (ValueFlow::Value& value : values) {
             const std::string info = "Assignment '" + tok->astParent()->expressionString() + "', assigned value is " + value.infoString();
@@ -4194,9 +4196,9 @@ struct ConditionHandler {
                 if (isExpressionChanged(cond.vartok, start, end, settings, tokenlist->isCPP())) {
                     // If its reassigned in loop then analyze from the end
                     if (!Token::Match(tok, "%assign%|++|--") &&
-                        findExpression(cond.vartok->exprId(), start, end, [&](const Token* tok2) {
-                            return Token::Match(tok2->astParent(), "%assign%") && astIsLHS(tok2);
-                        })) {
+                    findExpression(cond.vartok->exprId(), start, end, [&](const Token* tok2) {
+                    return Token::Match(tok2->astParent(), "%assign%") && astIsLHS(tok2);
+                    })) {
                         // Start at the end of the loop body
                         Token* bodyTok = top->link()->next();
                         reverse(bodyTok->link(), bodyTok, cond.vartok, values, tokenlist, settings);
@@ -4458,8 +4460,7 @@ struct SimpleConditionHandler : ConditionHandler {
                          const Token* exprTok,
                          const std::list<ValueFlow::Value>& values,
                          TokenList* tokenlist,
-                         const Settings* settings) const OVERRIDE
-    {
+                         const Settings* settings) const OVERRIDE {
         return valueFlowReverse(start, endToken, exprTok, values, tokenlist, settings);
     }
 
@@ -6179,8 +6180,7 @@ struct ContainerConditionHandler : ConditionHandler {
                          const Token* exprTok,
                          const std::list<ValueFlow::Value>& values,
                          TokenList* tokenlist,
-                         const Settings* settings) const OVERRIDE
-    {
+                         const Settings* settings) const OVERRIDE {
         if (values.empty())
             return;
         if (!exprTok->variable())

@@ -2137,8 +2137,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void nullpointer69()
-    {
+    void nullpointer69() {
         check("void f(const Scope *scope) {\n"
               "    if (scope->definedType) {}\n"
               "    while (scope) {\n"
@@ -2212,7 +2211,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:10]: (warning) Either the condition 'first' is redundant or there is possible null pointer dereference: first.\n", errout.str());
     }
-    
+
     void nullpointer_addressOf() { // address of
         check("void f() {\n"
               "  struct X *x = 0;\n"
