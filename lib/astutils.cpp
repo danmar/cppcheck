@@ -21,6 +21,7 @@
 #include "astutils.h"
 
 #include "config.h"
+#include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
@@ -78,6 +79,24 @@ const Token* findAstNode(const Token* ast, const std::function<bool(const Token*
         return ChildrenToVisit::op1_and_op2;
     });
     return result;
+}
+
+const Token* findExpression(MathLib::bigint exprid,
+                            const Token* start,
+                            const Token* end,
+                            const std::function<bool(const Token*)>& pred)
+{
+    if (!precedes(start, end))
+        return nullptr;
+    if (exprid == 0)
+        return nullptr;
+    for (const Token* tok = start; tok != end; tok = tok->next()) {
+        if (tok->exprId() != exprid)
+            continue;
+        if (pred(tok))
+            return tok;
+    }
+    return nullptr;
 }
 
 static void astFlattenRecursive(const Token *tok, std::vector<const Token *> *result, const char* op, nonneg int depth = 0)
@@ -732,6 +751,75 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
     errors->push_back(item);
 }
 
+static const Token* followReferences(const Token* tok, ErrorPath* errors, int depth = 20)
+{
+    if (!tok)
+        return nullptr;
+    if (depth < 0)
+        return tok;
+    const Variable *var = tok->variable();
+    if (var && var->declarationId() == tok->varId()) {
+        if (var->nameToken() == tok) {
+            return tok;
+        } else if (var->isReference() || var->isRValueReference()) {
+            if (!var->declEndToken())
+                return tok;
+            if (var->isArgument()) {
+                if (errors)
+                    errors->emplace_back(var->declEndToken(), "Passed to reference.");
+                return tok;
+            } else if (Token::simpleMatch(var->declEndToken(), "=")) {
+                if (errors)
+                    errors->emplace_back(var->declEndToken(), "Assigned to reference.");
+                const Token *vartok = var->declEndToken()->astOperand2();
+                if (vartok == tok)
+                    return tok;
+                if (vartok)
+                    return followReferences(vartok, errors, depth - 1);
+            } else {
+                return tok;
+            }
+        }
+    } else if (Token::Match(tok->previous(), "%name% (")) {
+        const Function *f = tok->previous()->function();
+        if (f) {
+            if (!Function::returnsReference(f))
+                return tok;
+            std::set<const Token*> result;
+            ErrorPath errorPath;
+            for (const Token* returnTok : Function::findReturns(f)) {
+                if (returnTok == tok)
+                    continue;
+                const Token* argvarTok = followReferences(returnTok, errors, depth - 1);
+                const Variable* argvar = argvarTok->variable();
+                if (!argvar)
+                    return tok;
+                if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
+                    int n = getArgumentPos(argvar, f);
+                    if (n < 0)
+                        return tok;
+                    std::vector<const Token*> args = getArguments(tok->previous());
+                    if (n >= args.size())
+                        return tok;
+                    const Token* argTok = args[n];
+                    ErrorPath er;
+                    er.emplace_back(returnTok, "Return reference.");
+                    er.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
+                    const Token* tok2 = followReferences(argTok, &er, depth - 1);
+                    errorPath = er;
+                    result.insert(tok2);
+                }
+            }
+            if (result.size() == 1) {
+                if (errors)
+                    errors->insert(errors->end(), errorPath.begin(), errorPath.end());
+                return *result.begin();
+            }
+        }
+    }
+    return tok;
+}
+
 static bool isSameLifetime(const Token * const tok1, const Token * const tok2)
 {
     ValueFlow::Value v1 = getLifetimeObjValue(tok1);
@@ -850,6 +938,13 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
             followVariableExpressionError(tok2, varTok2, errors);
             return isSameExpression(cpp, macro, varTok1, varTok2, library, true, followVar, errors);
         }
+    }
+    // Follow references
+    if (tok1->str() != tok2->str()) {
+        const Token* refTok1 = followReferences(tok1, errors);
+        const Token* refTok2 = followReferences(tok2, errors);
+        if (refTok1 != tok1 || refTok2 != tok2)
+            return isSameExpression(cpp, macro, refTok1, refTok2, library, pure, followVar, errors);
     }
     if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str() || tok1->originalName() != tok2->originalName()) {
         if ((Token::Match(tok1,"<|>")   && Token::Match(tok2,"<|>")) ||

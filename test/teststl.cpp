@@ -5013,6 +5013,9 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo() { int f = 0; auto g(f); g = g; }");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

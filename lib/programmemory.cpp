@@ -10,7 +10,10 @@
 #include <limits>
 #include <memory>
 
-void ProgramMemory::setValue(MathLib::bigint exprid, const ValueFlow::Value& value) { values[exprid] = value; }
+void ProgramMemory::setValue(MathLib::bigint exprid, const ValueFlow::Value& value)
+{
+    values[exprid] = value;
+}
 const ValueFlow::Value* ProgramMemory::getValue(MathLib::bigint exprid) const
 {
     const ProgramMemory::Map::const_iterator it = values.find(exprid);
@@ -61,7 +64,10 @@ void ProgramMemory::setUnknown(MathLib::bigint exprid)
     values[exprid].valueType = ValueFlow::Value::ValueType::UNINIT;
 }
 
-bool ProgramMemory::hasValue(MathLib::bigint exprid) { return values.find(exprid) != values.end(); }
+bool ProgramMemory::hasValue(MathLib::bigint exprid)
+{
+    return values.find(exprid) != values.end();
+}
 
 void ProgramMemory::swap(ProgramMemory &pm)
 {

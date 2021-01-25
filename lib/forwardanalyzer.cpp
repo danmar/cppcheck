@@ -243,7 +243,7 @@ struct ForwardTraversal {
             ForwardTraversal ft = forkScope(endBlock);
             return {ft};
         }
-        return std::vector<ForwardTraversal>{};
+        return std::vector<ForwardTraversal> {};
     }
 
     static bool hasGoto(const Token* endBlock) {
@@ -317,8 +317,7 @@ struct ForwardTraversal {
         return bail;
     }
 
-    void continueUpdateRangeAfterLoop(std::vector<ForwardTraversal>& ftv, Token* start, const Token* endToken)
-    {
+    void continueUpdateRangeAfterLoop(std::vector<ForwardTraversal>& ftv, Token* start, const Token* endToken) {
         for (ForwardTraversal& ft : ftv) {
             // If analysis has terminated normally, then continue analysis
             if (ft.terminate == Terminate::None)
@@ -330,8 +329,7 @@ struct ForwardTraversal {
                         Token* endBlock,
                         Token* condTok,
                         Token* initTok = nullptr,
-                        Token* stepTok = nullptr)
-    {
+                        Token* stepTok = nullptr) {
         const bool isDoWhile = precedes(endBlock, condTok);
         Analyzer::Action bodyAnalysis = analyzeScope(endBlock);
         Analyzer::Action allAnalysis = bodyAnalysis;
@@ -383,7 +381,9 @@ struct ForwardTraversal {
         return Progress::Continue;
     }
 
-    Progress updateRange(Token* start, const Token* end) {
+    Progress updateRange(Token* start, const Token* end, int depth = 20) {
+        if (depth < 0)
+            return Break(Terminate::Bail);
         for (Token* tok = start; tok && tok != end; tok = tok->next()) {
             Token* next = nullptr;
 
@@ -497,7 +497,7 @@ struct ForwardTraversal {
                     // Traverse then block
                     thenBranch.escape = isEscapeScope(endBlock, thenBranch.escapeUnknown);
                     if (thenBranch.check) {
-                        if (updateRange(endCond->next(), endBlock) == Progress::Break)
+                        if (updateRange(endCond->next(), endBlock, depth - 1) == Progress::Break)
                             return Break();
                     } else if (!elseBranch.check) {
                         if (checkBranch(thenBranch, endBlock))
@@ -507,7 +507,7 @@ struct ForwardTraversal {
                     if (hasElse) {
                         elseBranch.escape = isEscapeScope(endBlock->linkAt(2), elseBranch.escapeUnknown);
                         if (elseBranch.check) {
-                            Progress result = updateRange(endBlock->tokAt(2), endBlock->linkAt(2));
+                            Progress result = updateRange(endBlock->tokAt(2), endBlock->linkAt(2), depth - 1);
                             if (result == Progress::Break)
                                 return Break();
                         } else if (!thenBranch.check) {
@@ -555,7 +555,7 @@ struct ForwardTraversal {
             } else if (Token::simpleMatch(tok, "try {")) {
                 Token* endBlock = tok->next()->link();
                 Analyzer::Action a = analyzeScope(endBlock);
-                if (updateRange(tok->next(), endBlock) == Progress::Break)
+                if (updateRange(tok->next(), endBlock, depth - 1) == Progress::Break)
                     return Break();
                 if (a.isModified())
                     analyzer->lowerToPossible();

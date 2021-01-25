@@ -109,7 +109,8 @@ private:
         TEST_CASE(nullpointer66); // #10024
         TEST_CASE(nullpointer67); // #10062
         TEST_CASE(nullpointer68);
-        TEST_CASE(nullpointer69);
+        TEST_CASE(nullpointer69);         // #8143
+        TEST_CASE(nullpointer70);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2136,7 +2137,48 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void nullpointer69() {
+    void nullpointer69()
+    {
+        check("void f(const Scope *scope) {\n"
+              "    if (scope->definedType) {}\n"
+              "    while (scope) {\n"
+              "        scope = scope->nestedIn;\n"
+              "        enumerator = scope->findEnumerator();\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:5]: (warning) Either the condition 'scope' is redundant or there is possible null pointer dereference: scope.\n",
+            errout.str());
+
+        check("void f(const Scope *scope) {\n"
+              "    if (scope->definedType) {}\n"
+              "    while (scope && scope->nestedIn) {\n"
+              "        if (scope->type == Scope::eFunction && scope->functionOf)\n"
+              "            scope = scope->functionOf;\n"
+              "        else\n"
+              "            scope = scope->nestedIn;\n"
+              "        enumerator = scope->findEnumerator();\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:8]: (warning) Either the condition 'scope' is redundant or there is possible null pointer dereference: scope.\n",
+            errout.str());
+
+        check("struct a {\n"
+              "  a *b() const;\n"
+              "  void c();\n"
+              "};\n"
+              "void d() {\n"
+              "  for (a *e;;) {\n"
+              "    e->b()->c();\n"
+              "    while (e)\n"
+              "      e = e->b();\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer70() {
         check("struct Token {\n"
               "    const Token* nextArgument() const;\n"
               "    const Token* next() const;\n"
@@ -2170,7 +2212,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:10]: (warning) Either the condition 'first' is redundant or there is possible null pointer dereference: first.\n", errout.str());
     }
-
+    
     void nullpointer_addressOf() { // address of
         check("void f() {\n"
               "  struct X *x = 0;\n"

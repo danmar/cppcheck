@@ -1310,7 +1310,9 @@ public:
         return const_cast<Scope *>(this->findScope(tok, const_cast<const Scope *>(startScope)));
     }
 
-    bool isVarId(nonneg int varid) const { return varid < mVariableList.size(); }
+    bool isVarId(nonneg int varid) const {
+        return varid < mVariableList.size();
+    }
 
     const Variable *getVariableFromVarId(nonneg int varId) const {
         return mVariableList.at(varId);

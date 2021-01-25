@@ -402,7 +402,8 @@ private:
         TEST_CASE(findFunction35);
         TEST_CASE(findFunction36); // #10122
         TEST_CASE(findFunction37); // #10124
-        TEST_CASE(findFunction38); // #10152
+        TEST_CASE(findFunction38); // #10125
+        TEST_CASE(findFunction39); // #10127
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -6320,6 +6321,26 @@ private:
         ASSERT(functok->function());
         ASSERT(functok->function()->name() == "f");
         ASSERT_EQUALS(6, functok->function()->tokenDef->linenr());
+    }
+
+    void findFunction39() { // #10127
+        GET_SYMBOL_DB("namespace external {\n"
+                      "    class V {\n"
+                      "    public:\n"
+                      "        using I = int;\n"
+                      "    };\n"
+                      "}\n"
+                      "class A {\n"
+                      "    void f(external::V::I);\n"
+                      "};\n"
+                      "using ::external::V;\n"
+                      "void A::f(V::I) {}");
+        ASSERT_EQUALS("", errout.str());
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "f ( int )");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT(functok->function()->name() == "f");
+        ASSERT_EQUALS(8, functok->function()->tokenDef->linenr());
     }
 
     void findFunctionContainer() {
