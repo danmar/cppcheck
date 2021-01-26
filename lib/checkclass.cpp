@@ -1903,7 +1903,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
             const Type *derivedFrom = i.type;
 
             // find the function in the base class
-            if (derivedFrom && derivedFrom->classScope) {
+            if (derivedFrom && derivedFrom->classScope && derivedFrom->classScope != scope) {
                 if (isMemberVar(derivedFrom->classScope, tok))
                     return true;
             }
@@ -1944,7 +1944,7 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
             const Type *derivedFrom = i.type;
 
             // find the function in the base class
-            if (derivedFrom && derivedFrom->classScope) {
+            if (derivedFrom && derivedFrom->classScope && derivedFrom->classScope != scope) {
                 if (isMemberFunc(derivedFrom->classScope, tok))
                     return true;
             }
@@ -2460,7 +2460,8 @@ void CheckClass::checkDuplInheritedMembersRecursive(const Type* typeCurrent, con
                 }
             }
         }
-        checkDuplInheritedMembersRecursive(typeCurrent, parentClassIt.type);
+        if (typeCurrent != parentClassIt.type)
+            checkDuplInheritedMembersRecursive(typeCurrent, parentClassIt.type);
     }
 }
 

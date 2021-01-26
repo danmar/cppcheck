@@ -1105,7 +1105,7 @@ void CheckStl::invalidContainerLoopError(const Token *tok, const Token * loopTok
     reportError(errorPath, Severity::error, "invalidContainerLoop", msg, CWE664, false);
 }
 
-void CheckStl::invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val, ErrorPath errorPath)
+void CheckStl::invalidContainerError(const Token *tok, const Token * /*contTok*/, const ValueFlow::Value *val, ErrorPath errorPath)
 {
     const bool inconclusive = val ? val->isInconclusive() : false;
     if (val)
@@ -1732,8 +1732,6 @@ void CheckStl::missingComparison()
             }
 
             const Token *incrementToken = nullptr;
-            bool bComparedInAdvance = false;
-
             // Parse loop..
             for (const Token *tok3 = scope.bodyStart; tok3 != scope.bodyEnd; tok3 = tok3->next()) {
                 if (tok3->varId() == iteratorId) {
@@ -1742,16 +1740,13 @@ void CheckStl::missingComparison()
                         tok3 = tok3->linkAt(6);
                         if (!tok3)
                             break;
-                    } else if (Token::simpleMatch(tok3->astParent(), "++")) {
-                        if (!bComparedInAdvance)
-                            incrementToken = tok3;
-                        else
-                            bComparedInAdvance = false;
-                    } else if (Token::simpleMatch(tok3->astParent(), "+")) {
-                        if (Token::simpleMatch(tok3->astSibling(), "1")) {
+                    } else if (Token::simpleMatch(tok3->astParent(), "++"))
+                        incrementToken = tok3;
+                    else if (Token::simpleMatch(tok3->astParent(), "+")) {
+                        if (Token::Match(tok3->astSibling(), "%num%")) {
                             const Token* tokenGrandParent = tok3->astParent()->astParent();
                             if (Token::Match(tokenGrandParent, "==|!="))
-                                bComparedInAdvance = true;
+                                break;
                         }
                     } else if (Token::Match(tok3->astParent(), "==|!="))
                         incrementToken = nullptr;

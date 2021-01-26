@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef reverseanalyzerH
-#define reverseanalyzerH
+#include <QtTest/QtTest>
+#include "cppchecklibrarydata.h"
 
-struct Analyzer;
-class Settings;
-class Token;
-template <class T>
-class ValuePtr;
+class TestCppcheckLibraryData: public QObject {
+    Q_OBJECT
 
-void valueFlowGenericReverse(Token* start, const ValuePtr<Analyzer>& a, const Settings* settings);
-void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings* settings);
+private slots:
+    void init();
 
-#endif
+    void xmlReaderError();
+    void unhandledElement();
+    void mandatoryAttributeMissing();
+
+    void podtypeValid();
+    void typechecksValid();
+    void smartPointerValid();
+
+private:
+    void loadCfgFile(QString filename, CppcheckLibraryData &data, QString &result, bool removeFile = false);
+    void saveCfgFile(QString filename, CppcheckLibraryData &data);
+
+    CppcheckLibraryData libraryData;
+    CppcheckLibraryData fileLibraryData;
+    QString result;
+
+    static const QString TempCfgFile;
+};

@@ -895,7 +895,7 @@ public:
     const Token *templateDef;         ///< points to 'template <' before function
     const Token *functionPointerUsage; ///< function pointer usage
 
-    static bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length);
+    bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length) const;
 
     static bool returnsReference(const Function* function, bool unknown = false);
 
@@ -1150,6 +1150,8 @@ public:
 
     const Token * addEnum(const Token * tok, bool isCpp);
 
+    const Scope *findRecordInBase(const std::string &name) const;
+
 private:
     /**
      * @brief helper function for getVariableList()
@@ -1306,6 +1308,10 @@ public:
     const Scope *findScope(const Token *tok, const Scope *startScope) const;
     Scope *findScope(const Token *tok, Scope *startScope) const {
         return const_cast<Scope *>(this->findScope(tok, const_cast<const Scope *>(startScope)));
+    }
+
+    bool isVarId(nonneg int varid) const {
+        return varid < mVariableList.size();
     }
 
     const Variable *getVariableFromVarId(nonneg int varId) const {

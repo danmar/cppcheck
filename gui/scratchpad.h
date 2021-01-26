@@ -35,6 +35,11 @@ class ScratchPad : public QDialog {
 public:
     explicit ScratchPad(MainWindow& mainWindow);
 
+    /**
+    * @brief Translate dialog
+    */
+    void translate();
+
 private slots:
     /**
     * @brief Called when check button is clicked.

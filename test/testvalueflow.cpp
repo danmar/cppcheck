@@ -122,7 +122,7 @@ private:
 
         TEST_CASE(valueFlowUninit);
 
-        TEST_CASE(valueFlowTerminatingCond);
+        TEST_CASE(valueFlowConditionExpressions);
 
         TEST_CASE(valueFlowContainerSize);
 
@@ -1266,7 +1266,7 @@ private:
                 "    if (x == 123) {}\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable y\n",
+            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y\n",
             errout.str());
     }
 
@@ -1383,7 +1383,7 @@ private:
                 "    y = ((x<0) ? x : ((x==2)?3:4));\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable y\n",
+            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y\n",
             errout.str());
 
         bailout("int f(int x) {\n"
@@ -1448,7 +1448,7 @@ private:
                 "    if (x == 123) {}\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable b\n",
+            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable b\n",
             errout.str());
 
         code = "void f(int x, bool abc) {\n"
@@ -1497,7 +1497,7 @@ private:
                 "    };\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n",
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n",
             errout.str());
 
         bailout("void f(int x, int y) {\n"
@@ -1507,7 +1507,7 @@ private:
                 "    };\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n",
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n",
             errout.str());
     }
 
@@ -1519,7 +1519,7 @@ private:
                 "    M;\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n"
             "[test.cpp:4]: (debug) valueflow.cpp:1260:(valueFlow) bailout: variable 'x', condition is defined in macro\n",
             errout.str());
 
@@ -1529,7 +1529,7 @@ private:
                 "    FREE(x);\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n"
             "[test.cpp:4]: (debug) valueflow.cpp:1260:(valueFlow) bailout: variable 'x', condition is defined in macro\n",
             errout.str());
     }
@@ -1543,7 +1543,7 @@ private:
                 "    if (x==123){}\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n",
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n",
             errout.str());
 
         // #5721 - FP
@@ -2125,7 +2125,22 @@ private:
                "  }\n"
                "  a = x;\n" // <- x can't be 0
                "}\n";
-        ASSERT_EQUALS(false, testValueOfX(code, 9U, 0)); // x can't be 0 at line 9
+        ASSERT_EQUALS(true, testValueOfX(code, 9U, 0));       // x can be 0 at line 9
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 9U, 0)); // x can't be known at line 9
+
+        code = "void f(const int *buf) {\n"
+               "  int x = 0;\n"
+               "  for (int i = 0; i < 10; i++) {\n"
+               "    if (buf[i] == 123) {\n"
+               "      x = i;\n"
+               "      ;\n" // <- no break
+               "    } else {\n"
+               "      x = 1;\n"
+               "    }\n"
+               "  }\n"
+               "  a = x;\n" // <- x can't be 0
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 11U, 0)); // x can't be 0 at line 11
 
         code = "void f(const int *buf) {\n"
                "  int x = 0;\n"
@@ -2591,6 +2606,16 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 10U, 1));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 10U, 0));
+
+        code = "int f(int a, int b) {\n"
+               "  if (!a && !b)\n"
+               "    return;\n"
+               "  if ((!a && b) || (a && !b))\n"
+               "    return;\n"
+               "  int x = a;\n" // <- a is _not_ 0
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 7U, 0));
     }
 
     void valueFlowAfterConditionExpr() {
@@ -4177,7 +4202,7 @@ private:
         ASSERT_EQUALS(0, values.size());
     }
 
-    void valueFlowTerminatingCond() {
+    void valueFlowConditionExpressions() {
         const char* code;
 
         // opposite condition
@@ -4247,6 +4272,60 @@ private:
                "}\n";
         ASSERT_EQUALS(false, valueOfTok(code, "!=").intvalue == 1);
 
+        code = "void f(bool b, int i, int j) {\n"
+               "    if (b || i == j) return;\n"
+               "    if(i != j) {}\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 1);
+
+        code = "void f(bool b, int i, int j) {\n"
+               "    if (b && i == j) return;\n"
+               "    if(i != j) {}\n"
+               "}\n";
+        ASSERT_EQUALS(true, tokenValues(code, "!=").empty());
+
+        code = "void f(int i, int j) {\n"
+               "    if (i == j) {\n"
+               "        if (i != j) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 0);
+
+        code = "void f(int i, int j) {\n"
+               "    if (i == j) {} else {\n"
+               "        if (i != j) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 1);
+
+        code = "void f(bool b, int i, int j) {\n"
+               "    if (b && i == j) {\n"
+               "        if (i != j) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 0);
+
+        code = "void f(bool b, int i, int j) {\n"
+               "    if (b || i == j) {\n"
+               "        if (i != j) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, tokenValues(code, "!=").empty());
+
+        code = "void f(bool b, int i, int j) {\n"
+               "    if (b || i == j) {} else {\n"
+               "        if (i != j) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 1);
+
+        code = "void f(bool b, int i, int j) {\n"
+               "    if (b && i == j) {} else {\n"
+               "        if (i != j) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, tokenValues(code, "!=").empty());
+
         code = "void foo()\n" // #8924
                "{\n"
                "    if ( this->FileIndex >= 0 )\n"
@@ -4280,6 +4359,73 @@ private:
                "}\n";
         ASSERT_EQUALS(true, valueOfTok(code, "> 0").isKnown());
         ASSERT_EQUALS(true, valueOfTok(code, "> 0").intvalue == 1);
+
+        //  FP #10110
+        code = "enum FENUMS { NONE = 0, CB = 8 };\n"
+               "bool calc(int x) {\n"
+               "    if (!x) {\n"
+               "        return false;\n"
+               "    }\n"
+               "\n"
+               "    if (x & CB) {\n"
+               "        return true;\n"
+               "    }\n"
+               "    return false;\n"
+               "}\n";
+        ASSERT_EQUALS(false, valueOfTok(code, "& CB").isKnown());
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 7U, 0));
+
+        code = "enum FENUMS { NONE = 0, CB = 8 };\n"
+               "bool calc(int x) {\n"
+               "    if (x) {\n"
+               "        return false;\n"
+               "    }\n"
+               "\n"
+               "    if ((!x) & CB) {\n"
+               "        return true;\n"
+               "    }\n"
+               "    return false;\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "& CB").isKnown());
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 7U, 0));
+
+        code = "enum FENUMS { NONE = 0, CB = 8 };\n"
+               "bool calc(int x) {\n"
+               "    if (!!x) {\n"
+               "        return false;\n"
+               "    }\n"
+               "\n"
+               "    if (x & CB) {\n"
+               "        return true;\n"
+               "    }\n"
+               "    return false;\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "& CB").isKnown());
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 7U, 0));
+
+        code = "bool calc(bool x) {\n"
+               "    if (!x) {\n"
+               "        return false;\n"
+               "    }\n"
+               "\n"
+               "    if (x) {\n"
+               "        return true;\n"
+               "    }\n"
+               "    return false;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 1));
+
+        code = "bool calc(bool x) {\n"
+               "    if (x) {\n"
+               "        return false;\n"
+               "    }\n"
+               "\n"
+               "    if (!x) {\n"
+               "        return true;\n"
+               "    }\n"
+               "    return false;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 0));
     }
 
     static std::string isPossibleContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {

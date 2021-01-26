@@ -398,6 +398,12 @@ private:
         TEST_CASE(findFunction31);
         TEST_CASE(findFunction32); // C: relax type matching
         TEST_CASE(findFunction33); // #9885 variadic function
+        TEST_CASE(findFunction34); // #10061
+        TEST_CASE(findFunction35);
+        TEST_CASE(findFunction36); // #10122
+        TEST_CASE(findFunction37); // #10124
+        TEST_CASE(findFunction38); // #10125
+        TEST_CASE(findFunction39); // #10127
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -2738,7 +2744,7 @@ private:
         check("::y(){x}");
 
         ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n"
-                                          "[test.cpp:1]: (debug) valueflow.cpp:1321:valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable x\n", errout.str());
+                                          "[test.cpp:1]: (debug) valueflow.cpp:1321:valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n", errout.str());
     }
 
     void symboldatabase20() {
@@ -6215,6 +6221,126 @@ private:
             ASSERT(foo->function()->tokenDef);
             ASSERT_EQUALS(4, foo->function()->tokenDef->linenr());
         }
+    }
+
+    void findFunction34() {
+        GET_SYMBOL_DB("namespace cppcheck {\n"
+                      "    class Platform {\n"
+                      "    public:\n"
+                      "        enum PlatformType { Unspecified };\n"
+                      "    };\n"
+                      "}\n"
+                      "class ImportProject {\n"
+                      "    void selectOneVsConfig(cppcheck::Platform::PlatformType);\n"
+                      "};\n"
+                      "class Settings : public cppcheck::Platform { };\n"
+                      "void ImportProject::selectOneVsConfig(Settings::PlatformType) { }");
+        (void)db;
+        const Token *foo = Token::findsimplematch(tokenizer.tokens(), "selectOneVsConfig ( Settings :: PlatformType ) { }");
+        ASSERT(foo);
+        ASSERT(foo->function());
+        ASSERT(foo->function()->tokenDef);
+        ASSERT_EQUALS(8, foo->function()->tokenDef->linenr());
+    }
+
+    void findFunction35() {
+        GET_SYMBOL_DB("namespace clangimport {\n"
+                      "    class AstNode {\n"
+                      "    public:\n"
+                      "        AstNode();\n"
+                      "        void createTokens();\n"
+                      "    };\n"
+                      "}\n"
+                      "::clangimport::AstNode::AstNode() { }\n"
+                      "void ::clangimport::AstNode::createTokens() { }");
+        (void)db;
+        const Token *foo = Token::findsimplematch(tokenizer.tokens(), "AstNode ( ) { }");
+        ASSERT(foo);
+        ASSERT(foo->function());
+        ASSERT(foo->function()->tokenDef);
+        ASSERT_EQUALS(4, foo->function()->tokenDef->linenr());
+        foo = Token::findsimplematch(tokenizer.tokens(), "createTokens ( ) { }");
+        ASSERT(foo);
+        ASSERT(foo->function());
+        ASSERT(foo->function()->tokenDef);
+        ASSERT_EQUALS(5, foo->function()->tokenDef->linenr());
+    }
+
+    void findFunction36() { // #10122
+        GET_SYMBOL_DB("namespace external {\n"
+                      "    enum class T { };\n"
+                      "}\n"
+                      "namespace ns {\n"
+                      "    class A {\n"
+                      "    public:\n"
+                      "        void f(external::T);\n"
+                      "    };\n"
+                      "}\n"
+                      "namespace ns {\n"
+                      "    void A::f(external::T link_type) { }\n"
+                      "}");
+        ASSERT_EQUALS("", errout.str());
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "f ( external :: T link_type )");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT(functok->function()->name() == "f");
+        ASSERT_EQUALS(7, functok->function()->tokenDef->linenr());
+    }
+
+    void findFunction37() { // #10124
+        GET_SYMBOL_DB("namespace ns {\n"
+                      "    class V { };\n"
+                      "}\n"
+                      "class A {\n"
+                      "public:\n"
+                      "    void f(const ns::V&);\n"
+                      "};\n"
+                      "using ::ns::V;\n"
+                      "void A::f(const V&) { }");
+        ASSERT_EQUALS("", errout.str());
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "f ( const :: ns :: V & )");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT(functok->function()->name() == "f");
+        ASSERT_EQUALS(6, functok->function()->tokenDef->linenr());
+    }
+
+    void findFunction38() { // #10125
+        GET_SYMBOL_DB("namespace ns {\n"
+                      "    class V { };\n"
+                      "    using Var = V;\n"
+                      "}\n"
+                      "class A {\n"
+                      "    void f(const ns::Var&);\n"
+                      "};\n"
+                      "using ::ns::Var;\n"
+                      "void A::f(const Var&) {}");
+        ASSERT_EQUALS("", errout.str());
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "f ( const :: ns :: V & )");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT(functok->function()->name() == "f");
+        ASSERT_EQUALS(6, functok->function()->tokenDef->linenr());
+    }
+
+    void findFunction39() { // #10127
+        GET_SYMBOL_DB("namespace external {\n"
+                      "    class V {\n"
+                      "    public:\n"
+                      "        using I = int;\n"
+                      "    };\n"
+                      "}\n"
+                      "class A {\n"
+                      "    void f(external::V::I);\n"
+                      "};\n"
+                      "using ::external::V;\n"
+                      "void A::f(V::I) {}");
+        ASSERT_EQUALS("", errout.str());
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "f ( int )");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT(functok->function()->name() == "f");
+        ASSERT_EQUALS(8, functok->function()->tokenDef->linenr());
     }
 
     void findFunctionContainer() {

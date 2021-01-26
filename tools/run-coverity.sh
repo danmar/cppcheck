@@ -1,6 +1,6 @@
 #!/bin/bash
 PATH=$PATH:/home/danielmarjamaki/cov-analysis-linux64-2019.03/bin
-cd /home/danielmarjamaki/cppcheck-devinfo
+cd /home/danielmarjamaki/cppcheck-devinfo || exit 1
 git pull
 
 echo Analyze
@@ -15,7 +15,7 @@ curl --insecure \
   --form token=e74RRnWR6BVsn5LKdclfcA \
   --form email=daniel.marjamaki@gmail.com \
   --form file=@cppcheck.tgz \
-  --form version=`git log -1 --format=oneline | sed -r 's/([a-f0-9]{7}).*/\1/'` \
+  --form version=$(git log -1 --format=oneline | sed -r 's/([a-f0-9]{7}).*/\1/') \
   --form description="Development" \
   https://scan.coverity.com/builds?project=cppcheck
 

@@ -1,21 +1,22 @@
 
 #include "programmemory.h"
-#include "mathlib.h"
-#include "token.h"
 #include "astutils.h"
+#include "mathlib.h"
 #include "symboldatabase.h"
+#include "token.h"
 #include <algorithm>
 #include <cassert>
+#include <cstdio>
 #include <limits>
 #include <memory>
 
-void ProgramMemory::setValue(nonneg int varid, const ValueFlow::Value &value)
+void ProgramMemory::setValue(MathLib::bigint exprid, const ValueFlow::Value& value)
 {
-    values[varid] = value;
+    values[exprid] = value;
 }
-const ValueFlow::Value* ProgramMemory::getValue(nonneg int varid) const
+const ValueFlow::Value* ProgramMemory::getValue(MathLib::bigint exprid) const
 {
-    const ProgramMemory::Map::const_iterator it = values.find(varid);
+    const ProgramMemory::Map::const_iterator it = values.find(exprid);
     const bool found = it != values.end() && !it->second.isImpossible();
     if (found)
         return &it->second;
@@ -23,9 +24,9 @@ const ValueFlow::Value* ProgramMemory::getValue(nonneg int varid) const
         return nullptr;
 }
 
-bool ProgramMemory::getIntValue(nonneg int varid, MathLib::bigint* result) const
+bool ProgramMemory::getIntValue(MathLib::bigint exprid, MathLib::bigint* result) const
 {
-    const ValueFlow::Value* value = getValue(varid);
+    const ValueFlow::Value* value = getValue(exprid);
     if (value && value->isIntValue()) {
         *result = value->intvalue;
         return true;
@@ -33,14 +34,14 @@ bool ProgramMemory::getIntValue(nonneg int varid, MathLib::bigint* result) const
     return false;
 }
 
-void ProgramMemory::setIntValue(nonneg int varid, MathLib::bigint value)
+void ProgramMemory::setIntValue(MathLib::bigint exprid, MathLib::bigint value)
 {
-    values[varid] = ValueFlow::Value(value);
+    values[exprid] = ValueFlow::Value(value);
 }
 
-bool ProgramMemory::getTokValue(nonneg int varid, const Token** result) const
+bool ProgramMemory::getTokValue(MathLib::bigint exprid, const Token** result) const
 {
-    const ValueFlow::Value* value = getValue(varid);
+    const ValueFlow::Value* value = getValue(exprid);
     if (value && value->isTokValue()) {
         *result = value->tokvalue;
         return true;
@@ -48,9 +49,9 @@ bool ProgramMemory::getTokValue(nonneg int varid, const Token** result) const
     return false;
 }
 
-bool ProgramMemory::getContainerSizeValue(nonneg int varid, MathLib::bigint* result) const
+bool ProgramMemory::getContainerSizeValue(MathLib::bigint exprid, MathLib::bigint* result) const
 {
-    const ValueFlow::Value* value = getValue(varid);
+    const ValueFlow::Value* value = getValue(exprid);
     if (value && value->isContainerSizeValue()) {
         *result = value->intvalue;
         return true;
@@ -58,14 +59,14 @@ bool ProgramMemory::getContainerSizeValue(nonneg int varid, MathLib::bigint* res
     return false;
 }
 
-void ProgramMemory::setUnknown(nonneg int varid)
+void ProgramMemory::setUnknown(MathLib::bigint exprid)
 {
-    values[varid].valueType = ValueFlow::Value::ValueType::UNINIT;
+    values[exprid].valueType = ValueFlow::Value::ValueType::UNINIT;
 }
 
-bool ProgramMemory::hasValue(nonneg int varid)
+bool ProgramMemory::hasValue(MathLib::bigint exprid)
 {
-    return values.find(varid) != values.end();
+    return values.find(exprid) != values.end();
 }
 
 void ProgramMemory::swap(ProgramMemory &pm)
@@ -85,8 +86,9 @@ bool ProgramMemory::empty() const
 
 void ProgramMemory::replace(const ProgramMemory &pm)
 {
-    for (auto&& p:pm.values)
+    for (auto&& p : pm.values) {
         values[p.first] = p.second;
+    }
 }
 
 void ProgramMemory::insert(const ProgramMemory &pm)
@@ -146,21 +148,13 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
         });
         if (!vartok)
             return;
-        if (vartok->varId() == 0)
+        if (vartok->exprId() == 0)
             return;
         if (!truevalue.isIntValue())
             return;
-        if (endTok && isVariableChanged(tok->next(), endTok, vartok->varId(), false, settings, true))
+        if (endTok && isExpressionChanged(vartok, tok->next(), endTok, settings, true))
             return;
-        pm.setIntValue(vartok->varId(),  then ? truevalue.intvalue : falsevalue.intvalue);
-    } else if (Token::Match(tok, "%var%")) {
-        if (tok->varId() == 0)
-            return;
-        if (then && !astIsPointer(tok) && !astIsBool(tok))
-            return;
-        if (endTok && isVariableChanged(tok->next(), endTok, tok->varId(), false, settings, true))
-            return;
-        pm.setIntValue(tok->varId(), then);
+        pm.setIntValue(vartok->exprId(), then ? truevalue.intvalue : falsevalue.intvalue);
     } else if (Token::simpleMatch(tok, "!")) {
         programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, !then);
     } else if (then && Token::simpleMatch(tok, "&&")) {
@@ -169,6 +163,12 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
     } else if (!then && Token::simpleMatch(tok, "||")) {
         programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, then);
         programMemoryParseCondition(pm, tok->astOperand2(), endTok, settings, then);
+    } else if (tok->exprId() > 0) {
+        if (then && !astIsPointer(tok) && !astIsBool(tok))
+            return;
+        if (endTok && isExpressionChanged(tok, tok->next(), endTok, settings, true))
+            return;
+        pm.setIntValue(tok->exprId(), then);
     }
 }
 
@@ -197,36 +197,33 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
 {
     int indentlevel = 0;
     for (const Token *tok2 = tok; tok2; tok2 = tok2->previous()) {
-        bool setvar = false;
-        if (Token::Match(tok2, "[;{}] %var% = %var% ;")) {
+        if ((Token::simpleMatch(tok2, "=") || Token::Match(tok2->previous(), "%var% (|{")) && tok2->astOperand1() &&
+            tok2->astOperand2()) {
+            bool setvar = false;
+            const Token* vartok = tok2->astOperand1();
+            const Token* valuetok = tok2->astOperand2();
             for (const auto& p:vars) {
-                if (p.first != tok2->next()->varId())
+                if (p.first != vartok->exprId())
                     continue;
-                const Token *vartok = tok2->tokAt(3);
                 if (vartok == tok)
                     continue;
-                pm.setValue(vartok->varId(), p.second);
+                pm.setValue(vartok->exprId(), p.second);
                 setvar = true;
             }
-        }
-        if (!setvar && (Token::Match(tok2, ";|{|}|%type% %var% =") ||
-                        Token::Match(tok2, "[;{}] const| %type% %var% ("))) {
-            const Token *vartok = tok2->next();
-            while (vartok->next()->isName())
-                vartok = vartok->next();
-            if (!pm.hasValue(vartok->varId())) {
-                MathLib::bigint result = 0;
-                bool error = false;
-                execute(vartok->next()->astOperand2(), &pm, &result, &error);
-                if (!error)
-                    pm.setIntValue(vartok->varId(), result);
-                else
-                    pm.setUnknown(vartok->varId());
+            if (!setvar) {
+                if (!pm.hasValue(vartok->exprId())) {
+                    MathLib::bigint result = 0;
+                    bool error = false;
+                    execute(valuetok, &pm, &result, &error);
+                    if (!error)
+                        pm.setIntValue(vartok->exprId(), result);
+                    else
+                        pm.setUnknown(vartok->exprId());
+                }
             }
-        } else if (!setvar && Token::Match(tok2, "%var% !!=") && isVariableChanged(tok2, 0, nullptr, true)) {
-            const Token *vartok = tok2;
-            if (!pm.hasValue(vartok->varId()))
-                pm.setUnknown(vartok->varId());
+        } else if (tok2->exprId() > 0 && Token::Match(tok2, ".|(|[|*|%var%") && !pm.hasValue(tok2->exprId()) &&
+                   isVariableChanged(tok2, 0, nullptr, true)) {
+            pm.setUnknown(tok2->exprId());
         }
 
         if (tok2->str() == "{") {
@@ -291,12 +288,12 @@ void ProgramMemoryState::replace(const ProgramMemory &pm, const Token* origin)
 
 void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& vars)
 {
-    ProgramMemory pm;
+    ProgramMemory pm = state;
     fillProgramMemoryFromConditions(pm, tok, nullptr);
     for (const auto& p:vars) {
-        nonneg int varid = p.first;
+        MathLib::bigint exprid = p.first;
         const ValueFlow::Value &value = p.second;
-        pm.setValue(varid, value);
+        pm.setValue(exprid, value);
         if (value.varId)
             pm.setIntValue(value.varId, value.varvalue);
     }
@@ -343,9 +340,9 @@ ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars)
     fillProgramMemoryFromConditions(programMemory, tok, nullptr);
     ProgramMemory state;
     for (const auto& p:vars) {
-        nonneg int varid = p.first;
+        MathLib::bigint exprid = p.first;
         const ValueFlow::Value &value = p.second;
-        programMemory.setValue(varid, value);
+        programMemory.setValue(exprid, value);
         if (value.varId)
             programMemory.setIntValue(value.varId, value.varvalue);
     }
@@ -354,17 +351,17 @@ ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars)
     return programMemory;
 }
 
-ProgramMemory getProgramMemory(const Token *tok, nonneg int varid, const ValueFlow::Value &value)
+ProgramMemory getProgramMemory(const Token* tok, MathLib::bigint exprid, const ValueFlow::Value& value)
 {
     ProgramMemory programMemory;
     programMemory.replace(getInitialProgramState(tok, value.tokvalue));
     programMemory.replace(getInitialProgramState(tok, value.condition));
     fillProgramMemoryFromConditions(programMemory, tok, nullptr);
-    programMemory.setValue(varid, value);
+    programMemory.setValue(exprid, value);
     if (value.varId)
         programMemory.setIntValue(value.varId, value.varvalue);
     const ProgramMemory state = programMemory;
-    fillProgramMemoryFromAssignments(programMemory, tok, state, {{varid, value}});
+    fillProgramMemoryFromAssignments(programMemory, tok, state, {{exprid, value}});
     return programMemory;
 }
 
@@ -391,6 +388,11 @@ void execute(const Token *expr,
             *error = true;
     }
 
+    else if (expr->exprId() > 0 && programMemory->hasValue(expr->exprId())) {
+        if (!programMemory->getIntValue(expr->exprId(), result))
+            *error = true;
+    }
+
     else if (expr->isComparisonOp()) {
         MathLib::bigint result1(0), result2(0);
         execute(expr->astOperand1(), programMemory, &result1, error);
@@ -411,45 +413,45 @@ void execute(const Token *expr,
 
     else if (expr->isAssignmentOp()) {
         execute(expr->astOperand2(), programMemory, result, error);
-        if (!expr->astOperand1() || !expr->astOperand1()->varId())
+        if (!expr->astOperand1() || !expr->astOperand1()->exprId())
             *error = true;
         if (*error)
             return;
 
         if (expr->str() == "=") {
-            programMemory->setIntValue(expr->astOperand1()->varId(), *result);
+            programMemory->setIntValue(expr->astOperand1()->exprId(), *result);
             return;
         }
 
         long long intValue;
-        if (!programMemory->getIntValue(expr->astOperand1()->varId(), &intValue)) {
+        if (!programMemory->getIntValue(expr->astOperand1()->exprId(), &intValue)) {
             *error = true;
             return;
         }
         if (expr->str() == "+=")
-            programMemory->setIntValue(expr->astOperand1()->varId(), intValue + *result);
+            programMemory->setIntValue(expr->astOperand1()->exprId(), intValue + *result);
         else if (expr->str() == "-=")
-            programMemory->setIntValue(expr->astOperand1()->varId(), intValue - *result);
+            programMemory->setIntValue(expr->astOperand1()->exprId(), intValue - *result);
         else if (expr->str() == "*=")
-            programMemory->setIntValue(expr->astOperand1()->varId(), intValue * *result);
+            programMemory->setIntValue(expr->astOperand1()->exprId(), intValue * *result);
         else if (expr->str() == "/=" && *result != 0)
-            programMemory->setIntValue(expr->astOperand1()->varId(), intValue / *result);
+            programMemory->setIntValue(expr->astOperand1()->exprId(), intValue / *result);
         else if (expr->str() == "%=" && *result != 0)
-            programMemory->setIntValue(expr->astOperand1()->varId(), intValue % *result);
+            programMemory->setIntValue(expr->astOperand1()->exprId(), intValue % *result);
         else if (expr->str() == "&=")
-            programMemory->setIntValue(expr->astOperand1()->varId(), intValue & *result);
+            programMemory->setIntValue(expr->astOperand1()->exprId(), intValue & *result);
         else if (expr->str() == "|=")
-            programMemory->setIntValue(expr->astOperand1()->varId(), intValue | *result);
+            programMemory->setIntValue(expr->astOperand1()->exprId(), intValue | *result);
         else if (expr->str() == "^=")
-            programMemory->setIntValue(expr->astOperand1()->varId(), intValue ^ *result);
+            programMemory->setIntValue(expr->astOperand1()->exprId(), intValue ^ *result);
     }
 
     else if (Token::Match(expr, "++|--")) {
-        if (!expr->astOperand1() || expr->astOperand1()->varId() == 0U)
+        if (!expr->astOperand1() || expr->astOperand1()->exprId() == 0U)
             *error = true;
         else {
             long long intValue;
-            if (!programMemory->getIntValue(expr->astOperand1()->varId(), &intValue))
+            if (!programMemory->getIntValue(expr->astOperand1()->exprId(), &intValue))
                 *error = true;
             else {
                 if (intValue == 0 &&
@@ -458,7 +460,7 @@ void execute(const Token *expr,
                     expr->astOperand1()->variable()->isUnsigned())
                     *error = true; // overflow
                 *result = intValue + (expr->str() == "++" ? 1 : -1);
-                programMemory->setIntValue(expr->astOperand1()->varId(), *result);
+                programMemory->setIntValue(expr->astOperand1()->exprId(), *result);
             }
         }
     }
@@ -530,7 +532,7 @@ void execute(const Token *expr,
 
     else if (expr->str() == "[" && expr->astOperand1() && expr->astOperand2()) {
         const Token *tokvalue = nullptr;
-        if (!programMemory->getTokValue(expr->astOperand1()->varId(), &tokvalue)) {
+        if (!programMemory->getTokValue(expr->astOperand1()->exprId(), &tokvalue)) {
             auto tokvalue_it = std::find_if(expr->astOperand1()->values().begin(),
                                             expr->astOperand1()->values().end(),
                                             std::mem_fn(&ValueFlow::Value::isTokValue));
@@ -558,11 +560,11 @@ void execute(const Token *expr,
         if (astIsContainer(containerTok)) {
             Library::Container::Yield yield = containerTok->valueType()->container->getYield(expr->strAt(-1));
             if (yield == Library::Container::Yield::SIZE) {
-                if (!programMemory->getContainerSizeValue(containerTok->varId(), result))
+                if (!programMemory->getContainerSizeValue(containerTok->exprId(), result))
                     *error = true;
             } else if (yield == Library::Container::Yield::EMPTY) {
                 MathLib::bigint size = 0;
-                if (!programMemory->getContainerSizeValue(containerTok->varId(), &size))
+                if (!programMemory->getContainerSizeValue(containerTok->exprId(), &size))
                     *error = true;
                 *result = (size == 0);
             } else {

@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "errortypes.h"
+#include "mathlib.h"
 #include "utils.h"
 
 class Function;
@@ -52,6 +53,10 @@ void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *
 void visitAstNodes(Token *ast, std::function<ChildrenToVisit(Token *)> visitor);
 
 const Token* findAstNode(const Token* ast, const std::function<bool(const Token*)>& pred);
+const Token* findExpression(MathLib::bigint exprid,
+                            const Token* start,
+                            const Token* end,
+                            const std::function<bool(const Token*)>& pred);
 
 std::vector<const Token*> astFlatten(const Token* tok, const char* op);
 
@@ -140,6 +145,11 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
 bool isEqualKnownValue(const Token * const tok1, const Token * const tok2);
 
 bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2);
+
+/**
+ * Is token used a boolean, that is to say cast to a bool, or used as a condition in a if/while/for
+ */
+bool isUsedAsBool(const Token * const tok);
 
 /**
  * Are two conditions opposite

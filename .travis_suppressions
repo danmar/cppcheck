@@ -11,6 +11,12 @@ unusedPrivateFunction:lib/checkbufferoverrun.h
 unusedPrivateFunction:test/test*.cpp
 useStlAlgorithm
 
+# debug suppressions
+valueFlowBailout
+valueFlowBailoutIncompleteVar
+debug
+varid0
+
 *:gui/test/*
 *:test/test.cxx
 *:test/cfg/*
