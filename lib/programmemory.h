@@ -11,21 +11,21 @@
 class Token;
 
 struct ProgramMemory {
-    using Map = std::unordered_map<MathLib::bigint, ValueFlow::Value>;
+    using Map = std::unordered_map<nonneg int, ValueFlow::Value>;
     Map values;
 
-    void setValue(MathLib::bigint exprid, const ValueFlow::Value& value);
-    const ValueFlow::Value* getValue(MathLib::bigint exprid) const;
+    void setValue(nonneg int exprid, const ValueFlow::Value& value);
+    const ValueFlow::Value* getValue(nonneg int exprid) const;
 
-    bool getIntValue(MathLib::bigint exprid, MathLib::bigint* result) const;
-    void setIntValue(MathLib::bigint exprid, MathLib::bigint value);
+    bool getIntValue(nonneg int exprid, MathLib::bigint* result) const;
+    void setIntValue(nonneg int exprid, MathLib::bigint value);
 
-    bool getContainerSizeValue(MathLib::bigint exprid, MathLib::bigint* result) const;
+    bool getContainerSizeValue(nonneg int exprid, MathLib::bigint* result) const;
 
-    void setUnknown(MathLib::bigint exprid);
+    void setUnknown(nonneg int exprid);
 
-    bool getTokValue(MathLib::bigint exprid, const Token** result) const;
-    bool hasValue(MathLib::bigint exprid);
+    bool getTokValue(nonneg int exprid, const Token** result) const;
+    bool hasValue(nonneg int exprid);
 
     void swap(ProgramMemory &pm);
 
@@ -42,7 +42,7 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
 
 struct ProgramMemoryState {
     ProgramMemory state;
-    std::map<MathLib::bigint, const Token*> origins;
+    std::map<nonneg int, const Token*> origins;
 
     void insert(const ProgramMemory &pm, const Token* origin = nullptr);
     void replace(const ProgramMemory &pm, const Token* origin = nullptr);
@@ -79,7 +79,7 @@ bool conditionIsTrue(const Token *condition, const ProgramMemory &programMemory)
 /**
  * Get program memory by looking backwards from given token.
  */
-ProgramMemory getProgramMemory(const Token* tok, MathLib::bigint exprid, const ValueFlow::Value& value);
+ProgramMemory getProgramMemory(const Token* tok, nonneg int exprid, const ValueFlow::Value& value);
 
 ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars);
 

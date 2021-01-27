@@ -310,7 +310,7 @@ static void combineValueProperties(const ValueFlow::Value &value1, const ValueFl
     if (value2.isIteratorValue())
         result->valueType = value2.valueType;
     result->condition = value1.condition ? value1.condition : value2.condition;
-    result->varId = (value1.varId != 0U) ? value1.varId : value2.varId;
+    result->varId = (value1.varId != 0) ? value1.varId : value2.varId;
     result->varvalue = (result->varId == value1.varId) ? value1.varvalue : value2.varvalue;
     result->errorPath = (value1.errorPath.empty() ? value2 : value1).errorPath;
     result->safe = value1.safe || value2.safe;
@@ -551,12 +551,12 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             }
         } else {
             // is condition only depending on 1 variable?
-            int varId = 0;
+            nonneg int varId = 0;
             bool ret = false;
             visitAstNodes(parent->astOperand1(),
             [&](const Token *t) {
                 if (t->varId()) {
-                    if (varId > 0 || value.varId != 0U)
+                    if (varId > 0 || value.varId != 0)
                         ret = true;
                     varId = t->varId();
                 } else if (t->str() == "(" && Token::Match(t->previous(), "%name%"))
@@ -626,7 +626,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     continue;
                 if (value1.isIteratorValue() && value2.isIteratorValue())
                     continue;
-                if (value1.isKnown() || value2.isKnown() || value1.varId == 0U || value2.varId == 0U ||
+                if (value1.isKnown() || value2.isKnown() || value1.varId == 0 || value2.varId == 0 ||
                     (value1.varId == value2.varId && value1.varvalue == value2.varvalue && value1.isIntValue() &&
                      value2.isIntValue())) {
                     ValueFlow::Value result(0);
@@ -773,12 +773,12 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
             for (const ValueFlow::Value &value2 : parent->astOperand2()->values()) {
                 if (!value2.isIntValue())
                     continue;
-                if (value1.varId == 0U || value2.varId == 0U ||
+                if (value1.varId == 0 || value2.varId == 0 ||
                     (value1.varId == value2.varId && value1.varvalue == value2.varvalue)) {
                     ValueFlow::Value result(0);
                     result.condition = value1.condition ? value1.condition : value2.condition;
                     result.setInconclusive(value1.isInconclusive() | value2.isInconclusive());
-                    result.varId = (value1.varId != 0U) ? value1.varId : value2.varId;
+                    result.varId = (value1.varId != 0) ? value1.varId : value2.varId;
                     result.varvalue = (result.varId == value1.varId) ? value1.intvalue : value2.intvalue;
                     if (value1.valueKind == value2.valueKind)
                         result.valueKind = value1.valueKind;
@@ -961,7 +961,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
             // Get number of elements in array
             const Token *sz1 = tok->tokAt(2);
             const Token *sz2 = tok->tokAt(7);
-            const int varid1 = sz1->varId();
+            const nonneg int varid1 = sz1->varId();
             if (varid1 &&
                 sz1->variable() &&
                 sz1->variable()->isArray() &&
@@ -1088,12 +1088,12 @@ static void valueFlowString(TokenList *tokenlist)
 
 static void valueFlowArray(TokenList *tokenlist)
 {
-    std::map<int, const Token *> constantArrays;
+    std::map<nonneg int, const Token *> constantArrays;
 
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-        if (tok->varId() > 0U) {
+        if (tok->varId() > 0) {
             // array
-            const std::map<int, const Token *>::const_iterator it = constantArrays.find(tok->varId());
+            const std::map<nonneg int, const Token *>::const_iterator it = constantArrays.find(tok->varId());
             if (it != constantArrays.end()) {
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::ValueType::TOK;
@@ -1771,7 +1771,7 @@ struct ValueFlowAnalyzer : Analyzer {
 
     virtual bool isAlias(const Token* tok, bool& inconclusive) const = 0;
 
-    using ProgramState = std::unordered_map<MathLib::bigint, ValueFlow::Value>;
+    using ProgramState = std::unordered_map<nonneg int, ValueFlow::Value>;
 
     virtual ProgramState getProgramState() const = 0;
 
@@ -3662,7 +3662,7 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
                 const Variable *var = varTok->variable();
                 if (!var || (!var->isLocal() && !var->isArgument()))
                     continue;
-                const int varId = varTok->varId();
+                const nonneg int varId = varTok->varId();
                 const Token * const endOfVarScope = var->scope()->bodyEnd;
                 setTokenValue(varTok, value, settings);
                 valueFlowForwardVariable(
@@ -3672,7 +3672,7 @@ static void valueFlowAfterMove(TokenList *tokenlist, SymbolDatabase* symboldatab
             ValueFlow::Value::MoveKind moveKind;
             if (!isStdMoveOrStdForwarded(tok, &moveKind, &varTok))
                 continue;
-            const int varId = varTok->varId();
+            const nonneg int varId = varTok->varId();
             // x is not MOVED after assignment if code is:  x = ... std::move(x) .. ;
             const Token *parent = tok->astParent();
             while (parent && parent->str() != "=" && parent->str() != "return" &&
@@ -3924,7 +3924,7 @@ static bool isVariableInit(const Token *tok)
 static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (const Scope * scope : symboldatabase->functionScopes) {
-        std::set<int> aliased;
+        std::set<nonneg int> aliased;
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             // Alias
             if (tok->isUnaryOp("&")) {
@@ -3939,7 +3939,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             // Lhs should be a variable
             if (!tok->astOperand1() || !tok->astOperand1()->exprId())
                 continue;
-            const int exprid = tok->astOperand1()->exprId();
+            const nonneg int exprid = tok->astOperand1()->exprId();
             if (aliased.find(exprid) != aliased.end())
                 continue;
             std::vector<const Variable*> vars = getLHSVariables(tok);
@@ -4025,7 +4025,7 @@ static std::vector<const Variable*> getExprVariables(const Token* expr,
 {
     std::vector<const Variable*> result;
     FwdAnalysis fwdAnalysis(tokenlist->isCPP(), settings->library);
-    std::set<int> varids = fwdAnalysis.getExprVarIds(expr);
+    std::set<nonneg int> varids = fwdAnalysis.getExprVarIds(expr);
     std::transform(varids.begin(), varids.end(), std::back_inserter(result), [&](int id) {
         return symboldatabase->getVariableFromVarId(id);
     });
@@ -4066,7 +4066,7 @@ struct ConditionHandler {
         const std::function<
         void(const Condition& cond, Token* tok, const Scope* scope, const std::vector<const Variable*>& vars)>& f) const {
         for (const Scope *scope : symboldatabase->functionScopes) {
-            std::set<unsigned> aliased;
+            std::set<nonneg int> aliased;
             for (Token *tok = const_cast<Token *>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
                 if (Token::Match(tok, "if|while|for ("))
                     continue;
@@ -5018,7 +5018,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
             programMemoryParseCondition(pm, condTok, nullptr, getSettings(), scope->type != Scope::eElse);
         // ProgramMemory pm = pms.get(endBlock->link()->next(), getProgramState());
         for (const auto& p:pm.values) {
-            int varid = p.first;
+            nonneg int varid = p.first;
             if (!symboldatabase->isVarId(varid))
                 continue;
             ValueFlow::Value value = p.second;
@@ -5098,7 +5098,7 @@ static void valueFlowInjectParameter(TokenList* tokenlist, ErrorLogger* errorLog
         return;
 
     // Set value in function scope..
-    const int varid2 = arg->declarationId();
+    const nonneg int varid2 = arg->declarationId();
     if (!varid2)
         return;
 
@@ -6531,7 +6531,7 @@ ValueFlow::Value::Value(const Token* c, long long val)
       moveKind(MoveKind::NonMovedVariable),
       varvalue(val),
       condition(c),
-      varId(0U),
+      varId(0),
       safe(false),
       conditional(false),
       defaultArg(false),
