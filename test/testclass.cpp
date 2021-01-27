@@ -1551,7 +1551,7 @@ private:
             "    }\n"
             "    return *this;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator='123 should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
         
         // this test needs an assignment test and has the inverse test
         checkOpertorEqToSelf(
@@ -1570,7 +1570,7 @@ private:
             "    }\n"
             "    return *this;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' 123should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
 
         // this test needs an assignment test and has the inverse test
         checkOpertorEqToSelf(
@@ -1589,7 +1589,7 @@ private:
             "    }\n"
             "    return *this;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' 123should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
 
         // this test needs an assignment test and has the inverse test
         checkOpertorEqToSelf(
@@ -1608,7 +1608,7 @@ private:
             "    }\n"
             "    return *this;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' 123should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
 
         // this test needs an assignment test and has the inverse test
         checkOpertorEqToSelf(
@@ -1627,7 +1627,7 @@ private:
             "    }\n"
             "    return *this;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' 123should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
 
         // this test needs an assignment test and has the inverse test
         checkOpertorEqToSelf(
@@ -1649,7 +1649,7 @@ private:
             "    }\n"
             "    return *this;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' 123should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
 
         // this test needs an assignment test and has the inverse test
         checkOpertorEqToSelf(
@@ -1670,7 +1670,7 @@ private:
             "    }\n"
             "    return *this;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' 123should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
 
 
         // this test needs an assignment test but doesn’t have it

@@ -259,7 +259,7 @@ private:
 
     // operatorEqToSelf helper functions
     bool hasAllocation(const Function *func, const Scope* scope) const;
-    bool hasAllocation(const Function *func, const Scope* scope, const Token *start, const Token *last) const;
+    bool hasAllocation(const Function *func, const Scope* scope, const Token *start, const Token *end) const;
     bool hasAllocationInIfScope(const Function *func, const Scope* scope, const Token *ifStatementScopeStart) const;
     static bool hasAssignSelf(const Function *func, const Token *rhs, const Token **out_ifStatementScopeStart);
     static bool isInverseAssignmentTest(const Token *tok);
