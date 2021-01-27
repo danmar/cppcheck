@@ -1886,6 +1886,38 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
         setFlag(fIsInit, true);
 }
 
+Variable::Variable(const Variable &var, const Scope *scope)
+    : mNameToken(var.mNameToken)
+    , mTypeStartToken(var.mTypeStartToken)
+    , mTypeEndToken(var.mTypeEndToken)
+    , mIndex(var.mIndex)
+    , mAccess(var.mAccess)
+    , mFlags(var.mFlags)
+    , mType(var.mType)
+    , mScope(scope ? scope : var.mScope)
+    , mValueType(nullptr)
+    , mDimensions(var.mDimensions)
+{
+    if (var.mValueType)
+        mValueType = new ValueType(*var.mValueType);
+}
+
+Variable::Variable(const Variable &var)
+    : mNameToken(var.mNameToken)
+    , mTypeStartToken(var.mTypeStartToken)
+    , mTypeEndToken(var.mTypeEndToken)
+    , mIndex(var.mIndex)
+    , mAccess(var.mAccess)
+    , mFlags(var.mFlags)
+    , mType(var.mType)
+    , mScope(var.mScope)
+    , mValueType(nullptr)
+    , mDimensions(var.mDimensions)
+{
+    if (var.mValueType)
+        mValueType = new ValueType(*var.mValueType);
+}
+
 Variable::~Variable()
 {
     delete mValueType;
