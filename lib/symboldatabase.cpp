@@ -2429,9 +2429,16 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
     while (first->str() == second->str() &&
            first->isLong() == second->isLong() &&
            first->isUnsigned() == second->isUnsigned()) {
-
         if (first->str() == "(")
             openParen++;
+
+        // at end of argument list
+        else if (first->str() == ")") {
+            if (openParen == 1)
+                return true;
+            else
+                --openParen;
+        }
 
         // skip optional type information
         if (Token::Match(first->next(), "struct|enum|union|class"))
@@ -2446,14 +2453,6 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         if (Token::Match(second->next(), "const %type% %name%|,|)") &&
             !Token::Match(second->next(), "const %type% %name%| ["))
             second = second->next();
-
-        // at end of argument list
-        if (first->str() == ")") {
-            if (openParen == 1)
-                return true;
-            else
-                --openParen;
-        }
 
         // skip default value assignment
         else if (first->next()->str() == "=") {
@@ -2506,7 +2505,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             first = first->next();
 
         // argument list has different number of arguments
-        else if (second->str() == ")")
+        else if (openParen == 1 && second->str() == ")" && first->str() != ")")
             break;
 
         // ckeck for type * x == type x[]
