@@ -4451,13 +4451,17 @@ struct ConditionHandler {
                                      std::mem_fn(&ValueFlow::Value::isPossible));
                     }
 
-                    if (!values.empty()) {
-                        if ((dead_if || dead_else) && !Token::Match(tok->astParent(), "&&|&")) {
+                    if (dead_if || dead_else) {
+                        if (Token::Match(tok->astParent(), "&&|&")) {
+                            values.remove_if(std::mem_fn(&ValueFlow::Value::isImpossible));
+                            changeKnownToPossible(values);
+                        } else {
                             valueFlowSetConditionToKnown(tok, values, true);
                             valueFlowSetConditionToKnown(tok, values, false);
                         }
-                        forward(after, scope->bodyEnd, cond.vartok, values, tokenlist, settings);
                     }
+                    if (!values.empty())
+                        forward(after, scope->bodyEnd, cond.vartok, values, tokenlist, settings);
                 }
             }
         });

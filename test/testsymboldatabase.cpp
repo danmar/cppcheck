@@ -404,6 +404,7 @@ private:
         TEST_CASE(findFunction37); // #10124
         TEST_CASE(findFunction38); // #10125
         TEST_CASE(findFunction39); // #10127
+        TEST_CASE(findFunction40); // #10135
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -6341,6 +6342,22 @@ private:
         ASSERT(functok->function());
         ASSERT(functok->function()->name() == "f");
         ASSERT_EQUALS(8, functok->function()->tokenDef->linenr());
+    }
+
+    void findFunction40() { // #10135
+        GET_SYMBOL_DB("class E : public std::exception {\n"
+                      "public:\n"
+                      "    const char* what() const noexcept override;\n"
+                      "};\n"
+                      "const char* E::what() const noexcept {\n"
+                      "    return nullptr;\n"
+                      "}");
+        ASSERT_EQUALS("", errout.str());
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "what ( ) const noexcept {");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT(functok->function()->name() == "what");
+        ASSERT_EQUALS(3, functok->function()->tokenDef->linenr());
     }
 
     void findFunctionContainer() {

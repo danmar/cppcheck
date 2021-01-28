@@ -1414,7 +1414,7 @@ bool Library::isnoreturn(const Token *ftok) const
         return true;
     if (isNotLibraryFunction(ftok))
         return false;
-    const std::map<std::string, FalseTrueMaybe>::const_iterator it = mNoReturn.find(getFunctionName(ftok));
+    const std::unordered_map<std::string, FalseTrueMaybe>::const_iterator it = mNoReturn.find(getFunctionName(ftok));
     if (it == mNoReturn.end())
         return false;
     if (it->second == FalseTrueMaybe::Maybe)
@@ -1428,7 +1428,7 @@ bool Library::isnotnoreturn(const Token *ftok) const
         return false;
     if (isNotLibraryFunction(ftok))
         return false;
-    const std::map<std::string, FalseTrueMaybe>::const_iterator it = mNoReturn.find(getFunctionName(ftok));
+    const std::unordered_map<std::string, FalseTrueMaybe>::const_iterator it = mNoReturn.find(getFunctionName(ftok));
     if (it == mNoReturn.end())
         return false;
     if (it->second == FalseTrueMaybe::Maybe)

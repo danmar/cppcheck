@@ -7381,7 +7381,7 @@ void Tokenizer::simplifyVariableMultipleAssign()
 }
 
 // Binary operators simplification map
-static const std::map<std::string, std::string> cAlternativeTokens = {
+static const std::unordered_map<std::string, std::string> cAlternativeTokens = {
     std::make_pair("and", "&&")
     , std::make_pair("and_eq", "&=")
     , std::make_pair("bitand", "&")
@@ -7437,7 +7437,7 @@ bool Tokenizer::simplifyCAlternativeTokens()
         if (!tok->isName())
             continue;
 
-        const std::map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok->str());
+        const std::unordered_map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok->str());
         if (cOpIt != cAlternativeTokens.end()) {
             alt.push_back(tok);
 
@@ -7474,7 +7474,7 @@ bool Tokenizer::simplifyCAlternativeTokens()
         return false;
 
     for (Token *tok: alt) {
-        const std::map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok->str());
+        const std::unordered_map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok->str());
         if (cOpIt != cAlternativeTokens.end())
             tok->str(cOpIt->second);
         else if (tok->str() == "not")
