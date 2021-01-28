@@ -4452,6 +4452,18 @@ private:
         return "";
     }
 
+    static std::string isInconclusiveContainerSizeValue(const std::list<ValueFlow::Value>& values, MathLib::bigint i) {
+        if (values.size() != 1)
+            return "values.size():" + std::to_string(values.size());
+        if (!values.front().isContainerSizeValue())
+            return "ContainerSizeValue";
+        if (!values.front().isInconclusive())
+            return "Inconclusive";
+        if (values.front().intvalue != i)
+            return "intvalue:" + std::to_string(values.front().intvalue);
+        return "";
+    }
+
     static std::string isKnownContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {
         if (values.size() != 1)
             return "values.size():" + std::to_string(values.size());
@@ -5016,7 +5028,7 @@ private:
                "    return x1.empty() || x2.empty();\n"
                "}\n";
         ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "x1 . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "x2 . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+        ASSERT_EQUALS("", isInconclusiveContainerSizeValue(tokenValues(code, "x2 . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
     }
 
     void valueFlowDynamicBufferSize() {
