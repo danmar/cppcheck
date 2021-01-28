@@ -14,10 +14,10 @@ void ProgramMemory::setValue(nonneg int exprid, const ValueFlow::Value& value)
 {
     values[exprid] = value;
 }
-const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid) const
+const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossible) const
 {
     const ProgramMemory::Map::const_iterator it = values.find(exprid);
-    const bool found = it != values.end() && !it->second.isImpossible();
+    const bool found = it != values.end() && (impossible || !it->second.isImpossible());
     if (found)
         return &it->second;
     else
@@ -55,6 +55,21 @@ bool ProgramMemory::getContainerSizeValue(nonneg int exprid, MathLib::bigint* re
     if (value && value->isContainerSizeValue()) {
         *result = value->intvalue;
         return true;
+    }
+    return false;
+}
+bool ProgramMemory::getContainerEmptyValue(nonneg int exprid, MathLib::bigint* result) const
+{
+    const ValueFlow::Value* value = getValue(exprid, true);
+    if (value && value->isContainerSizeValue()) {
+        if (value->isImpossible() && value->intvalue == 0) {
+            *result = false;
+            return true;
+        }
+        if (!value->isImpossible()) {
+            *result = (value->intvalue == 0);
+            return true;
+        }
     }
     return false;
 }
@@ -563,10 +578,8 @@ void execute(const Token *expr,
                 if (!programMemory->getContainerSizeValue(containerTok->exprId(), result))
                     *error = true;
             } else if (yield == Library::Container::Yield::EMPTY) {
-                MathLib::bigint size = 0;
-                if (!programMemory->getContainerSizeValue(containerTok->exprId(), &size))
+                if (!programMemory->getContainerEmptyValue(containerTok->exprId(), result))
                     *error = true;
-                *result = (size == 0);
             } else {
                 *error = true;
             }

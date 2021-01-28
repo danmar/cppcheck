@@ -2616,6 +2616,26 @@ private:
                "  return x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 7U, 0));
+
+        code = "void f(int x, int y) {\n"
+               "    if (x && y)\n"
+               "        return;\n"
+               "    int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 0));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 1));
+
+        code = "int f(std::vector<int> a, std::vector<int> b) {\n"
+               "    if (a.empty() && b.empty())\n"
+               "        return 0;\n"
+               "    bool x = a.empty() && !b.empty();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 5U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 5U, 1));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 5U, 0));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 5U, 1));
     }
 
     void valueFlowAfterConditionExpr() {

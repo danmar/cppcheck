@@ -3524,6 +3524,18 @@ private:
               "    return 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:11]: (style) Condition '!y' is always true\n", errout.str());
+
+        // #10134
+        check("bool foo(bool b);\n"
+              "bool thud(const std::vector<std::wstring>& Arr, const std::wstring& Str) {\n"
+              "  if (Arr.empty() && Str.empty())\n"
+              "    return false;\n"
+              "  bool OldFormat = Arr.empty() && !Str.empty();\n"
+              "  if (OldFormat)\n"
+              "    return foo(OldFormat);\n"
+              "  return false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {

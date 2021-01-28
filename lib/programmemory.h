@@ -15,12 +15,13 @@ struct ProgramMemory {
     Map values;
 
     void setValue(nonneg int exprid, const ValueFlow::Value& value);
-    const ValueFlow::Value* getValue(nonneg int exprid) const;
+    const ValueFlow::Value* getValue(nonneg int exprid, bool impossible = false) const;
 
     bool getIntValue(nonneg int exprid, MathLib::bigint* result) const;
     void setIntValue(nonneg int exprid, MathLib::bigint value);
 
     bool getContainerSizeValue(nonneg int exprid, MathLib::bigint* result) const;
+    bool getContainerEmptyValue(nonneg int exprid, MathLib::bigint* result) const;
 
     void setUnknown(nonneg int exprid);
 
