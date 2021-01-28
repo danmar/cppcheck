@@ -1669,6 +1669,8 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     out << "always ";
                     break;
                 case ValueFlow::Value::ValueKind::Inconclusive:
+                    out << "inconclusive ";
+                    break;
                 case ValueFlow::Value::ValueKind::Possible:
                     out << "possible ";
                     break;
@@ -1767,7 +1769,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     out << "end=" << value.intvalue;
                     break;
                 case ValueFlow::Value::ValueType::LIFETIME:
-                    out << "lifetime=" << value.tokvalue->str();
+                    out << "lifetime=" << "(" << value.tokvalue->expressionString() << ")";
                     break;
                 }
                 if (value.indirect > 0)
