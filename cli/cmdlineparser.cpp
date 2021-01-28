@@ -855,6 +855,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 else if (mSettings->templateFormat == "selfcheck") {
                     mSettings->templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\\n{code}";
                     mSettings->templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
+                    mSettings->daca = true;
                 }
             }
 
