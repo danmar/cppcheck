@@ -2057,19 +2057,16 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
     virtual bool isAlias(const Token* tok, bool& inconclusive) const OVERRIDE {
         if (value.isLifetimeValue())
             return false;
-        for(const LifetimeToken& lt:getLifetimeTokens(tok)) {
-            inconclusive = lt.inconclusive;
-            for (const auto& m: {
-            std::ref(getVars()), std::ref(getAliasedVars())
-            }) {
-                for (const auto& p:m.get()) {
-                    nonneg int varid = p.first;
-                    const Variable* var = p.second;
-                    if (lt.token->varId() == varid)
-                        return true;
-                    if (isAliasOf(var, lt.token, varid, {value}, &inconclusive))
-                        return true;
-                }
+        for (const auto& m: {
+        std::ref(getVars()), std::ref(getAliasedVars())
+        }) {
+            for (const auto& p:m.get()) {
+                nonneg int varid = p.first;
+                const Variable* var = p.second;
+                if (tok->varId() == varid)
+                    return true;
+                if (isAliasOf(var, tok, varid, {value}, &inconclusive))
+                    return true;
             }
         }
         return false;
@@ -2576,16 +2573,6 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, bool escape, Valu
                 return std::vector<LifetimeToken> {};
             }
         }
-    } else if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) {
-
-        std::vector<LifetimeToken> result = getLifetimeTokens(tok->astOperand2()->astOperand1(), escape, errorPath, depth - 1);
-        std::vector<LifetimeToken> result2 = getLifetimeTokens(tok->astOperand2()->astOperand2(), escape, errorPath, depth - 1);
-        if (result.size() != result2.size() || !std::equal(result.begin(), result.end(), result2.begin(), [](const LifetimeToken& x, const LifetimeToken& y) {
-            return x.token == y.token;
-        }))
-            result.insert(result.end(), result2.begin(), result2.end());
-        return LifetimeToken::setInconclusive(result, result.size() > 1);
-
     } else if (Token::Match(tok->previous(), "%name% (")) {
         const Function *f = tok->previous()->function();
         if (f) {
@@ -4936,18 +4923,14 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         std::list<ValueFlow::Value> vals;
         std::transform(values.begin(), values.end(), std::back_inserter(vals), SelectMapValues{});
 
-        for(const LifetimeToken& lt:getLifetimeTokens(tok)) {
-            inconclusive = lt.inconclusive;
-            for (const auto& p:getVars()) {
-                nonneg int varid = p.first;
-                const Variable* var = p.second;
-                if (lt.token->varId() == varid)
-                    return true;
-                if (isAliasOf(var, lt.token, varid, vals, &inconclusive))
-                    return true;
-            }
+        for (const auto& p:getVars()) {
+            nonneg int varid = p.first;
+            const Variable* var = p.second;
+            if (tok->varId() == varid)
+                return true;
+            if (isAliasOf(var, tok, varid, vals, &inconclusive))
+                return true;
         }
-
         return false;
     }
 
