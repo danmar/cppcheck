@@ -1911,23 +1911,36 @@ struct ValueFlowAnalyzer : Analyzer {
         }
     }
 
+    Action analyzeMatch(const Token* tok, Direction d) const {
+        const Token* parent = tok->astParent();
+        if (astIsPointer(tok) && (Token::Match(parent, "*|[") || (parent && parent->originalName() == "->")) && getIndirect(tok) <= 0)
+            return Action::Read;
+
+        Action w = isWritable(tok, d);
+        if (w != Action::None)
+            return w;
+
+        // Check for modifications by function calls
+        return isModified(tok);
+    }
+
     virtual Action analyze(const Token* tok, Direction d) const OVERRIDE {
         if (invalid())
             return Action::Invalid;
         bool inconclusive = false;
-        if (match(tok)) {
-            const Token* parent = tok->astParent();
-            if (astIsPointer(tok) && (Token::Match(parent, "*|[") || (parent && parent->originalName() == "->")) && getIndirect(tok) <= 0)
-                return Action::Read | Action::Match;
-
-            // Action read = Action::Read;
-            Action w = isWritable(tok, d);
-            if (w != Action::None)
-                return w | Action::Match;
-
-            // Check for modifications by function calls
-            return isModified(tok) | Action::Match;
-        } else if (tok->isUnaryOp("*")) {
+        std::vector<ReferenceToken> refs = followAllReferences(tok);
+        if (refs.size() == 1 && match(refs.front().token)) {
+            return analyzeMatch(tok, d) | Action::Match;
+        } else {
+            for(const ReferenceToken& ref:refs) {
+                if (match(ref.token)) {
+                    Action a = isModified(tok);
+                    if (a.isModified() || a.isInconclusive())
+                        return Action::Inconclusive;
+                }
+            }
+        }
+        if (tok->isUnaryOp("*")) {
             const Token* lifeTok = nullptr;
             for (const ValueFlow::Value& v:tok->astOperand1()->values()) {
                 if (!v.isLocalLifetimeValue())
