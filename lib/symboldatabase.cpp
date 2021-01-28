@@ -1887,40 +1887,44 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
 }
 
 Variable::Variable(const Variable &var, const Scope *scope)
-    : mNameToken(var.mNameToken)
-    , mTypeStartToken(var.mTypeStartToken)
-    , mTypeEndToken(var.mTypeEndToken)
-    , mIndex(var.mIndex)
-    , mAccess(var.mAccess)
-    , mFlags(var.mFlags)
-    , mType(var.mType)
-    , mScope(scope ? scope : var.mScope)
-    , mValueType(nullptr)
-    , mDimensions(var.mDimensions)
+    : mValueType(nullptr)
 {
-    if (var.mValueType)
-        mValueType = new ValueType(*var.mValueType);
+    *this = var;
+    mScope = scope;
 }
 
 Variable::Variable(const Variable &var)
-    : mNameToken(var.mNameToken)
-    , mTypeStartToken(var.mTypeStartToken)
-    , mTypeEndToken(var.mTypeEndToken)
-    , mIndex(var.mIndex)
-    , mAccess(var.mAccess)
-    , mFlags(var.mFlags)
-    , mType(var.mType)
-    , mScope(var.mScope)
-    , mValueType(nullptr)
-    , mDimensions(var.mDimensions)
+    : mValueType(nullptr)
 {
-    if (var.mValueType)
-        mValueType = new ValueType(*var.mValueType);
+    *this = var;
 }
 
 Variable::~Variable()
 {
     delete mValueType;
+}
+
+Variable& Variable::operator=(const Variable &var)
+{
+    if (this == &var)
+        return *this;
+
+    mNameToken = var.mNameToken;
+    mTypeStartToken = var.mTypeStartToken;
+    mTypeEndToken = var.mTypeEndToken;
+    mIndex = var.mIndex;
+    mAccess = var.mAccess;
+    mFlags = var.mFlags;
+    mType = var.mType;
+    mScope = var.mScope;
+    mDimensions = var.mDimensions;
+    delete mValueType;
+    if (var.mValueType)
+        mValueType = new ValueType(*var.mValueType);
+    else
+        mValueType = nullptr;
+
+    return *this;
 }
 
 bool Variable::isPointerArray() const
