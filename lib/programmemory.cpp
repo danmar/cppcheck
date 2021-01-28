@@ -10,11 +10,11 @@
 #include <limits>
 #include <memory>
 
-void ProgramMemory::setValue(MathLib::bigint exprid, const ValueFlow::Value& value)
+void ProgramMemory::setValue(nonneg int exprid, const ValueFlow::Value& value)
 {
     values[exprid] = value;
 }
-const ValueFlow::Value* ProgramMemory::getValue(MathLib::bigint exprid, bool impossible) const
+const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossible) const
 {
     const ProgramMemory::Map::const_iterator it = values.find(exprid);
     const bool found = it != values.end() && (impossible || !it->second.isImpossible());
@@ -24,7 +24,7 @@ const ValueFlow::Value* ProgramMemory::getValue(MathLib::bigint exprid, bool imp
         return nullptr;
 }
 
-bool ProgramMemory::getIntValue(MathLib::bigint exprid, MathLib::bigint* result) const
+bool ProgramMemory::getIntValue(nonneg int exprid, MathLib::bigint* result) const
 {
     const ValueFlow::Value* value = getValue(exprid);
     if (value && value->isIntValue()) {
@@ -34,12 +34,12 @@ bool ProgramMemory::getIntValue(MathLib::bigint exprid, MathLib::bigint* result)
     return false;
 }
 
-void ProgramMemory::setIntValue(MathLib::bigint exprid, MathLib::bigint value)
+void ProgramMemory::setIntValue(nonneg int exprid, MathLib::bigint value)
 {
     values[exprid] = ValueFlow::Value(value);
 }
 
-bool ProgramMemory::getTokValue(MathLib::bigint exprid, const Token** result) const
+bool ProgramMemory::getTokValue(nonneg int exprid, const Token** result) const
 {
     const ValueFlow::Value* value = getValue(exprid);
     if (value && value->isTokValue()) {
@@ -49,7 +49,7 @@ bool ProgramMemory::getTokValue(MathLib::bigint exprid, const Token** result) co
     return false;
 }
 
-bool ProgramMemory::getContainerSizeValue(MathLib::bigint exprid, MathLib::bigint* result) const
+bool ProgramMemory::getContainerSizeValue(nonneg int exprid, MathLib::bigint* result) const
 {
     const ValueFlow::Value* value = getValue(exprid);
     if (value && value->isContainerSizeValue()) {
@@ -58,7 +58,7 @@ bool ProgramMemory::getContainerSizeValue(MathLib::bigint exprid, MathLib::bigin
     }
     return false;
 }
-bool ProgramMemory::getContainerEmptyValue(MathLib::bigint exprid, MathLib::bigint* result) const
+bool ProgramMemory::getContainerEmptyValue(nonneg int exprid, MathLib::bigint* result) const
 {
     const ValueFlow::Value* value = getValue(exprid, true);
     if (value && value->isContainerSizeValue()) {
@@ -74,12 +74,12 @@ bool ProgramMemory::getContainerEmptyValue(MathLib::bigint exprid, MathLib::bigi
     return false;
 }
 
-void ProgramMemory::setUnknown(MathLib::bigint exprid)
+void ProgramMemory::setUnknown(nonneg int exprid)
 {
     values[exprid].valueType = ValueFlow::Value::ValueType::UNINIT;
 }
 
-bool ProgramMemory::hasValue(MathLib::bigint exprid)
+bool ProgramMemory::hasValue(nonneg int exprid)
 {
     return values.find(exprid) != values.end();
 }
@@ -306,7 +306,7 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
     ProgramMemory pm = state;
     fillProgramMemoryFromConditions(pm, tok, nullptr);
     for (const auto& p:vars) {
-        MathLib::bigint exprid = p.first;
+        nonneg int exprid = p.first;
         const ValueFlow::Value &value = p.second;
         pm.setValue(exprid, value);
         if (value.varId)
@@ -355,7 +355,7 @@ ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars)
     fillProgramMemoryFromConditions(programMemory, tok, nullptr);
     ProgramMemory state;
     for (const auto& p:vars) {
-        MathLib::bigint exprid = p.first;
+        nonneg int exprid = p.first;
         const ValueFlow::Value &value = p.second;
         programMemory.setValue(exprid, value);
         if (value.varId)
@@ -366,7 +366,7 @@ ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars)
     return programMemory;
 }
 
-ProgramMemory getProgramMemory(const Token* tok, MathLib::bigint exprid, const ValueFlow::Value& value)
+ProgramMemory getProgramMemory(const Token* tok, nonneg int exprid, const ValueFlow::Value& value)
 {
     ProgramMemory programMemory;
     programMemory.replace(getInitialProgramState(tok, value.tokvalue));
@@ -462,7 +462,7 @@ void execute(const Token *expr,
     }
 
     else if (Token::Match(expr, "++|--")) {
-        if (!expr->astOperand1() || expr->astOperand1()->exprId() == 0U)
+        if (!expr->astOperand1() || expr->astOperand1()->exprId() == 0)
             *error = true;
         else {
             long long intValue;

@@ -119,6 +119,7 @@ private:
         TEST_CASE(symbolDatabaseVariableRRef);
         TEST_CASE(symbolDatabaseVariablePointerRef);
         TEST_CASE(symbolDatabaseNodeType1);
+        TEST_CASE(symbolDatabaseForVariable);
 
         TEST_CASE(valueFlow1);
         TEST_CASE(valueFlow2);
@@ -1208,6 +1209,28 @@ private:
         ASSERT(!!tok);
         ASSERT(!!tok->valueType());
         ASSERT_EQUALS("signed long", tok->valueType()->str());
+    }
+
+    void symbolDatabaseForVariable() {
+        const char clang[] = "`-FunctionDecl 0x38f8bb0 <10100.c:2:1, line:4:1> line:2:6 f 'void (void)'\n"
+                             "  `-CompoundStmt 0x38f8d88 <col:14, line:4:1>\n"
+                             "    `-ForStmt 0x38f8d50 <line:3:5, col:26>\n"
+                             "      |-DeclStmt 0x38f8d28 <col:10, col:19>\n"
+                             "      | `-VarDecl 0x38f8ca8 <col:10, col:18> col:14 i 'int' cinit\n"
+                             "      |   `-IntegerLiteral 0x38f8d08 <col:18> 'int' 0\n"
+                             "      |-<<<NULL>>>\n"
+                             "      |-<<<NULL>>>\n"
+                             "      |-<<<NULL>>>\n"
+                             "      `-CompoundStmt 0x38f8d40 <col:25, col:26>";
+
+        ASSERT_EQUALS("void f ( ) { for ( int i@1 = 0 ; ; ) { } }", parse(clang));
+
+        GET_SYMBOL_DB(clang);
+
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "i");
+        ASSERT(!!tok);
+        ASSERT(!!tok->variable());
+        ASSERT_EQUALS(Scope::ScopeType::eFor, tok->variable()->scope()->type);
     }
 
     void valueFlow1() {
