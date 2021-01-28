@@ -660,7 +660,7 @@ Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType 
             if (replaceVar.find(&(*var)) != replaceVar.end())
                 varlist.erase(var++);
             else
-                var++;
+                ++var;
         }
     }
     scope->bodyStart = addtoken(tokenList, "{");

@@ -246,6 +246,8 @@ public:
 
     ~Variable();
 
+    Variable &operator=(const Variable &var) = delete;
+
     /**
      * Get name token.
      * @return name token
