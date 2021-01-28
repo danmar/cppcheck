@@ -4,12 +4,14 @@ shadowFunction
 functionConst
 functionStatic
 bitwiseOnBoolean
+unusedFunction
 
 # temporary suppressions - fix the warnings!
 missingOverride
 unusedPrivateFunction:lib/checkbufferoverrun.h
 unusedPrivateFunction:test/test*.cpp
 useStlAlgorithm
+unmatchedSuppression
 
 # debug suppressions
 valueFlowBailout
