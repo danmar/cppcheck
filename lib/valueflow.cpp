@@ -1924,25 +1924,22 @@ struct ValueFlowAnalyzer : Analyzer {
         return isModified(tok);
     }
 
-    virtual Action analyze(const Token* tok, Direction d) const OVERRIDE {
-        if (invalid())
-            return Action::Invalid;
+    Action analyzeToken(const Token* ref, const Token* tok, Direction d, bool inconclusiveRef) const
+    {
+        // If its an inconclusiveRef then ref != tok
+        assert(!inconclusiveRef || ref != tok);
         bool inconclusive = false;
-        std::vector<ReferenceToken> refs = followAllReferences(tok);
-        if (refs.size() == 1 && match(refs.front().token)) {
-            return analyzeMatch(tok, d) | Action::Match;
-        } else {
-            for(const ReferenceToken& ref:refs) {
-                if (match(ref.token)) {
-                    Action a = isModified(tok);
-                    if (a.isModified() || a.isInconclusive())
-                        return Action::Inconclusive;
-                }
+        if (ref && match(ref)) {
+            if (inconclusiveRef) {
+                Action a = isModified(tok);
+                if (a.isModified() || a.isInconclusive())
+                    return Action::Inconclusive;
+            } else {
+                return analyzeMatch(tok, d) | Action::Match;
             }
-        }
-        if (tok->isUnaryOp("*")) {
+        } else if (ref->isUnaryOp("*")) {
             const Token* lifeTok = nullptr;
-            for (const ValueFlow::Value& v:tok->astOperand1()->values()) {
+            for (const ValueFlow::Value& v:ref->astOperand1()->values()) {
                 if (!v.isLocalLifetimeValue())
                     continue;
                 if (lifeTok)
@@ -1955,17 +1952,37 @@ struct ValueFlowAnalyzer : Analyzer {
                     a = Action::Invalid;
                 if (Token::Match(tok->astParent(), "%assign%") && astIsLHS(tok))
                     a |= Action::Invalid;
+                if (inconclusiveRef && a.isModified())
+                    return Action::Inconclusive;
                 return a;
             }
             return Action::None;
 
-        } else if (isAlias(tok, inconclusive)) {
+        } else if (isAlias(ref, inconclusive)) {
+            inconclusive |= inconclusiveRef;
             Action a = isAliasModified(tok);
             if (inconclusive && a.isModified())
                 return Action::Inconclusive;
             else
                 return a;
-        } else if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
+        }
+        return Action::None;
+    }
+
+    virtual Action analyze(const Token* tok, Direction d) const OVERRIDE {
+        if (invalid())
+            return Action::Invalid;
+        // Follow references
+        std::vector<ReferenceToken> refs = followAllReferences(tok);
+        const bool inconclusiveRefs = refs.size() != 1;
+        for(const ReferenceToken& ref:refs) {
+            Action a = analyzeToken(ref.token, tok, d, inconclusiveRefs);
+            if (a != Action::None)
+                return a;
+        }
+
+        // TODO: Check if function is pure
+        if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
             // bailout: global non-const variables
             if (isGlobal()) {
                 return Action::Invalid;

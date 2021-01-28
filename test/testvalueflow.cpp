@@ -5005,6 +5005,18 @@ private:
                "     }\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "bool f() {\n"
+               "    std::list<int> x1;\n"
+               "    std::list<int> x2;\n"
+               "    for (int i = 0; i < 10; ++i) {\n"
+               "        std::list<int>& x = (i < 5) ? x1 : x2;\n"
+               "        x.push_back(i);\n"
+               "    }\n"
+               "    return x1.empty() || x2.empty();\n"
+               "}\n";
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "x1 . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "x2 . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
     }
 
     void valueFlowDynamicBufferSize() {
