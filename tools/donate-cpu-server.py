@@ -22,7 +22,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.9"
+SERVER_VERSION = "1.3.10"
 
 OLD_VERSION = '2.3'
 
@@ -186,7 +186,7 @@ def crashReport(results_path: str) -> str:
                         break
                 if line.find(' received signal ') != -1:
                     crash_line = next(file_, '').strip()
-                    location_index = crash_line.rindex(' at ')
+                    location_index = crash_line.rfind(' at ')
                     if location_index > 0:
                         code_line = next(file_, '').strip()
                         stack_trace = []
