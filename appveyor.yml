@@ -89,7 +89,7 @@ test_script:
   - IF EXIST bin\debug\testrunner.exe bin\debug\testrunner.exe -q
   - IF EXIST bin\testrunner.exe bin\testrunner.exe -q
   - cd test\cli
-  - python -m pytest test-clangimport.py
+  - python -m pytest test-clang-import.py
   - python -m pytest test-helloworld.py
   - python -m pytest test-inline-suppress.py
   - python -m pytest test-proj2.py
