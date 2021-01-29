@@ -1231,13 +1231,13 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
         // TODO: Handle reverse conditions
         if (Library::isContainerYield(cond1, Library::Container::Yield::EMPTY, "empty") &&
             Library::isContainerYield(cond2->astOperand1(), Library::Container::Yield::SIZE, "size") &&
-            cond1->astOperand1()->astOperand1()->varId() == cond2->astOperand1()->astOperand1()->astOperand1()->varId()) {
+            isSameExpression(cpp, true, cond1->astOperand1()->astOperand1(), cond2->astOperand1()->astOperand1()->astOperand1(), library, pure, followVar, errors)) {
             return !isZeroBoundCond(cond2);
         }
 
         if (Library::isContainerYield(cond2, Library::Container::Yield::EMPTY, "empty") &&
             Library::isContainerYield(cond1->astOperand1(), Library::Container::Yield::SIZE, "size") &&
-            cond2->astOperand1()->astOperand1()->varId() == cond1->astOperand1()->astOperand1()->astOperand1()->varId()) {
+            isSameExpression(cpp, true, cond2->astOperand1()->astOperand1(), cond1->astOperand1()->astOperand1()->astOperand1(), library, pure, followVar, errors)) {
             return !isZeroBoundCond(cond1);
         }
     }
