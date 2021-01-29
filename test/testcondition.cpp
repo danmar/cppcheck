@@ -1565,7 +1565,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void incorrectLogicOperator15() {
+    void incorrectLogicOperator15()
+    {
         // 10022
         check("struct PipeRoute {\n"
               "    std::deque<int> points;\n"
@@ -1586,7 +1587,6 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-
     }
 
     void secondAlwaysTrueFalseWhenFirstTrueError() {
