@@ -4242,7 +4242,14 @@ struct ConditionHandler {
                 }
             }
 
-            Token* startTok = tok->astParent() ? tok->astParent() : tok->previous();
+            Token* startTok = nullptr;
+            if (astIsRHS(tok))
+                startTok = tok->astParent();
+            else if (astIsLHS(tok))
+                startTok = previousBeforeAstLeftmostLeaf(tok->astParent());
+            if (!startTok)
+                startTok = tok->previous();
+
             reverse(startTok, nullptr, cond.vartok, values, tokenlist, settings);
         });
     }
@@ -5812,7 +5819,7 @@ struct ContainerVariableAnalyzer : VariableAnalyzer {
             return Action::Invalid;
         if (isLikelyStreamRead(isCPP(), tok->astParent()))
             return Action::Invalid;
-        if (isContainerSizeChanged(tok))
+        if (astIsContainer(tok) && isContainerSizeChanged(tok))
             return Action::Invalid;
         return read;
     }
