@@ -146,6 +146,7 @@ def test_gui_project_loads_relative_vs_solution():
 def test_gui_project_loads_relative_vs_solution():
     create_gui_project_file('test.cppcheck', root_path='proj2', import_project='proj2/proj2.sln', exclude_paths=['b'])
     ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
+    print(stderr)
     assert stderr == ERR_A
 
 def test_gui_project_loads_absolute_vs_solution():
@@ -153,4 +154,5 @@ def test_gui_project_loads_absolute_vs_solution():
                             root_path=realpath('proj2'),
                             import_project=realpath('proj2/proj2.sln'))
     ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
+    print(stderr)
     assert stderr == ERR_A + ERR_B
