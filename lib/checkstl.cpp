@@ -1340,19 +1340,24 @@ void CheckStl::stlBoundariesError(const Token *tok)
                 "container is not guaranteed. One should use operator!= instead to compare iterators.", CWE664, false);
 }
 
-static bool if_findCompare(const Token * const tokBack)
+static bool if_findCompare(const Token * const tokBack, bool stdStringLike)
 {
     const Token *tok = tokBack->astParent();
     if (!tok)
         return true;
-    if (tok->isComparisonOp())
+    if (tok->isComparisonOp()) {
+        if (stdStringLike) {
+            const Token * const tokOther = tokBack->astSibling();
+            return !tokOther->hasKnownIntValue() || tokOther->getKnownIntValue() != 0;
+        }
         return (!tok->astOperand1()->isNumber() && !tok->astOperand2()->isNumber());
+    }
     if (tok->isArithmeticalOp()) // result is used in some calculation
         return true;  // TODO: check if there is a comparison of the result somewhere
     if (tok->str() == ".")
         return true; // Dereferencing is OK, the programmer might know that the element exists - TODO: An inconclusive warning might be appropriate
     if (tok->isAssignmentOp())
-        return if_findCompare(tok); // Go one step upwards in the AST
+        return if_findCompare(tok, stdStringLike); // Go one step upwards in the AST
     return false;
 }
 
@@ -1411,7 +1416,7 @@ void CheckStl::if_find()
             }
 
             if (container && container->getAction(funcTok->str()) == Library::Container::Action::FIND) {
-                if (if_findCompare(funcTok->next()))
+                if (if_findCompare(funcTok->next(), container->stdStringLike))
                     continue;
 
                 if (printWarning && container->getYield(funcTok->str()) == Library::Container::Yield::ITERATOR)
@@ -1420,7 +1425,7 @@ void CheckStl::if_find()
                     if_findError(tok, true);
             } else if (printWarning && Token::Match(tok, "std :: find|find_if (")) {
                 // check that result is checked properly
-                if (!if_findCompare(tok->tokAt(3))) {
+                if (!if_findCompare(tok->tokAt(3), false)) {
                     if_findError(tok, false);
                 }
             }

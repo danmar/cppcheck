@@ -2732,6 +2732,17 @@ private:
               "    if (s.find_first_of(\"abc\")==0) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // # 10153
+        check("int main() {\n"
+              "  for (;;) {\n"
+              "    std::string line = getLine();\n"
+              "    if (line.find(\" GL_EXTENSIONS =\") < 12)\n"
+              "      return 1;\n"
+              "  }\n"
+              "  return 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
