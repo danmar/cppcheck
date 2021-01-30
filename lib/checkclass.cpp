@@ -1565,36 +1565,49 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope, const T
     return false;
 }
 
+bool CheckClass::isTrueKeyword(const Token* tok)
+{
+	return tok->hasKnownIntValue() && tok->getKnownIntValue() == 1;
+}
+
+bool CheckClass::isFalseKeyword(const Token* tok)
+{
+	return tok->hasKnownIntValue() && tok->getKnownIntValue() == 0;
+}
+
+/*
+ * Checks if self-assignment test is inverse
+ * for example 'if (this == &rhs)'
+ */
 bool CheckClass::isInverseAssignmentTest(const Token *tok)
 {
 	bool res = true;
 	for (const Token *itr = tok; itr; itr=itr->astParent()) {
-		if (itr->str() == "!=" && (itr->astOperand1()->str() == "true" || itr->astOperand2()->str() == "true")) {
+		if (Token::simpleMatch(itr, "!=") && (isTrueKeyword(itr->astOperand1()) || isTrueKeyword(itr->astOperand2()))) {
 			res = !res;
 		}
-		else if (itr->str() == "!=" && (itr->astOperand1()->str() != "false" && itr->astOperand2()->str() != "false")) {
+		else if (Token::simpleMatch(itr, "!=") && (!isFalseKeyword(itr->astOperand1()) && !isFalseKeyword(itr->astOperand2()))) {
 			res = !res;
 		}
-		else if (itr->str() == "!") {
+		else if (Token::simpleMatch(itr, "!")) {
 			res = !res;
 		}
-		else if (itr->str() == "==" && (itr->astOperand1()->str() == "false" || itr->astOperand2()->str() == "false")) {
+		else if (Token::simpleMatch(itr, "==") && (isFalseKeyword(itr->astOperand1()) || isFalseKeyword(itr->astOperand2()))) {
 			res = !res;
 		}
 	}
 	return res;
 }
 
-const Token * CheckClass::getScopeStartToken(const Token *tok)
+const Token * CheckClass::getIfStmtScopeStart(const Token *tok)
 {
-	const Token *itr;
-	for (itr = tok; itr->astParent(); itr=itr->astParent()){}
-	if (itr->str() == "(" && itr->link()->next() && itr->link()->next()->str() == "{") {
+	const Token *top = tok->astTop();
+	if (Token::simpleMatch(top->link(), ") {")) {
 		if (isInverseAssignmentTest(tok)) {
-			return itr->link()->next();
+			return top->link()->next();
 		}
 		else {
-			return itr->link()->next()->link();
+			return top->link()->next()->link();
 		}
 	}
 	return nullptr;
@@ -1623,7 +1636,7 @@ bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs, const Tok
             if (tok2 && tok2->isUnaryOp("&") && tok2->astOperand1()->str() == rhs->str())
                 ret = true;
             if (ret) {
-            	*out_ifStatementScopeStart = getScopeStartToken(tok2);
+            	*out_ifStatementScopeStart = getIfStmtScopeStart(tok2);
             }
             return ret ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
         });
