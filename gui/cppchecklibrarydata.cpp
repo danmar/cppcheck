@@ -570,7 +570,7 @@ static void writeTypeChecks(QXmlStreamWriter &xmlWriter, const CppcheckLibraryDa
     xmlWriter.writeEndElement();
 }
 
-static void writePlatformType (QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::PlatformType &pt)
+static void writePlatformType(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::PlatformType &pt)
 {
     xmlWriter.writeStartElement("platformtype");
     xmlWriter.writeAttribute("name", pt.name);
