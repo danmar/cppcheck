@@ -5297,7 +5297,7 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    unsigned int instantiateMatch(const char code[], const std::size_t numberOfArguments, const char patternAfter[]) {
+    bool instantiateMatch(const char code[], const std::size_t numberOfArguments, const char patternAfter[]) {
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);

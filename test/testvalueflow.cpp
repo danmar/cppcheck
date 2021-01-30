@@ -3083,7 +3083,7 @@ private:
         values = tokenValues(code, "<");
         ASSERT_EQUALS(1, values.size());
         ASSERT(values.front().isPossible());
-        ASSERT_EQUALS(true, values.front().intvalue);
+        ASSERT_EQUALS(true, values.front().intvalue != 0);
 
         code = "void f() {\n"
                "  S s;\n"
