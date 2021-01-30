@@ -7,12 +7,12 @@ from testutils import create_gui_project_file, cppcheck
 
 COMPILE_COMMANDS_JSON = 'compile_commands.json'
 
-ERR_A = ('a/a.c:1:7: error: Division by zero. [zerodiv]\n' +
+ERR_A = ('%s:1:7: error: Division by zero. [zerodiv]\n' +
          'x = 3 / 0;\n' +
-         '      ^\n')
-ERR_B = ('b/b.c:1:7: error: Division by zero. [zerodiv]\n' +
+         '      ^\n') % os.path.join('a', 'a.c')
+ERR_B = ('%s:1:7: error: Division by zero. [zerodiv]\n' +
          'x = 3 / 0;\n' +
-         '      ^\n')
+         '      ^\n') % os.path.join('b', 'b.c')
 
 def realpath(s):
     return os.path.realpath(s).replace('\\', '/')
