@@ -3,6 +3,7 @@
 # Server for 'donate-cpu.py'
 # Runs only under Python 3.
 
+import collections
 import glob
 import json
 import os
@@ -22,7 +23,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.10"
+SERVER_VERSION = "1.3.11"
 
 OLD_VERSION = '2.3'
 
@@ -612,15 +613,17 @@ def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
     return text
 
 
-# TODO: sort the results by factor
 def timeReport(resultPath: str, show_gt: bool) -> str:
-    html = '<html><head><title>Time report ({})</title></head><body>\n'.format('regressed' if show_gt else 'improved')
-    html += '<h1>Time report</h1>\n'
+    title = 'Time report ({})'.format('regressed' if show_gt else 'improved')
+    html = '<html><head><title>{}</title></head><body>\n'.format(title)
+    html += '<h1>{}</h1>\n'.format(title)
     html += '<pre>\n'
     column_width = [40, 10, 10, 10, 10]
     html += '<b>'
     html += fmt('Package', OLD_VERSION, 'Head', 'Factor', link=False, column_width=column_width)
     html += '</b>\n'
+
+    data = {}
 
     total_time_base = 0.0
     total_time_head = 0.0
@@ -655,9 +658,18 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
                     time_factor = time_head / time_base
                 else:
                     time_factor = 0.0
-                html += fmt(filename[len(resultPath)+1:], split_line[2], split_line[1],
-                    '{:.2f}'.format(time_factor), column_width=column_width) + '\n'
+                pkg_name = filename[len(resultPath)+1:]
+                data[pkg_name] = (split_line[2], split_line[1], time_factor)
             break
+
+    sorted_data = sorted(data.items(), key=lambda kv: kv[1][2])
+    if show_gt:
+        sorted_data.reverse()
+
+    sorted_dict = collections.OrderedDict(sorted_data)
+    for key in sorted_dict:
+        html += fmt(key, sorted_dict[key][0], sorted_dict[key][1], '{:.2f}'.format(sorted_dict[key][2]),
+                    column_width=column_width) + '\n'
 
     html += '\n'
     html += '(listed above are all suspicious timings with a factor '
