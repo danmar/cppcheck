@@ -170,7 +170,7 @@ void CheckClass::constructors()
                 if (usage[count].assign || usage[count].init || var.isStatic())
                     continue;
 
-                if (var.valueType()->pointer == 0 && var.type() && var.type()->needInitialization == Type::NeedInitialization::False && var.type()->derivedFrom.empty())
+                if (var.valueType() && var.valueType()->pointer == 0 && var.type() && var.type()->needInitialization == Type::NeedInitialization::False && var.type()->derivedFrom.empty())
                     continue;
 
                 if (var.isConst() && func.isOperator()) // We can't set const members in assignment operator
