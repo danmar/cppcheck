@@ -424,15 +424,17 @@ void ImportProject::importCompileCommands(std::istream &istr)
             continue;
 
         struct FileSettings fs;
-        if (Path::isAbsolute(file) || Path::fileExists(file))
-            fs.filename = file;
-        else {
-            std::string path = directory;
-            if (!path.empty() && !endsWith(path,'/'))
-                path += '/';
-            path += file;
-            fs.filename = Path::simplifyPath(path);
-        }
+        if (Path::isAbsolute(file))
+            fs.filename = Path::simplifyPath(file);
+#ifdef _WIN32
+        else if (file[0] == '/' && directory.size() > 2 && std::isalpha(directory[0]) && directory[1] == ':')
+            // directory: C:\foo\bar
+            // file: /xy/z.c
+            // => c:/xy/z.c
+            fs.filename = Path::simplifyPath(directory.substr(0,2) + file);
+#endif
+        else
+            fs.filename = Path::simplifyPath(directory + file);
         fs.parseCommand(command); // read settings; -D, -I, -U, -std, -m*, -f*
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         fs.setIncludePaths(directory, fs.includePaths, variables);
