@@ -23,7 +23,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.11"
+SERVER_VERSION = "1.3.12"
 
 OLD_VERSION = '2.3'
 
@@ -171,7 +171,7 @@ def crashReport(results_path: str) -> str:
                         continue
                 if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                     datestr = line
-                if line.startswith('count:'):
+                elif line.startswith('count:'):
                     if line.find('Crash') < 0:
                         break
                     package = filename[filename.rfind('/')+1:]
@@ -185,7 +185,7 @@ def crashReport(results_path: str) -> str:
                     html += fmt(package, datestr, c2, c1) + '\n'
                     if c1 != 'Crash':
                         break
-                if line.find(' received signal ') != -1:
+                elif line.find(' received signal ') != -1:
                     crash_line = next(file_, '').strip()
                     location_index = crash_line.rfind(' at ')
                     if location_index > 0:
@@ -244,7 +244,7 @@ def timeoutReport(results_path: str) -> str:
                         continue
                 if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                     datestr = line
-                if line.startswith('count:'):
+                elif line.startswith('count:'):
                     if line.find('TO!') < 0:
                         break
                     package = filename[filename.rfind('/')+1:]
@@ -620,8 +620,10 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
     html += '<pre>\n'
     column_width = [40, 10, 10, 10, 10]
     html += '<b>'
-    html += fmt('Package', OLD_VERSION, 'Head', 'Factor', link=False, column_width=column_width)
+    html += fmt('Package', 'Date       Time', OLD_VERSION, 'Head', 'Factor', link=False, column_width=column_width)
     html += '</b>\n'
+
+    current_year = datetime.date.today().year
 
     data = {}
 
@@ -630,6 +632,7 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
     for filename in glob.glob(resultPath + '/*'):
         if not os.path.isfile(filename):
             continue
+        datestr = ''
         for line in open(filename, 'rt'):
             if line.startswith('cppcheck: '):
                 if OLD_VERSION not in line:
@@ -638,6 +641,9 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
                 else:
                     # Current package, parse on
                     continue
+            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+                datestr = line
+                continue
             if not line.startswith('elapsed-time:'):
                 continue
             split_line = line.strip().split()
@@ -659,16 +665,16 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
                 else:
                     time_factor = 0.0
                 pkg_name = filename[len(resultPath)+1:]
-                data[pkg_name] = (split_line[2], split_line[1], time_factor)
+                data[pkg_name] = (datestr, split_line[2], split_line[1], time_factor)
             break
 
-    sorted_data = sorted(data.items(), key=lambda kv: kv[1][2])
+    sorted_data = sorted(data.items(), key=lambda kv: kv[1][3])
     if show_gt:
         sorted_data.reverse()
 
     sorted_dict = collections.OrderedDict(sorted_data)
     for key in sorted_dict:
-        html += fmt(key, sorted_dict[key][0], sorted_dict[key][1], '{:.2f}'.format(sorted_dict[key][2]),
+        html += fmt(key, sorted_dict[key][0], sorted_dict[key][1], sorted_dict[key][2], '{:.2f}'.format(sorted_dict[key][3]),
                     column_width=column_width) + '\n'
 
     html += '\n'
