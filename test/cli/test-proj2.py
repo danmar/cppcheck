@@ -29,7 +29,7 @@ def cppcheck_local(args):
     os.chdir('proj2')
     ret, stdout, stderr = cppcheck(args)
     os.chdir(cwd)
-    return (ret, stdout, stderr)
+    return ret, stdout, stderr
 
 def test_file_filter():
     ret, stdout, stderr = cppcheck(['proj2/','--file-filter=proj2/a/*'])
@@ -138,17 +138,17 @@ def test_gui_project_loads_absolute_vs_solution():
     assert stdout.find('Checking %s Release|Win32...' % file2) >= 0
     assert stdout.find('Checking %s Release|x64...' % file2) >= 0
 
-def test_gui_project_loads_relative_vs_solution():
+def test_gui_project_loads_relative_vs_solution_2():
     create_gui_project_file('test.cppcheck', root_path='proj2', import_project='proj2/proj2.sln')
     ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
     assert stderr == ERR_A + ERR_B
 
-def test_gui_project_loads_relative_vs_solution():
+def test_gui_project_loads_relative_vs_solution_with_exclude():
     create_gui_project_file('test.cppcheck', root_path='proj2', import_project='proj2/proj2.sln', exclude_paths=['b'])
     ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
     assert stderr == ERR_A
 
-def test_gui_project_loads_absolute_vs_solution():
+def test_gui_project_loads_absolute_vs_solution_2():
     create_gui_project_file('test.cppcheck',
                             root_path=realpath('proj2'),
                             import_project=realpath('proj2/proj2.sln'))

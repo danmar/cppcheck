@@ -9,15 +9,10 @@
 #
 
 
-import argparse
-import logging
 import subprocess
 import sys
-import shutil
-import glob
 import os
 import re
-import datetime
 import time
 import natsort
 

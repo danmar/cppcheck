@@ -3,8 +3,6 @@
 import glob
 import logging
 import os
-import re
-import shutil
 import sys
 import subprocess
 
