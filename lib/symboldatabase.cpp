@@ -3139,7 +3139,7 @@ bool Type::findDependency(const Type* ancestor) const
     if (this==ancestor)
         return true;
     for (std::vector<BaseInfo>::const_iterator parent=derivedFrom.begin(); parent!=derivedFrom.end(); ++parent) {
-        if (parent->type && parent->type->findDependency(ancestor))
+        if (parent->type && (parent->type == this || parent->type->findDependency(ancestor)))
             return true;
     }
     return false;

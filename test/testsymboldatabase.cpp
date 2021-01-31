@@ -344,6 +344,7 @@ private:
         TEST_CASE(symboldatabase89); // valuetype name
         TEST_CASE(symboldatabase90);
         TEST_CASE(symboldatabase91);
+        TEST_CASE(symboldatabase92); // daca crash
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4678,6 +4679,14 @@ private:
         ASSERT(functok);
         ASSERT(functok->function());
         ASSERT(functok->function()->name() == "foo");
+    }
+
+    void symboldatabase92() { // daca crash
+        GET_SYMBOL_DB("template <size_t, typename...> struct a;\n"
+                      "template <size_t b, typename c, typename... d>\n"
+                      "struct a<b, c, d...> : a<1, d...> {};\n"
+                      "template <typename... e> struct f : a<0, e...> {};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
