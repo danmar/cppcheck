@@ -1565,29 +1565,33 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope, const T
     return false;
 }
 
-bool CheckClass::isTrueKeyword(const Token* tok)
+static bool isTrueKeyword(const Token* tok)
 {
 	return tok->hasKnownIntValue() && tok->getKnownIntValue() == 1;
 }
 
-bool CheckClass::isFalseKeyword(const Token* tok)
+static bool isFalseKeyword(const Token* tok)
 {
 	return tok->hasKnownIntValue() && tok->getKnownIntValue() == 0;
 }
 
 /*
  * Checks if self-assignment test is inverse
- * for example 'if (this == &rhs)'
+ * For example 'if (this == &rhs)'
  */
-bool CheckClass::isInverseAssignmentTest(const Token *tok)
+CheckClass::Bool CheckClass::isInverted(const Token *tok, const Token *rhs)
 {
 	bool res = true;
-	for (const Token *itr = tok; itr; itr=itr->astParent()) {
+	for (const Token *itr = tok; itr && itr->str()!="("; itr=itr->astParent()) {
 		if (Token::simpleMatch(itr, "!=") && (isTrueKeyword(itr->astOperand1()) || isTrueKeyword(itr->astOperand2()))) {
 			res = !res;
 		}
-		else if (Token::simpleMatch(itr, "!=") && (!isFalseKeyword(itr->astOperand1()) && !isFalseKeyword(itr->astOperand2()))) {
+		else if (Token::simpleMatch(itr, "!=") && ( (Token::simpleMatch(itr->astOperand1(), "this") && Token::simpleMatch(itr->astOperand2(), "&") && Token::simpleMatch(itr->astOperand2()->next(), rhs->str().c_str(), rhs->str().size()))
+				|| (Token::simpleMatch(itr->astOperand2(), "this") && Token::simpleMatch(itr->astOperand1(), "&") && Token::simpleMatch(itr->astOperand1()->next(), rhs->str().c_str(), rhs->str().size())))) {
 			res = !res;
+		}
+		else if (Token::simpleMatch(itr, "!=") && (isFalseKeyword(itr->astOperand1()) || isFalseKeyword(itr->astOperand2()))) {
+			//Do nothing
 		}
 		else if (Token::simpleMatch(itr, "!")) {
 			res = !res;
@@ -1595,19 +1599,30 @@ bool CheckClass::isInverseAssignmentTest(const Token *tok)
 		else if (Token::simpleMatch(itr, "==") && (isFalseKeyword(itr->astOperand1()) || isFalseKeyword(itr->astOperand2()))) {
 			res = !res;
 		}
+		else if (Token::simpleMatch(itr, "==") && (isTrueKeyword(itr->astOperand1()) || isTrueKeyword(itr->astOperand2()))) {
+			//Do nothing
+		}
+		else if (Token::simpleMatch(itr, "==") && ( (Token::simpleMatch(itr->astOperand1(), "this") && Token::simpleMatch(itr->astOperand2(), "&") && Token::simpleMatch(itr->astOperand2()->next(), rhs->str().c_str(), rhs->str().size()))
+				|| (Token::simpleMatch(itr->astOperand2(), "this") && Token::simpleMatch(itr->astOperand1(), "&") && Token::simpleMatch(itr->astOperand1()->next(), rhs->str().c_str(), rhs->str().size())))) {
+			//Do nothing
+		}
+		else {
+			return Bool::BAILOUT;
+		}
 	}
-	return res;
+	if (res)
+		return Bool::TRUE;
+	return Bool::FALSE;
 }
 
-const Token * CheckClass::getIfStmtScopeStart(const Token *tok)
+const Token * CheckClass::getIfStmtBodyStart(const Token *tok, const Token *rhs)
 {
 	const Token *top = tok->astTop();
 	if (Token::simpleMatch(top->link(), ") {")) {
-		if (isInverseAssignmentTest(tok)) {
-			return top->link()->next();
-		}
-		else {
-			return top->link()->next()->link();
+		switch (isInverted(tok->astParent(), rhs)) {
+			case Bool::BAILOUT: return nullptr;
+			case Bool::TRUE: return top->link()->next();
+			case Bool::FALSE: return top->link()->next()->link();
 		}
 	}
 	return nullptr;
@@ -1636,7 +1651,7 @@ bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs, const Tok
             if (tok2 && tok2->isUnaryOp("&") && tok2->astOperand1()->str() == rhs->str())
                 ret = true;
             if (ret) {
-            	*out_ifStatementScopeStart = getIfStmtScopeStart(tok2);
+            	*out_ifStatementScopeStart = getIfStmtBodyStart(tok2, rhs);
             }
             return ret ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
         });
