@@ -160,7 +160,7 @@ private:
     void noCopyConstructorError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
     void noOperatorEqError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
     void noDestructorError(const Scope *scope, bool isdefault, const Token *alloc);
-    void uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool inconclusive);
+    void uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive);
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
     void memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type);
@@ -197,8 +197,10 @@ private:
         c.noCopyConstructorError(nullptr, false, nullptr, false);
         c.noOperatorEqError(nullptr, false, nullptr, false);
         c.noDestructorError(nullptr, false, nullptr);
-        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", false);
-        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", false);
+        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", false, false);
+        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", false, false);
+        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", true, false);
+        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", true, false);
         c.operatorEqVarError(nullptr, "classname", emptyString, false);
         c.unusedPrivateFunctionError(nullptr, "classname", "funcname");
         c.memsetError(nullptr, "memfunc", "classname", "class");
@@ -287,12 +289,19 @@ private:
     static bool isBaseClassFunc(const Token *tok, const Scope *scope);
 
     /**
-     * @brief assign a variable in the varlist
-     * @param varid id of variable to mark assigned
-     * @param scope pointer to variable Scope
-     * @param usage reference to usage vector
+     * @brief Create usage list that contains all scope members and also members
+     * of base classes without constructors.
+     * @param usageList usageList that will be filled up
+     * @param scope current class scope
      */
-    static void assignVar(nonneg int varid, const Scope *scope, std::vector<Usage> &usage);
+    static void createUsageList(std::vector<Usage>& usageList, const Scope *scope);
+
+    /**
+     * @brief assign a variable in the varlist
+     * @param usageList reference to usage vector
+     * @param varid id of variable to mark assigned
+     */
+    static void assignVar(std::vector<Usage> &usageList, nonneg int varid);
 
     /**
      * @brief initialize a variable in the varlist
