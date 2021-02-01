@@ -180,6 +180,19 @@ public:
 
     using TypeChecks = QList<QPair<QString, QString>>;
 
+    struct Reflection {
+        struct Call {
+            Call() :
+                arg {-1}    // -1: Mandatory "arg" attribute not available
+            {}
+
+            int arg;
+            QString name;
+        };
+
+        QList<struct Call> calls;
+    };
+
     void clear() {
         containers.clear();
         defines.clear();
@@ -190,6 +203,7 @@ public:
         smartPointers.clear();
         typeChecks.clear();
         platformTypes.clear();
+        reflections.clear();
     }
 
     void swap(CppcheckLibraryData &other) {
@@ -202,6 +216,7 @@ public:
         smartPointers.swap(other.smartPointers);
         typeChecks.swap(other.typeChecks);
         platformTypes.swap(other.platformTypes);
+        reflections.swap(other.reflections);
     }
 
     QString open(QIODevice &file);
@@ -216,6 +231,7 @@ public:
     QList<struct PlatformType> platformTypes;
     QStringList undefines;
     QStringList smartPointers;
+    QList<struct Reflection> reflections;
 };
 
 #endif // CPPCHECKLIBRARYDATA_H

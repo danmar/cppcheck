@@ -47,11 +47,23 @@ void TestCppcheckLibraryData::unhandledElement()
     loadCfgFile(":/files/memory_resource_unhandled_element.cfg", fileLibraryData, result);
     QCOMPARE(result.isNull(), false);
     qDebug() << result;
+
+    loadCfgFile(":/files/container_unhandled_element.cfg", fileLibraryData, result);
+    QCOMPARE(result.isNull(), false);
+    qDebug() << result;
+
+    loadCfgFile(":/files/reflection_unhandled_element.cfg", fileLibraryData, result);
+    QCOMPARE(result.isNull(), false);
+    qDebug() << result;
 }
 
 void TestCppcheckLibraryData::mandatoryAttributeMissing()
 {
     loadCfgFile(":/files/mandatory_attribute_missing.cfg", fileLibraryData, result);
+    QCOMPARE(result.isNull(), false);
+    qDebug() << result;
+
+    loadCfgFile(":/files/reflection_mandatory_attribute_missing.cfg", fileLibraryData, result);
     QCOMPARE(result.isNull(), false);
     qDebug() << result;
 }
@@ -333,6 +345,114 @@ void TestCppcheckLibraryData::memoryResourceValid()
         for (int num=0; num < lhs.dealloc.size(); num++) {
             QCOMPARE(lhs.dealloc[num].name, rhs.dealloc[num].name);
             QCOMPARE(lhs.dealloc[num].arg, rhs.dealloc[num].arg);
+        }
+    }
+}
+
+void TestCppcheckLibraryData::defineValid()
+{
+    // Load library data from file
+    loadCfgFile(":/files/define_valid.cfg", fileLibraryData, result);
+    QCOMPARE(result.isNull(), true);
+
+    // Swap libray data read from file to other object
+    libraryData.swap(fileLibraryData);
+
+    // Do size and content checks against swapped data.
+    QCOMPARE(libraryData.defines.size(), 2);
+    QCOMPARE(libraryData.defines[0].name, "INT8_MIN");
+    QCOMPARE(libraryData.defines[0].value, "-128");
+    QCOMPARE(libraryData.defines[1].name.isEmpty(), true);
+    QCOMPARE(libraryData.defines[1].value.isEmpty(), true);
+
+    // Save library data to file
+    saveCfgFile(TempCfgFile, libraryData);
+
+    fileLibraryData.clear();
+    QCOMPARE(fileLibraryData.defines.size(), 0);
+
+    // Reload library data from file
+    loadCfgFile(TempCfgFile, fileLibraryData, result, true);
+    QCOMPARE(result.isNull(), true);
+
+    // Verify no data got lost or modified
+    QCOMPARE(libraryData.defines.size(), fileLibraryData.defines.size());
+    QCOMPARE(libraryData.defines.size(), 2);
+    for (int idx=0; idx < libraryData.defines.size(); idx++) {
+        QCOMPARE(libraryData.defines[idx].name, fileLibraryData.defines[idx].name);
+        QCOMPARE(libraryData.defines[idx].value, fileLibraryData.defines[idx].value);
+    }
+}
+
+void TestCppcheckLibraryData::undefineValid()
+{
+    // Load library data from file
+    loadCfgFile(":/files/undefine_valid.cfg", fileLibraryData, result);
+    QCOMPARE(result.isNull(), true);
+
+    // Swap libray data read from file to other object
+    libraryData.swap(fileLibraryData);
+
+    // Do size and content checks against swapped data.
+    QCOMPARE(libraryData.undefines.size(), 2);
+    QCOMPARE(libraryData.undefines[0], "INT8_MIN");
+    QCOMPARE(libraryData.undefines[1].isEmpty(), true);
+
+    // Save library data to file
+    saveCfgFile(TempCfgFile, libraryData);
+
+    fileLibraryData.clear();
+    QCOMPARE(fileLibraryData.undefines.size(), 0);
+
+    // Reload library data from file
+    loadCfgFile(TempCfgFile, fileLibraryData, result, true);
+    QCOMPARE(result.isNull(), true);
+
+    // Verify no data got lost or modified
+    QCOMPARE(libraryData.undefines.size(), fileLibraryData.undefines.size());
+    QCOMPARE(libraryData.undefines.size(), 2);
+    QCOMPARE(libraryData.undefines, fileLibraryData.undefines);
+}
+
+void TestCppcheckLibraryData::reflectionValid()
+{
+    // Load library data from file
+    loadCfgFile(":/files/reflection_valid.cfg", fileLibraryData, result);
+    QCOMPARE(result.isNull(), true);
+
+    // Swap libray data read from file to other object
+    libraryData.swap(fileLibraryData);
+
+    // Do size and content checks against swapped data.
+    QCOMPARE(libraryData.reflections.size(), 2);
+    QCOMPARE(libraryData.reflections[0].calls.size(), 2);
+    QCOMPARE(libraryData.reflections[0].calls[0].arg, 2);
+    QCOMPARE(libraryData.reflections[0].calls[0].name, "invokeMethod");
+    QCOMPARE(libraryData.reflections[0].calls[1].arg, 1);
+    QCOMPARE(libraryData.reflections[0].calls[1].name, "callFunction");
+    QCOMPARE(libraryData.reflections[1].calls.isEmpty(), true);
+
+    // Save library data to file
+    saveCfgFile(TempCfgFile, libraryData);
+
+    fileLibraryData.clear();
+    QCOMPARE(fileLibraryData.reflections.size(), 0);
+
+    // Reload library data from file
+    loadCfgFile(TempCfgFile, fileLibraryData, result, true);
+    QCOMPARE(result.isNull(), true);
+
+    // Verify no data got lost or modified
+    QCOMPARE(libraryData.reflections.size(), fileLibraryData.reflections.size());
+    QCOMPARE(libraryData.reflections.size(), 2);
+    for (int idx=0; idx < libraryData.reflections.size(); idx++) {
+        CppcheckLibraryData::Reflection lhs = libraryData.reflections[idx];
+        CppcheckLibraryData::Reflection rhs = fileLibraryData.reflections[idx];
+
+        QCOMPARE(lhs.calls.size(), rhs.calls.size());
+        for (int num=0; num < lhs.calls.size(); num++) {
+            QCOMPARE(lhs.calls[num].arg, rhs.calls[num].arg);
+            QCOMPARE(lhs.calls[num].name, rhs.calls[num].name);
         }
     }
 }

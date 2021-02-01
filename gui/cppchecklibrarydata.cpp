@@ -294,6 +294,33 @@ static CppcheckLibraryData::PlatformType loadPlatformType(QXmlStreamReader &xmlR
     return platformType;
 }
 
+static CppcheckLibraryData::Reflection loadReflection(QXmlStreamReader &xmlReader)
+{
+    CppcheckLibraryData::Reflection reflection;
+
+    QXmlStreamReader::TokenType type;
+    while ((type = xmlReader.readNext()) != QXmlStreamReader::EndElement ||
+           xmlReader.name().toString() != "reflection") {
+        if (type != QXmlStreamReader::StartElement)
+            continue;
+        const QString elementName = xmlReader.name().toString();
+        if (elementName == "call") {
+            CppcheckLibraryData::Reflection::Call call;
+            if (xmlReader.attributes().hasAttribute("arg")) {
+                call.arg = xmlReader.attributes().value("arg").toInt();
+            } else {
+                mandatoryAttibuteMissing(xmlReader, "arg");
+            }
+            call.name = xmlReader.readElementText();
+            reflection.calls.append(call);
+        } else {
+            unhandledElement(xmlReader);
+        }
+    }
+
+    return reflection;
+}
+
 QString CppcheckLibraryData::open(QIODevice &file)
 {
     clear();
@@ -330,6 +357,8 @@ QString CppcheckLibraryData::open(QIODevice &file)
                     typeChecks.append(loadTypeChecks(xmlReader));
                 else if (elementName == "platformtype")
                     platformTypes.append(loadPlatformType(xmlReader));
+                else if (elementName == "reflection")
+                    reflections.append(loadReflection(xmlReader));
                 else
                     unhandledElement(xmlReader);
             } catch (std::runtime_error &e) {
@@ -589,6 +618,18 @@ static void writePlatformType (QXmlStreamWriter &xmlWriter, const CppcheckLibrar
     xmlWriter.writeEndElement();
 }
 
+static void writeReflection (QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::Reflection &refl)
+{
+    xmlWriter.writeStartElement("reflection");
+    foreach (const CppcheckLibraryData::Reflection::Call &call, refl.calls) {
+        xmlWriter.writeStartElement("call");
+        xmlWriter.writeAttribute("arg", QString("%1").arg(call.arg));
+        xmlWriter.writeCharacters(call.name);
+        xmlWriter.writeEndElement();
+    }
+    xmlWriter.writeEndElement();
+}
+
 QString CppcheckLibraryData::toString() const
 {
     QString outputString;
@@ -648,6 +689,10 @@ QString CppcheckLibraryData::toString() const
 
     foreach (const PlatformType &pt, platformTypes) {
         writePlatformType(xmlWriter, pt);
+    }
+
+    foreach (const Reflection &refl, reflections) {
+        writeReflection(xmlWriter, refl);
     }
 
     xmlWriter.writeEndElement();
