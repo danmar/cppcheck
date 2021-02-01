@@ -1926,10 +1926,12 @@ struct ValueFlowAnalyzer : Analyzer {
 
     Action analyzeToken(const Token* ref, const Token* tok, Direction d, bool inconclusiveRef) const
     {
+        if (!ref)
+            return Action::None;
         // If its an inconclusiveRef then ref != tok
         assert(!inconclusiveRef || ref != tok);
         bool inconclusive = false;
-        if (ref && match(ref)) {
+        if (match(ref)) {
             if (inconclusiveRef) {
                 Action a = isModified(tok);
                 if (a.isModified() || a.isInconclusive())
