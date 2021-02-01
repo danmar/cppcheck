@@ -568,15 +568,15 @@ void CheckClass::initVar(std::vector<Usage> &usageList, nonneg int varid)
     }
 }
 
-void CheckClass::assignAllVar(std::vector<Usage> &usage)
+void CheckClass::assignAllVar(std::vector<Usage> &usageList)
 {
-    for (Usage & i : usage)
+    for (Usage & i : usageList)
         i.assign = true;
 }
 
-void CheckClass::clearAllVar(std::vector<Usage> &usage)
+void CheckClass::clearAllVar(std::vector<Usage> &usageList)
 {
-    for (Usage & i : usage) {
+    for (Usage & i : usageList) {
         i.assign = false;
         i.init = false;
     }

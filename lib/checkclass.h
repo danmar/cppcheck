@@ -274,7 +274,7 @@ private:
     // constructors helper function
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
     struct Usage {
-        Usage(const Variable *var) : var(var), assign(false), init(false) { }
+        explicit Usage(const Variable *var) : var(var), assign(false), init(false) { }
 
         /** Variable that this usage is for */
         const Variable *var;
