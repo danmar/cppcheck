@@ -137,7 +137,9 @@ void CheckClass::constructors()
         }
 
 
-        std::vector<Usage> usage(scope->varlist.size());
+        std::vector<Usage> usageList;
+        for (const Variable &var : scope->varlist)
+            usageList.push_back(Usage(&var));
 
         for (const Function &func : scope->functionList) {
             if (!func.hasBody() || !(func.isConstructor() || func.type == Function::eOperatorEqual))
@@ -151,23 +153,22 @@ void CheckClass::constructors()
             }
 
             // Mark all variables not used
-            clearAllVar(usage);
+            clearAllVar(usageList);
 
             std::list<const Function *> callstack;
-            initializeVarList(func, callstack, scope, usage);
+            initializeVarList(func, callstack, scope, usageList);
 
             // Check if any variables are uninitialized
-            int count = -1;
-            for (const Variable &var : scope->varlist) {
-                ++count;
+            for (Usage &usage : usageList) {
+                const Variable& var = *usage.var;
 
                 // check for C++11 initializer
                 if (var.hasDefault()) {
-                    usage[count].init = true;
+                    usage.init = true;
                     continue;
                 }
 
-                if (usage[count].assign || usage[count].init || var.isStatic())
+                if (usage.assign || usage.init || var.isStatic())
                     continue;
 
                 if (var.valueType() && var.valueType()->pointer == 0 && var.type() && var.type()->needInitialization == Type::NeedInitialization::False && var.type()->derivedFrom.empty())
@@ -546,13 +547,11 @@ void CheckClass::assignVar(nonneg int varid, const Scope *scope, std::vector<Usa
     }
 }
 
-void CheckClass::initVar(nonneg int varid, const Scope *scope, std::vector<Usage> &usage)
+void CheckClass::initVar(std::vector<Usage> &usageList, nonneg int varid)
 {
-    int count = 0;
-
-    for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var, ++count) {
-        if (var->declarationId() == varid) {
-            usage[count].init = true;
+    for (Usage& usage: usageList) {
+        if (usage.var->declarationId() == varid) {
+            usage.init = true;
             return;
         }
     }
@@ -609,7 +608,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         if (initList) {
             if (level == 0 && Token::Match(ftok, "%name% {|(") && Token::Match(ftok->linkAt(1), "}|) ,|{")) {
                 if (ftok->str() != func.name()) {
-                    initVar(ftok->varId(), scope, usage);
+                    initVar(usage, ftok->varId());
                 } else { // c++11 delegate constructor
                     const Function *member = ftok->function();
                     // member function not found => assume it initializes all members

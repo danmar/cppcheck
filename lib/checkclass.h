@@ -272,7 +272,10 @@ private:
     // constructors helper function
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
     struct Usage {
-        Usage() : assign(false), init(false) { }
+        Usage(const Variable *var) : var(var), assign(false), init(false) { }
+
+        /** Variable that this usage is for */
+        const Variable *var;
 
         /** @brief has this variable been assigned? */
         bool assign;
@@ -293,23 +296,22 @@ private:
 
     /**
      * @brief initialize a variable in the varlist
+     * @param usageList reference to usage vector
      * @param varid id of variable to mark initialized
-     * @param scope pointer to variable Scope
-     * @param usage reference to usage vector
      */
-    static void initVar(nonneg int varid, const Scope *scope, std::vector<Usage> &usage);
+    static void initVar(std::vector<Usage> &usageList, nonneg int varid);
 
     /**
      * @brief set all variables in list assigned
-     * @param usage reference to usage vector
+     * @param usageList reference to usage vector
      */
-    static void assignAllVar(std::vector<Usage> &usage);
+    static void assignAllVar(std::vector<Usage> &usageList);
 
     /**
      * @brief set all variables in list not assigned and not initialized
-     * @param usage reference to usage vector
+     * @param usageList reference to usage vector
      */
-    static void clearAllVar(std::vector<Usage> &usage);
+    static void clearAllVar(std::vector<Usage> &usageList);
 
     /**
      * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist
