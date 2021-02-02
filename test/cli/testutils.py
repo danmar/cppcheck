@@ -1,7 +1,6 @@
 
 import logging
 import os
-import shutil
 import subprocess
 
 # Create Cppcheck project file
@@ -32,7 +31,7 @@ def create_gui_project_file(project_file, root_path=None, import_project=None, p
         cppcheck_xml += '  </suppressions>\n'
     if addon:
         cppcheck_xml += '  <addons>\n'
-        cppcheck_xml += '    <addon>%s</addon>\n' % (addon)
+        cppcheck_xml += '    <addon>%s</addon>\n' % addon
         cppcheck_xml += '  </addons>\n'
     cppcheck_xml += '</project>\n'
 

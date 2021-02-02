@@ -13,6 +13,7 @@ class ElementDef:
         self.numInits = 0
         self.childIndex = -1
 
+        self.flexibleToken = None
         self.isFlexible = False
         self.structureViolationToken = None
 
@@ -24,7 +25,7 @@ class ElementDef:
             inits += 'D'
         if not (self.isPositional or self.isDesignated) and self.numInits == 0:
             inits += '_'
-        if (self.numInits > 1):
+        if self.numInits > 1:
             inits += str(self.numInits)
 
         attrs = ["childIndex", "elementType", "valueType"]
@@ -59,7 +60,7 @@ class ElementDef:
             t.append('D')
         if self.numInits == 0:
             t.append('_')
-        if (self.numInits > 1):
+        if self.numInits > 1:
             t.append(str(self.numInits))
 
         myDump = "".join(t)
@@ -165,7 +166,7 @@ class ElementDef:
             self.structureViolationToken = token
 
     def markAsFlexibleArray(self, token):
-        self.flexibleToken = token;
+        self.flexibleToken = token
         self.isFlexible = True
 
     def markAsCurrent(self):
@@ -371,7 +372,7 @@ class InitializerParser:
 
                         self.root = self.root.parent
 
-                if self.token.astParent == None:
+                if self.token.astParent is None:
                     self.token = None
                     break
 

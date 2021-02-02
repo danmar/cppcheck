@@ -214,7 +214,7 @@ void TestCppcheckLibraryData::platformTypeValid()
     QCOMPARE(libraryData.platformTypes[1].value, "all");
     QCOMPARE(libraryData.platformTypes[1].types.size(), 5);
     QCOMPARE(libraryData.platformTypes[1].types,
-            QStringList({"unsigned", "long", "pointer", "const_ptr", "ptr_ptr"}));
+             QStringList({"unsigned", "long", "pointer", "const_ptr", "ptr_ptr"}));
     QCOMPARE(libraryData.platformTypes[1].platforms.isEmpty(), true);
 
     QCOMPARE(libraryData.platformTypes[2].name, "types and platform");

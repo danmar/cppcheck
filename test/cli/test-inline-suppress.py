@@ -3,12 +3,11 @@
 
 import json
 import os
-import re
 from testutils import cppcheck
 
 def create_unused_function_compile_commands():
-    compile_commands = os.path.join('proj-inline-suppress-unusedFunction', 'compile_commands.json')
-    prjpath = os.path.join(os.getcwd(), 'proj-inline-suppress-unusedFunction')
+    prjpath = os.path.realpath('proj-inline-suppress-unusedFunction')
+    compile_commands = os.path.join(prjpath, 'compile_commands.json')
     j = [{'directory': prjpath,
           'command': '/usr/bin/c++ -I"' + prjpath + '" -o "' + os.path.join(prjpath, 'B.cpp.o') + '" -c "' + os.path.join(prjpath, 'B.cpp') + '"',
           'file': os.path.join(prjpath, 'B.cpp')},

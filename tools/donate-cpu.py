@@ -28,14 +28,6 @@
 #
 # Quick start: just run this script without any arguments
 
-import shutil
-import os
-import subprocess
-import sys
-import socket
-import time
-import re
-import tarfile
 import platform
 from donate_cpu_lib import *
 

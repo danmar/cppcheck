@@ -491,7 +491,7 @@ if __name__ == '__main__':
             with io.open(source_filename, 'r', encoding=options.source_encoding) as input_file:
                 content = input_file.read()
         except IOError:
-            if (error['id'] == 'unmatchedSuppression'):
+            if error['id'] == 'unmatchedSuppression':
                 continue  # file not found, bail out
             else:
                 sys.stderr.write("ERROR: Source file '%s' not found.\n" %
@@ -592,13 +592,13 @@ if __name__ == '__main__':
         output_file.write('\n       <tr><th>Line</th><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th></tr>')
         for filename, data in sorted(files.items()):
             if filename in decode_errors:  # don't print a link but a note
-                output_file.write("\n       <tr><td colspan=\"5\">%s</td></tr>" % (filename))
+                output_file.write("\n       <tr><td colspan=\"5\">%s</td></tr>" % filename)
                 output_file.write("\n       <tr><td colspan=\"5\"> Could not generated due to UnicodeDecodeError</td></tr>")
             else:
                 if filename.endswith('*'):  # assume unmatched suppression
                     output_file.write(
                         "\n       <tr><td colspan=\"5\">%s</td></tr>" %
-                        (filename))
+                        filename)
                 else:
                     output_file.write(
                         "\n       <tr><td colspan=\"5\"><a href=\"%s\">%s</a></td></tr>" %
@@ -640,7 +640,7 @@ if __name__ == '__main__':
         output_file.write('\n       </table>')
         output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
 
-    if (decode_errors):
+    if decode_errors:
         sys.stderr.write("\nGenerating html failed for the following files: " + ' '.join(decode_errors))
         sys.stderr.write("\nConsider changing source-encoding (for example: \"htmlreport ... --source-encoding=\"iso8859-1\"\"\n")
 
@@ -653,7 +653,7 @@ if __name__ == '__main__':
     stats_countlist = {}
 
     for filename, data in sorted(files.items()):
-        if (filename == ''):
+        if filename == '':
             continue
         stats_tmplist = []
         for error in sorted(data['errors'], key=lambda k: k['line']):
@@ -679,11 +679,11 @@ if __name__ == '__main__':
                 for filename in stats_countlist:
                     try:  # also bail out if we have a file with no sev-results
                         _sum += stats_countlist[filename][sev]
-                        stats_templist[filename] = (int)(stats_countlist[filename][sev])  # file : amount,
+                        stats_templist[filename] = int(stats_countlist[filename][sev])  # file : amount,
                     except KeyError:
                         continue
                 # don't print "0 style" etc, if no style warnings were found
-                if (_sum == 0):
+                if _sum == 0:
                     continue
             except KeyError:
                 continue
@@ -697,12 +697,12 @@ if __name__ == '__main__':
             for i in stats_list_sorted:  # printing loop
                 # for aesthetics: if it's the first iteration of the loop, get
                 # the max length of the number string
-                if (it == 0):
+                if it == 0:
                     LENGTH = len(str(i[1]))  # <- length of longest number, now get the difference and try to  make other numbers align to it
 
                 stats_file.write("&#160;" * 3 + str(i[1]) + "&#160;" * (1 + LENGTH - len(str(i[1]))) + "<a href=\"" + files[i[0]]['htmlfile'] + "\">  " + i[0] + "</a><br>\n")
                 it += 1
-                if (it == 10):  # print only the top 10
+                if it == 10:  # print only the top 10
                     break
             stats_file.write("</p>\n")
 
