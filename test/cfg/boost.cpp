@@ -81,3 +81,15 @@ void throwexception2(int * buf)
         BOOST_THROW_EXCEPTION(std::bad_alloc());
     *buf = 0;
 }
+
+void macros()
+{
+    #define DECL(z, n, text) text ## n = n;
+    BOOST_PP_REPEAT(5, DECL, int x)
+
+    BOOST_SCOPED_ENUM_DECLARE_BEGIN(future_errc)
+    {
+        no_state
+    }
+    BOOST_SCOPED_ENUM_DECLARE_END(future_errc)
+}
