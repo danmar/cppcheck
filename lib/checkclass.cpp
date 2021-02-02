@@ -1522,10 +1522,9 @@ void CheckClass::operatorEqToSelf()
                     if (!hasAssignSelf(&func, rhs, &out_ifStatementScopeStart)) {
                         if (hasAllocation(&func, scope))
                             operatorEqToSelfError(func.token);
-                    }
-                    else if (out_ifStatementScopeStart != nullptr) {
-                    	if(hasAllocationInIfScope(&func, scope, out_ifStatementScopeStart))
-                    		operatorEqToSelfError(func.token);
+                    } else if (out_ifStatementScopeStart != nullptr) {
+                        if (hasAllocationInIfScope(&func, scope, out_ifStatementScopeStart))
+                            operatorEqToSelfError(func.token);
                     }
                 }
             }
@@ -1535,23 +1534,23 @@ void CheckClass::operatorEqToSelf()
 
 bool CheckClass::hasAllocationInIfScope(const Function *func, const Scope* scope, const Token *ifStatementScopeStart) const
 {
-	const Token *end;
-	if (ifStatementScopeStart->str() == "{")
-		end = ifStatementScopeStart->link();
-	else
-		end = func->functionScope->bodyEnd;
-	return hasAllocation(func, scope, ifStatementScopeStart, end);
+    const Token *end;
+    if (ifStatementScopeStart->str() == "{")
+        end = ifStatementScopeStart->link();
+    else
+        end = func->functionScope->bodyEnd;
+    return hasAllocation(func, scope, ifStatementScopeStart, end);
 }
 
 bool CheckClass::hasAllocation(const Function *func, const Scope* scope) const
 {
-	return hasAllocation(func, scope, func->functionScope->bodyStart, func->functionScope->bodyEnd);
+    return hasAllocation(func, scope, func->functionScope->bodyStart, func->functionScope->bodyEnd);
 }
 
 bool CheckClass::hasAllocation(const Function *func, const Scope* scope, const Token *start, const Token *end) const
 {
-	if (!end)
-		end = func->functionScope->bodyEnd;
+    if (!end)
+        end = func->functionScope->bodyEnd;
     for (const Token *tok = start; tok && (tok != end); tok = tok->next()) {
         if (Token::Match(tok, "%var% = malloc|realloc|calloc|new") && isMemberVar(scope, tok))
             return true;
@@ -1580,12 +1579,12 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope, const T
 
 static bool isTrueKeyword(const Token* tok)
 {
-	return tok->hasKnownIntValue() && tok->getKnownIntValue() == 1;
+    return tok->hasKnownIntValue() && tok->getKnownIntValue() == 1;
 }
 
 static bool isFalseKeyword(const Token* tok)
 {
-	return tok->hasKnownIntValue() && tok->getKnownIntValue() == 0;
+    return tok->hasKnownIntValue() && tok->getKnownIntValue() == 0;
 }
 
 /*
@@ -1594,51 +1593,47 @@ static bool isFalseKeyword(const Token* tok)
  */
 CheckClass::Bool CheckClass::isInverted(const Token *tok, const Token *rhs)
 {
-	bool res = true;
-	for (const Token *itr = tok; itr && itr->str()!="("; itr=itr->astParent()) {
-		if (Token::simpleMatch(itr, "!=") && (isTrueKeyword(itr->astOperand1()) || isTrueKeyword(itr->astOperand2()))) {
-			res = !res;
-		}
-		else if (Token::simpleMatch(itr, "!=") && ( (Token::simpleMatch(itr->astOperand1(), "this") && Token::simpleMatch(itr->astOperand2(), "&") && Token::simpleMatch(itr->astOperand2()->next(), rhs->str().c_str(), rhs->str().size()))
-				|| (Token::simpleMatch(itr->astOperand2(), "this") && Token::simpleMatch(itr->astOperand1(), "&") && Token::simpleMatch(itr->astOperand1()->next(), rhs->str().c_str(), rhs->str().size())))) {
-			res = !res;
-		}
-		else if (Token::simpleMatch(itr, "!=") && (isFalseKeyword(itr->astOperand1()) || isFalseKeyword(itr->astOperand2()))) {
-			//Do nothing
-		}
-		else if (Token::simpleMatch(itr, "!")) {
-			res = !res;
-		}
-		else if (Token::simpleMatch(itr, "==") && (isFalseKeyword(itr->astOperand1()) || isFalseKeyword(itr->astOperand2()))) {
-			res = !res;
-		}
-		else if (Token::simpleMatch(itr, "==") && (isTrueKeyword(itr->astOperand1()) || isTrueKeyword(itr->astOperand2()))) {
-			//Do nothing
-		}
-		else if (Token::simpleMatch(itr, "==") && ( (Token::simpleMatch(itr->astOperand1(), "this") && Token::simpleMatch(itr->astOperand2(), "&") && Token::simpleMatch(itr->astOperand2()->next(), rhs->str().c_str(), rhs->str().size()))
-				|| (Token::simpleMatch(itr->astOperand2(), "this") && Token::simpleMatch(itr->astOperand1(), "&") && Token::simpleMatch(itr->astOperand1()->next(), rhs->str().c_str(), rhs->str().size())))) {
-			//Do nothing
-		}
-		else {
-			return Bool::BAILOUT;
-		}
-	}
-	if (res)
-		return Bool::TRUE;
-	return Bool::FALSE;
+    bool res = true;
+    for (const Token *itr = tok; itr && itr->str()!="("; itr=itr->astParent()) {
+        if (Token::simpleMatch(itr, "!=") && (isTrueKeyword(itr->astOperand1()) || isTrueKeyword(itr->astOperand2()))) {
+            res = !res;
+        } else if (Token::simpleMatch(itr, "!=") && ((Token::simpleMatch(itr->astOperand1(), "this") && Token::simpleMatch(itr->astOperand2(), "&") && Token::simpleMatch(itr->astOperand2()->next(), rhs->str().c_str(), rhs->str().size()))
+                   || (Token::simpleMatch(itr->astOperand2(), "this") && Token::simpleMatch(itr->astOperand1(), "&") && Token::simpleMatch(itr->astOperand1()->next(), rhs->str().c_str(), rhs->str().size())))) {
+            res = !res;
+        } else if (Token::simpleMatch(itr, "!=") && (isFalseKeyword(itr->astOperand1()) || isFalseKeyword(itr->astOperand2()))) {
+            //Do nothing
+        } else if (Token::simpleMatch(itr, "!")) {
+            res = !res;
+        } else if (Token::simpleMatch(itr, "==") && (isFalseKeyword(itr->astOperand1()) || isFalseKeyword(itr->astOperand2()))) {
+            res = !res;
+        } else if (Token::simpleMatch(itr, "==") && (isTrueKeyword(itr->astOperand1()) || isTrueKeyword(itr->astOperand2()))) {
+            //Do nothing
+        } else if (Token::simpleMatch(itr, "==") && ((Token::simpleMatch(itr->astOperand1(), "this") && Token::simpleMatch(itr->astOperand2(), "&") && Token::simpleMatch(itr->astOperand2()->next(), rhs->str().c_str(), rhs->str().size()))
+                   || (Token::simpleMatch(itr->astOperand2(), "this") && Token::simpleMatch(itr->astOperand1(), "&") && Token::simpleMatch(itr->astOperand1()->next(), rhs->str().c_str(), rhs->str().size())))) {
+            //Do nothing
+        } else {
+            return Bool::BAILOUT;
+        }
+    }
+    if (res)
+        return Bool::TRUE;
+    return Bool::FALSE;
 }
 
 const Token * CheckClass::getIfStmtBodyStart(const Token *tok, const Token *rhs)
 {
-	const Token *top = tok->astTop();
-	if (Token::simpleMatch(top->link(), ") {")) {
-		switch (isInverted(tok->astParent(), rhs)) {
-			case Bool::BAILOUT: return nullptr;
-			case Bool::TRUE: return top->link()->next();
-			case Bool::FALSE: return top->link()->next()->link();
-		}
-	}
-	return nullptr;
+    const Token *top = tok->astTop();
+    if (Token::simpleMatch(top->link(), ") {")) {
+        switch (isInverted(tok->astParent(), rhs)) {
+        case Bool::BAILOUT:
+            return nullptr;
+        case Bool::TRUE:
+            return top->link()->next();
+        case Bool::FALSE:
+            return top->link()->next()->link();
+        }
+    }
+    return nullptr;
 }
 
 bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs, const Token **out_ifStatementScopeStart)
@@ -1664,7 +1659,7 @@ bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs, const Tok
             if (tok2 && tok2->isUnaryOp("&") && tok2->astOperand1()->str() == rhs->str())
                 ret = true;
             if (ret) {
-            	*out_ifStatementScopeStart = getIfStmtBodyStart(tok2, rhs);
+                *out_ifStatementScopeStart = getIfStmtBodyStart(tok2, rhs);
             }
             return ret ? ChildrenToVisit::done : ChildrenToVisit::op1_and_op2;
         });

@@ -1566,7 +1566,7 @@ private:
             "    return *this;\n"
             "}");
         ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
-        
+
         // this test needs an assignment test and has the inverse test
         checkOpertorEqToSelf(
             "class A\n"
@@ -1655,9 +1655,9 @@ private:
             "{\n"
             "    if (&a != this)\n"
             "    {\n"
-        	"    }\n"
-        	"    else\n"
-        	"    {\n"
+            "    }\n"
+            "    else\n"
+            "    {\n"
             "        free(s);\n"
             "        s = strdup(a.s);\n"
             "    }\n"
@@ -1676,9 +1676,9 @@ private:
             "A & A::operator=(const A &a)\n"
             "{\n"
             "    if (&a != this)\n"
-        	"        free(s);\n"
-        	"    else\n"
-        	"    {\n"
+            "        free(s);\n"
+            "    else\n"
+            "    {\n"
             "        free(s);\n"
             "        s = strdup(a.s);\n"
             "    }\n"
