@@ -263,7 +263,12 @@ private:
 
     // operatorEqToSelf helper functions
     bool hasAllocation(const Function *func, const Scope* scope) const;
-    static bool hasAssignSelf(const Function *func, const Token *rhs);
+    bool hasAllocation(const Function *func, const Scope* scope, const Token *start, const Token *end) const;
+    bool hasAllocationInIfScope(const Function *func, const Scope* scope, const Token *ifStatementScopeStart) const;
+    static bool hasAssignSelf(const Function *func, const Token *rhs, const Token **out_ifStatementScopeStart);
+    enum class Bool { TRUE, FALSE, BAILOUT };
+    static Bool isInverted(const Token *tok, const Token *rhs);
+    static const Token * getIfStmtBodyStart(const Token *tok, const Token *rhs);
 
     // checkConst helper functions
     bool isMemberVar(const Scope *scope, const Token *tok) const;
