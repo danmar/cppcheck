@@ -10,5 +10,11 @@
         <file>files/platform_type_unhandled_element.cfg</file>
         <file>files/memory_resource_unhandled_element.cfg</file>
         <file>files/memory_resource_valid.cfg</file>
+        <file>files/define_valid.cfg</file>
+        <file>files/undefine_valid.cfg</file>
+        <file>files/container_unhandled_element.cfg</file>
+        <file>files/reflection_unhandled_element.cfg</file>
+        <file>files/reflection_valid.cfg</file>
+        <file>files/reflection_mandatory_attribute_missing.cfg</file>
     </qresource>
 </RCC>
