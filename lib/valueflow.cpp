@@ -440,7 +440,11 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
         // .empty, .size, +"abc", +'a'
         if (Token::Match(parent, "+|==|!=") && parent->astOperand1() && parent->astOperand2()) {
             for (const ValueFlow::Value &value1 : parent->astOperand1()->values()) {
+                if (value1.isImpossible())
+                    continue;
                 for (const ValueFlow::Value &value2 : parent->astOperand2()->values()) {
+                    if (value2.isImpossible())
+                        continue;
                     if (value1.path != value2.path)
                         continue;
                     ValueFlow::Value result;
