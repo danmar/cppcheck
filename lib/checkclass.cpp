@@ -534,18 +534,17 @@ bool CheckClass::canNotMove(const Scope *scope)
     return constructor && !(publicAssign || publicCopy || publicMove);
 }
 
-static void getAllVariableMembers(const Scope *scope, std::vector<const Variable *>& varList, std::vector<const Scope *> &baseClasses)
+static void getAllVariableMembers(const Scope *scope, std::vector<const Variable *>& varList)
 {
-    if (std::find(baseClasses.begin(), baseClasses.end(), scope) != baseClasses.end())
-        return;
-    baseClasses.push_back(scope);
     for (const Variable& var: scope->varlist)
         varList.push_back(&var);
     if (scope->definedType) {
         for (const Type::BaseInfo& baseInfo: scope->definedType->derivedFrom) {
+            if (scope->definedType == baseInfo.type)
+                continue;
             const Scope *baseClass = baseInfo.type ? baseInfo.type->classScope : nullptr;
             if (baseClass && baseClass->isClassOrStruct() && baseClass->numConstructors == 0)
-                getAllVariableMembers(baseClass, varList, baseClasses);
+                getAllVariableMembers(baseClass, varList);
         }
     }
 }
@@ -554,8 +553,7 @@ std::vector<CheckClass::Usage> CheckClass::createUsageList(const Scope *scope)
 {
     std::vector<Usage> ret;
     std::vector<const Variable *> varlist;
-    std::vector<const Scope *> temp;
-    getAllVariableMembers(scope, varlist, temp);
+    getAllVariableMembers(scope, varlist);
     for (const Variable *var: varlist)
         ret.emplace_back(var);
     return ret;
