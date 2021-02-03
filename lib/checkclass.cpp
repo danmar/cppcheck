@@ -541,6 +541,8 @@ void CheckClass::createUsageList(std::vector<Usage>& usageList, const Scope *sco
         usageList.push_back(Usage(&var));
     if (scope->definedType) {
         for (const Type::BaseInfo& baseInfo: scope->definedType->derivedFrom) {
+            if (scope->definedType == baseInfo.type) // don't crash on recursive templates
+                continue;
             const Scope *baseClass = baseInfo.type ? baseInfo.type->classScope : nullptr;
             if (baseClass && baseClass->isClassOrStruct() && baseClass->numConstructors == 0)
                 createUsageList(usageList, baseClass);

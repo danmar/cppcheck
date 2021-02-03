@@ -571,6 +571,10 @@ private:
                                   "};");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:10]: (warning) The class 'Derived2' defines member variable with name 'i' also defined in its parent class 'Base'.\n", errout.str());
 
+        // don't crash on recursive template
+        checkDuplInheritedMembers("template<size_t N>\n"
+                                  "struct BitInt : public BitInt<N+1> { };");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkCopyConstructor(const char code[]) {
