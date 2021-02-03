@@ -618,7 +618,7 @@ static void writePlatformType(QXmlStreamWriter &xmlWriter, const CppcheckLibrary
     xmlWriter.writeEndElement();
 }
 
-static void writeReflection (QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::Reflection &refl)
+static void writeReflection(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::Reflection &refl)
 {
     xmlWriter.writeStartElement("reflection");
     foreach (const CppcheckLibraryData::Reflection::Call &call, refl.calls) {
