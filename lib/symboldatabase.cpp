@@ -3139,7 +3139,7 @@ bool Type::findDependency(const Type* ancestor) const
     if (this==ancestor)
         return true;
     for (std::vector<BaseInfo>::const_iterator parent=derivedFrom.begin(); parent!=derivedFrom.end(); ++parent) {
-        if (parent->type && parent->type->findDependency(ancestor))
+        if (parent->type && (parent->type == this || parent->type->findDependency(ancestor)))
             return true;
     }
     return false;
@@ -5099,16 +5099,21 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
         }
 
         if (currScope) {
-            while (currScope && !(Token::Match(tok1, "%type% :: %name% [(),>]") ||
-                                  (Token::Match(tok1, "%type% <") && Token::Match(tok1->linkAt(1), "> :: %name% (")))) {
+            while (currScope && tok1 && !(Token::Match(tok1, "%type% :: %name% [(),>]") ||
+                                          (Token::Match(tok1, "%type% <") && Token::Match(tok1->linkAt(1), "> :: %name% (")))) {
                 if (tok1->strAt(1) == "::")
                     tok1 = tok1->tokAt(2);
-                else
+                else if (tok1->strAt(1) == "<")
                     tok1 = tok1->linkAt(1)->tokAt(2);
-                currScope = currScope->findRecordInNestedList(tok1->str());
+                else
+                    tok1 = nullptr;
+
+                if (tok1)
+                    currScope = currScope->findRecordInNestedList(tok1->str());
             }
 
-            tok1 = tok1->tokAt(2);
+            if (tok1)
+                tok1 = tok1->tokAt(2);
 
             if (currScope && tok1)
                 return currScope->findFunction(tok1);

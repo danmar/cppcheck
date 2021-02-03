@@ -51,7 +51,7 @@ jobs:
           move externals\z3-%Z3_VERSION%-x64-win externals\z3
         env:
           # see https://github.com/Z3Prover/z3/releases:  
-          Z3_VERSION: 4.8.9
+          Z3_VERSION: 4.8.10
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
@@ -68,10 +68,7 @@ jobs:
       
       - name: Deploy GUI
         run: |
-          dir Build
-          dir Build\gui
           windeployqt Build\gui
-          dir Build\gui
           del Build\gui\cppcheck-gui.ilk
           del Build\gui\cppcheck-gui.pdb
           

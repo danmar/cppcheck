@@ -106,7 +106,7 @@ def runCheck(source_filename=None, xml_version='1', xml_filename=None):
     with open(os.path.join(output_directory, 'index.html')) as index_file:
         index_contents = index_file.read()
 
-    yield (index_contents, output_directory)
+    yield index_contents, output_directory
 
     shutil.rmtree(output_directory)
 

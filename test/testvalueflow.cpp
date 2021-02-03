@@ -5049,6 +5049,15 @@ private:
                "}\n";
         ASSERT_EQUALS("", isInconclusiveContainerSizeValue(tokenValues(code, "x1 . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
         ASSERT_EQUALS("", isInconclusiveContainerSizeValue(tokenValues(code, "x2 . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+        
+        code = "std::vector<int> g();\n"
+               "int f(bool b) {\n"
+               "    std::set<int> a;\n"
+               "    std::vector<int> c = g();\n"
+               "    a.insert(c.begin(), c.end());\n"
+               "    return a.size();\n"
+               "}\n";
+        ASSERT_EQUALS(true, tokenValues(code, "a . size", ValueFlow::Value::ValueType::CONTAINER_SIZE).empty());
     }
 
     void valueFlowDynamicBufferSize() {

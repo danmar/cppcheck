@@ -4,7 +4,6 @@
 # check all files in a compile_commands.json:
 # grep '"file":' compile_commands.json | grep -v test | sed 's|.*/curl/|"--project=compile_commands.json --file-filter=*|' | xargs python3 ~/cppcheck/tools/compare_ast.py
 
-import glob
 import os
 import re
 import sys

@@ -97,6 +97,7 @@ private:
         TEST_CASE(initvar_union);
         TEST_CASE(initvar_delegate);       // ticket #4302
         TEST_CASE(initvar_delegate2);
+        TEST_CASE(initvar_derived_class);  // ticket #10161
 
         TEST_CASE(initvar_private_constructor);     // BUG 2354171 - private constructor
         TEST_CASE(initvar_copy_constructor); // ticket #1611
@@ -1178,6 +1179,21 @@ private:
               "{\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void initvar_derived_class() {
+        check("class Base {\n"
+              "public:\n"
+              "  virtual void foo() = 0;\n"
+              "  int x;\n" // <- uninitialized
+              "};\n"
+              "\n"
+              "class Derived: public Base {\n"
+              "public:\n"
+              "  Derived() {}\n"
+              "  void foo() override;\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'Base::x' is not initialized in the constructor. Maybe it should be initialized directly in the class Base?\n", errout.str());
     }
 
     void initvar_private_constructor() {

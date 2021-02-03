@@ -171,6 +171,13 @@ public:
         QString sign;
     };
 
+    struct PlatformType {
+        QString name;
+        QString value;
+        QStringList types;      // Keeps element names w/o attribute (e.g. unsigned)
+        QStringList platforms;  // Keeps "type" attribute of each "platform" element
+    };
+
     using TypeChecks = QList<QPair<QString, QString>>;
 
     void clear() {
@@ -182,6 +189,7 @@ public:
         podtypes.clear();
         smartPointers.clear();
         typeChecks.clear();
+        platformTypes.clear();
     }
 
     void swap(CppcheckLibraryData &other) {
@@ -193,6 +201,7 @@ public:
         podtypes.swap(other.podtypes);
         smartPointers.swap(other.smartPointers);
         typeChecks.swap(other.typeChecks);
+        platformTypes.swap(other.platformTypes);
     }
 
     QString open(QIODevice &file);
@@ -204,6 +213,7 @@ public:
     QList<struct MemoryResource> memoryresource;
     QList<struct PodType> podtypes;
     QList<TypeChecks> typeChecks;
+    QList<struct PlatformType> platformTypes;
     QStringList undefines;
     QStringList smartPointers;
 };

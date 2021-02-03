@@ -77,6 +77,7 @@ private:
         TEST_CASE(incorrectLogicOperator12);
         TEST_CASE(incorrectLogicOperator13);
         TEST_CASE(incorrectLogicOperator14);
+        TEST_CASE(incorrectLogicOperator15);
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
         TEST_CASE(testBug5895);
@@ -1559,6 +1560,29 @@ private:
               "      bool g(e);\n"
               "      if (f && g)\n"
               "        ;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void incorrectLogicOperator15() {
+        // 10022
+        check("struct PipeRoute {\n"
+              "    std::deque<int> points;\n"
+              "    std::deque<int> estimates;\n"
+              "};\n"
+              "void CleanPipeRoutes(std::map<int, PipeRoute*>& pipeRoutes) {\n"
+              "    for (auto it = pipeRoutes.begin(); it != pipeRoutes.end(); ) {\n"
+              "        PipeRoute* curRoute = it->second;\n"
+              "        if (curRoute->points.empty() && curRoute->estimates.size() != 2)\n"
+              "        {\n"
+              "            delete curRoute;\n"
+              "            it = pipeRoutes.erase(it);\n"
+              "        }\n"
+              "        else\n"
+              "        {\n"
+              "            ++it;\n"
+              "        }\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());

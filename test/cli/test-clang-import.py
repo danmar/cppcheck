@@ -4,7 +4,7 @@
 import os
 import re
 import subprocess
-from testutils import create_gui_project_file, cppcheck
+from testutils import cppcheck
 
 
 def get_debug_section(title, stdout):

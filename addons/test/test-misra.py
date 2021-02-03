@@ -10,7 +10,6 @@
 import pytest
 import re
 import sys
-import subprocess
 
 from .util import dump_create, dump_remove, convert_json_output
 

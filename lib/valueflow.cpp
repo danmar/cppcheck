@@ -5775,8 +5775,11 @@ struct ContainerVariableAnalyzer : VariableAnalyzer {
             }
         } else if (Token::Match(tok, "%name% . %name% (")) {
             Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
-            if (action == Library::Container::Action::PUSH || action == Library::Container::Action::POP)
-                return Action::Read | Action::Write | Action::Incremental;
+            if (action == Library::Container::Action::PUSH || action == Library::Container::Action::POP) {
+                std::vector<const Token*> args = getArguments(tok->tokAt(3));
+                if (args.size() < 2)
+                    return Action::Read | Action::Write | Action::Incremental;
+            }
         }
         return Action::None;
     }
