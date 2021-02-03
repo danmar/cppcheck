@@ -3,6 +3,7 @@
 # Server for 'donate-cpu.py'
 # Runs only under Python 3.
 
+import collections
 import glob
 import json
 import os
@@ -22,7 +23,7 @@ import operator
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.9"
+SERVER_VERSION = "1.3.12"
 
 OLD_VERSION = '2.3'
 
@@ -170,7 +171,7 @@ def crashReport(results_path: str) -> str:
                         continue
                 if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                     datestr = line
-                if line.startswith('count:'):
+                elif line.startswith('count:'):
                     if line.find('Crash') < 0:
                         break
                     package = filename[filename.rfind('/')+1:]
@@ -184,9 +185,9 @@ def crashReport(results_path: str) -> str:
                     html += fmt(package, datestr, c2, c1) + '\n'
                     if c1 != 'Crash':
                         break
-                if line.find(' received signal ') != -1:
+                elif line.find(' received signal ') != -1:
                     crash_line = next(file_, '').strip()
-                    location_index = crash_line.rindex(' at ')
+                    location_index = crash_line.rfind(' at ')
                     if location_index > 0:
                         code_line = next(file_, '').strip()
                         stack_trace = []
@@ -243,7 +244,7 @@ def timeoutReport(results_path: str) -> str:
                         continue
                 if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                     datestr = line
-                if line.startswith('count:'):
+                elif line.startswith('count:'):
                     if line.find('TO!') < 0:
                         break
                     package = filename[filename.rfind('/')+1:]
@@ -612,21 +613,26 @@ def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
     return text
 
 
-# TODO: sort the results by factor
 def timeReport(resultPath: str, show_gt: bool) -> str:
-    html = '<html><head><title>Time report ({})</title></head><body>\n'.format('regressed' if show_gt else 'improved')
-    html += '<h1>Time report</h1>\n'
+    title = 'Time report ({})'.format('regressed' if show_gt else 'improved')
+    html = '<html><head><title>{}</title></head><body>\n'.format(title)
+    html += '<h1>{}</h1>\n'.format(title)
     html += '<pre>\n'
     column_width = [40, 10, 10, 10, 10]
     html += '<b>'
-    html += fmt('Package', OLD_VERSION, 'Head', 'Factor', link=False, column_width=column_width)
+    html += fmt('Package', 'Date       Time', OLD_VERSION, 'Head', 'Factor', link=False, column_width=column_width)
     html += '</b>\n'
+
+    current_year = datetime.date.today().year
+
+    data = {}
 
     total_time_base = 0.0
     total_time_head = 0.0
     for filename in glob.glob(resultPath + '/*'):
         if not os.path.isfile(filename):
             continue
+        datestr = ''
         for line in open(filename, 'rt'):
             if line.startswith('cppcheck: '):
                 if OLD_VERSION not in line:
@@ -635,6 +641,9 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
                 else:
                     # Current package, parse on
                     continue
+            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+                datestr = line
+                continue
             if not line.startswith('elapsed-time:'):
                 continue
             split_line = line.strip().split()
@@ -655,9 +664,18 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
                     time_factor = time_head / time_base
                 else:
                     time_factor = 0.0
-                html += fmt(filename[len(resultPath)+1:], split_line[2], split_line[1],
-                    '{:.2f}'.format(time_factor), column_width=column_width) + '\n'
+                pkg_name = filename[len(resultPath)+1:]
+                data[pkg_name] = (datestr, split_line[2], split_line[1], time_factor)
             break
+
+    sorted_data = sorted(data.items(), key=lambda kv: kv[1][3])
+    if show_gt:
+        sorted_data.reverse()
+
+    sorted_dict = collections.OrderedDict(sorted_data)
+    for key in sorted_dict:
+        html += fmt(key, sorted_dict[key][0], sorted_dict[key][1], sorted_dict[key][2], '{:.2f}'.format(sorted_dict[key][3]),
+                    column_width=column_width) + '\n'
 
     html += '\n'
     html += '(listed above are all suspicious timings with a factor '

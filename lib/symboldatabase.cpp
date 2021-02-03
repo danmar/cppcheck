@@ -1421,14 +1421,14 @@ void SymbolDatabase::createSymbolDatabaseEscapeFunctions()
 
 void SymbolDatabase::createSymbolDatabaseExprIds()
 {
-    MathLib::bigint base = 0;
+    nonneg int base = 0;
     // Find highest varId
     for (const Variable *var : mVariableList) {
         if (!var)
             continue;
         base = std::max<MathLib::bigint>(base, var->declarationId());
     }
-    MathLib::bigint id = base+1;
+    nonneg int id = base + 1;
     for (const Scope * scope : functionScopes) {
         std::unordered_map<std::string, std::vector<Token*>> exprs;
 
@@ -1439,6 +1439,10 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
             } else if (Token::Match(tok, "(|.|[|%cop%")) {
                 exprs[tok->str()].push_back(tok);
                 tok->exprId(id++);
+
+                if (id == std::numeric_limits<nonneg int>::max()) {
+                    throw InternalError(nullptr, "Ran out of expression ids.", InternalError::INTERNAL);
+                }
             }
         }
 
@@ -1453,7 +1457,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                         continue;
                     if (!isSameExpression(isCPP(), true, tok1, tok2, mSettings->library, true, false))
                         continue;
-                    MathLib::bigint cid = std::min(tok1->exprId(), tok2->exprId());
+                    nonneg int cid = std::min(tok1->exprId(), tok2->exprId());
                     tok1->exprId(cid);
                     tok2->exprId(cid);
                 }
@@ -1882,9 +1886,45 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
         setFlag(fIsInit, true);
 }
 
+Variable::Variable(const Variable &var, const Scope *scope)
+    : mValueType(nullptr)
+{
+    *this = var;
+    mScope = scope;
+}
+
+Variable::Variable(const Variable &var)
+    : mValueType(nullptr)
+{
+    *this = var;
+}
+
 Variable::~Variable()
 {
     delete mValueType;
+}
+
+Variable& Variable::operator=(const Variable &var)
+{
+    if (this == &var)
+        return *this;
+
+    mNameToken = var.mNameToken;
+    mTypeStartToken = var.mTypeStartToken;
+    mTypeEndToken = var.mTypeEndToken;
+    mIndex = var.mIndex;
+    mAccess = var.mAccess;
+    mFlags = var.mFlags;
+    mType = var.mType;
+    mScope = var.mScope;
+    mDimensions = var.mDimensions;
+    delete mValueType;
+    if (var.mValueType)
+        mValueType = new ValueType(*var.mValueType);
+    else
+        mValueType = nullptr;
+
+    return *this;
 }
 
 bool Variable::isPointerArray() const
@@ -2393,9 +2433,16 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
     while (first->str() == second->str() &&
            first->isLong() == second->isLong() &&
            first->isUnsigned() == second->isUnsigned()) {
-
         if (first->str() == "(")
             openParen++;
+
+        // at end of argument list
+        else if (first->str() == ")") {
+            if (openParen == 1)
+                return true;
+            else
+                --openParen;
+        }
 
         // skip optional type information
         if (Token::Match(first->next(), "struct|enum|union|class"))
@@ -2410,14 +2457,6 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         if (Token::Match(second->next(), "const %type% %name%|,|)") &&
             !Token::Match(second->next(), "const %type% %name%| ["))
             second = second->next();
-
-        // at end of argument list
-        if (first->str() == ")") {
-            if (openParen == 1)
-                return true;
-            else
-                --openParen;
-        }
 
         // skip default value assignment
         else if (first->next()->str() == "=") {
@@ -2470,7 +2509,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             first = first->next();
 
         // argument list has different number of arguments
-        else if (second->str() == ")")
+        else if (openParen == 1 && second->str() == ")" && first->str() != ")")
             break;
 
         // ckeck for type * x == type x[]
@@ -3100,7 +3139,7 @@ bool Type::findDependency(const Type* ancestor) const
     if (this==ancestor)
         return true;
     for (std::vector<BaseInfo>::const_iterator parent=derivedFrom.begin(); parent!=derivedFrom.end(); ++parent) {
-        if (parent->type && parent->type->findDependency(ancestor))
+        if (parent->type && (parent->type == this || parent->type->findDependency(ancestor)))
             return true;
     }
     return false;
@@ -5060,16 +5099,21 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
         }
 
         if (currScope) {
-            while (currScope && !(Token::Match(tok1, "%type% :: %name% [(),>]") ||
-                                  (Token::Match(tok1, "%type% <") && Token::Match(tok1->linkAt(1), "> :: %name% (")))) {
+            while (currScope && tok1 && !(Token::Match(tok1, "%type% :: %name% [(),>]") ||
+                                          (Token::Match(tok1, "%type% <") && Token::Match(tok1->linkAt(1), "> :: %name% (")))) {
                 if (tok1->strAt(1) == "::")
                     tok1 = tok1->tokAt(2);
-                else
+                else if (tok1->strAt(1) == "<")
                     tok1 = tok1->linkAt(1)->tokAt(2);
-                currScope = currScope->findRecordInNestedList(tok1->str());
+                else
+                    tok1 = nullptr;
+
+                if (tok1)
+                    currScope = currScope->findRecordInNestedList(tok1->str());
             }
 
-            tok1 = tok1->tokAt(2);
+            if (tok1)
+                tok1 = tok1->tokAt(2);
 
             if (currScope && tok1)
                 return currScope->findFunction(tok1);

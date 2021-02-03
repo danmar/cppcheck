@@ -53,7 +53,7 @@ void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *
 void visitAstNodes(Token *ast, std::function<ChildrenToVisit(Token *)> visitor);
 
 const Token* findAstNode(const Token* ast, const std::function<bool(const Token*)>& pred);
-const Token* findExpression(MathLib::bigint exprid,
+const Token* findExpression(const nonneg int exprid,
                             const Token* start,
                             const Token* end,
                             const std::function<bool(const Token*)>& pred);
@@ -319,7 +319,7 @@ public:
     /** Is there some possible alias for given expression */
     bool possiblyAliased(const Token *expr, const Token *startToken) const;
 
-    std::set<int> getExprVarIds(const Token* expr, bool* localOut = nullptr, bool* unknownVarIdOut = nullptr) const;
+    std::set<nonneg int> getExprVarIds(const Token* expr, bool* localOut = nullptr, bool* unknownVarIdOut = nullptr) const;
 private:
     static bool isEscapedAlias(const Token* expr);
 
@@ -332,7 +332,7 @@ private:
     };
 
     struct Result check(const Token *expr, const Token *startToken, const Token *endToken);
-    struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<int> &exprVarIds, bool local, bool inInnerClass, int depth=0);
+    struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local, bool inInnerClass, int depth=0);
 
     // Is expression a l-value global data?
     bool isGlobalData(const Token *expr) const;

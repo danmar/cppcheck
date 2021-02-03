@@ -249,6 +249,14 @@ namespace clangimport {
             notFound(addr);
         }
 
+        void replaceVarDecl(const Variable *from, Variable *to) {
+            for (auto &it: mDeclMap) {
+                Decl &decl = it.second;
+                if (decl.var == from)
+                    decl.var = to;
+            }
+        }
+
         void ref(const std::string &addr, Token *tok) {
             auto it = mDeclMap.find(addr);
             if (it != mDeclMap.end())
@@ -632,6 +640,29 @@ Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType 
     scope->type = scopeType;
     scope->classDef = def;
     scope->check = nestedIn->check;
+    if (Token::Match(def, "if|for|while (")) {
+        std::map<const Variable *, const Variable *> replaceVar;
+        for (const Token *vartok = def->tokAt(2); vartok; vartok = vartok->next()) {
+            if (!vartok->variable())
+                continue;
+            if (vartok->variable()->nameToken() == vartok) {
+                const Variable *from = vartok->variable();
+                scope->varlist.emplace_back(*from, scope);
+                Variable *to = &scope->varlist.back();
+                replaceVar[from] = to;
+                mData->replaceVarDecl(from, to);
+            }
+            if (replaceVar.find(vartok->variable()) != replaceVar.end())
+                const_cast<Token *>(vartok)->variable(replaceVar[vartok->variable()]);
+        }
+        std::list<Variable> &varlist = const_cast<Scope *>(def->scope())->varlist;
+        for (std::list<Variable>::iterator var = varlist.begin(); var != varlist.end();) {
+            if (replaceVar.find(&(*var)) != replaceVar.end())
+                varlist.erase(var++);
+            else
+                ++var;
+        }
+    }
     scope->bodyStart = addtoken(tokenList, "{");
     tokenList->back()->scope(scope);
     mData->scopeAccessControl[scope] = scope->defaultAccess();

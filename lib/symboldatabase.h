@@ -240,7 +240,13 @@ public:
              const Token *typeEnd, nonneg int index_, AccessControl access_,
              const Type *type_, const Scope *scope_);
 
+    Variable(const Variable &var, const Scope *scope);
+
+    Variable(const Variable &var);
+
     ~Variable();
+
+    Variable &operator=(const Variable &var);
 
     /**
      * Get name token.
@@ -1236,6 +1242,21 @@ public:
           containerTypeToken(nullptr),
           originalTypeName(otn)
     {}
+    ValueType(const ValueType &vt)
+        : sign(vt.sign)
+        , type(vt.type)
+        , bits(vt.bits)
+        , pointer(vt.pointer)
+        , constness(vt.constness)
+        , reference(vt.reference)
+        , typeScope(vt.typeScope)
+        , smartPointerType(vt.smartPointerType)
+        , smartPointerTypeToken(vt.smartPointerTypeToken)
+        , container(vt.container)
+        , containerTypeToken(vt.containerTypeToken)
+        , originalTypeName(vt.originalTypeName)
+    {}
+
     static ValueType parseDecl(const Token *type, const Settings *settings);
 
     static Type typeFromString(const std::string &typestr, bool longType);

@@ -271,6 +271,56 @@ static CppcheckLibraryData::PodType loadPodType(const QXmlStreamReader &xmlReade
     return podtype;
 }
 
+static CppcheckLibraryData::PlatformType loadPlatformType(QXmlStreamReader &xmlReader)
+{
+    CppcheckLibraryData::PlatformType platformType;
+    platformType.name = xmlReader.attributes().value("name").toString();
+    platformType.value = xmlReader.attributes().value("value").toString();
+
+    QXmlStreamReader::TokenType type;
+    while ((type = xmlReader.readNext()) != QXmlStreamReader::EndElement ||
+           xmlReader.name().toString() != "platformtype") {
+        if (type != QXmlStreamReader::StartElement)
+            continue;
+        const QString elementName = xmlReader.name().toString();
+        if (QStringList({"unsigned", "long", "pointer", "const_ptr", "ptr_ptr"}).contains(elementName)) {
+            platformType.types.append(elementName);
+        } else if (elementName == "platform") {
+            platformType.platforms.append(xmlReader.attributes().value("type").toString());
+        } else {
+            unhandledElement(xmlReader);
+        }
+    }
+    return platformType;
+}
+
+static CppcheckLibraryData::Reflection loadReflection(QXmlStreamReader &xmlReader)
+{
+    CppcheckLibraryData::Reflection reflection;
+
+    QXmlStreamReader::TokenType type;
+    while ((type = xmlReader.readNext()) != QXmlStreamReader::EndElement ||
+           xmlReader.name().toString() != "reflection") {
+        if (type != QXmlStreamReader::StartElement)
+            continue;
+        const QString elementName = xmlReader.name().toString();
+        if (elementName == "call") {
+            CppcheckLibraryData::Reflection::Call call;
+            if (xmlReader.attributes().hasAttribute("arg")) {
+                call.arg = xmlReader.attributes().value("arg").toInt();
+            } else {
+                mandatoryAttibuteMissing(xmlReader, "arg");
+            }
+            call.name = xmlReader.readElementText();
+            reflection.calls.append(call);
+        } else {
+            unhandledElement(xmlReader);
+        }
+    }
+
+    return reflection;
+}
+
 QString CppcheckLibraryData::open(QIODevice &file)
 {
     clear();
@@ -305,6 +355,10 @@ QString CppcheckLibraryData::open(QIODevice &file)
                     smartPointers.append(loadSmartPointer(xmlReader));
                 else if (elementName == "type-checks")
                     typeChecks.append(loadTypeChecks(xmlReader));
+                else if (elementName == "platformtype")
+                    platformTypes.append(loadPlatformType(xmlReader));
+                else if (elementName == "reflection")
+                    reflections.append(loadReflection(xmlReader));
                 else
                     unhandledElement(xmlReader);
             } catch (std::runtime_error &e) {
@@ -545,6 +599,37 @@ static void writeTypeChecks(QXmlStreamWriter &xmlWriter, const CppcheckLibraryDa
     xmlWriter.writeEndElement();
 }
 
+static void writePlatformType(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::PlatformType &pt)
+{
+    xmlWriter.writeStartElement("platformtype");
+    xmlWriter.writeAttribute("name", pt.name);
+    xmlWriter.writeAttribute("value", pt.value);
+    foreach (const QString type, pt.types) {
+        xmlWriter.writeStartElement(type);
+        xmlWriter.writeEndElement();
+    }
+    foreach (const QString platform, pt.platforms) {
+        xmlWriter.writeStartElement("platform");
+        if (!platform.isEmpty()) {
+            xmlWriter.writeAttribute("type", platform);
+        }
+        xmlWriter.writeEndElement();
+    }
+    xmlWriter.writeEndElement();
+}
+
+static void writeReflection(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::Reflection &refl)
+{
+    xmlWriter.writeStartElement("reflection");
+    foreach (const CppcheckLibraryData::Reflection::Call &call, refl.calls) {
+        xmlWriter.writeStartElement("call");
+        xmlWriter.writeAttribute("arg", QString("%1").arg(call.arg));
+        xmlWriter.writeCharacters(call.name);
+        xmlWriter.writeEndElement();
+    }
+    xmlWriter.writeEndElement();
+}
+
 QString CppcheckLibraryData::toString() const
 {
     QString outputString;
@@ -600,6 +685,14 @@ QString CppcheckLibraryData::toString() const
         xmlWriter.writeStartElement("smart-pointer");
         xmlWriter.writeAttribute("class-name", smartPtr);
         xmlWriter.writeEndElement();
+    }
+
+    foreach (const PlatformType &pt, platformTypes) {
+        writePlatformType(xmlWriter, pt);
+    }
+
+    foreach (const Reflection &refl, reflections) {
+        writeReflection(xmlWriter, refl);
     }
 
     xmlWriter.writeEndElement();

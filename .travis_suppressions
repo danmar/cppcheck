@@ -6,8 +6,6 @@ functionStatic
 bitwiseOnBoolean
 
 # temporary suppressions - fix the warnings!
-missingOverride
-unusedPrivateFunction:lib/checkbufferoverrun.h
 unusedPrivateFunction:test/test*.cpp
 useStlAlgorithm
 

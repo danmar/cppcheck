@@ -344,6 +344,7 @@ private:
         TEST_CASE(symboldatabase89); // valuetype name
         TEST_CASE(symboldatabase90);
         TEST_CASE(symboldatabase91);
+        TEST_CASE(symboldatabase92); // daca crash
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -404,6 +405,7 @@ private:
         TEST_CASE(findFunction37); // #10124
         TEST_CASE(findFunction38); // #10125
         TEST_CASE(findFunction39); // #10127
+        TEST_CASE(findFunction40); // #10135
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -4679,6 +4681,14 @@ private:
         ASSERT(functok->function()->name() == "foo");
     }
 
+    void symboldatabase92() { // daca crash
+        GET_SYMBOL_DB("template <size_t, typename...> struct a;\n"
+                      "template <size_t b, typename c, typename... d>\n"
+                      "struct a<b, c, d...> : a<1, d...> {};\n"
+                      "template <typename... e> struct f : a<0, e...> {};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void createSymbolDatabaseFindAllScopes1() {
         GET_SYMBOL_DB("void f() { union {int x; char *p;} a={0}; }");
         ASSERT(db->scopeList.size() == 3);
@@ -6341,6 +6351,22 @@ private:
         ASSERT(functok->function());
         ASSERT(functok->function()->name() == "f");
         ASSERT_EQUALS(8, functok->function()->tokenDef->linenr());
+    }
+
+    void findFunction40() { // #10135
+        GET_SYMBOL_DB("class E : public std::exception {\n"
+                      "public:\n"
+                      "    const char* what() const noexcept override;\n"
+                      "};\n"
+                      "const char* E::what() const noexcept {\n"
+                      "    return nullptr;\n"
+                      "}");
+        ASSERT_EQUALS("", errout.str());
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "what ( ) const noexcept {");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT(functok->function()->name() == "what");
+        ASSERT_EQUALS(3, functok->function()->tokenDef->linenr());
     }
 
     void findFunctionContainer() {

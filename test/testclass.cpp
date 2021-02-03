@@ -571,6 +571,10 @@ private:
                                   "};");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:10]: (warning) The class 'Derived2' defines member variable with name 'i' also defined in its parent class 'Base'.\n", errout.str());
 
+        // don't crash on recursive template
+        checkDuplInheritedMembers("template<size_t N>\n"
+                                  "struct BitInt : public BitInt<N+1> { };");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkCopyConstructor(const char code[]) {
@@ -1547,6 +1551,145 @@ private:
             "    return *this;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        // this test needs an assignment test and has the inverse test
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &);\n"
+            "};\n"
+            "A & A::operator=(const A &a)\n"
+            "{\n"
+            "    if (&a == this)\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(a.s);\n"
+            "    }\n"
+            "    return *this;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+
+        // this test needs an assignment test and has the inverse test
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &);\n"
+            "};\n"
+            "A & A::operator=(const A &a)\n"
+            "{\n"
+            "    if ((&a == this) == true)\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(a.s);\n"
+            "    }\n"
+            "    return *this;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+
+        // this test needs an assignment test and has the inverse test
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &);\n"
+            "};\n"
+            "A & A::operator=(const A &a)\n"
+            "{\n"
+            "    if ((&a == this) != false)\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(a.s);\n"
+            "    }\n"
+            "    return *this;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+
+        // this test needs an assignment test and has the inverse test
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &);\n"
+            "};\n"
+            "A & A::operator=(const A &a)\n"
+            "{\n"
+            "    if (!((&a == this) == false))\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(a.s);\n"
+            "    }\n"
+            "    return *this;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+
+        // this test needs an assignment test and has the inverse test
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &);\n"
+            "};\n"
+            "A & A::operator=(const A &a)\n"
+            "{\n"
+            "    if ((&a != this) == false)\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(a.s);\n"
+            "    }\n"
+            "    return *this;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+
+        // this test needs an assignment test and has the inverse test
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &);\n"
+            "};\n"
+            "A & A::operator=(const A &a)\n"
+            "{\n"
+            "    if (&a != this)\n"
+            "    {\n"
+            "    }\n"
+            "    else\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(a.s);\n"
+            "    }\n"
+            "    return *this;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+
+        // this test needs an assignment test and has the inverse test
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &);\n"
+            "};\n"
+            "A & A::operator=(const A &a)\n"
+            "{\n"
+            "    if (&a != this)\n"
+            "        free(s);\n"
+            "    else\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(a.s);\n"
+            "    }\n"
+            "    return *this;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+
 
         // this test needs an assignment test but doesn’t have it
         checkOpertorEqToSelf(

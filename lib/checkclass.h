@@ -160,7 +160,7 @@ private:
     void noCopyConstructorError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
     void noOperatorEqError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
     void noDestructorError(const Scope *scope, bool isdefault, const Token *alloc);
-    void uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool inconclusive);
+    void uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive);
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
     void memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type);
@@ -197,8 +197,10 @@ private:
         c.noCopyConstructorError(nullptr, false, nullptr, false);
         c.noOperatorEqError(nullptr, false, nullptr, false);
         c.noDestructorError(nullptr, false, nullptr);
-        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", false);
-        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", false);
+        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", false, false);
+        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", false, false);
+        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", true, false);
+        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", true, false);
         c.operatorEqVarError(nullptr, "classname", emptyString, false);
         c.unusedPrivateFunctionError(nullptr, "classname", "funcname");
         c.memsetError(nullptr, "memfunc", "classname", "class");
@@ -261,7 +263,12 @@ private:
 
     // operatorEqToSelf helper functions
     bool hasAllocation(const Function *func, const Scope* scope) const;
-    static bool hasAssignSelf(const Function *func, const Token *rhs);
+    bool hasAllocation(const Function *func, const Scope* scope, const Token *start, const Token *end) const;
+    bool hasAllocationInIfScope(const Function *func, const Scope* scope, const Token *ifStatementScopeStart) const;
+    static bool hasAssignSelf(const Function *func, const Token *rhs, const Token **out_ifStatementScopeStart);
+    enum class Bool { TRUE, FALSE, BAILOUT };
+    static Bool isInverted(const Token *tok, const Token *rhs);
+    static const Token * getIfStmtBodyStart(const Token *tok, const Token *rhs);
 
     // checkConst helper functions
     bool isMemberVar(const Scope *scope, const Token *tok) const;
@@ -272,7 +279,10 @@ private:
     // constructors helper function
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
     struct Usage {
-        Usage() : assign(false), init(false) { }
+        explicit Usage(const Variable *var) : var(var), assign(false), init(false) { }
+
+        /** Variable that this usage is for */
+        const Variable *var;
 
         /** @brief has this variable been assigned? */
         bool assign;
@@ -284,32 +294,37 @@ private:
     static bool isBaseClassFunc(const Token *tok, const Scope *scope);
 
     /**
-     * @brief assign a variable in the varlist
-     * @param varid id of variable to mark assigned
-     * @param scope pointer to variable Scope
-     * @param usage reference to usage vector
+     * @brief Create usage list that contains all scope members and also members
+     * of base classes without constructors.
+     * @param scope current class scope
      */
-    static void assignVar(nonneg int varid, const Scope *scope, std::vector<Usage> &usage);
+    static std::vector<Usage> createUsageList(const Scope *scope);
+
+    /**
+     * @brief assign a variable in the varlist
+     * @param usageList reference to usage vector
+     * @param varid id of variable to mark assigned
+     */
+    static void assignVar(std::vector<Usage> &usageList, nonneg int varid);
 
     /**
      * @brief initialize a variable in the varlist
+     * @param usageList reference to usage vector
      * @param varid id of variable to mark initialized
-     * @param scope pointer to variable Scope
-     * @param usage reference to usage vector
      */
-    static void initVar(nonneg int varid, const Scope *scope, std::vector<Usage> &usage);
+    static void initVar(std::vector<Usage> &usageList, nonneg int varid);
 
     /**
      * @brief set all variables in list assigned
-     * @param usage reference to usage vector
+     * @param usageList reference to usage vector
      */
-    static void assignAllVar(std::vector<Usage> &usage);
+    static void assignAllVar(std::vector<Usage> &usageList);
 
     /**
      * @brief set all variables in list not assigned and not initialized
-     * @param usage reference to usage vector
+     * @param usageList reference to usage vector
      */
-    static void clearAllVar(std::vector<Usage> &usage);
+    static void clearAllVar(std::vector<Usage> &usageList);
 
     /**
      * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist

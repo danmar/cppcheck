@@ -2579,6 +2579,24 @@ private:
               "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10090
+        check("struct a {\n"
+              "    int b{};\n"
+              "};\n"
+              "struct c {\n"
+              "    int* c{};\n"
+              "    a* d{};\n"
+              "};\n"
+              "a* f();\n"
+              "c g() {\n"
+              "    c e;\n"
+              "    e.d = f();\n"
+              "    if (e.d)\n"
+              "        e.c = &e.d->b;\n"
+              "    return e;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {

@@ -77,6 +77,7 @@ private:
         TEST_CASE(incorrectLogicOperator12);
         TEST_CASE(incorrectLogicOperator13);
         TEST_CASE(incorrectLogicOperator14);
+        TEST_CASE(incorrectLogicOperator15);
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
         TEST_CASE(testBug5895);
@@ -1559,6 +1560,29 @@ private:
               "      bool g(e);\n"
               "      if (f && g)\n"
               "        ;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void incorrectLogicOperator15() {
+        // 10022
+        check("struct PipeRoute {\n"
+              "    std::deque<int> points;\n"
+              "    std::deque<int> estimates;\n"
+              "};\n"
+              "void CleanPipeRoutes(std::map<int, PipeRoute*>& pipeRoutes) {\n"
+              "    for (auto it = pipeRoutes.begin(); it != pipeRoutes.end(); ) {\n"
+              "        PipeRoute* curRoute = it->second;\n"
+              "        if (curRoute->points.empty() && curRoute->estimates.size() != 2)\n"
+              "        {\n"
+              "            delete curRoute;\n"
+              "            it = pipeRoutes.erase(it);\n"
+              "        }\n"
+              "        else\n"
+              "        {\n"
+              "            ++it;\n"
+              "        }\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
@@ -3524,6 +3548,18 @@ private:
               "    return 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:11]: (style) Condition '!y' is always true\n", errout.str());
+
+        // #10134
+        check("bool foo(bool b);\n"
+              "bool thud(const std::vector<std::wstring>& Arr, const std::wstring& Str) {\n"
+              "  if (Arr.empty() && Str.empty())\n"
+              "    return false;\n"
+              "  bool OldFormat = Arr.empty() && !Str.empty();\n"
+              "  if (OldFormat)\n"
+              "    return foo(OldFormat);\n"
+              "  return false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
