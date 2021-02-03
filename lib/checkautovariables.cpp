@@ -593,6 +593,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                             continue;
                         if (!isLifetimeBorrowed(tok, mSettings))
                             continue;
+                        if (tokvalue->exprId() == tok->exprId() && !(tok->variable() && tok->variable()->isArray()))
+                            continue;
                         if ((tokvalue->variable() && !isEscapedReference(tokvalue->variable()) &&
                              isInScope(tokvalue->variable()->nameToken(), scope)) ||
                             isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
