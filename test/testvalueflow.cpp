@@ -5026,6 +5026,17 @@ private:
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
 
+        code = "bool f(std::string s) {\n"
+               "    if (!s.empty()) {\n"
+               "        bool x = s == \"0\";\n"
+               "        return x;\n"
+               "    }\n"
+               "    return false;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
+
         code = "std::vector<int> g();\n"
                "int f(bool b) {\n"
                "    std::set<int> a;\n"
