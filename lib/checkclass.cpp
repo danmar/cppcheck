@@ -137,8 +137,7 @@ void CheckClass::constructors()
         }
 
 
-        std::vector<Usage> usageList;
-        createUsageList(usageList, scope);
+        std::vector<Usage> usageList = createUsageList(scope);
 
         for (const Function &func : scope->functionList) {
             if (!func.hasBody() || !(func.isConstructor() || func.type == Function::eOperatorEqual))
@@ -535,17 +534,31 @@ bool CheckClass::canNotMove(const Scope *scope)
     return constructor && !(publicAssign || publicCopy || publicMove);
 }
 
-void CheckClass::createUsageList(std::vector<Usage>& usageList, const Scope *scope)
+static void getAllVariableMembers(const Scope *scope, std::vector<const Variable *>& varList, std::vector<const Scope *> &baseClasses)
 {
+    if (std::find(baseClasses.begin(), baseClasses.end(), scope) != baseClasses.end())
+        return;
+    baseClasses.push_back(scope);
     for (const Variable& var: scope->varlist)
-        usageList.push_back(Usage(&var));
+        varList.push_back(&var);
     if (scope->definedType) {
         for (const Type::BaseInfo& baseInfo: scope->definedType->derivedFrom) {
             const Scope *baseClass = baseInfo.type ? baseInfo.type->classScope : nullptr;
             if (baseClass && baseClass->isClassOrStruct() && baseClass->numConstructors == 0)
-                createUsageList(usageList, baseClass);
+                getAllVariableMembers(baseClass, varList, baseClasses);
         }
     }
+}
+
+std::vector<CheckClass::Usage> CheckClass::createUsageList(const Scope *scope)
+{
+    std::vector<Usage> ret;
+    std::vector<const Variable *> varlist;
+    std::vector<const Scope *> temp;
+    getAllVariableMembers(scope, varlist, temp);
+    for (const Variable *var: varlist)
+        ret.emplace_back(var);
+    return ret;
 }
 
 void CheckClass::assignVar(std::vector<Usage> &usageList, nonneg int varid)

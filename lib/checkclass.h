@@ -296,10 +296,9 @@ private:
     /**
      * @brief Create usage list that contains all scope members and also members
      * of base classes without constructors.
-     * @param usageList usageList that will be filled up
      * @param scope current class scope
      */
-    static void createUsageList(std::vector<Usage>& usageList, const Scope *scope);
+    static std::vector<Usage> createUsageList(const Scope *scope);
 
     /**
      * @brief assign a variable in the varlist
