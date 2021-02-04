@@ -1746,9 +1746,10 @@ void Tokenizer::simplifyTypedef()
 
 namespace {
     struct ScopeInfo3 {
-        ScopeInfo3() : parent(nullptr), bodyStart(nullptr), bodyEnd(nullptr) {}
-        ScopeInfo3(ScopeInfo3 *parent_, const std::string &name_, const Token *bodyStart_, const Token *bodyEnd_)
-            : parent(parent_), name(name_), bodyStart(bodyStart_), bodyEnd(bodyEnd_) {
+        enum Type { Global, Namespace, Record, MemberFunction, Other };
+        ScopeInfo3() : parent(nullptr), type(Global), bodyStart(nullptr), bodyEnd(nullptr) {}
+        ScopeInfo3(ScopeInfo3 *parent_, Type type_, const std::string &name_, const Token *bodyStart_, const Token *bodyEnd_)
+            : parent(parent_), type(type_), name(name_), bodyStart(bodyStart_), bodyEnd(bodyEnd_) {
             fullName = name;
             ScopeInfo3 *scope = parent;
             while (!fullName.empty() && scope && scope->parent) {
@@ -1758,6 +1759,7 @@ namespace {
         }
         ScopeInfo3 *parent;
         std::list<ScopeInfo3> children;
+        Type type;
         std::string fullName;
         const std::string name;
         const Token * const bodyStart;
@@ -1765,9 +1767,9 @@ namespace {
         std::set<std::string> usingNamespaces;
         std::set<std::string> recordTypes;
 
-        ScopeInfo3 *addChild(const std::string &name, const Token *bodyStart, const Token *bodyEnd)
+        ScopeInfo3 *addChild(Type type, const std::string &name, const Token *bodyStart, const Token *bodyEnd)
         {
-            children.emplace_back(this, name, bodyStart, bodyEnd);
+            children.emplace_back(this, type, name, bodyStart, bodyEnd);
             return &children.back();
         }
 
@@ -1778,6 +1780,28 @@ namespace {
                     return true;
             }
             return false;
+        }
+
+        void  printOut(const std::string & indent = "  ") const
+        {
+            std::cerr << indent << "type: " << (type == Global ? "Global" :
+                                                type == Namespace ? "Namespace" :
+                                                type == Record ? "Record" :
+                                                type == MemberFunction ? "MemberFunction" :
+                                                type == Other ? "Other" :
+                                                "Unknown") << std::endl;
+            std::cerr << indent << "fullName: " << fullName << std::endl;
+            std::cerr << indent << "name: " << name << std::endl;
+            std::cerr << indent << usingNamespaces.size() << " usingNamespaces:";
+            for (const auto & usingNamespace : usingNamespaces)
+                std::cerr << " " << usingNamespace;
+            std::cerr << std::endl;
+            std::cerr << indent << children.size() << " children:" << std::endl;
+            size_t i = 0;
+            for (const auto & child : children) {
+                std::cerr << indent << "child " << i++ << std::endl;
+                child.printOut(indent + "  ");
+            }
         }
     };
 
@@ -1834,13 +1858,13 @@ namespace {
                             scope = tok1->strAt(-3) + " :: " + scope;
                             tok1 = tok1->tokAt(-2);
                         }
-                        *scopeInfo = (*scopeInfo)->addChild(scope, tok, tok->link());
+                        *scopeInfo = (*scopeInfo)->addChild(ScopeInfo3::MemberFunction, scope, tok, tok->link());
                         added = true;
                     }
                 }
 
                 if (all && !added)
-                    *scopeInfo = (*scopeInfo)->addChild("", tok, tok->link());
+                    *scopeInfo = (*scopeInfo)->addChild(ScopeInfo3::Other, "", tok, tok->link());
             }
             return;
         }
@@ -1860,14 +1884,16 @@ namespace {
             while (tok && !Token::Match(tok, ";|{"))
                 tok = tok->next();
         }
+
         // skip template parameters
         if (tok && tok->str() == "<") {
             tok = tok->findClosingBracket();
             if (tok)
                 tok = tok->next();
         }
+
         if (tok && tok->str() == "{") {
-            *scopeInfo = (*scopeInfo)->addChild(classname, tok, tok->link());
+            *scopeInfo = (*scopeInfo)->addChild(record ? ScopeInfo3::Record : ScopeInfo3::Namespace, classname, tok, tok->link());
         }
     }
 
