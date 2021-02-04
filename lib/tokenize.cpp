@@ -1766,6 +1766,7 @@ namespace {
         const Token * const bodyEnd;
         std::set<std::string> usingNamespaces;
         std::set<std::string> recordTypes;
+        std::set<std::string> baseTypes;
 
         ScopeInfo3 *addChild(Type type, const std::string &name, const Token *bodyStart, const Token *bodyEnd)
         {
@@ -1796,12 +1797,23 @@ namespace {
             for (const auto & usingNamespace : usingNamespaces)
                 std::cerr << " " << usingNamespace;
             std::cerr << std::endl;
+            std::cerr << indent << baseTypes.size() << " baseTypes:";
+            for (const auto & baseType : baseTypes)
+                std::cerr << " " << baseType;
+            std::cerr << std::endl;
             std::cerr << indent << children.size() << " children:" << std::endl;
             size_t i = 0;
             for (const auto & child : children) {
                 std::cerr << indent << "child " << i++ << std::endl;
                 child.printOut(indent + "  ");
             }
+        }
+
+        bool findTypeInBase(const std::string &scope) const
+        {
+            if (baseTypes.find(scope) != baseTypes.end())
+                return true;
+            return false;
         }
     };
 
@@ -1876,14 +1888,11 @@ namespace {
             tok = tok->tokAt(2);
             classname += " :: " + tok->str();
         }
+
         // add record type to scope info
         if (record)
             (*scopeInfo)->recordTypes.insert(classname);
         tok = tok->next();
-        if (tok && tok->str() == ":") {
-            while (tok && !Token::Match(tok, ";|{"))
-                tok = tok->next();
-        }
 
         // skip template parameters
         if (tok && tok->str() == "<") {
@@ -1892,8 +1901,33 @@ namespace {
                 tok = tok->next();
         }
 
+        // get base class types
+        std::set<std::string> baseTypes;
+        if (tok && tok->str() == ":") {
+            do {
+                tok = tok->next();
+                while (Token::Match(tok, "public|protected|private|virtual"))
+                    tok = tok->next();
+                std::string base;
+                while (tok && !Token::Match(tok, ";|,|{")) {
+                    if (!base.empty())
+                        base += ' ';
+                    base += tok->str();
+                    tok = tok->next();
+                    // skip template parameters
+                    if (tok && tok->str() == "<") {
+                        tok = tok->findClosingBracket();
+                        if (tok)
+                            tok = tok->next();
+                    }
+                }
+                baseTypes.insert(base);
+            } while (tok && !Token::Match(tok, ";|{"));
+        }
+
         if (tok && tok->str() == "{") {
             *scopeInfo = (*scopeInfo)->addChild(record ? ScopeInfo3::Record : ScopeInfo3::Namespace, classname, tok, tok->link());
+            (*scopeInfo)->baseTypes = baseTypes;
         }
     }
 
@@ -1977,6 +2011,10 @@ namespace {
         fullScope1 += qualification;
 
         if (scope == fullScope1)
+            return true;
+
+        // check in base types
+        if (scopeInfo->findTypeInBase(scope))
             return true;
 
         // check using namespace
