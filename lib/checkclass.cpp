@@ -2548,6 +2548,9 @@ void CheckClass::checkDuplInheritedMembersRecursive(const Type* typeCurrent, con
         // Check if there is info about the 'Base' class
         if (!parentClassIt.type || !parentClassIt.type->classScope)
             continue;
+        // Don't crash on recursive templates
+        if (parentClassIt.type == typeBase)
+            continue;
         // Check if they have a member variable in common
         for (const Variable &classVarIt : typeCurrent->classScope->varlist) {
             for (const Variable &parentClassVarIt : parentClassIt.type->classScope->varlist) {
