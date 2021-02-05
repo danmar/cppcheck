@@ -78,6 +78,7 @@ private:
         TEST_CASE(simplifyUsing9757);
         TEST_CASE(simplifyUsing10008);
         TEST_CASE(simplifyUsing10054);
+        TEST_CASE(simplifyUsing10136);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -886,6 +887,118 @@ private:
                                 "struct B<1> { } ;";
             ASSERT_EQUALS(exp, tok(code, true));
             ASSERT_EQUALS("", errout.str());
+        }
+    }
+
+    void simplifyUsing10136() {
+        {
+            const char code[] = "class B {\n"
+                                "public:\n"
+                                "    using V = std::vector<char>;\n"
+                                "    virtual void f(const V&) const = 0;\n"
+                                "};\n"
+                                "class A final : public B {\n"
+                                "public:\n"
+                                "    void f(const V&) const override;\n"
+                                "};\n"
+                                "void A::f(const std::vector<char>&) const { }";
+            const char exp[]  = "class B { "
+                                "public: "
+                                "virtual void f ( const std :: vector < char > & ) const = 0 ; "
+                                "} ; "
+                                "class A : public B { "
+                                "public: "
+                                "void f ( const std :: vector < char > & ) const override ; "
+                                "} ; "
+                                "void A :: f ( const std :: vector < char > & ) const { }";
+            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            const char code[] = "namespace NS1 {\n"
+                                "    class B {\n"
+                                "    public:\n"
+                                "        using V = std::vector<char>;\n"
+                                "        virtual void f(const V&) const = 0;\n"
+                                "    };\n"
+                                "}\n"
+                                "namespace NS2 {\n"
+                                "    class A : public NS1::B {\n"
+                                "    public:\n"
+                                "        void f(const V&) const override;\n"
+                                "    };\n"
+                                "    namespace NS3 {\n"
+                                "        class C : public A {\n"
+                                "        public:\n"
+                                "            void f(const V&) const override;\n"
+                                "        };\n"
+                                "        void C::f(const V&) const { }\n"
+                                "    }\n"
+                                "    void A::f(const V&) const { }\n"
+                                "}\n"
+                                "void foo() {\n"
+                                "    NS2::A a;\n"
+                                "    NS2::NS3::C c;\n"
+                                "    NS1::B::V v;\n"
+                                "    a.f(v);\n"
+                                "    c.f(v);\n"
+                                "}";
+            const char exp[]  = "namespace NS1 { "
+                                "class B { "
+                                "public: "
+                                "virtual void f ( const std :: vector < char > & ) const = 0 ; "
+                                "} ; "
+                                "} "
+                                "namespace NS2 { "
+                                "class A : public NS1 :: B { "
+                                "public: "
+                                "void f ( const std :: vector < char > & ) const override ; "
+                                "} ; "
+                                "namespace NS3 { "
+                                "class C : public A { "
+                                "public: "
+                                "void f ( const std :: vector < char > & ) const override ; "
+                                "} ; "
+                                "void C :: f ( const std :: vector < char > & ) const { } "
+                                "} "
+                                "void A :: f ( const std :: vector < char > & ) const { } "
+                                "} "
+                                "void foo ( ) { "
+                                "NS2 :: A a ; "
+                                "NS2 :: NS3 :: C c ; "
+                                "std :: vector < char > v ; "
+                                "a . f ( v ) ; "
+                                "c . f ( v ) ; "
+                                "}";
+            const char act[]  = "namespace NS1 { "
+                                "class B { "
+                                "public: "
+                                "virtual void f ( const std :: vector < char > & ) const = 0 ; "
+                                "} ; "
+                                "} "
+                                "namespace NS2 { "
+                                "class A : public NS1 :: B { "
+                                "public: "
+                                "void f ( const std :: vector < char > & ) const override ; "
+                                "} ; "
+                                "namespace NS3 { "
+                                "class C : public A { "
+                                "public: "
+                                "void f ( const V & ) const override ; "
+                                "} ; "
+                                "void C :: f ( const V & ) const { } "
+                                "} "
+                                "void A :: f ( const V & ) const { } "
+                                "} "
+                                "void foo ( ) { "
+                                "NS2 :: A a ; "
+                                "NS2 :: NS3 :: C c ; "
+                                "std :: vector < char > v ; "
+                                "a . f ( v ) ; "
+                                "c . f ( v ) ; "
+                                "}";
+            TODO_ASSERT_EQUALS(exp, act, tok(code, true));
+            TODO_ASSERT_EQUALS("", "[test.cpp:20]: (debug) Executable scope 'f' with unknown function.\n", errout.str());
         }
     }
 };
