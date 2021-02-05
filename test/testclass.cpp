@@ -575,6 +575,21 @@ private:
         checkDuplInheritedMembers("template<size_t N>\n"
                                   "struct BitInt : public BitInt<N+1> { };");
         ASSERT_EQUALS("", errout.str());
+
+        // don't crash on recursive template
+        checkDuplInheritedMembers("namespace _impl {\n"
+                                  "    template <typename AlwaysVoid, typename>\n"
+                                  "    struct fn_traits;\n"
+                                  "}\n"
+                                  "template <typename T>\n"
+                                  "struct function_traits\n"
+                                  "    : public _impl::fn_traits<void, std::remove_reference_t<T>> {};\n"
+                                  "namespace _impl {\n"
+                                  "    template <typename T>\n"
+                                  "    struct fn_traits<decltype(void(&T::operator())), T>\n"
+                                  "        : public fn_traits<void, decltype(&T::operator())> {};\n"
+                                  "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkCopyConstructor(const char code[]) {
