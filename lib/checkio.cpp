@@ -87,27 +87,27 @@ void CheckIO::coutCerrMisusageError(const Token* tok, const std::string& streamN
 // fopen("","r"); fwrite(); <- write to read-only file (or vice versa)
 // fclose(); fread(); <- Use closed file
 //---------------------------------------------------------------------------
-enum OpenMode { CLOSED, READ_MODE, WRITE_MODE, RW_MODE, UNKNOWN_OM };
+enum class OpenMode { CLOSED, READ_MODE, WRITE_MODE, RW_MODE, UNKNOWN_OM };
 static OpenMode getMode(const std::string& str)
 {
     if (str.find('+', 1) != std::string::npos)
-        return RW_MODE;
+        return OpenMode::RW_MODE;
     else if (str.find('w') != std::string::npos || str.find('a') != std::string::npos)
-        return WRITE_MODE;
+        return OpenMode::WRITE_MODE;
     else if (str.find('r') != std::string::npos)
-        return READ_MODE;
-    return UNKNOWN_OM;
+        return OpenMode::READ_MODE;
+    return OpenMode::UNKNOWN_OM;
 }
 
 struct Filepointer {
     OpenMode mode;
     nonneg int mode_indent;
-    enum Operation {NONE, UNIMPORTANT, READ, WRITE, POSITIONING, OPEN, CLOSE, UNKNOWN_OP} lastOperation;
+    enum class Operation {NONE, UNIMPORTANT, READ, WRITE, POSITIONING, OPEN, CLOSE, UNKNOWN_OP} lastOperation;
     nonneg int op_indent;
-    enum AppendMode { UNKNOWN_AM, APPEND, APPEND_EX };
+    enum class AppendMode { UNKNOWN_AM, APPEND, APPEND_EX };
     AppendMode append_mode;
-    explicit Filepointer(OpenMode mode_ = UNKNOWN_OM)
-        : mode(mode_), mode_indent(0), lastOperation(NONE), op_indent(0), append_mode(UNKNOWN_AM) {
+    explicit Filepointer(OpenMode mode_ = OpenMode::UNKNOWN_OM)
+        : mode(mode_), mode_indent(0), lastOperation(Operation::NONE), op_indent(0), append_mode(AppendMode::UNKNOWN_AM) {
     }
 };
 
@@ -130,11 +130,11 @@ void CheckIO::checkFileUsage()
 
         if (var->isLocal()) {
             if (var->nameToken()->strAt(1) == "(") // initialize by calling "ctor"
-                filepointers.insert(std::make_pair(var->declarationId(), Filepointer(UNKNOWN_OM)));
+                filepointers.insert(std::make_pair(var->declarationId(), Filepointer(OpenMode::UNKNOWN_OM)));
             else
-                filepointers.insert(std::make_pair(var->declarationId(), Filepointer(CLOSED)));
+                filepointers.insert(std::make_pair(var->declarationId(), Filepointer(OpenMode::CLOSED)));
         } else {
-            filepointers.insert(std::make_pair(var->declarationId(), Filepointer(UNKNOWN_OM)));
+            filepointers.insert(std::make_pair(var->declarationId(), Filepointer(OpenMode::UNKNOWN_OM)));
             // TODO: If all fopen calls we find open the file in the same type, we can set Filepointer::mode
         }
     }
@@ -149,32 +149,32 @@ void CheckIO::checkFileUsage()
                 for (std::pair<const int, Filepointer>& filepointer : filepointers) {
                     if (indent < filepointer.second.mode_indent) {
                         filepointer.second.mode_indent = 0;
-                        filepointer.second.mode = UNKNOWN_OM;
+                        filepointer.second.mode = OpenMode::UNKNOWN_OM;
                     }
                     if (indent < filepointer.second.op_indent) {
                         filepointer.second.op_indent = 0;
-                        filepointer.second.lastOperation = Filepointer::UNKNOWN_OP;
+                        filepointer.second.lastOperation = Filepointer::Operation::UNKNOWN_OP;
                     }
                 }
             } else if (tok->str() == "return" || tok->str() == "continue" || tok->str() == "break" || mSettings->library.isnoreturn(tok)) { // Reset upon return, continue or break
                 for (std::pair<const int, Filepointer>& filepointer : filepointers) {
                     filepointer.second.mode_indent = 0;
-                    filepointer.second.mode = UNKNOWN_OM;
+                    filepointer.second.mode = OpenMode::UNKNOWN_OM;
                     filepointer.second.op_indent = 0;
-                    filepointer.second.lastOperation = Filepointer::UNKNOWN_OP;
+                    filepointer.second.lastOperation = Filepointer::Operation::UNKNOWN_OP;
                 }
             } else if (Token::Match(tok, "%var% =") &&
                        (tok->strAt(2) != "fopen" && tok->strAt(2) != "freopen" && tok->strAt(2) != "tmpfile" &&
                         (windows ? (tok->str() != "_wfopen" && tok->str() != "_wfreopen") : true))) {
                 std::map<int, Filepointer>::iterator i = filepointers.find(tok->varId());
                 if (i != filepointers.end()) {
-                    i->second.mode = UNKNOWN_OM;
-                    i->second.lastOperation = Filepointer::UNKNOWN_OP;
+                    i->second.mode = OpenMode::UNKNOWN_OM;
+                    i->second.lastOperation = Filepointer::Operation::UNKNOWN_OP;
                 }
             } else if (Token::Match(tok, "%name% (") && tok->previous() && (!tok->previous()->isName() || Token::Match(tok->previous(), "return|throw"))) {
                 std::string mode;
                 const Token* fileTok = nullptr;
-                Filepointer::Operation operation = Filepointer::NONE;
+                Filepointer::Operation operation = Filepointer::Operation::NONE;
 
                 if ((tok->str() == "fopen" || tok->str() == "freopen" || tok->str() == "tmpfile" ||
                      (windows && (tok->str() == "_wfopen" || tok->str() == "_wfreopen"))) &&
@@ -186,13 +186,13 @@ void CheckIO::checkFileUsage()
                     } else
                         mode = "wb+";
                     fileTok = tok->tokAt(-2);
-                    operation = Filepointer::OPEN;
+                    operation = Filepointer::Operation::OPEN;
                 } else if (windows && Token::Match(tok, "fopen_s|freopen_s|_wfopen_s|_wfreopen_s ( & %name%")) {
                     const Token* modeTok = tok->tokAt(2)->nextArgument()->nextArgument();
                     if (modeTok && modeTok->tokType() == Token::eString)
                         mode = modeTok->strValue();
                     fileTok = tok->tokAt(3);
-                    operation = Filepointer::OPEN;
+                    operation = Filepointer::Operation::OPEN;
                 } else if ((tok->str() == "rewind" || tok->str() == "fseek" || tok->str() == "fsetpos" || tok->str() == "fflush") ||
                            (windows && tok->str() == "_fseeki64")) {
                     fileTok = tok->tokAt(2);
@@ -201,11 +201,11 @@ void CheckIO::checkFileUsage()
                             fflushOnInputStreamError(tok, fileTok->str());
                         else {
                             const Filepointer& f = filepointers[fileTok->varId()];
-                            if (f.mode == READ_MODE)
+                            if (f.mode == OpenMode::READ_MODE)
                                 fflushOnInputStreamError(tok, fileTok->str());
                         }
                     }
-                    operation = Filepointer::POSITIONING;
+                    operation = Filepointer::Operation::POSITIONING;
                 } else if (tok->str() == "fgetc" || tok->str() == "fgetwc" ||
                            tok->str() == "fgets" || tok->str() == "fgetws" || tok->str() == "fread" ||
                            tok->str() == "fscanf" || tok->str() == "fwscanf" || tok->str() == "getc" ||
@@ -214,7 +214,7 @@ void CheckIO::checkFileUsage()
                         fileTok = tok->tokAt(2);
                     else
                         fileTok = tok->linkAt(1)->previous();
-                    operation = Filepointer::READ;
+                    operation = Filepointer::Operation::READ;
                 } else if (tok->str() == "fputc" || tok->str() == "fputwc" ||
                            tok->str() == "fputs" || tok->str() == "fputws" || tok->str() == "fwrite" ||
                            tok->str() == "fprintf" || tok->str() == "fwprintf" || tok->str() == "putcc" ||
@@ -223,15 +223,15 @@ void CheckIO::checkFileUsage()
                         fileTok = tok->tokAt(2);
                     else
                         fileTok = tok->linkAt(1)->previous();
-                    operation = Filepointer::WRITE;
+                    operation = Filepointer::Operation::WRITE;
                 } else if (tok->str() == "fclose") {
                     fileTok = tok->tokAt(2);
-                    operation = Filepointer::CLOSE;
+                    operation = Filepointer::Operation::CLOSE;
                 } else if (whitelist.find(tok->str()) != whitelist.end()) {
                     fileTok = tok->tokAt(2);
                     if ((tok->str() == "ungetc" || tok->str() == "ungetwc") && fileTok)
                         fileTok = fileTok->nextArgument();
-                    operation = Filepointer::UNIMPORTANT;
+                    operation = Filepointer::Operation::UNIMPORTANT;
                 } else if (!Token::Match(tok, "if|for|while|catch|switch") && !mSettings->library.isFunctionConst(tok->str(), true)) {
                     const Token* const end2 = tok->linkAt(1);
                     if (scope->functionOf && scope->functionOf->isClassOrStruct() && !scope->function->isStatic() && ((tok->strAt(-1) != "::" && tok->strAt(-1) != ".") || tok->strAt(-2) == "this")) {
@@ -239,10 +239,10 @@ void CheckIO::checkFileUsage()
                             for (std::pair<const int, Filepointer>& filepointer : filepointers) {
                                 const Variable* var = symbolDatabase->getVariableFromVarId(filepointer.first);
                                 if (!var || !(var->isLocal() || var->isGlobal() || var->isStatic())) {
-                                    filepointer.second.mode = UNKNOWN_OM;
+                                    filepointer.second.mode = OpenMode::UNKNOWN_OM;
                                     filepointer.second.mode_indent = 0;
                                     filepointer.second.op_indent = indent;
-                                    filepointer.second.lastOperation = Filepointer::UNKNOWN_OP;
+                                    filepointer.second.lastOperation = Filepointer::Operation::UNKNOWN_OP;
                                 }
                             }
                             continue;
@@ -251,7 +251,7 @@ void CheckIO::checkFileUsage()
                     for (const Token* tok2 = tok->tokAt(2); tok2 != end2; tok2 = tok2->next()) {
                         if (tok2->varId() && filepointers.find(tok2->varId()) != filepointers.end()) {
                             fileTok = tok2;
-                            operation = Filepointer::UNKNOWN_OP; // Assume that repositioning was last operation and that the file is opened now
+                            operation = Filepointer::Operation::UNKNOWN_OP; // Assume that repositioning was last operation and that the file is opened now
                             break;
                         }
                     }
@@ -264,63 +264,63 @@ void CheckIO::checkFileUsage()
                     continue;
 
                 if (filepointers.find(fileTok->varId()) == filepointers.end()) { // function call indicates: Its a File
-                    filepointers.insert(std::make_pair(fileTok->varId(), Filepointer(UNKNOWN_OM)));
+                    filepointers.insert(std::make_pair(fileTok->varId(), Filepointer(OpenMode::UNKNOWN_OM)));
                 }
                 Filepointer& f = filepointers[fileTok->varId()];
 
                 switch (operation) {
-                case Filepointer::OPEN:
+                case Filepointer::Operation::OPEN:
                     f.mode = getMode(mode);
                     if (mode.find('a') != std::string::npos) {
-                        if (f.mode == RW_MODE)
-                            f.append_mode = Filepointer::APPEND_EX;
+                        if (f.mode == OpenMode::RW_MODE)
+                            f.append_mode = Filepointer::AppendMode::APPEND_EX;
                         else
-                            f.append_mode = Filepointer::APPEND;
+                            f.append_mode = Filepointer::AppendMode::APPEND;
                     } else
-                        f.append_mode = Filepointer::UNKNOWN_AM;
+                        f.append_mode = Filepointer::AppendMode::UNKNOWN_AM;
                     f.mode_indent = indent;
                     break;
-                case Filepointer::POSITIONING:
-                    if (f.mode == CLOSED)
+                case Filepointer::Operation::POSITIONING:
+                    if (f.mode == OpenMode::CLOSED)
                         useClosedFileError(tok);
-                    else if (f.append_mode == Filepointer::APPEND && tok->str() != "fflush" && printWarnings)
+                    else if (f.append_mode == Filepointer::AppendMode::APPEND && tok->str() != "fflush" && printWarnings)
                         seekOnAppendedFileError(tok);
                     break;
-                case Filepointer::READ:
-                    if (f.mode == CLOSED)
+                case Filepointer::Operation::READ:
+                    if (f.mode == OpenMode::CLOSED)
                         useClosedFileError(tok);
-                    else if (f.mode == WRITE_MODE)
+                    else if (f.mode == OpenMode::WRITE_MODE)
                         readWriteOnlyFileError(tok);
-                    else if (f.lastOperation == Filepointer::WRITE)
+                    else if (f.lastOperation == Filepointer::Operation::WRITE)
                         ioWithoutPositioningError(tok);
                     break;
-                case Filepointer::WRITE:
-                    if (f.mode == CLOSED)
+                case Filepointer::Operation::WRITE:
+                    if (f.mode == OpenMode::CLOSED)
                         useClosedFileError(tok);
-                    else if (f.mode == READ_MODE)
+                    else if (f.mode == OpenMode::READ_MODE)
                         writeReadOnlyFileError(tok);
-                    else if (f.lastOperation == Filepointer::READ)
+                    else if (f.lastOperation == Filepointer::Operation::READ)
                         ioWithoutPositioningError(tok);
                     break;
-                case Filepointer::CLOSE:
-                    if (f.mode == CLOSED)
+                case Filepointer::Operation::CLOSE:
+                    if (f.mode == OpenMode::CLOSED)
                         useClosedFileError(tok);
                     else
-                        f.mode = CLOSED;
+                        f.mode = OpenMode::CLOSED;
                     f.mode_indent = indent;
                     break;
-                case Filepointer::UNIMPORTANT:
-                    if (f.mode == CLOSED)
+                case Filepointer::Operation::UNIMPORTANT:
+                    if (f.mode == OpenMode::CLOSED)
                         useClosedFileError(tok);
                     break;
-                case Filepointer::UNKNOWN_OP:
-                    f.mode = UNKNOWN_OM;
+                case Filepointer::Operation::UNKNOWN_OP:
+                    f.mode = OpenMode::UNKNOWN_OM;
                     f.mode_indent = 0;
                     break;
                 default:
                     break;
                 }
-                if (operation != Filepointer::NONE && operation != Filepointer::UNIMPORTANT) {
+                if (operation != Filepointer::Operation::NONE && operation != Filepointer::Operation::UNIMPORTANT) {
                     f.op_indent = indent;
                     f.lastOperation = operation;
                 }
@@ -328,8 +328,8 @@ void CheckIO::checkFileUsage()
         }
         for (std::pair<const int, Filepointer>& filepointer : filepointers) {
             filepointer.second.op_indent = 0;
-            filepointer.second.mode = UNKNOWN_OM;
-            filepointer.second.lastOperation = Filepointer::UNKNOWN_OP;
+            filepointer.second.mode = OpenMode::UNKNOWN_OM;
+            filepointer.second.lastOperation = Filepointer::Operation::UNKNOWN_OP;
         }
     }
 }
