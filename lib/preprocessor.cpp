@@ -459,6 +459,16 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                 std::vector<std::string> configs(configs_if);
                 configs.push_back(configs_ifndef.back());
                 ret.erase(cfg(configs, userDefines));
+                std::set<std::string> temp;
+                temp.swap(ret);
+                for (const std::string &c: temp) {
+                    if (c.find(configs_ifndef.back()) != std::string::npos)
+                        ret.insert(c);
+                    else if (c.empty())
+                        ret.insert(configs.empty() ? configs_ifndef.back() : "");
+                    else
+                        ret.insert(c + ";" + configs_ifndef.back());
+                }
                 if (!elseError.empty())
                     elseError += ';';
                 elseError += cfg(configs_ifndef, userDefines);
