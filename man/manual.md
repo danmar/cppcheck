@@ -310,7 +310,7 @@ likely you don't have to configure anything extra.
 If you don't use `--project` then a bit of manual preprocessor configuration might be required. However Cppcheck has
 automatic configuration of defines.
 
-## Automatic configuration of -D
+## Automatic configuration of preprocessor defines
 
 Here is a file that has 3 bugs (when x,y,z are assigned).
 
@@ -323,35 +323,30 @@ Here is a file that has 3 bugs (when x,y,z are assigned).
         z=100/0;
     #endif
 
-Before the code is preprocessed, Cppcheck will by default look at what preprocessor conditions there are and generate
-a list of suitable preprocessor configurations. For the example code above, all bugs can be found if we check for
-instance the configurations "" and "A;B".
+    #ifndef C
+    #error C must be defined
+    #endif
 
-Cppcheck will by default not try to check configurations that contain `#error`.
 
-Check all code:
+To find all bugs the code must be preprocessed both with "-DC" and with "-DA -DB -DC".
 
-    cppcheck file.c
-    => All bugs are reported
+Cppcheck automatically determines what combinations of defines are necessary to analyze all the code. The example code
+above will by default automatically be preprocessed and analyzed multiple times.
 
-### Limit automatic configurations
+You can manually configure what combinations are checked with `-D`, `-U`, `--max-configs` and `--force`.
 
-To specify a preprocessor define you can use `-D`.
+The flag `-D` tells Cppcheck that a name is defined.
+The flag `-U` will tell Cppcheck that a name is not defined. 
+The flag `--force` and `--max-configs` is used to control how many combinations are checked. When `-D` is used,
+Cppcheck will only check 1 configuration unless these are used.
 
-If there is an explicit configuration on the command line then Cppcheck will only that and nothing else.
+Example:
 
-    cppcheck -DA file.c
-    => Only first bug is found
-
-You can use `--force` to tell Cppcheck that you do want to check several configurations
-
-    cppcheck -DA --force file.c
-    => The first 2 bugs are found (if A is defined then the last bug never happens).
-
-To exclude a certain define you can use `-U`. It tells Cppcheck that a macro is never defined. Example usage:
-
-    cppcheck -UA file.c
-    => Cppcheck will only report the last bug.
+    cppcheck test.c => all bugs are found
+    cppcheck -DA test.c => No bug is found (#error)
+    cppcheck -DA -DC test.c => The first bug is found
+    cppcheck -UA test.c => The last bug is found
+    cppcheck --force -DA test.c => The two first bugs are found
 
 
 ## Include paths
