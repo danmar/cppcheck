@@ -79,6 +79,7 @@ private:
         TEST_CASE(simplifyUsing10008);
         TEST_CASE(simplifyUsing10054);
         TEST_CASE(simplifyUsing10136);
+        TEST_CASE(simplifyUsing10171);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -984,7 +985,7 @@ private:
                                 "namespace NS3 { "
                                 "class C : public A { "
                                 "public: "
-                                "void f ( const V & ) const override ; "
+                                "void f ( const std :: vector < char > & ) const override ; "
                                 "} ; "
                                 "void C :: f ( const V & ) const { } "
                                 "} "
@@ -998,8 +999,41 @@ private:
                                 "c . f ( v ) ; "
                                 "}";
             TODO_ASSERT_EQUALS(exp, act, tok(code, true));
-            TODO_ASSERT_EQUALS("", "[test.cpp:20]: (debug) Executable scope 'f' with unknown function.\n", errout.str());
+            TODO_ASSERT_EQUALS("",
+                               "[test.cpp:18]: (debug) Executable scope 'f' with unknown function.\n"
+                               "[test.cpp:20]: (debug) Executable scope 'f' with unknown function.\n", errout.str());
         }
+    }
+
+    void simplifyUsing10171() {
+        const char code[] = "namespace ns {\n"
+                            "    class A {\n"
+                            "    public:\n"
+                            "        using V = std::vector<unsigned char>;\n"
+                            "        virtual void f(const V&) const = 0;\n"
+                            "    };\n"
+                            "    class B : public A {\n"
+                            "    public:\n"
+                            "        void f(const V&) const override;\n"
+                            "    };\n"
+                            "}\n"
+                            "namespace ns {\n"
+                            "    void B::f(const std::vector<unsigned char>&) const { }\n"
+                            "}";
+        const char exp[] = "namespace ns { "
+                           "class A { "
+                           "public: "
+                           "virtual void f ( const std :: vector < unsigned char > & ) const = 0 ; "
+                           "} ; "
+                           "class B : public A { "
+                           "public: "
+                           "void f ( const std :: vector < unsigned char > & ) const override ; "
+                           "} ; "
+                           "} "
+                           "namespace ns { "
+                           "void B :: f ( const std :: vector < unsigned char > & ) const { } "
+                           "}";
+        ASSERT_EQUALS(exp, tok(code, false));
     }
 };
 
