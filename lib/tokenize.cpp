@@ -1768,14 +1768,12 @@ namespace {
         std::set<std::string> recordTypes;
         std::set<std::string> baseTypes;
 
-        ScopeInfo3 *addChild(Type type, const std::string &name, const Token *bodyStart, const Token *bodyEnd)
-        {
+        ScopeInfo3 *addChild(Type type, const std::string &name, const Token *bodyStart, const Token *bodyEnd) {
             children.emplace_back(this, type, name, bodyStart, bodyEnd);
             return &children.back();
         }
 
-        bool hasChild(const std::string &name) const
-        {
+        bool hasChild(const std::string &name) const {
             for (const auto & child : children) {
                 if (child.name == name)
                     return true;
@@ -1783,8 +1781,7 @@ namespace {
             return false;
         }
 
-        void  printOut(const std::string & indent = "  ") const
-        {
+        void  printOut(const std::string & indent = "  ") const {
             std::cerr << indent << "type: " << (type == Global ? "Global" :
                                                 type == Namespace ? "Namespace" :
                                                 type == Record ? "Record" :
@@ -1809,8 +1806,7 @@ namespace {
             }
         }
 
-        bool findTypeInBase(const std::string &scope) const
-        {
+        bool findTypeInBase(const std::string &scope) const {
             if (baseTypes.find(scope) != baseTypes.end())
                 return true;
             return false;
