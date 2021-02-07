@@ -971,37 +971,8 @@ private:
                                 "a . f ( v ) ; "
                                 "c . f ( v ) ; "
                                 "}";
-            const char act[]  = "namespace NS1 { "
-                                "class B { "
-                                "public: "
-                                "virtual void f ( const std :: vector < char > & ) const = 0 ; "
-                                "} ; "
-                                "} "
-                                "namespace NS2 { "
-                                "class A : public NS1 :: B { "
-                                "public: "
-                                "void f ( const std :: vector < char > & ) const override ; "
-                                "} ; "
-                                "namespace NS3 { "
-                                "class C : public A { "
-                                "public: "
-                                "void f ( const std :: vector < char > & ) const override ; "
-                                "} ; "
-                                "void C :: f ( const V & ) const { } "
-                                "} "
-                                "void A :: f ( const V & ) const { } "
-                                "} "
-                                "void foo ( ) { "
-                                "NS2 :: A a ; "
-                                "NS2 :: NS3 :: C c ; "
-                                "std :: vector < char > v ; "
-                                "a . f ( v ) ; "
-                                "c . f ( v ) ; "
-                                "}";
-            TODO_ASSERT_EQUALS(exp, act, tok(code, true));
-            TODO_ASSERT_EQUALS("",
-                               "[test.cpp:18]: (debug) Executable scope 'f' with unknown function.\n"
-                               "[test.cpp:20]: (debug) Executable scope 'f' with unknown function.\n", errout.str());
+            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS("", errout.str());
         }
     }
 
