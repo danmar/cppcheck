@@ -1750,9 +1750,11 @@ namespace {
         ScopeInfo3() : parent(nullptr), type(Global), bodyStart(nullptr), bodyEnd(nullptr) {}
         ScopeInfo3(ScopeInfo3 *parent_, Type type_, const std::string &name_, const Token *bodyStart_, const Token *bodyEnd_)
             : parent(parent_), type(type_), name(name_), bodyStart(bodyStart_), bodyEnd(bodyEnd_) {
+            if (name.empty())
+                return;
             fullName = name;
             ScopeInfo3 *scope = parent;
-            while (!fullName.empty() && scope && scope->parent) {
+            while (scope && scope->parent) {
                 fullName = scope->name + " :: " + fullName;
                 scope = scope->parent;
             }
@@ -1806,9 +1808,31 @@ namespace {
             }
         }
 
+        const ScopeInfo3 * findScope(const std::string & scope) const {
+            const ScopeInfo3 * tempScope = this;
+            while (tempScope) {
+                for (const auto & child : tempScope->children) {
+                    if (child.name == scope || child.fullName == scope)
+                        return &child;
+                }
+
+                tempScope = tempScope->parent;
+            }
+            return nullptr;
+        }
+
         bool findTypeInBase(const std::string &scope) const {
+            // check in base types first
             if (baseTypes.find(scope) != baseTypes.end())
                 return true;
+            // check in base types base types
+            for (const std::string & base : baseTypes) {
+                const ScopeInfo3 * baseScope = findScope(base);
+                if (baseScope && baseScope->fullName == scope)
+                    return true;
+                if (baseScope && baseScope->findTypeInBase(scope))
+                    return true;
+            }
             return false;
         }
     };
