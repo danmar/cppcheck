@@ -2297,7 +2297,7 @@ bool Tokenizer::simplifyUsing()
                 inMemberFunc = true;
                 memberFuncEnd = currentScope1->bodyEnd;
                 continue;
-            } else if (inMemberFunc) {
+            } else if (inMemberFunc && memberFuncScope) {
                 if (!usingMatch(nameToken, scope, &tok1, scope1, memberFuncScope))
                     continue;
             } else if (!usingMatch(nameToken, scope, &tok1, scope1, currentScope1))
