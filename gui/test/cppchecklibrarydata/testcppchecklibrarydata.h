@@ -37,6 +37,7 @@ private slots:
     void defineValid();
     void undefineValid();
     void reflectionValid();
+    void markupValid();
 
 private:
     void loadCfgFile(QString filename, CppcheckLibraryData &data, QString &result, bool removeFile = false);

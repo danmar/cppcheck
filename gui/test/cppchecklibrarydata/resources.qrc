@@ -16,5 +16,8 @@
         <file>files/reflection_unhandled_element.cfg</file>
         <file>files/reflection_valid.cfg</file>
         <file>files/reflection_mandatory_attribute_missing.cfg</file>
+        <file>files/markup_mandatory_attribute_missing.cfg</file>
+        <file>files/markup_valid.cfg</file>
+        <file>files/markup_unhandled_element.cfg</file>
     </qresource>
 </RCC>
