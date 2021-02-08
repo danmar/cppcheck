@@ -1815,8 +1815,18 @@ namespace {
                     if (child.name == scope || child.fullName == scope)
                         return &child;
                 }
-
                 tempScope = tempScope->parent;
+            }
+            // check for sibling with same name
+            if (parent) {
+                for (const ScopeInfo3 & sibling : parent->children) {
+                    if (sibling.fullName == fullName && &sibling != this) {
+                        for (const auto & child : sibling.children) {
+                            if (child.name == scope || child.fullName == scope)
+                                return &child;
+                        }
+                    }
+                }
             }
             return nullptr;
         }

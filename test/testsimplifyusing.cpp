@@ -80,6 +80,7 @@ private:
         TEST_CASE(simplifyUsing10054);
         TEST_CASE(simplifyUsing10136);
         TEST_CASE(simplifyUsing10171);
+        TEST_CASE(simplifyUsing10172);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -1003,6 +1004,33 @@ private:
                            "} "
                            "namespace ns { "
                            "void B :: f ( const std :: vector < unsigned char > & ) const { } "
+                           "}";
+        ASSERT_EQUALS(exp, tok(code, false));
+    }
+
+    void simplifyUsing10172() {
+        const char code[] = "namespace ns {\n"
+                            "    class A {\n"
+                            "    public:\n"
+                            "        using h = std::function<void()>;\n"
+                            "    };\n"
+                            "    class B : public A {\n"
+                            "        void f(h);\n"
+                            "    };\n"
+                            "}\n"
+                            "namespace ns {\n"
+                            "    void B::f(h) { }\n"
+                            "}";
+        const char exp[] = "namespace ns { "
+                           "class A { "
+                           "public: "
+                           "} ; "
+                           "class B : public A { "
+                           "void f ( std :: function < void ( ) > ) ; "
+                           "} ; "
+                           "} "
+                           "namespace ns { "
+                           "void B :: f ( std :: function < void ( ) > ) { } "
                            "}";
         ASSERT_EQUALS(exp, tok(code, false));
     }
