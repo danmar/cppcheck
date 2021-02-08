@@ -752,15 +752,14 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
     errors->push_back(item);
 }
 
-struct ReferenceTokenLess {
-    bool operator()(const ReferenceToken& x, const ReferenceToken& y) const
-    {
-        return x.token < y.token;
-    }
-};
-
 std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclusive, ErrorPath errors, int depth)
 {
+    struct ReferenceTokenLess {
+        bool operator()(const ReferenceToken& x, const ReferenceToken& y) const
+        {
+            return x.token < y.token;
+        }
+    };
     if (!tok)
         return std::vector<ReferenceToken>{};
     if (depth < 0)
