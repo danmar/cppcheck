@@ -19,6 +19,7 @@
 #include <tinyxml2.h>
 
 #include "checkclass.h"
+#include "ctu.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -222,6 +223,8 @@ private:
         TEST_CASE(checkThisUseAfterFree);
 
         TEST_CASE(unsafeClassRefMember);
+
+        TEST_CASE(ctuOneDefinitionRule);
     }
 
     void checkCopyCtorAndEqOperator(const char code[]) {
@@ -7398,6 +7401,45 @@ private:
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
+
+
+    void ctu(const std::vector<std::string> &code) {
+        Settings settings;
+        CheckClass check;
+
+        // getFileInfo
+        std::list<Check::FileInfo*> fileInfo;
+        for (const std::string& c: code) {
+            Tokenizer tokenizer(&settings, this);
+            std::istringstream istr(c);
+            tokenizer.tokenize(istr, (std::to_string(fileInfo.size()) + ".cpp").c_str());
+            fileInfo.push_back(check.getFileInfo(&tokenizer, &settings));
+        }
+
+        // Check code..
+        errout.str("");
+        check.analyseWholeProgram(nullptr, fileInfo, settings, *this);
+
+        while (!fileInfo.empty()) {
+            delete fileInfo.back();
+            fileInfo.pop_back();
+        }
+    }
+
+    void ctuOneDefinitionRule() {
+        ctu({"class C { C() { std::cout << 0; } };", "class C { C() { std::cout << 1; } };"});
+        ASSERT_EQUALS("[1.cpp:1] -> [0.cpp:1]: (error) The one definition rule is violated, different classes/structs have the same name 'C'\n", errout.str());
+
+        ctu({"class C { C(); }; C::C() { std::cout << 0; }", "class C { C(); }; C::C() { std::cout << 1; }"});
+        ASSERT_EQUALS("[1.cpp:1] -> [0.cpp:1]: (error) The one definition rule is violated, different classes/structs have the same name 'C'\n", errout.str());
+
+        ctu({"class C { C() {} };\n", "class C { C() {} };\n"});
+        ASSERT_EQUALS("", errout.str());
+
+        ctu({"class C { C(); }; C::C(){}", "class C { C(); }; C::C(){}"});
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestClass)

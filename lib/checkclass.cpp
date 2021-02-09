@@ -24,13 +24,17 @@
 #include "settings.h"
 #include "standards.h"
 #include "symboldatabase.h"
+#include "errorlogger.h"
 #include "errortypes.h"
 #include "token.h"
 #include "tokenize.h"
 #include "utils.h"
 
+#include "tinyxml2.h"
+
 #include <algorithm>
 #include <cstdlib>
+#include <functional>
 #include <utility>
 //---------------------------------------------------------------------------
 
@@ -44,6 +48,8 @@ static const CWE CWE404(404U);  // Improper Resource Shutdown or Release
 static const CWE CWE665(665U);  // Improper Initialization
 static const CWE CWE758(758U);  // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 static const CWE CWE762(762U);  // Mismatched Memory Management Routines
+
+static const CWE CWE_ONE_DEFINITION_RULE(758U);
 
 static const char * getFunctionTypeName(Function::Type type)
 {
@@ -2827,3 +2833,142 @@ void CheckClass::unsafeClassRefMemberError(const Token *tok, const std::string &
                 "Unsafe class checking: The const reference member '$symbol' is initialized by a const reference constructor argument. You need to be careful about lifetime issues. If you pass a local variable or temporary value in this constructor argument, be extra careful. If the argument is always some global object that is never destroyed then this is safe usage. However it would be defensive to make the member '$symbol' a non-reference variable or a smart pointer.",
                 CWE(0), false);
 }
+
+Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
+{
+    if (!tokenizer->isCPP())
+        return nullptr;
+    (void)settings;
+    // One definition rule
+    std::vector<MyFileInfo::NameLoc> classDefinitions;
+    for (const Scope * classScope : tokenizer->getSymbolDatabase()->classAndStructScopes) {
+        // the full definition must be compared
+        bool fullDefinition = true;
+        for (const Function &f: classScope->functionList)
+            fullDefinition &= f.hasBody();
+        if (!fullDefinition)
+            continue;
+
+        std::string name;
+        const Scope *scope = classScope;
+        while (scope->isClassOrStruct() && !classScope->className.empty()) {
+            name = scope->className + "::" + name;
+            scope = scope->nestedIn;
+        }
+        name.erase(name.size() - 2);
+        if (scope->type != Scope::ScopeType::eGlobal)
+            continue;
+
+        MyFileInfo::NameLoc nameLoc;
+        nameLoc.className = name;
+        nameLoc.fileName = tokenizer->list.file(classScope->classDef);
+        nameLoc.lineNumber = classScope->classDef->linenr();
+        nameLoc.column = classScope->classDef->column();
+
+        // Calculate hash from the full class/struct definition
+        std::string def;
+        for (const Token *tok = classScope->classDef; tok != classScope->bodyEnd; tok = tok->next())
+            def += tok->str();
+        for (const Function &f: classScope->functionList) {
+            if (f.functionScope->nestedIn != classScope) {
+                for (const Token *tok = f.functionScope->bodyStart; tok != f.functionScope->bodyEnd; tok = tok->next())
+                    def += tok->str();
+            }
+        }
+        nameLoc.hash = std::hash<std::string> {}(def);
+
+        classDefinitions.push_back(nameLoc);
+    }
+
+    if (classDefinitions.empty())
+        return nullptr;
+
+    MyFileInfo *fileInfo = new MyFileInfo;
+    fileInfo->classDefinitions.swap(classDefinitions);
+    return fileInfo;
+}
+
+std::string CheckClass::MyFileInfo::toString() const
+{
+    std::string ret;
+    for (const MyFileInfo::NameLoc &nameLoc: classDefinitions) {
+        ret += "<class name=\"" + nameLoc.className +
+               "\" file=\"" + ErrorLogger::toxml(nameLoc.fileName) +
+               "\" line=\"" + std::to_string(nameLoc.lineNumber) +
+               "\" col=\"" + std::to_string(nameLoc.column) +
+               "\" hash=\"" + std::to_string(nameLoc.hash) +
+               "\"/>\n";
+    }
+    return ret;
+}
+
+Check::FileInfo * CheckClass::loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const
+{
+    MyFileInfo *fileInfo = new MyFileInfo;
+    for (const tinyxml2::XMLElement *e = xmlElement->FirstChildElement(); e; e = e->NextSiblingElement()) {
+        if (std::strcmp(e->Name(), "class") != 0)
+            continue;
+        const char *name = e->Attribute("name");
+        const char *file = e->Attribute("file");
+        const char *line = e->Attribute("line");
+        const char *col = e->Attribute("col");
+        const char *hash = e->Attribute("hash");
+        if (name && file && line && col && hash) {
+            MyFileInfo::NameLoc nameLoc;
+            nameLoc.className = name;
+            nameLoc.fileName = file;
+            nameLoc.lineNumber = std::atoi(line);
+            nameLoc.column = std::atoi(col);
+            nameLoc.hash = MathLib::toULongNumber(hash);
+            fileInfo->classDefinitions.push_back(nameLoc);
+        }
+    }
+    if (fileInfo->classDefinitions.empty()) {
+        delete fileInfo;
+        fileInfo = nullptr;
+    }
+    return fileInfo;
+}
+
+bool CheckClass::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
+{
+    bool foundErrors = false;
+    (void)ctu; // This argument is unused
+    (void)settings; // This argument is unused
+
+    std::unordered_map<std::string, MyFileInfo::NameLoc> all;
+
+    for (Check::FileInfo *fi1 : fileInfo) {
+        const MyFileInfo *fi = dynamic_cast<MyFileInfo*>(fi1);
+        if (!fi)
+            continue;
+        for (const MyFileInfo::NameLoc &nameLoc : fi->classDefinitions) {
+            auto it = all.find(nameLoc.className);
+            if (it == all.end()) {
+                all[nameLoc.className] = nameLoc;
+                continue;
+            }
+            if (it->second.hash == nameLoc.hash)
+                continue;
+
+            std::list<ErrorMessage::FileLocation> locationList;
+            locationList.emplace_back(nameLoc.fileName, nameLoc.lineNumber, nameLoc.column);
+            locationList.emplace_back(it->second.fileName, it->second.lineNumber, it->second.column);
+
+            const ErrorMessage errmsg(locationList,
+                                      emptyString,
+                                      Severity::error,
+                                      "$symbol:" + nameLoc.className +
+                                      "\nThe one definition rule is violated, different classes/structs have the same name '$symbol'",
+                                      "ctuOneDefinitionRuleViolation",
+                                      CWE_ONE_DEFINITION_RULE,
+                                      false);
+            errorLogger.reportErr(errmsg);
+
+            foundErrors = true;
+        }
+    }
+    return foundErrors;
+}
+
+

@@ -149,6 +149,38 @@ public:
     /** @brief Unsafe class check - const reference member */
     void checkUnsafeClassRefMember();
 
+
+    /* multifile checking; one definition rule violations */
+    class MyFileInfo : public Check::FileInfo {
+    public:
+        struct NameLoc {
+            std::string className;
+            std::string fileName;
+            int lineNumber;
+            int column;
+            std::size_t hash;
+
+            bool operator==(const NameLoc& other) const {
+                return fileName == other.fileName &&
+                       lineNumber == other.lineNumber &&
+                       column == other.column &&
+                       hash == other.hash;
+            }
+        };
+        std::vector<NameLoc> classDefinitions;
+
+        /** Convert MyFileInfo data into xml string */
+        std::string toString() const OVERRIDE;
+    };
+
+    /** @brief Parse current TU and extract file info */
+    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const OVERRIDE;
+
+    Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const OVERRIDE;
+
+    /** @brief Analyse all file infos for all TU */
+    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) OVERRIDE;
+
 private:
     const SymbolDatabase *mSymbolDatabase;
 
@@ -254,7 +286,8 @@ private:
                // disabled for now "- If 'copy constructor' defined, 'operator=' also should be defined and vice versa\n"
                "- Check that arbitrary usage of public interface does not result in division by zero\n"
                "- Delete \"self pointer\" and then access 'this'\n"
-               "- Check that the 'override' keyword is used when overriding virtual functions\n";
+               "- Check that the 'override' keyword is used when overriding virtual functions\n"
+               "- Check that the 'one definition rule' is not violated\n";
     }
 
     // operatorEqRetRefThis helper functions
@@ -364,7 +397,6 @@ private:
      * @brief Helper for checkThisUseAfterFree
      */
     bool checkThisUseAfterFreeRecursive(const Scope *classScope, const Function *func, const Variable *selfPointer, std::set<const Function *> callstack, const Token **freeToken);
-
 };
 /// @}
 //---------------------------------------------------------------------------
