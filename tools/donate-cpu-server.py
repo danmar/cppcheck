@@ -19,11 +19,12 @@ import urllib.error
 import logging
 import logging.handlers
 import operator
+import html as html_lib
 
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.12"
+SERVER_VERSION = "1.3.13"
 
 OLD_VERSION = '2.3'
 
@@ -190,22 +191,40 @@ def crashReport(results_path: str) -> str:
                     location_index = crash_line.rfind(' at ')
                     if location_index > 0:
                         code_line = next(file_, '').strip()
-                        stack_trace = []
-                        while True:
-                            l = next(file_, '')
-                            m = re.search(r'(?P<number>#\d+) .* (?P<function>.+)\(.*\) at (?P<location>.*)$', l)
-                            if not m:
-                                break
+                    else:
+                        code_line = ''
+                    stack_trace = []
+                    while True:
+                        l = next(file_, '')
+                        if not l.strip():
+                            break
+                        # #0  0x00007ffff71cbf67 in raise () from /lib64/libc.so.6
+                        m = re.search(r'(?P<number>#\d+) .* (?P<function>.+)\(.*\) from (?P<binary>.*)$', l)
+                        if m:
+                            stack_trace.append(m.group('number') + ' ' + m.group('function') + '(...) from ' + m.group('binary'))
+                            continue
+                        # #11 0x00000000006f2414 in valueFlowNumber (tokenlist=tokenlist@entry=0x7fffffffc610) at build/valueflow.cpp:2503
+                        m = re.search(r'(?P<number>#\d+) .* (?P<function>.+)\(.*\) at (?P<location>.*)$', l)
+                        if m:
                             stack_trace.append(m.group('number') + ' ' + m.group('function') + '(...) at ' + m.group('location'))
-                        key = hash(' '.join(stack_trace))
+                            continue
+                        # #18 ForwardTraversal::updateRecursive (this=0x7fffffffb3c0, tok=0x14668a0) at build/forwardanalyzer.cpp:415
+                        m = re.search(r'(?P<number>#\d+) (?P<function>.+)\(.*\) at (?P<location>.*)$', l)
+                        if m:
+                            stack_trace.append(m.group('number') + ' ' + m.group('function') + '(...) at ' + m.group('location'))
+                            continue
 
-                        if key in stack_traces:
-                            stack_traces[key]['code_line'] = code_line
-                            stack_traces[key]['stack_trace'] = stack_trace
-                            stack_traces[key]['n'] += 1
-                            stack_traces[key]['packages'].append(package)
-                        else:
-                            stack_traces[key] = {'stack_trace': stack_trace, 'n': 1, 'code_line': code_line, 'packages': [package], 'crash_line': crash_line}
+                        print('{} - unmatched stack frame - {}'.format(package, l))
+                        break
+                    key = hash(' '.join(stack_trace))
+
+                    if key in stack_traces:
+                        stack_traces[key]['code_line'] = code_line
+                        stack_traces[key]['stack_trace'] = stack_trace
+                        stack_traces[key]['n'] += 1
+                        stack_traces[key]['packages'].append(package)
+                    else:
+                        stack_traces[key] = {'stack_trace': stack_trace, 'n': 1, 'code_line': code_line, 'packages': [package], 'crash_line': crash_line}
                     break
 
     html += '</pre>\n'
@@ -213,9 +232,9 @@ def crashReport(results_path: str) -> str:
     html += '<b>Stack traces</b>\n'
     for stack_trace in sorted(list(stack_traces.values()), key=lambda x: x['n'], reverse=True):
         html += 'Packages: ' + ' '.join(['<a href="' + p + '">' + p + '</a>' for p in stack_trace['packages']]) + '\n'
-        html += stack_trace['crash_line'] + '\n'
-        html += stack_trace['code_line'] + '\n'
-        html += '\n'.join(stack_trace['stack_trace']) + '\n\n'
+        html += html_lib.escape(stack_trace['crash_line']) + '\n'
+        html += html_lib.escape(stack_trace['code_line']) + '\n'
+        html += html_lib.escape('\n'.join(stack_trace['stack_trace'])) + '\n\n'
     html += '</pre>\n'
 
     html += '</body></html>\n'
