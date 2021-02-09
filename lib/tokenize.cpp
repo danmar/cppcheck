@@ -1837,8 +1837,8 @@ namespace {
             const ScopeInfo3 * global = this;
             while (global->parent)
                 global = global->parent;
-            for (const ScopeInfo3 & tempScope : global->children) {
-                const ScopeInfo3 * temp = tempScope.findScopeRecursive(scope);
+            for (const ScopeInfo3 & tempChild : global->children) {
+                const ScopeInfo3 * temp = tempChild.findScopeRecursive(scope);
                 if (temp)
                     return temp;
             }
