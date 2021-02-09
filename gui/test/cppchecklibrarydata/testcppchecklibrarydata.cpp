@@ -55,6 +55,10 @@ void TestCppcheckLibraryData::unhandledElement()
     loadCfgFile(":/files/reflection_unhandled_element.cfg", fileLibraryData, result);
     QCOMPARE(result.isNull(), false);
     qDebug() << result;
+
+    loadCfgFile(":/files/markup_unhandled_element.cfg", fileLibraryData, result);
+    QCOMPARE(result.isNull(), false);
+    qDebug() << result;
 }
 
 void TestCppcheckLibraryData::mandatoryAttributeMissing()
@@ -64,6 +68,10 @@ void TestCppcheckLibraryData::mandatoryAttributeMissing()
     qDebug() << result;
 
     loadCfgFile(":/files/reflection_mandatory_attribute_missing.cfg", fileLibraryData, result);
+    QCOMPARE(result.isNull(), false);
+    qDebug() << result;
+
+    loadCfgFile(":/files/markup_mandatory_attribute_missing.cfg", fileLibraryData, result);
     QCOMPARE(result.isNull(), false);
     qDebug() << result;
 }
@@ -453,6 +461,81 @@ void TestCppcheckLibraryData::reflectionValid()
         for (int num=0; num < lhs.calls.size(); num++) {
             QCOMPARE(lhs.calls[num].arg, rhs.calls[num].arg);
             QCOMPARE(lhs.calls[num].name, rhs.calls[num].name);
+        }
+    }
+}
+
+void TestCppcheckLibraryData::markupValid()
+{
+    // Load library data from file
+    loadCfgFile(":/files/markup_valid.cfg", fileLibraryData, result);
+    QCOMPARE(result.isNull(), true);
+
+    // Swap libray data read from file to other object
+    libraryData.swap(fileLibraryData);
+
+    // Do size and content checks against swapped data.
+    QCOMPARE(libraryData.markups.size(), 1);
+    QCOMPARE(libraryData.markups[0].ext, ".qml");
+    QCOMPARE(libraryData.markups[0].reportErrors, false);
+    QCOMPARE(libraryData.markups[0].afterCode, true);
+
+    QCOMPARE(libraryData.markups[0].keywords.size(), 4);
+    QCOMPARE(libraryData.markups[0].keywords, QStringList( {"if", "while", "typeof", "for"} ));
+
+    QCOMPARE(libraryData.markups[0].importer.size(), 1);
+    QCOMPARE(libraryData.markups[0].importer, QStringList("connect"));
+
+    QCOMPARE(libraryData.markups[0].exporter.size(), 1);
+    QCOMPARE(libraryData.markups[0].exporter[0].prefix, "Q_PROPERTY");
+    QCOMPARE(libraryData.markups[0].exporter[0].suffixList.size(), 1);
+    QCOMPARE(libraryData.markups[0].exporter[0].suffixList, QStringList("READ"));
+    QCOMPARE(libraryData.markups[0].exporter[0].prefixList.size(), 3);
+    QCOMPARE(libraryData.markups[0].exporter[0].prefixList, QStringList( {"READ", "WRITE", "NOTIFY"} ));
+
+    QCOMPARE(libraryData.markups[0].codeBlocks.size(), 2);
+    QCOMPARE(libraryData.markups[0].codeBlocks[0].blocks.size(), 5);
+    QCOMPARE(libraryData.markups[0].codeBlocks[0].blocks, QStringList( {"onClicked", "onFinished", "onTriggered", "onPressed", "onTouch"} ));
+    QCOMPARE(libraryData.markups[0].codeBlocks[0].offset, 3);
+    QCOMPARE(libraryData.markups[0].codeBlocks[0].start, "{");
+    QCOMPARE(libraryData.markups[0].codeBlocks[0].end, "}");
+    QCOMPARE(libraryData.markups[0].codeBlocks[1].blocks.size(), 1);
+    QCOMPARE(libraryData.markups[0].codeBlocks[1].blocks, QStringList("function"));
+    QCOMPARE(libraryData.markups[0].codeBlocks[1].offset, 2);
+    QCOMPARE(libraryData.markups[0].codeBlocks[1].start, "{");
+    QCOMPARE(libraryData.markups[0].codeBlocks[1].end, "}");
+
+    // Save library data to file
+    saveCfgFile(TempCfgFile, libraryData);
+
+    fileLibraryData.clear();
+    QCOMPARE(fileLibraryData.markups.size(), 0);
+
+    // Reload library data from file
+    loadCfgFile(TempCfgFile, fileLibraryData, result, true);
+    QCOMPARE(result.isNull(), true);
+
+    // Verify no data got lost or modified
+    QCOMPARE(libraryData.markups.size(), fileLibraryData.markups.size());
+    for (int idx=0; idx < libraryData.markups.size(); idx++) {
+        CppcheckLibraryData::Markup lhs = libraryData.markups[idx];
+        CppcheckLibraryData::Markup rhs = fileLibraryData.markups[idx];
+
+        QCOMPARE(lhs.ext, rhs.ext);
+        QCOMPARE(lhs.reportErrors, rhs.reportErrors);
+        QCOMPARE(lhs.afterCode, rhs.afterCode);
+        QCOMPARE(lhs.keywords, rhs.keywords);
+        QCOMPARE(lhs.importer, rhs.importer);
+        for (int num=0; num < lhs.exporter.size(); num++) {
+            QCOMPARE(lhs.exporter[num].prefix, rhs.exporter[num].prefix);
+            QCOMPARE(lhs.exporter[num].suffixList, rhs.exporter[num].suffixList);
+            QCOMPARE(lhs.exporter[num].prefixList, rhs.exporter[num].prefixList);
+        }
+        for (int num=0; num < lhs.codeBlocks.size(); num++) {
+            QCOMPARE(lhs.codeBlocks[num].blocks, rhs.codeBlocks[num].blocks);
+            QCOMPARE(lhs.codeBlocks[num].offset, rhs.codeBlocks[num].offset);
+            QCOMPARE(lhs.codeBlocks[num].start, rhs.codeBlocks[num].start);
+            QCOMPARE(lhs.codeBlocks[num].end, rhs.codeBlocks[num].end);
         }
     }
 }

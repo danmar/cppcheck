@@ -193,6 +193,33 @@ public:
         QList<struct Call> calls;
     };
 
+    struct Markup {
+        struct CodeBlocks {
+            CodeBlocks() :
+                offset {-1}
+            {}
+
+            QStringList blocks;
+            int offset;
+            QString start;
+            QString end;
+        };
+
+        struct Exporter {
+            QString prefix;
+            QStringList prefixList;
+            QStringList suffixList;
+        };
+
+        QString ext;
+        bool afterCode;
+        bool reportErrors;
+        QStringList keywords;
+        QStringList importer;
+        QList<CodeBlocks> codeBlocks;
+        QList<Exporter> exporter;
+    };
+
     void clear() {
         containers.clear();
         defines.clear();
@@ -204,6 +231,7 @@ public:
         typeChecks.clear();
         platformTypes.clear();
         reflections.clear();
+        markups.clear();
     }
 
     void swap(CppcheckLibraryData &other) {
@@ -217,6 +245,7 @@ public:
         typeChecks.swap(other.typeChecks);
         platformTypes.swap(other.platformTypes);
         reflections.swap(other.reflections);
+        markups.swap(other.markups);
     }
 
     QString open(QIODevice &file);
@@ -232,6 +261,7 @@ public:
     QStringList undefines;
     QStringList smartPointers;
     QList<struct Reflection> reflections;
+    QList<struct Markup> markups;
 };
 
 #endif // CPPCHECKLIBRARYDATA_H
