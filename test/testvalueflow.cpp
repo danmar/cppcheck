@@ -4472,6 +4472,18 @@ private:
         return "";
     }
 
+    static std::string isInconclusiveContainerSizeValue(const std::list<ValueFlow::Value>& values, MathLib::bigint i) {
+        if (values.size() != 1)
+            return "values.size():" + std::to_string(values.size());
+        if (!values.front().isContainerSizeValue())
+            return "ContainerSizeValue";
+        if (!values.front().isInconclusive())
+            return "Inconclusive";
+        if (values.front().intvalue != i)
+            return "intvalue:" + std::to_string(values.front().intvalue);
+        return "";
+    }
+
     static std::string isKnownContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {
         if (values.size() != 1)
             return "values.size():" + std::to_string(values.size());
@@ -5026,17 +5038,29 @@ private:
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
 
-        code = "bool f(std::string s) {\n"
-               "    if (!s.empty()) {\n"
-               "        bool x = s == \"0\";\n"
-               "        return x;\n"
+      code = "bool f(std::string s) {\n"
+             "    if (!s.empty()) {\n"
+             "        bool x = s == \"0\";\n"
+             "        return x;\n"
+             "    }\n"
+             "    return false;\n"
+             "}\n";
+      ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 0));
+      ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
+      ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
+      
+      code = "bool f() {\n"
+               "    std::list<int> x1;\n"
+               "    std::list<int> x2;\n"
+               "    for (int i = 0; i < 10; ++i) {\n"
+               "        std::list<int>& x = (i < 5) ? x1 : x2;\n"
+               "        x.push_back(i);\n"
                "    }\n"
-               "    return false;\n"
+               "    return x1.empty() || x2.empty();\n"
                "}\n";
-        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 0));
-        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
-        ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
-
+        ASSERT_EQUALS("", isInconclusiveContainerSizeValue(tokenValues(code, "x1 . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+        ASSERT_EQUALS("", isInconclusiveContainerSizeValue(tokenValues(code, "x2 . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+        
         code = "std::vector<int> g();\n"
                "int f(bool b) {\n"
                "    std::set<int> a;\n"

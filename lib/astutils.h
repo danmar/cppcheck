@@ -140,6 +140,14 @@ bool precedes(const Token * tok1, const Token * tok2);
 
 bool exprDependsOnThis(const Token* expr, nonneg int depth = 0);
 
+struct ReferenceToken {
+    const Token* token;
+    ErrorPath errors;
+};
+
+std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclusive = true, ErrorPath errors = ErrorPath{}, int depth = 20);
+const Token* followReferences(const Token* tok, ErrorPath* errors = nullptr);
+
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
 
 bool isEqualKnownValue(const Token * const tok1, const Token * const tok2);

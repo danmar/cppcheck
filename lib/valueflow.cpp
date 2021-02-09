@@ -1915,25 +1915,37 @@ struct ValueFlowAnalyzer : Analyzer {
         }
     }
 
-    virtual Action analyze(const Token* tok, Direction d) const OVERRIDE {
-        if (invalid())
-            return Action::Invalid;
+    Action analyzeMatch(const Token* tok, Direction d) const {
+        const Token* parent = tok->astParent();
+        if (astIsPointer(tok) && (Token::Match(parent, "*|[") || (parent && parent->originalName() == "->")) && getIndirect(tok) <= 0)
+            return Action::Read;
+
+        Action w = isWritable(tok, d);
+        if (w != Action::None)
+            return w;
+
+        // Check for modifications by function calls
+        return isModified(tok);
+    }
+
+    Action analyzeToken(const Token* ref, const Token* tok, Direction d, bool inconclusiveRef) const
+    {
+        if (!ref)
+            return Action::None;
+        // If its an inconclusiveRef then ref != tok
+        assert(!inconclusiveRef || ref != tok);
         bool inconclusive = false;
-        if (match(tok)) {
-            const Token* parent = tok->astParent();
-            if (astIsPointer(tok) && (Token::Match(parent, "*|[") || (parent && parent->originalName() == "->")) && getIndirect(tok) <= 0)
-                return Action::Read | Action::Match;
-
-            // Action read = Action::Read;
-            Action w = isWritable(tok, d);
-            if (w != Action::None)
-                return w | Action::Match;
-
-            // Check for modifications by function calls
-            return isModified(tok) | Action::Match;
-        } else if (tok->isUnaryOp("*")) {
+        if (match(ref)) {
+            if (inconclusiveRef) {
+                Action a = isModified(tok);
+                if (a.isModified() || a.isInconclusive())
+                    return Action::Inconclusive;
+            } else {
+                return analyzeMatch(tok, d) | Action::Match;
+            }
+        } else if (ref->isUnaryOp("*")) {
             const Token* lifeTok = nullptr;
-            for (const ValueFlow::Value& v:tok->astOperand1()->values()) {
+            for (const ValueFlow::Value& v:ref->astOperand1()->values()) {
                 if (!v.isLocalLifetimeValue())
                     continue;
                 if (lifeTok)
@@ -1946,17 +1958,37 @@ struct ValueFlowAnalyzer : Analyzer {
                     a = Action::Invalid;
                 if (Token::Match(tok->astParent(), "%assign%") && astIsLHS(tok))
                     a |= Action::Invalid;
+                if (inconclusiveRef && a.isModified())
+                    return Action::Inconclusive;
                 return a;
             }
             return Action::None;
 
-        } else if (isAlias(tok, inconclusive)) {
+        } else if (isAlias(ref, inconclusive)) {
+            inconclusive |= inconclusiveRef;
             Action a = isAliasModified(tok);
             if (inconclusive && a.isModified())
                 return Action::Inconclusive;
             else
                 return a;
-        } else if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
+        }
+        return Action::None;
+    }
+
+    virtual Action analyze(const Token* tok, Direction d) const OVERRIDE {
+        if (invalid())
+            return Action::Invalid;
+        // Follow references
+        std::vector<ReferenceToken> refs = followAllReferences(tok);
+        const bool inconclusiveRefs = refs.size() != 1;
+        for(const ReferenceToken& ref:refs) {
+            Action a = analyzeToken(ref.token, tok, d, inconclusiveRefs);
+            if (a != Action::None)
+                return a;
+        }
+
+        // TODO: Check if function is pure
+        if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
             // bailout: global non-const variables
             if (isGlobal()) {
                 return Action::Invalid;
@@ -4216,7 +4248,14 @@ struct ConditionHandler {
                 }
             }
 
-            Token* startTok = tok->astParent() ? tok->astParent() : tok->previous();
+            Token* startTok = nullptr;
+            if (astIsRHS(tok))
+                startTok = tok->astParent();
+            else if (astIsLHS(tok))
+                startTok = previousBeforeAstLeftmostLeaf(tok->astParent());
+            if (!startTok)
+                startTok = tok->previous();
+
             reverse(startTok, nullptr, cond.vartok, values, tokenlist, settings);
         });
     }
@@ -5789,7 +5828,7 @@ struct ContainerVariableAnalyzer : VariableAnalyzer {
             return Action::Invalid;
         if (isLikelyStreamRead(isCPP(), tok->astParent()))
             return Action::Invalid;
-        if (isContainerSizeChanged(tok))
+        if (astIsContainer(tok) && isContainerSizeChanged(tok))
             return Action::Invalid;
         return read;
     }
