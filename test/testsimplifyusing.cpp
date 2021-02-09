@@ -974,6 +974,33 @@ private:
             ASSERT_EQUALS(exp, tok(code, true));
             ASSERT_EQUALS("", errout.str());
         }
+        {
+            const char code[] = "foo::ResultCodes_e\n"
+                                "GemImpl::setR(const ::foo::s _ipSource)\n"
+                                "{\n"
+                                "   M3_LOG_EE_DEBUG();\n"
+                                "   using MLSource = foo::s::Literal;\n"
+                                "   auto ret = foo::ResultCodes_e::NO_ERROR;\n"
+                                "   M3_LOG_INFO(\"foo(\" << static_cast<int>(_ipSource) << \")\");\n"
+                                "   return ret;\n"
+                                "}\n"
+                                "foo::ResultCodes_e\n"
+                                "GemImpl::getF(::foo::s &_ipSource)\n"
+                                "{\n"
+                                "   M3_LOG_EE_DEBUG();\n"
+                                "   auto ret = foo::ResultCodes_e::NO_ERROR;\n"
+                                "   return ret;\n"
+                                "}\n"
+                                "foo::ResultCodes_e\n"
+                                "GemImpl::setF(const ::foo::s _ipSource)\n"
+                                "{\n"
+                                "   M3_LOG_EE_DEBUG();\n"
+                                "   using MLSource = foo::s::Literal;\n"
+                                "   auto ret = foo::ResultCodes_e::NO_ERROR;\n"
+                                "   return ret;\n"
+                                "}";
+            tok(code, true); // don't crash
+        }
     }
 
     void simplifyUsing10171() {

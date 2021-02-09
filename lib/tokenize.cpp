@@ -1812,7 +1812,7 @@ namespace {
             const ScopeInfo3 * tempScope = this;
             while (tempScope) {
                 for (const auto & child : tempScope->children) {
-                    if (child.name == scope || child.fullName == scope)
+                    if (child.type == Record && (child.name == scope || child.fullName == scope))
                         return &child;
                 }
 
