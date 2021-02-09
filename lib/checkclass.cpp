@@ -2843,9 +2843,9 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
     std::vector<MyFileInfo::NameLoc> classDefinitions;
     for (const Scope * classScope : tokenizer->getSymbolDatabase()->classAndStructScopes) {
         // the full definition must be compared
-        bool fullDefinition = true;
-        for (const Function &f: classScope->functionList)
-            fullDefinition &= f.hasBody();
+        bool fullDefinition = std::all_of(classScope->functionList.begin(),
+                                          classScope->functionList.end(),
+                                          [](const Function& f) { return f.hasBody(); });
         if (!fullDefinition)
             continue;
 
