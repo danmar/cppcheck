@@ -312,6 +312,9 @@ automatic configuration of defines.
 
 ## Automatic configuration of preprocessor defines
 
+Cppcheck automatically test different combinations of preprocessor defines to achieve as high coverage in the analysis
+as possible.
+
 Here is a file that has 3 bugs (when x,y,z are assigned).
 
     #ifdef A
@@ -328,25 +331,18 @@ Here is a file that has 3 bugs (when x,y,z are assigned).
     #endif
 
 
-To find all bugs the code must be preprocessed both with "-DC" and with "-DA -DB -DC".
-
-Cppcheck automatically determines what combinations of defines are necessary to analyze all the code. The example code
-above will by default automatically be preprocessed and analyzed multiple times.
-
-You can manually configure what combinations are checked with `-D`, `-U`, `--max-configs` and `--force`.
-
-The flag `-D` tells Cppcheck that a name is defined.
-The flag `-U` will tell Cppcheck that a name is not defined. 
+The flag `-D` tells Cppcheck that a name is defined. There will be no Cppcheck analysis without this define.
+The flag `-U` tells Cppcheck that a name is not defined. There will be no Cppcheck analysis with this define.
 The flag `--force` and `--max-configs` is used to control how many combinations are checked. When `-D` is used,
 Cppcheck will only check 1 configuration unless these are used.
 
 Example:
 
-    cppcheck test.c => all bugs are found
-    cppcheck -DA test.c => No bug is found (#error)
-    cppcheck -DA -DC test.c => The first bug is found
-    cppcheck -UA test.c => The last bug is found
-    cppcheck --force -DA test.c => The two first bugs are found
+    cppcheck test.c => test all configurations => all bugs are found
+    cppcheck -DA test.c => only test configuration "-DA" => No bug is found (#error)
+    cppcheck -DA -DC test.c => only test configuration "-DA -DC" => The first bug is found
+    cppcheck -UA test.c => The configuration "-DC" is tested => The last bug is found
+    cppcheck --force -DA test.c => All configurations with "-DA" are tested => The two first bugs are found
 
 
 ## Include paths
