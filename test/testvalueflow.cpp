@@ -5069,6 +5069,18 @@ private:
                "    return a.size();\n"
                "}\n";
         ASSERT_EQUALS(true, tokenValues(code, "a . size", ValueFlow::Value::ValueType::CONTAINER_SIZE).empty());
+
+        code = "std::vector<int> g();\n"
+               "std::vector<int> f() {\n"
+               "    std::vector<int> v = g();\n"
+               "    if (!v.empty()) {\n"
+               "        if (v[0] != 0)\n"
+               "            v.clear();\n"
+               "    }\n"
+               "    if (!v.empty() && v[0] != 0) {}\n"
+               "    return v;\n"
+               "}\n";
+        ASSERT_EQUALS(true, tokenValues(code, "v [ 0 ] != 0 ) { }", ValueFlow::Value::ValueType::CONTAINER_SIZE).empty());
     }
 
     void valueFlowDynamicBufferSize() {
