@@ -2952,6 +2952,9 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<C
             }
             if (it->second.hash == nameLoc.hash)
                 continue;
+            // Same location, sometimes the hash is different wrongly (possibly because of different token simplifications).
+            if (it->second.isSameLocation(nameLoc))
+                continue;
 
             std::list<ErrorMessage::FileLocation> locationList;
             locationList.emplace_back(nameLoc.fileName, nameLoc.lineNumber, nameLoc.column);
