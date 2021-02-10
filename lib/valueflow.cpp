@@ -1662,8 +1662,81 @@ static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign
     return true;
 }
 
+template<class T>
+struct SingleRange {
+    T* x;
+    T* begin() const {
+        return x;
+    }
+    T* end() const {
+        return x+1;
+    }
+};
+
+template<class T>
+SingleRange<T> MakeSingleRange(T& x)
+{
+    return {&x};
+}
+
+class SelectValueFromVarIdMapRange {
+    using M = std::unordered_map<nonneg int, ValueFlow::Value>;
+
+    struct Iterator {
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = const ValueFlow::Value;
+        using pointer = value_type *;
+        using reference = value_type &;
+
+        explicit Iterator(const M::const_iterator &it)
+            : mIt(it) {
+        }
+
+        reference operator*() const {
+            return mIt->second;
+        }
+
+        pointer operator->() {
+            return &mIt->second;
+        }
+
+        Iterator &operator++() {
+            // cppcheck-suppress postfixOperator - forward iterator needs to perform post-increment
+            mIt++;
+            return *this;
+        }
+
+        friend bool operator==(const Iterator &a, const Iterator &b) {
+            return a.mIt == b.mIt;
+        }
+
+        friend bool operator!=(const Iterator &a, const Iterator &b) {
+            return a.mIt != b.mIt;
+        }
+
+    private:
+        M::const_iterator mIt;
+    };
+
+public:
+    explicit SelectValueFromVarIdMapRange(const M *m)
+        : mMap(m) {
+    }
+
+    Iterator begin() const {
+        return Iterator(mMap->begin());
+    }
+    Iterator end() const {
+        return Iterator(mMap->end());
+    }
+
+private:
+    const M *mMap;
+};
+
 // Check if its an alias of the variable or is being aliased to this variable
-static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, const std::list<ValueFlow::Value>& values, bool* inconclusive = nullptr)
+template<typename V>
+static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, const V& values, bool* inconclusive = nullptr)
 {
     if (tok->varId() == varid)
         return false;
@@ -2101,7 +2174,7 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
                 const Variable* var = p.second;
                 if (tok->varId() == varid)
                     return true;
-                if (isAliasOf(var, tok, varid, {value}, &inconclusive))
+                if (isAliasOf(var, tok, varid, MakeSingleRange(value), &inconclusive))
                     return true;
             }
         }
@@ -4967,15 +5040,14 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
     }
 
     virtual bool isAlias(const Token* tok, bool& inconclusive) const OVERRIDE {
-        std::list<ValueFlow::Value> vals;
-        std::transform(values.begin(), values.end(), std::back_inserter(vals), SelectMapValues{});
+        const auto range = SelectValueFromVarIdMapRange(&values);
 
         for (const auto& p:getVars()) {
             nonneg int varid = p.first;
             const Variable* var = p.second;
             if (tok->varId() == varid)
                 return true;
-            if (isAliasOf(var, tok, varid, vals, &inconclusive))
+            if (isAliasOf(var, tok, varid, range, &inconclusive))
                 return true;
         }
         return false;
