@@ -4273,8 +4273,6 @@ private:
                "}\n";
         values = tokenValues(code, "x ; }", ValueFlow::Value::ValueType::UNINIT);
         ASSERT_EQUALS(0, values.size());
-
-
     }
 
     void valueFlowConditionExpressions() {
