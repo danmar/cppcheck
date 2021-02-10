@@ -584,7 +584,6 @@ void execute(const Token *expr,
             *result = 0;
         else
             *error = true;
-    }
-    else
+    } else
         *error = true;
 }

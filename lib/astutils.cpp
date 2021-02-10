@@ -755,13 +755,12 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
 std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclusive, ErrorPath errors, int depth)
 {
     struct ReferenceTokenLess {
-        bool operator()(const ReferenceToken& x, const ReferenceToken& y) const
-        {
+        bool operator()(const ReferenceToken& x, const ReferenceToken& y) const {
             return x.token < y.token;
         }
     };
     if (!tok)
-        return std::vector<ReferenceToken>{};
+        return std::vector<ReferenceToken> {};
     if (depth < 0)
         return {{tok, std::move(errors)}};
     const Variable *var = tok->variable();
@@ -811,7 +810,7 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclus
                 if (returnTok == tok)
                     continue;
                 std::vector<ReferenceToken> argvarRt = followAllReferences(returnTok, inconclusive, errors, depth - 1);
-                for(const ReferenceToken& rt:followAllReferences(returnTok, inconclusive, errors, depth - 1)) {
+                for (const ReferenceToken& rt:followAllReferences(returnTok, inconclusive, errors, depth - 1)) {
                     const Variable* argvar = rt.token->variable();
                     if (!argvar)
                         return {{tok, std::move(errors)}};
@@ -830,7 +829,7 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclus
                         result.insert(refs.begin(), refs.end());
                         if (!inconclusive && result.size() > 1)
                             return {{tok, std::move(errors)}};
-                    }   
+                    }
                 }
             }
             if (!result.empty())

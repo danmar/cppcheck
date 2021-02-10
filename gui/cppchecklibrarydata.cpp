@@ -329,20 +329,17 @@ static CppcheckLibraryData::Markup loadMarkup(QXmlStreamReader &xmlReader)
     QXmlStreamReader::TokenType type;
     if (xmlReader.attributes().hasAttribute("ext")) {
         markup.ext = xmlReader.attributes().value("ext").toString();
-    }
-    else {
+    } else {
         mandatoryAttibuteMissing(xmlReader, "ext");
     }
     if (xmlReader.attributes().hasAttribute("aftercode")) {
         markup.afterCode = (xmlReader.attributes().value("aftercode") == "true") ? true : false;
-    }
-    else {
+    } else {
         mandatoryAttibuteMissing(xmlReader, "aftercode");
     }
     if (xmlReader.attributes().hasAttribute("reporterrors")) {
         markup.reportErrors = (xmlReader.attributes().value("reporterrors") == "true") ? true : false;
-    }
-    else {
+    } else {
         mandatoryAttibuteMissing(xmlReader, "reporterrors");
     }
 
@@ -358,8 +355,7 @@ static CppcheckLibraryData::Markup loadMarkup(QXmlStreamReader &xmlReader)
                     continue;
                 if (xmlReader.name().toString() == "keyword") {
                     markup.keywords.append(xmlReader.attributes().value("name").toString());
-                }
-                else {
+                } else {
                     unhandledElement(xmlReader);
                 }
             }
@@ -372,13 +368,11 @@ static CppcheckLibraryData::Markup loadMarkup(QXmlStreamReader &xmlReader)
                     continue;
                 if (xmlReader.name().toString() == "block") {
                     codeBlock.blocks.append(xmlReader.attributes().value("name").toString());
-                }
-                else if (xmlReader.name().toString() == "structure") {
+                } else if (xmlReader.name().toString() == "structure") {
                     codeBlock.offset = xmlReader.attributes().value("offset").toInt();
                     codeBlock.start = xmlReader.attributes().value("start").toString();
                     codeBlock.end = xmlReader.attributes().value("end").toString();
-                }
-                else {
+                } else {
                     unhandledElement(xmlReader);
                 }
             }
@@ -392,14 +386,11 @@ static CppcheckLibraryData::Markup loadMarkup(QXmlStreamReader &xmlReader)
                     continue;
                 if (xmlReader.name().toString() == "exporter") {
                     exporter.prefix = xmlReader.attributes().value("prefix").toString();
-                }
-                else if (xmlReader.name().toString() == "prefix") {
+                } else if (xmlReader.name().toString() == "prefix") {
                     exporter.prefixList.append(xmlReader.readElementText());
-                }
-                else if (xmlReader.name().toString() == "suffix") {
+                } else if (xmlReader.name().toString() == "suffix") {
                     exporter.suffixList.append(xmlReader.readElementText());
-                }
-                else {
+                } else {
                     unhandledElement(xmlReader);
                 }
             }
@@ -411,8 +402,7 @@ static CppcheckLibraryData::Markup loadMarkup(QXmlStreamReader &xmlReader)
                     continue;
                 if (xmlReader.name().toString() == "importer") {
                     markup.importer.append(xmlReader.readElementText());
-                }
-                else {
+                } else {
                     unhandledElement(xmlReader);
                 }
             }
@@ -778,7 +768,7 @@ static void writeMarkup(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::
         }
         xmlWriter.writeEndElement();
     }
-    if (!mup.codeBlocks.isEmpty()) {        
+    if (!mup.codeBlocks.isEmpty()) {
         foreach (const CppcheckLibraryData::Markup::CodeBlocks codeblock, mup.codeBlocks) {
             xmlWriter.writeStartElement("codeblocks");
             foreach (const QString &block, codeblock.blocks) {

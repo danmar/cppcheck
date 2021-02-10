@@ -2001,8 +2001,7 @@ struct ValueFlowAnalyzer : Analyzer {
         return isModified(tok);
     }
 
-    Action analyzeToken(const Token* ref, const Token* tok, Direction d, bool inconclusiveRef) const
-    {
+    Action analyzeToken(const Token* ref, const Token* tok, Direction d, bool inconclusiveRef) const {
         if (!ref)
             return Action::None;
         // If its an inconclusiveRef then ref != tok
@@ -2054,7 +2053,7 @@ struct ValueFlowAnalyzer : Analyzer {
         // Follow references
         std::vector<ReferenceToken> refs = followAllReferences(tok);
         const bool inconclusiveRefs = refs.size() != 1;
-        for(const ReferenceToken& ref:refs) {
+        for (const ReferenceToken& ref:refs) {
             Action a = analyzeToken(ref.token, tok, d, inconclusiveRefs);
             if (a != Action::None)
                 return a;

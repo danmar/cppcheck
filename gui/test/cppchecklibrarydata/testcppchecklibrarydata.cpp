@@ -481,7 +481,7 @@ void TestCppcheckLibraryData::markupValid()
     QCOMPARE(libraryData.markups[0].afterCode, true);
 
     QCOMPARE(libraryData.markups[0].keywords.size(), 4);
-    QCOMPARE(libraryData.markups[0].keywords, QStringList( {"if", "while", "typeof", "for"} ));
+    QCOMPARE(libraryData.markups[0].keywords, QStringList({"if", "while", "typeof", "for"}));
 
     QCOMPARE(libraryData.markups[0].importer.size(), 1);
     QCOMPARE(libraryData.markups[0].importer, QStringList("connect"));
@@ -491,11 +491,11 @@ void TestCppcheckLibraryData::markupValid()
     QCOMPARE(libraryData.markups[0].exporter[0].suffixList.size(), 1);
     QCOMPARE(libraryData.markups[0].exporter[0].suffixList, QStringList("READ"));
     QCOMPARE(libraryData.markups[0].exporter[0].prefixList.size(), 3);
-    QCOMPARE(libraryData.markups[0].exporter[0].prefixList, QStringList( {"READ", "WRITE", "NOTIFY"} ));
+    QCOMPARE(libraryData.markups[0].exporter[0].prefixList, QStringList({"READ", "WRITE", "NOTIFY"}));
 
     QCOMPARE(libraryData.markups[0].codeBlocks.size(), 2);
     QCOMPARE(libraryData.markups[0].codeBlocks[0].blocks.size(), 5);
-    QCOMPARE(libraryData.markups[0].codeBlocks[0].blocks, QStringList( {"onClicked", "onFinished", "onTriggered", "onPressed", "onTouch"} ));
+    QCOMPARE(libraryData.markups[0].codeBlocks[0].blocks, QStringList({"onClicked", "onFinished", "onTriggered", "onPressed", "onTouch"}));
     QCOMPARE(libraryData.markups[0].codeBlocks[0].offset, 3);
     QCOMPARE(libraryData.markups[0].codeBlocks[0].start, "{");
     QCOMPARE(libraryData.markups[0].codeBlocks[0].end, "}");
