@@ -637,7 +637,7 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
     html = '<html><head><title>{}</title></head><body>\n'.format(title)
     html += '<h1>{}</h1>\n'.format(title)
     html += '<pre>\n'
-    column_width = [40, 10, 10, 10, 10]
+    column_width = [40, 10, 10, 10, 10, 10]
     html += '<b>'
     html += fmt('Package', 'Date       Time', OLD_VERSION, 'Head', 'Factor', link=False, column_width=column_width)
     html += '</b>\n'
@@ -710,6 +710,7 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
         total_time_factor = 0.0
     html += 'Time for all packages (not just the ones listed above):\n'
     html += fmt('Total time:',
+            '',
             '{:.1f}'.format(total_time_base),
             '{:.1f}'.format(total_time_head),
             '{:.2f}'.format(total_time_factor), link=False, column_width=column_width)
