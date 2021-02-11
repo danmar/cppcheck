@@ -4220,6 +4220,59 @@ private:
                "}";
         values = tokenValues(code, "x . value");
         ASSERT_EQUALS(0, values.size());
+
+        // #10166
+        code = "int f(bool b) {\n"
+               "    int x;\n"
+               "    do {\n"
+               "      if (b) {\n"
+               "        x = 0;\n"
+               "        break;\n"
+               "      }\n"
+               "    } while (true);\n"
+               "    return x;\n"
+               "}\n";
+        values = tokenValues(code, "x ; }", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
+
+        code = "int f(bool b) {\n"
+               "    int x;\n"
+               "    while (true) {\n"
+               "      if (b) {\n"
+               "        x = 0;\n"
+               "        break;\n"
+               "      }\n"
+               "    }\n"
+               "    return x;\n"
+               "}\n";
+        values = tokenValues(code, "x ; }", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
+
+        code = "int f(bool b) {\n"
+               "    int x;\n"
+               "    for(;;) {\n"
+               "      if (b) {\n"
+               "        x = 0;\n"
+               "        break;\n"
+               "      }\n"
+               "    }\n"
+               "    return x;\n"
+               "}\n";
+        values = tokenValues(code, "x ; }", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
+
+        code = "int f(bool b) {\n"
+               "    int x;\n"
+               "    switch (b) {\n"
+               "      case 1: {\n"
+               "        ret = 0;\n"
+               "        break;\n"
+               "      }\n"
+               "    }\n"
+               "    return x;\n"
+               "}\n";
+        values = tokenValues(code, "x ; }", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
     }
 
     void valueFlowConditionExpressions() {
