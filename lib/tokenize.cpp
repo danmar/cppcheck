@@ -1808,6 +1808,22 @@ namespace {
             }
         }
 
+        const ScopeInfo3 * findScopeRecursive(const std::string & scope) const {
+            if (fullName.size() < scope.size() &&
+                fullName == scope.substr(0, fullName.size())) {
+                for (auto & child : children) {
+                    if (child.fullName == scope && &child != this)
+                        return &child;
+                    else {
+                        const ScopeInfo3 * temp1 = child.findScopeRecursive(scope);
+                        if (temp1)
+                            return temp1;
+                    }
+                }
+            }
+            return nullptr;
+        }
+
         const ScopeInfo3 * findScope(const std::string & scope) const {
             const ScopeInfo3 * tempScope = this;
             while (tempScope) {
@@ -1815,8 +1831,16 @@ namespace {
                     if (child.type == Record && (child.name == scope || child.fullName == scope))
                         return &child;
                 }
-
                 tempScope = tempScope->parent;
+            }
+            // check for another scope with same name
+            const ScopeInfo3 * global = this;
+            while (global->parent)
+                global = global->parent;
+            for (const ScopeInfo3 & tempChild : global->children) {
+                const ScopeInfo3 * temp = tempChild.findScopeRecursive(scope);
+                if (temp)
+                    return temp;
             }
             return nullptr;
         }
