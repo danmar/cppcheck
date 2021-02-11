@@ -4013,11 +4013,6 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
     return values;
 }
 
-static bool isLiteralNumber(const Token *tok, bool cpp)
-{
-    return tok->isNumber() || tok->isEnumerator() || tok->str() == "NULL" || (cpp && Token::Match(tok, "false|true|nullptr"));
-}
-
 static bool isVariableInit(const Token *tok)
 {
     return tok->str() == "(" &&
