@@ -2192,9 +2192,9 @@ bool Tokenizer::simplifyUsing()
             if (end && Token::Match(end->next(), "class|struct|union %name%"))
                 currentScope->recordTypes.insert(end->strAt(2));
 
-            Token *endToken = TemplateSimplifier::findTemplateDeclarationEnd(tok);
-            if (endToken)
-                tok = endToken;
+            Token *declEndToken = TemplateSimplifier::findTemplateDeclarationEnd(tok);
+            if (declEndToken)
+                tok = declEndToken;
             continue;
         }
 
@@ -2322,9 +2322,9 @@ bool Tokenizer::simplifyUsing()
 
             // skip template definitions
             if (Token::Match(tok1, "template < !!>")) {
-                Token *endToken = TemplateSimplifier::findTemplateDeclarationEnd(tok1);
-                if (endToken)
-                    tok1 = endToken;
+                Token *declEndToken = TemplateSimplifier::findTemplateDeclarationEnd(tok1);
+                if (declEndToken)
+                    tok1 = declEndToken;
                 continue;
             }
 
