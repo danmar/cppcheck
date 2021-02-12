@@ -1103,27 +1103,51 @@ private:
     }
 
     void simplifyUsing10173() {
-        const char code[] = "std::ostream & operator<<(std::ostream &s, const Pr<st> p) {\n"
-                            "    return s;\n"
-                            "}\n"
-                            "void foo() {\n"
-                            "    using Pr = d::Pr<st>;\n"
-                            "    Pr p;\n"
-                            "}\n"
-                            "void bar() {\n"
-                            "   Pr<st> p;\n"
-                            "}";
-        const char exp[]  = "std :: ostream & operator<< ( std :: ostream & s , const Pr < st > p ) { "
-                            "return s ; "
-                            "} "
-                            "void foo ( ) { "
-                            "d :: Pr < st > p ; "
-                            "} "
-                            "void bar ( ) { "
-                            "Pr < st > p ; "
-                            "}";
-        ASSERT_EQUALS(exp, tok(code, true));
-        ASSERT_EQUALS("", errout.str());
+        {
+            const char code[] = "std::ostream & operator<<(std::ostream &s, const Pr<st> p) {\n"
+                                "    return s;\n"
+                                "}\n"
+                                "void foo() {\n"
+                                "    using Pr = d::Pr<st>;\n"
+                                "    Pr p;\n"
+                                "}\n"
+                                "void bar() {\n"
+                                "   Pr<st> p;\n"
+                                "}";
+            const char exp[]  = "std :: ostream & operator<< ( std :: ostream & s , const Pr < st > p ) { "
+                                "return s ; "
+                                "} "
+                                "void foo ( ) { "
+                                "d :: Pr < st > p ; "
+                                "} "
+                                "void bar ( ) { "
+                                "Pr < st > p ; "
+                                "}";
+            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            const char code[] = "namespace defsa {\n"
+                                "void xxx::foo() {\n"
+                                "   using NS1 = v1::l;\n"
+                                "}\n"
+                                "void xxx::bar() {\n"
+                                "   using NS1 = v1::l;\n"
+                                "}\n"
+                                "void xxx::foobar() {\n"
+                                "   using NS1 = v1::l;\n"
+                                "}\n"
+                                "}";
+            const char exp[]  = "namespace defsa { "
+                                "void xxx :: foo ( ) { "
+                                "} "
+                                "void xxx :: bar ( ) { "
+                                "} "
+                                "void xxx :: foobar ( ) { "
+                                "} "
+                                "}";
+            ASSERT_EQUALS(exp, tok(code, true));
+        }
     }
 };
 
