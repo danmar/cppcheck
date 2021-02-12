@@ -1763,9 +1763,9 @@ namespace {
         std::list<ScopeInfo3> children;
         Type type;
         std::string fullName;
-        const std::string name;
-        const Token * const bodyStart;
-        const Token * const bodyEnd;
+        std::string name;
+        const Token * bodyStart;
+        const Token * bodyEnd;
         std::set<std::string> usingNamespaces;
         std::set<std::string> recordTypes;
         std::set<std::string> baseTypes;
@@ -1859,9 +1859,19 @@ namespace {
             }
             return false;
         }
+
+        ScopeInfo3 * findScope(const ScopeInfo3 * scope) {
+            if (scope->bodyStart == bodyStart)
+                return this;
+            for (auto & child : children) {
+                if (child.findScope(scope))
+                    return &child;
+            }
+            return nullptr;
+        }
     };
 
-    void setScopeInfo(Token *tok, ScopeInfo3 **scopeInfo, bool all = false)
+    void setScopeInfo(Token *tok, ScopeInfo3 **scopeInfo)
     {
         if (!tok)
             return;
@@ -1920,7 +1930,7 @@ namespace {
                     }
                 }
 
-                if (all && !added)
+                if (!added)
                     *scopeInfo = (*scopeInfo)->addChild(ScopeInfo3::Other, "", tok, tok->link());
             }
             return;
@@ -2182,9 +2192,9 @@ bool Tokenizer::simplifyUsing()
             if (end && Token::Match(end->next(), "class|struct|union %name%"))
                 currentScope->recordTypes.insert(end->strAt(2));
 
-            Token *endToken = TemplateSimplifier::findTemplateDeclarationEnd(tok);
-            if (endToken)
-                tok = endToken;
+            Token *declEndToken = TemplateSimplifier::findTemplateDeclarationEnd(tok);
+            if (declEndToken)
+                tok = declEndToken;
             continue;
         }
 
@@ -2195,8 +2205,6 @@ bool Tokenizer::simplifyUsing()
                 Token::Match(tok->linkAt(2), "] ] = ::| %name%")))))
             continue;
 
-        ScopeInfo3 scopeInfo1;
-        ScopeInfo3 *currentScope1 = &scopeInfo1;
         std::string name = tok->strAt(1);
         const Token *nameToken = tok->next();
         std::string scope = currentScope->fullName;
@@ -2278,15 +2286,31 @@ bool Tokenizer::simplifyUsing()
         // Unfortunately we have to start searching from the beginning
         // of the token stream because templates are instantiated at
         // the end of the token stream and it may be used before then.
+        ScopeInfo3 scopeInfo1;
+        ScopeInfo3 *currentScope1 = &scopeInfo1;
+        Token *startToken = list.front();
+        Token *endToken = nullptr;
+
+        // We can limit the search to the current function when the type alias
+        // is defined in that function.
+        if (currentScope->type == ScopeInfo3::Other) {
+            scopeInfo1 = scopeInfo;
+            currentScope1 = scopeInfo.findScope(currentScope);
+            if (!currentScope1)
+                return substitute; // something bad happened
+            startToken = usingEnd;
+            endToken = currentScope->bodyEnd->next();
+        }
+
         std::string scope1;
         bool inMemberFunc = false;
         const ScopeInfo3 * memberFuncScope = nullptr;
         const Token * memberFuncEnd = nullptr;
         bool skip = false; // don't erase type aliases we can't parse
-        for (Token* tok1 = list.front(); tok1; tok1 = tok1->next()) {
+        for (Token* tok1 = startToken; tok1 != endToken; tok1 = tok1->next()) {
             if ((Token::Match(tok1, "{|}|namespace|class|struct|union") && tok1->strAt(-1) != "using") ||
                 Token::Match(tok1, "using namespace %name% ;|::")) {
-                setScopeInfo(tok1, &currentScope1, true);
+                setScopeInfo(tok1, &currentScope1);
                 scope1 = currentScope1->fullName;
                 if (inMemberFunc && memberFuncEnd && tok1 == memberFuncEnd) {
                     inMemberFunc = false;
@@ -2298,9 +2322,9 @@ bool Tokenizer::simplifyUsing()
 
             // skip template definitions
             if (Token::Match(tok1, "template < !!>")) {
-                Token *endToken = TemplateSimplifier::findTemplateDeclarationEnd(tok1);
-                if (endToken)
-                    tok1 = endToken;
+                Token *declEndToken = TemplateSimplifier::findTemplateDeclarationEnd(tok1);
+                if (declEndToken)
+                    tok1 = declEndToken;
                 continue;
             }
 

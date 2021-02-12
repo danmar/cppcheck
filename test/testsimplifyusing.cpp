@@ -81,6 +81,7 @@ private:
         TEST_CASE(simplifyUsing10136);
         TEST_CASE(simplifyUsing10171);
         TEST_CASE(simplifyUsing10172);
+        TEST_CASE(simplifyUsing10173);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -1099,6 +1100,30 @@ private:
             ASSERT_EQUALS(exp, tok(code, false));
             ASSERT_EQUALS("", errout.str());
         }
+    }
+
+    void simplifyUsing10173() {
+        const char code[] = "std::ostream & operator<<(std::ostream &s, const Pr<st> p) {\n"
+                            "    return s;\n"
+                            "}\n"
+                            "void foo() {\n"
+                            "    using Pr = d::Pr<st>;\n"
+                            "    Pr p;\n"
+                            "}\n"
+                            "void bar() {\n"
+                            "   Pr<st> p;\n"
+                            "}";
+        const char exp[]  = "std :: ostream & operator<< ( std :: ostream & s , const Pr < st > p ) { "
+                            "return s ; "
+                            "} "
+                            "void foo ( ) { "
+                            "d :: Pr < st > p ; "
+                            "} "
+                            "void bar ( ) { "
+                            "Pr < st > p ; "
+                            "}";
+        ASSERT_EQUALS(exp, tok(code, true));
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
