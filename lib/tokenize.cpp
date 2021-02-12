@@ -2293,7 +2293,8 @@ bool Tokenizer::simplifyUsing()
 
         // We can limit the search to the current function when the type alias
         // is defined in that function.
-        if (currentScope->type == ScopeInfo3::Other) {
+        if (currentScope->type == ScopeInfo3::Other ||
+            currentScope->type == ScopeInfo3::MemberFunction) {
             scopeInfo1 = scopeInfo;
             currentScope1 = scopeInfo.findScope(currentScope);
             if (!currentScope1)
