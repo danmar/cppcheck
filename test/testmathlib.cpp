@@ -20,6 +20,8 @@
 #include "mathlib.h"
 #include "testsuite.h"
 
+#include <limits>
+
 struct InternalError;
 
 
@@ -370,6 +372,103 @@ private:
          */
 
         ASSERT_EQUALS(0x0A00000000000000LL, MathLib::toLongNumber("0x0A00000000000000LL"));
+
+        // min/max numeric limits
+        ASSERT_EQUALS(std::numeric_limits<long long>::min(), MathLib::toLongNumber(std::to_string(std::numeric_limits<long long>::min())));
+        ASSERT_EQUALS(std::numeric_limits<long long>::max(), MathLib::toLongNumber(std::to_string(std::numeric_limits<long long>::max())));
+        ASSERT_EQUALS(std::numeric_limits<unsigned long long>::min(), MathLib::toLongNumber(std::to_string(std::numeric_limits<unsigned long long>::min())));
+        ASSERT_EQUALS(std::numeric_limits<unsigned long long>::max(), MathLib::toLongNumber(std::to_string(std::numeric_limits<unsigned long long>::max())));
+
+        ASSERT_EQUALS(std::numeric_limits<long long>::min(), MathLib::toULongNumber(std::to_string(std::numeric_limits<long long>::min())));
+        ASSERT_EQUALS(std::numeric_limits<long long>::max(), MathLib::toULongNumber(std::to_string(std::numeric_limits<long long>::max())));
+        ASSERT_EQUALS(std::numeric_limits<unsigned long long>::min(), MathLib::toULongNumber(std::to_string(std::numeric_limits<unsigned long long>::min())));
+        ASSERT_EQUALS(std::numeric_limits<unsigned long long>::max(), MathLib::toULongNumber(std::to_string(std::numeric_limits<unsigned long long>::max())));
+
+        // min/max and out-of-bounds - hex
+        {
+            const MathLib::bigint i = 0xFFFFFFFFFFFFFFFF;
+            ASSERT_EQUALS(i, MathLib::toLongNumber(std::to_string(i)));
+            ASSERT_EQUALS(i, MathLib::toLongNumber("0xFFFFFFFFFFFFFFFF"));
+        }
+        {
+            const MathLib::biguint u = 0xFFFFFFFFFFFFFFFF;
+            ASSERT_EQUALS(u, MathLib::toULongNumber(std::to_string(u)));
+            ASSERT_EQUALS(u, MathLib::toULongNumber("0xFFFFFFFFFFFFFFFF"));
+        }
+        {
+            const MathLib::bigint i = -0xFFFFFFFFFFFFFFFF;
+            ASSERT_EQUALS(i, MathLib::toLongNumber(std::to_string(i)));
+            ASSERT_EQUALS(i, MathLib::toLongNumber("-0xFFFFFFFFFFFFFFFF"));
+        }
+        {
+            const MathLib::biguint u = -0xFFFFFFFFFFFFFFFF;
+            ASSERT_EQUALS(u, MathLib::toULongNumber(std::to_string(u)));
+            ASSERT_EQUALS(u, MathLib::toULongNumber("-0xFFFFFFFFFFFFFFFF"));
+        }
+
+        ASSERT_THROW(MathLib::toLongNumber("0x10000000000000000"), InternalError);
+        ASSERT_THROW(MathLib::toULongNumber("0x10000000000000000"), InternalError);
+        ASSERT_THROW(MathLib::toLongNumber("-0x10000000000000000"), InternalError);
+        ASSERT_THROW(MathLib::toULongNumber("-0x10000000000000000"), InternalError);
+
+        // min/max and out-of-bounds - octal
+        {
+            const MathLib::bigint i = 01777777777777777777777;
+            ASSERT_EQUALS(i, MathLib::toLongNumber(std::to_string(i)));
+            ASSERT_EQUALS(i, MathLib::toLongNumber("01777777777777777777777"));
+        }
+        {
+            const MathLib::biguint u = 01777777777777777777777;
+            ASSERT_EQUALS(u, MathLib::toULongNumber(std::to_string(u)));
+            ASSERT_EQUALS(u, MathLib::toULongNumber("01777777777777777777777"));
+        }
+        {
+            const MathLib::bigint i = -01777777777777777777777;
+            ASSERT_EQUALS(i, MathLib::toLongNumber(std::to_string(i)));
+            ASSERT_EQUALS(i, MathLib::toLongNumber("-01777777777777777777777"));
+        }
+        {
+            const MathLib::biguint u = -01777777777777777777777;
+            ASSERT_EQUALS(u, MathLib::toULongNumber(std::to_string(u)));
+            ASSERT_EQUALS(u, MathLib::toULongNumber("-01777777777777777777777"));
+        }
+
+        ASSERT_THROW(MathLib::toLongNumber("02000000000000000000000"), InternalError);
+        ASSERT_THROW(MathLib::toULongNumber("02000000000000000000000"), InternalError);
+        ASSERT_THROW(MathLib::toLongNumber("-02000000000000000000000"), InternalError);
+        ASSERT_THROW(MathLib::toULongNumber("-02000000000000000000000"), InternalError);
+
+        // min/max and out-of-bounds - decimal
+        {
+            const MathLib::bigint i = 18446744073709551615;
+            ASSERT_EQUALS(i, MathLib::toLongNumber(std::to_string(i)));
+            ASSERT_EQUALS(i, MathLib::toLongNumber("18446744073709551615"));
+        }
+        {
+            const MathLib::biguint u = 18446744073709551615;
+            ASSERT_EQUALS(u, MathLib::toULongNumber(std::to_string(u)));
+            ASSERT_EQUALS(u, MathLib::toULongNumber("18446744073709551615"));
+        }
+        {
+            const MathLib::bigint i = -18446744073709551615;
+            ASSERT_EQUALS(i, MathLib::toLongNumber(std::to_string(i)));
+            ASSERT_EQUALS(i, MathLib::toLongNumber("-18446744073709551615"));
+        }
+        {
+            const MathLib::biguint u = -18446744073709551615;
+            ASSERT_EQUALS(u, MathLib::toULongNumber(std::to_string(u)));
+            ASSERT_EQUALS(u, MathLib::toULongNumber("-18446744073709551615"));
+        }
+
+        ASSERT_THROW(MathLib::toLongNumber("18446744073709551616"), InternalError);
+        ASSERT_THROW(MathLib::toULongNumber("18446744073709551616"), InternalError);
+        ASSERT_THROW(MathLib::toLongNumber("-18446744073709551616"), InternalError);
+        ASSERT_THROW(MathLib::toULongNumber("-18446744073709551616"), InternalError);
+
+        // TODO: test binary
+        // TODO: test floating point
+
+        // TODO: test with 128-bit values
     }
 
     void toDoubleNumber() const {
