@@ -4701,6 +4701,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     removePragma();
 
+    // Simplify the C alternative tokens (and, or, etc.)
+    simplifyCAlternativeTokens();
+
     reportUnknownMacros();
 
     simplifyHeadersAndUnusedTemplates();
@@ -4757,9 +4760,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Combine tokens..
     combineOperators();
-
-    // Simplify the C alternative tokens (and, or, etc.)
-    simplifyCAlternativeTokens();
 
     // replace 'sin(0)' to '0' and other similar math expressions
     simplifyMathExpressions();
@@ -7627,6 +7627,11 @@ bool Tokenizer::simplifyCAlternativeTokens()
             replaceAll = true;
         } else if (Token::Match(tok, "not|compl")) {
             alt.push_back(tok);
+
+            if (Token::Match(tok->previous(), "%assign%") || Token::Match(tok->next(), "%number%")) {
+                replaceAll = true;
+                continue;
+            }
 
             // Don't simplify 'not p;' (in case 'not' is a type)
             if (!Token::Match(tok->next(), "%name%|(") ||
