@@ -57,7 +57,7 @@ environment:
 
 install:
   - python -m pip install pip --upgrade
-  - pip install pytest
+  - python -m pip install pytest
   - SET p=x86
   - IF "%platform%"=="x64" SET p=x64
   - curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-4.8.9/z3-4.8.9-%p%-win.zip -o z3-4.8.9-win.zip

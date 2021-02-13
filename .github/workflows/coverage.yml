@@ -20,7 +20,7 @@ jobs:
           sudo apt-get install lcov
           sudo apt-get install libcppunit-dev
           python -m pip install pip --upgrade
-          pip install lcov_cobertura
+          python -m pip install lcov_cobertura
 
       - name: Compile instrumented
         run: |
