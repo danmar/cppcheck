@@ -74,7 +74,9 @@ static const char * getFunctionTypeName(Function::Type type)
 
 static bool isVariableCopyNeeded(const Variable &var)
 {
-    return var.isPointer() || (var.type() && var.type()->needInitialization == Type::NeedInitialization::True) || (var.valueType()->type >= ValueType::Type::CHAR);
+    return var.isPointer() ||
+           (var.type() && var.type()->needInitialization == Type::NeedInitialization::True) ||
+           (var.valueType() && var.valueType()->type >= ValueType::Type::CHAR);
 }
 
 //---------------------------------------------------------------------------
