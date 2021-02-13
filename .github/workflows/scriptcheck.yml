@@ -47,6 +47,7 @@ jobs:
       - name: run pylint
         if: matrix.python-version == '3.8'
         run: |
+          pylint --rcfile=pylintrc_travis addons/*.py
           pylint --rcfile=pylintrc_travis htmlreport/cppcheck-htmlreport
           pylint --rcfile=pylintrc_travis htmlreport/*.py
           pylint --rcfile=pylintrc_travis tools/*.py
@@ -55,6 +56,12 @@ jobs:
         if: matrix.python-version == '3.8'
         run: |
           find . -name '*.json' | xargs -n 1 python -m json.tool > /dev/null
+
+      - name: check python syntax
+        if: matrix.python-version != '2.7'
+        run: |
+          python -m py_compile ./tools/donate-cpu.py
+          python -m py_compile ./tools/donate-cpu-server.py
 
       - name: compile addons
         run: |
