@@ -3059,7 +3059,11 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
             base.type = classScope->check->findType(base.nameTok, classScope);
 
             // save pattern for base class name
-            derivedFrom.push_back(base);
+            if (base.type != this)
+                derivedFrom.push_back(base);
+            else if (base.name != name())
+                if (classScope && classScope->check)
+                   classScope->check-> debugMessage(base.nameTok, "debug", "Type::initBaseInfo found same type with different names");
         } else
             tok2 = tok2->next();
     }
