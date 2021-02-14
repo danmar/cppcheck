@@ -69,5 +69,5 @@ jobs:
 
       - name: test addons
         run: |
-          make -s
+          make -j$(nproc) -s
           PYTHONPATH=./addons python -m pytest addons/test/test-*.py
