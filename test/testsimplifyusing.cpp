@@ -64,6 +64,7 @@ private:
         TEST_CASE(simplifyUsing15);
         TEST_CASE(simplifyUsing16);
         TEST_CASE(simplifyUsing17);
+        TEST_CASE(simplifyUsing18);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -455,6 +456,11 @@ private:
                                 "class S4 s4 ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyUsing18() {
+        const char code[] = "{ { { using a = a; using a; } } }";
+        tok(code, false); // don't crash
     }
 
     void simplifyUsing8970() {
