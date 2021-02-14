@@ -11,6 +11,7 @@ import socket
 import re
 import datetime
 import time
+import traceback
 from threading import Thread
 import sys
 import urllib.request
@@ -24,7 +25,7 @@ import html as html_lib
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.14"
+SERVER_VERSION = "1.3.15"
 
 OLD_VERSION = '2.3'
 
@@ -913,6 +914,10 @@ class HttpClientThread(Thread):
                     data = f.read()
                     f.close()
                     httpGetResponse(self.connection, data, 'text/plain')
+        except:
+            tb = "".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]))
+            print(tb)
+            httpGetResponse(self.connection, tb, 'text/plain')
         finally:
             time.sleep(1)
             self.connection.close()
