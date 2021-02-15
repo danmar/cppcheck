@@ -3056,7 +3056,9 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
                 }
             }
 
-            base.type = classScope->check->findType(base.nameTok, classScope);
+            const Type * baseType = classScope->check->findType(base.nameTok, enclosingScope);
+            if (baseType && !baseType->findDependency(this))
+                base.type = baseType;
 
             // save pattern for base class name
             derivedFrom.push_back(base);
