@@ -2308,7 +2308,7 @@ bool Tokenizer::simplifyUsing()
         const ScopeInfo3 * memberFuncScope = nullptr;
         const Token * memberFuncEnd = nullptr;
         bool skip = false; // don't erase type aliases we can't parse
-        for (Token* tok1 = startToken; tok1 != endToken; tok1 = tok1->next()) {
+        for (Token* tok1 = startToken; tok1 && tok1 != endToken; tok1 = tok1->next()) {
             if ((Token::Match(tok1, "{|}|namespace|class|struct|union") && tok1->strAt(-1) != "using") ||
                 Token::Match(tok1, "using namespace %name% ;|::")) {
                 setScopeInfo(tok1, &currentScope1);
