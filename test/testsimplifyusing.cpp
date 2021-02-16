@@ -65,6 +65,7 @@ private:
         TEST_CASE(simplifyUsing16);
         TEST_CASE(simplifyUsing17);
         TEST_CASE(simplifyUsing18);
+        TEST_CASE(simplifyUsing19);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -461,6 +462,18 @@ private:
     void simplifyUsing18() {
         const char code[] = "{ { { using a = a; using a; } } }";
         tok(code, false); // don't crash
+    }
+
+    void simplifyUsing19() {
+        const char code[] = "namespace a {\n"
+                            "using b = int;\n"
+                            "void foo::c() { }\n"
+                            "void foo::d() { }\n"
+                            "void foo::e() {\n"
+                            "   using b = float;\n"
+                            "}\n"
+                            "}";
+        tok(code, false); // don't hang
     }
 
     void simplifyUsing8970() {
