@@ -5546,22 +5546,20 @@ private:
     }
 
     void const61() { // ticket #5606 - don't crash
+        // this code is invalid so a false negative is OK
         checkConst("class MixerParticipant : public MixerParticipant {\n"
                    "    int GetAudioFrame();\n"
                    "};\n"
                    "int MixerParticipant::GetAudioFrame() {\n"
                    "    return 0;\n"
                    "}");
-        // this code is invalid so a false negative is OK
-        TODO_ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (performance, inconclusive) Technically the member function 'MixerParticipant::GetAudioFrame' can be static (but you may consider moving to unnamed namespace).\n", "", errout.str());
 
+        // this code is invalid so a false negative is OK
         checkConst("class MixerParticipant : public MixerParticipant {\n"
                    "    bool InitializeFileReader() {\n"
                    "       printf(\"music\");\n"
                    "    }\n"
                    "};");
-        // this code is invalid so a false negative is OK
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'MixerParticipant::InitializeFileReader' can be static (but you may consider moving to unnamed namespace).\n", "", errout.str());
 
         // Based on an example from SVN source code causing an endless recursion within CheckClass::isConstMemberFunc()
         // A more complete example including a template declaration like
