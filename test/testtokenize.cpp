@@ -1263,6 +1263,7 @@ private:
                                            "inline CImg<T> operator==(const char *const expression, const CImg<T>& img) {"
                                            "  return img == expression;"
                                            "}"));
+        ASSERT_EQUALS("f ( source , asm ( \"^(){somecode}\" ) ) ;", tokenizeAndStringify("f(source, ^(){somecode});"));
     }
 
     void ifAddBraces1() {
