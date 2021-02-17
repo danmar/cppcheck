@@ -175,7 +175,7 @@ bool Token::isUpperCaseName() const
 
 void Token::concatStr(std::string const& b)
 {
-    mStr.erase(mStr.length() - 1);
+    mStr.pop_back();
     mStr.append(getStringLiteral(b) + "\"");
 
     if (isCChar() && isStringLiteral(b) && b[0] != '"') {
