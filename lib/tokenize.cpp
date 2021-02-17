@@ -10133,7 +10133,7 @@ void Tokenizer::findGarbageCode() const
             std::string code;
             if (Token::Match(tok->next(), ")|]|}"))
                 code = tok->str() + tok->next()->str();
-            if (Token::simpleMatch(tok->next(), "( )"))
+            if (Token::simpleMatch(tok->next(), "( )") && tok->str() != "^")
                 code = tok->str() + "()";
             if (!code.empty()) {
                 if (isC() || (tok->str() != ">" && !Token::simpleMatch(tok->previous(), "operator")))
