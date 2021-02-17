@@ -111,6 +111,7 @@ private:
         TEST_CASE(nullpointer68);
         TEST_CASE(nullpointer69);         // #8143
         TEST_CASE(nullpointer70);
+        TEST_CASE(nullpointer71); // #10178
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2210,6 +2211,24 @@ private:
               "    first->str();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:10]: (warning) Either the condition 'first' is redundant or there is possible null pointer dereference: first.\n", errout.str());
+    }
+
+    void nullpointer71() {
+        check("void f() {\n"
+              "  Device* dev = Get();\n"
+              "  SetCount(dev == nullptr ? 0 : dev->size());\n"
+              "  if (dev)\n"
+              "    DoSomething(dev);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  Device* dev = Get();\n"
+              "  SetCount(dev != nullptr ? dev->size() : 0);\n"
+              "  if (dev)\n"
+              "    DoSomething(dev);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_addressOf() { // address of
