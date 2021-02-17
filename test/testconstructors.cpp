@@ -196,6 +196,8 @@ private:
         TEST_CASE(uninitComparisonAssignment);    // ticket #7429
 
         TEST_CASE(uninitTemplate1); // ticket #7372
+
+        TEST_CASE(unknownTemplateType);
     }
 
 
@@ -3903,6 +3905,18 @@ private:
               "A<B<T1, T2>>::A() : m_value(false) {}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void unknownTemplateType() {
+        check("template <typename T> class A {\n"
+              "private:\n"
+              "    T m;\n"
+              "public:\n"
+              "    A& operator=() { return *this; }\n"
+              "};\n"
+              "A<decltype(SOMETHING)> a;");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestConstructors)

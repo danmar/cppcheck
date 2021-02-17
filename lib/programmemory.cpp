@@ -403,6 +403,20 @@ void execute(const Token *expr,
             *error = true;
     }
 
+    else if (Token::Match(expr->tokAt(-3), "%var% . %name% (") && astIsContainer(expr->tokAt(-3))) {
+        const Token* containerTok = expr->tokAt(-3);
+        Library::Container::Yield yield = containerTok->valueType()->container->getYield(expr->strAt(-1));
+        if (yield == Library::Container::Yield::SIZE) {
+            if (!programMemory->getContainerSizeValue(containerTok->exprId(), result))
+                *error = true;
+        } else if (yield == Library::Container::Yield::EMPTY) {
+            if (!programMemory->getContainerEmptyValue(containerTok->exprId(), result))
+                *error = true;
+        } else {
+            *error = true;
+        }
+    }
+
     else if (expr->exprId() > 0 && programMemory->hasValue(expr->exprId())) {
         if (!programMemory->getIntValue(expr->exprId(), result))
             *error = true;
@@ -570,24 +584,6 @@ void execute(const Token *expr,
             *result = 0;
         else
             *error = true;
-    } else if (Token::Match(expr->tokAt(-3), "%var% . %name% (")) {
-        const Token* containerTok = expr->tokAt(-3);
-        if (astIsContainer(containerTok)) {
-            Library::Container::Yield yield = containerTok->valueType()->container->getYield(expr->strAt(-1));
-            if (yield == Library::Container::Yield::SIZE) {
-                if (!programMemory->getContainerSizeValue(containerTok->exprId(), result))
-                    *error = true;
-            } else if (yield == Library::Container::Yield::EMPTY) {
-                if (!programMemory->getContainerEmptyValue(containerTok->exprId(), result))
-                    *error = true;
-            } else {
-                *error = true;
-            }
-        } else {
-            *error = true;
-        }
-    }
-
-    else
+    } else
         *error = true;
 }

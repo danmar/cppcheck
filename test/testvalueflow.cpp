@@ -4220,6 +4220,59 @@ private:
                "}";
         values = tokenValues(code, "x . value");
         ASSERT_EQUALS(0, values.size());
+
+        // #10166
+        code = "int f(bool b) {\n"
+               "    int x;\n"
+               "    do {\n"
+               "      if (b) {\n"
+               "        x = 0;\n"
+               "        break;\n"
+               "      }\n"
+               "    } while (true);\n"
+               "    return x;\n"
+               "}\n";
+        values = tokenValues(code, "x ; }", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
+
+        code = "int f(bool b) {\n"
+               "    int x;\n"
+               "    while (true) {\n"
+               "      if (b) {\n"
+               "        x = 0;\n"
+               "        break;\n"
+               "      }\n"
+               "    }\n"
+               "    return x;\n"
+               "}\n";
+        values = tokenValues(code, "x ; }", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
+
+        code = "int f(bool b) {\n"
+               "    int x;\n"
+               "    for(;;) {\n"
+               "      if (b) {\n"
+               "        x = 0;\n"
+               "        break;\n"
+               "      }\n"
+               "    }\n"
+               "    return x;\n"
+               "}\n";
+        values = tokenValues(code, "x ; }", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
+
+        code = "int f(bool b) {\n"
+               "    int x;\n"
+               "    switch (b) {\n"
+               "      case 1: {\n"
+               "        ret = 0;\n"
+               "        break;\n"
+               "      }\n"
+               "    }\n"
+               "    return x;\n"
+               "}\n";
+        values = tokenValues(code, "x ; }", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
     }
 
     void valueFlowConditionExpressions() {
@@ -4467,6 +4520,18 @@ private:
             return "ContainerSizeValue";
         if (!values.front().isImpossible())
             return "Impossible";
+        if (values.front().intvalue != i)
+            return "intvalue:" + std::to_string(values.front().intvalue);
+        return "";
+    }
+
+    static std::string isInconclusiveContainerSizeValue(const std::list<ValueFlow::Value>& values, MathLib::bigint i) {
+        if (values.size() != 1)
+            return "values.size():" + std::to_string(values.size());
+        if (!values.front().isContainerSizeValue())
+            return "ContainerSizeValue";
+        if (!values.front().isInconclusive())
+            return "Inconclusive";
         if (values.front().intvalue != i)
             return "intvalue:" + std::to_string(values.front().intvalue);
         return "";
@@ -5037,6 +5102,18 @@ private:
         ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
 
+        code = "bool f() {\n"
+               "    std::list<int> x1;\n"
+               "    std::list<int> x2;\n"
+               "    for (int i = 0; i < 10; ++i) {\n"
+               "        std::list<int>& x = (i < 5) ? x1 : x2;\n"
+               "        x.push_back(i);\n"
+               "    }\n"
+               "    return x1.empty() || x2.empty();\n"
+               "}\n";
+        ASSERT_EQUALS("", isInconclusiveContainerSizeValue(tokenValues(code, "x1 . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+        ASSERT_EQUALS("", isInconclusiveContainerSizeValue(tokenValues(code, "x2 . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+
         code = "std::vector<int> g();\n"
                "int f(bool b) {\n"
                "    std::set<int> a;\n"
@@ -5045,6 +5122,18 @@ private:
                "    return a.size();\n"
                "}\n";
         ASSERT_EQUALS(true, tokenValues(code, "a . size", ValueFlow::Value::ValueType::CONTAINER_SIZE).empty());
+
+        code = "std::vector<int> g();\n"
+               "std::vector<int> f() {\n"
+               "    std::vector<int> v = g();\n"
+               "    if (!v.empty()) {\n"
+               "        if (v[0] != 0)\n"
+               "            v.clear();\n"
+               "    }\n"
+               "    if (!v.empty() && v[0] != 0) {}\n"
+               "    return v;\n"
+               "}\n";
+        ASSERT_EQUALS(true, tokenValues(code, "v [ 0 ] != 0 ) { }", ValueFlow::Value::ValueType::CONTAINER_SIZE).empty());
     }
 
     void valueFlowDynamicBufferSize() {

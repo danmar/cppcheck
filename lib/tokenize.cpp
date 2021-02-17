@@ -1750,9 +1750,13 @@ namespace {
         ScopeInfo3() : parent(nullptr), type(Global), bodyStart(nullptr), bodyEnd(nullptr) {}
         ScopeInfo3(ScopeInfo3 *parent_, Type type_, const std::string &name_, const Token *bodyStart_, const Token *bodyEnd_)
             : parent(parent_), type(type_), name(name_), bodyStart(bodyStart_), bodyEnd(bodyEnd_) {
+            if (name.empty())
+                return;
             fullName = name;
             ScopeInfo3 *scope = parent;
-            while (!fullName.empty() && scope && scope->parent) {
+            while (scope && scope->parent) {
+                if (scope->name.empty())
+                    break;
                 fullName = scope->name + " :: " + fullName;
                 scope = scope->parent;
             }
@@ -1761,30 +1765,27 @@ namespace {
         std::list<ScopeInfo3> children;
         Type type;
         std::string fullName;
-        const std::string name;
-        const Token * const bodyStart;
-        const Token * const bodyEnd;
+        std::string name;
+        const Token * bodyStart;
+        const Token * bodyEnd;
         std::set<std::string> usingNamespaces;
         std::set<std::string> recordTypes;
         std::set<std::string> baseTypes;
 
-        ScopeInfo3 *addChild(Type type, const std::string &name, const Token *bodyStart, const Token *bodyEnd)
-        {
-            children.emplace_back(this, type, name, bodyStart, bodyEnd);
+        ScopeInfo3 *addChild(Type scopeType, const std::string &scopeName, const Token *bodyStartToken, const Token *bodyEndToken) {
+            children.emplace_back(this, scopeType, scopeName, bodyStartToken, bodyEndToken);
             return &children.back();
         }
 
-        bool hasChild(const std::string &name) const
-        {
+        bool hasChild(const std::string &childName) const {
             for (const auto & child : children) {
-                if (child.name == name)
+                if (child.name == childName)
                     return true;
             }
             return false;
         }
 
-        void  printOut(const std::string & indent = "  ") const
-        {
+        void  printOut(const std::string & indent = "  ") const {
             std::cerr << indent << "type: " << (type == Global ? "Global" :
                                                 type == Namespace ? "Namespace" :
                                                 type == Record ? "Record" :
@@ -1809,23 +1810,94 @@ namespace {
             }
         }
 
-        bool findTypeInBase(const std::string &scope) const
-        {
+        const ScopeInfo3 * findScopeRecursive(const std::string & scope) const {
+            if (fullName.size() < scope.size() &&
+                fullName == scope.substr(0, fullName.size())) {
+                for (auto & child : children) {
+                    if (child.fullName == scope && &child != this)
+                        return &child;
+                    else {
+                        const ScopeInfo3 * temp1 = child.findScopeRecursive(scope);
+                        if (temp1)
+                            return temp1;
+                    }
+                }
+            }
+            return nullptr;
+        }
+
+        const ScopeInfo3 * findInChildren(const std::string & scope) const {
+            for (const auto & child : children) {
+                if (child.name == scope || child.fullName == scope)
+                    return &child;
+                else {
+                    const ScopeInfo3 * temp = child.findInChildren(scope);
+                    if (temp)
+                        return temp;
+                }
+            }
+            return nullptr;
+        }
+
+        const ScopeInfo3 * findScope(const std::string & scope) const {
+            const ScopeInfo3 * tempScope = this;
+            while (tempScope) {
+                // check children
+                for (const auto & child : tempScope->children) {
+                    if (&child != this && child.type == Record && (child.name == scope || child.fullName == scope))
+                        return &child;
+                }
+                // check siblings for same name
+                if (tempScope->parent) {
+                    for (const auto &sibling : tempScope->parent->children) {
+                        if (sibling.name == tempScope->name && &sibling != this) {
+                            const ScopeInfo3 * temp = sibling.findInChildren(scope);
+                            if (temp)
+                                return temp;
+                        }
+                    }
+                }
+                tempScope = tempScope->parent;
+            }
+            return nullptr;
+        }
+
+        bool findTypeInBase(const std::string &scope) const {
+            // check in base types first
             if (baseTypes.find(scope) != baseTypes.end())
                 return true;
+            // check in base types base types
+            for (const std::string & base : baseTypes) {
+                const ScopeInfo3 * baseScope = findScope(base);
+                if (baseScope && baseScope->fullName == scope)
+                    return true;
+                if (baseScope && baseScope->findTypeInBase(scope))
+                    return true;
+            }
             return false;
+        }
+
+        ScopeInfo3 * findScope(const ScopeInfo3 * scope) {
+            if (scope->bodyStart == bodyStart)
+                return this;
+            for (auto & child : children) {
+                if (child.findScope(scope))
+                    return &child;
+            }
+            return nullptr;
         }
     };
 
-    void setScopeInfo(Token *tok, ScopeInfo3 **scopeInfo, bool all = false)
+    void setScopeInfo(Token *tok, ScopeInfo3 **scopeInfo)
     {
         if (!tok)
             return;
         if (tok->str() == "{" && (*scopeInfo)->parent && tok == (*scopeInfo)->bodyStart)
             return;
-
-        while (tok->str() == "}" && (*scopeInfo)->parent && tok == (*scopeInfo)->bodyEnd)
+        if (tok->str() == "}" && (*scopeInfo)->parent && tok == (*scopeInfo)->bodyEnd) {
             *scopeInfo = (*scopeInfo)->parent;
+            return;
+        }
         if (!Token::Match(tok, "namespace|class|struct|union %name% {|:|::|<")) {
             // check for using namespace
             if (Token::Match(tok, "using namespace %name% ;|::")) {
@@ -1875,7 +1947,7 @@ namespace {
                     }
                 }
 
-                if (all && !added)
+                if (!added)
                     *scopeInfo = (*scopeInfo)->addChild(ScopeInfo3::Other, "", tok, tok->link());
             }
             return;
@@ -2137,9 +2209,9 @@ bool Tokenizer::simplifyUsing()
             if (end && Token::Match(end->next(), "class|struct|union %name%"))
                 currentScope->recordTypes.insert(end->strAt(2));
 
-            Token *endToken = TemplateSimplifier::findTemplateDeclarationEnd(tok);
-            if (endToken)
-                tok = endToken;
+            Token *declEndToken = TemplateSimplifier::findTemplateDeclarationEnd(tok);
+            if (declEndToken)
+                tok = declEndToken;
             continue;
         }
 
@@ -2150,8 +2222,6 @@ bool Tokenizer::simplifyUsing()
                 Token::Match(tok->linkAt(2), "] ] = ::| %name%")))))
             continue;
 
-        ScopeInfo3 scopeInfo1;
-        ScopeInfo3 *currentScope1 = &scopeInfo1;
         std::string name = tok->strAt(1);
         const Token *nameToken = tok->next();
         std::string scope = currentScope->fullName;
@@ -2233,21 +2303,46 @@ bool Tokenizer::simplifyUsing()
         // Unfortunately we have to start searching from the beginning
         // of the token stream because templates are instantiated at
         // the end of the token stream and it may be used before then.
+        ScopeInfo3 scopeInfo1;
+        ScopeInfo3 *currentScope1 = &scopeInfo1;
+        Token *startToken = list.front();
+        Token *endToken = nullptr;
+
+        // We can limit the search to the current function when the type alias
+        // is defined in that function.
+        if (currentScope->type == ScopeInfo3::Other ||
+            currentScope->type == ScopeInfo3::MemberFunction) {
+            scopeInfo1 = scopeInfo;
+            currentScope1 = scopeInfo.findScope(currentScope);
+            if (!currentScope1)
+                return substitute; // something bad happened
+            startToken = usingEnd;
+            endToken = currentScope->bodyEnd->next();
+        }
+
         std::string scope1;
+        bool inMemberFunc = false;
+        const ScopeInfo3 * memberFuncScope = nullptr;
+        const Token * memberFuncEnd = nullptr;
         bool skip = false; // don't erase type aliases we can't parse
-        for (Token* tok1 = list.front(); tok1; tok1 = tok1->next()) {
+        for (Token* tok1 = startToken; tok1 && tok1 != endToken; tok1 = tok1->next()) {
             if ((Token::Match(tok1, "{|}|namespace|class|struct|union") && tok1->strAt(-1) != "using") ||
                 Token::Match(tok1, "using namespace %name% ;|::")) {
-                setScopeInfo(tok1, &currentScope1, true);
+                setScopeInfo(tok1, &currentScope1);
                 scope1 = currentScope1->fullName;
+                if (inMemberFunc && memberFuncEnd && tok1 == memberFuncEnd) {
+                    inMemberFunc = false;
+                    memberFuncScope = nullptr;
+                    memberFuncEnd = nullptr;
+                }
                 continue;
             }
 
             // skip template definitions
             if (Token::Match(tok1, "template < !!>")) {
-                Token *endToken = TemplateSimplifier::findTemplateDeclarationEnd(tok1);
-                if (endToken)
-                    tok1 = endToken;
+                Token *declEndToken = TemplateSimplifier::findTemplateDeclarationEnd(tok1);
+                if (declEndToken)
+                    tok1 = declEndToken;
                 continue;
             }
 
@@ -2260,9 +2355,18 @@ bool Tokenizer::simplifyUsing()
                 if (!scope1.empty())
                     scope1 += " :: ";
                 scope1 += memberFunctionScope(tok1);
-            }
+                memberFuncScope = currentScope1->findScope(scope1);
 
-            if (!usingMatch(nameToken, scope, &tok1, scope1, currentScope1))
+                if (!memberFuncScope)
+                    continue;
+
+                inMemberFunc = true;
+                memberFuncEnd = currentScope1->bodyEnd;
+                continue;
+            } else if (inMemberFunc && memberFuncScope) {
+                if (!usingMatch(nameToken, scope, &tok1, scope1, memberFuncScope))
+                    continue;
+            } else if (!usingMatch(nameToken, scope, &tok1, scope1, currentScope1))
                 continue;
 
             // remove the qualification
@@ -4614,6 +4718,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     removePragma();
 
+    // Simplify the C alternative tokens (and, or, etc.)
+    simplifyCAlternativeTokens();
+
     reportUnknownMacros();
 
     simplifyHeadersAndUnusedTemplates();
@@ -4670,9 +4777,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Combine tokens..
     combineOperators();
-
-    // Simplify the C alternative tokens (and, or, etc.)
-    simplifyCAlternativeTokens();
 
     // replace 'sin(0)' to '0' and other similar math expressions
     simplifyMathExpressions();
@@ -7540,6 +7644,11 @@ bool Tokenizer::simplifyCAlternativeTokens()
             replaceAll = true;
         } else if (Token::Match(tok, "not|compl")) {
             alt.push_back(tok);
+
+            if (Token::Match(tok->previous(), "%assign%") || Token::Match(tok->next(), "%num%")) {
+                replaceAll = true;
+                continue;
+            }
 
             // Don't simplify 'not p;' (in case 'not' is a type)
             if (!Token::Match(tok->next(), "%name%|(") ||

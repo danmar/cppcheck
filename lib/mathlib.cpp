@@ -26,6 +26,7 @@
 #include <cstdlib>
 #include <limits>
 #include <locale>
+#include <stdexcept>
 
 #if defined(_MSC_VER) && _MSC_VER <= 1700  // VS2012 doesn't have std::isinf and std::isnan
 #define ISINF(x)      (!_finite(x))
@@ -294,14 +295,22 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
 {
     // hexadecimal numbers:
     if (isIntHex(str)) {
-        const biguint ret = std::stoull(str, nullptr, 16);
-        return ret;
+        try {
+            const biguint ret = std::stoull(str, nullptr, 16);
+            return ret;
+        } catch (const std::out_of_range& e) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str + " (" + e.what() +")");
+        }
     }
 
     // octal numbers:
     if (isOct(str)) {
-        const biguint ret = std::stoull(str, nullptr, 8);
-        return ret;
+        try {
+            const biguint ret = std::stoull(str, nullptr, 8);
+            return ret;
+        } catch (const std::out_of_range& e) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str + " (" + e.what() +")");
+        }
     }
 
     // binary numbers:
@@ -329,8 +338,12 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
             return static_cast<biguint>(doubleval);
     }
 
-    const biguint ret = std::stoull(str, nullptr, 10);
-    return ret;
+    try {
+        const biguint ret = std::stoull(str, nullptr, 10);
+        return ret;
+    } catch (const std::out_of_range& e) {
+        throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str + " (" + e.what() +")");
+    }
 }
 
 unsigned int MathLib::encodeMultiChar(const std::string& str)
@@ -474,19 +487,22 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
 {
     // hexadecimal numbers:
     if (isIntHex(str)) {
-        if (str[0] == '-') {
-            const bigint ret = std::stoll(str, nullptr, 16);
-            return ret;
-        } else {
+        try {
             const biguint ret = std::stoull(str, nullptr, 16);
             return (bigint)ret;
+        } catch (const std::out_of_range& e) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str + " (" + e.what() +")");
         }
     }
 
     // octal numbers:
     if (isOct(str)) {
-        const bigint ret = std::stoll(str, nullptr, 8);
-        return ret;
+        try {
+            const biguint ret = std::stoull(str, nullptr, 8);
+            return ret;
+        } catch (const std::out_of_range& e) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str + " (" + e.what() +")");
+        }
     }
 
     // binary numbers:
@@ -520,13 +536,12 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
         return characterLiteralToLongNumber(getCharLiteral(str));
     }
 
-    if (str[0] == '-') {
-        const bigint ret = std::stoll(str, nullptr, 10);
+    try {
+        const biguint ret = std::stoull(str, nullptr, 10);
         return ret;
+    } catch (const std::out_of_range& e) {
+        throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str + " (" + e.what() +")");
     }
-
-    const biguint ret = std::stoull(str, nullptr, 10);
-    return ret;
 }
 
 // in-place conversion of (sub)string to double. Requires no heap.

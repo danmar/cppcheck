@@ -64,6 +64,8 @@ private:
         TEST_CASE(simplifyUsing15);
         TEST_CASE(simplifyUsing16);
         TEST_CASE(simplifyUsing17);
+        TEST_CASE(simplifyUsing18);
+        TEST_CASE(simplifyUsing19);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -79,6 +81,9 @@ private:
         TEST_CASE(simplifyUsing10008);
         TEST_CASE(simplifyUsing10054);
         TEST_CASE(simplifyUsing10136);
+        TEST_CASE(simplifyUsing10171);
+        TEST_CASE(simplifyUsing10172);
+        TEST_CASE(simplifyUsing10173);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -452,6 +457,23 @@ private:
                                 "class S4 s4 ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyUsing18() {
+        const char code[] = "{ { { using a = a; using a; } } }";
+        tok(code, false); // don't crash
+    }
+
+    void simplifyUsing19() {
+        const char code[] = "namespace a {\n"
+                            "using b = int;\n"
+                            "void foo::c() { }\n"
+                            "void foo::d() { }\n"
+                            "void foo::e() {\n"
+                            "   using b = float;\n"
+                            "}\n"
+                            "}";
+        tok(code, false); // don't hang
     }
 
     void simplifyUsing8970() {
@@ -970,35 +992,180 @@ private:
                                 "a . f ( v ) ; "
                                 "c . f ( v ) ; "
                                 "}";
-            const char act[]  = "namespace NS1 { "
-                                "class B { "
-                                "public: "
-                                "virtual void f ( const std :: vector < char > & ) const = 0 ; "
-                                "} ; "
-                                "} "
-                                "namespace NS2 { "
-                                "class A : public NS1 :: B { "
-                                "public: "
-                                "void f ( const std :: vector < char > & ) const override ; "
-                                "} ; "
-                                "namespace NS3 { "
-                                "class C : public A { "
-                                "public: "
-                                "void f ( const V & ) const override ; "
-                                "} ; "
-                                "void C :: f ( const V & ) const { } "
-                                "} "
-                                "void A :: f ( const V & ) const { } "
+            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            const char code[] = "foo::ResultCodes_e\n"
+                                "GemImpl::setR(const ::foo::s _ipSource)\n"
+                                "{\n"
+                                "   M3_LOG_EE_DEBUG();\n"
+                                "   using MLSource = foo::s::Literal;\n"
+                                "   auto ret = foo::ResultCodes_e::NO_ERROR;\n"
+                                "   M3_LOG_INFO(\"foo(\" << static_cast<int>(_ipSource) << \")\");\n"
+                                "   return ret;\n"
+                                "}\n"
+                                "foo::ResultCodes_e\n"
+                                "GemImpl::getF(::foo::s &_ipSource)\n"
+                                "{\n"
+                                "   M3_LOG_EE_DEBUG();\n"
+                                "   auto ret = foo::ResultCodes_e::NO_ERROR;\n"
+                                "   return ret;\n"
+                                "}\n"
+                                "foo::ResultCodes_e\n"
+                                "GemImpl::setF(const ::foo::s _ipSource)\n"
+                                "{\n"
+                                "   M3_LOG_EE_DEBUG();\n"
+                                "   using MLSource = foo::s::Literal;\n"
+                                "   auto ret = foo::ResultCodes_e::NO_ERROR;\n"
+                                "   return ret;\n"
+                                "}";
+            tok(code, true); // don't crash
+        }
+    }
+
+    void simplifyUsing10171() {
+        const char code[] = "namespace ns {\n"
+                            "    class A {\n"
+                            "    public:\n"
+                            "        using V = std::vector<unsigned char>;\n"
+                            "        virtual void f(const V&) const = 0;\n"
+                            "    };\n"
+                            "    class B : public A {\n"
+                            "    public:\n"
+                            "        void f(const V&) const override;\n"
+                            "    };\n"
+                            "}\n"
+                            "namespace ns {\n"
+                            "    void B::f(const std::vector<unsigned char>&) const { }\n"
+                            "}";
+        const char exp[] = "namespace ns { "
+                           "class A { "
+                           "public: "
+                           "virtual void f ( const std :: vector < unsigned char > & ) const = 0 ; "
+                           "} ; "
+                           "class B : public A { "
+                           "public: "
+                           "void f ( const std :: vector < unsigned char > & ) const override ; "
+                           "} ; "
+                           "} "
+                           "namespace ns { "
+                           "void B :: f ( const std :: vector < unsigned char > & ) const { } "
+                           "}";
+        ASSERT_EQUALS(exp, tok(code, false));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyUsing10172() {
+        {
+            const char code[] = "namespace ns {\n"
+                                "    class A {\n"
+                                "    public:\n"
+                                "        using h = std::function<void()>;\n"
+                                "    };\n"
+                                "    class B : public A {\n"
+                                "        void f(h);\n"
+                                "    };\n"
+                                "}\n"
+                                "namespace ns {\n"
+                                "    void B::f(h) { }\n"
+                                "}";
+            const char exp[] = "namespace ns { "
+                               "class A { "
+                               "public: "
+                               "} ; "
+                               "class B : public A { "
+                               "void f ( std :: function < void ( ) > ) ; "
+                               "} ; "
+                               "} "
+                               "namespace ns { "
+                               "void B :: f ( std :: function < void ( ) > ) { } "
+                               "}";
+            ASSERT_EQUALS(exp, tok(code, false));
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            const char code[] = "namespace ns {\n"
+                                "namespace external {\n"
+                                "class A {\n"
+                                "public: \n"
+                                "  using h = std::function<void()>;\n"
+                                "};\n"
+                                "class B : public A {\n"
+                                "  void f(h);\n"
+                                "};\n"
+                                "}\n"
+                                "}\n"
+                                "namespace ns {\n"
+                                "namespace external {\n"
+                                "void B::f(h) {}\n"
+                                "}\n"
+                                "}";
+            const char exp[] = "namespace ns { "
+                               "namespace external { "
+                               "class A { "
+                               "public: "
+                               "} ; "
+                               "class B : public A { "
+                               "void f ( std :: function < void ( ) > ) ; "
+                               "} ; "
+                               "} "
+                               "} "
+                               "namespace ns { "
+                               "namespace external { "
+                               "void B :: f ( std :: function < void ( ) > ) { } "
+                               "} "
+                               "}";
+            ASSERT_EQUALS(exp, tok(code, false));
+            ASSERT_EQUALS("", errout.str());
+        }
+    }
+
+    void simplifyUsing10173() {
+        {
+            const char code[] = "std::ostream & operator<<(std::ostream &s, const Pr<st> p) {\n"
+                                "    return s;\n"
+                                "}\n"
+                                "void foo() {\n"
+                                "    using Pr = d::Pr<st>;\n"
+                                "    Pr p;\n"
+                                "}\n"
+                                "void bar() {\n"
+                                "   Pr<st> p;\n"
+                                "}";
+            const char exp[]  = "std :: ostream & operator<< ( std :: ostream & s , const Pr < st > p ) { "
+                                "return s ; "
                                 "} "
                                 "void foo ( ) { "
-                                "NS2 :: A a ; "
-                                "NS2 :: NS3 :: C c ; "
-                                "std :: vector < char > v ; "
-                                "a . f ( v ) ; "
-                                "c . f ( v ) ; "
+                                "d :: Pr < st > p ; "
+                                "} "
+                                "void bar ( ) { "
+                                "Pr < st > p ; "
                                 "}";
-            TODO_ASSERT_EQUALS(exp, act, tok(code, true));
-            TODO_ASSERT_EQUALS("", "[test.cpp:20]: (debug) Executable scope 'f' with unknown function.\n", errout.str());
+            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            const char code[] = "namespace defsa {\n"
+                                "void xxx::foo() {\n"
+                                "   using NS1 = v1::l;\n"
+                                "}\n"
+                                "void xxx::bar() {\n"
+                                "   using NS1 = v1::l;\n"
+                                "}\n"
+                                "void xxx::foobar() {\n"
+                                "   using NS1 = v1::l;\n"
+                                "}\n"
+                                "}";
+            const char exp[]  = "namespace defsa { "
+                                "void xxx :: foo ( ) { "
+                                "} "
+                                "void xxx :: bar ( ) { "
+                                "} "
+                                "void xxx :: foobar ( ) { "
+                                "} "
+                                "}";
+            ASSERT_EQUALS(exp, tok(code, true));
         }
     }
 };

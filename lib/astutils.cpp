@@ -30,6 +30,7 @@
 #include "valueflow.h"
 
 #include <algorithm>
+#include <deque>
 #include <functional>
 #include <iterator>
 #include <list>
@@ -751,73 +752,104 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
     errors->push_back(item);
 }
 
-static const Token* followReferences(const Token* tok, ErrorPath* errors, int depth = 20)
+std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclusive, ErrorPath errors, int depth)
 {
+    struct ReferenceTokenLess {
+        bool operator()(const ReferenceToken& x, const ReferenceToken& y) const {
+            return x.token < y.token;
+        }
+    };
     if (!tok)
-        return nullptr;
+        return std::vector<ReferenceToken> {};
     if (depth < 0)
-        return tok;
+        return {{tok, std::move(errors)}};
     const Variable *var = tok->variable();
     if (var && var->declarationId() == tok->varId()) {
         if (var->nameToken() == tok) {
-            return tok;
+            return {{tok, std::move(errors)}};
         } else if (var->isReference() || var->isRValueReference()) {
             if (!var->declEndToken())
-                return tok;
+                return {{tok, std::move(errors)}};
             if (var->isArgument()) {
-                if (errors)
-                    errors->emplace_back(var->declEndToken(), "Passed to reference.");
-                return tok;
+                errors.emplace_back(var->declEndToken(), "Passed to reference.");
+                return {{tok, std::move(errors)}};
             } else if (Token::simpleMatch(var->declEndToken(), "=")) {
-                if (errors)
-                    errors->emplace_back(var->declEndToken(), "Assigned to reference.");
+                errors.emplace_back(var->declEndToken(), "Assigned to reference.");
                 const Token *vartok = var->declEndToken()->astOperand2();
                 if (vartok == tok)
-                    return tok;
+                    return {{tok, std::move(errors)}};
                 if (vartok)
-                    return followReferences(vartok, errors, depth - 1);
+                    return followAllReferences(vartok, inconclusive, std::move(errors), depth - 1);
             } else {
-                return tok;
+                return {{tok, std::move(errors)}};
             }
         }
+    } else if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) {
+        std::set<ReferenceToken, ReferenceTokenLess> result;
+        const Token* tok2 = tok->astOperand2();
+
+        std::vector<ReferenceToken> refs;
+        refs = followAllReferences(tok2->astOperand1(), inconclusive, errors, depth - 1);
+        result.insert(refs.begin(), refs.end());
+        refs = followAllReferences(tok2->astOperand2(), inconclusive, errors, depth - 1);
+        result.insert(refs.begin(), refs.end());
+
+        if (!inconclusive && result.size() != 1)
+            return {{tok, std::move(errors)}};
+
+        if (!result.empty())
+            return std::vector<ReferenceToken>(result.begin(), result.end());
+
     } else if (Token::Match(tok->previous(), "%name% (")) {
         const Function *f = tok->previous()->function();
         if (f) {
             if (!Function::returnsReference(f))
-                return tok;
-            std::set<const Token*> result;
-            ErrorPath errorPath;
+                return {{tok, std::move(errors)}};
+            std::set<ReferenceToken, ReferenceTokenLess> result;
             for (const Token* returnTok : Function::findReturns(f)) {
                 if (returnTok == tok)
                     continue;
-                const Token* argvarTok = followReferences(returnTok, errors, depth - 1);
-                const Variable* argvar = argvarTok->variable();
-                if (!argvar)
-                    return tok;
-                if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
-                    int n = getArgumentPos(argvar, f);
-                    if (n < 0)
-                        return tok;
-                    std::vector<const Token*> args = getArguments(tok->previous());
-                    if (n >= args.size())
-                        return tok;
-                    const Token* argTok = args[n];
-                    ErrorPath er;
-                    er.emplace_back(returnTok, "Return reference.");
-                    er.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
-                    const Token* tok2 = followReferences(argTok, &er, depth - 1);
-                    errorPath = er;
-                    result.insert(tok2);
+                std::vector<ReferenceToken> argvarRt = followAllReferences(returnTok, inconclusive, errors, depth - 1);
+                for (const ReferenceToken& rt:followAllReferences(returnTok, inconclusive, errors, depth - 1)) {
+                    const Variable* argvar = rt.token->variable();
+                    if (!argvar)
+                        return {{tok, std::move(errors)}};
+                    if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
+                        int n = getArgumentPos(argvar, f);
+                        if (n < 0)
+                            return {{tok, std::move(errors)}};
+                        std::vector<const Token*> args = getArguments(tok->previous());
+                        if (n >= args.size())
+                            return {{tok, std::move(errors)}};
+                        const Token* argTok = args[n];
+                        ErrorPath er = errors;
+                        er.emplace_back(returnTok, "Return reference.");
+                        er.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
+                        std::vector<ReferenceToken> refs = followAllReferences(argTok, inconclusive, std::move(er), depth - 1);
+                        result.insert(refs.begin(), refs.end());
+                        if (!inconclusive && result.size() > 1)
+                            return {{tok, std::move(errors)}};
+                    }
                 }
             }
-            if (result.size() == 1) {
-                if (errors)
-                    errors->insert(errors->end(), errorPath.begin(), errorPath.end());
-                return *result.begin();
-            }
+            if (!result.empty())
+                return std::vector<ReferenceToken>(result.begin(), result.end());
         }
     }
-    return tok;
+    return {{tok, std::move(errors)}};
+}
+
+const Token* followReferences(const Token* tok, ErrorPath* errors)
+{
+    if (!tok)
+        return nullptr;
+    std::vector<ReferenceToken> refs = followAllReferences(tok, false);
+    if (refs.size() == 1) {
+        if (errors)
+            *errors = refs.front().errors;
+        return refs.front().token;
+    }
+    return nullptr;
 }
 
 static bool isSameLifetime(const Token * const tok1, const Token * const tok2)

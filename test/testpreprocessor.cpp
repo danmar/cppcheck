@@ -81,6 +81,7 @@ private:
         TEST_CASE(error5);
         TEST_CASE(error6);
         TEST_CASE(error7);
+        TEST_CASE(error8); // #10170 -> previous #if configurations
 
         TEST_CASE(setPlatformInfo);
 
@@ -425,6 +426,19 @@ private:
                                 "#error \"2\"\n"
                                 "#endif\n";
         ASSERT_EQUALS("\nB\n", getConfigsStr(filedata));
+    }
+
+    void error8() {
+        const char filedata[] = "#ifdef A\n"
+                                "#ifdef B\n"
+                                "#endif\n"
+                                "#else\n"
+                                "#endif\n"
+                                "\n"
+                                "#ifndef C\n"
+                                "#error aa\n"
+                                "#endif";
+        ASSERT_EQUALS("A;B;C\nA;C\nC\n", getConfigsStr(filedata));
     }
 
     void setPlatformInfo() {
@@ -2134,7 +2148,7 @@ private:
                                  "#error \"!Y\"\n"
                                  "#endif\n"
                                  "#endif\n";
-        ASSERT_EQUALS("\nX\nY\n", getConfigsStr(filedata2));
+        ASSERT_EQUALS("\nX;Y\nY\n", getConfigsStr(filedata2));
     }
 
     void getConfigsD1() {

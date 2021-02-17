@@ -6319,6 +6319,8 @@ private:
                           "  char *or;\n"
                           "  while ((*or != 0) && (*or != '|')) or++;\n"
                           "}", false, true, Settings::Native, "test.c"));
+        // #10013
+        ASSERT_EQUALS("void f ( ) { x = ! 123 ; }", tokenizeAndStringify("void f() { x = not 123; }", false, true, Settings::Native, "test.cpp"));
     }
 
     void simplifyCalculations() {

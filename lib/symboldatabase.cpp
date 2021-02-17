@@ -3056,7 +3056,9 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
                 }
             }
 
-            base.type = classScope->check->findType(base.nameTok, classScope);
+            const Type * baseType = classScope->check->findType(base.nameTok, enclosingScope);
+            if (baseType && !baseType->findDependency(this))
+                base.type = baseType;
 
             // save pattern for base class name
             derivedFrom.push_back(base);
@@ -3705,7 +3707,8 @@ void SymbolDatabase::printXml(std::ostream &out) const
         out << " typeEndToken=\""   << var->typeEndToken() << '\"';
         out << " access=\""         << accessControlToString(var->mAccess) << '\"';
         out << " scope=\""          << var->scope() << '\"';
-        out << " constness=\""      << var->valueType()->constness << '\"';
+        if (var->valueType())
+            out << " constness=\""      << var->valueType()->constness << '\"';
         out << " isArgument=\""     << var->isArgument() << '\"';
         out << " isArray=\""        << var->isArray() << '\"';
         out << " isClass=\""        << var->isClass() << '\"';

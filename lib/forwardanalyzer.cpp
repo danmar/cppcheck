@@ -329,6 +329,7 @@ struct ForwardTraversal {
                         Token* initTok = nullptr,
                         Token* stepTok = nullptr) {
         const bool isDoWhile = precedes(endBlock, condTok);
+        const bool alwaysEnterLoop = !condTok || (condTok->hasKnownIntValue() && condTok->values().front().intvalue != 0);
         Analyzer::Action bodyAnalysis = analyzeScope(endBlock);
         Analyzer::Action allAnalysis = bodyAnalysis;
         if (condTok)
@@ -357,6 +358,8 @@ struct ForwardTraversal {
             if (checkElse)
                 return Progress::Continue;
         }
+        if (allAnalysis.isModified() && alwaysEnterLoop)
+            return Break(Terminate::Bail);
 
         std::vector<ForwardTraversal> ftv = tryForkScope(endBlock, allAnalysis.isModified());
         if (bodyAnalysis.isModified()) {
