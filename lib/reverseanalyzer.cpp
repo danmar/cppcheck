@@ -78,8 +78,6 @@ struct ReverseTraversal {
         int opSide = 0;
         for (; tok && tok->astParent(); tok = tok->astParent()) {
             Token* parent = tok->astParent();
-            if (tok != parent->astOperand2())
-                continue;
             if (Token::simpleMatch(parent, ":")) {
                 if (astIsLHS(tok))
                     opSide = 1;
@@ -88,6 +86,8 @@ struct ReverseTraversal {
                 else
                     opSide = 0;
             }
+            if (tok != parent->astOperand2())
+                continue;
             if (!Token::Match(parent, "%oror%|&&|?"))
                 continue;
             Token* condTok = parent->astOperand1();
@@ -103,9 +103,9 @@ struct ReverseTraversal {
             }
 
             if (parent->str() == "?") {
-                if (!checkElse && opSide == 1)
+                if (checkElse && opSide == 1)
                     return parent;
-                if (!checkThen && opSide == 2)
+                if (checkThen && opSide == 2)
                     return parent;
             }
             if (!checkThen && parent->str() == "&&")
@@ -128,6 +128,8 @@ struct ReverseTraversal {
                 break;
             if (Token::Match(tok, "%name% :"))
                 break;
+            if (Token::simpleMatch(tok, ":"))
+                continue;
             // Evaluate LHS of assignment before RHS
             if (Token* assignTok = assignExpr(tok)) {
                 // If assignTok has broken ast then stop
