@@ -810,7 +810,11 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
 {
     std::list<ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
-        const ErrorMessage::FileLocation loc(filename, linenr, 0);
+        std::string file = Path::fromNativeSeparators(filename);
+        if (mSettings.relativePaths)
+            file = Path::getRelativePath(file, mSettings.basePaths);
+
+        const ErrorMessage::FileLocation loc(file, linenr, 0);
         locationList.push_back(loc);
     }
     mErrorLogger->reportErr(ErrorMessage(locationList,
