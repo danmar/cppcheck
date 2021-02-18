@@ -19,6 +19,7 @@
 #ifndef TestUtilsH
 #define TestUtilsH
 
+#include "errorlogger.h"
 #include "settings.h"
 #include "tokenize.h"
 
