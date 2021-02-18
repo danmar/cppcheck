@@ -4692,6 +4692,93 @@ static const ValueFlow::Value* proveNotEqual(const std::list<ValueFlow::Value>& 
     return result;
 }
 
+static std::vector<MathLib::bigint> minUnsignedValue(const Token* tok, int depth = 8)
+{
+    std::vector<MathLib::bigint> result = {};
+    if (!tok)
+        return result;
+    if (depth < 0)
+        return result;
+    if (tok->hasKnownIntValue()) {
+        result = {tok->values().front().intvalue};
+    } else if (tok->isConstOp() && tok->astOperand1() && tok->astOperand2()) {
+        std::vector<MathLib::bigint> op1 = minUnsignedValue(tok->astOperand1(), depth - 1);
+        std::vector<MathLib::bigint> op2 = minUnsignedValue(tok->astOperand2(), depth - 1);
+        if (!op1.empty() && !op1.empty())
+            result = {calculate(tok->str(), op1.front(), op2.front())};
+    }
+    if (result.empty() && tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
+        result = {0};
+    return result;
+}
+
+ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val)
+{
+    if (!varTok)
+        return ValueFlow::Value{};
+    if (varTok->hasKnownIntValue())
+        return ValueFlow::Value{};
+    if (std::none_of(varTok->values().begin(), varTok->values().end(), [](const ValueFlow::Value& v) {
+        return v.isImpossible() && v.valueType == ValueFlow::Value::ValueType::INT;
+    })) {
+        if (varTok->valueType() && varTok->valueType()->sign == ValueType::UNSIGNED && (op == ">" || op == ">=")) {
+            std::vector<MathLib::bigint> minvalue = minUnsignedValue(varTok);
+            if (minvalue.empty())
+                return ValueFlow::Value{};
+            bool isTrue = calculate(op, std::max<MathLib::bigint>(0, minvalue.front()), val);
+            if (!isTrue)
+                return ValueFlow::Value{};
+            ValueFlow::Value value;
+            value.intvalue = 1;
+            value.bound = ValueFlow::Value::Bound::Point;
+            value.setKnown();
+            return value;
+        }
+        return ValueFlow::Value{};
+    }
+    const ValueFlow::Value* result = nullptr;
+    bool known = false;
+    if (op == "==" || op == "!=") {
+        result = proveNotEqual(varTok->values(), val);
+        known = op == "!=";
+    } else if (op == "<" || op == ">=") {
+        result = proveLessThan(varTok->values(), val);
+        known = op == "<";
+        if (!result && !isSaturated(val)) {
+            result = proveGreaterThan(varTok->values(), val - 1);
+            known = op == ">=";
+        }
+    } else if (op == ">" || op == "<=") {
+        result = proveGreaterThan(varTok->values(), val);
+        known = op == ">";
+        if (!result && !isSaturated(val)) {
+            result = proveLessThan(varTok->values(), val + 1);
+            known = op == "<=";
+        }
+    }
+    if (!result)
+        return ValueFlow::Value{};
+    ValueFlow::Value value = *result;
+    value.intvalue = known;
+    value.bound = ValueFlow::Value::Bound::Point;
+    value.setKnown();
+    return value;
+}
+
+ValueFlow::Value inferCondition(std::string op, MathLib::bigint val, const Token* varTok)
+{
+    // Flip the operator
+    if (op == ">")
+        op = "<";
+    else if (op == "<")
+        op = ">";
+    else if (op == ">=")
+        op = "<=";
+    else if (op == "<=")
+        op = ">=";
+    return inferCondition(op, varTok, val);
+}
+
 static void valueFlowInferCondition(TokenList* tokenlist,
                                     const Settings* settings)
 {
@@ -4711,57 +4798,72 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             value.setKnown();
             setTokenValue(tok, value, settings);
         } else if (tok->isComparisonOp()) {
-            MathLib::bigint val = 0;
-            const Token* varTok = nullptr;
+            ValueFlow::Value value{};
             std::string op = tok->str();
             if (tok->astOperand1()->hasKnownIntValue()) {
-                val = tok->astOperand1()->values().front().intvalue;
-                varTok = tok->astOperand2();
-                // Flip the operator
-                if (op == ">")
-                    op = "<";
-                else if (op == "<")
-                    op = ">";
-                else if (op == ">=")
-                    op = "<=";
-                else if (op == "<=")
-                    op = ">=";
+                MathLib::bigint val =  tok->astOperand1()->values().front().intvalue;
+                const Token* varTok = tok->astOperand2();
+                value = inferCondition(tok->str(), val, varTok);
             } else if (tok->astOperand2()->hasKnownIntValue()) {
-                val = tok->astOperand2()->values().front().intvalue;
-                varTok = tok->astOperand1();
+                MathLib::bigint val =  tok->astOperand2()->values().front().intvalue;
+                const Token* varTok = tok->astOperand1();
+                value = inferCondition(tok->str(), varTok, val);
             }
-            if (!varTok)
+
+            if (!value.isKnown())
                 continue;
-            if (varTok->hasKnownIntValue())
-                continue;
-            if (varTok->values().empty())
-                continue;
-            const ValueFlow::Value* result = nullptr;
-            bool known = false;
-            if (op == "==" || op == "!=") {
-                result = proveNotEqual(varTok->values(), val);
-                known = op == "!=";
-            } else if (op == "<" || op == ">=") {
-                result = proveLessThan(varTok->values(), val);
-                known = op == "<";
-                if (!result && !isSaturated(val)) {
-                    result = proveGreaterThan(varTok->values(), val - 1);
-                    known = op == ">=";
-                }
-            } else if (op == ">" || op == "<=") {
-                result = proveGreaterThan(varTok->values(), val);
-                known = op == ">";
-                if (!result && !isSaturated(val)) {
-                    result = proveLessThan(varTok->values(), val + 1);
-                    known = op == "<=";
-                }
-            }
-            if (!result)
-                continue;
-            ValueFlow::Value value = *result;
-            value.intvalue = known;
-            value.bound = ValueFlow::Value::Bound::Point;
-            value.setKnown();
+
+            // MathLib::bigint val = 0;
+            // const Token* varTok = nullptr;
+            // std::string op = tok->str();
+            // if (tok->astOperand1()->hasKnownIntValue()) {
+            //     val = tok->astOperand1()->values().front().intvalue;
+            //     varTok = tok->astOperand2();
+            //     // Flip the operator
+            //     if (op == ">")
+            //         op = "<";
+            //     else if (op == "<")
+            //         op = ">";
+            //     else if (op == ">=")
+            //         op = "<=";
+            //     else if (op == "<=")
+            //         op = ">=";
+            // } else if (tok->astOperand2()->hasKnownIntValue()) {
+            //     val = tok->astOperand2()->values().front().intvalue;
+            //     varTok = tok->astOperand1();
+            // }
+            // if (!varTok)
+            //     continue;
+            // if (varTok->hasKnownIntValue())
+            //     continue;
+            // if (varTok->values().empty())
+            //     continue;
+            // const ValueFlow::Value* result = nullptr;
+            // bool known = false;
+            // if (op == "==" || op == "!=") {
+            //     result = proveNotEqual(varTok->values(), val);
+            //     known = op == "!=";
+            // } else if (op == "<" || op == ">=") {
+            //     result = proveLessThan(varTok->values(), val);
+            //     known = op == "<";
+            //     if (!result && !isSaturated(val)) {
+            //         result = proveGreaterThan(varTok->values(), val - 1);
+            //         known = op == ">=";
+            //     }
+            // } else if (op == ">" || op == "<=") {
+            //     result = proveGreaterThan(varTok->values(), val);
+            //     known = op == ">";
+            //     if (!result && !isSaturated(val)) {
+            //         result = proveLessThan(varTok->values(), val + 1);
+            //         known = op == "<=";
+            //     }
+            // }
+            // if (!result)
+            //     continue;
+            // ValueFlow::Value value = *result;
+            // value.intvalue = known;
+            // value.bound = ValueFlow::Value::Bound::Point;
+            // value.setKnown();
             setTokenValue(tok, value, settings);
         }
     }

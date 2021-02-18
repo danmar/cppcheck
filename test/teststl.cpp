@@ -396,6 +396,14 @@ private:
                     "    Bar(0.34, result[1]);\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(size_t entries) {\n"
+                    "    std::vector<uint8_t> v;\n"
+                    "    if (v.size() < entries + 2)\n"
+                    "        v.resize(entries + 2);\n"
+                    "    v[0] = 1;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsIndexExpression() {

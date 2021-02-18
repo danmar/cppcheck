@@ -2411,7 +2411,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f1(const std::string &s) { if(s.size() >= 0) if(s.empty()) {}} ");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Condition 's.size()>=0' is always true\n", errout.str());
 
         // TODO: These are identical condition since size cannot be negative
         check("void f1(const std::string &s) { if(s.size() <= 0) if(s.empty()) {}} ");

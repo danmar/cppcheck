@@ -385,6 +385,9 @@ struct LifetimeToken {
 const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value, const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate);
 const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value);
 
+ValueFlow::Value inferCondition(std::string op, MathLib::bigint val, const Token* varTok);
+ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val);
+
 std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
         bool escape = false,
         ValueFlow::Value::ErrorPath errorPath = ValueFlow::Value::ErrorPath{},
