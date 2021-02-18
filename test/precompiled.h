@@ -21,3 +21,4 @@
 #include "settings.h"
 #include "tokenize.h"
 #include "library.h"
+#include "check.h"

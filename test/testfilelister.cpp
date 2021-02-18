@@ -24,11 +24,7 @@
 #include <fstream>
 #include <map>
 #include <string>
-#include <utility>
-
-#ifndef _WIN32
 #include <vector>
-#endif
 
 class TestFileLister: public TestFixture {
 public:
