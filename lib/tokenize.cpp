@@ -1831,7 +1831,7 @@ namespace {
 
         const ScopeInfo3 * findInChildren(const std::string & scope) const {
             for (const auto & child : children) {
-                if (child.name == scope || child.fullName == scope)
+                if (child.type == Record && (child.name == scope || child.fullName == scope))
                     return &child;
                 else {
                     const ScopeInfo3 * temp = child.findInChildren(scope);
