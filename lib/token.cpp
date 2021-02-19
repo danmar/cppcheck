@@ -24,10 +24,12 @@
 #include "symboldatabase.h"
 #include "tokenlist.h"
 #include "utils.h"
+#include "valueflow.h"
 
 #include <algorithm>
 #include <cassert>
 #include <cctype>
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <map>
@@ -2015,6 +2017,94 @@ static void removeContradictions(std::list<ValueFlow::Value>& values)
     }
 }
 
+static bool isAdjacent(const ValueFlow::Value& x, const ValueFlow::Value& y)
+{
+    if (x.bound == y.bound) {
+        return true;
+    } else {
+        if (x.valueType == ValueFlow::Value::ValueType::FLOAT)
+            return false;
+        return std::abs(x.intvalue - y.intvalue) == 1;
+    }
+}
+
+using ValueIterator = std::list<ValueFlow::Value>::iterator;
+
+template<class Iterator>
+static ValueIterator removeAdjacentValues(std::list<ValueFlow::Value>& values, ValueIterator x, Iterator start, Iterator last)
+{
+    if (!isAdjacent(*x, **start))
+        return std::next(x);
+    auto it = std::adjacent_find(start, last, [](ValueIterator x, ValueIterator y) {
+        return !isAdjacent(*x, *y);
+    });
+    auto end = std::prev(last);
+    if (it != last) {
+        assert(*it != x);
+        end = std::next(it);
+    }
+    (*end)->bound = x->bound;
+    std::for_each(start, end, [&](ValueIterator y) {
+        values.erase(y);
+    });
+    return values.erase(x);
+}
+
+static void mergeAdjacent(std::list<ValueFlow::Value>& values)
+{
+    auto prev = values.end();
+    for (auto x = values.begin(); x != values.end();) {
+        if (x == prev)
+            printf("Infinite\n");
+        // assert(x != prev);
+        prev = x;
+        if (x->isNonValue()) {
+            x++;
+            continue;
+        }
+        if (x->bound == ValueFlow::Value::Bound::Point) {
+            x++;
+            continue;
+        }
+        std::vector<ValueIterator> adjValues;
+        for (auto y = values.begin(); y != values.end();y++) {
+            if (x == y)
+                continue;
+            if (y->isNonValue())
+                continue;
+            if (x->valueType != y->valueType)
+                continue;
+            if (x->valueKind != y->valueKind)
+                continue;
+            if (x->bound != y->bound) {
+                // No adjacent points for floating points
+                if (x->valueType == ValueFlow::Value::ValueType::FLOAT)
+                    continue;
+                if (y->bound != ValueFlow::Value::Bound::Point)
+                    continue;
+            }
+            if (x->bound == ValueFlow::Value::Bound::Lower && !y->compareValue(*x, ValueFlow::less{}))
+                continue;
+            if (x->bound == ValueFlow::Value::Bound::Upper && !x->compareValue(*y, ValueFlow::less{}))
+                continue;
+            adjValues.push_back(y);
+        }
+        if (adjValues.empty()) {
+            x++;
+            continue;
+        }
+        std::sort(adjValues.begin(), adjValues.end(), [&values](ValueIterator xx, ValueIterator yy) {
+            assert(xx != values.end() && yy != values.end());
+            return xx->compareValue(*yy, ValueFlow::less{});
+        });
+        if (x->bound == ValueFlow::Value::Bound::Lower)
+            x = removeAdjacentValues(values, x, adjValues.rbegin(), adjValues.rend());
+        else if (x->bound == ValueFlow::Value::Bound::Upper)
+            x = removeAdjacentValues(values, x, adjValues.begin(), adjValues.end());
+
+    }
+}
+
 bool Token::addValue(const ValueFlow::Value &value)
 {
     if (value.isKnown() && mImpl->mValues) {
@@ -2100,6 +2190,8 @@ bool Token::addValue(const ValueFlow::Value &value)
         mImpl->mValues = new std::list<ValueFlow::Value>(1, v);
     }
 
+    removeOverlaps(*mImpl->mValues);
+    mergeAdjacent(*mImpl->mValues);
     removeContradictions(*mImpl->mValues);
 
     return true;

@@ -1431,6 +1431,49 @@ static void valueFlowRightShift(TokenList *tokenList, const Settings* settings)
     }
 }
 
+static std::vector<MathLib::bigint> minUnsignedValue(const Token* tok, int depth = 8)
+{
+    std::vector<MathLib::bigint> result = {};
+    if (!tok)
+        return result;
+    if (depth < 0)
+        return result;
+    if (tok->hasKnownIntValue()) {
+        result = {tok->values().front().intvalue};
+    } else if (tok->isConstOp() && tok->astOperand1() && tok->astOperand2()) {
+        std::vector<MathLib::bigint> op1 = minUnsignedValue(tok->astOperand1(), depth - 1);
+        std::vector<MathLib::bigint> op2 = minUnsignedValue(tok->astOperand2(), depth - 1);
+        if (!op1.empty() && !op2.empty())
+            result = {calculate(tok->str(), op1.front(), op2.front())};
+    }
+    if (result.empty() && astIsUnsigned(tok))
+        result = {0};
+    return result;
+}
+
+static void valueFlowImpossibleValues(TokenList *tokenList, const Settings* settings)
+{
+    for (Token *tok = tokenList->front(); tok; tok = tok->next()) {
+        if (tok->hasKnownIntValue())
+            continue;
+        if (astIsUnsigned(tok)) {
+            std::vector<MathLib::bigint> minvalue = minUnsignedValue(tok);
+            if (minvalue.empty())
+                continue;
+            ValueFlow::Value value{std::max<MathLib::bigint>(0, minvalue.front()) - 1};
+            value.bound = ValueFlow::Value::Bound::Upper;
+            value.setImpossible();
+            setTokenValue(tok, value, settings);
+        }
+        if (Token::simpleMatch(tok, "%") && tok->astOperand2() && tok->astOperand2()->hasKnownIntValue()) {
+            ValueFlow::Value value{tok->astOperand2()->values().front()};
+            value.bound = ValueFlow::Value::Bound::Lower;
+            value.setImpossible();
+            setTokenValue(tok, value, settings);
+        }
+    }
+}
+
 static void valueFlowEnumValue(SymbolDatabase * symboldatabase, const Settings * settings)
 {
 
@@ -4692,26 +4735,6 @@ static const ValueFlow::Value* proveNotEqual(const std::list<ValueFlow::Value>& 
     return result;
 }
 
-static std::vector<MathLib::bigint> minUnsignedValue(const Token* tok, int depth = 8)
-{
-    std::vector<MathLib::bigint> result = {};
-    if (!tok)
-        return result;
-    if (depth < 0)
-        return result;
-    if (tok->hasKnownIntValue()) {
-        result = {tok->values().front().intvalue};
-    } else if (tok->isConstOp() && tok->astOperand1() && tok->astOperand2()) {
-        std::vector<MathLib::bigint> op1 = minUnsignedValue(tok->astOperand1(), depth - 1);
-        std::vector<MathLib::bigint> op2 = minUnsignedValue(tok->astOperand2(), depth - 1);
-        if (!op1.empty() && !op1.empty())
-            result = {calculate(tok->str(), op1.front(), op2.front())};
-    }
-    if (result.empty() && tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
-        result = {0};
-    return result;
-}
-
 ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val)
 {
     if (!varTok)
@@ -4721,19 +4744,6 @@ ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, Math
     if (std::none_of(varTok->values().begin(), varTok->values().end(), [](const ValueFlow::Value& v) {
         return v.isImpossible() && v.valueType == ValueFlow::Value::ValueType::INT;
     })) {
-        if (varTok->valueType() && varTok->valueType()->sign == ValueType::UNSIGNED && (op == ">" || op == ">=")) {
-            std::vector<MathLib::bigint> minvalue = minUnsignedValue(varTok);
-            if (minvalue.empty())
-                return ValueFlow::Value{};
-            bool isTrue = calculate(op, std::max<MathLib::bigint>(0, minvalue.front()), val);
-            if (!isTrue)
-                return ValueFlow::Value{};
-            ValueFlow::Value value;
-            value.intvalue = 1;
-            value.bound = ValueFlow::Value::Bound::Point;
-            value.setKnown();
-            return value;
-        }
         return ValueFlow::Value{};
     }
     const ValueFlow::Value* result = nullptr;
@@ -6798,6 +6808,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     std::size_t n = 4;
     while (n > 0 && values < getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
+        valueFlowImpossibleValues(tokenlist, settings);
         valueFlowPointerAliasDeref(tokenlist);
         valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);

@@ -21,6 +21,7 @@
 #define valueflowH
 //---------------------------------------------------------------------------
 
+#include "astutils.h"
 #include "config.h"
 #include "mathlib.h"
 #include "utils.h"
@@ -51,6 +52,20 @@ namespace ValueFlow {
         template <class T>
         void operator()(T& x) const {
             x--;
+        }
+    };
+
+    struct less {
+        template<class T, class U>
+        bool operator()(const T& x, const U& y) const {
+            return x < y;
+        }
+    };
+
+    struct adjacent {
+        template<class T, class U>
+        bool operator()(const T& x, const U& y) const {
+            return std::abs(x - y) == 1;
         }
     };
 
@@ -141,6 +156,28 @@ namespace ValueFlow {
             case ValueType::MOVED:
                 break;
             }
+        }
+
+        struct compareVisitor {
+            struct innerVisitor {
+                template<class Compare, class T, class U>
+                void operator()(bool& result, Compare compare, T x, U y) const {
+                    result = compare(x, y);
+                }
+            };
+            template<class Compare, class T>
+            void operator()(bool& result, const Value& rhs, Compare compare, T x) const {
+                visitValue(rhs, std::bind(innerVisitor{}, std::ref(result), std::move(compare), x, std::placeholders::_1));
+            }
+
+        };
+
+        template<class Compare>
+        bool compareValue(const Value& rhs, Compare compare) const
+        {
+            bool result = false;
+            visitValue(*this, std::bind(compareVisitor{}, std::ref(result), std::ref(rhs), std::move(compare), std::placeholders::_1));
+            return result;
         }
 
         bool operator==(const Value &rhs) const {
