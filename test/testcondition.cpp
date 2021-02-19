@@ -1718,7 +1718,8 @@ private:
               "    b5 = a % 5 >= 5;\n"
               "    return a % 5 > 5;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
+        ASSERT_EQUALS("[test.cpp:7]: (style) Condition 'a%5>5' is always false\n"
+                      "[test.cpp:2]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
                       "[test.cpp:3]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
                       "[test.cpp:4]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
                       "[test.cpp:5]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
@@ -2375,7 +2376,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void f1(const std::string &s) { if(s.size() < 0) if(s.empty()) {}} ");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Condition 's.size()<0' is always false\n", errout.str());
 
         check("void f1(const std::string &s) { if(s.empty()) if(s.size() > 42) {}} ");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());

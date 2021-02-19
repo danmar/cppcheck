@@ -421,6 +421,8 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
 /** set ValueFlow value and perform calculations if possible */
 static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Settings *settings)
 {
+    if (!value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok))
+        return;
     if (!tok->addValue(value))
         return;
 
@@ -1443,8 +1445,9 @@ static std::vector<MathLib::bigint> minUnsignedValue(const Token* tok, int depth
     } else if (tok->isConstOp() && tok->astOperand1() && tok->astOperand2()) {
         std::vector<MathLib::bigint> op1 = minUnsignedValue(tok->astOperand1(), depth - 1);
         std::vector<MathLib::bigint> op2 = minUnsignedValue(tok->astOperand2(), depth - 1);
-        if (!op1.empty() && !op2.empty())
+        if (!op1.empty() && !op2.empty() && (!Token::Match(tok, "/|%") || op2.front() != 0)) {
             result = {calculate(tok->str(), op1.front(), op2.front())};
+        }
     }
     if (result.empty() && astIsUnsigned(tok))
         result = {0};
