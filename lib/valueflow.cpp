@@ -4040,6 +4040,9 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
     const size_t sz = ValueFlow::getSizeOf(*valueType, settings);
 
     for (ValueFlow::Value &value : values) {
+        // Dont truncate impossible values since those can be outside of the valid range
+        if (value.isImpossible())
+            continue;
         if (value.isFloatValue()) {
             value.intvalue = value.floatValue;
             value.valueType = ValueFlow::Value::ValueType::INT;
