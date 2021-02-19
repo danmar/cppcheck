@@ -19,6 +19,7 @@
 #ifndef TestUtilsH
 #define TestUtilsH
 
+#include "errorlogger.h"
 #include "settings.h"
 #include "tokenize.h"
 
@@ -26,8 +27,8 @@ class Token;
 
 class givenACodeSampleToTokenize {
 private:
-    Settings settings;
     Tokenizer tokenizer;
+    static const Settings settings;
 
 public:
     explicit givenACodeSampleToTokenize(const char sample[], bool createOnly = false, bool cpp = true)

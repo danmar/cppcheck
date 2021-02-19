@@ -2678,10 +2678,12 @@ std::vector<const Token*> Function::findReturns(const Function* f)
 
 const Token * Function::constructorMemberInitialization() const
 {
-    if (!isConstructor() || !functionScope || !functionScope->bodyStart)
+    if (!isConstructor() || !arg)
         return nullptr;
-    if (Token::Match(token, "%name% (") && Token::simpleMatch(token->linkAt(1), ") :"))
-        return token->linkAt(1)->next();
+    if (Token::simpleMatch(arg->link(), ") :"))
+        return arg->link()->next();
+    if (Token::simpleMatch(arg->link(), ") noexcept (") && arg->link()->linkAt(2)->strAt(1) == ":")
+        return arg->link()->linkAt(2)->next();
     return nullptr;
 }
 

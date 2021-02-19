@@ -561,7 +561,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                 portabilityBackslash(outputList, files, location);
             if (currentToken[currentToken.size() - 1U] == '\\') {
                 ++multiline;
-                currentToken.erase(currentToken.size() - 1U);
+                currentToken.pop_back();
             } else {
                 ungetChar(istr, bom);
             }
@@ -606,7 +606,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
             if (ch == '\"' && !prefix.empty() && *cback()->str().rbegin() == 'R') {
                 std::string delim;
                 currentToken = ch;
-                prefix.resize(prefix.size() - 1);
+                prefix.pop_back();
                 ch = readChar(istr,bom);
                 while (istr.good() && ch != '(' && ch != '\n') {
                     delim += ch;
@@ -1147,7 +1147,7 @@ std::string simplecpp::TokenList::readUntil(std::istream &istr, const Location &
             do {
                 next = readChar(istr, bom);
                 if (next == '\r' || next == '\n') {
-                    ret.erase(ret.size()-1U);
+                    ret.pop_back();
                     backslash = (next == '\r');
                     update_ch = false;
                 } else if (next == '\\')
@@ -2176,7 +2176,7 @@ namespace simplecpp {
 
         // remove trailing dot if path ends with "/."
         if (endsWith(path,"/."))
-            path.erase(path.size()-1);
+            path.pop_back();
 
         // simplify ".."
         pos = 1; // don't simplify ".." if path starts with that
