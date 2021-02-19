@@ -1731,7 +1731,8 @@ private:
               "    if(x[593] % 5 <= 5)\n"
               "        b2 = x.a % 5 == 5;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'x[593]%5<=5' is always true\n"
+                      "[test.cpp:2]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
                       "[test.cpp:3]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
                       "[test.cpp:4]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n", errout.str());
 

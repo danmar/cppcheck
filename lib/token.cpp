@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cctype>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -1946,6 +1947,17 @@ const Token *Token::getValueTokenDeadPointer() const
     return nullptr;
 }
 
+static bool isAdjacent(const ValueFlow::Value& x, const ValueFlow::Value& y)
+{
+    if (x.bound == y.bound) {
+        return true;
+    } else {
+        if (x.valueType == ValueFlow::Value::ValueType::FLOAT)
+            return false;
+        return std::abs(x.intvalue - y.intvalue) == 1;
+    }
+}
+
 static bool removeContradiction(std::list<ValueFlow::Value>& values)
 {
     bool result = false;
@@ -1963,8 +1975,7 @@ static bool removeContradiction(std::list<ValueFlow::Value>& values)
                 continue;
             if (!x.equalValue(y))
                 continue;
-            if (x.bound == y.bound ||
-                (x.bound != ValueFlow::Value::Bound::Point && y.bound != ValueFlow::Value::Bound::Point)) {
+            if (x.bound == y.bound) {
                 const bool removex = !x.isImpossible() || y.isKnown();
                 const bool removey = !y.isImpossible() || x.isKnown();
                 if (removex)
@@ -1972,61 +1983,29 @@ static bool removeContradiction(std::list<ValueFlow::Value>& values)
                 if (removey)
                     values.remove(y);
                 return true;
-            } else if (x.bound == ValueFlow::Value::Bound::Point) {
-                y.decreaseRange();
-                result = true;
+            } else {
+                if (x.bound != ValueFlow::Value::Bound::Point) {
+                    // Only decrease the range on possible values
+                    if (!x.isImpossible())
+                        x.decreaseRange();
+                } else {
+                    values.remove(x);
+                    return true;
+                }
+                if (y.bound != ValueFlow::Value::Bound::Point) {
+                    // Only decrease the range on possible values
+                    if (!y.isImpossible())
+                        y.decreaseRange();
+                } else {
+                    values.remove(y);
+                    return true;
+                }
             }
         }
     }
     return result;
 }
 
-static void removeOverlaps(std::list<ValueFlow::Value>& values)
-{
-    for (ValueFlow::Value& x : values) {
-        if (x.isNonValue())
-            continue;
-        values.remove_if([&](ValueFlow::Value& y) {
-            if (y.isNonValue())
-                return false;
-            if (&x == &y)
-                return false;
-            if (x.valueType != y.valueType)
-                return false;
-            if (x.valueKind != y.valueKind)
-                return false;
-            // TODO: Remove points coverd in a lower or upper bound
-            // TODO: Remove lower or upper bound already covered by a lower and upper bound
-            if (!x.equalValue(y))
-                return false;
-            if (x.bound != y.bound)
-                return false;
-            return true;
-        });
-    }
-}
-
-// Removing contradictions is an NP-hard problem. Instead we run multiple
-// passes to try to catch most contradictions
-static void removeContradictions(std::list<ValueFlow::Value>& values)
-{
-    for (int i = 0; i < 4; i++) {
-        if (!removeContradiction(values))
-            return;
-        removeOverlaps(values);
-    }
-}
-
-static bool isAdjacent(const ValueFlow::Value& x, const ValueFlow::Value& y)
-{
-    if (x.bound == y.bound) {
-        return true;
-    } else {
-        if (x.valueType == ValueFlow::Value::ValueType::FLOAT)
-            return false;
-        return std::abs(x.intvalue - y.intvalue) == 1;
-    }
-}
 
 using ValueIterator = std::list<ValueFlow::Value>::iterator;
 
@@ -2052,12 +2031,7 @@ static ValueIterator removeAdjacentValues(std::list<ValueFlow::Value>& values, V
 
 static void mergeAdjacent(std::list<ValueFlow::Value>& values)
 {
-    auto prev = values.end();
     for (auto x = values.begin(); x != values.end();) {
-        if (x == prev)
-            printf("Infinite\n");
-        // assert(x != prev);
-        prev = x;
         if (x->isNonValue()) {
             x++;
             continue;
@@ -2104,6 +2078,45 @@ static void mergeAdjacent(std::list<ValueFlow::Value>& values)
 
     }
 }
+
+static void removeOverlaps(std::list<ValueFlow::Value>& values)
+{
+    for (ValueFlow::Value& x : values) {
+        if (x.isNonValue())
+            continue;
+        values.remove_if([&](ValueFlow::Value& y) {
+            if (y.isNonValue())
+                return false;
+            if (&x == &y)
+                return false;
+            if (x.valueType != y.valueType)
+                return false;
+            if (x.valueKind != y.valueKind)
+                return false;
+            // TODO: Remove points coverd in a lower or upper bound
+            // TODO: Remove lower or upper bound already covered by a lower and upper bound
+            if (!x.equalValue(y))
+                return false;
+            if (x.bound != y.bound)
+                return false;
+            return true;
+        });
+    }
+    mergeAdjacent(values);
+}
+
+// Removing contradictions is an NP-hard problem. Instead we run multiple
+// passes to try to catch most contradictions
+static void removeContradictions(std::list<ValueFlow::Value>& values)
+{
+    removeOverlaps(values);
+    for (int i = 0; i < 4; i++) {
+        if (!removeContradiction(values))
+            return;
+        removeOverlaps(values);
+    }
+}
+
 
 bool Token::addValue(const ValueFlow::Value &value)
 {
@@ -2190,8 +2203,6 @@ bool Token::addValue(const ValueFlow::Value &value)
         mImpl->mValues = new std::list<ValueFlow::Value>(1, v);
     }
 
-    removeOverlaps(*mImpl->mValues);
-    mergeAdjacent(*mImpl->mValues);
     removeContradictions(*mImpl->mValues);
 
     return true;
