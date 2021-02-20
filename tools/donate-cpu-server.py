@@ -177,7 +177,7 @@ def crashReport(results_path: str) -> str:
                     if line.find('Crash') < 0:
                         break
                     package = filename[filename.rfind('/')+1:]
-                    counts = line.strip().split(' ')
+                    counts = line.split(' ')
                     c2 = ''
                     if counts[2] == 'Crash!':
                         c2 = 'Crash'
@@ -268,7 +268,7 @@ def timeoutReport(results_path: str) -> str:
                     if line.find('TO!') < 0:
                         break
                     package = filename[filename.rfind('/')+1:]
-                    counts = line.strip().split(' ')
+                    counts = line.split(' ')
                     c2 = ''
                     if counts[2] == 'TO!':
                         c2 = 'Timeout'
