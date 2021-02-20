@@ -3456,7 +3456,7 @@ private:
                "}\n";
         value = valueOfTok(code, "x <");
         ASSERT(value.isPossible());
-        ASSERT_EQUALS(value.intvalue, 0);
+        ASSERT_EQUALS(0, value.intvalue);
 
         code = "void f() {\n"
                "    unsigned int x = 0;\n"
