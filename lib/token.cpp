@@ -32,6 +32,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <functional>
 #include <iostream>
 #include <map>
 #include <set>
@@ -1949,13 +1950,23 @@ const Token *Token::getValueTokenDeadPointer() const
 
 static bool isAdjacent(const ValueFlow::Value& x, const ValueFlow::Value& y)
 {
-    if (x.bound == y.bound) {
+    if (x.bound != ValueFlow::Value::Bound::Point && x.bound == y.bound) {
         return true;
     } else {
         if (x.valueType == ValueFlow::Value::ValueType::FLOAT)
             return false;
         return std::abs(x.intvalue - y.intvalue) == 1;
     }
+}
+
+static bool removePointValue(std::list<ValueFlow::Value>& values, ValueFlow::Value& x)
+{
+    const bool isPoint = x.bound == ValueFlow::Value::Bound::Point;
+    if (!isPoint)
+        x.decreaseRange();
+    else
+        values.remove(x);
+    return isPoint;
 }
 
 static bool removeContradiction(std::list<ValueFlow::Value>& values)
@@ -1973,33 +1984,40 @@ static bool removeContradiction(std::list<ValueFlow::Value>& values)
                 continue;
             if (x.isImpossible() == y.isImpossible())
                 continue;
-            if (!x.equalValue(y))
+            if (!x.equalValue(y)) {
+                auto compare = [](const ValueFlow::Value& x, const ValueFlow::Value& y) {
+                    return x.compareValue(y, ValueFlow::less{});
+                };
+                const ValueFlow::Value& maxValue = std::max(x, y, compare);
+                const ValueFlow::Value& minValue = std::min(x, y, compare);
+                // TODO: Adjust non-points instead of removing them
+                if (maxValue.isImpossible() && maxValue.bound == ValueFlow::Value::Bound::Upper) {
+                    values.remove(minValue);
+                    return true;
+                }
+                if (minValue.isImpossible() && minValue.bound == ValueFlow::Value::Bound::Lower) {
+                    values.remove(maxValue);
+                    return true;
+                }
                 continue;
+            }
+            const bool removex = !x.isImpossible() || y.isKnown();
+            const bool removey = !y.isImpossible() || x.isKnown();
             if (x.bound == y.bound) {
-                const bool removex = !x.isImpossible() || y.isKnown();
-                const bool removey = !y.isImpossible() || x.isKnown();
                 if (removex)
                     values.remove(x);
                 if (removey)
                     values.remove(y);
                 return true;
             } else {
-                if (x.bound != ValueFlow::Value::Bound::Point) {
-                    // Only decrease the range on possible values
-                    if (!x.isImpossible())
-                        x.decreaseRange();
-                } else {
-                    values.remove(x);
+                result = removex || removey;
+                bool bail = false;
+                if (removex && removePointValue(values, x))
+                    bail = true;
+                if (removey && removePointValue(values, y))
+                    bail = true;
+                if (bail)
                     return true;
-                }
-                if (y.bound != ValueFlow::Value::Bound::Point) {
-                    // Only decrease the range on possible values
-                    if (!y.isImpossible())
-                        y.decreaseRange();
-                } else {
-                    values.remove(y);
-                    return true;
-                }
             }
         }
     }
@@ -2017,13 +2035,10 @@ static ValueIterator removeAdjacentValues(std::list<ValueFlow::Value>& values, V
     auto it = std::adjacent_find(start, last, [](ValueIterator x, ValueIterator y) {
         return !isAdjacent(*x, *y);
     });
-    auto end = std::prev(last);
-    if (it != last) {
-        assert(*it != x);
-        end = std::next(it);
-    }
-    (*end)->bound = x->bound;
-    std::for_each(start, end, [&](ValueIterator y) {
+    if (it == last)
+        it--;
+    (*it)->bound = x->bound;
+    std::for_each(start, it, [&](ValueIterator y) {
         values.erase(y);
     });
     return values.erase(x);
