@@ -1840,13 +1840,13 @@ void CheckStl::string_c_str()
                 if (Token::Match(tok->tokAt(2), "%var% . str ( ) . c_str|data ( ) ;")) {
                     const Variable* var = tok->variable();
                     const Variable* var2 = tok->tokAt(2)->variable();
-                    if (var && var->isPointer() && var2 && var2->isStlType(stl_string_stream))
+                    if (var->isPointer() && var2 && var2->isStlType(stl_string_stream))
                         string_c_strError(tok);
                 } else if (Token::Match(tok->tokAt(2), "%name% (") &&
                            Token::Match(tok->linkAt(3), ") . c_str|data ( ) ;") &&
                            tok->tokAt(2)->function() && Token::Match(tok->tokAt(2)->function()->retDef, "std :: string|wstring %name%")) {
                     const Variable* var = tok->variable();
-                    if (var && var->isPointer())
+                    if (var->isPointer())
                         string_c_strError(tok);
                 }
             } else if (printPerformance && tok->function() && Token::Match(tok, "%name% ( !!)") && c_strFuncParam.find(tok->function()) != c_strFuncParam.end() &&
