@@ -3471,8 +3471,7 @@ private:
                "    for (x = 0; x < 2; x++) {}\n"
                "}\n";
         value = valueOfTok(code, "x <");
-        ASSERT(value.isPossible());
-        ASSERT_EQUALS(0, value.intvalue);
+        ASSERT(!value.isKnown());
     }
 
     void valueFlowSubFunction() {
@@ -5219,6 +5218,7 @@ private:
                "  return x + 0;\n"
                "}";
         values = tokenValues(code, "+", &s);
+        values.remove_if([](const ValueFlow::Value& v) { return v.isImpossible(); });
         ASSERT_EQUALS(2, values.size());
         ASSERT_EQUALS(0, values.front().intvalue);
         ASSERT_EQUALS(100, values.back().intvalue);
