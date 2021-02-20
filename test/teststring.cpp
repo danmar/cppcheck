@@ -317,7 +317,7 @@ private:
         check("bool foo(char* c) {\n"
               "    return \"x\" == c+foo;\n"
               "}", "test.c");
-        ASSERT_EQUALS("[test.c:2]: (warning) String literal compared with variable 'c'. Did you intend to use strcmp() instead?\n", errout.str());
+        ASSERT_EQUALS("[test.c:2]: (warning) String literal compared with variable 'c+foo'. Did you intend to use strcmp() instead?\n", errout.str());
 
         check("bool foo(Foo c) {\n"
               "    return \"x\" == c.foo;\n"
@@ -423,6 +423,21 @@ private:
               "    return c == '\\0';\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool foo(char* c) {\n"
+              "    return c[0] == '\\0';\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool foo(char** c) {\n"
+              "    return c[0] == '\\0';\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c[0]'. Did you intend to dereference it?\n", errout.str());
+
+        check("bool foo(char** c) {\n"
+              "    return *c == '\\0';\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer '*c'. Did you intend to dereference it?\n", errout.str());
 
         check("bool foo(char c) {\n"
               "    return c == 0;\n"

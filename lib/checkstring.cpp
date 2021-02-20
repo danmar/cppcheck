@@ -181,46 +181,18 @@ void CheckString::checkSuspiciousStringCompare()
             else if (!Token::Match(litTok, "%char%|%num%|%str%"))
                 continue;
 
-            if (mTokenizer->isCPP() && (!varTok->valueType() || !varTok->valueType()->isIntegral()))
+            if (varTok->isLiteral())
                 continue;
 
-            // Pointer addition?
-            if (varTok->str() == "+" && mTokenizer->isC()) {
-                const Token * const tokens[2] = { varTok->astOperand1(), varTok->astOperand2() };
-                for (const Token * t : tokens) {
-                    while (t && (t->str() == "." || t->str() == "::"))
-                        t = t->astOperand2();
-                    if (t && t->variable() && t->variable()->isPointer())
-                        varTok = t;
-                }
-            }
-
-            const Token* oldVarTok = varTok;
-            while (varTok->str() == "*") {
-                if (!mTokenizer->isC() || varTok->astOperand2() != nullptr || litTok->tokType() != Token::eString)
-                    break;
-                varTok = varTok->astOperand1();
-            }
-
-            if (mTokenizer->isC() && varTok->str() == "&")
-                varTok = varTok->astOperand1();
-
-            if (varTok->str() == "[")
-                varTok = varTok->astOperand1();
-
-            while (varTok && (varTok->str() == "." || varTok->str() == "::"))
-                varTok = varTok->astOperand2();
-            if (!varTok || !varTok->isName())
+            const ValueType* varType = varTok->valueType();
+            if (mTokenizer->isCPP() && (!varType || !varType->isIntegral()))
                 continue;
 
-            const Variable *var = varTok->variable();
-
-            const bool ischar(litTok->tokType() == Token::eChar);
             if (litTok->tokType() == Token::eString) {
-                if (mTokenizer->isC() || (var && var->isArrayOrPointer()))
-                    suspiciousStringCompareError(tok, oldVarTok->expressionString(), litTok->isLong());
-            } else if (ischar && var && var->isPointer()) {
-                suspiciousStringCompareError_char(tok, oldVarTok->expressionString());
+                if (mTokenizer->isC() || (varType && varType->pointer))
+                    suspiciousStringCompareError(tok, varTok->expressionString(), litTok->isLong());
+            } else if (litTok->tokType() == Token::eChar && varType && varType->pointer) {
+                suspiciousStringCompareError_char(tok, varTok->expressionString());
             }
         }
     }
