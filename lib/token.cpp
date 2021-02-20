@@ -2024,23 +2024,18 @@ static bool removeContradiction(std::list<ValueFlow::Value>& values)
     return result;
 }
 
-
 using ValueIterator = std::list<ValueFlow::Value>::iterator;
 
-template<class Iterator>
+template <class Iterator>
 static ValueIterator removeAdjacentValues(std::list<ValueFlow::Value>& values, ValueIterator x, Iterator start, Iterator last)
 {
     if (!isAdjacent(*x, **start))
         return std::next(x);
-    auto it = std::adjacent_find(start, last, [](ValueIterator x, ValueIterator y) {
-        return !isAdjacent(*x, *y);
-    });
+    auto it = std::adjacent_find(start, last, [](ValueIterator x, ValueIterator y) { return !isAdjacent(*x, *y); });
     if (it == last)
         it--;
     (*it)->bound = x->bound;
-    std::for_each(start, it, [&](ValueIterator y) {
-        values.erase(y);
-    });
+    std::for_each(start, it, [&](ValueIterator y) { values.erase(y); });
     return values.erase(x);
 }
 
@@ -2056,7 +2051,7 @@ static void mergeAdjacent(std::list<ValueFlow::Value>& values)
             continue;
         }
         std::vector<ValueIterator> adjValues;
-        for (auto y = values.begin(); y != values.end();y++) {
+        for (auto y = values.begin(); y != values.end(); y++) {
             if (x == y)
                 continue;
             if (y->isNonValue())
@@ -2090,7 +2085,6 @@ static void mergeAdjacent(std::list<ValueFlow::Value>& values)
             x = removeAdjacentValues(values, x, adjValues.rbegin(), adjValues.rend());
         else if (x->bound == ValueFlow::Value::Bound::Upper)
             x = removeAdjacentValues(values, x, adjValues.begin(), adjValues.end());
-
     }
 }
 
@@ -2131,7 +2125,6 @@ static void removeContradictions(std::list<ValueFlow::Value>& values)
         removeOverlaps(values);
     }
 }
-
 
 bool Token::addValue(const ValueFlow::Value &value)
 {

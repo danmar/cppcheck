@@ -1455,9 +1455,9 @@ static std::vector<MathLib::bigint> minUnsignedValue(const Token* tok, int depth
     return result;
 }
 
-static void valueFlowImpossibleValues(TokenList *tokenList, const Settings* settings)
+static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* settings)
 {
-    for (Token *tok = tokenList->front(); tok; tok = tok->next()) {
+    for (Token* tok = tokenList->front(); tok; tok = tok->next()) {
         if (tok->hasKnownIntValue())
             continue;
         if (astIsUnsigned(tok)) {
@@ -4749,8 +4749,8 @@ ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, Math
     if (varTok->hasKnownIntValue())
         return ValueFlow::Value{};
     if (std::none_of(varTok->values().begin(), varTok->values().end(), [](const ValueFlow::Value& v) {
-        return v.isImpossible() && v.valueType == ValueFlow::Value::ValueType::INT;
-    })) {
+            return v.isImpossible() && v.valueType == ValueFlow::Value::ValueType::INT;
+        })) {
         return ValueFlow::Value{};
     }
     const ValueFlow::Value* result = nullptr;
@@ -4818,11 +4818,11 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             ValueFlow::Value value{};
             std::string op = tok->str();
             if (tok->astOperand1()->hasKnownIntValue()) {
-                MathLib::bigint val =  tok->astOperand1()->values().front().intvalue;
+                MathLib::bigint val = tok->astOperand1()->values().front().intvalue;
                 const Token* varTok = tok->astOperand2();
                 value = inferCondition(tok->str(), val, varTok);
             } else if (tok->astOperand2()->hasKnownIntValue()) {
-                MathLib::bigint val =  tok->astOperand2()->values().front().intvalue;
+                MathLib::bigint val = tok->astOperand2()->values().front().intvalue;
                 const Token* varTok = tok->astOperand1();
                 value = inferCondition(tok->str(), varTok, val);
             }

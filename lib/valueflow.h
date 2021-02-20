@@ -56,15 +56,17 @@ namespace ValueFlow {
     };
 
     struct less {
-        template<class T, class U>
-        bool operator()(const T& x, const U& y) const {
+        template <class T, class U>
+        bool operator()(const T& x, const U& y) const
+        {
             return x < y;
         }
     };
 
     struct adjacent {
-        template<class T, class U>
-        bool operator()(const T& x, const U& y) const {
+        template <class T, class U>
+        bool operator()(const T& x, const U& y) const
+        {
             return std::abs(x - y) == 1;
         }
     };
@@ -160,23 +162,27 @@ namespace ValueFlow {
 
         struct compareVisitor {
             struct innerVisitor {
-                template<class Compare, class T, class U>
-                void operator()(bool& result, Compare compare, T x, U y) const {
+                template <class Compare, class T, class U>
+                void operator()(bool& result, Compare compare, T x, U y) const
+                {
                     result = compare(x, y);
                 }
             };
-            template<class Compare, class T>
-            void operator()(bool& result, const Value& rhs, Compare compare, T x) const {
-                visitValue(rhs, std::bind(innerVisitor{}, std::ref(result), std::move(compare), x, std::placeholders::_1));
+            template <class Compare, class T>
+            void operator()(bool& result, const Value& rhs, Compare compare, T x) const
+            {
+                visitValue(rhs,
+                           std::bind(innerVisitor{}, std::ref(result), std::move(compare), x, std::placeholders::_1));
             }
-
         };
 
-        template<class Compare>
+        template <class Compare>
         bool compareValue(const Value& rhs, Compare compare) const
         {
             bool result = false;
-            visitValue(*this, std::bind(compareVisitor{}, std::ref(result), std::ref(rhs), std::move(compare), std::placeholders::_1));
+            visitValue(
+                *this,
+                std::bind(compareVisitor{}, std::ref(result), std::ref(rhs), std::move(compare), std::placeholders::_1));
             return result;
         }
 
