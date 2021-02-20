@@ -654,6 +654,7 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
             continue
         datestr = ''
         for line in open(filename, 'rt'):
+            line = line.strip()
             if line.startswith('cppcheck: '):
                 if OLD_VERSION not in line:
                     # Package results seem to be too old, skip
@@ -666,7 +667,7 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
                 continue
             if not line.startswith('elapsed-time:'):
                 continue
-            split_line = line.strip().split()
+            split_line = line.split()
             time_base = float(split_line[2])
             time_head = float(split_line[1])
             if time_base < 0.0 or time_head < 0.0:
