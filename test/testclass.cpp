@@ -19,7 +19,6 @@
 #include <tinyxml2.h>
 
 #include "checkclass.h"
-#include "ctu.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"

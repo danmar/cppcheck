@@ -31,7 +31,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cstddef>
 #include <set>
 //---------------------------------------------------------------------------
 

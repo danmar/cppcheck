@@ -33,12 +33,8 @@
 #include <vector>
 
 class ErrorLogger;
-class Function;
-class Scope;
 class Settings;
-class SymbolDatabase;
 class Token;
-class Type;
 
 /// @addtogroup Checks
 /// @{

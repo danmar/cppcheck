@@ -30,10 +30,7 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
-#include <cmath>
-#include <cstddef>
 #include <iomanip>
-#include <ostream>
 #include <vector>
 
 //---------------------------------------------------------------------------

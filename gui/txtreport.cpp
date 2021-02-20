@@ -16,9 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "txtreport.h"
+
 #include <QDir>
 #include "erroritem.h"
-#include "txtreport.h"
 
 TxtReport::TxtReport(const QString &filename) :
     Report(filename)

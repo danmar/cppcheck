@@ -30,12 +30,9 @@
 #include "valueflow.h"
 
 #include <algorithm>
-#include <cstddef>
 #include <limits>
 #include <list>
-#include <ostream>
 #include <set>
-#include <stack>
 #include <utility>
 
 // CWE ids used

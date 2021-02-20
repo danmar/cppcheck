@@ -36,7 +36,6 @@
 #include <algorithm> // find_if()
 #include <list>
 #include <map>
-#include <ostream>
 #include <utility>
 //---------------------------------------------------------------------------
 

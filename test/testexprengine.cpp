@@ -25,7 +25,6 @@
 #include "tokenize.h"
 #include "testsuite.h"
 
-#include <limits>
 #include <string>
 
 class TestExprEngine : public TestFixture {

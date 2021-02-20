@@ -20,7 +20,6 @@
 #include "pathmatch.h"
 #include "testsuite.h"
 
-#include <cstddef>
 #include <fstream>
 #include <map>
 #include <string>

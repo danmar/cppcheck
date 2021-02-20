@@ -16,8 +16,6 @@
 
 #include "options.h"
 
-#include <iterator>
-
 options::options(int argc, const char* const argv[])
     :mWhichTests(argv + 1, argv + argc)
     ,mQuiet(mWhichTests.count("-q") != 0)

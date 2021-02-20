@@ -16,20 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QWidget>
-#include <QDialog>
-#include <QString>
-#include <QStringList>
+#include "projectfiledialog.h"
+
 #include <QFileInfo>
 #include <QFileDialog>
-#include <QInputDialog>
 #include <QDir>
 #include <QSettings>
-#include <QProcess>
-#include <QListView>
 #include "common.h"
 #include "newsuppressiondialog.h"
-#include "projectfiledialog.h"
 #include "checkthread.h"
 #include "projectfile.h"
 #include "library.h"

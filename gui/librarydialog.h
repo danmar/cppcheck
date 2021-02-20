@@ -20,7 +20,6 @@
 #define LIBRARYDIALOG_H
 
 #include <QDialog>
-#include <QFile>
 
 #include "cppchecklibrarydata.h"
 

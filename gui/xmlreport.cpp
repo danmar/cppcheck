@@ -16,12 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QObject>
-#include <QString>
+#include "xmlreport.h"
+
 #include <QFile>
 #include <QXmlStreamReader>
 #include "report.h"
-#include "xmlreport.h"
 
 static const char ResultElementName[] = "results";
 static const char VersionAttribute[] = "version";

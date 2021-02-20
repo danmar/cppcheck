@@ -31,7 +31,6 @@
 #include <cstddef>
 #include <list>
 #include <vector>
-#include <stack>
 #include <utility>
 
 //---------------------------------------------------------------------------

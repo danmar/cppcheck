@@ -27,8 +27,6 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
-#include <climits>
-#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <limits>
