@@ -76,3 +76,9 @@ jobs:
         run: |
           make -j$(nproc) -s
           PYTHONPATH=./addons python -m pytest addons/test/test-*.py
+
+      - name: dmake
+        if: matrix.python-version == '3.8'
+        run: |
+          make -j$(nproc) run-dmake
+          git diff --exit-code

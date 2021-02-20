@@ -37,9 +37,6 @@ before_install:
 matrix:
 # do notify immediately about it when a job of a build fails.
   fast_finish: true
-  allow_failures:
-    - name: "rerun dmake?"
-      compiler: clang
 # defined extra jobs that run besides what is configured in the build matrix
   include:
 
@@ -140,18 +137,6 @@ matrix:
         - unzip -qq ~/juliet/juliet.zip
         - cd -
         - python3 test/bug-hunting/juliet.py
-
-# check if dmake needs to be rerun (this job may fail)
-    - name: "rerun dmake?"
-      compiler: clang
-# we don't need to install any deps for dmake so skip it explicitly
-      before_install:
-      - true
-      script:
-        - echo "If the following command fails, run 'make dmake; make run-dmake' and commit the resulting change."
-        - make -s dmake -j$(nproc)
-        - make -s run-dmake
-        - git diff --exit-code
 
 script:
 # fail the entire job as soon as one of the subcommands exits non-zero to save time and resources
