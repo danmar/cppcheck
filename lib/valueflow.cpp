@@ -421,7 +421,8 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
 /** set ValueFlow value and perform calculations if possible */
 static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Settings *settings)
 {
-    if (!value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok))
+    // Skip setting values that are too big since its ambiguous
+    if (!value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok) && !tok->isLiteral())
         return;
     if (!tok->addValue(value))
         return;
