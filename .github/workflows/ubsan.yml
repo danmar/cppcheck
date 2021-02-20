@@ -19,7 +19,7 @@ jobs:
 
       - name: Build
         run: |
-          CC=clang CXX=clang++ CXXFLAGS="-fsanitize=undefined -fsanitize=nullability -O1 -g3 -DCPPCHK_GLIBCXX_DEBUG" CPPFLAGS="-DCHECK_INTERNAL" make cppcheck testrunner -j$(nproc) USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes VERIFY=1
+          CC=clang CXX=clang++ CXXFLAGS="-fsanitize=undefined -fsanitize=nullability -fno-sanitize=signed-integer-overflow -O1 -g3 -DCPPCHK_GLIBCXX_DEBUG" CPPFLAGS="-DCHECK_INTERNAL" make cppcheck testrunner -j$(nproc) USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes VERIFY=1
 
       - name: Run tests
         run: |
