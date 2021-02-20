@@ -159,7 +159,7 @@ def crashReport(results_path: str) -> str:
     current_year = datetime.date.today().year
     stack_traces = {}
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         datestr = ''
         with open(filename, 'rt') as file_:
@@ -250,7 +250,7 @@ def timeoutReport(results_path: str) -> str:
     html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', link=False) + '</b>\n'
     current_year = datetime.date.today().year
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         datestr = ''
         with open(filename, 'rt') as file_:
@@ -291,7 +291,7 @@ def staleReport(results_path: str) -> str:
     html += '<b>' + fmt('Package', 'Date       Time', link=False) + '</b>\n'
     current_year = datetime.date.today().year
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         for line in open(filename, 'rt'):
             line = line.strip()
@@ -520,7 +520,7 @@ def headReport(resultsPath: str) -> str:
     today = strDateTime()[:10]
 
     for filename in sorted(glob.glob(resultsPath + '/*')):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         uploadedToday = False
         firstLine = True
@@ -582,7 +582,7 @@ def headMessageIdReport(resultPath: str, messageId: str) -> str:
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
     for filename in sorted(glob.glob(resultPath + '/*')):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         url = None
         headResults = False
@@ -608,7 +608,7 @@ def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
     e = '[' + messageId + ']\n'
     today = strDateTime()[:10]
     for filename in sorted(glob.glob(resultPath + '/*')):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         url = None
         headResults = False
@@ -651,7 +651,7 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
     total_time_base = 0.0
     total_time_head = 0.0
     for filename in glob.glob(resultPath + '/*'):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         datestr = ''
         for line in open(filename, 'rt'):
@@ -739,7 +739,7 @@ def timeReportSlow(resultPath: str) -> str:
     data = {}
 
     for filename in glob.glob(resultPath + '/*'):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         datestr = ''
         for line in open(filename, 'rt'):
@@ -807,7 +807,7 @@ def check_library_report(result_path: str, message_id: str) -> str:
 
     function_counts = {}
     for filename in glob.glob(result_path + '/*'):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         info_messages = False
         for line in open(filename, 'rt'):
@@ -849,7 +849,7 @@ def check_library_function_name(result_path: str, function_name: str) -> str:
     function_name = urllib.parse.unquote_plus(function_name)
     output_lines_list = []
     for filename in glob.glob(result_path + '/*'):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         info_messages = False
         url = None
