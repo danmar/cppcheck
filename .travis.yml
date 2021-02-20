@@ -23,14 +23,12 @@ before_install:
  - travis_retry sudo apt-get install -qq python3-pip libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet python3-dev liblua5.3-dev libcurl3 libcairo2-dev libsigc++-2.0-dev tidy libopencv-dev libz3-dev
 # Python 2 modules 
  - travis_retry python2 -m pip install --user pytest==4.6.4
-# - travis_retry python2 -m pip install --user pylint
  - travis_retry python2 -m pip install --user unittest2
  - travis_retry python2 -m pip install --user pexpect # imported by tools/ci.py
  - travis_retry python2 -m pip install --user pygments
 # Python 3 modules
  - travis_retry python3 -m pip install --user setuptools --upgrade
  - travis_retry python3 -m pip install --user pytest
-# - travis_retry python3 -m pip install --user pylint
  - travis_retry python3 -m pip install --user unittest2
  - travis_retry python3 -m pip install --user pexpect # imported by tools/ci.py
  - travis_retry python3 -m pip install --user requests # imported by tools/pr.py
@@ -91,18 +89,6 @@ matrix:
 # check --dump
         - ${CPPCHECK} test/testpreprocessor.cpp --dump
         - xmllint --noout test/testpreprocessor.cpp.dump
-# run pylint -- FIXME these are temporarily commented out because there is a syntax error in pylint
-#        - pylint --rcfile=pylintrc_travis addons/*.py
-#        - pylint --rcfile=pylintrc_travis htmlreport/cppcheck-htmlreport
-#        - pylint --rcfile=pylintrc_travis htmlreport/*.py
-#        - pylint --rcfile=pylintrc_travis --ignore=donate-cpu-server.py --ignore=donate-cpu.py --ignore=donate_cpu_lib.py --ignore=test-my-pr.py tools/*.py
-#        - python3 -m pylint --rcfile=pylintrc_travis addons/*.py
-#        - python3 -m pylint --rcfile=pylintrc_travis htmlreport/cppcheck-htmlreport
-#        - python3 -m pylint --rcfile=pylintrc_travis htmlreport/*.py
-#        - python3 -m pylint --rcfile=pylintrc_travis tools/*.py
-# check python syntax by compiling some selected scripts
-        - python3 -m py_compile ./tools/donate-cpu.py
-        - python3 -m py_compile ./tools/donate-cpu-server.py
 # check addons/misc.py
         - cd addons/test
         - ${CPPCHECK} --dump misc-test.cpp
