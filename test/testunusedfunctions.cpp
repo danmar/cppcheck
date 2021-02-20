@@ -226,7 +226,7 @@ private:
               "private:\n"
               "    template<typename T> void foo( T t ) const;\n"
               "};\n"
-              "template<typename T> void X::foo( T t ) const { }\n");
+              "template<typename T> void X::foo( T t ) const { }");
         ASSERT_EQUALS("[test.cpp:3]: (style) The function 'bar' is never used.\n", errout.str());
     }
 
@@ -257,19 +257,19 @@ private:
 
     void unusedError() {
         check("void foo() {}\n"
-              "int main()\n");
+              "int main()");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
 
         check("void foo() const {}\n"
-              "int main()\n");
+              "int main()");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
 
         check("void foo() const throw() {}\n"
-              "int main()\n");
+              "int main()");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
 
         check("void foo() throw() {}\n"
-              "int main()\n");
+              "int main()");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
     }
 
@@ -427,7 +427,7 @@ private:
     void lineNumber() {
         check("void foo() {}\n"
               "void bar() {}\n"
-              "int main()\n");
+              "int main()");
         ASSERT_EQUALS("[test.cpp:2]: (style) The function 'bar' is never used.\n"
                       "[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
     }
@@ -486,7 +486,7 @@ private:
               "A operator ++ (const A &){ return A(); }\n"
               "A operator -- (const A &, const int){ return A(); }\n"
               "A operator -- (const A &){ return A(); }\n"
-              "A operator , (const A &, const A &){ return A(); }\n");
+              "A operator , (const A &, const A &){ return A(); }");
         ASSERT_EQUALS("", errout.str());
 
 

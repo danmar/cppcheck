@@ -989,7 +989,6 @@ private:
         }
 
         {
-            /* TODO: What to do here? since there are syntax error simplecpp outputs ""
             const char filedata[] = "#define BC(b, c...) 0##b * 0##c\n"
                                     "#define ABC(a, b...) a + BC(b)\n"
                                     "\n"
@@ -997,8 +996,7 @@ private:
                                     "ABC(2,3);\n"
                                     "ABC(4,5,6);\n";
 
-            ASSERT_EQUALS("\n\n\n1 + 0 * 0;\n2 + 03 * 0;\n4 + 05 * 06;", OurPreprocessor::expandMacros(filedata));
-            */
+            ASSERT_EQUALS("\n\n\n1 + 0 * 0 ;\n2 + 03 * 0 ;\n4 + 05 * 06 ;", OurPreprocessor::expandMacros(filedata));
         }
 
         {
@@ -1142,10 +1140,9 @@ private:
     }
 
     void macro_NULL() const {
-        // Let the tokenizer handle NULL.
         // See ticket #4482 - UB when passing NULL to variadic function
         ASSERT_EQUALS("\n0", OurPreprocessor::expandMacros("#define null 0\nnull"));
-        // TODO ASSERT_EQUALS("\nNULL", OurPreprocessor::expandMacros("#define NULL 0\nNULL"));
+        TODO_ASSERT_EQUALS("\nNULL", "\n0", OurPreprocessor::expandMacros("#define NULL 0\nNULL")); // TODO: Let the tokenizer handle NULL?
     }
 
     void string1() {

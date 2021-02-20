@@ -476,7 +476,7 @@ private:
                                        "{\n"
                                        "    std::string str(\"test\");\n"
                                        "    str.clear();\n"
-                                       "}\n");
+                                       "}");
 
         const char expected[] = "1: void func ( )\n"
                                 "2: {\n"
@@ -514,8 +514,7 @@ private:
     }
 
     void varid11() {
-        const std::string actual = tokenize(
-                                       "class Foo;\n");
+        const std::string actual = tokenize("class Foo;");
 
         const char expected[] = "1: class Foo ;\n";
 
@@ -527,7 +526,7 @@ private:
                                        "static void a()\n"
                                        "{\n"
                                        "    class Foo *foo;\n"
-                                       "}\n");
+                                       "}");
 
         const char expected[] = "1: static void a ( )\n"
                                 "2: {\n"
@@ -1278,8 +1277,7 @@ private:
                                        "std::list<boost::wave::token_id> tokens;\n"
                                        "static std::vector<CvsProcess*> ex1;\n"
                                        "extern std::vector<CvsProcess*> ex2;\n"
-                                       "std::map<int, 1> m;\n"
-                                   );
+                                       "std::map<int, 1> m;");
 
         const char expected[] = "1: list < int > ints@1 ;\n"
                                 "2: list < int > :: iterator it@2 ;\n"
@@ -1313,7 +1311,7 @@ private:
                                        "{\n"
                                        "  int *a;\n"
                                        "  delete a;\n"
-                                       "}\n");
+                                       "}");
 
         const char expected[] = "1: void f ( )\n"
                                 "2: {\n"
@@ -1364,7 +1362,7 @@ private:
                                            "void f3(const std::string &s)\n"
                                            "{\n"
                                            "    s.size();\n"
-                                           "}\n");
+                                           "}");
 
             const char expected[] = "1: void f1 ( int & p@1 )\n"
                                     "2: {\n"
@@ -1408,7 +1406,7 @@ private:
                                        "    std::vector<int> b;\n"
                                        "    std::vector<int> &a = b;\n"
                                        "    std::vector<int> *c = &b;\n"
-                                       "}\n");
+                                       "}");
 
         const char expected[] = "1: void f ( )\n"
                                 "2: {\n"
@@ -1428,7 +1426,7 @@ private:
                                            "public:\n"
                                            "    std::string name1;\n"
                                            "    std::string name2;\n"
-                                           "};\n");
+                                           "};");
 
             const char expected[] = "1: class Foo\n"
                                     "2: {\n"
@@ -1454,7 +1452,7 @@ private:
                                            "    POINT pOutput = { 0 , 0 };\n"
                                            "    int x = pOutput.x;\n"
                                            "    int y = pOutput.y;\n"
-                                           "}\n");
+                                           "}");
 
             const char expected[] = "1: class foo\n"
                                     "2: {\n"
@@ -1489,7 +1487,7 @@ private:
                                        "void Bar::f()\n"
                                        "{\n"
                                        "    foo.x = x;\n"
-                                       "}\n");
+                                       "}");
         const char expected[] = "1: struct Foo {\n"
                                 "2: int x@1 ;\n"
                                 "3: } ;\n"
@@ -2199,7 +2197,7 @@ private:
                                            "{\n"
                                            "public:\n"
                                            "    void operator=(const Foo &);\n"
-                                           "};\n");
+                                           "};");
 
             const char expected[] = "1: class Foo\n"
                                     "2: {\n"
@@ -2213,7 +2211,7 @@ private:
             const std::string actual = tokenize(
                                            "struct Foo {\n"
                                            "    void * operator new [](int);\n"
-                                           "};\n");
+                                           "};");
             const char expected[] = "1: struct Foo {\n"
                                     "2: void * operatornew[] ( int ) ;\n"
                                     "3: } ;\n";
@@ -2225,7 +2223,7 @@ private:
     void varid_throw() {  // ticket #1723
         const std::string actual = tokenize(
                                        "UserDefinedException* pe = new UserDefinedException();\n"
-                                       "throw pe;\n");
+                                       "throw pe;");
 
         const char expected[] = "1: UserDefinedException * pe@1 ; pe@1 = new UserDefinedException ( ) ;\n"
                                 "2: throw pe@1 ;\n";
@@ -2383,7 +2381,7 @@ private:
                                "    class QErrorLogger {\n"
                                "        void reportErr(ErrorLogger::ErrorMessage &msg) {\n"
                                "        }\n"
-                               "    }; \n"
+                               "    };\n"
                                "}"));
     }
 
@@ -2716,7 +2714,7 @@ private:
                                        "Fred::foo1()\n"
                                        "{\n"
                                        "    i = 0;\n"
-                                       "}\n");
+                                       "}");
 
         const char expected[] = "1: class Fred\n"
                                 "2: {\n"
@@ -2752,7 +2750,7 @@ private:
                                        "void Fred::f()\n"
                                        "{\n"
                                        "    i = 0;\n"
-                                       "}\n");
+                                       "}");
 
         const char expected[] = "1: class Fred\n"
                                 "2: { void f ( ) ; } ;\n"
@@ -2784,7 +2782,7 @@ private:
                                        "void A::f()\n"
                                        "{\n"
                                        "    i = 0;\n"
-                                       "}\n");
+                                       "}");
 
         const char expected[] = "1: class Fred\n"
                                 "2: { int i@1 ; void f ( ) ; } ;\n"
@@ -2812,7 +2810,7 @@ private:
                                        "{\n"
                                        "    if (i) { }\n"
                                        "    i = 0;\n"
-                                       "}\n");
+                                       "}");
 
         const char expected[] = "1: class Fred\n"
                                 "2: { int i@1 ; void f ( ) ; } ;\n"
@@ -2834,7 +2832,7 @@ private:
                                        "    A *a;\n"
                                        "    B() : a(new A)\n"
                                        "    { }\n"
-                                       "};\n");
+                                       "};");
 
         const char expected[] = "1: class A { } ;\n"
                                 "2: class B\n"

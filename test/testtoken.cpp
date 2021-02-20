@@ -1083,7 +1083,7 @@ private:
     }
 
     void canFindMatchingBracketsWithTooManyClosing() const {
-        givenACodeSampleToTokenize var("X< 1>2 > x1;\n");
+        givenACodeSampleToTokenize var("X< 1>2 > x1;");
 
         const Token* const t = var.tokens()->next()->findClosingBracket();
         ASSERT_EQUALS(">", t->str());
@@ -1091,7 +1091,7 @@ private:
     }
 
     void canFindMatchingBracketsWithTooManyOpening() const {
-        givenACodeSampleToTokenize var("X < (2 < 1) > x1;\n");
+        givenACodeSampleToTokenize var("X < (2 < 1) > x1;");
 
         const Token* t = var.tokens()->next()->findClosingBracket();
         ASSERT(t != nullptr && t->str() == ">");

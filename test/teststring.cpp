@@ -289,6 +289,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) String literal compared with variable 'c'. Did you intend to use strcmp() instead?\n", errout.str());
 
+        check("bool foo(char** c) {\n"
+              "    return c[3] == \"x\";\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) String literal compared with variable 'c[3]'. Did you intend to use strcmp() instead?\n", errout.str());
+
         check("bool foo(wchar_t* c) {\n"
               "    return c == L\"x\";\n"
               "}");
@@ -312,7 +317,7 @@ private:
         check("bool foo(char* c) {\n"
               "    return \"x\" == c+foo;\n"
               "}", "test.c");
-        ASSERT_EQUALS("[test.c:2]: (warning) String literal compared with variable 'c'. Did you intend to use strcmp() instead?\n", errout.str());
+        ASSERT_EQUALS("[test.c:2]: (warning) String literal compared with variable 'c+foo'. Did you intend to use strcmp() instead?\n", errout.str());
 
         check("bool foo(Foo c) {\n"
               "    return \"x\" == c.foo;\n"
@@ -349,18 +354,14 @@ private:
         // Ticket #4257
         check("bool foo() {\n"
               "MyString **str=OtherGetter();\n"
-              "return *str==\"bug\"; }");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) String literal compared with variable 'c'. Did you intend to use strcmp() instead?\n",
-                           "",
-                           errout.str());
+              "return *str==\"bug\"; }", "test.c");
+        ASSERT_EQUALS("[test.c:3]: (warning) String literal compared with variable '*str'. Did you intend to use strcmp() instead?\n", errout.str());
 
         // Ticket #4257
         check("bool foo() {\n"
               "MyString str=OtherGetter2();\n"
-              "return &str==\"bug\"; }");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (warning) String literal compared with variable 'c'. Did you intend to use strcmp() instead?\n",
-                           "",
-                           errout.str());
+              "return &str==\"bug\"; }", "test.c");
+        ASSERT_EQUALS("[test.c:3]: (warning) String literal compared with variable '&str'. Did you intend to use strcmp() instead?\n", errout.str());
 
         // Ticket #5734
         check("int foo(char c) {\n"
@@ -422,6 +423,21 @@ private:
               "    return c == '\\0';\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool foo(char* c) {\n"
+              "    return c[0] == '\\0';\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool foo(char** c) {\n"
+              "    return c[0] == '\\0';\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer 'c[0]'. Did you intend to dereference it?\n", errout.str());
+
+        check("bool foo(char** c) {\n"
+              "    return *c == '\\0';\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Char literal compared with pointer '*c'. Did you intend to dereference it?\n", errout.str());
 
         check("bool foo(char c) {\n"
               "    return c == 0;\n"

@@ -248,7 +248,7 @@ private:
 
         // #7451: Lambdas
         check("const int* test(std::vector<int> outputs, const std::string& text) {\n"
-              "  auto it = std::find_if(outputs.begin(), outputs.end(), \n"
+              "  auto it = std::find_if(outputs.begin(), outputs.end(),\n"
               "     [&](int ele) { return \"test\" == text; });\n"
               "  return nullptr;\n"
               "}");

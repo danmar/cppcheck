@@ -48,7 +48,7 @@ jobs:
         run: |
           mkdir cmake.output
           cd cmake.output
-          cmake -G "Unix Makefiles" -DBUILD_TESTS=On ..
+          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On ..
           make -j$(nproc) check
           cd ..
 

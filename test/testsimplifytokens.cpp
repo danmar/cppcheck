@@ -3165,7 +3165,7 @@ private:
             const char code[] = "void foo()\n"
                                 "{\n"
                                 "    char *a, *b;\n"
-                                "    if (x) \n"
+                                "    if (x)\n"
                                 "        delete a, b;\n"
                                 "}\n";
             ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; if ( x ) { delete a ; b ; } }", tok(code));

@@ -307,13 +307,13 @@ private:
         check("struct A { void operator()(int); };\n"
               "void f() {\n"
               "A{}(0);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("template<class> struct A { void operator()(int); };\n"
               "void f() {\n"
               "A<int>{}(0);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -342,7 +342,7 @@ private:
         check("void foo(int,const char*,int);\n"
               "void f(int value) {\n"
               "    foo(42,\"test\",42),(value&42);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Found suspicious operator ','\n", errout.str());
     }
 
