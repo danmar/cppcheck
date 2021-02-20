@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        image: ["centos:7", "ubuntu:14.04", "ubuntu:21.04"]
+        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:21.04"]
       fail-fast: false # Prefer quick result
 
     runs-on: ubuntu-20.04
