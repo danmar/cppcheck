@@ -77,6 +77,7 @@ def overviewReport() -> str:
     html += '<a href="latest.html">Latest results</a><br>\n'
     html += '<a href="time_lt.html">Time report (improved)</a><br>\n'
     html += '<a href="time_gt.html">Time report (regressed)</a><br>\n'
+    html += '<a href="time_slow.html">Time report (slowest)</a><br>\n'
     html += '<a href="check_library_function_report.html">checkLibraryFunction report</a><br>\n'
     html += '<a href="check_library_noreturn_report.html">checkLibraryNoReturn report</a><br>\n'
     html += '<a href="check_library_use_ignore_report.html">checkLibraryUseIgnore report</a><br>\n'
@@ -724,6 +725,69 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
     return html
 
 
+def timeReportSlow(resultPath: str) -> str:
+    title = 'Time report (slowest)'
+    html = '<html><head><title>{}</title></head><body>\n'.format(title)
+    html += '<h1>{}</h1>\n'.format(title)
+    html += '<pre>\n'
+    html += '<b>'
+    html += fmt('Package', 'Date       Time', OLD_VERSION, 'Head', link=False)
+    html += '</b>\n'
+
+    current_year = datetime.date.today().year
+
+    data = {}
+
+    for filename in glob.glob(resultPath + '/*'):
+        if not os.path.isfile(filename):
+            continue
+        datestr = ''
+        for line in open(filename, 'rt'):
+            line = line.strip()
+            if line.startswith('cppcheck: '):
+                if OLD_VERSION not in line:
+                    # Package results seem to be too old, skip
+                    break
+                else:
+                    # Current package, parse on
+                    continue
+            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+                datestr = line
+                continue
+            elif line.startswith('count:'):
+                count_head = line.split()[1]
+                if count_head == 'TO!':
+                    # ignore results with timeouts
+                    break
+                continue
+            if not line.startswith('elapsed-time:'):
+                continue
+            split_line = line.split()
+            time_base = float(split_line[2])
+            time_head = float(split_line[1])
+            if time_base < 0.0 or time_head < 0.0:
+                # ignore results with crashes / errors
+                break
+            pkg_name = filename[len(resultPath)+1:]
+            data[pkg_name] = (datestr, split_line[2], split_line[1], time_head)
+            break
+
+        sorted_data = sorted(data.items(), key=lambda kv: kv[1][3])
+        if len(data) > 100:
+            first_key, _ = sorted_data[0]
+            # remove the entry with the lowest run-time
+            del data[first_key]
+
+    sorted_data = sorted(data.items(), key=lambda kv: kv[1][3], reverse=True)
+    sorted_dict = collections.OrderedDict(sorted_data)
+    for key in sorted_dict:
+        html += fmt(key, sorted_dict[key][0], sorted_dict[key][1], sorted_dict[key][2]) + '\n'
+    html += '</pre>\n'
+    html += '</body></html>\n'
+
+    return html
+
+
 def check_library_report(result_path: str, message_id: str) -> str:
     if message_id not in ('checkLibraryNoReturn', 'checkLibraryFunction', 'checkLibraryUseIgnore'):
         error_message = 'Invalid value ' + message_id + ' for message_id parameter.'
@@ -890,6 +954,9 @@ class HttpClientThread(Thread):
                 httpGetResponse(self.connection, text, 'text/html')
             elif url == 'time_gt.html':
                 text = timeReport(self.resultPath, True)
+                httpGetResponse(self.connection, text, 'text/html')
+            elif url == 'time_slow.html':
+                text = timeReportSlow(self.resultPath)
                 httpGetResponse(self.connection, text, 'text/html')
             elif url == 'check_library_function_report.html':
                 text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryFunction')
