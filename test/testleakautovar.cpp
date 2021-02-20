@@ -615,14 +615,14 @@ private:
         check("struct Foo { int* ptr; };\n"
               "void f(Foo* foo) {\n"
               "    delete foo->ptr;\n"
-              "    foo->ptr = new Foo; \n"
+              "    foo->ptr = new Foo;\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
 
         check("struct Foo { int* ptr; };\n"
               "void f(Foo* foo) {\n"
               "    delete foo->ptr;\n"
-              "    x = *foo->ptr; \n"
+              "    x = *foo->ptr;\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:4]: (error) Dereferencing 'ptr' after it is deallocated / released\n", errout.str());
 

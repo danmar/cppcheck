@@ -171,7 +171,7 @@ private:
               "  if (k > 32)\n"
               "    return 0;\n"
               "  return rm>> k;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:6]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 4.\n",
             errout.str());
@@ -183,7 +183,7 @@ private:
               "    return 0;\n"
               "  else\n"
               "    return rm>> k;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:7]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 4.\n",
             errout.str());
@@ -195,14 +195,14 @@ private:
               "    return 0;\n"
               "  else\n"
               "    return rm>> k;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("static long long f(int x, long long y) {\n"
               "    if (x >= 64)\n"
               "        return 0;\n"
               "    return -(y << (x-1));\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -258,7 +258,7 @@ private:
         check("unsigned int dostuff(int x) {\n" // x is signed
               "  if (x==0) {}\n"
               "  return (x-1)*sizeof(int);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Expression 'x-1' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
 
         check("unsigned int f1(signed int x, unsigned int y) {" // x is signed
@@ -360,27 +360,27 @@ private:
 
         check("void f(void) {\n"
               "  return (int)1E100;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
 
         check("void f(void) {\n"
               "  return (int)-1E100;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
 
         check("void f(void) {\n"
               "  return (short)1E6;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
 
         check("void f(void) {\n"
               "  return (unsigned char)256.0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
 
         check("void f(void) {\n"
               "  return (unsigned char)255.5;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", removeFloat(errout.str()));
 
         check("void f(void) {\n"

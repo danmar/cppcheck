@@ -1171,7 +1171,7 @@ void CmdLineParser::printHelp()
               "    --report-progress    Report progress messages while checking a file.\n"
 #ifdef HAVE_RULES
               "    --rule=<rule>        Match regular expression.\n"
-              "    --rule-file=<file>   Use given rule file. For more information, see: \n"
+              "    --rule-file=<file>   Use given rule file. For more information, see:\n"
               "                         http://sourceforge.net/projects/cppcheck/files/Articles/\n"
 #endif
               "    --std=<id>           Set standard.\n"

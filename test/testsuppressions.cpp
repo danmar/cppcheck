@@ -710,7 +710,7 @@ private:
                             "_asm\n"
                             "{\n"
                             "   // cppcheck-suppress syntaxError\n"
-                            "   push  EAX               ; save EAX for callers \n"
+                            "   push  EAX               ; save EAX for callers\n"
                             "   mov   EAX,Real10        ; get the address pointed to by Real10\n"
                             "   fld   TBYTE PTR [EAX]   ; load an extended real (10 bytes)\n"
                             "   fstp  QWORD PTR result  ; store a double (8 bytes)\n"

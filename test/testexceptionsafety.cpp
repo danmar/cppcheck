@@ -326,13 +326,13 @@ private:
               "void func3() noexcept(true) { throw 1; }\n"
               "void func4() noexcept(false) { throw 1; }\n"
               "void func5() noexcept(true) { func1(); }\n"
-              "void func6() noexcept(false) { func1(); }\n");
+              "void func6() noexcept(false) { func1(); }");
         ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in function declared not to throw exceptions.\n"
                       "[test.cpp:3]: (error) Exception thrown in function declared not to throw exceptions.\n"
                       "[test.cpp:5]: (error) Exception thrown in function declared not to throw exceptions.\n", errout.str());
 
         // avoid false positives
-        check("const char *func() noexcept { return 0; }\n");
+        check("const char *func() noexcept { return 0; }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -341,12 +341,12 @@ private:
               "void func2() throw() { throw 1; }\n"
               "void func3() throw(int) { throw 1; }\n"
               "void func4() throw() { func1(); }\n"
-              "void func5() throw(int) { func1(); }\n");
+              "void func5() throw(int) { func1(); }");
         ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in function declared not to throw exceptions.\n"
                       "[test.cpp:4]: (error) Exception thrown in function declared not to throw exceptions.\n", errout.str());
 
         // avoid false positives
-        check("const char *func() throw() { return 0; }\n");
+        check("const char *func() throw() { return 0; }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -377,12 +377,12 @@ private:
     void nothrowAttributeThrow() {
         check("void func1() throw(int) { throw 1; }\n"
               "void func2() __attribute((nothrow)); void func2() { throw 1; }\n"
-              "void func3() __attribute((nothrow)); void func3() { func1(); }\n");
+              "void func3() __attribute((nothrow)); void func3() { func1(); }");
         ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in function declared not to throw exceptions.\n"
                       "[test.cpp:3]: (error) Exception thrown in function declared not to throw exceptions.\n", errout.str());
 
         // avoid false positives
-        check("const char *func() __attribute((nothrow)); void func1() { return 0; }\n");
+        check("const char *func() __attribute((nothrow)); void func1() { return 0; }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -391,19 +391,19 @@ private:
               "  void copyMemberValues() throw () {\n"
               "      copyMemberValues();\n"
               "   }\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
     void nothrowDeclspecThrow() {
         check("void func1() throw(int) { throw 1; }\n"
               "void __declspec(nothrow) func2() { throw 1; }\n"
-              "void __declspec(nothrow) func3() { func1(); }\n");
+              "void __declspec(nothrow) func3() { func1(); }");
         ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in function declared not to throw exceptions.\n"
                       "[test.cpp:3]: (error) Exception thrown in function declared not to throw exceptions.\n", errout.str());
 
         // avoid false positives
-        check("const char *func() __attribute((nothrow)); void func1() { return 0; }\n");
+        check("const char *func() __attribute((nothrow)); void func1() { return 0; }");
         ASSERT_EQUALS("", errout.str());
     }
 };

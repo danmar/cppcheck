@@ -442,7 +442,7 @@ private:
         check("class Fred {\n"
               "    int x=1;\n"
               "    int *y=0;\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -455,7 +455,7 @@ private:
               "    {}\n"
               "private:\n"
               "    int x;\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
 
         check("class Fred : public Base<A, B> {"
@@ -466,7 +466,7 @@ private:
               "    {}\n"
               "private:\n"
               "    int x;\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -534,7 +534,7 @@ private:
     void noConstructor7() {
         // ticket #4391
         check("short bar;\n"
-              "class foo;\n");
+              "class foo;");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -542,7 +542,7 @@ private:
         // ticket #4404
         check("class LineSegment;\n"
               "class PointArray  { };\n"
-              "void* tech_ = NULL;\n");
+              "void* tech_ = NULL;");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -573,7 +573,7 @@ private:
               "    virtual ~A();\n"
               "private:\n"
               "    wxTimer *WxTimer1;\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -602,15 +602,15 @@ private:
     // ticket #3190 "SymbolDatabase: Parse of sub class constructor fails"
     void forwardDeclaration() {
         check("class foo;\n"
-              "int bar;\n");
+              "int bar;");
         ASSERT_EQUALS("", errout.str());
 
         check("class foo;\n"
-              "class foo;\n");
+              "class foo;");
         ASSERT_EQUALS("", errout.str());
 
         check("class foo{};\n"
-              "class foo;\n");
+              "class foo;");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1121,7 +1121,7 @@ private:
               "  int foo_;\n"
               "};\n"
               "Foo::Foo() : Foo(0) {}\n"
-              "Foo::Foo(int foo) : foo_(foo) {}\n");
+              "Foo::Foo(int foo) : foo_(foo) {}");
         ASSERT_EQUALS("", errout.str());
 
         // Noexcept ctors
@@ -2277,8 +2277,7 @@ private:
               "Fred::Fred(struct C c, D d) { }\n"
               "Fred::Fred(E e, struct F f) { }\n"
               "Fred::Fred(G g, H h) { }\n"
-              "Fred::Fred(struct I i, struct J j) { }\n"
-             );
+              "Fred::Fred(struct I i, struct J j) { }");
         ASSERT_EQUALS("[test.cpp:10]: (warning) Member variable 'Fred::x' is not initialized in the constructor.\n"
                       "[test.cpp:11]: (warning) Member variable 'Fred::x' is not initialized in the constructor.\n"
                       "[test.cpp:12]: (warning) Member variable 'Fred::x' is not initialized in the constructor.\n"
@@ -2323,35 +2322,35 @@ private:
               "    int c;\n"
               "    A(int x = 0, int y = 0, int z = 0);\n"
               "};\n"
-              "A::A(int x = 0, int y = 0, int z = 0) { } \n"
+              "A::A(int x = 0, int y = 0, int z = 0) { }\n"
               "struct B {\n"
               "    int a;\n"
               "    int b;\n"
               "    int c;\n"
               "    B(int x = 0, int y = 0, int z = 0);\n"
               "};\n"
-              "B::B(int x, int y, int z) { } \n"
+              "B::B(int x, int y, int z) { }\n"
               "struct C {\n"
               "    int a;\n"
               "    int b;\n"
               "    int c;\n"
               "    C(int, int, int);\n"
               "};\n"
-              "C::C(int x = 0, int y = 0, int z = 0) { } \n"
+              "C::C(int x = 0, int y = 0, int z = 0) { }\n"
               "struct D {\n"
               "    int a;\n"
               "    int b;\n"
               "    int c;\n"
               "    D(int, int, int);\n"
               "};\n"
-              "D::D(int x, int y, int z) { } \n"
+              "D::D(int x, int y, int z) { }\n"
               "struct E {\n"
               "    int a;\n"
               "    int b;\n"
               "    int c;\n"
               "    E(int x, int y, int z);\n"
               "};\n"
-              "E::E(int, int, int) { } \n"
+              "E::E(int, int, int) { }\n"
               "struct F {\n"
               "    int a;\n"
               "    int b;\n"
@@ -2470,7 +2469,7 @@ private:
               "}\n"
               "using namespace NS;\n"
               "MyClass::~MyClass() { }\n"
-              "MyClass::MyClass() : SomeVar(false) { }\n");
+              "MyClass::MyClass() : SomeVar(false) { }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2488,7 +2487,7 @@ private:
               "}\n"
               "void MyClass::Restart() {\n"
               "    m_retCode = 0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2501,7 +2500,7 @@ private:
               "   {\n"
               "      if (1) {}\n"
               "   }\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable 'Foo::member' is not initialized in the constructor.\n", errout.str());
         check("class Foo {\n"
               "   friend class Bar;\n"
@@ -2511,7 +2510,7 @@ private:
               "   {\n"
               "      while (1) {}\n"
               "   }\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable 'Foo::member' is not initialized in the constructor.\n", errout.str());
         check("class Foo {\n"
               "   friend class Bar;\n"
@@ -2521,7 +2520,7 @@ private:
               "   {\n"
               "      for (;;) {}\n"
               "   }\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable 'Foo::member' is not initialized in the constructor.\n", errout.str());
     }
 
@@ -3535,7 +3534,7 @@ private:
               "public:\n"
               "  C() _STLP_NOTHROW {}\n"
               "  C(const C&) _STLP_NOTHROW {}\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3890,7 +3889,7 @@ private:
               "class C {\n"
               "  private:\n"
               "    A* b;\n"
-              "};\n");
+              "};");
         ASSERT_EQUALS("", errout.str());
 
         check("template<class T> class A{};\n"
@@ -3902,7 +3901,7 @@ private:
               "    bool m_value;\n"
               "};\n"
               "template<class T1, class T2>\n"
-              "A<B<T1, T2>>::A() : m_value(false) {}\n");
+              "A<B<T1, T2>>::A() : m_value(false) {}");
         ASSERT_EQUALS("", errout.str());
     }
 
