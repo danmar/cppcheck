@@ -690,10 +690,7 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
                 data[pkg_name] = (datestr, split_line[2], split_line[1], time_factor)
             break
 
-    sorted_data = sorted(data.items(), key=lambda kv: kv[1][3])
-    if show_gt:
-        sorted_data.reverse()
-
+    sorted_data = sorted(data.items(), key=lambda kv: kv[1][3], reverse=show_gt)
     sorted_dict = collections.OrderedDict(sorted_data)
     for key in sorted_dict:
         html += fmt(key, sorted_dict[key][0], sorted_dict[key][1], sorted_dict[key][2], '{:.2f}'.format(sorted_dict[key][3]),
@@ -704,7 +701,7 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
     if show_gt:
         html += '&gt;2.00'
     else:
-        html += '&lt;0.50'
+        html += '&lt;=0.50'
     html += ')\n'
     html += '\n'
     if total_time_base > 0.0:
