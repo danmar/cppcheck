@@ -71,7 +71,7 @@ test_script:
   - python -m pytest test-inline-suppress.py
   - python -m pytest test-proj2.py
   - python -m pytest test-suppress-syntaxError.py
-  - 'IF defined cygwin_build C:\cygwin64\bin\bash -e -l -c "cd /cygdrive/c/projects/cppcheck && make clean && make -j 2 && make test && make checkcfg"'
+  - 'IF defined cygwin_build C:\cygwin64\bin\bash -e -l -c "cd /cygdrive/c/projects/cppcheck && make clean && make -j 2 test checkcfg"'
 
 artifacts:
   - path: bin
