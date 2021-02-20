@@ -29,7 +29,7 @@ jobs:
       - name: Install missing software on ubuntu (Python 3)
         if: matrix.python-version != '2.7'
         run: |
-          sudo apt-get install shellcheck
+          sudo apt-get install shellcheck libxml2-utils
           python -m pip install pip --upgrade
           python -m pip install natsort
           python -m pip install pexpect
@@ -56,6 +56,11 @@ jobs:
         if: matrix.python-version == '3.8'
         run: |
           find . -name '*.json' | xargs -n 1 python -m json.tool > /dev/null
+
+      - name: Validate
+        if: matrix.python-version == '3.8'
+        run: |
+          make -j$(nproc) validateCFG validatePlatforms validateRules
 
       - name: check python syntax
         if: matrix.python-version != '2.7'

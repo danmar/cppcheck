@@ -54,12 +54,8 @@ matrix:
         - make checkCWEEntries
 # check cfg files
         - make checkcfg
-# check platform files
-        - make validatePlatforms
 # Validate Result XML
         - make validateXML
-# Validate rule files
-        - make validateRules
 # check htmlreport stuff
         - python2 htmlreport/test_htmlreport.py
         - python3 htmlreport/test_htmlreport.py
