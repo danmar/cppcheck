@@ -72,7 +72,7 @@ private:
         TEST_CASE(assign10);
         TEST_CASE(assign11); // #3942: x = a(b(p));
         TEST_CASE(assign12); // #4236: FP. bar(&x);
-        // TODO TEST_CASE(assign13); // #4237: FP. char*&ref=p; p=malloc(10); free(ref);
+        TEST_CASE(assign13); // #4237: FP. char*&ref=p; p=malloc(10); free(ref);
         TEST_CASE(assign14);
         TEST_CASE(assign15);
         TEST_CASE(assign16);
@@ -95,7 +95,7 @@ private:
         TEST_CASE(deallocuse2);
         TEST_CASE(deallocuse3);
         TEST_CASE(deallocuse4);
-        // TODO TEST_CASE(deallocuse5); // #4018: FP. free(p), p = 0;
+        TEST_CASE(deallocuse5); // #4018: FP. free(p), p = 0;
         TEST_CASE(deallocuse6); // #4034: FP. x = p = f();
         TEST_CASE(deallocuse7); // #6467, #6469, #6473
         TEST_CASE(deallocuse8); // #1765
@@ -342,7 +342,7 @@ private:
               "    p = malloc(10);\n"
               "    free(ref);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("", "[test.c:6]: (error) Memory leak: p\n", errout.str());
     }
 
     void assign14() {

@@ -3058,7 +3058,7 @@ private:
                               "void A::DoSomething(void) {\n"
                               "    const std::string x = Bar();\n"  // <- warning
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:16]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:16]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvar50() { // #6261, #6542
