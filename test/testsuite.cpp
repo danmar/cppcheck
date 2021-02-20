@@ -143,18 +143,23 @@ bool TestFixture::assert_(const char * const filename, const unsigned int linenr
     return condition;
 }
 
+void TestFixture::assertEqualsFailed(const char* const filename, const unsigned int linenr, const std::string& expected, const std::string& actual, const std::string& msg) const
+{
+    ++fails_counter;
+    errmsg << getLocationStr(filename, linenr) << ": Assertion failed. " << std::endl
+        << "Expected: " << std::endl
+        << writestr(expected) << std::endl
+        << "Actual: " << std::endl
+        << writestr(actual) << std::endl;
+    if (!msg.empty())
+        errmsg << "Hint:" << std::endl << msg << std::endl;
+    errmsg << "_____" << std::endl;
+}
+
 bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
 {
     if (expected != actual) {
-        ++fails_counter;
-        errmsg << getLocationStr(filename, linenr) << ": Assertion failed. " << std::endl
-               << "Expected: " <<  std::endl
-               << writestr(expected)  << std::endl
-               << "Actual: " << std::endl
-               << writestr(actual) << std::endl;
-        if (!msg.empty())
-            errmsg << "Hint:" << std::endl <<  msg << std::endl;
-        errmsg << "_____" << std::endl;
+        assertEqualsFailed(filename, linenr, expected, actual, msg);
     }
     return expected == actual;
 }
