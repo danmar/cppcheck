@@ -3214,7 +3214,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void Foo1(const std::string& str) {}\n"
-              "void Foo2(char* c, const std::string str) {}\n"
+              "void Foo2(const char* c, const std::string str) {}\n"
               "void Foo3(std::string& rstr) {}\n"
               "void Foo4(std::string str, const std::string& str) {}\n"
               "void Bar() {\n"
@@ -3261,9 +3261,10 @@ private:
               "    Foo::sfunc(str.c_str());\n"
               "    foo.func(str.c_str());\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:9]: (performance) Passing the result of c_str() to a function that takes std::string as argument 1 is slow and redundant.\n"
-                           "[test.cpp:10]: (performance) Passing the result of c_str() to a function that takes std::string as argument 1 is slow and redundant.\n",
-                           "", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n"
+                      "[test.cpp:10]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n"
+                      "[test.cpp:11]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n",
+                      errout.str());
 
         check("void svgFile(const std::string &content, const std::string &fileName, const double end = 1000., const double start = 0.);\n"
               "void Bar(std::string filename) {\n"
