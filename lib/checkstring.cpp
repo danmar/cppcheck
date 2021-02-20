@@ -195,11 +195,18 @@ void CheckString::checkSuspiciousStringCompare()
                 }
             }
 
-            if (varTok->str() == "*") {
+            const Token* oldVarTok = varTok;
+            while (varTok->str() == "*") {
                 if (!mTokenizer->isC() || varTok->astOperand2() != nullptr || litTok->tokType() != Token::eString)
-                    continue;
+                    break;
                 varTok = varTok->astOperand1();
             }
+
+            if (mTokenizer->isC() && varTok->str() == "&")
+                varTok = varTok->astOperand1();
+
+            if (varTok->str() == "[")
+                varTok = varTok->astOperand1();
 
             while (varTok && (varTok->str() == "." || varTok->str() == "::"))
                 varTok = varTok->astOperand2();
@@ -208,16 +215,12 @@ void CheckString::checkSuspiciousStringCompare()
 
             const Variable *var = varTok->variable();
 
-            while (Token::Match(varTok->astParent(), "[.*]"))
-                varTok = varTok->astParent();
-            const std::string varname = varTok->expressionString();
-
             const bool ischar(litTok->tokType() == Token::eChar);
             if (litTok->tokType() == Token::eString) {
                 if (mTokenizer->isC() || (var && var->isArrayOrPointer()))
-                    suspiciousStringCompareError(tok, varname, litTok->isLong());
+                    suspiciousStringCompareError(tok, oldVarTok->expressionString(), litTok->isLong());
             } else if (ischar && var && var->isPointer()) {
-                suspiciousStringCompareError_char(tok, varname);
+                suspiciousStringCompareError_char(tok, oldVarTok->expressionString());
             }
         }
     }
