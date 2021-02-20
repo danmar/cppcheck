@@ -159,12 +159,3 @@ script:
 # Testing addons (disabled 2020-11-24 because Travis fails, TODO try to enable these)
 #  - PYTHONPATH=./addons python -m pytest addons/test/test-*.py
 #  - PYTHONPATH=./addons python3 -m pytest addons/test/test-*.py
-
-notifications:
-  irc:
-    channels:
-      - "irc.freenode.org#cppcheck"
-    template:
-      - "[%{commit} : %{author}] %{message}"
-      - "%{build_url}"
-    skip_join: true
