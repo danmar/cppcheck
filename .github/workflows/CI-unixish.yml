@@ -58,6 +58,10 @@ jobs:
           make -j$(nproc) CXXFLAGS=-funsigned-char testrunner
           ./testrunner TestSymbolDatabase
 
+      - name: Check syntax with NONNEG
+        run: |
+          ls lib/*.cpp | xargs -n 1 -P $(nproc) g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/picojson -Iexternals/simplecpp -Iexternals/tinyxml2 -DNONNEG
+
       - name: Build cppcheck
         run: |
           make clean
@@ -73,8 +77,8 @@ jobs:
 
       - name: Validate
         run: |
-          make -j$(nproc) validateCFG validatePlatforms
-          
+          make -j$(nproc) checkCWEEntries validateXML
+
       - name: Test addons
         run: |
           ./cppcheck --addon=threadsafety addons/test/threadsafety
