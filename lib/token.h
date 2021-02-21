@@ -887,16 +887,15 @@ public:
         }
     };
 
-    void stringify(std::string& os, const stringifyOptions& options) const;
+    std::string stringify(const stringifyOptions& options) const;
 
     /**
      * Stringify a token
-     * @param os The result is shifted into that output stream
      * @param varid Print varids. (Style: "varname\@id")
      * @param attributes Print attributes of tokens like "unsigned" in front of it.
      * @param macro Prints $ in front of the token if it was expanded from a macro.
      */
-    void stringify(std::string& os, bool varid, bool attributes, bool macro) const;
+    std::string stringify(bool varid, bool attributes, bool macro) const;
 
     std::string stringifyList(const stringifyOptions& options, const std::vector<std::string>* fileNames = nullptr, const Token* end = nullptr) const;
     std::string stringifyList(const Token* end, bool attributes = true) const;
