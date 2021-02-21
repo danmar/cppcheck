@@ -195,22 +195,6 @@ void CheckLeakAutoVar::check()
         VarInfo varInfo;
 
         checkScope(scope->bodyStart, &varInfo, notzero, 0);
-
-        varInfo.conditionalAlloc.clear();
-
-        // Clear reference arguments from varInfo..
-        std::map<int, VarInfo::AllocInfo>::iterator it = varInfo.alloctype.begin();
-        while (it != varInfo.alloctype.end()) {
-            const Variable *var = symbolDatabase->getVariableFromVarId(it->first);
-            if (!var ||
-                (var->isArgument() && var->isReference()) ||
-                (!var->isArgument() && !var->isLocal()))
-                varInfo.alloctype.erase(it++);
-            else
-                ++it;
-        }
-
-        ret(scope->bodyEnd, varInfo);
     }
 }
 
@@ -741,6 +725,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             changeAllocStatus(varInfo, allocation, vtok, vtok);
         }
     }
+    ret(endToken, *varInfo, true);
 }
 
 
@@ -973,15 +958,16 @@ void CheckLeakAutoVar::leakIfAllocated(const Token *vartok,
     }
 }
 
-void CheckLeakAutoVar::ret(const Token *tok, const VarInfo &varInfo)
+void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndOfScope)
 {
     const std::map<int, VarInfo::AllocInfo> &alloctype = varInfo.alloctype;
     const std::map<int, std::string> &possibleUsage = varInfo.possibleUsage;
+    std::vector<int> toRemove;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (std::map<int, VarInfo::AllocInfo>::const_iterator it = alloctype.begin(); it != alloctype.end(); ++it) {
-        // don't warn if variable is conditionally allocated
-        if (!it->second.managed() && varInfo.conditionalAlloc.find(it->first) != varInfo.conditionalAlloc.end())
+        // don't warn if variable is conditionally allocated, unless it leaves the scope
+        if (!isEndOfScope && !it->second.managed() && varInfo.conditionalAlloc.find(it->first) != varInfo.conditionalAlloc.end())
             continue;
 
         // don't warn if there is a reference of the variable
@@ -991,6 +977,9 @@ void CheckLeakAutoVar::ret(const Token *tok, const VarInfo &varInfo)
         const int varid = it->first;
         const Variable *var = symbolDatabase->getVariableFromVarId(varid);
         if (var) {
+            // don't warn if we leave an inner scope
+            if (isEndOfScope && var->scope() && tok != var->scope()->bodyEnd)
+                continue;
             bool used = false;
             for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
                 if (tok2->str() == ";")
@@ -1028,6 +1017,9 @@ void CheckLeakAutoVar::ret(const Token *tok, const VarInfo &varInfo)
                     configurationInfo(tok, use->second);
                 }
             }
+            toRemove.push_back(varid);
         }
     }
+    for (int varId : toRemove)
+        varInfo.erase(varId);
 }
