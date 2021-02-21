@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        image: ["centos:7", "ubuntu:14.04", "ubuntu:21.04"]
+        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:21.04"]
       fail-fast: false # Prefer quick result
 
     runs-on: ubuntu-20.04
@@ -30,7 +30,7 @@ jobs:
         if: matrix.image != 'centos:7'
         run: |
           apt-get update
-          apt-get install -y cmake g++ make
+          apt-get install -y cmake g++ make python libxml2-utils
           apt-get install -y libpcre3-dev
 
       # tests require CMake 3.4
@@ -64,6 +64,10 @@ jobs:
       - name: Run test
         run: |
           make -j$(nproc) check HAVE_RULES=yes
+
+      - name: Validate
+        run: |
+          make -j$(nproc) checkCWEEntries validateXML
 
       - name: Test addons
         run: |
