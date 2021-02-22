@@ -2360,6 +2360,9 @@ bool Tokenizer::simplifyUsing()
             if (tok1->str() == "enum")
                 skipEnumBody(&tok1);
 
+            if (!tok1)
+                break;
+
             // check for member function and adjust scope
             if (isMemberFunction(tok1)) {
                 if (!scope1.empty())
