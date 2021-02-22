@@ -19,11 +19,14 @@
 #include "statsdialog.h"
 
 #include <QPrinter>
+#include <QDate>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QTextDocument>
 #include <QWidget>
 #include <QClipboard>
+#include <QMimeData>
+
 #include "projectfile.h"
 #include "checkstatistics.h"
 #include "common.h"

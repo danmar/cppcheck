@@ -26,6 +26,9 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QFile>
+#include <QInputDialog>
+#include <QTimer>
+#include <QSettings>
 
 #include "cppcheck.h"
 
