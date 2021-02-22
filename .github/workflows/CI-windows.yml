@@ -34,7 +34,7 @@ jobs:
           curl -fsSL https://ftp.pcre.org/pub/pcre/pcre-%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip
           7z x pcre-%PCRE_VERSION%.zip
           cd pcre-%PCRE_VERSION%
-          cmake . -G "Visual Studio 16 2019"
+          cmake . -G "Visual Studio 16 2019" -DPCRE_BUILD_PCRECPP=Off -DPCRE_BUILD_TESTS=Off -DPCRE_BUILD_PCREGREP=Off
           msbuild -m PCRE.sln /p:Configuration=Release;Platform=${{ matrix.arch }
           dir
           dir Release
