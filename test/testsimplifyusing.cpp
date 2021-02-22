@@ -65,6 +65,8 @@ private:
         TEST_CASE(simplifyUsing16);
         TEST_CASE(simplifyUsing17);
         TEST_CASE(simplifyUsing18);
+        TEST_CASE(simplifyUsing19);
+        TEST_CASE(simplifyUsing20);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -461,6 +463,62 @@ private:
     void simplifyUsing18() {
         const char code[] = "{ { { using a = a; using a; } } }";
         tok(code, false); // don't crash
+    }
+
+    void simplifyUsing19() {
+        const char code[] = "namespace a {\n"
+                            "using b = int;\n"
+                            "void foo::c() { }\n"
+                            "void foo::d() { }\n"
+                            "void foo::e() {\n"
+                            "   using b = float;\n"
+                            "}\n"
+                            "}";
+        tok(code, false); // don't hang
+    }
+
+    void simplifyUsing20() {
+        const char code[] = "namespace a {\n"
+                            "namespace b {\n"
+                            "namespace c {\n"
+                            "namespace d {\n"
+                            "namespace e {\n"
+                            "namespace f {\n"
+                            "namespace g {\n"
+                            "using Changeset = ::IAdaptionCallback::Changeset;\n"
+                            "using EProperty = searches::EProperty;\n"
+                            "using ChangesetValueType = Changeset::value_type;\n"
+                            "namespace {\n"
+                            "   template <class T>\n"
+                            "   auto modify(std::shared_ptr<T>& p) -> boost::optional<decltype(p->modify())> {\n"
+                            "      return nullptr;\n"
+                            "   }\n"
+                            "   template <class T>\n"
+                            "   std::list<T> getValidElements() {\n"
+                            "      return nullptr;\n"
+                            "   }\n"
+                            "}\n"
+                            "std::shared_ptr<ResourceConfiguration>\n"
+                            "foo::getConfiguration() {\n"
+                            "   return nullptr;\n"
+                            "}\n"
+                            "void\n"
+                            "foo::doRegister(const Input & Input) {\n"
+                            "   UNUSED( Input );\n"
+                            "}\n"
+                            "foo::MicroServiceReturnValue\n"
+                            "foo::post(SearchesPtr element, const Changeset& changeset)\n"
+                            "{\n"
+                            "   using EProperty = ab::ep;\n"
+                            "   static std::map<EProperty, std::pair<ElementPropertyHandler, CheckComponentState>> updateHandlers =\n"
+                            "   {\n"
+                            "      {EProperty::Needle, {&RSISearchesResource::updateNeedle,         &RSISearchesResource::isSearcherReady}},\n"
+                            "      {EProperty::SortBy, {&RSISearchesResource::updateResultsSorting, &RSISearchesResource::isSearcherReady}}\n"
+                            "   };\n"
+                            "   return nullptr;\n"
+                            "}\n"
+                            "}}}}}}}";
+        tok(code, false); // don't hang
     }
 
     void simplifyUsing8970() {

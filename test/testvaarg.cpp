@@ -167,7 +167,7 @@ private:
               "        return va_arg(ap, const char*);\n"
               "    });\n"
               "    va_end(ap);\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int n, ...)\n"
@@ -179,7 +179,7 @@ private:
               "    {\n"
               "        return va_arg(ap, const char*);\n"
               "    });\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:10]: (error) va_list 'ap' was opened but not closed by va_end().\n", errout.str());
     }
 

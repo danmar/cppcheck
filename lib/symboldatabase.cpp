@@ -2678,10 +2678,12 @@ std::vector<const Token*> Function::findReturns(const Function* f)
 
 const Token * Function::constructorMemberInitialization() const
 {
-    if (!isConstructor() || !functionScope || !functionScope->bodyStart)
+    if (!isConstructor() || !arg)
         return nullptr;
-    if (Token::Match(token, "%name% (") && Token::simpleMatch(token->linkAt(1), ") :"))
-        return token->linkAt(1)->next();
+    if (Token::simpleMatch(arg->link(), ") :"))
+        return arg->link()->next();
+    if (Token::simpleMatch(arg->link(), ") noexcept (") && arg->link()->linkAt(2)->strAt(1) == ":")
+        return arg->link()->linkAt(2)->next();
     return nullptr;
 }
 
@@ -3056,7 +3058,9 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
                 }
             }
 
-            base.type = classScope->check->findType(base.nameTok, classScope);
+            const Type * baseType = classScope->check->findType(base.nameTok, enclosingScope);
+            if (baseType && !baseType->findDependency(this))
+                base.type = baseType;
 
             // save pattern for base class name
             derivedFrom.push_back(base);
@@ -3484,9 +3488,7 @@ void SymbolDatabase::printOut(const char *title) const
         if (scope->type == Scope::eEnum) {
             std::cout << "    enumType: ";
             if (scope->enumType) {
-                std::string s;
-                scope->enumType->stringify(s, false, true, false);
-                std::cout << s;
+                std::cout << scope->enumType->stringify(false, true, false);
             } else
                 std::cout << "int";
             std::cout << std::endl;

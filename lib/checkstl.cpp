@@ -1804,21 +1804,15 @@ void CheckStl::string_c_str()
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Find all functions that take std::string as argument
-    std::multimap<std::string, int> c_strFuncParam;
+    std::multimap<const Function*, int> c_strFuncParam;
     if (printPerformance) {
         for (const Scope &scope : symbolDatabase->scopeList) {
             for (const Function &func : scope.functionList) {
-                if (c_strFuncParam.erase(func.tokenDef->str()) != 0) { // Check if function with this name was already found
-                    c_strFuncParam.insert(std::make_pair(func.tokenDef->str(), 0)); // Disable, because there are overloads. TODO: Handle overloads
-                    continue;
-                }
-
                 int numpar = 0;
-                c_strFuncParam.insert(std::make_pair(func.tokenDef->str(), numpar)); // Insert function as dummy, to indicate that there is at least one function with that name
                 for (const Variable &var : func.argumentList) {
                     numpar++;
                     if (var.isStlStringType() && (!var.isReference() || var.isConst()))
-                        c_strFuncParam.insert(std::make_pair(func.tokenDef->str(), numpar));
+                        c_strFuncParam.insert(std::make_pair(&func, numpar));
                 }
             }
         }
@@ -1842,21 +1836,23 @@ void CheckStl::string_c_str()
             if (Token::Match(tok, "throw %var% . c_str|data ( ) ;") && isLocal(tok->next()) &&
                 tok->next()->variable() && tok->next()->variable()->isStlStringType()) {
                 string_c_strThrowError(tok);
-            } else if (Token::Match(tok, "[;{}] %name% = %var% . str ( ) . c_str|data ( ) ;")) {
-                const Variable* var = tok->next()->variable();
-                const Variable* var2 = tok->tokAt(3)->variable();
-                if (var && var->isPointer() && var2 && var2->isStlType(stl_string_stream))
-                    string_c_strError(tok);
-            } else if (Token::Match(tok, "[;{}] %var% = %name% (") &&
-                       Token::Match(tok->linkAt(4), ") . c_str|data ( ) ;") &&
-                       tok->tokAt(3)->function() && Token::Match(tok->tokAt(3)->function()->retDef, "std :: string|wstring %name%")) {
-                const Variable* var = tok->next()->variable();
-                if (var && var->isPointer())
-                    string_c_strError(tok);
-            } else if (printPerformance && Token::Match(tok, "%name% ( !!)") && c_strFuncParam.find(tok->str()) != c_strFuncParam.end() &&
-                       !Token::Match(tok->previous(), "::|.") && tok->varId() == 0 && tok->str() != scope.className) { // calling function. TODO: Add support for member functions
-                const std::pair<std::multimap<std::string, int>::const_iterator, std::multimap<std::string, int>::const_iterator> range = c_strFuncParam.equal_range(tok->str());
-                for (std::multimap<std::string, int>::const_iterator i = range.first; i != range.second; ++i) {
+            } else if (tok->variable() && tok->strAt(1) == "=") {
+                if (Token::Match(tok->tokAt(2), "%var% . str ( ) . c_str|data ( ) ;")) {
+                    const Variable* var = tok->variable();
+                    const Variable* var2 = tok->tokAt(2)->variable();
+                    if (var->isPointer() && var2 && var2->isStlType(stl_string_stream))
+                        string_c_strError(tok);
+                } else if (Token::Match(tok->tokAt(2), "%name% (") &&
+                           Token::Match(tok->linkAt(3), ") . c_str|data ( ) ;") &&
+                           tok->tokAt(2)->function() && Token::Match(tok->tokAt(2)->function()->retDef, "std :: string|wstring %name%")) {
+                    const Variable* var = tok->variable();
+                    if (var->isPointer())
+                        string_c_strError(tok);
+                }
+            } else if (printPerformance && tok->function() && Token::Match(tok, "%name% ( !!)") && c_strFuncParam.find(tok->function()) != c_strFuncParam.end() &&
+                       tok->str() != scope.className) {
+                const std::pair<std::multimap<const Function*, int>::const_iterator, std::multimap<const Function*, int>::const_iterator> range = c_strFuncParam.equal_range(tok->function());
+                for (std::multimap<const Function*, int>::const_iterator i = range.first; i != range.second; ++i) {
                     if (i->second == 0)
                         continue;
 
@@ -1889,7 +1885,7 @@ void CheckStl::string_c_str()
             }
 
             // Using c_str() to get the return value is only dangerous if the function returns a char*
-            if ((returnType == charPtr || (printPerformance && (returnType == stdString || returnType == stdStringConstRef))) && tok->str() == "return") {
+            else if ((returnType == charPtr || (printPerformance && (returnType == stdString || returnType == stdStringConstRef))) && tok->str() == "return") {
                 bool err = false;
 
                 const Token* tok2 = tok->next();

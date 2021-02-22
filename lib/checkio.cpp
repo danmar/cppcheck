@@ -1938,9 +1938,7 @@ void CheckIO::argumentType(std::ostream& os, const ArgumentInfo * argInfo)
                     os << type->str() << "::";
                     type = type->tokAt(2);
                 }
-                std::string s;
-                type->stringify(s, false, true, false);
-                os << s;
+                os << type->stringify(false, true, false);
                 if (type->strAt(1) == "*" && !argInfo->element)
                     os << " *";
                 else if (argInfo->variableInfo && !argInfo->element && argInfo->variableInfo->isArray())
@@ -1957,10 +1955,7 @@ void CheckIO::argumentType(std::ostream& os, const ArgumentInfo * argInfo)
                 os << type->originalName();
                 if (type->strAt(1) == "*" || argInfo->address)
                     os << " *";
-                os << " {aka ";
-                std::string s;
-                type->stringify(s, false, true, false);
-                os << s;
+                os << " {aka " << type->stringify(false, true, false);
                 if (type->strAt(1) == "*" || argInfo->address)
                     os << " *";
                 os << "}";

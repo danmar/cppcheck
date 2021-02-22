@@ -48,7 +48,7 @@ jobs:
         run: |
           mkdir cmake.output
           cd cmake.output
-          cmake -G "Unix Makefiles" -DBUILD_TESTS=On ..
+          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On ..
           make -j$(nproc) check
           cd ..
 
@@ -57,6 +57,10 @@ jobs:
           make clean
           make -j$(nproc) CXXFLAGS=-funsigned-char testrunner
           ./testrunner TestSymbolDatabase
+
+      - name: Check syntax with NONNEG
+        run: |
+          ls lib/*.cpp | xargs -n 1 -P $(nproc) g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/picojson -Iexternals/simplecpp -Iexternals/tinyxml2 -DNONNEG
 
       - name: Build cppcheck
         run: |
@@ -73,8 +77,8 @@ jobs:
 
       - name: Validate
         run: |
-          make -j$(nproc) validateCFG validatePlatforms
-          
+          make -j$(nproc) checkCWEEntries validateXML
+
       - name: Test addons
         run: |
           ./cppcheck --addon=threadsafety addons/test/threadsafety

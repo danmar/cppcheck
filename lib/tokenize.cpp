@@ -559,6 +559,9 @@ Token *Tokenizer::processFunc(Token *tok2, bool inOperator) const
 
 void Tokenizer::simplifyUsingToTypedef()
 {
+    if (!isCPP() || mSettings->standards.cpp < Standards::CPP11)
+        return;
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // using a::b;  =>   typedef  a::b  b;
         if ((Token::Match(tok, "[;{}] using %name% :: %name% ::|;") && !tok->tokAt(2)->isKeyword()) ||
@@ -1755,6 +1758,8 @@ namespace {
             fullName = name;
             ScopeInfo3 *scope = parent;
             while (scope && scope->parent) {
+                if (scope->name.empty())
+                    break;
                 fullName = scope->name + " :: " + fullName;
                 scope = scope->parent;
             }
@@ -1770,14 +1775,14 @@ namespace {
         std::set<std::string> recordTypes;
         std::set<std::string> baseTypes;
 
-        ScopeInfo3 *addChild(Type type, const std::string &name, const Token *bodyStart, const Token *bodyEnd) {
-            children.emplace_back(this, type, name, bodyStart, bodyEnd);
+        ScopeInfo3 *addChild(Type scopeType, const std::string &scopeName, const Token *bodyStartToken, const Token *bodyEndToken) {
+            children.emplace_back(this, scopeType, scopeName, bodyStartToken, bodyEndToken);
             return &children.back();
         }
 
-        bool hasChild(const std::string &name) const {
+        bool hasChild(const std::string &childName) const {
             for (const auto & child : children) {
-                if (child.name == name)
+                if (child.name == childName)
                     return true;
             }
             return false;
@@ -1824,23 +1829,38 @@ namespace {
             return nullptr;
         }
 
+        const ScopeInfo3 * findInChildren(const std::string & scope) const {
+            for (const auto & child : children) {
+                if (child.type == Record && (child.name == scope || child.fullName == scope))
+                    return &child;
+                else {
+                    const ScopeInfo3 * temp = child.findInChildren(scope);
+                    if (temp)
+                        return temp;
+                }
+            }
+            return nullptr;
+        }
+
         const ScopeInfo3 * findScope(const std::string & scope) const {
             const ScopeInfo3 * tempScope = this;
             while (tempScope) {
+                // check children
                 for (const auto & child : tempScope->children) {
-                    if (child.type == Record && (child.name == scope || child.fullName == scope))
+                    if (&child != this && child.type == Record && (child.name == scope || child.fullName == scope))
                         return &child;
                 }
+                // check siblings for same name
+                if (tempScope->parent) {
+                    for (const auto &sibling : tempScope->parent->children) {
+                        if (sibling.name == tempScope->name && &sibling != this) {
+                            const ScopeInfo3 * temp = sibling.findInChildren(scope);
+                            if (temp)
+                                return temp;
+                        }
+                    }
+                }
                 tempScope = tempScope->parent;
-            }
-            // check for another scope with same name
-            const ScopeInfo3 * global = this;
-            while (global->parent)
-                global = global->parent;
-            for (const ScopeInfo3 & tempChild : global->children) {
-                const ScopeInfo3 * temp = tempChild.findScopeRecursive(scope);
-                if (temp)
-                    return temp;
             }
             return nullptr;
         }
@@ -2163,6 +2183,9 @@ static bool scopesMatch(const std::string &scope1, const std::string &scope2, co
 
 bool Tokenizer::simplifyUsing()
 {
+    if (!isCPP() || mSettings->standards.cpp < Standards::CPP11)
+        return false;
+
     bool substitute = false;
     ScopeInfo3 scopeInfo;
     ScopeInfo3 *currentScope = &scopeInfo;
@@ -2308,7 +2331,7 @@ bool Tokenizer::simplifyUsing()
         const ScopeInfo3 * memberFuncScope = nullptr;
         const Token * memberFuncEnd = nullptr;
         bool skip = false; // don't erase type aliases we can't parse
-        for (Token* tok1 = startToken; tok1 && tok1 != endToken; tok1 = tok1->next()) {
+        for (Token* tok1 = startToken; !skip && tok1 && tok1 != endToken; tok1 = tok1->next()) {
             if ((Token::Match(tok1, "{|}|namespace|class|struct|union") && tok1->strAt(-1) != "using") ||
                 Token::Match(tok1, "using namespace %name% ;|::")) {
                 setScopeInfo(tok1, &currentScope1);

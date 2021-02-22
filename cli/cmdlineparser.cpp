@@ -257,7 +257,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--cppcheck-build-dir=", 21) == 0) {
                 mSettings->buildDir = Path::fromNativeSeparators(argv[i] + 21);
                 if (endsWith(mSettings->buildDir, '/'))
-                    mSettings->buildDir.erase(mSettings->buildDir.size() - 1U);
+                    mSettings->buildDir.pop_back();
             }
 
             // Show --debug output after the first simplifications
@@ -1171,7 +1171,7 @@ void CmdLineParser::printHelp()
               "    --report-progress    Report progress messages while checking a file.\n"
 #ifdef HAVE_RULES
               "    --rule=<rule>        Match regular expression.\n"
-              "    --rule-file=<file>   Use given rule file. For more information, see: \n"
+              "    --rule-file=<file>   Use given rule file. For more information, see:\n"
               "                         http://sourceforge.net/projects/cppcheck/files/Articles/\n"
 #endif
               "    --std=<id>           Set standard.\n"

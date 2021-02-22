@@ -1744,7 +1744,18 @@ namespace simplecpp {
                     defToken = lastToken = tok2;
                 }
                 if (defToken) {
-                    const bool def = (macros.find(defToken->str()) != macros.end());
+                    std::string macroName = defToken->str();
+                    if (defToken->next && defToken->next->op == '#' && defToken->next->next && defToken->next->next->op == '#' && defToken->next->next->next && defToken->next->next->next->name && sameline(defToken,defToken->next->next->next)) {
+                        TokenList temp(files);
+                        if (expandArg(&temp, defToken, parametertokens))
+                            macroName = temp.cback()->str();
+                        if (expandArg(&temp, defToken->next->next->next, parametertokens))
+                            macroName += temp.cback()->str();
+                        else
+                            macroName += defToken->next->next->next->str();
+                        lastToken = defToken->next->next->next;
+                    }
+                    const bool def = (macros.find(macroName) != macros.end());
                     output->push_back(newMacroToken(def ? "1" : "0", loc, true));
                     return lastToken->next;
                 }
@@ -1880,7 +1891,6 @@ namespace simplecpp {
             }
 
             const Token *nextTok = B->next;
-
             if (varargs && tokensB.empty() && tok->previous->str() == ",")
                 output->deleteToken(A);
             else if (strAB != "," && macros.find(strAB) == macros.end()) {
@@ -1888,6 +1898,12 @@ namespace simplecpp {
                 for (Token *b = tokensB.front(); b; b = b->next)
                     b->location = loc;
                 output->takeTokens(tokensB);
+            } else if (nextTok->op == '#' && nextTok->next->op == '#') {
+                TokenList output2(files);
+                output2.push_back(new Token(strAB, tok->location));
+                nextTok = expandHashHash(&output2, loc, nextTok, macros, expandedmacros, parametertokens);
+                output->deleteToken(A);
+                output->takeTokens(output2);
             } else {
                 output->deleteToken(A);
                 TokenList tokens(files);

@@ -8,44 +8,77 @@ jobs:
   build:
 
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: [2.7, 3.5, 3.6, 3.7, 3.8]
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install missing software on ubuntu
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install missing software on ubuntu (Python 2)
+        if: matrix.python-version == '2.7'
         run: |
-          sudo apt-get update
-          sudo apt-get install shellcheck
-          sudo apt-get install python3-setuptools
-          sudo pip3 install natsort
-          sudo pip3 install pexpect
-          sudo pip3 install pylint
-          sudo pip3 install unittest2
-          sudo pip install pytest
-          sudo pip3 install pytest
-          
+          python -m pip install pip --upgrade
+          python -m pip install pytest
+
+      - name: Install missing software on ubuntu (Python 3)
+        if: matrix.python-version != '2.7'
+        run: |
+          sudo apt-get install shellcheck libxml2-utils
+          python -m pip install pip --upgrade
+          python -m pip install natsort
+          python -m pip install pexpect
+          python -m pip install pylint
+          python -m pip install unittest2
+          python -m pip install pytest
+          python -m pip install pygments
+          python -m pip install requests
+
       - name: run Shellcheck
+        if: matrix.python-version == '3.8'
         run: |
           find . -name "*.sh" | xargs shellcheck --exclude SC2002,SC2013,SC2034,SC2035,SC2043,SC2046,SC2086,SC2089,SC2090,SC2129,SC2211,SC2231
 
       - name: run pylint
+        if: matrix.python-version == '3.8'
         run: |
+          pylint --rcfile=pylintrc_travis addons/*.py
           pylint --rcfile=pylintrc_travis htmlreport/cppcheck-htmlreport
           pylint --rcfile=pylintrc_travis htmlreport/*.py
           pylint --rcfile=pylintrc_travis tools/*.py
-          
+
+      - name: check .json files
+        if: matrix.python-version == '3.8'
+        run: |
+          find . -name '*.json' | xargs -n 1 python -m json.tool > /dev/null
+
+      - name: Validate
+        if: matrix.python-version == '3.8'
+        run: |
+          make -j$(nproc) validateCFG validatePlatforms validateRules
+
+      - name: check python syntax
+        if: matrix.python-version != '2.7'
+        run: |
+          python -m py_compile ./tools/donate-cpu.py
+          python -m py_compile ./tools/donate-cpu-server.py
+
       - name: compile addons
         run: |
           python -m compileall ./addons
-          python3 -m compileall ./addons
-
-      - name: check .json files
-        run: |
-          find . -name '*.json' | xargs -n 1 python3 -m json.tool > /dev/null
 
       - name: test addons
         run: |
-          make -s
+          make -j$(nproc) -s
           PYTHONPATH=./addons python -m pytest addons/test/test-*.py
-          PYTHONPATH=./addons python3 -m pytest addons/test/test-*.py
 
+      - name: dmake
+        if: matrix.python-version == '3.8'
+        run: |
+          make -j$(nproc) run-dmake
+          git diff --exit-code

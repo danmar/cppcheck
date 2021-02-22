@@ -19,11 +19,12 @@ jobs:
           sudo apt-get install libz3-dev libz3-4
           sudo apt-get install lcov
           sudo apt-get install libcppunit-dev
-          pip install lcov_cobertura
+          python -m pip install pip --upgrade
+          python -m pip install lcov_cobertura
 
       - name: Compile instrumented
         run: |
-          make test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" USE_Z3=yes HAVE_RULES=yes -j$(nproc)
+          make -j$(nproc) test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" USE_Z3=yes HAVE_RULES=yes
           
       - name: Generate coverage report
         run: |
