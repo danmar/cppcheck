@@ -30,17 +30,17 @@ jobs:
 
       - name: Install PCRE
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }
-          curl -fsSL https://ftp.pcre.org/pub/pcre/pcre-%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip
-          7z x pcre-%PCRE_VERSION%.zip
-          cd pcre-%PCRE_VERSION%
-          cmake . -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DPCRE_BUILD_PCRECPP=Off -DPCRE_BUILD_TESTS=Off -DPCRE_BUILD_PCREGREP=Off
-          nmake
-          copy pcre.h ..\externals
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
+          curl -fsSL https://ftp.pcre.org/pub/pcre/pcre-%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
+          7z x pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
+          cd pcre-%PCRE_VERSION% || exit /b !errorlevel!
+          cmake . -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DPCRE_BUILD_PCRECPP=Off -DPCRE_BUILD_TESTS=Off -DPCRE_BUILD_PCREGREP=Off || exit /b !errorlevel!
+          nmake || exit /b !errorlevel!
+          copy pcre.h ..\externals || exit /b !errorlevel!
           if "${{ matrix.arch }}" == "x86" (
-            copy pcre.lib ..\externals\pcre.lib
+            copy pcre.lib ..\externals\pcre.lib || exit /b !errorlevel!
           ) else (
-            copy pcre.lib ..\externals\pcre64.lib
+            copy pcre.lib ..\externals\pcre64.lib || exit /b !errorlevel!
           )
         env:
           # see https://www.pcre.org/original/changelog.txt
@@ -48,9 +48,9 @@ jobs:
 
       - name: Install Z3 library
         run: |
-          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -o z3-%Z3_VERSION%-win.zip
-          7z x z3-%Z3_VERSION%-win.zip -oexternals -r -y
-          move externals\z3-%Z3_VERSION%-${{ matrix.arch }}-win externals\z3
+          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -o z3-%Z3_VERSION%-win.zip || exit /b !errorlevel!
+          7z x z3-%Z3_VERSION%-win.zip -oexternals -r -y || exit /b !errorlevel!
+          move externals\z3-%Z3_VERSION%-${{ matrix.arch }}-win externals\z3 || exit /b !errorlevel!
         env:
           # see https://github.com/Z3Prover/z3/releases:  
           Z3_VERSION: 4.8.10
@@ -65,41 +65,41 @@ jobs:
       - name: Build GUI release
         if: matrix.os == 'x64'
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }
-          cd gui
-          qmake HAVE_QCHART=yes
-          nmake release
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
+          cd gui || exit /b !errorlevel!
+          qmake HAVE_QCHART=yes || exit /b !errorlevel!
+          nmake release || exit /b !errorlevel!
       
       - name: Deploy GUI
         if: matrix.os == 'x64'
         run: |
-          windeployqt Build\gui
-          del Build\gui\cppcheck-gui.ilk
-          del Build\gui\cppcheck-gui.pdb
+          windeployqt Build\gui || exit /b !errorlevel!
+          del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
+          del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
           
       - name: Build CLI debug configuration using MSBuild
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }}
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           set ARCH=${{ matrix.arch }}
           if "${{ matrix.arch }}" == "x86" (
             set ARCH=Win32
           )
-          msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE;Platform=%ARCH% -maxcpucount
+          msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
 
       - name: Run Debug test
-        run: .\bin\debug\testrunner.exe
+        run: .\bin\debug\testrunner.exe || exit /b !errorlevel!
 
       - name: Build CLI release configuration using MSBuild
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }}
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           set ARCH=${{ matrix.arch }}
           if "${{ matrix.arch }}" == "x86" (
             set ARCH=Win32
           )
-          msbuild -m cppcheck.sln /p:Configuration=Release-PCRE;Platform=%ARCH% -maxcpucount
+          msbuild -m cppcheck.sln /p:Configuration=Release-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
 
       - name: Run Release test
-        run: .\bin\testrunner.exe
+        run: .\bin\testrunner.exe || exit /b !errorlevel!
  
       - uses: actions/upload-artifact@v2
         if: matrix.os == 'x64'
