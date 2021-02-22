@@ -67,6 +67,7 @@ private:
         TEST_CASE(simplifyUsing18);
         TEST_CASE(simplifyUsing19);
         TEST_CASE(simplifyUsing20);
+        TEST_CASE(simplifyUsing21);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -519,6 +520,12 @@ private:
                             "}\n"
                             "}}}}}}}";
         tok(code, false); // don't hang
+    }
+
+    void simplifyUsing21() {
+        const char code[] = "using a = b;\n"
+                            "enum {}";
+        tok(code, false); // don't crash
     }
 
     void simplifyUsing8970() {

@@ -2505,6 +2505,10 @@ bool Tokenizer::simplifyUsing()
                 } while (type && type->str() == "[");
             }
 
+            // make sure we are in a good state
+            if (!tok1 || !tok1->next())
+                break; // bail
+
             Token* after = tok1->next();
             // check if type was parsed
             if (type && type == usingEnd) {
