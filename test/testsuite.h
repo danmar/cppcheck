@@ -42,8 +42,6 @@ private:
     std::string mTemplateLocation;
     std::string mTestname;
 
-    static std::string writestr(const std::string& str, bool gccStyle = false);
-
 protected:
     std::string testToRun;
     bool quiet_tests;
