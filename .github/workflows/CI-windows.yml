@@ -26,7 +26,7 @@ jobs:
 
       - name: Setup msbuild.exe
         uses: microsoft/setup-msbuild@v1.0.2
-                  
+
       - name: Install PCRE
         run: |
           curl -fsSL https://ftp.pcre.org/pub/pcre/pcre-%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip
@@ -58,7 +58,7 @@ jobs:
         with:
           modules: 'qtcharts'
 
-      - name: Build GUI x64 release
+      - name: Build GUI release
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" 
           cd gui
@@ -71,14 +71,14 @@ jobs:
           del Build\gui\cppcheck-gui.ilk
           del Build\gui\cppcheck-gui.pdb
           
-      - name: Build CLI x64 debug configuration using MSBuild
-        run: msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE /p:Platform=x64
+      - name: Build CLI debug configuration using MSBuild
+        run: msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE;Platform=x64 -maxcpucount
 
       - name: Run Debug test
         run: .\bin\debug\testrunner.exe
 
-      - name: Build x64 release configuration using MSBuild
-        run: msbuild -m cppcheck.sln /p:Configuration=Release-PCRE /p:Platform=x64
+      - name: Build CLI release configuration using MSBuild
+        run: msbuild -m cppcheck.sln /p:Configuration=Release-PCRE;Platform=x64 -maxcpucount
 
       - name: Run Release test
         run: .\bin\testrunner.exe
