@@ -68,6 +68,7 @@ private:
         TEST_CASE(simplifyUsing19);
         TEST_CASE(simplifyUsing20);
         TEST_CASE(simplifyUsing21);
+        TEST_CASE(simplifyUsing22);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -526,6 +527,31 @@ private:
         const char code[] = "using a = b;\n"
                             "enum {}";
         tok(code, false); // don't crash
+    }
+
+    void simplifyUsing22() {
+        const char code[] = "namespace aa { namespace bb { namespace cc { namespace dd { namespace ee {\n"
+                            "class fff {\n"
+                            "public:\n"
+                            "    using icmsp   = std::shared_ptr<aa::bb::ee::cm::api::icm>;\n"
+                            "private:\n"
+                            "    using Connection = boost::signals2::connection;\n"
+                            "    using ESdk = sdk::common::api::Sdk::ESdk;\n"
+                            "    using co = aa::bb::ee::com::api::com2;\n"
+                            "};\n"
+                            "fff::fff() : m_icm(icm) {\n"
+                            "    using ESdk = aa::bb::sdk::common::api::Sdk::ESdk;\n"
+                            "}\n"
+                            "}}}}}";
+        const char expected[] = "namespace aa { namespace bb { namespace cc { namespace dd { namespace ee { "
+                                "class fff { "
+                                "public: "
+                                "private: "
+                                "} ; "
+                                "fff :: fff ( ) : m_icm ( icm ) { "
+                                "} "
+                                "} } } } }";
+        ASSERT_EQUALS(expected, tok(code, false)); // don't hang
     }
 
     void simplifyUsing8970() {

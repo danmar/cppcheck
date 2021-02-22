@@ -1928,10 +1928,14 @@ namespace {
                             tok1 = tok1->previous();
                         if (tok1->strAt(-1) != ")")
                             return;
-                    } else if (Token::Match(tok->tokAt(-2), ":|, %name%")) {
-                        tok1 = tok1->tokAt(-2);
-                        if (tok1->strAt(-1) != ")")
-                            return;
+                        tok1 = tok1->linkAt(-1);
+                    } else {
+                        while (Token::Match(tok1->tokAt(-2), ":|, %name%")) {
+                            tok1 = tok1->tokAt(-2);
+                            if (tok1->strAt(-1) != ")")
+                                return;
+                            tok1 = tok1->linkAt(-1);
+                        }
                     }
                     if (tok1->strAt(-1) == ">")
                         tok1 = tok1->previous()->findOpeningBracket();
