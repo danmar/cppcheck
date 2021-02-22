@@ -371,48 +371,55 @@ static bool isZero(T x)
     return isEqual<T>(x, T(0));
 }
 
+template <class R, class T>
+static R calculate(const std::string& s, T x, T y)
+{
+    auto wrap = [](T z) { return R{z}; };
+    switch (MathLib::encodeMultiChar(s)) {
+    case '+':
+        return wrap(x + y);
+    case '-':
+        return wrap(x - y);
+    case '*':
+        return wrap(x * y);
+    case '/':
+        return isZero(y) ? R{} : wrap(x / y);
+    case '%':
+        return isZero(y) ? R{} : wrap(MathLib::bigint(x) % MathLib::bigint(y));
+    case '&':
+        return wrap(MathLib::bigint(x) & MathLib::bigint(y));
+    case '|':
+        return wrap(MathLib::bigint(x) | MathLib::bigint(y));
+    case '^':
+        return wrap(MathLib::bigint(x) ^ MathLib::bigint(y));
+    case '>':
+        return wrap(x > y);
+    case '<':
+        return wrap(x < y);
+    case '<<':
+        return (y >= sizeof(MathLib::bigint) * 8) ? R{} : wrap(MathLib::bigint(x) << MathLib::bigint(y));
+    case '>>':
+        return (y >= sizeof(MathLib::bigint) * 8) ? R{} : wrap(MathLib::bigint(x) >> MathLib::bigint(y));
+    case '&&':
+        return wrap(!isZero(x) && !isZero(y));
+    case '||':
+        return wrap(!isZero(x) || !isZero(y));
+    case '==':
+        return wrap(isEqual(x, y));
+    case '!=':
+        return wrap(!isEqual(x, y));
+    case '>=':
+        return wrap(x >= y);
+    case '<=':
+        return wrap(x <= y);
+    }
+    throw InternalError(nullptr, "Unknown operator: " + s);
+}
+
 template <class T>
 static T calculate(const std::string& s, T x, T y)
 {
-    switch (MathLib::encodeMultiChar(s)) {
-    case '+':
-        return x + y;
-    case '-':
-        return x - y;
-    case '*':
-        return x * y;
-    case '/':
-        return x / y;
-    case '%':
-        return MathLib::bigint(x) % MathLib::bigint(y);
-    case '&':
-        return MathLib::bigint(x) & MathLib::bigint(y);
-    case '|':
-        return MathLib::bigint(x) | MathLib::bigint(y);
-    case '^':
-        return MathLib::bigint(x) ^ MathLib::bigint(y);
-    case '>':
-        return x > y;
-    case '<':
-        return x < y;
-    case '<<':
-        return MathLib::bigint(x) << MathLib::bigint(y);
-    case '>>':
-        return MathLib::bigint(x) >> MathLib::bigint(y);
-    case '&&':
-        return !isZero(x) && !isZero(y);
-    case '||':
-        return !isZero(x) || !isZero(y);
-    case '==':
-        return isEqual(x, y);
-    case '!=':
-        return !isEqual(x, y);
-    case '>=':
-        return x >= y;
-    case '<=':
-        return x <= y;
-    }
-    throw InternalError(nullptr, "Unknown operator: " + s);
+    return calculate<T, T>(s, x, y);
 }
 
 /** Set token value for cast */
@@ -1446,8 +1453,8 @@ static std::vector<MathLib::bigint> minUnsignedValue(const Token* tok, int depth
     } else if (tok->isConstOp() && tok->astOperand1() && tok->astOperand2()) {
         std::vector<MathLib::bigint> op1 = minUnsignedValue(tok->astOperand1(), depth - 1);
         std::vector<MathLib::bigint> op2 = minUnsignedValue(tok->astOperand2(), depth - 1);
-        if (!op1.empty() && !op2.empty() && (!Token::Match(tok, "/|%") || op2.front() != 0)) {
-            result = {calculate(tok->str(), op1.front(), op2.front())};
+        if (!op1.empty() && !op2.empty()) {
+            result = calculate<std::vector<MathLib::bigint>>(tok->str(), op1.front(), op2.front());
         }
     }
     if (result.empty() && astIsUnsigned(tok))
