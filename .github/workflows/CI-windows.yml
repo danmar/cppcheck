@@ -17,6 +17,7 @@ jobs:
       matrix:
         # windows 2016 should default to VS 2017. Not supported by setup-msbuild
         os: [windows-2019]
+        arch: [x64]
       fail-fast: true
 
     runs-on: ${{ matrix.os }}
@@ -29,11 +30,12 @@ jobs:
 
       - name: Install PCRE
         run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }
           curl -fsSL https://ftp.pcre.org/pub/pcre/pcre-%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip
           7z x pcre-%PCRE_VERSION%.zip
           cd pcre-%PCRE_VERSION%
-          cmake . -G "Visual Studio 16 2019" -A x64
-          msbuild -m PCRE.sln /p:Configuration=Release /p:Platform=x64
+          cmake . -G "Visual Studio 16 2019"
+          msbuild -m PCRE.sln /p:Configuration=Release;Platform=${{ matrix.arch }
           dir
           dir Release
           dir x64
@@ -46,9 +48,9 @@ jobs:
 
       - name: Install Z3 library
         run: |
-          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-x64-win.zip -o z3-%Z3_VERSION%-win.zip
+          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -o z3-%Z3_VERSION%-win.zip
           7z x z3-%Z3_VERSION%-win.zip -oexternals -r -y
-          move externals\z3-%Z3_VERSION%-x64-win externals\z3
+          move externals\z3-%Z3_VERSION%-${{ matrix.arch }}-win externals\z3
         env:
           # see https://github.com/Z3Prover/z3/releases:  
           Z3_VERSION: 4.8.10
@@ -60,7 +62,7 @@ jobs:
 
       - name: Build GUI release
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" 
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }
           cd gui
           qmake HAVE_QCHART=yes
           nmake release
@@ -72,13 +74,17 @@ jobs:
           del Build\gui\cppcheck-gui.pdb
           
       - name: Build CLI debug configuration using MSBuild
-        run: msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE;Platform=x64 -maxcpucount
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }}
+          msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE;Platform=${{ matrix.arch }} -maxcpucount
 
       - name: Run Debug test
         run: .\bin\debug\testrunner.exe
 
       - name: Build CLI release configuration using MSBuild
-        run: msbuild -m cppcheck.sln /p:Configuration=Release-PCRE;Platform=x64 -maxcpucount
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }}
+          msbuild -m cppcheck.sln /p:Configuration=Release-PCRE;Platform=${{ matrix.arch }} -maxcpucount
 
       - name: Run Release test
         run: .\bin\testrunner.exe
