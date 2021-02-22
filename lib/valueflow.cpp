@@ -372,7 +372,7 @@ static bool isZero(T x)
 }
 
 template <class R, class T>
-static R calculate(const std::string& s, T x, T y)
+static R calculate(const std::string& s, const T& x, const T& y)
 {
     auto wrap = [](T z) { return R{z}; };
     switch (MathLib::encodeMultiChar(s)) {
@@ -417,7 +417,7 @@ static R calculate(const std::string& s, T x, T y)
 }
 
 template <class T>
-static T calculate(const std::string& s, T x, T y)
+static T calculate(const std::string& s, const T& x, const T& y)
 {
     return calculate<T, T>(s, x, y);
 }
