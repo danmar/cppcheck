@@ -294,7 +294,7 @@ namespace ExprEngine {
         ValuePtr op1;
         ValuePtr op2;
     private:
-        std::string getName(const std::string &binop, ValuePtr op1, ValuePtr op2) const {
+        static std::string getName(const std::string& binop, ValuePtr op1, ValuePtr op2) {
             std::string name1 = op1 ? op1->name : std::string("null");
             std::string name2 = op2 ? op2->name : std::string("null");
             return "(" + name1 + ")" + binop + "(" + name2 + ")";

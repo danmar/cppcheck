@@ -53,6 +53,23 @@ protected:
 
     bool assert_(const char * const filename, const unsigned int linenr, const bool condition) const;
 
+    template <typename T, typename U>
+    bool assertEquals(const char* const filename, const unsigned int linenr, const T& expected, const U& actual, const std::string& msg = emptyString) const {
+        if (expected != actual) {
+            std::ostringstream expectedStr;
+            expectedStr << expected;
+            std::ostringstream actualStr;
+            actualStr << actual;
+
+            assertEqualsFailed(filename, linenr, expectedStr.str(), actualStr.str(), msg);
+        }
+        return expected == actual;
+    }
+
+    //Helper function to be called when an assertEquals assertion fails.
+    //Writes the appropriate failure message to errmsg and increments fails_counter
+    void assertEqualsFailed(const char* const filename, const unsigned int linenr, const std::string& expected, const std::string& actual, const std::string& msg) const;
+
     bool assertEquals(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
     void assertEqualsWithoutLineNumbers(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
     bool assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg = emptyString) const;
