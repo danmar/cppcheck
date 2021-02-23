@@ -69,6 +69,7 @@ private:
         TEST_CASE(simplifyUsing20);
         TEST_CASE(simplifyUsing21);
         TEST_CASE(simplifyUsing22);
+        TEST_CASE(simplifyUsing23);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -551,6 +552,36 @@ private:
                                 "fff :: fff ( ) : m_icm ( icm ) { "
                                 "} "
                                 "} } } } }";
+        ASSERT_EQUALS(expected, tok(code, false)); // don't hang
+    }
+
+    void simplifyUsing23() {
+        const char code[] = "class cmcch {\n"
+                            "public:\n"
+                            "   cmcch(icmsp const& icm, Rtnf&& rtnf = {});\n"
+                            "private:\n"
+                            "    using escs = aa::bb::cc::dd::ee;\n"
+                            "private:\n"
+                            "   icmsp m_icm;\n"
+                            "   mutable std::atomic<rt> m_rt;\n"
+                            "};\n"
+                            "cmcch::cmcch(cmcch::icmsp const& icm, Rtnf&& rtnf)\n"
+                            "   : m_icm(icm)\n"
+                            "   , m_rt{rt::UNKNOWN_} {\n"
+                            "  using escs = yy::zz::aa::bb::cc::dd::ee;\n"
+                            "}";
+        const char expected[] = "class cmcch { "
+                                "public: "
+                                "cmcch ( const icmsp & icm , Rtnf && rtnf = { } ) ; "
+                                "private: "
+                                "private: "
+                                "icmsp m_icm ; "
+                                "mutable std :: atomic < rt > m_rt ; "
+                                "} ; "
+                                "cmcch :: cmcch ( const cmcch :: icmsp & icm , Rtnf && rtnf ) "
+                                ": m_icm ( icm ) "
+                                ", m_rt { rt :: UNKNOWN_ } { "
+                                "}";
         ASSERT_EQUALS(expected, tok(code, false)); // don't hang
     }
 
