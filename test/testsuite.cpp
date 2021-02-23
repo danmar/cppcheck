@@ -110,7 +110,7 @@ std::string TestFixture::getLocationStr(const char * const filename, const unsig
     return ret.str();
 }
 
-std::string writestr(const std::string &str, bool gccStyle = false)
+static std::string writestr(const std::string &str, bool gccStyle = false)
 {
     std::ostringstream ostr;
     if (gccStyle)
