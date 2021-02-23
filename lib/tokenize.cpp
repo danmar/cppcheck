@@ -1928,10 +1928,14 @@ namespace {
                             tok1 = tok1->previous();
                         if (tok1->strAt(-1) != ")")
                             return;
-                    } else if (Token::Match(tok->tokAt(-2), ":|, %name%")) {
-                        tok1 = tok1->tokAt(-2);
-                        if (tok1->strAt(-1) != ")")
-                            return;
+                        tok1 = tok1->linkAt(-1);
+                    } else {
+                        while (Token::Match(tok1->tokAt(-2), ":|, %name%")) {
+                            tok1 = tok1->tokAt(-2);
+                            if (tok1->strAt(-1) != ")")
+                                return;
+                            tok1 = tok1->linkAt(-1);
+                        }
                     }
                     if (tok1->strAt(-1) == ">")
                         tok1 = tok1->previous()->findOpeningBracket();
@@ -2356,6 +2360,9 @@ bool Tokenizer::simplifyUsing()
             if (tok1->str() == "enum")
                 skipEnumBody(&tok1);
 
+            if (!tok1)
+                break;
+
             // check for member function and adjust scope
             if (isMemberFunction(tok1)) {
                 if (!scope1.empty())
@@ -2504,6 +2511,10 @@ bool Tokenizer::simplifyUsing()
                     type = type->next();
                 } while (type && type->str() == "[");
             }
+
+            // make sure we are in a good state
+            if (!tok1 || !tok1->next())
+                break; // bail
 
             Token* after = tok1->next();
             // check if type was parsed
