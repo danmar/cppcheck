@@ -248,6 +248,7 @@ void ProjectFile::readBuildDir(QXmlStreamReader &reader)
         switch (type) {
         case QXmlStreamReader::Characters:
             mBuildDir = reader.text().toString();
+            FALLTHROUGH;
         case QXmlStreamReader::EndElement:
             return;
         // Not handled
@@ -273,6 +274,7 @@ void ProjectFile::readImportProject(QXmlStreamReader &reader)
         switch (type) {
         case QXmlStreamReader::Characters:
             mImportProject = reader.text().toString();
+            FALLTHROUGH;
         case QXmlStreamReader::EndElement:
             return;
         // Not handled
@@ -298,6 +300,7 @@ bool ProjectFile::readBool(QXmlStreamReader &reader)
         switch (type) {
         case QXmlStreamReader::Characters:
             ret = (reader.text().toString() == "true");
+            FALLTHROUGH;
         case QXmlStreamReader::EndElement:
             return ret;
         // Not handled
@@ -323,6 +326,7 @@ int ProjectFile::readInt(QXmlStreamReader &reader, int defaultValue)
         switch (type) {
         case QXmlStreamReader::Characters:
             ret = reader.text().toString().toInt();
+            FALLTHROUGH;
         case QXmlStreamReader::EndElement:
             return ret;
         // Not handled
@@ -617,6 +621,7 @@ void ProjectFile::readPlatform(QXmlStreamReader &reader)
         switch (type) {
         case QXmlStreamReader::Characters:
             mPlatform = reader.text().toString();
+            FALLTHROUGH;
         case QXmlStreamReader::EndElement:
             return;
         // Not handled

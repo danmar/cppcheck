@@ -3,7 +3,6 @@
 # https://github.com/regehr/itc-benchmarks
 
 
-import glob
 import os
 import re
 import shutil
@@ -82,7 +81,7 @@ for testfile in TESTFILES:
     missing = []
     for w in wanted:
         if w not in actual:
-            missing.append(w);
+            missing.append(w)
     if len(missing) > 0:
         print('wanted:' + str(wanted))
         print('actual:' + str(actual))

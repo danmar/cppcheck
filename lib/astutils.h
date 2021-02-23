@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "errortypes.h"
+#include "mathlib.h"
 #include "utils.h"
 
 class Function;
@@ -52,6 +53,10 @@ void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *
 void visitAstNodes(Token *ast, std::function<ChildrenToVisit(Token *)> visitor);
 
 const Token* findAstNode(const Token* ast, const std::function<bool(const Token*)>& pred);
+const Token* findExpression(const nonneg int exprid,
+                            const Token* start,
+                            const Token* end,
+                            const std::function<bool(const Token*)>& pred);
 
 std::vector<const Token*> astFlatten(const Token* tok, const char* op);
 
@@ -135,11 +140,24 @@ bool precedes(const Token * tok1, const Token * tok2);
 
 bool exprDependsOnThis(const Token* expr, nonneg int depth = 0);
 
+struct ReferenceToken {
+    const Token* token;
+    ErrorPath errors;
+};
+
+std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclusive = true, ErrorPath errors = ErrorPath{}, int depth = 20);
+const Token* followReferences(const Token* tok, ErrorPath* errors = nullptr);
+
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
 
 bool isEqualKnownValue(const Token * const tok1, const Token * const tok2);
 
 bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2);
+
+/**
+ * Is token used a boolean, that is to say cast to a bool, or used as a condition in a if/while/for
+ */
+bool isUsedAsBool(const Token * const tok);
 
 /**
  * Are two conditions opposite
@@ -309,7 +327,7 @@ public:
     /** Is there some possible alias for given expression */
     bool possiblyAliased(const Token *expr, const Token *startToken) const;
 
-    std::set<int> getExprVarIds(const Token* expr, bool* localOut = nullptr, bool* unknownVarIdOut = nullptr) const;
+    std::set<nonneg int> getExprVarIds(const Token* expr, bool* localOut = nullptr, bool* unknownVarIdOut = nullptr) const;
 private:
     static bool isEscapedAlias(const Token* expr);
 
@@ -322,7 +340,7 @@ private:
     };
 
     struct Result check(const Token *expr, const Token *startToken, const Token *endToken);
-    struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<int> &exprVarIds, bool local, bool inInnerClass, int depth=0);
+    struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local, bool inInnerClass, int depth=0);
 
     // Is expression a l-value global data?
     bool isGlobalData(const Token *expr) const;

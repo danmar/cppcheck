@@ -48,7 +48,7 @@ jobs:
         run: |
           mkdir cmake.output
           cd cmake.output
-          cmake -G "Unix Makefiles" -DBUILD_TESTS=On ..
+          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On ..
           make -j$(nproc) check
           cd ..
 
@@ -57,6 +57,10 @@ jobs:
           make clean
           make -j$(nproc) CXXFLAGS=-funsigned-char testrunner
           ./testrunner TestSymbolDatabase
+
+      - name: Check syntax with NONNEG
+        run: |
+          ls lib/*.cpp | xargs -n 1 -P $(nproc) g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/picojson -Iexternals/simplecpp -Iexternals/tinyxml2 -DNONNEG
 
       - name: Build cppcheck
         run: |
@@ -73,8 +77,8 @@ jobs:
 
       - name: Validate
         run: |
-          make -j$(nproc) validateCFG validatePlatforms
-          
+          make -j$(nproc) checkCWEEntries validateXML
+
       - name: Test addons
         run: |
           ./cppcheck --addon=threadsafety addons/test/threadsafety
@@ -94,6 +98,11 @@ jobs:
           qmake
           make -j$(nproc)
           ./test-projectfile
+          popd
+          pushd gui/test/cppchecklibrarydata
+          qmake
+          make -j$(nproc)
+          ./test-cppchecklibrarydata
 
       - name: Generate Qt help file on ubuntu
         if: contains(matrix.os, 'ubuntu')
@@ -110,12 +119,12 @@ jobs:
           make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2" MATCHCOMPILER=yes VERIFY=1
           # self check lib/cli
           mkdir b1
-          ./cppcheck -q -j$(nproc) --template=selfcheck --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling cli lib
+          ./cppcheck -q -j$(nproc) --template=selfcheck --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings  cli lib
           # check gui with qt settings
           mkdir b2
-          ./cppcheck -q -j$(nproc) --template=selfcheck --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,internal --exception-handling gui/*.cpp
+          ./cppcheck -q -j$(nproc) --template=selfcheck --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings  gui/*.cpp
           # self check test and tools
-          ./cppcheck -q -j$(nproc) --template=selfcheck -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,internal --exception-handling test/*.cpp tools
+          ./cppcheck -q -j$(nproc) --template=selfcheck -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings  test/*.cpp tools
 
       - name: Build triage on ubuntu
         if: matrix.os == 'ubuntu-20.04'

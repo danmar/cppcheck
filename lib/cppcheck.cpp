@@ -187,6 +187,52 @@ static std::vector<std::string> split(const std::string &str, const std::string 
     return ret;
 }
 
+static void createDumpFile(const Settings& settings,
+                           const std::string& filename,
+                           const std::vector<std::string>& files,
+                           const simplecpp::Token* rawtokens,
+                           std::ofstream& fdump,
+                           std::string& dumpFile)
+{
+    if (!settings.dump && settings.addons.empty())
+        return;
+    if (!settings.dumpFile.empty())
+        dumpFile = settings.dumpFile;
+    else if (!settings.dump && !settings.buildDir.empty())
+        dumpFile = AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, "") + ".dump";
+    else
+        dumpFile = filename + ".dump";
+
+    fdump.open(dumpFile);
+    if (!fdump.is_open())
+        return;
+    fdump << "<?xml version=\"1.0\"?>" << std::endl;
+    fdump << "<dumps>" << std::endl;
+    fdump << "  <platform"
+          << " name=\"" << settings.platformString() << '\"'
+          << " char_bit=\"" << settings.char_bit << '\"'
+          << " short_bit=\"" << settings.short_bit << '\"'
+          << " int_bit=\"" << settings.int_bit << '\"'
+          << " long_bit=\"" << settings.long_bit << '\"'
+          << " long_long_bit=\"" << settings.long_long_bit << '\"'
+          << " pointer_bit=\"" << (settings.sizeof_pointer * settings.char_bit) << '\"'
+          << "/>\n";
+    if (rawtokens) {
+        fdump << "  <rawtokens>" << std::endl;
+        for (unsigned int i = 0; i < files.size(); ++i)
+            fdump << "    <file index=\"" << i << "\" name=\"" << ErrorLogger::toxml(files[i]) << "\"/>" << std::endl;
+        for (const simplecpp::Token *tok = rawtokens; tok; tok = tok->next) {
+            fdump << "    <tok "
+                  << "fileIndex=\"" << tok->location.fileIndex << "\" "
+                  << "linenr=\"" << tok->location.line << "\" "
+                  << "column=\"" << tok->location.col << "\" "
+                  << "str=\"" << ErrorLogger::toxml(tok->str()) << "\""
+                  << "/>" << std::endl;
+        }
+        fdump << "  </rawtokens>" << std::endl;
+    }
+}
+
 static std::string executeAddon(const AddonInfo &addonInfo,
                                 const std::string &defaultPythonExe,
                                 const std::string &dumpFile,
@@ -392,6 +438,26 @@ unsigned int CppCheck::check(const std::string &path)
             if (mSettings.debugnormal)
                 tokenizer.printDebugOutput(1);
             checkNormalTokens(tokenizer);
+
+            // create dumpfile
+            std::ofstream fdump;
+            std::string dumpFile;
+            createDumpFile(mSettings, path, tokenizer.list.getFiles(), nullptr, fdump, dumpFile);
+            if (fdump.is_open()) {
+                fdump << "<dump cfg=\"\">" << std::endl;
+                fdump << "  <standards>" << std::endl;
+                fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>" << std::endl;
+                fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>" << std::endl;
+                fdump << "  </standards>" << std::endl;
+                tokenizer.dump(fdump);
+                fdump << "</dump>" << std::endl;
+                fdump << "</dumps>" << std::endl;
+                fdump.close();
+            }
+
+            // run addons
+            executeAddons(dumpFile);
+
         } catch (const InternalError &e) {
             internalError(path, e.errorMessage);
             mExitCode = 1; // e.g. reflect a syntax error
@@ -508,7 +574,11 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             }
 
             if (err) {
-                const ErrorMessage::FileLocation loc1(output.location.file(), output.location.line, output.location.col);
+                std::string file = Path::fromNativeSeparators(output.location.file());
+                if (mSettings.relativePaths)
+                    file = Path::getRelativePath(file, mSettings.basePaths);
+
+                const ErrorMessage::FileLocation loc1(file, output.location.line, output.location.col);
                 std::list<ErrorMessage::FileLocation> callstack(1, loc1);
 
                 ErrorMessage errmsg(callstack,
@@ -540,41 +610,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         // write dump file xml prolog
         std::ofstream fdump;
         std::string dumpFile;
-        if (mSettings.dump || !mSettings.addons.empty()) {
-            if (!mSettings.dumpFile.empty())
-                dumpFile = mSettings.dumpFile;
-            else if (!mSettings.dump && !mSettings.buildDir.empty())
-                dumpFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, filename, "") + ".dump";
-            else
-                dumpFile = filename + ".dump";
-
-            fdump.open(dumpFile);
-            if (fdump.is_open()) {
-                fdump << "<?xml version=\"1.0\"?>" << std::endl;
-                fdump << "<dumps>" << std::endl;
-                fdump << "  <platform"
-                      << " name=\"" << mSettings.platformString() << '\"'
-                      << " char_bit=\"" << mSettings.char_bit << '\"'
-                      << " short_bit=\"" << mSettings.short_bit << '\"'
-                      << " int_bit=\"" << mSettings.int_bit << '\"'
-                      << " long_bit=\"" << mSettings.long_bit << '\"'
-                      << " long_long_bit=\"" << mSettings.long_long_bit << '\"'
-                      << " pointer_bit=\"" << (mSettings.sizeof_pointer * mSettings.char_bit) << '\"'
-                      << "/>\n";
-                fdump << "  <rawtokens>" << std::endl;
-                for (unsigned int i = 0; i < files.size(); ++i)
-                    fdump << "    <file index=\"" << i << "\" name=\"" << ErrorLogger::toxml(files[i]) << "\"/>" << std::endl;
-                for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
-                    fdump << "    <tok "
-                          << "fileIndex=\"" << tok->location.fileIndex << "\" "
-                          << "linenr=\"" << tok->location.line << "\" "
-                          << "column=\"" << tok->location.col << "\" "
-                          << "str=\"" << ErrorLogger::toxml(tok->str()) << "\""
-                          << "/>" << std::endl;
-                }
-                fdump << "  </rawtokens>" << std::endl;
-            }
-        }
+        createDumpFile(mSettings, filename, files, tokens1.cfront(), fdump, dumpFile);
 
         // Parse comments and then remove them
         preprocessor.inlineSuppressions(tokens1);
@@ -834,59 +870,12 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         }
 
         // dumped all configs, close root </dumps> element now
-        if ((mSettings.dump || !mSettings.addons.empty()) && fdump.is_open())
+        if (fdump.is_open()) {
             fdump << "</dumps>" << std::endl;
-
-        if (!mSettings.addons.empty()) {
             fdump.close();
-
-            for (const std::string &addon : mSettings.addons) {
-                struct AddonInfo addonInfo;
-                const std::string &failedToGetAddonInfo = addonInfo.getAddonInfo(addon, mSettings.exename);
-                if (!failedToGetAddonInfo.empty()) {
-                    reportOut(failedToGetAddonInfo);
-                    mExitCode = 1;
-                    continue;
-                }
-                const std::string results =
-                    executeAddon(addonInfo, mSettings.addonPython, dumpFile, mExecuteCommand);
-                std::istringstream istr(results);
-                std::string line;
-
-                while (std::getline(istr, line)) {
-                    if (line.compare(0,1,"{") != 0)
-                        continue;
-
-                    picojson::value res;
-                    std::istringstream istr2(line);
-                    istr2 >> res;
-                    if (!res.is<picojson::object>())
-                        continue;
-
-                    picojson::object obj = res.get<picojson::object>();
-
-                    const std::string fileName = obj["file"].get<std::string>();
-                    const int64_t lineNumber = obj["linenr"].get<int64_t>();
-                    const int64_t column = obj["column"].get<int64_t>();
-
-                    ErrorMessage errmsg;
-
-                    errmsg.callStack.emplace_back(ErrorMessage::FileLocation(fileName, lineNumber, column));
-
-                    errmsg.id = obj["addon"].get<std::string>() + "-" + obj["errorId"].get<std::string>();
-                    const std::string text = obj["message"].get<std::string>();
-                    errmsg.setmsg(text);
-                    const std::string severity = obj["severity"].get<std::string>();
-                    errmsg.severity = Severity::fromString(severity);
-                    if (errmsg.severity == Severity::SeverityType::none)
-                        continue;
-                    errmsg.file0 = fileName;
-
-                    reportErr(errmsg);
-                }
-            }
-            std::remove(dumpFile.c_str());
         }
+
+        executeAddons(dumpFile);
 
     } catch (const std::runtime_error &e) {
         internalError(filename, e.what());
@@ -1268,6 +1257,60 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 #endif
     }
 #endif
+}
+
+void CppCheck::executeAddons(const std::string& dumpFile)
+{
+
+    if (!mSettings.addons.empty() && !dumpFile.empty()) {
+        for (const std::string &addon : mSettings.addons) {
+            struct AddonInfo addonInfo;
+            const std::string &failedToGetAddonInfo = addonInfo.getAddonInfo(addon, mSettings.exename);
+            if (!failedToGetAddonInfo.empty()) {
+                reportOut(failedToGetAddonInfo);
+                mExitCode = 1;
+                continue;
+            }
+            const std::string results =
+                executeAddon(addonInfo, mSettings.addonPython, dumpFile, mExecuteCommand);
+            std::istringstream istr(results);
+            std::string line;
+
+            while (std::getline(istr, line)) {
+                if (line.compare(0,1,"{") != 0)
+                    continue;
+
+                picojson::value res;
+                std::istringstream istr2(line);
+                istr2 >> res;
+                if (!res.is<picojson::object>())
+                    continue;
+
+                picojson::object obj = res.get<picojson::object>();
+
+                const std::string fileName = obj["file"].get<std::string>();
+                const int64_t lineNumber = obj["linenr"].get<int64_t>();
+                const int64_t column = obj["column"].get<int64_t>();
+
+                ErrorMessage errmsg;
+
+                errmsg.callStack.emplace_back(ErrorMessage::FileLocation(fileName, lineNumber, column));
+
+                errmsg.id = obj["addon"].get<std::string>() + "-" + obj["errorId"].get<std::string>();
+                const std::string text = obj["message"].get<std::string>();
+                errmsg.setmsg(text);
+                const std::string severity = obj["severity"].get<std::string>();
+                errmsg.severity = Severity::fromString(severity);
+                if (errmsg.severity == Severity::SeverityType::none)
+                    continue;
+                errmsg.file0 = fileName;
+
+                reportErr(errmsg);
+            }
+        }
+        std::remove(dumpFile.c_str());
+    }
+
 }
 
 Settings &CppCheck::settings()

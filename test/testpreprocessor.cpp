@@ -81,6 +81,7 @@ private:
         TEST_CASE(error5);
         TEST_CASE(error6);
         TEST_CASE(error7);
+        TEST_CASE(error8); // #10170 -> previous #if configurations
 
         TEST_CASE(setPlatformInfo);
 
@@ -425,6 +426,19 @@ private:
                                 "#error \"2\"\n"
                                 "#endif\n";
         ASSERT_EQUALS("\nB\n", getConfigsStr(filedata));
+    }
+
+    void error8() {
+        const char filedata[] = "#ifdef A\n"
+                                "#ifdef B\n"
+                                "#endif\n"
+                                "#else\n"
+                                "#endif\n"
+                                "\n"
+                                "#ifndef C\n"
+                                "#error aa\n"
+                                "#endif";
+        ASSERT_EQUALS("A;B;C\nA;C\nC\n", getConfigsStr(filedata));
     }
 
     void setPlatformInfo() {
@@ -975,7 +989,6 @@ private:
         }
 
         {
-            /* TODO: What to do here? since there are syntax error simplecpp outputs ""
             const char filedata[] = "#define BC(b, c...) 0##b * 0##c\n"
                                     "#define ABC(a, b...) a + BC(b)\n"
                                     "\n"
@@ -983,8 +996,7 @@ private:
                                     "ABC(2,3);\n"
                                     "ABC(4,5,6);\n";
 
-            ASSERT_EQUALS("\n\n\n1 + 0 * 0;\n2 + 03 * 0;\n4 + 05 * 06;", OurPreprocessor::expandMacros(filedata));
-            */
+            ASSERT_EQUALS("\n\n\n1 + 0 * 0 ;\n2 + 03 * 0 ;\n4 + 05 * 06 ;", OurPreprocessor::expandMacros(filedata));
         }
 
         {
@@ -1128,10 +1140,9 @@ private:
     }
 
     void macro_NULL() const {
-        // Let the tokenizer handle NULL.
         // See ticket #4482 - UB when passing NULL to variadic function
         ASSERT_EQUALS("\n0", OurPreprocessor::expandMacros("#define null 0\nnull"));
-        // TODO ASSERT_EQUALS("\nNULL", OurPreprocessor::expandMacros("#define NULL 0\nNULL"));
+        TODO_ASSERT_EQUALS("\nNULL", "\n0", OurPreprocessor::expandMacros("#define NULL 0\nNULL")); // TODO: Let the tokenizer handle NULL?
     }
 
     void string1() {
@@ -2134,7 +2145,7 @@ private:
                                  "#error \"!Y\"\n"
                                  "#endif\n"
                                  "#endif\n";
-        ASSERT_EQUALS("\nX\nY\n", getConfigsStr(filedata2));
+        ASSERT_EQUALS("\nX;Y\nY\n", getConfigsStr(filedata2));
     }
 
     void getConfigsD1() {

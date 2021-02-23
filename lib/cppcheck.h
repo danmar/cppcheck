@@ -143,7 +143,6 @@ public:
     bool isUnusedFunctionCheckEnabled() const;
 
 private:
-
     /** Are there "simple" rules */
     bool hasRule(const std::string &tokenlist) const;
 
@@ -170,6 +169,11 @@ private:
      * @param tokenizer tokenizer instance
      */
     void checkNormalTokens(const Tokenizer &tokenizer);
+
+    /**
+     * Execute addons
+     */
+    void executeAddons(const std::string &dumpFile);
 
     /**
      * @brief Execute rules, if any

@@ -23,7 +23,6 @@ import os
 import argparse
 import codecs
 import string
-from collections import defaultdict
 
 try:
     from itertools import izip as zip
@@ -1119,7 +1118,7 @@ class MisraChecker:
     def misra_2_7(self, data):
         for func in data.functions:
             # Skip function with no parameter
-            if (len(func.argument) == 0):
+            if len(func.argument) == 0:
                 continue
             # Setup list of function parameters
             func_param_list = list()
@@ -1130,11 +1129,11 @@ class MisraChecker:
                 if (scope.type == "Function") and (scope.function == func):
                     # Search function body: remove referenced function parameter from list
                     token = scope.bodyStart
-                    while (token.next != None and token != scope.bodyEnd and len(func_param_list) > 0):
-                        if (token.variable != None and token.variable in func_param_list):
+                    while token.next is not None and token != scope.bodyEnd and len(func_param_list) > 0:
+                        if token.variable is not None and token.variable in func_param_list:
                             func_param_list.remove(token.variable)
                         token = token.next
-                    if (len(func_param_list) > 0):
+                    if len(func_param_list) > 0:
                         # At least one parameter has not been referenced in function body
                         self.reportError(func.tokenDef, 2, 7)
 
@@ -3074,7 +3073,6 @@ class MisraChecker:
             check_function(*args)
 
     def parseDump(self, dumpfile):
-        filename = '.'.join(dumpfile.split('.')[:-1])
         data = cppcheckdata.parsedump(dumpfile)
 
         typeBits['CHAR'] = data.platform.char_bit

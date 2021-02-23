@@ -21,6 +21,7 @@
 #include "astutils.h"
 
 #include "config.h"
+#include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
@@ -29,6 +30,7 @@
 #include "valueflow.h"
 
 #include <algorithm>
+#include <deque>
 #include <functional>
 #include <iterator>
 #include <list>
@@ -78,6 +80,24 @@ const Token* findAstNode(const Token* ast, const std::function<bool(const Token*
         return ChildrenToVisit::op1_and_op2;
     });
     return result;
+}
+
+const Token* findExpression(const nonneg int exprid,
+                            const Token* start,
+                            const Token* end,
+                            const std::function<bool(const Token*)>& pred)
+{
+    if (!precedes(start, end))
+        return nullptr;
+    if (exprid == 0)
+        return nullptr;
+    for (const Token* tok = start; tok != end; tok = tok->next()) {
+        if (tok->exprId() != exprid)
+            continue;
+        if (pred(tok))
+            return tok;
+    }
+    return nullptr;
 }
 
 static void astFlattenRecursive(const Token *tok, std::vector<const Token *> *result, const char* op, nonneg int depth = 0)
@@ -732,6 +752,106 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
     errors->push_back(item);
 }
 
+std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclusive, ErrorPath errors, int depth)
+{
+    struct ReferenceTokenLess {
+        bool operator()(const ReferenceToken& x, const ReferenceToken& y) const {
+            return x.token < y.token;
+        }
+    };
+    if (!tok)
+        return std::vector<ReferenceToken> {};
+    if (depth < 0)
+        return {{tok, std::move(errors)}};
+    const Variable *var = tok->variable();
+    if (var && var->declarationId() == tok->varId()) {
+        if (var->nameToken() == tok) {
+            return {{tok, std::move(errors)}};
+        } else if (var->isReference() || var->isRValueReference()) {
+            if (!var->declEndToken())
+                return {{tok, std::move(errors)}};
+            if (var->isArgument()) {
+                errors.emplace_back(var->declEndToken(), "Passed to reference.");
+                return {{tok, std::move(errors)}};
+            } else if (Token::simpleMatch(var->declEndToken(), "=")) {
+                errors.emplace_back(var->declEndToken(), "Assigned to reference.");
+                const Token *vartok = var->declEndToken()->astOperand2();
+                if (vartok == tok)
+                    return {{tok, std::move(errors)}};
+                if (vartok)
+                    return followAllReferences(vartok, inconclusive, std::move(errors), depth - 1);
+            } else {
+                return {{tok, std::move(errors)}};
+            }
+        }
+    } else if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) {
+        std::set<ReferenceToken, ReferenceTokenLess> result;
+        const Token* tok2 = tok->astOperand2();
+
+        std::vector<ReferenceToken> refs;
+        refs = followAllReferences(tok2->astOperand1(), inconclusive, errors, depth - 1);
+        result.insert(refs.begin(), refs.end());
+        refs = followAllReferences(tok2->astOperand2(), inconclusive, errors, depth - 1);
+        result.insert(refs.begin(), refs.end());
+
+        if (!inconclusive && result.size() != 1)
+            return {{tok, std::move(errors)}};
+
+        if (!result.empty())
+            return std::vector<ReferenceToken>(result.begin(), result.end());
+
+    } else if (Token::Match(tok->previous(), "%name% (")) {
+        const Function *f = tok->previous()->function();
+        if (f) {
+            if (!Function::returnsReference(f))
+                return {{tok, std::move(errors)}};
+            std::set<ReferenceToken, ReferenceTokenLess> result;
+            for (const Token* returnTok : Function::findReturns(f)) {
+                if (returnTok == tok)
+                    continue;
+                std::vector<ReferenceToken> argvarRt = followAllReferences(returnTok, inconclusive, errors, depth - 1);
+                for (const ReferenceToken& rt:followAllReferences(returnTok, inconclusive, errors, depth - 1)) {
+                    const Variable* argvar = rt.token->variable();
+                    if (!argvar)
+                        return {{tok, std::move(errors)}};
+                    if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
+                        int n = getArgumentPos(argvar, f);
+                        if (n < 0)
+                            return {{tok, std::move(errors)}};
+                        std::vector<const Token*> args = getArguments(tok->previous());
+                        if (n >= args.size())
+                            return {{tok, std::move(errors)}};
+                        const Token* argTok = args[n];
+                        ErrorPath er = errors;
+                        er.emplace_back(returnTok, "Return reference.");
+                        er.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
+                        std::vector<ReferenceToken> refs = followAllReferences(argTok, inconclusive, std::move(er), depth - 1);
+                        result.insert(refs.begin(), refs.end());
+                        if (!inconclusive && result.size() > 1)
+                            return {{tok, std::move(errors)}};
+                    }
+                }
+            }
+            if (!result.empty())
+                return std::vector<ReferenceToken>(result.begin(), result.end());
+        }
+    }
+    return {{tok, std::move(errors)}};
+}
+
+const Token* followReferences(const Token* tok, ErrorPath* errors)
+{
+    if (!tok)
+        return nullptr;
+    std::vector<ReferenceToken> refs = followAllReferences(tok, false);
+    if (refs.size() == 1) {
+        if (errors)
+            *errors = refs.front().errors;
+        return refs.front().token;
+    }
+    return nullptr;
+}
+
 static bool isSameLifetime(const Token * const tok1, const Token * const tok2)
 {
     ValueFlow::Value v1 = getLifetimeObjValue(tok1);
@@ -850,6 +970,13 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
             followVariableExpressionError(tok2, varTok2, errors);
             return isSameExpression(cpp, macro, varTok1, varTok2, library, true, followVar, errors);
         }
+    }
+    // Follow references
+    if (tok1->str() != tok2->str()) {
+        const Token* refTok1 = followReferences(tok1, errors);
+        const Token* refTok2 = followReferences(tok2, errors);
+        if (refTok1 != tok1 || refTok2 != tok2)
+            return isSameExpression(cpp, macro, refTok1, refTok2, library, pure, followVar, errors);
     }
     if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str() || tok1->originalName() != tok2->originalName()) {
         if ((Token::Match(tok1,"<|>")   && Token::Match(tok2,"<|>")) ||
@@ -1024,6 +1151,73 @@ static bool isZeroBoundCond(const Token * const cond)
     return false;
 }
 
+static bool isForLoopCondition(const Token * const tok)
+{
+    if (!tok)
+        return false;
+    const Token *const parent = tok->astParent();
+    return Token::simpleMatch(parent, ";") && parent->astOperand1() == tok &&
+           Token::simpleMatch(parent->astParent(), ";") &&
+           Token::simpleMatch(parent->astParent()->astParent(), "(") &&
+           parent->astParent()->astParent()->astOperand1()->str() == "for";
+}
+
+/**
+ * Is token used a boolean (cast to a bool, or used as a condition somewhere)
+ * @param tok
+ * @param checkingParent true if we are checking a parent. This is used to know
+ * what we are checking. For instance in `if (i == 2)`, isUsedAsBool("==") is
+ * true whereas isUsedAsBool("i") is false, but it might call
+ * isUsedAsBool_internal("==") which must not return true
+ */
+static bool isUsedAsBool_internal(const Token * const tok, bool checkingParent)
+{
+    if (!tok)
+        return false;
+    const Token::Type type = tok->tokType();
+    if (type == Token::eBitOp || type == Token::eIncDecOp || (type == Token::eArithmeticalOp && !tok->isUnaryOp("*")))
+        // those operators don't return a bool
+        return false;
+    if (type == Token::eComparisonOp) {
+        if (!checkingParent)
+            // this operator returns a bool
+            return true;
+        if (Token::Match(tok, "==|!="))
+            return astIsBool(tok->astOperand1()) || astIsBool(tok->astOperand2());
+        return false;
+    }
+    if (type == Token::eLogicalOp)
+        return true;
+    if (astIsBool(tok))
+        return true;
+
+    const Token * const parent = tok->astParent();
+    if (!parent)
+        return false;
+    if (parent->str() == "(" && parent->astOperand2() == tok) {
+        if (Token::Match(parent->astOperand1(), "if|while"))
+            return true;
+
+        if (!parent->isCast()) { // casts are handled via the recursive call, as astIsBool will be true
+            // is it a call to a function ?
+            int argnr;
+            const Token *const func = getTokenArgumentFunction(tok, argnr);
+            if (!func || !func->function())
+                return false;
+            const Variable *var = func->function()->getArgumentVar(argnr);
+            return var && (var->getTypeName() == "bool");
+        }
+    } else if (isForLoopCondition(tok))
+        return true;
+
+    return isUsedAsBool_internal(parent, true);
+}
+
+bool isUsedAsBool(const Token * const tok)
+{
+    return isUsedAsBool_internal(tok, false);
+}
+
 bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const Library& library, bool pure, bool followVar, ErrorPath* errors)
 {
     if (!cond1 || !cond2)
@@ -1051,6 +1245,8 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
             if (cond2->astOperand2() && cond2->astOperand2()->str() == "0")
                 return isSameExpression(cpp, true, cond1->astOperand1(), cond2->astOperand1(), library, pure, followVar, errors);
         }
+        if (!isUsedAsBool(cond2))
+            return false;
         return isSameExpression(cpp, true, cond1->astOperand1(), cond2, library, pure, followVar, errors);
     }
 
@@ -1067,13 +1263,27 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
         // TODO: Handle reverse conditions
         if (Library::isContainerYield(cond1, Library::Container::Yield::EMPTY, "empty") &&
             Library::isContainerYield(cond2->astOperand1(), Library::Container::Yield::SIZE, "size") &&
-            cond1->astOperand1()->astOperand1()->varId() == cond2->astOperand1()->astOperand1()->astOperand1()->varId()) {
+            isSameExpression(cpp,
+                             true,
+                             cond1->astOperand1()->astOperand1(),
+                             cond2->astOperand1()->astOperand1()->astOperand1(),
+                             library,
+                             pure,
+                             followVar,
+                             errors)) {
             return !isZeroBoundCond(cond2);
         }
 
         if (Library::isContainerYield(cond2, Library::Container::Yield::EMPTY, "empty") &&
             Library::isContainerYield(cond1->astOperand1(), Library::Container::Yield::SIZE, "size") &&
-            cond2->astOperand1()->astOperand1()->varId() == cond1->astOperand1()->astOperand1()->astOperand1()->varId()) {
+            isSameExpression(cpp,
+                             true,
+                             cond2->astOperand1()->astOperand1(),
+                             cond1->astOperand1()->astOperand1()->astOperand1(),
+                             library,
+                             pure,
+                             followVar,
+                             errors)) {
             return !isZeroBoundCond(cond1);
         }
     }
@@ -2093,13 +2303,13 @@ static bool hasFunctionCall(const Token *tok)
     return hasFunctionCall(tok->astOperand1()) || hasFunctionCall(tok->astOperand2());
 }
 
-static bool isUnchanged(const Token *startToken, const Token *endToken, const std::set<int> &exprVarIds, bool local)
+static bool isUnchanged(const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local)
 {
     for (const Token *tok = startToken; tok != endToken; tok = tok->next()) {
         if (!local && Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {"))
             // TODO: this is a quick bailout
             return false;
-        if (tok->varId() <= 0 || exprVarIds.find(tok->varId()) == exprVarIds.end())
+        if (tok->varId() == 0 || exprVarIds.find(tok->varId()) == exprVarIds.end())
             continue;
         const Token *parent = tok;
         while (parent->astParent() && !parent->astParent()->isAssignmentOp() && parent->astParent()->tokType() != Token::Type::eIncDecOp) {
@@ -2200,7 +2410,7 @@ bool isGlobalData(const Token *expr, bool cpp)
     return globalData;
 }
 
-struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<int> &exprVarIds, bool local, bool inInnerClass, int depth)
+struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local, bool inInnerClass, int depth)
 {
     // Parse the given tokens
     if (++depth > 1000)
@@ -2486,10 +2696,10 @@ bool FwdAnalysis::isGlobalData(const Token *expr) const
     return ::isGlobalData(expr, mCpp);
 }
 
-std::set<int> FwdAnalysis::getExprVarIds(const Token* expr, bool* localOut, bool* unknownVarIdOut) const
+std::set<nonneg int> FwdAnalysis::getExprVarIds(const Token* expr, bool* localOut, bool* unknownVarIdOut) const
 {
     // all variable ids in expr.
-    std::set<int> exprVarIds;
+    std::set<nonneg int> exprVarIds;
     bool local = true;
     bool unknownVarId = false;
     visitAstNodes(expr,
@@ -2523,7 +2733,7 @@ FwdAnalysis::Result FwdAnalysis::check(const Token* expr, const Token* startToke
     // all variable ids in expr.
     bool local = true;
     bool unknownVarId = false;
-    std::set<int> exprVarIds = getExprVarIds(expr, &local, &unknownVarId);
+    std::set<nonneg int> exprVarIds = getExprVarIds(expr, &local, &unknownVarId);
 
     if (unknownVarId)
         return Result(FwdAnalysis::Result::Type::BAILOUT);

@@ -7,12 +7,10 @@ compiler:
 
 env:
   global:
-    - ORIGINAL_CXXFLAGS="-pedantic -Wall -Wextra -Wcast-qual -Wno-deprecated-declarations -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wundef -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar -D_GLIBCXX_DEBUG -g "
+    - ORIGINAL_CXXFLAGS="-pedantic -Wall -Wextra -Wcast-qual -Wno-deprecated-declarations -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wundef -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar -D_GLIBCXX_DEBUG -g"
 #   unfortunately we need this to stay within 50min timelimit given by travis.
     - CXXFLAGS="${ORIGINAL_CXXFLAGS} -O2 -march=native -Wstrict-aliasing=2 -Werror=strict-aliasing"
     - CPPCHECK=${TRAVIS_BUILD_DIR}/cppcheck
-    - ASAN_OPTIONS=detect_stack_use_after_return=1
-    - UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1
   matrix:
     - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL"
     - CXXFLAGS="${CXXFLAGS} -DCHECK_INTERNAL" MAKEFLAGS="HAVE_RULES=yes" MATCHCOMPILER=yes VERIFY=1
@@ -23,14 +21,12 @@ before_install:
  - travis_retry sudo apt-get install -qq python3-pip libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet python3-dev liblua5.3-dev libcurl3 libcairo2-dev libsigc++-2.0-dev tidy libopencv-dev libz3-dev
 # Python 2 modules 
  - travis_retry python2 -m pip install --user pytest==4.6.4
-# - travis_retry python2 -m pip install --user pylint
  - travis_retry python2 -m pip install --user unittest2
  - travis_retry python2 -m pip install --user pexpect # imported by tools/ci.py
  - travis_retry python2 -m pip install --user pygments
 # Python 3 modules
  - travis_retry python3 -m pip install --user setuptools --upgrade
  - travis_retry python3 -m pip install --user pytest
-# - travis_retry python3 -m pip install --user pylint
  - travis_retry python3 -m pip install --user unittest2
  - travis_retry python3 -m pip install --user pexpect # imported by tools/ci.py
  - travis_retry python3 -m pip install --user requests # imported by tools/pr.py
@@ -41,9 +37,6 @@ before_install:
 matrix:
 # do notify immediately about it when a job of a build fails.
   fast_finish: true
-  allow_failures:
-    - name: "rerun dmake?"
-      compiler: clang
 # defined extra jobs that run besides what is configured in the build matrix
   include:
 
@@ -58,12 +51,8 @@ matrix:
         - make checkCWEEntries
 # check cfg files
         - make checkcfg
-# check platform files
-        - make validatePlatforms
 # Validate Result XML
         - make validateXML
-# Validate rule files
-        - make validateRules
 # check htmlreport stuff
         - python2 htmlreport/test_htmlreport.py
         - python3 htmlreport/test_htmlreport.py
@@ -91,18 +80,6 @@ matrix:
 # check --dump
         - ${CPPCHECK} test/testpreprocessor.cpp --dump
         - xmllint --noout test/testpreprocessor.cpp.dump
-# run pylint -- FIXME these are temporarily commented out because there is a syntax error in pylint
-#        - pylint --rcfile=pylintrc_travis addons/*.py
-#        - pylint --rcfile=pylintrc_travis htmlreport/cppcheck-htmlreport
-#        - pylint --rcfile=pylintrc_travis htmlreport/*.py
-#        - pylint --rcfile=pylintrc_travis --ignore=donate-cpu-server.py --ignore=donate-cpu.py --ignore=donate_cpu_lib.py --ignore=test-my-pr.py tools/*.py
-#        - python3 -m pylint --rcfile=pylintrc_travis addons/*.py
-#        - python3 -m pylint --rcfile=pylintrc_travis htmlreport/cppcheck-htmlreport
-#        - python3 -m pylint --rcfile=pylintrc_travis htmlreport/*.py
-#        - python3 -m pylint --rcfile=pylintrc_travis tools/*.py
-# check python syntax by compiling some selected scripts
-        - python3 -m py_compile ./tools/donate-cpu.py
-        - python3 -m py_compile ./tools/donate-cpu-server.py
 # check addons/misc.py
         - cd addons/test
         - ${CPPCHECK} --dump misc-test.cpp
@@ -161,29 +138,6 @@ matrix:
         - cd -
         - python3 test/bug-hunting/juliet.py
 
-# check if dmake needs to be rerun (this job may fail)
-    - name: "rerun dmake?"
-      compiler: clang
-# we don't need to install any deps for dmake so skip it explicitly
-      before_install:
-      - true
-      script:
-        - echo "If the following command fails, run 'make dmake; make run-dmake' and commit the resulting change."
-        - make -s dmake -j$(nproc)
-        - make -s run-dmake
-        - git diff --exit-code
-# check if cppcheck builds on trusty
-    - name: "make ubuntu 14.04 trusty"
-      compiler: gcc
-      dist: trusty
-      before_install:
-        - travis_retry sudo apt-get update -qq
-        - travis_retry sudo apt-get install libxml2-utils libpcre3
-      script:
-        - CXX=g++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck check -j$(nproc) -s
-        - make clean
-        - CXX=clang++ CXXFLAGS="${ORIGINAL_CXXFLAGS}" make cppcheck check -j $(nproc) -s
-
 script:
 # fail the entire job as soon as one of the subcommands exits non-zero to save time and resources
   - set -e
@@ -194,8 +148,6 @@ script:
   - echo $CXXFLAGS
   - make -s check -j$(nproc) CPPFLAGS=-DTEST_MATHLIB_VALUE
   - touch lib/mathlib.cpp test/testmathlib.cpp
-# syntax checking of cppcheck source code with -DNONNEG
-  - ls lib/*.cpp | xargs -n 1 -P 2 g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/picojson -Iexternals/simplecpp -Iexternals/tinyxml2 -DNONNEG
 # compile cppcheck, default build
   - echo $CXXFLAGS
   - make -s check -j$(nproc)
@@ -207,12 +159,3 @@ script:
 # Testing addons (disabled 2020-11-24 because Travis fails, TODO try to enable these)
 #  - PYTHONPATH=./addons python -m pytest addons/test/test-*.py
 #  - PYTHONPATH=./addons python3 -m pytest addons/test/test-*.py
-
-notifications:
-  irc:
-    channels:
-      - "irc.freenode.org#cppcheck"
-    template:
-      - "[%{commit} : %{author}] %{message}"
-      - "%{build_url}"
-    skip_join: true

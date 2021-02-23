@@ -559,10 +559,16 @@ Token *Tokenizer::processFunc(Token *tok2, bool inOperator) const
 
 void Tokenizer::simplifyUsingToTypedef()
 {
+    if (!isCPP() || mSettings->standards.cpp < Standards::CPP11)
+        return;
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // using a::b;  =>   typedef  a::b  b;
-        if (Token::Match(tok, "[;{}] using %name% :: %name% ::|;") && !tok->tokAt(2)->isKeyword()) {
+        if ((Token::Match(tok, "[;{}] using %name% :: %name% ::|;") && !tok->tokAt(2)->isKeyword()) ||
+            (Token::Match(tok, "[;{}] using :: %name% :: %name% ::|;") && !tok->tokAt(3)->isKeyword())) {
             Token *endtok = tok->tokAt(5);
+            if (Token::Match(endtok, "%name%"))
+                endtok = endtok->next();
             while (Token::Match(endtok, ":: %name%"))
                 endtok = endtok->tokAt(2);
             if (endtok && endtok->str() == ";") {
@@ -1743,34 +1749,158 @@ void Tokenizer::simplifyTypedef()
 
 namespace {
     struct ScopeInfo3 {
-        ScopeInfo3(const std::string &name_, const Token *bodyStart_, const Token *bodyEnd_)
-            : name(name_), bodyStart(bodyStart_), bodyEnd(bodyEnd_) {}
-        const std::string name;
-        const Token * const bodyStart;
-        const Token * const bodyEnd;
+        enum Type { Global, Namespace, Record, MemberFunction, Other };
+        ScopeInfo3() : parent(nullptr), type(Global), bodyStart(nullptr), bodyEnd(nullptr) {}
+        ScopeInfo3(ScopeInfo3 *parent_, Type type_, const std::string &name_, const Token *bodyStart_, const Token *bodyEnd_)
+            : parent(parent_), type(type_), name(name_), bodyStart(bodyStart_), bodyEnd(bodyEnd_) {
+            if (name.empty())
+                return;
+            fullName = name;
+            ScopeInfo3 *scope = parent;
+            while (scope && scope->parent) {
+                if (scope->name.empty())
+                    break;
+                fullName = scope->name + " :: " + fullName;
+                scope = scope->parent;
+            }
+        }
+        ScopeInfo3 *parent;
+        std::list<ScopeInfo3> children;
+        Type type;
+        std::string fullName;
+        std::string name;
+        const Token * bodyStart;
+        const Token * bodyEnd;
         std::set<std::string> usingNamespaces;
         std::set<std::string> recordTypes;
+        std::set<std::string> baseTypes;
+
+        ScopeInfo3 *addChild(Type scopeType, const std::string &scopeName, const Token *bodyStartToken, const Token *bodyEndToken) {
+            children.emplace_back(this, scopeType, scopeName, bodyStartToken, bodyEndToken);
+            return &children.back();
+        }
+
+        bool hasChild(const std::string &childName) const {
+            for (const auto & child : children) {
+                if (child.name == childName)
+                    return true;
+            }
+            return false;
+        }
+
+        void  printOut(const std::string & indent = "  ") const {
+            std::cerr << indent << "type: " << (type == Global ? "Global" :
+                                                type == Namespace ? "Namespace" :
+                                                type == Record ? "Record" :
+                                                type == MemberFunction ? "MemberFunction" :
+                                                type == Other ? "Other" :
+                                                "Unknown") << std::endl;
+            std::cerr << indent << "fullName: " << fullName << std::endl;
+            std::cerr << indent << "name: " << name << std::endl;
+            std::cerr << indent << usingNamespaces.size() << " usingNamespaces:";
+            for (const auto & usingNamespace : usingNamespaces)
+                std::cerr << " " << usingNamespace;
+            std::cerr << std::endl;
+            std::cerr << indent << baseTypes.size() << " baseTypes:";
+            for (const auto & baseType : baseTypes)
+                std::cerr << " " << baseType;
+            std::cerr << std::endl;
+            std::cerr << indent << children.size() << " children:" << std::endl;
+            size_t i = 0;
+            for (const auto & child : children) {
+                std::cerr << indent << "child " << i++ << std::endl;
+                child.printOut(indent + "  ");
+            }
+        }
+
+        const ScopeInfo3 * findScopeRecursive(const std::string & scope) const {
+            if (fullName.size() < scope.size() &&
+                fullName == scope.substr(0, fullName.size())) {
+                for (auto & child : children) {
+                    if (child.fullName == scope && &child != this)
+                        return &child;
+                    else {
+                        const ScopeInfo3 * temp1 = child.findScopeRecursive(scope);
+                        if (temp1)
+                            return temp1;
+                    }
+                }
+            }
+            return nullptr;
+        }
+
+        const ScopeInfo3 * findInChildren(const std::string & scope) const {
+            for (const auto & child : children) {
+                if (child.type == Record && (child.name == scope || child.fullName == scope))
+                    return &child;
+                else {
+                    const ScopeInfo3 * temp = child.findInChildren(scope);
+                    if (temp)
+                        return temp;
+                }
+            }
+            return nullptr;
+        }
+
+        const ScopeInfo3 * findScope(const std::string & scope) const {
+            const ScopeInfo3 * tempScope = this;
+            while (tempScope) {
+                // check children
+                for (const auto & child : tempScope->children) {
+                    if (&child != this && child.type == Record && (child.name == scope || child.fullName == scope))
+                        return &child;
+                }
+                // check siblings for same name
+                if (tempScope->parent) {
+                    for (const auto &sibling : tempScope->parent->children) {
+                        if (sibling.name == tempScope->name && &sibling != this) {
+                            const ScopeInfo3 * temp = sibling.findInChildren(scope);
+                            if (temp)
+                                return temp;
+                        }
+                    }
+                }
+                tempScope = tempScope->parent;
+            }
+            return nullptr;
+        }
+
+        bool findTypeInBase(const std::string &scope) const {
+            // check in base types first
+            if (baseTypes.find(scope) != baseTypes.end())
+                return true;
+            // check in base types base types
+            for (const std::string & base : baseTypes) {
+                const ScopeInfo3 * baseScope = findScope(base);
+                if (baseScope && baseScope->fullName == scope)
+                    return true;
+                if (baseScope && baseScope->findTypeInBase(scope))
+                    return true;
+            }
+            return false;
+        }
+
+        ScopeInfo3 * findScope(const ScopeInfo3 * scope) {
+            if (scope->bodyStart == bodyStart)
+                return this;
+            for (auto & child : children) {
+                if (child.findScope(scope))
+                    return &child;
+            }
+            return nullptr;
+        }
     };
 
-    std::string getScopeName(const std::list<ScopeInfo3> &scopeInfo)
-    {
-        std::string ret;
-        for (const ScopeInfo3 &i : scopeInfo) {
-            if (!i.name.empty())
-                ret += (ret.empty() ? "" : " :: ") + i.name;
-        }
-        return ret;
-    }
-
-    void setScopeInfo(Token *tok, std::list<ScopeInfo3> *scopeInfo, bool all = false)
+    void setScopeInfo(Token *tok, ScopeInfo3 **scopeInfo)
     {
         if (!tok)
             return;
-        if (tok->str() == "{" && !scopeInfo->empty() && tok == scopeInfo->back().bodyStart)
+        if (tok->str() == "{" && (*scopeInfo)->parent && tok == (*scopeInfo)->bodyStart)
             return;
-
-        while (tok->str() == "}" && !scopeInfo->empty() && tok == scopeInfo->back().bodyEnd)
-            scopeInfo->pop_back();
+        if (tok->str() == "}" && (*scopeInfo)->parent && tok == (*scopeInfo)->bodyEnd) {
+            *scopeInfo = (*scopeInfo)->parent;
+            return;
+        }
         if (!Token::Match(tok, "namespace|class|struct|union %name% {|:|::|<")) {
             // check for using namespace
             if (Token::Match(tok, "using namespace %name% ;|::")) {
@@ -1782,7 +1912,7 @@ namespace {
                     nameSpace += tok1->str();
                     tok1 = tok1->next();
                 }
-                scopeInfo->back().usingNamespaces.insert(nameSpace);
+                (*scopeInfo)->usingNamespaces.insert(nameSpace);
             }
             // check for member function
             else if (tok->str() == "{") {
@@ -1798,10 +1928,14 @@ namespace {
                             tok1 = tok1->previous();
                         if (tok1->strAt(-1) != ")")
                             return;
-                    } else if (Token::Match(tok->tokAt(-2), ":|, %name%")) {
-                        tok1 = tok1->tokAt(-2);
-                        if (tok1->strAt(-1) != ")")
-                            return;
+                        tok1 = tok1->linkAt(-1);
+                    } else {
+                        while (Token::Match(tok1->tokAt(-2), ":|, %name%")) {
+                            tok1 = tok1->tokAt(-2);
+                            if (tok1->strAt(-1) != ")")
+                                return;
+                            tok1 = tok1->linkAt(-1);
+                        }
                     }
                     if (tok1->strAt(-1) == ">")
                         tok1 = tok1->previous()->findOpeningBracket();
@@ -1815,13 +1949,13 @@ namespace {
                             scope = tok1->strAt(-3) + " :: " + scope;
                             tok1 = tok1->tokAt(-2);
                         }
-                        scopeInfo->emplace_back(scope, tok, tok->link());
+                        *scopeInfo = (*scopeInfo)->addChild(ScopeInfo3::MemberFunction, scope, tok, tok->link());
                         added = true;
                     }
                 }
 
-                if (all && !added)
-                    scopeInfo->emplace_back("", tok, tok->link());
+                if (!added)
+                    *scopeInfo = (*scopeInfo)->addChild(ScopeInfo3::Other, "", tok, tok->link());
             }
             return;
         }
@@ -1833,22 +1967,46 @@ namespace {
             tok = tok->tokAt(2);
             classname += " :: " + tok->str();
         }
+
         // add record type to scope info
         if (record)
-            scopeInfo->back().recordTypes.insert(classname);
+            (*scopeInfo)->recordTypes.insert(classname);
         tok = tok->next();
-        if (tok && tok->str() == ":") {
-            while (tok && !Token::Match(tok, ";|{"))
-                tok = tok->next();
-        }
+
         // skip template parameters
         if (tok && tok->str() == "<") {
             tok = tok->findClosingBracket();
             if (tok)
                 tok = tok->next();
         }
+
+        // get base class types
+        std::set<std::string> baseTypes;
+        if (tok && tok->str() == ":") {
+            do {
+                tok = tok->next();
+                while (Token::Match(tok, "public|protected|private|virtual"))
+                    tok = tok->next();
+                std::string base;
+                while (tok && !Token::Match(tok, ";|,|{")) {
+                    if (!base.empty())
+                        base += ' ';
+                    base += tok->str();
+                    tok = tok->next();
+                    // skip template parameters
+                    if (tok && tok->str() == "<") {
+                        tok = tok->findClosingBracket();
+                        if (tok)
+                            tok = tok->next();
+                    }
+                }
+                baseTypes.insert(base);
+            } while (tok && !Token::Match(tok, ";|{"));
+        }
+
         if (tok && tok->str() == "{") {
-            scopeInfo->emplace_back(classname, tok, tok->link());
+            *scopeInfo = (*scopeInfo)->addChild(record ? ScopeInfo3::Record : ScopeInfo3::Namespace, classname, tok, tok->link());
+            (*scopeInfo)->baseTypes = baseTypes;
         }
     }
 
@@ -1871,7 +2029,7 @@ namespace {
         const std::string &scope,
         Token **tok,
         const std::string &scope1,
-        const std::list<ScopeInfo3> &scopeList1)
+        const ScopeInfo3 *scopeInfo)
     {
         Token *tok1 = *tok;
 
@@ -1888,8 +2046,8 @@ namespace {
         if (tok1->strAt(-1) == "using") {
             // fixme: this is wrong
             // skip to end of scope
-            if (scopeList1.back().bodyEnd)
-                *tok = scopeList1.back().bodyEnd->previous();
+            if (scopeInfo->bodyEnd)
+                *tok = scopeInfo->bodyEnd->previous();
             return false;
         }
 
@@ -1904,7 +2062,7 @@ namespace {
         std::string::size_type index = scope.size();
         std::string::size_type new_index = std::string::npos;
         bool match = true;
-        while (tok2->strAt(-1) == "::") {
+        while (Token::Match(tok2->tokAt(-2), "%name% ::") && !tok2->tokAt(-2)->isKeyword()) {
             std::string last;
             if (match && !scope1.empty()) {
                 new_index = scope1.rfind(' ', index - 1);
@@ -1934,19 +2092,26 @@ namespace {
         if (scope == fullScope1)
             return true;
 
+        // check in base types
+        if (scopeInfo->findTypeInBase(scope))
+            return true;
+
         // check using namespace
-        for (std::list<ScopeInfo3>::const_reverse_iterator it = scopeList1.crbegin(); it != scopeList1.crend(); ++it) {
-            if (!it->usingNamespaces.empty()) {
+        const ScopeInfo3 * tempScope = scopeInfo;
+        while (tempScope) {
+            //if (!tempScope->parent->usingNamespaces.empty()) {
+            if (!tempScope->usingNamespaces.empty()) {
                 if (qualification.empty()) {
-                    if (it->usingNamespaces.find(scope) != it->usingNamespaces.end())
+                    if (tempScope->usingNamespaces.find(scope) != tempScope->usingNamespaces.end())
                         return true;
                 } else {
-                    for (auto ns : it->usingNamespaces) {
+                    for (auto ns : tempScope->usingNamespaces) {
                         if (scope == ns + " :: " + qualification)
                             return true;
                     }
                 }
             }
+            tempScope = tempScope->parent;
         }
 
         std::string newScope1 = scope1;
@@ -1993,18 +2158,47 @@ bool Tokenizer::isMemberFunction(const Token *openParen) const
            isFunctionHead(openParen, "{|:");
 }
 
+static bool scopesMatch(const std::string &scope1, const std::string &scope2, const ScopeInfo3 *globalScope)
+{
+    if (scope1.empty() || scope2.empty())
+        return false;
+
+    // check if scopes match
+    if (scope1 == scope2)
+        return true;
+
+    // check if scopes only differ by global qualification
+    if (scope1 == (":: " + scope2)) {
+        std::string::size_type end = scope2.find_first_of(' ');
+        if (end == std::string::npos)
+            end = scope2.size();
+        if (globalScope->hasChild(scope2.substr(0, end)))
+            return true;
+    } else if (scope2 == (":: " + scope1)) {
+        std::string::size_type end = scope1.find_first_of(' ');
+        if (end == std::string::npos)
+            end = scope1.size();
+        if (globalScope->hasChild(scope1.substr(0, end)))
+            return true;
+    }
+
+    return false;
+}
+
 bool Tokenizer::simplifyUsing()
 {
+    if (!isCPP() || mSettings->standards.cpp < Standards::CPP11)
+        return false;
+
     bool substitute = false;
-    std::list<ScopeInfo3> scopeList;
+    ScopeInfo3 scopeInfo;
+    ScopeInfo3 *currentScope = &scopeInfo;
     struct Using {
         Using(Token *start, Token *end) : startTok(start), endTok(end) { }
         Token *startTok;
         Token *endTok;
     };
     std::list<Using> usingList;
-
-    scopeList.emplace_back("", nullptr, nullptr);
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (mErrorLogger && !list.getFiles().empty())
@@ -2015,7 +2209,7 @@ bool Tokenizer::simplifyUsing()
 
         if (Token::Match(tok, "{|}|namespace|class|struct|union") ||
             Token::Match(tok, "using namespace %name% ;|::")) {
-            setScopeInfo(tok, &scopeList);
+            setScopeInfo(tok, &currentScope);
         }
 
         // skip template declarations
@@ -2023,11 +2217,11 @@ bool Tokenizer::simplifyUsing()
             // add template record type to scope info
             const Token *end = tok->next()->findClosingBracket();
             if (end && Token::Match(end->next(), "class|struct|union %name%"))
-                scopeList.back().recordTypes.insert(end->strAt(2));
+                currentScope->recordTypes.insert(end->strAt(2));
 
-            Token *endToken = TemplateSimplifier::findTemplateDeclarationEnd(tok);
-            if (endToken)
-                tok = endToken;
+            Token *declEndToken = TemplateSimplifier::findTemplateDeclarationEnd(tok);
+            if (declEndToken)
+                tok = declEndToken;
             continue;
         }
 
@@ -2038,11 +2232,9 @@ bool Tokenizer::simplifyUsing()
                 Token::Match(tok->linkAt(2), "] ] = ::| %name%")))))
             continue;
 
-        std::list<ScopeInfo3> scopeList1;
-        scopeList1.emplace_back("", nullptr, nullptr);
         std::string name = tok->strAt(1);
         const Token *nameToken = tok->next();
-        std::string scope = getScopeName(scopeList);
+        std::string scope = currentScope->fullName;
         Token *usingStart = tok;
         Token *start;
         if (tok->strAt(2) == "=")
@@ -2121,21 +2313,46 @@ bool Tokenizer::simplifyUsing()
         // Unfortunately we have to start searching from the beginning
         // of the token stream because templates are instantiated at
         // the end of the token stream and it may be used before then.
+        ScopeInfo3 scopeInfo1;
+        ScopeInfo3 *currentScope1 = &scopeInfo1;
+        Token *startToken = list.front();
+        Token *endToken = nullptr;
+
+        // We can limit the search to the current function when the type alias
+        // is defined in that function.
+        if (currentScope->type == ScopeInfo3::Other ||
+            currentScope->type == ScopeInfo3::MemberFunction) {
+            scopeInfo1 = scopeInfo;
+            currentScope1 = scopeInfo.findScope(currentScope);
+            if (!currentScope1)
+                return substitute; // something bad happened
+            startToken = usingEnd;
+            endToken = currentScope->bodyEnd->next();
+        }
+
         std::string scope1;
+        bool inMemberFunc = false;
+        const ScopeInfo3 * memberFuncScope = nullptr;
+        const Token * memberFuncEnd = nullptr;
         bool skip = false; // don't erase type aliases we can't parse
-        for (Token* tok1 = list.front(); tok1; tok1 = tok1->next()) {
+        for (Token* tok1 = startToken; !skip && tok1 && tok1 != endToken; tok1 = tok1->next()) {
             if ((Token::Match(tok1, "{|}|namespace|class|struct|union") && tok1->strAt(-1) != "using") ||
                 Token::Match(tok1, "using namespace %name% ;|::")) {
-                setScopeInfo(tok1, &scopeList1, true);
-                scope1 = getScopeName(scopeList1);
+                setScopeInfo(tok1, &currentScope1);
+                scope1 = currentScope1->fullName;
+                if (inMemberFunc && memberFuncEnd && tok1 == memberFuncEnd) {
+                    inMemberFunc = false;
+                    memberFuncScope = nullptr;
+                    memberFuncEnd = nullptr;
+                }
                 continue;
             }
 
             // skip template definitions
             if (Token::Match(tok1, "template < !!>")) {
-                Token *endToken = TemplateSimplifier::findTemplateDeclarationEnd(tok1);
-                if (endToken)
-                    tok1 = endToken;
+                Token *declEndToken = TemplateSimplifier::findTemplateDeclarationEnd(tok1);
+                if (declEndToken)
+                    tok1 = declEndToken;
                 continue;
             }
 
@@ -2143,20 +2360,32 @@ bool Tokenizer::simplifyUsing()
             if (tok1->str() == "enum")
                 skipEnumBody(&tok1);
 
+            if (!tok1)
+                break;
+
             // check for member function and adjust scope
             if (isMemberFunction(tok1)) {
                 if (!scope1.empty())
                     scope1 += " :: ";
                 scope1 += memberFunctionScope(tok1);
-            }
+                memberFuncScope = currentScope1->findScope(scope1);
 
-            if (!usingMatch(nameToken, scope, &tok1, scope1, scopeList1))
+                if (!memberFuncScope)
+                    continue;
+
+                inMemberFunc = true;
+                memberFuncEnd = currentScope1->bodyEnd;
+                continue;
+            } else if (inMemberFunc && memberFuncScope) {
+                if (!usingMatch(nameToken, scope, &tok1, scope1, memberFuncScope))
+                    continue;
+            } else if (!usingMatch(nameToken, scope, &tok1, scope1, currentScope1))
                 continue;
 
             // remove the qualification
             std::string fullScope = scope;
             std::string removed;
-            while (tok1->strAt(-1) == "::") {
+            while (Token::Match(tok1->tokAt(-2), "%name% ::") && !tok1->tokAt(-2)->isKeyword()) {
                 removed = (tok1->strAt(-2) + " :: ") + removed;
                 if (fullScope == tok1->strAt(-2)) {
                     tok1->deletePrevious();
@@ -2175,6 +2404,12 @@ bool Tokenizer::simplifyUsing()
                     } else
                         break;
                 }
+            }
+
+            // remove global namespace if present
+            if (tok1->strAt(-1) == "::") {
+                removed.insert(0, ":: ");
+                tok1->deletePrevious();
             }
 
             Token * arrayStart = nullptr;
@@ -2277,6 +2512,10 @@ bool Tokenizer::simplifyUsing()
                 } while (type && type->str() == "[");
             }
 
+            // make sure we are in a good state
+            if (!tok1 || !tok1->next())
+                break; // bail
+
             Token* after = tok1->next();
             // check if type was parsed
             if (type && type == usingEnd) {
@@ -2294,9 +2533,10 @@ bool Tokenizer::simplifyUsing()
                     std::string::size_type idx = removed1.rfind(" ::");
                     if (idx != std::string::npos)
                         removed1.resize(idx);
-                    if (removed1 == scope && !removed1.empty()) {
-                        for (std::list<ScopeInfo3>::const_reverse_iterator it = scopeList.crbegin(); it != scopeList.crend(); ++it) {
-                            if (it->recordTypes.find(start->str()) != it->recordTypes.end()) {
+                    if (scopesMatch(removed1, scope, &scopeInfo1)) {
+                        ScopeInfo3 * tempScope = currentScope;
+                        while (tempScope->parent) {
+                            if (tempScope->recordTypes.find(start->str()) != tempScope->recordTypes.end()) {
                                 std::string::size_type spaceIdx = 0;
                                 std::string::size_type startIdx = 0;
                                 while ((spaceIdx = removed1.find(" ", startIdx)) != std::string::npos) {
@@ -2312,6 +2552,7 @@ bool Tokenizer::simplifyUsing()
                                 break;
 
                             removed1.resize(idx);
+                            tempScope = tempScope->parent;
                         }
                     }
 
@@ -3434,8 +3675,8 @@ void Tokenizer::setVarId()
 #define NOTSTART_C "NOT", "case", "default", "goto", "not", "return", "sizeof", "typedef"
 static const std::unordered_set<std::string> notstart_c = { NOTSTART_C };
 static const std::unordered_set<std::string> notstart_cpp = { NOTSTART_C,
-                                                    "delete", "friend", "new", "throw", "using", "virtual", "explicit", "const_cast", "dynamic_cast", "reinterpret_cast", "static_cast", "template"
-                                                  };
+                                                              "delete", "friend", "new", "throw", "using", "virtual", "explicit", "const_cast", "dynamic_cast", "reinterpret_cast", "static_cast", "template"
+                                                            };
 
 void Tokenizer::setVarIdPass1()
 {
@@ -4494,6 +4735,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     removePragma();
 
+    // Simplify the C alternative tokens (and, or, etc.)
+    simplifyCAlternativeTokens();
+
     reportUnknownMacros();
 
     simplifyHeadersAndUnusedTemplates();
@@ -4550,9 +4794,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Combine tokens..
     combineOperators();
-
-    // Simplify the C alternative tokens (and, or, etc.)
-    simplifyCAlternativeTokens();
 
     // replace 'sin(0)' to '0' and other similar math expressions
     simplifyMathExpressions();
@@ -7342,7 +7583,7 @@ void Tokenizer::simplifyVariableMultipleAssign()
 }
 
 // Binary operators simplification map
-static const std::map<std::string, std::string> cAlternativeTokens = {
+static const std::unordered_map<std::string, std::string> cAlternativeTokens = {
     std::make_pair("and", "&&")
     , std::make_pair("and_eq", "&=")
     , std::make_pair("bitand", "&")
@@ -7398,7 +7639,7 @@ bool Tokenizer::simplifyCAlternativeTokens()
         if (!tok->isName())
             continue;
 
-        const std::map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok->str());
+        const std::unordered_map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok->str());
         if (cOpIt != cAlternativeTokens.end()) {
             alt.push_back(tok);
 
@@ -7421,6 +7662,11 @@ bool Tokenizer::simplifyCAlternativeTokens()
         } else if (Token::Match(tok, "not|compl")) {
             alt.push_back(tok);
 
+            if (Token::Match(tok->previous(), "%assign%") || Token::Match(tok->next(), "%num%")) {
+                replaceAll = true;
+                continue;
+            }
+
             // Don't simplify 'not p;' (in case 'not' is a type)
             if (!Token::Match(tok->next(), "%name%|(") ||
                 Token::Match(tok->previous(), "[;{}]") ||
@@ -7435,7 +7681,7 @@ bool Tokenizer::simplifyCAlternativeTokens()
         return false;
 
     for (Token *tok: alt) {
-        const std::map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok->str());
+        const std::unordered_map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok->str());
         if (cOpIt != cAlternativeTokens.end())
             tok->str(cOpIt->second);
         else if (tok->str() == "not")
@@ -7490,7 +7736,7 @@ Token * Tokenizer::initVar(Token * tok)
             return tok;
 
         tok = tok->next();
-    } else if (!tok->isStandardType() && tok->next()->str() != "*")
+    } else if (!tok->isStandardType() && tok->str() != "auto" && tok->next()->str() != "*")
         return tok;
 
     // goto variable name..
@@ -9821,15 +10067,15 @@ void Tokenizer::findGarbageCode() const
 
     // Keywords in global scope
     static const std::unordered_set<std::string> nonGlobalKeywords{"break",
-                                            "continue",
-                                            "for",
-                                            "goto",
-                                            "if",
-                                            "return",
-                                            "switch",
-                                            "while",
-                                            "try",
-                                            "catch"};
+        "continue",
+        "for",
+        "goto",
+        "if",
+        "return",
+        "switch",
+        "while",
+        "try",
+        "catch"};
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (tok->str() == "{")
             tok = tok->link();

@@ -24,6 +24,8 @@
 
 #include <cstddef>
 #include <cstring>
+// fix NAME_MAX not found on macOS GCC8.1
+#include <climits>
 
 #ifdef _WIN32
 

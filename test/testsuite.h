@@ -58,24 +58,18 @@ protected:
     template <typename T, typename U>
     bool assertEquals(const char* const filename, const unsigned int linenr, const T& expected, const U& actual, const std::string& msg = emptyString) const {
         if (expected != actual) {
-            ++fails_counter;
-
             std::ostringstream expectedStr;
             expectedStr << expected;
             std::ostringstream actualStr;
             actualStr << actual;
-
-            errmsg << getLocationStr(filename, linenr) << ": Assertion failed. " << std::endl
-                << "Expected: " << std::endl
-                << writestr(expectedStr.str()) << std::endl
-                << "Actual: " << std::endl
-                << writestr(actualStr.str()) << std::endl;
-            if (!msg.empty())
-                errmsg << "Hint:" << std::endl << msg << std::endl;
-            errmsg << "_____" << std::endl;
+            assertEqualsFailed(filename, linenr, expectedStr.str(), actualStr.str(), msg);
         }
         return expected == actual;
     }
+
+    //Helper function to be called when an assertEquals assertion fails.
+    //Writes the appropriate failure message to errmsg and increments fails_counter
+    void assertEqualsFailed(const char* const filename, const unsigned int linenr, const std::string& expected, const std::string& actual, const std::string& msg) const;
 
     bool assertEquals(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
     void assertEqualsWithoutLineNumbers(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;

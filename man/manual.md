@@ -304,39 +304,46 @@ In Linux you can use for instance the `bear` (build ear) utility to generate a c
 
 # Preprocessor Settings
 
-If you use `--project` then Cppcheck will use the preprocessor settings from the imported project. Otherwise you'll probably want to configure the include paths, defines, etc.
+If you use `--project` then Cppcheck will automatically use the preprocessor settings in the imported project file and
+likely you don't have to configure anything extra.
 
-## Defined and not defined
+If you don't use `--project` then a bit of manual preprocessor configuration might be required. However Cppcheck has
+automatic configuration of defines.
 
-Here is a file that has 2 preprocessor configurations with A defined and without A defined:
+## Automatic configuration of preprocessor defines
+
+Cppcheck automatically test different combinations of preprocessor defines to achieve as high coverage in the analysis
+as possible.
+
+Here is a file that has 3 bugs (when x,y,z are assigned).
 
     #ifdef A
-        x = y;
+        x=100/0;
+        #ifdef B
+            y=100/0;
+        #endif
     #else
-        x = z;
+        z=100/0;
     #endif
 
-By default Cppcheck will check all preprocessor configurations, except those that have #error in them.
-So the above code will by default be analyzed both with `A` defined and without `A` defined.
+    #ifndef C
+    #error C must be defined
+    #endif
 
-You can use `-D` and/or `-U` to change this. When you use `-D`, Cppcheck will by default only check the given configuration and nothing else. 
-This is how compilers work. But you can use `--force` or `--max-configs` to override the number of configurations.
 
-Check all configurations:
+The flag `-D` tells Cppcheck that a name is defined. There will be no Cppcheck analysis without this define.
+The flag `-U` tells Cppcheck that a name is not defined. There will be no Cppcheck analysis with this define.
+The flag `--force` and `--max-configs` is used to control how many combinations are checked. When `-D` is used,
+Cppcheck will only check 1 configuration unless these are used.
 
-    cppcheck file.c
+Example:
 
-Only check the configuration A:
+    cppcheck test.c => test all configurations => all bugs are found
+    cppcheck -DA test.c => only test configuration "-DA" => No bug is found (#error)
+    cppcheck -DA -DC test.c => only test configuration "-DA -DC" => The first bug is found
+    cppcheck -UA test.c => The configuration "-DC" is tested => The last bug is found
+    cppcheck --force -DA test.c => All configurations with "-DA" are tested => The two first bugs are found
 
-    cppcheck -DA file.c
-
-Check all configurations when macro A is defined:
-
-    cppcheck -DA --force file.c
-
-Another useful flag might be `-U`. It tells Cppcheck that a macro is not defined. Example usage:
-
-    cppcheck -UX file.c
 
 ## Include paths
 

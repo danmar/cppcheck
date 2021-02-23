@@ -122,7 +122,7 @@ private:
 
         TEST_CASE(valueFlowUninit);
 
-        TEST_CASE(valueFlowTerminatingCond);
+        TEST_CASE(valueFlowConditionExpressions);
 
         TEST_CASE(valueFlowContainerSize);
 
@@ -613,7 +613,7 @@ private:
 
         code = "void f(int i) {\n"
                "    X x;\n"
-               "    y = g(std::move(x), \n"
+               "    y = g(std::move(x),\n"
                "          x.size());\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, ValueFlow::Value::MoveKind::MovedVariable));
@@ -1266,7 +1266,7 @@ private:
                 "    if (x == 123) {}\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable y\n",
+            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y\n",
             errout.str());
     }
 
@@ -1383,7 +1383,7 @@ private:
                 "    y = ((x<0) ? x : ((x==2)?3:4));\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable y\n",
+            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y\n",
             errout.str());
 
         bailout("int f(int x) {\n"
@@ -1448,7 +1448,7 @@ private:
                 "    if (x == 123) {}\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable b\n",
+            "[test.cpp:2]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable b\n",
             errout.str());
 
         code = "void f(int x, bool abc) {\n"
@@ -1497,7 +1497,7 @@ private:
                 "    };\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n",
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n",
             errout.str());
 
         bailout("void f(int x, int y) {\n"
@@ -1507,7 +1507,7 @@ private:
                 "    };\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n",
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n",
             errout.str());
     }
 
@@ -1519,7 +1519,7 @@ private:
                 "    M;\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n"
             "[test.cpp:4]: (debug) valueflow.cpp:1260:(valueFlow) bailout: variable 'x', condition is defined in macro\n",
             errout.str());
 
@@ -1529,7 +1529,7 @@ private:
                 "    FREE(x);\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n"
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n"
             "[test.cpp:4]: (debug) valueflow.cpp:1260:(valueFlow) bailout: variable 'x', condition is defined in macro\n",
             errout.str());
     }
@@ -1543,7 +1543,7 @@ private:
                 "    if (x==123){}\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowTerminatingCondition bailout: Skipping function due to incomplete variable a\n",
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n",
             errout.str());
 
         // #5721 - FP
@@ -1556,7 +1556,7 @@ private:
                 "\n"
                 "out:\n"
                 "    if (abc) {}\n"
-                "}\n");
+                "}");
     }
 
     void valueFlowBeforeConditionForward() {
@@ -2472,7 +2472,7 @@ private:
         // protected usage with &&
         code = "void f(const Token* x) {\n"
                "    if (x) {}\n"
-               "    for (; x && \n"
+               "    for (; x &&\n"
                "         x->str() != y; x = x->next()) {}\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
@@ -2480,7 +2480,7 @@ private:
 
         code = "void f(const Token* x) {\n"
                "    if (x) {}\n"
-               "    if (x && \n"
+               "    if (x &&\n"
                "        x->str() != y) {}\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
@@ -2616,6 +2616,26 @@ private:
                "  return x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 7U, 0));
+
+        code = "void f(int x, int y) {\n"
+               "    if (x && y)\n"
+               "        return;\n"
+               "    int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 0));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 1));
+
+        code = "int f(std::vector<int> a, std::vector<int> b) {\n"
+               "    if (a.empty() && b.empty())\n"
+               "        return 0;\n"
+               "    bool x = a.empty() && !b.empty();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 5U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 5U, 1));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 5U, 0));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 5U, 1));
     }
 
     void valueFlowAfterConditionExpr() {
@@ -2813,9 +2833,9 @@ private:
 
         code = "void f(int i) {\n"
                "    int x = 0;\n"
-               "    if (i == 0) \n"
+               "    if (i == 0)\n"
                "        x = 1;\n"
-               "    else if (!x && i == 1) \n"
+               "    else if (!x && i == 1)\n"
                "        int b = x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 0));
@@ -3083,7 +3103,7 @@ private:
         values = tokenValues(code, "<");
         ASSERT_EQUALS(1, values.size());
         ASSERT(values.front().isPossible());
-        ASSERT_EQUALS(true, values.front().intvalue);
+        ASSERT_EQUALS(1, values.front().intvalue);
 
         code = "void f() {\n"
                "  S s;\n"
@@ -3123,7 +3143,7 @@ private:
         values = tokenValues(code, ">");
         ASSERT_EQUALS(1, values.size());
         ASSERT(values.front().isPossible());
-        ASSERT_EQUALS(true, values.front().intvalue);
+        ASSERT_EQUALS(1, values.front().intvalue);
 
         code = "void foo() {\n"
                "    struct ISO_PVD_s pvd;\n"
@@ -4200,9 +4220,62 @@ private:
                "}";
         values = tokenValues(code, "x . value");
         ASSERT_EQUALS(0, values.size());
+
+        // #10166
+        code = "int f(bool b) {\n"
+               "    int x;\n"
+               "    do {\n"
+               "      if (b) {\n"
+               "        x = 0;\n"
+               "        break;\n"
+               "      }\n"
+               "    } while (true);\n"
+               "    return x;\n"
+               "}\n";
+        values = tokenValues(code, "x ; }", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
+
+        code = "int f(bool b) {\n"
+               "    int x;\n"
+               "    while (true) {\n"
+               "      if (b) {\n"
+               "        x = 0;\n"
+               "        break;\n"
+               "      }\n"
+               "    }\n"
+               "    return x;\n"
+               "}\n";
+        values = tokenValues(code, "x ; }", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
+
+        code = "int f(bool b) {\n"
+               "    int x;\n"
+               "    for(;;) {\n"
+               "      if (b) {\n"
+               "        x = 0;\n"
+               "        break;\n"
+               "      }\n"
+               "    }\n"
+               "    return x;\n"
+               "}\n";
+        values = tokenValues(code, "x ; }", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
+
+        code = "int f(bool b) {\n"
+               "    int x;\n"
+               "    switch (b) {\n"
+               "      case 1: {\n"
+               "        ret = 0;\n"
+               "        break;\n"
+               "      }\n"
+               "    }\n"
+               "    return x;\n"
+               "}\n";
+        values = tokenValues(code, "x ; }", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
     }
 
-    void valueFlowTerminatingCond() {
+    void valueFlowConditionExpressions() {
         const char* code;
 
         // opposite condition
@@ -4230,7 +4303,7 @@ private:
 
         code = "void f(int i, int j, bool a) {\n"
                "    if (i != j) {}\n"
-               "    if (i == j) return; \n"
+               "    if (i == j) return;\n"
                "}\n";
         ASSERT_EQUALS(false, valueOfTok(code, "!=").intvalue == 1);
 
@@ -4262,7 +4335,7 @@ private:
         code = "void f(int i, int j, bool a) {\n"
                "    bool x = (i != j);\n"
                "    bool b = x;\n"
-               "    if (i != j) return; \n"
+               "    if (i != j) return;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, 0));
 
@@ -4271,6 +4344,60 @@ private:
                "    if(i != j) {}\n"
                "}\n";
         ASSERT_EQUALS(false, valueOfTok(code, "!=").intvalue == 1);
+
+        code = "void f(bool b, int i, int j) {\n"
+               "    if (b || i == j) return;\n"
+               "    if(i != j) {}\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 1);
+
+        code = "void f(bool b, int i, int j) {\n"
+               "    if (b && i == j) return;\n"
+               "    if(i != j) {}\n"
+               "}\n";
+        ASSERT_EQUALS(true, tokenValues(code, "!=").empty());
+
+        code = "void f(int i, int j) {\n"
+               "    if (i == j) {\n"
+               "        if (i != j) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 0);
+
+        code = "void f(int i, int j) {\n"
+               "    if (i == j) {} else {\n"
+               "        if (i != j) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 1);
+
+        code = "void f(bool b, int i, int j) {\n"
+               "    if (b && i == j) {\n"
+               "        if (i != j) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 0);
+
+        code = "void f(bool b, int i, int j) {\n"
+               "    if (b || i == j) {\n"
+               "        if (i != j) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, tokenValues(code, "!=").empty());
+
+        code = "void f(bool b, int i, int j) {\n"
+               "    if (b || i == j) {} else {\n"
+               "        if (i != j) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "!=").intvalue == 1);
+
+        code = "void f(bool b, int i, int j) {\n"
+               "    if (b && i == j) {} else {\n"
+               "        if (i != j) {}\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, tokenValues(code, "!=").empty());
 
         code = "void foo()\n" // #8924
                "{\n"
@@ -4305,6 +4432,73 @@ private:
                "}\n";
         ASSERT_EQUALS(true, valueOfTok(code, "> 0").isKnown());
         ASSERT_EQUALS(true, valueOfTok(code, "> 0").intvalue == 1);
+
+        //  FP #10110
+        code = "enum FENUMS { NONE = 0, CB = 8 };\n"
+               "bool calc(int x) {\n"
+               "    if (!x) {\n"
+               "        return false;\n"
+               "    }\n"
+               "\n"
+               "    if (x & CB) {\n"
+               "        return true;\n"
+               "    }\n"
+               "    return false;\n"
+               "}\n";
+        ASSERT_EQUALS(false, valueOfTok(code, "& CB").isKnown());
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 7U, 0));
+
+        code = "enum FENUMS { NONE = 0, CB = 8 };\n"
+               "bool calc(int x) {\n"
+               "    if (x) {\n"
+               "        return false;\n"
+               "    }\n"
+               "\n"
+               "    if ((!x) & CB) {\n"
+               "        return true;\n"
+               "    }\n"
+               "    return false;\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "& CB").isKnown());
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 7U, 0));
+
+        code = "enum FENUMS { NONE = 0, CB = 8 };\n"
+               "bool calc(int x) {\n"
+               "    if (!!x) {\n"
+               "        return false;\n"
+               "    }\n"
+               "\n"
+               "    if (x & CB) {\n"
+               "        return true;\n"
+               "    }\n"
+               "    return false;\n"
+               "}\n";
+        ASSERT_EQUALS(true, valueOfTok(code, "& CB").isKnown());
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 7U, 0));
+
+        code = "bool calc(bool x) {\n"
+               "    if (!x) {\n"
+               "        return false;\n"
+               "    }\n"
+               "\n"
+               "    if (x) {\n"
+               "        return true;\n"
+               "    }\n"
+               "    return false;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 1));
+
+        code = "bool calc(bool x) {\n"
+               "    if (x) {\n"
+               "        return false;\n"
+               "    }\n"
+               "\n"
+               "    if (!x) {\n"
+               "        return true;\n"
+               "    }\n"
+               "    return false;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 0));
     }
 
     static std::string isPossibleContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {
@@ -4326,6 +4520,18 @@ private:
             return "ContainerSizeValue";
         if (!values.front().isImpossible())
             return "Impossible";
+        if (values.front().intvalue != i)
+            return "intvalue:" + std::to_string(values.front().intvalue);
+        return "";
+    }
+
+    static std::string isInconclusiveContainerSizeValue(const std::list<ValueFlow::Value>& values, MathLib::bigint i) {
+        if (values.size() != 1)
+            return "values.size():" + std::to_string(values.size());
+        if (!values.front().isContainerSizeValue())
+            return "ContainerSizeValue";
+        if (!values.front().isInconclusive())
+            return "Inconclusive";
         if (values.front().intvalue != i)
             return "intvalue:" + std::to_string(values.front().intvalue);
         return "";
@@ -4884,6 +5090,50 @@ private:
                "     }\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "bool f(std::string s) {\n"
+               "    if (!s.empty()) {\n"
+               "        bool x = s == \"0\";\n"
+               "        return x;\n"
+               "    }\n"
+               "    return false;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
+
+        code = "bool f() {\n"
+               "    std::list<int> x1;\n"
+               "    std::list<int> x2;\n"
+               "    for (int i = 0; i < 10; ++i) {\n"
+               "        std::list<int>& x = (i < 5) ? x1 : x2;\n"
+               "        x.push_back(i);\n"
+               "    }\n"
+               "    return x1.empty() || x2.empty();\n"
+               "}\n";
+        ASSERT_EQUALS("", isInconclusiveContainerSizeValue(tokenValues(code, "x1 . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+        ASSERT_EQUALS("", isInconclusiveContainerSizeValue(tokenValues(code, "x2 . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+
+        code = "std::vector<int> g();\n"
+               "int f(bool b) {\n"
+               "    std::set<int> a;\n"
+               "    std::vector<int> c = g();\n"
+               "    a.insert(c.begin(), c.end());\n"
+               "    return a.size();\n"
+               "}\n";
+        ASSERT_EQUALS(true, tokenValues(code, "a . size", ValueFlow::Value::ValueType::CONTAINER_SIZE).empty());
+
+        code = "std::vector<int> g();\n"
+               "std::vector<int> f() {\n"
+               "    std::vector<int> v = g();\n"
+               "    if (!v.empty()) {\n"
+               "        if (v[0] != 0)\n"
+               "            v.clear();\n"
+               "    }\n"
+               "    if (!v.empty() && v[0] != 0) {}\n"
+               "    return v;\n"
+               "}\n";
+        ASSERT_EQUALS(true, tokenValues(code, "v [ 0 ] != 0 ) { }", ValueFlow::Value::ValueType::CONTAINER_SIZE).empty());
     }
 
     void valueFlowDynamicBufferSize() {

@@ -139,17 +139,17 @@ void Token::update_property_info()
 }
 
 static const std::unordered_set<std::string> stdTypes = { "bool"
-                                                , "_Bool"
-                                                , "char"
-                                                , "double"
-                                                , "float"
-                                                , "int"
-                                                , "long"
-                                                , "short"
-                                                , "size_t"
-                                                , "void"
-                                                , "wchar_t"
-                                              };
+                                                          , "_Bool"
+                                                          , "char"
+                                                          , "double"
+                                                          , "float"
+                                                          , "int"
+                                                          , "long"
+                                                          , "short"
+                                                          , "size_t"
+                                                          , "void"
+                                                          , "wchar_t"
+                                                        };
 
 void Token::update_property_isStandardType()
 {
@@ -186,7 +186,7 @@ bool Token::isUpperCaseName() const
 
 void Token::concatStr(std::string const& b)
 {
-    mStr.erase(mStr.length() - 1);
+    mStr.pop_back();
     mStr.append(getStringLiteral(b) + "\"");
 
     if (isCChar() && isStringLiteral(b) && b[0] != '"') {
@@ -1185,55 +1185,58 @@ void Token::printLines(int lines) const
     std::cout << stringifyList(stringifyOptions::forDebugExprId(), nullptr, end) << std::endl;
 }
 
-void Token::stringify(std::string& os, const stringifyOptions& options) const
+std::string Token::stringify(const stringifyOptions& options) const
 {
+    std::string ret;
     if (options.attributes) {
         if (isUnsigned())
-            os += "unsigned ";
+            ret += "unsigned ";
         else if (isSigned())
-            os += "signed ";
+            ret += "signed ";
         if (isComplex())
-            os += "_Complex ";
+            ret += "_Complex ";
         if (isLong()) {
             if (!(mTokType == eString || mTokType == eChar))
-                os += "long ";
+                ret += "long ";
         }
     }
     if (options.macro && isExpandedMacro())
-        os += '$';
+        ret += '$';
     if (isName() && mStr.find(' ') != std::string::npos) {
         for (char i : mStr) {
             if (i != ' ')
-                os += i;
+                ret += i;
         }
     } else if (mStr[0] != '\"' || mStr.find('\0') == std::string::npos)
-        os += mStr;
+        ret += mStr;
     else {
         for (char i : mStr) {
             if (i == '\0')
-                os += "\\0";
+                ret += "\\0";
             else
-                os += i;
+                ret += i;
         }
     }
     if (options.varid && mImpl->mVarId != 0) {
-        os += '@';
-        os += (options.idtype ? "var" : "");
-        os += std::to_string(mImpl->mVarId);
+        ret += '@';
+        ret += (options.idtype ? "var" : "");
+        ret += std::to_string(mImpl->mVarId);
     } else if (options.exprid && mImpl->mExprId != 0) {
-        os += '@';
-        os += (options.idtype ? "expr" : "");
-        os += std::to_string(mImpl->mExprId);
+        ret += '@';
+        ret += (options.idtype ? "expr" : "");
+        ret += std::to_string(mImpl->mExprId);
     }
+
+    return ret;
 }
 
-void Token::stringify(std::string& os, bool varid, bool attributes, bool macro) const
+std::string Token::stringify(bool varid, bool attributes, bool macro) const
 {
     stringifyOptions options;
     options.varid = varid;
     options.attributes = attributes;
     options.macro = macro;
-    stringify(os, options);
+    return stringify(options);
 }
 
 std::string Token::stringifyList(const stringifyOptions& options, const std::vector<std::string>* fileNames, const Token* end) const
@@ -1303,7 +1306,7 @@ std::string Token::stringifyList(const stringifyOptions& options, const std::vec
             lineNumber = tok->linenr();
         }
 
-        tok->stringify(ret, options); // print token
+        ret += tok->stringify(options); // print token
         if (tok->next() != end && (!options.linebreaks || (tok->next()->linenr() == tok->linenr() && tok->next()->fileIndex() == tok->fileIndex())))
             ret += ' ';
     }
@@ -1540,7 +1543,7 @@ static void astStringXml(const Token *tok, nonneg int indent, std::ostream &out)
     const std::string strindent(indent, ' ');
 
     out << strindent << "<token str=\"" << tok->str() << '\"';
-    if (tok->varId() > 0U)
+    if (tok->varId())
         out << " varId=\"" << MathLib::toString(tok->varId()) << '\"';
     if (tok->variable())
         out << " variable=\"" << tok->variable() << '\"';
@@ -1680,6 +1683,8 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     out << "always ";
                     break;
                 case ValueFlow::Value::ValueKind::Inconclusive:
+                    out << "inconclusive ";
+                    break;
                 case ValueFlow::Value::ValueKind::Possible:
                     out << "possible ";
                     break;
@@ -1778,7 +1783,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     out << "end=" << value.intvalue;
                     break;
                 case ValueFlow::Value::ValueType::LIFETIME:
-                    out << "lifetime=" << value.tokvalue->str();
+                    out << "lifetime=" << "(" << value.tokvalue->expressionString() << ")";
                     break;
                 }
                 if (value.indirect > 0)

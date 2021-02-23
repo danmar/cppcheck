@@ -1105,7 +1105,7 @@ void CheckStl::invalidContainerLoopError(const Token *tok, const Token * loopTok
     reportError(errorPath, Severity::error, "invalidContainerLoop", msg, CWE664, false);
 }
 
-void CheckStl::invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val, ErrorPath errorPath)
+void CheckStl::invalidContainerError(const Token *tok, const Token * /*contTok*/, const ValueFlow::Value *val, ErrorPath errorPath)
 {
     const bool inconclusive = val ? val->isInconclusive() : false;
     if (val)
@@ -1340,19 +1340,24 @@ void CheckStl::stlBoundariesError(const Token *tok)
                 "container is not guaranteed. One should use operator!= instead to compare iterators.", CWE664, false);
 }
 
-static bool if_findCompare(const Token * const tokBack)
+static bool if_findCompare(const Token * const tokBack, bool stdStringLike)
 {
     const Token *tok = tokBack->astParent();
     if (!tok)
         return true;
-    if (tok->isComparisonOp())
+    if (tok->isComparisonOp()) {
+        if (stdStringLike) {
+            const Token * const tokOther = tokBack->astSibling();
+            return !tokOther->hasKnownIntValue() || tokOther->getKnownIntValue() != 0;
+        }
         return (!tok->astOperand1()->isNumber() && !tok->astOperand2()->isNumber());
+    }
     if (tok->isArithmeticalOp()) // result is used in some calculation
         return true;  // TODO: check if there is a comparison of the result somewhere
     if (tok->str() == ".")
         return true; // Dereferencing is OK, the programmer might know that the element exists - TODO: An inconclusive warning might be appropriate
     if (tok->isAssignmentOp())
-        return if_findCompare(tok); // Go one step upwards in the AST
+        return if_findCompare(tok, stdStringLike); // Go one step upwards in the AST
     return false;
 }
 
@@ -1411,7 +1416,7 @@ void CheckStl::if_find()
             }
 
             if (container && container->getAction(funcTok->str()) == Library::Container::Action::FIND) {
-                if (if_findCompare(funcTok->next()))
+                if (if_findCompare(funcTok->next(), container->stdStringLike))
                     continue;
 
                 if (printWarning && container->getYield(funcTok->str()) == Library::Container::Yield::ITERATOR)
@@ -1420,7 +1425,7 @@ void CheckStl::if_find()
                     if_findError(tok, true);
             } else if (printWarning && Token::Match(tok, "std :: find|find_if (")) {
                 // check that result is checked properly
-                if (!if_findCompare(tok->tokAt(3))) {
+                if (!if_findCompare(tok->tokAt(3), false)) {
                     if_findError(tok, false);
                 }
             }
@@ -1741,7 +1746,7 @@ void CheckStl::missingComparison()
                         if (!tok3)
                             break;
                     } else if (Token::simpleMatch(tok3->astParent(), "++"))
-                            incrementToken = tok3;
+                        incrementToken = tok3;
                     else if (Token::simpleMatch(tok3->astParent(), "+")) {
                         if (Token::Match(tok3->astSibling(), "%num%")) {
                             const Token* tokenGrandParent = tok3->astParent()->astParent();
@@ -1799,21 +1804,15 @@ void CheckStl::string_c_str()
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Find all functions that take std::string as argument
-    std::multimap<std::string, int> c_strFuncParam;
+    std::multimap<const Function*, int> c_strFuncParam;
     if (printPerformance) {
         for (const Scope &scope : symbolDatabase->scopeList) {
             for (const Function &func : scope.functionList) {
-                if (c_strFuncParam.erase(func.tokenDef->str()) != 0) { // Check if function with this name was already found
-                    c_strFuncParam.insert(std::make_pair(func.tokenDef->str(), 0)); // Disable, because there are overloads. TODO: Handle overloads
-                    continue;
-                }
-
                 int numpar = 0;
-                c_strFuncParam.insert(std::make_pair(func.tokenDef->str(), numpar)); // Insert function as dummy, to indicate that there is at least one function with that name
                 for (const Variable &var : func.argumentList) {
                     numpar++;
                     if (var.isStlStringType() && (!var.isReference() || var.isConst()))
-                        c_strFuncParam.insert(std::make_pair(func.tokenDef->str(), numpar));
+                        c_strFuncParam.insert(std::make_pair(&func, numpar));
                 }
             }
         }
@@ -1837,21 +1836,23 @@ void CheckStl::string_c_str()
             if (Token::Match(tok, "throw %var% . c_str|data ( ) ;") && isLocal(tok->next()) &&
                 tok->next()->variable() && tok->next()->variable()->isStlStringType()) {
                 string_c_strThrowError(tok);
-            } else if (Token::Match(tok, "[;{}] %name% = %var% . str ( ) . c_str|data ( ) ;")) {
-                const Variable* var = tok->next()->variable();
-                const Variable* var2 = tok->tokAt(3)->variable();
-                if (var && var->isPointer() && var2 && var2->isStlType(stl_string_stream))
-                    string_c_strError(tok);
-            } else if (Token::Match(tok, "[;{}] %var% = %name% (") &&
-                       Token::Match(tok->linkAt(4), ") . c_str|data ( ) ;") &&
-                       tok->tokAt(3)->function() && Token::Match(tok->tokAt(3)->function()->retDef, "std :: string|wstring %name%")) {
-                const Variable* var = tok->next()->variable();
-                if (var && var->isPointer())
-                    string_c_strError(tok);
-            } else if (printPerformance && Token::Match(tok, "%name% ( !!)") && c_strFuncParam.find(tok->str()) != c_strFuncParam.end() &&
-                       !Token::Match(tok->previous(), "::|.") && tok->varId() == 0 && tok->str() != scope.className) { // calling function. TODO: Add support for member functions
-                const std::pair<std::multimap<std::string, int>::const_iterator, std::multimap<std::string, int>::const_iterator> range = c_strFuncParam.equal_range(tok->str());
-                for (std::multimap<std::string, int>::const_iterator i = range.first; i != range.second; ++i) {
+            } else if (tok->variable() && tok->strAt(1) == "=") {
+                if (Token::Match(tok->tokAt(2), "%var% . str ( ) . c_str|data ( ) ;")) {
+                    const Variable* var = tok->variable();
+                    const Variable* var2 = tok->tokAt(2)->variable();
+                    if (var->isPointer() && var2 && var2->isStlType(stl_string_stream))
+                        string_c_strError(tok);
+                } else if (Token::Match(tok->tokAt(2), "%name% (") &&
+                           Token::Match(tok->linkAt(3), ") . c_str|data ( ) ;") &&
+                           tok->tokAt(2)->function() && Token::Match(tok->tokAt(2)->function()->retDef, "std :: string|wstring %name%")) {
+                    const Variable* var = tok->variable();
+                    if (var->isPointer())
+                        string_c_strError(tok);
+                }
+            } else if (printPerformance && tok->function() && Token::Match(tok, "%name% ( !!)") && c_strFuncParam.find(tok->function()) != c_strFuncParam.end() &&
+                       tok->str() != scope.className) {
+                const std::pair<std::multimap<const Function*, int>::const_iterator, std::multimap<const Function*, int>::const_iterator> range = c_strFuncParam.equal_range(tok->function());
+                for (std::multimap<const Function*, int>::const_iterator i = range.first; i != range.second; ++i) {
                     if (i->second == 0)
                         continue;
 
@@ -1884,7 +1885,7 @@ void CheckStl::string_c_str()
             }
 
             // Using c_str() to get the return value is only dangerous if the function returns a char*
-            if ((returnType == charPtr || (printPerformance && (returnType == stdString || returnType == stdStringConstRef))) && tok->str() == "return") {
+            else if ((returnType == charPtr || (printPerformance && (returnType == stdString || returnType == stdStringConstRef))) && tok->str() == "return") {
                 bool err = false;
 
                 const Token* tok2 = tok->next();

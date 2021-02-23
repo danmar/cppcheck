@@ -3,6 +3,7 @@
 # Server for 'donate-cpu.py'
 # Runs only under Python 3.
 
+import collections
 import glob
 import json
 import os
@@ -10,6 +11,7 @@ import socket
 import re
 import datetime
 import time
+import traceback
 from threading import Thread
 import sys
 import urllib.request
@@ -18,11 +20,12 @@ import urllib.error
 import logging
 import logging.handlers
 import operator
+import html as html_lib
 
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.8"
+SERVER_VERSION = "1.3.16"
 
 OLD_VERSION = '2.3'
 
@@ -72,7 +75,9 @@ def overviewReport() -> str:
     html += '<a href="diff.html">Diff report</a><br>\n'
     html += '<a href="head.html">HEAD report</a><br>\n'
     html += '<a href="latest.html">Latest results</a><br>\n'
-    html += '<a href="time.html">Time report</a><br>\n'
+    html += '<a href="time_lt.html">Time report (improved)</a><br>\n'
+    html += '<a href="time_gt.html">Time report (regressed)</a><br>\n'
+    html += '<a href="time_slow.html">Time report (slowest)</a><br>\n'
     html += '<a href="check_library_function_report.html">checkLibraryFunction report</a><br>\n'
     html += '<a href="check_library_noreturn_report.html">checkLibraryNoReturn report</a><br>\n'
     html += '<a href="check_library_use_ignore_report.html">checkLibraryUseIgnore report</a><br>\n'
@@ -154,7 +159,7 @@ def crashReport(results_path: str) -> str:
     current_year = datetime.date.today().year
     stack_traces = {}
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         datestr = ''
         with open(filename, 'rt') as file_:
@@ -169,11 +174,11 @@ def crashReport(results_path: str) -> str:
                         continue
                 if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                     datestr = line
-                if line.startswith('count:'):
+                elif line.startswith('count:'):
                     if line.find('Crash') < 0:
                         break
                     package = filename[filename.rfind('/')+1:]
-                    counts = line.strip().split(' ')
+                    counts = line.split(' ')
                     c2 = ''
                     if counts[2] == 'Crash!':
                         c2 = 'Crash'
@@ -183,27 +188,45 @@ def crashReport(results_path: str) -> str:
                     html += fmt(package, datestr, c2, c1) + '\n'
                     if c1 != 'Crash':
                         break
-                if line.find(' received signal ') != -1:
+                elif line.find(' received signal ') != -1:
                     crash_line = next(file_, '').strip()
-                    location_index = crash_line.rindex(' at ')
+                    location_index = crash_line.rfind(' at ')
                     if location_index > 0:
                         code_line = next(file_, '').strip()
-                        stack_trace = []
-                        while True:
-                            l = next(file_, '')
-                            m = re.search(r'(?P<number>#\d+) .* (?P<function>.+)\(.*\) at (?P<location>.*)$', l)
-                            if not m:
-                                break
+                    else:
+                        code_line = ''
+                    stack_trace = []
+                    while True:
+                        l = next(file_, '')
+                        if not l.strip():
+                            break
+                        # #0  0x00007ffff71cbf67 in raise () from /lib64/libc.so.6
+                        m = re.search(r'(?P<number>#\d+) .* in (?P<function>.+)\(.*\) from (?P<binary>.*)$', l)
+                        if m:
+                            stack_trace.append(m.group('number') + ' ' + m.group('function') + '(...) from ' + m.group('binary'))
+                            continue
+                        # #11 0x00000000006f2414 in valueFlowNumber (tokenlist=tokenlist@entry=0x7fffffffc610) at build/valueflow.cpp:2503
+                        m = re.search(r'(?P<number>#\d+) .* in (?P<function>.+)\(.*\) at (?P<location>.*)$', l)
+                        if m:
                             stack_trace.append(m.group('number') + ' ' + m.group('function') + '(...) at ' + m.group('location'))
-                        key = hash(' '.join(stack_trace))
+                            continue
+                        # #18 ForwardTraversal::updateRecursive (this=0x7fffffffb3c0, tok=0x14668a0) at build/forwardanalyzer.cpp:415
+                        m = re.search(r'(?P<number>#\d+) (?P<function>.+)\(.*\) at (?P<location>.*)$', l)
+                        if m:
+                            stack_trace.append(m.group('number') + ' ' + m.group('function') + '(...) at ' + m.group('location'))
+                            continue
 
-                        if key in stack_traces:
-                            stack_traces[key]['code_line'] = code_line
-                            stack_traces[key]['stack_trace'] = stack_trace
-                            stack_traces[key]['n'] += 1
-                            stack_traces[key]['packages'].append(package)
-                        else:
-                            stack_traces[key] = {'stack_trace': stack_trace, 'n': 1, 'code_line': code_line, 'packages': [package], 'crash_line': crash_line}
+                        print('{} - unmatched stack frame - {}'.format(package, l))
+                        break
+                    key = hash(' '.join(stack_trace))
+
+                    if key in stack_traces:
+                        stack_traces[key]['code_line'] = code_line
+                        stack_traces[key]['stack_trace'] = stack_trace
+                        stack_traces[key]['n'] += 1
+                        stack_traces[key]['packages'].append(package)
+                    else:
+                        stack_traces[key] = {'stack_trace': stack_trace, 'n': 1, 'code_line': code_line, 'packages': [package], 'crash_line': crash_line}
                     break
 
     html += '</pre>\n'
@@ -211,9 +234,9 @@ def crashReport(results_path: str) -> str:
     html += '<b>Stack traces</b>\n'
     for stack_trace in sorted(list(stack_traces.values()), key=lambda x: x['n'], reverse=True):
         html += 'Packages: ' + ' '.join(['<a href="' + p + '">' + p + '</a>' for p in stack_trace['packages']]) + '\n'
-        html += stack_trace['crash_line'] + '\n'
-        html += stack_trace['code_line'] + '\n'
-        html += '\n'.join(stack_trace['stack_trace']) + '\n\n'
+        html += html_lib.escape(stack_trace['crash_line']) + '\n'
+        html += html_lib.escape(stack_trace['code_line']) + '\n'
+        html += html_lib.escape('\n'.join(stack_trace['stack_trace'])) + '\n\n'
     html += '</pre>\n'
 
     html += '</body></html>\n'
@@ -227,7 +250,7 @@ def timeoutReport(results_path: str) -> str:
     html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', link=False) + '</b>\n'
     current_year = datetime.date.today().year
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         datestr = ''
         with open(filename, 'rt') as file_:
@@ -242,11 +265,11 @@ def timeoutReport(results_path: str) -> str:
                         continue
                 if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                     datestr = line
-                if line.startswith('count:'):
+                elif line.startswith('count:'):
                     if line.find('TO!') < 0:
                         break
                     package = filename[filename.rfind('/')+1:]
-                    counts = line.strip().split(' ')
+                    counts = line.split(' ')
                     c2 = ''
                     if counts[2] == 'TO!':
                         c2 = 'Timeout'
@@ -268,7 +291,7 @@ def staleReport(results_path: str) -> str:
     html += '<b>' + fmt('Package', 'Date       Time', link=False) + '</b>\n'
     current_year = datetime.date.today().year
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         for line in open(filename, 'rt'):
             line = line.strip()
@@ -377,7 +400,6 @@ def generate_package_diff_statistics(filename: str) -> None:
         if not line.endswith(']'):
             continue
 
-        version = None
         if line.startswith(OLD_VERSION + ' '):
             version = OLD_VERSION
         elif line.startswith('head '):
@@ -498,7 +520,7 @@ def headReport(resultsPath: str) -> str:
     today = strDateTime()[:10]
 
     for filename in sorted(glob.glob(resultsPath + '/*')):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         uploadedToday = False
         firstLine = True
@@ -560,7 +582,7 @@ def headMessageIdReport(resultPath: str, messageId: str) -> str:
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
     for filename in sorted(glob.glob(resultPath + '/*')):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         url = None
         headResults = False
@@ -586,7 +608,7 @@ def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
     e = '[' + messageId + ']\n'
     today = strDateTime()[:10]
     for filename in sorted(glob.glob(resultPath + '/*')):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         url = None
         headResults = False
@@ -612,21 +634,28 @@ def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
     return text
 
 
-def timeReport(resultPath: str) -> str:
-    html = '<html><head><title>Time report</title></head><body>\n'
-    html += '<h1>Time report</h1>\n'
+def timeReport(resultPath: str, show_gt: bool) -> str:
+    title = 'Time report ({})'.format('regressed' if show_gt else 'improved')
+    html = '<html><head><title>{}</title></head><body>\n'.format(title)
+    html += '<h1>{}</h1>\n'.format(title)
     html += '<pre>\n'
-    column_width = [40, 10, 10, 10, 10]
+    column_width = [40, 10, 10, 10, 10, 10]
     html += '<b>'
-    html += fmt('Package', OLD_VERSION, 'Head', 'Factor', link=False, column_width=column_width)
+    html += fmt('Package', 'Date       Time', OLD_VERSION, 'Head', 'Factor', link=False, column_width=column_width)
     html += '</b>\n'
+
+    current_year = datetime.date.today().year
+
+    data = {}
 
     total_time_base = 0.0
     total_time_head = 0.0
     for filename in glob.glob(resultPath + '/*'):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
+        datestr = ''
         for line in open(filename, 'rt'):
+            line = line.strip()
             if line.startswith('cppcheck: '):
                 if OLD_VERSION not in line:
                     # Package results seem to be too old, skip
@@ -634,9 +663,12 @@ def timeReport(resultPath: str) -> str:
                 else:
                     # Current package, parse on
                     continue
+            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+                datestr = line
+                continue
             if not line.startswith('elapsed-time:'):
                 continue
-            split_line = line.strip().split()
+            split_line = line.split()
             time_base = float(split_line[2])
             time_head = float(split_line[1])
             if time_base < 0.0 or time_head < 0.0:
@@ -645,21 +677,32 @@ def timeReport(resultPath: str) -> str:
             total_time_base += time_base
             total_time_head += time_head
             suspicious_time_difference = False
-            if time_base > 1 and time_base*2 < time_head:
+            if show_gt and time_base > 1 and time_base*2 < time_head:
                 suspicious_time_difference = True
-            elif time_head > 1 and time_head*2 < time_base:
+            elif not show_gt and time_head > 1 and time_head*2 < time_base:
                 suspicious_time_difference = True
             if suspicious_time_difference:
                 if time_base > 0.0:
                     time_factor = time_head / time_base
                 else:
                     time_factor = 0.0
-                html += fmt(filename[len(resultPath)+1:], split_line[2], split_line[1],
-                    '{:.2f}'.format(time_factor), column_width=column_width) + '\n'
+                pkg_name = filename[len(resultPath)+1:]
+                data[pkg_name] = (datestr, split_line[2], split_line[1], time_factor)
             break
 
+    sorted_data = sorted(data.items(), key=lambda kv: kv[1][3], reverse=show_gt)
+    sorted_dict = collections.OrderedDict(sorted_data)
+    for key in sorted_dict:
+        html += fmt(key, sorted_dict[key][0], sorted_dict[key][1], sorted_dict[key][2], '{:.2f}'.format(sorted_dict[key][3]),
+                    column_width=column_width) + '\n'
+
     html += '\n'
-    html += '(listed above are all suspicious timings with a factor &lt;0.50 or &gt;2.00)\n'
+    html += '(listed above are all suspicious timings with a factor '
+    if show_gt:
+        html += '&gt;2.00'
+    else:
+        html += '&lt;=0.50'
+    html += ')\n'
     html += '\n'
     if total_time_base > 0.0:
         total_time_factor = total_time_head / total_time_base
@@ -667,11 +710,75 @@ def timeReport(resultPath: str) -> str:
         total_time_factor = 0.0
     html += 'Time for all packages (not just the ones listed above):\n'
     html += fmt('Total time:',
+            '',
             '{:.1f}'.format(total_time_base),
             '{:.1f}'.format(total_time_head),
             '{:.2f}'.format(total_time_factor), link=False, column_width=column_width)
 
     html += '\n'
+    html += '</pre>\n'
+    html += '</body></html>\n'
+
+    return html
+
+
+def timeReportSlow(resultPath: str) -> str:
+    title = 'Time report (slowest)'
+    html = '<html><head><title>{}</title></head><body>\n'.format(title)
+    html += '<h1>{}</h1>\n'.format(title)
+    html += '<pre>\n'
+    html += '<b>'
+    html += fmt('Package', 'Date       Time', OLD_VERSION, 'Head', link=False)
+    html += '</b>\n'
+
+    current_year = datetime.date.today().year
+
+    data = {}
+
+    for filename in glob.glob(resultPath + '/*'):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
+            continue
+        datestr = ''
+        for line in open(filename, 'rt'):
+            line = line.strip()
+            if line.startswith('cppcheck: '):
+                if OLD_VERSION not in line:
+                    # Package results seem to be too old, skip
+                    break
+                else:
+                    # Current package, parse on
+                    continue
+            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+                datestr = line
+                continue
+            elif line.startswith('count:'):
+                count_head = line.split()[1]
+                if count_head == 'TO!':
+                    # ignore results with timeouts
+                    break
+                continue
+            if not line.startswith('elapsed-time:'):
+                continue
+            split_line = line.split()
+            time_base = float(split_line[2])
+            time_head = float(split_line[1])
+            if time_base < 0.0 or time_head < 0.0:
+                # ignore results with crashes / errors
+                break
+            pkg_name = filename[len(resultPath)+1:]
+            data[pkg_name] = (datestr, split_line[2], split_line[1], time_head)
+            break
+
+        sorted_data = sorted(data.items(), key=lambda kv: kv[1][3])
+        if len(data) > 100:
+            first_key, _ = sorted_data[0]
+            # remove the entry with the lowest run-time
+            del data[first_key]
+
+    sorted_data = sorted(data.items(), key=lambda kv: kv[1][3], reverse=True)
+    sorted_dict = collections.OrderedDict(sorted_data)
+    for key in sorted_dict:
+        html += fmt(key, sorted_dict[key][0], sorted_dict[key][1], sorted_dict[key][2]) + '\n'
     html += '</pre>\n'
     html += '</body></html>\n'
 
@@ -697,7 +804,7 @@ def check_library_report(result_path: str, message_id: str) -> str:
 
     function_counts = {}
     for filename in glob.glob(result_path + '/*'):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         info_messages = False
         for line in open(filename, 'rt'):
@@ -739,7 +846,7 @@ def check_library_function_name(result_path: str, function_name: str) -> str:
     function_name = urllib.parse.unquote_plus(function_name)
     output_lines_list = []
     for filename in glob.glob(result_path + '/*'):
-        if not os.path.isfile(filename):
+        if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         info_messages = False
         url = None
@@ -839,8 +946,14 @@ class HttpClientThread(Thread):
                 messageId = url[5:]
                 text = headMessageIdReport(self.resultPath, messageId)
                 httpGetResponse(self.connection, text, 'text/plain')
-            elif url == 'time.html':
-                text = timeReport(self.resultPath)
+            elif url == 'time_lt.html':
+                text = timeReport(self.resultPath, False)
+                httpGetResponse(self.connection, text, 'text/html')
+            elif url == 'time_gt.html':
+                text = timeReport(self.resultPath, True)
+                httpGetResponse(self.connection, text, 'text/html')
+            elif url == 'time_slow.html':
+                text = timeReportSlow(self.resultPath)
                 httpGetResponse(self.connection, text, 'text/html')
             elif url == 'check_library_function_report.html':
                 text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryFunction')
@@ -866,6 +979,10 @@ class HttpClientThread(Thread):
                     data = f.read()
                     f.close()
                     httpGetResponse(self.connection, data, 'text/plain')
+        except:
+            tb = "".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]))
+            print(tb)
+            httpGetResponse(self.connection, tb, 'text/plain')
         finally:
             time.sleep(1)
             self.connection.close()
@@ -950,7 +1067,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                         time.sleep(0.2)
                         t += 0.2
                 connection.close()
-            except socket.error as e:
+            except socket.error:
                 pass
 
             pos = data.find('\n')
@@ -1019,7 +1136,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                         time.sleep(0.2)
                         t += 0.2
                 connection.close()
-            except socket.error as e:
+            except socket.error:
                 pass
 
             pos = data.find('\n')

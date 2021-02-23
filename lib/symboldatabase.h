@@ -240,7 +240,13 @@ public:
              const Token *typeEnd, nonneg int index_, AccessControl access_,
              const Type *type_, const Scope *scope_);
 
+    Variable(const Variable &var, const Scope *scope);
+
+    Variable(const Variable &var);
+
     ~Variable();
+
+    Variable &operator=(const Variable &var);
 
     /**
      * Get name token.
@@ -895,7 +901,7 @@ public:
     const Token *templateDef;         ///< points to 'template <' before function
     const Token *functionPointerUsage; ///< function pointer usage
 
-    static bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length);
+    bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length) const;
 
     static bool returnsReference(const Function* function, bool unknown = false);
 
@@ -1150,6 +1156,8 @@ public:
 
     const Token * addEnum(const Token * tok, bool isCpp);
 
+    const Scope *findRecordInBase(const std::string &name) const;
+
 private:
     /**
      * @brief helper function for getVariableList()
@@ -1234,6 +1242,21 @@ public:
           containerTypeToken(nullptr),
           originalTypeName(otn)
     {}
+    ValueType(const ValueType &vt)
+        : sign(vt.sign)
+        , type(vt.type)
+        , bits(vt.bits)
+        , pointer(vt.pointer)
+        , constness(vt.constness)
+        , reference(vt.reference)
+        , typeScope(vt.typeScope)
+        , smartPointerType(vt.smartPointerType)
+        , smartPointerTypeToken(vt.smartPointerTypeToken)
+        , container(vt.container)
+        , containerTypeToken(vt.containerTypeToken)
+        , originalTypeName(vt.originalTypeName)
+    {}
+
     static ValueType parseDecl(const Token *type, const Settings *settings);
 
     static Type typeFromString(const std::string &typestr, bool longType);
@@ -1306,6 +1329,10 @@ public:
     const Scope *findScope(const Token *tok, const Scope *startScope) const;
     Scope *findScope(const Token *tok, Scope *startScope) const {
         return const_cast<Scope *>(this->findScope(tok, const_cast<const Scope *>(startScope)));
+    }
+
+    bool isVarId(nonneg int varid) const {
+        return varid < mVariableList.size();
     }
 
     const Variable *getVariableFromVarId(nonneg int varId) const {

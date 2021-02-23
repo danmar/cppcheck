@@ -78,8 +78,6 @@ struct ReverseTraversal {
         int opSide = 0;
         for (; tok && tok->astParent(); tok = tok->astParent()) {
             Token* parent = tok->astParent();
-            if (tok != parent->astOperand2())
-                continue;
             if (Token::simpleMatch(parent, ":")) {
                 if (astIsLHS(tok))
                     opSide = 1;
@@ -88,6 +86,8 @@ struct ReverseTraversal {
                 else
                     opSide = 0;
             }
+            if (tok != parent->astOperand2())
+                continue;
             if (!Token::Match(parent, "%oror%|&&|?"))
                 continue;
             Token* condTok = parent->astOperand1();
@@ -103,9 +103,9 @@ struct ReverseTraversal {
             }
 
             if (parent->str() == "?") {
-                if (!checkElse && opSide == 1)
+                if (checkElse && opSide == 1)
                     return parent;
-                if (!checkThen && opSide == 2)
+                if (checkThen && opSide == 2)
                     return parent;
             }
             if (!checkThen && parent->str() == "&&")
@@ -116,8 +116,10 @@ struct ReverseTraversal {
         return nullptr;
     }
 
-    void traverse(Token* start) {
-        for (Token* tok = start->previous(); tok; tok = tok->previous()) {
+    void traverse(Token* start, const Token* end = nullptr) {
+        if (start == end)
+            return;
+        for (Token* tok = start->previous(); tok != end; tok = tok->previous()) {
             if (tok == start || (tok->str() == "{" && (tok->scope()->type == Scope::ScopeType::eFunction ||
                                  tok->scope()->type == Scope::ScopeType::eLambda))) {
                 break;
@@ -126,6 +128,8 @@ struct ReverseTraversal {
                 break;
             if (Token::Match(tok, "%name% :"))
                 break;
+            if (Token::simpleMatch(tok, ":"))
+                continue;
             // Evaluate LHS of assignment before RHS
             if (Token* assignTok = assignExpr(tok)) {
                 // If assignTok has broken ast then stop
@@ -171,7 +175,7 @@ struct ReverseTraversal {
                                                     assignTok->astOperand2()->scope()->bodyEnd,
                                                     a,
                                                     settings);
-                            valueFlowGenericReverse(assignTok->astOperand1()->previous(), a, settings);
+                            valueFlowGenericReverse(assignTok->astOperand1()->previous(), end, a, settings);
                         }
                     }
                 }
@@ -283,4 +287,10 @@ void valueFlowGenericReverse(Token* start, const ValuePtr<Analyzer>& a, const Se
 {
     ReverseTraversal rt{a, settings};
     rt.traverse(start);
+}
+
+void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings* settings)
+{
+    ReverseTraversal rt{a, settings};
+    rt.traverse(start, end);
 }

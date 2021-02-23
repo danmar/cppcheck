@@ -1,19 +1,5 @@
 ## Cppcheck developer and build tools
 
-### * tools/astyle-client.py
-
-With this tool you can astyle-format arbitrary cpp/header files even if you do not have astyle on your computer.
-
-astyle on a server is used.
-
-Example usage:
-
-    python tools/astyle-client.py lib/token.cpp
-
-The file is reformatted and a status message is written that says if there were any changes or not.
-
-This script is a lot slower than running astyle locally on your computer.
-
 ### * tools/matchcompiler.py
 
 The matchcompiler.py is a build script that performs a few code transformations to *.cpp* files under the *lib* directory. These transformations are related to the use of `Token::Match()` function and are intended to improve code performance. The transformed files are saved on the *build* directory. This tool is silently used when building the code with `SRCDIR=build`, that is:

@@ -393,43 +393,6 @@ void CheckAutoVariables::errorUselessAssignmentPtrArg(const Token *tok)
 
 //---------------------------------------------------------------------------
 
-static bool astHasAutoResult(const Token *tok)
-{
-    if (tok->astOperand1() && !astHasAutoResult(tok->astOperand1()))
-        return false;
-    if (tok->astOperand2() && !astHasAutoResult(tok->astOperand2()))
-        return false;
-
-    if (tok->isOp()) {
-        if (tok->tokType() == Token::eIncDecOp)
-            return false;
-        if ((tok->str() == "<<" || tok->str() == ">>") && tok->astOperand1()) {
-            const Token* tok2 = tok->astOperand1();
-            while (tok2 && tok2->isUnaryOp("*"))
-                tok2 = tok2->astOperand1();
-            return tok2 && tok2->variable() && !tok2->variable()->isClass() && !tok2->variable()->isStlType(); // Class or unknown type on LHS: Assume it is a stream
-        }
-        return true;
-    }
-
-    if (tok->isLiteral())
-        return true;
-
-    if (tok->isName()) {
-        // TODO: check function calls, struct members, arrays, etc also
-        if (!tok->variable())
-            return false;
-        if (tok->variable()->isStlType())
-            return true;
-        if (tok->variable()->isClass() || tok->variable()->isPointer() || tok->variable()->isReference()) // TODO: Properly handle pointers/references to classes in symbol database
-            return false;
-
-        return true;
-    }
-
-    return false;
-}
-
 static bool isInScope(const Token * tok, const Scope * scope)
 {
     if (!tok)
@@ -592,6 +555,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                         if (getPointerDepth(tok) < getPointerDepth(tokvalue))
                             continue;
                         if (!isLifetimeBorrowed(tok, mSettings))
+                            continue;
+                        if (tokvalue->exprId() == tok->exprId() && !(tok->variable() && tok->variable()->isArray()))
                             continue;
                         if ((tokvalue->variable() && !isEscapedReference(tokvalue->variable()) &&
                              isInScope(tokvalue->variable()->nameToken(), scope)) ||

@@ -1,5 +1,5 @@
 #!/bin/bash
-cd ~/cppcheck
+cd ~/cppcheck || exit 1
 make generate_cfg_tests
 ./generate_cfg_tests cfg/avr.cfg > test/cfg/generated-cfg-tests-avr.cpp
 ./generate_cfg_tests cfg/bsd.cfg > test/cfg/generated-cfg-tests-bsd.cpp

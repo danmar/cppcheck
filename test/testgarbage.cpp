@@ -466,7 +466,7 @@ private:
         TODO_ASSERT_THROW(checkCode("int ScopedEnum{ template<typename T> { { e = T::error }; };\n"
                                     "ScopedEnum1<int> se1; { enum class E : T { e = 0 = e ScopedEnum2<void*> struct UnscopedEnum3 { T{ e = 4 }; };\n"
                                     "arr[(int) E::e]; }; UnscopedEnum3<int> e2 = f()\n"
-                                    "{ { e = e1; T::error } int test1 ue2; g() { enum class E { e = T::error }; return E::e; } int test2 = } \n"
+                                    "{ { e = e1; T::error } int test1 ue2; g() { enum class E { e = T::error }; return E::e; } int test2 = }\n"
                                     "namespace UnscopedEnum { template<typename T> struct UnscopedEnum1 { E{ e = T::error }; }; UnscopedEnum1<int> { enum E : { e = 0 }; };\n"
                                     "UnscopedEnum2<void*> ue3; template<typename T> struct UnscopedEnum3 { enum { }; }; int arr[E::e]; };\n"
                                     "UnscopedEnum3<int> namespace template<typename T> int f() { enum E { e }; T::error }; return (int) E(); } int test1 int g() { enum E { e = E };\n"
@@ -582,7 +582,7 @@ private:
         checkCode("struct R1 {\n"
                   "  int a;\n"
                   "  R1 () : a { }\n"
-                  "};\n");
+                  "};");
     }
 
     void garbageCode30() {
@@ -847,7 +847,7 @@ private:
 
     void garbageCode99() { // #6726
         ASSERT_THROW(checkCode("{ xs :: i(:) ! ! x/5 ! !\n"
-                               "i, :: a :: b integer, } foo2(x) :: j(:) \n"
+                               "i, :: a :: b integer, } foo2(x) :: j(:)\n"
                                "b type(*), d(:), a x :: end d(..), foo end\n"
                                "foo4 b d(..), a a x type(*), b foo2 b"), InternalError);
     }
@@ -929,7 +929,7 @@ private:
 
     void garbageCode118() { // #5600 - missing include causes invalid enum
         ASSERT_THROW(checkCode("enum {\n"
-                               "    NUM_OPCODES = \n"
+                               "    NUM_OPCODES =\n"
                                // #include "definition"
                                "};\n"
                                "struct bytecode {};\n"
@@ -989,7 +989,7 @@ private:
                   "  ~A() { printf(\"A d'tor\\n\"); }\n"
                   "};\n"
                   " const A& foo(const A& arg) { return arg; }\n"
-                  " foo(A(12)).Var\n");
+                  " foo(A(12)).Var");
     }
 
     void garbageCode128() {
@@ -1077,7 +1077,7 @@ private:
         checkCode("struct S { int i, j; }; "
                   "template<int S::*p, typename U> struct X {}; "
                   "X<&S::i, int> x = X<&S::i, int>(); "
-                  "X<&S::j, int> y = X<&S::j, int>(); ");
+                  "X<&S::j, int> y = X<&S::j, int>();");
         checkCode("template <typename T> struct A {}; "
                   "template <> struct A<void> {}; "
                   "void foo(const void* f = 0) {}");
@@ -1240,13 +1240,13 @@ private:
     void garbageCode157() { // #7131
         ASSERT_THROW(checkCode("namespace std {\n"
                                "  template < typename >\n"
-                               "  void swap(); \n"
+                               "  void swap();\n"
                                "}"
                                "template std::swap\n"), InternalError);
     }
 
     void garbageCode158() { // #3238
-        checkCode("__FBSDID(\"...\");\n");
+        checkCode("__FBSDID(\"...\");");
     }
 
     void garbageCode159() { // #7119
@@ -1292,7 +1292,7 @@ private:
         checkCode("YY_DECL { switch (yy_act) {\n"
                   "    case 65: YY_BREAK\n"
                   "    case YY_STATE_EOF(block):\n"
-                  "        yyterminate(); \n"
+                  "        yyterminate();\n"
                   "} }"); // #5663
     }
 
@@ -1312,13 +1312,13 @@ private:
 
     void templateSimplifierCrashes() {
         checkCode( // #5950
-            "struct A { \n"
+            "struct A {\n"
             "  template <class T> operator T*();\n"
-            "}; \n"
+            "};\n"
             "\n"
             "template <> A::operator char*(){ return 0; } // specialization\n"
             "\n"
-            "int main() { \n"
+            "int main() {\n"
             "  A a;\n"
             "  int *ip = a.operator int*();\n"
             "}\n"
@@ -1331,7 +1331,7 @@ private:
             "  void f() {\n"
             "    s.operator A<A<int> >();\n"
             "  }\n"
-            "}\n");
+            "}");
 
         checkCode( // #6034
             "template<template<typename...> class T, typename... Args>\n"
@@ -1345,8 +1345,7 @@ private:
             "\n"
             "int main() {\n"
             "  foo<int_<0> >::value;\n"
-            "}\n"
-        );
+            "}");
 
         checkCode( // #6117
             "template <typename ...> struct something_like_tuple\n"
@@ -1364,19 +1363,17 @@ private:
             "\n"
             "typedef something_like_tuple<char, int, float> something_like_tuple_t;\n"
             "SA ((is_last<float, something_like_tuple_t>::value == false));\n"
-            "SA ((is_last<int, something_like_tuple_t>::value == false));\n"
-        );
+            "SA ((is_last<int, something_like_tuple_t>::value == false));");
 
         checkCode( // #6225
             "template <typename...>\n"
             "void templ_fun_with_ty_pack() {}\n"
-            " \n"
+            "\n"
             "namespace PR20047 {\n"
             "        template <typename T>\n"
             "        struct A {};\n"
             "        using AliasA = A<T>;\n"
-            "}\n"
-        );
+            "}");
 
         // #3449
         ASSERT_EQUALS("template < typename T > struct A ;\n"
@@ -1493,7 +1490,7 @@ private:
             "               pOut->CreateObject( nIndex, GDI_BRUSH, new WinMtfFillStyle( ReadColor(), ( nStyle == BS_HOLLOW ) ? TRUE : FALSE ) );\n"
             "               return bStatus;\n"
             "       };\n"
-            "}\n");
+            "}");
     }
 
     // #8151 - segfault due to incorrect template syntax
@@ -1742,14 +1739,12 @@ private:
 
     void cliCode() {
         // #8913
-        /*
         ASSERT_THROW(checkCode("public ref class LibCecSharp : public CecCallbackMethods {\n"
-                               "array<CecAdapter ^> ^ FindAdapters(String ^ path) {} \n"
+                               "array<CecAdapter ^> ^ FindAdapters(String ^ path) {}\n"
                                "bool GetDeviceInformation(String ^ port, LibCECConfiguration ^configuration, uint32_t timeoutMs) {\n"
                                "bool bReturn(false);\n"
                                "}\n"
-                               "};\n"), InternalError);
-                               */
+                               "};"), InternalError);
     }
 
     void enumTrailingComma() {
@@ -1766,20 +1761,20 @@ private:
                   "template< class T >\n"
                   "template< class Predicate > int\n"
                   "List<T>::DeleteIf( const Predicate &pred )\n"
-                  "{}\n");
+                  "{}");
 
         // #8749
         checkCode(
             "struct A {\n"
             "    void operator+=(A&) && = delete;\n"
-            "};\n");
+            "};");
 
         // #8788
         checkCode(
             "struct foo;\n"
             "void f() {\n"
             "    auto fn = []() -> foo* { return new foo(); };\n"
-            "}\n");
+            "}");
     }
 };
 

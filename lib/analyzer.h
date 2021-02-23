@@ -42,6 +42,7 @@ struct Analyzer {
             Inconclusive = (1 << 3),
             Match = (1 << 4),
             Idempotent = (1 << 5),
+            Incremental = (1 << 6),
         };
 
         void set(unsigned int f, bool state = true) {
@@ -78,6 +79,10 @@ struct Analyzer {
 
         bool isIdempotent() const {
             return get(Idempotent);
+        }
+
+        bool isIncremental() const {
+            return get(Incremental);
         }
 
         bool matches() const {
@@ -121,7 +126,7 @@ struct Analyzer {
     /// If the analysis is unsure whether to update a scope, this will return true if the analysis should bifurcate the scope
     virtual bool updateScope(const Token* endBlock, bool modified) const = 0;
     /// Called when a scope will be forked
-    virtual void forkScope(const Token* endBlock) {}
+    virtual void forkScope(const Token* /*endBlock*/) {}
     /// If the value is conditional
     virtual bool isConditional() const = 0;
     /// The condition that will be assumed during analysis

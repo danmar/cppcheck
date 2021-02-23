@@ -329,7 +329,7 @@ private:
               "\n"
               "void f() {\n"
               "    p++;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
