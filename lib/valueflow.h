@@ -244,7 +244,7 @@ namespace ValueFlow {
         /** The value bound  */
         enum class Bound { Upper, Lower, Point } bound;
 
-        /** int value */
+        /** int value (or sometimes bool value?) */
         long long intvalue;
 
         /** token value - the token that has the value. this is used for pointer aliases, strings, etc. */
