@@ -145,7 +145,8 @@ class Token:
         variable           Variable information for this token. See the Variable class.
         function           If this token points at a function call, this attribute has the Function
                            information. See the Function class.
-        values             Possible values of token
+        values             Possible/Known values of token
+        impossible_values  Impossible values of token
         valueType          type information
         typeScope          type scope (token->type()->classScope)
         astParent          ast parent
@@ -198,6 +199,7 @@ class Token:
     function = None
     valuesId = None
     values = None
+    impossible_values = None
     valueType = None
 
     typeScopeId = None
@@ -299,7 +301,14 @@ class Token:
         self.link = IdMap[self.linkId]
         self.variable = IdMap[self.variableId]
         self.function = IdMap[self.functionId]
-        self.values = IdMap[self.valuesId]
+        self.values = []
+        self.impossible_values = []
+        if IdMap[self.valuesId]:
+            for v in IdMap[self.valuesId]:
+                if v.isImpossible():
+                    self.impossible_values.append(v)
+                else:
+                    self.values.append(v)
         self.typeScope = IdMap[self.typeScopeId]
         self.astParent = IdMap[self.astParentId]
         self.astOperand1 = IdMap[self.astOperand1Id]
@@ -571,6 +580,9 @@ class Value:
     def isPossible(self):
         return self.valueKind and self.valueKind == 'possible'
 
+    def isImpossible(self):
+        return self.valueKind and self.valueKind == 'impossible'
+
     def __init__(self, element):
         self.intvalue = element.get('intvalue')
         if self.intvalue:
@@ -585,6 +597,8 @@ class Value:
             self.valueKind = 'known'
         elif element.get('possible'):
             self.valueKind = 'possible'
+        elif element.get('impossible'):
+            self.valueKind = 'impossible'
         if element.get('inconclusive'):
             self.inconclusive = True
 
