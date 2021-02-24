@@ -43,7 +43,7 @@ struct InternalError {
 class CPPCHECKLIB Certainty {
 public:
     enum CertaintyLevel {
-        normal, inconclusive, experimental
+        normal, inconclusive, safe, experimental
     };
 };
 
