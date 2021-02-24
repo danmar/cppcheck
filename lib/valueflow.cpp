@@ -429,7 +429,7 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
 static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Settings *settings)
 {
     // Skip setting values that are too big since its ambiguous
-    if (!value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok))
+    if (!value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok) && ValueFlow::getSizeOf(*tok->valueType(), settings) >= sizeof(MathLib::bigint))
         return;
     if (!tok->addValue(value))
         return;
