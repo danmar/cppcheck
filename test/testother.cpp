@@ -6758,7 +6758,7 @@ private:
               "    Foo a[5];\n"
               "    memset(a, 'a', 5);\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n", errout.str());
 
         check("void f() {\n"
               "    Foo a[5];\n" // Size of foo is unknown
