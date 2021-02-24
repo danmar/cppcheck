@@ -1920,9 +1920,9 @@ namespace {
                 Token *tok1 = tok;
                 while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
                     tok1 = tok1->previous();
-                if (tok1->previous() && tok1->strAt(-1) == ")") {
+                if (tok1->previous() && (tok1->strAt(-1) == ")" || tok->strAt(-1) == "}")) {
                     tok1 = tok1->linkAt(-1);
-                    if (Token::Match(tok1->previous(), "throw|noexcept")) {
+                    if (Token::Match(tok1->previous(), "throw|noexcept (")) {
                         tok1 = tok1->previous();
                         while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
                             tok1 = tok1->previous();
@@ -1932,7 +1932,7 @@ namespace {
                     } else {
                         while (Token::Match(tok1->tokAt(-2), ":|, %name%")) {
                             tok1 = tok1->tokAt(-2);
-                            if (tok1->strAt(-1) != ")")
+                            if (tok1->strAt(-1) != ")" && tok1->strAt(-1) != "}")
                                 return;
                             tok1 = tok1->linkAt(-1);
                         }
