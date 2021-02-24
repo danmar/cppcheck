@@ -33,7 +33,7 @@ private:
 
     void run() OVERRIDE {
 #ifdef USE_Z3
-        settings.inconclusive = true;
+        settings.certainty.setEnabled(Certainty::inconclusive, true);
         LOAD_LIB_2(settings.library, "std.cfg");
         TEST_CASE(checkAssignment);
         TEST_CASE(arrayIndexOutOfBounds1);
