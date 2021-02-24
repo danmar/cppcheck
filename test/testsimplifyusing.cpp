@@ -67,6 +67,9 @@ private:
         TEST_CASE(simplifyUsing18);
         TEST_CASE(simplifyUsing19);
         TEST_CASE(simplifyUsing20);
+        TEST_CASE(simplifyUsing21);
+        TEST_CASE(simplifyUsing22);
+        TEST_CASE(simplifyUsing23);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -519,6 +522,67 @@ private:
                             "}\n"
                             "}}}}}}}";
         tok(code, false); // don't hang
+    }
+
+    void simplifyUsing21() {
+        const char code[] = "using a = b;\n"
+                            "enum {}";
+        tok(code, false); // don't crash
+    }
+
+    void simplifyUsing22() {
+        const char code[] = "namespace aa { namespace bb { namespace cc { namespace dd { namespace ee {\n"
+                            "class fff {\n"
+                            "public:\n"
+                            "    using icmsp   = std::shared_ptr<aa::bb::ee::cm::api::icm>;\n"
+                            "private:\n"
+                            "    using Connection = boost::signals2::connection;\n"
+                            "    using ESdk = sdk::common::api::Sdk::ESdk;\n"
+                            "    using co = aa::bb::ee::com::api::com2;\n"
+                            "};\n"
+                            "fff::fff() : m_icm(icm) {\n"
+                            "    using ESdk = aa::bb::sdk::common::api::Sdk::ESdk;\n"
+                            "}\n"
+                            "}}}}}";
+        const char expected[] = "namespace aa { namespace bb { namespace cc { namespace dd { namespace ee { "
+                                "class fff { "
+                                "public: "
+                                "private: "
+                                "} ; "
+                                "fff :: fff ( ) : m_icm ( icm ) { "
+                                "} "
+                                "} } } } }";
+        ASSERT_EQUALS(expected, tok(code, false)); // don't hang
+    }
+
+    void simplifyUsing23() {
+        const char code[] = "class cmcch {\n"
+                            "public:\n"
+                            "   cmcch(icmsp const& icm, Rtnf&& rtnf = {});\n"
+                            "private:\n"
+                            "    using escs = aa::bb::cc::dd::ee;\n"
+                            "private:\n"
+                            "   icmsp m_icm;\n"
+                            "   mutable std::atomic<rt> m_rt;\n"
+                            "};\n"
+                            "cmcch::cmcch(cmcch::icmsp const& icm, Rtnf&& rtnf)\n"
+                            "   : m_icm(icm)\n"
+                            "   , m_rt{rt::UNKNOWN_} {\n"
+                            "  using escs = yy::zz::aa::bb::cc::dd::ee;\n"
+                            "}";
+        const char expected[] = "class cmcch { "
+                                "public: "
+                                "cmcch ( const icmsp & icm , Rtnf && rtnf = { } ) ; "
+                                "private: "
+                                "private: "
+                                "icmsp m_icm ; "
+                                "mutable std :: atomic < rt > m_rt ; "
+                                "} ; "
+                                "cmcch :: cmcch ( const cmcch :: icmsp & icm , Rtnf && rtnf ) "
+                                ": m_icm ( icm ) "
+                                ", m_rt { rt :: UNKNOWN_ } { "
+                                "}";
+        ASSERT_EQUALS(expected, tok(code, false)); // don't hang
     }
 
     void simplifyUsing8970() {
