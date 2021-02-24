@@ -147,10 +147,10 @@ void TestFixture::assertEqualsFailed(const char* const filename, const unsigned 
 {
     ++fails_counter;
     errmsg << getLocationStr(filename, linenr) << ": Assertion failed. " << std::endl
-        << "Expected: " << std::endl
-        << writestr(expected) << std::endl
-        << "Actual: " << std::endl
-        << writestr(actual) << std::endl;
+           << "Expected: " << std::endl
+           << writestr(expected) << std::endl
+           << "Actual: " << std::endl
+           << writestr(actual) << std::endl;
     if (!msg.empty())
         errmsg << "Hint:" << std::endl << msg << std::endl;
     errmsg << "_____" << std::endl;
