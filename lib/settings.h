@@ -35,6 +35,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 namespace ValueFlow {
     class Value;
@@ -43,27 +44,50 @@ namespace ValueFlow {
 /// @addtogroup Core
 /// @{
 
+template<typename T>
+class SimpleEnableGroup {
+    uint32_t flags = 0;
+public:
+    uint32_t intValue() const {
+        return flags;
+    }
+    void clear() {
+        flags = 0;
+    }
+    void fill() {
+        flags = 0xFFFFFFFF;
+    }
+    void setEnabledAll(bool enabled) {
+        if (enabled)
+            fill();
+        else
+            clear();
+    }
+    bool isEnabled(T flag) const {
+        return (flags & (1U << (uint32_t)flag)) != 0;
+    }
+    void enable(T flag) {
+        flags |= (1U << (uint32_t)flag);
+    }
+    void disable(T flag) {
+        flags &= ~(1U << (uint32_t)flag);
+    }
+    void setEnabled(T flag, bool enabled) {
+        if (enabled)
+            enable(flag);
+        else
+            disable(flag);
+    }
+};
+
+
 /**
  * @brief This is just a container for general settings so that we don't need
  * to pass individual values to functions or constructors now or in the
  * future when we might have even more detailed settings.
  */
 class CPPCHECKLIB Settings : public cppcheck::Platform {
-public:
-    enum EnabledGroup {
-        WARNING = 0x1,
-        STYLE = 0x2,
-        PERFORMANCE = 0x4,
-        PORTABILITY = 0x8,
-        INFORMATION = 0x10,
-        UNUSED_FUNCTION = 0x20,
-        MISSING_INCLUDE = 0x40,
-        INTERNAL = 0x80
-    };
-
 private:
-    /** @brief enable extra checks by id */
-    int mEnabled;
 
     /** @brief terminate checking */
     static std::atomic<bool> mTerminated;
@@ -167,14 +191,6 @@ public:
         Default value is 0. */
     int exitCode;
 
-    /**
-     * When this flag is false (default) then experimental
-     * heuristics and checks are disabled.
-     *
-     * It should not be possible to enable this from any client.
-     */
-    bool experimental;
-
     /** @brief --file-filter for analyzing special files */
     std::string fileFilter;
 
@@ -192,9 +208,6 @@ public:
     /** @brief List of include paths, e.g. "my/includes/" which should be used
         for finding include files inside source files. (-I) */
     std::list<std::string> includePaths;
-
-    /** @brief Inconclusive checks */
-    bool inconclusive;
 
     /** @brief Is --inline-suppr given? */
     bool inlineSuppressions;
@@ -319,6 +332,10 @@ public:
 
     SafeChecks safeChecks;
 
+    SimpleEnableGroup<Severity::SeverityType> severity;
+    SimpleEnableGroup<Certainty::CertaintyLevel> certainty;
+    SimpleEnableGroup<Checks::CheckList> checks;
+
     /** @brief show timing information (--showtime=file|summary|top5) */
     SHOWTIME_MODES showtime;
 
@@ -371,29 +388,6 @@ public:
      * @return error message. empty upon success
      */
     std::string addEnabled(const std::string &str);
-
-    /**
-     * @brief Disables all severities, except from error.
-     */
-    void clearEnabled() {
-        mEnabled = 0;
-    }
-
-    /**
-     * @brief Returns true if given id is in the list of
-     * enabled extra checks (--enable)
-     * @param group group to be enabled
-     * @return true if the check is enabled.
-     */
-    bool isEnabled(EnabledGroup group) const {
-        return (mEnabled & group) == group;
-    }
-
-    /**
-    * @brief Returns true if given severity is enabled
-    * @return true if the check is enabled.
-    */
-    bool isEnabled(Severity::SeverityType severity) const;
 
     /**
     * @brief Returns true if given value can be shown

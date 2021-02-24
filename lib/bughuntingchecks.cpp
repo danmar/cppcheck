@@ -474,7 +474,7 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
             return;
     }
 
-    if (inconclusive && !dataBase->settings->inconclusive)
+    if (inconclusive && !dataBase->settings->certainty.isEnabled(Certainty::inconclusive))
         return;
 
     // Avoid FP for array declaration

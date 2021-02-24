@@ -130,7 +130,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
                 ++iter;
             else {
                 // If the include path is not found, warn user and remove the non-existing path from the list.
-                if (settings.isEnabled(Settings::INFORMATION))
+                if (settings.severity.isEnabled(Severity::information))
                     std::cout << "(information) Couldn't find path given by -I '" << path << '\'' << std::endl;
                 iter = settings.includePaths.erase(iter);
             }
@@ -853,7 +853,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         if (!tryLoadLibrary(settings.library, argv[0], lib.c_str())) {
             const std::string msg("Failed to load the library " + lib);
             const std::list<ErrorMessage::FileLocation> callstack;
-            ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", false);
+            ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", Certainty::normal);
             reportErr(errmsg);
             return EXIT_FAILURE;
         }
@@ -879,7 +879,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                                   "std.cfg should be available in " + cfgfolder + " or the FILESDIR "
                                   "should be configured.");
 #endif
-        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg+" "+details, "failedToLoadCfg", false);
+        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg+" "+details, "failedToLoadCfg", Certainty::normal);
         reportErr(errmsg);
         return EXIT_FAILURE;
     }
@@ -963,7 +963,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
 
     cppcheck.analyseWholeProgram(mSettings->buildDir, mFiles);
 
-    if (settings.isEnabled(Settings::INFORMATION) || settings.checkConfiguration) {
+    if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
         const bool enableUnusedFunctionCheck = cppcheck.isUnusedFunctionCheckEnabled();
 
         if (settings.jointSuppressionReport) {
@@ -982,7 +982,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     if (!settings.checkConfiguration) {
         cppcheck.tooManyConfigsError("",0U);
 
-        if (settings.isEnabled(Settings::MISSING_INCLUDE) && (Preprocessor::missingIncludeFlag || Preprocessor::missingSystemIncludeFlag)) {
+        if (settings.checks.isEnabled(Checks::missingInclude) && (Preprocessor::missingIncludeFlag || Preprocessor::missingSystemIncludeFlag)) {
             const std::list<ErrorMessage::FileLocation> callStack;
             ErrorMessage msg(callStack,
                              emptyString,
@@ -994,7 +994,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                              "as include directories for Cppcheck. To see what files Cppcheck cannot find use "
                              "--check-config.",
                              Preprocessor::missingIncludeFlag ? "missingInclude" : "missingIncludeSystem",
-                             false);
+                             Certainty::normal);
             reportInfo(msg);
         }
     }

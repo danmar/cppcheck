@@ -32,8 +32,8 @@ private:
     Settings settings;
 
     void run() OVERRIDE {
-        settings.addEnabled("warning");
-        settings.addEnabled("style");
+        settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::style);
 
         TEST_CASE(stringLiteralWrite);
 

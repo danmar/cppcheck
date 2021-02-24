@@ -34,8 +34,8 @@ private:
 
     void run() OVERRIDE {
         settings.platform(Settings::Unspecified);
-        settings.addEnabled("warning");
-        settings.addEnabled("portability");
+        settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::portability);
 
         TEST_CASE(array_index_1);
         TEST_CASE(array_index_2);

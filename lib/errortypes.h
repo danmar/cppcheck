@@ -40,6 +40,20 @@ struct InternalError {
     std::string id;
 };
 
+class CPPCHECKLIB Certainty {
+public:
+    enum CertaintyLevel {
+        normal, inconclusive, experimental
+    };
+};
+
+class CPPCHECKLIB Checks {
+public:
+    enum CheckList {
+        unusedFunction, missingInclude, internalCheck
+    };
+};
+
 /** @brief enum class for severity. Used when reporting errors. */
 class CPPCHECKLIB Severity {
 public:

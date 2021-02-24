@@ -45,7 +45,7 @@ public:
     }
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
-        if (!settings->isEnabled(Settings::INTERNAL))
+        if (!settings->checks.isEnabled(Checks::internalCheck))
             return;
 
         CheckInternal checkInternal(tokenizer, settings, errorLogger);

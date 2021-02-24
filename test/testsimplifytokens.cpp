@@ -42,9 +42,9 @@ private:
     void run() OVERRIDE {
         LOAD_LIB_2(settings_std.library, "std.cfg");
         LOAD_LIB_2(settings_windows.library, "windows.cfg");
-        settings0.addEnabled("portability");
-        settings1.addEnabled("style");
-        settings_windows.addEnabled("portability");
+        settings0.severity.enable(Severity::portability);
+        settings1.severity.enable(Severity::style);
+        settings_windows.severity.enable(Severity::portability);
 
         // If there are unused templates, keep those
         settings0.checkUnusedTemplates = true;

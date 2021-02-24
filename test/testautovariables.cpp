@@ -35,7 +35,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings.inconclusive = inconclusive;
+        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -47,8 +47,8 @@ private:
     }
 
     void run() OVERRIDE {
-        settings.addEnabled("warning");
-        settings.addEnabled("style");
+        settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::style);
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "qt.cfg");
 

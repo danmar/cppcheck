@@ -37,7 +37,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings.inconclusive = inconclusive;
+        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
@@ -60,7 +60,7 @@ private:
     }
 
     void run() OVERRIDE {
-        settings.addEnabled("warning");
+        settings.severity.enable(Severity::warning);
 
         TEST_CASE(test1);
         TEST_CASE(test2);

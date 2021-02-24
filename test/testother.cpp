@@ -260,14 +260,14 @@ private:
         if (!settings) {
             settings = &_settings;
         }
-        settings->addEnabled("style");
-        settings->addEnabled("warning");
-        settings->addEnabled("portability");
-        settings->addEnabled("performance");
+        settings->severity.enable(Severity::style);
+        settings->severity.enable(Severity::warning);
+        settings->severity.enable(Severity::portability);
+        settings->severity.enable(Severity::performance);
         settings->standards.c = Standards::CLatest;
         settings->standards.cpp = Standards::CPPLatest;
-        settings->inconclusive = inconclusive;
-        settings->experimental = experimental;
+        settings->certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        settings->certainty.setEnabled(Certainty::experimental, experimental);
         settings->verbose = verbose;
 
         // Tokenize..
@@ -291,14 +291,14 @@ private:
         errout.str("");
 
         Settings* settings = &_settings;
-        settings->addEnabled("style");
-        settings->addEnabled("warning");
-        settings->addEnabled("portability");
-        settings->addEnabled("performance");
+        settings->severity.enable(Severity::style);
+        settings->severity.enable(Severity::warning);
+        settings->severity.enable(Severity::portability);
+        settings->severity.enable(Severity::performance);
         settings->standards.c = Standards::CLatest;
         settings->standards.cpp = Standards::CPPLatest;
-        settings->inconclusive = true;
-        settings->experimental = false;
+        settings->certainty.enable(Certainty::inconclusive);
+        settings->certainty.disable(Certainty::experimental);
 
         // Raw tokens..
         std::vector<std::string> files(1, filename);
@@ -326,7 +326,7 @@ private:
 
     void checkposix(const char code[]) {
         static Settings settings;
-        settings.addEnabled("warning");
+        settings.severity.enable(Severity::warning);
         settings.libraries.emplace_back("posix");
 
         check(code,
@@ -1298,7 +1298,7 @@ private:
         errout.str("");
 
         static Settings settings;
-        settings.addEnabled("style");
+        settings.severity.enable(Severity::style);
         settings.standards.cpp = Standards::CPP03; // #5560
 
         // Tokenize..
@@ -1439,10 +1439,10 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.addEnabled("warning");
+        settings.severity.enable(Severity::warning);
         if (portability)
-            settings.addEnabled("portability");
-        settings.inconclusive = inconclusive;
+            settings.severity.enable(Severity::portability);
+        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         settings.defaultSign = 's';
         // Tokenize..

@@ -47,7 +47,7 @@ private:
     }
 
     void run() OVERRIDE {
-        settings.addEnabled("performance");
+        settings.severity.enable(Severity::performance);
 
         TEST_CASE(testsimple);
         TEST_CASE(testfor);
