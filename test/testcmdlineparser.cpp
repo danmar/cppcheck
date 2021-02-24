@@ -538,7 +538,7 @@ private:
         const char * const argv[] = {"cppcheck", "--enable=internal", "file.cpp"};
         settings = Settings();
         ASSERT(defParser.parseFromArgs(3, argv));
-        ASSERT(settings.isEnabled(Settings::INTERNAL));
+        ASSERT(settings.checks.isEnabled(Checks::internalCheck));
     }
 #endif
 
