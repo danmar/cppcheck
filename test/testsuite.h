@@ -80,6 +80,8 @@ protected:
 
     void todoAssertEquals(const char * const filename, const unsigned int linenr, const std::string &wanted,
                           const std::string &current, const std::string &actual) const;
+    void todoAssertEquals(const char * const filename, const unsigned int linenr, const char wanted[],
+                          const char current[], const std::string &actual) const;
     void todoAssertEquals(const char * const filename, const unsigned int linenr, const long long wanted,
                           const long long current, const long long actual) const;
     void assertThrow(const char * const filename, const unsigned int linenr) const;
