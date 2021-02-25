@@ -764,6 +764,9 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
                         break;
                     rhs = rhs->astParent();
                 }
+                while (rhs->isCast()) {
+                    rhs = rhs->astOperand1();
+                }
                 if (rhs->varId() == tok->varId()) {
                     // simple assignment
                     varInfo->erase(tok->varId());
