@@ -52,6 +52,8 @@ static const CWE CWE415(415U);
 static const int NEW_ARRAY = -2;
 static const int NEW = -1;
 
+static const std::vector<std::pair<const std::string, const std::string>> var1_fail_conds = {{"==", "0"}, {"<", "0"}, {"==", "-1"}};
+static const std::vector<std::pair<const std::string, const std::string>> var2_fail_conds = {{"!=", "0"}, {">", "0"}, {"!=", "-1"}};
 
 /**
  * @brief Is variable type some class with automatic deallocation?
@@ -73,6 +75,16 @@ static bool isAutoDealloc(const Variable *var)
         return false;
 
     return true;
+}
+
+static bool isVarTokComparison(const Token * tok, const Token ** vartok,
+                               const std::vector<std::pair<const std::string, const std::string>>& ops)
+{
+    for (auto op : ops) {
+        if (astIsVariableComparison(tok, op.first, op.second, vartok))
+            return true;
+    }
+    return false;
 }
 
 //---------------------------------------------------------------------------
@@ -472,12 +484,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                             if (!par->isComparisonOp())
                                 continue;
                             const Token *vartok = nullptr;
-                            if (astIsVariableComparison(par, "!=", "0", &vartok) ||
-                                astIsVariableComparison(par, "==", "0", &vartok) ||
-                                astIsVariableComparison(par, "<", "0", &vartok) ||
-                                astIsVariableComparison(par, ">", "0", &vartok) ||
-                                astIsVariableComparison(par, "==", "-1", &vartok) ||
-                                astIsVariableComparison(par, "!=", "-1", &vartok)) {
+                            if (isVarTokComparison(par, &vartok, var2_fail_conds) ||
+                               (isVarTokComparison(par, &vartok, var1_fail_conds))) {
                                 varInfo1.erase(vartok->varId());
                                 varInfo2.erase(vartok->varId());
                             }
@@ -486,26 +494,15 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     }
 
                     const Token *vartok = nullptr;
-                    if (astIsVariableComparison(tok3, "!=", "0", &vartok)) {
+                    if (isVarTokComparison(tok3, &vartok, var2_fail_conds)) {
                         varInfo2.reallocToAlloc(vartok->varId());
                         varInfo2.erase(vartok->varId());
-                        if (notzero.find(vartok->varId()) != notzero.end())
+                        if (astIsVariableComparison(tok3, "!=", "0", &vartok) &&
+                            (notzero.find(vartok->varId()) != notzero.end()))
                             varInfo2.clear();
-                    } else if (astIsVariableComparison(tok3, "==", "0", &vartok)) {
+                    } else if (isVarTokComparison(tok3, &vartok, var1_fail_conds)) {
                         varInfo1.reallocToAlloc(vartok->varId());
                         varInfo1.erase(vartok->varId());
-                    } else if (astIsVariableComparison(tok3, "<", "0", &vartok)) {
-                        varInfo1.reallocToAlloc(vartok->varId());
-                        varInfo1.erase(vartok->varId());
-                    } else if (astIsVariableComparison(tok3, ">", "0", &vartok)) {
-                        varInfo2.reallocToAlloc(vartok->varId());
-                        varInfo2.erase(vartok->varId());
-                    } else if (astIsVariableComparison(tok3, "==", "-1", &vartok)) {
-                        varInfo1.reallocToAlloc(vartok->varId());
-                        varInfo1.erase(vartok->varId());
-                    } else if (astIsVariableComparison(tok3, "!=", "-1", &vartok)) {
-                        varInfo2.reallocToAlloc(vartok->varId());
-                        varInfo2.erase(vartok->varId());
                     }
                     return ChildrenToVisit::none;
                 });
