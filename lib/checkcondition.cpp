@@ -83,7 +83,7 @@ bool CheckCondition::isAliased(const std::set<int> &vars) const
 
 void CheckCondition::assignIf()
 {
-    if (!mSettings->isEnabled(Settings::STYLE))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -238,7 +238,7 @@ void CheckCondition::assignIfError(const Token *tok1, const Token *tok2, const s
     reportError(locations,
                 Severity::style,
                 "assignIfError",
-                "Mismatching assignment and comparison, comparison '" + condition + "' is always " + std::string(result ? "true" : "false") + ".", CWE398, false);
+                "Mismatching assignment and comparison, comparison '" + condition + "' is always " + std::string(result ? "true" : "false") + ".", CWE398, Certainty::normal);
 }
 
 
@@ -253,7 +253,7 @@ void CheckCondition::mismatchingBitAndError(const Token *tok1, const MathLib::bi
     reportError(locations,
                 Severity::style,
                 "mismatchingBitAnd",
-                msg.str(), CWE398, false);
+                msg.str(), CWE398, Certainty::normal);
 }
 
 
@@ -289,7 +289,7 @@ static bool inBooleanFunction(const Token *tok)
 
 void CheckCondition::checkBadBitmaskCheck()
 {
-    if (!mSettings->isEnabled(Settings::WARNING))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -312,12 +312,12 @@ void CheckCondition::checkBadBitmaskCheck()
 
 void CheckCondition::badBitmaskCheckError(const Token *tok)
 {
-    reportError(tok, Severity::warning, "badBitmaskCheck", "Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?", CWE571, false);
+    reportError(tok, Severity::warning, "badBitmaskCheck", "Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?", CWE571, Certainty::normal);
 }
 
 void CheckCondition::comparison()
 {
-    if (!mSettings->isEnabled(Settings::STYLE))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -387,7 +387,7 @@ void CheckCondition::comparisonError(const Token *tok, const std::string &bitop,
                              "spot sometimes. In case of complex expression it might help to split it to "
                              "separate expressions.");
 
-    reportError(tok, Severity::style, "comparisonError", errmsg, CWE398, false);
+    reportError(tok, Severity::style, "comparisonError", errmsg, CWE398, Certainty::normal);
 }
 
 bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * const cond2, bool pure) const
@@ -433,7 +433,7 @@ bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * 
 
 void CheckCondition::duplicateCondition()
 {
-    if (!mSettings->isEnabled(Settings::STYLE))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
     const SymbolDatabase *const symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -477,12 +477,12 @@ void CheckCondition::duplicateConditionError(const Token *tok1, const Token *tok
 
     std::string msg = "The if condition is the same as the previous if condition";
 
-    reportError(errorPath, Severity::style, "duplicateCondition", msg, CWE398, false);
+    reportError(errorPath, Severity::style, "duplicateCondition", msg, CWE398, Certainty::normal);
 }
 
 void CheckCondition::multiCondition()
 {
-    if (!mSettings->isEnabled(Settings::STYLE))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -526,7 +526,7 @@ void CheckCondition::overlappingElseIfConditionError(const Token *tok, nonneg in
     errmsg << "Expression is always false because 'else if' condition matches previous condition at line "
            << line1 << ".";
 
-    reportError(tok, Severity::style, "multiCondition", errmsg.str(), CWE398, false);
+    reportError(tok, Severity::style, "multiCondition", errmsg.str(), CWE398, Certainty::normal);
 }
 
 void CheckCondition::oppositeElseIfConditionError(const Token *ifCond, const Token *elseIfCond, ErrorPath errorPath)
@@ -540,7 +540,7 @@ void CheckCondition::oppositeElseIfConditionError(const Token *ifCond, const Tok
     errorPath.emplace_back(ifCond, "first condition");
     errorPath.emplace_back(elseIfCond, "else if condition is opposite to first condition");
 
-    reportError(errorPath, Severity::style, "multiCondition", errmsg.str(), CWE398, false);
+    reportError(errorPath, Severity::style, "multiCondition", errmsg.str(), CWE398, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -567,7 +567,7 @@ static bool isNonConstFunctionCall(const Token *ftok, const Library &library)
 
 void CheckCondition::multiCondition2()
 {
-    if (!mSettings->isEnabled(Settings::WARNING))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -818,7 +818,7 @@ void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token*
 
     const std::string msg("Opposite inner '" + innerSmt + "' condition leads to a dead code block.\n"
                           "Opposite inner '" + innerSmt + "' condition leads to a dead code block (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
-    reportError(errorPath, Severity::warning, "oppositeInnerCondition", msg, CWE398, false);
+    reportError(errorPath, Severity::warning, "oppositeInnerCondition", msg, CWE398, Certainty::normal);
 }
 
 void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath)
@@ -833,7 +833,7 @@ void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token
 
     const std::string msg("Identical inner '" + innerSmt + "' condition is always true.\n"
                           "Identical inner '" + innerSmt + "' condition is always true (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
-    reportError(errorPath, Severity::warning, "identicalInnerCondition", msg, CWE398, false);
+    reportError(errorPath, Severity::warning, "identicalInnerCondition", msg, CWE398, Certainty::normal);
 }
 
 void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, const Token* cond2, ErrorPath errorPath)
@@ -856,7 +856,7 @@ void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, c
                 ? ("Identical condition and return expression '" + cond + "', return value is always " + value)
                 : ("Identical condition '" + cond + "', second condition is always false"),
                 CWE398,
-                false);
+                Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -1034,11 +1034,11 @@ static std::string conditionString(const Token * tok)
 
 void CheckCondition::checkIncorrectLogicOperator()
 {
-    const bool printStyle = mSettings->isEnabled(Settings::STYLE);
-    const bool printWarning = mSettings->isEnabled(Settings::WARNING);
+    const bool printStyle = mSettings->severity.isEnabled(Severity::style);
+    const bool printWarning = mSettings->severity.isEnabled(Severity::warning);
     if (!printWarning && !printStyle)
         return;
-    const bool printInconclusive = mSettings->inconclusive;
+    const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -1244,19 +1244,19 @@ void CheckCondition::incorrectLogicOperatorError(const Token *tok, const std::st
         reportError(errors, Severity::warning, "incorrectLogicOperator",
                     "Logical disjunction always evaluates to true: " + condition + ".\n"
                     "Logical disjunction always evaluates to true: " + condition + ". "
-                    "Are these conditions necessary? Did you intend to use && instead? Are the numbers correct? Are you comparing the correct variables?", CWE571, inconclusive);
+                    "Are these conditions necessary? Did you intend to use && instead? Are the numbers correct? Are you comparing the correct variables?", CWE571, inconclusive ? Certainty::inconclusive : Certainty::normal);
     else
         reportError(errors, Severity::warning, "incorrectLogicOperator",
                     "Logical conjunction always evaluates to false: " + condition + ".\n"
                     "Logical conjunction always evaluates to false: " + condition + ". "
-                    "Are these conditions necessary? Did you intend to use || instead? Are the numbers correct? Are you comparing the correct variables?", CWE570, inconclusive);
+                    "Are these conditions necessary? Did you intend to use || instead? Are the numbers correct? Are you comparing the correct variables?", CWE570, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckCondition::redundantConditionError(const Token *tok, const std::string &text, bool inconclusive)
 {
     if (diag(tok))
         return;
-    reportError(tok, Severity::style, "redundantCondition", "Redundant condition: " + text, CWE398, inconclusive);
+    reportError(tok, Severity::style, "redundantCondition", "Redundant condition: " + text, CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 //-----------------------------------------------------------------------------
@@ -1264,7 +1264,7 @@ void CheckCondition::redundantConditionError(const Token *tok, const std::string
 //-----------------------------------------------------------------------------
 void CheckCondition::checkModuloAlwaysTrueFalse()
 {
-    if (!mSettings->isEnabled(Settings::WARNING))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1293,7 +1293,7 @@ void CheckCondition::checkModuloAlwaysTrueFalse()
 void CheckCondition::moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal)
 {
     reportError(tok, Severity::warning, "moduloAlwaysTrueFalse",
-                "Comparison of modulo result is predetermined, because it is always less than " + maxVal + ".", CWE398, false);
+                "Comparison of modulo result is predetermined, because it is always less than " + maxVal + ".", CWE398, Certainty::normal);
 }
 
 static int countPar(const Token *tok1, const Token *tok2)
@@ -1316,7 +1316,7 @@ static int countPar(const Token *tok1, const Token *tok2)
 //---------------------------------------------------------------------------
 void CheckCondition::clarifyCondition()
 {
-    if (!mSettings->isEnabled(Settings::STYLE))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
     const bool isC = mTokenizer->isC();
@@ -1375,12 +1375,12 @@ void CheckCondition::clarifyConditionError(const Token *tok, bool assign, bool b
     reportError(tok,
                 Severity::style,
                 "clarifyCondition",
-                errmsg, CWE398, false);
+                errmsg, CWE398, Certainty::normal);
 }
 
 void CheckCondition::alwaysTrueFalse()
 {
-    if (!mSettings->isEnabled(Settings::STYLE))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1496,7 +1496,7 @@ void CheckCondition::alwaysTrueFalseError(const Token *tok, const ValueFlow::Val
                 Severity::style,
                 "knownConditionTrueFalse",
                 errmsg,
-                (alwaysTrue ? CWE571 : CWE570), false);
+                (alwaysTrue ? CWE571 : CWE570), Certainty::normal);
 }
 
 void CheckCondition::checkInvalidTestForOverflow()
@@ -1514,7 +1514,7 @@ void CheckCondition::checkInvalidTestForOverflow()
     // x + y < x       ->   y < 0
 
 
-    if (!mSettings->isEnabled(Settings::WARNING))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -1597,13 +1597,13 @@ void CheckCondition::invalidTestForOverflow(const Token* tok, const ValueType *v
         errmsg += " Some mainstream compilers remove such overflow tests when optimising the code and assume it's always " + replace + ".";
     else
         errmsg += " Some mainstream compilers removes handling of overflows when optimising the code and change the code to '" + replace + "'.";
-    reportError(tok, Severity::warning, "invalidTestForOverflow", errmsg, uncheckedErrorConditionCWE, false);
+    reportError(tok, Severity::warning, "invalidTestForOverflow", errmsg, uncheckedErrorConditionCWE, Certainty::normal);
 }
 
 
 void CheckCondition::checkPointerAdditionResultNotNull()
 {
-    if (!mSettings->isEnabled(Settings::WARNING))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1648,7 +1648,7 @@ void CheckCondition::pointerAdditionResultNotNullError(const Token *tok, const T
 
 void CheckCondition::checkDuplicateConditionalAssign()
 {
-    if (!mSettings->isEnabled(Settings::STYLE))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1699,5 +1699,5 @@ void CheckCondition::duplicateConditionalAssignError(const Token *condTok, const
     }
 
     reportError(
-        errors, Severity::style, "duplicateConditionalAssign", msg, CWE398, false);
+        errors, Severity::style, "duplicateConditionalAssign", msg, CWE398, Certainty::normal);
 }

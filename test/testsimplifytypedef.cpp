@@ -39,8 +39,8 @@ private:
     Settings settings2;
 
     void run() OVERRIDE {
-        settings0.addEnabled("style");
-        settings2.addEnabled("style");
+        settings0.severity.enable(Severity::style);
+        settings2.severity.enable(Severity::style);
 
         // If there are unused templates, keep those
         settings0.checkUnusedTemplates = true;
@@ -196,7 +196,7 @@ private:
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
         errout.str("");
 
-        settings0.inconclusive = true;
+        settings0.certainty.enable(Certainty::inconclusive);
         settings0.debugwarnings = debugwarnings;   // show warnings about unhandled typedef
         settings0.platform(type);
         Tokenizer tokenizer(&settings0, this);
@@ -223,7 +223,7 @@ private:
     void checkSimplifyTypedef(const char code[]) {
         errout.str("");
         // Tokenize..
-        settings2.inconclusive = true;
+        settings2.certainty.enable(Certainty::inconclusive);
         settings2.debugwarnings = true;   // show warnings about unhandled typedef
         Tokenizer tokenizer(&settings2, this);
         std::istringstream istr(code);

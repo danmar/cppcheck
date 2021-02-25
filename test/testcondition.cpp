@@ -41,8 +41,8 @@ private:
         LOAD_LIB_2(settings0.library, "qt.cfg");
         LOAD_LIB_2(settings0.library, "std.cfg");
 
-        settings0.addEnabled("style");
-        settings0.addEnabled("warning");
+        settings0.severity.enable(Severity::style);
+        settings0.severity.enable(Severity::warning);
 
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
         "<def>\n"
@@ -50,8 +50,8 @@ private:
         "</def>";
         tinyxml2::XMLDocument xmldoc;
         xmldoc.Parse(cfg, sizeof(cfg));
-        settings1.addEnabled("style");
-        settings1.addEnabled("warning");
+        settings1.severity.enable(Severity::style);
+        settings1.severity.enable(Severity::warning);
         settings1.library.load(xmldoc);
 
         TEST_CASE(assignAndCompare);   // assignment and comparison don't match
@@ -126,7 +126,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings0.inconclusive = inconclusive;
+        settings0.certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         // Raw tokens..
         std::vector<std::string> files(1, filename);

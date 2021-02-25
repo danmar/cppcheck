@@ -297,7 +297,7 @@ void CheckMemoryLeak::reportErr(const Token *tok, Severity::SeverityType severit
 
 void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe) const
 {
-    const ErrorMessage errmsg(callstack, mTokenizer_ ? &mTokenizer_->list : nullptr, severity, id, msg, cwe, false, mSettings_->bugHunting);
+    const ErrorMessage errmsg(callstack, mTokenizer_ ? &mTokenizer_->list : nullptr, severity, id, msg, cwe, Certainty::normal, mSettings_->bugHunting);
     if (mErrorLogger_)
         mErrorLogger_->reportErr(errmsg);
     else
@@ -711,14 +711,14 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
 
 void CheckMemoryLeakInClass::unsafeClassError(const Token *tok, const std::string &classname, const std::string &varname)
 {
-    if (!mSettings->isEnabled(Settings::STYLE))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
     reportError(tok, Severity::style, "unsafeClassCanLeak",
                 "$symbol:" + classname + "\n"
                 "$symbol:" + varname + "\n"
                 "Class '" + classname + "' is unsafe, '" + varname + "' can leak by wrong usage.\n"
-                "The class '" + classname + "' is unsafe, wrong usage can cause memory/resource leaks for '" + varname + "'. This can for instance be fixed by adding proper cleanup in the destructor.", CWE398, false);
+                "The class '" + classname + "' is unsafe, wrong usage can cause memory/resource leaks for '" + varname + "'. This can for instance be fixed by adding proper cleanup in the destructor.", CWE398, Certainty::normal);
 }
 
 
@@ -727,7 +727,7 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const Scope *scope, const Toke
     // Check that public functions deallocate the pointers that they allocate.
     // There is no checking how these functions are used and therefore it
     // isn't established if there is real leaks or not.
-    if (!mSettings->isEnabled(Settings::WARNING))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
     const int varid = classtok->varId();
@@ -754,7 +754,7 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const Scope *scope, const Toke
 
 void CheckMemoryLeakInClass::publicAllocationError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::warning, "publicAllocationError", "$symbol:" + varname + "\nPossible leak in public function. The pointer '$symbol' is not deallocated before it is allocated.", CWE398, false);
+    reportError(tok, Severity::warning, "publicAllocationError", "$symbol:" + varname + "\nPossible leak in public function. The pointer '$symbol' is not deallocated before it is allocated.", CWE398, Certainty::normal);
 }
 
 
@@ -1081,7 +1081,7 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
 void CheckMemoryLeakNoVar::checkForUnsafeArgAlloc(const Scope *scope)
 {
     // This test only applies to C++ source
-    if (!mTokenizer->isCPP() || !mSettings->inconclusive || !mSettings->isEnabled(Settings::WARNING))
+    if (!mTokenizer->isCPP() || !mSettings->certainty.isEnabled(Certainty::inconclusive) || !mSettings->severity.isEnabled(Severity::warning))
         return;
 
     for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
@@ -1125,12 +1125,12 @@ void CheckMemoryLeakNoVar::checkForUnsafeArgAlloc(const Scope *scope)
 
 void CheckMemoryLeakNoVar::functionCallLeak(const Token *loc, const std::string &alloc, const std::string &functionCall)
 {
-    reportError(loc, Severity::error, "leakNoVarFunctionCall", "Allocation with " + alloc + ", " + functionCall + " doesn't release it.", CWE772, false);
+    reportError(loc, Severity::error, "leakNoVarFunctionCall", "Allocation with " + alloc + ", " + functionCall + " doesn't release it.", CWE772, Certainty::normal);
 }
 
 void CheckMemoryLeakNoVar::returnValueNotUsedError(const Token *tok, const std::string &alloc)
 {
-    reportError(tok, Severity::error, "leakReturnValNotUsed", "$symbol:" + alloc + "\nReturn value of allocation function '$symbol' is not stored.", CWE771, false);
+    reportError(tok, Severity::error, "leakReturnValNotUsed", "$symbol:" + alloc + "\nReturn value of allocation function '$symbol' is not stored.", CWE771, Certainty::normal);
 }
 
 void CheckMemoryLeakNoVar::unsafeArgAllocError(const Token *tok, const std::string &funcName, const std::string &ptrType, const std::string& objType)
@@ -1140,5 +1140,5 @@ void CheckMemoryLeakNoVar::unsafeArgAllocError(const Token *tok, const std::stri
                 "$symbol:" + funcName + "\n"
                 "Unsafe allocation. If $symbol() throws, memory could be leaked. Use " + factoryFunc + "<" + objType + ">() instead.",
                 CWE401,
-                true); // Inconclusive because funcName may never throw
+                Certainty::inconclusive); // Inconclusive because funcName may never throw
 }

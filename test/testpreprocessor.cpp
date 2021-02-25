@@ -40,7 +40,7 @@ public:
     TestPreprocessor()
         : TestFixture("TestPreprocessor")
         , preprocessor0(settings0, this) {
-        settings0.addEnabled("information");
+        settings0.severity.enable(Severity::information);
     }
 
     class OurPreprocessor : public Preprocessor {
@@ -1929,7 +1929,7 @@ private:
         Preprocessor::missingIncludeFlag = false;
         Settings settings;
         settings.inlineSuppressions = true;
-        settings.addEnabled("all");
+        settings.severity.fill();
         Preprocessor preprocessor(settings, this);
 
         std::istringstream src("// cppcheck-suppress missingInclude\n"

@@ -642,7 +642,7 @@ namespace {
 
             ErrorPath e = errorPath;
             e.push_back(ErrorPathItem(tok, text));
-            ErrorMessage errmsg(e, &tokenizer->list, severity, id, text, cwe, inconclusive, true);
+            ErrorMessage errmsg(e, &tokenizer->list, severity, id, text, cwe, inconclusive ? Certainty::inconclusive : Certainty::normal, true);
             errmsg.incomplete = incomplete;
             errmsg.function = functionName.empty() ? currentFunction : functionName;
             errorLogger->reportErr(errmsg);

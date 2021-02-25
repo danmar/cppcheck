@@ -39,7 +39,7 @@ private:
     Settings settings;
 
     void run() OVERRIDE {
-        settings.addEnabled("portability");
+        settings.severity.enable(Severity::portability);
 
         // If there are unused templates, keep those
         settings.checkUnusedTemplates = true;

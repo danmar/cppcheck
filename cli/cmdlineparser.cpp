@@ -309,7 +309,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     return false;
                 }
                 // when "style" is enabled, also enable "warning", "performance" and "portability"
-                if (mSettings->isEnabled(Settings::STYLE)) {
+                if (mSettings->severity.isEnabled(Severity::style)) {
                     mSettings->addEnabled("warning");
                     mSettings->addEnabled("performance");
                     mSettings->addEnabled("portability");
@@ -430,7 +430,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // Inconclusive checking
             else if (std::strcmp(argv[i], "--inconclusive") == 0)
-                mSettings->inconclusive = true;
+                mSettings->certainty.enable(Certainty::inconclusive);
 
             // Enables inline suppressions.
             else if (std::strcmp(argv[i], "--inline-suppr") == 0)
@@ -938,7 +938,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     else if ((def || mSettings->preprocessOnly) && !maxconfigs)
         mSettings->maxConfigs = 1U;
 
-    if (mSettings->isEnabled(Settings::UNUSED_FUNCTION) && mSettings->jobs > 1) {
+    if (mSettings->checks.isEnabled(Checks::unusedFunction) && mSettings->jobs > 1) {
         printMessage("cppcheck: unusedFunction check can't be used with '-j' option. Disabling unusedFunction check.");
     }
 

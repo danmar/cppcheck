@@ -184,8 +184,8 @@ private:
         settings.exitCode = 1;
         settings.inlineSuppressions = true;
         if (suppression == "unusedFunction")
-            settings.addEnabled("unusedFunction");
-        settings.addEnabled("information");
+            settings.checks.setEnabled(Checks::unusedFunction, true);
+        settings.severity.enable(Severity::information);
         settings.jointSuppressionReport = true;
         if (!suppression.empty()) {
             std::string r = settings.nomsg.addSuppressionLine(suppression);
@@ -214,7 +214,7 @@ private:
         Settings settings;
         settings.jobs = 1;
         settings.inlineSuppressions = true;
-        settings.addEnabled("information");
+        settings.severity.enable(Severity::information);
         if (!suppression.empty()) {
             EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
@@ -680,7 +680,7 @@ private:
 
         CppCheck cppCheck(*this, true, nullptr);
         Settings& settings = cppCheck.settings();
-        settings.addEnabled("style");
+        settings.severity.enable(Severity::style);
         settings.inlineSuppressions = true;
         settings.relativePaths = true;
         settings.basePaths.emplace_back("/somewhere");

@@ -35,13 +35,8 @@ private:
 
     void run() OVERRIDE {
         settings.debugwarnings = true;
-        settings.addEnabled("style");
-        settings.addEnabled("warning");
-        settings.addEnabled("portability");
-        settings.addEnabled("performance");
-        settings.addEnabled("information");
-        settings.inconclusive = true;
-        settings.experimental = true;
+        settings.severity.fill();
+        settings.certainty.fill();
 
         // don't freak out when the syntax is wrong
 

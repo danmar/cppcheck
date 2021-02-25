@@ -45,7 +45,7 @@ private:
     }
 
     void run() OVERRIDE {
-        settings.addEnabled("warning");
+        settings.severity.enable(Severity::warning);
 
         TEST_CASE(assignmentInAssert);
         TEST_CASE(functionCallInAssert);

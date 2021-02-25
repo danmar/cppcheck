@@ -80,12 +80,12 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings.clearEnabled();
-        settings.addEnabled("warning");
-        settings.addEnabled("style");
+        settings.severity.clear();
+        settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::style);
         if (portability)
-            settings.addEnabled("portability");
-        settings.inconclusive = inconclusive;
+            settings.severity.enable(Severity::portability);
+        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
         settings.platform(platform);
 
         // Tokenize..

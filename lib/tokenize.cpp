@@ -2149,6 +2149,21 @@ namespace {
         }
         return qualification;
     }
+
+    const Token * memberFunctionEnd(const Token *tok)
+    {
+        if (tok->str() != "(")
+            return nullptr;
+        const Token *end = tok->link()->next();
+        while (end) {
+            if (end->str() == "{" && !Token::Match(end->tokAt(-2), ":|, %name%"))
+                return end;
+            else if (end->str() == ";")
+                break;
+            end = end->next();
+        }
+        return nullptr;
+    }
 } // namespace
 
 bool Tokenizer::isMemberFunction(const Token *openParen) const
@@ -2317,6 +2332,9 @@ bool Tokenizer::simplifyUsing()
         ScopeInfo3 *currentScope1 = &scopeInfo1;
         Token *startToken = list.front();
         Token *endToken = nullptr;
+        bool inMemberFunc = false;
+        const ScopeInfo3 * memberFuncScope = nullptr;
+        const Token * memberFuncEnd = nullptr;
 
         // We can limit the search to the current function when the type alias
         // is defined in that function.
@@ -2328,12 +2346,17 @@ bool Tokenizer::simplifyUsing()
                 return substitute; // something bad happened
             startToken = usingEnd;
             endToken = currentScope->bodyEnd->next();
+            if (currentScope->type == ScopeInfo3::MemberFunction) {
+                const ScopeInfo3 * temp = currentScope->findScope(currentScope->fullName);
+                if (temp) {
+                    inMemberFunc = true;
+                    memberFuncScope = temp;
+                    memberFuncEnd = endToken;
+                }
+            }
         }
 
         std::string scope1;
-        bool inMemberFunc = false;
-        const ScopeInfo3 * memberFuncScope = nullptr;
-        const Token * memberFuncEnd = nullptr;
         bool skip = false; // don't erase type aliases we can't parse
         for (Token* tok1 = startToken; !skip && tok1 && tok1 != endToken; tok1 = tok1->next()) {
             if ((Token::Match(tok1, "{|}|namespace|class|struct|union") && tok1->strAt(-1) != "using") ||
@@ -2368,13 +2391,15 @@ bool Tokenizer::simplifyUsing()
                 if (!scope1.empty())
                     scope1 += " :: ";
                 scope1 += memberFunctionScope(tok1);
-                memberFuncScope = currentScope1->findScope(scope1);
-
-                if (!memberFuncScope)
-                    continue;
-
-                inMemberFunc = true;
-                memberFuncEnd = currentScope1->bodyEnd;
+                const ScopeInfo3 * temp = currentScope1->findScope(scope1);
+                if (temp) {
+                    const Token *end = memberFunctionEnd(tok1);
+                    if (end) {
+                        inMemberFunc = true;
+                        memberFuncScope = temp;
+                        memberFuncEnd = end;
+                    }
+                }
                 continue;
             } else if (inMemberFunc && memberFuncScope) {
                 if (!usingMatch(nameToken, scope, &tok1, scope1, memberFuncScope))
@@ -2573,7 +2598,7 @@ bool Tokenizer::simplifyUsing()
                     str += " ;";
                     std::list<const Token *> callstack(1, usingStart);
                     mErrorLogger->reportErr(ErrorMessage(callstack, &list, Severity::debug, "debug",
-                                                         "Failed to parse \'" + str + "\'. The checking continues anyway.", false));
+                                                         "Failed to parse \'" + str + "\'. The checking continues anyway.", Certainty::normal));
                 }
             }
             tok1 = after;
@@ -4950,7 +4975,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     }
 
     // class x y {
-    if (isCPP() && mSettings->isEnabled(Settings::INFORMATION)) {
+    if (isCPP() && mSettings->severity.isEnabled(Severity::information)) {
         for (const Token *tok = list.front(); tok; tok = tok->next()) {
             if (Token::Match(tok, "class %type% %type% [:{]")) {
                 unhandled_macro_class_x_y(tok);
@@ -9078,7 +9103,7 @@ bool Tokenizer::isScopeNoReturn(const Token *endScopeToken, bool *unknown) const
     }
     if (unknown)
         *unknown = !unknownFunc.empty();
-    if (!unknownFunc.empty() && mSettings->checkLibrary && mSettings->isEnabled(Settings::INFORMATION)) {
+    if (!unknownFunc.empty() && mSettings->checkLibrary && mSettings->severity.isEnabled(Severity::information)) {
         // Is function global?
         bool globalFunction = true;
         if (Token::simpleMatch(endScopeToken->tokAt(-2), ") ; }")) {
@@ -12171,7 +12196,7 @@ void Tokenizer::reportError(const Token* tok, const Severity::SeverityType sever
 
 void Tokenizer::reportError(const std::list<const Token*>& callstack, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive) const
 {
-    const ErrorMessage errmsg(callstack, &list, severity, id, msg, inconclusive);
+    const ErrorMessage errmsg(callstack, &list, severity, id, msg, inconclusive ? Certainty::inconclusive : Certainty::normal);
     if (mErrorLogger)
         mErrorLogger->reportErr(errmsg);
     else

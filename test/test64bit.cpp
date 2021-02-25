@@ -32,7 +32,7 @@ private:
     Settings settings;
 
     void run() OVERRIDE {
-        settings.addEnabled("portability");
+        settings.severity.enable(Severity::portability);
 
         TEST_CASE(novardecl);
         TEST_CASE(functionpar);

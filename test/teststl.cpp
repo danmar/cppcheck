@@ -35,9 +35,9 @@ private:
     Settings settings;
 
     void run() OVERRIDE {
-        settings.addEnabled("warning");
-        settings.addEnabled("style");
-        settings.addEnabled("performance");
+        settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::style);
+        settings.severity.enable(Severity::performance);
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(outOfBounds);
@@ -175,7 +175,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings.inconclusive = inconclusive;
+        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
         settings.standards.cpp = cppstandard;
 
 

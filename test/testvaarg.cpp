@@ -45,7 +45,7 @@ private:
     }
 
     void run() OVERRIDE {
-        settings.addEnabled("warning");
+        settings.severity.enable(Severity::warning);
 
         TEST_CASE(wrongParameterTo_va_start);
         TEST_CASE(referenceAs_va_start);

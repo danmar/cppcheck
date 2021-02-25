@@ -32,9 +32,9 @@ private:
     Settings settings;
 
     void run() OVERRIDE {
-        settings.addEnabled("style");
-        settings.addEnabled("warning");
-        settings.inconclusive = true;
+        settings.severity.enable(Severity::style);
+        settings.severity.enable(Severity::warning);
+        settings.certainty.enable(Certainty::inconclusive);
 
         TEST_CASE(bitwiseOnBoolean);      // if (bool & bool)
         TEST_CASE(incrementBoolean);
@@ -80,7 +80,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings.experimental = experimental;
+        settings.certainty.setEnabled(Certainty::experimental, experimental);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

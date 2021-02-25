@@ -80,6 +80,7 @@ private:
         TEST_CASE(assign18);
         TEST_CASE(assign19);
         TEST_CASE(assign20); // #9187
+        TEST_CASE(assign21); // #10186
 
         TEST_CASE(isAutoDealloc);
 
@@ -208,7 +209,7 @@ private:
         // Check for leaks..
         CheckLeakAutoVar c;
         settings.checkLibrary = true;
-        settings.addEnabled("information");
+        settings.severity.enable(Severity::information);
         c.runChecks(&tokenizer, &settings, this);
     }
 
@@ -224,7 +225,7 @@ private:
         // Check for leaks..
         CheckLeakAutoVar c;
         settings.checkLibrary = true;
-        settings.addEnabled("information");
+        settings.severity.enable(Severity::information);
         c.runChecks(&tokenizer, &settings, this);
     }
 
@@ -419,6 +420,20 @@ private:
               "    char *p = static_cast<int>(malloc(10));\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void assign21() { // #10186
+        check("void f(int **x) {\n"
+              "    void *p = malloc(10);\n"
+              "    *x = p;\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(struct str *d) {\n"
+              "    void *p = malloc(10);\n"
+              "    d->a = p;\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void isAutoDealloc() {
@@ -2245,7 +2260,7 @@ private:
         // Check for leaks..
         CheckLeakAutoVar checkLeak;
         settings.checkLibrary = true;
-        settings.addEnabled("information");
+        settings.severity.enable(Severity::information);
         checkLeak.runChecks(&tokenizer, &settings, this);
     }
 

@@ -105,9 +105,7 @@ bool TestFixture::prepareTest(const char testname[])
 
 std::string TestFixture::getLocationStr(const char * const filename, const unsigned int linenr) const
 {
-    std::ostringstream ret;
-    ret << filename << ':' << linenr << '(' << classname << "::" << mTestname << ')';
-    return ret.str();
+    return filename + ':' + std::to_string(linenr) + '(' + classname + "::" + mTestname + ')';
 }
 
 static std::string writestr(const std::string &str, bool gccStyle = false)
@@ -147,10 +145,10 @@ void TestFixture::assertEqualsFailed(const char* const filename, const unsigned 
 {
     ++fails_counter;
     errmsg << getLocationStr(filename, linenr) << ": Assertion failed. " << std::endl
-        << "Expected: " << std::endl
-        << writestr(expected) << std::endl
-        << "Actual: " << std::endl
-        << writestr(actual) << std::endl;
+           << "Expected: " << std::endl
+           << writestr(expected) << std::endl
+           << "Actual: " << std::endl
+           << writestr(actual) << std::endl;
     if (!msg.empty())
         errmsg << "Hint:" << std::endl << msg << std::endl;
     errmsg << "_____" << std::endl;
@@ -244,6 +242,15 @@ void TestFixture::todoAssertEquals(const char * const filename, const unsigned i
         ++todos_counter;
     }
 }
+
+void TestFixture::todoAssertEquals(const char* const filename, const unsigned int linenr,
+                                   const char wanted[],
+                                   const char current[],
+                                   const std::string& actual) const
+{
+    todoAssertEquals(filename, linenr, std::string(wanted), std::string(current), actual);
+}
+
 
 void TestFixture::todoAssertEquals(const char * const filename, const unsigned int linenr, const long long wanted, const long long current, const long long actual) const
 {

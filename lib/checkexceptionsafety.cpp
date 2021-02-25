@@ -38,7 +38,7 @@ namespace {
 
 void CheckExceptionSafety::destructors()
 {
-    if (!mSettings->isEnabled(Settings::WARNING))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -78,10 +78,10 @@ void CheckExceptionSafety::destructors()
 
 void CheckExceptionSafety::deallocThrow()
 {
-    if (!mSettings->isEnabled(Settings::WARNING))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
-    const bool printInconclusive = mSettings->inconclusive;
+    const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Deallocate a global/member pointer and then throw exception
@@ -145,7 +145,7 @@ void CheckExceptionSafety::deallocThrow()
 //---------------------------------------------------------------------------
 void CheckExceptionSafety::checkRethrowCopy()
 {
-    if (!mSettings->isEnabled(Settings::STYLE))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -179,7 +179,7 @@ void CheckExceptionSafety::checkRethrowCopy()
 //---------------------------------------------------------------------------
 void CheckExceptionSafety::checkCatchExceptionByValue()
 {
-    if (!mSettings->isEnabled(Settings::STYLE))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -281,7 +281,7 @@ void CheckExceptionSafety::nothrowThrows()
 //--------------------------------------------------------------------------
 void CheckExceptionSafety::unhandledExceptionSpecification()
 {
-    if (!mSettings->isEnabled(Settings::STYLE) || !mSettings->inconclusive)
+    if (!mSettings->severity.isEnabled(Severity::style) || !mSettings->certainty.isEnabled(Certainty::inconclusive))
         return;
 
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();

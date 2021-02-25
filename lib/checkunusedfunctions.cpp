@@ -331,7 +331,7 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
         locationList.push_back(fileLoc);
     }
 
-    const ErrorMessage errmsg(locationList, emptyString, Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' is never used.", "unusedFunction", CWE561, false);
+    const ErrorMessage errmsg(locationList, emptyString, Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' is never used.", "unusedFunction", CWE561, Certainty::normal);
     if (errorLogger)
         errorLogger->reportErr(errmsg);
     else
@@ -340,7 +340,7 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
 
 Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    if (!settings->isEnabled(Settings::UNUSED_FUNCTION))
+    if (!settings->checks.isEnabled(Checks::unusedFunction))
         return nullptr;
     if (settings->jobs == 1 && settings->buildDir.empty())
         instance.parseTokens(*tokenizer, tokenizer->list.getFiles().front().c_str(), settings);

@@ -118,7 +118,7 @@ static void bailoutInternal(const std::string& type, TokenList *tokenlist, Error
         function = "(valueFlow)";
     std::list<ErrorMessage::FileLocation> callstack(1, ErrorMessage::FileLocation(tok, tokenlist));
     ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::debug,
-                        Path::stripDirectoryPart(file) + ":" + MathLib::toString(line) + ":" + function + " bailout: " + what, type, false);
+                        Path::stripDirectoryPart(file) + ":" + MathLib::toString(line) + ":" + function + " bailout: " + what, type, Certainty::normal);
     errorLogger->reportErr(errmsg);
 }
 
@@ -3163,7 +3163,7 @@ struct LifetimeStore {
             return false;
         bool update = false;
         for (const LifetimeToken& lt : getLifetimeTokens(argtok)) {
-            if (!settings->inconclusive && lt.inconclusive)
+            if (!settings->certainty.isEnabled(Certainty::inconclusive) && lt.inconclusive)
                 continue;
             ErrorPath er = errorPath;
             er.insert(er.end(), lt.errorPath.begin(), lt.errorPath.end());
@@ -3226,7 +3226,7 @@ struct LifetimeStore {
                 continue;
             const Token *tok3 = v.tokvalue;
             for (const LifetimeToken& lt : getLifetimeTokens(tok3)) {
-                if (!settings->inconclusive && lt.inconclusive)
+                if (!settings->certainty.isEnabled(Certainty::inconclusive) && lt.inconclusive)
                     continue;
                 ErrorPath er = v.errorPath;
                 er.insert(er.end(), lt.errorPath.begin(), lt.errorPath.end());
@@ -3265,7 +3265,7 @@ struct LifetimeStore {
 
     template <class Predicate>
     void byDerefCopy(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
-        if (!settings->inconclusive && inconclusive)
+        if (!settings->certainty.isEnabled(Certainty::inconclusive) && inconclusive)
             return;
         if (!argtok)
             return;
@@ -3628,7 +3628,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
         // address of
         else if (tok->isUnaryOp("&")) {
             for (const LifetimeToken& lt : getLifetimeTokens(tok->astOperand1())) {
-                if (!settings->inconclusive && lt.inconclusive)
+                if (!settings->certainty.isEnabled(Certainty::inconclusive) && lt.inconclusive)
                     continue;
                 ErrorPath errorPath = lt.errorPath;
                 errorPath.emplace_back(tok, "Address of variable taken here.");
