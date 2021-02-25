@@ -46,16 +46,16 @@ namespace ValueFlow {
 
 template<typename T>
 class SimpleEnableGroup {
-    uint32_t flags = 0;
+    uint32_t mFlags = 0;
 public:
     uint32_t intValue() const {
-        return flags;
+        return mFlags;
     }
     void clear() {
-        flags = 0;
+        mFlags = 0;
     }
     void fill() {
-        flags = 0xFFFFFFFF;
+        mFlags = 0xFFFFFFFF;
     }
     void setEnabledAll(bool enabled) {
         if (enabled)
@@ -64,13 +64,13 @@ public:
             clear();
     }
     bool isEnabled(T flag) const {
-        return (flags & (1U << (uint32_t)flag)) != 0;
+        return (mFlags & (1U << (uint32_t)flag)) != 0;
     }
     void enable(T flag) {
-        flags |= (1U << (uint32_t)flag);
+        mFlags |= (1U << (uint32_t)flag);
     }
     void disable(T flag) {
-        flags &= ~(1U << (uint32_t)flag);
+        mFlags &= ~(1U << (uint32_t)flag);
     }
     void setEnabled(T flag, bool enabled) {
         if (enabled)
