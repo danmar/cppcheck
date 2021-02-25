@@ -36,8 +36,8 @@ private:
     Settings settings1;
 
     void run() OVERRIDE {
-        settings0.addEnabled("style");
-        settings1.addEnabled("warning");
+        settings0.severity.enable(Severity::style);
+        settings1.severity.enable(Severity::warning);
 
         // Load std.cfg configuration
         {
@@ -231,7 +231,7 @@ private:
         // Clear the error log
         errout.str("");
         Settings settings;
-        settings.addEnabled("warning");
+        settings.severity.enable(Severity::warning);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -2427,8 +2427,8 @@ private:
         // Clear the error log
         errout.str("");
 
-        settings0.inconclusive = inconclusive;
-        settings0.addEnabled("warning");
+        settings0.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        settings0.severity.enable(Severity::warning);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
@@ -2719,8 +2719,8 @@ private:
 
     void checkNoMemset(const char code[]) {
         Settings settings;
-        settings.addEnabled("warning");
-        settings.addEnabled("portability");
+        settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::portability);
         checkNoMemset(code,settings);
     }
 
@@ -3353,7 +3353,7 @@ private:
         // Check..
         if (!s)
             s = &settings0;
-        s->inconclusive = inconclusive;
+        s->certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         // Tokenize..
         Tokenizer tokenizer(s, this);
@@ -6539,7 +6539,7 @@ private:
         errout.str("");
 
         // Check..
-        settings0.inconclusive = true;
+        settings0.certainty.setEnabled(Certainty::inconclusive, true);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
@@ -6574,7 +6574,7 @@ private:
 
         // Check..
         Settings settings;
-        settings.addEnabled("performance");
+        settings.severity.enable(Severity::performance);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -6884,9 +6884,9 @@ private:
         if (!s) {
             static Settings settings_;
             s = &settings_;
-            s->addEnabled("warning");
+            s->severity.enable(Severity::warning);
         }
-        s->inconclusive = inconclusive;
+        s->certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         // Tokenize..
         Tokenizer tokenizer(s, this);
@@ -7137,7 +7137,7 @@ private:
         // Clear the error log
         errout.str("");
         Settings settings;
-        settings.addEnabled("style");
+        settings.severity.enable(Severity::style);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -7220,7 +7220,7 @@ private:
         errout.str("");
         Settings settings;
         settings.safeChecks.classes = true;
-        settings.addEnabled("warning");
+        settings.severity.enable(Severity::warning);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

@@ -44,7 +44,7 @@ static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
 
 void CheckPostfixOperator::postfixOperator()
 {
-    if (!mSettings->isEnabled(Settings::PERFORMANCE))
+    if (!mSettings->severity.isEnabled(Severity::performance))
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -82,5 +82,5 @@ void CheckPostfixOperator::postfixOperatorError(const Token *tok)
                 "Pre-increment/decrement can be more efficient than "
                 "post-increment/decrement. Post-increment/decrement usually "
                 "involves keeping a copy of the previous value around and "
-                "adds a little extra code.", CWE398, false);
+                "adds a little extra code.", CWE398, Certainty::normal);
 }

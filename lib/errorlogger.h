@@ -70,11 +70,11 @@ public:
             : fileIndex(0), line(0), column(0) {
         }
 
-        FileLocation(const std::string &file, int line, int column)
+        FileLocation(const std::string &file, int line, unsigned int column)
             : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file) {
         }
 
-        FileLocation(const std::string &file, const std::string &info, int line, int column)
+        FileLocation(const std::string &file, const std::string &info, int line, unsigned int column)
             : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file), mInfo(info) {
         }
 
@@ -127,27 +127,27 @@ public:
                  const std::string& file1,
                  Severity::SeverityType severity,
                  const std::string &msg,
-                 const std::string &id, bool inconclusive);
+                 const std::string &id, Certainty::CertaintyLevel certainty);
     ErrorMessage(const std::list<FileLocation> &callStack,
                  const std::string& file1,
                  Severity::SeverityType severity,
                  const std::string &msg,
                  const std::string &id,
                  const CWE &cwe,
-                 bool inconclusive);
+                 Certainty::CertaintyLevel certainty);
     ErrorMessage(const std::list<const Token*>& callstack,
                  const TokenList* list,
                  Severity::SeverityType severity,
                  const std::string& id,
                  const std::string& msg,
-                 bool inconclusive);
+                 Certainty::CertaintyLevel certainty);
     ErrorMessage(const std::list<const Token*>& callstack,
                  const TokenList* list,
                  Severity::SeverityType severity,
                  const std::string& id,
                  const std::string& msg,
                  const CWE &cwe,
-                 bool inconclusive,
+                 Certainty::CertaintyLevel certainty,
                  bool bugHunting);
     ErrorMessage(const ErrorPath &errorPath,
                  const TokenList *tokenList,
@@ -155,7 +155,7 @@ public:
                  const char id[],
                  const std::string &msg,
                  const CWE &cwe,
-                 bool inconclusive,
+                 Certainty::CertaintyLevel certainty,
                  bool bugHunting);
     ErrorMessage();
     explicit ErrorMessage(const tinyxml2::XMLElement * const errmsg);
@@ -196,7 +196,7 @@ public:
 
     Severity::SeverityType severity;
     CWE cwe;
-    bool inconclusive;
+    Certainty::CertaintyLevel certainty;
 
     /** Warning hash */
     std::size_t hash;

@@ -35,9 +35,9 @@ private:
     Settings settings;
 
     void run() OVERRIDE {
-        settings.addEnabled("style");
-        settings.addEnabled("warning");
-        settings.addEnabled("portability");
+        settings.severity.enable(Severity::style);
+        settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::portability);
         settings.libraries.emplace_back("posix");
         settings.standards.c = Standards::C11;
         settings.standards.cpp = Standards::CPP11;
@@ -1092,7 +1092,7 @@ private:
 
     void checkIgnoredReturnValue() {
         Settings settings2;
-        settings2.addEnabled("warning");
+        settings2.severity.enable(Severity::warning);
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def version=\"2\">\n"
                                "  <function name=\"mystrcmp,foo::mystrcmp\">\n"

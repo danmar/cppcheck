@@ -45,8 +45,8 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings0.inconclusive = true;
-        settings0.experimental = experimental;
+        settings0.certainty.enable(Certainty::inconclusive);
+        settings0.certainty.setEnabled(Certainty::experimental, experimental);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
@@ -74,9 +74,9 @@ private:
     void run() OVERRIDE {
         LOAD_LIB_2(settings0.library, "std.cfg");
 
-        settings0.addEnabled("warning");
-        settings0.addEnabled("style");
-        settings0.addEnabled("portability");
+        settings0.severity.enable(Severity::warning);
+        settings0.severity.enable(Severity::style);
+        settings0.severity.enable(Severity::portability);
 
         TEST_CASE(noerr1);
         TEST_CASE(noerr2);
@@ -3324,7 +3324,7 @@ private:
         tinyxml2::XMLDocument doc;
         doc.Parse(xmldata, sizeof(xmldata));
         settings.library.load(doc);
-        settings.addEnabled("warning");
+        settings.severity.enable(Severity::warning);
         settings.sizeof_wchar_t = 4;
 
         check("void f() {\n"

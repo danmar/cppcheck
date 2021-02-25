@@ -369,7 +369,7 @@ void ThreadExecutor::reportInternalChildErr(const std::string &childname, const 
                               Severity::error,
                               "Internal error: " + msg,
                               "cppcheckError",
-                              false);
+                              Certainty::normal);
 
     if (!mSettings.nomsg.isSuppressed(errmsg.toSuppressionsErrorMessage()))
         mErrorLogger.reportErr(errmsg);

@@ -54,7 +54,7 @@ static const CWE CWE688(688U);  // Function Call With Incorrect Variable or Refe
 
 void CheckFunctions::checkProhibitedFunctions()
 {
-    const bool checkAlloca = mSettings->isEnabled(Settings::WARNING) && ((mSettings->standards.c >= Standards::C99 && mTokenizer->isC()) || mSettings->standards.cpp >= Standards::CPP11);
+    const bool checkAlloca = mSettings->severity.isEnabled(Severity::warning) && ((mSettings->standards.c >= Standards::C99 && mTokenizer->isC()) || mSettings->standards.cpp >= Standards::CPP11);
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
@@ -84,9 +84,9 @@ void CheckFunctions::checkProhibitedFunctions()
 
                 const Library::WarnInfo* wi = mSettings->library.getWarnInfo(tok);
                 if (wi) {
-                    if (mSettings->isEnabled(wi->severity) && mSettings->standards.c >= wi->standards.c && mSettings->standards.cpp >= wi->standards.cpp) {
+                    if (mSettings->severity.isEnabled(wi->severity) && mSettings->standards.c >= wi->standards.c && mSettings->standards.cpp >= wi->standards.cpp) {
                         const std::string daca = mSettings->daca ? "prohibited" : "";
-                        reportError(tok, wi->severity, daca + tok->str() + "Called", wi->message, CWE477, false);
+                        reportError(tok, wi->severity, daca + tok->str() + "Called", wi->message, CWE477, Certainty::normal);
                     }
                 }
             }
@@ -161,14 +161,14 @@ void CheckFunctions::invalidFunctionArgError(const Token *tok, const std::string
                     "invalidFunctionArg",
                     errmsg.str(),
                     CWE628,
-                    invalidValue->isInconclusive());
+                    invalidValue->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
     else
         reportError(tok,
                     Severity::error,
                     "invalidFunctionArg",
                     errmsg.str(),
                     CWE628,
-                    false);
+                    Certainty::normal);
 }
 
 void CheckFunctions::invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr)
@@ -176,7 +176,7 @@ void CheckFunctions::invalidFunctionArgBoolError(const Token *tok, const std::st
     std::ostringstream errmsg;
     errmsg << "$symbol:" << functionName << '\n';
     errmsg << "Invalid $symbol() argument nr " << argnr << ". A non-boolean value is required.";
-    reportError(tok, Severity::error, "invalidFunctionArgBool", errmsg.str(), CWE628, false);
+    reportError(tok, Severity::error, "invalidFunctionArgBool", errmsg.str(), CWE628, Certainty::normal);
 }
 
 void CheckFunctions::invalidFunctionArgStrError(const Token *tok, const std::string &functionName, nonneg int argnr)
@@ -184,7 +184,7 @@ void CheckFunctions::invalidFunctionArgStrError(const Token *tok, const std::str
     std::ostringstream errmsg;
     errmsg << "$symbol:" << functionName << '\n';
     errmsg << "Invalid $symbol() argument nr " << argnr << ". A nul-terminated string is required.";
-    reportError(tok, Severity::error, "invalidFunctionArgStr", errmsg.str(), CWE628, false);
+    reportError(tok, Severity::error, "invalidFunctionArgStr", errmsg.str(), CWE628, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -192,7 +192,7 @@ void CheckFunctions::invalidFunctionArgStrError(const Token *tok, const std::str
 //---------------------------------------------------------------------------
 void CheckFunctions::checkIgnoredReturnValue()
 {
-    if (!mSettings->isEnabled(Settings::WARNING) && !mSettings->isEnabled(Settings::STYLE))
+    if (!mSettings->severity.isEnabled(Severity::warning) && !mSettings->severity.isEnabled(Severity::style))
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -218,11 +218,11 @@ void CheckFunctions::checkIgnoredReturnValue()
             if ((!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) &&
                 !WRONG_DATA(!tok->next()->astOperand1(), tok)) {
                 const Library::UseRetValType retvalTy = mSettings->library.getUseRetValType(tok);
-                if (mSettings->isEnabled(Settings::WARNING) &&
+                if (mSettings->severity.isEnabled(Severity::warning) &&
                     ((retvalTy == Library::UseRetValType::DEFAULT) ||
                      (tok->function() && tok->function()->isAttributeNodiscard())))
                     ignoredReturnValueError(tok, tok->next()->astOperand1()->expressionString());
-                else if (mSettings->isEnabled(Settings::STYLE) &&
+                else if (mSettings->severity.isEnabled(Severity::style) &&
                          retvalTy == Library::UseRetValType::ERROR_CODE)
                     ignoredReturnErrorCode(tok, tok->next()->astOperand1()->expressionString());
             }
@@ -233,13 +233,13 @@ void CheckFunctions::checkIgnoredReturnValue()
 void CheckFunctions::ignoredReturnValueError(const Token* tok, const std::string& function)
 {
     reportError(tok, Severity::warning, "ignoredReturnValue",
-                "$symbol:" + function + "\nReturn value of function $symbol() is not used.", CWE252, false);
+                "$symbol:" + function + "\nReturn value of function $symbol() is not used.", CWE252, Certainty::normal);
 }
 
 void CheckFunctions::ignoredReturnErrorCode(const Token* tok, const std::string& function)
 {
     reportError(tok, Severity::style, "ignoredReturnErrorCode",
-                "$symbol:" + function + "\nError code from the return value of function $symbol() is not used.", CWE252, false);
+                "$symbol:" + function + "\nError code from the return value of function $symbol() is not used.", CWE252, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -247,8 +247,8 @@ void CheckFunctions::ignoredReturnErrorCode(const Token* tok, const std::string&
 //---------------------------------------------------------------------------
 void CheckFunctions::checkMathFunctions()
 {
-    const bool styleC99 = mSettings->isEnabled(Settings::STYLE) && mSettings->standards.c != Standards::C89 && mSettings->standards.cpp != Standards::CPP03;
-    const bool printWarnings = mSettings->isEnabled(Settings::WARNING);
+    const bool styleC99 = mSettings->severity.isEnabled(Severity::style) && mSettings->standards.c != Standards::C89 && mSettings->standards.cpp != Standards::CPP03;
+    const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
@@ -305,16 +305,16 @@ void CheckFunctions::mathfunctionCallWarning(const Token *tok, const nonneg int 
 {
     if (tok) {
         if (numParam == 1)
-            reportError(tok, Severity::warning, "wrongmathcall", "$symbol:" + tok->str() + "\nPassing value " + tok->strAt(2) + " to $symbol() leads to implementation-defined result.", CWE758, false);
+            reportError(tok, Severity::warning, "wrongmathcall", "$symbol:" + tok->str() + "\nPassing value " + tok->strAt(2) + " to $symbol() leads to implementation-defined result.", CWE758, Certainty::normal);
         else if (numParam == 2)
-            reportError(tok, Severity::warning, "wrongmathcall", "$symbol:" + tok->str() + "\nPassing values " + tok->strAt(2) + " and " + tok->strAt(4) + " to $symbol() leads to implementation-defined result.", CWE758, false);
+            reportError(tok, Severity::warning, "wrongmathcall", "$symbol:" + tok->str() + "\nPassing values " + tok->strAt(2) + " and " + tok->strAt(4) + " to $symbol() leads to implementation-defined result.", CWE758, Certainty::normal);
     } else
-        reportError(tok, Severity::warning, "wrongmathcall", "Passing value '#' to #() leads to implementation-defined result.", CWE758, false);
+        reportError(tok, Severity::warning, "wrongmathcall", "Passing value '#' to #() leads to implementation-defined result.", CWE758, Certainty::normal);
 }
 
 void CheckFunctions::mathfunctionCallWarning(const Token *tok, const std::string& oldexp, const std::string& newexp)
 {
-    reportError(tok, Severity::style, "unpreciseMathCall", "Expression '" + oldexp + "' can be replaced by '" + newexp + "' to avoid loss of precision.", CWE758, false);
+    reportError(tok, Severity::style, "unpreciseMathCall", "Expression '" + oldexp + "' can be replaced by '" + newexp + "' to avoid loss of precision.", CWE758, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -329,7 +329,7 @@ void CheckFunctions::memsetZeroBytes()
 //       <warn knownIntValue="0" severity="warning" msg="..."/>
 //     </arg>
 
-    if (!mSettings->isEnabled(Settings::WARNING))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -353,7 +353,7 @@ void CheckFunctions::memsetZeroBytesError(const Token *tok)
     const std::string verbose(summary + " The second and third arguments might be inverted."
                               " The function memset ( void * ptr, int value, size_t num ) sets the"
                               " first num bytes of the block of memory pointed by ptr to the specified value.");
-    reportError(tok, Severity::warning, "memsetZeroBytes", summary + "\n" + verbose, CWE687, false);
+    reportError(tok, Severity::warning, "memsetZeroBytes", summary + "\n" + verbose, CWE687, Certainty::normal);
 }
 
 void CheckFunctions::memsetInvalid2ndParam()
@@ -366,8 +366,8 @@ void CheckFunctions::memsetInvalid2ndParam()
 //       <warn possibleIntValue=":-129,256:" severity="warning" msg="..."/>
 //     </arg>
 
-    const bool printPortability = mSettings->isEnabled(Settings::PORTABILITY);
-    const bool printWarning = mSettings->isEnabled(Settings::WARNING);
+    const bool printPortability = mSettings->severity.isEnabled(Severity::portability);
+    const bool printWarning = mSettings->severity.isEnabled(Severity::warning);
     if (!printWarning && !printPortability)
         return;
 
@@ -408,14 +408,14 @@ void CheckFunctions::memsetFloatError(const Token *tok, const std::string &var_v
                               "' is a float, its representation is implementation defined.");
     const std::string verbose(message + " memset() is used to set each byte of a block of memory to a specific value and"
                               " the actual representation of a floating-point value is implementation defined.");
-    reportError(tok, Severity::portability, "memsetFloat", message + "\n" + verbose, CWE688, false);
+    reportError(tok, Severity::portability, "memsetFloat", message + "\n" + verbose, CWE688, Certainty::normal);
 }
 
 void CheckFunctions::memsetValueOutOfRangeError(const Token *tok, const std::string &value)
 {
     const std::string message("The 2nd memset() argument '" + value + "' doesn't fit into an 'unsigned char'.");
     const std::string verbose(message + " The 2nd parameter is passed as an 'int', but the function fills the block of memory using the 'unsigned char' conversion of this value.");
-    reportError(tok, Severity::warning, "memsetValueOutOfRange", message + "\n" + verbose, CWE686, false);
+    reportError(tok, Severity::warning, "memsetValueOutOfRange", message + "\n" + verbose, CWE686, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -424,7 +424,7 @@ void CheckFunctions::memsetValueOutOfRangeError(const Token *tok, const std::str
 
 void CheckFunctions::checkLibraryMatchFunctions()
 {
-    if (!mSettings->checkLibrary || !mSettings->isEnabled(Settings::INFORMATION))
+    if (!mSettings->checkLibrary || !mSettings->severity.isEnabled(Severity::information))
         return;
 
     bool insideNew = false;

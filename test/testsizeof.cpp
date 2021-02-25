@@ -34,9 +34,9 @@ private:
     Settings settings;
 
     void run() OVERRIDE {
-        settings.addEnabled("warning");
-        settings.addEnabled("portability");
-        settings.inconclusive = true;
+        settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::portability);
+        settings.certainty.enable(Certainty::inconclusive);
 
         TEST_CASE(sizeofsizeof);
         TEST_CASE(sizeofCalculation);

@@ -32,7 +32,7 @@ private:
     Settings settings;
 
     void run() OVERRIDE {
-        settings.addEnabled("all");
+        settings.severity.fill();
 
         TEST_CASE(destructors);
         TEST_CASE(deallocThrow1);
@@ -57,7 +57,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings.inconclusive = inconclusive;
+        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

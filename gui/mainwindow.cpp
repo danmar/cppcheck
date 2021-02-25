@@ -974,14 +974,14 @@ Settings MainWindow::getCppcheckSettings()
         addIncludeDirs(includes, result);
     }
 
-    result.addEnabled("warning");
-    result.addEnabled("style");
-    result.addEnabled("performance");
-    result.addEnabled("portability");
-    result.addEnabled("information");
-    result.addEnabled("missingInclude");
+    result.severity.enable(Severity::warning);
+    result.severity.enable(Severity::style);
+    result.severity.enable(Severity::performance);
+    result.severity.enable(Severity::portability);
+    result.severity.enable(Severity::information);
+    result.checks.enable(Checks::missingInclude);
     if (!result.buildDir.empty())
-        result.addEnabled("unusedFunction");
+        result.checks.enable(Checks::unusedFunction);
     result.debugwarnings = mSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool();
     result.quiet = false;
     result.verbose = true;
@@ -989,7 +989,7 @@ Settings MainWindow::getCppcheckSettings()
     result.xml = false;
     result.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
     result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
-    result.inconclusive = mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool();
+    result.certainty.setEnabled(Certainty::inconclusive, mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool());
     if (!mProjectFile || result.platformType == cppcheck::Platform::Unspecified)
         result.platform((cppcheck::Platform::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
     result.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());

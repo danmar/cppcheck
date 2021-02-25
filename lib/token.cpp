@@ -1810,9 +1810,9 @@ const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Sett
         }
     }
     if (settings && ret) {
-        if (ret->isInconclusive() && !settings->inconclusive)
+        if (ret->isInconclusive() && !settings->certainty.isEnabled(Certainty::inconclusive))
             return nullptr;
-        if (ret->condition && !settings->isEnabled(Settings::WARNING))
+        if (ret->condition && !settings->severity.isEnabled(Severity::warning))
             return nullptr;
     }
     return ret;
@@ -1835,9 +1835,9 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
         }
     }
     if (settings && ret) {
-        if (ret->isInconclusive() && !settings->inconclusive)
+        if (ret->isInconclusive() && !settings->certainty.isEnabled(Certainty::inconclusive))
             return nullptr;
-        if (ret->condition && !settings->isEnabled(Settings::WARNING))
+        if (ret->condition && !settings->severity.isEnabled(Severity::warning))
             return nullptr;
     }
     return ret;
@@ -1861,9 +1861,9 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int ar
         }
     }
     if (ret) {
-        if (ret->isInconclusive() && !settings->inconclusive)
+        if (ret->isInconclusive() && !settings->certainty.isEnabled(Certainty::inconclusive))
             return nullptr;
-        if (ret->condition && !settings->isEnabled(Settings::WARNING))
+        if (ret->condition && !settings->severity.isEnabled(Severity::warning))
             return nullptr;
     }
     return ret;

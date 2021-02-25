@@ -33,8 +33,8 @@ private:
     Settings settings;
 
     void run() OVERRIDE {
-        settings.addEnabled("style");
-        settings.addEnabled("information");
+        settings.severity.enable(Severity::style);
+        settings.severity.enable(Severity::information);
         settings.checkLibrary = true;
         LOAD_LIB_2(settings.library, "std.cfg");
 
