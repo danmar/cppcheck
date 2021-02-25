@@ -12,7 +12,7 @@ public:
         : ErrorLogger()
         , cppcheck(*this, false, nullptr) {
         cppcheck.settings().addEnabled("all");
-        cppcheck.settings().inconclusive = true;
+        cppcheck.settings().certainty.setEnabled(Certainty::inconclusive, true);
     }
 
     void run(const std::string &code) {
