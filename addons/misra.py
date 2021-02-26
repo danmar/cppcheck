@@ -1876,26 +1876,6 @@ class MisraChecker:
                         break
                     prev = prev.previous
 
-    def misra_12_4(self, data):
-        if typeBits['INT'] == 16:
-            max_uint = 0xffff
-        elif typeBits['INT'] == 32:
-            max_uint = 0xffffffff
-        else:
-            return
-
-        for token in data.tokenlist:
-            if not token.values:
-                continue
-            if (not isConstantExpression(token)) or (not isUnsignedInt(token)):
-                continue
-            for value in token.values:
-                if value.intvalue is None:
-                    continue
-                if value.intvalue < 0 or value.intvalue > max_uint:
-                    self.reportError(token, 12, 4)
-                    break
-
     def misra_13_1(self, data):
         for token in data.tokenlist:
             if simpleMatch(token, ") {") and token.next.astParent == token.link:
@@ -3141,7 +3121,6 @@ class MisraChecker:
             self.executeCheck(1201, self.misra_12_1, cfg)
             self.executeCheck(1202, self.misra_12_2, cfg)
             self.executeCheck(1203, self.misra_12_3, cfg)
-            self.executeCheck(1204, self.misra_12_4, cfg)
             self.executeCheck(1301, self.misra_13_1, cfg)
             self.executeCheck(1303, self.misra_13_3, cfg)
             self.executeCheck(1304, self.misra_13_4, cfg)

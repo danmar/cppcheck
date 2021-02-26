@@ -732,10 +732,10 @@ void misra_12_3(int a, int b, int c) { // no warning
 void misra_12_4() {
   uint32_t x;
   bool t;
-  x = 123456u * 123456u; // 12.4
-  x = MISRA12_4a + MISRA12_4b; // 12.4
-  x = 0u - 1u; // 12.4
-  x = t ? 0u : (0u-1u); // 12.4
+  x = 123456u * 123456u; // TODO 12.4
+  x = MISRA12_4a + MISRA12_4b; // TODO 12.4
+  x = 0u - 1u; // TODO 12.4
+  x = t ? 0u : (0u-1u); // TODO 12.4
   x = 556200230913ULL;
   foo(&volatile_macro_12_4); // no crash
 }
