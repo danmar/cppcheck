@@ -52,8 +52,8 @@ static const CWE CWE415(415U);
 static const int NEW_ARRAY = -2;
 static const int NEW = -1;
 
-static const std::vector<std::pair<const std::string, const std::string>> var1_fail_conds = {{"==", "0"}, {"<", "0"}, {"==", "-1"}};
-static const std::vector<std::pair<const std::string, const std::string>> var2_fail_conds = {{"!=", "0"}, {">", "0"}, {"!=", "-1"}};
+static const std::vector<std::pair<const std::string, const std::string>> var1_fail_conds = {{"==", "0"}, {"<", "0"}, {"==", "-1"}, {"<=", "-1"}};
+static const std::vector<std::pair<const std::string, const std::string>> var2_fail_conds = {{"!=", "0"}, {">", "0"}, {"!=", "-1"}, {">=", "0"}};
 
 /**
  * @brief Is variable type some class with automatic deallocation?
