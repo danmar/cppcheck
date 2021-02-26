@@ -255,14 +255,18 @@ def has_include(path, includes):
 def run_command(cmd):
     print(cmd)
     startTime = time.time()
+    comm = None
     p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
     try:
         comm = p.communicate(timeout=CPPCHECK_TIMEOUT)
         return_code = p.returncode
+        p = None
     except subprocess.TimeoutExpired:
-        os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
-        comm = p.communicate()
         return_code = RETURN_CODE_TIMEOUT
+    finally:
+        if p:
+            os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
+            comm = p.communicate()
     stop_time = time.time()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore')
