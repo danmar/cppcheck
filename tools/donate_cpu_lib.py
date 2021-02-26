@@ -10,6 +10,7 @@ import re
 import signal
 import tarfile
 import shlex
+import psutil
 
 
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
@@ -263,6 +264,13 @@ def run_command(cmd):
         p = None
     except subprocess.TimeoutExpired:
         return_code = RETURN_CODE_TIMEOUT
+        # terminate all the child processes so we get messages about which files were hanging
+        child_procs = psutil.Process(p.pid).children(recursive=True)
+        if len(child_procs) > 0:
+            for child in child_procs:
+                child.terminate()
+            comm = p.communicate()
+            p = None
     finally:
         if p:
             os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
@@ -298,6 +306,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
     # collect messages
     information_messages_list = []
     issue_messages_list = []
+    internal_error_messages_list = []
     count = 0
     for line in stderr.split('\n'):
         if ': information: ' in line:
@@ -306,6 +315,8 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
             issue_messages_list.append(line + '\n')
             if re.match(r'.*:[0-9]+:.*\]$', line):
                 count += 1
+            if ': error: Internal error: ' in line:
+                internal_error_messages_list.append(line + '\n')
     print('Number of issues: ' + str(count))
     # Collect timing information
     stdout_lines = stdout.split('\n')
@@ -334,7 +345,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
 
     if returncode == RETURN_CODE_TIMEOUT:
         print('Timeout!')
-        return returncode, stdout, '', elapsed_time, options, ''
+        return returncode, ''.join(internal_error_messages_list), '', elapsed_time, options, ''
 
     # generate stack trace for SIGSEGV, SIGABRT, SIGILL, SIGFPE, SIGBUS
     if returncode in (-11, -6, -4, -8, -7) or sig_num in (11, 6, 4, 8, 7):
