@@ -1884,8 +1884,9 @@ namespace {
             if (scope->bodyStart == bodyStart)
                 return this;
             for (auto & child : children) {
-                if (child.findScope(scope))
-                    return &child;
+                ScopeInfo3 * temp = child.findScope(scope);
+                if (temp)
+                    return temp;
             }
             return nullptr;
         }
@@ -2029,7 +2030,8 @@ namespace {
         const std::string &scope,
         Token **tok,
         const std::string &scope1,
-        const ScopeInfo3 *scopeInfo)
+        const ScopeInfo3 *currentScope,
+        const ScopeInfo3 *memberClassScope)
     {
         Token *tok1 = *tok;
 
@@ -2046,8 +2048,8 @@ namespace {
         if (tok1->strAt(-1) == "using") {
             // fixme: this is wrong
             // skip to end of scope
-            if (scopeInfo->bodyEnd)
-                *tok = scopeInfo->bodyEnd->previous();
+            if (currentScope->bodyEnd)
+                *tok = currentScope->bodyEnd->previous();
             return false;
         }
 
@@ -2091,6 +2093,8 @@ namespace {
 
         if (scope == fullScope1)
             return true;
+
+        const ScopeInfo3 *scopeInfo = memberClassScope ? memberClassScope : currentScope;
 
         // check in base types
         if (scopeInfo->findTypeInBase(scope))
@@ -2225,6 +2229,7 @@ bool Tokenizer::simplifyUsing()
         if (Token::Match(tok, "{|}|namespace|class|struct|union") ||
             Token::Match(tok, "using namespace %name% ;|::")) {
             setScopeInfo(tok, &currentScope);
+            continue;
         }
 
         // skip template declarations
@@ -2325,6 +2330,9 @@ bool Tokenizer::simplifyUsing()
                 temp->deleteThis();
         }
 
+        if (usingEnd)
+            tok = usingEnd;
+
         // Unfortunately we have to start searching from the beginning
         // of the token stream because templates are instantiated at
         // the end of the token stream and it may be used before then.
@@ -2341,10 +2349,10 @@ bool Tokenizer::simplifyUsing()
         if (currentScope->type == ScopeInfo3::Other ||
             currentScope->type == ScopeInfo3::MemberFunction) {
             scopeInfo1 = scopeInfo;
-            currentScope1 = scopeInfo.findScope(currentScope);
+            currentScope1 = scopeInfo1.findScope(currentScope);
             if (!currentScope1)
                 return substitute; // something bad happened
-            startToken = usingEnd;
+            startToken = usingEnd->next();
             endToken = currentScope->bodyEnd->next();
             if (currentScope->type == ScopeInfo3::MemberFunction) {
                 const ScopeInfo3 * temp = currentScope->findScope(currentScope->fullName);
@@ -2356,7 +2364,7 @@ bool Tokenizer::simplifyUsing()
             }
         }
 
-        std::string scope1;
+        std::string scope1 = currentScope1->fullName;
         bool skip = false; // don't erase type aliases we can't parse
         for (Token* tok1 = startToken; !skip && tok1 && tok1 != endToken; tok1 = tok1->next()) {
             if ((Token::Match(tok1, "{|}|namespace|class|struct|union") && tok1->strAt(-1) != "using") ||
@@ -2402,9 +2410,9 @@ bool Tokenizer::simplifyUsing()
                 }
                 continue;
             } else if (inMemberFunc && memberFuncScope) {
-                if (!usingMatch(nameToken, scope, &tok1, scope1, memberFuncScope))
+                if (!usingMatch(nameToken, scope, &tok1, scope1, currentScope1, memberFuncScope))
                     continue;
-            } else if (!usingMatch(nameToken, scope, &tok1, scope1, currentScope1))
+            } else if (!usingMatch(nameToken, scope, &tok1, scope1, currentScope1, nullptr))
                 continue;
 
             // remove the qualification
