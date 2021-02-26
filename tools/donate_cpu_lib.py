@@ -294,6 +294,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
     cppcheck_cmd = cppcheck_path + '/cppcheck' + ' ' + options
     cmd = 'nice ' + cppcheck_cmd
     returncode, stdout, stderr, elapsed_time = run_command(cmd)
+
     sig_num = -1
     sig_msg = 'Internal error: Child process crashed with signal '
     sig_pos = stderr.find(sig_msg)
@@ -301,9 +302,11 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         sig_start_pos = sig_pos + len(sig_msg)
         sig_num = int(stderr[sig_start_pos:stderr.find(' ', sig_start_pos)])
     print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
+
     if returncode == RETURN_CODE_TIMEOUT:
         print('Timeout!')
         return returncode, stdout, '', elapsed_time, options, ''
+
     # generate stack trace for SIGSEGV, SIGABRT, SIGILL, SIGFPE, SIGBUS
     if returncode in (-11, -6, -4, -8, -7) or sig_num in (11, 6, 4, 8, 7):
         print('Crash!')
@@ -323,22 +326,24 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         if not stacktrace:
             stacktrace = stdout
         return returncode, stacktrace, '', returncode, options, ''
+
     if returncode != 0:
         print('Error!')
         if returncode > 0:
             returncode = -100-returncode
         return returncode, stdout, '', returncode, options, ''
-    err_s = 'Internal error: Child process crashed with signal '
-    err_pos = stderr.find(err_s)
-    if err_pos != -1:
+
+    if sig_pos != -1:
         print('Error!')
-        pos2 = stderr.find(' [cppcheckError]', err_pos)
-        signr = int(stderr[err_pos+len(err_s):pos2])
+        pos2 = stderr.find(' [cppcheckError]', sig_pos)
+        signr = int(stderr[sig_pos+len(sig_msg):pos2])
         return -signr, '', '', -signr, options, ''
+
     thr_pos = stderr.find('#### ThreadExecutor')
     if thr_pos != -1:
         print('Thread!')
         return -222, stderr[thr_pos:], '', -222, options, ''
+
     information_messages_list = []
     issue_messages_list = []
     count = 0
@@ -365,6 +370,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
             timing_info_list.insert(0, ' ' + reverse_line + '\n')
             current_timing_lines += 1
     timing_str = ''.join(timing_info_list)
+
     return count, ''.join(issue_messages_list), ''.join(information_messages_list), elapsed_time, options, timing_str
 
 
