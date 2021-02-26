@@ -295,6 +295,35 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
     cmd = 'nice ' + cppcheck_cmd
     returncode, stdout, stderr, elapsed_time = run_command(cmd)
 
+    # collect messages
+    information_messages_list = []
+    issue_messages_list = []
+    count = 0
+    for line in stderr.split('\n'):
+        if ': information: ' in line:
+            information_messages_list.append(line + '\n')
+        elif line:
+            issue_messages_list.append(line + '\n')
+            if re.match(r'.*:[0-9]+:.*\]$', line):
+                count += 1
+    print('Number of issues: ' + str(count))
+    # Collect timing information
+    stdout_lines = stdout.split('\n')
+    timing_info_list = []
+    overall_time_found = False
+    max_timing_lines = 6
+    current_timing_lines = 0
+    for reverse_line in reversed(stdout_lines):
+        if reverse_line.startswith('Overall time:'):
+            overall_time_found = True
+        if overall_time_found:
+            if not reverse_line or current_timing_lines >= max_timing_lines:
+                break
+            timing_info_list.insert(0, ' ' + reverse_line + '\n')
+            current_timing_lines += 1
+    timing_str = ''.join(timing_info_list)
+
+    # detect errors
     sig_num = -1
     sig_msg = 'Internal error: Child process crashed with signal '
     sig_pos = stderr.find(sig_msg)
@@ -343,33 +372,6 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
     if thr_pos != -1:
         print('Thread!')
         return -222, stderr[thr_pos:], '', -222, options, ''
-
-    information_messages_list = []
-    issue_messages_list = []
-    count = 0
-    for line in stderr.split('\n'):
-        if ': information: ' in line:
-            information_messages_list.append(line + '\n')
-        elif line:
-            issue_messages_list.append(line + '\n')
-            if re.match(r'.*:[0-9]+:.*\]$', line):
-                count += 1
-    print('Number of issues: ' + str(count))
-    # Collect timing information
-    stdout_lines = stdout.split('\n')
-    timing_info_list = []
-    overall_time_found = False
-    max_timing_lines = 6
-    current_timing_lines = 0
-    for reverse_line in reversed(stdout_lines):
-        if reverse_line.startswith('Overall time:'):
-            overall_time_found = True
-        if overall_time_found:
-            if not reverse_line or current_timing_lines >= max_timing_lines:
-                break
-            timing_info_list.insert(0, ' ' + reverse_line + '\n')
-            current_timing_lines += 1
-    timing_str = ''.join(timing_info_list)
 
     return count, ''.join(issue_messages_list), ''.join(information_messages_list), elapsed_time, options, timing_str
 
