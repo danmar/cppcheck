@@ -103,23 +103,6 @@ private:
         TEST_CASE(simplifyHeadersAndUnusedTemplates1);
         TEST_CASE(simplifyHeadersAndUnusedTemplates2);
 
-        TEST_CASE(simplifyCasts1);
-        TEST_CASE(simplifyCasts2);
-        TEST_CASE(simplifyCasts3);
-        TEST_CASE(simplifyCasts4);
-        TEST_CASE(simplifyCasts5);
-        TEST_CASE(simplifyCasts7);
-        TEST_CASE(simplifyCasts8);
-        TEST_CASE(simplifyCasts9);
-        TEST_CASE(simplifyCasts10);
-        TEST_CASE(simplifyCasts11);
-        TEST_CASE(simplifyCasts12);
-        TEST_CASE(simplifyCasts13);
-        TEST_CASE(simplifyCasts14);
-        TEST_CASE(simplifyCasts15); // #5996 - don't remove cast in 'a+static_cast<int>(b?60:0)'
-        TEST_CASE(simplifyCasts16); // #6278
-        TEST_CASE(simplifyCasts17); // #6110 - don't remove any parentheses in 'a(b)(c)'
-
         TEST_CASE(simplifyAt);
 
         TEST_CASE(inlineasm);
@@ -960,104 +943,6 @@ private:
                       "new ( uBAR ? uBAR : sizeof ( T ) ) T ;\n"
                       "}\n"
                       "} ;", tokenizeAndStringify(code, s));
-    }
-
-    // Don’t remove "(int *)"..
-    void simplifyCasts1() {
-        const char code[] = "int *f(int *);";
-        ASSERT_EQUALS("int * f ( int * ) ;", tokenizeAndStringify(code, true));
-    }
-
-    // remove static_cast..
-    void simplifyCasts2() {
-        const char code[] = "t = (static_cast<std::vector<int> *>(&p));\n";
-        ASSERT_EQUALS("t = & p ;", tokenizeAndStringify(code, true));
-    }
-
-    void simplifyCasts3() {
-        // ticket #961
-        const char code[] = "assert (iplen >= (unsigned) ipv4->ip_hl * 4 + 20);";
-        const char expected[] = "assert ( iplen >= ipv4 . ip_hl * 4 + 20 ) ;";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-    }
-
-    void simplifyCasts4() {
-        // ticket #970
-        const char code[] = "{if (a >= (unsigned)(b)) {}}";
-        const char expected[] = "{ if ( a >= ( unsigned int ) ( b ) ) { } }";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-    }
-
-    void simplifyCasts5() {
-        // ticket #1817
-        ASSERT_EQUALS("a . data = f ;", tokenizeAndStringify("a->data = reinterpret_cast<void*>(static_cast<intptr_t>(f));", true));
-    }
-
-    void simplifyCasts7() {
-        ASSERT_EQUALS("str = malloc ( 3 )", tokenizeAndStringify("str=(char **)malloc(3)", true));
-    }
-
-    void simplifyCasts8() {
-        ASSERT_EQUALS("ptr1 = ptr2", tokenizeAndStringify("ptr1=(int *   **)ptr2", true));
-    }
-
-    void simplifyCasts9() {
-        ASSERT_EQUALS("f ( ( double ) ( v1 ) * v2 )", tokenizeAndStringify("f((double)(v1)*v2)", true));
-        ASSERT_EQUALS("int v1 ; f ( ( double ) ( v1 ) * v2 )", tokenizeAndStringify("int v1; f((double)(v1)*v2)", true));
-        ASSERT_EQUALS("f ( ( A ) ( B ) & x )", tokenizeAndStringify("f((A)(B)&x)", true)); // #4439
-    }
-
-    void simplifyCasts10() {
-        ASSERT_EQUALS("; ( * f ) ( p ) ;", tokenizeAndStringify("; (*(void (*)(char *))f)(p);", true));
-    }
-
-    void simplifyCasts11() {
-        ASSERT_EQUALS("; x = 0 ;", tokenizeAndStringify("; *(int *)&x = 0;", true));
-    }
-
-    void simplifyCasts12() {
-        // #3935 - don't remove this cast
-        ASSERT_EQUALS("; ( ( short * ) data ) [ 5 ] = 0 ;", tokenizeAndStringify("; ((short*)data)[5] = 0;", true));
-    }
-
-    void simplifyCasts13() {
-        // casting deref / address of
-        ASSERT_EQUALS("; int x ; x = * y ;", tokenizeAndStringify(";int x=(int)*y;",true));
-        ASSERT_EQUALS("; int x ; x = & y ;", tokenizeAndStringify(";int x=(int)&y;",true));
-        TODO_ASSERT_EQUALS("; int x ; x = ( INT ) * y ;",
-                           "; int x ; x = * y ;",
-                           tokenizeAndStringify(";int x=(INT)*y;",true)); // INT might be a variable
-        TODO_ASSERT_EQUALS("; int x ; x = ( INT ) & y ;",
-                           "; int x ; x = & y ;",
-                           tokenizeAndStringify(";int x=(INT)&y;",true)); // INT might be a variable
-
-        // #4899 - False positive on unused variable
-        ASSERT_EQUALS("; float angle ; angle = tilt ;", tokenizeAndStringify("; float angle = (float) tilt;", true)); // status quo
-        ASSERT_EQUALS("; float angle ; angle = ( float ) - tilt ;", tokenizeAndStringify("; float angle = (float) -tilt;", true));
-        ASSERT_EQUALS("; float angle ; angle = ( float ) + tilt ;", tokenizeAndStringify("; float angle = (float) +tilt;", true));
-        ASSERT_EQUALS("; int a ; a = ( int ) ~ c ;", tokenizeAndStringify("; int a = (int)~c;", true));
-    }
-
-    void simplifyCasts14() { // const
-        // #5081
-        ASSERT_EQUALS("( ! ( & s ) . a ) ;", tokenizeAndStringify("(! ( (struct S const *) &s)->a);", true));
-        // #5244
-        ASSERT_EQUALS("bar ( & ptr ) ;", tokenizeAndStringify("bar((const X**)&ptr);",true));
-    }
-
-    void simplifyCasts15() { // #5996 - don't remove cast in 'a+static_cast<int>(b?60:0)'
-        ASSERT_EQUALS("a + ( b ? 60 : 0 ) ;",
-                      tokenizeAndStringify("a + static_cast<int>(b ? 60 : 0);", true));
-    }
-
-    void simplifyCasts16() { // #6278
-        ASSERT_EQUALS("Get ( pArray ) ;",
-                      tokenizeAndStringify("Get((CObject*&)pArray);", true));
-    }
-
-    void simplifyCasts17() { // #6110 - don't remove any parentheses in 'a(b)(c)'
-        ASSERT_EQUALS("{ if ( a ( b ) ( c ) >= 3 ) { } }",
-                      tokenizeAndStringify("{ if (a(b)(c) >= 3) { } }", true));
     }
 
     void simplifyAt() {
