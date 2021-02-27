@@ -210,6 +210,7 @@ private:
         TEST_CASE(template165); // #10032 syntax error
         TEST_CASE(template166); // #10081 hang
         TEST_CASE(template167);
+        TEST_CASE(template168);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -4215,6 +4216,51 @@ private:
                             "void foo ( ) { "
                             "std :: string str ; str = MathLib :: toString<double> ( 1.0 ) ; "
                             "}";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template168() {
+        const char code[] = "template < typename T, typename U > struct type { };\n"
+                            "template < > struct type < bool, bool > {};\n"
+                            "template < > struct type < unsigned char, unsigned char > {};\n"
+                            "template < > struct type < char, char > {};\n"
+                            "template < > struct type < signed char, signed char > {};\n"
+                            "template < > struct type < unsigned short, unsigned short > {};\n"
+                            "template < > struct type < short, short > {};\n"
+                            "template < > struct type < unsigned int, unsigned int > {};\n"
+                            "template < > struct type < int, int > {};\n"
+                            "template < > struct type < unsigned long long, unsigned long long > {};\n"
+                            "template < > struct type < long long, long long > {};\n"
+                            "template < > struct type < double, double > {};\n"
+                            "template < > struct type < float, float > {};\n"
+                            "template < > struct type < long double, long double > {};";
+        const char exp[]  = "struct type<longdouble,longdouble> ; "
+                            "struct type<float,float> ; "
+                            "struct type<double,double> ; "
+                            "struct type<longlong,longlong> ; "
+                            "struct type<unsignedlonglong,unsignedlonglong> ; "
+                            "struct type<int,int> ; "
+                            "struct type<unsignedint,unsignedint> ; "
+                            "struct type<short,short> ; "
+                            "struct type<unsignedshort,unsignedshort> ; "
+                            "struct type<signedchar,signedchar> ; "
+                            "struct type<char,char> ; "
+                            "struct type<unsignedchar,unsignedchar> ; "
+                            "struct type<bool,bool> ; "
+                            "template < typename T , typename U > struct type { } ; "
+                            "struct type<bool,bool> { } ; "
+                            "struct type<unsignedchar,unsignedchar> { } ; "
+                            "struct type<char,char> { } ; "
+                            "struct type<signedchar,signedchar> { } ; "
+                            "struct type<unsignedshort,unsignedshort> { } ; "
+                            "struct type<short,short> { } ; "
+                            "struct type<unsignedint,unsignedint> { } ; "
+                            "struct type<int,int> { } ; "
+                            "struct type<unsignedlonglong,unsignedlonglong> { } ; "
+                            "struct type<longlong,longlong> { } ; "
+                            "struct type<double,double> { } ; "
+                            "struct type<float,float> { } ; "
+                            "struct type<longdouble,longdouble> { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
