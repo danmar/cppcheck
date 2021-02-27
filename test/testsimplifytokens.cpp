@@ -58,6 +58,8 @@ private:
         // correct order
         TEST_CASE(simplifyTokenList1);
 
+        TEST_CASE(test1); // array access. replace "*(p+1)" => "p[1]"
+
         TEST_CASE(simplifyMathFunctions_sqrt);
         TEST_CASE(simplifyMathFunctions_cbrt);
         TEST_CASE(simplifyMathFunctions_exp);
@@ -342,6 +344,23 @@ private:
         TEST_CASE(simplifyKnownVariablesGlobalVars);
         TEST_CASE(simplifyKnownVariablesReturn);   // 3500 - return
         TEST_CASE(simplifyKnownVariablesPointerAliasFunctionCall); // #7440
+
+        TEST_CASE(simplifyCasts1);
+        TEST_CASE(simplifyCasts2);
+        TEST_CASE(simplifyCasts3);
+        TEST_CASE(simplifyCasts4);
+        TEST_CASE(simplifyCasts5);
+        TEST_CASE(simplifyCasts7);
+        TEST_CASE(simplifyCasts8);
+        TEST_CASE(simplifyCasts9);
+        TEST_CASE(simplifyCasts10);
+        TEST_CASE(simplifyCasts11);
+        TEST_CASE(simplifyCasts12);
+        TEST_CASE(simplifyCasts13);
+        TEST_CASE(simplifyCasts14);
+        TEST_CASE(simplifyCasts15); // #5996 - don't remove cast in 'a+static_cast<int>(b?60:0)'
+        TEST_CASE(simplifyCasts16); // #6278
+        TEST_CASE(simplifyCasts17); // #6110 - don't remove any parentheses in 'a(b)(c)'
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
@@ -460,6 +479,53 @@ private:
         ASSERT_EQUALS("{ x = f ( ) ; while ( x == -1 ) { x = f ( ) ; } }",
                       tok("{ while((x=f())==-1 && errno==EINTR){}}",true));
     }
+
+
+
+    void test1() {
+        // "&p[1]" => "p+1"
+        /*
+        ASSERT_EQUALS("; x = p + n ;", tok("; x = & p [ n ] ;"));
+        ASSERT_EQUALS("; x = ( p + n ) [ m ] ;", tok("; x = & p [ n ] [ m ] ;"));
+        ASSERT_EQUALS("; x = y & p [ n ] ;", tok("; x = y & p [ n ] ;"));
+        ASSERT_EQUALS("; x = 10 & p [ n ] ;", tok(";  x = 10 & p [ n ] ;"));
+        ASSERT_EQUALS("; x = y [ 10 ] & p [ n ] ;", tok("; x = y [ 10 ] & p [ n ] ;"));
+        ASSERT_EQUALS("; x = ( a + m ) & p [ n ] ;", tok("; x = ( a + m ) & p [ n ] ;"));
+        */
+        // "*(p+1)" => "p[1]"
+        ASSERT_EQUALS("; x = p [ 1 ] ;", tok("; x = * ( p + 1 ) ;"));
+        ASSERT_EQUALS("; x = p [ 0xA ] ;", tok("; x = * ( p + 0xA ) ;"));
+        ASSERT_EQUALS("; x = p [ n ] ;", tok("; x = * ( p + n ) ;"));
+        ASSERT_EQUALS("; x = y * ( p + n ) ;", tok("; x = y * ( p + n ) ;"));
+        ASSERT_EQUALS("; x = 10 * ( p + n ) ;", tok("; x = 10 * ( p + n ) ;"));
+        ASSERT_EQUALS("; x = y [ 10 ] * ( p + n ) ;", tok("; x = y [ 10 ] * ( p + n ) ;"));
+        ASSERT_EQUALS("; x = ( a + m ) * ( p + n ) ;", tok("; x = ( a + m ) * ( p + n ) ;"));
+
+        // "*(p-1)" => "p[-1]" and "*(p-n)" => "p[-n]"
+        ASSERT_EQUALS("; x = p [ -1 ] ;", tok("; x = *(p - 1);"));
+        ASSERT_EQUALS("; x = p [ -0xA ] ;", tok("; x = *(p - 0xA);"));
+        ASSERT_EQUALS("; x = p [ - n ] ;", tok("; x = *(p - n);"));
+        ASSERT_EQUALS("; x = y * ( p - 1 ) ;", tok("; x = y * (p - 1);"));
+        ASSERT_EQUALS("; x = 10 * ( p - 1 ) ;", tok("; x = 10 * (p - 1);"));
+        ASSERT_EQUALS("; x = y [ 10 ] * ( p - 1 ) ;", tok("; x = y[10] * (p - 1);"));
+        ASSERT_EQUALS("; x = ( a - m ) * ( p - n ) ;", tok("; x = (a - m) * (p - n);"));
+
+        // Test that the array-index simplification is not applied when there's no dereference:
+        // "(x-y)" => "(x-y)" and "(x+y)" => "(x+y)"
+        ASSERT_EQUALS("; a = b * ( x - y ) ;", tok("; a = b * (x - y);"));
+        ASSERT_EQUALS("; a = b * x [ - y ] ;", tok("; a = b * *(x - y);"));
+        ASSERT_EQUALS("; a = a * ( x - y ) ;", tok("; a *= (x - y);"));
+        ASSERT_EQUALS("; z = a ++ * ( x - y ) ;", tok("; z = a++ * (x - y);"));
+        ASSERT_EQUALS("; z = a ++ * ( x + y ) ;", tok("; z = a++ * (x + y);"));
+        ASSERT_EQUALS("; z = a -- * ( x - y ) ;", tok("; z = a-- * (x - y);"));
+        ASSERT_EQUALS("; z = a -- * ( x + y ) ;", tok("; z = a-- * (x + y);"));
+        ASSERT_EQUALS("; z = 'a' * ( x - y ) ;", tok("; z = 'a' * (x - y);"));
+        ASSERT_EQUALS("; z = \"a\" * ( x - y ) ;", tok("; z = \"a\" * (x - y);"));
+        ASSERT_EQUALS("; z = 'a' * ( x + y ) ;", tok("; z = 'a' * (x + y);"));
+        ASSERT_EQUALS("; z = \"a\" * ( x + y ) ;", tok("; z = \"a\" * (x + y);"));
+        ASSERT_EQUALS("; z = foo ( ) * ( x + y ) ;", tok("; z = foo() * (x + y);"));
+    }
+
 
 
     void simplifyMathFunctions_erfc() {
@@ -6751,6 +6817,105 @@ private:
             const std::string s(tokenizeAndStringify(code, true));
             TODO_ASSERT_EQUALS(true, false, s.find("memcpy ( 0 , s , 10 ) ;") != std::string::npos);
         }
+    }
+
+
+    // Don’t remove "(int *)"..
+    void simplifyCasts1() {
+        const char code[] = "int *f(int *);";
+        ASSERT_EQUALS("int * f ( int * ) ;", tok(code));
+    }
+
+    // remove static_cast..
+    void simplifyCasts2() {
+        const char code[] = "t = (static_cast<std::vector<int> *>(&p));\n";
+        ASSERT_EQUALS("t = & p ;", tok(code));
+    }
+
+    void simplifyCasts3() {
+        // ticket #961
+        const char code[] = "assert (iplen >= (unsigned) ipv4->ip_hl * 4 + 20);";
+        const char expected[] = "assert ( iplen >= ipv4 . ip_hl * 4 + 20 ) ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyCasts4() {
+        // ticket #970
+        const char code[] = "{if (a >= (unsigned)(b)) {}}";
+        const char expected[] = "{ if ( a >= ( int ) ( b ) ) { } }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyCasts5() {
+        // ticket #1817
+        ASSERT_EQUALS("a . data = f ;", tok("a->data = reinterpret_cast<void*>(static_cast<intptr_t>(f));"));
+    }
+
+    void simplifyCasts7() {
+        ASSERT_EQUALS("str = malloc ( 3 )", tok("str=(char **)malloc(3)"));
+    }
+
+    void simplifyCasts8() {
+        ASSERT_EQUALS("ptr1 = ptr2", tok("ptr1=(int *   **)ptr2"));
+    }
+
+    void simplifyCasts9() {
+        ASSERT_EQUALS("f ( ( double ) ( v1 ) * v2 )", tok("f((double)(v1)*v2)"));
+        ASSERT_EQUALS("int v1 ; f ( ( double ) ( v1 ) * v2 )", tok("int v1; f((double)(v1)*v2)"));
+        ASSERT_EQUALS("f ( ( A ) ( B ) & x )", tok("f((A)(B)&x)")); // #4439
+    }
+
+    void simplifyCasts10() {
+        ASSERT_EQUALS("; ( * f ) ( p ) ;", tok("; (*(void (*)(char *))f)(p);"));
+    }
+
+    void simplifyCasts11() {
+        ASSERT_EQUALS("; x = 0 ;", tok("; *(int *)&x = 0;"));
+    }
+
+    void simplifyCasts12() {
+        // #3935 - don't remove this cast
+        ASSERT_EQUALS("; ( ( short * ) data ) [ 5 ] = 0 ;", tokenizeAndStringify("; ((short*)data)[5] = 0;", true));
+    }
+
+    void simplifyCasts13() {
+        // casting deref / address of
+        ASSERT_EQUALS("; int x ; x = * y ;", tok(";int x=(int)*y;"));
+        ASSERT_EQUALS("; int x ; x = & y ;", tok(";int x=(int)&y;"));
+        TODO_ASSERT_EQUALS("; int x ; x = ( INT ) * y ;",
+                           "; int x ; x = * y ;",
+                           tok(";int x=(INT)*y;")); // INT might be a variable
+        TODO_ASSERT_EQUALS("; int x ; x = ( INT ) & y ;",
+                           "; int x ; x = & y ;",
+                           tok(";int x=(INT)&y;")); // INT might be a variable
+
+        // #4899 - False positive on unused variable
+        ASSERT_EQUALS("; float angle ; angle = tilt ;", tok("; float angle = (float) tilt;")); // status quo
+        ASSERT_EQUALS("; float angle ; angle = ( float ) - tilt ;", tok("; float angle = (float) -tilt;"));
+        ASSERT_EQUALS("; float angle ; angle = ( float ) + tilt ;", tok("; float angle = (float) +tilt;"));
+        ASSERT_EQUALS("; int a ; a = ( int ) ~ c ;", tok("; int a = (int)~c;"));
+    }
+
+    void simplifyCasts14() { // const
+        // #5081
+        ASSERT_EQUALS("( ! ( & s ) . a ) ;", tok("(! ( (struct S const *) &s)->a);"));
+        // #5244
+        ASSERT_EQUALS("bar ( & ptr ) ;", tok("bar((const X**)&ptr);"));
+    }
+
+    void simplifyCasts15() { // #5996 - don't remove cast in 'a+static_cast<int>(b?60:0)'
+        ASSERT_EQUALS("a + ( b ? 60 : 0 ) ;",
+                      tok("a + static_cast<int>(b ? 60 : 0);"));
+    }
+
+    void simplifyCasts16() { // #6278
+        ASSERT_EQUALS("Get ( pArray ) ;",
+                      tok("Get((CObject*&)pArray);"));
+    }
+
+    void simplifyCasts17() { // #6110 - don't remove any parentheses in 'a(b)(c)'
+        ASSERT_EQUALS("{ if ( a ( b ) ( c ) >= 3 ) { } }",
+                      tok("{ if (a(b)(c) >= 3) { } }"));
     }
 };
 

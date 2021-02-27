@@ -10,12 +10,13 @@ import re
 import signal
 import tarfile
 import shlex
+import psutil
 
 
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.8"
+CLIENT_VERSION = "1.3.9"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -255,14 +256,25 @@ def has_include(path, includes):
 def run_command(cmd):
     print(cmd)
     startTime = time.time()
+    comm = None
     p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
     try:
         comm = p.communicate(timeout=CPPCHECK_TIMEOUT)
         return_code = p.returncode
+        p = None
     except subprocess.TimeoutExpired:
-        os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
-        comm = p.communicate()
         return_code = RETURN_CODE_TIMEOUT
+        # terminate all the child processes so we get messages about which files were hanging
+        child_procs = psutil.Process(p.pid).children(recursive=True)
+        if len(child_procs) > 0:
+            for child in child_procs:
+                child.terminate()
+            comm = p.communicate()
+            p = None
+    finally:
+        if p:
+            os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
+            comm = p.communicate()
     stop_time = time.time()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore')
@@ -290,6 +302,39 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
     cppcheck_cmd = cppcheck_path + '/cppcheck' + ' ' + options
     cmd = 'nice ' + cppcheck_cmd
     returncode, stdout, stderr, elapsed_time = run_command(cmd)
+
+    # collect messages
+    information_messages_list = []
+    issue_messages_list = []
+    internal_error_messages_list = []
+    count = 0
+    for line in stderr.split('\n'):
+        if ': information: ' in line:
+            information_messages_list.append(line + '\n')
+        elif line:
+            issue_messages_list.append(line + '\n')
+            if re.match(r'.*:[0-9]+:.*\]$', line):
+                count += 1
+            if ': error: Internal error: ' in line:
+                internal_error_messages_list.append(line + '\n')
+    print('Number of issues: ' + str(count))
+    # Collect timing information
+    stdout_lines = stdout.split('\n')
+    timing_info_list = []
+    overall_time_found = False
+    max_timing_lines = 6
+    current_timing_lines = 0
+    for reverse_line in reversed(stdout_lines):
+        if reverse_line.startswith('Overall time:'):
+            overall_time_found = True
+        if overall_time_found:
+            if not reverse_line or current_timing_lines >= max_timing_lines:
+                break
+            timing_info_list.insert(0, ' ' + reverse_line + '\n')
+            current_timing_lines += 1
+    timing_str = ''.join(timing_info_list)
+
+    # detect errors
     sig_num = -1
     sig_msg = 'Internal error: Child process crashed with signal '
     sig_pos = stderr.find(sig_msg)
@@ -297,9 +342,11 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         sig_start_pos = sig_pos + len(sig_msg)
         sig_num = int(stderr[sig_start_pos:stderr.find(' ', sig_start_pos)])
     print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
+
     if returncode == RETURN_CODE_TIMEOUT:
         print('Timeout!')
-        return returncode, stdout, '', elapsed_time, options, ''
+        return returncode, ''.join(internal_error_messages_list), '', elapsed_time, options, ''
+
     # generate stack trace for SIGSEGV, SIGABRT, SIGILL, SIGFPE, SIGBUS
     if returncode in (-11, -6, -4, -8, -7) or sig_num in (11, 6, 4, 8, 7):
         print('Crash!')
@@ -319,48 +366,24 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         if not stacktrace:
             stacktrace = stdout
         return returncode, stacktrace, '', returncode, options, ''
+
     if returncode != 0:
         print('Error!')
         if returncode > 0:
             returncode = -100-returncode
         return returncode, stdout, '', returncode, options, ''
-    err_s = 'Internal error: Child process crashed with signal '
-    err_pos = stderr.find(err_s)
-    if err_pos != -1:
+
+    if sig_pos != -1:
         print('Error!')
-        pos2 = stderr.find(' [cppcheckError]', err_pos)
-        signr = int(stderr[err_pos+len(err_s):pos2])
+        pos2 = stderr.find(' [cppcheckError]', sig_pos)
+        signr = int(stderr[sig_pos+len(sig_msg):pos2])
         return -signr, '', '', -signr, options, ''
+
     thr_pos = stderr.find('#### ThreadExecutor')
     if thr_pos != -1:
         print('Thread!')
         return -222, stderr[thr_pos:], '', -222, options, ''
-    information_messages_list = []
-    issue_messages_list = []
-    count = 0
-    for line in stderr.split('\n'):
-        if ': information: ' in line:
-            information_messages_list.append(line + '\n')
-        elif line:
-            issue_messages_list.append(line + '\n')
-            if re.match(r'.*:[0-9]+:.*\]$', line):
-                count += 1
-    print('Number of issues: ' + str(count))
-    # Collect timing information
-    stdout_lines = stdout.split('\n')
-    timing_info_list = []
-    overall_time_found = False
-    max_timing_lines = 6
-    current_timing_lines = 0
-    for reverse_line in reversed(stdout_lines):
-        if reverse_line.startswith('Overall time:'):
-            overall_time_found = True
-        if overall_time_found:
-            if not reverse_line or current_timing_lines >= max_timing_lines:
-                break
-            timing_info_list.insert(0, ' ' + reverse_line + '\n')
-            current_timing_lines += 1
-    timing_str = ''.join(timing_info_list)
+
     return count, ''.join(issue_messages_list), ''.join(information_messages_list), elapsed_time, options, timing_str
 
 
