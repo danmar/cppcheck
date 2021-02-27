@@ -58,6 +58,8 @@ private:
         // correct order
         TEST_CASE(simplifyTokenList1);
 
+        TEST_CASE(test1); // array access. replace "*(p+1)" => "p[1]"
+
         TEST_CASE(simplifyMathFunctions_sqrt);
         TEST_CASE(simplifyMathFunctions_cbrt);
         TEST_CASE(simplifyMathFunctions_exp);
@@ -460,6 +462,53 @@ private:
         ASSERT_EQUALS("{ x = f ( ) ; while ( x == -1 ) { x = f ( ) ; } }",
                       tok("{ while((x=f())==-1 && errno==EINTR){}}",true));
     }
+
+
+
+    void test1() {
+        // "&p[1]" => "p+1"
+        /*
+        ASSERT_EQUALS("; x = p + n ;", tok("; x = & p [ n ] ;"));
+        ASSERT_EQUALS("; x = ( p + n ) [ m ] ;", tok("; x = & p [ n ] [ m ] ;"));
+        ASSERT_EQUALS("; x = y & p [ n ] ;", tok("; x = y & p [ n ] ;"));
+        ASSERT_EQUALS("; x = 10 & p [ n ] ;", tok(";  x = 10 & p [ n ] ;"));
+        ASSERT_EQUALS("; x = y [ 10 ] & p [ n ] ;", tok("; x = y [ 10 ] & p [ n ] ;"));
+        ASSERT_EQUALS("; x = ( a + m ) & p [ n ] ;", tok("; x = ( a + m ) & p [ n ] ;"));
+        */
+        // "*(p+1)" => "p[1]"
+        ASSERT_EQUALS("; x = p [ 1 ] ;", tok("; x = * ( p + 1 ) ;"));
+        ASSERT_EQUALS("; x = p [ 0xA ] ;", tok("; x = * ( p + 0xA ) ;"));
+        ASSERT_EQUALS("; x = p [ n ] ;", tok("; x = * ( p + n ) ;"));
+        ASSERT_EQUALS("; x = y * ( p + n ) ;", tok("; x = y * ( p + n ) ;"));
+        ASSERT_EQUALS("; x = 10 * ( p + n ) ;", tok("; x = 10 * ( p + n ) ;"));
+        ASSERT_EQUALS("; x = y [ 10 ] * ( p + n ) ;", tok("; x = y [ 10 ] * ( p + n ) ;"));
+        ASSERT_EQUALS("; x = ( a + m ) * ( p + n ) ;", tok("; x = ( a + m ) * ( p + n ) ;"));
+
+        // "*(p-1)" => "p[-1]" and "*(p-n)" => "p[-n]"
+        ASSERT_EQUALS("; x = p [ -1 ] ;", tok("; x = *(p - 1);"));
+        ASSERT_EQUALS("; x = p [ -0xA ] ;", tok("; x = *(p - 0xA);"));
+        ASSERT_EQUALS("; x = p [ - n ] ;", tok("; x = *(p - n);"));
+        ASSERT_EQUALS("; x = y * ( p - 1 ) ;", tok("; x = y * (p - 1);"));
+        ASSERT_EQUALS("; x = 10 * ( p - 1 ) ;", tok("; x = 10 * (p - 1);"));
+        ASSERT_EQUALS("; x = y [ 10 ] * ( p - 1 ) ;", tok("; x = y[10] * (p - 1);"));
+        ASSERT_EQUALS("; x = ( a - m ) * ( p - n ) ;", tok("; x = (a - m) * (p - n);"));
+
+        // Test that the array-index simplification is not applied when there's no dereference:
+        // "(x-y)" => "(x-y)" and "(x+y)" => "(x+y)"
+        ASSERT_EQUALS("; a = b * ( x - y ) ;", tok("; a = b * (x - y);"));
+        ASSERT_EQUALS("; a = b * x [ - y ] ;", tok("; a = b * *(x - y);"));
+        ASSERT_EQUALS("; a = a * ( x - y ) ;", tok("; a *= (x - y);"));
+        ASSERT_EQUALS("; z = a ++ * ( x - y ) ;", tok("; z = a++ * (x - y);"));
+        ASSERT_EQUALS("; z = a ++ * ( x + y ) ;", tok("; z = a++ * (x + y);"));
+        ASSERT_EQUALS("; z = a -- * ( x - y ) ;", tok("; z = a-- * (x - y);"));
+        ASSERT_EQUALS("; z = a -- * ( x + y ) ;", tok("; z = a-- * (x + y);"));
+        ASSERT_EQUALS("; z = 'a' * ( x - y ) ;", tok("; z = 'a' * (x - y);"));
+        ASSERT_EQUALS("; z = \"a\" * ( x - y ) ;", tok("; z = \"a\" * (x - y);"));
+        ASSERT_EQUALS("; z = 'a' * ( x + y ) ;", tok("; z = 'a' * (x + y);"));
+        ASSERT_EQUALS("; z = \"a\" * ( x + y ) ;", tok("; z = \"a\" * (x + y);"));
+        ASSERT_EQUALS("; z = foo ( ) * ( x + y ) ;", tok("; z = foo() * (x + y);"));
+    }
+
 
 
     void simplifyMathFunctions_erfc() {
