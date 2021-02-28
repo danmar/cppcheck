@@ -215,7 +215,6 @@ def unpack_package(work_path, tgz):
     temp_path = work_path + '/temp'
     remove_tree(temp_path)
     os.mkdir(temp_path)
-    os.chdir(temp_path)
     found = False
     if tarfile.is_tarfile(tgz):
         with tarfile.open(tgz) as tf:
@@ -226,13 +225,12 @@ def unpack_package(work_path, tgz):
                 elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp',
                                                    '.h++', '.hxx', '.hh', '.tpp', '.txx', '.ipp', '.ixx', '.qml')):
                     try:
-                        tf.extract(member.name)
+                        tf.extract(member.name, temp_path)
                         found = True
                     except OSError:
                         pass
                     except AttributeError:
                         pass
-    os.chdir(work_path)
     return found
 
 
