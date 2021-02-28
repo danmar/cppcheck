@@ -241,7 +241,7 @@ void misra_7_2() {
     unsigned short h = 0x8000U;
     unsigned int i = 0x80000000; // 7.2
     unsigned int j = 0x80000000U;
-    unsigned long long k = 0x8000000000000000; // 7.2
+    unsigned long long k = 0x8000000000000000; // TODO 7.2
     unsigned long long l = 0x8000000000000000ULL;
 
     unsigned int m = 1 + 0x80000000; // 7.2 10.4
