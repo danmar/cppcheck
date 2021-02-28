@@ -370,11 +370,9 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
             returncode = -100-returncode
         return returncode, stdout, '', returncode, options, ''
 
-    if sig_pos != -1:
+    if sig_num != -1:
         print('Error!')
-        pos2 = stderr.find(' [cppcheckError]', sig_pos)
-        signr = int(stderr[sig_pos+len(sig_msg):pos2])
-        return -signr, '', '', -signr, options, ''
+        return -sig_num, '', '', -sig_num, options, ''
 
     thr_pos = stderr.find('#### ThreadExecutor')
     if thr_pos != -1:
