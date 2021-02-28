@@ -291,11 +291,14 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         if os.path.exists(os.path.join(cppcheck_path, 'cfg', library + '.cfg')):
             libs += '--library=' + library + ' '
 
+    dir_to_scan = 'temp'
+
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
-    options = libs + jobs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --template=daca2 -rp=temp'
-    options += ' -D__GNUC__ --platform=unix64 temp'
+    options = libs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --template=daca2'
+    options += ' -D__GNUC__ --platform=unix64'
+    options += ' -rp={}'.format(dir_to_scan)
     cppcheck_cmd = cppcheck_path + '/cppcheck' + ' ' + options
-    cmd = 'nice ' + cppcheck_cmd
+    cmd = 'nice ' + cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
     returncode, stdout, stderr, elapsed_time = run_command(cmd)
 
     # collect messages
@@ -348,7 +351,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         stacktrace = ''
         if cppcheck_path == 'cppcheck':
             # re-run within gdb to get a stacktrace
-            cmd = 'gdb --batch --eval-command=run --eval-command="bt 50" --return-child-result --args ' + cppcheck_cmd + " -j1"
+            cmd = 'gdb --batch --eval-command=run --eval-command="bt 50" --return-child-result --args ' + cppcheck_cmd + " -j1 " + dir_to_scan
             _, st_stdout, _, _ = run_command(cmd)
             gdb_pos = st_stdout.find(" received signal")
             if not gdb_pos == -1:
