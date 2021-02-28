@@ -489,7 +489,7 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
     else
         temp.mSettings.userDefines += fs.cppcheckDefines();
     temp.mSettings.includePaths = fs.includePaths;
-    temp.mSettings.userUndefs = fs.undefs;
+    temp.mSettings.userUndefs.insert(fs.undefs.cbegin(), fs.undefs.cend());
     if (fs.standard.find("++") != std::string::npos)
         temp.mSettings.standards.setCPP(fs.standard);
     else if (!fs.standard.empty())
