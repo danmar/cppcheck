@@ -224,8 +224,7 @@ def unpack_package(work_path, tgz):
                     # Skip dangerous file names
                     continue
                 elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp',
-                                                   '.h++', '.hxx', '.hh', '.tpp', '.txx', '.qml',
-                                                   '.sln', '.vcproj', '.vcxproj')):
+                                                   '.h++', '.hxx', '.hh', '.tpp', '.txx', '.qml')):
                     try:
                         tf.extract(member.name)
                         found = True
@@ -296,13 +295,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
 
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
     options = libs + jobs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --template=daca2 -rp=temp'
-    if os.path.isfile('temp/tortoisesvn/TortoiseSVN.sln'):
-        options = options.replace('--library=posix ', '')
-        options = options.replace('--library=gnu ', '')
-        options = '--library=windows ' + options
-        options += ' --platform=win64 --project=temp/tortoisesvn/TortoiseSVN.sln'
-    else:
-        options += ' -D__GNUC__ --platform=unix64 temp'
+    options += ' -D__GNUC__ --platform=unix64 temp'
     cppcheck_cmd = cppcheck_path + '/cppcheck' + ' ' + options
     cmd = 'nice ' + cppcheck_cmd
     returncode, stdout, stderr, elapsed_time = run_command(cmd)
