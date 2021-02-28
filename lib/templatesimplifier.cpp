@@ -3471,6 +3471,12 @@ void TemplateSimplifier::printOut(const TokenAndName &tokenAndName, const std::s
             const Token *start = tokenAndName.token()->next();
             std::cout << indent << "type: ";
             while (start && start != end) {
+                if (start->isUnsigned())
+                    std::cout << "unsigned";
+                else if (start->isSigned())
+                    std::cout << "signed";
+                if (start->isLong())
+                    std::cout << "long";
                 std::cout << start->str();
                 start = start->next();
             }
