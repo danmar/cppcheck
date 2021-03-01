@@ -346,8 +346,13 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         return returncode, ''.join(internal_error_messages_list), '', elapsed_time, options, ''
 
     # generate stack trace for SIGSEGV, SIGABRT, SIGILL, SIGFPE, SIGBUS
-    if returncode in (-11, -6, -4, -8, -7) or sig_num in (11, 6, 4, 8, 7):
+    has_error = returncode in (-11, -6, -4, -8, -7)
+    has_sig = sig_num in (11, 6, 4, 8, 7)
+    if has_error or has_sig:
         print('Crash!')
+        # make sure we have the actual error code set
+        if has_sig:
+            returncode = -sig_num
         stacktrace = ''
         if cppcheck_path == 'cppcheck':
             # re-run within gdb to get a stacktrace
@@ -360,9 +365,12 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
                     stacktrace = st_stdout[gdb_pos:]
                 else:
                     stacktrace = st_stdout[last_check_pos:]
-        # if no stacktrace was generated return the original stdout
+        # if no stacktrace was generated return the original stdout or internal errors list
         if not stacktrace:
-            stacktrace = stdout
+            if has_sig:
+                stacktrace = ''.join(internal_error_messages_list)
+            else:
+                stacktrace = stdout
         return returncode, stacktrace, '', returncode, options, ''
 
     if returncode != 0:
