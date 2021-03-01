@@ -372,7 +372,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
 
     if sig_num != -1:
         print('Error!')
-        return -sig_num, '', '', -sig_num, options, ''
+        return -sig_num, ''.join(internal_error_messages_list), '', -sig_num, options, ''
 
     thr_pos = stderr.find('#### ThreadExecutor')
     if thr_pos != -1:
