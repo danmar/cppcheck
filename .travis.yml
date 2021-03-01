@@ -151,11 +151,6 @@ script:
 # compile cppcheck, default build
   - echo $CXXFLAGS
   - make -s check -j$(nproc)
-# Testing cli
-  - cp -R . ../cppcheck\ 2
-  - cd ../cppcheck\ 2/test/cli # path with space
-  - python -m pytest test-*.py
-  - cd -
 # Testing addons (disabled 2020-11-24 because Travis fails, TODO try to enable these)
 #  - PYTHONPATH=./addons python -m pytest addons/test/test-*.py
 #  - PYTHONPATH=./addons python3 -m pytest addons/test/test-*.py
