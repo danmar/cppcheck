@@ -397,7 +397,7 @@ def split_results(results):
     return ret
 
 
-def diff_results(work_path, ver1, results1, ver2, results2):
+def diff_results(ver1, results1, ver2, results2):
     print('Diff results..')
     ret = ''
     r1 = sorted(split_results(results1))
