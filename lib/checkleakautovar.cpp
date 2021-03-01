@@ -52,8 +52,8 @@ static const CWE CWE415(415U);
 static const int NEW_ARRAY = -2;
 static const int NEW = -1;
 
-static const std::vector<std::pair<const std::string, const std::string>> var1_fail_conds = {{"==", "0"}, {"<", "0"}, {"==", "-1"}, {"<=", "-1"}};
-static const std::vector<std::pair<const std::string, const std::string>> var2_fail_conds = {{"!=", "0"}, {">", "0"}, {"!=", "-1"}, {">=", "0"}};
+static const std::vector<std::pair<std::string, std::string>> var1_fail_conds = {{"==", "0"}, {"<", "0"}, {"==", "-1"}, {"<=", "-1"}};
+static const std::vector<std::pair<std::string, std::string>> var2_fail_conds = {{"!=", "0"}, {">", "0"}, {"!=", "-1"}, {">=", "0"}};
 
 /**
  * @brief Is variable type some class with automatic deallocation?
@@ -78,7 +78,7 @@ static bool isAutoDealloc(const Variable *var)
 }
 
 static bool isVarTokComparison(const Token * tok, const Token ** vartok,
-                               const std::vector<std::pair<const std::string, const std::string>>& ops)
+                               const std::vector<std::pair<std::string, std::string>>& ops)
 {
     for (auto op : ops) {
         if (astIsVariableComparison(tok, op.first, op.second, vartok))
