@@ -2858,7 +2858,10 @@ bool TemplateSimplifier::matchSpecialization(
         if (!endToken)
             continue;
         while (declToken != endToken) {
-            if (declToken->str() != instToken->str()) {
+            if (declToken->str() != instToken->str() ||
+                declToken->isSigned() != instToken->isSigned() ||
+                declToken->isUnsigned() != instToken->isUnsigned() ||
+                declToken->isLong() != instToken->isLong()) {
                 int nr = 0;
                 while (nr < templateParameters.size() && templateParameters[nr]->str() != declToken->str())
                     ++nr;
@@ -2915,14 +2918,15 @@ std::string TemplateSimplifier::getNewName(
         }
         // add additional type information
         if (!constconst && !Token::Match(tok3, "class|struct|enum")) {
-            if (tok3->isUnsigned())
-                typeForNewName += "unsigned";
-            else if (tok3->isSigned())
-                typeForNewName += "signed";
-            if (tok3->isLong())
-                typeForNewName += "long";
             if (!typeForNewName.empty())
                 typeForNewName += ' ';
+            if (tok3->isUnsigned())
+                typeForNewName += "unsigned ";
+            else if (tok3->isSigned())
+                typeForNewName += "signed ";
+            if (tok3->isLong()) {
+                typeForNewName += "long ";
+            }
             typeForNewName += tok3->str();
         }
     }
@@ -3467,6 +3471,12 @@ void TemplateSimplifier::printOut(const TokenAndName &tokenAndName, const std::s
             const Token *start = tokenAndName.token()->next();
             std::cout << indent << "type: ";
             while (start && start != end) {
+                if (start->isUnsigned())
+                    std::cout << "unsigned";
+                else if (start->isSigned())
+                    std::cout << "signed";
+                if (start->isLong())
+                    std::cout << "long";
                 std::cout << start->str();
                 start = start->next();
             }

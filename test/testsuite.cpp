@@ -31,13 +31,13 @@ std::ostringstream output;
 /**
  * TestRegistry
  **/
-
+namespace {
 struct CompareFixtures {
     bool operator()(const TestFixture* lhs, const TestFixture* rhs) const {
         return lhs->classname < rhs->classname;
     }
 };
-
+}
 using TestSet = std::set<TestFixture*, CompareFixtures>;
 class TestRegistry {
     TestSet _tests;
@@ -105,7 +105,7 @@ bool TestFixture::prepareTest(const char testname[])
 
 std::string TestFixture::getLocationStr(const char * const filename, const unsigned int linenr) const
 {
-    return filename + ':' + std::to_string(linenr) + '(' + classname + "::" + mTestname + ')';
+    return std::string(filename) + ':' + std::to_string(linenr) + '(' + classname + "::" + mTestname + ')';
 }
 
 static std::string writestr(const std::string &str, bool gccStyle = false)
