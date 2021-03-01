@@ -31,7 +31,7 @@ def check_requirements():
         try:
             subprocess.call([app, '--version'])
         except OSError:
-            print(app + ' is required')
+            print("Error: '{}' is required".format(app))
             result = False
     return result
 
