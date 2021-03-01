@@ -203,6 +203,7 @@ while True:
     output += 'platform: ' + platform.platform() + '\n'
     output += 'python: ' + platform.python_version() + '\n'
     output += 'client-version: ' + CLIENT_VERSION + '\n'
+    output += 'compiler: ' + get_compiler_version() + '\n'
     output += 'cppcheck: ' + ' '.join(cppcheck_versions) + '\n'
     output += 'head-info: ' + cppcheck_head_info + '\n'
     output += 'count:' + count + '\n'

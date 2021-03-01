@@ -515,6 +515,11 @@ def get_libraries():
     return libraries
 
 
+def get_compiler_version():
+    _, stdout, _, _ = run_command('g++ --version')
+    return stdout.split('\n')[0]
+
+
 my_script_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 jobs = '-j1'
 stop_time = None
