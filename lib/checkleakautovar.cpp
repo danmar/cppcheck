@@ -316,6 +316,9 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         if (!tok || tok == endToken)
             break;
 
+        if (Token::Match(tok, "const %type%"))
+            tok = tok->tokAt(2);
+
         // parse statement, skip to last member
         const Token *varTok = tok;
         while (Token::Match(varTok, "%name% ::|. %name% !!("))
