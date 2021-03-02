@@ -16,7 +16,7 @@ import psutil
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.10"
+CLIENT_VERSION = "1.3.11"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -272,9 +272,9 @@ def run_command(cmd):
             try:
                 # call with timeout since it might get stuck e.g. gcc-arm-none-eabi
                 comm = p.communicate(timeout=5)
+                p = None
             except subprocess.TimeoutExpired:
                 pass
-            p = None
     finally:
         if p:
             os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
