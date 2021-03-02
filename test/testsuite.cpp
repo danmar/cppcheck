@@ -32,11 +32,11 @@ std::ostringstream output;
  * TestRegistry
  **/
 namespace {
-struct CompareFixtures {
-    bool operator()(const TestFixture* lhs, const TestFixture* rhs) const {
-        return lhs->classname < rhs->classname;
-    }
-};
+    struct CompareFixtures {
+        bool operator()(const TestFixture* lhs, const TestFixture* rhs) const {
+            return lhs->classname < rhs->classname;
+        }
+    };
 }
 using TestSet = std::set<TestFixture*, CompareFixtures>;
 class TestRegistry {
