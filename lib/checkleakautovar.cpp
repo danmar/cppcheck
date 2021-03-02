@@ -52,8 +52,8 @@ static const CWE CWE415(415U);
 static const int NEW_ARRAY = -2;
 static const int NEW = -1;
 
-static const std::vector<std::pair<std::string, std::string>> var1_fail_conds = {{"==", "0"}, {"<", "0"}, {"==", "-1"}, {"<=", "-1"}};
-static const std::vector<std::pair<std::string, std::string>> var2_fail_conds = {{"!=", "0"}, {">", "0"}, {"!=", "-1"}, {">=", "0"}};
+static const std::vector<std::pair<std::string, std::string>> alloc_failed_conds {{"==", "0"}, {"<", "0"}, {"==", "-1"}, {"<=", "-1"}};
+static const std::vector<std::pair<std::string, std::string>> alloc_success_conds {{"!=", "0"}, {">", "0"}, {"!=", "-1"}, {">=", "0"}};
 
 /**
  * @brief Is variable type some class with automatic deallocation?
@@ -80,7 +80,7 @@ static bool isAutoDealloc(const Variable *var)
 static bool isVarTokComparison(const Token * tok, const Token ** vartok,
                                const std::vector<std::pair<std::string, std::string>>& ops)
 {
-    for (auto op : ops) {
+    for (const auto & op : ops) {
         if (astIsVariableComparison(tok, op.first, op.second, vartok))
             return true;
     }
@@ -484,8 +484,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                             if (!par->isComparisonOp())
                                 continue;
                             const Token *vartok = nullptr;
-                            if (isVarTokComparison(par, &vartok, var2_fail_conds) ||
-                               (isVarTokComparison(par, &vartok, var1_fail_conds))) {
+                            if (isVarTokComparison(par, &vartok, alloc_success_conds) ||
+                                (isVarTokComparison(par, &vartok, alloc_failed_conds))) {
                                 varInfo1.erase(vartok->varId());
                                 varInfo2.erase(vartok->varId());
                             }
@@ -494,13 +494,13 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     }
 
                     const Token *vartok = nullptr;
-                    if (isVarTokComparison(tok3, &vartok, var2_fail_conds)) {
+                    if (isVarTokComparison(tok3, &vartok, alloc_success_conds)) {
                         varInfo2.reallocToAlloc(vartok->varId());
                         varInfo2.erase(vartok->varId());
                         if (astIsVariableComparison(tok3, "!=", "0", &vartok) &&
                             (notzero.find(vartok->varId()) != notzero.end()))
                             varInfo2.clear();
-                    } else if (isVarTokComparison(tok3, &vartok, var1_fail_conds)) {
+                    } else if (isVarTokComparison(tok3, &vartok, alloc_failed_conds)) {
                         varInfo1.reallocToAlloc(vartok->varId());
                         varInfo1.erase(vartok->varId());
                     }
