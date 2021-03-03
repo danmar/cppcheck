@@ -148,6 +148,7 @@ private:
         TEST_CASE(ifelse19);
         TEST_CASE(ifelse20); // #10182
         TEST_CASE(ifelse21);
+        TEST_CASE(ifelse22); // #10187
 
         // switch
         TEST_CASE(switch1);
@@ -1657,6 +1658,24 @@ private:
               "    return;\n"
               "}");
         ASSERT_EQUALS("[test.c:6]: (error) Memory leak: p\n",  errout.str());
+    }
+
+    void ifelse22() { // #10187
+        check("int f(const char * pathname, int flags) {\n"
+              "    int fd = socket(pathname, flags);\n"
+              "    if (fd >= 0)\n"
+              "        return fd;\n"
+              "    return -1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(const char * pathname, int flags) {\n"
+              "    int fd = socket(pathname, flags);\n"
+              "    if (fd <= -1)\n"
+              "        return -1;\n"
+              "    return fd;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switch1() {
