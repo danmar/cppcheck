@@ -41,7 +41,7 @@ private:
         settings.library.setalloc("malloc", id, -1);
         settings.library.setrealloc("realloc", id, -1);
         settings.library.setdealloc("free", id, 1);
-        while (!Library::ismemory(++id));
+        while (!Library::isresource(++id));
         settings.library.setalloc("socket", id, -1);
         settings.library.setdealloc("close", id, 1);
         while (!Library::isresource(++id));
@@ -81,6 +81,7 @@ private:
         TEST_CASE(assign19);
         TEST_CASE(assign20); // #9187
         TEST_CASE(assign21); // #10186
+        TEST_CASE(assign22); // #9139
 
         TEST_CASE(isAutoDealloc);
 
@@ -436,6 +437,18 @@ private:
               "    d->a = p;\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void assign22() { // #9139
+        check("void f(char tempFileName[256]) {\n"
+              "    const int fd = socket(AF_INET, SOCK_PACKET, 0 );\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Resource leak: fd\n", errout.str());
+
+        check("void f() {\n"
+              "    const void * const p = malloc(10);\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
     }
 
     void isAutoDealloc() {
