@@ -55,11 +55,12 @@ public:
 
 class TokenRange : public TokenRangeBase<Token> {
 public:
-    using TokenRangeBase<Token>::TokenRangeBase;
+    TokenRange(Token* front, Token* back) : TokenRangeBase<Token>(front, back) {}
 };
 
 class ConstTokenRange : public TokenRangeBase<const Token> {
-    using TokenRangeBase<const Token>::TokenRangeBase;
+public:
+    ConstTokenRange(const Token* front, const Token* back) : TokenRangeBase<const Token>(front, back) {}
 };
 
 #endif // tokenrangeH
