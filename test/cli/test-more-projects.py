@@ -32,3 +32,32 @@ def test_project_force_U():
         ret, stdout, stderr = cppcheck(['--project=' + compile_commands, '--force', '-UMACRO1', '-rp=' + temp_folder, '--template=cppcheck1'])
         assert stderr == '[bug1.cpp:2]: (error) Division by zero.\n'
 
+
+def test_project_custom_platform():
+    """
+    import cppcheck project that contains a custom platform file
+    """
+    with tempfile.TemporaryDirectory('10018') as temp_folder:
+        project_file = os.path.join(temp_folder, 'Project.cppcheck')
+
+        with open(project_file, 'wt') as f:
+            f.write("""
+                    <?xml version="1.0" encoding="UTF-8"?>
+                    <project version="1">
+                      <platform>p1.xml</platform>
+                      <paths>
+                        <dir name="."/>
+                      </paths>
+                    </project>
+                    """)
+
+        with open(os.path.join(temp_folder, 'p1.xml'), 'wt') as f:
+            f.write('<?xml version="1.0"?>\n<platform/>')
+
+        with open(os.path.join(temp_folder, '1.c'), 'wt') as f:
+            f.write("int x;")
+
+        ret, stdout, stderr = cppcheck(['--project=' + project_file, '--template=cppcheck1'])
+        assert stderr == ''
+
+

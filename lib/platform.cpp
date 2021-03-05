@@ -162,6 +162,8 @@ bool cppcheck::Platform::loadPlatformFile(const char exename[], const std::strin
         std::vector<std::string> filenames;
         filenames.push_back(filename + ".xml");
         if (exename && (std::string::npos != Path::fromNativeSeparators(exename).find('/'))) {
+            filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + filename);
+            filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + filename);
             filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename);
             filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename + ".xml");
         }
