@@ -17,6 +17,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
       - name: Install missing software on ubuntu 18.04
         if: matrix.os == 'ubuntu-18.04'
         run: |
@@ -24,7 +29,6 @@ jobs:
           sudo apt-get install libxml2-utils
           sudo apt-get install z3 libz3-dev
           cp externals/z3_version_old.h externals/z3_version.h
-          sudo apt-get install python3-pytest
 
       - name: Install missing software on ubuntu 20.04
         if: matrix.os == 'ubuntu-20.04' 
@@ -32,13 +36,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install libxml2-utils
           sudo apt-get install z3 libz3-dev
-          sudo apt-get install python3-pytest
 
       - name: Install missing software on macos
         if: contains(matrix.os, 'macos')
         run: |
           brew install coreutils z3
           cp externals/z3_version_old.h externals/z3_version.h
+
+      - name: Install missing Python packages
+        run: |
+          python -m pip install pip --upgrade
+          python -m pip install pytest
           
       - name: Install Qt
         if: contains(matrix.os, 'ubuntu')
@@ -78,12 +86,13 @@ jobs:
           make -j$(nproc) check USE_Z3=yes HAVE_RULES=yes
 
       - name: Run test/cli
-        if: contains(matrix.os, 'ubuntu')
         run: |
-          cd ..
-          ln -s cppcheck cpp\ check
-          cd cpp\ check/test/cli
-          pytest-3 test-*.py
+          cd test/cli
+          pytest test-*.py
+          cd ../../..
+          ln -s cppcheck 'cpp check'
+          cd 'cpp check/test/cli'
+          pytest test-*.py
 
       - name: Validate
         run: |
