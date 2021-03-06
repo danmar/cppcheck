@@ -49,8 +49,6 @@ matrix:
         - tools/generate_and_run_more_tests.sh
 # check for missing CWE entries
         - make checkCWEEntries
-# check cfg files
-        - make checkcfg
 # Validate Result XML
         - make validateXML
 # check htmlreport stuff

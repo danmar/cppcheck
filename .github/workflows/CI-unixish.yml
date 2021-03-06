@@ -89,6 +89,10 @@ jobs:
         run: |
           make -j$(nproc) checkCWEEntries validateXML
 
+      - name: Check cfg files
+        run: |
+          make -j$(nproc) checkcfg
+
       - name: Test addons
         run: |
           ./cppcheck --addon=threadsafety addons/test/threadsafety
