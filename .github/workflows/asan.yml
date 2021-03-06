@@ -9,6 +9,9 @@ jobs:
 
     runs-on: ubuntu-20.04
 
+    env:
+      ASAN_OPTIONS: detect_stack_use_after_return=1
+
     steps:
       - uses: actions/checkout@v2
 
@@ -18,21 +21,23 @@ jobs:
           sudo apt-get install libz3-4 libz3-dev
 
       - name: Build
-        run: |
-          CC=clang CXX=clang++ CXXFLAGS="-fsanitize=address -O1 -g3 -DCPPCHK_GLIBCXX_DEBUG" CPPFLAGS="-DCHECK_INTERNAL" make -j$(nproc) cppcheck testrunner USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes VERIFY=1
+        run: make -j$(nproc) cppcheck testrunner USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes VERIFY=1
+        env:
+          CC: clang
+          CXX: clang++
+          CXXFLAGS: "-fsanitize=address -O1 -g3 -DCPPCHK_GLIBCXX_DEBUG"
+          CPPFLAGS: "-DCHECK_INTERNAL"
 
       - name: Run tests
-        run: |
-          ASAN_OPTIONS=detect_stack_use_after_return=1 ./testrunner
+        run: ./testrunner
 
       - name: Self check
         run: |
-          ASAN_OPTIONS=detect_stack_use_after_return=1 ./cppcheck -q -j$(nproc) --template=selfcheck -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings cli lib
-          ASAN_OPTIONS=detect_stack_use_after_return=1 ./cppcheck -q -j$(nproc) --template=selfcheck -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings gui/*.cpp
-          ASAN_OPTIONS=detect_stack_use_after_return=1 ./cppcheck -q -j$(nproc) --template=selfcheck -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings test/*.cpp tools
+          ./cppcheck -q -j$(nproc) --template=selfcheck -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings cli lib
+          ./cppcheck -q -j$(nproc) --template=selfcheck -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings gui/*.cpp
+          ./cppcheck -q -j$(nproc) --template=selfcheck -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings test/*.cpp tools
 
 # This takes too long time right now
 #      - name: Bughunting lib
-#        run: |
-#          ASAN_OPTIONS=detect_stack_use_after_return=1 ./cppcheck -D__CPPCHECK__ --bug-hunting -j$(nproc) lib
+#        run: ./cppcheck -D__CPPCHECK__ --bug-hunting -j$(nproc) lib
 
