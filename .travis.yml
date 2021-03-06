@@ -45,9 +45,7 @@ matrix:
       compiler: clang
       script:
         - make -j$(nproc) -s
-# run extra tests
-        - tools/generate_and_run_more_tests.sh
-# check cfg files
+        # check cfg files
         - make checkcfg
 # check htmlreport stuff
         - python2 htmlreport/test_htmlreport.py

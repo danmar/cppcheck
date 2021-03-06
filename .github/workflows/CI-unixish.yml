@@ -85,6 +85,12 @@ jobs:
         run: |
           make -j$(nproc) check USE_Z3=yes HAVE_RULES=yes
 
+      # the script uses sed parameters not supported by MacOS
+      - name: Run extra tests
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          tools/generate_and_run_more_tests.sh
+
       - name: Run test/cli
         run: |
           cd test/cli
