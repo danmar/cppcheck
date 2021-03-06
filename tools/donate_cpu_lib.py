@@ -16,7 +16,7 @@ import psutil
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.11"
+CLIENT_VERSION = "1.3.12"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -31,7 +31,7 @@ def check_requirements():
         try:
             subprocess.call([app, '--version'])
         except OSError:
-            print(app + ' is required')
+            print("Error: '{}' is required".format(app))
             result = False
     return result
 
@@ -224,8 +224,7 @@ def unpack_package(work_path, tgz):
                     # Skip dangerous file names
                     continue
                 elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp',
-                                                   '.h++', '.hxx', '.hh', '.tpp', '.txx', '.qml',
-                                                   '.sln', '.vcproj', '.vcxproj')):
+                                                   '.h++', '.hxx', '.hh', '.tpp', '.txx', '.qml')):
                     try:
                         tf.extract(member.name)
                         found = True
@@ -296,13 +295,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
 
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
     options = libs + jobs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --template=daca2 -rp=temp'
-    if os.path.isfile('temp/tortoisesvn/TortoiseSVN.sln'):
-        options = options.replace('--library=posix ', '')
-        options = options.replace('--library=gnu ', '')
-        options = '--library=windows ' + options
-        options += ' --platform=win64 --project=temp/tortoisesvn/TortoiseSVN.sln'
-    else:
-        options += ' -D__GNUC__ --platform=unix64 temp'
+    options += ' -D__GNUC__ --platform=unix64 temp'
     cppcheck_cmd = cppcheck_path + '/cppcheck' + ' ' + options
     cmd = 'nice ' + cppcheck_cmd
     returncode, stdout, stderr, elapsed_time = run_command(cmd)
@@ -358,7 +351,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         if cppcheck_path == 'cppcheck':
             # re-run within gdb to get a stacktrace
             cmd = 'gdb --batch --eval-command=run --eval-command="bt 50" --return-child-result --args ' + cppcheck_cmd + " -j1"
-            dummy, st_stdout, dummy, dummy = run_command(cmd)
+            _, st_stdout, _, _ = run_command(cmd)
             gdb_pos = st_stdout.find(" received signal")
             if not gdb_pos == -1:
                 last_check_pos = st_stdout.rfind('Checking ', 0, gdb_pos)
@@ -377,11 +370,9 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
             returncode = -100-returncode
         return returncode, stdout, '', returncode, options, ''
 
-    if sig_pos != -1:
+    if sig_num != -1:
         print('Error!')
-        pos2 = stderr.find(' [cppcheckError]', sig_pos)
-        signr = int(stderr[sig_pos+len(sig_msg):pos2])
-        return -signr, '', '', -signr, options, ''
+        return -sig_num, ''.join(internal_error_messages_list), '', -sig_num, options, ''
 
     thr_pos = stderr.find('#### ThreadExecutor')
     if thr_pos != -1:
@@ -406,7 +397,7 @@ def split_results(results):
     return ret
 
 
-def diff_results(work_path, ver1, results1, ver2, results2):
+def diff_results(ver1, results1, ver2, results2):
     print('Diff results..')
     ret = ''
     r1 = sorted(split_results(results1))
@@ -522,6 +513,11 @@ def get_libraries():
         if has_include('temp', includes):
             libraries.append(library)
     return libraries
+
+
+def get_compiler_version():
+    _, stdout, _, _ = run_command('g++ --version')
+    return stdout.split('\n')[0]
 
 
 my_script_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
