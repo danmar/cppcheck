@@ -34,9 +34,13 @@ jobs:
         env:
           CXXFLAGS: "-O2 -march=native"
 
+      # currently to slow to execute it in the CI
       - name: Run CVE suite
         run: |
-          python test/bug-hunting/cve.py
+          #python test/bug-hunting/cve.py
+
+      - name: Run ITC suite
+        run: |
           git clone https://github.com/regehr/itc-benchmarks.git ~/itc
           python test/bug-hunting/itc.py
 
