@@ -30,7 +30,7 @@ jobs:
 
       - name: Build cppcheck
         run: |
-          make -j$(nproc) USE_Z3=yes HAVE_RULES=yes
+          make -j$(nproc) USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes
         env:
           CXXFLAGS: "-O2 -march=native"
 
