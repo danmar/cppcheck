@@ -358,12 +358,9 @@ C99_KEYWORDS = {
 
 
 def isKeyword(keyword, standard='c99'):
-    kw_set = {}
-    if standard == 'c89':
-        kw_set = C90_KEYWORDS
-    elif standard == 'c99':
-        kw_set = C99_KEYWORDS
-    return keyword in kw_set
+    if standard == 'c99':
+        return C99_KEYWORDS
+    return keyword in C90_KEYWORDS
 
 
 def getEssentialTypeCategory(expr):
