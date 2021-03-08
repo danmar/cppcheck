@@ -25,10 +25,10 @@ It is also possible to call scripts as follows:
 ```bash
 cppcheck --dump --quiet src/test.c
 python cert.py src/test.c.dump
-python misra.py --rules-texts=~/misra_rules.txt src/test.c.dump
+python misra.py --rule-texts=~/misra_rules.txt src/test.c.dump
 ```
 
-This allows you to add additional parameters when calling the script (for example, `--rule-tests` for `misra.py`). The full list of available parameters can be found by calling any script with the `--help` flag.
+This allows you to add additional parameters when calling the script (for example, `--rule-texts` for `misra.py`). The full list of available parameters can be found by calling any script with the `--help` flag.
 
 ### GUI
 
