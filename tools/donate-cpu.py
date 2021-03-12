@@ -203,6 +203,7 @@ while True:
     output += 'platform: ' + platform.platform() + '\n'
     output += 'python: ' + platform.python_version() + '\n'
     output += 'client-version: ' + CLIENT_VERSION + '\n'
+    output += 'compiler: ' + get_compiler_version() + '\n'
     output += 'cppcheck: ' + ' '.join(cppcheck_versions) + '\n'
     output += 'head-info: ' + cppcheck_head_info + '\n'
     output += 'count:' + count + '\n'
@@ -214,7 +215,7 @@ while True:
     if 'head' in cppcheck_versions:
         output += 'head results:\n' + results_to_diff[cppcheck_versions.index('head')]
     if not crash and not timeout:
-        output += 'diff:\n' + diff_results(work_path, cppcheck_versions[0], results_to_diff[0], cppcheck_versions[1], results_to_diff[1]) + '\n'
+        output += 'diff:\n' + diff_results(cppcheck_versions[0], results_to_diff[0], cppcheck_versions[1], results_to_diff[1]) + '\n'
     if package_url:
         print('=========================================================')
         print(output)

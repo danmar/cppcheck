@@ -204,6 +204,12 @@ private:
               "    return -(y << (x-1));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool f() {\n"
+              "    std::ofstream outfile;\n"
+              "    outfile << vec_points[0](0) << static_cast<int>(d) << ' ';\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkIntegerOverflow() {
