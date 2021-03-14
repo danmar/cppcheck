@@ -2825,6 +2825,7 @@ const Token * TemplateSimplifier::getTemplateParametersInDeclaration(
 
     typeParametersInDeclaration.clear();
     const Token *end = tok->previous()->findClosingBracket();
+    bool inDefaultValue = false;
     for (; tok && tok!= end; tok = tok->next()) {
         if (Token::simpleMatch(tok, "template <")) {
             const Token *closing = tok->next()->findClosingBracket();
@@ -2832,8 +2833,21 @@ const Token * TemplateSimplifier::getTemplateParametersInDeclaration(
                 tok = closing->next();
         } else if (tok->link() && Token::Match(tok, "{|(|["))
             tok = tok->link();
-        else if (Token::Match(tok, "%name% ,|>|="))
-            typeParametersInDeclaration.push_back(tok);
+        else if (Token::Match(tok, "%name% ,|>|=")) {
+            if (!inDefaultValue) {
+                typeParametersInDeclaration.push_back(tok);
+                if (tok->strAt(1) == "=")
+                    inDefaultValue = true;
+            }
+        } else if (inDefaultValue) {
+            if (tok->str() == ",")
+                inDefaultValue = false;
+            else if (tok->str() == "<") {
+                const Token *end = tok->findClosingBracket();
+                if (end)
+                    tok = end;
+            }
+        }
     }
     return tok;
 }
