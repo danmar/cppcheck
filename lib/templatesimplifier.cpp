@@ -2843,9 +2843,9 @@ const Token * TemplateSimplifier::getTemplateParametersInDeclaration(
             if (tok->str() == ",")
                 inDefaultValue = false;
             else if (tok->str() == "<") {
-                const Token *end = tok->findClosingBracket();
-                if (end)
-                    tok = end;
+                const Token *closing = tok->findClosingBracket();
+                if (closing)
+                    tok = closing;
             }
         }
     }
