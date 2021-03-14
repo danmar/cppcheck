@@ -501,7 +501,7 @@ private:
     std::list<TokenAndName> mInstantiatedTemplates;
     std::list<TokenAndName> mMemberFunctionsToDelete;
     std::vector<TokenAndName> mExplicitInstantiationsToDelete;
-    std::vector<TokenAndName> mTypesUsedInTemplateInstantiation;
+    std::vector<const Token *> mTypesUsedInTemplateInstantiation;
     std::unordered_map<const Token*, int> mTemplateNamePos;
 };
 
