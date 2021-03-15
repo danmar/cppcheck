@@ -43,6 +43,8 @@ class TokenList;
 
 /** @brief Simplify templates from the preprocessed and partially simplified code. */
 class CPPCHECKLIB TemplateSimplifier {
+    friend class TestSimplifyTemplate;
+
 public:
     explicit TemplateSimplifier(Tokenizer *tokenizer);
     ~TemplateSimplifier();
@@ -437,10 +439,8 @@ private:
      *                        ^ tok
      * @param typeParametersInDeclaration  template < typename T, typename S >
      *                                                         ^ [0]       ^ [1]
-     * @return  template < typename T, typename S >
-     *                                              ^ return
      */
-    static const Token * getTemplateParametersInDeclaration(
+    static void getTemplateParametersInDeclaration(
         const Token * tok,
         std::vector<const Token *> & typeParametersInDeclaration);
 

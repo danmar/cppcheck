@@ -2817,7 +2817,7 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, Token *backToke
     return ret;
 }
 
-const Token * TemplateSimplifier::getTemplateParametersInDeclaration(
+void TemplateSimplifier::getTemplateParametersInDeclaration(
     const Token * tok,
     std::vector<const Token *> & typeParametersInDeclaration)
 {
@@ -2849,7 +2849,6 @@ const Token * TemplateSimplifier::getTemplateParametersInDeclaration(
             }
         }
     }
-    return tok;
 }
 
 bool TemplateSimplifier::matchSpecialization(
