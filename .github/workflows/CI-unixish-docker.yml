@@ -73,18 +73,3 @@ jobs:
         run: |
           ./cppcheck --addon=threadsafety addons/test/threadsafety
           ./cppcheck --addon=threadsafety --std=c++03 addons/test/threadsafety
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: cppcheck_cli
-          path: ./cppcheck
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: cppcheck_cli
-          path: ./**/cfg/*.cfg
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: cppcheck_cli
-          path: ./**/platforms/*.xml
