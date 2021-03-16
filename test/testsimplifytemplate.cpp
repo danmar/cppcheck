@@ -243,6 +243,8 @@ private:
 
         TEST_CASE(findTemplateDeclarationEnd);
 
+        TEST_CASE(getTemplateParametersInDeclaration);
+
         TEST_CASE(expandSpecialized1);
         TEST_CASE(expandSpecialized2);
         TEST_CASE(expandSpecialized3); // #8671
@@ -5204,6 +5206,36 @@ private:
         ASSERT(findTemplateDeclarationEndHelper("template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>){} int x;", "} int x ;"));
         ASSERT(findTemplateDeclarationEndHelper("template <typename... f, c<h<e<typename f::d...>>::g>> void i(); int x;", "; int x ;"));
         ASSERT(findTemplateDeclarationEndHelper("template <typename... f, c<h<e<typename f::d...>>::g>> void i(){} int x;", "} int x ;"));
+    }
+
+    // Helper function to unit test TemplateSimplifier::getTemplateParametersInDeclaration
+    bool getTemplateParametersInDeclarationHelper(const char code[], const std::vector<std::string> & params) {
+        Tokenizer tokenizer(&settings, this);
+
+        std::istringstream istr(code);
+        tokenizer.createTokens(istr, "test.cpp");
+        tokenizer.createLinks();
+        tokenizer.splitTemplateRightAngleBrackets(false);
+
+        std::vector<const Token *> typeParametersInDeclaration;
+        TemplateSimplifier::getTemplateParametersInDeclaration(tokenizer.tokens()->tokAt(2), typeParametersInDeclaration);
+
+        if (params.size() != typeParametersInDeclaration.size())
+            return false;
+
+        for (size_t i = 0; i < typeParametersInDeclaration.size(); ++i) {
+            if (typeParametersInDeclaration[i]->str() != params[i])
+                return false;
+        }
+        return true;
+    }
+
+    void getTemplateParametersInDeclaration() {
+        ASSERT(getTemplateParametersInDeclarationHelper("template<typename T> class Fred {};", std::vector<std::string>{"T"}));
+        ASSERT(getTemplateParametersInDeclarationHelper("template<typename T=int> class Fred {};", std::vector<std::string>{"T"}));
+        ASSERT(getTemplateParametersInDeclarationHelper("template<typename T,typename U> class Fred {};", std::vector<std::string>{"T","U"}));
+        ASSERT(getTemplateParametersInDeclarationHelper("template<typename T,typename U=int> class Fred {};", std::vector<std::string>{"T","U"}));
+        ASSERT(getTemplateParametersInDeclarationHelper("template<typename T=int,typename U=int> class Fred {};", std::vector<std::string>{"T","U"}));
     }
 
     void expandSpecialized1() {
