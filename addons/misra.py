@@ -1461,6 +1461,76 @@ class MisraChecker:
                         if usedParameter.isString and parameterDefinition.nameToken:
                             reportErrorIfVariableIsNotConst(parameterDefinition.nameToken, usedParameter)
 
+    def misra_8_2(self, data, rawTokens):
+        def getFollowingRawTokens(rawTokens, token, count):
+            following =[]
+            for rawToken in rawTokens:
+                if (rawToken.file == token.file and
+                        rawToken.linenr == token.linenr and 
+                        rawToken.column == token.column):
+                    for _ in range(count):
+                        following.append(rawToken.next)
+                        rawToken = rawToken.next
+                        if rawToken is None:
+                            break
+
+                    return following
+
+        # Check arguments in function declaration
+        for func in data.functions:
+
+            # Zero arguments should be in form ( void )
+            if (len(func.argument) == 0):
+                zeroCallTokens = getFollowingRawTokens(rawTokens, func.tokenDef, 3)
+                if len(zeroCallTokens) != 3:
+                    continue
+                if (zeroCallTokens[0].str != '(' or 
+                        zeroCallTokens[1].str != 'void' or
+                        zeroCallTokens[2].str != ')'):
+                    self.reportError(func.tokenDef, 8, 2)
+
+            startCall = func.tokenDef.next
+            if startCall is None or startCall.str != '(':
+                continue
+
+            endCall = startCall.link
+            if endCall is None or endCall.str != ')':
+                continue
+
+            for arg in func.argument:
+                argument = func.argument[arg]
+                typeStartToken = argument.typeStartToken
+                if typeStartToken is None:
+                    continue
+
+                nameToken = argument.nameToken
+                # Arguments should have a name unless variable length arg
+                if nameToken is None and typeStartToken.str != '...':
+                    self.reportError(typeStartToken, 8, 2)
+
+                # Type declaration on next line (old style declaration list) is not allowed
+                if (typeStartToken.linenr > endCall.linenr) or (typeStartToken.column > endCall.column):
+                    self.reportError(typeStartToken, 8, 2)
+
+        # Check arguments in pointer declarations
+        for var in data.variables:
+            if not var.isPointer:
+                continue
+
+            if var.nameToken is None:
+                continue
+            
+            rawTokensFollowingPtr = getFollowingRawTokens(rawTokens, var.nameToken, 3)
+            if len(rawTokensFollowingPtr) != 3:
+                continue
+
+            # Compliant:           returnType (*ptrName) ( ArgType )
+            # Non-compliant:       returnType (*ptrName) ( ) 
+            if (rawTokensFollowingPtr[0].str == ')' and 
+                    rawTokensFollowingPtr[1].str == '(' and  
+                    rawTokensFollowingPtr[2].str == ')'):
+                self.reportError(var.nameToken, 8, 2)
+
     def misra_8_11(self, data):
         for var in data.variables:
             if var.isExtern and simpleMatch(var.nameToken.next, '[ ]') and var.nameToken.scope.type == 'Global':
@@ -3095,6 +3165,8 @@ class MisraChecker:
             if cfgNumber == 0:
                 self.executeCheck(703, self.misra_7_3, data.rawTokens)
             self.executeCheck(704, self.misra_7_4, cfg)
+            if cfgNumber == 0:
+                self.executeCheck(802, self.misra_8_2, cfg, data.rawTokens)
             self.executeCheck(811, self.misra_8_11, cfg)
             self.executeCheck(812, self.misra_8_12, cfg)
             if cfgNumber == 0:
