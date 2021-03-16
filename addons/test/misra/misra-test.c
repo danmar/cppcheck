@@ -677,20 +677,20 @@ static struct misra_12_3_s1 misra_12_3_s1_inst = {
 };
 typedef struct misra_12_3_s2 { int a; int b; int c, d; } misra_12_3_s2_t; // 12.3
 typedef struct { int a; int b; int c, d; } misra_12_3_s3_t; // 12.3
-void misra_12_3_fn1(int, int); static int misra_12_3_v5, misra_12_4_v6; // 12.3
+void misra_12_3_fn1(int, int); static int misra_12_3_v5, misra_12_4_v6; // 12.3 8.2
 void misra_12_3_fn2(int a, int b) // 2.7
 { int d, e; } // 12.3
 int misra_12_3_fn3(int a, int b) { return a+b;} static int misra_12_3_v5, misra_12_4_v6; // 12.3
 void misra_12_3_fn4(const uint32_t value, uint8_t * const y) {} // 2.7
-uint32_t misra_12_3_fn5(const uint32_t * const, const uint8_t) {} // 2.7
+uint32_t misra_12_3_fn5(const uint32_t * const, const uint8_t) {} // 2.7 8.2
 extern void misra_12_3_fn6(const uint32_t value, uint8_t * const y);
-extern uint32_t misra_12_3_fn7(const uint32_t * const, const uint8_t);
+extern uint32_t misra_12_3_fn7(const uint32_t * const, const uint8_t); // 8.2
 #define MISRA_12_3_FN3_1(A, B) (misra_12_3_fn3(A, B))
 #define MISRA_12_3_FN3_2(A, B) (misra_12_3_fn3(A, \
                                 B))
 #define MISRA_12_3_FN3_2_MSG(x) x, fflush(stderr)
 void misra_12_3(int, int, int); // no warning
-void misra_12_3(int a, int b, int c) { // no warning
+void misra_12_3(int a, int b, int c) { // 8.2
   int a1, a2; // 12.3
   int a3; int a4; // no warning
   int a5 = 9, a6; // 12.3
