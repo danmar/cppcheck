@@ -1469,10 +1469,13 @@ class MisraChecker:
                         rawToken.linenr == token.linenr and
                         rawToken.column == token.column):
                     for _ in range(count):
-                        following.append(rawToken.next)
                         rawToken = rawToken.next
+                        # Skip comments
+                        while rawTokens and (rawToken.str.startswith('/*') or rawToken.str.startswith('//')):
+                            rawToken = rawToken.next
                         if rawToken is None:
                             break
+                        following.append(rawToken)
 
                     return following
 

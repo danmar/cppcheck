@@ -296,6 +296,14 @@ int n; // 8.2
 {
     return vec[ n - 1 ];
 }
+static int misra_8_2_g ( /* comment */ ); // 8.2
+static int misra_8_2_h ( /* comment 1 */ /* comment 2 */ ); // 8.2
+static int misra_8_2_i ( /* comment */ void);
+static int misra_8_2_j ( /* comment */ void /* comment */);
+static int misra_8_2_k ( // 
+ void);
+static int misra_8_2_l ( // 8.2
+);
 int16_t ( *misra_8_2_p_a ) (); // 8.2
 int16_t ( *misra_8_2_p_b ) (void);
 int16_t ( *misra_8_2_p_c ) (int);
