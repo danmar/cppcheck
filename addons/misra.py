@@ -1466,7 +1466,7 @@ class MisraChecker:
             following =[]
             for rawToken in rawTokens:
                 if (rawToken.file == token.file and
-                        rawToken.linenr == token.linenr and 
+                        rawToken.linenr == token.linenr and
                         rawToken.column == token.column):
                     for _ in range(count):
                         following.append(rawToken.next)
@@ -1484,7 +1484,7 @@ class MisraChecker:
                 zeroCallTokens = getFollowingRawTokens(rawTokens, func.tokenDef, 3)
                 if len(zeroCallTokens) != 3:
                     continue
-                if (zeroCallTokens[0].str != '(' or 
+                if (zeroCallTokens[0].str != '(' or
                         zeroCallTokens[1].str != 'void' or
                         zeroCallTokens[2].str != ')'):
                     self.reportError(func.tokenDef, 8, 2)
@@ -1519,15 +1519,15 @@ class MisraChecker:
 
             if var.nameToken is None:
                 continue
-            
+
             rawTokensFollowingPtr = getFollowingRawTokens(rawTokens, var.nameToken, 3)
             if len(rawTokensFollowingPtr) != 3:
                 continue
 
             # Compliant:           returnType (*ptrName) ( ArgType )
-            # Non-compliant:       returnType (*ptrName) ( ) 
-            if (rawTokensFollowingPtr[0].str == ')' and 
-                    rawTokensFollowingPtr[1].str == '(' and  
+            # Non-compliant:       returnType (*ptrName) ( )
+            if (rawTokensFollowingPtr[0].str == ')' and
+                    rawTokensFollowingPtr[1].str == '(' and
                     rawTokensFollowingPtr[2].str == ')'):
                 self.reportError(var.nameToken, 8, 2)
 
