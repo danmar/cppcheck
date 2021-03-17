@@ -133,13 +133,24 @@ while True:
     if not get_cppcheck(cppcheck_path, work_path):
         print('Failed to clone Cppcheck, retry later')
         sys.exit(1)
-    cppcheck_versions = get_cppcheck_versions(server_address)
-    if cppcheck_versions is None:
-        print('Failed to communicate with server, retry later')
-        sys.exit(1)
-    if len(cppcheck_versions) == 0:
-        print('Did not get any cppcheck versions from server, retry later')
-        sys.exit(1)
+    version_retry_count = 3
+    cppcheck_versions = []
+    for i in range(version_retry_count):
+        cppcheck_versions = get_cppcheck_versions(server_address)
+        if cppcheck_versions is None:
+            if i < version_retry_count:
+                print('Failed to communicate with server, retrying in 30 seconds')
+                time.sleep(30)
+                continue
+            print('Failed to communicate with server, retry later')
+            sys.exit(1)
+        if len(cppcheck_versions) == 0:
+            if i < version_retry_count:
+                print('Did not get any cppcheck versions from server, retrying in 30 seconds')
+                time.sleep(30)
+                continue
+            print('Did not get any cppcheck versions from server, retry later')
+            sys.exit(1)
     for ver in cppcheck_versions:
         if ver == 'head':
             if not compile_cppcheck(cppcheck_path, jobs):
