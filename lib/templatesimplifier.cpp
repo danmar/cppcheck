@@ -1650,7 +1650,7 @@ void TemplateSimplifier::expandTemplate(
                 std::stack<Token *> brackets1; // holds "(" and "{" tokens
                 bool pointerType = false;
                 Token * const dst1 = dst->previous();
-                for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token();
+                for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype];
                      typetok && (typeindentlevel > 0 || !Token::Match(typetok, ",|>"));
                      typetok = typetok->next()) {
                     if (typeindentlevel == 0 && typetok->str() == "*")
@@ -1896,7 +1896,7 @@ void TemplateSimplifier::expandTemplate(
                         if (itype < typeParametersInDeclaration.size()) {
                             unsigned int typeindentlevel = 0;
                             std::stack<Token *> brackets1; // holds "(" and "{" tokens
-                            for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token();
+                            for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype];
                                  typetok && (typeindentlevel>0 || !Token::Match(typetok, ",|>"));
                                  typetok = typetok->next()) {
                                 if (!Token::simpleMatch(typetok, "...")) {
@@ -2003,7 +2003,7 @@ void TemplateSimplifier::expandTemplate(
                     std::stack<Token *> brackets1; // holds "(" and "{" tokens
                     Token * const beforeTypeToken = mTokenList.back();
                     bool pointerType = false;
-                    for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token();
+                    for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype];
                          typetok && (typeindentlevel > 0 || !Token::Match(typetok, ",|>"));
                          typetok = typetok->next()) {
                         if (typeindentlevel == 0 && typetok->str() == "*")
@@ -2817,7 +2817,7 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, Token *backToke
     return ret;
 }
 
-const Token * TemplateSimplifier::getTemplateParametersInDeclaration(
+void TemplateSimplifier::getTemplateParametersInDeclaration(
     const Token * tok,
     std::vector<const Token *> & typeParametersInDeclaration)
 {
@@ -2825,6 +2825,7 @@ const Token * TemplateSimplifier::getTemplateParametersInDeclaration(
 
     typeParametersInDeclaration.clear();
     const Token *end = tok->previous()->findClosingBracket();
+    bool inDefaultValue = false;
     for (; tok && tok!= end; tok = tok->next()) {
         if (Token::simpleMatch(tok, "template <")) {
             const Token *closing = tok->next()->findClosingBracket();
@@ -2832,10 +2833,22 @@ const Token * TemplateSimplifier::getTemplateParametersInDeclaration(
                 tok = closing->next();
         } else if (tok->link() && Token::Match(tok, "{|(|["))
             tok = tok->link();
-        else if (Token::Match(tok, "%name% ,|>|="))
-            typeParametersInDeclaration.push_back(tok);
+        else if (Token::Match(tok, "%name% ,|>|=")) {
+            if (!inDefaultValue) {
+                typeParametersInDeclaration.push_back(tok);
+                if (tok->strAt(1) == "=")
+                    inDefaultValue = true;
+            }
+        } else if (inDefaultValue) {
+            if (tok->str() == ",")
+                inDefaultValue = false;
+            else if (tok->str() == "<") {
+                const Token *closing = tok->findClosingBracket();
+                if (closing)
+                    tok = closing;
+            }
+        }
     }
-    return tok;
 }
 
 bool TemplateSimplifier::matchSpecialization(
@@ -2909,7 +2922,7 @@ std::string TemplateSimplifier::getNewName(
         else if (indentlevel > 0 && Token::Match(tok3, "> [,>]"))
             --indentlevel;
         if (indentlevel == 0 && Token::Match(tok3->previous(), "[<,]")) {
-            mTypesUsedInTemplateInstantiation.emplace_back(tok3, "");
+            mTypesUsedInTemplateInstantiation.push_back(tok3);
         }
         if (tok3->str() == "(")
             ++indentlevel;
