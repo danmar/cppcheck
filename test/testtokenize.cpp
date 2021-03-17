@@ -5690,6 +5690,21 @@ private:
 
         ASSERT_EQUALS("struct a ;",
                       tokenizeAndStringify("struct [[,,,]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct alignas(int) a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct alignas ( alignof ( float ) ) a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("char a [ 256 ] ;",
+                      tokenizeAndStringify("alignas(256) char a[256];", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct alignas(float) [[deprecated(reason)]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[deprecated,maybe_unused]] alignas(double) [[trivial_abi]] a;", false, true, Settings::Native, "test.cpp", true));
     }
 
     void simplifyCaseRange() {
