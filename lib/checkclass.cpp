@@ -2876,7 +2876,7 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
         for (const Token *tok = classScope->classDef; tok != classScope->bodyEnd; tok = tok->next())
             def += tok->str();
         for (const Function &f: classScope->functionList) {
-            if (f.functionScope->nestedIn != classScope) {
+            if (f.functionScope && f.functionScope->nestedIn != classScope) {
                 for (const Token *tok = f.functionScope->bodyStart; tok != f.functionScope->bodyEnd; tok = tok->next())
                     def += tok->str();
             }

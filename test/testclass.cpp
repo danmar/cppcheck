@@ -7431,13 +7431,13 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void getFileInfo() { // don't crash
+    void getFileInfo(const char code[]) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
-        std::istringstream istr("void foo() { union { struct { }; }; }");
+        std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
         // Check..
@@ -7445,6 +7445,12 @@ private:
 
         checkClass.getFileInfo(&tokenizer, &settings1);
     }
+
+    void getFileInfo() {
+        getFileInfo("void foo() { union { struct { }; }; }"); // don't crash
+        getFileInfo("struct sometype { sometype(); }; sometype::sometype() = delete;"); // don't crash
+    }
+
 };
 
 REGISTER_TEST(TestClass)
