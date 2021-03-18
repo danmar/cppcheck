@@ -7443,7 +7443,9 @@ private:
         // Check..
         CheckClass checkClass(&tokenizer, &settings1, this);
 
-        checkClass.getFileInfo(&tokenizer, &settings1);
+        Check::FileInfo * fileInfo = checkClass.getFileInfo(&tokenizer, &settings1);
+
+        delete fileInfo;
     }
 
     void getFileInfo() {
