@@ -225,6 +225,8 @@ private:
         TEST_CASE(unsafeClassRefMember);
 
         TEST_CASE(ctuOneDefinitionRule);
+
+        TEST_CASE(getFileInfo);
     }
 
     void checkCopyCtorAndEqOperator(const char code[]) {
@@ -7429,6 +7431,20 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void getFileInfo() { // don't crash
+        // Clear the error log
+        errout.str("");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings1, this);
+        std::istringstream istr("void foo() { union { struct { }; }; }");
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check..
+        CheckClass checkClass(&tokenizer, &settings1, this);
+
+        checkClass.getFileInfo(&tokenizer, &settings1);
+    }
 };
 
 REGISTER_TEST(TestClass)

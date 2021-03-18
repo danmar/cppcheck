@@ -2859,6 +2859,8 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
             name = scope->className + "::" + name;
             scope = scope->nestedIn;
         }
+        if (name.empty())
+            continue;
         name.erase(name.size() - 2);
         if (scope->type != Scope::ScopeType::eGlobal)
             continue;
