@@ -212,6 +212,7 @@ private:
         TEST_CASE(template167);
         TEST_CASE(template168);
         TEST_CASE(template169);
+        TEST_CASE(template170); // crash
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -4360,6 +4361,20 @@ private:
                             "struct last<float> { float t ; } ; "
                             "struct last<double> { double t ; } ; "
                             "struct last<longdouble> { long double t ; } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template170() { // crash
+        const char code[] = "template <int b> int a = 0;\n"
+                            "void c() {\n"
+                            "  a<1>;\n"
+                            "  [](auto b) {};\n"
+                            "}";
+        const char exp[]  = "int a<1> ; a<1> = 0 ; "
+                            "void c ( ) { "
+                            "a<1> ; "
+                            "[ ] ( auto b ) { } ; "
+                            "}";
         ASSERT_EQUALS(exp, tok(code));
     }
 
