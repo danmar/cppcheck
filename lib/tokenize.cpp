@@ -5281,6 +5281,8 @@ bool Tokenizer::simplifyTokenList2()
 
     Token::assignProgressValues(list.front());
 
+    list.front()->assignIndexes();
+
     list.createAst();
     // needed for #7208 (garbage code) and #7724 (ast max depth limit)
     list.validateAst();
