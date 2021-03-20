@@ -9928,9 +9928,9 @@ static bool isAlignAttribute(const Token * tok)
 
 static const Token* skipCPPOrAlignAttribute(const Token * tok)
 {
-    if(isCPPAttribute(tok)) {
+    if (isCPPAttribute(tok)) {
         return tok->link();
-    }else if(isAlignAttribute(tok)) {
+    } else if (isAlignAttribute(tok)) {
         return tok->next()->link();
     }
     return tok;
@@ -10199,7 +10199,7 @@ void Tokenizer::findGarbageCode() const
                 continue;
         }
         // skip C++ attributes [[...]]
-        if (isCPP11 && (isCPPAttribute(tok) || isAlignAttribute(tok)) ) {
+        if (isCPP11 && (isCPPAttribute(tok) || isAlignAttribute(tok))) {
             tok = skipCPPOrAlignAttribute(tok);
             continue;
         }
@@ -10842,10 +10842,10 @@ void Tokenizer::simplifyCPPAttribute()
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!isCPPAttribute(tok) && !isAlignAttribute(tok)){
+        if (!isCPPAttribute(tok) && !isAlignAttribute(tok)) {
             continue;
         }
-        if(isCPPAttribute(tok)){
+        if (isCPPAttribute(tok)) {
             if (Token::findsimplematch(tok->tokAt(2), "noreturn", tok->link())) {
                 const Token * head = skipCPPOrAlignAttribute(tok);
                 while (isCPPAttribute(head) || isAlignAttribute(head))
@@ -10854,7 +10854,7 @@ void Tokenizer::simplifyCPPAttribute()
                 while (Token::Match(head, "%name%|::|*|&|<|>|,")) // skip return type
                     head = head->next();
                 if (head && head->str() == "(" && isFunctionHead(head, "{|;")) {
-                        head->previous()->isAttributeNoreturn(true);
+                    head->previous()->isAttributeNoreturn(true);
                 }
             } else if (Token::findsimplematch(tok->tokAt(2), "nodiscard", tok->link())) {
                 const Token * head = skipCPPOrAlignAttribute(tok);
@@ -10864,7 +10864,7 @@ void Tokenizer::simplifyCPPAttribute()
                 while (Token::Match(head, "%name%|::|*|&|<|>|,"))
                     head = head->next();
                 if (head && head->str() == "(" && isFunctionHead(head, "{|;")) {
-                        head->previous()->isAttributeNodiscard(true);
+                    head->previous()->isAttributeNodiscard(true);
                 }
             } else if (Token::findsimplematch(tok->tokAt(2), "maybe_unused", tok->link())) {
                 const Token* head = skipCPPOrAlignAttribute(tok);
@@ -10901,10 +10901,10 @@ void Tokenizer::simplifyCPPAttribute()
         }
         Token::eraseTokens(tok, skipCPPOrAlignAttribute(tok)->next());
         // fix iterator after removing
-        if(tok->previous()){
+        if (tok->previous()) {
             tok = tok->previous();
             tok->next()->deleteThis();
-        }else{
+        } else {
             tok->deleteThis();
             tok = list.front();
         }

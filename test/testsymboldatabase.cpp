@@ -4693,8 +4693,8 @@ private:
 
     void symboldatabase93() { // alignas attribute
         GET_SYMBOL_DB("struct alignas(int) A{\n"
-              "};\n"
-              );
+                      "};\n"
+                     );
         ASSERT(db != nullptr);
         const Scope* scope = db->findScopeByName("A");
         ASSERT(scope);
@@ -6669,7 +6669,7 @@ private:
                       "template <class T> [[nodiscard]] int func4() { }"
                       "std::pair<bool, char> [[nodiscard]] func5();\n"
                       "[[nodiscard]] std::pair<bool, char> func6();\n"
-                      );
+                     );
         ASSERT_EQUALS("", errout.str());
         ASSERT_EQUALS(true,  db != nullptr); // not null
 
