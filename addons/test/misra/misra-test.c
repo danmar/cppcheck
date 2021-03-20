@@ -442,6 +442,9 @@ void misra_9_struct_initializers() {
     dummy_struct dsd[2][2] = { 1, 2, 3, 4 };                  // 9.2
     dummy_struct dse[3]    = { {1,2}, {3,4}, [1] = {5,6} };   // 9.3 9.4
     dummy_struct dsd[]     = { [0] = 1 };                     // 9.5
+
+    // Syntax error: initialization of an unnamed anonymous struct should not crash
+    struct { int j; } = { .j = 1 };
 }
 
 void misra_9_broken_initializers() {
