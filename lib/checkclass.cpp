@@ -2844,6 +2844,9 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
     // One definition rule
     std::vector<MyFileInfo::NameLoc> classDefinitions;
     for (const Scope * classScope : tokenizer->getSymbolDatabase()->classAndStructScopes) {
+        if (classScope->isAnonymous())
+            continue;
+
         // the full definition must be compared
         bool fullDefinition = std::all_of(classScope->functionList.begin(),
                                           classScope->functionList.end(),
