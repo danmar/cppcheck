@@ -444,7 +444,7 @@ void misra_9_struct_initializers() {
     dummy_struct dsd[]     = { [0] = 1 };                     // 9.5
 
     // Obsolete initialization syntax for GCC
-    struct1 os1 = { i1: 1, i2: 2 };
+    struct1 os1 = { i1: 1, i2: 2 }; // 10.4 13.4
 }
 
 void misra_9_broken_initializers() {
