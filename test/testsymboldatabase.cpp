@@ -345,6 +345,7 @@ private:
         TEST_CASE(symboldatabase90);
         TEST_CASE(symboldatabase91);
         TEST_CASE(symboldatabase92); // daca crash
+        TEST_CASE(symboldatabase93); // alignas attribute
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -426,6 +427,7 @@ private:
         TEST_CASE(nothrowDeclspecFunction);
 
         TEST_CASE(noreturnAttributeFunction);
+        TEST_CASE(nodiscardAttributeFunction);
 
         TEST_CASE(varTypesIntegral); // known integral
         TEST_CASE(varTypesFloating); // known floating
@@ -4689,6 +4691,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void symboldatabase93() { // alignas attribute
+        GET_SYMBOL_DB("struct alignas(int) A{\n"
+              "};\n"
+              );
+        ASSERT(db != nullptr);
+        const Scope* scope = db->findScopeByName("A");
+        ASSERT(scope);
+    }
+
     void createSymbolDatabaseFindAllScopes1() {
         GET_SYMBOL_DB("void f() { union {int x; char *p;} a={0}; }");
         ASSERT(db->scopeList.size() == 3);
@@ -6647,6 +6658,44 @@ private:
         func = findFunctionByName("func4", &db->scopeList.front());
         ASSERT_EQUALS(true, func != nullptr);
         ASSERT_EQUALS(true, func->isAttributeNoreturn());
+
+    }
+
+    void nodiscardAttributeFunction() {
+        GET_SYMBOL_DB("[[nodiscard]] int func1();\n"
+                      "int func1() { }\n"
+                      "[[nodiscard]] int func2();\n"
+                      "[[nodiscard]] int func3() { }\n"
+                      "template <class T> [[nodiscard]] int func4() { }"
+                      "std::pair<bool, char> [[nodiscard]] func5();\n"
+                      "[[nodiscard]] std::pair<bool, char> func6();\n"
+                      );
+        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(true,  db != nullptr); // not null
+
+        const Function *func = findFunctionByName("func1", &db->scopeList.front());
+        ASSERT_EQUALS(true, func != nullptr);
+        ASSERT_EQUALS(true, func->isAttributeNodiscard());
+
+        func = findFunctionByName("func2", &db->scopeList.front());
+        ASSERT_EQUALS(true, func != nullptr);
+        ASSERT_EQUALS(true, func->isAttributeNodiscard());
+
+        func = findFunctionByName("func3", &db->scopeList.front());
+        ASSERT_EQUALS(true, func != nullptr);
+        ASSERT_EQUALS(true, func->isAttributeNodiscard());
+
+        func = findFunctionByName("func4", &db->scopeList.front());
+        ASSERT_EQUALS(true, func != nullptr);
+        ASSERT_EQUALS(true, func->isAttributeNodiscard());
+
+        func = findFunctionByName("func5", &db->scopeList.front());
+        ASSERT_EQUALS(true, func != nullptr);
+        ASSERT_EQUALS(true, func->isAttributeNodiscard());
+
+        func = findFunctionByName("func6", &db->scopeList.front());
+        ASSERT_EQUALS(true, func != nullptr);
+        ASSERT_EQUALS(true, func->isAttributeNodiscard());
     }
 
     void varTypesIntegral() {
