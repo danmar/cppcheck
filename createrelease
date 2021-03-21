@@ -99,15 +99,9 @@ scp $releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/projec
 rm $releasename.*
 cd ..
 
-# Generate the manual.pdf, manual.html and version.txt
+# Generate version.txt
 make -j4
 ./cppcheck --version > upload/version.txt
-cd ~/cppcheck/man
-./buildman.sh
-mv manual.pdf ../upload/
-mv manual.html ../upload/
-mv reference-cfg-format.pdf ../upload/
-mv reference-cfg-format.html ../upload/
 
 cd ~/cppcheck/upload
 scp * danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
