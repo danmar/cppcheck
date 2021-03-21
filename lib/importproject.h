@@ -52,6 +52,7 @@ public:
     enum class Type {
         UNKNOWN,
         MISSING,
+        FAILURE,
         COMPILE_DB,
         VS_SLN,
         VS_VCXPROJ,
@@ -106,12 +107,14 @@ public:
 
     Type import(const std::string &filename, Settings *settings=nullptr);
 protected:
-    void importCompileCommands(std::istream &istr);
+    bool importCompileCommands(std::istream &istr);
     bool importCppcheckGuiProject(std::istream &istr, Settings *settings);
 private:
-    void importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters);
-    void importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters);
-    void importBcb6Prj(const std::string &projectFilename);
+    bool importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters);
+    bool importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters);
+    bool importBcb6Prj(const std::string &projectFilename);
+
+    void printMessage(const std::string &message);
 
     void setRelativePaths(const std::string &filename);
 
