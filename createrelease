@@ -10,13 +10,13 @@
 # ./cppcheck -D__CPPCHECK__ --library=cppcheck-lib --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h cli gui/*.cpp --suppress=functionConst --suppress=functionStatic -q lib
 #
 # check --bug-hunting output:
-# ./cppcheck -D__CPPCHECK__ --bug-hunting lib
+# make clean && make -j4 USE_Z3=yes && ./cppcheck -D__CPPCHECK__ --bug-hunting lib
 #
 # Update translations
 #   lupdate gui.pro
 #
 # Update copyright year
-# git diff 1.90 -- */*.cpp */*.h | grep '^diff --git a/' | sed 's|.* b/||' | xargs sed -i 's/Copyright (C) 2007-201./Copyright (C) 2007-2020/'
+# git diff 2.3 -- */*.cpp */*.h | grep '^diff --git a/' | sed 's|.* b/||' | xargs sed -i 's/Copyright (C) 2007-20[12]./Copyright (C) 2007-2021/'
 # git diff | grep '^diff --git a/'
 #
 # Make sure "cppcheck --errorlist" works. For example with:
