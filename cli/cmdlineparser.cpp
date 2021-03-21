@@ -645,11 +645,15 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     }
                 }
                 if (projType == ImportProject::Type::MISSING) {
-                    printMessage("cppcheck: Failed to open project '" + projectFile + "'.");
+                    printMessage("cppcheck: Failed to open project '" + projectFile + "'. The file does not exist.");
                     return false;
                 }
                 if (projType == ImportProject::Type::UNKNOWN) {
                     printMessage("cppcheck: Failed to load project '" + projectFile + "'. The format is unknown.");
+                    return false;
+                }
+                if (projType == ImportProject::Type::FAILURE) {
+                    printMessage("cppcheck: Failed to load project '" + projectFile + "'. An error occurred.");
                     return false;
                 }
             }
