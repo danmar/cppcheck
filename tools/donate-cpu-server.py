@@ -27,7 +27,7 @@ import html as html_lib
 # changes)
 SERVER_VERSION = "1.3.16"
 
-OLD_VERSION = '2.3'
+OLD_VERSION = '2.4'
 
 
 # Set up logging
