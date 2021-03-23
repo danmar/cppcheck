@@ -735,7 +735,7 @@ private:
         check("void f() {\n"
               "  int size = sizeof(void);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (portability) '*)' is of type 'void', the behaviour of 'sizeof(void)' is not covered by the ISO C standard.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (portability) Behaviour of 'sizeof(void)' is not covered by the ISO C standard.\n", errout.str());
 
         check("void f() {\n"
               "  void* p;\n"
