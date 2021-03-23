@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -5690,6 +5690,21 @@ private:
 
         ASSERT_EQUALS("struct a ;",
                       tokenizeAndStringify("struct [[,,,]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct alignas(int) a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct alignas ( alignof ( float ) ) a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("char a [ 256 ] ;",
+                      tokenizeAndStringify("alignas(256) char a[256];", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct alignas(float) [[deprecated(reason)]] a;", false, true, Settings::Native, "test.cpp", true));
+
+        ASSERT_EQUALS("struct a ;",
+                      tokenizeAndStringify("struct [[deprecated,maybe_unused]] alignas(double) [[trivial_abi]] a;", false, true, Settings::Native, "test.cpp", true));
     }
 
     void simplifyCaseRange() {

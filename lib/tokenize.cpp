@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -4816,7 +4816,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // simplify namespace aliases
     simplifyNamespaceAliases();
 
-    // Remove [[attribute]]
+    // Remove [[attribute]] and alignas(?)
     simplifyCPPAttribute();
 
     // remove __attribute__((?))
@@ -5280,6 +5280,8 @@ bool Tokenizer::simplifyTokenList2()
     validate();
 
     Token::assignProgressValues(list.front());
+
+    list.front()->assignIndexes();
 
     list.createAst();
     // needed for #7208 (garbage code) and #7724 (ast max depth limit)
@@ -9919,6 +9921,21 @@ static bool isCPPAttribute(const Token * tok)
     return Token::simpleMatch(tok, "[ [") && tok->link() && tok->link()->previous() == tok->linkAt(1);
 }
 
+static bool isAlignAttribute(const Token * tok)
+{
+    return Token::simpleMatch(tok, "alignas (") && tok->next()->link();
+}
+
+static const Token* skipCPPOrAlignAttribute(const Token * tok)
+{
+    if (isCPPAttribute(tok)) {
+        return tok->link();
+    } else if (isAlignAttribute(tok)) {
+        return tok->next()->link();
+    }
+    return tok;
+}
+
 void Tokenizer::reportUnknownMacros() const
 {
     // Report unknown macros used in expressions "%name% %num%"
@@ -10182,8 +10199,8 @@ void Tokenizer::findGarbageCode() const
                 continue;
         }
         // skip C++ attributes [[...]]
-        if (isCPP11 && isCPPAttribute(tok)) {
-            tok = tok->link();
+        if (isCPP11 && (isCPPAttribute(tok) || isAlignAttribute(tok))) {
+            tok = skipCPPOrAlignAttribute(tok);
             continue;
         }
         {
@@ -10825,48 +10842,72 @@ void Tokenizer::simplifyCPPAttribute()
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!isCPPAttribute(tok))
+        if (!isCPPAttribute(tok) && !isAlignAttribute(tok)) {
             continue;
-        if (Token::Match(tok->tokAt(2), "noreturn|nodiscard")) {
-            const Token * head = tok->link()->next();
-            while (Token::Match(head, "%name%|::|*|&"))
+        }
+        if (isCPPAttribute(tok)) {
+            if (Token::findsimplematch(tok->tokAt(2), "noreturn", tok->link())) {
+                const Token * head = skipCPPOrAlignAttribute(tok);
+                while (isCPPAttribute(head) || isAlignAttribute(head))
+                    head = skipCPPOrAlignAttribute(head);
                 head = head->next();
-            if (head && head->str() == "(" && isFunctionHead(head, "{|;")) {
-                if (tok->strAt(2) == "noreturn")
+                while (Token::Match(head, "%name%|::|*|&|<|>|,")) // skip return type
+                    head = head->next();
+                if (head && head->str() == "(" && isFunctionHead(head, "{|;")) {
                     head->previous()->isAttributeNoreturn(true);
-                else
+                }
+            } else if (Token::findsimplematch(tok->tokAt(2), "nodiscard", tok->link())) {
+                const Token * head = skipCPPOrAlignAttribute(tok);
+                while (isCPPAttribute(head) || isAlignAttribute(head))
+                    head = skipCPPOrAlignAttribute(head);
+                head = head->next();
+                while (Token::Match(head, "%name%|::|*|&|<|>|,"))
+                    head = head->next();
+                if (head && head->str() == "(" && isFunctionHead(head, "{|;")) {
                     head->previous()->isAttributeNodiscard(true);
+                }
+            } else if (Token::findsimplematch(tok->tokAt(2), "maybe_unused", tok->link())) {
+                const Token* head = skipCPPOrAlignAttribute(tok);
+                while (isCPPAttribute(head) || isAlignAttribute(head))
+                    head = skipCPPOrAlignAttribute(head);
+                head->next()->isAttributeMaybeUnused(true);
+            } else if (Token::Match(tok->previous(), ") [ [ expects|ensures|assert default|audit|axiom| : %name% <|<=|>|>= %num% ] ]")) {
+                const Token *vartok = tok->tokAt(4);
+                if (vartok->str() == ":")
+                    vartok = vartok->next();
+                Token *argtok = tok->tokAt(-2);
+                while (argtok && argtok->str() != "(") {
+                    if (argtok->str() == vartok->str())
+                        break;
+                    if (argtok->str() == ")")
+                        argtok = argtok->link();
+                    argtok = argtok->previous();
+                }
+                if (argtok && argtok->str() == vartok->str()) {
+                    if (vartok->next()->str() == ">=")
+                        argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, MathLib::toLongNumber(vartok->strAt(2)));
+                    else if (vartok->next()->str() == ">")
+                        argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, MathLib::toLongNumber(vartok->strAt(2))+1);
+                    else if (vartok->next()->str() == "<=")
+                        argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, MathLib::toLongNumber(vartok->strAt(2)));
+                    else if (vartok->next()->str() == "<")
+                        argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, MathLib::toLongNumber(vartok->strAt(2))-1);
+                }
             }
-        } else if (Token::simpleMatch(tok->tokAt(2), "maybe_unused")) {
-            Token* head = tok->tokAt(5);
-            while (isCPPAttribute(head))
-                head = head->tokAt(5);
-            head->isAttributeMaybeUnused(true);
-        } else if (Token::Match(tok->previous(), ") [ [ expects|ensures|assert default|audit|axiom| : %name% <|<=|>|>= %num% ] ]")) {
-            const Token *vartok = tok->tokAt(4);
-            if (vartok->str() == ":")
-                vartok = vartok->next();
-            Token *argtok = tok->tokAt(-2);
-            while (argtok && argtok->str() != "(") {
-                if (argtok->str() == vartok->str())
-                    break;
-                if (argtok->str() == ")")
-                    argtok = argtok->link();
-                argtok = argtok->previous();
-            }
-            if (argtok && argtok->str() == vartok->str()) {
-                if (vartok->next()->str() == ">=")
-                    argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, MathLib::toLongNumber(vartok->strAt(2)));
-                else if (vartok->next()->str() == ">")
-                    argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, MathLib::toLongNumber(vartok->strAt(2))+1);
-                else if (vartok->next()->str() == "<=")
-                    argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, MathLib::toLongNumber(vartok->strAt(2)));
-                else if (vartok->next()->str() == "<")
-                    argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, MathLib::toLongNumber(vartok->strAt(2))-1);
+        } else {
+            if (Token::simpleMatch(tok, "alignas (")) {
+                // alignment requirements could be checked here
             }
         }
-        Token::eraseTokens(tok, tok->link()->next());
-        tok->deleteThis();
+        Token::eraseTokens(tok, skipCPPOrAlignAttribute(tok)->next());
+        // fix iterator after removing
+        if (tok->previous()) {
+            tok = tok->previous();
+            tok->next()->deleteThis();
+        } else {
+            tok->deleteThis();
+            tok = list.front();
+        }
     }
 }
 
