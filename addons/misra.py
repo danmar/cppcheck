@@ -1482,16 +1482,6 @@ class MisraChecker:
         # Check arguments in function declaration
         for func in data.functions:
 
-            # Zero arguments should be in form ( void )
-            if (len(func.argument) == 0):
-                zeroCallTokens = getFollowingRawTokens(rawTokens, func.tokenDef, 3)
-                if len(zeroCallTokens) != 3:
-                    continue
-                if (zeroCallTokens[0].str != '(' or
-                        zeroCallTokens[1].str != 'void' or
-                        zeroCallTokens[2].str != ')'):
-                    self.reportError(func.tokenDef, 8, 2)
-
             startCall = func.tokenDef.next
             if startCall is None or startCall.str != '(':
                 continue
@@ -1499,6 +1489,16 @@ class MisraChecker:
             endCall = startCall.link
             if endCall is None or endCall.str != ')':
                 continue
+
+            # Zero arguments should be in form ( void )
+            if (len(func.argument) == 0):
+                voidArg = startCall.next
+                while voidArg is not endCall:
+                    if voidArg.str == 'void':
+                        break
+                    voidArg = voidArg.next
+                if not voidArg.str == 'void':
+                    self.reportError(func.tokenDef, 8, 2)
 
             for arg in func.argument:
                 argument = func.argument[arg]
