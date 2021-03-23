@@ -250,9 +250,6 @@ private:
 
         TEST_CASE(simplifyFunctionReturn);
 
-        // void foo(void) -> void foo()
-        TEST_CASE(removeVoidFromFunction);
-
         TEST_CASE(return_strncat); // ticket # 2860 Returning value of strncat() reported as memory leak
 
         // #3069 : for loop with 1 iteration
@@ -4947,10 +4944,6 @@ private:
                                 "}";
             tok(code);
         }
-    }
-
-    void removeVoidFromFunction() {
-        ASSERT_EQUALS("void foo ( ) ;", tok("void foo(void);"));
     }
 
     void return_strncat() {

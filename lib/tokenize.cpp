@@ -3020,14 +3020,6 @@ void Tokenizer::simplifyArrayAccessSyntax()
     }
 }
 
-void Tokenizer::simplifyParameterVoid()
-{
-    for (Token* tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%name% ( void )"))
-            tok->next()->deleteNext();
-    }
-}
-
 void Tokenizer::simplifyRedundantConsecutiveBraces()
 {
     // Remove redundant consecutive braces, i.e. '.. { { .. } } ..' -> '.. { .. } ..'.
@@ -5133,8 +5125,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     Token::assignProgressValues(list.front());
 
     removeRedundantSemicolons();
-
-    simplifyParameterVoid();
 
     simplifyRedundantConsecutiveBraces();
 

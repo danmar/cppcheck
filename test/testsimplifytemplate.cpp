@@ -1116,7 +1116,7 @@ private:
                                 "return f1<B<A>> ( 0 , reinterpret_cast < B<A> * > ( E<void*> :: Int ( -1 ) ) ) ; "
                                 "} "
                                 "} ; "
-                                "int main ( ) { "
+                                "int main ( void ) { "
                                 "C<A> ca ; "
                                 "return 0 ; "
                                 "} "
