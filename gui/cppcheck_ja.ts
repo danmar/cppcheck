@@ -2097,7 +2097,7 @@ Options:
     <message>
         <location filename="cppchecklibrarydata.cpp" line="41"/>
         <source>line %1: Mandatory attribute &apos;%2&apos; missing in &apos;%3&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>行 %1: 必須の属性 &apos;%2&apos; が &apos;%3&apos;にない</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="242"/>
