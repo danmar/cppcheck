@@ -16,6 +16,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install debian-goodies ubuntu-dbgsym-keyring
+          # the key expired and the ubuntu-dbgsym-keyring package does not yet include the latest one - see https://bugs.launchpad.net/ubuntu/+source/ubuntu-keyring/+bug/1920640
+          wget -O - http://ddebs.ubuntu.com/dbgsym-release-key.asc | sudo apt-key add -
 
       - name: Add debug repos on ubuntu
         run:  |

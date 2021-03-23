@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -4693,8 +4693,8 @@ private:
 
     void symboldatabase93() { // alignas attribute
         GET_SYMBOL_DB("struct alignas(int) A{\n"
-              "};\n"
-              );
+                      "};\n"
+                     );
         ASSERT(db != nullptr);
         const Scope* scope = db->findScopeByName("A");
         ASSERT(scope);
@@ -6669,7 +6669,7 @@ private:
                       "template <class T> [[nodiscard]] int func4() { }"
                       "std::pair<bool, char> [[nodiscard]] func5();\n"
                       "[[nodiscard]] std::pair<bool, char> func6();\n"
-                      );
+                     );
         ASSERT_EQUALS("", errout.str());
         ASSERT_EQUALS(true,  db != nullptr); // not null
 
