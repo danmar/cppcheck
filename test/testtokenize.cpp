@@ -3309,11 +3309,11 @@ private:
 
     void functionpointer6() {
         const char code1[] = "void (*fp(void))(int) {}";
-        const char expected1[] = "1: void * fp ( ) { }\n";
+        const char expected1[] = "1: void * fp ( void ) { }\n";
         ASSERT_EQUALS(expected1, tokenizeDebugListing(code1, false));
 
         const char code2[] = "std::string (*fp(void))(int);";
-        const char expected2[] = "1: std :: string * fp ( ) ;\n";
+        const char expected2[] = "1: std :: string * fp ( void ) ;\n";
         ASSERT_EQUALS(expected2, tokenizeDebugListing(code2, false));
     }
 
@@ -3716,7 +3716,7 @@ private:
 
         {
             const char code[] = "class S { int function(void); };";
-            ASSERT_EQUALS("class S { int function ( ) ; } ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("class S { int function ( void ) ; } ;", tokenizeAndStringify(code));
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -3728,7 +3728,7 @@ private:
 
         {
             const char code[] = "int function(void);";
-            ASSERT_EQUALS("int function ( ) ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("int function ( void ) ;", tokenizeAndStringify(code));
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -3740,13 +3740,13 @@ private:
 
         {
             const char code[] = "extern int function(void);";
-            ASSERT_EQUALS("extern int function ( ) ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("extern int function ( void ) ;", tokenizeAndStringify(code));
             ASSERT_EQUALS("", errout.str());
         }
 
         {
             const char code[] = "int function1(void); int function2(void);";
-            ASSERT_EQUALS("int function1 ( ) ; int function2 ( ) ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("int function1 ( void ) ; int function2 ( void ) ;", tokenizeAndStringify(code));
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -4431,7 +4431,7 @@ private:
     }
 
     void simplifyCAlternativeTokens() {
-        ASSERT_EQUALS("void or ( ) ;", tokenizeAndStringify("void or(void);", false, true, Settings::Native, "test.c"));
+        ASSERT_EQUALS("void or ( void ) ;", tokenizeAndStringify("void or(void);", false, true, Settings::Native, "test.c"));
         ASSERT_EQUALS("void f ( ) { if ( a && b ) { ; } }", tokenizeAndStringify("void f() { if (a and b); }", false, true, Settings::Native, "test.c"));
         ASSERT_EQUALS("void f ( ) { if ( a && b ) { ; } }", tokenizeAndStringify("void f() { if (a and b); }", false, true, Settings::Native, "test.cpp"));
         ASSERT_EQUALS("void f ( ) { if ( a || b ) { ; } }", tokenizeAndStringify("void f() { if (a or b); }", false, true, Settings::Native, "test.c"));
