@@ -66,8 +66,10 @@ jobs:
       - name: check python syntax
         if: matrix.python-version != '2.7'
         run: |
-          python -m py_compile ./tools/donate-cpu.py
-          python -m py_compile ./tools/donate-cpu-server.py
+          python -m py_compile addons/*.py
+          python -m py_compile htmlreport/cppcheck-htmlreport
+          python -m py_compile htmlreport/*.py
+          python -m py_compile tools/*.py
 
       - name: compile addons
         run: |
