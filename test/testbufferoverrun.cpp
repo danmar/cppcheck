@@ -131,6 +131,7 @@ private:
         TEST_CASE(array_index_48); // #9478
         TEST_CASE(array_index_49); // #8653
         TEST_CASE(array_index_50);
+        TEST_CASE(array_index_51); // #3763
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1523,6 +1524,14 @@ private:
               "    f(\"12345\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_51() {
+        check("void f(void){\n"
+              "    int k=0, dd, d[1U] = {1};\n"
+              "    for (dd=d[k]; k<10; dd=d[++k]){;}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'd[1]' accessed at index 1, which is out of bounds.\n", errout.str());
     }
 
     void array_index_multidim() {
