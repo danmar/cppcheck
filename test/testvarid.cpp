@@ -195,6 +195,7 @@ private:
         TEST_CASE(varidclass19);  // initializer list
         TEST_CASE(varidclass20);   // #7578: int (*p)[2]
         TEST_CASE(varid_classnameshaddowsvariablename); // #3990
+        TEST_CASE(varid_classnametemplate); // #10221
 
         TEST_CASE(varidenum1);
         TEST_CASE(varidenum2);
@@ -3207,6 +3208,37 @@ private:
                                 "3: void handleData ( const Data & data@2 ) {\n"
                                 "4: strange_declarated ( data@2 ) ;\n"
                                 "5: }\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+
+    }
+
+    void varid_classnametemplate() {
+        const char code[] = "template <typename T>\n"
+                            "struct BBB {\n"
+                            "  struct inner;\n"
+                            "};\n"
+                            "\n"
+                            "template <typename T>\n"
+                            "struct BBB<T>::inner {\n"
+                            "  inner(int x);\n"
+                            "  int x;\n"
+                            "};\n"
+                            "\n"
+                            "template <typename T>\n"
+                            "BBB<T>::inner::inner(int x): x(x) {}\n";
+        const char expected[] = "1: template < typename T >\n"
+                                "2: struct BBB {\n"
+                                "3: struct inner ;\n"
+                                "4: } ;\n"
+                                "5:\n"
+                                "6: template < typename T >\n"
+                                "7: struct BBB < T > :: inner {\n"
+                                "8: inner ( int x@1 ) ;\n"
+                                "9: int x@2 ;\n"
+                                "10: } ;\n"
+                                "11:\n"
+                                "12: template < typename T >\n"
+                                "13: BBB < T > :: inner :: inner ( int x@3 ) : x@2 ( x@3 ) { }\n";
         ASSERT_EQUALS(expected, tokenize(code));
 
     }
