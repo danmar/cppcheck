@@ -11,7 +11,7 @@ if (HAVE_RULES)
     find_library(PCRE_LIBRARY pcre)
     if (NOT PCRE_LIBRARY OR NOT PCRE_INCLUDE)
         message(FATAL_ERROR "pcre dependency for RULES has not been found")
-    else
+    else()
         include_directories(${PCRE_INCLUDE})
     endif()
 endif()
