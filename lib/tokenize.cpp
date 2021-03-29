@@ -4175,7 +4175,7 @@ void Tokenizer::setVarIdPass2()
         while (tok->str() == "}" && !scopeInfo.empty() && tok == scopeInfo.back().bodyEnd)
             scopeInfo.pop_back();
 
-        if (!Token::Match(tok, "namespace|class|struct %name% {|:|::"))
+        if (!Token::Match(tok, "namespace|class|struct %name% {|:|::|<"))
             continue;
 
         const std::string &scopeName(getScopeName(scopeInfo));
@@ -4184,9 +4184,14 @@ void Tokenizer::setVarIdPass2()
         std::list<const Token *> classnameTokens;
         classnameTokens.push_back(tok->next());
         const Token* tokStart = tok->tokAt(2);
-        while (Token::Match(tokStart, ":: %name%")) {
-            classnameTokens.push_back(tokStart->next());
-            tokStart = tokStart->tokAt(2);
+        while (Token::Match(tokStart, ":: %name%") || tokStart->str() == "<") {
+            if (tokStart->str() == "<") {
+                // skip the template part
+                tokStart = tokStart->findClosingBracket()->next();
+            } else {
+                classnameTokens.push_back(tokStart->next());
+                tokStart = tokStart->tokAt(2);
+            }
         }
 
         std::string classname;
