@@ -8,11 +8,6 @@ include_directories(${PROJECT_SOURCE_DIR}/externals/simplecpp/)
 file(GLOB_RECURSE hdrs "*.h")
 file(GLOB_RECURSE srcs "*.cpp")
 
-if (HAVE_RULES)
-    find_path(PCRE_INCLUDE pcre.h)
-    include_directories(${PCRE_INCLUDE})
-endif()
-
 function(build_src output filename)
     get_filename_component(file ${filename} NAME)
     set(outfile ${CMAKE_CURRENT_BINARY_DIR}/build/mc_${file})
