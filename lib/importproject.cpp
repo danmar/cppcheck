@@ -486,6 +486,7 @@ bool ImportProject::importSln(std::istream &istr, const std::string &path, const
             printMessage("Failed to load '" + vcxproj + "' from Visual Studio solution");
             return false;
         }
+        found = true;
     }
 
     if (!found) {
