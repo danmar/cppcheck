@@ -806,11 +806,12 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclus
             if (!Function::returnsReference(f))
                 return {{tok, std::move(errors)}};
             std::set<ReferenceToken, ReferenceTokenLess> result;
-            for (const Token* returnTok : Function::findReturns(f)) {
+            std::vector<const Token*> returns = Function::findReturns(f);
+            for (const Token* returnTok : returns) {
                 if (returnTok == tok)
                     continue;
-                std::vector<ReferenceToken> argvarRt = followAllReferences(returnTok, inconclusive, errors, depth - 1);
-                for (const ReferenceToken& rt:followAllReferences(returnTok, inconclusive, errors, depth - 1)) {
+                // std::vector<ReferenceToken> argvarRt = followAllReferences(returnTok, inconclusive, errors, depth - 1);
+                for (const ReferenceToken& rt:followAllReferences(returnTok, inconclusive, errors, depth - returns.size())) {
                     const Variable* argvar = rt.token->variable();
                     if (!argvar)
                         return {{tok, std::move(errors)}};
@@ -825,7 +826,7 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclus
                         ErrorPath er = errors;
                         er.emplace_back(returnTok, "Return reference.");
                         er.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
-                        std::vector<ReferenceToken> refs = followAllReferences(argTok, inconclusive, std::move(er), depth - 1);
+                        std::vector<ReferenceToken> refs = followAllReferences(argTok, inconclusive, std::move(er), depth - returns.size());
                         result.insert(refs.begin(), refs.end());
                         if (!inconclusive && result.size() > 1)
                             return {{tok, std::move(errors)}};
