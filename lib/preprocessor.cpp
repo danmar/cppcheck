@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -410,6 +410,37 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
             // skip undefined configurations..
             if (isUndefined(config, undefined))
                 config.clear();
+
+            bool ifndef = false;
+            if (cmdtok->str() == "ifndef")
+                ifndef = true;
+            else {
+                const std::vector<std::string> match{"if", "!", "defined", "(", config, ")"};
+                int i = 0;
+                ifndef = true;
+                for (const simplecpp::Token *t = cmdtok; i < match.size(); t = t->next) {
+                    if (!t || t->str() != match[i++]) {
+                        ifndef = false;
+                        break;
+                    }
+                }
+            }
+
+            // include guard..
+            if (ifndef && tok->location.fileIndex > 0) {
+                bool includeGuard = true;
+                for (const simplecpp::Token *t = tok->previous; t; t = t->previous) {
+                    if (t->location.fileIndex == tok->location.fileIndex) {
+                        includeGuard = false;
+                        break;
+                    }
+                }
+                if (includeGuard) {
+                    configs_if.push_back(std::string());
+                    configs_ifndef.push_back(std::string());
+                    continue;
+                }
+            }
 
             configs_if.push_back((cmdtok->str() == "ifndef") ? std::string() : config);
             configs_ifndef.push_back((cmdtok->str() == "ifndef") ? config : std::string());

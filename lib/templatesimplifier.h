@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,8 @@ class TokenList;
 
 /** @brief Simplify templates from the preprocessed and partially simplified code. */
 class CPPCHECKLIB TemplateSimplifier {
+    friend class TestSimplifyTemplate;
+
 public:
     explicit TemplateSimplifier(Tokenizer *tokenizer);
     ~TemplateSimplifier();
@@ -437,10 +439,8 @@ private:
      *                        ^ tok
      * @param typeParametersInDeclaration  template < typename T, typename S >
      *                                                         ^ [0]       ^ [1]
-     * @return  template < typename T, typename S >
-     *                                              ^ return
      */
-    static const Token * getTemplateParametersInDeclaration(
+    static void getTemplateParametersInDeclaration(
         const Token * tok,
         std::vector<const Token *> & typeParametersInDeclaration);
 

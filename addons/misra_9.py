@@ -98,6 +98,8 @@ class ElementDef:
     def getNextValueElement(self, root):
         current = self
         while current != root:
+            if not current.parent:
+                return None
             # Get next index of parent
             i = current.parent.children.index(current) + 1
             # Next index of parent exists

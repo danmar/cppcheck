@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -221,6 +221,7 @@ private:
         TEST_CASE(getConfigs7e);
         TEST_CASE(getConfigs8);  // #if A==1  => cfg: A=1
         TEST_CASE(getConfigs10); // #5139
+        TEST_CASE(getConfigs11); // #9832 - include guards
         TEST_CASE(getConfigsError);
 
         TEST_CASE(getConfigsD1);
@@ -2131,6 +2132,16 @@ private:
                                 "#define baz bar+0\n"
                                 "#if 0\n"
                                 "#endif";
+        ASSERT_EQUALS("\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs11() { // #9832 - include guards
+        const char filedata[] = "#file \"test.h\"\n"
+                                "#if !defined(test_h)\n"
+                                "#define test_h\n"
+                                "123\n"
+                                "#endif\n"
+                                "#endfile\n";
         ASSERT_EQUALS("\n", getConfigsStr(filedata));
     }
 

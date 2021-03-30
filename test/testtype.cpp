@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -202,6 +202,12 @@ private:
               "    if (x >= 64)\n"
               "        return 0;\n"
               "    return -(y << (x-1));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f() {\n"
+              "    std::ofstream outfile;\n"
+              "    outfile << vec_points[0](0) << static_cast<int>(d) << ' ';\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

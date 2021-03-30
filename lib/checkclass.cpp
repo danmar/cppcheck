@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2844,6 +2844,9 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
     // One definition rule
     std::vector<MyFileInfo::NameLoc> classDefinitions;
     for (const Scope * classScope : tokenizer->getSymbolDatabase()->classAndStructScopes) {
+        if (classScope->isAnonymous())
+            continue;
+
         // the full definition must be compared
         bool fullDefinition = std::all_of(classScope->functionList.begin(),
                                           classScope->functionList.end(),
@@ -2859,6 +2862,8 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
             name = scope->className + "::" + name;
             scope = scope->nestedIn;
         }
+        if (name.empty())
+            continue;
         name.erase(name.size() - 2);
         if (scope->type != Scope::ScopeType::eGlobal)
             continue;
@@ -2874,7 +2879,7 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
         for (const Token *tok = classScope->classDef; tok != classScope->bodyEnd; tok = tok->next())
             def += tok->str();
         for (const Function &f: classScope->functionList) {
-            if (f.functionScope->nestedIn != classScope) {
+            if (f.functionScope && f.functionScope->nestedIn != classScope) {
                 for (const Token *tok = f.functionScope->bodyStart; tok != f.functionScope->bodyEnd; tok = tok->next())
                     def += tok->str();
             }

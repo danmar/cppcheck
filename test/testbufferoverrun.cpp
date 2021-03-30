@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -131,6 +131,9 @@ private:
         TEST_CASE(array_index_48); // #9478
         TEST_CASE(array_index_49); // #8653
         TEST_CASE(array_index_50);
+        TEST_CASE(array_index_51); // #3763
+        TEST_CASE(array_index_52); // #7682
+        TEST_CASE(array_index_53); // #4750
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1523,6 +1526,37 @@ private:
               "    f(\"12345\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_51() {
+        check("void f(void){\n"
+              "    int k=0, dd, d[1U] = {1};\n"
+              "    for (dd=d[k]; k<10; dd=d[++k]){;}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'd[1]' accessed at index 1, which is out of bounds.\n", errout.str());
+    }
+
+    void array_index_52() {
+        check("char f(void)\n"
+              "{\n"
+              "    char buf[10];\n"
+              "    for(int i = 0, j= 11; i < j; ++i)\n"
+              "       buf[i] = 0;\n"
+              "    return buf[0];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'buf[10]' accessed at index 10, which is out of bounds.\n", errout.str());
+    }
+
+    void array_index_53() {
+        check("double M[3][1];\n"
+              " \n"
+              "void matrix()\n"
+              "{\n"
+              "    for (int i=0; i < 3; i++)\n"
+              "        for (int j = 0; j < 3; j++)\n"
+              "             M[i][j]=0.0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'M[3][1]' accessed at index M[*][2], which is out of bounds.\n", errout.str());
     }
 
     void array_index_multidim() {

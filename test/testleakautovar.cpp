@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ private:
         settings.library.setalloc("malloc", id, -1);
         settings.library.setrealloc("realloc", id, -1);
         settings.library.setdealloc("free", id, 1);
-        while (!Library::ismemory(++id));
+        while (!Library::isresource(++id));
         settings.library.setalloc("socket", id, -1);
         settings.library.setdealloc("close", id, 1);
         while (!Library::isresource(++id));
@@ -81,6 +81,7 @@ private:
         TEST_CASE(assign19);
         TEST_CASE(assign20); // #9187
         TEST_CASE(assign21); // #10186
+        TEST_CASE(assign22); // #9139
 
         TEST_CASE(isAutoDealloc);
 
@@ -147,6 +148,7 @@ private:
         TEST_CASE(ifelse19);
         TEST_CASE(ifelse20); // #10182
         TEST_CASE(ifelse21);
+        TEST_CASE(ifelse22); // #10187
 
         // switch
         TEST_CASE(switch1);
@@ -436,6 +438,18 @@ private:
               "    d->a = p;\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void assign22() { // #9139
+        check("void f(char tempFileName[256]) {\n"
+              "    const int fd = socket(AF_INET, SOCK_PACKET, 0 );\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Resource leak: fd\n", errout.str());
+
+        check("void f() {\n"
+              "    const void * const p = malloc(10);\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
     }
 
     void isAutoDealloc() {
@@ -1644,6 +1658,24 @@ private:
               "    return;\n"
               "}");
         ASSERT_EQUALS("[test.c:6]: (error) Memory leak: p\n",  errout.str());
+    }
+
+    void ifelse22() { // #10187
+        check("int f(const char * pathname, int flags) {\n"
+              "    int fd = socket(pathname, flags);\n"
+              "    if (fd >= 0)\n"
+              "        return fd;\n"
+              "    return -1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(const char * pathname, int flags) {\n"
+              "    int fd = socket(pathname, flags);\n"
+              "    if (fd <= -1)\n"
+              "        return -1;\n"
+              "    return fd;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switch1() {

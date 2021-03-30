@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -249,9 +249,6 @@ private:
         TEST_CASE(redundant_semicolon);
 
         TEST_CASE(simplifyFunctionReturn);
-
-        // void foo(void) -> void foo()
-        TEST_CASE(removeVoidFromFunction);
 
         TEST_CASE(return_strncat); // ticket # 2860 Returning value of strncat() reported as memory leak
 
@@ -4947,10 +4944,6 @@ private:
                                 "}";
             tok(code);
         }
-    }
-
-    void removeVoidFromFunction() {
-        ASSERT_EQUALS("void foo ( ) ;", tok("void foo(void);"));
     }
 
     void return_strncat() {

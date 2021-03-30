@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -211,6 +211,8 @@ private:
         TEST_CASE(template166); // #10081 hang
         TEST_CASE(template167);
         TEST_CASE(template168);
+        TEST_CASE(template169);
+        TEST_CASE(template170); // crash
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -241,6 +243,8 @@ private:
         TEST_CASE(templateNamePosition);
 
         TEST_CASE(findTemplateDeclarationEnd);
+
+        TEST_CASE(getTemplateParametersInDeclaration);
 
         TEST_CASE(expandSpecialized1);
         TEST_CASE(expandSpecialized2);
@@ -1112,7 +1116,7 @@ private:
                                 "return f1<B<A>> ( 0 , reinterpret_cast < B<A> * > ( E<void*> :: Int ( -1 ) ) ) ; "
                                 "} "
                                 "} ; "
-                                "int main ( ) { "
+                                "int main ( void ) { "
                                 "C<A> ca ; "
                                 "return 0 ; "
                                 "} "
@@ -4264,6 +4268,116 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
+    void template169() {
+        const char code[] = "template < typename T> struct last { T t; };\n"
+                            "template < typename T > struct CImgList { T t; };\n"
+                            "CImgList < last < bool > > c1;\n"
+                            "CImgList < last < signed char > > c2;\n"
+                            "CImgList < last < unsigned char > > c3;\n"
+                            "CImgList < last < char > > c4;\n"
+                            "CImgList < last < unsigned short > > c5;\n"
+                            "CImgList < last < short > > c6;\n"
+                            "CImgList < last < unsigned int > > c7;\n"
+                            "CImgList < last < int > > c8;\n"
+                            "CImgList < last < unsigned long > > c9;\n"
+                            "CImgList < last < long > > c10;\n"
+                            "CImgList < last < unsigned long long > > c11;\n"
+                            "CImgList < last < long long > > c12;\n"
+                            "CImgList < last < float > > c13;\n"
+                            "CImgList < last < double > > c14;\n"
+                            "CImgList < last < long double > > c15;";
+        const char exp[]  = "struct last<bool> ; "
+                            "struct last<signedchar> ; "
+                            "struct last<unsignedchar> ; "
+                            "struct last<char> ; "
+                            "struct last<unsignedshort> ; "
+                            "struct last<short> ; "
+                            "struct last<unsignedint> ; "
+                            "struct last<int> ; "
+                            "struct last<unsignedlong> ; "
+                            "struct last<long> ; "
+                            "struct last<unsignedlonglong> ; "
+                            "struct last<longlong> ; "
+                            "struct last<float> ; "
+                            "struct last<double> ; "
+                            "struct last<longdouble> ; "
+                            "struct CImgList<last<bool>> ; "
+                            "struct CImgList<last<signedchar>> ; "
+                            "struct CImgList<last<unsignedchar>> ; "
+                            "struct CImgList<last<char>> ; "
+                            "struct CImgList<last<unsignedshort>> ; "
+                            "struct CImgList<last<short>> ; "
+                            "struct CImgList<last<unsignedint>> ; "
+                            "struct CImgList<last<int>> ; "
+                            "struct CImgList<last<unsignedlong>> ; "
+                            "struct CImgList<last<long>> ; "
+                            "struct CImgList<last<unsignedlonglong>> ; "
+                            "struct CImgList<last<longlong>> ; "
+                            "struct CImgList<last<float>> ; "
+                            "struct CImgList<last<double>> ; "
+                            "struct CImgList<last<longdouble>> ; "
+                            "CImgList<last<bool>> c1 ; "
+                            "CImgList<last<signedchar>> c2 ; "
+                            "CImgList<last<unsignedchar>> c3 ; "
+                            "CImgList<last<char>> c4 ; "
+                            "CImgList<last<unsignedshort>> c5 ; "
+                            "CImgList<last<short>> c6 ; "
+                            "CImgList<last<unsignedint>> c7 ; "
+                            "CImgList<last<int>> c8 ; "
+                            "CImgList<last<unsignedlong>> c9 ; "
+                            "CImgList<last<long>> c10 ; "
+                            "CImgList<last<unsignedlonglong>> c11 ; "
+                            "CImgList<last<longlong>> c12 ; "
+                            "CImgList<last<float>> c13 ; "
+                            "CImgList<last<double>> c14 ; "
+                            "CImgList<last<longdouble>> c15 ; "
+                            "struct CImgList<last<bool>> { last<bool> t ; } ; "
+                            "struct CImgList<last<signedchar>> { last<signedchar> t ; } ; "
+                            "struct CImgList<last<unsignedchar>> { last<unsignedchar> t ; } ; "
+                            "struct CImgList<last<char>> { last<char> t ; } ; "
+                            "struct CImgList<last<unsignedshort>> { last<unsignedshort> t ; } ; "
+                            "struct CImgList<last<short>> { last<short> t ; } ; "
+                            "struct CImgList<last<unsignedint>> { last<unsignedint> t ; } ; "
+                            "struct CImgList<last<int>> { last<int> t ; } ; "
+                            "struct CImgList<last<unsignedlong>> { last<unsignedlong> t ; } ; "
+                            "struct CImgList<last<long>> { last<long> t ; } ; "
+                            "struct CImgList<last<unsignedlonglong>> { last<unsignedlonglong> t ; } ; "
+                            "struct CImgList<last<longlong>> { last<longlong> t ; } ; "
+                            "struct CImgList<last<float>> { last<float> t ; } ; "
+                            "struct CImgList<last<double>> { last<double> t ; } ; "
+                            "struct CImgList<last<longdouble>> { last<longdouble> t ; } ; "
+                            "struct last<bool> { bool t ; } ; "
+                            "struct last<signedchar> { signed char t ; } ; "
+                            "struct last<unsignedchar> { unsigned char t ; } ; "
+                            "struct last<char> { char t ; } ; "
+                            "struct last<unsignedshort> { unsigned short t ; } ; "
+                            "struct last<short> { short t ; } ; "
+                            "struct last<unsignedint> { unsigned int t ; } ; "
+                            "struct last<int> { int t ; } ; "
+                            "struct last<unsignedlong> { unsigned long t ; } ; "
+                            "struct last<long> { long t ; } ; "
+                            "struct last<unsignedlonglong> { unsigned long long t ; } ; "
+                            "struct last<longlong> { long long t ; } ; "
+                            "struct last<float> { float t ; } ; "
+                            "struct last<double> { double t ; } ; "
+                            "struct last<longdouble> { long double t ; } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template170() { // crash
+        const char code[] = "template <int b> int a = 0;\n"
+                            "void c() {\n"
+                            "  a<1>;\n"
+                            "  [](auto b) {};\n"
+                            "}";
+        const char exp[]  = "int a<1> ; a<1> = 0 ; "
+                            "void c ( ) { "
+                            "a<1> ; "
+                            "[ ] ( auto b ) { } ; "
+                            "}";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         const char code[] = "template <typename T> struct C {};\n"
                             "template <typename T> struct S {a};\n"
@@ -5107,6 +5221,36 @@ private:
         ASSERT(findTemplateDeclarationEndHelper("template <class, class a> auto b() -> decltype(a{}.template b<void(int, int)>){} int x;", "} int x ;"));
         ASSERT(findTemplateDeclarationEndHelper("template <typename... f, c<h<e<typename f::d...>>::g>> void i(); int x;", "; int x ;"));
         ASSERT(findTemplateDeclarationEndHelper("template <typename... f, c<h<e<typename f::d...>>::g>> void i(){} int x;", "} int x ;"));
+    }
+
+    // Helper function to unit test TemplateSimplifier::getTemplateParametersInDeclaration
+    bool getTemplateParametersInDeclarationHelper(const char code[], const std::vector<std::string> & params) {
+        Tokenizer tokenizer(&settings, this);
+
+        std::istringstream istr(code);
+        tokenizer.createTokens(istr, "test.cpp");
+        tokenizer.createLinks();
+        tokenizer.splitTemplateRightAngleBrackets(false);
+
+        std::vector<const Token *> typeParametersInDeclaration;
+        TemplateSimplifier::getTemplateParametersInDeclaration(tokenizer.tokens()->tokAt(2), typeParametersInDeclaration);
+
+        if (params.size() != typeParametersInDeclaration.size())
+            return false;
+
+        for (size_t i = 0; i < typeParametersInDeclaration.size(); ++i) {
+            if (typeParametersInDeclaration[i]->str() != params[i])
+                return false;
+        }
+        return true;
+    }
+
+    void getTemplateParametersInDeclaration() {
+        ASSERT(getTemplateParametersInDeclarationHelper("template<typename T> class Fred {};", std::vector<std::string> {"T"}));
+        ASSERT(getTemplateParametersInDeclarationHelper("template<typename T=int> class Fred {};", std::vector<std::string> {"T"}));
+        ASSERT(getTemplateParametersInDeclarationHelper("template<typename T,typename U> class Fred {};", std::vector<std::string> {"T","U"}));
+        ASSERT(getTemplateParametersInDeclarationHelper("template<typename T,typename U=int> class Fred {};", std::vector<std::string> {"T","U"}));
+        ASSERT(getTemplateParametersInDeclarationHelper("template<typename T=int,typename U=int> class Fred {};", std::vector<std::string> {"T","U"}));
     }
 
     void expandSpecialized1() {
