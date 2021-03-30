@@ -1951,13 +1951,11 @@ const Token *Token::getValueTokenDeadPointer() const
 
 static bool isAdjacent(const ValueFlow::Value& x, const ValueFlow::Value& y)
 {
-    if (x.bound != ValueFlow::Value::Bound::Point && x.bound == y.bound) {
+    if (x.bound != ValueFlow::Value::Bound::Point && x.bound == y.bound)
         return true;
-    } else {
-        if (x.valueType == ValueFlow::Value::ValueType::FLOAT)
-            return false;
-        return std::abs(x.intvalue - y.intvalue) == 1;
-    }
+    if (x.valueType == ValueFlow::Value::ValueType::FLOAT)
+        return false;
+    return std::abs(x.intvalue - y.intvalue) == 1;
 }
 
 static bool removePointValue(std::list<ValueFlow::Value>& values, ValueFlow::Value& x)
