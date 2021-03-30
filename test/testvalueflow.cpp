@@ -409,7 +409,8 @@ private:
         ASSERT_EQUALS(0, valueOfTok("x(NULL);", "NULL").intvalue);
         ASSERT_EQUALS((int)('a'), valueOfTok("x='a';", "'a'").intvalue);
         ASSERT_EQUALS((int)('\n'), valueOfTok("x='\\n';", "'\\n'").intvalue);
-        ASSERT_EQUALS(0xFFFFFFFF00000000, valueOfTok("x=0xFFFFFFFF00000000;","0xFFFFFFFF00000000").intvalue); // #7701
+        TODO_ASSERT_EQUALS(
+            0xFFFFFFFF00000000, -1, valueOfTok("x=0xFFFFFFFF00000000;", "0xFFFFFFFF00000000").intvalue); // #7701
 
         // scope
         {
@@ -3456,7 +3457,7 @@ private:
                "}\n";
         value = valueOfTok(code, "x <");
         ASSERT(value.isPossible());
-        ASSERT_EQUALS(value.intvalue, 0);
+        ASSERT_EQUALS(0, value.intvalue);
 
         code = "void f() {\n"
                "    unsigned int x = 0;\n"
@@ -3471,8 +3472,7 @@ private:
                "    for (x = 0; x < 2; x++) {}\n"
                "}\n";
         value = valueOfTok(code, "x <");
-        ASSERT(value.isPossible());
-        ASSERT_EQUALS(0, value.intvalue);
+        ASSERT(!value.isKnown());
     }
 
     void valueFlowSubFunction() {
@@ -5219,6 +5219,7 @@ private:
                "  return x + 0;\n"
                "}";
         values = tokenValues(code, "+", &s);
+        values.remove_if([](const ValueFlow::Value& v) { return v.isImpossible(); });
         ASSERT_EQUALS(2, values.size());
         ASSERT_EQUALS(0, values.front().intvalue);
         ASSERT_EQUALS(100, values.back().intvalue);

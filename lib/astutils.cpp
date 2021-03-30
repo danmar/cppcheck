@@ -167,6 +167,11 @@ bool astIsIntegral(const Token *tok, bool unknown)
     return vt->isIntegral() && vt->pointer == 0U;
 }
 
+bool astIsUnsigned(const Token* tok)
+{
+    return tok && tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED;
+}
+
 bool astIsFloat(const Token *tok, bool unknown)
 {
     const ValueType *vt = tok ? tok->valueType() : nullptr;
