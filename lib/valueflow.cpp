@@ -6138,6 +6138,7 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok, const Lib
 
 static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger * /*errorLogger*/, const Settings *settings)
 {
+    std::map<int, std::size_t> static_sizes;
     // declaration
     for (const Variable *var : symboldatabase->variableList()) {
         if (!var || !var->isLocal() || var->isPointer() || var->isReference() || var->isStatic())
@@ -6151,15 +6152,15 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
         if (!Token::Match(var->nameToken(), "%name% ;") &&
             !(Token::Match(var->nameToken(), "%name% {") && Token::simpleMatch(var->nameToken()->next()->link(), "} ;")))
             continue;
+        if (var->valueType()->container->size_templateArgNo >= 0) {
+            if (var->dimensions().size() == 1 && var->dimensions().front().known)
+                static_sizes[var->declarationId()] = var->dimensions().front().num;
+            continue;
+        }
         std::vector<ValueFlow::Value> values{ValueFlow::Value{0}};
         values.back().valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
         values.back().setKnown();
-        if (var->valueType()->container->size_templateArgNo >= 0) {
-            if (var->dimensions().size() == 1 && var->dimensions().front().known)
-                values.back().intvalue = var->dimensions().front().num;
-            else
-                continue;
-        } else if (Token::simpleMatch(var->nameToken()->next(), "{")) {
+        if (Token::simpleMatch(var->nameToken()->next(), "{")) {
             const Token* initList = var->nameToken()->next();
             values = getInitListSize(initList, var->valueType()->container);
         }
@@ -6170,7 +6171,12 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
     // after assignment
     for (const Scope *functionScope : symboldatabase->functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
-            if (Token::Match(tok, "%name%|;|{|} %var% = %str% ;")) {
+            if (static_sizes.count(tok->varId()) > 0) {
+                ValueFlow::Value value(static_sizes.at(tok->varId()));
+                value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+                value.setKnown();
+                setTokenValue(const_cast<Token*>(tok), value, settings);
+            } else if (Token::Match(tok, "%name%|;|{|} %var% = %str% ;")) {
                 const Token *containerTok = tok->next();
                 if (containerTok && containerTok->valueType() && containerTok->valueType()->container && containerTok->valueType()->container->stdStringLike) {
                     ValueFlow::Value value(Token::getStrLength(containerTok->tokAt(2)));
@@ -6180,7 +6186,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                 }
             } else if (Token::Match(tok, "%name%|;|{|}|> %var% = {") && Token::simpleMatch(tok->linkAt(3), "} ;")) {
                 const Token* containerTok = tok->next();
-                if (astIsContainer(containerTok)) {
+                if (astIsContainer(containerTok) && containerTok->valueType()->container->size_templateArgNo < 0) {
                     std::vector<ValueFlow::Value> values = getInitListSize(tok->tokAt(3), containerTok->valueType()->container);
                     for (const ValueFlow::Value& value : values)
                         valueFlowContainerForward(containerTok->next(), containerTok->variable(), value, tokenlist);
