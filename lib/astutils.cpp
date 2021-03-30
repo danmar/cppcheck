@@ -810,7 +810,6 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclus
             for (const Token* returnTok : returns) {
                 if (returnTok == tok)
                     continue;
-                // std::vector<ReferenceToken> argvarRt = followAllReferences(returnTok, inconclusive, errors, depth - 1);
                 for (const ReferenceToken& rt:followAllReferences(returnTok, inconclusive, errors, depth - returns.size())) {
                     const Variable* argvar = rt.token->variable();
                     if (!argvar)
