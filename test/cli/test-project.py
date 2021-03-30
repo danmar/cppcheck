@@ -22,8 +22,8 @@ def test_missing_project(project_ext):
     ("bpr", "Borland project file is not a valid XML - XML_ERROR_EMPTY_DOCUMENT"),
     ("cppcheck", "Cppcheck GUI project file cannot be parsed - XML_ERROR_EMPTY_DOCUMENT")
 ])
-def test_empty_project(tmp_path, project_ext, expected):
-    project_file = tmp_path / "file.{}".format(project_ext)
+def test_empty_project(tmpdir, project_ext, expected):
+    project_file = "{}/file.{}".format(tmpdir, project_ext)
 
     with open(project_file, 'w'):
         pass
