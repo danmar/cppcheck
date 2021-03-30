@@ -397,7 +397,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
     picojson::value compileCommands;
     istr >> compileCommands;
     if (!compileCommands.is<picojson::array>()) {
-        printMessage("compilation database is not an array");
+        printMessage("compilation database is not a JSON array");
         return false;
     }
 
@@ -421,7 +421,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
                     }
                 }
             } else {
-                printMessage("'arguments' field in compilation database entry is not an array");
+                printMessage("'arguments' field in compilation database entry is not a JSON array");
                 return false;
             }
         } else if (obj.find("command") != obj.end()) {
@@ -463,10 +463,24 @@ bool ImportProject::importCompileCommands(std::istream &istr)
 
 bool ImportProject::importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters)
 {
+    std::string line;
+
+    // skip magic word
+    if (!std::getline(istr,line)) {
+        printMessage("Visual Studio solution file is empty");
+        return false;
+    }
+
+    if (!std::getline(istr, line) || line.find("Microsoft Visual Studio Solution File") != 0) {
+        printMessage("Visual Studio solution file header not found");
+        return false;
+    }
+
     std::map<std::string,std::string,cppcheck::stricmp> variables;
     variables["SolutionDir"] = path;
 
-    std::string line;
+    bool found = false;
+
     while (std::getline(istr,line)) {
         if (line.compare(0,8,"Project(")!=0)
             continue;
@@ -483,6 +497,12 @@ bool ImportProject::importSln(std::istream &istr, const std::string &path, const
             printMessage("Failed to load '" + vcxproj + "' from Visual Studio solution");
             return false;
         }
+        found = true;
+    }
+
+    if (!found) {
+        printMessage("No projects found in Visual Studio solution file");
+        return false;
     }
 
     return true;
