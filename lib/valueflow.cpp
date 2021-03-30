@@ -2663,7 +2663,7 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, bool escape, Valu
             for (const Token* returnTok : returns) {
                 if (returnTok == tok)
                     continue;
-                for (LifetimeToken& lt : getLifetimeTokens(returnTok, escape, errorPath, depth - 1)) {
+                for (LifetimeToken& lt : getLifetimeTokens(returnTok, escape, errorPath, depth - returns.size())) {
                     const Token* argvarTok = lt.token;
                     const Variable* argvar = argvarTok->variable();
                     if (!argvar)
@@ -2680,7 +2680,7 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, bool escape, Valu
                         lt.errorPath.emplace_back(returnTok, "Return reference.");
                         lt.errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
                         std::vector<LifetimeToken> arglts = LifetimeToken::setInconclusive(
-                                                                getLifetimeTokens(argTok, escape, std::move(lt.errorPath), depth - 1), returns.size() > 1);
+                                                                getLifetimeTokens(argTok, escape, std::move(lt.errorPath), depth - returns.size()), returns.size() > 1);
                         result.insert(result.end(), arglts.begin(), arglts.end());
                     }
                 }

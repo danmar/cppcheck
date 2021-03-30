@@ -5447,6 +5447,47 @@ private:
                "       &b}}}};\n"
                "}\n";
         valueOfTok(code, "x");
+
+        code = "int &a(int &);\n"
+               "int &b(int &);\n"
+               "int &c(int &);\n"
+               "int &d(int &e) {\n"
+               "  if (!e)\n"
+               "    return a(e);\n"
+               "  if (e > 0)\n"
+               "    return b(e);\n"
+               "  if (e < 0)\n"
+               "    return c(e);\n"
+               "  return e;\n"
+               "}\n"
+               "int &a(int &e) { \n"
+               "  if (!e)\n"
+               "    return d(e); \n"
+               "  if (e > 0)\n"
+               "    return b(e);\n"
+               "  if (e < 0)\n"
+               "    return c(e);\n"
+               "  return e;\n"
+               "}\n"
+               "int &b(int &e) { \n"
+               "  if (!e)\n"
+               "    return a(e); \n"
+               "  if (e > 0)\n"
+               "    return c(e);\n"
+               "  if (e < 0)\n"
+               "    return d(e);\n"
+               "  return e;\n"
+               "}\n"
+               "int &c(int &e) { \n"
+               "  if (!e)\n"
+               "    return a(e); \n"
+               "  if (e > 0)\n"
+               "    return b(e);\n"
+               "  if (e < 0)\n"
+               "    return d(e);\n"
+               "  return e;\n"
+               "}\n";
+        valueOfTok(code, "x");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577
