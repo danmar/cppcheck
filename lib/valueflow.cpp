@@ -1868,7 +1868,7 @@ struct ValueFlowAnalyzer : Analyzer {
 
     ValueFlowAnalyzer() : tokenlist(nullptr), pms() {}
 
-    ValueFlowAnalyzer(const TokenList* t) : tokenlist(t), pms() {}
+    explicit ValueFlowAnalyzer(const TokenList* t) : tokenlist(t), pms() {}
 
     virtual const ValueFlow::Value* getValue(const Token* tok) const = 0;
     virtual ValueFlow::Value* getValue(const Token* tok) = 0;
