@@ -25,11 +25,13 @@ def test_project_force_U():
 
         # Without -U => both bugs are found
         ret, stdout, stderr = cppcheck(['--project=' + compile_commands, '--force', '-rp=' + temp_folder, '--template=cppcheck1'])
+        assert ret == 0, stdout
         assert (stderr == '[bug1.cpp:2]: (error) Division by zero.\n'
                           '[bug1.cpp:4]: (error) Division by zero.\n')
 
         # With -U => only first bug is found
         ret, stdout, stderr = cppcheck(['--project=' + compile_commands, '--force', '-UMACRO1', '-rp=' + temp_folder, '--template=cppcheck1'])
+        assert ret == 0, stdout
         assert stderr == '[bug1.cpp:2]: (error) Division by zero.\n'
 
 
@@ -58,6 +60,7 @@ def test_project_custom_platform():
             f.write("int x;")
 
         ret, stdout, stderr = cppcheck(['--project=' + project_file, '--template=cppcheck1'])
+        assert ret == 0, stdout
         assert stderr == ''
 
 

@@ -21,7 +21,7 @@ def get_debug_section(title, stdout):
         s = re.sub(r"return '[a-zA-Z0-9: *]+'", "return", s)
 
     pos1 = s.find(title)
-    assert pos1 > 0
+    assert pos1 > 0, 'title not found'
     pos1 = s.find('\n', pos1) + 1
     assert pos1 > 0
     pos2 = s.find("\n##", pos1)
@@ -40,9 +40,11 @@ def check_symbol_database(code):
     testfile = 'test.cpp'
     with open(testfile, 'w+t') as f:
         f.write(code)
-    ret1, stdout1, stderr1 = cppcheck(['--clang', '--debug', '-v', testfile])
-    ret2, stdout2, stderr2 = cppcheck(['--debug', '-v', testfile])
+    ret1, stdout1, _ = cppcheck(['--clang', '--debug', '-v', testfile])
+    ret2, stdout2, _ = cppcheck(['--debug', '-v', testfile])
     os.remove(testfile)
+    assert 0 == ret1, stdout1
+    assert 0 == ret2, stdout2
     assert get_debug_section('### Symbol database', stdout1) == get_debug_section('### Symbol database', stdout2)
 
 
@@ -56,9 +58,11 @@ def check_ast(code):
     testfile = 'test.cpp'
     with open(testfile, 'w+t') as f:
         f.write(code)
-    ret1, stdout1, stderr1 = cppcheck(['--clang', '--debug', '-v', testfile])
-    ret2, stdout2, stderr2 = cppcheck(['--debug', '-v', testfile])
+    ret1, stdout1, _ = cppcheck(['--clang', '--debug', '-v', testfile])
+    ret2, stdout2, _ = cppcheck(['--debug', '-v', testfile])
     os.remove(testfile)
+    assert 0 == ret1, stdout1
+    assert 0 == ret2, stdout1
     assert get_debug_section('##AST', stdout1) == get_debug_section('##AST', stdout2)
 
 
@@ -72,9 +76,11 @@ def todo_check_ast(code):
     testfile = 'test.cpp'
     with open(testfile, 'w+t') as f:
         f.write(code)
-    ret1, stdout1, stderr1 = cppcheck(['--clang', '--debug', '-v', testfile])
-    ret2, stdout2, stderr2 = cppcheck(['--debug', '-v', testfile])
+    ret1, stdout1, _ = cppcheck(['--clang', '--debug', '-v', testfile])
+    ret2, stdout2, _ = cppcheck(['--debug', '-v', testfile])
     os.remove(testfile)
+    assert 0 == ret1, stdout1
+    assert 0 == ret2, stdout2
     assert get_debug_section('##AST', stdout1) != get_debug_section('##AST', stdout2)
 
 
