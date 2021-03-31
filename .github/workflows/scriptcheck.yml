@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: [2.7, 3.5, 3.6, 3.7, 3.8]
+        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9]
+      fail-fast: false
 
     steps:
       - uses: actions/checkout@v2
@@ -41,12 +42,12 @@ jobs:
           python -m pip install psutil
 
       - name: run Shellcheck
-        if: matrix.python-version == '3.8'
+        if: matrix.python-version == '3.9'
         run: |
           find . -name "*.sh" | xargs shellcheck --exclude SC2002,SC2013,SC2034,SC2035,SC2043,SC2046,SC2086,SC2089,SC2090,SC2129,SC2211,SC2231
 
       - name: run pylint
-        if: matrix.python-version == '3.8'
+        if: matrix.python-version == '3.9'
         run: |
           pylint --rcfile=pylintrc_travis addons/*.py
           pylint --rcfile=pylintrc_travis htmlreport/cppcheck-htmlreport
@@ -54,20 +55,22 @@ jobs:
           pylint --rcfile=pylintrc_travis tools/*.py
 
       - name: check .json files
-        if: matrix.python-version == '3.8'
+        if: matrix.python-version == '3.9'
         run: |
           find . -name '*.json' | xargs -n 1 python -m json.tool > /dev/null
 
       - name: Validate
-        if: matrix.python-version == '3.8'
+        if: matrix.python-version == '3.9'
         run: |
           make -j$(nproc) validateCFG validatePlatforms validateRules
 
       - name: check python syntax
         if: matrix.python-version != '2.7'
         run: |
-          python -m py_compile ./tools/donate-cpu.py
-          python -m py_compile ./tools/donate-cpu-server.py
+          python -m py_compile addons/*.py
+          python -m py_compile htmlreport/cppcheck-htmlreport
+          python -m py_compile htmlreport/*.py
+          python -m py_compile tools/*.py
 
       - name: compile addons
         run: |
@@ -79,7 +82,7 @@ jobs:
           PYTHONPATH=./addons python -m pytest addons/test/test-*.py
 
       - name: dmake
-        if: matrix.python-version == '3.8'
+        if: matrix.python-version == '3.9'
         run: |
           make -j$(nproc) run-dmake
           git diff --exit-code
