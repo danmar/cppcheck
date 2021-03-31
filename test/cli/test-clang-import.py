@@ -4,7 +4,13 @@
 import os
 import re
 import subprocess
+import pytest
 from testutils import cppcheck
+
+try:
+    subprocess.call(['clang', '--version'])
+except OSError:
+    pytest.skip("'clang' does not exist", allow_module_level=True)
 
 
 def get_debug_section(title, stdout):
@@ -31,12 +37,6 @@ def get_debug_section(title, stdout):
 
 
 def check_symbol_database(code):
-    # Only compare symboldatabases if clang is found in PATH
-    try:
-        subprocess.call(['clang', '--version'])
-    except OSError:
-        return
-
     testfile = 'test.cpp'
     with open(testfile, 'w+t') as f:
         f.write(code)
@@ -49,12 +49,6 @@ def check_symbol_database(code):
 
 
 def check_ast(code):
-    # Only compare syntax trees if clang is found in PATH
-    try:
-        subprocess.call(['clang', '--version'])
-    except OSError:
-        return
-
     testfile = 'test.cpp'
     with open(testfile, 'w+t') as f:
         f.write(code)
@@ -67,12 +61,6 @@ def check_ast(code):
 
 
 def todo_check_ast(code):
-    # Only compare syntax trees if clang is found in PATH
-    try:
-        subprocess.call(['clang', '--version'])
-    except OSError:
-        return
-
     testfile = 'test.cpp'
     with open(testfile, 'w+t') as f:
         f.write(code)
