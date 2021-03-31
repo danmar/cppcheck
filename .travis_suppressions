@@ -4,6 +4,7 @@ shadowFunction
 functionConst
 functionStatic
 bitwiseOnBoolean
+missingIncludeSystem
 
 # temporary suppressions - fix the warnings!
 unusedPrivateFunction:test/test*.cpp
