@@ -70,6 +70,7 @@ bool astIsSignedChar(const Token *tok);
 bool astIsUnknownSignChar(const Token *tok);
 /** Is expression of integral type? */
 bool astIsIntegral(const Token *tok, bool unknown);
+bool astIsUnsigned(const Token* tok);
 /** Is expression of floating point type? */
 bool astIsFloat(const Token *tok, bool unknown);
 /** Is expression of boolean type? */

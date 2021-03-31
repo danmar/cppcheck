@@ -371,48 +371,55 @@ static bool isZero(T x)
     return isEqual<T>(x, T(0));
 }
 
-template <class T>
-static T calculate(const std::string& s, T x, T y)
+template <class R, class T>
+static R calculate(const std::string& s, const T& x, const T& y)
 {
+    auto wrap = [](T z) { return R{z}; };
     switch (MathLib::encodeMultiChar(s)) {
     case '+':
-        return x + y;
+        return wrap(x + y);
     case '-':
-        return x - y;
+        return wrap(x - y);
     case '*':
-        return x * y;
+        return wrap(x * y);
     case '/':
-        return x / y;
+        return isZero(y) ? R{} : wrap(x / y);
     case '%':
-        return MathLib::bigint(x) % MathLib::bigint(y);
+        return isZero(y) ? R{} : wrap(MathLib::bigint(x) % MathLib::bigint(y));
     case '&':
-        return MathLib::bigint(x) & MathLib::bigint(y);
+        return wrap(MathLib::bigint(x) & MathLib::bigint(y));
     case '|':
-        return MathLib::bigint(x) | MathLib::bigint(y);
+        return wrap(MathLib::bigint(x) | MathLib::bigint(y));
     case '^':
-        return MathLib::bigint(x) ^ MathLib::bigint(y);
+        return wrap(MathLib::bigint(x) ^ MathLib::bigint(y));
     case '>':
-        return x > y;
+        return wrap(x > y);
     case '<':
-        return x < y;
+        return wrap(x < y);
     case '<<':
-        return MathLib::bigint(x) << MathLib::bigint(y);
+        return (y >= sizeof(MathLib::bigint) * 8) ? R{} : wrap(MathLib::bigint(x) << MathLib::bigint(y));
     case '>>':
-        return MathLib::bigint(x) >> MathLib::bigint(y);
+        return (y >= sizeof(MathLib::bigint) * 8) ? R{} : wrap(MathLib::bigint(x) >> MathLib::bigint(y));
     case '&&':
-        return !isZero(x) && !isZero(y);
+        return wrap(!isZero(x) && !isZero(y));
     case '||':
-        return !isZero(x) || !isZero(y);
+        return wrap(!isZero(x) || !isZero(y));
     case '==':
-        return isEqual(x, y);
+        return wrap(isEqual(x, y));
     case '!=':
-        return !isEqual(x, y);
+        return wrap(!isEqual(x, y));
     case '>=':
-        return x >= y;
+        return wrap(x >= y);
     case '<=':
-        return x <= y;
+        return wrap(x <= y);
     }
     throw InternalError(nullptr, "Unknown operator: " + s);
+}
+
+template <class T>
+static T calculate(const std::string& s, const T& x, const T& y)
+{
+    return calculate<T, T>(s, x, y);
 }
 
 /** Set token value for cast */
@@ -421,6 +428,10 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
 /** set ValueFlow value and perform calculations if possible */
 static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Settings *settings)
 {
+    // Skip setting values that are too big since its ambiguous
+    if (!value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok) &&
+        ValueFlow::getSizeOf(*tok->valueType(), settings) >= sizeof(MathLib::bigint))
+        return;
     if (!tok->addValue(value))
         return;
 
@@ -1428,6 +1439,50 @@ static void valueFlowRightShift(TokenList *tokenList, const Settings* settings)
         ValueFlow::Value val(0);
         val.setKnown();
         setTokenValue(tok, val, tokenList->getSettings());
+    }
+}
+
+static std::vector<MathLib::bigint> minUnsignedValue(const Token* tok, int depth = 8)
+{
+    std::vector<MathLib::bigint> result = {};
+    if (!tok)
+        return result;
+    if (depth < 0)
+        return result;
+    if (tok->hasKnownIntValue()) {
+        result = {tok->values().front().intvalue};
+    } else if (tok->isConstOp() && tok->astOperand1() && tok->astOperand2()) {
+        std::vector<MathLib::bigint> op1 = minUnsignedValue(tok->astOperand1(), depth - 1);
+        std::vector<MathLib::bigint> op2 = minUnsignedValue(tok->astOperand2(), depth - 1);
+        if (!op1.empty() && !op2.empty()) {
+            result = calculate<std::vector<MathLib::bigint>>(tok->str(), op1.front(), op2.front());
+        }
+    }
+    if (result.empty() && astIsUnsigned(tok))
+        result = {0};
+    return result;
+}
+
+static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* settings)
+{
+    for (Token* tok = tokenList->front(); tok; tok = tok->next()) {
+        if (tok->hasKnownIntValue())
+            continue;
+        if (astIsUnsigned(tok)) {
+            std::vector<MathLib::bigint> minvalue = minUnsignedValue(tok);
+            if (minvalue.empty())
+                continue;
+            ValueFlow::Value value{std::max<MathLib::bigint>(0, minvalue.front()) - 1};
+            value.bound = ValueFlow::Value::Bound::Upper;
+            value.setImpossible();
+            setTokenValue(tok, value, settings);
+        }
+        if (Token::simpleMatch(tok, "%") && tok->astOperand2() && tok->astOperand2()->hasKnownIntValue()) {
+            ValueFlow::Value value{tok->astOperand2()->values().front()};
+            value.bound = ValueFlow::Value::Bound::Lower;
+            value.setImpossible();
+            setTokenValue(tok, value, settings);
+        }
     }
 }
 
@@ -2663,7 +2718,7 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, bool escape, Valu
             for (const Token* returnTok : returns) {
                 if (returnTok == tok)
                     continue;
-                for (LifetimeToken& lt : getLifetimeTokens(returnTok, escape, errorPath, depth - 1)) {
+                for (LifetimeToken& lt : getLifetimeTokens(returnTok, escape, errorPath, depth - returns.size())) {
                     const Token* argvarTok = lt.token;
                     const Variable* argvar = argvarTok->variable();
                     if (!argvar)
@@ -2680,7 +2735,7 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, bool escape, Valu
                         lt.errorPath.emplace_back(returnTok, "Return reference.");
                         lt.errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
                         std::vector<LifetimeToken> arglts = LifetimeToken::setInconclusive(
-                                                                getLifetimeTokens(argTok, escape, std::move(lt.errorPath), depth - 1), returns.size() > 1);
+                                                                getLifetimeTokens(argTok, escape, std::move(lt.errorPath), depth - returns.size()), returns.size() > 1);
                         result.insert(result.end(), arglts.begin(), arglts.end());
                     }
                 }
@@ -3969,6 +4024,9 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
     const size_t sz = ValueFlow::getSizeOf(*valueType, settings);
 
     for (ValueFlow::Value &value : values) {
+        // Dont truncate impossible values since those can be outside of the valid range
+        if (value.isImpossible())
+            continue;
         if (value.isFloatValue()) {
             value.intvalue = value.floatValue;
             value.valueType = ValueFlow::Value::ValueType::INT;
@@ -4664,6 +4722,60 @@ static const ValueFlow::Value* proveNotEqual(const std::list<ValueFlow::Value>& 
     return result;
 }
 
+ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val)
+{
+    if (!varTok)
+        return ValueFlow::Value{};
+    if (varTok->hasKnownIntValue())
+        return ValueFlow::Value{};
+    if (std::none_of(varTok->values().begin(), varTok->values().end(), [](const ValueFlow::Value& v) {
+            return v.isImpossible() && v.valueType == ValueFlow::Value::ValueType::INT;
+        })) {
+        return ValueFlow::Value{};
+    }
+    const ValueFlow::Value* result = nullptr;
+    bool known = false;
+    if (op == "==" || op == "!=") {
+        result = proveNotEqual(varTok->values(), val);
+        known = op == "!=";
+    } else if (op == "<" || op == ">=") {
+        result = proveLessThan(varTok->values(), val);
+        known = op == "<";
+        if (!result && !isSaturated(val)) {
+            result = proveGreaterThan(varTok->values(), val - 1);
+            known = op == ">=";
+        }
+    } else if (op == ">" || op == "<=") {
+        result = proveGreaterThan(varTok->values(), val);
+        known = op == ">";
+        if (!result && !isSaturated(val)) {
+            result = proveLessThan(varTok->values(), val + 1);
+            known = op == "<=";
+        }
+    }
+    if (!result)
+        return ValueFlow::Value{};
+    ValueFlow::Value value = *result;
+    value.intvalue = known;
+    value.bound = ValueFlow::Value::Bound::Point;
+    value.setKnown();
+    return value;
+}
+
+ValueFlow::Value inferCondition(std::string op, MathLib::bigint val, const Token* varTok)
+{
+    // Flip the operator
+    if (op == ">")
+        op = "<";
+    else if (op == "<")
+        op = ">";
+    else if (op == ">=")
+        op = "<=";
+    else if (op == "<=")
+        op = ">=";
+    return inferCondition(op, varTok, val);
+}
+
 static void valueFlowInferCondition(TokenList* tokenlist,
                                     const Settings* settings)
 {
@@ -4683,57 +4795,20 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             value.setKnown();
             setTokenValue(tok, value, settings);
         } else if (tok->isComparisonOp()) {
-            MathLib::bigint val = 0;
-            const Token* varTok = nullptr;
+            ValueFlow::Value value{};
             std::string op = tok->str();
             if (tok->astOperand1()->hasKnownIntValue()) {
-                val = tok->astOperand1()->values().front().intvalue;
-                varTok = tok->astOperand2();
-                // Flip the operator
-                if (op == ">")
-                    op = "<";
-                else if (op == "<")
-                    op = ">";
-                else if (op == ">=")
-                    op = "<=";
-                else if (op == "<=")
-                    op = ">=";
+                MathLib::bigint val = tok->astOperand1()->values().front().intvalue;
+                const Token* varTok = tok->astOperand2();
+                value = inferCondition(tok->str(), val, varTok);
             } else if (tok->astOperand2()->hasKnownIntValue()) {
-                val = tok->astOperand2()->values().front().intvalue;
-                varTok = tok->astOperand1();
+                MathLib::bigint val = tok->astOperand2()->values().front().intvalue;
+                const Token* varTok = tok->astOperand1();
+                value = inferCondition(tok->str(), varTok, val);
             }
-            if (!varTok)
+
+            if (!value.isKnown())
                 continue;
-            if (varTok->hasKnownIntValue())
-                continue;
-            if (varTok->values().empty())
-                continue;
-            const ValueFlow::Value* result = nullptr;
-            bool known = false;
-            if (op == "==" || op == "!=") {
-                result = proveNotEqual(varTok->values(), val);
-                known = op == "!=";
-            } else if (op == "<" || op == ">=") {
-                result = proveLessThan(varTok->values(), val);
-                known = op == "<";
-                if (!result && !isSaturated(val)) {
-                    result = proveGreaterThan(varTok->values(), val - 1);
-                    known = op == ">=";
-                }
-            } else if (op == ">" || op == "<=") {
-                result = proveGreaterThan(varTok->values(), val);
-                known = op == ">";
-                if (!result && !isSaturated(val)) {
-                    result = proveLessThan(varTok->values(), val + 1);
-                    known = op == "<=";
-                }
-            }
-            if (!result)
-                continue;
-            ValueFlow::Value value = *result;
-            value.intvalue = known;
-            value.bound = ValueFlow::Value::Bound::Point;
-            value.setKnown();
             setTokenValue(tok, value, settings);
         }
     }
@@ -6720,6 +6795,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     std::size_t n = 4;
     while (n > 0 && values < getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
+        valueFlowImpossibleValues(tokenlist, settings);
         valueFlowPointerAliasDeref(tokenlist);
         valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);
