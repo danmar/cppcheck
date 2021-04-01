@@ -1,6 +1,5 @@
-
 # python -m pytest test-more-projects.py
-
+import json
 import os
 from testutils import cppcheck
 
@@ -18,8 +17,15 @@ def test_project_force_U(tmpdir):
 
     compile_commands = os.path.join(tmpdir, 'compile_commands.json')
 
+    compilation_db = [
+        {"directory": str(tmpdir),
+         "command": "c++ -o bug1.o -c bug1.cpp",
+         "file": "bug1.cpp",
+         "output": "bug1.o"}
+    ]
+
     with open(compile_commands, 'wt') as f:
-        f.write('[ { "directory": "%s", "command": "c++ -o bug1.o -c bug1.cpp", "file": "bug1.cpp", "output": "bug1.o" } ]' % str(tmpdir))
+        f.write(json.dumps(compilation_db))
 
     # Without -U => both bugs are found
     ret, stdout, stderr = cppcheck(['--project=' + compile_commands, '--force', '-rp=' + str(tmpdir), '--template=cppcheck1'])
@@ -59,5 +65,3 @@ def test_project_custom_platform(tmpdir):
     ret, stdout, stderr = cppcheck(['--project=' + project_file, '--template=cppcheck1'])
     assert ret == 0, stdout
     assert stderr == ''
-
-
