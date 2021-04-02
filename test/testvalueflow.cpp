@@ -5016,6 +5016,13 @@ private:
                       isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
 
         code = "void f() {\n"
+               "  std::vector<int> ints{};\n"
+               "  ints.front();\n"
+               "}";
+        ASSERT_EQUALS("",
+                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+
+        code = "void f() {\n"
                "  std::vector<int> ints{1};\n"
                "  ints.front();\n"
                "}";
@@ -5037,19 +5044,19 @@ private:
         ASSERT_EQUALS("",
                       isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
 
-        code = "void f() {\n"
-               "  std::vector<int> ints = {1};\n"
-               "  ints.front();\n"
-               "}";
-        ASSERT_EQUALS("",
-                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 1));
-
         code = "void f(std::string str) {\n"
                "    if (str == \"123\")\n"
                "        bool x = str.empty();\n"
                "}\n";
         ASSERT_EQUALS("",
                       isKnownContainerSizeValue(tokenValues(code, "str . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 3));
+        
+        code = "int f() {\n"
+               "    std::array<int, 10> a = {};\n"
+               "    return a.front();\n"
+               "}\n";
+        ASSERT_EQUALS("",
+                      isKnownContainerSizeValue(tokenValues(code, "a . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 10));
 
         code = "void f(std::string str) {\n"
                "    if (str == \"123\") {\n"
