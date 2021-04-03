@@ -57,13 +57,13 @@ jobs:
 
       # no 32-bit Qt available
       - name: Install Qt
-        if: matrix.os == 'x64'
+        if: matrix.arch == 'x64'
         uses: jurplel/install-qt-action@v2
         with:
           modules: 'qtcharts'
 
       - name: Build GUI release
-        if: matrix.os == 'x64'
+        if: matrix.arch == 'x64'
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           cd gui || exit /b !errorlevel!
@@ -71,7 +71,7 @@ jobs:
           nmake release || exit /b !errorlevel!
       
       - name: Deploy GUI
-        if: matrix.os == 'x64'
+        if: matrix.arch == 'x64'
         run: |
           windeployqt Build\gui || exit /b !errorlevel!
           del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
