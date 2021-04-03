@@ -44,7 +44,8 @@ jobs:
           )
         env:
           # see https://www.pcre.org/original/changelog.txt
-          PCRE_VERSION: 8.44  
+          PCRE_VERSION: 8.44
+          CL: /MP
 
       - name: Install Z3 library
         run: |
@@ -69,6 +70,8 @@ jobs:
           cd gui || exit /b !errorlevel!
           qmake HAVE_QCHART=yes || exit /b !errorlevel!
           nmake release || exit /b !errorlevel!
+        env:
+          CL: /MP
       
       - name: Deploy GUI
         if: matrix.os == 'x64'
