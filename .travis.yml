@@ -45,14 +45,8 @@ matrix:
       compiler: clang
       script:
         - make -j$(nproc) -s
-# run extra tests
-        - tools/generate_and_run_more_tests.sh
-# check for missing CWE entries
-        - make checkCWEEntries
-# check cfg files
+        # check cfg files
         - make checkcfg
-# Validate Result XML
-        - make validateXML
 # check htmlreport stuff
         - python2 htmlreport/test_htmlreport.py
         - python3 htmlreport/test_htmlreport.py
@@ -74,9 +68,6 @@ matrix:
         - /usr/bin/cppcheck ./cli
 # check if showtime=top5 works
         - ./tools/test_showtimetop5.sh
-# check matchcompiler
-        - python2 tools/test_matchcompiler.py
-        - python3 tools/test_matchcompiler.py
 # check --dump
         - ${CPPCHECK} test/testpreprocessor.cpp --dump
         - xmllint --noout test/testpreprocessor.cpp.dump
@@ -151,6 +142,3 @@ script:
 # compile cppcheck, default build
   - echo $CXXFLAGS
   - make -s check -j$(nproc)
-# Testing addons (disabled 2020-11-24 because Travis fails, TODO try to enable these)
-#  - PYTHONPATH=./addons python -m pytest addons/test/test-*.py
-#  - PYTHONPATH=./addons python3 -m pytest addons/test/test-*.py

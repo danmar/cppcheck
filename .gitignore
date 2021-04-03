@@ -4,6 +4,7 @@
 *.pyc
 cppcheck
 cppcheck.exe
+cppcheck-core.dll
 dmake
 dmake.exe
 reduce

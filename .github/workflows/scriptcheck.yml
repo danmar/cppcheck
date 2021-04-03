@@ -30,6 +30,7 @@ jobs:
       - name: Install missing software on ubuntu (Python 3)
         if: matrix.python-version != '2.7'
         run: |
+          sudo apt-get update
           sudo apt-get install shellcheck libxml2-utils
           python -m pip install pip --upgrade
           python -m pip install natsort
@@ -75,6 +76,10 @@ jobs:
       - name: compile addons
         run: |
           python -m compileall ./addons
+
+      - name: test matchcompiler
+        run: |
+          python tools/test_matchcompiler.py
 
       - name: test addons
         run: |
