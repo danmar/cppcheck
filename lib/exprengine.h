@@ -29,7 +29,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <cstdint>
 
 class ErrorLogger;
 class Tokenizer;

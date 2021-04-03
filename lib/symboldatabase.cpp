@@ -33,7 +33,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <climits>
 #include <cstring>
 #include <limits>
 #include <iomanip>

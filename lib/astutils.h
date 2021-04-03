@@ -28,12 +28,10 @@
 #include <vector>
 
 #include "errortypes.h"
-#include "mathlib.h"
 #include "utils.h"
 
 class Function;
 class Library;
-class Scope;
 class Settings;
 class Token;
 class Variable;

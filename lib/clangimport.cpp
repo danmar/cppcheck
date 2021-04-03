@@ -28,6 +28,7 @@
 #include <memory>
 #include <stack>
 #include <vector>
+#include <cctype>
 
 static const std::string AccessSpecDecl = "AccessSpecDecl";
 static const std::string ArraySubscriptExpr = "ArraySubscriptExpr";

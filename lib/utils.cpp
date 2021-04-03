@@ -20,6 +20,7 @@
 
 #include <utility>
 #include <stack>
+#include <cctype>
 
 
 int caseInsensitiveStringCompare(const std::string &lhs, const std::string &rhs)

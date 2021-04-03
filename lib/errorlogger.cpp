@@ -32,7 +32,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
-#include <functional> // std::hash
 
 InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type type) :
     token(tok), errorMessage(errorMsg), type(type)

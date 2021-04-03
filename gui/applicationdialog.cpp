@@ -16,12 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QString>
-#include <QWidget>
-#include <QDialog>
+#include "applicationdialog.h"
+
+#include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QMessageBox>
-#include "applicationdialog.h"
+#include <QPushButton>
+
 #include "application.h"
 #include "common.h"
 

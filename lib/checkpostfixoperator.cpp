@@ -27,8 +27,6 @@
 #include "symboldatabase.h"
 #include "token.h"
 
-#include <cstddef>
-
 //---------------------------------------------------------------------------
 
 

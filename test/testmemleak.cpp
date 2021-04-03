@@ -24,7 +24,6 @@
 #include "tokenize.h"
 
 #include <list>
-#include <ostream>
 #include <string>
 
 

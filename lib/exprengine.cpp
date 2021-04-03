@@ -138,6 +138,7 @@
 #include "symboldatabase.h"
 #include "tokenize.h"
 
+#include <cctype>
 #include <limits>
 #include <memory>
 #include <iostream>

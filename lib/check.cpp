@@ -24,6 +24,7 @@
 #include "settings.h"
 #include "tokenize.h"
 
+#include <cctype>
 #include <iostream>
 
 //---------------------------------------------------------------------------

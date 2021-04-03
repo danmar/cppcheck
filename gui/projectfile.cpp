@@ -16,13 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QObject>
-#include <QString>
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
+#include "projectfile.h"
+
 #include <QFile>
 #include <QDir>
-#include "projectfile.h"
+#include <QXmlStreamReader>
 #include "common.h"
 #include "importproject.h"
 

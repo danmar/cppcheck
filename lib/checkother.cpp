@@ -36,8 +36,8 @@
 #include <algorithm> // find_if()
 #include <list>
 #include <map>
-#include <ostream>
 #include <utility>
+#include <cctype>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

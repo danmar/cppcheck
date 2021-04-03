@@ -20,10 +20,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QSettings>
 #include <QFileDialog>
-#include <QActionGroup>
-#include <QTimer>
 #include <QStringList>
 
 #include "settings.h"
@@ -35,6 +32,9 @@ class TranslationHandler;
 class ScratchPad;
 class ProjectFile;
 class QAction;
+class QActionGroup;
+class QSettings;
+class QTimer;
 
 /// @addtogroup GUI
 /// @{

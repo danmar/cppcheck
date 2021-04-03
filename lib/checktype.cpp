@@ -20,7 +20,6 @@
 //---------------------------------------------------------------------------
 #include "checktype.h"
 
-#include "astutils.h"
 #include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
@@ -29,10 +28,7 @@
 #include "tokenize.h"
 
 #include <cmath>
-#include <cstddef>
 #include <list>
-#include <ostream>
-#include <stack>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

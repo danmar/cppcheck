@@ -27,12 +27,9 @@
 #include "testsuite.h"
 
 #include <algorithm>
-#include <cstddef>
-#include <cstring>
 #include <fstream>
 #include <iterator>
 #include <map>
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
