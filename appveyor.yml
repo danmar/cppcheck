@@ -47,6 +47,8 @@ build_script:
   - msbuild "cppcheck.sln" /consoleloggerparameters:Verbosity=minimal /target:Build /property:Configuration="%configuration%";Platform=%platform% /p:PlatformToolset=%PlatformToolset% /maxcpucount /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   # the following builds are Debug ones so do not perform them in Release jobs
   - 'IF "%configuration%" == "Release" exit /b 0'
+  # use all available processes for nmake
+  - set CL=/MP
   # cmake..
   - mkdir build
   - cd build
