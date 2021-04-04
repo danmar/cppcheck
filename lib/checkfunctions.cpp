@@ -204,7 +204,10 @@ void CheckFunctions::checkIgnoredReturnValue()
             if (tok->varId() || !Token::Match(tok, "%name% (") || tok->isKeyword())
                 continue;
 
-            if (tok->next()->astParent())
+            const Token *parent = tok->next()->astParent();
+            while (Token::Match(parent, "%cop%"))
+                parent = parent->astParent();
+            if (parent)
                 continue;
 
             if (!tok->scope()->isExecutable()) {
