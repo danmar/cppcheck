@@ -603,7 +603,7 @@ double MathLib::toDoubleNumber(const std::string &str)
     // nullcheck
     if (isNullValue(str))
         return 0.0;
-#ifdef __clang__
+#ifdef _LIBCPP_VERSION
     if (isFloat(str)) // Workaround libc++ bug at http://llvm.org/bugs/show_bug.cgi?id=17782
         // TODO : handle locale
         return std::strtod(str.c_str(), nullptr);
