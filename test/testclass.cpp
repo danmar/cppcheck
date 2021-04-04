@@ -7428,6 +7428,9 @@ private:
 
         ctu({"class C { C(); }; C::C(){}", "class C { C(); }; C::C(){}"});
         ASSERT_EQUALS("", errout.str());
+
+        ctu({"class A::C { C() { std::cout << 0; } };", "class B::C { C() { std::cout << 1; } };"});
+        ASSERT_EQUALS("", errout.str());
     }
 
     void getFileInfo(const char code[]) {

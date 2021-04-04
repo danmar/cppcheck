@@ -2859,6 +2859,11 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
         std::string name;
         const Scope *scope = classScope;
         while (scope->isClassOrStruct() && !classScope->className.empty()) {
+            if (Token::Match(scope->classDef, "struct|class %name% :: %name%")) {
+                // TODO handle such classnames
+                name.clear();
+                break;
+            }
             name = scope->className + "::" + name;
             scope = scope->nestedIn;
         }
