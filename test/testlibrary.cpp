@@ -26,7 +26,6 @@
 
 #include <tinyxml2.h>
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 

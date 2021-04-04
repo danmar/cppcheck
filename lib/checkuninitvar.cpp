@@ -32,10 +32,8 @@
 #include "valueflow.h"
 
 #include <cassert>
-#include <cstddef>
 #include <list>
 #include <map>
-#include <stack>
 #include <utility>
 
 

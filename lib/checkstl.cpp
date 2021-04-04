@@ -33,14 +33,12 @@
 #include "valueflow.h"
 
 #include <algorithm>
-#include <cstddef>
 #include <iterator>
 #include <list>
 #include <map>
 #include <set>
 #include <sstream>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 
 // Register this check class (by creating a static instance of it)

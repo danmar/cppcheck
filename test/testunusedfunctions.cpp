@@ -22,7 +22,6 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <ostream>
 #include <string>
 
 class TestUnusedFunctions : public TestFixture {

@@ -1759,6 +1759,9 @@ void uninitvar_mbstowcs(wchar_t* d, const char* s, size_t m)
 
     // No warning is expected
     (void)mbstowcs(d,s,m);
+
+    wchar_t buf[100];
+    (void)mbstowcs(buf,s,100);
 }
 
 void uninitvar_mbsrtowcs(wchar_t* d, const char** s, size_t m, mbstate_t *p)

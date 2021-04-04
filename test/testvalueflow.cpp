@@ -29,7 +29,6 @@
 #include <cmath>
 #include <list>
 #include <map>
-#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -5050,7 +5049,7 @@ private:
                "}\n";
         ASSERT_EQUALS("",
                       isKnownContainerSizeValue(tokenValues(code, "str . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 3));
-        
+
         code = "int f() {\n"
                "    std::array<int, 10> a = {};\n"
                "    return a.front();\n"
@@ -5226,7 +5225,9 @@ private:
                "  return x + 0;\n"
                "}";
         values = tokenValues(code, "+", &s);
-        values.remove_if([](const ValueFlow::Value& v) { return v.isImpossible(); });
+        values.remove_if([](const ValueFlow::Value& v) {
+            return v.isImpossible();
+        });
         ASSERT_EQUALS(2, values.size());
         ASSERT_EQUALS(0, values.front().intvalue);
         ASSERT_EQUALS(100, values.back().intvalue);

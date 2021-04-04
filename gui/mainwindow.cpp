@@ -16,18 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "mainwindow.h"
+
 #include <QApplication>
 #include <QDebug>
 #include <QMessageBox>
 #include <QFileInfo>
 #include <QDir>
-#include <QDesktopServices>
-#include <QUrl>
 #include <QAction>
 #include <QActionGroup>
 #include <QFile>
 #include <QInputDialog>
-#include "mainwindow.h"
+#include <QTimer>
+#include <QSettings>
 
 #include "cppcheck.h"
 

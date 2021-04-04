@@ -23,11 +23,13 @@
 #include <QObject>
 #include <QString>
 #include <QStringList>
-#include <QXmlStreamReader>
 
 #include "suppressions.h"
 
 #include <settings.h>
+
+class QXmlStreamReader;
+class QXmlStreamWriter;
 
 /// @addtogroup GUI
 /// @{

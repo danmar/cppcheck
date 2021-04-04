@@ -70,6 +70,8 @@ jobs:
           cd gui
           qmake HAVE_QCHART=yes
           nmake release
+        env:
+          CL: /MP
 
       - name: Deploy app
         run: |

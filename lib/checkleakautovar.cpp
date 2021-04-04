@@ -32,10 +32,8 @@
 #include "token.h"
 #include "tokenize.h"
 
-#include <cstddef>
 #include <iostream>
 #include <list>
-#include <stack>
 #include <utility>
 
 //---------------------------------------------------------------------------

@@ -3,7 +3,6 @@
 
 #include <QSyntaxHighlighter>
 #include <QPlainTextEdit>
-#include <QObject>
 #include <QRegularExpression>
 
 class CodeEditorStyle;

@@ -16,16 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QObject>
-#include <QString>
-#include <QList>
+#include "xmlreportv2.h"
+
 #include <QDir>
 #include <QXmlStreamWriter>
 #include <QDebug>
 #include "report.h"
 #include "erroritem.h"
 #include "xmlreport.h"
-#include "xmlreportv2.h"
 #include "cppcheck.h"
 
 static const QString ResultElementName = "results";

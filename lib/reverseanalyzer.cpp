@@ -3,13 +3,11 @@
 #include "astutils.h"
 #include "errortypes.h"
 #include "forwardanalyzer.h"
-#include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueptr.h"
 
 #include <algorithm>
-#include <functional>
 
 struct ReverseTraversal {
     ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const Settings* settings)
