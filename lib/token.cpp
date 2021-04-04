@@ -2030,11 +2030,15 @@ static ValueIterator removeAdjacentValues(std::list<ValueFlow::Value>& values, V
 {
     if (!isAdjacent(*x, **start))
         return std::next(x);
-    auto it = std::adjacent_find(start, last, [](ValueIterator x, ValueIterator y) { return !isAdjacent(*x, *y); });
+    auto it = std::adjacent_find(start, last, [](ValueIterator x, ValueIterator y) {
+        return !isAdjacent(*x, *y);
+    });
     if (it == last)
         it--;
     (*it)->bound = x->bound;
-    std::for_each(start, it, [&](ValueIterator y) { values.erase(y); });
+    std::for_each(start, it, [&](ValueIterator y) {
+        values.erase(y);
+    });
     return values.erase(x);
 }
 

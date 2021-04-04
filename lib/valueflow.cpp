@@ -374,7 +374,9 @@ static bool isZero(T x)
 template <class R, class T>
 static R calculate(const std::string& s, const T& x, const T& y)
 {
-    auto wrap = [](T z) { return R{z}; };
+    auto wrap = [](T z) {
+        return R{z};
+    };
     switch (MathLib::encodeMultiChar(s)) {
     case '+':
         return wrap(x + y);
@@ -383,9 +385,11 @@ static R calculate(const std::string& s, const T& x, const T& y)
     case '*':
         return wrap(x * y);
     case '/':
-        return isZero(y) ? R{} : wrap(x / y);
+        return isZero(y) ? R{} :
+               wrap(x / y);
     case '%':
-        return isZero(y) ? R{} : wrap(MathLib::bigint(x) % MathLib::bigint(y));
+        return isZero(y) ? R{} :
+               wrap(MathLib::bigint(x) % MathLib::bigint(y));
     case '&':
         return wrap(MathLib::bigint(x) & MathLib::bigint(y));
     case '|':
@@ -397,9 +401,11 @@ static R calculate(const std::string& s, const T& x, const T& y)
     case '<':
         return wrap(x < y);
     case '<<':
-        return (y >= sizeof(MathLib::bigint) * 8) ? R{} : wrap(MathLib::bigint(x) << MathLib::bigint(y));
+        return (y >= sizeof(MathLib::bigint) * 8) ? R{} :
+               wrap(MathLib::bigint(x) << MathLib::bigint(y));
     case '>>':
-        return (y >= sizeof(MathLib::bigint) * 8) ? R{} : wrap(MathLib::bigint(x) >> MathLib::bigint(y));
+        return (y >= sizeof(MathLib::bigint) * 8) ? R{} :
+               wrap(MathLib::bigint(x) >> MathLib::bigint(y));
     case '&&':
         return wrap(!isZero(x) && !isZero(y));
     case '||':
@@ -4729,8 +4735,8 @@ ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, Math
     if (varTok->hasKnownIntValue())
         return ValueFlow::Value{};
     if (std::none_of(varTok->values().begin(), varTok->values().end(), [](const ValueFlow::Value& v) {
-            return v.isImpossible() && v.valueType == ValueFlow::Value::ValueType::INT;
-        })) {
+    return v.isImpossible() && v.valueType == ValueFlow::Value::ValueType::INT;
+    })) {
         return ValueFlow::Value{};
     }
     const ValueFlow::Value* result = nullptr;
