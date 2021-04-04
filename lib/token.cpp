@@ -1746,10 +1746,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     out << "<=";
                 switch (value.valueType) {
                 case ValueFlow::Value::ValueType::INT:
-                    if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
-                        out << (MathLib::biguint)value.intvalue;
-                    else
-                        out << value.intvalue;
+                    out << value.intvalue;
                     break;
                 case ValueFlow::Value::ValueType::TOK:
                     out << value.tokvalue->str();
