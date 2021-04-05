@@ -249,10 +249,12 @@ private:
         // Inconclusive error message
         std::list<ErrorMessage::FileLocation> locs;
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error", "errorId", Certainty::inconclusive);
+        msg.file0 = "test.cpp";
         ASSERT_EQUALS("7 errorId"
                       "5 error"
                       "1 0"
                       "1 0"
+                      "8 test.cpp"
                       "12 inconclusive"
                       "17 Programming error"
                       "17 Programming error"
@@ -262,6 +264,7 @@ private:
         msg2.deserialize(msg.serialize());
         ASSERT_EQUALS("errorId", msg2.id);
         ASSERT_EQUALS(Severity::error, msg2.severity);
+        ASSERT_EQUALS("test.cpp", msg2.file0);
         ASSERT_EQUALS(Certainty::inconclusive, msg2.certainty);
         ASSERT_EQUALS("Programming error", msg2.shortMessage());
         ASSERT_EQUALS("Programming error", msg2.verboseMessage());
@@ -275,11 +278,13 @@ private:
     void SerializeSanitize() const {
         std::list<ErrorMessage::FileLocation> locs;
         ErrorMessage msg(locs, emptyString, Severity::error, std::string("Illegal character in \"foo\001bar\""), "errorId", Certainty::normal);
+        msg.file0 = "1.c";
 
         ASSERT_EQUALS("7 errorId"
                       "5 error"
                       "1 0"
                       "1 0"
+                      "3 1.c"
                       "33 Illegal character in \"foo\\001bar\""
                       "33 Illegal character in \"foo\\001bar\""
                       "0 ", msg.serialize());
@@ -288,6 +293,7 @@ private:
         msg2.deserialize(msg.serialize());
         ASSERT_EQUALS("errorId", msg2.id);
         ASSERT_EQUALS(Severity::error, msg2.severity);
+        ASSERT_EQUALS("1.c", msg2.file0);
         ASSERT_EQUALS("Illegal character in \"foo\\001bar\"", msg2.shortMessage());
         ASSERT_EQUALS("Illegal character in \"foo\\001bar\"", msg2.verboseMessage());
     }
