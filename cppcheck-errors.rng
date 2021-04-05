@@ -17,20 +17,6 @@
       <element name="errors">
         <zeroOrMore>
           <element name="error">
-            <optional>
-              <attribute name="cwe">
-                <data type="integer">
-                  <param name="minExclusive">0</param>
-                </data>
-              </attribute>
-            </optional>
-            <optional>
-              <attribute name="hash">
-                <data type="integer">
-                  <param name="minExclusive">1</param>
-                </data>
-              </attribute>
-            </optional>
             <attribute name="id">
               <data type="NCName"/>
             </attribute>
@@ -55,13 +41,27 @@
             <attribute name="verbose">
               <data type="string"/>
             </attribute>
+            <optional>
+              <attribute name="file0">
+                <data type="string"/>
+              </attribute>
+            </optional>
+            <optional>
+              <attribute name="cwe">
+                <data type="integer">
+                  <param name="minExclusive">0</param>
+                </data>
+              </attribute>
+            </optional>
+            <optional>
+              <attribute name="hash">
+                <data type="integer">
+                  <param name="minExclusive">1</param>
+                </data>
+              </attribute>
+            </optional>
             <zeroOrMore>
               <element name="location">
-                <optional>
-                  <attribute name="file0">
-                    <data type="string"/>
-                  </attribute>
-                </optional>
                 <attribute name="file">
                   <data type="string"/>
                 </attribute>
