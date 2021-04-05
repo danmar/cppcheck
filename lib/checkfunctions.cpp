@@ -205,8 +205,11 @@ void CheckFunctions::checkIgnoredReturnValue()
                 continue;
 
             const Token *parent = tok->next()->astParent();
-            while (Token::Match(parent, "%cop%"))
+            while (Token::Match(parent, "%cop%")) {
+                if (Token::Match(parent, "<<|>>") && !parent->astParent())
+                    break;
                 parent = parent->astParent();
+            }
             if (parent)
                 continue;
 
