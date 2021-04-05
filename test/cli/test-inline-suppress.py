@@ -19,12 +19,12 @@ def create_unused_function_compile_commands():
 
 def test1():
     ret, stdout, stderr = cppcheck(['--inline-suppr', 'proj-inline-suppress'])
-    assert ret == 0
+    assert ret == 0, stdout
     assert stderr == ''
 
 def test2():
     ret, stdout, stderr = cppcheck(['proj-inline-suppress'])
-    assert ret == 0
+    assert ret == 0, stdout
     assert len(stderr) > 0
 
 def test_unmatched_suppression():
@@ -42,6 +42,7 @@ def test_backwards_compatibility():
     assert '[zerodiv]' in stderr
 
     ret, stdout, stderr = cppcheck(['--inline-suppr', 'proj-inline-suppress/3.cpp'])
+    assert ret == 0, stdout
     assert stderr == ''
 
 def test_compile_commands_unused_function():
@@ -53,5 +54,5 @@ def test_compile_commands_unused_function():
 def test_compile_commands_unused_function_suppression():
     create_unused_function_compile_commands()
     ret, stdout, stderr = cppcheck(['--enable=all', '--inline-suppr', '--error-exitcode=1', '--project=./proj-inline-suppress-unusedFunction/compile_commands.json'])
-    assert ret == 0
+    assert ret == 0, stdout
     assert 'unusedFunction' not in stderr

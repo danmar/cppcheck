@@ -16,11 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "codeeditor.h"
 #include "codeeditstyledialog.h"
+
+#include "codeeditor.h"
 #include "codeeditstylecontrols.h"
-#include <QHBoxLayout>
-#include <QVBoxLayout>
 #include <QFormLayout>
 #include <QDialogButtonBox>
 

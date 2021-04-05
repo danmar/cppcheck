@@ -3549,13 +3549,19 @@ private:
               "    throw 0;\n"
               "    return 1;\n"
               "}", nullptr, false, false, false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
         check("void foo() {\n"
               "    throw 0;\n"
               "    return;\n"
               "}", nullptr, false, false, false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
+
+        check("int foo() {\n"
+              "    throw = 0;\n"
+              "    return 1;\n"
+              "}", "test.c", false, false, false);
+        ASSERT_EQUALS("", errout.str());
 
         check("int foo() {\n"
               "    return 0;\n"

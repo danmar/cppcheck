@@ -19,11 +19,11 @@
 #ifndef XML_REPORTV2_H
 #define XML_REPORTV2_H
 
-#include <QObject>
 #include <QString>
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
 #include "xmlreport.h"
+
+class QXmlStreamReader;
+class QXmlStreamWriter;
 
 /// @addtogroup GUI
 /// @{

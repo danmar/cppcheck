@@ -1231,6 +1231,13 @@ private:
               "}\n"
               "A g() { return f(1); }");
         ASSERT_EQUALS("", errout.str());
+
+        // #8412 - unused operator result
+        check("void foo() {\n"
+              "  !mystrcmp(a, b);\n"
+              "}", "test.cpp", &settings2);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of function mystrcmp() is not used.\n", errout.str());
+
     }
 
     void checkIgnoredErrorCode() {

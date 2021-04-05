@@ -1746,10 +1746,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     out << "<=";
                 switch (value.valueType) {
                 case ValueFlow::Value::ValueType::INT:
-                    if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
-                        out << (MathLib::biguint)value.intvalue;
-                    else
-                        out << value.intvalue;
+                    out << value.intvalue;
                     break;
                 case ValueFlow::Value::ValueType::TOK:
                     out << value.tokvalue->str();
@@ -2030,11 +2027,15 @@ static ValueIterator removeAdjacentValues(std::list<ValueFlow::Value>& values, V
 {
     if (!isAdjacent(*x, **start))
         return std::next(x);
-    auto it = std::adjacent_find(start, last, [](ValueIterator x, ValueIterator y) { return !isAdjacent(*x, *y); });
+    auto it = std::adjacent_find(start, last, [](ValueIterator x, ValueIterator y) {
+        return !isAdjacent(*x, *y);
+    });
     if (it == last)
         it--;
     (*it)->bound = x->bound;
-    std::for_each(start, it, [&](ValueIterator y) { values.erase(y); });
+    std::for_each(start, it, [&](ValueIterator y) {
+        values.erase(y);
+    });
     return values.erase(x);
 }
 

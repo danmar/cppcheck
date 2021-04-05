@@ -28,7 +28,6 @@
 #include "importproject.h"
 #include "settings.h"
 
-#include <cstddef>
 #include <functional>
 #include <istream>
 #include <list>

@@ -29,7 +29,6 @@
 #include "symboldatabase.h"
 #include "valueflow.h"
 
-#include <cstddef>
 #include <list>
 #include <map>
 #include <string>

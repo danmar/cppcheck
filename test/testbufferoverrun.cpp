@@ -27,9 +27,7 @@
 #include "tokenize.h"
 
 #include <tinyxml2.h>
-#include <climits>
 #include <list>
-#include <ostream>
 #include <string>
 
 

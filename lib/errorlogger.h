@@ -25,7 +25,6 @@
 #include "errortypes.h"
 #include "suppressions.h"
 
-#include <cstddef>
 #include <fstream>
 #include <list>
 #include <string>

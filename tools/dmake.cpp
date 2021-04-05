@@ -23,7 +23,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <sstream>
 
 #include "../cli/filelister.h"
 #include "../lib/pathmatch.h"

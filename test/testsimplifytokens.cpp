@@ -23,7 +23,6 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
-#include <ostream>
 #include <string>
 
 

@@ -374,7 +374,9 @@ static bool isZero(T x)
 template <class R, class T>
 static R calculate(const std::string& s, const T& x, const T& y)
 {
-    auto wrap = [](T z) { return R{z}; };
+    auto wrap = [](T z) {
+        return R{z};
+    };
     switch (MathLib::encodeMultiChar(s)) {
     case '+':
         return wrap(x + y);
@@ -383,9 +385,11 @@ static R calculate(const std::string& s, const T& x, const T& y)
     case '*':
         return wrap(x * y);
     case '/':
-        return isZero(y) ? R{} : wrap(x / y);
+        return isZero(y) ? R{} :
+               wrap(x / y);
     case '%':
-        return isZero(y) ? R{} : wrap(MathLib::bigint(x) % MathLib::bigint(y));
+        return isZero(y) ? R{} :
+               wrap(MathLib::bigint(x) % MathLib::bigint(y));
     case '&':
         return wrap(MathLib::bigint(x) & MathLib::bigint(y));
     case '|':
@@ -397,9 +401,11 @@ static R calculate(const std::string& s, const T& x, const T& y)
     case '<':
         return wrap(x < y);
     case '<<':
-        return (y >= sizeof(MathLib::bigint) * 8) ? R{} : wrap(MathLib::bigint(x) << MathLib::bigint(y));
+        return (y >= sizeof(MathLib::bigint) * 8) ? R{} :
+               wrap(MathLib::bigint(x) << MathLib::bigint(y));
     case '>>':
-        return (y >= sizeof(MathLib::bigint) * 8) ? R{} : wrap(MathLib::bigint(x) >> MathLib::bigint(y));
+        return (y >= sizeof(MathLib::bigint) * 8) ? R{} :
+               wrap(MathLib::bigint(x) >> MathLib::bigint(y));
     case '&&':
         return wrap(!isZero(x) && !isZero(y));
     case '||':
@@ -834,7 +840,7 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
 
 static void setTokenValueCast(Token *parent, const ValueType &valueType, const ValueFlow::Value &value, const Settings *settings)
 {
-    if (valueType.pointer)
+    if (valueType.pointer || value.isImpossible())
         setTokenValue(parent,value,settings);
     else if (valueType.type == ValueType::Type::CHAR)
         setTokenValue(parent, castValue(value, valueType.sign, settings->char_bit), settings);
@@ -1468,7 +1474,7 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
     for (Token* tok = tokenList->front(); tok; tok = tok->next()) {
         if (tok->hasKnownIntValue())
             continue;
-        if (astIsUnsigned(tok)) {
+        if (astIsUnsigned(tok) && !astIsPointer(tok)) {
             std::vector<MathLib::bigint> minvalue = minUnsignedValue(tok);
             if (minvalue.empty())
                 continue;
@@ -4731,8 +4737,8 @@ ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, Math
     if (varTok->hasKnownIntValue())
         return ValueFlow::Value{};
     if (std::none_of(varTok->values().begin(), varTok->values().end(), [](const ValueFlow::Value& v) {
-            return v.isImpossible() && v.valueType == ValueFlow::Value::ValueType::INT;
-        })) {
+    return v.isImpossible() && v.valueType == ValueFlow::Value::ValueType::INT;
+    })) {
         return ValueFlow::Value{};
     }
     const ValueFlow::Value* result = nullptr;
@@ -5875,8 +5881,7 @@ struct ContainerVariableAnalyzer : VariableAnalyzer {
             return Action::None;
         if (d == Direction::Reverse)
             return Action::None;
-        const ValueFlow::Value* value = getValue(tok);
-        if (!value)
+        if (!getValue(tok))
             return Action::None;
         if (!tok->valueType() || !tok->valueType()->container)
             return Action::None;
@@ -5903,10 +5908,10 @@ struct ContainerVariableAnalyzer : VariableAnalyzer {
         return Action::None;
     }
 
-    virtual void writeValue(ValueFlow::Value* value, const Token* tok, Direction d) const OVERRIDE {
+    virtual void writeValue(ValueFlow::Value* val, const Token* tok, Direction d) const OVERRIDE {
         if (d == Direction::Reverse)
             return;
-        if (!value)
+        if (!val)
             return;
         if (!tok->astParent())
             return;
@@ -5917,20 +5922,20 @@ struct ContainerVariableAnalyzer : VariableAnalyzer {
         if (tok->valueType()->container->stdStringLike && Token::simpleMatch(parent, "+=") && parent->astOperand2()) {
             const Token* rhs = parent->astOperand2();
             if (rhs->tokType() == Token::eString)
-                value->intvalue += Token::getStrLength(rhs);
+                val->intvalue += Token::getStrLength(rhs);
             else if (rhs->valueType() && rhs->valueType()->container && rhs->valueType()->container->stdStringLike) {
                 for (const ValueFlow::Value &rhsval : rhs->values()) {
                     if (rhsval.isKnown() && rhsval.isContainerSizeValue()) {
-                        value->intvalue += rhsval.intvalue;
+                        val->intvalue += rhsval.intvalue;
                     }
                 }
             }
         } else if (Token::Match(tok, "%name% . %name% (")) {
             Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
             if (action == Library::Container::Action::PUSH)
-                value->intvalue++;
+                val->intvalue++;
             if (action == Library::Container::Action::POP)
-                value->intvalue--;
+                val->intvalue--;
         }
     }
 
@@ -6215,6 +6220,7 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok, const Lib
 
 static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger * /*errorLogger*/, const Settings *settings)
 {
+    std::map<int, std::size_t> static_sizes;
     // declaration
     for (const Variable *var : symboldatabase->variableList()) {
         if (!var || !var->isLocal() || var->isPointer() || var->isReference() || var->isStatic())
@@ -6228,15 +6234,15 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
         if (!Token::Match(var->nameToken(), "%name% ;") &&
             !(Token::Match(var->nameToken(), "%name% {") && Token::simpleMatch(var->nameToken()->next()->link(), "} ;")))
             continue;
+        if (var->valueType()->container->size_templateArgNo >= 0) {
+            if (var->dimensions().size() == 1 && var->dimensions().front().known)
+                static_sizes[var->declarationId()] = var->dimensions().front().num;
+            continue;
+        }
         std::vector<ValueFlow::Value> values{ValueFlow::Value{0}};
         values.back().valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
         values.back().setKnown();
-        if (var->valueType()->container->size_templateArgNo >= 0) {
-            if (var->dimensions().size() == 1 && var->dimensions().front().known)
-                values.back().intvalue = var->dimensions().front().num;
-            else
-                continue;
-        } else if (Token::simpleMatch(var->nameToken()->next(), "{")) {
+        if (Token::simpleMatch(var->nameToken()->next(), "{")) {
             const Token* initList = var->nameToken()->next();
             values = getInitListSize(initList, var->valueType()->container);
         }
@@ -6247,7 +6253,12 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
     // after assignment
     for (const Scope *functionScope : symboldatabase->functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
-            if (Token::Match(tok, "%name%|;|{|} %var% = %str% ;")) {
+            if (static_sizes.count(tok->varId()) > 0) {
+                ValueFlow::Value value(static_sizes.at(tok->varId()));
+                value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+                value.setKnown();
+                setTokenValue(const_cast<Token*>(tok), value, settings);
+            } else if (Token::Match(tok, "%name%|;|{|} %var% = %str% ;")) {
                 const Token *containerTok = tok->next();
                 if (containerTok && containerTok->valueType() && containerTok->valueType()->container && containerTok->valueType()->container->stdStringLike) {
                     ValueFlow::Value value(Token::getStrLength(containerTok->tokAt(2)));
@@ -6257,7 +6268,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                 }
             } else if (Token::Match(tok, "%name%|;|{|}|> %var% = {") && Token::simpleMatch(tok->linkAt(3), "} ;")) {
                 const Token* containerTok = tok->next();
-                if (astIsContainer(containerTok)) {
+                if (astIsContainer(containerTok) && containerTok->valueType()->container->size_templateArgNo < 0) {
                     std::vector<ValueFlow::Value> values = getInitListSize(tok->tokAt(3), containerTok->valueType()->container);
                     for (const ValueFlow::Value& value : values)
                         valueFlowContainerForward(containerTok->next(), containerTok->variable(), value, tokenlist);

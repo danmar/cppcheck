@@ -3,13 +3,11 @@
 #include "astutils.h"
 #include "errortypes.h"
 #include "forwardanalyzer.h"
-#include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueptr.h"
 
 #include <algorithm>
-#include <functional>
 
 struct ReverseTraversal {
     ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const Settings* settings)
@@ -96,12 +94,6 @@ struct ReverseTraversal {
                 continue;
             bool checkThen, checkElse;
             std::tie(checkThen, checkElse) = evalCond(condTok);
-
-            if (!checkThen && !checkElse) {
-                Analyzer::Action action = analyzeRecursive(condTok);
-                if (action.isRead() || action.isModified())
-                    return parent;
-            }
 
             if (parent->str() == "?") {
                 if (checkElse && opSide == 1)

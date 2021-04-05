@@ -36,8 +36,8 @@
 #include <algorithm> // find_if()
 #include <list>
 #include <map>
-#include <ostream>
 #include <utility>
+#include <cctype>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -784,7 +784,7 @@ void CheckOther::checkUnreachableCode()
                 tok = tok->link();
             else if (Token::Match(tok, "break|continue ;"))
                 secondBreak = tok->tokAt(2);
-            else if (Token::Match(tok, "[;{}:] return|throw")) {
+            else if (Token::Match(tok, "[;{}:] return|throw") && tok->next()->isKeyword()) {
                 if (Token::simpleMatch(tok->astParent(), "?"))
                     continue;
                 tok = tok->next(); // tok should point to return or throw
@@ -809,8 +809,7 @@ void CheckOther::checkUnreachableCode()
             const bool inconclusive = secondBreak && (secondBreak->linenr() - 1 > secondBreak->previous()->linenr());
 
             if (secondBreak && (printInconclusive || !inconclusive)) {
-                if (Token::Match(secondBreak, "continue|goto|throw") ||
-                    (secondBreak->str() == "return" && (tok->str() == "return" || secondBreak->strAt(1) == ";"))) { // return with value after statements like throw can be necessary to make a function compile
+                if (Token::Match(secondBreak, "continue|goto|throw|return") && secondBreak->isKeyword()) {
                     duplicateBreakError(secondBreak, inconclusive);
                     tok = Token::findmatch(secondBreak, "[}:]");
                 } else if (secondBreak->str() == "break") { // break inside switch as second break statement should not issue a warning

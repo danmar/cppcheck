@@ -18,12 +18,17 @@ jobs:
         # windows 2016 should default to VS 2017. Not supported by setup-msbuild
         os: [windows-2019]
         arch: [x64, x86]
-      fail-fast: true
+      fail-fast: false
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
 
       - name: Setup msbuild.exe
         uses: microsoft/setup-msbuild@v1.0.2
@@ -44,7 +49,8 @@ jobs:
           )
         env:
           # see https://www.pcre.org/original/changelog.txt
-          PCRE_VERSION: 8.44  
+          PCRE_VERSION: 8.44
+          CL: /MP
 
       - name: Install Z3 library
         run: |
@@ -57,21 +63,29 @@ jobs:
 
       # no 32-bit Qt available
       - name: Install Qt
-        if: matrix.os == 'x64'
+        if: matrix.arch == 'x64'
         uses: jurplel/install-qt-action@v2
         with:
           modules: 'qtcharts'
 
+      - name: Install missing Python packages
+        run: |
+          python -m pip install pip --upgrade
+          python -m pip install pytest
+          python -m pip install pytest-custom_exit_code
+
       - name: Build GUI release
-        if: matrix.os == 'x64'
+        if: matrix.arch == 'x64'
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           cd gui || exit /b !errorlevel!
           qmake HAVE_QCHART=yes || exit /b !errorlevel!
           nmake release || exit /b !errorlevel!
+        env:
+          CL: /MP
       
       - name: Deploy GUI
-        if: matrix.os == 'x64'
+        if: matrix.arch == 'x64'
         run: |
           windeployqt Build\gui || exit /b !errorlevel!
           del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
@@ -100,4 +114,16 @@ jobs:
 
       - name: Run Release test
         run: .\bin\testrunner.exe || exit /b !errorlevel!
- 
+
+      - name: Run test/cli
+        run: |
+          :: since FILESDIR is not set copy the binary to the root so the addons are found
+          copy .\bin\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
+          copy .\bin\cppcheck-core.dll .\cppcheck-core.dll || exit /b !errorlevel!
+          cd test/cli || exit /b !errorlevel!
+          python -m pytest --suppress-no-test-exit-code test-clang-import.py || exit /b !errorlevel!
+          python -m pytest test-helloworld.py || exit /b !errorlevel!
+          python -m pytest test-inline-suppress.py || exit /b !errorlevel!
+          python -m pytest test-more-projects.py || exit /b !errorlevel!
+          python -m pytest test-proj2.py || exit /b !errorlevel!
+          python -m pytest test-suppress-syntaxError.py || exit /b !errorlevel!

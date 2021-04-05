@@ -21,13 +21,11 @@
 #include "checkbool.h"
 
 #include "astutils.h"
-#include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
 
-#include <cstddef>
 #include <list>
 //---------------------------------------------------------------------------
 

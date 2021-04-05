@@ -19,7 +19,6 @@
 #include <tinyxml2.h>
 
 #include "checkclass.h"
-#include "ctu.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -7428,6 +7427,9 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         ctu({"class C { C(); }; C::C(){}", "class C { C(); }; C::C(){}"});
+        ASSERT_EQUALS("", errout.str());
+
+        ctu({"class A::C { C() { std::cout << 0; } };", "class B::C { C() { std::cout << 1; } };"});
         ASSERT_EQUALS("", errout.str());
     }
 

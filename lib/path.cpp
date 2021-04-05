@@ -25,9 +25,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
-#include <cstring>
 #include <fstream>
-#include <sstream>
 
 #ifndef _WIN32
 #include <unistd.h>

@@ -16,16 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "threadresult.h"
+
 #include <QFile>
-#include <QString>
-#include <QMutexLocker>
-#include <QList>
-#include <QStringList>
-#include <QDebug>
 #include "common.h"
 #include "erroritem.h"
 #include "errorlogger.h"
-#include "threadresult.h"
 
 ThreadResult::ThreadResult() : QObject(), ErrorLogger(), mMaxProgress(0), mProgress(0), mFilesChecked(0), mTotalFiles(0)
 {

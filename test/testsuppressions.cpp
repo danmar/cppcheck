@@ -23,7 +23,6 @@
 #include "testsuite.h"
 #include "threadexecutor.h"
 
-#include <cstddef>
 #include <list>
 #include <map>
 #include <string>

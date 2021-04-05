@@ -3787,6 +3787,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition '(i+1)!=s.end()' is redundant or there is possible dereference of an invalid iterator: i+2.\n", errout.str());
 
+        check("void f(int v, std::map<int, int> &items) {\n"
+              "    for (auto it = items.begin(); it != items.end();)\n"
+              "        (it->first == v) ? it = items.erase(it) : ++it;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(std::string s) {\n"
               "    for (std::string::const_iterator i = s.begin(); i != s.end(); ++i) {\n"
               "        if (i != s.end() && (i + 1) != s.end() && *(i + 1) == *i) {\n"

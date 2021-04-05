@@ -29,7 +29,6 @@
 #include <cmath>
 #include <list>
 #include <map>
-#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -835,6 +834,12 @@ private:
                "   bool a = x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
+        code = "bool f(const uint16_t * const p) {\n"
+               "    const uint8_t x = (uint8_t)(*p & 0x01E0U) >> 5U;\n"
+               "    return x != 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
 
         code = "bool f() {\n"
                "    bool a = (4 == 3);\n"
@@ -5016,6 +5021,13 @@ private:
                       isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
 
         code = "void f() {\n"
+               "  std::vector<int> ints{};\n"
+               "  ints.front();\n"
+               "}";
+        ASSERT_EQUALS("",
+                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+
+        code = "void f() {\n"
                "  std::vector<int> ints{1};\n"
                "  ints.front();\n"
                "}";
@@ -5037,19 +5049,19 @@ private:
         ASSERT_EQUALS("",
                       isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
 
-        code = "void f() {\n"
-               "  std::vector<int> ints = {1};\n"
-               "  ints.front();\n"
-               "}";
-        ASSERT_EQUALS("",
-                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 1));
-
         code = "void f(std::string str) {\n"
                "    if (str == \"123\")\n"
                "        bool x = str.empty();\n"
                "}\n";
         ASSERT_EQUALS("",
                       isKnownContainerSizeValue(tokenValues(code, "str . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 3));
+
+        code = "int f() {\n"
+               "    std::array<int, 10> a = {};\n"
+               "    return a.front();\n"
+               "}\n";
+        ASSERT_EQUALS("",
+                      isKnownContainerSizeValue(tokenValues(code, "a . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 10));
 
         code = "void f(std::string str) {\n"
                "    if (str == \"123\") {\n"
@@ -5219,7 +5231,9 @@ private:
                "  return x + 0;\n"
                "}";
         values = tokenValues(code, "+", &s);
-        values.remove_if([](const ValueFlow::Value& v) { return v.isImpossible(); });
+        values.remove_if([](const ValueFlow::Value& v) {
+            return v.isImpossible();
+        });
         ASSERT_EQUALS(2, values.size());
         ASSERT_EQUALS(0, values.front().intvalue);
         ASSERT_EQUALS(100, values.back().intvalue);

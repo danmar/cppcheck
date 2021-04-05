@@ -31,7 +31,6 @@
 #include <cstring>
 #include <fstream>
 #include <utility>
-#include <sstream>
 
 
 ImportProject::ImportProject()

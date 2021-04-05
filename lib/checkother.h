@@ -27,7 +27,6 @@
 #include "errortypes.h"
 #include "utils.h"
 
-#include <cstddef>
 #include <string>
 #include <vector>
 

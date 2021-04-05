@@ -33,7 +33,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <climits>
 #include <cstring>
 #include <limits>
 #include <iomanip>
@@ -4753,9 +4752,9 @@ const Scope *Scope::findRecordInBase(const std::string & name) const
                     return base->classScope;
                 }
 
-                const ::Type * type = base->classScope->findType(name);
-                if (type)
-                    return type->classScope;
+                const ::Type * t = base->classScope->findType(name);
+                if (t)
+                    return t->classScope;
             }
         }
     }
