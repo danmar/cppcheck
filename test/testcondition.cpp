@@ -3551,6 +3551,34 @@ private:
               "  return false;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10208
+        check("bool GetFirst(std::string &first);\n"
+              "bool GetNext(std::string &next);\n"
+              "void g(const std::string& name);\n"
+              "void f() {\n"
+              "  for (std::string name; name.empty() ? GetFirst(name) : GetNext(name);)\n"
+              "    g(name);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool GetFirst(std::string &first);\n"
+              "bool GetNext(std::string &next);\n"
+              "void g(const std::string& name);\n"
+              "void f() {\n"
+              "  for (std::string name{}; name.empty() ? GetFirst(name) : GetNext(name);)\n"
+              "    g(name);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool GetFirst(std::string &first);\n"
+              "bool GetNext(std::string &next);\n"
+              "void g(const std::string& name);\n"
+              "void f() {\n"
+              "  for (std::string name{'a', 'b'}; name.empty() ? GetFirst(name) : GetNext(name);)\n"
+              "    g(name);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {

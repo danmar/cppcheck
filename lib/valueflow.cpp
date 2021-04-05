@@ -6198,7 +6198,7 @@ static void valueFlowIteratorInfer(TokenList *tokenlist, const Settings *setting
     }
 }
 
-static std::vector<ValueFlow::Value> getInitListSize(const Token* tok, const Library::Container *container)
+static std::vector<ValueFlow::Value> getInitListSize(const Token* tok, const Library::Container *container, bool known = true)
 {
     std::vector<const Token*> args = getArguments(tok);
     if ((args.size() == 1 && astIsContainer(args[0]) && args[0]->valueType()->container == container) ||
@@ -6212,7 +6212,8 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok, const Lib
     }
     ValueFlow::Value value(args.size());
     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
-    value.setKnown();
+    if (known)
+        value.setKnown();
     return {value};
 }
 
@@ -6221,6 +6222,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
     std::map<int, std::size_t> static_sizes;
     // declaration
     for (const Variable *var : symboldatabase->variableList()) {
+        bool known = true;
         if (!var || !var->isLocal() || var->isPointer() || var->isReference() || var->isStatic())
             continue;
         if (!var->valueType() || !var->valueType()->container)
@@ -6232,6 +6234,8 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
         if (!Token::Match(var->nameToken(), "%name% ;") &&
             !(Token::Match(var->nameToken(), "%name% {") && Token::simpleMatch(var->nameToken()->next()->link(), "} ;")))
             continue;
+        if (var->nameToken()->astTop() && Token::Match(var->nameToken()->astTop()->previous(), "for|while"))
+            known = false;
         if (var->valueType()->container->size_templateArgNo >= 0) {
             if (var->dimensions().size() == 1 && var->dimensions().front().known)
                 static_sizes[var->declarationId()] = var->dimensions().front().num;
@@ -6239,10 +6243,11 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
         }
         std::vector<ValueFlow::Value> values{ValueFlow::Value{0}};
         values.back().valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
-        values.back().setKnown();
+        if (known)
+            values.back().setKnown();
         if (Token::simpleMatch(var->nameToken()->next(), "{")) {
             const Token* initList = var->nameToken()->next();
-            values = getInitListSize(initList, var->valueType()->container);
+            values = getInitListSize(initList, var->valueType()->container, known);
         }
         for (const ValueFlow::Value& value : values)
             valueFlowContainerForward(var->nameToken()->next(), var, value, tokenlist);
