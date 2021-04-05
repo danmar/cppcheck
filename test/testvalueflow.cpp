@@ -835,6 +835,12 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
 
+        code = "bool f(const uint16_t * const p) {\n"
+               "    const uint8_t x = (uint8_t)(*p & 0x01E0U) >> 5U;\n"
+               "    return x != 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
+
         code = "bool f() {\n"
                "    bool a = (4 == 3);\n"
                "    bool b = (3 == 3);\n"
