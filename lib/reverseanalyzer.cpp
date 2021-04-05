@@ -97,12 +97,6 @@ struct ReverseTraversal {
             bool checkThen, checkElse;
             std::tie(checkThen, checkElse) = evalCond(condTok);
 
-            if (!checkThen && !checkElse) {
-                Analyzer::Action action = analyzeRecursive(condTok);
-                if (action.isRead() || action.isModified())
-                    return parent;
-            }
-
             if (parent->str() == "?") {
                 if (checkElse && opSide == 1)
                     return parent;
