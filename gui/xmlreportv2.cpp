@@ -123,6 +123,8 @@ void XmlReportV2::writeError(const ErrorItem &error)
         mXmlWriter->writeAttribute(CWEAttribute, QString::number(error.cwe));
     if (error.hash > 0)
         mXmlWriter->writeAttribute(HashAttribute, QString::number(error.hash));
+    if (!error.file0.isEmpty())
+        mXmlWriter->writeAttribute(IncludedFromFilenameAttribute, quoteMessage(error.file0));
     if (!error.sinceDate.isEmpty())
         mXmlWriter->writeAttribute(SinceDateAttribute, error.sinceDate);
     if (!error.tags.isEmpty())
@@ -132,9 +134,6 @@ void XmlReportV2::writeError(const ErrorItem &error)
         mXmlWriter->writeStartElement(LocationElementName);
 
         QString file = QDir::toNativeSeparators(error.errorPath[i].file);
-        if (!error.file0.isEmpty() && file != error.file0) {
-            mXmlWriter->writeAttribute(IncludedFromFilenameAttribute, quoteMessage(error.file0));
-        }
         mXmlWriter->writeAttribute(FilenameAttribute, XmlReport::quoteMessage(file));
         mXmlWriter->writeAttribute(LineAttribute, QString::number(error.errorPath[i].line));
         if (error.errorPath[i].column > 0)
@@ -218,6 +217,8 @@ ErrorItem XmlReportV2::readError(QXmlStreamReader *reader)
             item.cwe = attribs.value(QString(), CWEAttribute).toInt();
         if (attribs.hasAttribute(QString(), HashAttribute))
             item.hash = attribs.value(QString(), HashAttribute).toULongLong();
+        if (attribs.hasAttribute(QString(), IncludedFromFilenameAttribute))
+            item.file0 = attribs.value(QString(), IncludedFromFilenameAttribute).toString();
         if (attribs.hasAttribute(QString(), SinceDateAttribute))
             item.sinceDate = attribs.value(QString(), SinceDateAttribute).toString();
         if (attribs.hasAttribute(QString(), TagsAttribute))

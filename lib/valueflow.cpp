@@ -4476,6 +4476,7 @@ struct ConditionHandler {
                 // start token of conditional code
                 Token* startTokens[] = {nullptr, nullptr};
 
+                bool inverted = false;
                 // if astParent is "!" we need to invert codeblock
                 {
                     const Token* tok2 = tok;
@@ -4484,6 +4485,7 @@ struct ConditionHandler {
                         while (parent && parent->str() == "&&")
                             parent = parent->astParent();
                         if (parent && (parent->str() == "!" || Token::simpleMatch(parent, "== false"))) {
+                            inverted = true;
                             std::swap(thenValues, elseValues);
                         }
                         tok2 = parent;
@@ -4568,7 +4570,7 @@ struct ConditionHandler {
                     }
 
                     if (dead_if || dead_else) {
-                        if (Token::Match(tok->astParent(), "&&|&")) {
+                        if (!inverted && Token::Match(tok->astParent(), "&&|&")) {
                             values.remove_if(std::mem_fn(&ValueFlow::Value::isImpossible));
                             changeKnownToPossible(values);
                         } else {
