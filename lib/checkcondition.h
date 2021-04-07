@@ -70,6 +70,7 @@ public:
         checkCondition.checkBadBitmaskCheck();
         checkCondition.comparison();
         checkCondition.checkModuloAlwaysTrueFalse();
+        checkCondition.checkAssignmentInCondition();
     }
 
     /** mismatching assignment / comparison */
@@ -122,6 +123,9 @@ public:
 
     void checkDuplicateConditionalAssign();
 
+    /** @brief Assignment in condition */
+    void checkAssignmentInCondition();
+
 private:
     // The conditions that have been diagnosed
     std::set<const Token*> mCondDiags;
@@ -161,6 +165,8 @@ private:
 
     void duplicateConditionalAssignError(const Token *condTok, const Token* assignTok);
 
+    void assignmentInCondition(const Token *eq);
+
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckCondition c(nullptr, settings, errorLogger);
 
@@ -183,6 +189,7 @@ private:
         c.invalidTestForOverflow(nullptr, nullptr, "false");
         c.pointerAdditionResultNotNullError(nullptr, nullptr);
         c.duplicateConditionalAssignError(nullptr, nullptr);
+        c.assignmentInCondition(nullptr);
     }
 
     static std::string myName() {
@@ -203,7 +210,8 @@ private:
                "- Mutual exclusion over || always evaluating to true\n"
                "- Comparisons of modulo results that are always true/false.\n"
                "- Known variable values => condition is always true/false\n"
-               "- Invalid test for overflow. Some mainstream compilers remove such overflow tests when optimising code.\n";
+               "- Invalid test for overflow. Some mainstream compilers remove such overflow tests when optimising code.\n"
+               "- Assignment of container/iterator in condition should probably be comparison.\n";
     }
 };
 /// @}

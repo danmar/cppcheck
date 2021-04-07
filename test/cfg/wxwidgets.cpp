@@ -28,6 +28,24 @@
 #include <wx/textctrl.h>
 #include <wx/propgrid/property.h>
 
+wxString useRetval_wxString_MakeCapitalized(wxString &str)
+{
+    // No warning is expected for
+    str.MakeCapitalized();
+}
+
+wxString useRetval_wxString_MakeLower(wxString &str)
+{
+    // No warning is expected for
+    str.MakeLower();
+}
+
+wxString useRetval_wxString_MakeUpper(wxString &str)
+{
+    // No warning is expected for
+    str.MakeUpper();
+}
+
 wxString containerOutOfBounds_wxArrayString(void)
 {
     wxArrayString a;
