@@ -100,6 +100,19 @@ jobs:
           cd 'cpp check/test/cli'
           pytest test-*.py
 
+      - name: Run cfg tests
+        run: |
+          make -j$(nproc) checkcfg
+
+      - name: Run showtimetop5 tests
+        run: |
+          ./tools/test_showtimetop5.sh
+
+      - name: Run --dump test
+        run: |
+          ./cppcheck test/testpreprocessor.cpp --dump
+          xmllint --noout test/testpreprocessor.cpp.dump
+
       - name: Validate
         run: |
           make -j$(nproc) checkCWEEntries validateXML

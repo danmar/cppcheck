@@ -45,8 +45,6 @@ matrix:
       compiler: clang
       script:
         - make -j$(nproc) -s
-        # check cfg files
-        - make checkcfg
 # check if DESTDIR works  TODO: actually execute this
         - mkdir install_test
         - echo $CXXFLAGS
@@ -59,11 +57,6 @@ matrix:
         - sudo make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck install
 # check if it actually works:
         - /usr/bin/cppcheck ./cli
-# check if showtime=top5 works
-        - ./tools/test_showtimetop5.sh
-# check --dump
-        - ${CPPCHECK} test/testpreprocessor.cpp --dump
-        - xmllint --noout test/testpreprocessor.cpp.dump
 # check addons/misc.py
         - cd addons/test
         - ${CPPCHECK} --dump misc-test.cpp
