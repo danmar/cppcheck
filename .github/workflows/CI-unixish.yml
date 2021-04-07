@@ -106,7 +106,9 @@ jobs:
         run: |
           make -j$(nproc) checkcfg
 
+      # it seems macos has no "wc" command
       - name: Run showtimetop5 tests
+        if: contains(matrix.os, 'ubuntu')
         run: |
           ./tools/test_showtimetop5.sh
 
