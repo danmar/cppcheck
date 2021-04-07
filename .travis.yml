@@ -56,7 +56,7 @@ matrix:
         - make -s MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck -j$(nproc)
         - sudo make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck install
 # check if it actually works:
-        - /usr/bin/cppcheck ./cli
+        - /usr/bin/cppcheck -j$(nproc) ./cli
 # check addons/misc.py
         - cd addons/test
         - ${CPPCHECK} --dump misc-test.cpp
@@ -118,8 +118,6 @@ matrix:
 script:
 # fail the entire job as soon as one of the subcommands exits non-zero to save time and resources
   - set -e
-# Determine CPU count. As of January 2019 it seems to be 2 - so use this for job count in suitable calls to make or cppcheck
-  - cat /proc/cpuinfo
 # check with TEST_MATHLIB_VALUE enabled
   - touch lib/mathlib.cpp test/testmathlib.cpp
   - echo $CXXFLAGS
