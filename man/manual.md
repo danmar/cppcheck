@@ -24,9 +24,10 @@ The checks in Cppcheck are not perfect. There are bugs that should be found, tha
 ## About static analysis
 
 The kinds of bugs that you can find with static analysis are:
- * undefined behavior
- * using dangerous code patterns
- * coding style
+
+- undefined behavior
+- using dangerous code patterns
+- coding style
 
 There are many bugs that you can not find with static analysis. Static analysis tools do not have human knowledge about
 what your program is intended to do. If the output from your program is valid but unexpected then in most cases this is
@@ -34,10 +35,11 @@ not detected by static analysis tools. For instance, if your small program write
 it is unlikely that any tool will complain about that.
 
 Static analysis should be used as a complement in your quality assurance. It does not replace any of;
- * careful design
- * testing
- * dynamic analysis
- * fuzzing
+
+- careful design
+- testing
+- dynamic analysis
+- fuzzing
 
 # Getting started
 
@@ -404,6 +406,17 @@ The available options are:
 - c++14: C++ code is C++14 compatible
 - c++17: C++ code is C++17 compatible
 - c++20: C++ code is C++20 compatible (default)
+
+# Cppcheck build dir
+
+It's a good idea to use a Cppcheck build dir. On the command line use `--cppcheck-build-dir`. In
+the GUI, the build dir is configured in the project options.
+
+Rechecking code will be much faster. Cppcheck does not analyse unchanged code. The old warnings are
+loaded from the build dir and reported again.
+
+Whole program analysis does not work when multiple threads are used; unless you use a cppcheck
+build dir. For instance, the unusedFunction warnings require whole program analysis.
 
 # Suppressions
 
