@@ -120,6 +120,8 @@ private:
         TEST_CASE(alwaysTrueFalseInLogicalOperators);
         TEST_CASE(pointerAdditionResultNotNull);
         TEST_CASE(duplicateConditionalAssign);
+
+        TEST_CASE(checkAssignmentInCondition);
     }
 
     void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
@@ -4152,6 +4154,13 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkAssignmentInCondition() {
+        check("void f(std::string s) {\n"
+              "    if (s=\"123\"){}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Assignment in condition should probably be comparison.\n", errout.str());
     }
 };
 
