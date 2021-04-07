@@ -47,13 +47,6 @@ matrix:
         - make -j$(nproc) -s
         # check cfg files
         - make checkcfg
-# check htmlreport stuff
-        - python2 htmlreport/test_htmlreport.py
-        - python3 htmlreport/test_htmlreport.py
-        - cd htmlreport
-        - PYTHON=python2 ./check.sh
-        - PYTHON=python3 ./check.sh
-        - cd ../
 # check if DESTDIR works  TODO: actually execute this
         - mkdir install_test
         - echo $CXXFLAGS

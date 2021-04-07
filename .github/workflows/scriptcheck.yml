@@ -21,6 +21,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Install missing software on ubuntu
+        run: |
+          sudo apt-get update
+          sudo apt-get install tidy libxml2-utils
+
       - name: Install missing software on ubuntu (Python 2)
         if: matrix.python-version == '2.7'
         run: |
@@ -30,8 +35,7 @@ jobs:
       - name: Install missing software on ubuntu (Python 3)
         if: matrix.python-version != '2.7'
         run: |
-          sudo apt-get update
-          sudo apt-get install shellcheck libxml2-utils
+          sudo apt-get install shellcheck
           python -m pip install pip --upgrade
           python -m pip install natsort
           python -m pip install pexpect
@@ -90,6 +94,12 @@ jobs:
           python -m pytest addons/test/test-*.py
         env:
           PYTHONPATH: ./addons
+
+      - name: test htmlreport
+        run: |
+          htmlreport/test_htmlreport.py
+          cd htmlreport
+          ./check.sh
 
       - name: dmake
         if: matrix.python-version == '3.9'
