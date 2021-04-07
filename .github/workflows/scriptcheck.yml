@@ -81,10 +81,15 @@ jobs:
         run: |
           python tools/test_matchcompiler.py
 
-      - name: test addons
+      - name: build cppcheck
         run: |
           make -j$(nproc) -s
-          PYTHONPATH=./addons python -m pytest addons/test/test-*.py
+
+      - name: test addons
+        run: |
+          python -m pytest addons/test/test-*.py
+        env:
+          PYTHONPATH: ./addons
 
       - name: dmake
         if: matrix.python-version == '3.9'
