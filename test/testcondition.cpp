@@ -4160,7 +4160,12 @@ private:
         check("void f(std::string s) {\n"
               "    if (s=\"123\"){}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Assignment in condition should probably be comparison.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious assignment in condition. Condition 's=\"123\"' is always true.\n", errout.str());
+
+        check("void f(std::string *p) {\n"
+              "    if (p=foo()){}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
