@@ -4476,7 +4476,6 @@ struct ConditionHandler {
                 // start token of conditional code
                 Token* startTokens[] = {nullptr, nullptr};
 
-                bool inverted = false;
                 // if astParent is "!" we need to invert codeblock
                 {
                     const Token* tok2 = tok;
@@ -4484,10 +4483,8 @@ struct ConditionHandler {
                         const Token* parent = tok2->astParent();
                         while (parent && parent->str() == "&&")
                             parent = parent->astParent();
-                        if (parent && (parent->str() == "!" || Token::simpleMatch(parent, "== false"))) {
-                            inverted = true;
+                        if (parent && (parent->str() == "!" || Token::simpleMatch(parent, "== false")))
                             std::swap(thenValues, elseValues);
-                        }
                         tok2 = parent;
                     }
                 }
@@ -4569,8 +4566,25 @@ struct ConditionHandler {
                                      std::mem_fn(&ValueFlow::Value::isPossible));
                     }
 
+                    if (values.empty())
+                        return;
+
                     if (dead_if || dead_else) {
-                        if (!inverted && Token::Match(tok->astParent(), "&&|&")) {
+                        const Token* parent = tok->astParent();
+                        // Skip the not operator
+                        while (Token::simpleMatch(parent, "!"))
+                            parent = parent->astParent();
+                        bool possible = false;
+                        if (Token::Match(parent, "&&|%oror%")) {
+                            std::string op = parent->str();
+                            while (parent && parent->str() == op)
+                                parent = parent->astParent();
+                            if (Token::simpleMatch(parent, "!") || Token::simpleMatch(parent, "== false"))
+                                possible = op == "||";
+                            else
+                                possible = op == "&&";
+                        }
+                        if (possible) {
                             values.remove_if(std::mem_fn(&ValueFlow::Value::isImpossible));
                             changeKnownToPossible(values);
                         } else {
@@ -4578,8 +4592,9 @@ struct ConditionHandler {
                             valueFlowSetConditionToKnown(tok, values, false);
                         }
                     }
-                    if (!values.empty())
-                        forward(after, scope->bodyEnd, cond.vartok, values, tokenlist, settings);
+                    if (values.empty())
+                        return;
+                    forward(after, scope->bodyEnd, cond.vartok, values, tokenlist, settings);
                 }
             }
         });
