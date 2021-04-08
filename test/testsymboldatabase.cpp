@@ -407,6 +407,7 @@ private:
         TEST_CASE(findFunction40); // #10135
         TEST_CASE(findFunction41); // #10202
         TEST_CASE(findFunction42);
+        TEST_CASE(findFunction43); // #10087
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -6424,6 +6425,34 @@ private:
         ASSERT(functok->function()->name() == "a");
         ASSERT_EQUALS(2, functok->function()->tokenDef->linenr());
     }
+
+    void findFunction43() { // #10087
+        {
+            GET_SYMBOL_DB("struct A {};\n"
+                          "const A* g(const std::string&);\n"
+                          "const A& g(std::vector<A>::size_type i);\n"
+                          "const A& f(std::vector<A>::size_type i) { return g(i); }\n");
+            ASSERT_EQUALS("", errout.str());
+            const Token *functok = Token::findsimplematch(tokenizer.tokens(), "g ( i )");
+            ASSERT(functok);
+            ASSERT(functok->function());
+            ASSERT(functok->function()->name() == "g");
+            ASSERT_EQUALS(3, functok->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("struct A {};\n"
+                          "const A& g(std::vector<A>::size_type i);\n"
+                          "const A* g(const std::string&);\n"
+                          "const A& f(std::vector<A>::size_type i) { return g(i); }\n");
+            ASSERT_EQUALS("", errout.str());
+            const Token *functok = Token::findsimplematch(tokenizer.tokens(), "g ( i )");
+            ASSERT(functok);
+            ASSERT(functok->function());
+            ASSERT(functok->function()->name() == "g");
+            ASSERT_EQUALS(2, functok->function()->tokenDef->linenr());
+        }
+    }
+
 
     void findFunctionContainer() {
         {

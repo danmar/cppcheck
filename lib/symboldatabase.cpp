@@ -4818,11 +4818,12 @@ static std::string getTypeString(const Token *typeToken)
             while (Token::Match(typeToken, ":: %name%")) {
                 ret += "::" + typeToken->strAt(1);
                 typeToken = typeToken->tokAt(2);
-            }
-            if (typeToken->str() == "<") {
-                for (const Token *tok = typeToken; tok != typeToken->link(); tok = tok->next())
-                    ret += tok->str();
-                ret += ">";
+                if (typeToken->str() == "<") {
+                    for (const Token *tok = typeToken; tok != typeToken->link(); tok = tok->next())
+                        ret += tok->str();
+                    ret += ">";
+                    typeToken = typeToken->link()->next();
+                }
             }
             return ret;
         }
@@ -6857,7 +6858,7 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
 ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Variable *callVar, const Variable *funcVar)
 {
     ValueType::MatchResult res = ValueType::matchParameter(call, funcVar->valueType());
-    if (res == ValueType::MatchResult::SAME && callVar && call->container) {
+    if (callVar && ((res == ValueType::MatchResult::SAME && call->container) || res == ValueType::MatchResult::UNKNOWN)) {
         const std::string type1 = getTypeString(callVar->typeStartToken());
         const std::string type2 = getTypeString(funcVar->typeStartToken());
         if (type1 != type2)
