@@ -3579,6 +3579,15 @@ private:
               "    g(name);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool GetFirst(const std::string &first);\n"
+              "bool GetNext(const std::string &next);\n"
+              "void g(const std::string& name);\n"
+              "void f() {\n"
+              "  for (std::string name; name.empty() ? GetFirst(name) : GetNext(name);)\n"
+              "    g(name);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'name.empty()' is always true\n", errout.str());
     }
 
     void alwaysTrueInfer() {
