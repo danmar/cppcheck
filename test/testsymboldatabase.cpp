@@ -405,6 +405,8 @@ private:
         TEST_CASE(findFunction38); // #10125
         TEST_CASE(findFunction39); // #10127
         TEST_CASE(findFunction40); // #10135
+        TEST_CASE(findFunction41); // #10202
+        TEST_CASE(findFunction42);
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -6376,6 +6378,51 @@ private:
         ASSERT(functok->function());
         ASSERT(functok->function()->name() == "what");
         ASSERT_EQUALS(3, functok->function()->tokenDef->linenr());
+    }
+
+    void findFunction41() { // #10202
+        {
+            GET_SYMBOL_DB("struct A {};\n"
+                          "const int* g(const A&);\n"
+                          "int* g(A&);\n"
+                          "void f(A& x) {\n"
+                          "    int* y = g(x);\n"
+                          "    *y = 0;\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+            const Token *functok = Token::findsimplematch(tokenizer.tokens(), "g ( x )");
+            ASSERT(functok);
+            ASSERT(functok->function());
+            ASSERT(functok->function()->name() == "g");
+            ASSERT_EQUALS(3, functok->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("struct A {};\n"
+                          "const int* g(const A&);\n"
+                          "int* g(A&);\n"
+                          "void f(const A& x) {\n"
+                          "    int* y = g(x);\n"
+                          "    *y = 0;\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+            const Token *functok = Token::findsimplematch(tokenizer.tokens(), "g ( x )");
+            ASSERT(functok);
+            ASSERT(functok->function());
+            ASSERT(functok->function()->name() == "g");
+            ASSERT_EQUALS(2, functok->function()->tokenDef->linenr());
+        }
+    }
+
+    void findFunction42() {
+        GET_SYMBOL_DB("void a(const std::string &, const std::string &);\n"
+                      "void a(long, long);\n"
+                      "void b() { a(true, false); }\n");
+        ASSERT_EQUALS("", errout.str());
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "a ( true , false )");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT(functok->function()->name() == "a");
+        ASSERT_EQUALS(2, functok->function()->tokenDef->linenr());
     }
 
     void findFunctionContainer() {

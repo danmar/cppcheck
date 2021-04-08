@@ -6830,18 +6830,25 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
         return ValueType::MatchResult::UNKNOWN; // TODO
     }
 
-    if (call->typeScope != nullptr || func->typeScope != nullptr)
-        return call->typeScope == func->typeScope ? ValueType::MatchResult::SAME : ValueType::MatchResult::NOMATCH;
+    if (call->typeScope != nullptr || func->typeScope != nullptr) {
+        if (call->typeScope != func->typeScope)
+            return ValueType::MatchResult::NOMATCH;
+    }
 
     if (call->container != nullptr || func->container != nullptr) {
         if (call->container != func->container)
             return ValueType::MatchResult::NOMATCH;
     }
 
-    else if (func->type < ValueType::Type::VOID || func->type == ValueType::Type::UNKNOWN_INT)
-        return ValueType::MatchResult::UNKNOWN;
+    if (func->typeScope != nullptr && func->container != nullptr) {
+        if (func->type < ValueType::Type::VOID || func->type == ValueType::Type::UNKNOWN_INT)
+            return ValueType::MatchResult::UNKNOWN;
+    }
 
     if (call->isIntegral() && func->isIntegral() && call->sign != ValueType::Sign::UNKNOWN_SIGN && func->sign != ValueType::Sign::UNKNOWN_SIGN && call->sign != func->sign)
+        return ValueType::MatchResult::FALLBACK1;
+
+    if (func->reference != Reference::None && func->constness > call->constness)
         return ValueType::MatchResult::FALLBACK1;
 
     return ValueType::MatchResult::SAME;
