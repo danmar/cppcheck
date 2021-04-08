@@ -2325,16 +2325,6 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        // #10202
-        check("struct A {};\n"
-              "const int* g(const A&);\n"
-              "int* g(A&);\n"
-              "void f(A& x) {\n"
-              "    int* y = g(x);\n"
-              "    *y = 0;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
         check("void e();\n"
               "void g(void);\n"
               "void h(void);\n"
