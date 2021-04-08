@@ -6237,7 +6237,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
             !(Token::Match(var->nameToken(), "%name% {") && Token::simpleMatch(var->nameToken()->next()->link(), "} ;")))
             continue;
         if (var->nameToken()->astTop() && Token::Match(var->nameToken()->astTop()->previous(), "for|while"))
-            known = isVariableChanged(var, settings, true);
+            known = !isVariableChanged(var, settings, true);
         if (var->valueType()->container->size_templateArgNo >= 0) {
             if (var->dimensions().size() == 1 && var->dimensions().front().known)
                 static_sizes[var->declarationId()] = var->dimensions().front().num;

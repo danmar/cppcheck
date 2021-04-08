@@ -1837,13 +1837,17 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
             const ValueType * valueType = var->valueType();
             isConst = (valueType && valueType->pointer == 1 && valueType->constness == 1);
         }
+        if (isConst)
+            return false;
 
         const Token *ftok = tok->tokAt(2);
+        if (settings)
+            return !settings->library.isFunctionConst(ftok);
+        
         const Function * fun = ftok->function();
-        if (!isConst && (!fun || !fun->isConst()))
+        if (!fun)
             return true;
-        else
-            return false;
+        return !fun->isConst();
     }
 
     const Token *ftok = tok2;

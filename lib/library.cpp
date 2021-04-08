@@ -1400,7 +1400,7 @@ bool Library::isFunctionConst(const std::string& functionName, bool pure) const
 }
 bool Library::isFunctionConst(const Token *ftok) const
 {
-    if (ftok->function() && ftok->function()->isAttributeConst())
+    if (ftok->function() && ftok->function()->isConst())
         return true;
     if (isNotLibraryFunction(ftok))
         return false;
