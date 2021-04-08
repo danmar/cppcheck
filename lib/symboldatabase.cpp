@@ -6812,6 +6812,8 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
     }
     if (call->pointer > 0 && ((call->constness | func->constness) != func->constness))
         return ValueType::MatchResult::NOMATCH;
+    if (func->reference != Reference::None && func->constness > call->constness)
+        return ValueType::MatchResult::FALLBACK1;
     if (call->type != func->type) {
         if (call->type == ValueType::Type::VOID || func->type == ValueType::Type::VOID)
             return ValueType::MatchResult::FALLBACK1;
