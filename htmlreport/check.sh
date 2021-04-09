@@ -1,22 +1,23 @@
 #!/bin/bash -ex
 
 # Command for checking HTML syntax with HTML Tidy, see http://www.html-tidy.org/
-# newer tidy (5.6.0) command, if using this it is not necessary to ignore warnings:
-#tidy_cmd='tidy -o /dev/null -eq --drop-empty-elements no'
-# older tidy from 2009 (Ubuntu 16.04 Xenial comes with this old version):
-tidy_cmd='tidy -o /dev/null -eq'
+tidy_version=$(tidy --version)
+
+if [[ "$tidy_version" == *"5.6.0"* ]] ;then
+    # newer tidy (5.6.0) command, if using this it is not necessary to ignore warnings:
+    tidy_cmd='tidy -o /dev/null -eq --drop-empty-elements no'
+else
+    # older tidy from 2009 (Ubuntu 16.04 Xenial comes with this old version):
+    tidy_cmd='tidy -o /dev/null -eq'
+fi
 
 function validate_html {
     if [ ! -f "$1" ]; then
         echo "File $1 does not exist!"
-	exit 1
+	      exit 1
     fi
-    set +e
-    ${tidy_cmd} "$1"
-    tidy_status=$?
-    set -e
-    if [ $tidy_status -eq 2 ]; then
-        echo "HTML does not validate!"
+    if ! ${tidy_cmd} "$1"; then
+        echo "HTML validation failed!"
         exit 1
     fi
 }
