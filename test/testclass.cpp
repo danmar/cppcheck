@@ -910,27 +910,27 @@ private:
     }
 
     void copyConstructor5() {
-         checkCopyConstructor("class Copyable {};\n"
-                              "\n"
-                              "class Foo : public Copyable, public UnknownType {\n"
-                              "public:\n"
-                              "    Foo() : m_ptr(new int) {}\n"
-                              "    ~Foo() { delete m_ptr; }\n"
-                              "private:\n"
-                              "    int* m_ptr;\n"
-                              "};");
-         ASSERT_EQUALS("", errout.str());
+        checkCopyConstructor("class Copyable {};\n"
+                             "\n"
+                             "class Foo : public Copyable, public UnknownType {\n"
+                             "public:\n"
+                             "    Foo() : m_ptr(new int) {}\n"
+                             "    ~Foo() { delete m_ptr; }\n"
+                             "private:\n"
+                             "    int* m_ptr;\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
 
-         checkCopyConstructor("class Copyable {};\n"
-                              "\n"
-                              "class Foo : public UnknownType, public Copyable {\n"
-                              "public:\n"
-                              "    Foo() : m_ptr(new int) {}\n"
-                              "    ~Foo() { delete m_ptr; }\n"
-                              "private:\n"
-                              "    int* m_ptr;\n"
-                              "};");
-         ASSERT_EQUALS("", errout.str());
+        checkCopyConstructor("class Copyable {};\n"
+                             "\n"
+                             "class Foo : public UnknownType, public Copyable {\n"
+                             "public:\n"
+                             "    Foo() : m_ptr(new int) {}\n"
+                             "    ~Foo() { delete m_ptr; }\n"
+                             "private:\n"
+                             "    int* m_ptr;\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void noOperatorEq() {
