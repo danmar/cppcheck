@@ -298,27 +298,27 @@ void CheckClass::checkExplicitConstructors()
     }
 }
 
-static bool isNonCopyable(const Scope *scope, bool *unknown)
+static bool hasNonCopyableBase(const Scope *scope, bool *unknown)
 {
-    bool u = false;
     // check if there is base class that is not copyable
     for (const Type::BaseInfo &baseInfo : scope->definedType->derivedFrom) {
         if (!baseInfo.type || !baseInfo.type->classScope) {
-            u = true;
+            *unknown = true;
             continue;
         }
 
-        if (isNonCopyable(baseInfo.type->classScope, &u))
+        if (hasNonCopyableBase(baseInfo.type->classScope, unknown))
             return true;
 
         for (const Function &func : baseInfo.type->classScope->functionList) {
             if (func.type != Function::eCopyConstructor)
                 continue;
-            if (func.access == AccessControl::Private || func.isDelete())
+            if (func.access == AccessControl::Private || func.isDelete()) {
+                *unknown = false;
                 return true;
+            }
         }
     }
-    *unknown = u;
     return false;
 }
 
@@ -366,12 +366,12 @@ void CheckClass::copyconstructors()
             }
             if (!funcCopyCtor || funcCopyCtor->isDefault()) {
                 bool unknown = false;
-                if (!isNonCopyable(scope, &unknown) && !unknown)
+                if (!hasNonCopyableBase(scope, &unknown) && !unknown)
                     noCopyConstructorError(scope, funcCopyCtor, allocatedVars.begin()->second, unknown);
             }
             if (!funcOperatorEq || funcOperatorEq->isDefault()) {
                 bool unknown = false;
-                if (!isNonCopyable(scope, &unknown) && !unknown)
+                if (!hasNonCopyableBase(scope, &unknown) && !unknown)
                     noOperatorEqError(scope, funcOperatorEq, allocatedVars.begin()->second, unknown);
             }
             if (!funcDestructor || funcDestructor->isDefault()) {
