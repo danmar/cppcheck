@@ -3089,10 +3089,10 @@ private:
 
         // #8206 - knownCondition always false
         check("void f(int i)\n"
-"{\n"
-"        if(i > 4)\n"
-"          for( int x = 0; i < 3; ++x){}\n" // << 
-"}");
+              "{\n"
+              "        if(i > 4)\n"
+              "          for( int x = 0; i < 3; ++x){}\n" // <<
+              "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'i<3' is always false\n", errout.str());
 
         // Skip literals
