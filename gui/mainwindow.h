@@ -228,10 +228,10 @@ protected slots:
     void suppressIds(QStringList ids);
 
     /** Edit contract for function */
-    void editFunctionContract(QString function);
+    void editFunctionContract(const QString& function);
 
     /** Edit constraints for variable */
-    void editVariableContract(QString var);
+    void editVariableContract(const QString& var);
 
     /** Delete contract for function */
     void deleteFunctionContract(QString function);

@@ -72,7 +72,7 @@ std::string Path::fromNativeSeparators(std::string path)
 
 std::string Path::simplifyPath(std::string originalPath)
 {
-    return simplecpp::simplifyPath(originalPath);
+    return simplecpp::simplifyPath(std::move(originalPath));
 }
 
 std::string Path::getPathFromFilename(const std::string &filename)

@@ -141,7 +141,7 @@ private:
             str.replace(pos, from.length(), to);
     }
 
-    static std::string cleanupExpr(std::string rawexpr) {
+    static std::string cleanupExpr(const std::string& rawexpr) {
         std::string ret;
         std::istringstream istr(rawexpr);
         std::string line;

@@ -1870,7 +1870,7 @@ void MainWindow::suppressIds(QStringList ids)
     mProjectFile->write();
 }
 
-void MainWindow::editFunctionContract(QString function)
+void MainWindow::editFunctionContract(const QString &function)
 {
     if (!mProjectFile)
         return;
@@ -1892,7 +1892,7 @@ void MainWindow::editFunctionContract(QString function)
     updateFunctionContractsTab();
 }
 
-void MainWindow::editVariableContract(QString var)
+void MainWindow::editVariableContract(const QString &var)
 {
     if (!mProjectFile)
         return;
@@ -1909,7 +1909,7 @@ void MainWindow::editVariableContract(QString var)
 void MainWindow::deleteFunctionContract(QString function)
 {
     if (mProjectFile) {
-        mProjectFile->deleteFunctionContract(function);
+        mProjectFile->deleteFunctionContract(std::move(function));
         mProjectFile->write();
     }
 }
@@ -1917,7 +1917,7 @@ void MainWindow::deleteFunctionContract(QString function)
 void MainWindow::deleteVariableContract(QString var)
 {
     if (mProjectFile) {
-        mProjectFile->deleteVariableContract(var);
+        mProjectFile->deleteVariableContract(std::move(var));
         mProjectFile->write();
     }
 }

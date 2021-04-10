@@ -925,7 +925,7 @@ void CheckBufferOverrun::objectIndex()
                     });
                     if (idxValues.empty() ||
                     std::any_of(idxValues.begin(), idxValues.end(), [&](const ValueFlow::Value& vidx) {
-                    if (vidx.isImpossible())
+                        if (vidx.isImpossible())
                             return (vidx.intvalue == 0);
                         else
                             return (vidx.intvalue != 0);

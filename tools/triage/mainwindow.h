@@ -23,10 +23,10 @@ public:
 public slots:
     void loadFile();
     void loadFromClipboard();
-    void filter(QString filter);
+    void filter(const QString& filter);
     void showResult(QListWidgetItem *item);
     void refreshResults();
-    void fileTreeFilter(QString str);
+    void fileTreeFilter(const QString& str);
     void findInFilesClicked();
     void directorytreeDoubleClick();
     void searchResultsDoubleClick();

@@ -116,7 +116,7 @@ void MainWindow::refreshResults()
     filter(ui->version->currentText());
 }
 
-void MainWindow::filter(QString filter)
+void MainWindow::filter(const QString& filter)
 {
     QStringList allErrors;
 
@@ -263,7 +263,7 @@ void MainWindow::showSrcFile(const QString &fileName, const QString &url, const 
     }
 }
 
-void MainWindow::fileTreeFilter(QString str)
+void MainWindow::fileTreeFilter(const QString& str)
 {
     mFSmodel.setNameFilters(QStringList{"*" + str + "*"});
     mFSmodel.setNameFilterDisables(false);

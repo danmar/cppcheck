@@ -28,7 +28,7 @@
 #include "cppcheck.h"
 #include "common.h"
 
-static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output)
+static bool executeCommand(const std::string& exe, const std::vector<std::string> &args, const std::string& redirect, std::string *output)
 {
     output->clear();
 

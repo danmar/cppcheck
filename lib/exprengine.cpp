@@ -1259,7 +1259,7 @@ public:
         return bool_expr(getExpr(v));
     }
 
-    z3::expr bool_expr(z3::expr e) {
+    z3::expr bool_expr(const z3::expr&e) {
         if (e.is_bool())
             return e;
 
@@ -1270,7 +1270,7 @@ public:
         return e != 0;
     }
 
-    z3::expr int_expr(z3::expr e) {
+    z3::expr int_expr(const z3::expr& e) {
         if (e.is_bool())
             return z3::ite(e, context.int_val(1), context.int_val(0));
         return e;
@@ -1291,7 +1291,7 @@ public:
         return context.real_val(name.c_str());
     }
 
-    bool z3_is_fp(z3::expr e) const {
+    bool z3_is_fp(const z3::expr& e) const {
         return e.is_real();
     }
 
