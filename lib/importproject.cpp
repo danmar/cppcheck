@@ -452,6 +452,10 @@ bool ImportProject::importCompileCommands(std::istream &istr)
 #endif
         else
             fs.filename = Path::simplifyPath(directory + file);
+        if (!Path::fileExists(fs.filename)) {
+            printMessage("'" + fs.filename + "' from compilation database does not exist");
+            return false;
+        }
         fs.parseCommand(command); // read settings; -D, -I, -U, -std, -m*, -f*
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         fs.setIncludePaths(directory, fs.includePaths, variables);

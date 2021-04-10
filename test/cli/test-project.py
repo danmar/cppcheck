@@ -2,6 +2,7 @@
 
 import pytest
 import os
+import json
 from testutils import cppcheck
 
 
@@ -29,6 +30,27 @@ def test_empty_project(tmpdir, project_ext, expected):
         pass
 
     ret, stdout, stderr = cppcheck(['--project=' + str(project_file), '--template=cppcheck1'])
+    assert 1 == ret
+    assert expected + "\ncppcheck: Failed to load project '{}'. An error occurred.\n".format(project_file) == stdout
+    assert "" == stderr
+
+
+def test_compile_db_entry_file_not_found(tmpdir):
+    project_file = os.path.join(tmpdir, "file.json")
+
+    compilation_db = [
+        {"directory": str(tmpdir),
+         "command": "c++ -o bug1.o -c bug1.cpp",
+         "file": "bug1.cpp",
+         "output": "bug1.o"}
+    ]
+
+    with open(project_file, 'w') as f:
+        f.write(json.dumps(compilation_db))
+
+    expected = "'{}' from compilation database does not exist".format(os.path.join(tmpdir, "bug1.cpp"))
+
+    ret, stdout, stderr = cppcheck(['--project=' + str(project_file)])
     assert 1 == ret
     assert expected + "\ncppcheck: Failed to load project '{}'. An error occurred.\n".format(project_file) == stdout
     assert "" == stderr
