@@ -249,6 +249,8 @@ private:
 
         TEST_CASE(functionStatic);
 
+        TEST_CASE(functionReturnsReference); // Function::returnsReference
+
         TEST_CASE(namespaces1);
         TEST_CASE(namespaces2);
         TEST_CASE(namespaces3);  // #3854 - unknown macro
@@ -2465,6 +2467,14 @@ private:
         const Function *func = db->scopeList.back().function;
         ASSERT(func);
         ASSERT(func->isStatic());
+    }
+
+    void functionReturnsReference() {
+        GET_SYMBOL_DB("Fred::Reference foo();");
+        ASSERT_EQUALS(1, db->scopeList.back().functionList.size());
+        const Function &func = *db->scopeList.back().functionList.begin();
+        ASSERT(!Function::returnsReference(&func, false));
+        ASSERT(Function::returnsReference(&func, true));
     }
 
     void namespaces1() {

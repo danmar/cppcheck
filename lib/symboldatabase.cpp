@@ -2642,6 +2642,10 @@ bool Function::returnsReference(const Function* function, bool unknown)
     const Token* start = function->retDef;
     while (Token::Match(start, "const|volatile"))
         start = start->next();
+    if (Token::Match(start, ":: %name%"))
+        start = start->next();
+    while (Token::Match(start, "%name% :: %name%"))
+        start = start->tokAt(2);
     if (start->tokAt(1) == defEnd && !start->type() && !start->isStandardType())
         return unknown;
     // TODO: Try to deduce the type of the expression
