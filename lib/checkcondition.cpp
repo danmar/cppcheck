@@ -1716,6 +1716,8 @@ void CheckCondition::checkAssignmentInCondition()
             // Is this assignment of container/iterator?
             if (!tok->valueType())
                 continue;
+            if (tok->valueType()->pointer > 0)
+                continue;
             if (tok->valueType()->type != ValueType::Type::CONTAINER && tok->valueType()->type != ValueType::Type::ITERATOR)
                 continue;
 
@@ -1732,11 +1734,13 @@ void CheckCondition::checkAssignmentInCondition()
 
 void CheckCondition::assignmentInCondition(const Token *eq)
 {
+    std::string expr = eq ? eq->expressionString() : "x=y";
+
     reportError(
         eq,
         Severity::style,
         "assignmentInCondition",
-        "Assignment in condition should probably be comparison.",
+        "Suspicious assignment in condition. Condition '" + expr + "' is always true.",
         CWE571,
         Certainty::normal);
 }

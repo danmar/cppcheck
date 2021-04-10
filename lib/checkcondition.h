@@ -211,7 +211,7 @@ private:
                "- Comparisons of modulo results that are always true/false.\n"
                "- Known variable values => condition is always true/false\n"
                "- Invalid test for overflow. Some mainstream compilers remove such overflow tests when optimising code.\n"
-               "- Assignment of container/iterator in condition should probably be comparison.\n";
+               "- Suspicious assignment of container/iterator in condition => condition is always true.\n";
     }
 };
 /// @}

@@ -5063,6 +5063,22 @@ private:
         ASSERT_EQUALS("",
                       isKnownContainerSizeValue(tokenValues(code, "a . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 10));
 
+        code = "int f(const std::vector<int>& x) {\n"
+               "    if (!x.empty() && x[0] == 0)\n"
+               "        return 2;\n"
+               "    return x.front();\n"
+               "}\n";
+        ASSERT_EQUALS("",
+                      isPossibleContainerSizeValue(tokenValues(code, "x . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+
+        code = "int f(const std::vector<int>& x) {\n"
+               "    if (!(x.empty() || x[0] != 0))\n"
+               "        return 2;\n"
+               "    return x.front();\n"
+               "}\n";
+        ASSERT_EQUALS("",
+                      isPossibleContainerSizeValue(tokenValues(code, "x . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+
         code = "void f(std::string str) {\n"
                "    if (str == \"123\") {\n"
                "        bool x = (str == \"\");\n"
