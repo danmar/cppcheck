@@ -1125,7 +1125,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     const std::string xmldata = istream_to_string(istr);
     const tinyxml2::XMLError error = doc.Parse(xmldata.data(), xmldata.size());
     if (error != tinyxml2::XML_SUCCESS) {
-        printMessage(std::string("Cppcheck GUI project file cannot be parsed - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
+        printMessage(std::string("Cppcheck GUI project file is not a valid XML - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
         return false;
     }
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
