@@ -1,7 +1,7 @@
 # python -m pytest test-projects.py
-import tempfile
 
 import pytest
+import os
 from testutils import cppcheck
 
 
@@ -23,7 +23,7 @@ def test_missing_project(project_ext):
     ("cppcheck", "Cppcheck GUI project file cannot be parsed - XML_ERROR_EMPTY_DOCUMENT")
 ])
 def test_empty_project(tmpdir, project_ext, expected):
-    project_file = "{}/file.{}".format(tmpdir, project_ext)
+    project_file = os.path.join(tmpdir, "file.{}".format(project_ext))
 
     with open(project_file, 'w'):
         pass
