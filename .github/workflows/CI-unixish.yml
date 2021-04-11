@@ -152,6 +152,19 @@ jobs:
           pushd gui/help
           qhelpgenerator online-help.qhcp -o online-help.qhc
 
+      - name: Build triage on ubuntu
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          pushd tools/triage
+          qmake
+          make -j$(nproc)
+
+      - name: Build Fuzzer
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          pushd oss-fuzz
+          make -j$(nproc) CXX=clang++ CXXFLAGS="-fsanitize=address" fuzz-client translate
+
       # Run self check after "Build GUI" to include generated headers in analysis
       - name: Self check
         if: matrix.os == 'ubuntu-20.04'
@@ -182,16 +195,3 @@ jobs:
         if: matrix.os == 'ubuntu-20.04'
         run: |
           ./cppcheck -q -j$(nproc) --template=selfcheck --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --library=qt --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings --project=cppcheck.cppcheck
-
-      - name: Build triage on ubuntu
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          pushd tools/triage
-          qmake
-          make -j$(nproc)
-
-      - name: Build Fuzzer
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          pushd oss-fuzz
-          make -j$(nproc) CXX=clang++ CXXFLAGS="-fsanitize=address" fuzz-client translate
