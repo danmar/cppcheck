@@ -275,7 +275,7 @@ void CheckClass::checkExplicitConstructors()
 
         // Abstract classes can't be instantiated. But if there is C++11
         // "misuse" by derived classes then these constructors must be explicit.
-        if (isAbstractClass && mSettings->standards.cpp != Standards::CPP11)
+        if (isAbstractClass && mSettings->standards.cpp >= Standards::CPP11)
             continue;
 
         for (const Function &func : scope->functionList) {
