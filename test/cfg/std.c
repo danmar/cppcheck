@@ -3561,6 +3561,17 @@ void bufferAccessOutOfBounds_strxfrm(void)
     (void)strxfrm(dest,src,3);
 }
 
+void bufferAccessOutOfBounds_strncmp(void)
+{
+    const char src[3] = "abc";
+    char dest[1] = "a";
+    (void)strncmp(dest,src,1);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)strncmp(dest,src,2);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)strncmp(dest,src,3);
+}
+
 void uninitvar_wcsxfrm(void)
 {
     wchar_t *ds;
