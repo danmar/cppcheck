@@ -31,10 +31,11 @@
 #ifdef __VISUALC__
 // Ensure no duplicateBreak warning is issued after wxLogApiError() calls.
 // This function does not terminate execution.
-bool duplicateBreak_wxLogApiError(const wxString &msg, const HRESULT &hr)
+bool duplicateBreak_wxLogApiError(const wxString &msg, const HRESULT &hr, wxString &str)
 {
-    if (FAILED(hr)) {
+    if (hr) {
         wxLogApiError(msg,hr);
+        str = "fail";
         return false;
     }
     return true;
