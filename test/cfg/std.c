@@ -3555,9 +3555,9 @@ void bufferAccessOutOfBounds_strxfrm(void)
     const char src[3] = "abc";
     char dest[1] = "a";
     (void)strxfrm(dest,src,1);
-    // TODO cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress bufferAccessOutOfBounds
     (void)strxfrm(dest,src,2);
-    // TODO cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress bufferAccessOutOfBounds
     (void)strxfrm(dest,src,3);
 }
 
