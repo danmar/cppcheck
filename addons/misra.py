@@ -1477,7 +1477,7 @@ class MisraChecker:
                             break
                         following.append(rawToken)
 
-                    return following
+            return following
 
         # Check arguments in function declaration
         for func in data.functions:

@@ -33,8 +33,6 @@ environment:
 #      PlatformToolset: v140
 
 install:
-  - python -m pip install --user pip --upgrade
-  - python -m pip install --user pytest
   - curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-4.8.9/z3-4.8.9-%platform%-win.zip -o z3-4.8.9-win.zip
   - 7z x z3-4.8.9-win.zip -oexternals -r -y
   - move externals\z3-4.8.9-%platform%-win externals\z3
