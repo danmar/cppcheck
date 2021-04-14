@@ -441,7 +441,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
 #endif
         else
             fs.filename = Path::simplifyPath(directory + file);
-        if (!Path::fileExists(fs.filename)) {
+        if (!sourceFileExists(fs.filename)) {
             printMessage("'" + fs.filename + "' from compilation database does not exist");
             return false;
         }
@@ -1300,4 +1300,9 @@ std::list<std::string> ImportProject::getVSConfigs()
 void ImportProject::printMessage(const std::string &message)
 {
     std::cout << message << std::endl;
+}
+
+bool ImportProject::sourceFileExists(const std::string &file)
+{
+    return Path::fileExists(file);
 }

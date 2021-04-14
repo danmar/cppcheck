@@ -109,6 +109,7 @@ public:
 protected:
     bool importCompileCommands(std::istream &istr);
     bool importCppcheckGuiProject(std::istream &istr, Settings *settings);
+    virtual bool sourceFileExists(const std::string &file);
 private:
     bool importSln(std::istream &istr, const std::string &path, const std::string &fileFilter);
     bool importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::string &fileFilter);
