@@ -692,6 +692,9 @@ private:
      */
     void simplifyCppcheckAttribute();
 
+    /** Remove alignas */
+    void removeAlignas();
+
     /**
      * Remove keywords "volatile", "inline", "register", and "restrict"
      */

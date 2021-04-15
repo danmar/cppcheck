@@ -4781,6 +4781,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Remove extra "template" tokens that are not used by cppcheck
     removeExtraTemplateKeywords();
 
+    removeAlignas();
+
     // Bail out if code is garbage
     if (mTimerResults) {
         Timer t("Tokenizer::tokenize::findGarbageCode", mSettings->showtime, mTimerResults);
@@ -10901,6 +10903,19 @@ void Tokenizer::simplifyCPPAttribute()
         } else {
             tok->deleteThis();
             tok = list.front();
+        }
+    }
+}
+
+void Tokenizer::removeAlignas()
+{
+    if (!isCPP() || mSettings->standards.cpp < Standards::CPP11)
+        return;
+
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "alignas|alignof (")) {
+            Token::eraseTokens(tok, tok->linkAt(1)->next());
+            tok->deleteThis();
         }
     }
 }
