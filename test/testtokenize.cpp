@@ -414,6 +414,8 @@ private:
         TEST_CASE(checkHeader1);
 
         TEST_CASE(removeExtraTemplateKeywords);
+
+        TEST_CASE(removeAlignas);
     }
 
     std::string tokenizeAndStringify(const char code[], bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -5845,6 +5847,8 @@ private:
         ASSERT_EQUALS("b{[{ stdunique_ptr::0nullptrnullptr:?{", testAst("auto b{[] { std::unique_ptr<void *>{0 ? nullptr : nullptr}; }};"));
         ASSERT_EQUALS("b{[=", testAst("void a() { [b = [] { ; }] {}; }"));
 
+        // Lambda capture expression (C++14)
+        ASSERT_EQUALS("a{b1=[= c2=", testAst("a = [b=1]{c=2;};"));
     }
 
     void astcase() {
@@ -6496,6 +6500,12 @@ private:
         const char code2[] = "typename GridView::template Codim<0>::Iterator it = gv.template begin<0>();";
         const char expected2[] = "GridView :: Codim < 0 > :: Iterator it ; it = gv . begin < 0 > ( ) ;";
         ASSERT_EQUALS(expected2, tokenizeAndStringify(code2));
+    }
+
+    void removeAlignas() {
+        const char code[] = "alignas(float) unsigned char c[sizeof(float)];";
+        const char expected[] = "unsigned char c [ sizeof ( float ) ] ;";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 };
 
