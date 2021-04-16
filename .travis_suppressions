@@ -14,6 +14,8 @@ valueFlowBailout
 valueFlowBailoutIncompleteVar
 debug
 varid0
+autoNoType
+bailoutUninitVar
 
 *:gui/test/*
 *:test/test.cxx
