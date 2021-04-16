@@ -5847,6 +5847,8 @@ private:
         ASSERT_EQUALS("b{[{ stdunique_ptr::0nullptrnullptr:?{", testAst("auto b{[] { std::unique_ptr<void *>{0 ? nullptr : nullptr}; }};"));
         ASSERT_EQUALS("b{[=", testAst("void a() { [b = [] { ; }] {}; }"));
 
+        // Lambda capture expression (C++14)
+        ASSERT_EQUALS("a{b1=[= c2=", testAst("a = [b=1]{c=2;};"));
     }
 
     void astcase() {
