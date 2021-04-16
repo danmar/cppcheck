@@ -15,6 +15,7 @@ valueFlowBailoutIncompleteVar
 varid0
 autoNoType
 bailoutUninitVar
+simplifyUsing
 
 *:gui/test/*
 *:test/test.cxx
