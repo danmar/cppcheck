@@ -12,7 +12,6 @@ useStlAlgorithm
 # debug suppressions
 valueFlowBailout
 valueFlowBailoutIncompleteVar
-debug
 varid0
 autoNoType
 bailoutUninitVar
