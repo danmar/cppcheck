@@ -377,7 +377,7 @@ void Tokenizer::unsupportedTypedef(const Token *tok) const
     if (tok)
         str << " ;";
 
-    reportError(tok1, Severity::debug, "debug",
+    reportError(tok1, Severity::debug, "simplifyTypedef",
                 "Failed to parse \'" + str.str() + "\'. The checking continues anyway.");
 }
 
@@ -2479,7 +2479,7 @@ bool Tokenizer::simplifyUsing()
                     }
 
                     if (Token::Match(type, "%type%") &&
-                        type->next() && !Token::Match(type->next(), "[|;|,|(")) {
+                        type->next() && !Token::Match(type->next(), "[|,|(")) {
                         type = type->next();
                     } else if (Token::simpleMatch(type, "const (")) {
                         type = type->next();
@@ -2604,7 +2604,7 @@ bool Tokenizer::simplifyUsing()
                     }
                     str += " ;";
                     std::list<const Token *> callstack(1, usingStart);
-                    mErrorLogger->reportErr(ErrorMessage(callstack, &list, Severity::debug, "debug",
+                    mErrorLogger->reportErr(ErrorMessage(callstack, &list, Severity::debug, "simplifyUsing",
                                                          "Failed to parse \'" + str + "\'. The checking continues anyway.", Certainty::normal));
                 }
             }

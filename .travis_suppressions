@@ -8,11 +8,11 @@ bitwiseOnBoolean
 # temporary suppressions - fix the warnings!
 unusedPrivateFunction:test/test*.cpp
 useStlAlgorithm
+simplifyUsing:lib/valueptr.h
 
 # debug suppressions
 valueFlowBailout
 valueFlowBailoutIncompleteVar
-debug
 varid0
 autoNoType
 bailoutUninitVar
