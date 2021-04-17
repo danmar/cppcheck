@@ -562,6 +562,7 @@ std::vector<CheckClass::Usage> CheckClass::createUsageList(const Scope *scope)
     std::vector<Usage> ret;
     std::vector<const Variable *> varlist;
     getAllVariableMembers(scope, varlist);
+    ret.reserve(varlist.size());
     for (const Variable *var: varlist)
         ret.emplace_back(var);
     return ret;
