@@ -1792,7 +1792,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     return false;
 }
 
-bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Settings *settings)
+bool isVariableChangedByFunctionCall(const Token* tok, int indirect, const Settings* settings)
 {
     bool inconclusive = false;
     bool r = isVariableChangedByFunctionCall(tok, indirect, settings, &inconclusive);
@@ -1852,7 +1852,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
         const Token *ftok = tok->tokAt(2);
         if (settings)
             return !settings->library.isFunctionConst(ftok);
-        
+
         const Function * fun = ftok->function();
         if (!fun)
             return true;
@@ -1963,7 +1963,8 @@ Token* findVariableChanged(Token *start, const Token *end, int indirect, const n
                 // TODO: Is global variable really changed by function call?
                 return tok;
             // Is aliased function call or alias passed to function
-            if ((Token::Match(tok, "%var% (") || isVariableChangedByFunctionCall(tok, 1, settings)) && std::any_of(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
+            if ((Token::Match(tok, "%var% (") || isVariableChangedByFunctionCall(tok, 1, settings)) &&
+                std::any_of(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
                 bool aliased = false;
                 // If we can't find the expression then assume it was modified
                 if (!getExprTok())

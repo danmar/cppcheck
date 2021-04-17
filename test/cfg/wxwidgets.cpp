@@ -110,7 +110,7 @@ bool invalidFunctionArgBool_wxPGProperty_Hide(wxPGProperty *pg, bool hide, int f
     return pg->Hide(hide, flags);
 }
 
-wxTextCtrlHitTestResult nullPointer_wxTextCtrl_HitTest(const wxTextCtrl &txtCtrl, const wxPoint &pos)
+wxTextCtrlHitTestResult nullPointer_wxTextCtrl_HitTest(const wxTextCtrl& txtCtrl, const wxPoint& pos)
 {
     // no nullPointer-warning is expected
     return txtCtrl.HitTest(pos, NULL);
