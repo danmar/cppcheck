@@ -3488,9 +3488,7 @@ void CheckOther::checkKnownArgument()
                 continue;
             // ensure that function name does not contain "assert"
             std::string funcname = tok->astParent()->previous()->str();
-            std::transform(funcname.begin(), funcname.end(), funcname.begin(), [](int c) {
-                return std::tolower(c);
-            });
+            strTolower(funcname);
             if (funcname.find("assert") != std::string::npos)
                 continue;
             knownArgumentError(tok, tok->astParent()->previous(), &tok->values().front(), varexpr, isVariableExprHidden);
