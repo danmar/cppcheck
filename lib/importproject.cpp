@@ -318,7 +318,10 @@ void ImportProject::FileSettings::parseCommand(std::string command)
                 } else if (standard == "c++20" || standard == "c++2a" || standard == "gnu++20" || standard == "gnu++2a") {
                     // GCC 10 returns "201703L"
                     stddef = "202002L";
-                }
+                } /* else if (standard == "c++23" || standard == "c++2b" || standard == "gnu++23" || standard == "gnu++2b") {
+                    // supported by GCC 11+
+                    stddef = "";
+                } */
 
                 if (stddef.empty()) {
                     // TODO: log error
@@ -343,8 +346,8 @@ void ImportProject::FileSettings::parseCommand(std::string command)
                 } else if (standard == "c17" || standard == "c18" || standard == "iso9899:2017" || standard == "iso9899:2018" || standard == "gnu17"|| standard == "gnu18") {
                     stddef = "201710L";
                 } else if (standard == "c2x" || standard == "gnu2x") {
-                    // Clang 11 and GCC 11 return "201710L"
-                    stddef = "201710L";
+                    // Clang 11 returns "201710L"
+                    stddef = "202000L";
                 }
 
                 if (stddef.empty()) {
@@ -750,14 +753,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             for (const ItemDefinitionGroup &i : itemDefinitionGroupList) {
                 if (!i.conditionIsTrue(p))
                     continue;
-                if (i.cppstd == Standards::CPP11)
-                    fs.standard = "c++11";
-                else if (i.cppstd == Standards::CPP14)
-                    fs.standard = "c++14";
-                else if (i.cppstd == Standards::CPP17)
-                    fs.standard = "c++17";
-                else if (i.cppstd == Standards::CPP20)
-                    fs.standard = "c++20";
+                fs.standard = Standards::getCPP(i.cppstd);
                 fs.defines += ';' + i.preprocessorDefinitions;
                 additionalIncludePaths += ';' + i.additionalIncludePaths;
             }
