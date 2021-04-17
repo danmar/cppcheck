@@ -787,14 +787,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             for (const ItemDefinitionGroup &i : itemDefinitionGroupList) {
                 if (!i.conditionIsTrue(p))
                     continue;
-                if (i.cppstd == Standards::CPP11)
-                    fs.standard = "c++11";
-                else if (i.cppstd == Standards::CPP14)
-                    fs.standard = "c++14";
-                else if (i.cppstd == Standards::CPP17)
-                    fs.standard = "c++17";
-                else if (i.cppstd == Standards::CPP20)
-                    fs.standard = "c++20";
+                fs.standard = Standards::getCPP(i.cppstd);
                 fs.defines += ';' + i.preprocessorDefinitions;
                 if (i.enhancedInstructionSet == "StreamingSIMDExtensions")
                     fs.defines += ";__SSE__";
