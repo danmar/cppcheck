@@ -229,8 +229,8 @@ static void addFiles2(std::map<std::string, std::size_t> &files,
                     }
                 } else {
                     if (Path::acceptFile(new_path, extra) && !ignored.match(new_path)) {
-                        stat(new_path.c_str(), &file_stat);
-                        files[new_path] = file_stat.st_size;
+                        if (stat(new_path.c_str(), &file_stat) != -1)
+                            files[new_path] = file_stat.st_size;
                     }
                 }
             }
