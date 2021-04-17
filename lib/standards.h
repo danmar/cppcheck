@@ -21,6 +21,7 @@
 #define standardsH
 //---------------------------------------------------------------------------
 
+#include <algorithm>
 #include <string>
 
 /// @addtogroup Core
@@ -74,40 +75,19 @@ struct Standards {
     static cstd_t getC(const std::string &std) {
         if (std == "c89") {
             return Standards::C89;
-        } else if (std == "c99") {
+        }
+        if (std == "c99") {
             return Standards::C99;
-        } else if (std == "c11") {
+        }
+        if (std == "c11") {
             return Standards::C11;
-        } else {
-            return Standards::CLatest;
         }
+        return Standards::CLatest;
     }
-    bool setCPP(const std::string& str) {
+    bool setCPP(std::string str) {
         stdValue = str;
-        if (str == "c++03" || str == "C++03") {
-            cpp = CPP03;
-            return true;
-        }
-        if (str == "c++11" || str == "C++11") {
-            cpp = CPP11;
-            return true;
-        }
-        if (str == "c++14" || str == "C++14") {
-            cpp = CPP14;
-            return true;
-        }
-        if (str == "c++17" || str == "C++17") {
-            cpp = CPP17;
-            return true;
-        }
-        if (str == "c++20" || str == "C++20") {
-            cpp = CPP20;
-            return true;
-        }
-        if (str == "c++23" || str == "C++23") {
-            cpp = CPP23;
-            return true;
-        }
+        std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+        cpp = getCPP(str);
         return false;
     }
     std::string getCPP() const {
@@ -133,19 +113,23 @@ struct Standards {
     static cppstd_t getCPP(const std::string &std) {
         if (std == "c++03") {
             return Standards::CPP03;
-        } else if (std == "c++11") {
-            return Standards::CPP11;
-        } else if (std == "c++14") {
-            return Standards::CPP14;
-        } else if (std == "c++17") {
-            return Standards::CPP17;
-        } else if (std == "c++20") {
-            return Standards::CPP20;
-        } else if (std == "c++23") {
-            return Standards::CPP20;
-        } else {
-            return Standards::CPPLatest;
         }
+        if (std == "c++11") {
+            return Standards::CPP11;
+        }
+        if (std == "c++14") {
+            return Standards::CPP14;
+        }
+        if (std == "c++17") {
+            return Standards::CPP17;
+        }
+        if (std == "c++20") {
+            return Standards::CPP20;
+        }
+        if (std == "c++23") {
+            return Standards::CPP23;
+        }
+        return Standards::CPPLatest;
     }
 };
 
