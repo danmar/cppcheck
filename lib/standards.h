@@ -89,7 +89,7 @@ struct Standards {
         stdValue = str;
         strTolower(str);
         cpp = getCPP(str);
-        return false;
+        return !stdValue.empty() && str == getCPP();
     }
     std::string getCPP() const {
         return getCPP(cpp);
