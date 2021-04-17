@@ -585,7 +585,10 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     }
                     if (!isLifetimeBorrowed(tok, mSettings))
                         continue;
-                    if (var && !var->isLocal() && !var->isArgument() && !isVariableChanged(tok->next(), tok->scope()->bodyEnd, var->declarationId(), var->isGlobal(), mSettings, mTokenizer->isCPP())) {
+                    const Token* nextTok = nextAfterAstRightmostLeaf(tok->astTop());
+                    if (!nextTok)
+                        nextTok = tok->next();
+                    if (var && !var->isLocal() && !var->isArgument() && !isVariableChanged(nextTok, tok->scope()->bodyEnd, var->declarationId(), var->isGlobal(), mSettings, mTokenizer->isCPP())) {
                         errorDanglngLifetime(tok2, &val);
                         break;
                     }

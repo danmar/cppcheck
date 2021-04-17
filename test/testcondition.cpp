@@ -3974,6 +3974,18 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void g(std::function<void()>);\n"
+              "void f(std::vector<int> v) {\n"
+              "    auto x = [&v] { v.push_back(1); };\n"
+              "    if(v.empty()) {\n"
+              "        g(x);\n"
+              "    }\n"
+              "    if(v.empty())\n"
+              "        return;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // do not crash
         check("void assign(const MMA& other) {\n"
               "    if (mPA.cols != other.mPA.cols || mPA.rows != other.mPA.rows)\n"

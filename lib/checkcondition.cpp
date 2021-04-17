@@ -713,7 +713,7 @@ void CheckCondition::multiCondition2()
                         });
                     }
                 }
-                if (Token::Match(tok, "%name% (") && isVariablesChanged(tok, tok->linkAt(1), true, varsInCond, mSettings, mTokenizer->isCPP())) {
+                if (Token::Match(tok, "%name% (") && isVariablesChanged(tok, tok->linkAt(1), 0, varsInCond, mSettings, mTokenizer->isCPP())) {
                     break;
                 }
                 if (Token::Match(tok, "%type% (") && nonlocal && isNonConstFunctionCall(tok, mSettings->library)) // non const function call -> bailout if there are nonlocal variables
