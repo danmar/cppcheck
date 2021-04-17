@@ -30,7 +30,7 @@ PathMatch::PathMatch(const std::vector<std::string> &excludedPaths, bool caseSen
 {
     if (!mCaseSensitive)
         for (std::string& excludedPath : mExcludedPaths)
-            std::transform(excludedPath.begin(), excludedPath.end(), excludedPath.begin(), ::tolower);
+            strTolower(excludedPath);
     mWorkingDirectory.push_back(Path::getCurrentPath());
 }
 
@@ -44,7 +44,7 @@ bool PathMatch::match(const std::string &path) const
 
         std::string findpath = Path::fromNativeSeparators(path);
         if (!mCaseSensitive)
-            std::transform(findpath.begin(), findpath.end(), findpath.begin(), ::tolower);
+            strTolower(findpath);
 
         // Filtering directory name
         if (endsWith(excludedPath,'/')) {

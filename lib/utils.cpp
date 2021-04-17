@@ -21,6 +21,7 @@
 #include <utility>
 #include <stack>
 #include <cctype>
+#include <algorithm>
 
 
 int caseInsensitiveStringCompare(const std::string &lhs, const std::string &rhs)
@@ -111,4 +112,14 @@ bool matchglob(const std::string& pattern, const std::string& name)
         // Advance name pointer by one because the current position didn't work
         n++;
     }
+}
+
+void strTolower(std::string& str)
+{
+    // This wrapper exists because Sun's CC does not allow a static_cast
+    // from extern "C" int(*)(int) to int(*)(int).
+    static auto tolowerWrapper = [](int c) {
+        return std::tolower(c);
+    };
+    std::transform(str.begin(), str.end(), str.begin(), tolowerWrapper);
 }

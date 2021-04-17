@@ -21,7 +21,8 @@
 #define standardsH
 //---------------------------------------------------------------------------
 
-#include <algorithm>
+#include "utils.h"
+
 #include <string>
 
 /// @addtogroup Core
@@ -86,7 +87,7 @@ struct Standards {
     }
     bool setCPP(std::string str) {
         stdValue = str;
-        std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+        strTolower(str);
         cpp = getCPP(str);
         return false;
     }
