@@ -120,7 +120,7 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *token, const std::string &
         isClass(Token::Match(next, "class|struct|union %name% <|{|:|;|::"));
         if (mToken->strAt(1) == "<" && !isSpecialization()) {
             const Token *end = mToken->next()->findClosingBracket();
-            isVariadic(end && Token::findmatch(mToken->tokAt(2), "typename|class ...", end));
+            isVariadic(end && Token::findmatch(mToken->tokAt(2), "%name% ...", end));
         }
         const Token *tok1 = mNameToken->next();
         if (tok1->str() == "<") {
@@ -1324,11 +1324,12 @@ void TemplateSimplifier::simplifyTemplateAliases()
     }
 }
 
-bool TemplateSimplifier::instantiateMatch(const Token *instance, const std::size_t numberOfArguments, const char patternAfter[])
+bool TemplateSimplifier::instantiateMatch(const Token *instance, const std::size_t numberOfArguments, bool variadic, const char patternAfter[])
 {
     assert(instance->strAt(1) == "<");
 
-    if (numberOfArguments != templateParameters(instance->next()))
+    auto n = templateParameters(instance->next());
+    if (variadic ? (n + 1 < numberOfArguments) : (numberOfArguments != n))
         return false;
 
     if (patternAfter) {
@@ -1650,8 +1651,12 @@ void TemplateSimplifier::expandTemplate(
                 std::stack<Token *> brackets1; // holds "(" and "{" tokens
                 bool pointerType = false;
                 Token * const dst1 = dst->previous();
+                const bool isVariadicTemplateArg = templateDeclaration.isVariadic() && itype + 1 == typeParametersInDeclaration.size();
+                if (isVariadicTemplateArg && Token::Match(start, "%name% ... %name%"))
+                    start = start->tokAt(2);
+                const std::string endsWith(isVariadicTemplateArg ? ">" : ",>");
                 for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token();
-                     typetok && (typeindentlevel > 0 || !Token::Match(typetok, ",|>"));
+                     typetok && (typeindentlevel > 0 || endsWith.find(typetok->str()[0]) == std::string::npos);
                      typetok = typetok->next()) {
                     if (typeindentlevel == 0 && typetok->str() == "*")
                         pointerType = true;
@@ -1847,7 +1852,7 @@ void TemplateSimplifier::expandTemplate(
         else if (inTemplateDefinition &&
                  Token::Match(tok3, "%name% <") &&
                  templateInstantiation.name() == tok3->str() &&
-                 instantiateMatch(tok3, typeParametersInDeclaration.size(), ":: ~| %name% (")) {
+                 instantiateMatch(tok3, typeParametersInDeclaration.size(), templateDeclaration.isVariadic(), ":: ~| %name% (")) {
             // there must be template..
             bool istemplate = false;
             Token * tok5 = nullptr; // start of function return type
@@ -2003,8 +2008,12 @@ void TemplateSimplifier::expandTemplate(
                     std::stack<Token *> brackets1; // holds "(" and "{" tokens
                     Token * const beforeTypeToken = mTokenList.back();
                     bool pointerType = false;
+                    const bool isVariadicTemplateArg = templateDeclaration.isVariadic() && itype + 1 == typeParametersInDeclaration.size();
+                    if (isVariadicTemplateArg && Token::Match(tok3, "%name% ... %name%"))
+                        tok3 = tok3->tokAt(2);
+                    const std::string endsWith(isVariadicTemplateArg ? ">" : ",>");
                     for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token();
-                         typetok && (typeindentlevel > 0 || !Token::Match(typetok, ",|>"));
+                         typetok && (typeindentlevel > 0 || endsWith.find(typetok->str()[0]) == std::string::npos);
                          typetok = typetok->next()) {
                         if (typeindentlevel == 0 && typetok->str() == "*")
                             pointerType = true;
@@ -3091,7 +3100,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         }
 
         if (Token::Match(startToken->previous(), ";|{|}|=|const") &&
-            (!specialized && !instantiateMatch(tok2, typeParametersInDeclaration.size(), isfunc ? "(" : isVar ? ";|%op%|(" : "*|&|::| %name%")))
+            (!specialized && !instantiateMatch(tok2, typeParametersInDeclaration.size(), templateDeclaration.isVariadic(), isfunc ? "(" : isVar ? ";|%op%|(" : "*|&|::| %name%")))
             continue;
 
         // New type..
@@ -3100,7 +3109,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         std::string typeForNewName = getNewName(tok2, typeStringsUsedInTemplateInstantiation);
 
         if ((typeForNewName.empty() && !templateDeclaration.isVariadic()) ||
-            (!typeParametersInDeclaration.empty() && typeParametersInDeclaration.size() != mTypesUsedInTemplateInstantiation.size())) {
+            (!typeParametersInDeclaration.empty() && !instantiateMatch(tok2, typeParametersInDeclaration.size(), templateDeclaration.isVariadic(), nullptr))) {
             if (printDebug && mErrorLogger) {
                 std::list<const Token *> callstack(1, tok2);
                 mErrorLogger->reportErr(ErrorMessage(callstack, &mTokenList, Severity::debug, "debug",

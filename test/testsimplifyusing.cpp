@@ -70,6 +70,7 @@ private:
         TEST_CASE(simplifyUsing21);
         TEST_CASE(simplifyUsing22);
         TEST_CASE(simplifyUsing23);
+        TEST_CASE(simplifyUsing24);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -583,6 +584,13 @@ private:
                                 ", m_rt { rt :: UNKNOWN_ } { "
                                 "}";
         ASSERT_EQUALS(expected, tok(code, false)); // don't hang
+    }
+
+    void simplifyUsing24() {
+        const char code[] = "using value_type = const ValueFlow::Value;\n"
+                            "value_type vt;";
+        const char expected[] = "const ValueFlow :: Value vt ;";
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void simplifyUsing8970() {

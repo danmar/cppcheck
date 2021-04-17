@@ -377,7 +377,7 @@ void Tokenizer::unsupportedTypedef(const Token *tok) const
     if (tok)
         str << " ;";
 
-    reportError(tok1, Severity::debug, "debug",
+    reportError(tok1, Severity::debug, "simplifyTypedef",
                 "Failed to parse \'" + str.str() + "\'. The checking continues anyway.");
 }
 
@@ -2479,7 +2479,7 @@ bool Tokenizer::simplifyUsing()
                     }
 
                     if (Token::Match(type, "%type%") &&
-                        type->next() && !Token::Match(type->next(), "[|;|,|(")) {
+                        type->next() && !Token::Match(type->next(), "[|,|(")) {
                         type = type->next();
                     } else if (Token::simpleMatch(type, "const (")) {
                         type = type->next();
@@ -2604,7 +2604,7 @@ bool Tokenizer::simplifyUsing()
                     }
                     str += " ;";
                     std::list<const Token *> callstack(1, usingStart);
-                    mErrorLogger->reportErr(ErrorMessage(callstack, &list, Severity::debug, "debug",
+                    mErrorLogger->reportErr(ErrorMessage(callstack, &list, Severity::debug, "simplifyUsing",
                                                          "Failed to parse \'" + str + "\'. The checking continues anyway.", Certainty::normal));
                 }
             }
@@ -4780,6 +4780,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Remove extra "template" tokens that are not used by cppcheck
     removeExtraTemplateKeywords();
+
+    removeAlignas();
 
     // Bail out if code is garbage
     if (mTimerResults) {
@@ -10901,6 +10903,19 @@ void Tokenizer::simplifyCPPAttribute()
         } else {
             tok->deleteThis();
             tok = list.front();
+        }
+    }
+}
+
+void Tokenizer::removeAlignas()
+{
+    if (!isCPP() || mSettings->standards.cpp < Standards::CPP11)
+        return;
+
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "alignas|alignof (")) {
+            Token::eraseTokens(tok, tok->linkAt(1)->next());
+            tok->deleteThis();
         }
     }
 }

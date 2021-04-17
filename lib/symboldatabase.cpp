@@ -2642,6 +2642,10 @@ bool Function::returnsReference(const Function* function, bool unknown)
     const Token* start = function->retDef;
     while (Token::Match(start, "const|volatile"))
         start = start->next();
+    if (Token::Match(start, ":: %name%"))
+        start = start->next();
+    while (Token::Match(start, "%name% :: %name%"))
+        start = start->tokAt(2);
     if (start->tokAt(1) == defEnd && !start->type() && !start->isStandardType())
         return unknown;
     // TODO: Try to deduce the type of the expression
@@ -4818,11 +4822,12 @@ static std::string getTypeString(const Token *typeToken)
             while (Token::Match(typeToken, ":: %name%")) {
                 ret += "::" + typeToken->strAt(1);
                 typeToken = typeToken->tokAt(2);
-            }
-            if (typeToken->str() == "<") {
-                for (const Token *tok = typeToken; tok != typeToken->link(); tok = tok->next())
-                    ret += tok->str();
-                ret += ">";
+                if (typeToken->str() == "<") {
+                    for (const Token *tok = typeToken; tok != typeToken->link(); tok = tok->next())
+                        ret += tok->str();
+                    ret += ">";
+                    typeToken = typeToken->link()->next();
+                }
             }
             return ret;
         }
@@ -6493,7 +6498,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
     if (reportDebugWarnings && mSettings->debugwarnings) {
         for (Token *tok = tokens; tok; tok = tok->next()) {
             if (tok->str() == "auto" && !tok->valueType())
-                debugMessage(tok, "debug", "auto token with no type.");
+                debugMessage(tok, "autoNoType", "auto token with no type.");
         }
     }
 
@@ -6830,18 +6835,25 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
         return ValueType::MatchResult::UNKNOWN; // TODO
     }
 
-    if (call->typeScope != nullptr || func->typeScope != nullptr)
-        return call->typeScope == func->typeScope ? ValueType::MatchResult::SAME : ValueType::MatchResult::NOMATCH;
+    if (call->typeScope != nullptr || func->typeScope != nullptr) {
+        if (call->typeScope != func->typeScope)
+            return ValueType::MatchResult::NOMATCH;
+    }
 
     if (call->container != nullptr || func->container != nullptr) {
         if (call->container != func->container)
             return ValueType::MatchResult::NOMATCH;
     }
 
-    else if (func->type < ValueType::Type::VOID || func->type == ValueType::Type::UNKNOWN_INT)
-        return ValueType::MatchResult::UNKNOWN;
+    if (func->typeScope != nullptr && func->container != nullptr) {
+        if (func->type < ValueType::Type::VOID || func->type == ValueType::Type::UNKNOWN_INT)
+            return ValueType::MatchResult::UNKNOWN;
+    }
 
     if (call->isIntegral() && func->isIntegral() && call->sign != ValueType::Sign::UNKNOWN_SIGN && func->sign != ValueType::Sign::UNKNOWN_SIGN && call->sign != func->sign)
+        return ValueType::MatchResult::FALLBACK1;
+
+    if (func->reference != Reference::None && func->constness > call->constness)
         return ValueType::MatchResult::FALLBACK1;
 
     return ValueType::MatchResult::SAME;
@@ -6850,7 +6862,7 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
 ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Variable *callVar, const Variable *funcVar)
 {
     ValueType::MatchResult res = ValueType::matchParameter(call, funcVar->valueType());
-    if (res == ValueType::MatchResult::SAME && callVar && call->container) {
+    if (callVar && ((res == ValueType::MatchResult::SAME && call->container) || res == ValueType::MatchResult::UNKNOWN)) {
         const std::string type1 = getTypeString(callVar->typeStartToken());
         const std::string type2 = getTypeString(funcVar->typeStartToken());
         if (type1 != type2)

@@ -1698,3 +1698,50 @@ void CheckCondition::duplicateConditionalAssignError(const Token *condTok, const
     reportError(
         errors, Severity::style, "duplicateConditionalAssign", msg, CWE398, Certainty::normal);
 }
+
+
+void CheckCondition::checkAssignmentInCondition()
+{
+    if (!mSettings->severity.isEnabled(Severity::style))
+        return;
+
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (tok->str() != "=")
+                continue;
+            if (!tok->astParent())
+                continue;
+
+            // Is this assignment of container/iterator?
+            if (!tok->valueType())
+                continue;
+            if (tok->valueType()->pointer > 0)
+                continue;
+            if (tok->valueType()->type != ValueType::Type::CONTAINER && tok->valueType()->type != ValueType::Type::ITERATOR)
+                continue;
+
+            // warn if this is a conditional expression..
+            if (Token::Match(tok->astParent()->previous(), "if|while ("))
+                assignmentInCondition(tok);
+            else if (Token::Match(tok->astParent(), "%oror%|&&"))
+                assignmentInCondition(tok);
+            else if (Token::simpleMatch(tok->astParent(), "?") && tok == tok->astParent()->astOperand1())
+                assignmentInCondition(tok);
+        }
+    }
+}
+
+void CheckCondition::assignmentInCondition(const Token *eq)
+{
+    std::string expr = eq ? eq->expressionString() : "x=y";
+
+    reportError(
+        eq,
+        Severity::style,
+        "assignmentInCondition",
+        "Suspicious assignment in condition. Condition '" + expr + "' is always true.",
+        CWE571,
+        Certainty::normal);
+}
+

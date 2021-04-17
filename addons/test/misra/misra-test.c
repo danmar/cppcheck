@@ -8,6 +8,8 @@
 #include <file,.h> // 20.2
 #include "file,.h" // 20.2
 
+#include "misra-test.h"
+
 #include /*abc*/ "file.h" // no warning
 /*foo*/#include "file.h" // no warning
 #include "./file.h" // no warning

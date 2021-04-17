@@ -25,6 +25,7 @@
 #include "check.h"
 #include "config.h"
 #include "ctu.h"
+#include "errortypes.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
 #include "valueflow.h"
@@ -83,7 +84,7 @@ public:
         c.pointerArithmeticError(nullptr, nullptr, nullptr);
         c.negativeIndexError(nullptr, std::vector<Dimension>(), std::vector<const ValueFlow::Value *>());
         c.arrayIndexThenCheckError(nullptr, "i");
-        c.bufferOverflowError(nullptr, nullptr);
+        c.bufferOverflowError(nullptr, nullptr, Certainty::normal);
         c.objectIndexError(nullptr, nullptr, true);
     }
 
@@ -103,7 +104,7 @@ private:
     void pointerArithmeticError(const Token *tok, const Token *indexToken, const ValueFlow::Value *indexValue);
 
     void bufferOverflow();
-    void bufferOverflowError(const Token *tok, const ValueFlow::Value *value);
+    void bufferOverflowError(const Token *tok, const ValueFlow::Value *value, const Certainty::CertaintyLevel& certainty);
 
     void arrayIndexThenCheck();
     void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);

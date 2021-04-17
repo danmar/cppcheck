@@ -93,7 +93,6 @@ private:
         TEST_CASE(template48);  // #6134 - 100% CPU upon invalid code
         TEST_CASE(template49);  // #6237 - template instantiation
         TEST_CASE(template50);  // #4272 - simple partial specialization
-        TEST_CASE(template51);  // #6172 - crash upon valid code
         TEST_CASE(template52);  // #6437 - crash upon valid code
         TEST_CASE(template53);  // #4335 - bail out for valid code
         TEST_CASE(template54);  // #6587 - memory corruption upon valid code
@@ -271,6 +270,8 @@ private:
         TEST_CASE(simplifyTemplateArgs2);
 
         TEST_CASE(template_variadic_1); // #9144
+        TEST_CASE(template_variadic_2); // #4349
+        TEST_CASE(template_variadic_3); // #6172
 
         TEST_CASE(template_variable_1);
         TEST_CASE(template_variable_2);
@@ -1250,17 +1251,6 @@ private:
                                 "void Fred<int> :: f ( ) { }";
 
         ASSERT_EQUALS(expected, tok(code));
-    }
-
-    void template51() { // #6172
-        tok("template<int N, int ... M> struct A { "
-            "  static void foo() { "
-            "    int i = N; "
-            "  } "
-            "}; "
-            "void bar() { "
-            "  A<0>::foo(); "
-            "}");
     }
 
     void template52() { // #6437
@@ -5493,7 +5483,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp", "");
 
-        return TemplateSimplifier::instantiateMatch(tokenizer.tokens(), numberOfArguments, patternAfter);
+        return TemplateSimplifier::instantiateMatch(tokenizer.tokens(), numberOfArguments, false, patternAfter);
     }
 
     void instantiateMatch() {
@@ -5838,6 +5828,34 @@ private:
         const char expected[] = "struct e<> ; struct e<int,int> ; "
                                 "static_assert ( sizeof ( e<> ) == sizeof ( e<int,int> ) , \"\" ) ; "
                                 "struct e<> { } ; struct e<int,int> { } ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void template_variadic_2() { // #4349
+        const char code[] = "template<typename T, typename... Args>\n"
+                            "void printf(const char *s, T value, Args... args) {}\n"
+                            "\n"
+                            "int main() {\n"
+                            "    printf<int, float>(\"\", foo, bar);\n"
+                            "}";
+        const char expected[] = "void printf<int,float> ( const char * s , int value , float ) ; "
+                                "int main ( ) { printf<int,float> ( \"\" , foo , bar ) ; } "
+                                "void printf<int,float> ( const char * s , int value , float ) { }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void template_variadic_3() { // #6172
+        const char code[] = "template<int N, int ... M> struct A { "
+                            "  static void foo() { "
+                            "    int i = N; "
+                            "  } "
+                            "}; "
+                            "void bar() { "
+                            "  A<0>::foo(); "
+                            "}";
+        const char expected[] = "struct A<0> ; "
+                                "void bar ( ) { A<0> :: foo ( ) ; } "
+                                "struct A<0> { static void foo ( ) { int i ; i = 0 ; } } ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 

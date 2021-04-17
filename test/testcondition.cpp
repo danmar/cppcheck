@@ -120,6 +120,8 @@ private:
         TEST_CASE(alwaysTrueFalseInLogicalOperators);
         TEST_CASE(pointerAdditionResultNotNull);
         TEST_CASE(duplicateConditionalAssign);
+
+        TEST_CASE(checkAssignmentInCondition);
     }
 
     void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
@@ -3085,6 +3087,14 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #8206 - knownCondition always false
+        check("void f(int i)\n"
+              "{\n"
+              "        if(i > 4)\n"
+              "          for( int x = 0; i < 3; ++x){}\n" // <<
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Condition 'i<3' is always false\n", errout.str());
+
         // Skip literals
         check("void f() { if(true) {} }");
         ASSERT_EQUALS("", errout.str());
@@ -4199,6 +4209,18 @@ private:
               "        x = y;\n"
               "        g();\n"
               "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkAssignmentInCondition() {
+        check("void f(std::string s) {\n"
+              "    if (s=\"123\"){}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious assignment in condition. Condition 's=\"123\"' is always true.\n", errout.str());
+
+        check("void f(std::string *p) {\n"
+              "    if (p=foo()){}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
