@@ -4811,6 +4811,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // convert C++17 style nested namespaces to old style namespaces
     simplifyNestedNamespace();
 
+    // convert c++20 coroutines
+    simplifyCoroutines();
+
     // simplify namespace aliases
     simplifyNamespaceAliases();
 
@@ -12336,6 +12339,29 @@ void Tokenizer::simplifyNestedNamespace()
                     links.pop();
                 }
             }
+        }
+    }
+}
+
+void Tokenizer::simplifyCoroutines()
+{
+    if (!isCPP() || mSettings->standards.cpp < Standards::CPP20)
+        return;
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (!tok->isName() || !Token::Match(tok, "co_return|co_yield|co_await"))
+            continue;
+        Token *end = tok->next();
+        while (end && end->str() != ";") {
+            if (Token::Match(end, "[({[]"))
+                end = end->link();
+            else if (Token::Match(end, "[)]}]"))
+                break;
+            end = end->next();
+        }
+        if (Token::simpleMatch(end, ";")) {
+            tok->insertToken("(");
+            end->previous()->insertToken(")");
+            Token::createMutualLinks(tok->next(), end->previous());
         }
     }
 }

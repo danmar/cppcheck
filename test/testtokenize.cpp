@@ -416,6 +416,8 @@ private:
         TEST_CASE(removeExtraTemplateKeywords);
 
         TEST_CASE(removeAlignas);
+
+        TEST_CASE(simplifyCoroutines);
     }
 
     std::string tokenizeAndStringify(const char code[], bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -6506,6 +6508,23 @@ private:
         const char code[] = "alignas(float) unsigned char c[sizeof(float)];";
         const char expected[] = "unsigned char c [ sizeof ( float ) ] ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+    }
+
+    void simplifyCoroutines() {
+        Settings settings;
+        settings.standards.cpp = Standards::CPP20;
+
+        const char code1[] = "generator<int> f() { co_yield start++; }";
+        const char expected1[] = "generator < int > f ( ) { co_yield ( start ++ ) ; }";
+        ASSERT_EQUALS(expected1, tokenizeAndStringify(code1, settings));
+
+        const char code2[] = "task<> f() { co_await foo(); }";
+        const char expected2[] = "task < > f ( ) { co_await ( foo ( ) ) ; }";
+        ASSERT_EQUALS(expected2, tokenizeAndStringify(code2, settings));
+
+        const char code3[] = "generator<int> f() { co_return 7; }";
+        const char expected3[] = "generator < int > f ( ) { co_return ( 7 ) ; }";
+        ASSERT_EQUALS(expected3, tokenizeAndStringify(code3, settings));
     }
 };
 

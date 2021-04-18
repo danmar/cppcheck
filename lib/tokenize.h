@@ -786,6 +786,13 @@ private:
     void simplifyNestedNamespace();
 
     /**
+     * Simplify coroutines - just put parentheses around arguments for
+     * co_* keywords so they can be handled like function calls in data
+     * flow.
+     */
+    void simplifyCoroutines();
+
+    /**
     * Prepare ternary operators with parentheses so that the AST can be created
     * */
     void prepareTernaryOpForAST();
