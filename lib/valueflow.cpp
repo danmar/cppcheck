@@ -2693,10 +2693,11 @@ std::vector<LifetimeToken> getLifetimeTokens(const Token* tok, bool escape, Valu
             } else if (Token::simpleMatch(var->declEndToken(), "=")) {
                 errorPath.emplace_back(var->declEndToken(), "Assigned to reference.");
                 const Token *vartok = var->declEndToken()->astOperand2();
-                const bool temporaryDefault = false; //If we can't tell then assume the value is not temporary as this will result in fewer false positives.
-                const bool temporary = isTemporary(true, vartok, nullptr, temporaryDefault);
+                const bool temporary = isTemporary(true, vartok, nullptr, true);
                 const bool nonlocal = var->isStatic() || var->isGlobal();
-                if (vartok == tok || (nonlocal && temporary) || (!escape && (var->isConst() || var->isRValueReference()) && temporary))
+                if (vartok == tok || 
+                    (nonlocal && temporary) ||
+                    (!escape && (var->isConst() || var->isRValueReference()) && temporary))
                     return {{tok, true, std::move(errorPath)}};
                 if (vartok)
                     return getLifetimeTokens(vartok, escape, std::move(errorPath), depth - 1);
