@@ -904,6 +904,8 @@ public:
 
     bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length) const;
 
+    static bool returnsConst(const Function* function, bool unknown = false);
+
     static bool returnsReference(const Function* function, bool unknown = false);
 
     static std::vector<const Token*> findReturns(const Function* f);

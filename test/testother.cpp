@@ -1865,6 +1865,11 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("const int& f(std::vector<int>& x) {\n"
+              "    return x[0];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared with const\n", errout.str());
+
         check("int f(std::vector<int>& x) {\n"
               "    x[0]++;\n"
               "    return x[0];\n"
@@ -2323,6 +2328,16 @@ private:
               "void f(const A& x) {\n"
               "    ++(*x);\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10086
+        check("struct V {\n"
+              "    V& get(typename std::vector<V>::size_type i) {\n"
+              "        std::vector<V>& arr = v;\n"
+              "        return arr[i];\n"
+              "    }\n"
+              "    std::vector<V> v;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
 
         check("void e();\n"

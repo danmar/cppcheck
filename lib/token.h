@@ -812,7 +812,9 @@ public:
     }
 
     nonneg int exprId() const {
-        return mImpl->mExprId;
+        if (mImpl->mExprId)
+            return mImpl->mExprId;
+        return mImpl->mVarId;
     }
     void exprId(nonneg int id) {
         mImpl->mExprId = id;

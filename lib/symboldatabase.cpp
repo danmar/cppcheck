@@ -2629,6 +2629,37 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
     return false;
 }
 
+static bool isUnknownType(const Token* start, const Token* end)
+{
+    while (Token::Match(start, "const|volatile"))
+        start = start->next();
+    if (Token::Match(start, ":: %name%"))
+        start = start->next();
+    while (Token::Match(start, "%name% :: %name%"))
+        start = start->tokAt(2);
+    if (start->tokAt(1) == end && !start->type() && !start->isStandardType())
+        return true;
+    // TODO: Try to deduce the type of the expression
+    if (Token::Match(start, "decltype|typeof"))
+        return true;
+    return false;
+}
+
+bool Function::returnsConst(const Function* function, bool unknown)
+{
+    if (!function)
+        return false;
+    if (function->type != Function::eFunction)
+        return false;
+    const Token* defEnd = function->returnDefEnd();
+    if (Token::findsimplematch(function->retDef, "const", defEnd))
+        return true;
+    // Check for unknown types, which could be a const
+    if (isUnknownType(function->retDef, defEnd))
+        return unknown;
+    return false;
+}
+
 bool Function::returnsReference(const Function* function, bool unknown)
 {
     if (!function)
@@ -2639,17 +2670,7 @@ bool Function::returnsReference(const Function* function, bool unknown)
     if (defEnd->strAt(-1) == "&")
         return true;
     // Check for unknown types, which could be a reference
-    const Token* start = function->retDef;
-    while (Token::Match(start, "const|volatile"))
-        start = start->next();
-    if (Token::Match(start, ":: %name%"))
-        start = start->next();
-    while (Token::Match(start, "%name% :: %name%"))
-        start = start->tokAt(2);
-    if (start->tokAt(1) == defEnd && !start->type() && !start->isStandardType())
-        return unknown;
-    // TODO: Try to deduce the type of the expression
-    if (Token::Match(start, "decltype|typeof"))
+    if (isUnknownType(function->retDef, defEnd))
         return unknown;
     return false;
 }
