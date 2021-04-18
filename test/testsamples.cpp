@@ -53,11 +53,13 @@ private:
         std::map<std::string, std::size_t> files;
         const std::vector<std::string> masks;
         const PathMatch matcher(masks);
+        std::string err =
 #ifdef _WIN32
-        FileLister::recursiveAddFiles(files, "..\\samples", matcher);
+            FileLister::recursiveAddFiles(files, "..\\samples", matcher);
 #else
-        FileLister::recursiveAddFiles(files, "samples", matcher);
+            FileLister::recursiveAddFiles(files, "samples", matcher);
 #endif
+        ASSERT(err.empty());
         for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i) {
             if (i->first.find("memleak") != std::string::npos)
                 continue;
