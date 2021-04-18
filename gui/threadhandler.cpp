@@ -198,7 +198,7 @@ void ThreadHandler::initialize(ResultsView *view)
             this, &ThreadHandler::bughuntingReportLine);
 }
 
-void ThreadHandler::loadSettings(QSettings &settings)
+void ThreadHandler::loadSettings(const QSettings &settings)
 {
     setThreadCount(settings.value(SETTINGS_CHECK_THREADS, 1).toInt());
 }

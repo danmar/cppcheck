@@ -3561,6 +3561,43 @@ private:
               "  return false;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10208
+        check("bool GetFirst(std::string &first);\n"
+              "bool GetNext(std::string &next);\n"
+              "void g(const std::string& name);\n"
+              "void f() {\n"
+              "  for (std::string name; name.empty() ? GetFirst(name) : GetNext(name);)\n"
+              "    g(name);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool GetFirst(std::string &first);\n"
+              "bool GetNext(std::string &next);\n"
+              "void g(const std::string& name);\n"
+              "void f() {\n"
+              "  for (std::string name{}; name.empty() ? GetFirst(name) : GetNext(name);)\n"
+              "    g(name);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool GetFirst(std::string &first);\n"
+              "bool GetNext(std::string &next);\n"
+              "void g(const std::string& name);\n"
+              "void f() {\n"
+              "  for (std::string name{'a', 'b'}; name.empty() ? GetFirst(name) : GetNext(name);)\n"
+              "    g(name);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool GetFirst(const std::string &first);\n"
+              "bool GetNext(const std::string &next);\n"
+              "void g(const std::string& name);\n"
+              "void f() {\n"
+              "  for (std::string name; name.empty() ? GetFirst(name) : GetNext(name);)\n"
+              "    g(name);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'name.empty()' is always true\n", errout.str());
     }
 
     void alwaysTrueInfer() {
@@ -3944,6 +3981,18 @@ private:
               "  }\n"
               "  if (*i == 0) {\n"
               "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(std::function<void()>);\n"
+              "void f(std::vector<int> v) {\n"
+              "    auto x = [&v] { v.push_back(1); };\n"
+              "    if(v.empty()) {\n"
+              "        g(x);\n"
+              "    }\n"
+              "    if(v.empty())\n"
+              "        return;\n"
+              "    return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 

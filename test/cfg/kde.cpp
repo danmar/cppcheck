@@ -14,7 +14,7 @@
 class k_global_static_testclass1 {};
 K_GLOBAL_STATIC(k_global_static_testclass1, k_global_static_testinstance1);
 
-void valid_code(KConfigGroup &cfgGroup)
+void valid_code(const KConfigGroup& cfgGroup)
 {
     k_global_static_testclass1 * pk_global_static_testclass1 = k_global_static_testinstance1;
     printf("%p", pk_global_static_testclass1);
@@ -23,7 +23,7 @@ void valid_code(KConfigGroup &cfgGroup)
     if (entryTest) {}
 }
 
-void ignoredReturnValue(KConfigGroup & cfgGroup)
+void ignoredReturnValue(const KConfigGroup& cfgGroup)
 {
     // cppcheck-suppress ignoredReturnValue
     cfgGroup.readEntry("test", "default");

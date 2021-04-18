@@ -1169,7 +1169,7 @@ static bool isForLoopCondition(const Token * const tok)
 
 /**
  * Is token used a boolean (cast to a bool, or used as a condition somewhere)
- * @param tok
+ * @param tok the token to check
  * @param checkingParent true if we are checking a parent. This is used to know
  * what we are checking. For instance in `if (i == 2)`, isUsedAsBool("==") is
  * true whereas isUsedAsBool("i") is false, but it might call
@@ -1774,11 +1774,13 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         if (!arg)
             continue;
         conclusive = true;
-        if (addressOf || (indirect > 0 && arg->isPointer())) {
-            if (!arg->isConst())
+        if (addressOf || indirect > 0) {
+            if (!arg->isConst() && arg->isPointer())
                 return true;
             // If const is applied to the pointer, then the value can still be modified
             if (Token::simpleMatch(arg->typeEndToken(), "* const"))
+                return true;
+            if (!arg->isPointer())
                 return true;
         }
         if (!arg->isConst() && arg->isReference())
@@ -1788,6 +1790,13 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         *inconclusive = true;
     }
     return false;
+}
+
+bool isVariableChangedByFunctionCall(const Token* tok, int indirect, const Settings* settings)
+{
+    bool inconclusive = false;
+    bool r = isVariableChangedByFunctionCall(tok, indirect, settings, &inconclusive);
+    return r || inconclusive;
 }
 
 bool isVariableChanged(const Token *tok, int indirect, const Settings *settings, bool cpp, int depth)
@@ -1837,13 +1846,17 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
             const ValueType * valueType = var->valueType();
             isConst = (valueType && valueType->pointer == 1 && valueType->constness == 1);
         }
+        if (isConst)
+            return false;
 
         const Token *ftok = tok->tokAt(2);
+        if (settings)
+            return !settings->library.isFunctionConst(ftok);
+
         const Function * fun = ftok->function();
-        if (!isConst && (!fun || !fun->isConst()))
+        if (!fun)
             return true;
-        else
-            return false;
+        return !fun->isConst();
     }
 
     const Token *ftok = tok2;
@@ -1949,8 +1962,9 @@ Token* findVariableChanged(Token *start, const Token *end, int indirect, const n
             if (globalvar && Token::Match(tok, "%name% ("))
                 // TODO: Is global variable really changed by function call?
                 return tok;
-            // Is aliased function call
-            if (Token::Match(tok, "%var% (") && std::any_of(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
+            // Is aliased function call or alias passed to function
+            if ((Token::Match(tok, "%var% (") || isVariableChangedByFunctionCall(tok, 1, settings)) &&
+                std::any_of(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
                 bool aliased = false;
                 // If we can't find the expression then assume it was modified
                 if (!getExprTok())
