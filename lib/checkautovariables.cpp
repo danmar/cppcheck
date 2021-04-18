@@ -558,7 +558,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             if (!printInconclusive && val.isInconclusive())
                 continue;
             const bool escape = Token::Match(tok->astParent(), "return|throw");
-            for (const LifetimeToken& lt : getLifetimeTokens(getParentLifetime(val.tokvalue), escape || isAssignedToNonLocal(tok))) {
+            for (const LifetimeToken& lt :
+                 getLifetimeTokens(getParentLifetime(val.tokvalue), escape || isAssignedToNonLocal(tok))) {
                 const Token * tokvalue = lt.token;
                 if (val.isLocalLifetimeValue()) {
                     if (escape) {
