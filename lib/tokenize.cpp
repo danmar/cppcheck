@@ -1815,7 +1815,7 @@ namespace {
         const ScopeInfo3 * findScopeRecursive(const std::string & scope) const {
             if (fullName.size() < scope.size() &&
                 fullName == scope.substr(0, fullName.size())) {
-                for (auto & child : children) {
+                for (const auto & child : children) {
                     if (child.fullName == scope && &child != this)
                         return &child;
                     else {

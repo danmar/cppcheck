@@ -1169,7 +1169,7 @@ static bool isForLoopCondition(const Token * const tok)
 
 /**
  * Is token used a boolean (cast to a bool, or used as a condition somewhere)
- * @param tok
+ * @param tok the token to check
  * @param checkingParent true if we are checking a parent. This is used to know
  * what we are checking. For instance in `if (i == 2)`, isUsedAsBool("==") is
  * true whereas isUsedAsBool("i") is false, but it might call
