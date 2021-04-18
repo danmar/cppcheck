@@ -5085,8 +5085,9 @@ private:
                "    v.resize(1 + len);\n"
                "    return v.front();\n"
                "}\n";
-        ASSERT_EQUALS("",
-                      isKnownContainerSizeValue(tokenValues(code, "v . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 7));
+        ASSERT_EQUALS(
+            "",
+            isKnownContainerSizeValue(tokenValues(code, "v . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 7));
 
         code = "void f(std::string str) {\n"
                "    if (str == \"123\") {\n"
