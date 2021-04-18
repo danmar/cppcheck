@@ -6295,8 +6295,8 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
                     valueFlowContainerForward(tok->next(), tok->variable(), value, tokenlist);
-                } else if (action == Library::Container::Action::RESIZE && tok->tokAt(4)->hasKnownIntValue()) {
-                    ValueFlow::Value value(tok->tokAt(4)->values().front());
+                } else if (action == Library::Container::Action::RESIZE && tok->tokAt(3)->astOperand2() && tok->tokAt(3)->astOperand2()->hasKnownIntValue()) {
+                    ValueFlow::Value value(tok->tokAt(3)->astOperand2()->values().front());
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
                     valueFlowContainerForward(tok->next(), tok->variable(), value, tokenlist);
