@@ -258,10 +258,11 @@ public:
      * Match template declaration/instantiation
      * @param instance template instantiation
      * @param numberOfArguments number of template arguments
+     * @param variadic last template argument is variadic
      * @param patternAfter pattern that must match the tokens after the ">"
      * @return match => true
      */
-    static bool instantiateMatch(const Token *instance, const std::size_t numberOfArguments, const char patternAfter[]);
+    static bool instantiateMatch(const Token *instance, const std::size_t numberOfArguments, bool variadic, const char patternAfter[]);
 
     /**
      * Match template declaration/instantiation
