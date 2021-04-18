@@ -1395,7 +1395,7 @@ void CheckOther::checkConstVariable()
         if (Function::returnsReference(function) && !Function::returnsConst(function)) {
             std::vector<const Token*> returns = Function::findReturns(function);
             if (std::any_of(returns.begin(), returns.end(), [&](const Token* retTok) {
-                if (retTok->varId() == var->declarationId())
+                    if (retTok->varId() == var->declarationId())
                         return true;
                     while (retTok && retTok->isCast())
                         retTok = retTok->astOperand2();
