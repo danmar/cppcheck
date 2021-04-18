@@ -180,7 +180,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         for (const std::string &pathname : pathnames) {
             std::string err = FileLister::recursiveAddFiles(mFiles, Path::toNativeSeparators(pathname), mSettings->library.markupExtensions(), matcher);
             if (!err.empty()) {
-                std::cout << err << std::endl;
+                std::cout << "cppcheck: " << err << std::endl;
             }
         }
     }
