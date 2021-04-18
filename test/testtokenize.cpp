@@ -234,15 +234,15 @@ private:
         TEST_CASE(switchCase);
 
         TEST_CASE(simplifyPointerToStandardType);
-        TEST_CASE(functionpointer1);
-        TEST_CASE(functionpointer2);
-        TEST_CASE(functionpointer3);
-        TEST_CASE(functionpointer4);
-        TEST_CASE(functionpointer5);
-        TEST_CASE(functionpointer6);
-        TEST_CASE(functionpointer7);
-        TEST_CASE(functionpointer8); // #7410 - throw
-        TEST_CASE(functionpointer9); // #6113 - function call with function pointer
+        TEST_CASE(simplifyFunctionPointers1);
+        TEST_CASE(simplifyFunctionPointers2);
+        TEST_CASE(simplifyFunctionPointers3);
+        TEST_CASE(simplifyFunctionPointers4);
+        TEST_CASE(simplifyFunctionPointers5);
+        TEST_CASE(simplifyFunctionPointers6);
+        TEST_CASE(simplifyFunctionPointers7);
+        TEST_CASE(simplifyFunctionPointers8); // #7410 - throw
+        TEST_CASE(simplifyFunctionPointers9); // #6113 - function call with function pointer
 
         TEST_CASE(removedeclspec);
         TEST_CASE(removeattribute);
@@ -3153,14 +3153,14 @@ private:
                       tokenizeAndStringify("foo data[100]; something(&foo[0]);"));
     }
 
-    void functionpointer1() {
+    void simplifyFunctionPointers1() {
         ASSERT_EQUALS("void ( * f ) ( ) ;", tokenizeAndStringify("void (*f)();"));
         ASSERT_EQUALS("void * ( * f ) ( ) ;", tokenizeAndStringify("void *(*f)();"));
         ASSERT_EQUALS("unsigned int ( * f ) ( ) ;", tokenizeAndStringify("unsigned int (*f)();"));
         ASSERT_EQUALS("unsigned int * ( * f ) ( ) ;", tokenizeAndStringify("unsigned int * (*f)();"));
     }
 
-    void functionpointer2() {
+    void simplifyFunctionPointers2() {
         const char code[] = "typedef void (* PF)();"
                             "void f1 ( ) { }"
                             "PF pf = &f1;"
@@ -3171,7 +3171,7 @@ private:
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
-    void functionpointer3() {
+    void simplifyFunctionPointers3() {
         // Related with ticket #2873
         const char code[] = "void f() {\n"
                             "(void)(xy(*p)(0);)"
@@ -3182,7 +3182,7 @@ private:
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
-    void functionpointer4() {
+    void simplifyFunctionPointers4() {
         const char code[] = "struct S\n"
                             "{\n"
                             "    typedef void (*FP)();\n"
@@ -3196,13 +3196,13 @@ private:
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
-    void functionpointer5() {
+    void simplifyFunctionPointers5() {
         const char code[] = ";void (*fp[])(int a) = {0,0,0};";
         const char expected[] = "1: ; void ( * fp@1 [ ] ) ( ) = { 0 , 0 , 0 } ;\n"; // TODO: Array dimension
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
-    void functionpointer6() {
+    void simplifyFunctionPointers6() {
         const char code1[] = "void (*fp(void))(int) {}";
         const char expected1[] = "1: void * fp ( void ) { }\n";
         ASSERT_EQUALS(expected1, tokenizeDebugListing(code1));
@@ -3212,19 +3212,19 @@ private:
         ASSERT_EQUALS(expected2, tokenizeDebugListing(code2));
     }
 
-    void functionpointer7() {
+    void simplifyFunctionPointers7() {
         const char code1[] = "void (X::*y)();";
         const char expected1[] = "1: void ( * y@1 ) ( ) ;\n";
         ASSERT_EQUALS(expected1, tokenizeDebugListing(code1));
     }
 
-    void functionpointer8() {
+    void simplifyFunctionPointers8() {
         const char code1[] = "int (*f)() throw(int);";
         const char expected1[] = "1: int ( * f@1 ) ( ) ;\n";
         ASSERT_EQUALS(expected1, tokenizeDebugListing(code1));
     }
 
-    void functionpointer9() { // function call with function pointer
+    void simplifyFunctionPointers9() { // function call with function pointer
         const char code1[] = "int f() { (*f)(); }";
         const char expected1[] = "1: int f ( ) { ( * f ) ( ) ; }\n";
         ASSERT_EQUALS(expected1, tokenizeDebugListing(code1));
