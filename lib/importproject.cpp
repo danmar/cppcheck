@@ -307,15 +307,21 @@ void ImportProject::FileSettings::parseCommand(std::string command)
             standard = stdval;
             if (standard.compare(0, 3, "c++") || standard.compare(0, 5, "gnu++")) {
                 std::string stddef;
-                if (standard == "c++98" || standard == "gnu++98" || standard == "c++03" || standard == "gnu++03") {
+                if (standard == "c++98" || standard == "c++03" || standard == "gnu++98" || standard == "gnu++03") {
                     stddef = "199711L";
-                } else if (standard == "c++11" || standard == "gnu++11"|| standard == "c++0x" || standard == "gnu++0x") {
+                } else if (standard == "c++11" || standard == "c++0x" || standard == "gnu++11" || standard == "gnu++0x") {
                     stddef = "201103L";
-                } else if (standard == "c++14" || standard == "gnu++14" || standard == "c++1y" || standard == "gnu++1y") {
+                } else if (standard == "c++14" || standard == "c++1y" || standard == "gnu++14" || standard == "gnu++1y") {
                     stddef = "201402L";
-                } else if (standard == "c++17" || standard == "gnu++17" || standard == "c++1z" || standard == "gnu++1z") {
+                } else if (standard == "c++17" || standard == "c++1z" || standard == "gnu++17" || standard == "gnu++1z") {
                     stddef = "201703L";
-                }
+                } else if (standard == "c++20" || standard == "c++2a" || standard == "gnu++20" || standard == "gnu++2a") {
+                    // GCC 10 returns "201703L"
+                    stddef = "202002L";
+                } /* else if (standard == "c++23" || standard == "c++2b" || standard == "gnu++23" || standard == "gnu++2b") {
+                    // supported by GCC 11+
+                    stddef = "";
+                } */
 
                 if (stddef.empty()) {
                     // TODO: log error
@@ -326,19 +332,22 @@ void ImportProject::FileSettings::parseCommand(std::string command)
                 defs += stddef;
                 defs += ";";
             } else if (standard.compare(0, 1, "c") || standard.compare(0, 3, "gnu")) {
-                if (standard == "c90" || standard == "iso9899:1990" || standard == "gnu90" || standard == "iso9899:199409") {
+                if (standard == "c90" || standard == "c89" ||standard == "iso9899:1990" || standard == "iso9899:199409" || standard == "gnu90" || standard == "gnu89") {
                     // __STDC_VERSION__ is not set for C90 although the macro was added in the 1994 amendments
                     continue;
                 }
 
                 std::string stddef;
 
-                if (standard == "c99" || standard == "iso9899:1999" || standard == "gnu99") {
+                if (standard == "c99" || standard == "c9x" || standard == "iso9899:1999" || standard == "iso9899:199x" || standard == "gnu99"|| standard == "gnu9x") {
                     stddef = "199901L";
-                } else if (standard == "c11" || standard == "iso9899:2011" || standard == "gnu11" || standard == "c1x" || standard == "gnu1x") {
+                } else if (standard == "c11" || standard == "c1x" || standard == "iso9899:2011" || standard == "gnu11" || standard == "gnu1x") {
                     stddef = "201112L";
-                } else if (standard == "c17") {
+                } else if (standard == "c17" || standard == "c18" || standard == "iso9899:2017" || standard == "iso9899:2018" || standard == "gnu17"|| standard == "gnu18") {
                     stddef = "201710L";
+                } else if (standard == "c2x" || standard == "gnu2x") {
+                    // Clang 11 returns "201710L"
+                    stddef = "202000L";
                 }
 
                 if (stddef.empty()) {
@@ -744,14 +753,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             for (const ItemDefinitionGroup &i : itemDefinitionGroupList) {
                 if (!i.conditionIsTrue(p))
                     continue;
-                if (i.cppstd == Standards::CPP11)
-                    fs.standard = "c++11";
-                else if (i.cppstd == Standards::CPP14)
-                    fs.standard = "c++14";
-                else if (i.cppstd == Standards::CPP17)
-                    fs.standard = "c++17";
-                else if (i.cppstd == Standards::CPP20)
-                    fs.standard = "c++20";
+                fs.standard = Standards::getCPP(i.cppstd);
                 fs.defines += ';' + i.preprocessorDefinitions;
                 additionalIncludePaths += ';' + i.additionalIncludePaths;
             }
