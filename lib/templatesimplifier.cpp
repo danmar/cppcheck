@@ -2928,7 +2928,7 @@ std::string TemplateSimplifier::getNewName(
         }
         if (Token::Match(tok3->tokAt(-2), "<|,|:: %name% <") && (tok3->strAt(1) == ">" || templateParameters(tok3)))
             ++indentlevel;
-        else if (indentlevel > 0 && Token::Match(tok3, "> [,>]"))
+        else if (indentlevel > 0 && Token::Match(tok3, "> ,|>|::"))
             --indentlevel;
         if (indentlevel == 0 && Token::Match(tok3->previous(), "[<,]")) {
             mTypesUsedInTemplateInstantiation.emplace_back(tok3, "");
