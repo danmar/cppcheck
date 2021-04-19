@@ -690,6 +690,10 @@ bool CheckStl::checkIteratorPair(const Token* tok1, const Token* tok2)
         return true;
     }
 
+    if (Token::Match(tok1->astParent(), "%comp%|-")) {
+        if (astIsIntegral(tok1, false) || astIsIntegral(tok2, false) || astIsFloat(tok1, false) || astIsFloat(tok2, false))
+            return false;
+    }
     const Token* iter1 = getIteratorExpression(tok1);
     const Token* iter2 = getIteratorExpression(tok2);
     if (iter1 && iter2 && !isSameExpression(true, false, iter1, iter2, mSettings->library, false, false)) {
