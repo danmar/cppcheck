@@ -1430,6 +1430,16 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10012
+        check("struct a {\n"
+              "    int b;\n"
+              "    int end() { return b; }\n"
+              "};\n"
+              "void f(a c, a d) {\n"
+              "    if (c.end() == d.end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Dereferencing invalid pointer
