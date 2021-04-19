@@ -2597,6 +2597,19 @@ private:
               "    return e;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10214
+        check("struct A {\n"
+              "  std::string key;\n"
+              "  const char *value;\n"
+              "};\n"
+              "const char *f(const std::string &key, const std::vector<A> &lookup) {\n"
+              "  const auto &entry =\n"
+              "      std::find_if(lookup.begin(), lookup.end(),\n"
+              "                   [key](const auto &v) { return v.key == key; });\n"
+              "  return (entry == lookup.end()) ? \"\" : entry->value;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {

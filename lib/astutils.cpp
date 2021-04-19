@@ -650,6 +650,8 @@ bool exprDependsOnThis(const Token* expr, nonneg int depth)
 {
     if (!expr)
         return false;
+    if (expr->str() == "this")
+        return true;
     if (depth >= 1000)
         // Abort recursion to avoid stack overflow
         return true;

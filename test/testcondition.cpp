@@ -2429,6 +2429,20 @@ private:
               "};");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct CD {\n"
+              "    bool state;\n"
+              "    void foo()  {\n"
+              "        const bool flag = this->get();\n"
+              "        if (flag) {\n"
+              "            this->bar();\n"
+              "            if (!this->get()) return;\n"
+              "        }\n"
+              "    }\n"
+              "    bool get() const;\n"
+              "    void bar();\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("class C {\n"
               "public:\n"
               "  bool f() const { return x > 0; }\n"
