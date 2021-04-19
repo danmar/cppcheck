@@ -212,6 +212,7 @@ private:
         TEST_CASE(template168);
         TEST_CASE(template169);
         TEST_CASE(template170); // crash
+        TEST_CASE(template171); // crash
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -4366,6 +4367,27 @@ private:
                             "[ ] ( auto b ) { } ; "
                             "}";
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template171() { // crash
+        const char code[] = "template <int> struct c { enum { b }; };\n"
+                            "template <int> struct h { enum { d }; enum { e }; };\n"
+                            "template <int f, long = h<f>::d, int g = h<f>::e> class i { enum { e = c<g>::b }; };\n"
+                            "void j() { i<2> a; }";
+        const char exp[]  = "struct c<h<2>::e> ; "
+                            "struct h<2> ; "
+                            "class i<2,h<2>::d,h<2>::e> ; "
+                            "void j ( ) { i<2,h<2>::d,h<2>::e> a ; } "
+                            "class i<2,h<2>::d,h<2>::e> { enum Anonymous3 { e = c<h<2>::e> :: b } ; } ; "
+                            "struct h<2> { enum Anonymous1 { d } ; enum Anonymous2 { e } ; } ; "
+                            "struct c<h<2>::e> { enum Anonymous0 { b } ; } ;";
+        const char act[]  = "struct c<h<2>::e> ; "
+                            "template < int > struct h { enum Anonymous1 { d } ; enum Anonymous2 { e } ; } ; "
+                            "class i<2,h<2>::d,h<2>::e> ; "
+                            "void j ( ) { i<2,h<2>::d,h<2>::e> a ; } "
+                            "class i<2,h<2>::d,h<2>::e> { enum Anonymous3 { e = c<h<2>::e> :: b } ; } ; "
+                            "struct c<h<2>::e> { enum Anonymous0 { b } ; } ;";
+        TODO_ASSERT_EQUALS(exp, act, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
