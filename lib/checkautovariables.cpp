@@ -488,6 +488,18 @@ static bool isDanglingSubFunction(const Token* tokvalue, const Token* tok)
     return exprDependsOnThis(parent);
 }
 
+static bool isAssignedToNonLocal(const Token* tok)
+{
+    if (!Token::simpleMatch(tok->astParent(), "="))
+        return false;
+    if (!Token::Match(tok->astParent()->astOperand1(), "%var%"))
+        return false;
+    const Variable* var = tok->astParent()->astOperand1()->variable();
+    if (!var)
+        return false;
+    return !var->isLocal() || var->isStatic();
+}
+
 void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token * end)
 {
     const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
@@ -546,7 +558,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             if (!printInconclusive && val.isInconclusive())
                 continue;
             const bool escape = Token::Match(tok->astParent(), "return|throw");
-            for (const LifetimeToken& lt : getLifetimeTokens(getParentLifetime(val.tokvalue), escape)) {
+            for (const LifetimeToken& lt :
+                 getLifetimeTokens(getParentLifetime(val.tokvalue), escape || isAssignedToNonLocal(tok))) {
                 const Token * tokvalue = lt.token;
                 if (val.isLocalLifetimeValue()) {
                     if (escape) {
