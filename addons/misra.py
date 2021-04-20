@@ -1512,7 +1512,7 @@ class MisraChecker:
                     self.reportError(typeStartToken, 8, 2)
 
                 # Type declaration on next line (old style declaration list) is not allowed
-                if (typeStartToken.linenr > endCall.linenr) or (typeStartToken.column > endCall.column):
+                if (typeStartToken.file == endCall.file) and ((typeStartToken.linenr > endCall.linenr) or (typeStartToken.column > endCall.column)):
                     self.reportError(typeStartToken, 8, 2)
 
         # Check arguments in pointer declarations
