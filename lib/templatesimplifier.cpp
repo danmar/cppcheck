@@ -43,7 +43,7 @@ static Token *skipRequires(Token *tok)
             tok = after->link()->next();
             continue;
         }
-        if (Token::Match(after, "requires (") && Token::simpleMatch(after->linkAt(1), ") {")) {
+        if (Token::simpleMatch(after, "requires (") && Token::simpleMatch(after->linkAt(1), ") {")) {
             tok = after->linkAt(1)->linkAt(1)->next();
             continue;
         }
