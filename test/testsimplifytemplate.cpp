@@ -6067,28 +6067,28 @@ private:
     void fold_expression_1() {
         const char code[] = "template<typename... Args> bool all(Args... args) { return (... && args); }\n"
                             "x=all(true,false,true,true);";
-        const char expected[] = "template < typename ... Args > bool all ( Args ... args ) { return ( __cppcheck_uninstantiated_fold__ ) ; } x = all ( true , false , true , true ) ;";
+        const char expected[] = "template < typename ... Args > bool all ( Args ... args ) { return ( __cppcheck_fold_&&__ ( args ... ) ) ; } x = all ( true , false , true , true ) ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 
     void fold_expression_2() {
         const char code[] = "template<typename... Args> bool all(Args... args) { return (args && ...); }\n"
                             "x=all(true,false,true,true);";
-        const char expected[] = "template < typename ... Args > bool all ( Args ... args ) { return ( __cppcheck_uninstantiated_fold__ ) ; } x = all ( true , false , true , true ) ;";
+        const char expected[] = "template < typename ... Args > bool all ( Args ... args ) { return ( __cppcheck_fold_&&__ ( args ... ) ) ; } x = all ( true , false , true , true ) ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 
     void fold_expression_3() {
         const char code[] = "template<typename... Args> int foo(Args... args) { return (12 * ... * args); }\n"
                             "x=foo(1,2);";
-        const char expected[] = "template < typename ... Args > int foo ( Args ... args ) { return ( __cppcheck_uninstantiated_fold__ ) ; } x = foo ( 1 , 2 ) ;";
+        const char expected[] = "template < typename ... Args > int foo ( Args ... args ) { return ( __cppcheck_fold_*__ ( args ... ) ) ; } x = foo ( 1 , 2 ) ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 
     void fold_expression_4() {
         const char code[] = "template<typename... Args> int foo(Args... args) { return (args * ... * 123); }\n"
                             "x=foo(1,2);";
-        const char expected[] = "template < typename ... Args > int foo ( Args ... args ) { return ( __cppcheck_uninstantiated_fold__ ) ; } x = foo ( 1 , 2 ) ;";
+        const char expected[] = "template < typename ... Args > int foo ( Args ... args ) { return ( __cppcheck_fold_*__ ( args ... ) ) ; } x = foo ( 1 , 2 ) ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 

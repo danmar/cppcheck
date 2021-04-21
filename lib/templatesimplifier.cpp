@@ -3864,13 +3864,36 @@ void TemplateSimplifier::simplifyTemplates(
                 simplify = true;
             if (!simplify || tok->str() != "(")
                 continue;
-            if (Token::Match(tok, "( ... %op%") ||
-                Token::Match(tok, "( %name% %op% ...") ||
-                Token::Match(tok->link()->tokAt(-3), "%op% ... )") ||
-                Token::Match(tok->link()->tokAt(-3), "... %op% %name% )")) {
-                Token::eraseTokens(tok, tok->link());
-                tok->insertToken("__cppcheck_uninstantiated_fold__");
+            const Token *op = nullptr;
+            const Token *args = nullptr;
+            if (Token::Match(tok, "( ... %op%")) {
+                op = tok->tokAt(2);
+                args = tok->link()->previous();
+            } else if (Token::Match(tok, "( %name% %op% ...")) {
+                op = tok->tokAt(2);
+                args = tok->link()->previous()->isName() ? nullptr : tok->next();
+            } else if (Token::Match(tok->link()->tokAt(-3), "%op% ... )")) {
+                op = tok->link()->tokAt(-2);
+                args = tok->next();
+            } else if (Token::Match(tok->link()->tokAt(-3), "... %op% %name% )")) {
+                op = tok->link()->tokAt(-2);
+                args = tok->next()->isName() ? nullptr : tok->link()->previous();
+            } else {
+                continue;
             }
+
+            const std::string strop = op->str();
+            const std::string strargs = (args && args->isName()) ? args->str() : "";
+
+            Token::eraseTokens(tok, tok->link());
+            tok->insertToken(")");
+            if (!strargs.empty()) {
+                tok->insertToken("...");
+                tok->insertToken(strargs);
+            }
+            tok->insertToken("(");
+            Token::createMutualLinks(tok->next(), tok->link()->previous());
+            tok->insertToken("__cppcheck_fold_" + strop + "__");
         }
     }
 }
