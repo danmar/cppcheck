@@ -169,11 +169,6 @@ int TokenList::appendFileIfNew(const std::string &fileName)
     return mFiles.size() - 1;
 }
 
-void TokenList::clangSetOrigFiles()
-{
-    mOrigFiles = mFiles;
-}
-
 void TokenList::deleteTokens(Token *tok)
 {
     while (tok) {

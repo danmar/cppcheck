@@ -192,14 +192,6 @@ public:
     */
     QStringList getAddonsAndTools() const;
 
-    bool getClangAnalyzer() const {
-        return false; //mClangAnalyzer;
-    }
-
-    void setClangAnalyzer(bool c) {
-        mClangAnalyzer = c;
-    }
-
     bool getClangTidy() const {
         return mClangTidy;
     }
@@ -387,9 +379,6 @@ public:
     void setCheckUnknownFunctionReturn(const QStringList &s) {
         mCheckUnknownFunctionReturn = s;
     }
-
-    /** Use Clang parser */
-    bool clangParser;
 
     /** Bug hunting */
     bool bugHunting;
@@ -582,9 +571,6 @@ private:
      * @brief List of addons.
      */
     QStringList mAddons;
-
-    /** @brief Execute clang analyzer? */
-    bool mClangAnalyzer;
 
     /** @brief Execute clang-tidy? */
     bool mClangTidy;
