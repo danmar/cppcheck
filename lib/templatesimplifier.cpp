@@ -3882,6 +3882,7 @@ void TemplateSimplifier::simplifyTemplates(
                 continue;
             }
 
+            // cppcheck-suppress redundantCopyLocalConst ; False positive
             const std::string strop = op->str();
             const std::string strargs = (args && args->isName()) ? args->str() : "";
 
