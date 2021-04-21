@@ -74,9 +74,9 @@ jobs:
       - name: Install missing Python packages
         if: matrix.qt_ver == ''
         run: |
-          python -m pip install pip --upgrade
-          python -m pip install pytest
-          python -m pip install pytest-custom_exit_code
+          python -m pip install pip --upgrade || exit /b !errorlevel!
+          python -m pip install pytest || exit /b !errorlevel!
+          python -m pip install pytest-custom_exit_code || exit /b !errorlevel!
 
       - name: Build GUI release
         if: matrix.qt_ver != '' && matrix.arch == 'x64'
