@@ -327,6 +327,7 @@ private:
         TEST_CASE(simplifyOperatorName26);
         TEST_CASE(simplifyOperatorName27);
         TEST_CASE(simplifyOperatorName28);
+        TEST_CASE(simplifyOperatorName29); // spaceship operator
 
         TEST_CASE(simplifyOverloadedOperators1);
         TEST_CASE(simplifyOverloadedOperators2); // (*this)(123)
@@ -418,6 +419,8 @@ private:
         TEST_CASE(removeAlignas);
 
         TEST_CASE(simplifyCoroutines);
+
+        TEST_CASE(simplifySpaceshipOperator);
     }
 
     std::string tokenizeAndStringify(const char code[], bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -4707,6 +4710,12 @@ private:
                       tokenizeAndStringify(code));
     }
 
+    void simplifyOperatorName29() {
+        Settings settings;
+        settings.standards.cpp = Standards::CPP20;
+        ASSERT_EQUALS("auto operator<=> ( ) ;", tokenizeAndStringify("auto operator<=>();", settings));
+    }
+
     void simplifyOverloadedOperators1() {
         const char code[] = "struct S { void operator()(int); };\n"
                             "\n"
@@ -5309,6 +5318,7 @@ private:
 
         tokenList.combineStringAndCharLiterals();
         tokenList.combineOperators();
+        tokenList.simplifySpaceshipOperator();
         tokenList.createLinks();
         tokenList.createLinks2();
         tokenList.list.front()->assignIndexes();
@@ -5363,6 +5373,7 @@ private:
         ASSERT_EQUALS("abc=,", testAst("a,b=c"));
         ASSERT_EQUALS("a-1+", testAst("-a+1"));
         ASSERT_EQUALS("ab++-c-", testAst("a-b++-c"));
+        ASSERT_EQUALS("ab<=>", testAst("a<=>b"));
 
         // sizeof
         ASSERT_EQUALS("ab.sizeof", testAst("sizeof a.b"));
@@ -6525,6 +6536,13 @@ private:
         const char code3[] = "generator<int> f() { co_return 7; }";
         const char expected3[] = "generator < int > f ( ) { co_return ( 7 ) ; }";
         ASSERT_EQUALS(expected3, tokenizeAndStringify(code3, settings));
+    }
+
+    void simplifySpaceshipOperator() {
+        Settings settings;
+        settings.standards.cpp = Standards::CPP20;
+
+        ASSERT_EQUALS("; x <=> y ;", tokenizeAndStringify(";x<=>y;", settings));
     }
 };
 

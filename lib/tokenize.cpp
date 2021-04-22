@@ -4783,6 +4783,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     removeAlignas();
 
+    simplifySpaceshipOperator();
+
     // Bail out if code is garbage
     if (mTimerResults) {
         Timer t("Tokenizer::tokenize::findGarbageCode", mSettings->showtime, mTimerResults);
@@ -10919,6 +10921,18 @@ void Tokenizer::removeAlignas()
         if (Token::Match(tok, "alignas|alignof (")) {
             Token::eraseTokens(tok, tok->linkAt(1)->next());
             tok->deleteThis();
+        }
+    }
+}
+
+void Tokenizer::simplifySpaceshipOperator()
+{
+    if (isCPP() && mSettings->standards.cpp >= Standards::CPP20) {
+        for (Token *tok = list.front(); tok && tok->next(); tok = tok->next()) {
+            if (Token::simpleMatch(tok, "<= >")) {
+                tok->str("<=>");
+                tok->deleteNext();
+            }
         }
     }
 }

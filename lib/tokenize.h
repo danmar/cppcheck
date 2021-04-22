@@ -695,6 +695,9 @@ private:
     /** Remove alignas */
     void removeAlignas();
 
+    /** Simplify c++20 spaceship operator */
+    void simplifySpaceshipOperator();
+
     /**
      * Remove keywords "volatile", "inline", "register", and "restrict"
      */

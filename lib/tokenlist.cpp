@@ -1152,12 +1152,22 @@ static void compileShift(Token *&tok, AST_state& state)
     }
 }
 
-static void compileRelComp(Token *&tok, AST_state& state)
+static void compileThreewayComp(Token *&tok, AST_state& state)
 {
     compileShift(tok, state);
     while (tok) {
-        if (Token::Match(tok, "<|<=|>=|>") && !tok->link()) {
+        if (tok->str() == "<=>") {
             compileBinOp(tok, state, compileShift);
+        } else break;
+    }
+}
+
+static void compileRelComp(Token *&tok, AST_state& state)
+{
+    compileThreewayComp(tok, state);
+    while (tok) {
+        if (Token::Match(tok, "<|<=|>=|>") && !tok->link()) {
+            compileBinOp(tok, state, compileThreewayComp);
         } else break;
     }
 }
