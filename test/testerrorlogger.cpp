@@ -235,17 +235,17 @@ private:
 
     void FromXmlV2() const {
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-        "<error id=\"errorId\""
-        " severity=\"error\""
-        " cwe=\"123\""
-        " inconclusive=\"true\""
-        " msg=\"Programming error.\""
-        " verbose=\"Verbose error\""
-        " hash=\"456\""
-        ">\n"
-        "  <location file=\"bar.cpp\" line=\"8\" column=\"1\"/>\n"
-        "  <location file=\"foo.cpp\" line=\"5\" column=\"2\"/>\n"
-        "</error>";
+                               "<error id=\"errorId\""
+                               " severity=\"error\""
+                               " cwe=\"123\""
+                               " inconclusive=\"true\""
+                               " msg=\"Programming error.\""
+                               " verbose=\"Verbose error\""
+                               " hash=\"456\""
+                               ">\n"
+                               "  <location file=\"bar.cpp\" line=\"8\" column=\"1\"/>\n"
+                               "  <location file=\"foo.cpp\" line=\"5\" column=\"2\"/>\n"
+                               "</error>";
         tinyxml2::XMLDocument doc;
         doc.Parse(xmldata, sizeof(xmldata));
         ErrorMessage msg(doc.FirstChildElement());
