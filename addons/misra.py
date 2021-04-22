@@ -726,7 +726,7 @@ def findGotoLabel(gotoToken):
     label = gotoToken.next.str
     tok = gotoToken.next.next
     while tok:
-        if tok.str == '}' and tok.scope.type == 'Function':
+        if tok.str == '}' and tok.scope.type == 'Function' and tok == tok.scope.bodyEnd:
             break
         if tok.str == label and tok.next.str == ':':
             return tok
