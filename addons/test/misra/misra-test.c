@@ -287,6 +287,11 @@ void misra_7_4(void)
    misra_7_4_call(1, "text_call"); // 7.4 11.8
 }
 
+bool test(char *a)
+{
+    return false;
+}
+
 static int misra_8_2_a (int n, ...);
 extern int misra_8_2_b (int n);
 extern int misra_8_2_c (int); // 8.2
@@ -974,8 +979,21 @@ a1:
 }
 
 void misra_15_2(void) {
-label:
-  goto label; // 15.2 15.1
+
+    if (x)
+    {
+        goto L2;
+    }
+
+    struct test tmp = {
+        1,
+        2,
+        3
+    };
+
+L1:
+  goto L1; // 15.2 15.1
+L2:
 }
 
 void misra_15_3(void) {
