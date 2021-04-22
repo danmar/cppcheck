@@ -6216,8 +6216,8 @@ static void valueFlowIteratorInfer(TokenList *tokenlist, const Settings *setting
 }
 
 static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
-                                                     const Library::Container* container,
-                                                     bool known = true)
+        const Library::Container* container,
+        bool known = true)
 {
     std::vector<const Token*> args = getArguments(tok);
     if ((args.size() == 1 && astIsContainer(args[0]) && args[0]->valueType()->container == container) ||

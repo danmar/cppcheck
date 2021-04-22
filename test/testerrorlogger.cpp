@@ -22,6 +22,7 @@
 #include "suppressions.h"
 #include "testsuite.h"
 
+#include <tinyxml2.h>
 #include <list>
 #include <string>
 
@@ -49,6 +50,7 @@ private:
         TEST_CASE(ToXmlV2);
         TEST_CASE(ToXmlV2Locations);
         TEST_CASE(ToXmlV2Encoding);
+        TEST_CASE(FromXmlV2);
 
         // Inconclusive results in xml reports..
         TEST_CASE(InconclusiveXml);
@@ -229,6 +231,38 @@ private:
             ErrorMessage msg2(locs, emptyString, Severity::error, std::string("Programming error.\nReading \"")+code2+"\"", "errorId", Certainty::normal);
             ASSERT_EQUALS("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Reading &quot;\\022&quot;\"/>", msg2.toXML());
         }
+    }
+
+    void FromXmlV2() const {
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+        "<error id=\"errorId\""
+        " severity=\"error\""
+        " cwe=\"123\""
+        " inconclusive=\"true\""
+        " msg=\"Programming error.\""
+        " verbose=\"Verbose error\""
+        " hash=\"456\""
+        ">\n"
+        "  <location file=\"bar.cpp\" line=\"8\" column=\"1\"/>\n"
+        "  <location file=\"foo.cpp\" line=\"5\" column=\"2\"/>\n"
+        "</error>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+        ErrorMessage msg(doc.FirstChildElement());
+        ASSERT_EQUALS("errorId", msg.id);
+        ASSERT_EQUALS(Severity::error, msg.severity);
+        ASSERT_EQUALS(123u, msg.cwe.id);
+        ASSERT_EQUALS(Certainty::inconclusive, msg.certainty);
+        ASSERT_EQUALS("Programming error.", msg.shortMessage());
+        ASSERT_EQUALS("Verbose error", msg.verboseMessage());
+        ASSERT_EQUALS(456u, msg.hash);
+        ASSERT_EQUALS(2u, msg.callStack.size());
+        ASSERT_EQUALS("foo.cpp", msg.callStack.front().getfile());
+        ASSERT_EQUALS(5, msg.callStack.front().line);
+        ASSERT_EQUALS(2u, msg.callStack.front().column);
+        ASSERT_EQUALS("bar.cpp", msg.callStack.back().getfile());
+        ASSERT_EQUALS(8, msg.callStack.back().line);
+        ASSERT_EQUALS(1u, msg.callStack.back().column);
     }
 
     void InconclusiveXml() const {

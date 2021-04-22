@@ -69,10 +69,6 @@ void StatsDialog::setProject(const ProjectFile* projectFile)
             QChartView *chartView;
             chartView = createChart(statsFile, "cppcheck");
             mUI.mTabHistory->layout()->addWidget(chartView);
-            if (projectFile->getClangAnalyzer()) {
-                chartView = createChart(statsFile, CLANG_ANALYZER);
-                mUI.mTabHistory->layout()->addWidget(chartView);
-            }
             if (projectFile->getClangTidy()) {
                 chartView = createChart(statsFile, CLANG_TIDY);
                 mUI.mTabHistory->layout()->addWidget(chartView);

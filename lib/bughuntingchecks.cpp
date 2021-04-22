@@ -211,7 +211,7 @@ static void divByZero(const Token *tok, const ExprEngine::Value &value, ExprEngi
     if (tok->astParent()->astOperand2() == tok && value.isEqual(dataBase, 0)) {
         const char * const id = (tok->valueType() && tok->valueType()->isFloat()) ? "bughuntingDivByZeroFloat" : "bughuntingDivByZero";
         const bool bailout = (value.type == ExprEngine::ValueType::BailoutValue);
-        dataBase->reportError(dataBase->settings->clang ? tok : tok->astParent(),
+        dataBase->reportError(tok->astParent(),
                               Severity::SeverityType::error,
                               id,
                               "There is division, cannot determine that there can't be a division by zero.",

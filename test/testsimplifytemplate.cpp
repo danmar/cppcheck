@@ -282,6 +282,18 @@ private:
         TEST_CASE(simplifyDecltype);
 
         TEST_CASE(castInExpansion);
+
+        TEST_CASE(fold_expression_1);
+        TEST_CASE(fold_expression_2);
+        TEST_CASE(fold_expression_3);
+        TEST_CASE(fold_expression_4);
+
+        TEST_CASE(concepts1);
+        TEST_CASE(requires1);
+        TEST_CASE(requires2);
+        TEST_CASE(requires3);
+        TEST_CASE(requires4);
+        TEST_CASE(requires5);
     }
 
     std::string tok(const char code[], bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
@@ -6049,6 +6061,78 @@ private:
                                 "class C3 { Derived<C<static_cast<int>-1>> c ; } ; "
                                 "class Derived<C<static_cast<int>-1>> : private Base<C<static_cast<int>-1>> { } ; "
                                 "class Base<C<static_cast<int>-1>> { } ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void fold_expression_1() {
+        const char code[] = "template<typename... Args> bool all(Args... args) { return (... && args); }\n"
+                            "x=all(true,false,true,true);";
+        const char expected[] = "template < typename ... Args > bool all ( Args ... args ) { return ( __cppcheck_fold_&&__ ( args ... ) ) ; } x = all ( true , false , true , true ) ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void fold_expression_2() {
+        const char code[] = "template<typename... Args> bool all(Args... args) { return (args && ...); }\n"
+                            "x=all(true,false,true,true);";
+        const char expected[] = "template < typename ... Args > bool all ( Args ... args ) { return ( __cppcheck_fold_&&__ ( args ... ) ) ; } x = all ( true , false , true , true ) ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void fold_expression_3() {
+        const char code[] = "template<typename... Args> int foo(Args... args) { return (12 * ... * args); }\n"
+                            "x=foo(1,2);";
+        const char expected[] = "template < typename ... Args > int foo ( Args ... args ) { return ( __cppcheck_fold_*__ ( args ... ) ) ; } x = foo ( 1 , 2 ) ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void fold_expression_4() {
+        const char code[] = "template<typename... Args> int foo(Args... args) { return (args * ... * 123); }\n"
+                            "x=foo(1,2);";
+        const char expected[] = "template < typename ... Args > int foo ( Args ... args ) { return ( __cppcheck_fold_*__ ( args ... ) ) ; } x = foo ( 1 , 2 ) ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void concepts1() {
+        const char code[] = "template <my_concept T> void f(T v) {}\n"
+                            "f<int>(123);";
+        const char expected[] = "void f<int> ( int v ) ; f<int> ( 123 ) ; void f<int> ( int v ) { }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void requires1() {
+        const char code[] = "template <class T> requires my_concept<T> void f(T v) {}\n"
+                            "f<int>(123);";
+        const char expected[] = "void f<int> ( int v ) ; f<int> ( 123 ) ; void f<int> ( int v ) { }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void requires2() {
+        const char code[] = "template<class T> requires (sizeof(T) > 1 && get_value<T>()) void f(T v){}\n"
+                            "f<int>(123);";
+        const char expected[] = "void f<int> ( int v ) ; f<int> ( 123 ) ; void f<int> ( int v ) { }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void requires3() {
+        const char code[] = "template<class T> requires c1<T> && c2<T> void f(T v){}\n"
+                            "f<int>(123);";
+        const char expected[] = "void f<int> ( int v ) ; f<int> ( 123 ) ; void f<int> ( int v ) { }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void requires4() {
+        const char code[] = "template <class T> void f(T v) requires my_concept<T> {}\n"
+                            "f<int>(123);";
+        const char expected[] = "void f<int> ( int v ) ; f<int> ( 123 ) ; void f<int> ( int v ) { }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void requires5() {
+        const char code[] = "template <class T>\n"
+                            "  requires requires (T x) { x + x; }\n"
+                            "  T add(T a, T b) { return a + b; }\n"
+                            "add<int>(123,456);";
+        const char expected[] = "int add<int> ( int a , int b ) ; add<int> ( 123 , 456 ) ; int add<int> ( int a , int b ) { return a + b ; }";
         ASSERT_EQUALS(expected, tok(code));
     }
 };

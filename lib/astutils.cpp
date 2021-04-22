@@ -1794,7 +1794,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     return false;
 }
 
-bool isVariableChangedByFunctionCall(const Token* tok, int indirect, const Settings* settings)
+static bool isVariableChangedByFunctionCall(const Token* tok, int indirect, const Settings* settings)
 {
     bool inconclusive = false;
     bool r = isVariableChangedByFunctionCall(tok, indirect, settings, &inconclusive);

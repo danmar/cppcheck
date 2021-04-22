@@ -25,7 +25,7 @@ import html as html_lib
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.16"
+SERVER_VERSION = "1.3.17"
 
 OLD_VERSION = '2.4'
 
@@ -1079,7 +1079,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             # save data
             res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2|xz)', url)
             if res is None:
-                res = re.match(r'http://cppcheck.sf.net/([a-z]+).tgz', url)
+                res = re.match(r'http://cppcheck\.sf\.net/([a-z]+).tgz', url)
             if res is None:
                 print('results not written. res is None.')
                 continue
@@ -1148,7 +1148,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             # save data
             res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2|xz)', url)
             if res is None:
-                res = re.match(r'http://cppcheck.sf.net/([a-z]+).tgz', url)
+                res = re.match(r'http://cppcheck\.sf\.net/([a-z]+).tgz', url)
             if res is None:
                 print('info output not written. res is None.')
                 continue

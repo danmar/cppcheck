@@ -32,6 +32,32 @@
 #include <stack>
 #include <utility>
 
+static Token *skipRequires(Token *tok)
+{
+    if (!Token::simpleMatch(tok, "requires"))
+        return tok;
+
+    while (Token::Match(tok, "%oror%|&&|requires %name%|(")) {
+        Token *after = tok->next();
+        if (after->str() == "(") {
+            tok = after->link()->next();
+            continue;
+        }
+        if (Token::simpleMatch(after, "requires (") && Token::simpleMatch(after->linkAt(1), ") {")) {
+            tok = after->linkAt(1)->linkAt(1)->next();
+            continue;
+        }
+        while (Token::Match(after, "%name% :: %name%"))
+            after = after->tokAt(2);
+        if (Token::Match(after, "%name% <")) {
+            after = after->next()->findClosingBracket();
+            tok = after ? after->next() : nullptr;
+        } else
+            break;
+    }
+    return tok;
+}
+
 namespace {
     class FindToken {
     public:
@@ -616,13 +642,8 @@ bool TemplateSimplifier::getTemplateDeclarations()
                 break;
             tok1 = closing->next();
         }
-        if (!tok1)
+        if (!Token::Match(tok, "%any% %any%"))
             syntaxError(tok);
-        if (!tok1->next())
-            syntaxError(tok);
-        // Some syntax checks, see #6865
-        if (!tok->tokAt(2))
-            syntaxError(tok->next());
         if (tok->strAt(2)=="typename" &&
             !Token::Match(tok->tokAt(3), "%name%|...|,|=|>"))
             syntaxError(tok->next());
@@ -3662,6 +3683,18 @@ void TemplateSimplifier::simplifyTemplates(
         }
     }
 
+    if (mSettings->standards.cpp >= Standards::CPP20) {
+        // Remove concepts/requires
+        // TODO concepts are not removed yet
+        for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
+            if (!Token::Match(tok, ")|>|>> requires %name%|("))
+                continue;
+            Token *end = skipRequires(tok->next());
+            if (end)
+                Token::eraseTokens(tok, end);
+        }
+    }
+
     mTokenizer->calculateScopes();
 
     unsigned int passCount = 0;
@@ -3818,6 +3851,50 @@ void TemplateSimplifier::simplifyTemplates(
                                       Certainty::normal);
             if (mErrorLogger)
                 mErrorLogger->reportErr(errmsg);
+        }
+    }
+
+    // Tweak uninstantiated C++17 fold expressions (... && args)
+    if (mSettings->standards.cpp >= Standards::CPP17) {
+        bool simplify = false;
+        for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
+            if (tok->str() == "template")
+                simplify = false;
+            if (tok->str() == "{")
+                simplify = true;
+            if (!simplify || tok->str() != "(")
+                continue;
+            const Token *op = nullptr;
+            const Token *args = nullptr;
+            if (Token::Match(tok, "( ... %op%")) {
+                op = tok->tokAt(2);
+                args = tok->link()->previous();
+            } else if (Token::Match(tok, "( %name% %op% ...")) {
+                op = tok->tokAt(2);
+                args = tok->link()->previous()->isName() ? nullptr : tok->next();
+            } else if (Token::Match(tok->link()->tokAt(-3), "%op% ... )")) {
+                op = tok->link()->tokAt(-2);
+                args = tok->next();
+            } else if (Token::Match(tok->link()->tokAt(-3), "... %op% %name% )")) {
+                op = tok->link()->tokAt(-2);
+                args = tok->next()->isName() ? nullptr : tok->link()->previous();
+            } else {
+                continue;
+            }
+
+            // cppcheck-suppress redundantCopyLocalConst ; False positive
+            const std::string strop = op->str();
+            const std::string strargs = (args && args->isName()) ? args->str() : "";
+
+            Token::eraseTokens(tok, tok->link());
+            tok->insertToken(")");
+            if (!strargs.empty()) {
+                tok->insertToken("...");
+                tok->insertToken(strargs);
+            }
+            tok->insertToken("(");
+            Token::createMutualLinks(tok->next(), tok->link()->previous());
+            tok->insertToken("__cppcheck_fold_" + strop + "__");
         }
     }
 }

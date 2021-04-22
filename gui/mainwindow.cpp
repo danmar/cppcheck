@@ -873,7 +873,6 @@ Settings MainWindow::getCppcheckSettings()
             result.userDefines += define.toStdString();
         }
 
-        result.clang = mProjectFile->clangParser;
         result.bugHunting = mProjectFile->bugHunting;
         result.bugHuntingReport = " ";
 
