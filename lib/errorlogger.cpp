@@ -216,7 +216,7 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
             const char *info = strinfo ? strinfo : "";
             const int line = strline ? std::atoi(strline) : 0;
             const int column = strcolumn ? std::atoi(strcolumn) : 0;
-            callStack.emplace_back(file, info, line, column);
+            callStack.emplace_front(file, info, line, column);
         }
     }
 }

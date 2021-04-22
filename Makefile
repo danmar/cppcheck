@@ -632,7 +632,7 @@ test/testconstructors.o: test/testconstructors.cpp lib/astutils.h lib/check.h li
 test/testcppcheck.o: test/testcppcheck.cpp lib/analyzerinfo.h lib/check.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testcppcheck.o test/testcppcheck.cpp
 
-test/testerrorlogger.o: test/testerrorlogger.cpp lib/analyzerinfo.h lib/check.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h test/testsuite.h
+test/testerrorlogger.o: test/testerrorlogger.cpp externals/tinyxml2/tinyxml2.h lib/analyzerinfo.h lib/check.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testerrorlogger.o test/testerrorlogger.cpp
 
 test/testexceptionsafety.o: test/testexceptionsafety.cpp lib/astutils.h lib/check.h lib/checkexceptionsafety.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h test/testsuite.h
