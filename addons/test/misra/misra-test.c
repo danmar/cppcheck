@@ -287,7 +287,7 @@ void misra_7_4(void)
    misra_7_4_call(1, "text_call"); // 7.4 11.8
 }
 
-bool test(char *a)
+bool test_8_2(char *a)
 {
     return false;
 }
@@ -980,9 +980,9 @@ a1:
 
 void misra_15_2(void) {
 
-    if (x)
+    if (x) // 14.4
     {
-        goto L2;
+        goto L2; // 15.1
     }
 
     struct test tmp = {
