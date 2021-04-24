@@ -173,6 +173,7 @@ private:
         TEST_CASE(varid_parameter_pack); // #9383
         TEST_CASE(varid_for_auto_cpp17);
         TEST_CASE(varid_not); // #9689 'not x'
+        TEST_CASE(varid_declInIfCondition);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -2696,6 +2697,53 @@ private:
                             "2: if ( ! x@1 ) { }\n"
                             "3: }\n";
         ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_declInIfCondition() {
+        // if
+        ASSERT_EQUALS("1: void f ( int x@1 ) {\n"
+                      "2: if ( int x@2 = 0 ) { x@2 ; }\n"
+                      "3: x@1 ;\n"
+                      "4: }\n",
+                      tokenize("void f(int x) {\n"
+                               "  if (int x = 0) { x; }\n"
+                               "  x;\n"
+                               "}"));
+        // if, else
+        ASSERT_EQUALS("1: void f ( int x@1 ) {\n"
+                      "2: if ( int x@2 = 0 ) { x@2 ; }\n"
+                      "3: else { x@2 ; }\n"
+                      "4: x@1 ;\n"
+                      "5: }\n",
+                      tokenize("void f(int x) {\n"
+                               "  if (int x = 0) { x; }\n"
+                               "  else { x; }\n"
+                               "  x;\n"
+                               "}"));
+        // if, else if
+        ASSERT_EQUALS("1: void f ( int x@1 ) {\n"
+                      "2: if ( int x@2 = 0 ) { x@2 ; }\n"
+                      "3: else { if ( void * x@3 = & x@3 ) { x@3 ; } }\n"
+                      "4: x@1 ;\n"
+                      "5: }\n",
+                      tokenize("void f(int x) {\n"
+                               "  if (int x = 0) x;\n"
+                               "  else if (void* x = &x) x;\n"
+                               "  x;\n"
+                               "}"));
+        // if, else if, else
+        ASSERT_EQUALS("1: void f ( int x@1 ) {\n"
+                      "2: if ( int x@2 = 0 ) { x@2 ; }\n"
+                      "3: else { if ( void * x@3 = & x@3 ) { x@3 ; }\n"
+                      "4: else { x@3 ; } }\n"
+                      "5: x@1 ;\n"
+                      "6: }\n",
+                      tokenize("void f(int x) {\n"
+                               "  if (int x = 0) x;\n"
+                               "  else if (void* x = &x) x;\n"
+                               "  else x;\n"
+                               "  x;\n"
+                               "}"));
     }
 
     void varidclass1() {
