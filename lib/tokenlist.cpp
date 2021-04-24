@@ -1515,8 +1515,10 @@ static Token * createAstAtToken(Token *tok, bool cpp)
                 semicolon2->astOperand2(state3.op.top());
             semicolon1->astOperand2(semicolon2);
         } else {
-            tok2 = findAstTop(semicolon1->next(), semicolon2);
-            semicolon1->astOperand2(tok2 ? tok2 : state2.op.top());
+            if (!cpp || !Token::simpleMatch(state2.op.top(), ":"))
+                throw InternalError(tok, "syntax error", InternalError::SYNTAX);
+
+            semicolon1->astOperand2(state2.op.top());
         }
 
         if (init != semicolon1)
