@@ -504,7 +504,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             configurations.insert(mSettings.userDefines);
         }
 
-        if (mSettings.checkConfiguration) {
+        if (mSettings.checkConfiguration == Settings::CheckConfig::CheckOnly) {
             for (const std::string &config : configurations)
                 (void)preprocessor.getcode(tokens1, config, files, true);
 
@@ -605,10 +605,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 }
 
                 if (!tokenizer.tokens())
-                    continue;
-
-                // skip rest of iteration if just checking configuration
-                if (mSettings.checkConfiguration)
                     continue;
 
                 // Check raw tokens
@@ -737,7 +733,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
     // In jointSuppressionReport mode, unmatched suppressions are
     // collected after all files are processed
-    if (!mSettings.jointSuppressionReport && (mSettings.severity.isEnabled(Severity::information) || mSettings.checkConfiguration)) {
+    if (!mSettings.jointSuppressionReport && (mSettings.severity.isEnabled(Severity::information) || mSettings.checkConfiguration != Settings::CheckConfig::Disabled)) {
         reportUnmatchedSuppressions(mSettings.nomsg.getUnmatchedLocalSuppressions(filename, isUnusedFunctionCheckEnabled()));
     }
 

@@ -87,6 +87,13 @@ public:
  * future when we might have even more detailed settings.
  */
 class CPPCHECKLIB Settings : public cppcheck::Platform {
+public:
+    enum class CheckConfig {
+        Disabled,
+        CheckOnly,
+        Analysis
+    };
+
 private:
 
     /** @brief terminate checking */
@@ -121,7 +128,7 @@ public:
     bool checkAllConfigurations;
 
     /** Is the 'configuration checking' wanted? */
-    bool checkConfiguration;
+    CheckConfig checkConfiguration;
 
     /**
      * Check code in the headers, this is on by default but can

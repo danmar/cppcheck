@@ -439,7 +439,8 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
     Settings checkSettings = getCppcheckSettings();
     checkSettings.force = false;
     checkSettings.checkLibrary = checkLibrary;
-    checkSettings.checkConfiguration = checkConfiguration;
+    // TODO
+    checkSettings.checkConfiguration = checkConfiguration ? Settings::CheckConfig::CheckOnly : Settings::CheckConfig::Disabled;
 
     if (mProjectFile)
         qDebug() << "Checking project file" << mProjectFile->getFilename();
@@ -506,7 +507,8 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     mUI.mResults->setCheckDirectory(checkPath);
     Settings checkSettings = getCppcheckSettings();
     checkSettings.checkLibrary = checkLibrary;
-    checkSettings.checkConfiguration = checkConfiguration;
+    // TODO
+    checkSettings.checkConfiguration = checkConfiguration ? Settings::CheckConfig::CheckOnly : Settings::CheckConfig::Disabled;
 
     if (mProjectFile)
         qDebug() << "Checking project file" << mProjectFile->getFilename();

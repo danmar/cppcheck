@@ -6406,7 +6406,7 @@ private:
         errout.str("");
 
         Settings s;
-        s.checkConfiguration = true;
+        s.checkConfiguration = Settings::CheckConfig::CheckOnly;
 
         // tokenize..
         Tokenizer tokenizer(&s, this);

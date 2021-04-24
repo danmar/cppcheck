@@ -224,8 +224,20 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->bugHuntingCheckFunctionMaxTime = std::atoi(argv[i] + 38);
 
             // Check configuration
-            else if (std::strcmp(argv[i], "--check-config") == 0)
-                mSettings->checkConfiguration = true;
+            else if (std::strncmp(argv[i], "--check-config", 14) == 0) {
+				if (std::strncmp(argv[i], "--check-config=", 15) == 0) {
+					const std::string mode = argv[i] + 15;
+					if (mode == "analysis")
+						mSettings->checkConfiguration = Settings::CheckConfig::Analysis;
+					else {
+						printMessage("Cppcheck: unknown mode '" + mode + "' specified for --check-config");
+						return false;
+					}
+				}
+				else {
+					mSettings->checkConfiguration = Settings::CheckConfig::CheckOnly;
+				}
+			}
 
             // Check library definitions
             else if (std::strcmp(argv[i], "--check-library") == 0) {
@@ -983,15 +995,10 @@ void CmdLineParser::printHelp()
               "    --bug-hunting\n"
               "                         Enable noisy and soundy analysis. The normal Cppcheck\n"
               "                         analysis is turned off.\n"
-              "    --cppcheck-build-dir=<dir>\n"
-              "                         Cppcheck work folder. Advantages:\n"
-              "                          * whole program analysis\n"
-              "                          * faster analysis; Cppcheck will reuse the results if\n"
-              "                            the hash for a file is unchanged.\n"
-              "                          * some useful debug information, i.e. commands used to\n"
-              "                            execute clang-tidy/addons.\n"
-              "    --check-config       Check cppcheck configuration. The normal code\n"
-              "                         analysis is disabled by this flag.\n"
+              "    --check-config=<mode>\n"
+			  "                         Check cppcheck configuration. The normal code\n"
+              "                         analysis is disabled by this flag. To enable the analysis provide\n"
+			  "                         the optional mode 'analysis'\n"
               "    --check-library      Show information messages when library files have\n"
               "                         incomplete info.\n"
               "    --config-exclude=<dir>\n"
@@ -1001,6 +1008,13 @@ void CmdLineParser::printHelp()
               "                         be considered for evaluation.\n"
               "    --config-excludes-file=<file>\n"
               "                         A file that contains a list of config-excludes\n"
+			  "    --cppcheck-build-dir=<dir>\n"
+			  "                         Cppcheck work folder. Advantages:\n"
+			  "                          * whole program analysis\n"
+			  "                          * faster analysis; Cppcheck will reuse the results if\n"
+			  "                            the hash for a file is unchanged.\n"
+			  "                          * some useful debug information, i.e. commands used to\n"
+			  "                            execute clang/clang-tidy/addons.\n"
               "    --dump               Dump xml data for each translation unit. The dump\n"
               "                         files have the extension .dump and contain ast,\n"
               "                         tokenlist, symboldatabase, valueflow.\n"

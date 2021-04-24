@@ -873,7 +873,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
         missingSystemIncludeFlag = true;
     else
         missingIncludeFlag = true;
-    if (mErrorLogger && mSettings.checkConfiguration) {
+    if (mErrorLogger && mSettings.checkConfiguration != Settings::CheckConfig::Disabled) {
 
         std::list<ErrorMessage::FileLocation> locationList;
         if (!filename.empty()) {
@@ -936,7 +936,7 @@ void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *se
 {
     Settings settings2(*settings);
     Preprocessor preprocessor(settings2, errorLogger);
-    settings2.checkConfiguration = true;
+    settings2.checkConfiguration = Settings::CheckConfig::CheckOnly;
     preprocessor.missingInclude(emptyString, 1, emptyString, UserHeader);
     preprocessor.missingInclude(emptyString, 1, emptyString, SystemHeader);
     preprocessor.validateCfgError(emptyString, 1, "X", "X");
