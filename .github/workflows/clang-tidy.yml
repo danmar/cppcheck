@@ -7,26 +7,30 @@ on: [push, pull_request]
 jobs:
   build:
 
-    strategy:
-      matrix:
-        os: [ubuntu-20.04]
-      fail-fast: false # Prefer quick result
+    runs-on: ubuntu-20.04
 
-    runs-on: ${{ matrix.os }}
+    container:
+      image: "ubuntu:21.04"
 
     steps:
       - uses: actions/checkout@v2
 
       - name: Install missing software
         run: |
-          sudo apt-get update
-          sudo apt-get install z3 libz3-dev
-          sudo apt-get install clang-tidy
+          apt-get update
+          apt-get install -y cmake g++ make
+          apt-get install -y z3 libz3-dev
+          apt-get install -y libpcre3-dev
+          apt-get install -y software-properties-common
+          add-apt-repository universe
+          apt-get update
+          apt-get install -y clang-tidy-12
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v2
-        with:
-          modules: 'qtcharts'
+      # uses "sudo" internally which is not available on docker by default
+      #- name: Install Qt
+      #  uses: jurplel/install-qt-action@v2
+      #  with:
+      #    modules: 'qtcharts'
 
       - name: Prepare CMake
         run: |
