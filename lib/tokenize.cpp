@@ -10182,9 +10182,10 @@ void Tokenizer::findGarbageCode() const
             }
         }
         // if we have an invalid number of semicolons inside for( ), assume syntax error
-        if ((semicolons == 1) || (semicolons > 2)) {
+        if (semicolons > 2)
             syntaxError(tok);
-        }
+        if (semicolons == 1 && !(isCPP() && mSettings->standards.cpp >= Standards::CPP20))
+            syntaxError(tok);
     }
 
     // Operators without operands..
@@ -11280,6 +11281,9 @@ void Tokenizer::simplifyBitfields()
             tok = tok->previous();
         }
         Token *last = nullptr;
+
+        if (Token::simpleMatch(tok, "for ("))
+            tok = tok->linkAt(1);
 
         if (!Token::Match(tok, ";|{|}|public:|protected:|private:"))
             continue;

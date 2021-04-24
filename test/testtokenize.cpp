@@ -281,6 +281,7 @@ private:
         TEST_CASE(bitfields14); // ticket #4561 (segfault for 'class a { signals: };')
         TEST_CASE(bitfields15); // ticket #7747 (enum Foo {A,B}:4;)
         TEST_CASE(bitfields16); // Save bitfield bit count
+        TEST_CASE(bitfields17); // for (A; b:c);
 
         TEST_CASE(simplifyNamespaceStd);
 
@@ -3952,6 +3953,13 @@ private:
         ASSERT_EQUALS(1, x->bits());
     }
 
+    void bitfields17() {
+        Settings settings;
+        settings.standards.cpp = Standards::CPP20;
+        const char code[] = "void f() { for (a;b:c) {} }";
+        ASSERT_EQUALS("void f ( ) { for ( a ; b : c ) { } }", tokenizeAndStringify(code, settings));
+    }
+
     void simplifyNamespaceStd() {
         const char *code, *expected;
 
@@ -5366,6 +5374,7 @@ private:
         ASSERT_EQUALS("12*34*5*+", testAst("1*2+3*4*5"));
         ASSERT_EQUALS("0(r.&", testAst("(&((typeof(x))0).r);"));
         ASSERT_EQUALS("0(r.&", testAst("&((typeof(x))0).r;"));
+        ASSERT_EQUALS("0f1(||", testAst("; 0 || f(1);"));
 
         // Various tests of precedence
         ASSERT_EQUALS("ab::c+", testAst("a::b+c"));
@@ -5449,6 +5458,10 @@ private:
         ASSERT_EQUALS("fora*++;;(", testAst("for (++(*a);;);"));
         ASSERT_EQUALS("foryz:(", testAst("for (decltype(x) *y : z);"));
         ASSERT_EQUALS("for(tmpNULL!=tmptmpnext.=;;( tmpa=", testAst("for ( ({ tmp = a; }) ; tmp != NULL; tmp = tmp->next ) {}"));
+        ASSERT_EQUALS("forx0=x;;(", testAst("for (int x=0; x;);"));
+
+        // for with initializer (c++20)
+        ASSERT_EQUALS("forab=ca:;(", testAst("for(a=b;int c:a)"));
 
         // problems with multiple expressions
         ASSERT_EQUALS("ax( whilex(", testAst("a(x) while (x)"));
@@ -5474,9 +5487,7 @@ private:
         // C++17: if (expr1; expr2)
         ASSERT_EQUALS("ifx3=y;(", testAst("if (int x=3; y)"));
 
-        ASSERT_EQUALS("forx0=x;;(", testAst("for (int x=0; x;);"));
 
-        ASSERT_EQUALS("0f1(||", testAst("; 0 || f(1);"));
     }
 
     void astexpr2() { // limit for large expressions

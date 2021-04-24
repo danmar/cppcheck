@@ -1495,26 +1495,32 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         Token * const semicolon2 = tok2;
         if (!semicolon2)
             return nullptr; // invalid code #7235
-        tok2 = tok2->next();
-        AST_state state3(cpp);
-        if (Token::simpleMatch(tok2, "( {")) {
-            state3.op.push(tok2->next());
-            tok2 = tok2->link()->next();
+
+        if (semicolon2->str() == ";") {
+            tok2 = tok2->next();
+            AST_state state3(cpp);
+            if (Token::simpleMatch(tok2, "( {")) {
+                state3.op.push(tok2->next());
+                tok2 = tok2->link()->next();
+            }
+            compileExpression(tok2, state3);
+
+            tok2 = findAstTop(semicolon1->next(), semicolon2);
+            if (tok2)
+                semicolon2->astOperand1(tok2);
+            tok2 = findAstTop(semicolon2->next(), endPar);
+            if (tok2)
+                semicolon2->astOperand2(tok2);
+            else if (!state3.op.empty())
+                semicolon2->astOperand2(state3.op.top());
+            semicolon1->astOperand2(semicolon2);
+        } else {
+            tok2 = findAstTop(semicolon1->next(), semicolon2);
+            semicolon1->astOperand2(tok2 ? tok2 : state2.op.top());
         }
-        compileExpression(tok2, state3);
 
         if (init != semicolon1)
             semicolon1->astOperand1(init->astTop());
-        tok2 = findAstTop(semicolon1->next(), semicolon2);
-        if (tok2)
-            semicolon2->astOperand1(tok2);
-        tok2 = findAstTop(semicolon2->next(), endPar);
-        if (tok2)
-            semicolon2->astOperand2(tok2);
-        else if (!state3.op.empty())
-            semicolon2->astOperand2(state3.op.top());
-
-        semicolon1->astOperand2(semicolon2);
         tok->next()->astOperand1(tok);
         tok->next()->astOperand2(semicolon1);
 
