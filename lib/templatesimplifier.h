@@ -451,7 +451,7 @@ private:
     static bool removeTemplate(Token *tok);
 
     /** Syntax error */
-    static void syntaxError(const Token *tok);
+    NORETURN static void syntaxError(const Token *tok);
 
     static bool matchSpecialization(
         const Token *templateDeclarationNameToken,
