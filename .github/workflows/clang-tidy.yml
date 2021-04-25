@@ -21,6 +21,7 @@ jobs:
           apt-get install -y cmake g++ make
           apt-get install -y z3 libz3-dev
           apt-get install -y libpcre3-dev
+          apt-get install -y libffi7 # work around missing dependency for Qt install step
           apt-get install -y software-properties-common
           add-apt-repository universe
           apt-get update
