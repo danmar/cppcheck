@@ -645,8 +645,18 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
         dui.defines.push_back(s);
     }
 
-    if (Path::isCPP(filename))
-        dui.defines.emplace_back("__cplusplus");
+    if (Path::isCPP(filename)) {
+        if (mSettings.standards.cpp == Standards::CPP11)
+            dui.defines.emplace_back("__cplusplus=201103L");
+        else if (mSettings.standards.cpp == Standards::CPP14)
+            dui.defines.emplace_back("__cplusplus=201402L");
+        else if (mSettings.standards.cpp == Standards::CPP17)
+            dui.defines.emplace_back("__cplusplus=201703L");
+        else if (mSettings.standards.cpp == Standards::CPP20)
+            dui.defines.emplace_back("__cplusplus=202002L");
+        else
+            dui.defines.emplace_back("__cplusplus");
+    }
 
     dui.undefined = mSettings.userUndefs; // -U
     dui.includePaths = mSettings.includePaths; // -I
