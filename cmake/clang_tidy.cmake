@@ -11,5 +11,6 @@ find_program(RUN_CLANG_TIDY NAMES run-clang-tidy run-clang-tidy-12 run-clang-tid
 message(STATUS "RUN_CLANG_TIDY=${RUN_CLANG_TIDY}")
 if (RUN_CLANG_TIDY)
     # disable all compiler warnings since we are just interested in the tidy ones
-    add_custom_target(run-clang-tidy ${RUN_CLANG_TIDY} -p=${CMAKE_BINARY_DIR} -j ${NPROC} -extra-arg=-w -quiet)
+    add_custom_target(run-clang-tidy ${RUN_CLANG_TIDY} -p=${CMAKE_BINARY_DIR} -j ${NPROC} -extra-arg=-w -quiet
+            DEPENDS build-ui-headers)
 endif()
