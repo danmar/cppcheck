@@ -7,6 +7,13 @@ function(add_compile_options_safe FLAG)
     endif()
 endfunction()
 
+function(target_compile_options_safe TARGET FLAG)
+    check_cxx_compiler_flag(${FLAG} _has_flag)
+    if (_has_flag)
+        target_compile_options(${TARGET} PRIVATE ${FLAG})
+    endif()
+endfunction()
+
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if(CMAKE_BUILD_TYPE MATCHES "Release")
         # "Release" uses -O3 by default
