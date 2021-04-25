@@ -5143,6 +5143,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     elseif();
 
+    simplifyIfSwitchForInit();
+
     simplifyOverloadedOperators();
 
     validate();
@@ -8589,6 +8591,66 @@ void Tokenizer::elseif()
                 }
             }
         }
+    }
+}
+
+
+void Tokenizer::simplifyIfSwitchForInit()
+{
+    if (!isCPP() || mSettings->standards.cpp < Standards::CPP17)
+        return;
+
+    const bool forInit = (mSettings->standards.cpp >= Standards::CPP20);
+
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "if|switch|for ("))
+            continue;
+
+        Token *semicolon = tok->tokAt(2);
+        while (!Token::Match(semicolon, "[;)]")) {
+            if (semicolon->str() == "(")
+                semicolon = semicolon->link();
+            semicolon = semicolon->next();
+        }
+        if (semicolon->str() != ";")
+            continue;
+
+        if (tok->str() ==  "for") {
+            if (!forInit)
+                continue;
+
+            // Is it a for range..
+            const Token *tok2 = semicolon->next();
+            bool rangeFor = false;
+            while (!Token::Match(tok2, "[;)]")) {
+                if (tok2->str() == "(")
+                    tok2 = tok2->link();
+                else if (!rangeFor && tok2->str() == "?")
+                    break;
+                else if (tok2->str() == ":")
+                    rangeFor = true;
+                tok2 = tok2->next();
+            }
+            if (!rangeFor || tok2->str() != ")")
+                continue;
+        }
+
+        Token *endpar = tok->linkAt(1);
+        if (!Token::simpleMatch(endpar, ") {"))
+            continue;
+
+        Token *endscope = endpar->linkAt(1);
+        if (Token::simpleMatch(endscope, "} else {"))
+            endscope = endscope->linkAt(2);
+
+        // Simplify, the initialization expression is broken out..
+        semicolon->insertToken(tok->str());
+        semicolon->next()->insertToken("(");
+        Token::createMutualLinks(semicolon->next()->next(), endpar);
+        tok->deleteNext();
+        tok->str("{");
+        endscope->insertToken("}");
+        Token::createMutualLinks(tok, endscope->next());
     }
 }
 

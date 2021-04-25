@@ -449,6 +449,9 @@ public:
     /** Simplify "if else" */
     void elseif();
 
+    /** Simplify C++17/C++20 if/switch/for initialization expression */
+    void simplifyIfSwitchForInit();
+
     /** Simplify conditions
      * @return true if something is modified
      *         false if nothing is done.
