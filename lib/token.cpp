@@ -111,6 +111,8 @@ void Token::update_property_info()
                   mStr == ">"  ||
                   mStr == ">="))
             tokType(eComparisonOp);
+        else if (mStr == "<=>")
+            tokType(eComparisonOp);
         else if (mStr.size() == 2 &&
                  (mStr == "++" ||
                   mStr == "--"))

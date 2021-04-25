@@ -1666,7 +1666,7 @@ void TemplateSimplifier::expandTemplate(
             while (itype < typeParametersInDeclaration.size() && typeParametersInDeclaration[itype]->str() != start->str())
                 ++itype;
 
-            if (itype < typeParametersInDeclaration.size() &&
+            if (itype < typeParametersInDeclaration.size() && itype < mTypesUsedInTemplateInstantiation.size() &&
                 (!isVariable || !Token::Match(typeParametersInDeclaration[itype]->previous(), "<|, %type% >|,"))) {
                 typeindentlevel = 0;
                 std::stack<Token *> brackets1; // holds "(" and "{" tokens
@@ -1919,7 +1919,7 @@ void TemplateSimplifier::expandTemplate(
                             ++itype;
 
                         // replace type with given type..
-                        if (itype < typeParametersInDeclaration.size()) {
+                        if (itype < typeParametersInDeclaration.size() && itype < mTypesUsedInTemplateInstantiation.size()) {
                             unsigned int typeindentlevel = 0;
                             std::stack<Token *> brackets1; // holds "(" and "{" tokens
                             for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token();
@@ -2024,7 +2024,7 @@ void TemplateSimplifier::expandTemplate(
                     ++itype;
 
                 // replace type with given type..
-                if (itype < typeParametersInDeclaration.size()) {
+                if (itype < typeParametersInDeclaration.size() && itype < mTypesUsedInTemplateInstantiation.size()) {
                     unsigned int typeindentlevel = 0;
                     std::stack<Token *> brackets1; // holds "(" and "{" tokens
                     Token * const beforeTypeToken = mTokenList.back();

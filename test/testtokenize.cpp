@@ -281,6 +281,7 @@ private:
         TEST_CASE(bitfields14); // ticket #4561 (segfault for 'class a { signals: };')
         TEST_CASE(bitfields15); // ticket #7747 (enum Foo {A,B}:4;)
         TEST_CASE(bitfields16); // Save bitfield bit count
+        TEST_CASE(bitfields17); // for (A; b:c);
 
         TEST_CASE(simplifyNamespaceStd);
 
@@ -327,6 +328,7 @@ private:
         TEST_CASE(simplifyOperatorName26);
         TEST_CASE(simplifyOperatorName27);
         TEST_CASE(simplifyOperatorName28);
+        TEST_CASE(simplifyOperatorName29); // spaceship operator
 
         TEST_CASE(simplifyOverloadedOperators1);
         TEST_CASE(simplifyOverloadedOperators2); // (*this)(123)
@@ -418,6 +420,8 @@ private:
         TEST_CASE(removeAlignas);
 
         TEST_CASE(simplifyCoroutines);
+
+        TEST_CASE(simplifySpaceshipOperator);
     }
 
     std::string tokenizeAndStringify(const char code[], bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
@@ -3949,6 +3953,13 @@ private:
         ASSERT_EQUALS(1, x->bits());
     }
 
+    void bitfields17() {
+        Settings settings;
+        settings.standards.cpp = Standards::CPP20;
+        const char code[] = "void f() { for (a;b:c) {} }";
+        ASSERT_EQUALS("void f ( ) { for ( a ; b : c ) { } }", tokenizeAndStringify(code, settings));
+    }
+
     void simplifyNamespaceStd() {
         const char *code, *expected;
 
@@ -4707,6 +4718,12 @@ private:
                       tokenizeAndStringify(code));
     }
 
+    void simplifyOperatorName29() {
+        Settings settings;
+        settings.standards.cpp = Standards::CPP20;
+        ASSERT_EQUALS("auto operator<=> ( ) ;", tokenizeAndStringify("auto operator<=>();", settings));
+    }
+
     void simplifyOverloadedOperators1() {
         const char code[] = "struct S { void operator()(int); };\n"
                             "\n"
@@ -5309,6 +5326,7 @@ private:
 
         tokenList.combineStringAndCharLiterals();
         tokenList.combineOperators();
+        tokenList.simplifySpaceshipOperator();
         tokenList.createLinks();
         tokenList.createLinks2();
         tokenList.list.front()->assignIndexes();
@@ -5356,6 +5374,7 @@ private:
         ASSERT_EQUALS("12*34*5*+", testAst("1*2+3*4*5"));
         ASSERT_EQUALS("0(r.&", testAst("(&((typeof(x))0).r);"));
         ASSERT_EQUALS("0(r.&", testAst("&((typeof(x))0).r;"));
+        ASSERT_EQUALS("0f1(||", testAst("; 0 || f(1);"));
 
         // Various tests of precedence
         ASSERT_EQUALS("ab::c+", testAst("a::b+c"));
@@ -5363,6 +5382,7 @@ private:
         ASSERT_EQUALS("abc=,", testAst("a,b=c"));
         ASSERT_EQUALS("a-1+", testAst("-a+1"));
         ASSERT_EQUALS("ab++-c-", testAst("a-b++-c"));
+        ASSERT_EQUALS("ab<=>", testAst("a<=>b"));
 
         // sizeof
         ASSERT_EQUALS("ab.sizeof", testAst("sizeof a.b"));
@@ -5438,6 +5458,10 @@ private:
         ASSERT_EQUALS("fora*++;;(", testAst("for (++(*a);;);"));
         ASSERT_EQUALS("foryz:(", testAst("for (decltype(x) *y : z);"));
         ASSERT_EQUALS("for(tmpNULL!=tmptmpnext.=;;( tmpa=", testAst("for ( ({ tmp = a; }) ; tmp != NULL; tmp = tmp->next ) {}"));
+        ASSERT_EQUALS("forx0=x;;(", testAst("for (int x=0; x;);"));
+
+        // for with initializer (c++20)
+        ASSERT_EQUALS("forab=ca:;(", testAst("for(a=b;int c:a)"));
 
         // problems with multiple expressions
         ASSERT_EQUALS("ax( whilex(", testAst("a(x) while (x)"));
@@ -5463,9 +5487,7 @@ private:
         // C++17: if (expr1; expr2)
         ASSERT_EQUALS("ifx3=y;(", testAst("if (int x=3; y)"));
 
-        ASSERT_EQUALS("forx0=x;;(", testAst("for (int x=0; x;);"));
 
-        ASSERT_EQUALS("0f1(||", testAst("; 0 || f(1);"));
     }
 
     void astexpr2() { // limit for large expressions
@@ -5676,6 +5698,7 @@ private:
         ASSERT_EQUALS("stdvector::", testAst("std::vector<std::vector<int>>{{},{}}"));
         ASSERT_EQUALS("abR{{,P(,((", testAst("a(b(R{},{},P()));"));
         ASSERT_EQUALS("f1{2{,3{,{x,(", testAst("f({{1},{2},{3}},x);"));
+        ASSERT_EQUALS("a1{ b2{", testAst("auto a{1}; auto b{2};"));
     }
 
     void astbrackets() { // []
@@ -6525,6 +6548,13 @@ private:
         const char code3[] = "generator<int> f() { co_return 7; }";
         const char expected3[] = "generator < int > f ( ) { co_return ( 7 ) ; }";
         ASSERT_EQUALS(expected3, tokenizeAndStringify(code3, settings));
+    }
+
+    void simplifySpaceshipOperator() {
+        Settings settings;
+        settings.standards.cpp = Standards::CPP20;
+
+        ASSERT_EQUALS("; x <=> y ;", tokenizeAndStringify(";x<=>y;", settings));
     }
 };
 

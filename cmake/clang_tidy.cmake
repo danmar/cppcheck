@@ -7,7 +7,7 @@ if (NOT NPROC)
 endif()
 message(STATUS "NPROC=${NPROC}")
 
-find_program(RUN_CLANG_TIDY NAMES run-clang-tidy run-clang-tidy-11 run-clang-tidy-10 run-clang-tidy-9 run-clang-tidy-8)
+find_program(RUN_CLANG_TIDY NAMES run-clang-tidy run-clang-tidy-12 run-clang-tidy-11 run-clang-tidy-10 run-clang-tidy-9 run-clang-tidy-8)
 message(STATUS "RUN_CLANG_TIDY=${RUN_CLANG_TIDY}")
 if (RUN_CLANG_TIDY)
     # disable all compiler warnings since we are just interested in the tidy ones

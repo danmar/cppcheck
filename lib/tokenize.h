@@ -617,7 +617,7 @@ private:
      * Send error message to error logger about internal bug.
      * @param tok the token that this bug concerns.
      */
-    void cppcheckError(const Token *tok) const;
+    NORETURN void cppcheckError(const Token *tok) const;
 
     /**
      * Setup links for tokens so that one can call Token::link().
@@ -694,6 +694,9 @@ private:
 
     /** Remove alignas */
     void removeAlignas();
+
+    /** Simplify c++20 spaceship operator */
+    void simplifySpaceshipOperator();
 
     /**
      * Remove keywords "volatile", "inline", "register", and "restrict"

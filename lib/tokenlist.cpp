@@ -1152,12 +1152,22 @@ static void compileShift(Token *&tok, AST_state& state)
     }
 }
 
-static void compileRelComp(Token *&tok, AST_state& state)
+static void compileThreewayComp(Token *&tok, AST_state& state)
 {
     compileShift(tok, state);
     while (tok) {
-        if (Token::Match(tok, "<|<=|>=|>") && !tok->link()) {
+        if (tok->str() == "<=>") {
             compileBinOp(tok, state, compileShift);
+        } else break;
+    }
+}
+
+static void compileRelComp(Token *&tok, AST_state& state)
+{
+    compileThreewayComp(tok, state);
+    while (tok) {
+        if (Token::Match(tok, "<|<=|>=|>") && !tok->link()) {
+            compileBinOp(tok, state, compileThreewayComp);
         } else break;
     }
 }
@@ -1485,26 +1495,34 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         Token * const semicolon2 = tok2;
         if (!semicolon2)
             return nullptr; // invalid code #7235
-        tok2 = tok2->next();
-        AST_state state3(cpp);
-        if (Token::simpleMatch(tok2, "( {")) {
-            state3.op.push(tok2->next());
-            tok2 = tok2->link()->next();
+
+        if (semicolon2->str() == ";") {
+            tok2 = tok2->next();
+            AST_state state3(cpp);
+            if (Token::simpleMatch(tok2, "( {")) {
+                state3.op.push(tok2->next());
+                tok2 = tok2->link()->next();
+            }
+            compileExpression(tok2, state3);
+
+            tok2 = findAstTop(semicolon1->next(), semicolon2);
+            if (tok2)
+                semicolon2->astOperand1(tok2);
+            tok2 = findAstTop(semicolon2->next(), endPar);
+            if (tok2)
+                semicolon2->astOperand2(tok2);
+            else if (!state3.op.empty())
+                semicolon2->astOperand2(state3.op.top());
+            semicolon1->astOperand2(semicolon2);
+        } else {
+            if (!cpp || !Token::simpleMatch(state2.op.top(), ":"))
+                throw InternalError(tok, "syntax error", InternalError::SYNTAX);
+
+            semicolon1->astOperand2(state2.op.top());
         }
-        compileExpression(tok2, state3);
 
         if (init != semicolon1)
             semicolon1->astOperand1(init->astTop());
-        tok2 = findAstTop(semicolon1->next(), semicolon2);
-        if (tok2)
-            semicolon2->astOperand1(tok2);
-        tok2 = findAstTop(semicolon2->next(), endPar);
-        if (tok2)
-            semicolon2->astOperand2(tok2);
-        else if (!state3.op.empty())
-            semicolon2->astOperand2(state3.op.top());
-
-        semicolon1->astOperand2(semicolon2);
         tok->next()->astOperand1(tok);
         tok->next()->astOperand2(semicolon1);
 
@@ -1575,6 +1593,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         (cpp && tok->str() == "throw") ||
         !tok->previous() ||
         Token::Match(tok, "%name% %op%|(|[|.|::|<|?|;") ||
+        (cpp && Token::Match(tok, "%name% {") && iscpp11init(tok->next())) ||
         Token::Match(tok->previous(), "[;{}] %cop%|++|--|( !!{") ||
         Token::Match(tok->previous(), "[;{}] %num%|%str%|%char%")) {
         if (cpp && (Token::Match(tok->tokAt(-2), "[;{}] new|delete %name%") || Token::Match(tok->tokAt(-3), "[;{}] :: new|delete %name%")))
