@@ -5698,6 +5698,7 @@ private:
         ASSERT_EQUALS("stdvector::", testAst("std::vector<std::vector<int>>{{},{}}"));
         ASSERT_EQUALS("abR{{,P(,((", testAst("a(b(R{},{},P()));"));
         ASSERT_EQUALS("f1{2{,3{,{x,(", testAst("f({{1},{2},{3}},x);"));
+        ASSERT_EQUALS("a1{ b2{", testAst("auto a{1}; auto b{2};"));
     }
 
     void astbrackets() { // []

@@ -5770,6 +5770,15 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         return;
     }
 
+    // c++17 auto type deduction of braced init list
+    if (mIsCpp && mSettings->standards.cpp >= Standards::CPP17 && vt2 && Token::Match(parent->tokAt(-2), "auto %var% {")) {
+        Token *autoTok = parent->tokAt(-2);
+        setValueType(autoTok, *vt2);
+        setAutoTokenProperties(autoTok);
+        const_cast<Variable *>(parent->previous()->variable())->setValueType(*vt2);
+        return;
+    }
+
     if (!vt1)
         return;
     if (parent->astOperand2() && !vt2)

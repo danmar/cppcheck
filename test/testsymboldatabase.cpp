@@ -468,6 +468,7 @@ private:
         TEST_CASE(auto12); // #8993 - const std::string &x; auto y = x; if (y.empty()) ..
         TEST_CASE(auto13);
         TEST_CASE(auto14);
+        TEST_CASE(auto15); // C++17 auto deduction from braced-init-list
 
         TEST_CASE(unionWithConstructor);
 
@@ -8145,6 +8146,18 @@ private:
 
         tok = Token::findsimplematch(tokenizer.tokens(), "combo =");
         ASSERT(tok && !tok->valueType());
+    }
+
+    void auto15() {
+        GET_SYMBOL_DB("auto var1{3};\n"
+                      "auto var2{4.0};");
+        ASSERT_EQUALS(3, db->variableList().size());
+        const Variable *var1 = db->variableList()[1];
+        ASSERT(var1->valueType());
+        ASSERT_EQUALS(ValueType::Type::INT, var1->valueType()->type);
+        const Variable *var2 = db->variableList()[2];
+        ASSERT(var2->valueType());
+        ASSERT_EQUALS(ValueType::Type::DOUBLE, var2->valueType()->type);
     }
 
     void unionWithConstructor() {
