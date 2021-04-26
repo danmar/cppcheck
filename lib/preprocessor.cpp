@@ -645,12 +645,11 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
         dui.defines.push_back(s);
     }
 
-    if (Path::isCPP(filename))
-        dui.defines.emplace_back("__cplusplus");
-
     dui.undefined = mSettings.userUndefs; // -U
     dui.includePaths = mSettings.includePaths; // -I
     dui.includes = mSettings.userIncludes;  // --include
+    if (Path::isCPP(filename))
+        dui.std = mSettings.standards.getCPP();
     return dui;
 }
 

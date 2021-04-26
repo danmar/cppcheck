@@ -346,6 +346,7 @@ private:
         TEST_CASE(symboldatabase91);
         TEST_CASE(symboldatabase92); // daca crash
         TEST_CASE(symboldatabase93); // alignas attribute
+        TEST_CASE(symboldatabase94); // structured bindings
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4710,6 +4711,13 @@ private:
         ASSERT(db != nullptr);
         const Scope* scope = db->findScopeByName("A");
         ASSERT(scope);
+    }
+
+    void symboldatabase94() { // structured bindings
+        GET_SYMBOL_DB("int foo() { auto [x,y] = xy(); return x+y; }");
+        ASSERT(db != nullptr);
+        ASSERT(db->getVariableFromVarId(1) != nullptr);
+        ASSERT(db->getVariableFromVarId(2) != nullptr);
     }
 
     void createSymbolDatabaseFindAllScopes1() {
