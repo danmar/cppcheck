@@ -4139,6 +4139,16 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
     // the start of the type tokens does not include the above modifiers
     const Token *typestart = tok;
 
+    // C++17 structured bindings
+    if (settings->standards.cpp >= Standards::CPP17 && Token::Match(tok, "auto &|&&| [")) {
+        const Token *typeend = Token::findsimplematch(typestart, "[")->previous();
+        for (tok = typeend->tokAt(2); Token::Match(tok, "%name%|,"); tok = tok->next()) {
+            if (tok->varId())
+                addVariable(tok, typestart, typeend, varaccess, nullptr, this, settings);
+        }
+        return typeend->linkAt(1);
+    }
+
     if (tok->isKeyword() && Token::Match(tok, "class|struct|union|enum")) {
         tok = tok->next();
     }
