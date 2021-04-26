@@ -216,6 +216,8 @@ private:
         TEST_CASE(decltype2);
 
         TEST_CASE(exprid1);
+
+        TEST_CASE(structuredBindings);
     }
 
     std::string tokenize(const char code[], const char filename[] = "test.cpp") {
@@ -224,7 +226,7 @@ private:
         Settings settings;
         settings.platform(Settings::Unix64);
         settings.standards.c   = Standards::C89;
-        settings.standards.cpp = Standards::CPP11;
+        settings.standards.cpp = Standards::CPPLatest;
         settings.checkUnusedTemplates = true;
 
         Tokenizer tokenizer(&settings, this);
@@ -243,7 +245,7 @@ private:
         Settings settings;
         settings.platform(Settings::Unix64);
         settings.standards.c   = Standards::C89;
-        settings.standards.cpp = Standards::CPP11;
+        settings.standards.cpp = Standards::CPPLatest;
         settings.checkUnusedTemplates = true;
 
         Tokenizer tokenizer(&settings, this);
@@ -1285,7 +1287,7 @@ private:
                                 "2: list < int > :: iterator it@2 ;\n"
                                 "3: std :: vector < std :: string > dirs@3 ;\n"
                                 "4: std :: map < int , int > coords@4 ;\n"
-                                "5: std :: unordered_map < int , int > xy@5 ;\n"
+                                "5: std :: tr1 :: unordered_map < int , int > xy@5 ;\n"
                                 "6: std :: list < boost :: wave :: token_id > tokens@6 ;\n"
                                 "7: static std :: vector < CvsProcess * > ex1@7 ;\n"
                                 "8: extern std :: vector < CvsProcess * > ex2@8 ;\n"
@@ -3428,6 +3430,12 @@ private:
                                 "8: }\n";
 
         ASSERT_EQUALS(expected, actual);
+    }
+
+    void structuredBindings() {
+        const char code[] = "int foo() { auto [x,y] = xy(); return x+y; }";
+        ASSERT_EQUALS("1: int foo ( ) { auto [ x@1 , y@2 ] = xy ( ) ; return x@1 + y@2 ; }\n",
+                      tokenize(code));
     }
 };
 
