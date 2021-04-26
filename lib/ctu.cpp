@@ -174,7 +174,7 @@ static long long readAttrInt(const tinyxml2::XMLElement *e, const char *attr, bo
     const char *value = e->Attribute(attr);
     if (!value && error)
         *error = true;
-    return value ? std::atoi(value) : 0;
+    return value ? std::strtoll(value, nullptr, 10) : 0;
 }
 
 bool CTU::FileInfo::CallBase::loadBaseFromXml(const tinyxml2::XMLElement *xmlElement)
