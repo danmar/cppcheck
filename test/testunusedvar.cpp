@@ -179,6 +179,7 @@ private:
         TEST_CASE(localvarInvert);      // Usage with inverted variable
         TEST_CASE(localvarIf);          // Usage in if
         TEST_CASE(localvarIfElse);      // return tmp1 ? tmp2 : tmp3;
+        TEST_CASE(localvarDeclaredInIf);
         TEST_CASE(localvarOpAssign);    // a |= b;
         TEST_CASE(localvarFor);         // for ( ; var; )
         TEST_CASE(localvarForEach);     // #4155 - BOOST_FOREACH, hlist_for_each, etc
@@ -4589,6 +4590,35 @@ private:
                               "    int tmp2 = 2;\n"
                               "    int tmp3 = 3;\n"
                               "    return tmp1 ? tmp2 : tmp3;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarDeclaredInIf() {
+        functionVariableUsage("int foo(int x)\n"
+                              "{\n"
+                              "    if (int y = x % 2)\n"
+                              "        return 2;\n"
+                              "    else\n"
+                              "        return 1;\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'y' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("int foo(int x)\n"
+                              "{\n"
+                              "    if (int y = x % 2)\n"
+                              "        return y;\n"
+                              "    else\n"
+                              "        return 1;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int foo(int x)\n"
+                              "{\n"
+                              "    if (int y = x % 2)\n"
+                              "        return 2;\n"
+                              "    else\n"
+                              "        return y;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }

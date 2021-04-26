@@ -3728,8 +3728,22 @@ void Tokenizer::setVarIdPass1()
             else if (tok->str() == ";") {
                 if (!variableMap.leaveScope())
                     cppcheckError(tok);
-            } else if (tok->str() == "{")
+            } else if (tok->str() == "{") {
                 scopeStack.push(VarIdScopeInfo(true, scopeStack.top().isStructInit || tok->strAt(-1) == "=", /*isEnum=*/false, *variableMap.getVarId()));
+
+                // check if this '{' is a start of an "if" body
+                const Token * ifToken = tok->previous();
+                if (ifToken && ifToken->str() == ")")
+                    ifToken = ifToken->link();
+                else
+                    ifToken = nullptr;
+                if (ifToken)
+                    ifToken = ifToken->previous();
+                if (ifToken && ifToken->str() == "if") {
+                    // open another scope to differentiate between variables declared in the "if" condition and in the "if" body
+                    variableMap.enterScope();
+                }
+            }
         } else if (!initlist && tok->str()=="(") {
             const Token * newFunctionDeclEnd = nullptr;
             if (!scopeStack.top().isExecutable)
@@ -3788,6 +3802,17 @@ void Tokenizer::setVarIdPass1()
 
                     if (!scopeStack.top().isStructInit) {
                         variableMap.leaveScope();
+
+                        // check if this '}' is an end of an "else" body or an "if" body without an "else" part
+                        const Token * ifToken = startToken->previous();
+                        if (ifToken && ifToken->str() == ")")
+                            ifToken = ifToken->link()->previous();
+                        else
+                            ifToken = nullptr;
+                        if (startToken->strAt(-1) == "else" || (ifToken && ifToken->str() == "if" && tok->strAt(1) != "else")) {
+                            // leave the extra scope used to differentiate between variables declared in the "if" condition and in the "if" body
+                            variableMap.leaveScope();
+                        }
                     }
 
                     scopeStack.pop();
@@ -5096,6 +5121,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Split up variable declarations.
     simplifyVarDecl(false);
 
+    elseif();
+
     validate(); // #6772 "segmentation fault (invalid code) in Tokenizer::setVarId"
 
     if (mTimerResults) {
@@ -5140,8 +5167,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     simplifyRedundantConsecutiveBraces();
 
     simplifyEmptyNamespaces();
-
-    elseif();
 
     simplifyIfSwitchForInit();
 
