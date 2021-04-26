@@ -416,7 +416,8 @@ private:
 
         TEST_CASE(removeExtraTemplateKeywords);
 
-        TEST_CASE(removeAlignas);
+        TEST_CASE(removeAlignas1);
+        TEST_CASE(removeAlignas2); // Do not remove alignof in the same way
 
         TEST_CASE(simplifyCoroutines);
 
@@ -6524,9 +6525,15 @@ private:
         ASSERT_EQUALS(expected2, tokenizeAndStringify(code2));
     }
 
-    void removeAlignas() {
+    void removeAlignas1() {
         const char code[] = "alignas(float) unsigned char c[sizeof(float)];";
         const char expected[] = "unsigned char c [ sizeof ( float ) ] ;";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+    }
+
+    void removeAlignas2() { // Do not remove alignas and alignof in the same way
+        const char code[] = "static_assert( alignof( VertexC ) == 4 );";
+        const char expected[] = "static_assert ( alignof ( VertexC ) == 4 ) ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 

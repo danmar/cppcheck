@@ -11006,10 +11006,8 @@ void Tokenizer::removeAlignas()
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "alignas|alignof (")) {
-            Token::eraseTokens(tok, tok->linkAt(1)->next());
-            tok->deleteThis();
-        }
+        if (Token::Match(tok, "[;{}] alignas (") && Token::Match(tok->linkAt(2), ") %name%"))
+            Token::eraseTokens(tok, tok->linkAt(2)->next());
     }
 }
 
