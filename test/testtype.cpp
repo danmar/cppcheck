@@ -143,6 +143,9 @@ private:
             ASSERT_EQUALS("", errout.str());
         }
 
+        check("void f() { int x; x = 1 >> 64; }", &settings);
+        ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 64 bits is undefined behaviour\n", errout.str());
+
         check("void foo() {\n"
               "  QList<int> someList;\n"
               "  someList << 300;\n"
