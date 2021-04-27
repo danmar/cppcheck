@@ -254,13 +254,25 @@ void misra_7_2(void) {
     misra_7_2_call_va_test(1, 2, 3);
 }
 
+// The addon should not generate false positives for the identifiers.
+struct misra_7_3_s
+{
+  uint32_t ul_clka;
+  uint32_t test123l;
+};
+
 void misra_7_3(void) {
   long misra_7_3_a = 0l; //7.3
   long misra_7_3_b = 0lU; //7.3
   long long misra_7_3_c = 0Ull; //7.3
   long long misra_7_3_d = 0ll; //7.3
   long double misra_7_3_e = 7.3l; //7.3
-  }
+  struct misra_7_3_s misra_7_3_f =
+  {
+    .ul_clka = 19U,
+    .test123l = 23U
+  };
+}
 
 typedef const char* MISRA_7_4_CHAR_CONST;
 MISRA_7_4_CHAR_CONST misra_7_4_return_const_type_def (void) { return "return_typedef_const"; }

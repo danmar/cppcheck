@@ -1417,7 +1417,7 @@ class MisraChecker:
                                 reportErrorIfMissingSuffix(parameterDefinition.nameToken, usedParameter)
 
     def misra_7_3(self, rawTokens):
-        compiled = re.compile(r'^[0-9.uU]+l')
+        compiled = re.compile(r'^[0-9.]+[Uu]*l+[Uu]*$')
         for tok in rawTokens:
             if compiled.match(tok.str):
                 self.reportError(tok, 7, 3)
