@@ -270,7 +270,7 @@ void CheckAutoVariables::autoVariables()
                 tok = Token::findmatch(tok->next(), "%var%");
                 if (isArrayVar(tok))
                     errorInvalidDeallocation(tok, nullptr);
-                else if (tok && tok->variable() && tok->variable()->isPointer()) {
+                else if (tok->variable() && tok->variable()->isPointer()) {
                     for (const ValueFlow::Value &v : tok->values()) {
                         if (!(v.isTokValue()))
                             continue;
