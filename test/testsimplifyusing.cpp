@@ -71,6 +71,7 @@ private:
         TEST_CASE(simplifyUsing22);
         TEST_CASE(simplifyUsing23);
         TEST_CASE(simplifyUsing24);
+        TEST_CASE(simplifyUsing25);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -590,6 +591,24 @@ private:
         const char code[] = "using value_type = const ValueFlow::Value;\n"
                             "value_type vt;";
         const char expected[] = "const ValueFlow :: Value vt ;";
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyUsing25() {
+        const char code[] = "struct UnusualType {\n"
+                            "  using T = vtkm::Id;\n"
+                            "  T X;\n"
+                            "};\n"
+                            "namespace vtkm {\n"
+                            "template <>\n"
+                            "struct VecTraits<UnusualType> : VecTraits<UnusualType::T> { };\n"
+                            "}";
+        const char expected[] = "struct UnusualType { "
+                                "vtkm :: Id X ; "
+                                "} ; "
+                                "namespace vtkm { "
+                                "struct VecTraits<UnusualType> : VecTraits < vtkm :: Id > { } ; "
+                                "}";
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
