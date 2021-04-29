@@ -218,6 +218,18 @@ Example code with template specialisation:
 You can pass `-D__cppcheck__` when checking this code.
 
 
+# Cppcheck build folder
+
+Using a Cppcheck build folder is not mandatory but it is recommended.
+
+Cppcheck save analyzer information in that folder.
+
+The advantages are;
+ * It speeds up the analysis as it makes incremental analysis possible. Only changed files are analyzed when you recheck.
+ * Whole program analysis also when multiple threads are used.
+
+On the command line you configure that through `--cppcheck-build-dir=path`. In the GUI it is configured in the project settings.
+
 # Importing a project
 
 You can import some project files and build configurations into Cppcheck.
