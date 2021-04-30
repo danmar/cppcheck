@@ -10799,12 +10799,15 @@ void Tokenizer::simplifyAttributeList()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         while (Token::Match(tok, "__attribute__|__attribute (") && 
+				tok->next()->link() != tok->next()->next() &&
 				tok->next()->link() && tok->next()->link()->next()) {
 
 			// tokens for braces in __attribute__ (( ))
 			// (left to right: outerLeftBr, innerLeftBr, innerRightBr, outerRightBr)
-			Token *outerLeftBr = tok->next(), *innerLeftBr = tok->next()->next();
-			Token *outerRightBr = outerLeftBr->link(), *innerRightBr = innerLeftBr->link();
+			Token *outerLeftBr = tok->next(), *outerRightBr = outerLeftBr->link();
+			Token *innerLeftBr = tok->next()->next(), *innerRightBr = innerLeftBr->link();
+
+			// new intermediate __attribute__|__attribute in place of comma
 			Token *newtok = nullptr;
 
 			// new tokens for comma replacement
@@ -10812,10 +10815,10 @@ void Tokenizer::simplifyAttributeList()
 			//                                  replaced by ------>  \________________/
 			Token *newInnerRightBr, *newOuterRightBr, *newInnerLeftBr, *newOuterLeftBr;
 
-			// searching between initial (( and ))
-			for(Token *attrlist = innerLeftBr->next();
-					!newtok && attrlist != innerRightBr && outerLeftBr->next() != outerRightBr;
-					attrlist = attrlist -> next()) {
+			Token *attrlist = innerLeftBr->next();
+
+			// scanning between initial (( and ))
+			while(attrlist != innerRightBr && !newtok) {
 
 				if (attrlist->str() == ",") {
 
@@ -10825,7 +10828,6 @@ void Tokenizer::simplifyAttributeList()
 					newInnerRightBr->insertToken(")"); newOuterRightBr = newInnerRightBr->next();
 					Token::createMutualLinks(outerLeftBr, newOuterRightBr);
 
-					// new intermediate __attribute__|__attribute in place of comma
 					newOuterRightBr->insertToken(tok->str());
 					newtok = newOuterRightBr->next();
 
@@ -10843,7 +10845,9 @@ void Tokenizer::simplifyAttributeList()
 				// jump over internal attribute parameters (e.g. format definition)
 				// example: __attribute__((format(printf, 1, 2), noreturn))
 				} else if (attrlist->str() == "(") {
-					attrlist = attrlist->link();
+					attrlist = attrlist->link()->next();
+				} else {
+					attrlist = attrlist->next();
 				}
 			}
 
