@@ -884,6 +884,9 @@ void CheckOther::unreachableCodeError(const Token *tok, bool inconclusive)
 //---------------------------------------------------------------------------
 void CheckOther::checkVariableScope()
 {
+    if (mSettings->clang)
+        return;
+
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 

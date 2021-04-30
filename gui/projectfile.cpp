@@ -45,6 +45,7 @@ ProjectFile::ProjectFile(const QString &filename, QObject *parent) :
 void ProjectFile::clear()
 {
     const Settings settings;
+    clangParser = false;
     bugHunting = false;
     mRootPath.clear();
     mBuildDir.clear();
@@ -61,7 +62,7 @@ void ProjectFile::clear()
     mPlatform.clear();
     mSuppressions.clear();
     mAddons.clear();
-    mClangTidy = false;
+    mClangAnalyzer = mClangTidy = false;
     mAnalyzeAllVsConfigs = false;
     mCheckHeaders = true;
     mCheckUnusedTemplates = true;
@@ -116,6 +117,9 @@ bool ProjectFile::read(const QString &filename)
 
             if (xmlReader.name() == CppcheckXml::AnalyzeAllVsConfigsElementName)
                 mAnalyzeAllVsConfigs = readBool(xmlReader);
+
+            if (xmlReader.name() == CppcheckXml::Parser)
+                clangParser = true;
 
             if (xmlReader.name() == CppcheckXml::BugHunting)
                 bugHunting = true;
@@ -182,6 +186,7 @@ bool ProjectFile::read(const QString &filename)
             if (xmlReader.name() == CppcheckXml::ToolsElementName) {
                 QStringList tools;
                 readStringList(tools, xmlReader, CppcheckXml::ToolElementName);
+                mClangAnalyzer = tools.contains(CLANG_ANALYZER);
                 mClangTidy = tools.contains(CLANG_TIDY);
             }
 
@@ -870,6 +875,12 @@ bool ProjectFile::write(const QString &filename)
     xmlWriter.writeCharacters(mAnalyzeAllVsConfigs ? "true" : "false");
     xmlWriter.writeEndElement();
 
+    if (clangParser) {
+        xmlWriter.writeStartElement(CppcheckXml::Parser);
+        xmlWriter.writeCharacters("clang");
+        xmlWriter.writeEndElement();
+    }
+
     if (bugHunting) {
         xmlWriter.writeStartElement(CppcheckXml::BugHunting);
         xmlWriter.writeEndElement();
@@ -1005,6 +1016,8 @@ bool ProjectFile::write(const QString &filename)
                     CppcheckXml::AddonElementName);
 
     QStringList tools;
+    if (mClangAnalyzer)
+        tools << CLANG_ANALYZER;
     if (mClangTidy)
         tools << CLANG_TIDY;
     writeStringList(xmlWriter,
@@ -1064,6 +1077,8 @@ QStringList ProjectFile::fromNativeSeparators(const QStringList &paths)
 QStringList ProjectFile::getAddonsAndTools() const
 {
     QStringList ret(mAddons);
+    if (mClangAnalyzer)
+        ret << CLANG_ANALYZER;
     if (mClangTidy)
         ret << CLANG_TIDY;
     return ret;

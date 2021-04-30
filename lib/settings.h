@@ -140,6 +140,12 @@ public:
     /** Check unused/uninstantiated templates */
     bool checkUnusedTemplates;
 
+    /** Use Clang */
+    bool clang;
+
+    /** Custom Clang executable */
+    std::string clangExecutable;
+
     /** Use clang-tidy */
     bool clangTidy;
 

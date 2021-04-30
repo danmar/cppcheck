@@ -237,6 +237,10 @@ public:
         evaluate(settings);
     }
 
+    Variable(const Token *name_, const std::string &clangType, const Token *typeStart,
+             const Token *typeEnd, nonneg int index_, AccessControl access_,
+             const Type *type_, const Scope *scope_);
+
     Variable(const Variable &var, const Scope *scope);
 
     Variable(const Variable &var);
@@ -742,6 +746,7 @@ public:
     enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction, eLambda };
 
     Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef);
+    Function(const Token *tokenDef, const std::string &clangType);
 
     const std::string &name() const {
         return tokenDef->str();
@@ -1379,6 +1384,7 @@ public:
     /** Set array dimensions when valueflow analysis is completed */
     void setArrayDimensionsUsingValueFlow();
 
+    void clangSetVariables(const std::vector<const Variable *> &variableList);
     void createSymbolDatabaseExprIds();
 
 private:

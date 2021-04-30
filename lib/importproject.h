@@ -125,6 +125,7 @@ namespace CppcheckXml {
     const char BuildDirElementName[] = "builddir";
     const char ImportProjectElementName[] = "importproject";
     const char AnalyzeAllVsConfigsElementName[] = "analyze-all-vs-configs";
+    const char Parser[] = "parser";
     const char BugHunting[] = "bug-hunting";
     const char IncludeDirElementName[] = "includedir";
     const char DirElementName[] = "dir";
