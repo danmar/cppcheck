@@ -686,7 +686,7 @@ private:
     void simplifyCallingConvention();
 
     /**
-	 * Split comma-separated attributes
+    * Split comma-separated attributes
      */
     void simplifyAttributeList();
 

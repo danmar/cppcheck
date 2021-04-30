@@ -10795,7 +10795,6 @@ void Tokenizer::simplifyDeclspec()
     }
 }
 
-// TODO: {Left,Right} -> {LeftBrace,RightBrace}
 void Tokenizer::simplifyAttributeList()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
