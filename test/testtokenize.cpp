@@ -3343,8 +3343,8 @@ private:
                             "void __attribute__((noreturn,format(printf,1,2))) func5();\n"
                             "void __attribute__((__nothrow__)) __attribute__((__pure__,__const__)) func6();\n"
                             "void __attribute__((__nothrow__,__pure__)) __attribute__((__const__)) func7();\n"
-                            "void __attribute__((noreturn)) __attribute__(()) __attribute__((nothrow,pure,const)) func8();\n"
-        const char expected[] = "void func1 ( ) ; void func2 ( ) ; void func3 ( ) ; void func4 ( ) ; void func5 ( ) ;\n"
+                            "void __attribute__((noreturn)) __attribute__(()) __attribute__((nothrow,pure,const)) func8();"
+        const char expected[] = "void func1 ( ) ; void func2 ( ) ; void func3 ( ) ; void func4 ( ) ; void func5 ( ) ; "
                                 "void func6 ( ) ; void func7 ( ) ; void func8 ( ) ;";
 
         errout.str("");
@@ -3384,8 +3384,8 @@ private:
                             "void func5() __attribute__((noreturn,format(printf,1,2)));\n"
                             "void func6() __attribute__((__nothrow__)) __attribute__((__pure__,__const__));\n"
                             "void func7() __attribute__((__nothrow__,__pure__)) __attribute__((__const__));\n"
-                            "void func8() __attribute__((noreturn)) __attribute__(()) __attribute__((nothrow,pure,const));\n"
-        const char expected[] = "void func1 ( ) ; void func2 ( ) ; void func3 ( ) ; void func4 ( ) ; void func5 ( ) ;\n"
+                            "void func8() __attribute__((noreturn)) __attribute__(()) __attribute__((nothrow,pure,const));"
+        const char expected[] = "void func1 ( ) ; void func2 ( ) ; void func3 ( ) ; void func4 ( ) ; void func5 ( ) ; "
                                 "void func6 ( ) ; void func7 ( ) ; void func8 ( ) ;";
 
         errout.str("");
