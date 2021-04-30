@@ -107,7 +107,8 @@ namespace simplecpp {
         }
 
         void flags() {
-            name = (std::isalpha((unsigned char)string[0]) || string[0] == '_' || string[0] == '$');
+            name = (std::isalpha((unsigned char)string[0]) || string[0] == '_' || string[0] == '$')
+                   && (string.find('\'') == string.npos);
             comment = string.size() > 1U && string[0] == '/' && (string[1] == '/' || string[1] == '*');
             number = std::isdigit((unsigned char)string[0]) || (string.size() > 1U && string[0] == '-' && std::isdigit((unsigned char)string[1]));
             op = (string.size() == 1U) ? string[0] : '\0';
@@ -298,6 +299,8 @@ namespace simplecpp {
         std::list<std::string> includes;
         std::string std;
     };
+
+    SIMPLECPP_LIB long long characterLiteralToLL(const std::string& str);
 
     SIMPLECPP_LIB std::map<std::string, TokenList*> load(const TokenList &rawtokens, std::vector<std::string> &filenames, const DUI &dui, OutputList *outputList = NULL);
 
