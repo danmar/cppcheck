@@ -427,9 +427,10 @@ ValueFlow::Value inferCondition(std::string op, MathLib::bigint val, const Token
 ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val);
 
 std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
-        bool escape = false,
-        ValueFlow::Value::ErrorPath errorPath = ValueFlow::Value::ErrorPath{},
-        int depth = 20);
+                                             bool escape = false,
+                                             ValueFlow::Value::ErrorPath errorPath = ValueFlow::Value::ErrorPath{});
+
+bool hasLifetimeToken(const Token* tok, const Token* lifetime);
 
 const Variable* getLifetimeVariable(const Token* tok, ValueFlow::Value::ErrorPath& errorPath, bool* addressOf = nullptr);
 

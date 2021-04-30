@@ -1392,21 +1392,18 @@ void CheckOther::checkConstVariable()
             continue;
         if (isVariableChanged(var, mSettings, mTokenizer->isCPP()))
             continue;
-        if (Function::returnsReference(function)) {
+        if (Function::returnsReference(function) && !Function::returnsConst(function)) {
             std::vector<const Token*> returns = Function::findReturns(function);
             if (std::any_of(returns.begin(), returns.end(), [&](const Token* retTok) {
-            if (retTok->varId() == var->declarationId())
-                    return true;
-                while (retTok && retTok->isCast())
-                    retTok = retTok->astOperand2();
-                while (Token::simpleMatch(retTok, "."))
-                    retTok = retTok->astOperand2();
-                const Variable* retVar = getLifetimeVariable(getParentLifetime(retTok));
-                if (!retVar)
-                    return false;
-                return retVar->declarationId() == var->declarationId();
-            }))
-            continue;
+                    if (retTok->varId() == var->declarationId())
+                        return true;
+                    while (retTok && retTok->isCast())
+                        retTok = retTok->astOperand2();
+                    while (Token::simpleMatch(retTok, "."))
+                        retTok = retTok->astOperand2();
+                    return hasLifetimeToken(getParentLifetime(retTok), var->nameToken());
+                }))
+                continue;
         }
         // Skip if address is taken
         if (Token::findmatch(var->nameToken(), "& %varid%", scope->bodyEnd, var->declarationId()))
