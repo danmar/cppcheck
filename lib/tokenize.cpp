@@ -10813,7 +10813,8 @@ void Tokenizer::simplifyAttributeList()
 			Token *newInnerRightBr, *newOuterRightBr, *newInnerLeftBr, *newOuterLeftBr;
 
 			// searching between initial (( and ))
-			for(Token *attrlist = innerLeftBr->next(); !newtok && attrlist != innerRightBr;
+			for(Token *attrlist = innerLeftBr->next();
+					!newtok && attrlist != innerRightBr && outerLeftBr->next() != outerRightBr;
 					attrlist = attrlist -> next()) {
 
 				if (attrlist->str() == ",") {
