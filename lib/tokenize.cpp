@@ -1871,6 +1871,9 @@ namespace {
             // check in base types base types
             for (const std::string & base : baseTypes) {
                 const ScopeInfo3 * baseScope = findScope(base);
+                // bail on uninstantiated recursive template
+                if (baseScope == this)
+                    return false;
                 if (baseScope && baseScope->fullName == scope)
                     return true;
                 if (baseScope && baseScope->findTypeInBase(scope))

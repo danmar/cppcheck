@@ -235,7 +235,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             else if (std::strncmp(argv[i], "--clang", 7) == 0) {
-                printMessage("Cppcheck: Clang import has been removed");
+                mSettings->clang = true;
+                if (std::strncmp(argv[i], "--clang=", 8) == 0) {
+                    mSettings->clangExecutable = argv[i] + 8;
+                }
             }
 
             else if (std::strncmp(argv[i], "--config-exclude=",17) ==0) {
@@ -989,11 +992,18 @@ void CmdLineParser::printHelp()
               "                          * faster analysis; Cppcheck will reuse the results if\n"
               "                            the hash for a file is unchanged.\n"
               "                          * some useful debug information, i.e. commands used to\n"
-              "                            execute clang-tidy/addons.\n"
+              "                            execute clang/clang-tidy/addons.\n"
               "    --check-config       Check cppcheck configuration. The normal code\n"
               "                         analysis is disabled by this flag.\n"
               "    --check-library      Show information messages when library files have\n"
               "                         incomplete info.\n"
+              "    --clang=<path>       Experimental: Use Clang parser instead of the builtin Cppcheck\n"
+              "                         parser. Takes the executable as optional parameter and\n"
+              "                         defaults to `clang`. Cppcheck will run the given Clang\n"
+              "                         executable, import the Clang AST and convert it into\n"
+              "                         Cppcheck data. After that the normal Cppcheck analysis is\n"
+              "                         used. You must have the executable in PATH if no path is\n"
+              "                         given.\n"
               "    --config-exclude=<dir>\n"
               "                         Path (prefix) to be excluded from configuration\n"
               "                         checking. Preprocessor configurations defined in\n"

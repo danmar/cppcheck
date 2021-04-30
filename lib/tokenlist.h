@@ -186,6 +186,8 @@ public:
      */
     void simplifyStdType();
 
+    void clangSetOrigFiles();
+
     bool isKeyword(const std::string &str) const;
 
 private:

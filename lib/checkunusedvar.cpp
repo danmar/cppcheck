@@ -1145,6 +1145,9 @@ void CheckUnusedVar::checkFunctionVariableUsage()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
+    if (mSettings->clang)
+        return;
+
     // Parse all executing scopes..
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 

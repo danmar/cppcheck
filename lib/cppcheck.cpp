@@ -19,6 +19,7 @@
 
 #include "check.h"
 #include "checkunusedfunctions.h"
+#include "clangimport.h"
 #include "ctu.h"
 #include "library.h"
 #include "mathlib.h"
@@ -319,8 +320,154 @@ const char * CppCheck::extraVersion()
     return ExtraVersion;
 }
 
+static bool reportClangErrors(std::istream &is, std::function<void(const ErrorMessage&)> reportErr)
+{
+    std::string line;
+    while (std::getline(is, line)) {
+        if (line.empty() || line[0] == ' ' || line[0] == '`' || line[0] == '-')
+            continue;
+
+        std::string::size_type pos3 = line.find(": error: ");
+        if (pos3 == std::string::npos)
+            pos3 = line.find(": fatal error:");
+        if (pos3 == std::string::npos)
+            continue;
+
+        // file:line:column: error: ....
+        const std::string::size_type pos2 = line.rfind(":", pos3 - 1);
+        const std::string::size_type pos1 = line.rfind(":", pos2 - 1);
+
+        if (pos1 >= pos2 || pos2 >= pos3)
+            continue;
+
+        const std::string filename = line.substr(0, pos1);
+        const std::string linenr = line.substr(pos1+1, pos2-pos1-1);
+        const std::string colnr = line.substr(pos2+1, pos3-pos2-1);
+        const std::string msg = line.substr(line.find(":", pos3+1) + 2);
+
+        std::list<ErrorMessage::FileLocation> locationList;
+        ErrorMessage::FileLocation loc;
+        loc.setfile(Path::toNativeSeparators(filename));
+        loc.line = std::atoi(linenr.c_str());
+        loc.column = std::atoi(colnr.c_str());
+        locationList.push_back(loc);
+        ErrorMessage errmsg(locationList,
+                            loc.getfile(),
+                            Severity::error,
+                            msg,
+                            "syntaxError",
+                            Certainty::normal);
+        reportErr(errmsg);
+
+        return true;
+    }
+    return false;
+}
+
 unsigned int CppCheck::check(const std::string &path)
 {
+    if (mSettings.clang) {
+        if (!mSettings.quiet)
+            mErrorLogger.reportOut(std::string("Checking ") + path + "...");
+
+        const std::string lang = Path::isCPP(path) ? "-x c++" : "-x c";
+        const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "");
+        const std::string clangcmd = analyzerInfo + ".clang-cmd";
+        const std::string clangStderr = analyzerInfo + ".clang-stderr";
+        const std::string clangAst = analyzerInfo + ".clang-ast";
+        std::string exe = mSettings.clangExecutable;
+#ifdef _WIN32
+        // append .exe if it is not a path
+        if (Path::fromNativeSeparators(mSettings.clangExecutable).find('/') == std::string::npos) {
+            exe += ".exe";
+        }
+#endif
+
+        std::string flags(lang + " ");
+        if (Path::isCPP(path) && !mSettings.standards.stdValue.empty())
+            flags += "-std=" + mSettings.standards.stdValue + " ";
+
+        for (const std::string &i: mSettings.includePaths)
+            flags += "-I" + i + " ";
+
+        flags += getDefinesFlags(mSettings.userDefines);
+
+        const std::string args2 = "-fsyntax-only -Xclang -ast-dump -fno-color-diagnostics " + flags + path;
+        const std::string redirect2 = analyzerInfo.empty() ? std::string("2>&1") : ("2> " + clangStderr);
+        if (!mSettings.buildDir.empty()) {
+            std::ofstream fout(clangcmd);
+            fout << exe << " " << args2 << " " << redirect2 << std::endl;
+        } else if (mSettings.verbose && !mSettings.quiet) {
+            mErrorLogger.reportOut(exe + " " + args2);
+        }
+
+        std::string output2;
+        if (!mExecuteCommand(exe,split(args2),redirect2,&output2) || output2.find("TranslationUnitDecl") == std::string::npos) {
+            std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "'" << std::endl;
+            return 0;
+        }
+
+        // Ensure there are not syntax errors...
+        if (!mSettings.buildDir.empty()) {
+            std::ifstream fin(clangStderr);
+            auto reportError = [this](const ErrorMessage& errorMessage) {
+                reportErr(errorMessage);
+            };
+            if (reportClangErrors(fin, reportError))
+                return 0;
+        } else {
+            std::istringstream istr(output2);
+            auto reportError = [this](const ErrorMessage& errorMessage) {
+                reportErr(errorMessage);
+            };
+            if (reportClangErrors(istr, reportError))
+                return 0;
+        }
+
+        if (!mSettings.buildDir.empty()) {
+            std::ofstream fout(clangAst);
+            fout << output2 << std::endl;
+        }
+
+        try {
+            std::istringstream ast(output2);
+            Tokenizer tokenizer(&mSettings, this);
+            tokenizer.list.appendFileIfNew(path);
+            clangimport::parseClangAstDump(&tokenizer, ast);
+            ValueFlow::setValues(&tokenizer.list, const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase()), this, &mSettings);
+            if (mSettings.debugnormal)
+                tokenizer.printDebugOutput(1);
+            checkNormalTokens(tokenizer);
+
+            // create dumpfile
+            std::ofstream fdump;
+            std::string dumpFile;
+            createDumpFile(mSettings, path, tokenizer.list.getFiles(), nullptr, fdump, dumpFile);
+            if (fdump.is_open()) {
+                fdump << "<dump cfg=\"\">" << std::endl;
+                fdump << "  <standards>" << std::endl;
+                fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>" << std::endl;
+                fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>" << std::endl;
+                fdump << "  </standards>" << std::endl;
+                tokenizer.dump(fdump);
+                fdump << "</dump>" << std::endl;
+                fdump << "</dumps>" << std::endl;
+                fdump.close();
+            }
+
+            // run addons
+            executeAddons(dumpFile);
+
+        } catch (const InternalError &e) {
+            internalError(path, e.errorMessage);
+            mExitCode = 1; // e.g. reflect a syntax error
+        } catch (const std::exception &e) {
+            internalError(path, e.what());
+        }
+
+        return mExitCode;
+    }
+
     std::ifstream fin(path);
     return checkFile(Path::simplifyPath(path), emptyString, fin);
 }
@@ -337,7 +484,10 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
     temp.mSettings = mSettings;
     if (!temp.mSettings.userDefines.empty())
         temp.mSettings.userDefines += ';';
-    temp.mSettings.userDefines += fs.cppcheckDefines();
+    if (mSettings.clang)
+        temp.mSettings.userDefines += fs.defines;
+    else
+        temp.mSettings.userDefines += fs.cppcheckDefines();
     temp.mSettings.includePaths = fs.includePaths;
     temp.mSettings.userUndefs.insert(fs.undefs.cbegin(), fs.undefs.cend());
     if (fs.standard.find("++") != std::string::npos)
@@ -346,6 +496,10 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
         temp.mSettings.standards.setC(fs.standard);
     if (fs.platformType != Settings::Unspecified)
         temp.mSettings.platform(fs.platformType);
+    if (mSettings.clang) {
+        temp.mSettings.includePaths.insert(temp.mSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
+        return temp.check(Path::simplifyPath(fs.filename));
+    }
     std::ifstream fin(fs.filename);
     unsigned int returnValue = temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
     mSettings.nomsg.addSuppressions(temp.mSettings.nomsg.getSuppressions());
@@ -799,6 +953,10 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
             Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
             check->runChecks(&tokenizer, &mSettings, this);
         }
+
+        if (mSettings.clang)
+            // TODO: Use CTU for Clang analysis
+            return;
 
         // Analyse the tokens..
 
