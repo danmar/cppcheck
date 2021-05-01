@@ -248,6 +248,8 @@ private:
         TEST_CASE(removeattribute);
         TEST_CASE(functionAttributeBefore);
         TEST_CASE(functionAttributeAfter);
+        TEST_CASE(functionAttributeListBefore);
+        TEST_CASE(functionAttributeListAfter);
 
         TEST_CASE(splitTemplateRightAngleBrackets);
 
@@ -3332,6 +3334,89 @@ private:
         ASSERT(func4 && func4->isAttributePure() && func4->isAttributeNothrow() && func4->isAttributeConst());
         ASSERT(func5 && func5->isAttributeNoreturn());
     }
+
+    void functionAttributeListBefore() {
+        const char code[] = "void __attribute__((pure,nothrow,const)) func1();\n"
+                            "void __attribute__((__pure__,__nothrow__,__const__)) func2();\n"
+                            "void __attribute__((nothrow,pure,const)) func3();\n"
+                            "void __attribute__((__nothrow__,__pure__,__const__)) func4();\n"
+                            "void __attribute__((noreturn,format(printf,1,2))) func5();\n"
+                            "void __attribute__((__nothrow__)) __attribute__((__pure__,__const__)) func6();\n"
+                            "void __attribute__((__nothrow__,__pure__)) __attribute__((__const__)) func7();\n"
+                            "void __attribute__((noreturn)) __attribute__(()) __attribute__((nothrow,pure,const)) func8();";
+        const char expected[] = "void func1 ( ) ; void func2 ( ) ; void func3 ( ) ; void func4 ( ) ; void func5 ( ) ; "
+                                "void func6 ( ) ; void func7 ( ) ; void func8 ( ) ;";
+
+        errout.str("");
+
+        // tokenize..
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Expected result..
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token * func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
+        const Token * func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
+        const Token * func3 = Token::findsimplematch(tokenizer.tokens(), "func3");
+        const Token * func4 = Token::findsimplematch(tokenizer.tokens(), "func4");
+        const Token * func5 = Token::findsimplematch(tokenizer.tokens(), "func5");
+        const Token * func6 = Token::findsimplematch(tokenizer.tokens(), "func6");
+        const Token * func7 = Token::findsimplematch(tokenizer.tokens(), "func7");
+        const Token * func8 = Token::findsimplematch(tokenizer.tokens(), "func8");
+
+        ASSERT(func1 && func1->isAttributePure() && func1->isAttributeNothrow() && func1->isAttributeConst());
+        ASSERT(func2 && func2->isAttributePure() && func2->isAttributeNothrow() && func2->isAttributeConst());
+        ASSERT(func3 && func3->isAttributePure() && func3->isAttributeNothrow() && func3->isAttributeConst());
+        ASSERT(func4 && func4->isAttributePure() && func4->isAttributeNothrow() && func4->isAttributeConst());
+        ASSERT(func5 && func5->isAttributeNoreturn());
+        ASSERT(func6 && func6->isAttributePure() && func6->isAttributeNothrow() && func6->isAttributeConst());
+        ASSERT(func7 && func7->isAttributePure() && func7->isAttributeNothrow() && func7->isAttributeConst());
+        ASSERT(func8 && func8->isAttributeNoreturn() && func8->isAttributePure() && func8->isAttributeNothrow() && func8->isAttributeConst()); 
+    }
+
+    void functionAttributeListAfter() {
+        const char code[] = "void func1() __attribute__((pure,nothrow,const));\n"
+                            "void func2() __attribute__((__pure__,__nothrow__,__const__));\n"
+                            "void func3() __attribute__((nothrow,pure,const));\n"
+                            "void func4() __attribute__((__nothrow__,__pure__,__const__));\n"
+                            "void func5() __attribute__((noreturn,format(printf,1,2)));\n"
+                            "void func6() __attribute__((__nothrow__)) __attribute__((__pure__,__const__));\n"
+                            "void func7() __attribute__((__nothrow__,__pure__)) __attribute__((__const__));\n"
+                            "void func8() __attribute__((noreturn)) __attribute__(()) __attribute__((nothrow,pure,const));";
+        const char expected[] = "void func1 ( ) ; void func2 ( ) ; void func3 ( ) ; void func4 ( ) ; void func5 ( ) ; "
+                                "void func6 ( ) ; void func7 ( ) ; void func8 ( ) ;";
+
+        errout.str("");
+
+        // tokenize..
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Expected result..
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token * func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
+        const Token * func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
+        const Token * func3 = Token::findsimplematch(tokenizer.tokens(), "func3");
+        const Token * func4 = Token::findsimplematch(tokenizer.tokens(), "func4");
+        const Token * func5 = Token::findsimplematch(tokenizer.tokens(), "func5");
+        const Token * func6 = Token::findsimplematch(tokenizer.tokens(), "func6");
+        const Token * func7 = Token::findsimplematch(tokenizer.tokens(), "func7");
+        const Token * func8 = Token::findsimplematch(tokenizer.tokens(), "func8");
+
+        ASSERT(func1 && func1->isAttributePure() && func1->isAttributeNothrow() && func1->isAttributeConst());
+        ASSERT(func2 && func2->isAttributePure() && func2->isAttributeNothrow() && func2->isAttributeConst());
+        ASSERT(func3 && func3->isAttributePure() && func3->isAttributeNothrow() && func3->isAttributeConst());
+        ASSERT(func4 && func4->isAttributePure() && func4->isAttributeNothrow() && func4->isAttributeConst());
+        ASSERT(func5 && func5->isAttributeNoreturn());
+        ASSERT(func6 && func6->isAttributePure() && func6->isAttributeNothrow() && func6->isAttributeConst());
+        ASSERT(func7 && func7->isAttributePure() && func7->isAttributeNothrow() && func7->isAttributeConst());
+        ASSERT(func8 && func8->isAttributeNoreturn() && func8->isAttributePure() && func8->isAttributeNothrow() && func8->isAttributeConst()); 
+    }
+
 
     void splitTemplateRightAngleBrackets() {
         {
