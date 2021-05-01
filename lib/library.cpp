@@ -190,7 +190,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     AllocFunc temp = {0};
                     temp.groupId = allocationId;
 
-                    temp.initData = memorynode->BoolAttribute("init", false);
+                    temp.initData = memorynode->BoolAttribute("init", true);
                     temp.arg = memorynode->IntAttribute("arg", -1);
 
                     const char *bufferSize = memorynode->Attribute("buffer-size");
