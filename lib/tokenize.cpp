@@ -10827,7 +10827,7 @@ void Tokenizer::simplifyAttribute()
                 if (Token::Match(attr, "%name% ("))
                     attr = attr->linkAt(1);
 
-                if (Token::Match(attr, "[(,] constructor|__constructor__  [,()]")) {
+                if (Token::Match(attr, "[(,] constructor|__constructor__ [,()]")) {
                     if (!functok)
                         syntaxError(tok);
                     functok->isAttributeConstructor(true);
@@ -10839,7 +10839,7 @@ void Tokenizer::simplifyAttribute()
                     functok->isAttributeDestructor(true);
                 }
 
-                else if (Token::Match(attr, "[(,] unused|__unused__|used|__used__  [,)]")) {
+                else if (Token::Match(attr, "[(,] unused|__unused__|used|__used__ [,)]")) {
                     Token *vartok = nullptr;
 
                     // check if after variable name
