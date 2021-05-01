@@ -433,11 +433,10 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
 
-        check("void boolArgZeroIsInvalidButOneIsValid(int param) {\n"
-              "  void* buffer = calloc(param > 0, 10);\n"
-              "  free(buffer);\n"
+        check("int boolArgZeroIsInvalidButOneIsValid(int a, int param) {\n"
+              "  return div(a, param > 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid calloc() argument nr 1. The value is 0 or 1 (boolean) but the valid values are '1:'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid div() argument nr 2. The value is 0 or 1 (boolean) but the valid values are ':-1,1:'.\n", errout.str());
 
         check("void boolArgZeroIsValidButOneIsInvalid(int param) {\n"
               "  strtol(a, b, param > 0);\n"
