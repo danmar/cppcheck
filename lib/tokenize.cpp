@@ -4855,9 +4855,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Remove [[attribute]] and alignas(?)
     simplifyCPPAttribute();
 
-    // split comma-separated attributes
-    simplifyAttributeList();
-
     // remove __attribute__((?))
     simplifyAttribute();
 
@@ -10795,75 +10792,6 @@ void Tokenizer::simplifyDeclspec()
     }
 }
 
-void Tokenizer::simplifyAttributeList()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        while (Token::Match(tok, "__attribute__|__attribute (") &&
-               tok->next()->link() != tok->next()->next() &&
-               tok->next()->link() && tok->next()->link()->next()) {
-
-            // tokens for braces in __attribute__ (( ))
-            // (left to right: outerLeftBr, innerLeftBr, innerRightBr, outerRightBr)
-            Token *outerLeftBr = tok->next(), *outerRightBr = outerLeftBr->link();
-            Token *innerLeftBr = tok->next()->next(), *innerRightBr = innerLeftBr->link();
-
-            // new intermediate __attribute__|__attribute in place of comma
-            Token *newtok = nullptr;
-
-            // new tokens for comma replacement
-            // __attribute__ ((attr1,attr2)) -> __attribute__ ((attr1)) __attribute__((attr2))
-            //                                  replaced by ------>  \________________/
-            Token *newInnerRightBr, *newOuterRightBr, *newInnerLeftBr, *newOuterLeftBr;
-
-            Token *attrlist = innerLeftBr->next();
-
-            // scanning between initial (( and ))
-            while (attrlist != innerRightBr && !newtok) {
-
-                if (attrlist->str() == ",") {
-
-                    attrlist->insertToken(")");
-                    newInnerRightBr = attrlist->next();
-                    Token::createMutualLinks(innerLeftBr, newInnerRightBr);
-
-                    newInnerRightBr->insertToken(")");
-                    newOuterRightBr = newInnerRightBr->next();
-                    Token::createMutualLinks(outerLeftBr, newOuterRightBr);
-
-                    newOuterRightBr->insertToken(tok->str());
-                    newtok = newOuterRightBr->next();
-
-                    newtok->insertToken("(");
-                    newOuterLeftBr = newtok->next();
-                    Token::createMutualLinks(newOuterLeftBr, outerRightBr);
-
-                    newOuterLeftBr->insertToken("(");
-                    newInnerLeftBr = newOuterLeftBr->next();
-                    Token::createMutualLinks(newInnerLeftBr, innerRightBr);
-
-                    tok = newtok;
-
-                    // e.g. "," -> ")) __attribute__ (("
-                    Token::replace(attrlist, newInnerRightBr, newInnerLeftBr);
-
-                    // jump over internal attribute parameters (e.g. format definition)
-                    // example: __attribute__((format(printf, 1, 2), noreturn))
-                } else if (attrlist->str() == "(") {
-                    attrlist = attrlist->link()->next();
-                } else {
-                    attrlist = attrlist->next();
-                }
-            }
-
-            // passing to next token just after __attribute__ ((...))
-            // (there may be another __attribute__ ((...)) )
-            if (!newtok) {
-                tok = outerRightBr->next();
-            }
-        }
-    }
-}
-
 void Tokenizer::simplifyAttribute()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -10873,76 +10801,71 @@ void Tokenizer::simplifyAttribute()
             if (mSettings->library.isFunctionConst(tok->str(), false))
                 tok->isAttributeConst(true);
         }
-        while (Token::Match(tok, "__attribute__|__attribute (") && tok->next()->link() && tok->next()->link()->next()) {
-            if (Token::Match(tok->tokAt(2), "( constructor|__constructor__")) {
-                // prototype for constructor is: void func(void);
-                if (!tok->next()->link()->next())
-                    syntaxError(tok);
+        while (Token::Match(tok, "__attribute__|__attribute (")) {
+            Token *after = tok;
+            while (Token::Match(after, "__attribute__|__attribute ("))
+                after = after->linkAt(1)->next();
+            if (!after)
+                syntaxError(tok);
 
-                if (tok->next()->link()->next()->str() == "void") { // __attribute__((constructor)) void func() {}
-                    if (!tok->next()->link()->next()->next())
+            Token *functok = nullptr;
+            if (Token::Match(after, "%name%|*")) {
+                Token *ftok = after;
+                while (Token::Match(ftok, "%name%|* !!("))
+                    ftok = ftok->next();
+                if (Token::Match(ftok, "%name% ("))
+                    functok = ftok;
+            } else if (Token::Match(after, "[;{=:]")) {
+                Token *prev = tok->previous();
+                while (Token::Match(prev, "%name%"))
+                    prev = prev->previous();
+                if (Token::simpleMatch(prev, ")") && Token::Match(prev->link()->previous(), "%name% ("))
+                    functok = prev->link()->previous();
+            }
+
+            for (Token *attr = tok->tokAt(2); attr->str() != ")"; attr = attr->next()) {
+                if (Token::Match(attr, "%name% ("))
+                    attr = attr->linkAt(1);
+
+                if (Token::Match(attr, "[(,] constructor|__constructor__  [,()]")) {
+                    if (!functok)
+                        syntaxError(tok);
+                    functok->isAttributeConstructor(true);
+                }
+
+                else if (Token::Match(attr, "[(,] destructor|__destructor__ [,()]")) {
+                    if (!functok)
+                        syntaxError(tok);
+                    functok->isAttributeDestructor(true);
+                }
+
+                else if (Token::Match(attr, "[(,] unused|__unused__|used|__used__  [,)]")) {
+                    Token *vartok = nullptr;
+
+                    // check if after variable name
+                    if (Token::Match(after, ";|=")) {
+                        if (Token::Match(tok->previous(), "%type%"))
+                            vartok = tok->previous();
+                    }
+
+                    // check if before variable name
+                    else if (Token::Match(after, "%type%"))
+                        vartok = after;
+
+                    if (vartok) {
+                        const std::string &attribute(attr->next()->str());
+                        if (attribute.find("unused") != std::string::npos)
+                            vartok->isAttributeUnused(true);
+                        else
+                            vartok->isAttributeUsed(true);
+                    }
+                }
+
+                else if (Token::Match(attr, "[(,] pure|__pure__|const|__const__|noreturn|__noreturn__|nothrow|__nothrow__|warn_unused_result [,)]")) {
+                    if (!functok)
                         syntaxError(tok);
 
-                    tok->next()->link()->next()->next()->isAttributeConstructor(true);
-                } else if (tok->next()->link()->next()->str() == ";" && tok->linkAt(-1) && tok->previous()->link()->previous()) // void func() __attribute__((constructor));
-                    tok->previous()->link()->previous()->isAttributeConstructor(true);
-                else // void __attribute__((constructor)) func() {}
-                    tok->next()->link()->next()->isAttributeConstructor(true);
-            }
-
-            else if (Token::Match(tok->tokAt(2), "( destructor|__destructor__")) {
-                // prototype for destructor is: void func(void);
-                if (!tok->next()->link()->next())
-                    syntaxError(tok);
-
-                if (tok->next()->link()->next()->str() == "void") // __attribute__((destructor)) void func() {}
-                    tok->next()->link()->next()->next()->isAttributeDestructor(true);
-                else if (tok->next()->link()->next()->str() == ";" && tok->linkAt(-1) && tok->previous()->link()->previous()) // void func() __attribute__((destructor));
-                    tok->previous()->link()->previous()->isAttributeDestructor(true);
-                else // void __attribute__((destructor)) func() {}
-                    tok->next()->link()->next()->isAttributeDestructor(true);
-            }
-
-            else if (Token::Match(tok->tokAt(2), "( unused|__unused__|used|__used__ )")) {
-                Token *vartok = nullptr;
-
-                // check if after variable name
-                if (Token::Match(tok->next()->link()->next(), ";|=")) {
-                    if (Token::Match(tok->previous(), "%type%"))
-                        vartok = tok->previous();
-                }
-
-                // check if before variable name
-                else if (Token::Match(tok->next()->link()->next(), "%type%"))
-                    vartok = tok->next()->link()->next();
-
-                if (vartok) {
-                    const std::string &attribute(tok->strAt(3));
-                    if (attribute.find("unused") != std::string::npos)
-                        vartok->isAttributeUnused(true);
-                    else
-                        vartok->isAttributeUsed(true);
-                }
-            }
-
-            else if (Token::Match(tok->tokAt(2), "( pure|__pure__|const|__const__|noreturn|__noreturn__|nothrow|__nothrow__|warn_unused_result )")) {
-                Token *functok = nullptr;
-
-                // type func(...) __attribute__((attribute));
-                if (tok->previous() && tok->previous()->link() && Token::Match(tok->previous()->link()->previous(), "%name% ("))
-                    functok = tok->previous()->link()->previous();
-
-                // type __attribute__((attribute)) func() { }
-                else {
-                    Token *tok2 = tok->next()->link();
-                    while (Token::Match(tok2, ") __attribute__|__attribute ("))
-                        tok2 = tok2->linkAt(2);
-                    if (Token::Match(tok2, ") %name% ("))
-                        functok = tok2->next();
-                }
-
-                if (functok) {
-                    const std::string &attribute(tok->strAt(3));
+                    const std::string &attribute(attr->next()->str());
                     if (attribute.find("pure") != std::string::npos)
                         functok->isAttributePure(true);
                     else if (attribute.find("const") != std::string::npos)
@@ -10954,13 +10877,12 @@ void Tokenizer::simplifyAttribute()
                     else if (attribute.find("warn_unused_result") != std::string::npos)
                         functok->isAttributeNodiscard(true);
                 }
+
+                else if (Token::Match(attr, "[(,] packed [,)]") && Token::simpleMatch(tok->previous(), "}"))
+                    tok->previous()->isAttributePacked(true);
             }
 
-            else if (Token::simpleMatch(tok->previous(), "} __attribute__ ( ( packed )")) {
-                tok->previous()->isAttributePacked(true);
-            }
-
-            Token::eraseTokens(tok, tok->next()->link()->next());
+            Token::eraseTokens(tok, tok->linkAt(1)->next());
             tok->deleteThis();
         }
     }
