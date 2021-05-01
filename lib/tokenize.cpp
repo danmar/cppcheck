@@ -10798,64 +10798,68 @@ void Tokenizer::simplifyDeclspec()
 void Tokenizer::simplifyAttributeList()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        while (Token::Match(tok, "__attribute__|__attribute (") && 
-				tok->next()->link() != tok->next()->next() &&
-				tok->next()->link() && tok->next()->link()->next()) {
+        while (Token::Match(tok, "__attribute__|__attribute (") &&
+               tok->next()->link() != tok->next()->next() &&
+               tok->next()->link() && tok->next()->link()->next()) {
 
-			// tokens for braces in __attribute__ (( ))
-			// (left to right: outerLeftBr, innerLeftBr, innerRightBr, outerRightBr)
-			Token *outerLeftBr = tok->next(), *outerRightBr = outerLeftBr->link();
-			Token *innerLeftBr = tok->next()->next(), *innerRightBr = innerLeftBr->link();
+            // tokens for braces in __attribute__ (( ))
+            // (left to right: outerLeftBr, innerLeftBr, innerRightBr, outerRightBr)
+            Token *outerLeftBr = tok->next(), *outerRightBr = outerLeftBr->link();
+            Token *innerLeftBr = tok->next()->next(), *innerRightBr = innerLeftBr->link();
 
-			// new intermediate __attribute__|__attribute in place of comma
-			Token *newtok = nullptr;
+            // new intermediate __attribute__|__attribute in place of comma
+            Token *newtok = nullptr;
 
-			// new tokens for comma replacement
-			// __attribute__ ((attr1,attr2)) -> __attribute__ ((attr1)) __attribute__((attr2))
-			//                                  replaced by ------>  \________________/
-			Token *newInnerRightBr, *newOuterRightBr, *newInnerLeftBr, *newOuterLeftBr;
+            // new tokens for comma replacement
+            // __attribute__ ((attr1,attr2)) -> __attribute__ ((attr1)) __attribute__((attr2))
+            //                                  replaced by ------>  \________________/
+            Token *newInnerRightBr, *newOuterRightBr, *newInnerLeftBr, *newOuterLeftBr;
 
-			Token *attrlist = innerLeftBr->next();
+            Token *attrlist = innerLeftBr->next();
 
-			// scanning between initial (( and ))
-			while(attrlist != innerRightBr && !newtok) {
+            // scanning between initial (( and ))
+            while (attrlist != innerRightBr && !newtok) {
 
-				if (attrlist->str() == ",") {
+                if (attrlist->str() == ",") {
 
-					attrlist->insertToken(")"); newInnerRightBr = attrlist->next();
-					Token::createMutualLinks(innerLeftBr, newInnerRightBr);
+                    attrlist->insertToken(")");
+                    newInnerRightBr = attrlist->next();
+                    Token::createMutualLinks(innerLeftBr, newInnerRightBr);
 
-					newInnerRightBr->insertToken(")"); newOuterRightBr = newInnerRightBr->next();
-					Token::createMutualLinks(outerLeftBr, newOuterRightBr);
+                    newInnerRightBr->insertToken(")");
+                    newOuterRightBr = newInnerRightBr->next();
+                    Token::createMutualLinks(outerLeftBr, newOuterRightBr);
 
-					newOuterRightBr->insertToken(tok->str());
-					newtok = newOuterRightBr->next();
+                    newOuterRightBr->insertToken(tok->str());
+                    newtok = newOuterRightBr->next();
 
-					newtok->insertToken("("); newOuterLeftBr = newtok->next();
-					Token::createMutualLinks(newOuterLeftBr, outerRightBr);
+                    newtok->insertToken("(");
+                    newOuterLeftBr = newtok->next();
+                    Token::createMutualLinks(newOuterLeftBr, outerRightBr);
 
-					newOuterLeftBr->insertToken("("); newInnerLeftBr = newOuterLeftBr->next();
-					Token::createMutualLinks(newInnerLeftBr, innerRightBr);
+                    newOuterLeftBr->insertToken("(");
+                    newInnerLeftBr = newOuterLeftBr->next();
+                    Token::createMutualLinks(newInnerLeftBr, innerRightBr);
 
-					tok = newtok;
+                    tok = newtok;
 
-					// e.g. "," -> ")) __attribute__ (("
-					Token::replace(attrlist, newInnerRightBr, newInnerLeftBr);
+                    // e.g. "," -> ")) __attribute__ (("
+                    Token::replace(attrlist, newInnerRightBr, newInnerLeftBr);
 
-				// jump over internal attribute parameters (e.g. format definition)
-				// example: __attribute__((format(printf, 1, 2), noreturn))
-				} else if (attrlist->str() == "(") {
-					attrlist = attrlist->link()->next();
-				} else {
-					attrlist = attrlist->next();
-				}
-			}
+                    // jump over internal attribute parameters (e.g. format definition)
+                    // example: __attribute__((format(printf, 1, 2), noreturn))
+                } else if (attrlist->str() == "(") {
+                    attrlist = attrlist->link()->next();
+                } else {
+                    attrlist = attrlist->next();
+                }
+            }
 
-			// passing to next token just after __attribute__ ((...))
-			// (there may be another __attribute__ ((...)) )
-			if(!newtok) {
-				tok = outerRightBr->next();
-			}
+            // passing to next token just after __attribute__ ((...))
+            // (there may be another __attribute__ ((...)) )
+            if (!newtok) {
+                tok = outerRightBr->next();
+            }
         }
     }
 }

@@ -3373,7 +3373,7 @@ private:
         ASSERT(func5 && func5->isAttributeNoreturn());
         ASSERT(func6 && func6->isAttributePure() && func6->isAttributeNothrow() && func6->isAttributeConst());
         ASSERT(func7 && func7->isAttributePure() && func7->isAttributeNothrow() && func7->isAttributeConst());
-        ASSERT(func8 && func8->isAttributeNoreturn() && func8->isAttributePure() && func8->isAttributeNothrow() && func8->isAttributeConst()); 
+        ASSERT(func8 && func8->isAttributeNoreturn() && func8->isAttributePure() && func8->isAttributeNothrow() && func8->isAttributeConst());
     }
 
     void functionAttributeListAfter() {
@@ -3414,7 +3414,7 @@ private:
         ASSERT(func5 && func5->isAttributeNoreturn());
         ASSERT(func6 && func6->isAttributePure() && func6->isAttributeNothrow() && func6->isAttributeConst());
         ASSERT(func7 && func7->isAttributePure() && func7->isAttributeNothrow() && func7->isAttributeConst());
-        ASSERT(func8 && func8->isAttributeNoreturn() && func8->isAttributePure() && func8->isAttributeNothrow() && func8->isAttributeConst()); 
+        ASSERT(func8 && func8->isAttributeNoreturn() && func8->isAttributePure() && func8->isAttributeNothrow() && func8->isAttributeConst());
     }
 
 
