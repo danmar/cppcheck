@@ -1378,7 +1378,7 @@ void CheckStl::if_find()
             continue;
 
         const Token *conditionStart = scope.classDef->next();
-        if (Token::simpleMatch(conditionStart->astOperand2(), ";"))
+        if (conditionStart && Token::simpleMatch(conditionStart->astOperand2(), ";"))
             conditionStart = conditionStart->astOperand2();
 
         for (const Token *tok = conditionStart; tok->str() != "{"; tok = tok->next()) {
