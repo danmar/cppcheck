@@ -172,7 +172,7 @@ static std::string readAttrString(const tinyxml2::XMLElement *e, const char *att
 static long long readAttrInt(const tinyxml2::XMLElement *e, const char *attr, bool *error)
 {
     int64_t value = 0;
-    bool err = (e->QueryInt64Attribute(attr, &value) != XML_SUCCESS);
+    bool err = (e->QueryInt64Attribute(attr, &value) != tinyxml2::XML_SUCCESS);
     if (error)
         *error = err;
     return value;
