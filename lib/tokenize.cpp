@@ -4802,6 +4802,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     reportUnknownMacros();
 
+    simplifyFunctionTryCatch();
+
     simplifyHeadersAndUnusedTemplates();
 
     // Remove __asm..
@@ -10510,6 +10512,39 @@ void Tokenizer::simplifyWhile0()
             else
                 break;
         }
+    }
+}
+
+void Tokenizer::simplifyFunctionTryCatch()
+{
+    if (!isCPP())
+        return;
+
+    for (Token * tok = list.front(); tok; tok = tok->next()) {
+        if (!Token::simpleMatch(tok, "try {"))
+            continue;
+        if (!isFunctionHead(tok->previous(), "try"))
+            continue;
+
+        // find the end of the last catch block
+        Token * const tryEndToken = tok->linkAt(1);
+        Token * endToken = tryEndToken;
+        while (Token::simpleMatch(endToken, "} catch (")) {
+            endToken = endToken->linkAt(2)->next();
+            if (!endToken)
+                break;
+            if (endToken->str() != "{") {
+                endToken = nullptr;
+                break;
+            }
+            endToken = endToken->link();
+        }
+        if (!endToken || endToken == tryEndToken)
+            continue;
+
+        tok->previous()->insertToken("{");
+        endToken->insertToken("}");
+        Token::createMutualLinks(tok->previous(), endToken->next());
     }
 }
 
