@@ -304,38 +304,6 @@ private:
         ASSERT_EQUALS((int)('\100'), MathLib::toLongNumber("'\\100'"));
         ASSERT_EQUALS((int)('\200'), MathLib::toLongNumber("'\\200'"));
         ASSERT_EQUALS((int)(L'A'),   MathLib::toLongNumber("L'A'"));
-#ifdef __GNUC__
-        // BEGIN Implementation-specific results
-        ASSERT_EQUALS((int)('AB'),    MathLib::toLongNumber("'AB'"));
-        ASSERT_EQUALS((int)('ABC'),    MathLib::toLongNumber("'ABC'"));
-        ASSERT_EQUALS((int)('ABCD'),    MathLib::toLongNumber("'ABCD'"));
-        ASSERT_EQUALS((int)('ABCDE'),    MathLib::toLongNumber("'ABCDE'"));
-        // END Implementation-specific results
-#endif
-        ASSERT_EQUALS((int)('\0'),   MathLib::toLongNumber("'\\0'"));
-        ASSERT_EQUALS(0x1B,   MathLib::toLongNumber("'\\e'"));
-        ASSERT_EQUALS((int)('\r'),   MathLib::toLongNumber("'\\r'"));
-        ASSERT_EQUALS((int)('\x12'), MathLib::toLongNumber("'\\x12'"));
-        // may cause some compile problems: ASSERT_EQUALS((int)('\x123'), MathLib::toLongNumber("'\\x123'"));
-        // may cause some compile problems: ASSERT_EQUALS((int)('\x1234'), MathLib::toLongNumber("'\\x1234'"));
-        ASSERT_EQUALS((int)('\3'),  MathLib::toLongNumber("'\\3'"));
-        ASSERT_EQUALS((int)('\34'),  MathLib::toLongNumber("'\\34'"));
-        ASSERT_EQUALS((int)('\034'), MathLib::toLongNumber("'\\034'"));
-        ASSERT_EQUALS((int)('\x34'), MathLib::toLongNumber("'\\x34'"));
-        ASSERT_EQUALS((int)('\134'), MathLib::toLongNumber("'\\134'"));
-        ASSERT_EQUALS((int)('\134t'), MathLib::toLongNumber("'\\134t'")); // Ticket #7452
-        ASSERT_THROW(MathLib::toLongNumber("'\\9'"), InternalError);
-        ASSERT_THROW(MathLib::toLongNumber("'\\934'"), InternalError);
-        // that is not gcc/clang encoding
-        ASSERT_EQUALS(959657011, MathLib::toLongNumber("'\\u9343'"));
-        ASSERT_EQUALS(1714631779, MathLib::toLongNumber("'\\U0001f34c'"));
-        {
-            // some unit-testing for a utility function
-            ASSERT_EQUALS(0, MathLib::characterLiteralToLongNumber(std::string()));
-            ASSERT_EQUALS(32, MathLib::characterLiteralToLongNumber(std::string(" ")));
-            ASSERT_EQUALS(538976288, MathLib::characterLiteralToLongNumber(std::string("          ")));
-            ASSERT_THROW(MathLib::characterLiteralToLongNumber(std::string("\\u")), InternalError);
-        }
 
         ASSERT_EQUALS(-8552249625308161526, MathLib::toLongNumber("0x89504e470d0a1a0a"));
         ASSERT_EQUALS(-8481036456200365558, MathLib::toLongNumber("0x8a4d4e470d0a1a0a"));

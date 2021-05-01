@@ -21,6 +21,8 @@
 #include "errortypes.h"
 #include "utils.h"
 
+#include <simplecpp.h>
+
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
@@ -355,35 +357,6 @@ unsigned int MathLib::encodeMultiChar(const std::string& str)
     return retval;
 }
 
-static bool isoctal(int c)
-{
-    return c>='0' && c<='7';
-}
-
-MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
-{
-    if (str.empty())
-        return 0; // <- only possible in unit testing
-
-    // '\xF6'
-    if (str.size() == 4 && str.compare(0,2,"\\x")==0 && std::isxdigit(str[2]) && std::isxdigit(str[3])) {
-        return std::strtoul(str.substr(2).c_str(), nullptr, 16);
-    }
-
-    // '\123'
-    if (str.size() == 4 && str[0] == '\\' && isoctal(str[1]) && isoctal(str[2]) && isoctal(str[3])) {
-        return (char)std::strtoul(str.substr(1).c_str(), nullptr, 8);
-    }
-
-    // C99 6.4.4.4
-    // The value of an integer character constant containing more than one character (e.g., 'ab'),
-    // or containing a character or escape sequence that does not map to a single-byte execution character,
-    // is implementation-defined.
-    // clang and gcc seem to use the following encoding: 'AB' as (('A' << 8) | 'B')
-    const std::string& normStr = normalizeCharacterLiteral(str);
-    return encodeMultiChar(normStr);
-}
-
 std::string MathLib::normalizeCharacterLiteral(const std::string& iLiteral)
 {
     std::string normalizedLiteral;
@@ -533,7 +506,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
     }
 
     if (isCharLiteral(str)) {
-        return characterLiteralToLongNumber(getCharLiteral(str));
+        return simplecpp::characterLiteralToLL(str);
     }
 
     try {
@@ -597,7 +570,7 @@ static double floatHexToDoubleNumber(const std::string& str)
 double MathLib::toDoubleNumber(const std::string &str)
 {
     if (isCharLiteral(str))
-        return characterLiteralToLongNumber(getCharLiteral(str));
+        return simplecpp::characterLiteralToLL(str);
     if (isIntHex(str))
         return static_cast<double>(toLongNumber(str));
     // nullcheck
