@@ -128,12 +128,6 @@ public:
     static unsigned int encodeMultiChar(const std::string& str);
 
     /**
-     * \param[in] str character literal
-     * @return Number of internal representation of the character literal
-     * */
-    static MathLib::bigint characterLiteralToLongNumber(const std::string& str);
-
-    /**
      * \param[in] iCode Code being considered
      * \param[in] iPos A posision within iCode
      * \return Whether iCode[iPos] is a C++14 digit separator
