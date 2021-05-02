@@ -163,6 +163,16 @@ void valid_code(int argInt1, va_list valist_arg, int * parg)
     uint64_t i64_1 = 0, i64_2;
     // cppcheck-suppress unreadVariable
     i64_2 = __builtin_bswap64(i64_1++);
+    
+    // TODO cppcheck-suppress zerodiv
+    // cppcheck-suppress unreadVariable
+    i16_1 /= bswap_16(0x1234) - 0x3412;
+    // TODO cppcheck-suppress zerodiv
+    // cppcheck-suppress unreadVariable
+    i32_1 /= bswap_32(0x12345678) - 0x78563412;
+    // TODO cppcheck-suppress zerodiv
+    // cppcheck-suppress unreadVariable
+    i64_1 /= bswap_64(0x123456789abcdef0) - 0xf0debc9a78563412;
 }
 
 void ignoreleak(void)
