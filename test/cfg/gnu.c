@@ -153,6 +153,16 @@ void valid_code(int argInt1, va_list valist_arg, int * parg)
     void * p_mmap = mmap(NULL, 1, PROT_NONE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
     printf("%p", p_mmap);
     munmap(p_mmap, 1);
+
+    uint16_t i16_1 = 0, i16_2;
+    // cppcheck-suppress unreadVariable
+    i16_2 = __builtin_bswap16(i16_1++);
+    uint32_t i32_1 = 0, i32_2;
+    // cppcheck-suppress unreadVariable
+    i32_2 = __builtin_bswap32(i32_1++);
+    uint64_t i64_1 = 0, i64_2;
+    // cppcheck-suppress unreadVariable
+    i64_2 = __builtin_bswap64(i64_1++);
 }
 
 void ignoreleak(void)
