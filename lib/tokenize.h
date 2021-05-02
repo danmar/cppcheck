@@ -511,6 +511,12 @@ public:
      */
     void simplifyFunctionParameters();
 
+    /** Simplify function level try blocks:
+     *  Convert "void f() try {} catch (int) {}"
+     *  to "void f() { try {} catch (int) {} }"
+     */
+    void simplifyFunctionTryCatch();
+
     /**
      * Simplify templates
      */

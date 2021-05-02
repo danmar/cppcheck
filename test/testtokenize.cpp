@@ -147,6 +147,8 @@ private:
         TEST_CASE(simplifyFunctionParametersMultiTemplate);
         TEST_CASE(simplifyFunctionParametersErrors);
 
+        TEST_CASE(simplifyFunctionTryCatch);
+
         TEST_CASE(removeParentheses1);       // Ticket #61
         TEST_CASE(removeParentheses3);
         TEST_CASE(removeParentheses4);       // Ticket #390
@@ -1452,6 +1454,36 @@ private:
                              "    { }\n"
                              "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyFunctionTryCatch() {
+        ASSERT_EQUALS("void foo ( ) { try {\n"
+                      "} catch ( int ) {\n"
+                      "} catch ( char ) {\n"
+                      "} }",
+                      tokenizeAndStringify("void foo() try {\n"
+                                           "} catch (int) {\n"
+                                           "} catch (char) {\n"
+                                           "}"));
+
+        ASSERT_EQUALS("void foo ( ) { try {\n"
+                      "struct S {\n"
+                      "void bar ( ) { try {\n"
+                      "} catch ( int ) {\n"
+                      "} catch ( char ) {\n"
+                      "} }\n"
+                      "} ;\n"
+                      "} catch ( long ) {\n"
+                      "} }",
+                      tokenizeAndStringify("void foo() try {\n"
+                                           "  struct S {\n"
+                                           "    void bar() try {\n"
+                                           "    } catch (int) {\n"
+                                           "    } catch (char) {\n"
+                                           "    }\n"
+                                           "  };\n"
+                                           "} catch (long) {\n"
+                                           "}"));
     }
 
     // Simplify "((..))" into "(..)"
@@ -6100,7 +6132,8 @@ private:
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()
         // C++ try/catch in global scope
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() try { }"), InternalError, "syntax error: keyword 'try' is not allowed in global scope");
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("try { }"), InternalError, "syntax error: keyword 'try' is not allowed in global scope");
+        ASSERT_NO_THROW(tokenizeAndStringify("void f() try { } catch (int) { }"));
 
         // before if|for|while|switch
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { do switch (a) {} while (1); }"));
