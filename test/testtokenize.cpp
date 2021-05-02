@@ -5932,8 +5932,16 @@ private:
         ASSERT_EQUALS("x{(a&[( ai=", testAst("x([&a](int i){a=i;});"));
         ASSERT_EQUALS("{([(return 0return", testAst("return [](){ return 0; }();"));
 
-        // noexcept
-        ASSERT_EQUALS("x{([( ai=", testAst("x([](int i)noexcept{a=i;});"));
+        // noexcept (which if simplified to always have a condition by the time AST is created)
+        ASSERT_EQUALS("x{([( ai=", testAst("x([](int i) noexcept(true) { a=i; });"));
+        ASSERT_EQUALS("x{([( ai=", testAst("x([](int i) mutable noexcept(true) { a=i; });"));
+        ASSERT_EQUALS("x{([( ai=", testAst("x([](int i) const noexcept(true) { a=i; });"));
+
+        // both mutable and constexpr (which is simplified to 'const' by the time AST is created)
+        ASSERT_EQUALS("x{([( ai=", testAst("x([](int i) const mutable { a=i; });"));
+        ASSERT_EQUALS("x{([( ai=", testAst("x([](int i) mutable const { a=i; });"));
+        ASSERT_EQUALS("x{([( ai=", testAst("x([](int i) const mutable noexcept(true) { a=i; });"));
+        ASSERT_EQUALS("x{([( ai=", testAst("x([](int i) mutable const noexcept(true) { a=i; });"));
 
         // ->
         ASSERT_EQUALS("{([(return 0return", testAst("return []() -> int { return 0; }();"));
@@ -5989,6 +5997,9 @@ private:
 
         // Lambda capture expression (C++14)
         ASSERT_EQUALS("a{b1=[= c2=", testAst("a = [b=1]{c=2;};"));
+
+        // #9729
+        ASSERT_NO_THROW(tokenizeAndStringify("void foo() { bar([]() noexcept { if (0) {} }); }"));
     }
 
     void astcase() {
