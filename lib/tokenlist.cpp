@@ -888,6 +888,8 @@ static void compileScope(Token *&tok, AST_state& state)
     while (tok) {
         if (tok->str() == "::") {
             const Token *lastOp = state.op.empty() ? nullptr : state.op.top();
+            if (Token::Match(lastOp, ":: %name%"))
+                lastOp = lastOp->next();
             if (Token::Match(lastOp, "%name%") &&
                 (lastOp->next() == tok || (Token::Match(lastOp, "%name% <") && lastOp->linkAt(1) && tok == lastOp->linkAt(1)->next())))
                 compileBinOp(tok, state, compileTerm);
