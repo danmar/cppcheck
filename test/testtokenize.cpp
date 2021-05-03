@@ -5815,6 +5815,15 @@ private:
         ASSERT_EQUALS("f1{2{,3{,{x,(", testAst("f({{1},{2},{3}},x);"));
         ASSERT_EQUALS("a1{ b2{", testAst("auto a{1}; auto b{2};"));
         ASSERT_EQUALS("var1ab::23,{,{4ab::56,{,{,{", testAst("auto var{{1,a::b{2,3}}, {4,a::b{5,6}}};"));
+
+        // Initialization with decltype(expr) instead of a type
+        ASSERT_EQUALS("decltypex((", testAst("decltype(x)();"));
+        ASSERT_EQUALS("decltypex({", testAst("decltype(x){};"));
+        ASSERT_EQUALS("decltypexy+(yx+(", testAst("decltype(x+y)(y+x);"));
+        ASSERT_EQUALS("decltypexy+(yx+{", testAst("decltype(x+y){y+x};"));
+
+        // Check that decltype(x){} doesn't break AST creation for subsequent tokens.
+        ASSERT_EQUALS("decltypex({01:?", testAst("decltype(x){} ? 0 : 1;"));
     }
 
     void astbrackets() { // []

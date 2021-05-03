@@ -651,6 +651,8 @@ static bool iscpp11init_impl(const Token * const tok)
     }
     if (!nameToken)
         return false;
+    if (nameToken->str() == ")" && Token::simpleMatch(nameToken->link()->previous(), "decltype ("))
+        return true;
     if (nameToken->str() == ">" && nameToken->link())
         nameToken = nameToken->link()->previous();
 
