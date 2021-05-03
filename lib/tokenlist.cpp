@@ -722,6 +722,8 @@ static void compileBinOp(Token *&tok, AST_state& state, void(*f)(Token *&tok, AS
     Token *binop = tok;
     if (f) {
         tok = tok->next();
+        if (Token::simpleMatch(binop, ":: ~"))
+            tok = tok->next();
         state.depth++;
         if (tok && state.depth <= AST_MAX_DEPTH)
             f(tok, state);
@@ -885,17 +887,12 @@ static void compileScope(Token *&tok, AST_state& state)
     compileTerm(tok, state);
     while (tok) {
         if (tok->str() == "::") {
-            Token *binop = tok;
-            tok = tok->next();
-            if (tok && tok->str() == "~") // Jump over ~ of destructor definition
-                tok = tok->next();
-            if (tok)
-                compileTerm(tok, state);
-
-            if (binop->previous() && (binop->previous()->isName() || (binop->previous()->link() && binop->strAt(-1) == ">")))
-                compileBinOp(binop, state, nullptr);
+            const Token *lastOp = state.op.empty() ? nullptr : state.op.top();
+            if (Token::Match(lastOp, "%name%") &&
+                (lastOp->next() == tok || (Token::Match(lastOp, "%name% <") && lastOp->linkAt(1) && tok == lastOp->linkAt(1)->next())))
+                compileBinOp(tok, state, compileTerm);
             else
-                compileUnaryOp(binop, state, nullptr);
+                compileUnaryOp(tok, state, compileTerm);
         } else break;
     }
 }
@@ -1011,7 +1008,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 compileUnaryOp(tok, state, compileExpression);
             else
                 compileBinOp(tok, state, compileExpression);
-            while (Token::simpleMatch(tok, "}"))
+            if (Token::simpleMatch(tok, "}"))
                 tok = tok->next();
         } else break;
     }
@@ -1543,6 +1540,25 @@ static Token * createAstAtToken(Token *tok, bool cpp)
 
     if (Token::Match(tok, "%type% <") && tok->linkAt(1) && !Token::Match(tok->linkAt(1), "> [({]"))
         return tok->linkAt(1);
+
+    if (cpp && Token::Match(tok, "%type% ::|<|%name%")) {
+        Token *tok2 = tok;
+        while (true) {
+            if (Token::Match(tok2, "%name%|> :: %name%"))
+                tok2 = tok2->tokAt(2);
+            else if (Token::Match(tok2, "%name% <") && tok2->linkAt(1))
+                tok2 = tok2->linkAt(1);
+            else
+                break;
+        }
+        if (Token::Match(tok2, "%name%|> %name% {") && tok2->next()->varId() && iscpp11init(tok2->tokAt(2))) {
+            Token *const tok1 = tok = tok2->next();
+            AST_state state(cpp);
+            compileExpression(tok, state);
+            createAstAtTokenInner(tok1->next(), tok1->linkAt(1), cpp);
+            return tok;
+        }
+    }
 
     if (Token::Match(tok, "%type% %name%|*|&|::") && tok->str() != "return") {
         int typecount = 0;
