@@ -163,7 +163,7 @@ void valid_code(int argInt1, va_list valist_arg, int * parg)
     uint64_t i64_1 = 0, i64_2;
     // cppcheck-suppress unreadVariable
     i64_2 = __builtin_bswap64(i64_1++);
-    
+
     // cppcheck-suppress zerodiv
     // cppcheck-suppress unreadVariable
     i16_1 /= bswap_16(0x1234) - 0x3412;
