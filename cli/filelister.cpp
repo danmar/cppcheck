@@ -179,7 +179,7 @@ bool FileLister::fileExists(const std::string &path)
 
 #include <dirent.h>
 #include <sys/stat.h>
-#include <sys/errno.h>
+#include <cerrno>
 
 
 static std::string addFiles2(std::map<std::string, std::size_t> &files,
