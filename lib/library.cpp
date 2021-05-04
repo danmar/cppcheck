@@ -154,10 +154,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
     if (strcmp(rootnode->Name(),"def") != 0)
         return Error(ErrorCode::UNSUPPORTED_FORMAT, rootnode->Name());
 
-    const char* format_string = rootnode->Attribute("format");
-    int format = 1; // Assume format version 1 if nothing else is specified (very old .cfg files had no 'format' attribute)
-    if (format_string)
-        format = atoi(format_string);
+    int format = rootnode->IntAttribute("format", 1); // Assume format version 1 if nothing else is specified (very old .cfg files had no 'format' attribute)
 
     if (format > 2 || format <= 0)
         return Error(ErrorCode::UNSUPPORTED_FORMAT);
@@ -193,16 +190,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     AllocFunc temp = {0};
                     temp.groupId = allocationId;
 
-                    if (memorynode->Attribute("init", "false"))
-                        temp.initData = false;
-                    else
-                        temp.initData = true;
-
-                    const char *arg = memorynode->Attribute("arg");
-                    if (arg)
-                        temp.arg = atoi(arg);
-                    else
-                        temp.arg = -1;
+                    temp.initData = memorynode->BoolAttribute("init", true);
+                    temp.arg = memorynode->IntAttribute("arg", -1);
 
                     const char *bufferSize = memorynode->Attribute("buffer-size");
                     if (!bufferSize)
@@ -228,13 +217,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                             return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, bufferSize);
                     }
 
-                    if (memorynodename == "realloc") {
-                        const char *reallocArg =  memorynode->Attribute("realloc-arg");
-                        if (reallocArg)
-                            temp.reallocArg = atoi(reallocArg);
-                        else
-                            temp.reallocArg = 1;
-                    }
+                    if (memorynodename == "realloc")
+                        temp.reallocArg = memorynode->IntAttribute("realloc-arg", 1);
 
                     if (memorynodename != "realloc")
                         mAlloc[memorynode->GetText()] = temp;
@@ -243,11 +227,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 } else if (memorynodename == "dealloc") {
                     AllocFunc temp = {0};
                     temp.groupId = allocationId;
-                    const char *arg = memorynode->Attribute("arg");
-                    if (arg)
-                        temp.arg = atoi(arg);
-                    else
-                        temp.arg = 1;
+                    temp.arg = memorynode->IntAttribute("arg", 1);
                     mDealloc[memorynode->GetText()] = temp;
                 } else if (memorynodename == "use")
                     functions[memorynode->GetText()].use = true;
@@ -778,10 +758,9 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                 else if (argnodename == "iterator") {
                     ac.iteratorInfo.it = true;
                     const char* str = argnode->Attribute("type");
-                    ac.iteratorInfo.first = str ? (std::strcmp(str, "first") == 0) : false;
-                    ac.iteratorInfo.last = str ? (std::strcmp(str, "last") == 0) : false;
-                    str = argnode->Attribute("container");
-                    ac.iteratorInfo.container = str ? std::atoi(str) : 0;
+                    ac.iteratorInfo.first = (str && std::strcmp(str, "first") == 0);
+                    ac.iteratorInfo.last = (str && std::strcmp(str, "last") == 0);
+                    ac.iteratorInfo.container = argnode->IntAttribute("container", 0);
                 }
 
                 else

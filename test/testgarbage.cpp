@@ -681,7 +681,7 @@ private:
     }
 
     void garbageCode55() { // #6724
-        checkCode("() __attribute__((constructor)); { } { }");
+        ASSERT_THROW(checkCode("() __attribute__((constructor)); { } { }"), InternalError);
     }
 
     void garbageCode56() { // #6713

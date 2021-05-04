@@ -651,6 +651,8 @@ static bool iscpp11init_impl(const Token * const tok)
     }
     if (!nameToken)
         return false;
+    if (nameToken->str() == ")" && Token::simpleMatch(nameToken->link()->previous(), "decltype ("))
+        return true;
     if (nameToken->str() == ">" && nameToken->link())
         nameToken = nameToken->link()->previous();
 
@@ -722,6 +724,8 @@ static void compileBinOp(Token *&tok, AST_state& state, void(*f)(Token *&tok, AS
     Token *binop = tok;
     if (f) {
         tok = tok->next();
+        if (Token::simpleMatch(binop, ":: ~"))
+            tok = tok->next();
         state.depth++;
         if (tok && state.depth <= AST_MAX_DEPTH)
             f(tok, state);
@@ -885,17 +889,14 @@ static void compileScope(Token *&tok, AST_state& state)
     compileTerm(tok, state);
     while (tok) {
         if (tok->str() == "::") {
-            Token *binop = tok;
-            tok = tok->next();
-            if (tok && tok->str() == "~") // Jump over ~ of destructor definition
-                tok = tok->next();
-            if (tok)
-                compileTerm(tok, state);
-
-            if (binop->previous() && (binop->previous()->isName() || (binop->previous()->link() && binop->strAt(-1) == ">")))
-                compileBinOp(binop, state, nullptr);
+            const Token *lastOp = state.op.empty() ? nullptr : state.op.top();
+            if (Token::Match(lastOp, ":: %name%"))
+                lastOp = lastOp->next();
+            if (Token::Match(lastOp, "%name%") &&
+                (lastOp->next() == tok || (Token::Match(lastOp, "%name% <") && lastOp->linkAt(1) && tok == lastOp->linkAt(1)->next())))
+                compileBinOp(tok, state, compileTerm);
             else
-                compileUnaryOp(binop, state, nullptr);
+                compileUnaryOp(tok, state, compileTerm);
         } else break;
     }
 }
@@ -951,8 +952,10 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 if (Token::simpleMatch(squareBracket->link(), "] (")) {
                     Token* const roundBracket = squareBracket->link()->next();
                     Token* curlyBracket = roundBracket->link()->next();
-                    if (Token::Match(curlyBracket, "mutable|const|noexcept"))
+                    while (Token::Match(curlyBracket, "mutable|const"))
                         curlyBracket = curlyBracket->next();
+                    if (Token::simpleMatch(curlyBracket, "noexcept ("))
+                        curlyBracket = curlyBracket->linkAt(1)->next();
                     if (curlyBracket && curlyBracket->originalName() == "->")
                         curlyBracket = findTypeEnd(curlyBracket->next());
                     if (curlyBracket && curlyBracket->str() == "{") {
@@ -1009,7 +1012,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 compileUnaryOp(tok, state, compileExpression);
             else
                 compileBinOp(tok, state, compileExpression);
-            while (Token::simpleMatch(tok, "}"))
+            if (Token::simpleMatch(tok, "}"))
                 tok = tok->next();
         } else break;
     }
@@ -1536,41 +1539,30 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         return endPar;
     }
 
-    if (cpp && Token::Match(tok, "if|switch (")) {
-        Token *semicolon = nullptr;
-        Token *tok2;
-        for (tok2 = tok->tokAt(2); tok2 && tok2->str() != ")"; tok2 = tok2->next()) {
-            if (tok2->str() == ";") {
-                if (semicolon)
-                    break;
-                semicolon = tok2;
-            }
-            if (tok2->str() == "(")
-                tok2 = tok2->link();
-        }
-        if (semicolon && tok2 == tok->linkAt(1)) {
-            tok2 = skipDecl(tok->tokAt(2));
-            Token *init1 = tok2;
-            AST_state state1(cpp);
-            compileExpression(tok2, state1);
-
-            tok2 = semicolon->next();
-            Token *expr1 = tok2;
-            AST_state state2(cpp);
-            compileExpression(tok2, state2);
-
-            semicolon->astOperand1(findAstTop(init1, semicolon->previous()));
-            semicolon->astOperand2(findAstTop(expr1, tok2));
-            tok->next()->astOperand1(tok);
-            tok->next()->astOperand2(semicolon);
-        }
-    }
-
     if (Token::simpleMatch(tok, "( {"))
         return tok;
 
     if (Token::Match(tok, "%type% <") && tok->linkAt(1) && !Token::Match(tok->linkAt(1), "> [({]"))
         return tok->linkAt(1);
+
+    if (cpp && Token::Match(tok, "%type% ::|<|%name%")) {
+        Token *tok2 = tok;
+        while (true) {
+            if (Token::Match(tok2, "%name%|> :: %name%"))
+                tok2 = tok2->tokAt(2);
+            else if (Token::Match(tok2, "%name% <") && tok2->linkAt(1))
+                tok2 = tok2->linkAt(1);
+            else
+                break;
+        }
+        if (Token::Match(tok2, "%name%|> %name% {") && tok2->next()->varId() && iscpp11init(tok2->tokAt(2))) {
+            Token *const tok1 = tok = tok2->next();
+            AST_state state(cpp);
+            compileExpression(tok, state);
+            createAstAtTokenInner(tok1->next(), tok1->linkAt(1), cpp);
+            return tok;
+        }
+    }
 
     if (Token::Match(tok, "%type% %name%|*|&|::") && tok->str() != "return") {
         int typecount = 0;

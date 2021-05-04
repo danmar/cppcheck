@@ -931,9 +931,83 @@ static bool isSameConstantValue(bool macro, const Token * const tok1, const Toke
     return isEqualKnownValue(tok1, tok2);
 }
 
+
+static bool isForLoopCondition(const Token * const tok)
+{
+    if (!tok)
+        return false;
+    const Token *const parent = tok->astParent();
+    return Token::simpleMatch(parent, ";") && parent->astOperand1() == tok &&
+           Token::simpleMatch(parent->astParent(), ";") &&
+           Token::simpleMatch(parent->astParent()->astParent(), "(") &&
+           parent->astParent()->astParent()->astOperand1()->str() == "for";
+}
+
+static bool isZeroConstant(const Token *tok) {
+	while (tok && tok->isCast())
+		tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
+	return Token::simpleMatch(tok, "0") && !tok->isExpandedMacro();
+}
+
+/**
+ * Is token used a boolean (cast to a bool, or used as a condition somewhere)
+ * @param tok the token to check
+ * @param checkingParent true if we are checking a parent. This is used to know
+ * what we are checking. For instance in `if (i == 2)`, isUsedAsBool("==") is
+ * true whereas isUsedAsBool("i") is false, but it might call
+ * isUsedAsBool_internal("==") which must not return true
+ */
+static bool isUsedAsBool_internal(const Token * const tok, bool checkingParent)
+{
+    if (!tok)
+        return false;
+    const Token::Type type = tok->tokType();
+    if (type == Token::eBitOp || type == Token::eIncDecOp || (type == Token::eArithmeticalOp && !tok->isUnaryOp("*")))
+        // those operators don't return a bool
+        return false;
+    if (type == Token::eComparisonOp) {
+        if (!checkingParent)
+            // this operator returns a bool
+            return true;
+        if (Token::Match(tok, "==|!="))
+            return isZeroConstant(tok->astOperand1()) || isZeroConstant(tok->astOperand2());
+        return false;
+    }
+    if (type == Token::eLogicalOp)
+        return true;
+    if (astIsBool(tok))
+        return true;
+
+    const Token * const parent = tok->astParent();
+    if (!parent)
+        return false;
+    if (parent->str() == "(" && parent->astOperand2() == tok) {
+        if (Token::Match(parent->astOperand1(), "if|while"))
+            return true;
+
+        if (!parent->isCast()) { // casts are handled via the recursive call, as astIsBool will be true
+            // is it a call to a function ?
+            int argnr;
+            const Token *const func = getTokenArgumentFunction(tok, argnr);
+            if (!func || !func->function())
+                return false;
+            const Variable *var = func->function()->getArgumentVar(argnr);
+            return var && (var->getTypeName() == "bool");
+        }
+    } else if (isForLoopCondition(tok))
+        return true;
+
+    return isUsedAsBool_internal(parent, true);
+}
+
+bool isUsedAsBool(const Token * const tok)
+{
+    return isUsedAsBool_internal(tok, false);
+}
+
 static bool astIsBoolLike(const Token* tok)
 {
-    return astIsBool(tok) || astIsPointer(tok) || astIsSmartPointer(tok);
+    return astIsBool(tok) || isUsedAsBool(tok);
 }
 
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors)
@@ -1156,73 +1230,6 @@ static bool isZeroBoundCond(const Token * const cond)
     if (cond->str() == ">")
         return false;
     return false;
-}
-
-static bool isForLoopCondition(const Token * const tok)
-{
-    if (!tok)
-        return false;
-    const Token *const parent = tok->astParent();
-    return Token::simpleMatch(parent, ";") && parent->astOperand1() == tok &&
-           Token::simpleMatch(parent->astParent(), ";") &&
-           Token::simpleMatch(parent->astParent()->astParent(), "(") &&
-           parent->astParent()->astParent()->astOperand1()->str() == "for";
-}
-
-/**
- * Is token used a boolean (cast to a bool, or used as a condition somewhere)
- * @param tok the token to check
- * @param checkingParent true if we are checking a parent. This is used to know
- * what we are checking. For instance in `if (i == 2)`, isUsedAsBool("==") is
- * true whereas isUsedAsBool("i") is false, but it might call
- * isUsedAsBool_internal("==") which must not return true
- */
-static bool isUsedAsBool_internal(const Token * const tok, bool checkingParent)
-{
-    if (!tok)
-        return false;
-    const Token::Type type = tok->tokType();
-    if (type == Token::eBitOp || type == Token::eIncDecOp || (type == Token::eArithmeticalOp && !tok->isUnaryOp("*")))
-        // those operators don't return a bool
-        return false;
-    if (type == Token::eComparisonOp) {
-        if (!checkingParent)
-            // this operator returns a bool
-            return true;
-        if (Token::Match(tok, "==|!="))
-            return astIsBool(tok->astOperand1()) || astIsBool(tok->astOperand2());
-        return false;
-    }
-    if (type == Token::eLogicalOp)
-        return true;
-    if (astIsBool(tok))
-        return true;
-
-    const Token * const parent = tok->astParent();
-    if (!parent)
-        return false;
-    if (parent->str() == "(" && parent->astOperand2() == tok) {
-        if (Token::Match(parent->astOperand1(), "if|while"))
-            return true;
-
-        if (!parent->isCast()) { // casts are handled via the recursive call, as astIsBool will be true
-            // is it a call to a function ?
-            int argnr;
-            const Token *const func = getTokenArgumentFunction(tok, argnr);
-            if (!func || !func->function())
-                return false;
-            const Variable *var = func->function()->getArgumentVar(argnr);
-            return var && (var->getTypeName() == "bool");
-        }
-    } else if (isForLoopCondition(tok))
-        return true;
-
-    return isUsedAsBool_internal(parent, true);
-}
-
-bool isUsedAsBool(const Token * const tok)
-{
-    return isUsedAsBool_internal(tok, false);
 }
 
 bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token * const cond2, const Library& library, bool pure, bool followVar, ErrorPath* errors)

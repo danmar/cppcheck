@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <cctype>
+#include <clocale>
 #include <complex>
 #include <cassert>
 #include <cwchar>

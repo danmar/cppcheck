@@ -291,8 +291,8 @@ private:
         ASSERT(Result::False == isUsedAsBool("void f() { int i; for (i;;) {} }", "i ; ; )"));
         ASSERT(Result::True == isUsedAsBool("void f() { int i; for (int j=0; i; ++j) {} }", "i ; ++"));
         ASSERT(Result::False == isUsedAsBool("void f() { int i; if (i == 2) {} }", "i =="));
-        ASSERT(Result::True == isUsedAsBool("void f() { int i; if (i == true) {} }", "i =="));
-        ASSERT(Result::True == isUsedAsBool("void f() { int i,j; if (i == (j&&f())) {} }", "i =="));
+        ASSERT(Result::False == isUsedAsBool("void f() { int i; if (i == true) {} }", "i =="));
+        ASSERT(Result::False == isUsedAsBool("void f() { int i,j; if (i == (j&&f())) {} }", "i =="));
         ASSERT(Result::True == isUsedAsBool("void f() { int i; if (!i == 0) {} }", "i =="));
         ASSERT(Result::True == isUsedAsBool("void f() { int i; if (!i) {} }", "i )"));
         ASSERT(Result::True == isUsedAsBool("void f() { int i; if (!!i) {} }", "i )"));

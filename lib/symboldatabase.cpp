@@ -78,11 +78,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
 static const Token* skipScopeIdentifiers(const Token* tok)
 {
-    if (tok && tok->str() == "::") {
+    if (Token::Match(tok, ":: %name%"))
         tok = tok->next();
-    }
     while (Token::Match(tok, "%name% ::") ||
-           (Token::Match(tok, "%name% <") && Token::simpleMatch(tok->linkAt(1), "> ::"))) {
+           (Token::Match(tok, "%name% <") && Token::Match(tok->linkAt(1), ">|>> ::"))) {
         if (tok->strAt(1) == "::")
             tok = tok->tokAt(2);
         else
@@ -2633,10 +2632,7 @@ static bool isUnknownType(const Token* start, const Token* end)
 {
     while (Token::Match(start, "const|volatile"))
         start = start->next();
-    if (Token::Match(start, ":: %name%"))
-        start = start->next();
-    while (Token::Match(start, "%name% :: %name%"))
-        start = start->tokAt(2);
+    start = skipScopeIdentifiers(start);
     if (start->tokAt(1) == end && !start->type() && !start->isStandardType())
         return true;
     // TODO: Try to deduce the type of the expression

@@ -78,6 +78,7 @@ private:
         TEST_CASE(incorrectLogicOperator13);
         TEST_CASE(incorrectLogicOperator14);
         TEST_CASE(incorrectLogicOperator15);
+        TEST_CASE(incorrectLogicOperator16); // #10070
         TEST_CASE(secondAlwaysTrueFalseWhenFirstTrueError);
         TEST_CASE(incorrectLogicOp_condSwapping);
         TEST_CASE(testBug5895);
@@ -1575,6 +1576,13 @@ private:
               "            ++it;\n"
               "        }\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void incorrectLogicOperator16() { // #10070
+        check("void foo(void* p) {\n"
+              "    if (!p || p == -1) { }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
