@@ -6011,6 +6011,13 @@ private:
 
         // #9729
         ASSERT_NO_THROW(tokenizeAndStringify("void foo() { bar([]() noexcept { if (0) {} }); }"));
+
+        // #10079 - createInnerAST bug..
+        ASSERT_EQUALS("x{([= yz= switchy(",
+                      testAst("x = []() -> std::vector<uint8_t> {\n"
+                              "    const auto y = z;\n"
+                              "    switch (y) {}\n"
+                              "};"));
     }
 
     void astcase() {

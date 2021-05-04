@@ -1383,6 +1383,7 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
                 if (tok->str() == "(")
                     tok = tok->astOperand1();
                 const Token * const endToken2 = tok->link();
+                tok = tok->next();
                 for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
                     tok = createAstAtToken(tok, cpp);
             }
