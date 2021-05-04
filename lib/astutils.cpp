@@ -943,10 +943,11 @@ static bool isForLoopCondition(const Token * const tok)
            parent->astParent()->astParent()->astOperand1()->str() == "for";
 }
 
-static bool isZeroConstant(const Token *tok) {
-	while (tok && tok->isCast())
-		tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
-	return Token::simpleMatch(tok, "0") && !tok->isExpandedMacro();
+static bool isZeroConstant(const Token *tok)
+{
+    while (tok && tok->isCast())
+        tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
+    return Token::simpleMatch(tok, "0") && !tok->isExpandedMacro();
 }
 
 /**
