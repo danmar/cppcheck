@@ -3258,19 +3258,20 @@ void Tokenizer::simplifyCaseRange()
                 }
             }
         } else if (Token::Match(tok, "case %char% ... %char% :")) {
-            const char start = tok->strAt(1)[1];
-            const char end = tok->strAt(3)[1];
-            if (start < end) {
+            const MathLib::bigint start = MathLib::toLongNumber(tok->strAt(1));
+            const MathLib::bigint end = MathLib::toLongNumber(tok->strAt(3));
+            if (start < end && start >= std::numeric_limits<char>::min() && end <= std::numeric_limits<char>::max()) {
                 tok = tok->tokAt(2);
                 tok->str(":");
                 tok->insertToken("case");
                 for (char i = end - 1; i > start; i--) {
                     tok->insertToken(":");
-                    if (i == '\\') {
-                        tok->insertToken(std::string("\'\\") + i + '\'');
-                    } else {
-                        tok->insertToken(std::string(1, '\'') + i + '\'');
-                    }
+                    if (i == '\\' || i == '\'')
+                        tok->insertToken(std::string("'\\") + i + "'");
+                    else if (i == '\n')
+                        tok->insertToken("'\\n'");
+                    else
+                        tok->insertToken(std::string("'") + i + "'");
                     tok->insertToken("case");
                 }
             }
