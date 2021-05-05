@@ -38,7 +38,7 @@ def test_file_filter():
     assert ret == 0
     assert stdout.find('Checking %s ...' % file1) >= 0
     ret, stdout, stderr = cppcheck(['proj2/','--file-filter=proj2/b*'])
-    assert ret == 0
+    assert ret == 0, stdout
     assert stdout.find('Checking %s ...' % file2) >= 0
 
 def test_local_path():
@@ -46,24 +46,20 @@ def test_local_path():
     ret, stdout, stderr = cppcheck_local(['--project=compile_commands.json'])
     file1 = os.path.realpath('proj2/a/a.c')
     file2 = os.path.realpath('proj2/b/b.c')
-    assert ret == 0
+    assert ret == 0, stdout
     assert stdout.find('Checking %s ...' % file1) >= 0
     assert stdout.find('Checking %s ...' % file2) >= 0
 
 def test_local_path_force():
     create_compile_commands()
     ret, stdout, stderr = cppcheck_local(['--project=compile_commands.json', '--force'])
-    file1 = os.path.realpath('proj2/a/a.c')
-    file2 = os.path.realpath('proj2/b/b.c')
-    assert ret == 0
+    assert ret == 0, stdout
     assert stdout.find('AAA') >= 0
 
 def test_local_path_maxconfigs():
     create_compile_commands()
     ret, stdout, stderr = cppcheck_local(['--project=compile_commands.json', '--max-configs=2'])
-    file1 = os.path.realpath('proj2/a/a.c')
-    file2 = os.path.realpath('proj2/b/b.c')
-    assert ret == 0
+    assert ret == 0, stdout
     assert stdout.find('AAA') >= 0
 
 def test_relative_path():
@@ -71,7 +67,7 @@ def test_relative_path():
     ret, stdout, stderr = cppcheck(['--project=proj2/' + COMPILE_COMMANDS_JSON])
     file1 = os.path.realpath('proj2/a/a.c')
     file2 = os.path.realpath('proj2/b/b.c')
-    assert ret == 0
+    assert ret == 0, stdout
     assert stdout.find('Checking %s ...' % file1) >= 0
     assert stdout.find('Checking %s ...' % file2) >= 0
 
@@ -80,7 +76,7 @@ def test_absolute_path():
     ret, stdout, stderr = cppcheck(['--project=' + os.path.realpath('proj2/' + COMPILE_COMMANDS_JSON)])
     file1 = os.path.realpath('proj2/a/a.c')
     file2 = os.path.realpath('proj2/b/b.c')
-    assert ret == 0
+    assert ret == 0, stdout
     assert stdout.find('Checking %s ...' % file1) >= 0
     assert stdout.find('Checking %s ...' % file2) >= 0
 
@@ -89,7 +85,7 @@ def test_gui_project_loads_compile_commands_1():
     ret, stdout, stderr = cppcheck(['--project=proj2/proj2.cppcheck'])
     file1 = os.path.realpath('proj2/a/a.c')
     file2 = os.path.realpath('proj2/b/b.c')
-    assert ret == 0
+    assert ret == 0, stdout
     assert stdout.find('Checking %s ...' % file1) >= 0
     assert stdout.find('Checking %s ...' % file2) >= 0
 
@@ -102,7 +98,7 @@ def test_gui_project_loads_compile_commands_2():
     ret, stdout, stderr = cppcheck(['--project=proj2/test.cppcheck'])
     file1 = os.path.realpath('proj2/a/a.c')
     file2 = os.path.realpath('proj2/b/b.c') # Excluded by test.cppcheck
-    assert ret == 0
+    assert ret == 0, stdout
     assert stdout.find('Checking %s ...' % file1) >= 0
     assert stdout.find('Checking %s ...' % file2) < 0
 
@@ -112,7 +108,7 @@ def test_gui_project_loads_relative_vs_solution():
     ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
     file1 = os.path.join('proj2', 'a', 'a.c')
     file2 = os.path.join('proj2', 'b', 'b.c')
-    assert ret == 0
+    assert ret == 0, stdout
     assert stdout.find('Checking %s Debug|Win32...' % file1) >= 0
     assert stdout.find('Checking %s Debug|x64...' % file1) >= 0
     assert stdout.find('Checking %s Release|Win32...' % file1) >= 0
@@ -128,7 +124,7 @@ def test_gui_project_loads_absolute_vs_solution():
     file1 = os.path.realpath('proj2/a/a.c')
     file2 = os.path.realpath('proj2/b/b.c')
     print(stdout)
-    assert ret == 0
+    assert ret == 0, stdout
     assert stdout.find('Checking %s Debug|Win32...' % file1) >= 0
     assert stdout.find('Checking %s Debug|x64...' % file1) >= 0
     assert stdout.find('Checking %s Release|Win32...' % file1) >= 0
@@ -141,11 +137,13 @@ def test_gui_project_loads_absolute_vs_solution():
 def test_gui_project_loads_relative_vs_solution_2():
     create_gui_project_file('test.cppcheck', root_path='proj2', import_project='proj2/proj2.sln')
     ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
+    assert ret == 0, stdout
     assert stderr == ERR_A + ERR_B
 
 def test_gui_project_loads_relative_vs_solution_with_exclude():
     create_gui_project_file('test.cppcheck', root_path='proj2', import_project='proj2/proj2.sln', exclude_paths=['b'])
     ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
+    assert ret == 0, stdout
     assert stderr == ERR_A
 
 def test_gui_project_loads_absolute_vs_solution_2():
@@ -153,4 +151,5 @@ def test_gui_project_loads_absolute_vs_solution_2():
                             root_path=realpath('proj2'),
                             import_project=realpath('proj2/proj2.sln'))
     ret, stdout, stderr = cppcheck(['--project=test.cppcheck'])
+    assert ret == 0, stdout
     assert stderr == ERR_A + ERR_B

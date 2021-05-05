@@ -1759,6 +1759,9 @@ void uninitvar_mbstowcs(wchar_t* d, const char* s, size_t m)
 
     // No warning is expected
     (void)mbstowcs(d,s,m);
+
+    wchar_t buf[100];
+    (void)mbstowcs(buf,s,100);
 }
 
 void uninitvar_mbsrtowcs(wchar_t* d, const char** s, size_t m, mbstate_t *p)
@@ -3545,6 +3548,28 @@ void uninitvar_strxfrm(void)
     size_t n;
     // cppcheck-suppress uninitvar
     (void)strxfrm(ds,ss,n);
+}
+
+void bufferAccessOutOfBounds_strxfrm(void)
+{
+    const char src[3] = "abc";
+    char dest[1] = "a";
+    (void)strxfrm(dest,src,1);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)strxfrm(dest,src,2);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)strxfrm(dest,src,3);
+}
+
+void bufferAccessOutOfBounds_strncmp(void)
+{
+    const char src[3] = "abc";
+    char dest[1] = "a";
+    (void)strncmp(dest,src,1);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)strncmp(dest,src,2);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)strncmp(dest,src,3);
 }
 
 void uninitvar_wcsxfrm(void)

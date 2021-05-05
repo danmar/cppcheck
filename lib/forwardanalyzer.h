@@ -20,7 +20,6 @@
 #define forwardanalyzerH
 
 #include "analyzer.h"
-#include <vector>
 
 class Settings;
 class Token;

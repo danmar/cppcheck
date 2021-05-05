@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,8 +36,8 @@
 #include <algorithm> // find_if()
 #include <list>
 #include <map>
-#include <ostream>
 #include <utility>
+#include <cctype>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -784,7 +784,7 @@ void CheckOther::checkUnreachableCode()
                 tok = tok->link();
             else if (Token::Match(tok, "break|continue ;"))
                 secondBreak = tok->tokAt(2);
-            else if (Token::Match(tok, "[;{}:] return|throw")) {
+            else if (Token::Match(tok, "[;{}:] return|throw") && tok->next()->isKeyword()) {
                 if (Token::simpleMatch(tok->astParent(), "?"))
                     continue;
                 tok = tok->next(); // tok should point to return or throw
@@ -809,8 +809,7 @@ void CheckOther::checkUnreachableCode()
             const bool inconclusive = secondBreak && (secondBreak->linenr() - 1 > secondBreak->previous()->linenr());
 
             if (secondBreak && (printInconclusive || !inconclusive)) {
-                if (Token::Match(secondBreak, "continue|goto|throw") ||
-                    (secondBreak->str() == "return" && (tok->str() == "return" || secondBreak->strAt(1) == ";"))) { // return with value after statements like throw can be necessary to make a function compile
+                if (Token::Match(secondBreak, "continue|goto|throw|return") && secondBreak->isKeyword()) {
                     duplicateBreakError(secondBreak, inconclusive);
                     tok = Token::findmatch(secondBreak, "[}:]");
                 } else if (secondBreak->str() == "break") { // break inside switch as second break statement should not issue a warning
@@ -1393,7 +1392,7 @@ void CheckOther::checkConstVariable()
             continue;
         if (isVariableChanged(var, mSettings, mTokenizer->isCPP()))
             continue;
-        if (Function::returnsReference(function)) {
+        if (Function::returnsReference(function) && !Function::returnsConst(function)) {
             std::vector<const Token*> returns = Function::findReturns(function);
             if (std::any_of(returns.begin(), returns.end(), [&](const Token* retTok) {
             if (retTok->varId() == var->declarationId())
@@ -1402,10 +1401,7 @@ void CheckOther::checkConstVariable()
                     retTok = retTok->astOperand2();
                 while (Token::simpleMatch(retTok, "."))
                     retTok = retTok->astOperand2();
-                const Variable* retVar = getLifetimeVariable(getParentLifetime(retTok));
-                if (!retVar)
-                    return false;
-                return retVar->declarationId() == var->declarationId();
+                return hasLifetimeToken(getParentLifetime(retTok), var->nameToken());
             }))
             continue;
         }

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,10 +30,7 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
-#include <cmath>
-#include <cstddef>
 #include <iomanip>
-#include <ostream>
 #include <vector>
 
 //---------------------------------------------------------------------------
@@ -207,7 +204,13 @@ void CheckFunctions::checkIgnoredReturnValue()
             if (tok->varId() || !Token::Match(tok, "%name% (") || tok->isKeyword())
                 continue;
 
-            if (tok->next()->astParent())
+            const Token *parent = tok->next()->astParent();
+            while (Token::Match(parent, "%cop%")) {
+                if (Token::Match(parent, "<<|>>") && !parent->astParent())
+                    break;
+                parent = parent->astParent();
+            }
+            if (parent)
                 continue;
 
             if (!tok->scope()->isExecutable()) {

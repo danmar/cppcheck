@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -681,7 +681,7 @@ private:
     }
 
     void garbageCode55() { // #6724
-        checkCode("() __attribute__((constructor)); { } { }");
+        ASSERT_THROW(checkCode("() __attribute__((constructor)); { } { }"), InternalError);
     }
 
     void garbageCode56() { // #6713

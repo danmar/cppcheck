@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -449,6 +449,9 @@ public:
     /** Simplify "if else" */
     void elseif();
 
+    /** Simplify C++17/C++20 if/switch/for initialization expression */
+    void simplifyIfSwitchForInit();
+
     /** Simplify conditions
      * @return true if something is modified
      *         false if nothing is done.
@@ -507,6 +510,12 @@ public:
      * into "void f(int x) {"
      */
     void simplifyFunctionParameters();
+
+    /** Simplify function level try blocks:
+     *  Convert "void f() try {} catch (int) {}"
+     *  to "void f() { try {} catch (int) {} }"
+     */
+    void simplifyFunctionTryCatch();
 
     /**
      * Simplify templates
@@ -617,7 +626,7 @@ private:
      * Send error message to error logger about internal bug.
      * @param tok the token that this bug concerns.
      */
-    void cppcheckError(const Token *tok) const;
+    NORETURN void cppcheckError(const Token *tok) const;
 
     /**
      * Setup links for tokens so that one can call Token::link().
@@ -691,6 +700,12 @@ private:
      * Remove \__cppcheck\__ ((?))
      */
     void simplifyCppcheckAttribute();
+
+    /** Remove alignas */
+    void removeAlignas();
+
+    /** Simplify c++20 spaceship operator */
+    void simplifySpaceshipOperator();
 
     /**
      * Remove keywords "volatile", "inline", "register", and "restrict"
@@ -781,6 +796,13 @@ private:
      * Convert C++17 style nested namespace to older style
      */
     void simplifyNestedNamespace();
+
+    /**
+     * Simplify coroutines - just put parentheses around arguments for
+     * co_* keywords so they can be handled like function calls in data
+     * flow.
+     */
+    void simplifyCoroutines();
 
     /**
     * Prepare ternary operators with parentheses so that the AST can be created

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -275,7 +275,7 @@ void CheckClass::checkExplicitConstructors()
 
         // Abstract classes can't be instantiated. But if there is C++11
         // "misuse" by derived classes then these constructors must be explicit.
-        if (isAbstractClass && mSettings->standards.cpp != Standards::CPP11)
+        if (isAbstractClass && mSettings->standards.cpp >= Standards::CPP11)
             continue;
 
         for (const Function &func : scope->functionList) {
@@ -298,27 +298,27 @@ void CheckClass::checkExplicitConstructors()
     }
 }
 
-static bool isNonCopyable(const Scope *scope, bool *unknown)
+static bool hasNonCopyableBase(const Scope *scope, bool *unknown)
 {
-    bool u = false;
     // check if there is base class that is not copyable
     for (const Type::BaseInfo &baseInfo : scope->definedType->derivedFrom) {
         if (!baseInfo.type || !baseInfo.type->classScope) {
-            u = true;
+            *unknown = true;
             continue;
         }
 
-        if (isNonCopyable(baseInfo.type->classScope, &u))
+        if (hasNonCopyableBase(baseInfo.type->classScope, unknown))
             return true;
 
         for (const Function &func : baseInfo.type->classScope->functionList) {
             if (func.type != Function::eCopyConstructor)
                 continue;
-            if (func.access == AccessControl::Private || func.isDelete())
+            if (func.access == AccessControl::Private || func.isDelete()) {
+                *unknown = false;
                 return true;
+            }
         }
     }
-    *unknown = u;
     return false;
 }
 
@@ -366,12 +366,12 @@ void CheckClass::copyconstructors()
             }
             if (!funcCopyCtor || funcCopyCtor->isDefault()) {
                 bool unknown = false;
-                if (!isNonCopyable(scope, &unknown) && !unknown)
+                if (!hasNonCopyableBase(scope, &unknown) && !unknown)
                     noCopyConstructorError(scope, funcCopyCtor, allocatedVars.begin()->second, unknown);
             }
             if (!funcOperatorEq || funcOperatorEq->isDefault()) {
                 bool unknown = false;
-                if (!isNonCopyable(scope, &unknown) && !unknown)
+                if (!hasNonCopyableBase(scope, &unknown) && !unknown)
                     noOperatorEqError(scope, funcOperatorEq, allocatedVars.begin()->second, unknown);
             }
             if (!funcDestructor || funcDestructor->isDefault()) {
@@ -562,6 +562,7 @@ std::vector<CheckClass::Usage> CheckClass::createUsageList(const Scope *scope)
     std::vector<Usage> ret;
     std::vector<const Variable *> varlist;
     getAllVariableMembers(scope, varlist);
+    ret.reserve(varlist.size());
     for (const Variable *var: varlist)
         ret.emplace_back(var);
     return ret;
@@ -2844,6 +2845,9 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
     // One definition rule
     std::vector<MyFileInfo::NameLoc> classDefinitions;
     for (const Scope * classScope : tokenizer->getSymbolDatabase()->classAndStructScopes) {
+        if (classScope->isAnonymous())
+            continue;
+
         // the full definition must be compared
         bool fullDefinition = std::all_of(classScope->functionList.begin(),
                                           classScope->functionList.end(),
@@ -2856,6 +2860,11 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
         std::string name;
         const Scope *scope = classScope;
         while (scope->isClassOrStruct() && !classScope->className.empty()) {
+            if (Token::Match(scope->classDef, "struct|class %name% :: %name%")) {
+                // TODO handle such classnames
+                name.clear();
+                break;
+            }
             name = scope->className + "::" + name;
             scope = scope->nestedIn;
         }

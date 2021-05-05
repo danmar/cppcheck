@@ -23,6 +23,7 @@
 #include "simplecpp.h"
 
 #include <algorithm>
+#include <climits>
 #include <cstdlib>
 #include <cstring>
 #include <exception>
@@ -69,6 +70,8 @@ static const simplecpp::TokenString ENDIF("endif");
 
 static const simplecpp::TokenString PRAGMA("pragma");
 static const simplecpp::TokenString ONCE("once");
+
+static const simplecpp::TokenString HAS_INCLUDE("__has_include");
 
 template<class T> static std::string toString(T t)
 {
@@ -1287,7 +1290,10 @@ namespace simplecpp {
                     rawtokens2.push_back(new Token(rawtok->str(), rawtok1->location));
                     rawtok = rawtok->next;
                 }
-                if (expand(&output2, rawtok1->location, rawtokens2.cfront(), macros, expandedmacros))
+                bool first = true;
+                if (valueToken && valueToken->str() == rawtok1->str())
+                    first = false;
+                if (expand(&output2, rawtok1->location, rawtokens2.cfront(), macros, expandedmacros, first))
                     rawtok = rawtok1->next;
             } else {
                 rawtok = expand(&output2, rawtok->location, rawtok, macros, expandedmacros);
@@ -1517,8 +1523,10 @@ namespace simplecpp {
             return sameline(lpar,tok) ? tok : NULL;
         }
 
-        const Token * expand(TokenList * const output, const Location &loc, const Token * const nameTokInst, const std::map<TokenString,Macro> &macros, std::set<TokenString> expandedmacros) const {
-            expandedmacros.insert(nameTokInst->str());
+        const Token * expand(TokenList * const output, const Location &loc, const Token * const nameTokInst, const std::map<TokenString,Macro> &macros, std::set<TokenString> expandedmacros, bool first=false) const {
+
+            if (!first)
+                expandedmacros.insert(nameTokInst->str());
 
             usageList.push_back(loc);
 
@@ -2297,6 +2305,208 @@ static void simplifyName(simplecpp::TokenList &expr)
     }
 }
 
+/*
+ * Reads at least minlen and at most maxlen digits (inc. prefix) in base base
+ * from s starting at position pos and converts them to a
+ * unsigned long long value, updating pos to point to the first
+ * unused element of s.
+ * Returns ULLONG_MAX if the result is not representable and
+ * throws if the above requirements were not possible to satisfy.
+ */
+static unsigned long long stringToULLbounded(
+    const std::string& s,
+    std::size_t& pos,
+    int base = 0,
+    std::ptrdiff_t minlen = 1,
+    std::size_t maxlen = std::string::npos
+)
+{
+    std::string sub = s.substr(pos, maxlen);
+    const char* start = sub.c_str();
+    char* end;
+    unsigned long long value = std::strtoull(start, &end, base);
+    pos += end - start;
+    if (end - start < minlen)
+        throw std::runtime_error("expected digit");
+    return value;
+}
+
+/* Converts character literal (including prefix, but not ud-suffix)
+ * to long long value.
+ *
+ * Assumes ASCII-compatible single-byte encoded str.
+ *
+ * For target assumes
+ * - UTF-8 execution character set encoding or encoding matching str
+ * - UTF-32 execution wide-character set encoding
+ * - requirements for __STDC_UTF_16__, __STDC_UTF_32__ and __STDC_ISO_10646__ satisfied
+ * - char16_t is 16bit wide
+ * - char32_t is 32bit wide
+ * - wchar_t is 32bit wide and unsigned
+ * - matching char signedness to host
+ * - matching sizeof(int) to host
+ *
+ * For host assumes
+ * - ASCII-compatible execution character set
+ *
+ * For host and target assumes
+ * - CHAR_BIT == 8
+ * - two's complement
+ *
+ * Implements multi-character narrow literals according to GCC's behavior,
+ * except multi code unit universal character names are not supported.
+ * Multi-character wide literals are not supported.
+ * Limited support of universal character names for non-UTF-8 execution character set encodings.
+ */
+long long simplecpp::characterLiteralToLL(const std::string& str)
+{
+    // default is wide/utf32
+    bool narrow = false;
+    bool utf8 = false;
+    bool utf16 = false;
+
+    std::size_t pos;
+
+    if (str.size() >= 1 && str[0] == '\'') {
+        narrow = true;
+        pos = 1;
+    } else if (str.size() >= 2 && str[0] == 'u' && str[1] == '\'') {
+        utf16 = true;
+        pos = 2;
+    } else if (str.size() >= 3 && str[0] == 'u' && str[1] == '8' && str[2] == '\'') {
+        utf8 = true;
+        pos = 3;
+    } else if (str.size() >= 2 && (str[0] == 'L' || str[0] == 'U') && str[1] == '\'') {
+        pos = 2;
+    } else
+        throw std::runtime_error("expected a character literal");
+
+    unsigned long long multivalue = 0;
+
+    std::size_t nbytes = 0;
+
+    while (pos + 1 < str.size()) {
+        if (str[pos] == '\'' || str[pos] == '\n')
+            throw std::runtime_error("raw single quotes and newlines not allowed in character literals");
+
+        if (nbytes >= 1 && !narrow)
+            throw std::runtime_error("multiple characters only supported in narrow character literals");
+
+        unsigned long long value;
+
+        if (str[pos] == '\\') {
+            pos++;
+            char escape = str[pos++];
+
+            if (pos >= str.size())
+                throw std::runtime_error("unexpected end of character literal");
+
+            switch (escape) {
+            case '\'':
+            case '"':
+            case '?':
+            case '\\':
+                value = static_cast<unsigned char>(escape);
+                break;
+
+            case 'a':
+                value = static_cast<unsigned char>('\a');
+                break;
+            case 'b':
+                value = static_cast<unsigned char>('\b');
+                break;
+            case 'f':
+                value = static_cast<unsigned char>('\f');
+                break;
+            case 'n':
+                value = static_cast<unsigned char>('\n');
+                break;
+            case 'r':
+                value = static_cast<unsigned char>('\r');
+                break;
+            case 't':
+                value = static_cast<unsigned char>('\t');
+                break;
+            case 'v':
+                value = static_cast<unsigned char>('\v');
+                break;
+
+            // ESC extension
+            case 'e':
+                value = static_cast<unsigned char>('\x1b');
+                break;
+
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+                // octal escape sequences consist of 1 to 3 digits
+                value = stringToULLbounded(str, --pos, 8, 1, 3);
+                break;
+
+            case 'x':
+                // hexadecimal escape sequences consist of at least 1 digit
+                value = stringToULLbounded(str, pos, 16);
+                break;
+
+            case 'u':
+            case 'U': {
+                // universal character names have exactly 4 or 8 digits
+                std::size_t ndigits = (escape == 'u' ? 4 : 8);
+                value = stringToULLbounded(str, pos, 16, ndigits, ndigits);
+
+                // UTF-8 encodes code points above 0x7f in multiple code units
+                // code points above 0x10ffff are not allowed
+                if (((narrow || utf8) && value > 0x7f) || (utf16 && value > 0xffff) || value > 0x10ffff)
+                    throw std::runtime_error("code point too large");
+
+                if (value >= 0xd800 && value <= 0xdfff)
+                    throw std::runtime_error("surrogate code points not allowed in universal character names");
+
+                break;
+            }
+
+            default:
+                throw std::runtime_error("invalid escape sequence");
+            }
+        } else {
+            value = static_cast<unsigned char>(str[pos++]);
+
+            if (!narrow && value > 0x7f)
+                throw std::runtime_error("non-ASCII source characters supported only in narrow character literals");
+        }
+
+        if (((narrow || utf8) && value > std::numeric_limits<unsigned char>::max()) || (utf16 && value >> 16) || value >> 32)
+            throw std::runtime_error("numeric escape sequence too large");
+
+        multivalue <<= CHAR_BIT;
+        multivalue |= value;
+        nbytes++;
+    }
+
+    if (pos + 1 != str.size() || str[pos] != '\'')
+        throw std::runtime_error("missing closing quote in character literal");
+
+    if (!nbytes)
+        throw std::runtime_error("empty character literal");
+
+    // ordinary narrow character literal's value is determined by (possibly signed) char
+    if (narrow && nbytes == 1)
+        return static_cast<char>(multivalue);
+
+    // while multi-character literal's value is determined by (signed) int
+    if (narrow)
+        return static_cast<int>(multivalue);
+
+    // All other cases are unsigned. Since long long is at least 64bit wide,
+    // while the literals at most 32bit wide, the conversion preserves all values.
+    return multivalue;
+}
+
 static void simplifyNumbers(simplecpp::TokenList &expr)
 {
     for (simplecpp::Token *tok = expr.front(); tok; tok = tok->next) {
@@ -2304,8 +2514,8 @@ static void simplifyNumbers(simplecpp::TokenList &expr)
             continue;
         if (tok->str().compare(0,2,"0x") == 0)
             tok->setstr(toString(stringToULL(tok->str())));
-        else if (tok->str()[0] == '\'')
-            tok->setstr(toString(tok->str()[1] & 0xffU));
+        else if (!tok->number && tok->str().find('\'') != tok->str().npos)
+            tok->setstr(toString(simplecpp::characterLiteralToLL(tok->str())));
     }
 }
 
@@ -2510,7 +2720,6 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
             continue;
 
         bool systemheader = (htok->str()[0] == '<');
-
         const std::string header(realFilename(htok->str().substr(1U, htok->str().size() - 2U)));
         if (hasFile(ret, sourcefile, header, dui, systemheader))
             continue;
@@ -2580,6 +2789,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
     sizeOfType.insert(std::make_pair("double *", sizeof(double *)));
     sizeOfType.insert(std::make_pair("long double *", sizeof(long double *)));
 
+    const bool hasInclude = (dui.std.size() == 5 && dui.std.compare(0,3,"c++") == 0 && dui.std >= "c++17");
     std::map<TokenString, Macro> macros;
     for (std::list<std::string>::const_iterator it = dui.defines.begin(); it != dui.defines.end(); ++it) {
         const std::string &macrostr = *it;
@@ -2597,6 +2807,15 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
     macros.insert(std::make_pair("__FILE__", Macro("__FILE__", "__FILE__", files)));
     macros.insert(std::make_pair("__LINE__", Macro("__LINE__", "__LINE__", files)));
     macros.insert(std::make_pair("__COUNTER__", Macro("__COUNTER__", "__COUNTER__", files)));
+
+    if (dui.std == "c++11")
+        macros.insert(std::make_pair("__cplusplus", Macro("__cplusplus", "201103L", files)));
+    else if (dui.std == "c++14")
+        macros.insert(std::make_pair("__cplusplus", Macro("__cplusplus", "201402L", files)));
+    else if (dui.std == "c++17")
+        macros.insert(std::make_pair("__cplusplus", Macro("__cplusplus", "201703L", files)));
+    else if (dui.std == "c++20")
+        macros.insert(std::make_pair("__cplusplus", Macro("__cplusplus", "202002L", files)));
 
     // TRUE => code in current #if block should be kept
     // ELSE_IS_TRUE => code in current #if block should be dropped. the code in the #else should be kept.
@@ -2782,9 +3001,9 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                 if (ifstates.top() == ALWAYS_FALSE || (ifstates.top() == ELSE_IS_TRUE && rawtok->str() != ELIF))
                     conditionIsTrue = false;
                 else if (rawtok->str() == IFDEF)
-                    conditionIsTrue = (macros.find(rawtok->next->str()) != macros.end());
+                    conditionIsTrue = (macros.find(rawtok->next->str()) != macros.end() || (hasInclude && rawtok->next->str() == HAS_INCLUDE));
                 else if (rawtok->str() == IFNDEF)
-                    conditionIsTrue = (macros.find(rawtok->next->str()) == macros.end());
+                    conditionIsTrue = (macros.find(rawtok->next->str()) == macros.end() && !(hasInclude && rawtok->next->str() == HAS_INCLUDE));
                 else { /*if (rawtok->str() == IF || rawtok->str() == ELIF)*/
                     TokenList expr(files);
                     for (const Token *tok = rawtok->next; tok && tok->location.sameline(rawtok->location); tok = tok->next) {
@@ -2801,8 +3020,39 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                             if (tok) {
                                 if (macros.find(tok->str()) != macros.end())
                                     expr.push_back(new Token("1", tok->location));
+                                else if (hasInclude && tok->str() == HAS_INCLUDE)
+                                    expr.push_back(new Token("1", tok->location));
                                 else
                                     expr.push_back(new Token("0", tok->location));
+                            }
+                            if (par)
+                                tok = tok ? tok->next : NULL;
+                            if (!tok || !sameline(rawtok,tok) || (par && tok->op != ')')) {
+                                if (outputList) {
+                                    Output out(rawtok->location.files);
+                                    out.type = Output::SYNTAX_ERROR;
+                                    out.location = rawtok->location;
+                                    out.msg = "failed to evaluate " + std::string(rawtok->str() == IF ? "#if" : "#elif") + " condition";
+                                    outputList->push_back(out);
+                                }
+                                output.clear();
+                                return;
+                            }
+                            continue;
+                        }
+
+                        if (hasInclude && tok->str() == HAS_INCLUDE) {
+                            tok = tok->next;
+                            const bool par = (tok && tok->op == '(');
+                            if (par)
+                                tok = tok->next;
+                            if (tok) {
+                                const std::string &sourcefile = rawtok->location.file();
+                                const bool systemheader = (tok->str()[0] == '<');
+                                const std::string header(realFilename(tok->str().substr(1U, tok->str().size() - 2U)));
+                                std::ifstream f;
+                                const std::string header2 = openHeader(f,dui,sourcefile,header,systemheader);
+                                expr.push_back(new Token(header2.empty() ? "0" : "1", tok->location));
                             }
                             if (par)
                                 tok = tok ? tok->next : NULL;

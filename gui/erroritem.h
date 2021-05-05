@@ -20,8 +20,8 @@
 #define ERRORITEM_H
 
 #include <QString>
-#include <QStringList>
 #include <QMetaType>
+#include <QList>
 #include "errorlogger.h"
 
 /// @addtogroup GUI

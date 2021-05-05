@@ -12,7 +12,7 @@ import subprocess
 CPPCHECK = os.path.expanduser('~/cppcheck/cppcheck')
 
 def run_cppcheck(cppcheck_parameters:str, clang:str):
-    cmd = f'{CPPCHECK} {cppcheck_parameters} {clang} --debug --verbose'
+    cmd = '{} {} {} --debug --verbose'.format(CPPCHECK, cppcheck_parameters, clang)
     #print(cmd)
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     comm = p.communicate()
@@ -63,7 +63,7 @@ def compare_ast_symdb(cppcheck_parameters: str):
     ast1 = get_ast(debug1)
     ast2 = get_ast(debug2)
     if ast1 != ast2:
-        print(f"ast is not the same: {cppcheck_parameters}")
+        print("ast is not the same: {}".format(cppcheck_parameters))
         with open('cppcheck.ast', 'wt') as f:
             f.write(ast1)
         with open('clang.ast', 'wt') as f:
@@ -73,7 +73,7 @@ def compare_ast_symdb(cppcheck_parameters: str):
     symdb1 = get_symdb(debug1)
     symdb2 = get_symdb(debug2)
     if symdb1 != symdb2:
-        print(f"symdb is not the same: {cppcheck_parameters}")
+        print("symdb is not the same: {}".format(cppcheck_parameters))
         with open('cppcheck.symdb', 'wt') as f:
             f.write(symdb1)
         with open('clang.symdb', 'wt') as f:

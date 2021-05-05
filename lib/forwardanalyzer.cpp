@@ -385,8 +385,12 @@ struct ForwardTraversal {
     Progress updateRange(Token* start, const Token* end, int depth = 20) {
         if (depth < 0)
             return Break(Terminate::Bail);
+        std::size_t i = 0;
         for (Token* tok = start; tok && tok != end; tok = tok->next()) {
             Token* next = nullptr;
+            if (tok->index() <= i)
+                throw InternalError(tok, "Cyclic forward analysis.");
+            i = tok->index();
 
             if (tok->link()) {
                 // Skip casts..

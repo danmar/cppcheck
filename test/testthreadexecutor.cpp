@@ -20,9 +20,7 @@
 #include "testsuite.h"
 #include "threadexecutor.h"
 
-#include <cstddef>
 #include <map>
-#include <ostream>
 #include <string>
 #include <utility>
 

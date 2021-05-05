@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -258,10 +258,11 @@ public:
      * Match template declaration/instantiation
      * @param instance template instantiation
      * @param numberOfArguments number of template arguments
+     * @param variadic last template argument is variadic
      * @param patternAfter pattern that must match the tokens after the ">"
      * @return match => true
      */
-    static bool instantiateMatch(const Token *instance, const std::size_t numberOfArguments, const char patternAfter[]);
+    static bool instantiateMatch(const Token *instance, const std::size_t numberOfArguments, bool variadic, const char patternAfter[]);
 
     /**
      * Match template declaration/instantiation
@@ -450,7 +451,7 @@ private:
     static bool removeTemplate(Token *tok);
 
     /** Syntax error */
-    static void syntaxError(const Token *tok);
+    NORETURN static void syntaxError(const Token *tok);
 
     static bool matchSpecialization(
         const Token *templateDeclarationNameToken,

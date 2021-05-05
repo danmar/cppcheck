@@ -16,14 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QObject>
+#include "threadhandler.h"
+
 #include <QFileInfo>
-#include <QStringList>
 #include <QDebug>
+#include <QSettings>
 #include "common.h"
 #include "settings.h"
 #include "checkthread.h"
-#include "threadhandler.h"
 #include "resultsview.h"
 
 ThreadHandler::ThreadHandler(QObject *parent) :
@@ -198,7 +198,7 @@ void ThreadHandler::initialize(ResultsView *view)
             this, &ThreadHandler::bughuntingReportLine);
 }
 
-void ThreadHandler::loadSettings(QSettings &settings)
+void ThreadHandler::loadSettings(const QSettings &settings)
 {
     setThreadCount(settings.value(SETTINGS_CHECK_THREADS, 1).toInt());
 }

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,14 +33,12 @@
 #include "valueflow.h"
 
 #include <algorithm>
-#include <cstddef>
 #include <iterator>
 #include <list>
 #include <map>
 #include <set>
 #include <sstream>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 
 // Register this check class (by creating a static instance of it)
@@ -692,6 +690,11 @@ bool CheckStl::checkIteratorPair(const Token* tok1, const Token* tok2)
         return true;
     }
 
+    if (Token::Match(tok1->astParent(), "%comp%|-")) {
+        if (astIsIntegral(tok1, false) || astIsIntegral(tok2, false) || astIsFloat(tok1, false) ||
+            astIsFloat(tok2, false))
+            return false;
+    }
     const Token* iter1 = getIteratorExpression(tok1);
     const Token* iter2 = getIteratorExpression(tok2);
     if (iter1 && iter2 && !isSameExpression(true, false, iter1, iter2, mSettings->library, false, false)) {

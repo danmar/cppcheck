@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -93,7 +93,6 @@ private:
         TEST_CASE(template48);  // #6134 - 100% CPU upon invalid code
         TEST_CASE(template49);  // #6237 - template instantiation
         TEST_CASE(template50);  // #4272 - simple partial specialization
-        TEST_CASE(template51);  // #6172 - crash upon valid code
         TEST_CASE(template52);  // #6437 - crash upon valid code
         TEST_CASE(template53);  // #4335 - bail out for valid code
         TEST_CASE(template54);  // #6587 - memory corruption upon valid code
@@ -213,6 +212,8 @@ private:
         TEST_CASE(template168);
         TEST_CASE(template169);
         TEST_CASE(template170); // crash
+        TEST_CASE(template171); // crash
+        TEST_CASE(template172); // #10258 crash
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -271,6 +272,8 @@ private:
         TEST_CASE(simplifyTemplateArgs2);
 
         TEST_CASE(template_variadic_1); // #9144
+        TEST_CASE(template_variadic_2); // #4349
+        TEST_CASE(template_variadic_3); // #6172
 
         TEST_CASE(template_variable_1);
         TEST_CASE(template_variable_2);
@@ -280,6 +283,18 @@ private:
         TEST_CASE(simplifyDecltype);
 
         TEST_CASE(castInExpansion);
+
+        TEST_CASE(fold_expression_1);
+        TEST_CASE(fold_expression_2);
+        TEST_CASE(fold_expression_3);
+        TEST_CASE(fold_expression_4);
+
+        TEST_CASE(concepts1);
+        TEST_CASE(requires1);
+        TEST_CASE(requires2);
+        TEST_CASE(requires3);
+        TEST_CASE(requires4);
+        TEST_CASE(requires5);
     }
 
     std::string tok(const char code[], bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
@@ -1116,7 +1131,7 @@ private:
                                 "return f1<B<A>> ( 0 , reinterpret_cast < B<A> * > ( E<void*> :: Int ( -1 ) ) ) ; "
                                 "} "
                                 "} ; "
-                                "int main ( ) { "
+                                "int main ( void ) { "
                                 "C<A> ca ; "
                                 "return 0 ; "
                                 "} "
@@ -1250,17 +1265,6 @@ private:
                                 "void Fred<int> :: f ( ) { }";
 
         ASSERT_EQUALS(expected, tok(code));
-    }
-
-    void template51() { // #6172
-        tok("template<int N, int ... M> struct A { "
-            "  static void foo() { "
-            "    int i = N; "
-            "  } "
-            "}; "
-            "void bar() { "
-            "  A<0>::foo(); "
-            "}");
     }
 
     void template52() { // #6437
@@ -4378,6 +4382,37 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
+    void template171() { // crash
+        const char code[] = "template <int> struct c { enum { b }; };\n"
+                            "template <int> struct h { enum { d }; enum { e }; };\n"
+                            "template <int f, long = h<f>::d, int g = h<f>::e> class i { enum { e = c<g>::b }; };\n"
+                            "void j() { i<2> a; }";
+        const char exp[]  = "struct c<h<2>::e> ; "
+                            "struct h<2> ; "
+                            "class i<2,h<2>::d,h<2>::e> ; "
+                            "void j ( ) { i<2,h<2>::d,h<2>::e> a ; } "
+                            "class i<2,h<2>::d,h<2>::e> { enum Anonymous3 { e = c<h<2>::e> :: b } ; } ; "
+                            "struct h<2> { enum Anonymous1 { d } ; enum Anonymous2 { e } ; } ; "
+                            "struct c<h<2>::e> { enum Anonymous0 { b } ; } ;";
+        const char act[]  = "struct c<h<2>::e> ; "
+                            "template < int > struct h { enum Anonymous1 { d } ; enum Anonymous2 { e } ; } ; "
+                            "class i<2,h<2>::d,h<2>::e> ; "
+                            "void j ( ) { i<2,h<2>::d,h<2>::e> a ; } "
+                            "class i<2,h<2>::d,h<2>::e> { enum Anonymous3 { e = c<h<2>::e> :: b } ; } ; "
+                            "struct c<h<2>::e> { enum Anonymous0 { b } ; } ;";
+        TODO_ASSERT_EQUALS(exp, act, tok(code));
+    }
+
+    void template172() { // #10258 crash
+        const char code[] = "template<typename T, typename... Args>\n"
+                            "void bar(T t, Args&&... args) { }\n"
+                            "void foo() { bar<int>(0, 1); }";
+        const char exp[]  = "void bar<int> ( int t , Args && ... args ) ; "
+                            "void foo ( ) { bar<int> ( 0 , 1 ) ; } "
+                            "void bar<int> ( int t , Args && ... args ) { }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         const char code[] = "template <typename T> struct C {};\n"
                             "template <typename T> struct S {a};\n"
@@ -5493,7 +5528,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp", "");
 
-        return TemplateSimplifier::instantiateMatch(tokenizer.tokens(), numberOfArguments, patternAfter);
+        return TemplateSimplifier::instantiateMatch(tokenizer.tokens(), numberOfArguments, false, patternAfter);
     }
 
     void instantiateMatch() {
@@ -5841,6 +5876,34 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
+    void template_variadic_2() { // #4349
+        const char code[] = "template<typename T, typename... Args>\n"
+                            "void printf(const char *s, T value, Args... args) {}\n"
+                            "\n"
+                            "int main() {\n"
+                            "    printf<int, float>(\"\", foo, bar);\n"
+                            "}";
+        const char expected[] = "void printf<int,float> ( const char * s , int value , float ) ; "
+                                "int main ( ) { printf<int,float> ( \"\" , foo , bar ) ; } "
+                                "void printf<int,float> ( const char * s , int value , float ) { }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void template_variadic_3() { // #6172
+        const char code[] = "template<int N, int ... M> struct A { "
+                            "  static void foo() { "
+                            "    int i = N; "
+                            "  } "
+                            "}; "
+                            "void bar() { "
+                            "  A<0>::foo(); "
+                            "}";
+        const char expected[] = "struct A<0> ; "
+                                "void bar ( ) { A<0> :: foo ( ) ; } "
+                                "struct A<0> { static void foo ( ) { int i ; i = 0 ; } } ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
     void template_variable_1() {
         {
             const char code[] = "template <int N> const int foo = N*N;\n"
@@ -6009,6 +6072,78 @@ private:
                                 "class C3 { Derived<C<static_cast<int>-1>> c ; } ; "
                                 "class Derived<C<static_cast<int>-1>> : private Base<C<static_cast<int>-1>> { } ; "
                                 "class Base<C<static_cast<int>-1>> { } ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void fold_expression_1() {
+        const char code[] = "template<typename... Args> bool all(Args... args) { return (... && args); }\n"
+                            "x=all(true,false,true,true);";
+        const char expected[] = "template < typename ... Args > bool all ( Args ... args ) { return ( __cppcheck_fold_&&__ ( args ... ) ) ; } x = all ( true , false , true , true ) ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void fold_expression_2() {
+        const char code[] = "template<typename... Args> bool all(Args... args) { return (args && ...); }\n"
+                            "x=all(true,false,true,true);";
+        const char expected[] = "template < typename ... Args > bool all ( Args ... args ) { return ( __cppcheck_fold_&&__ ( args ... ) ) ; } x = all ( true , false , true , true ) ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void fold_expression_3() {
+        const char code[] = "template<typename... Args> int foo(Args... args) { return (12 * ... * args); }\n"
+                            "x=foo(1,2);";
+        const char expected[] = "template < typename ... Args > int foo ( Args ... args ) { return ( __cppcheck_fold_*__ ( args ... ) ) ; } x = foo ( 1 , 2 ) ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void fold_expression_4() {
+        const char code[] = "template<typename... Args> int foo(Args... args) { return (args * ... * 123); }\n"
+                            "x=foo(1,2);";
+        const char expected[] = "template < typename ... Args > int foo ( Args ... args ) { return ( __cppcheck_fold_*__ ( args ... ) ) ; } x = foo ( 1 , 2 ) ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void concepts1() {
+        const char code[] = "template <my_concept T> void f(T v) {}\n"
+                            "f<int>(123);";
+        const char expected[] = "void f<int> ( int v ) ; f<int> ( 123 ) ; void f<int> ( int v ) { }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void requires1() {
+        const char code[] = "template <class T> requires my_concept<T> void f(T v) {}\n"
+                            "f<int>(123);";
+        const char expected[] = "void f<int> ( int v ) ; f<int> ( 123 ) ; void f<int> ( int v ) { }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void requires2() {
+        const char code[] = "template<class T> requires (sizeof(T) > 1 && get_value<T>()) void f(T v){}\n"
+                            "f<int>(123);";
+        const char expected[] = "void f<int> ( int v ) ; f<int> ( 123 ) ; void f<int> ( int v ) { }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void requires3() {
+        const char code[] = "template<class T> requires c1<T> && c2<T> void f(T v){}\n"
+                            "f<int>(123);";
+        const char expected[] = "void f<int> ( int v ) ; f<int> ( 123 ) ; void f<int> ( int v ) { }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void requires4() {
+        const char code[] = "template <class T> void f(T v) requires my_concept<T> {}\n"
+                            "f<int>(123);";
+        const char expected[] = "void f<int> ( int v ) ; f<int> ( 123 ) ; void f<int> ( int v ) { }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void requires5() {
+        const char code[] = "template <class T>\n"
+                            "  requires requires (T x) { x + x; }\n"
+                            "  T add(T a, T b) { return a + b; }\n"
+                            "add<int>(123,456);";
+        const char expected[] = "int add<int> ( int a , int b ) ; add<int> ( 123 , 456 ) ; int add<int> ( int a , int b ) { return a + b ; }";
         ASSERT_EQUALS(expected, tok(code));
     }
 };

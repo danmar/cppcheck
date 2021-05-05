@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -177,8 +177,12 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     } else if (!pathnames.empty()) {
         // Execute recursiveAddFiles() to each given file parameter
         const PathMatch matcher(ignored, caseSensitive);
-        for (const std::string &pathname : pathnames)
-            FileLister::recursiveAddFiles(mFiles, Path::toNativeSeparators(pathname), mSettings->library.markupExtensions(), matcher);
+        for (const std::string &pathname : pathnames) {
+            std::string err = FileLister::recursiveAddFiles(mFiles, Path::toNativeSeparators(pathname), mSettings->library.markupExtensions(), matcher);
+            if (!err.empty()) {
+                std::cout << "cppcheck: " << err << std::endl;
+            }
+        }
     }
 
     if (mFiles.empty() && settings.project.fileSettings.empty()) {
@@ -1035,11 +1039,6 @@ static inline std::string ansiToOEM(const std::string &msg, bool doConvert)
 
 void CppCheckExecutor::reportErr(const std::string &errmsg)
 {
-    // Alert only about unique errors
-    if (mShownErrors.find(errmsg) != mShownErrors.end())
-        return;
-
-    mShownErrors.insert(errmsg);
     if (mErrorOutput)
         *mErrorOutput << errmsg << std::endl;
     else {
@@ -1096,11 +1095,17 @@ void CppCheckExecutor::reportErr(const ErrorMessage &msg)
 {
     if (mShowAllErrors) {
         reportOut(msg.toXML());
-    } else if (mSettings->xml) {
-        reportErr(msg.toXML());
-    } else {
-        reportErr(msg.toString(mSettings->verbose, mSettings->templateFormat, mSettings->templateLocation));
+        return;
     }
+
+    // Alert only about unique errors
+    if (!mShownErrors.insert(msg.toString(mSettings->verbose)).second)
+        return;
+
+    if (mSettings->xml)
+        reportErr(msg.toXML());
+    else
+        reportErr(msg.toString(mSettings->verbose, mSettings->templateFormat, mSettings->templateLocation));
 }
 
 void CppCheckExecutor::bughuntingReport(const std::string &str)

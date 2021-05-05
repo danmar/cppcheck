@@ -16,13 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "applicationlist.h"
+
 #include <QFileInfo>
-#include <QObject>
 #include <QSettings>
 #include <QStringList>
 
 #include "common.h"
-#include "applicationlist.h"
 #include "application.h"
 
 #include <cstdlib>

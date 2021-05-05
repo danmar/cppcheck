@@ -65,6 +65,10 @@ jobs:
         run: |
           make -j$(nproc) check HAVE_RULES=yes
 
+      - name: Run extra tests
+        run: |
+          tools/generate_and_run_more_tests.sh
+
       - name: Validate
         run: |
           make -j$(nproc) checkCWEEntries validateXML

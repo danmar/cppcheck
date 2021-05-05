@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2595,6 +2595,19 @@ private:
               "    if (e.d)\n"
               "        e.c = &e.d->b;\n"
               "    return e;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10214
+        check("struct A {\n"
+              "  std::string key;\n"
+              "  const char *value;\n"
+              "};\n"
+              "const char *f(const std::string &key, const std::vector<A> &lookup) {\n"
+              "  const auto &entry =\n"
+              "      std::find_if(lookup.begin(), lookup.end(),\n"
+              "                   [key](const auto &v) { return v.key == key; });\n"
+              "  return (entry == lookup.end()) ? \"\" : entry->value;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

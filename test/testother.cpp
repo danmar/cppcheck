@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1865,6 +1865,11 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("const int& f(std::vector<int>& x) {\n"
+              "    return x[0];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared with const\n", errout.str());
+
         check("int f(std::vector<int>& x) {\n"
               "    x[0]++;\n"
               "    return x[0];\n"
@@ -2323,6 +2328,16 @@ private:
               "void f(const A& x) {\n"
               "    ++(*x);\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10086
+        check("struct V {\n"
+              "    V& get(typename std::vector<V>::size_type i) {\n"
+              "        std::vector<V>& arr = v;\n"
+              "        return arr[i];\n"
+              "    }\n"
+              "    std::vector<V> v;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
 
         check("void e();\n"
@@ -3549,13 +3564,19 @@ private:
               "    throw 0;\n"
               "    return 1;\n"
               "}", nullptr, false, false, false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
         check("void foo() {\n"
               "    throw 0;\n"
               "    return;\n"
               "}", nullptr, false, false, false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
+
+        check("int foo() {\n"
+              "    throw = 0;\n"
+              "    return 1;\n"
+              "}", "test.c", false, false, false);
+        ASSERT_EQUALS("", errout.str());
 
         check("int foo() {\n"
               "    return 0;\n"

@@ -4,9 +4,9 @@
 #include "mathlib.h"
 #include "symboldatabase.h"
 #include "token.h"
+#include "valueflow.h"
 #include <algorithm>
 #include <cassert>
-#include <cstdio>
 #include <limits>
 #include <memory>
 
@@ -424,20 +424,34 @@ void execute(const Token *expr,
 
     else if (expr->isComparisonOp()) {
         MathLib::bigint result1(0), result2(0);
-        execute(expr->astOperand1(), programMemory, &result1, error);
-        execute(expr->astOperand2(), programMemory, &result2, error);
-        if (expr->str() == "<")
-            *result = result1 < result2;
-        else if (expr->str() == "<=")
-            *result = result1 <= result2;
-        else if (expr->str() == ">")
-            *result = result1 > result2;
-        else if (expr->str() == ">=")
-            *result = result1 >= result2;
-        else if (expr->str() == "==")
-            *result = result1 == result2;
-        else if (expr->str() == "!=")
-            *result = result1 != result2;
+        bool error1 = false;
+        bool error2 = false;
+        execute(expr->astOperand1(), programMemory, &result1, &error1);
+        execute(expr->astOperand2(), programMemory, &result2, &error2);
+        if (error1 && error2) {
+            *error = true;
+        } else if (error1 && !error2) {
+            ValueFlow::Value v = inferCondition(expr->str(), expr->astOperand1(), result2);
+            *error = !v.isKnown();
+            *result = v.intvalue;
+        } else if (!error1 && error2) {
+            ValueFlow::Value v = inferCondition(expr->str(), result1, expr->astOperand2());
+            *error = !v.isKnown();
+            *result = v.intvalue;
+        } else {
+            if (expr->str() == "<")
+                *result = result1 < result2;
+            else if (expr->str() == "<=")
+                *result = result1 <= result2;
+            else if (expr->str() == ">")
+                *result = result1 > result2;
+            else if (expr->str() == ">=")
+                *result = result1 >= result2;
+            else if (expr->str() == "==")
+                *result = result1 == result2;
+            else if (expr->str() == "!=")
+                *result = result1 != result2;
+        }
     }
 
     else if (expr->isAssignmentOp()) {
@@ -520,7 +534,7 @@ void execute(const Token *expr,
                 *result = result1 << result2;
             }
         } else if (expr->str() == ">>") {
-            if (result2 < 0) { // don't perform UB
+            if (result2 < 0 || result2 >= MathLib::bigint_bits) { // don't perform UB
                 *error=true;
             } else {
                 *result = result1 >> result2;

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -394,6 +394,40 @@ private:
                     "    Bar(10U, result.size());\n"
                     "    Bar(0.0, result[0]);\n"
                     "    Bar(0.34, result[1]);\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(size_t entries) {\n"
+                    "    std::vector<uint8_t> v;\n"
+                    "    if (v.size() < entries + 2)\n"
+                    "        v.resize(entries + 2);\n"
+                    "    v[0] = 1;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(size_t entries) {\n"
+                    "    std::vector<uint8_t> v;\n"
+                    "    if (v.size() < entries)\n"
+                    "        v.resize(entries);\n"
+                    "    v[0] = 1;\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:5:error:Out of bounds access in expression 'v[0]' because 'v' is empty.\n", errout.str());
+
+        checkNormal("void f(size_t entries) {\n"
+                    "    if (entries < 2) return;\n"
+                    "    std::vector<uint8_t> v;\n"
+                    "    if (v.size() < entries)\n"
+                    "        v.resize(entries);\n"
+                    "    v[0] = 1;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(size_t entries) {\n"
+                    "    if (entries == 0) return;\n"
+                    "    std::vector<uint8_t> v;\n"
+                    "    if (v.size() < entries)\n"
+                    "        v.resize(entries);\n"
+                    "    v[0] = 1;\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1394,6 +1428,16 @@ private:
               "            break;\n"
               "        }\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10012
+        check("struct a {\n"
+              "    int b;\n"
+              "    int end() { return b; }\n"
+              "};\n"
+              "void f(a c, a d) {\n"
+              "    if (c.end() == d.end()) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -3753,6 +3797,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition '(i+1)!=s.end()' is redundant or there is possible dereference of an invalid iterator: i+2.\n", errout.str());
 
+        check("void f(int v, std::map<int, int> &items) {\n"
+              "    for (auto it = items.begin(); it != items.end();)\n"
+              "        (it->first == v) ? it = items.erase(it) : ++it;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(std::string s) {\n"
               "    for (std::string::const_iterator i = s.begin(); i != s.end(); ++i) {\n"
               "        if (i != s.end() && (i + 1) != s.end() && *(i + 1) == *i) {\n"
@@ -3763,6 +3813,15 @@ private:
               "            }\n"
               "        }\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(std::vector<int>::iterator it, const std::vector<int>& vector) {\n"
+              "    if (!(it != vector.end() && it != vector.begin()))\n"
+              "        throw std::out_of_range();\n"
+              "    if (it != vector.end() && *it == 0)\n"
+              "        return -1;\n"
+              "    return *it;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

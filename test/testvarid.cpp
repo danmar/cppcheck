@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -173,6 +173,7 @@ private:
         TEST_CASE(varid_parameter_pack); // #9383
         TEST_CASE(varid_for_auto_cpp17);
         TEST_CASE(varid_not); // #9689 'not x'
+        TEST_CASE(varid_declInIfCondition);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -195,6 +196,7 @@ private:
         TEST_CASE(varidclass19);  // initializer list
         TEST_CASE(varidclass20);   // #7578: int (*p)[2]
         TEST_CASE(varid_classnameshaddowsvariablename); // #3990
+        TEST_CASE(varid_classnametemplate); // #10221
 
         TEST_CASE(varidenum1);
         TEST_CASE(varidenum2);
@@ -214,6 +216,8 @@ private:
         TEST_CASE(decltype2);
 
         TEST_CASE(exprid1);
+
+        TEST_CASE(structuredBindings);
     }
 
     std::string tokenize(const char code[], const char filename[] = "test.cpp") {
@@ -222,7 +226,7 @@ private:
         Settings settings;
         settings.platform(Settings::Unix64);
         settings.standards.c   = Standards::C89;
-        settings.standards.cpp = Standards::CPP11;
+        settings.standards.cpp = Standards::CPPLatest;
         settings.checkUnusedTemplates = true;
 
         Tokenizer tokenizer(&settings, this);
@@ -241,7 +245,7 @@ private:
         Settings settings;
         settings.platform(Settings::Unix64);
         settings.standards.c   = Standards::C89;
-        settings.standards.cpp = Standards::CPP11;
+        settings.standards.cpp = Standards::CPPLatest;
         settings.checkUnusedTemplates = true;
 
         Tokenizer tokenizer(&settings, this);
@@ -1283,7 +1287,7 @@ private:
                                 "2: list < int > :: iterator it@2 ;\n"
                                 "3: std :: vector < std :: string > dirs@3 ;\n"
                                 "4: std :: map < int , int > coords@4 ;\n"
-                                "5: std :: unordered_map < int , int > xy@5 ;\n"
+                                "5: std :: tr1 :: unordered_map < int , int > xy@5 ;\n"
                                 "6: std :: list < boost :: wave :: token_id > tokens@6 ;\n"
                                 "7: static std :: vector < CvsProcess * > ex1@7 ;\n"
                                 "8: extern std :: vector < CvsProcess * > ex2@8 ;\n"
@@ -1702,7 +1706,7 @@ private:
                             "};";
         ASSERT_EQUALS("1: class Foo {\n"
                       "2: private:\n"
-                      "3: void f ( ) ;\n"
+                      "3: void f ( void ) ;\n"
                       "4: } ;\n",
                       tokenize(code));
     }
@@ -2697,6 +2701,53 @@ private:
         ASSERT_EQUALS(exp1, tokenize(code1));
     }
 
+    void varid_declInIfCondition() {
+        // if
+        ASSERT_EQUALS("1: void f ( int x@1 ) {\n"
+                      "2: if ( int x@2 = 0 ) { x@2 ; }\n"
+                      "3: x@1 ;\n"
+                      "4: }\n",
+                      tokenize("void f(int x) {\n"
+                               "  if (int x = 0) { x; }\n"
+                               "  x;\n"
+                               "}"));
+        // if, else
+        ASSERT_EQUALS("1: void f ( int x@1 ) {\n"
+                      "2: if ( int x@2 = 0 ) { x@2 ; }\n"
+                      "3: else { x@2 ; }\n"
+                      "4: x@1 ;\n"
+                      "5: }\n",
+                      tokenize("void f(int x) {\n"
+                               "  if (int x = 0) { x; }\n"
+                               "  else { x; }\n"
+                               "  x;\n"
+                               "}"));
+        // if, else if
+        ASSERT_EQUALS("1: void f ( int x@1 ) {\n"
+                      "2: if ( int x@2 = 0 ) { x@2 ; }\n"
+                      "3: else { if ( void * x@3 = & x@3 ) { x@3 ; } }\n"
+                      "4: x@1 ;\n"
+                      "5: }\n",
+                      tokenize("void f(int x) {\n"
+                               "  if (int x = 0) x;\n"
+                               "  else if (void* x = &x) x;\n"
+                               "  x;\n"
+                               "}"));
+        // if, else if, else
+        ASSERT_EQUALS("1: void f ( int x@1 ) {\n"
+                      "2: if ( int x@2 = 0 ) { x@2 ; }\n"
+                      "3: else { if ( void * x@3 = & x@3 ) { x@3 ; }\n"
+                      "4: else { x@3 ; } }\n"
+                      "5: x@1 ;\n"
+                      "6: }\n",
+                      tokenize("void f(int x) {\n"
+                               "  if (int x = 0) x;\n"
+                               "  else if (void* x = &x) x;\n"
+                               "  else x;\n"
+                               "  x;\n"
+                               "}"));
+    }
+
     void varidclass1() {
         const std::string actual = tokenize(
                                        "class Fred\n"
@@ -3211,6 +3262,37 @@ private:
 
     }
 
+    void varid_classnametemplate() {
+        const char code[] = "template <typename T>\n"
+                            "struct BBB {\n"
+                            "  struct inner;\n"
+                            "};\n"
+                            "\n"
+                            "template <typename T>\n"
+                            "struct BBB<T>::inner {\n"
+                            "  inner(int x);\n"
+                            "  int x;\n"
+                            "};\n"
+                            "\n"
+                            "template <typename T>\n"
+                            "BBB<T>::inner::inner(int x): x(x) {}\n";
+        const char expected[] = "1: template < typename T >\n"
+                                "2: struct BBB {\n"
+                                "3: struct inner ;\n"
+                                "4: } ;\n"
+                                "5:\n"
+                                "6: template < typename T >\n"
+                                "7: struct BBB < T > :: inner {\n"
+                                "8: inner ( int x@1 ) ;\n"
+                                "9: int x@2 ;\n"
+                                "10: } ;\n"
+                                "11:\n"
+                                "12: template < typename T >\n"
+                                "13: BBB < T > :: inner :: inner ( int x@3 ) : x@2 ( x@3 ) { }\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+
+    }
+
     void varidnamespace1() {
         const char code[] = "namespace A {\n"
                             "    char buf[20];\n"
@@ -3348,6 +3430,12 @@ private:
                                 "8: }\n";
 
         ASSERT_EQUALS(expected, actual);
+    }
+
+    void structuredBindings() {
+        const char code[] = "int foo() { auto [x,y] = xy(); return x+y; }";
+        ASSERT_EQUALS("1: int foo ( ) { auto [ x@1 , y@2 ] = xy ( ) ; return x@1 + y@2 ; }\n",
+                      tokenize(code));
     }
 };
 

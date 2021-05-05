@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
-#include <functional> // std::hash
 
 InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type type) :
     token(tok), errorMessage(errorMsg), type(type)
@@ -217,7 +216,7 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
             const char *info = strinfo ? strinfo : "";
             const int line = strline ? std::atoi(strline) : 0;
             const int column = strcolumn ? std::atoi(strcolumn) : 0;
-            callStack.emplace_back(file, info, line, column);
+            callStack.emplace_front(file, info, line, column);
         }
     }
 }
@@ -271,6 +270,7 @@ std::string ErrorMessage::serialize() const
     oss << Severity::toString(severity).length() << " " << Severity::toString(severity);
     oss << MathLib::toString(cwe.id).length() << " " << MathLib::toString(cwe.id);
     oss << MathLib::toString(hash).length() << " " << MathLib::toString(hash);
+    oss << file0.size() << " " << file0;
     if (certainty == Certainty::inconclusive) {
         const std::string text("inconclusive");
         oss << text.length() << " " << text;
@@ -297,9 +297,9 @@ bool ErrorMessage::deserialize(const std::string &data)
     certainty = Certainty::normal;
     callStack.clear();
     std::istringstream iss(data);
-    std::array<std::string, 6> results;
+    std::array<std::string, 7> results;
     std::size_t elem = 0;
-    while (iss.good() && elem < 6) {
+    while (iss.good() && elem < 7) {
         unsigned int len = 0;
         if (!(iss >> len))
             return false;
@@ -319,15 +319,16 @@ bool ErrorMessage::deserialize(const std::string &data)
         results[elem++] = temp;
     }
 
-    if (elem != 6)
+    if (elem != 7)
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed");
 
     id = results[0];
     severity = Severity::fromString(results[1]);
     std::istringstream(results[2]) >> cwe.id;
     std::istringstream(results[3]) >> hash;
-    mShortMessage = results[4];
-    mVerboseMessage = results[5];
+    std::istringstream(results[4]) >> file0;
+    mShortMessage = results[5];
+    mVerboseMessage = results[6];
 
     unsigned int stackSize = 0;
     if (!(iss >> stackSize))
@@ -439,10 +440,11 @@ std::string ErrorMessage::toXML() const
     if (certainty == Certainty::inconclusive)
         printer.PushAttribute("inconclusive", "true");
 
+    if (!file0.empty())
+        printer.PushAttribute("file0", file0.c_str());
+
     for (std::list<FileLocation>::const_reverse_iterator it = callStack.rbegin(); it != callStack.rend(); ++it) {
         printer.OpenElement("location", false);
-        if (!file0.empty() && (*it).getfile() != file0)
-            printer.PushAttribute("file0", Path::toNativeSeparators(file0).c_str());
         printer.PushAttribute("file", (*it).getfile().c_str());
         printer.PushAttribute("line", std::max((*it).line,0));
         printer.PushAttribute("column", (*it).column);

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,12 +28,10 @@
 #include <vector>
 
 #include "errortypes.h"
-#include "mathlib.h"
 #include "utils.h"
 
 class Function;
 class Library;
-class Scope;
 class Settings;
 class Token;
 class Variable;
@@ -70,6 +68,7 @@ bool astIsSignedChar(const Token *tok);
 bool astIsUnknownSignChar(const Token *tok);
 /** Is expression of integral type? */
 bool astIsIntegral(const Token *tok, bool unknown);
+bool astIsUnsigned(const Token* tok);
 /** Is expression of floating point type? */
 bool astIsFloat(const Token *tok, bool unknown);
 /** Is expression of boolean type? */

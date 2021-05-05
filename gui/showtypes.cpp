@@ -16,9 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QSettings>
-#include "common.h"
 #include "showtypes.h"
+
+#include "common.h"
+
+#include <QSettings>
+#include <QMap>
+#include <QString>
 
 ShowTypes::ShowTypes()
 {

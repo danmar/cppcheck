@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <cstring>
 #include <iterator> // back_inserter
 #include <utility>
 
@@ -97,7 +96,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         return false;
 
     // skip spaces after "cppcheck-suppress"
-    const std::string::size_type pos2 = comment.find_first_not_of(" ", pos1+17);
+    const std::string::size_type pos2 = comment.find_first_not_of(" ", pos1+cppchecksuppress.size());
     if (pos2 == std::string::npos)
         return false;
 
@@ -646,12 +645,11 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
         dui.defines.push_back(s);
     }
 
-    if (Path::isCPP(filename))
-        dui.defines.emplace_back("__cplusplus");
-
     dui.undefined = mSettings.userUndefs; // -U
     dui.includePaths = mSettings.includePaths; // -I
     dui.includes = mSettings.userIncludes;  // --include
+    if (Path::isCPP(filename))
+        dui.std = mSettings.standards.getCPP();
     return dui;
 }
 

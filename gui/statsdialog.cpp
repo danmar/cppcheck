@@ -15,17 +15,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#include "statsdialog.h"
+
 #include <QPrinter>
 #include <QDate>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QTextDocument>
 #include <QWidget>
-#include <QString>
 #include <QClipboard>
 #include <QMimeData>
+
 #include "projectfile.h"
-#include "statsdialog.h"
 #include "checkstatistics.h"
 #include "common.h"
 

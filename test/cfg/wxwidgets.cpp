@@ -28,6 +28,38 @@
 #include <wx/textctrl.h>
 #include <wx/propgrid/property.h>
 
+#ifdef __VISUALC__
+// Ensure no duplicateBreak warning is issued after wxLogApiError() calls.
+// This function does not terminate execution.
+bool duplicateBreak_wxLogApiError(const wxString &msg, const HRESULT &hr, wxString &str)
+{
+    if (hr) {
+        wxLogApiError(msg,hr);
+        str = "fail";
+        return false;
+    }
+    return true;
+}
+#endif
+
+void useRetval_wxString_MakeCapitalized(wxString &str)
+{
+    // No warning is expected for
+    str.MakeCapitalized();
+}
+
+void useRetval_wxString_MakeLower(wxString &str)
+{
+    // No warning is expected for
+    str.MakeLower();
+}
+
+void useRetval_wxString_MakeUpper(wxString &str)
+{
+    // No warning is expected for
+    str.MakeUpper();
+}
+
 wxString containerOutOfBounds_wxArrayString(void)
 {
     wxArrayString a;
@@ -78,7 +110,7 @@ bool invalidFunctionArgBool_wxPGProperty_Hide(wxPGProperty *pg, bool hide, int f
     return pg->Hide(hide, flags);
 }
 
-wxTextCtrlHitTestResult nullPointer_wxTextCtrl_HitTest(wxTextCtrl &txtCtrl, const wxPoint &pos)
+wxTextCtrlHitTestResult nullPointer_wxTextCtrl_HitTest(const wxTextCtrl& txtCtrl, const wxPoint& pos)
 {
     // no nullPointer-warning is expected
     return txtCtrl.HitTest(pos, NULL);

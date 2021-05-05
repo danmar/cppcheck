@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
-#include <ostream>
 #include <string>
 
 
@@ -178,6 +177,7 @@ private:
         // Simplify calculations
         TEST_CASE(calculations);
         TEST_CASE(comparisons);
+        TEST_CASE(simplifyCalculations);
 
         //remove dead code after flow control statements
         TEST_CASE(simplifyFlowControl);
@@ -249,9 +249,6 @@ private:
         TEST_CASE(redundant_semicolon);
 
         TEST_CASE(simplifyFunctionReturn);
-
-        // void foo(void) -> void foo()
-        TEST_CASE(removeVoidFromFunction);
 
         TEST_CASE(return_strncat); // ticket # 2860 Returning value of strncat() reported as memory leak
 
@@ -361,6 +358,16 @@ private:
         TEST_CASE(simplifyCasts15); // #5996 - don't remove cast in 'a+static_cast<int>(b?60:0)'
         TEST_CASE(simplifyCasts16); // #6278
         TEST_CASE(simplifyCasts17); // #6110 - don't remove any parentheses in 'a(b)(c)'
+
+        TEST_CASE(removeRedundantAssignment);
+
+        TEST_CASE(simplify_constants);
+        TEST_CASE(simplify_constants2);
+        TEST_CASE(simplify_constants3);
+        TEST_CASE(simplify_constants4);
+        TEST_CASE(simplify_constants5);
+        TEST_CASE(simplify_constants6);     // Ticket #5625: Ternary operator as template parameter
+
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
@@ -3708,6 +3715,58 @@ private:
         ASSERT_EQUALS("( 6 ) ;", tok("( 1 > 2 && 3 > 4 ? 5 : 6 );"));
     }
 
+    void simplifyCalculations() {
+        ASSERT_EQUALS("void foo ( char str [ ] ) { char x ; x = * str ; }",
+                      tok("void foo ( char str [ ] ) { char x = 0 | ( * str ) ; }"));
+        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
+                      tok("void foo ( ) { if (b + 0) { } }"));
+        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
+                      tok("void foo ( ) { if (0 + b) { } }"));
+        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
+                      tok("void foo ( ) { if (b - 0) { } }"));
+        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
+                      tok("void foo ( ) { if (b * 1) { } }"));
+        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
+                      tok("void foo ( ) { if (1 * b) { } }"));
+        //ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
+        //              tok("void foo ( ) { if (b / 1) { } }"));
+        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
+                      tok("void foo ( ) { if (b | 0) { } }"));
+        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
+                      tok("void foo ( ) { if (0 | b) { } }"));
+        ASSERT_EQUALS("void foo ( int b ) { int a ; a = b ; bar ( a ) ; }",
+                      tok("void foo ( int b ) { int a = b | 0 ; bar ( a ) ; }"));
+        ASSERT_EQUALS("void foo ( int b ) { int a ; a = b ; bar ( a ) ; }",
+                      tok("void foo ( int b ) { int a = 0 | b ; bar ( a ) ; }"));
+
+        // ticket #3093
+        ASSERT_EQUALS("int f ( ) { return 15 ; }",
+                      tok("int f() { int a = 10; int b = 5; return a + b; }"));
+        ASSERT_EQUALS("int f ( ) { return a ; }",
+                      tok("int f() { return a * 1; }"));
+        ASSERT_EQUALS("int f ( int a ) { return 0 ; }",
+                      tok("int f(int a) { return 0 * a; }"));
+        ASSERT_EQUALS("bool f ( int i ) { switch ( i ) { case 15 : ; return true ; } }",
+                      tok("bool f(int i) { switch (i) { case 10 + 5: return true; } }"));
+
+        // ticket #3576 - False positives in boolean expressions
+        ASSERT_EQUALS("int foo ( ) { return 1 ; }",
+                      tok("int foo ( ) { int i; int j; i = 1 || j; return i; }"));
+
+        ASSERT_EQUALS("int foo ( ) { return 0 ; }",
+                      tok("int foo ( ) { int i; int j; i = 0 && j; return i; }"));        // ticket #3576 - False positives in boolean expressions
+
+        // ticket #3723 - Simplify condition (0 && a < 123)
+        ASSERT_EQUALS("( 0 ) ;",
+                      tok("( 0 && a < 123 );"));
+        ASSERT_EQUALS("( 0 ) ;",
+                      tok("( 0 && a[123] );"));
+
+        // ticket #4931
+        ASSERT_EQUALS("dostuff ( 1 ) ;", tok("dostuff(9&&8);"));
+    }
+
+
 
     void simplifyFlowControl() {
         const char code1[] = "void f() {\n"
@@ -4947,10 +5006,6 @@ private:
                                 "}";
             tok(code);
         }
-    }
-
-    void removeVoidFromFunction() {
-        ASSERT_EQUALS("void foo ( ) ;", tok("void foo(void);"));
     }
 
     void return_strncat() {
@@ -6916,6 +6971,86 @@ private:
     void simplifyCasts17() { // #6110 - don't remove any parentheses in 'a(b)(c)'
         ASSERT_EQUALS("{ if ( a ( b ) ( c ) >= 3 ) { } }",
                       tok("{ if (a(b)(c) >= 3) { } }"));
+    }
+
+
+    void removeRedundantAssignment() {
+        ASSERT_EQUALS("void f ( ) { }", tok("void f() { int *p, *q; p = q; }"));
+        ASSERT_EQUALS("void f ( ) { }", tok("void f() { int *p = 0, *q; p = q; }"));
+        ASSERT_EQUALS("int f ( int * x ) { return * x ; }", tok("int f(int *x) { return *x; }"));
+    }
+
+    void simplify_constants() {
+        const char code[] =
+            "void f() {\n"
+            "const int a = 45;\n"
+            "if( a )\n"
+            "{ int b = a; }\n"
+            "}\n"
+            "void g() {\n"
+            "int a = 2;\n"
+            "}";
+        ASSERT_EQUALS("void f ( ) { } void g ( ) { }", tok(code));
+    }
+
+    void simplify_constants2() {
+        const char code[] =
+            "void f( Foo &foo, Foo *foo2 ) {\n"
+            "const int a = 45;\n"
+            "foo.a=a+a;\n"
+            "foo2->a=a;\n"
+            "}";
+        ASSERT_EQUALS("void f ( Foo & foo , Foo * foo2 ) { foo . a = 90 ; foo2 . a = 45 ; }", tok(code));
+    }
+
+    void simplify_constants3() {
+        const char code[] =
+            "static const char str[] = \"abcd\";\n"
+            "static const unsigned int SZ = sizeof(str);\n"
+            "void f() {\n"
+            "a = SZ;\n"
+            "}\n";
+        const char expected[] =
+            "static const char str [ 5 ] = \"abcd\" ; void f ( ) { a = 5 ; }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplify_constants4() {
+        const char code[] = "static const int bSize = 4;\n"
+                            "static const int aSize = 50;\n"
+                            "x = bSize;\n"
+                            "y = aSize;\n";
+        ASSERT_EQUALS("x = 4 ; y = 50 ;", tok(code));
+    }
+
+    void simplify_constants5() {
+        const char code[] = "int buffer[10];\n"
+                            "static const int NELEMS = sizeof(buffer)/sizeof(int);\n"
+                            "static const int NELEMS2(sizeof(buffer)/sizeof(int));\n"
+                            "x = NELEMS;\n"
+                            "y = NELEMS2;\n";
+        ASSERT_EQUALS("int buffer [ 10 ] ; x = 10 ; y = 10 ;", tok(code));
+    }
+
+    void simplify_constants6() { // Ticket #5625
+        {
+            const char code[] = "template < class T > struct foo ;\n"
+                                "void bar ( ) {\n"
+                                "foo < 1 ? 0 ? 1 : 6 : 2 > x ;\n"
+                                "foo < 1 ? 0 : 2 > y ;\n"
+                                "}";
+            const char exp [] = "template < class T > struct foo ; "
+                                "void bar ( ) { "
+                                "foo < 6 > x ; "
+                                "foo < 0 > y ; "
+                                "}";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "bool b = true ? false : 1 > 2 ;";
+            const char exp [] = "bool b ; b = false ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
     }
 };
 

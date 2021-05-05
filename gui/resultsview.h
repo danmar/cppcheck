@@ -21,7 +21,6 @@
 #define RESULTSVIEW_H
 
 
-#include <QWidget>
 #include "report.h"
 #include "showtypes.h"
 #include "ui_resultsview.h"

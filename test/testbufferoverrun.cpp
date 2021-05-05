@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,9 +27,7 @@
 #include "tokenize.h"
 
 #include <tinyxml2.h>
-#include <climits>
 #include <list>
-#include <ostream>
 #include <string>
 
 
@@ -131,6 +129,9 @@ private:
         TEST_CASE(array_index_48); // #9478
         TEST_CASE(array_index_49); // #8653
         TEST_CASE(array_index_50);
+        TEST_CASE(array_index_51); // #3763
+        TEST_CASE(array_index_52); // #7682
+        TEST_CASE(array_index_53); // #4750
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -179,6 +180,7 @@ private:
         TEST_CASE(buffer_overrun_29); // #7083: false positive: typedef and initialization with strings
         TEST_CASE(buffer_overrun_30); // #6367
         TEST_CASE(buffer_overrun_31);
+        TEST_CASE(buffer_overrun_32); //#10244
         TEST_CASE(buffer_overrun_errorpath);
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
         // TODO TEST_CASE(buffer_overrun_function_array_argument);
@@ -1525,6 +1527,37 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void array_index_51() {
+        check("void f(void){\n"
+              "    int k=0, dd, d[1U] = {1};\n"
+              "    for (dd=d[k]; k<10; dd=d[++k]){;}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'd[1]' accessed at index 1, which is out of bounds.\n", errout.str());
+    }
+
+    void array_index_52() {
+        check("char f(void)\n"
+              "{\n"
+              "    char buf[10];\n"
+              "    for(int i = 0, j= 11; i < j; ++i)\n"
+              "       buf[i] = 0;\n"
+              "    return buf[0];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'buf[10]' accessed at index 10, which is out of bounds.\n", errout.str());
+    }
+
+    void array_index_53() {
+        check("double M[3][1];\n"
+              " \n"
+              "void matrix()\n"
+              "{\n"
+              "    for (int i=0; i < 3; i++)\n"
+              "        for (int j = 0; j < 3; j++)\n"
+              "             M[i][j]=0.0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'M[3][1]' accessed at index M[*][2], which is out of bounds.\n", errout.str());
+    }
+
     void array_index_multidim() {
         check("void f()\n"
               "{\n"
@@ -2620,6 +2653,43 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void buffer_overrun_32() {
+        // destination size is too small
+        check("void f(void) {\n"
+              "    const char src[3] = \"abc\";\n"
+              "    char dest[1] = \"a\";\n"
+              "    (void)strxfrm(dest,src,1);\n"
+              "    (void)strxfrm(dest,src,2);\n"// <<
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error, inconclusive) Buffer is accessed out of bounds: dest\n", errout.str());
+        // destination size is too small
+        check("void f(void) {\n"
+              "    const char src[3] = \"abc\";\n"
+              "    char dest[2] = \"ab\";\n"
+              "    (void)strxfrm(dest,src,1);\n"
+              "    (void)strxfrm(dest,src,2);\n"
+              "    (void)strxfrm(dest,src,3);\n" // <<
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: dest\n", errout.str());
+        // source size is too small
+        check("void f(void) {\n"
+              "    const char src[2] = \"ab\";\n"
+              "    char dest[3] = \"abc\";\n"
+              "    (void)strxfrm(dest,src,1);\n"
+              "    (void)strxfrm(dest,src,2);\n"
+              "    (void)strxfrm(dest,src,3);\n" // <<
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: src\n", errout.str());
+        // source size is too small
+        check("void f(void) {\n"
+              "    const char src[1] = \"a\";\n"
+              "    char dest[3] = \"abc\";\n"
+              "    (void)strxfrm(dest,src,1);\n"
+              "    (void)strxfrm(dest,src,2);\n" // <<
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error, inconclusive) Buffer is accessed out of bounds: src\n", errout.str());
+    }
+
     void buffer_overrun_errorpath() {
         setMultiline();
         settings0.templateLocation = "{file}:{line}:note:{info}";
@@ -3577,7 +3647,7 @@ private:
               "  struct Foo x;\n"
               "  mysprintf(x.a, \"aa\");\n"
               "}", settings);
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: x.a\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Buffer is accessed out of bounds: x.a\n", errout.str());
 
         // ticket #900
         check("void f() {\n"
@@ -3598,14 +3668,14 @@ private:
               "  struct Foo *x = malloc(sizeof(Foo));\n"
               "  mysprintf(x.a, \"aa\");\n"
               "}", settings);
-        ASSERT_EQUALS("", errout.str()); // TODO: Inconclusive error?
+        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Buffer is accessed out of bounds: x.a\n", errout.str());
 
         check("struct Foo { char a[1]; };\n"
               "void f() {\n"
               "  struct Foo *x = malloc(sizeof(Foo) + 10);\n"
               "  mysprintf(x.a, \"aa\");\n"
               "}", settings);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Buffer is accessed out of bounds: x.a\n", errout.str());
 
         check("struct Foo {\n" // #6668 - unknown size
               "  char a[LEN];\n"

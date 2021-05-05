@@ -22,8 +22,9 @@
 #include <QObject>
 #include <QString>
 #include <QList>
-#include <QAction>
 #include "settings.h"
+
+class QAction;
 
 /// @addtogroup GUI
 /// @{

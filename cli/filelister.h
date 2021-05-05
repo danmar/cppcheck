@@ -40,10 +40,11 @@ public:
      * @param files output map that associates the size of each file with its name
      * @param path root path
      * @param ignored ignored paths
+     * @return On success, an empty string is returned. On error, a error message is returned.
      */
-    static void recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const PathMatch& ignored) {
+    static std::string recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const PathMatch& ignored) {
         const std::set<std::string> extra;
-        recursiveAddFiles(files, path, extra, ignored);
+        return recursiveAddFiles(files, path, extra, ignored);
     }
 
     /**
@@ -55,8 +56,9 @@ public:
      * @param path root path
      * @param extra Extra file extensions
      * @param ignored ignored paths
+     * @return On success, an empty string is returned. On error, a error message is returned.
      */
-    static void recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored);
+    static std::string recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored);
 
     /**
      * @brief (Recursively) add source files to a map.
@@ -68,8 +70,9 @@ public:
      * @param extra Extra file extensions
      * @param recursive Enable recursion
      * @param ignored ignored paths
+     * @return On success, an empty string is returned. On error, a error message is returned.
      */
-    static void addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored);
+    static std::string addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored);
 
     /**
      * @brief Is given path a directory?

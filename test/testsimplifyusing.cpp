@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,6 +70,8 @@ private:
         TEST_CASE(simplifyUsing21);
         TEST_CASE(simplifyUsing22);
         TEST_CASE(simplifyUsing23);
+        TEST_CASE(simplifyUsing24);
+        TEST_CASE(simplifyUsing25);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -583,6 +585,31 @@ private:
                                 ", m_rt { rt :: UNKNOWN_ } { "
                                 "}";
         ASSERT_EQUALS(expected, tok(code, false)); // don't hang
+    }
+
+    void simplifyUsing24() {
+        const char code[] = "using value_type = const ValueFlow::Value;\n"
+                            "value_type vt;";
+        const char expected[] = "const ValueFlow :: Value vt ;";
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyUsing25() {
+        const char code[] = "struct UnusualType {\n"
+                            "  using T = vtkm::Id;\n"
+                            "  T X;\n"
+                            "};\n"
+                            "namespace vtkm {\n"
+                            "template <>\n"
+                            "struct VecTraits<UnusualType> : VecTraits<UnusualType::T> { };\n"
+                            "}";
+        const char expected[] = "struct UnusualType { "
+                                "vtkm :: Id X ; "
+                                "} ; "
+                                "namespace vtkm { "
+                                "struct VecTraits<UnusualType> : VecTraits < vtkm :: Id > { } ; "
+                                "}";
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void simplifyUsing8970() {

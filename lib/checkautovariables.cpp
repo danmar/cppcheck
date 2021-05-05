@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,9 +30,7 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
-#include <cstddef>
 #include <list>
-#include <functional>
 
 //---------------------------------------------------------------------------
 
@@ -272,7 +270,7 @@ void CheckAutoVariables::autoVariables()
                 tok = Token::findmatch(tok->next(), "%var%");
                 if (isArrayVar(tok))
                     errorInvalidDeallocation(tok, nullptr);
-                else if (tok && tok->variable() && tok->variable()->isPointer()) {
+                else if (tok->variable() && tok->variable()->isPointer()) {
                     for (const ValueFlow::Value &v : tok->values()) {
                         if (!(v.isTokValue()))
                             continue;
@@ -490,6 +488,18 @@ static bool isDanglingSubFunction(const Token* tokvalue, const Token* tok)
     return exprDependsOnThis(parent);
 }
 
+static bool isAssignedToNonLocal(const Token* tok)
+{
+    if (!Token::simpleMatch(tok->astParent(), "="))
+        return false;
+    if (!Token::Match(tok->astParent()->astOperand1(), "%var%"))
+        return false;
+    const Variable* var = tok->astParent()->astOperand1()->variable();
+    if (!var)
+        return false;
+    return !var->isLocal() || var->isStatic();
+}
+
 void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token * end)
 {
     const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
@@ -548,7 +558,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             if (!printInconclusive && val.isInconclusive())
                 continue;
             const bool escape = Token::Match(tok->astParent(), "return|throw");
-            for (const LifetimeToken& lt : getLifetimeTokens(getParentLifetime(val.tokvalue), escape)) {
+            for (const LifetimeToken& lt :
+                 getLifetimeTokens(getParentLifetime(val.tokvalue), escape || isAssignedToNonLocal(tok))) {
                 const Token * tokvalue = lt.token;
                 if (val.isLocalLifetimeValue()) {
                     if (escape) {
@@ -587,7 +598,16 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     }
                     if (!isLifetimeBorrowed(tok, mSettings))
                         continue;
-                    if (var && !var->isLocal() && !var->isArgument() && !isVariableChanged(tok->next(), tok->scope()->bodyEnd, var->declarationId(), var->isGlobal(), mSettings, mTokenizer->isCPP())) {
+                    const Token* nextTok = nextAfterAstRightmostLeaf(tok->astTop());
+                    if (!nextTok)
+                        nextTok = tok->next();
+                    if (var && !var->isLocal() && !var->isArgument() &&
+                        !isVariableChanged(nextTok,
+                                           tok->scope()->bodyEnd,
+                                           var->declarationId(),
+                                           var->isGlobal(),
+                                           mSettings,
+                                           mTokenizer->isCPP())) {
                         errorDanglngLifetime(tok2, &val);
                         break;
                     }

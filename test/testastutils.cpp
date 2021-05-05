@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -291,8 +291,8 @@ private:
         ASSERT(Result::False == isUsedAsBool("void f() { int i; for (i;;) {} }", "i ; ; )"));
         ASSERT(Result::True == isUsedAsBool("void f() { int i; for (int j=0; i; ++j) {} }", "i ; ++"));
         ASSERT(Result::False == isUsedAsBool("void f() { int i; if (i == 2) {} }", "i =="));
-        ASSERT(Result::True == isUsedAsBool("void f() { int i; if (i == true) {} }", "i =="));
-        ASSERT(Result::True == isUsedAsBool("void f() { int i,j; if (i == (j&&f())) {} }", "i =="));
+        ASSERT(Result::False == isUsedAsBool("void f() { int i; if (i == true) {} }", "i =="));
+        ASSERT(Result::False == isUsedAsBool("void f() { int i,j; if (i == (j&&f())) {} }", "i =="));
         ASSERT(Result::True == isUsedAsBool("void f() { int i; if (!i == 0) {} }", "i =="));
         ASSERT(Result::True == isUsedAsBool("void f() { int i; if (!i) {} }", "i )"));
         ASSERT(Result::True == isUsedAsBool("void f() { int i; if (!!i) {} }", "i )"));

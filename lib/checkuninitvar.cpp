@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,10 +32,8 @@
 #include "valueflow.h"
 
 #include <cassert>
-#include <cstddef>
 #include <list>
 #include <map>
-#include <stack>
 #include <utility>
 
 
@@ -467,7 +465,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                             if (tok2->isName() && tok2->next()->isName())
                                 condition += ' ';
                         }
-                        reportError(tok, Severity::debug, "debug", "bailout uninitialized variable checking for '" + var.name() + "'. can't determine if this condition can be false when previous condition is false: " + condition);
+                        reportError(tok, Severity::debug, "bailoutUninitVar", "bailout uninitialized variable checking for '" + var.name() + "'. can't determine if this condition can be false when previous condition is false: " + condition);
                     }
                     return true;
                 }

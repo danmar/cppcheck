@@ -1,14 +1,13 @@
 #include "reverseanalyzer.h"
 #include "analyzer.h"
 #include "astutils.h"
+#include "errortypes.h"
 #include "forwardanalyzer.h"
-#include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueptr.h"
 
 #include <algorithm>
-#include <functional>
 
 struct ReverseTraversal {
     ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const Settings* settings)
@@ -96,12 +95,6 @@ struct ReverseTraversal {
             bool checkThen, checkElse;
             std::tie(checkThen, checkElse) = evalCond(condTok);
 
-            if (!checkThen && !checkElse) {
-                Analyzer::Action action = analyzeRecursive(condTok);
-                if (action.isRead() || action.isModified())
-                    return parent;
-            }
-
             if (parent->str() == "?") {
                 if (checkElse && opSide == 1)
                     return parent;
@@ -119,7 +112,11 @@ struct ReverseTraversal {
     void traverse(Token* start, const Token* end = nullptr) {
         if (start == end)
             return;
+        std::size_t i = start->index();
         for (Token* tok = start->previous(); tok != end; tok = tok->previous()) {
+            if (tok->index() >= i)
+                throw InternalError(tok, "Cyclic reverse analysis.");
+            i = tok->index();
             if (tok == start || (tok->str() == "{" && (tok->scope()->type == Scope::ScopeType::eFunction ||
                                  tok->scope()->type == Scope::ScopeType::eLambda))) {
                 break;

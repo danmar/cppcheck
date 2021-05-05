@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 #include <tinyxml2.h>
 
 #include "checkclass.h"
-#include "ctu.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -72,6 +71,7 @@ private:
         TEST_CASE(copyConstructor2); // ticket #4458
         TEST_CASE(copyConstructor3); // defaulted/deleted
         TEST_CASE(copyConstructor4); // base class with private constructor
+        TEST_CASE(copyConstructor5); // multiple inheritance
         TEST_CASE(noOperatorEq); // class with memory management should have operator eq
         TEST_CASE(noDestructor); // class with memory management should have destructor
 
@@ -900,6 +900,30 @@ private:
                              "class Base : private noncopyable {};\n"
                              "\n"
                              "class Foo : public Base {\n"
+                             "public:\n"
+                             "    Foo() : m_ptr(new int) {}\n"
+                             "    ~Foo() { delete m_ptr; }\n"
+                             "private:\n"
+                             "    int* m_ptr;\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void copyConstructor5() {
+        checkCopyConstructor("class Copyable {};\n"
+                             "\n"
+                             "class Foo : public Copyable, public UnknownType {\n"
+                             "public:\n"
+                             "    Foo() : m_ptr(new int) {}\n"
+                             "    ~Foo() { delete m_ptr; }\n"
+                             "private:\n"
+                             "    int* m_ptr;\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkCopyConstructor("class Copyable {};\n"
+                             "\n"
+                             "class Foo : public UnknownType, public Copyable {\n"
                              "public:\n"
                              "    Foo() : m_ptr(new int) {}\n"
                              "    ~Foo() { delete m_ptr; }\n"
@@ -7428,6 +7452,9 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         ctu({"class C { C(); }; C::C(){}", "class C { C(); }; C::C(){}"});
+        ASSERT_EQUALS("", errout.str());
+
+        ctu({"class A::C { C() { std::cout << 0; } };", "class B::C { C() { std::cout << 1; } };"});
         ASSERT_EQUALS("", errout.str());
     }
 
