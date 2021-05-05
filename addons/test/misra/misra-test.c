@@ -287,7 +287,7 @@ void misra_7_4(void)
    misra_7_4_call(1, "text_call"); // 7.4 11.8
 }
 
-bool test_8_2(char *a)
+bool test_8_2(char *a) // 2.7
 {
     return false;
 }
