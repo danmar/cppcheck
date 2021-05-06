@@ -35,7 +35,7 @@
 // How many compileExpression recursions are allowed?
 // For practical code this could be endless. But in some special torture test
 // there needs to be a limit.
-static const int AST_MAX_DEPTH = 50;
+static const int AST_MAX_DEPTH = 100;
 
 
 TokenList::TokenList(const Settings* settings) :
@@ -707,7 +707,9 @@ static void compileUnaryOp(Token *&tok, AST_state& state, void(*f)(Token *&tok, 
     if (f) {
         tok = tok->next();
         state.depth++;
-        if (tok && state.depth <= AST_MAX_DEPTH)
+        if (state.depth > AST_MAX_DEPTH)
+            throw InternalError(tok, "maximum AST depth exceeded", InternalError::AST);
+        if (tok)
             f(tok, state);
         state.depth--;
     }
@@ -1315,7 +1317,7 @@ static void compileComma(Token *&tok, AST_state& state)
 static void compileExpression(Token *&tok, AST_state& state)
 {
     if (state.depth > AST_MAX_DEPTH)
-        return; // ticket #5592
+        throw InternalError(tok, "maximum AST depth exceeded", InternalError::AST); // ticket #5592
     if (tok)
         compileComma(tok, state);
 }
