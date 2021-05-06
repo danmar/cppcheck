@@ -2173,6 +2173,11 @@ private:
               "    return ret;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+        
+        check("char *x() {\n"
+              "    return strcpy(malloc(10), \"abc\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         check("void x() {\n"
               "    free(malloc(10));\n"
