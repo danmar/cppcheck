@@ -3243,7 +3243,7 @@ void Tokenizer::simplifyLabelsCaseDefault()
 void Tokenizer::simplifyCaseRange()
 {
     for (Token* tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "case %num% ... %num% :")) {
+        if (Token::Match(tok, "case %num%|%char% ... %num%|%char% :")) {
             const MathLib::bigint start = MathLib::toLongNumber(tok->strAt(1));
             MathLib::bigint end = MathLib::toLongNumber(tok->strAt(3));
             end = std::min(start + 50, end); // Simplify it 50 times at maximum
@@ -3254,24 +3254,6 @@ void Tokenizer::simplifyCaseRange()
                 for (MathLib::bigint i = end-1; i > start; i--) {
                     tok->insertToken(":");
                     tok->insertToken(MathLib::toString(i));
-                    tok->insertToken("case");
-                }
-            }
-        } else if (Token::Match(tok, "case %char% ... %char% :")) {
-            const MathLib::bigint start = MathLib::toLongNumber(tok->strAt(1));
-            const MathLib::bigint end = MathLib::toLongNumber(tok->strAt(3));
-            if (start < end && start >= std::numeric_limits<char>::min() && end <= std::numeric_limits<char>::max()) {
-                tok = tok->tokAt(2);
-                tok->str(":");
-                tok->insertToken("case");
-                for (char i = end - 1; i > start; i--) {
-                    tok->insertToken(":");
-                    if (i == '\\' || i == '\'')
-                        tok->insertToken(std::string("'\\") + i + "'");
-                    else if (i == '\n')
-                        tok->insertToken("'\\n'");
-                    else
-                        tok->insertToken(std::string("'") + i + "'");
                     tok->insertToken("case");
                 }
             }
