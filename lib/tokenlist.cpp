@@ -477,7 +477,6 @@ static Token * skipDecl(Token *tok)
 {
     if (!Token::Match(tok->previous(), "( %name%"))
         return tok;
-
     Token *vartok = tok;
     while (Token::Match(vartok, "%name%|*|&|::|<")) {
         if (vartok->str() == "<") {
@@ -487,7 +486,7 @@ static Token * skipDecl(Token *tok)
                 return tok;
         } else if (Token::Match(vartok, "%var% [:=(]")) {
             return vartok;
-        } else if (Token::simpleMatch(vartok, "decltype (")) {
+        } else if (Token::simpleMatch(vartok, "decltype (") && !Token::Match(tok->linkAt(1), ") [,)]")) {
             return vartok->linkAt(1)->next();
         }
         vartok = vartok->next();
