@@ -2962,7 +2962,7 @@ class MisraChecker:
         ruleNum = num1 * 100 + num2
 
         if self.settings.verify:
-            self.verify_actual.append(str(location.linenr) + ':' + str(num1) + '.' + str(num2))
+            self.verify_actual.append('%s:%d %d.%d' % (location.file, location.linenr, num1, num2))
         elif self.isRuleSuppressed(location.file, location.linenr, ruleNum):
             # Error is suppressed. Ignore
             self.suppressionStats.setdefault(ruleNum, 0)
@@ -3126,6 +3126,14 @@ class MisraChecker:
             check_function(*args)
 
     def parseDump(self, dumpfile):
+        def fillVerifyExpected(verify_expected, tok):
+            """Add expected suppressions to verify_expected list."""
+            rule_re = re.compile(r'[0-9]+\.[0-9]+')
+            if tok.str.startswith('//') and 'TODO' not in tok.str:
+                for word in tok.str[2:].split(' '):
+                    if rule_re.match(word):
+                        verify_expected.append('%s:%d %s' % (tok.file, tok.linenr, word))
+
         data = cppcheckdata.parsedump(dumpfile)
 
         typeBits['CHAR'] = data.platform.char_bit
@@ -3136,12 +3144,23 @@ class MisraChecker:
         typeBits['POINTER'] = data.platform.pointer_bit
 
         if self.settings.verify:
+            # Add suppressions from the current file
             for tok in data.rawTokens:
-                if tok.str.startswith('//') and 'TODO' not in tok.str:
-                    compiled = re.compile(r'[0-9]+\.[0-9]+')
-                    for word in tok.str[2:].split(' '):
-                        if compiled.match(word):
-                            self.verify_expected.append(str(tok.linenr) + ':' + word)
+                fillVerifyExpected(self.verify_expected, tok)
+            # Add suppressions from the included headers
+            include_re = re.compile(r'^#include [<"]([a-zA-Z0-9]+[a-zA-Z\-_./\\0-9]*)[">]$')
+            dump_dir = os.path.dirname(data.filename)
+            for conf in data.configurations:
+                for directive in conf.directives:
+                    m = re.match(include_re, directive.str)
+                    if not m:
+                        continue
+                    header_dump_path = os.path.join(dump_dir, m.group(1) + '.dump')
+                    if not os.path.exists(header_dump_path):
+                        continue
+                    header_data = cppcheckdata.parsedump(header_dump_path)
+                    for tok in header_data.rawTokens:
+                        fillVerifyExpected(self.verify_expected, tok)
         else:
             self.printStatus('Checking ' + dumpfile + '...')
 
