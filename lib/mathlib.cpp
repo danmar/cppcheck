@@ -505,13 +505,8 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
             return static_cast<bigint>(doubleval);
     }
 
-    if (isCharLiteral(str)) {
-        try {
-            return simplecpp::characterLiteralToLL(str);
-        } catch (const std::exception& e) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: characterLiteralToLL(" + str + ") => " + e.what());
-        }
-    }
+    if (isCharLiteral(str))
+        return simplecpp::characterLiteralToLL(str);
 
     try {
         const biguint ret = std::stoull(str, nullptr, 10);

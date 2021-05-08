@@ -913,10 +913,14 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings *settings)
 static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, bool cpp)
 {
     if ((tok->isNumber() && MathLib::isInt(tok->str())) || (tok->tokType() == Token::eChar)) {
-        ValueFlow::Value value(MathLib::toLongNumber(tok->str()));
-        if (!tok->isTemplateArg())
-            value.setKnown();
-        setTokenValue(tok, value, settings);
+        try {
+            ValueFlow::Value value(MathLib::toLongNumber(tok->str()));
+            if (!tok->isTemplateArg())
+                value.setKnown();
+            setTokenValue(tok, value, settings);
+        } catch (const std::exception &e) {
+            // Bad character literal
+        }
     } else if (tok->isNumber() && MathLib::isFloat(tok->str())) {
         ValueFlow::Value value;
         value.valueType = ValueFlow::Value::ValueType::FLOAT;

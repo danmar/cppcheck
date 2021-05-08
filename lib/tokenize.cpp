@@ -2766,6 +2766,19 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
     }
 
+    // Warn about unhandled character literals
+    if (mSettings->severity.isEnabled(Severity::information)) {
+        for (const Token *tok = tokens(); tok; tok = tok->next()) {
+            if (tok->tokType() == Token::eChar && tok->values().empty()) {
+                try {
+                    simplecpp::characterLiteralToLL(tok->str());
+                } catch (const std::exception &e) {
+                    unhandledCharLiteral(tok, e.what());
+                }
+            }
+        }
+    }
+
     mSymbolDatabase->setArrayDimensionsUsingValueFlow();
 
     printDebugOutput(1);
@@ -9528,6 +9541,21 @@ void Tokenizer::cppcheckError(const Token *tok) const
     printDebugOutput(0);
     throw InternalError(tok, "Analysis failed. If the code is valid then please report this failure.", InternalError::INTERNAL);
 }
+
+void Tokenizer::unhandledCharLiteral(const Token *tok, const std::string& msg) const
+{
+    std::string s = tok ? (" " + tok->str()) : "";
+    for (int i = 0; i < s.size(); ++i) {
+        if ((unsigned char)s[i] >= 0x80)
+            s.clear();
+    }
+
+    reportError(tok,
+                Severity::information,
+                "cppcheckUnhandledChar",
+                "Character literal" + s + " is not handled. " + msg);
+}
+
 /**
  * Helper function to check whether number is equal to integer constant X
  * or floating point pattern X.0

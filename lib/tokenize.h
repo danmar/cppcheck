@@ -652,6 +652,8 @@ public:
     /** Warn about unknown macro(s), configuration is recommended */
     NORETURN void unknownMacroError(const Token *tok1) const;
 
+    void unhandledCharLiteral(const Token *tok, const std::string& msg) const;
+
 private:
 
     /** Report that there is an unhandled "class x y {" code */
