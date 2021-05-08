@@ -47,6 +47,7 @@ private:
         TEST_CASE(wrong_syntax4); // #3618
         TEST_CASE(wrong_syntax_if_macro);  // #2518 - if MACRO()
         TEST_CASE(wrong_syntax_class_x_y); // #3585 - class x y { };
+        TEST_CASE(wrong_syntax_anonymous_struct);
         TEST_CASE(syntax_case_default);
         TEST_CASE(garbageCode1);
         TEST_CASE(garbageCode2); // #4300
@@ -401,6 +402,11 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
             ASSERT_EQUALS("[test.cpp:1]: (information) The code 'class x y {' is not handled. You can use -I or --include to add handling of this code.\n", errout.str());
         }
+    }
+
+    void wrong_syntax_anonymous_struct() {
+        ASSERT_THROW(checkCode("struct { int x; } = {0};"), InternalError);
+        ASSERT_THROW(checkCode("struct { int x; } * = {0};"), InternalError);
     }
 
     void syntax_case_default() {

@@ -10224,6 +10224,22 @@ void Tokenizer::findGarbageCode() const
         }
     }
 
+    // invalid struct declaration
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "struct|class|enum %name%| {") && (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
+            const Token *tok2 = tok->linkAt(tok->next()->isName() ? 2 : 1);
+            if (Token::Match(tok2, "} %op%")) {
+                tok2 = tok2->next();
+                if (!Token::Match(tok2, "*|&|&&"))
+                    syntaxError(tok2, "Unexpected token '" + tok2->str() + "'");
+                while (Token::Match(tok2, "*|&|&&"))
+                    tok2 = tok2->next();
+                if (!Token::Match(tok2, "%name%"))
+                    syntaxError(tok2, "Unexpected token '" + tok2->str() + "'");
+            }
+        }
+    }
+
     // Keywords in global scope
     static const std::unordered_set<std::string> nonGlobalKeywords{"break",
         "continue",
