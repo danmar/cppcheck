@@ -2596,6 +2596,12 @@ private:
               "{\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:16]: (style) Parameter 'i' can be declared with const\n", "", errout.str());
+
+        check("void f(std::map<int, std::vector<int>> &map) {\n" // #10266
+              "  for (auto &[slave, panels] : map)\n"
+              "    panels.erase(it);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {
