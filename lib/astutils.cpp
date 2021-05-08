@@ -1890,6 +1890,22 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     if (parent && parent->tokType() == Token::eIncDecOp)
         return true;
 
+    // structured binding, nonconst reference variable in lhs
+    if (Token::Match(tok2->astParent(), ":|=") && tok2 == tok2->astParent()->astOperand2() && Token::simpleMatch(tok2->astParent()->previous(), "]")) {
+        const Token *typeStart = tok2->astParent()->previous()->link()->previous();
+        if (Token::simpleMatch(typeStart, "&"))
+            typeStart = typeStart->previous();
+        if (typeStart && Token::Match(typeStart->previous(), "[;{}(] auto &| [")) {
+            for (const Token *vartok = typeStart->tokAt(2); vartok != tok2; vartok = vartok->next()) {
+                if (vartok->varId()) {
+                    const Variable* refvar = vartok->variable();
+                    if (!refvar || (!refvar->isConst() && refvar->isReference()))
+                        return true;
+                }
+            }
+        }
+    }
+
     if (Token::simpleMatch(tok2->astParent(), ":") && tok2->astParent()->astParent() && Token::simpleMatch(tok2->astParent()->astParent()->previous(), "for (")) {
         const Token * varTok = tok2->astParent()->previous();
         if (!varTok)

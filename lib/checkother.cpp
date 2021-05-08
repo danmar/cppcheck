@@ -1419,28 +1419,6 @@ void CheckOther::checkConstVariable()
                         usedInAssignment = true;
                         break;
                     }
-                } else if (Token::Match(tok, "auto &| [")) {
-                    // structured binding taking reference..
-                    const Token *tok2 = tok->next();
-                    if (tok2->str() == "&")
-                        tok2 = tok2->next();
-                    tok2 = tok2->link();
-                    if (Token::Match(tok2, "] [:=] %varid% [);]", var->declarationId())) {
-                        if (tok->next()->str() == "&") {
-                            usedInAssignment = true;
-                            break;
-                        }
-                        while (tok2 != tok) {
-                            if (tok2->varId()) {
-                                const Variable* refvar = tok2->variable();
-                                if (!refvar || (!refvar->isConst() && refvar->isReference())) {
-                                    usedInAssignment = true;
-                                    break;
-                                }
-                            }
-                            tok2 = tok2->previous();
-                        }
-                    }
                 }
             }
             if (usedInAssignment)
