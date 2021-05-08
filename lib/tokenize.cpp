@@ -3243,7 +3243,7 @@ void Tokenizer::simplifyLabelsCaseDefault()
 void Tokenizer::simplifyCaseRange()
 {
     for (Token* tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "case %num% ... %num% :")) {
+        if (Token::Match(tok, "case %num%|%char% ... %num%|%char% :")) {
             const MathLib::bigint start = MathLib::toLongNumber(tok->strAt(1));
             MathLib::bigint end = MathLib::toLongNumber(tok->strAt(3));
             end = std::min(start + 50, end); // Simplify it 50 times at maximum
@@ -3254,23 +3254,6 @@ void Tokenizer::simplifyCaseRange()
                 for (MathLib::bigint i = end-1; i > start; i--) {
                     tok->insertToken(":");
                     tok->insertToken(MathLib::toString(i));
-                    tok->insertToken("case");
-                }
-            }
-        } else if (Token::Match(tok, "case %char% ... %char% :")) {
-            const char start = tok->strAt(1)[1];
-            const char end = tok->strAt(3)[1];
-            if (start < end) {
-                tok = tok->tokAt(2);
-                tok->str(":");
-                tok->insertToken("case");
-                for (char i = end - 1; i > start; i--) {
-                    tok->insertToken(":");
-                    if (i == '\\') {
-                        tok->insertToken(std::string("\'\\") + i + '\'');
-                    } else {
-                        tok->insertToken(std::string(1, '\'') + i + '\'');
-                    }
                     tok->insertToken("case");
                 }
             }
