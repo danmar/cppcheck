@@ -6151,15 +6151,11 @@ private:
     }
 
     void explicitBool1() {
-        Settings settings;
-        settings.standards.cpp = Standards::CPP20;
         const char code[] = "class Fred { explicit(true) Fred(int); };";
         ASSERT_EQUALS("class Fred { explicit Fred ( int ) ; } ;", tok(code));
     }
 
     void explicitBool2() {
-        Settings settings;
-        settings.standards.cpp = Standards::CPP20;
         const char code[] = "class Fred { explicit(false) Fred(int); };";
         ASSERT_EQUALS("class Fred { Fred ( int ) ; } ;", tok(code));
     }
