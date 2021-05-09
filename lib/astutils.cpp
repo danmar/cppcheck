@@ -2680,6 +2680,26 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 if (mWhat == What::Reassign)
                     return Result(Result::Type::BAILOUT, parent->astParent());
                 continue;
+            } else if (mWhat == What::UnusedValue && Token::simpleMatch(parent, "&") && Token::Match(parent->astParent(), "[,(]")) {
+                // Pass variable to function the writes it
+                const Token *ftok = parent->astParent();
+                while (Token::simpleMatch(ftok, ","))
+                    ftok = ftok->astParent();
+                if (ftok && Token::Match(ftok->previous(), "%name% (")) {
+                    const std::vector<const Token *> args = getArguments(ftok);
+                    int argnr = 0;
+                    while (argnr < args.size() && args[argnr] != parent)
+                        argnr++;
+                    if (argnr < args.size()) {
+                        const Library::Function* functionInfo = mLibrary.getFunction(ftok->astOperand1());
+                        if (functionInfo) {
+                            const auto it = functionInfo->argumentChecks.find(argnr + 1);
+                            if (it != functionInfo->argumentChecks.end() && it->second.direction == Library::ArgumentChecks::Direction::DIR_OUT)
+                                continue;
+                        }
+                    }
+                }
+                return Result(Result::Type::BAILOUT, parent->astParent());
             } else {
                 // TODO: this is a quick bailout
                 return Result(Result::Type::BAILOUT, parent->astParent());

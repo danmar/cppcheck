@@ -172,6 +172,7 @@ private:
         TEST_CASE(localvarStruct7);
         TEST_CASE(localvarStruct8);
         TEST_CASE(localvarStruct9);
+        TEST_CASE(localvarStruct10);
         TEST_CASE(localvarStructArray);
         TEST_CASE(localvarUnion1);
 
@@ -4527,6 +4528,17 @@ private:
                               "      return xy.x + xy.y;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarStruct10() { // #6766
+        functionVariableUsage("struct S { int x; };\n"
+                              "\n"
+                              "void foo() {\n"
+                              "    struct S s;\n"
+                              "    s.x = 3;\n"
+                              "    memcpy (&s, &s2, sizeof (S));\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 's.x' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvarStructArray() {
