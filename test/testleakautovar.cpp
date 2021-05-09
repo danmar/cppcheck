@@ -429,13 +429,7 @@ private:
     void assign21() { // #10186
         check("void f(int **x) {\n"
               "    void *p = malloc(10);\n"
-              "    *x = p;\n"
-              "}", true);
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(struct str *d) {\n"
-              "    void *p = malloc(10);\n"
-              "    d->a = p;\n"
+              "    *x = (int*)p;\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
     }
