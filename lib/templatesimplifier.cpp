@@ -3693,6 +3693,16 @@ void TemplateSimplifier::simplifyTemplates(
             if (end)
                 Token::eraseTokens(tok, end);
         }
+
+        // explicit(bool)
+        for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
+            if (Token::Match(tok, "explicit (")) {
+                bool isFalse = Token::simpleMatch(tok->tokAt(2), "false )");
+                Token::eraseTokens(tok, tok->linkAt(1)->next());
+                if (isFalse)
+                    tok->deleteThis();
+            }
+        }
     }
 
     mTokenizer->calculateScopes();
