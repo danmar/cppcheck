@@ -71,6 +71,7 @@ private:
         TEST_CASE(uninitvar9); // ticket #6424
         TEST_CASE(uninitvar10); // ticket #9467
         TEST_CASE(uninitvar11); // ticket #9123
+        TEST_CASE(uninitvar12); // #10218 - stream read
         TEST_CASE(uninitvar_unconditionalTry);
         TEST_CASE(uninitvar_funcptr); // #6404
         TEST_CASE(uninitvar_operator); // #6680
@@ -2770,6 +2771,15 @@ private:
                             "    x = get(x) && x;\n"
                             "}";
         checkUninitVar(code, "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar12() { // 10218
+        const char code[] = "void fp() {\n"
+                            "  std::stringstream ss;\n"
+                            "  for (int i; ss >> i;) {}\n"
+                            "}";
+        checkUninitVar(code);
         ASSERT_EQUALS("", errout.str());
     }
 
