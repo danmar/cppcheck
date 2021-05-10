@@ -3520,6 +3520,13 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized struct member: s.b\n", errout.str());
 
+        checkUninitVar("struct S { int a; int b; };\n" // #9810
+                       "void f(void) {\n"
+                       "    struct S s;\n"
+                       "    return s.a ? 1 : 2;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized struct member: s.a\n", errout.str());
+
         // checkIfForWhileHead
         checkUninitVar("struct FRED {\n"
                        "    int a;\n"
