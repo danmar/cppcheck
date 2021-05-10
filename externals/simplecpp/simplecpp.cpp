@@ -2334,10 +2334,11 @@ static unsigned long long stringToULLbounded(
 /* Converts character literal (including prefix, but not ud-suffix)
  * to long long value.
  *
- * Assumes ASCII-compatible single-byte encoded str.
+ * Assumes ASCII-compatible single-byte encoded str for narrow literals
+ * and UTF-8 otherwise.
  *
  * For target assumes
- * - UTF-8 execution character set encoding or encoding matching str
+ * - execution character set encoding matching str
  * - UTF-32 execution wide-character set encoding
  * - requirements for __STDC_UTF_16__, __STDC_UTF_32__ and __STDC_ISO_10646__ satisfied
  * - char16_t is 16bit wide
@@ -2402,6 +2403,12 @@ long long simplecpp::characterLiteralToLL(const std::string& str)
                 throw std::runtime_error("unexpected end of character literal");
 
             switch (escape) {
+            // obscure GCC extensions
+            case '%':
+            case '(':
+            case '[':
+            case '{':
+            // standard escape sequences
             case '\'':
             case '"':
             case '?':
@@ -2431,8 +2438,9 @@ long long simplecpp::characterLiteralToLL(const std::string& str)
                 value = static_cast<unsigned char>('\v');
                 break;
 
-            // ESC extension
+            // GCC extension for ESC character
             case 'e':
+            case 'E':
                 value = static_cast<unsigned char>('\x1b');
                 break;
 
@@ -2476,8 +2484,45 @@ long long simplecpp::characterLiteralToLL(const std::string& str)
         } else {
             value = static_cast<unsigned char>(str[pos++]);
 
-            if (!narrow && value > 0x7f)
-                throw std::runtime_error("non-ASCII source characters supported only in narrow character literals");
+            if (!narrow && value >= 0x80) {
+                // Assuming this is a UTF-8 encoded code point.
+                // This decoder may not completely validate the input.
+                // Noncharacters are neither rejected nor replaced.
+                
+                int additional_bytes;
+                if (value >= 0xf5)  // higher values would result in code points above 0x10ffff
+                    throw std::runtime_error("assumed UTF-8 encoded source, but sequence is invalid");
+                else if (value >= 0xf0)
+                    additional_bytes = 3;
+                else if (value >= 0xe0)
+                    additional_bytes = 2;
+                else if (value >= 0xc2) // 0xc0 and 0xc1 are always overlong 2-bytes encodings
+                    additional_bytes = 1;
+                else
+                    throw std::runtime_error("assumed UTF-8 encoded source, but sequence is invalid");
+                
+                value &= (1 << (6 - additional_bytes)) - 1;
+
+                while (additional_bytes--) {
+                    if(pos + 1 >= str.size())
+                        throw std::runtime_error("assumed UTF-8 encoded source, but character literal ends unexpectedly");
+                    
+                    unsigned char c = str[pos++];
+                    
+                    if (((c >> 6) != 2)    // ensure c has form 0xb10xxxxxx
+                        || (!value && additional_bytes == 1 && c < 0xa0)    // overlong 3-bytes encoding
+                        || (!value && additional_bytes == 2 && c < 0x90))   // overlong 4-bytes encoding
+                        throw std::runtime_error("assumed UTF-8 encoded source, but sequence is invalid");
+                    
+                    value = (value << 6) | (c & ((1 << 7) - 1));
+                }
+
+                if (value >= 0xd800 && value <= 0xdfff)
+                    throw std::runtime_error("assumed UTF-8 encoded source, but sequence is invalid");
+                
+                if ((utf8 && value > 0x7f) || (utf16 && value > 0xffff) || value > 0x10ffff)
+                    throw std::runtime_error("code point too large");
+            }
         }
 
         if (((narrow || utf8) && value > std::numeric_limits<unsigned char>::max()) || (utf16 && value >> 16) || value >> 32)
