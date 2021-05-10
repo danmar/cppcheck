@@ -2680,7 +2680,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 if (mWhat == What::Reassign)
                     return Result(Result::Type::BAILOUT, parent->astParent());
                 continue;
-            } else if (mWhat == What::UnusedValue && Token::simpleMatch(parent, "&") && Token::Match(parent->astParent(), "[,(]")) {
+            } else if (mWhat == What::UnusedValue && parent->isUnaryOp("&") && Token::Match(parent->astParent(), "[,(]")) {
                 // Pass variable to function the writes it
                 const Token *ftok = parent->astParent();
                 while (Token::simpleMatch(ftok, ","))
