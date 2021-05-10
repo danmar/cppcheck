@@ -673,6 +673,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     if (!membervar.empty()) {
                         if (!suppressErrors && Token::Match(tok, "%name% . %name% ;|%cop%") && tok->strAt(2) == membervar)
                             uninitStructMemberError(tok, tok->str() + "." + membervar);
+                        else if (mTokenizer->isCPP() && !suppressErrors && Token::Match(tok, "%name% ;"))
+                            uninitStructMemberError(tok, tok->str() + "." + membervar);
                     }
 
                     // Use variable

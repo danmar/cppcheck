@@ -758,7 +758,8 @@ private:
                              "    return ab;\n"
                              "}";
         checkUninitVar(code2, "test.cpp");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized struct member: ab.a\n"
+                      "[test.cpp:4]: (error) Uninitialized struct member: ab.b\n", errout.str());
         checkUninitVar(code2, "test.c");
         ASSERT_EQUALS("[test.c:4]: (error) Uninitialized variable: ab\n", errout.str());
 
@@ -3510,6 +3511,14 @@ private:
                        "    return ab.a;\n"
                        "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("struct S { int a; int b; };\n" // #8299
+                       "void f(void) {\n"
+                       "    struct S s;\n"
+                       "    s.a = 0;\n"
+                       "    return s;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized struct member: s.b\n", errout.str());
 
         // checkIfForWhileHead
         checkUninitVar("struct FRED {\n"
