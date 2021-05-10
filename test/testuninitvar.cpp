@@ -71,6 +71,7 @@ private:
         TEST_CASE(uninitvar9); // ticket #6424
         TEST_CASE(uninitvar10); // ticket #9467
         TEST_CASE(uninitvar11); // ticket #9123
+        TEST_CASE(uninitvar12); // #10218 - stream read
         TEST_CASE(uninitvar_unconditionalTry);
         TEST_CASE(uninitvar_funcptr); // #6404
         TEST_CASE(uninitvar_operator); // #6680
@@ -758,7 +759,8 @@ private:
                              "    return ab;\n"
                              "}";
         checkUninitVar(code2, "test.cpp");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized struct member: ab.a\n"
+                      "[test.cpp:4]: (error) Uninitialized struct member: ab.b\n", errout.str());
         checkUninitVar(code2, "test.c");
         ASSERT_EQUALS("[test.c:4]: (error) Uninitialized variable: ab\n", errout.str());
 
@@ -2772,6 +2774,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void uninitvar12() { // 10218
+        const char code[] = "void fp() {\n"
+                            "  std::stringstream ss;\n"
+                            "  for (int i; ss >> i;) {}\n"
+                            "}";
+        checkUninitVar(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void uninitvar_unconditionalTry() {
         // Unconditional scopes and try{} scopes
         checkUninitVar("int f() {\n"
@@ -3510,6 +3521,21 @@ private:
                        "    return ab.a;\n"
                        "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("struct S { int a; int b; };\n" // #8299
+                       "void f(void) {\n"
+                       "    struct S s;\n"
+                       "    s.a = 0;\n"
+                       "    return s;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized struct member: s.b\n", errout.str());
+
+        checkUninitVar("struct S { int a; int b; };\n" // #9810
+                       "void f(void) {\n"
+                       "    struct S s;\n"
+                       "    return s.a ? 1 : 2;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized struct member: s.a\n", errout.str());
 
         // checkIfForWhileHead
         checkUninitVar("struct FRED {\n"

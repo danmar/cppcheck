@@ -295,6 +295,9 @@ private:
         TEST_CASE(requires3);
         TEST_CASE(requires4);
         TEST_CASE(requires5);
+
+        TEST_CASE(explicitBool1);
+        TEST_CASE(explicitBool2);
     }
 
     std::string tok(const char code[], bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
@@ -6145,6 +6148,16 @@ private:
                             "add<int>(123,456);";
         const char expected[] = "int add<int> ( int a , int b ) ; add<int> ( 123 , 456 ) ; int add<int> ( int a , int b ) { return a + b ; }";
         ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void explicitBool1() {
+        const char code[] = "class Fred { explicit(true) Fred(int); };";
+        ASSERT_EQUALS("class Fred { explicit Fred ( int ) ; } ;", tok(code));
+    }
+
+    void explicitBool2() {
+        const char code[] = "class Fred { explicit(false) Fred(int); };";
+        ASSERT_EQUALS("class Fred { Fred ( int ) ; } ;", tok(code));
     }
 };
 

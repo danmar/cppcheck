@@ -228,7 +228,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     stditem->setData(QVariant(data));
 
     //Add backtrace files as children
-    if (item.errorPath.size() > 1U) {
+    if (item.errorPath.size() > 1) {
         for (int i = 0; i < item.errorPath.size(); i++) {
             const QErrorPathItem &e = item.errorPath[i];
             line.file = e.file;

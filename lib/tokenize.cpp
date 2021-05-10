@@ -2766,6 +2766,19 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
     }
 
+    // Warn about unhandled character literals
+    if (mSettings->severity.isEnabled(Severity::information)) {
+        for (const Token *tok = tokens(); tok; tok = tok->next()) {
+            if (tok->tokType() == Token::eChar && tok->values().empty()) {
+                try {
+                    simplecpp::characterLiteralToLL(tok->str());
+                } catch (const std::exception &e) {
+                    unhandledCharLiteral(tok, e.what());
+                }
+            }
+        }
+    }
+
     mSymbolDatabase->setArrayDimensionsUsingValueFlow();
 
     printDebugOutput(1);
@@ -3243,7 +3256,7 @@ void Tokenizer::simplifyLabelsCaseDefault()
 void Tokenizer::simplifyCaseRange()
 {
     for (Token* tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "case %num% ... %num% :")) {
+        if (Token::Match(tok, "case %num%|%char% ... %num%|%char% :")) {
             const MathLib::bigint start = MathLib::toLongNumber(tok->strAt(1));
             MathLib::bigint end = MathLib::toLongNumber(tok->strAt(3));
             end = std::min(start + 50, end); // Simplify it 50 times at maximum
@@ -3254,23 +3267,6 @@ void Tokenizer::simplifyCaseRange()
                 for (MathLib::bigint i = end-1; i > start; i--) {
                     tok->insertToken(":");
                     tok->insertToken(MathLib::toString(i));
-                    tok->insertToken("case");
-                }
-            }
-        } else if (Token::Match(tok, "case %char% ... %char% :")) {
-            const char start = tok->strAt(1)[1];
-            const char end = tok->strAt(3)[1];
-            if (start < end) {
-                tok = tok->tokAt(2);
-                tok->str(":");
-                tok->insertToken("case");
-                for (char i = end - 1; i > start; i--) {
-                    tok->insertToken(":");
-                    if (i == '\\') {
-                        tok->insertToken(std::string("\'\\") + i + '\'');
-                    } else {
-                        tok->insertToken(std::string(1, '\'') + i + '\'');
-                    }
                     tok->insertToken("case");
                 }
             }
@@ -9545,6 +9541,21 @@ void Tokenizer::cppcheckError(const Token *tok) const
     printDebugOutput(0);
     throw InternalError(tok, "Analysis failed. If the code is valid then please report this failure.", InternalError::INTERNAL);
 }
+
+void Tokenizer::unhandledCharLiteral(const Token *tok, const std::string& msg) const
+{
+    std::string s = tok ? (" " + tok->str()) : "";
+    for (int i = 0; i < s.size(); ++i) {
+        if ((unsigned char)s[i] >= 0x80)
+            s.clear();
+    }
+
+    reportError(tok,
+                Severity::information,
+                "cppcheckUnhandledChar",
+                "Character literal" + s + " is not handled. " + msg);
+}
+
 /**
  * Helper function to check whether number is equal to integer constant X
  * or floating point pattern X.0
@@ -10209,6 +10220,22 @@ void Tokenizer::findGarbageCode() const
                 if (!Token::simpleMatch(tok->tokAt(-2), "operator \"\" if") &&
                     !Token::simpleMatch(tok->tokAt(-2), "extern \"C\""))
                     syntaxError(tok, prev == tok->previous() ? (prev->str() + " " + tok->str()) : (prev->str() + " .. " + tok->str()));
+            }
+        }
+    }
+
+    // invalid struct declaration
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "struct|class|enum %name%| {") && (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
+            const Token *tok2 = tok->linkAt(tok->next()->isName() ? 2 : 1);
+            if (Token::Match(tok2, "} %op%")) {
+                tok2 = tok2->next();
+                if (!Token::Match(tok2, "*|&|&&"))
+                    syntaxError(tok2, "Unexpected token '" + tok2->str() + "'");
+                while (Token::Match(tok2, "*|&|&&"))
+                    tok2 = tok2->next();
+                if (!Token::Match(tok2, "%name%"))
+                    syntaxError(tok2, "Unexpected token '" + tok2->str() + "'");
             }
         }
     }

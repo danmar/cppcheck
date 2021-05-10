@@ -1413,12 +1413,12 @@ void CheckOther::checkConstVariable()
             //Is it the right side of an initialization of a non-const reference
             bool usedInAssignment = false;
             for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
-                if (!Token::Match(tok, "& %var% = %varid%", var->declarationId()))
-                    continue;
-                const Variable* refvar = tok->next()->variable();
-                if (refvar && !refvar->isConst() && refvar->nameToken() == tok->next()) {
-                    usedInAssignment = true;
-                    break;
+                if (Token::Match(tok, "& %var% = %varid%", var->declarationId())) {
+                    const Variable* refvar = tok->next()->variable();
+                    if (refvar && !refvar->isConst() && refvar->nameToken() == tok->next()) {
+                        usedInAssignment = true;
+                        break;
+                    }
                 }
             }
             if (usedInAssignment)

@@ -943,10 +943,11 @@ static bool isForLoopCondition(const Token * const tok)
            parent->astParent()->astParent()->astOperand1()->str() == "for";
 }
 
-static bool isZeroConstant(const Token *tok) {
-	while (tok && tok->isCast())
-		tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
-	return Token::simpleMatch(tok, "0") && !tok->isExpandedMacro();
+static bool isZeroConstant(const Token *tok)
+{
+    while (tok && tok->isCast())
+        tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
+    return Token::simpleMatch(tok, "0") && !tok->isExpandedMacro();
 }
 
 /**
@@ -1889,6 +1890,22 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     if (parent && parent->tokType() == Token::eIncDecOp)
         return true;
 
+    // structured binding, nonconst reference variable in lhs
+    if (Token::Match(tok2->astParent(), ":|=") && tok2 == tok2->astParent()->astOperand2() && Token::simpleMatch(tok2->astParent()->previous(), "]")) {
+        const Token *typeStart = tok2->astParent()->previous()->link()->previous();
+        if (Token::simpleMatch(typeStart, "&"))
+            typeStart = typeStart->previous();
+        if (typeStart && Token::Match(typeStart->previous(), "[;{}(] auto &| [")) {
+            for (const Token *vartok = typeStart->tokAt(2); vartok != tok2; vartok = vartok->next()) {
+                if (vartok->varId()) {
+                    const Variable* refvar = vartok->variable();
+                    if (!refvar || (!refvar->isConst() && refvar->isReference()))
+                        return true;
+                }
+            }
+        }
+    }
+
     if (Token::simpleMatch(tok2->astParent(), ":") && tok2->astParent()->astParent() && Token::simpleMatch(tok2->astParent()->astParent()->previous(), "for (")) {
         const Token * varTok = tok2->astParent()->previous();
         if (!varTok)
@@ -2196,7 +2213,7 @@ bool isLikelyStreamRead(bool cpp, const Token *op)
     const Token *parent = op;
     while (parent->astParent() && parent->astParent()->str() == op->str())
         parent = parent->astParent();
-    if (parent->astParent() && !Token::Match(parent->astParent(), "%oror%|&&|(|,|.|!"))
+    if (parent->astParent() && !Token::Match(parent->astParent(), "%oror%|&&|(|,|.|!|;"))
         return false;
     if (op->str() == "&" && parent->astParent())
         return false;
@@ -2663,6 +2680,26 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 if (mWhat == What::Reassign)
                     return Result(Result::Type::BAILOUT, parent->astParent());
                 continue;
+            } else if (mWhat == What::UnusedValue && parent->isUnaryOp("&") && Token::Match(parent->astParent(), "[,(]")) {
+                // Pass variable to function the writes it
+                const Token *ftok = parent->astParent();
+                while (Token::simpleMatch(ftok, ","))
+                    ftok = ftok->astParent();
+                if (ftok && Token::Match(ftok->previous(), "%name% (")) {
+                    const std::vector<const Token *> args = getArguments(ftok);
+                    int argnr = 0;
+                    while (argnr < args.size() && args[argnr] != parent)
+                        argnr++;
+                    if (argnr < args.size()) {
+                        const Library::Function* functionInfo = mLibrary.getFunction(ftok->astOperand1());
+                        if (functionInfo) {
+                            const auto it = functionInfo->argumentChecks.find(argnr + 1);
+                            if (it != functionInfo->argumentChecks.end() && it->second.direction == Library::ArgumentChecks::Direction::DIR_OUT)
+                                continue;
+                        }
+                    }
+                }
+                return Result(Result::Type::BAILOUT, parent->astParent());
             } else {
                 // TODO: this is a quick bailout
                 return Result(Result::Type::BAILOUT, parent->astParent());

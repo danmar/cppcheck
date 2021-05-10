@@ -35,7 +35,7 @@
 // How many compileExpression recursions are allowed?
 // For practical code this could be endless. But in some special torture test
 // there needs to be a limit.
-static const int AST_MAX_DEPTH = 50;
+static const int AST_MAX_DEPTH = 100;
 
 
 TokenList::TokenList(const Settings* settings) :
@@ -477,7 +477,6 @@ static Token * skipDecl(Token *tok)
 {
     if (!Token::Match(tok->previous(), "( %name%"))
         return tok;
-
     Token *vartok = tok;
     while (Token::Match(vartok, "%name%|*|&|::|<")) {
         if (vartok->str() == "<") {
@@ -487,7 +486,7 @@ static Token * skipDecl(Token *tok)
                 return tok;
         } else if (Token::Match(vartok, "%var% [:=(]")) {
             return vartok;
-        } else if (Token::simpleMatch(vartok, "decltype (")) {
+        } else if (Token::simpleMatch(vartok, "decltype (") && !Token::Match(tok->linkAt(1), ") [,)]")) {
             return vartok->linkAt(1)->next();
         }
         vartok = vartok->next();
@@ -707,7 +706,9 @@ static void compileUnaryOp(Token *&tok, AST_state& state, void(*f)(Token *&tok, 
     if (f) {
         tok = tok->next();
         state.depth++;
-        if (tok && state.depth <= AST_MAX_DEPTH)
+        if (state.depth > AST_MAX_DEPTH)
+            throw InternalError(tok, "maximum AST depth exceeded", InternalError::AST);
+        if (tok)
             f(tok, state);
         state.depth--;
     }
@@ -844,9 +845,10 @@ static void compileTerm(Token *&tok, AST_state& state)
         } else if (state.cpp && iscpp11init(tok)) {
             if (state.op.empty() || Token::Match(tok->previous(), "[{,]") || Token::Match(tok->tokAt(-2), "%name% (")) {
                 if (Token::Match(tok, "{ !!}")) {
-                    Token *end = tok->link();
+                    Token *const end = tok->link();
                     compileUnaryOp(tok, state, compileExpression);
-                    tok = end;
+                    if (precedes(tok,end))
+                        tok = end;
                 } else {
                     state.op.push(tok);
                     tok = tok->tokAt(2);
@@ -1314,7 +1316,7 @@ static void compileComma(Token *&tok, AST_state& state)
 static void compileExpression(Token *&tok, AST_state& state)
 {
     if (state.depth > AST_MAX_DEPTH)
-        return; // ticket #5592
+        throw InternalError(tok, "maximum AST depth exceeded", InternalError::AST); // ticket #5592
     if (tok)
         compileComma(tok, state);
 }
@@ -1382,6 +1384,7 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
                 if (tok->str() == "(")
                     tok = tok->astOperand1();
                 const Token * const endToken2 = tok->link();
+                tok = tok->next();
                 for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
                     tok = createAstAtToken(tok, cpp);
             }
