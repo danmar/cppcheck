@@ -1255,6 +1255,16 @@ private:
                        "    *c = 0;\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #10273 - assignment in conditional code
+        checkUninitVar("void foo() {\n"
+                       "    int learn;\n"
+                       "    for (int index = 0; index < 10; index++) {\n"
+                       "        if (!(learn & PORT_LEARN_DISABLE))\n"
+                       "            learn = 123;\n"
+                       "    }\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: learn\n", errout.str());
     }
 
     // switch..
