@@ -652,6 +652,31 @@ struct ForwardTraversal {
             } else if (Token::simpleMatch(tok, "switch (")) {
                 if (updateRecursive(tok->next()->astOperand2()) == Progress::Break)
                     return Break();
+                if (!analyzer->isKnown())
+                    return Break();
+                Token *bodyStart = tok->linkAt(1)->next();
+                const Token *bodyEnd = bodyStart->link();
+                bool known = true;
+                for (Token *bodyTok = bodyStart->next(); bodyTok != bodyEnd; bodyTok = bodyTok->next()) {
+                    if (bodyTok->str() == "{")
+                        bodyTok = bodyTok->link();
+                    known |= Token::Match(bodyTok, "return|throw|break");
+                    if (!Token::Match(bodyTok, "case %any% :") && !Token::simpleMatch(bodyTok, "default :"))
+                        continue;
+                    while (Token::Match(bodyTok, "case %any% :") || Token::simpleMatch(bodyTok, "default :")) {
+                        bodyTok = bodyTok->tokAt(2);
+                        while (Token::Match(bodyTok, "[;:]"))
+                            bodyTok = bodyTok->next();
+                    }
+
+                    ForwardTraversal ft = *this;
+                    ft.analyzer->forkScope(bodyEnd);
+                    if (!known)
+                        ft.analyzer->lowerToPossible();
+                    ft.updateRange(bodyTok, bodyEnd, depth - 1);
+                    known = false;
+                    bodyTok = bodyTok->previous();
+                }
                 return Break();
             } else {
                 if (updateTok(tok, &next) == Progress::Break)

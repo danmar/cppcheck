@@ -92,6 +92,7 @@ private:
         TEST_CASE(valueFlowForwardFunction);
         TEST_CASE(valueFlowForwardTernary);
         TEST_CASE(valueFlowForwardLambda);
+        TEST_CASE(valueFlowForwardSwitch);
         TEST_CASE(valueFlowForwardTryCatch);
         TEST_CASE(valueFlowForwardInconclusiveImpossible);
 
@@ -3028,6 +3029,22 @@ private:
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 3));
     }
 
+
+    void valueFlowForwardSwitch() {
+        const char *code;
+        code = "void f(int var) {\n"
+               "  int x = 123;\n"
+               "  switch (var) {\n"
+               "  case 1:\n"
+               "     return x;\n"
+               "  case 2:\n"
+               "     return x;\n"
+               "  }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 123));
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 7U, 123));
+    }
+
     void valueFlowForwardTryCatch() {
         const char *code;
 
@@ -4378,7 +4395,7 @@ private:
                "    return x;\n"
                "}\n";
         values = tokenValues(code, "x ; }", ValueFlow::Value::ValueType::UNINIT);
-        ASSERT_EQUALS(0, values.size());
+        ASSERT(values.size());
     }
 
     void valueFlowConditionExpressions() {
