@@ -2012,7 +2012,7 @@ private:
     }
 
     void localvar2() {
-        // extracttests.start: struct undefined { void f(); };
+        // extracttests.disable: uninitialized variables and stuff
 
         functionVariableUsage("int foo()\n"
                               "{\n"
@@ -2036,7 +2036,6 @@ private:
                               "}");
         ASSERT_EQUALS("", errout.str());
 
-        // extracttests.disable
         functionVariableUsage("undefined foo()\n"
                               "{\n"
                               "    undefined i;\n"
@@ -2044,7 +2043,6 @@ private:
                               "}\n",
                               "test.c");
         ASSERT_EQUALS("[test.c:3]: (style) Variable 'i' is not assigned a value.\n", errout.str());
-        // extracttests.enable
 
         functionVariableUsage("undefined *foo()\n"
                               "{\n"
@@ -2149,6 +2147,7 @@ private:
                               "    f(a+1);\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+        // extracttests.enable
     }
 
     void localvar3() {
