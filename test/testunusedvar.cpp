@@ -2607,15 +2607,7 @@ private:
                               "    char *ptr = buf;\n"
                               "    *(ptr++) = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'buf' is assigned a value that is never used.\n", errout.str());
-
-        functionVariableUsage("void foo()\n"
-                              "{\n"
-                              "    char buf[5];\n"
-                              "    char *ptr = buf - 1;\n"
-                              "    *(++ptr) = 0;\n"
-                              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'buf' is not assigned a value.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'buf' is assigned a value that is never used.\n", "", errout.str());
 
         // #3910
         functionVariableUsage("void foo() {\n"
