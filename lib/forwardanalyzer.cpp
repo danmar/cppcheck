@@ -652,7 +652,9 @@ struct ForwardTraversal {
             } else if (Token::simpleMatch(tok, "switch (")) {
                 if (updateRecursive(tok->next()->astOperand2()) == Progress::Break)
                     return Break();
-                if (!analyzer->isKnown())
+                std::vector<int> result = analyzer->evaluate(tok->next()->astOperand2());
+                if (!result.empty() || analyzer->isConditional())
+                    // TODO if result is not empty then execute the corresponding case
                     return Break();
                 Token *bodyStart = tok->linkAt(1)->next();
                 const Token *bodyEnd = bodyStart->link();
