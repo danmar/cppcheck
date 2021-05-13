@@ -2324,6 +2324,21 @@ const Variable *getLHSVariable(const Token *tok)
     return getLHSVariableRecursive(tok->astOperand1());
 }
 
+const Token* findAllocFuncCallToken(const Token *expr, const Library &library)
+{
+    if (!expr)
+        return nullptr;
+    if (Token::Match(expr, "[+-]")) {
+        const Token *tok1 = findAllocFuncCallToken(expr->astOperand1(), library);
+        return tok1 ? tok1 : findAllocFuncCallToken(expr->astOperand2(), library);
+    }
+    if (expr->isCast())
+        return findAllocFuncCallToken(expr->astOperand2() ? expr->astOperand2() : expr->astOperand1(), library);
+    if (Token::Match(expr->previous(), "%name% (") && library.getAllocFuncInfo(expr->astOperand1()))
+        return expr->astOperand1();
+    return (Token::simpleMatch(expr, "new") && expr->astOperand1()) ? expr : nullptr;
+}
+
 static bool nonLocal(const Variable* var, bool deref)
 {
     return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isReference() || var->isExtern();

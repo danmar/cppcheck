@@ -281,6 +281,9 @@ const Variable *getLHSVariable(const Token *tok);
 
 std::vector<const Variable*> getLHSVariables(const Token* tok);
 
+/** Find a allocation function call in expression, so result of expression is allocated memory/resource. */
+const Token* findAllocFuncCallToken(const Token *expr, const Library &library);
+
 bool isScopeBracket(const Token* tok);
 
 bool isNullOperand(const Token *expr);
