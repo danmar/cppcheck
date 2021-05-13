@@ -403,6 +403,7 @@ void nullPointer()
 
 void memleak_malloca()
 {
+    // cppcheck-suppress unusedAllocatedMemory
     // cppcheck-suppress unreadVariable
     void *pMem = _malloca(10);
     // cppcheck-suppress memleak

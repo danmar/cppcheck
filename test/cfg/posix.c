@@ -197,6 +197,7 @@ void memleak_getaddrinfo()
 
 void memleak_mmap(int fd)
 {
+    // cppcheck-suppress unusedAllocatedMemory
     // cppcheck-suppress unreadVariable
     void *addr = mmap(NULL, 255, PROT_NONE, MAP_PRIVATE, fd, 0);
     // cppcheck-suppress memleak

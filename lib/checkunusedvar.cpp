@@ -940,9 +940,11 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 else if (var && var->mType == Variables::pointer &&
                          Token::Match(start, "%name% =") &&
                          findAllocFuncCallToken(start->next()->astOperand2(), mSettings->library)) {
-                    bool allocate = true;
 
                     const Token *allocFuncCallToken = findAllocFuncCallToken(start->next()->astOperand2(), mSettings->library);
+                    const Library::AllocFunc *allocFunc = mSettings->library.getAllocFuncInfo(allocFuncCallToken);
+
+                    bool allocateMemory = !allocFunc || Library::ismemory(allocFunc->groupId);
 
                     if (allocFuncCallToken->str() == "new") {
                         const Token *type = allocFuncCallToken->next();
@@ -956,11 +958,11 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                         if (!type->isStandardType()) {
                             const Variable *variable = start->variable();
                             if (!variable || !isRecordTypeWithoutSideEffects(variable->type()))
-                                allocate = false;
+                                allocateMemory = false;
                         }
                     }
 
-                    if (allocate)
+                    if (allocateMemory)
                         variables.allocateMemory(varid1, tok);
                     else
                         variables.write(varid1, tok);
