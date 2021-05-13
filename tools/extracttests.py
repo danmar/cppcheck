@@ -47,7 +47,7 @@ def add_includes(code):
 
     for i in includes:
         if i[0] in code:
-            include_header = f'#include <{i[1]}>'
+            include_header = '#include <%s>' % i[1]
             if include_header not in code:
                 code = include_header + '\n' + code
 
