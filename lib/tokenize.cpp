@@ -2767,7 +2767,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     }
 
     // Warn about unhandled character literals
-    if (mSettings->severity.isEnabled(Severity::information)) {
+    if (mSettings->severity.isEnabled(Severity::debug) || mSettings->daca) {
         for (const Token *tok = tokens(); tok; tok = tok->next()) {
             if (tok->tokType() == Token::eChar && tok->values().empty()) {
                 try {
@@ -9551,8 +9551,8 @@ void Tokenizer::unhandledCharLiteral(const Token *tok, const std::string& msg) c
     }
 
     reportError(tok,
-                Severity::information,
-                "cppcheckUnhandledChar",
+                Severity::debug,
+                "debugUnhandledChar",
                 "Character literal" + s + " is not handled. " + msg);
 }
 
