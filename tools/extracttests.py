@@ -33,6 +33,7 @@ def add_includes(code):
                 ('free','cstdlib'),
                 ('malloc','cstdlib'),
                 ('realloc','cstdlib'),
+                ('memcpy','cstring'),
                 ('stdin','cstdio'),
                 ('strcat','cstring'),
                 ('strchr','cstring'),
@@ -41,9 +42,11 @@ def add_includes(code):
                 ('strncat','cstring'),
                 ('strncpy','cstring'),
                 ('std::cout','iostream'),
+                ('std::pair','utility'),
                 ('std::shared_ptr','memory'),
                 ('std::string','string'),
-                ('std::unique_ptr','memory'))
+                ('std::unique_ptr','memory'),
+                ('std::vector','vector'))
 
     for i in includes:
         if i[0] in code:
