@@ -108,12 +108,3 @@ jobs:
           make -j$(nproc) run-dmake
           git diff --exit-code
 
-      - name: extract tests and check syntax
-        run: |
-          mkdir temp1
-          python3 tools/extracttests.py --only-tp --code=temp1 test/testbufferoverrun.cpp
-          python3 tools/extracttests.py --only-tp --code=temp1 test/testnullpointer.cpp
-          python3 tools/extracttests.py --only-tp --code=temp1 test/testuninitvar.cpp
-          python3 tools/extracttests.py --only-tp --code=temp1 --check-function=functionVariableUsage test/testunusedvar.cpp
-          g++ -fsyntax-only temp1/*.cpp
-
