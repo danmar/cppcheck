@@ -5036,7 +5036,7 @@ private:
                               "void foo()\n"
                               "{\n"
                               "    struct Fred* ptr = new Fred();\n"
-                              "    free(ptr);\n"
+                              "    delete ptr;\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'ptr' is allocated memory that is never used.\n", errout.str());
 
