@@ -1029,6 +1029,18 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
             if (possibleParent && isLikelyStreamRead(mTokenizer->isCPP(), possibleParent))
                 return false;
         }
+        if (alloc == ARRAY && Token::simpleMatch(vartok->astParent(), "[")) {
+            const Token *arrayValue = vartok;
+            while (arrayValue->astParent() &&
+                   (Token::simpleMatch(arrayValue->astParent(), "[") || arrayValue->astParent()->isUnaryOp("*")) &&
+                   arrayValue == arrayValue->astParent()->astOperand1())
+                arrayValue = arrayValue->astParent();
+            if (Token::Match(arrayValue->astParent(), "[(,]")) {
+                const int use = isFunctionParUsage(arrayValue, pointer, NO_ALLOC, indirect);
+                if (use >= 0)
+                    return (use>0);
+            }
+        }
         if (Token::Match(possibleParent, "[(,]")) {
             if (unknown)
                 return false; // TODO: output some info message?

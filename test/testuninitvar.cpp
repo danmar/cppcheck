@@ -1487,7 +1487,7 @@ private:
                        "    int a[10];\n"
                        "    f(a[0]);\n"
                        "}");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Uninitialized variable: a\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: a\n", errout.str());
 
         // Ticket #2320
         checkUninitVar("void foo() {\n"
