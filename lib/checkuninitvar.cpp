@@ -842,9 +842,9 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
             if (!Token::simpleMatch(top->previous(), "for (") || !Token::simpleMatch(top->link(), ") {"))
                 continue;
             const Token *bodyStart = top->link()->next();
-            const Token *errorToken = checkLoopBodyRecursive(bodyStart, var, alloc, membervar, bailout);
-            if (errorToken)
-                return errorToken;
+            const Token *errorToken1 = checkLoopBodyRecursive(bodyStart, var, alloc, membervar, bailout);
+            if (errorToken1)
+                return errorToken1;
             if (bailout)
                 return nullptr;
         }
