@@ -836,6 +836,26 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
             return nullptr;
         }
 
+        // for loop; skip third expression until loop body has been analyzed..
+        if (tok->str() == ";" && Token::simpleMatch(tok->astParent(), ";") && Token::simpleMatch(tok->astParent()->astParent(), "(")) {
+            const Token *top = tok->astParent()->astParent();
+            if (!Token::simpleMatch(top->previous(), "for (") || !Token::simpleMatch(top->link(), ") {"))
+                continue;
+            const Token *bodyStart = top->link()->next();
+            const Token *errorToken = checkLoopBodyRecursive(bodyStart, var, alloc, membervar, bailout);
+            if (errorToken)
+                return errorToken;
+            if (bailout)
+                return nullptr;
+        }
+        // for loop; skip loop body if there is third expression
+        if (Token::simpleMatch(tok, ") {") &&
+            Token::simpleMatch(tok->link()->previous(), "for (") &&
+            Token::simpleMatch(tok->link()->astOperand2(), ";")  &&
+            Token::simpleMatch(tok->link()->astOperand2()->astOperand2(), ";")) {
+            tok = tok->linkAt(1);
+        }
+
         if (tok->str() == "{") {
             const Token *errorToken1 = checkLoopBodyRecursive(tok, var, alloc, membervar, bailout);
             if (Token::simpleMatch(tok->link(), "} else {")) {
