@@ -2177,22 +2177,27 @@ private:
     }
 
     void localvar6() {
-        functionVariableUsage("void foo()\n"
-                              "{\n"
+        functionVariableUsage("void foo() {\n"
                               "    int b[10];\n"
                               "    for (int i=0;i<10;++i)\n"
                               "        b[i] = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'b' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'b[i]' is assigned a value that is never used.\n", errout.str());
 
-        functionVariableUsage("void foo()\n"
-                              "{\n"
+        functionVariableUsage("void foo() {\n"
                               "    int a = 0;\n"
                               "    int b[10];\n"
                               "    for (int i=0;i<10;++i)\n"
                               "        b[i] = ++a;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'b' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'b[i]' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void foo() {\n"
+                              "    int b[10];\n"
+                              "    for (int i=0;i<10;++i)\n"
+                              "        *(b+i) = 0;\n"
+                              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Variable '*(b+i)' is assigned a value that is never used.\n", "", errout.str());
     }
 
     void localvar8() {

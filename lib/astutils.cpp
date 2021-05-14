@@ -2784,6 +2784,8 @@ std::set<nonneg int> FwdAnalysis::getExprVarIds(const Token* expr, bool* localOu
     bool unknownVarId = false;
     visitAstNodes(expr,
     [&](const Token *tok) {
+        if (tok->str() == "[" && mWhat == What::UnusedValue)
+            return ChildrenToVisit::op1;
         if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
             // unknown variable
             unknownVarId = true;
