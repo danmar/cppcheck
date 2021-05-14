@@ -1284,6 +1284,7 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: learn\n", errout.str());
 
+        // extracttests.start: struct Entry { Entry *next; }; Entry *buckets;
         checkUninitVar("void foo() {\n"
                        "  Entry *entry, *nextEntry;\n"
                        "  for(int i = 0; i < 10; i++) {\n"
