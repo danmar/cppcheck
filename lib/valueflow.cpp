@@ -100,6 +100,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <functional>
 #include <iterator>
@@ -4911,10 +4912,13 @@ static bool valueFlowForLoop2(const Token *tok,
             execute(secondExpression, &programMemory, &result, &error);
     }
 
-    memory1->swap(startMemory);
+    if (memory1)
+        memory1->swap(startMemory);
     if (!error) {
-        memory2->swap(endMemory);
-        memoryAfter->swap(programMemory);
+        if (memory2)
+            memory2->swap(endMemory);
+        if (memoryAfter)
+            memoryAfter->swap(programMemory);
     }
 
     return true;
@@ -5229,6 +5233,11 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         const Token* condTok = getCondTokFromEnd(endBlock);
         if (scope && condTok)
             programMemoryParseCondition(pm, condTok, nullptr, getSettings(), scope->type != Scope::eElse);
+        if (condTok && Token::simpleMatch(condTok->astParent(), ";")) {
+            ProgramMemory endMemory;
+            if (valueFlowForLoop2(condTok->astTop()->previous(), nullptr, &endMemory, nullptr))
+                pm.replace(endMemory);
+        }
         // ProgramMemory pm = pms.get(endBlock->link()->next(), getProgramState());
         for (const auto& p:pm.values) {
             nonneg int varid = p.first;

@@ -132,6 +132,7 @@ private:
         TEST_CASE(array_index_51); // #3763
         TEST_CASE(array_index_52); // #7682
         TEST_CASE(array_index_53); // #4750
+        TEST_CASE(array_index_54); // #10268
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1557,6 +1558,20 @@ private:
               "             M[i][j]=0.0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Array 'M[3][1]' accessed at index M[*][2], which is out of bounds.\n", errout.str());
+    }
+
+    void array_index_54() {
+        check("void f() {\n"
+              "    g(0);\n"
+              "}\n"
+              "void g(unsigned int x) {\n"
+              "    int b[4];\n"
+              "    for (unsigned int i = 0; i < 4; i += 2) {\n"
+              "        b[i]   = 0;\n"
+              "        b[i+1] = 0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_multidim() {
