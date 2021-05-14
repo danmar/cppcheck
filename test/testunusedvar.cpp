@@ -2112,16 +2112,6 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // f() can not write a (not supported yet)
-        functionVariableUsage("void f(int i) { }\n"
-                              "void foo()\n"
-                              "{\n"
-                              "    int a[10];\n"
-                              "    f(a[0]);\n"
-                              "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'a' is not assigned a value.\n",
-                           "", errout.str());
-
-        // f() can not write a (not supported yet)
         functionVariableUsage("void f(const int & i) { }\n"
                               "void foo()\n"
                               "{\n"
