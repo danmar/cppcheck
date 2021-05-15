@@ -2249,6 +2249,12 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
 
+        checkUninitVar("void f() {\n" // #7736
+                       "    int buf[12];\n"
+                       "    printf (\"%d\", buf[0] );\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: buf\n", errout.str());
+
         checkUninitVar("void f() {\n"
                        "    int x;\n"
                        "    int y = x & 3;\n"
