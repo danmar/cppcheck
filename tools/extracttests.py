@@ -26,7 +26,7 @@ import sys
 import re
 
 
-def add_includes(code):
+def get_includes(code):
     includes = (('alloca','alloca.h'),
                 ('NULL','cstddef'),
                 ('size_t','cstddef'),
@@ -48,23 +48,28 @@ def add_includes(code):
                 ('std::unique_ptr','memory'),
                 ('std::vector','vector'))
 
+    ret = ''
+
     for i in includes:
         if i[0] in code:
             include_header = '#include <%s>' % i[1]
-            if include_header not in code:
-                code = include_header + '\n' + code
+            if include_header not in ret:
+                ret += include_header + '\n'
 
-    return code
+    return ret
 
 
 def tweak_expected(expected, start_code):
-    if start_code is None:
+    if start_code is None or start_code == '':
         return expected
-    res = re.match(r'\[([^:\]]+):([0-9]+)\](.*)', expected)
+    res = re.match(r'[^(]*\[([^:\]]+):([0-9]+)\](.*)', expected)
     if res is None:
         return expected
+    if start_code[-1] == '\n':
+        start_code = start_code[:-1]
     lines = len(start_code.split('\n'))
     return '[%s:%i]%s' % (res.group(1), lines + int(res.group(2)), res.group(3))
+
 
 class Extract:
 
@@ -127,8 +132,6 @@ class Extract:
             res = re.match('\\s+' + check_function + '\\(' + string, line)
             if res is not None:
                 code = res.group(1)
-                if start_code:
-                    code = start_code + '\n' + code
 
             # code..
             if code is not None:
@@ -141,8 +144,15 @@ class Extract:
             # assert
             res = re.match('\\s+ASSERT_EQUALS\\(\\"([^"]*)\\",', line)
             if res is not None and code is not None:
-                code = add_includes(code)
-                expected = tweak_expected(res.group(1), start_code)
+                if start_code:
+                    includes = get_includes(start_code + code)
+                    code = includes + start_code + code
+                    expected = tweak_expected(res.group(1), includes + start_code)
+                else:
+                    includes = get_includes(code)
+                    code = includes + code
+                    expected = tweak_expected(res.group(1), includes)
+
                 node = {'testclass': testclass,
                         'functionName': functionName,
                         'code': code.replace("\\\\", "\\"),
@@ -345,8 +355,6 @@ if filename is not None:
         if not os.path.exists(codedir):
             os.mkdir(codedir)
 
-        errors = open(codedir + 'errors.txt', 'w')
-
         testfile = filename
         if testfile.find('/'):
             testfile = testfile[testfile.rfind('/'):]
@@ -363,21 +371,25 @@ if filename is not None:
             code = code.replace('\\n', '\n')
             code = code.replace('\\"', '"')
             expected = node['expected']
+            if expected.endswith('\\n'):
+                expected = expected[:-2]
 
             filename = '%s-%03i-%s.cpp' % (testfile, testnum, functionName)
 
+            # comment error
+            res = re.match(r'[^(]*\[([^:\]]+):([0-9]+)\]: \([a-z]+\) (.*)', expected)
+            if res:
+                line_number = int(res.group(2)) - 1
+                lines = code.split('\n')
+                if len(lines) > line_number:
+                    lines[line_number] += ' // ' + res.group(3)
+                    code = '\n'.join(lines)
+                else:
+                    print('filename:%s expected:%s' % (filename, expected))
+
             # source code
             with open(codedir + filename, 'w') as fout:
-                fout.write(code)
-
-            # write 'expected' to errors.txt
-            if expected != '':
-                expected = expected.replace('\\n', '\n')
-                expected = expected.replace('\\"', '"')
-                expected = re.sub(
-                    '\\[test.cp?p?:', '[' + filename + ':', expected)
-                errors.write(expected)
-        errors.close()
+                fout.write(code + '\n')
     else:
         for node in e.nodes:
             print(node['functionName'])
