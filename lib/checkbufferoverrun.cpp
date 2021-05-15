@@ -436,7 +436,7 @@ void CheckBufferOverrun::pointerArithmetic()
             continue;
         if (!tok->valueType() || tok->valueType()->pointer == 0)
             continue;
-        if (!tok->astOperand1() || !tok->astOperand2())
+        if (!tok->isBinaryOp())
             continue;
         if (!tok->astOperand1()->valueType() || !tok->astOperand2()->valueType())
             continue;
@@ -472,7 +472,14 @@ void CheckBufferOverrun::pointerArithmetic()
             if (const ValueFlow::Value *neg = indexToken->getValueLE(-1, mSettings))
                 pointerArithmeticError(tok, indexToken, neg);
         } else if (tok->str() == "-") {
-            // TODO
+            const Token *array = arrayToken;
+            while (Token::Match(array, ".|::"))
+                array = array->astOperand2();
+            if (array->variable() && array->variable()->isArray()) {
+                const ValueFlow::Value *v = indexToken->getValueGE(1, mSettings);
+                if (v)
+                    pointerArithmeticError(tok, indexToken, v);
+            }
         }
     }
 }
