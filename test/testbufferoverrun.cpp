@@ -200,13 +200,7 @@ private:
         TEST_CASE(pointer_out_of_bounds_4);
         // TODO TEST_CASE(pointer_out_of_bounds_sub);
 
-        // TODO TEST_CASE(strncat1);
-        // TODO TEST_CASE(strncat2);
-        // TODO TEST_CASE(strncat3);
-
-        // TODO TEST_CASE(strcat1);
-        // TODO TEST_CASE(strcat2);
-        // TODO TEST_CASE(strcat3);
+        TEST_CASE(strcat1);
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);  // ticket #4764
@@ -3055,58 +3049,14 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (portability) Undefined behaviour, when 'i' is -20 the pointer arithmetic 'x-i' is out of bounds.\n", errout.str());
     }
 
-    void strncat1() {
-        check("void f(char *a, char *b) {\n"
-              "    char str[16];\n"
-              "    strncpy(str, a, 10);\n"
-              "    strncat(str, b, 10);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Dangerous usage of strncat - 3rd parameter is the maximum number of characters to append.\n", errout.str());
-    }
-
-    void strncat2() {
-        check("void f(char *a) {\n"
-              "    char str[5];\n"
-              "    strncat(str, a, 5);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Dangerous usage of strncat - 3rd parameter is the maximum number of characters to append.\n", errout.str());
-    }
-
-    void strncat3() {
-        check("void f(char *a) {\n"
-              "    char str[5];\n"
-              "    strncat(str, \"foobar\", 5);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Dangerous usage of strncat - 3rd parameter is the maximum number of characters to append.\n", errout.str());
-    }
-
-
     void strcat1() {
         check("struct Foo { char a[4]; };\n"
               "void f() {\n"
-              "  struct Foo x;\n"
+              "  struct Foo x = {0};\n"
               "  strcat(x.a, \"aa\");\n"
               "  strcat(x.a, \"aa\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds.\n", errout.str());
-    }
-
-    void strcat2() {
-        check("struct Foo { char a[5]; };\n"
-              "void f() {\n"
-              "  struct Foo x;\n"
-              "  strcat(x.a, \"aa\");\n"
-              "  strcat(x.a, \"aa\");\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void strcat3() {
-        check("void f() {\n"
-              "  INT str[10];\n"
-              "  strcat(str, \"aa\");\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds.\n", "", errout.str());
     }
 
     void varid1() {
