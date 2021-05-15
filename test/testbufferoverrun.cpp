@@ -39,12 +39,11 @@ public:
 private:
     Settings settings0;
 
-    void check(const char code[], bool experimental = true, const char filename[] = "test.cpp") {
+    void check(const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
         settings0.certainty.enable(Certainty::inconclusive);
-        settings0.certainty.setEnabled(Certainty::experimental, experimental);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
@@ -341,7 +340,7 @@ private:
     void array_index_1() {
         check("void f()\n"
               "{\n"
-              "    char str[0x10];\n"
+              "    char str[0x10] = {0};\n"
               "    str[15] = 0;\n"
               "    str[16] = 0;\n"
               "}");
@@ -349,7 +348,7 @@ private:
 
         check("char f()\n"
               "{\n"
-              "    char str[16];\n"
+              "    char str[16] = {0};\n"
               "    return str[16];\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'str[16]' accessed at index 16, which is out of bounds.\n", errout.str());
@@ -373,11 +372,11 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("int x[5];\n"
+        check("int x[5] = {0};\n"
               "int a = x[10];");
         ASSERT_EQUALS("[test.cpp:2]: (error) Array 'x[5]' accessed at index 10, which is out of bounds.\n", errout.str());
 
-        check("int x[5];\n"
+        check("int x[5] = {0};\n"
               "int a = (x)[10];");
         ASSERT_EQUALS("[test.cpp:2]: (error) Array 'x[5]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
@@ -641,12 +640,11 @@ private:
               "public:\n"
               "    ABC();\n"
               "    char *str[10];\n"
-              "    struct ABC *next();"
+              "    struct ABC *next();\n"
               "};\n"
               "\n"
-              "static void f()\n"
+              "static void f(ABC *abc1)\n"
               "{\n"
-              "    ABC *abc1;\n"
               "    for ( ABC *abc = abc1; abc; abc = abc->next() )\n"
               "    {\n"
               "        abc->str[10] = 0;\n"
@@ -1945,7 +1943,7 @@ private:
               "        }\n"
               "        a[i - 1] = 0;\n"
               "    }\n"
-              "}", true);
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         // extracttests.start: int maybe();
@@ -2172,13 +2170,13 @@ private:
         check("void f() {\n"
               "    char str[3];\n"
               "    str[((unsigned char)3) - 1] = 0;\n"
-              "}", false, "test.cpp");
+              "}", "test.cpp");
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"  // #5416 FP
               "    char *str[3];\n"
               "    do_something(&str[0][5]);\n"
-              "}", false, "test.cpp");
+              "}", "test.cpp");
         ASSERT_EQUALS("", errout.str());
 
         check("class X { static const int x[100]; };\n" // #6070
@@ -2415,7 +2413,7 @@ private:
               "{\n"
               "  char s[3];\n"
               "  f1(s,3);\n"
-              "}\n", false);
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2956,7 +2954,7 @@ private:
         check("void f() {\n" // #6350 - fp when there is cast of buffer
               "  wchar_t buf[64];\n"
               "  p = (unsigned char *) buf + sizeof (buf);\n"
-              "}", false, "6350.c");
+              "}", "6350.c");
         ASSERT_EQUALS("", errout.str());
 
         check("int f() {\n"
@@ -3815,7 +3813,7 @@ private:
               "\n"
               "void bar(char *p) {\n"
               "    strncpy(p, str, 100);\n"
-              "}\n", false);
+              "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'str' may not be null-terminated after the call to strncpy().\n", errout.str());
     }
 
@@ -4313,7 +4311,6 @@ private:
               "{\n"
               "   int *a;\n"
               "   a = (int *)alloca( -10 );\n"
-              "   free(a);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory allocation size is negative.\n", errout.str());
     }
