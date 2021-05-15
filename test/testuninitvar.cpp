@@ -1303,6 +1303,20 @@ private:
                        "  }\n"
                        "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: nextEntry\n", errout.str());
+
+        checkUninitVar("void f(int x) {\n"
+                       "    list *f = NULL;\n"
+                       "    list *l;\n"
+                       "\n"
+                       "    while (--x) {\n"
+                       "        if (!f)\n"
+                       "            f = c;\n"
+                       "        else\n"
+                       "            l->next = c;\n" // <- not uninitialized
+                       "        l = c;\n"
+                       "    }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // switch..
