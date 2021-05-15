@@ -163,7 +163,7 @@ private:
         TEST_CASE(buffer_overrun_3);
         TEST_CASE(buffer_overrun_4);
         TEST_CASE(buffer_overrun_5);
-        // TODO strcat TEST_CASE(buffer_overrun_6);
+        TEST_CASE(buffer_overrun_6);
         TEST_CASE(buffer_overrun_7);
         TEST_CASE(buffer_overrun_8);
         TEST_CASE(buffer_overrun_9);
@@ -2428,7 +2428,7 @@ private:
               "   strcat(n, \"abc\");\n"
               "   strcat(n, \"def\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: n\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: n\n", "", errout.str());
     }
 
     void buffer_overrun_7() {
