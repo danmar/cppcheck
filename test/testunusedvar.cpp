@@ -3582,15 +3582,6 @@ private:
         ASSERT_EQUALS(// TODO "[test.cpp:4]: (style) Variable 'a' is assigned a value that is never used.\n"
             "[test.cpp:5]: (style) Variable 'c' is assigned a value that is never used.\n", errout.str());
 
-        // extracttests.start: int x;
-        functionVariableUsage("void foo()\n"
-                              "{\n"
-                              "    int a[10], * b = a + 10;\n"
-                              "    int * c = b - 10;\n"
-                              "    x = c[0];\n"
-                              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is not assigned a value.\n", errout.str());
-
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int a[10], * b = a + 10;\n"
@@ -3606,16 +3597,6 @@ private:
                               "    c[1] = c[0];\n"
                               "}");
         // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'c[1]' is assigned a value that is never used.\n", errout.str());
-
-        // extracttests.start: void f(int);
-        functionVariableUsage("void foo()\n"
-                              "{\n"
-                              "    int a[10], * b = a + 10;\n"
-                              "    int * c = b - 10;\n"
-                              "    int d = c[0];\n"
-                              "    f(d);\n"
-                              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is not assigned a value.\n", errout.str());
 
         functionVariableUsage("void foo() {\n" // #4022 - FP (a is assigned a value that is never used)
                               "    int a[2], *b[2];\n"
