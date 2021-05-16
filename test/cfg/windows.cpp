@@ -677,7 +677,7 @@ void uninitvar()
     SetLastError(dwordUninit);
 
     DWORD dwordUninit;
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     GetUserName(NULL, &dwordUninit);
 
     FILE *pFileUninit;

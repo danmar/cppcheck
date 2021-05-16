@@ -1775,7 +1775,7 @@ void uninitvar_mbsrtowcs(wchar_t* d, const char** s, size_t m, mbstate_t *p)
 
     // cppcheck-suppress uninitvar
     (void)mbsrtowcs(dest,s,m,p);
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     (void)mbsrtowcs(d,&src,m,p);
     // cppcheck-suppress uninitvar
     (void)mbsrtowcs(d,s,max,p);

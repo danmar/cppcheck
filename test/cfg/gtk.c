@@ -391,7 +391,7 @@ void g_once_init_enter_leave_test()
     }
 
     gsize init_val2;
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     // cppcheck-suppress ignoredReturnValue
     g_once_init_enter(&init_val2);
 
