@@ -2063,6 +2063,10 @@ static void mergeAdjacent(std::list<ValueFlow::Value>& values)
             if (x->valueKind != y->valueKind)
                 continue;
             if (x->bound != y->bound) {
+                if (y->bound != ValueFlow::Value::Bound::Point && isAdjacent(*x, *y)) {
+                    adjValues.clear();
+                    break;
+                }
                 // No adjacent points for floating points
                 if (x->valueType == ValueFlow::Value::ValueType::FLOAT)
                     continue;

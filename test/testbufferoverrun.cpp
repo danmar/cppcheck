@@ -135,6 +135,7 @@ private:
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
+        TEST_CASE(array_index_bounds);
         TEST_CASE(array_index_calculation);
         TEST_CASE(array_index_negative1);
         TEST_CASE(array_index_negative2);    // ticket #3063
@@ -1754,6 +1755,18 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
     }
+
+	void array_index_bounds() {
+		// #10275
+		check("int a[10];\n"
+              "void f(int i) {\n"
+              "  if (i >= 0 && i < 10) {}\n"
+              "  a[i] = 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition 'i<10' is redundant or the array 'a[10]' is accessed at index 10, which is out of bounds.\n"
+                      "[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition 'i>=0' is redundant or the array 'a[10]' is accessed at index -1, which is out of bounds.\n",
+                      errout.str());
+	}
 
     void array_index_calculation() {
         // #1193 - false negative: array out of bounds in loop when there is calculation
