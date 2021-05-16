@@ -1044,7 +1044,7 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
             // todo compare deref with array dimensions
             derefValue = nullptr;
         }
-    } else if (alloc == NO_ALLOC && vartok->astParent() && vartok->astParent()->isUnaryOp("&")) {
+    } else if (vartok->astParent() && vartok->astParent()->isUnaryOp("&")) {
         const Token *child = vartok->astParent();
         const Token *parent = child->astParent();
         while (parent && (parent->isCast() || parent->str() == "+")) {
