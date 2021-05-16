@@ -1071,9 +1071,8 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
                 return (use>0);
         }
 
-        else if (!pointer && Token::simpleMatch(possibleParent, "=") && vartok->astParent()->str() == "&") {
+        else if (!pointer && Token::simpleMatch(possibleParent, "=") && vartok->astParent()->str() == "&")
             return false;
-        }
     }
 
     {
@@ -1117,18 +1116,18 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         if (!pointer && vartok->next() && vartok->next()->str() == "(")
             return false;
 
-        if (vartok->previous()->str() != "&" || !Token::Match(vartok->tokAt(-2), "[(,=?:]")) {
-            if (alloc != NO_ALLOC && vartok->previous()->str() == "*") {
-                // TestUninitVar::isVariableUsageDeref()
-                const Token *parent = vartok->previous()->astParent();
-                if (parent && parent->str() == "=" && parent->astOperand1() == vartok->previous())
-                    return false;
-                if (vartok->variable() && vartok->variable()->dimensions().size() >= 2)
-                    return false;
-                return true;
-            }
-            return alloc == NO_ALLOC;
+        if (alloc != NO_ALLOC && vartok->previous()->str() == "*") {
+            // TestUninitVar::isVariableUsageDeref()
+            const Token *parent = vartok->previous()->astParent();
+            if (parent && parent->str() == "=" && parent->astOperand1() == vartok->previous())
+                return false;
+            if (vartok->variable() && vartok->variable()->dimensions().size() >= 2)
+                return false;
+            return true;
         }
+
+        if (vartok->previous()->str() != "&" || !Token::Match(vartok->tokAt(-2), "[(,=?:]"))
+            return alloc == NO_ALLOC;
     }
 
     if (alloc == NO_ALLOC && Token::Match(vartok->previous(), "%assign% %name% %cop%|;|)")) {
