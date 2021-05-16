@@ -65,9 +65,7 @@ def tweak_expected(expected, start_code):
     res = re.match(r'[^(]*\[([^:\]]+):([0-9]+)\](.*)', expected)
     if res is None:
         return expected
-    if start_code[-1] == '\n':
-        start_code = start_code[:-1]
-    lines = len(start_code.split('\n'))
+    lines = len(start_code[:-1].split('\n'))
     return '[%s:%i]%s' % (res.group(1), lines + int(res.group(2)), res.group(3))
 
 
@@ -119,7 +117,7 @@ class Extract:
             # extracttests commands..
             res = re.match(r'\s*//\s*extracttests.start:(.*)', line)
             if res is not None:
-                start_code = res.group(1).replace('\\n', '\n')
+                start_code = res.group(1).replace('\\n', '\n') + '\n'
             elif line.find('extracttests.disable') >= 0:
                 disable = True
             elif line.find('extracttests.enable') >= 0:
@@ -377,7 +375,7 @@ if filename is not None:
             filename = '%s-%03i-%s.cpp' % (testfile, testnum, functionName)
 
             # comment error
-            res = re.match(r'[^(]*\[([^:\]]+):([0-9]+)\]: \([a-z]+\) (.*)', expected)
+            res = re.match(r'[^(]*\[([^:\]]+):([0-9]+)\]: \([a-z, ]+\) (.*)', expected)
             if res:
                 line_number = int(res.group(2)) - 1
                 lines = code.split('\n')

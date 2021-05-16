@@ -1895,7 +1895,7 @@ private:
               "    int x;\n"
               "    for (x = 0; x < 10 && y; x++) {\n"
               "        data[x] = 0;\n"
-              "    }"
+              "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'data[2]' accessed at index 9, which is out of bounds.\n", errout.str());
 
@@ -1904,7 +1904,7 @@ private:
               "    int x;\n"
               "    for (x = 0; x < 10 || y; x++) {\n"
               "        data[x] = 0;\n"
-              "    }"
+              "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'data[2]' accessed at index 9, which is out of bounds.\n", errout.str());
 
@@ -1913,7 +1913,7 @@ private:
               "    int x;\n"
               "    for (x = 0; x <= 10 && y; x++) {\n"
               "        data[x] = 0;\n"
-              "    }"
+              "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'data[2]' accessed at index 10, which is out of bounds.\n", errout.str());
 
@@ -1922,7 +1922,7 @@ private:
               "    int x;\n"
               "    for (x = 0; y && x <= 10; x++) {\n"
               "        data[x] = 0;\n"
-              "    }"
+              "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'data[2]' accessed at index 10, which is out of bounds.\n", errout.str());
     }
