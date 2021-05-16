@@ -1109,14 +1109,14 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
         }
 
         // is there something like: ; "*((&var ..expr.. ="  => the variable is assigned
-        if (vartok->previous()->str() == "&" && !vartok->previous()->astOperand2())
+        if (vartok->astParent()->isUnaryOp("&"))
             return false;
 
         // bailout to avoid fp for 'int x = 2 + x();' where 'x()' is a unseen preprocessor macro (seen in linux)
         if (!pointer && vartok->next() && vartok->next()->str() == "(")
             return false;
 
-        if (alloc != NO_ALLOC && vartok->previous()->str() == "*") {
+        if (alloc != NO_ALLOC && vartok->astParent()->isUnaryOp("*")) {
             // TestUninitVar::isVariableUsageDeref()
             const Token *parent = vartok->previous()->astParent();
             if (parent && parent->str() == "=" && parent->astOperand1() == vartok->previous())
@@ -1126,7 +1126,7 @@ bool CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc al
             return true;
         }
 
-        if (vartok->previous()->str() != "&" || !Token::Match(vartok->tokAt(-2), "[(,=?:]"))
+        if (!vartok->astParent()->isUnaryOp("&") || !Token::Match(vartok->tokAt(-2), "[(,=?:]"))
             return alloc == NO_ALLOC;
     }
 
