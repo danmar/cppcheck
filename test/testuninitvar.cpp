@@ -4279,6 +4279,14 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        valueFlowUninit("struct AB { int a; int b; };\n"
+                        "void f(void) {\n"
+                        "  AB ab;\n"
+                        "  AB *p = &ab;\n"
+                        "  p->a = 1;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // Unknown types
         {
             valueFlowUninit("void a()\n"

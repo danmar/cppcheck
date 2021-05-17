@@ -1020,6 +1020,8 @@ static bool isVoidCast(const Token *tok)
 const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect) const
 {
     const Token *valueExpr = vartok;   // non-dereferenced , no address of value as variable
+    while (Token::Match(valueExpr->astParent(), ".|::") && astIsRhs(valueExpr))
+        valueExpr = valueExpr->astParent();
     if (!pointer) {
         if (Token::Match(vartok, "%name% [.(]") && vartok->variable() && !vartok->variable()->isPointer() && vartok->variable()->isClass())
             return nullptr;
