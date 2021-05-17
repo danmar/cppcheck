@@ -956,9 +956,9 @@ bool CheckUninitVar::checkLoopBody(const Token *tok, const Variable& var, const 
 
     if (!suppressErrors && !bailout && errorToken) {
         if (membervar.empty())
-            uninitvarError(errorToken, errorToken->str(), alloc);
+            uninitvarError(errorToken, errorToken->expressionString(), alloc);
         else
-            uninitStructMemberError(errorToken, errorToken->str() + "." + membervar);
+            uninitStructMemberError(errorToken, errorToken->expressionString() + "." + membervar);
         return true;
     }
 
