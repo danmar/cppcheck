@@ -1012,6 +1012,11 @@ static bool astIsRhs(const Token *tok)
     return tok && tok->astParent() && tok == tok->astParent()->astOperand2();
 }
 
+static bool isVoidCast(const Token *tok)
+{
+    return Token::simpleMatch(tok, "(") && tok->isCast() && tok->valueType() && tok->valueType()->type == ValueType::Type::VOID && tok->valueType()->pointer == 0;
+}
+
 const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect) const
 {
     const Token *valueExpr = vartok;   // non-dereferenced , no address of value as variable
@@ -1065,6 +1070,15 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
         return nullptr;
 
     // safe operations
+    if (isVoidCast(valueExpr->astParent()))
+        return nullptr;
+    if (Token::simpleMatch(valueExpr->astParent(), ".")) {
+        const Token *parent = valueExpr->astParent();
+        while (Token::simpleMatch(parent, "."))
+            parent = parent->astParent();
+        if (isVoidCast(parent))
+            return nullptr;
+    }
     if (alloc != NO_ALLOC) {
         if (Token::Match(valueExpr->astParent(), "%comp%|%oror%|&&|?|!"))
             return nullptr;
