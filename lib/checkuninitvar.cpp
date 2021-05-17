@@ -802,10 +802,10 @@ bool CheckUninitVar::checkIfForWhileHead(const Token *startparentheses, const Va
                 continue;
             }
 
-            if (isVariableUsage(tok, var.isPointer(), alloc)) {
+            if (const Token *errorToken = isVariableUsage(tok, var.isPointer(), alloc)) {
                 if (suppressErrors)
                     continue;
-                uninitvarError(tok, tok->str(), alloc);
+                uninitvarError(errorToken, errorToken->expressionString(), alloc);
             }
             return true;
         }
@@ -920,8 +920,8 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
                 return nullptr;
             }
         } else {
-            if (isVariableUsage(tok, var.isPointer(), alloc))
-                return tok;
+            if (const Token *errorToken = isVariableUsage(tok, var.isPointer(), alloc))
+                return errorToken;
             else if (tok->strAt(1) == "=") {
                 bool varIsUsedInRhs = false;
                 visitAstNodes(tok->next()->astOperand2(), [&](const Token * t) {
@@ -1067,6 +1067,10 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
     if (valueExpr->astParent()->isUnaryOp("&"))
         return nullptr;
     if (derefValue && derefValue->astParent() && derefValue->astParent()->isUnaryOp("&"))
+        return nullptr;
+
+    // BAILOUT for binary &
+    if (Token::simpleMatch(valueExpr->astParent(), "&") && astIsRhs(valueExpr) && Token::Match(valueExpr->astParent()->tokAt(-3), "( %name% ) &"))
         return nullptr;
 
     // safe operations

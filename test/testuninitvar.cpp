@@ -1698,7 +1698,7 @@ private:
                        "    char *p = (char*)malloc(64);\n"
                        "    if (p[0]) { }\n"
                        "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Memory is allocated but not initialized: p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory is allocated but not initialized: p[0]\n", errout.str());
 
         checkUninitVar("char f() {\n"
                        "    char *p = (char*)malloc(64);\n"
@@ -1787,9 +1787,11 @@ private:
         checkUninitVar("void f()\n"
                        "{\n"
                        "    char *s = (char*)malloc(100);\n"
-                       "    if (!s) {}\n"
-                       "};");
-        ASSERT_EQUALS("", errout.str());
+                       "    if (!s)\n"
+                       "        return;\n"
+                       "    char c = *s;\n"
+                       "}");
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Memory is allocated but not initialized: s\n", "", errout.str());
 
         // #3708 - false positive when using ptr typedef
         checkUninitVar("void f() {\n"
@@ -2748,7 +2750,7 @@ private:
                        "    int done;\n"
                        "    dostuff(1, (AuPointer) &done);\n" // <- It is not conclusive if the "&" is a binary or unary operator. Bailout.
                        "}");
-        // FP ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         checkUninitVar("void f() {\n" // #4778 - cast address of uninitialized variable
                        "    long a;\n"
@@ -3324,7 +3326,7 @@ private:
                        "    ab.a = (addr)&x;\n"
                        "    dostuff(&ab,0);\n"
                        "}\n", "test.c");
-        // FP ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         checkUninitVar("struct Element {\n"
                        "    static void f() { }\n"
@@ -3939,7 +3941,7 @@ private:
                        "  while(*p && *p == '_')\n"
                        "    p++;\n"
                        "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Memory is allocated but not initialized: p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory is allocated but not initialized: *p\n", errout.str());
 
         // #6646 - init in for loop
         checkUninitVar("void f() {\n" // No FP
