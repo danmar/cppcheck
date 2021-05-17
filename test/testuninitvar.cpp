@@ -3590,6 +3590,12 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void f(void) {\n"
+                       "    struct tm t;\n"
+                       "    t.tm_year = 123;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         // return
         checkUninitVar("struct AB { int a; int b; };\n"
                        "void f(void) {\n"
@@ -4279,6 +4285,7 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        // struct
         valueFlowUninit("struct AB { int a; int b; };\n"
                         "void f(void) {\n"
                         "  AB ab;\n"
