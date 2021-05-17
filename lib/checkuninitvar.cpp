@@ -920,8 +920,8 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
                 return nullptr;
             }
         } else {
-            if (const Token *errorToken = isVariableUsage(tok, var.isPointer(), alloc))
-                return errorToken;
+            if (const Token *errtok = isVariableUsage(tok, var.isPointer(), alloc))
+                return errtok;
             else if (tok->strAt(1) == "=") {
                 bool varIsUsedInRhs = false;
                 visitAstNodes(tok->next()->astOperand2(), [&](const Token * t) {
