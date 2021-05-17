@@ -4121,12 +4121,18 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void uninitvar_rangeBasedFor() { // #7078
-        checkUninitVar("void function(Entry& entry) {\n"
+    void uninitvar_rangeBasedFor() {
+        checkUninitVar("void function(Entry& entry) {\n" // #7078
                        "    for (auto* expr : entry.exprs) {\n"
                        "        expr->operate();\n"
                        "        expr->operate();\n"
                        "    }\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f() {\n"
+                       "    int *item;\n"
+                       "    for (item: itemList) {}\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
     }
