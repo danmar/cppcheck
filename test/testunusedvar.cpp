@@ -220,6 +220,7 @@ private:
         TEST_CASE(argumentClass);
         TEST_CASE(escapeAlias); // #9150
         TEST_CASE(volatileData); // #9280
+        TEST_CASE(globalData);
     }
 
     void checkStructMemberUsage(const char code[], const std::list<Directive> *directives=nullptr) {
@@ -5806,6 +5807,15 @@ private:
             "struct Data { unsigned int n; };\n"
             "int main() {\n"
             "  (*(volatile struct Data*)0x4200).n = 1;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void globalData() {
+        // #10276
+        functionVariableUsage(
+            "void f(void) {\n"
+            "    ((uint8_t *) (uint16_t)0x1000)[0] = 0x42;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
     }

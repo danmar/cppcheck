@@ -2405,8 +2405,11 @@ bool isNullOperand(const Token *expr)
 bool isGlobalData(const Token *expr, bool cpp)
 {
     bool globalData = false;
+    bool var = false;
     visitAstNodes(expr,
-    [&](const Token *tok) {
+    [expr, cpp, &globalData, &var](const Token *tok) {
+        if (tok->varId())
+            var = true;
         if (tok->varId() && !tok->variable()) {
             // Bailout, this is probably global
             globalData = true;
@@ -2467,7 +2470,7 @@ bool isGlobalData(const Token *expr, bool cpp)
             return ChildrenToVisit::op1;
         return ChildrenToVisit::op1_and_op2;
     });
-    return globalData;
+    return globalData || !var;
 }
 
 struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local, bool inInnerClass, int depth)
