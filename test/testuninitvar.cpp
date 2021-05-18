@@ -534,11 +534,18 @@ private:
                        "  a & x;\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("void f(int a) {\n"
                        "  int x;\n"
                        "  a & x;\n"
                        "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
+
+        checkUninitVar("void f() {\n"
+                       "  int a,b,c;\n"
+                       "  ar & a & b & c;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
 
         checkUninitVar("void a() {\n"   // asm
                        "    int x;\n"

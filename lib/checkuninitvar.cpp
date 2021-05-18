@@ -1166,8 +1166,19 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
     if (astIsRhs(derefValue) && isLikelyStreamRead(mTokenizer->isCPP(), derefValue->astParent()))
         return nullptr;
 
-    if (mTokenizer->isCPP() && Token::simpleMatch(valueExpr->astParent(), "&") && !valueExpr->astParent()->astParent() && astIsRhs(valueExpr) && Token::Match(valueExpr->astSibling(), "%type%"))
-        return nullptr;
+    // Assignment with overloaded &
+    if (mTokenizer->isCPP() && Token::simpleMatch(valueExpr->astParent(), "&") && astIsRhs(valueExpr)) {
+        const Token *parent = valueExpr->astParent();
+        while (Token::simpleMatch(parent, "&") && parent->isBinaryOp())
+            parent = parent->astParent();
+        if (!parent) {
+            const Token *lhs = valueExpr->astParent();
+            while (Token::simpleMatch(lhs, "&") && lhs->isBinaryOp())
+                lhs = lhs->astOperand1();
+            if (lhs && lhs->isName() && (!lhs->valueType() || lhs->valueType()->type <= ValueType::Type::CONTAINER))
+                return nullptr; // <- possible assignment
+        }
+    }
 
     return derefValue ? derefValue : valueExpr;
 }
