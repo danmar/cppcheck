@@ -1163,6 +1163,9 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
             return nullptr;
         }
     }
+    if (astIsRhs(derefValue) && isLikelyStreamRead(mTokenizer->isCPP(), derefValue->astParent()))
+        return nullptr;
+
     if (mTokenizer->isCPP() && Token::simpleMatch(valueExpr->astParent(), "&") && !valueExpr->astParent()->astParent() && astIsRhs(valueExpr) && Token::Match(valueExpr->astSibling(), "%type%"))
         return nullptr;
 

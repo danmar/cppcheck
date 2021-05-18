@@ -421,6 +421,12 @@ private:
                            "}");
             ASSERT_EQUALS("", errout.str());
 
+            checkUninitVar("void f() {\n"
+                           "    int ret[2];\n"
+                           "    std::cin >> ret[0];\n"
+                           "}");
+            ASSERT_EQUALS("", errout.str());
+
             checkUninitVar("void f(int i) {\n"
                            "    int a;\n"
                            "    i >> a;\n"
