@@ -1113,23 +1113,6 @@ private:
             "}");
         ASSERT_EQUALS("[test.cpp:10]: (style) Unused variable: c\n", errout.str());
 
-        // global variable modifying through function argument
-        functionVariableUsage(
-            "char buf[10];\n"
-            "int func(char* p) {\n"
-            "   *p = 0;\n"
-            "   return 1;\n"
-            "}\n"
-            "class C {\n"
-            "public:\n"
-            "   C() : x(func(buf)) {}\n"
-            "   int x;\n"
-            "};\n"
-            "void f() {\n"
-            "   C c;\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-
         // global variable modifying through local pointer
         functionVariableUsage(
             "int global = 1;\n"
@@ -1235,6 +1218,98 @@ private:
             "   C c;\n"
             "}");
         ASSERT_EQUALS("[test.cpp:13]: (style) Unused variable: c\n", errout.str());
+
+        // global variable modifying through function argument
+        functionVariableUsage(
+            "char buf[10];\n"
+            "int func(char* p) {\n"
+            "   *p = 0;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(buf)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+    
+        // global variable passing to function args without modifying
+        functionVariableUsage(
+            "char buf[10];\n"
+            "int func(char* p) {\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(buf)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:11]: (style) Unused variable: c\n", errout.str());
+
+        // global variable passing to function args without modifying (multiple args)
+        functionVariableUsage(
+            "char buf[10];\n"
+            "int func(int arg1, char* arg2, int arg3) {\n"
+            "   arg1 = 10; (void) arg1;\n"
+            "   arg3 = 30; (void) arg3;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(1, buf, 3)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:13]: (style) Unused variable: c\n", errout.str());
+
+        // global variable modified through function arg (multiple args)
+        functionVariableUsage(
+            "char buf[10];\n"
+            "int func(int arg1, char* arg2, int arg3) {\n"
+            "   arg1 = 10; (void) arg1;\n"
+            "   arg2[0] = 1;\n"
+            "   arg3 = 30; (void) arg3;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(1, buf, 3)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // global variable modified through function arg (multiple args with func call)
+        functionVariableUsage(
+            "char buf[10];\n"
+            "int func(int arg1, char* arg2, int arg3) {\n"
+            "   arg1 = 10; (void) arg1;\n"
+            "   arg2[0] = 1;\n"
+            "   arg3 = 30; (void) arg3;\n"
+            "   return 1;\n"
+            "}\n"
+            "int func1(int a, int b) {\n"
+            "   return 2;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(func1(1, 2), buf, 3)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // #5355 - False positive: Variable is not assigned a value.

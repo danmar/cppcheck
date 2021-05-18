@@ -1604,15 +1604,47 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
         return false;
     }
 
-    for (const Token* argsToken = functionUsageToken->next(); !Token::simpleMatch(argsToken, ")"); argsToken = argsToken->next()) {
-        const Variable* argVar = argsToken->variable();
-        if (argVar && argVar->isGlobal()) {
-            return false; // TODO: analyze global variable usage
+    // search for global variables in arguments list
+    std::vector<unsigned int> globalVarsIndexes;
+    unsigned int usageVarIndex = 0;
+    const Token* argsClosingBracketToken = functionUsageToken->next()->link();
+    for (const Token* usageArgToken = functionUsageToken->next(); usageArgToken != argsClosingBracketToken; 
+        usageArgToken = usageArgToken->next())
+    {
+        if (usageArgToken->function()) {
+            usageArgToken = usageArgToken->next()->link(); 
+            continue; // move to the nested function call closing bracket, it's definitely not a global variable
+        }
+        if (usageArgToken->isName() || usageArgToken->isLiteral()) {
+            const Variable* argVar = usageArgToken->variable();
+            if (argVar && argVar->isGlobal()) {
+                globalVarsIndexes.push_back(usageVarIndex);
+            }
+            usageVarIndex++;
+        }
+    }
+    
+    // match global variables from function usage with arguments at function declaration
+    std::set<const Variable*> pointersToGlobals;
+    if (not globalVarsIndexes.empty()) {
+        unsigned int definitionVarIndex = 0;
+        for (const Token* defArgToken = func.argDef->next(); !Token::simpleMatch(defArgToken, ")"); 
+            defArgToken = defArgToken->next())
+        {
+            const Variable* argVar = defArgToken->variable();
+            if (argVar) {
+                if (std::find(globalVarsIndexes.begin(), globalVarsIndexes.end(), definitionVarIndex) != 
+                    globalVarsIndexes.end())
+                {
+                    pointersToGlobals.insert(argVar);
+                }
+                definitionVarIndex++;
+            }
         }
     }
 
+    // main check loop: go through all function body
     bool sideEffectReturnFound = false;
-    std::set<const Variable*> pointersToGlobals;
     for (Token* bodyToken = func.functionScope->bodyStart->next(); bodyToken != func.functionScope->bodyEnd;
          bodyToken = bodyToken->next()) {
         // check variable inside function body
