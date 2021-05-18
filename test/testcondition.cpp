@@ -3620,6 +3620,12 @@ private:
               "    g(name);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'name.empty()' is always true\n", errout.str());
+
+        // #10278
+        check("void foo(unsigned int x) {\n"
+              "    if ((100 - x) > 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
