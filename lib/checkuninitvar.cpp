@@ -1408,7 +1408,7 @@ void CheckUninitVar::valueFlowUninit()
             if (Token::Match(tok, "%name% ("))
                 continue;
             const Token* parent = tok->astParent();
-            while(Token::simpleMatch(parent, "."))
+            while (Token::simpleMatch(parent, "."))
                 parent = parent->astParent();
             if (parent && parent->isUnaryOp("&"))
                 continue;
@@ -1429,10 +1429,11 @@ void CheckUninitVar::valueFlowUninit()
                 if (Token::Match(tok->astParent(), ". %var%") && !isleaf)
                     continue;
             }
-            if (!Token::Match(tok->astParent(), ". %name% (") && isVariableChanged(tok, v->indirect, mSettings, mTokenizer->isCPP()))
+            if (!Token::Match(tok->astParent(), ". %name% (") &&
+                isVariableChanged(tok, v->indirect, mSettings, mTokenizer->isCPP()))
                 continue;
             uninitvarError(tok, tok->expressionString(), v->errorPath);
-            const Token * nextTok = nextAfterAstRightmostLeaf(parent);
+            const Token* nextTok = nextAfterAstRightmostLeaf(parent);
             if (nextTok == scope.bodyEnd)
                 break;
             tok = nextTok ? nextTok : tok;
