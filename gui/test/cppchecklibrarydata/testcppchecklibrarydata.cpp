@@ -82,7 +82,7 @@ void TestCppcheckLibraryData::podtypeValid()
     loadCfgFile(":/files/podtype_valid.cfg", fileLibraryData, result);
     QCOMPARE(result.isNull(), true);
 
-    // Swap libray data read from file to other object
+    // Swap library data read from file to other object
     libraryData.swap(fileLibraryData);
 
     // Do size and content checks against swapped data.
@@ -125,7 +125,7 @@ void TestCppcheckLibraryData::typechecksValid()
     loadCfgFile(":/files/typechecks_valid.cfg", fileLibraryData, result);
     QCOMPARE(result.isNull(), true);
 
-    // Swap libray data read from file to other object
+    // Swap library data read from file to other object
     libraryData.swap(fileLibraryData);
 
     // Do size and content checks against swapped data.
@@ -173,7 +173,7 @@ void TestCppcheckLibraryData::smartPointerValid()
     loadCfgFile(":/files/smartptr_valid.cfg", fileLibraryData, result);
     QCOMPARE(result.isNull(), true);
 
-    // Swap libray data read from file to other object
+    // Swap library data read from file to other object
     libraryData.swap(fileLibraryData);
 
     // Do size and content checks against swapped data.
@@ -205,7 +205,7 @@ void TestCppcheckLibraryData::platformTypeValid()
     loadCfgFile(":/files/platform_type_valid.cfg", fileLibraryData, result);
     QCOMPARE(result.isNull(), true);
 
-    // Swap libray data read from file to other object
+    // Swap library data read from file to other object
     libraryData.swap(fileLibraryData);
 
     // Do size and content checks against swapped data.
@@ -263,7 +263,7 @@ void TestCppcheckLibraryData::memoryResourceValid()
     loadCfgFile(":/files/memory_resource_valid.cfg", fileLibraryData, result);
     QCOMPARE(result.isNull(), true);
 
-    // Swap libray data read from file to other object
+    // Swap library data read from file to other object
     libraryData.swap(fileLibraryData);
 
     // Do size and content checks against swapped data.
@@ -363,7 +363,7 @@ void TestCppcheckLibraryData::defineValid()
     loadCfgFile(":/files/define_valid.cfg", fileLibraryData, result);
     QCOMPARE(result.isNull(), true);
 
-    // Swap libray data read from file to other object
+    // Swap library data read from file to other object
     libraryData.swap(fileLibraryData);
 
     // Do size and content checks against swapped data.
@@ -398,7 +398,7 @@ void TestCppcheckLibraryData::undefineValid()
     loadCfgFile(":/files/undefine_valid.cfg", fileLibraryData, result);
     QCOMPARE(result.isNull(), true);
 
-    // Swap libray data read from file to other object
+    // Swap library data read from file to other object
     libraryData.swap(fileLibraryData);
 
     // Do size and content checks against swapped data.
@@ -428,7 +428,7 @@ void TestCppcheckLibraryData::reflectionValid()
     loadCfgFile(":/files/reflection_valid.cfg", fileLibraryData, result);
     QCOMPARE(result.isNull(), true);
 
-    // Swap libray data read from file to other object
+    // Swap library data read from file to other object
     libraryData.swap(fileLibraryData);
 
     // Do size and content checks against swapped data.
@@ -471,7 +471,7 @@ void TestCppcheckLibraryData::markupValid()
     loadCfgFile(":/files/markup_valid.cfg", fileLibraryData, result);
     QCOMPARE(result.isNull(), true);
 
-    // Swap libray data read from file to other object
+    // Swap library data read from file to other object
     libraryData.swap(fileLibraryData);
 
     // Do size and content checks against swapped data.
