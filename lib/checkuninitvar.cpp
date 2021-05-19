@@ -1138,12 +1138,17 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
             return nullptr;
     }
 
-    // LHS in range for loop:
+    // range for loop
     if (Token::simpleMatch(valueExpr->astParent(), ":") &&
-        astIsLhs(valueExpr) &&
         valueExpr->astParent()->astParent() &&
-        Token::simpleMatch(valueExpr->astParent()->astParent()->previous(), "for ("))
-        return nullptr;
+        Token::simpleMatch(valueExpr->astParent()->astParent()->previous(), "for (")) {
+        if (astIsLhs(valueExpr))
+            return nullptr;
+        // Taking value by reference?
+        const Token *lhs = valueExpr->astParent()->astOperand1();
+        if (lhs && lhs->variable() && lhs->variable()->nameToken() == lhs && lhs->variable()->isReference())
+            return nullptr;
+    }
 
     // Stream read/write
     // FIXME this code is a hack!!

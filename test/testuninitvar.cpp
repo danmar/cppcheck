@@ -4164,6 +4164,12 @@ private:
                        "    for (item: itemList) {}\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f() {\n"
+                       "    int buf[10];\n"
+                       "    for (int &i: buf) { i = 0; }\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_static() { // #8734
