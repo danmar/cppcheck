@@ -1330,6 +1330,22 @@ private:
                        "    }\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // switch in loop
+        checkUninitVar("int foo(int *p) {\n"
+                       "  int x;\n"
+                       "  while (true) {\n"
+                       "    switch (*p) {\n"
+                       "    case 1:\n"
+                       "        return x;\n"
+                       "    case 2:\n"
+                       "        x = 123;\n"
+                       "        break;\n"
+                       "    };\n"
+                       "    ++p\n"
+                       "  }\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // switch..

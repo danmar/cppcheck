@@ -859,6 +859,12 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
         }
 
         if (tok->str() == "{") {
+            // switch => bailout
+            if (tok->scope() && tok->scope()->type == Scope::ScopeType::eSwitch) {
+                bailout = true;
+                return nullptr;
+            }
+
             const Token *errorToken1 = checkLoopBodyRecursive(tok, var, alloc, membervar, bailout);
             tok = tok->link();
             if (Token::simpleMatch(tok, "} else {")) {
