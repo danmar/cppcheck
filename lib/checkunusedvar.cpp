@@ -1626,7 +1626,7 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
     
     // match global variables from function usage with arguments at function declaration
     std::set<const Variable*> pointersToGlobals;
-    if (not globalVarsIndexes.empty()) {
+    if (!globalVarsIndexes.empty()) {
         unsigned int definitionVarIndex = 0;
         for (const Token* defArgToken = func.argDef->next(); !Token::simpleMatch(defArgToken, ")"); 
             defArgToken = defArgToken->next())
