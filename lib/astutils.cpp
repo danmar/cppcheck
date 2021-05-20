@@ -1669,6 +1669,8 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
     if (!Token::Match(tok, "{|("))
         return nullptr;
     tok = tok->astOperand1();
+    while (tok && (tok->isUnaryOp("*") || tok->str() == "["))
+        tok = tok->astOperand1();
     while (Token::simpleMatch(tok, "."))
         tok = tok->astOperand2();
     while (Token::simpleMatch(tok, "::")) {

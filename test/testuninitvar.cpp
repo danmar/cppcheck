@@ -4667,6 +4667,21 @@ private:
                         "    printf(\"\", value);\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // function pointers
+        valueFlowUninit("int f (const struct FileFuncDefs *ffd) {\n" // #10279
+                        "  int c;\n"
+                        "  (*ffd->zread)(&c, 1);\n"
+                        "  return c;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("int foo(unsigned int code) {\n" // #10279
+                        "  int res;\n\n"
+                        "  (* (utility_table[code])) (&res);\n"
+                        "  return (res);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_ipa() {
