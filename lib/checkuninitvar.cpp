@@ -891,6 +891,14 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
         if (tok->varId() != var.declarationId())
             continue;
 
+        bool conditionalUsage = false;
+        for (const Token* parent = tok; parent; parent = parent->astParent()) {
+            if (Token::Match(parent->astParent(), "%oror%|&&|?") && astIsRHS(parent)) {
+                conditionalUsage = true;
+                break;
+            }
+        }
+
         if (!membervar.empty()) {
             if (isMemberVariableAssignment(tok, membervar)) {
                 bool assign = true;
@@ -924,17 +932,22 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
                     return nullptr;
                 }
             }
-
-            if (isMemberVariableUsage(tok, var.isPointer(), alloc, membervar))
-                return tok;
-            else if (Token::Match(tok->previous(), "[(,] %name% [,)]")) {
+            if (isMemberVariableUsage(tok, var.isPointer(), alloc, membervar)) {
+                if (!conditionalUsage)
+                    return tok;
+                if (!errorToken)
+                    errorToken = tok;
+            } else if (Token::Match(tok->previous(), "[(,] %name% [,)]")) {
                 bailout = true;
                 return nullptr;
             }
         } else {
-            if (const Token *errtok = isVariableUsage(tok, var.isPointer(), alloc))
-                return errtok;
-            else if (tok->strAt(1) == "=") {
+            if (const Token *errtok = isVariableUsage(tok, var.isPointer(), alloc)) {
+                if (!conditionalUsage)
+                    return errtok;
+                if (!errorToken)
+                    errorToken = errtok;
+            } else if (tok->strAt(1) == "=") {
                 bool varIsUsedInRhs = false;
                 visitAstNodes(tok->next()->astOperand2(), [&](const Token * t) {
                     if (!t)

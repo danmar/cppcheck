@@ -1233,6 +1233,31 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void foo(void) {\n"
+                       "    int a = 0;\n"
+                       "    int x;\n"
+                       "\n"
+                       "    for (;;) {\n"
+                       "        if (!a || 12 < x) {\n" // <- x is not uninitialized
+                       "            a = 1;\n"
+                       "            x = 2;\n"
+                       "        }\n"
+                       "    }\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void foo(void) {\n"
+                       "    int a = 0;\n"
+                       "    int x;\n"
+                       "\n"
+                       "    for (;;) {\n"
+                       "        if (!a || 12 < x) {\n" // <- x is uninitialized
+                       "            a = 1;\n"
+                       "        }\n"
+                       "    }\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: x\n", errout.str());
+
         // Ticket #2226: C++0x loop
         checkUninitVar("void f() {\n"
                        "    container c;\n"
