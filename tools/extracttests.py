@@ -26,6 +26,49 @@ import sys
 import re
 
 
+def get_includes(code):
+    includes = (('alloca','alloca.h'),
+                ('NULL','cstddef'),
+                ('size_t','cstddef'),
+                ('free','cstdlib'),
+                ('malloc','cstdlib'),
+                ('realloc','cstdlib'),
+                ('memcpy','cstring'),
+                ('stdin','cstdio'),
+                ('strcat','cstring'),
+                ('strchr','cstring'),
+                ('strcpy','cstring'),
+                ('strlen','cstring'),
+                ('strncat','cstring'),
+                ('strncpy','cstring'),
+                ('std::cout','iostream'),
+                ('std::pair','utility'),
+                ('std::shared_ptr','memory'),
+                ('std::string','string'),
+                ('std::unique_ptr','memory'),
+                ('std::vector','vector'))
+
+    ret = ''
+
+    for i in includes:
+        if i[0] in code:
+            include_header = '#include <%s>' % i[1]
+            if include_header not in ret:
+                ret += include_header + '\n'
+
+    return ret
+
+
+def tweak_expected(expected, start_code):
+    if start_code is None or start_code == '':
+        return expected
+    res = re.match(r'[^(]*\[([^:\]]+):([0-9]+)\](.*)', expected)
+    if res is None:
+        return expected
+    lines = len(start_code[:-1].split('\n'))
+    return '[%s:%i]%s' % (res.group(1), lines + int(res.group(2)), res.group(3))
+
+
 class Extract:
 
     """
@@ -48,6 +91,8 @@ class Extract:
         testclass = None
         functionName = None
         code = None
+        start_code = None
+        disable = False
 
         fin = open(filename, 'r')
         for line in fin:
@@ -64,15 +109,25 @@ class Extract:
             res = re.match('\\s+void (' + name + ')\\(\\)', line)
             if res is not None:
                 functionName = res.group(1)
+                start_code = None
 
             elif re.match('\\s+}', line) is not None:
                 functionName = None
 
-            if functionName is None:
+            # extracttests commands..
+            res = re.match(r'\s*//\s*extracttests.start:(.*)', line)
+            if res is not None:
+                start_code = res.group(1).replace('\\n', '\n') + '\n'
+            elif line.find('extracttests.disable') >= 0:
+                disable = True
+            elif line.find('extracttests.enable') >= 0:
+                disable = False
+
+            if functionName is None or disable:
                 continue
 
             # check
-            res = re.match('\\s+check.*\\(' + string, line)
+            res = re.match('\\s+' + check_function + '\\(' + string, line)
             if res is not None:
                 code = res.group(1)
 
@@ -81,14 +136,25 @@ class Extract:
                 res = re.match('\\s+' + string, line)
                 if res is not None:
                     code = code + res.group(1)
+                    if res.group(1).find('"') > 0:
+                        code = None
 
             # assert
             res = re.match('\\s+ASSERT_EQUALS\\(\\"([^"]*)\\",', line)
             if res is not None and code is not None:
+                if start_code:
+                    includes = get_includes(start_code + code)
+                    code = includes + start_code + code
+                    expected = tweak_expected(res.group(1), includes + start_code)
+                else:
+                    includes = get_includes(code)
+                    code = includes + code
+                    expected = tweak_expected(res.group(1), includes)
+
                 node = {'testclass': testclass,
                         'functionName': functionName,
-                        'code': code,
-                        'expected': res.group(1)}
+                        'code': code.replace("\\\\", "\\"),
+                        'expected': expected}
                 self.nodes.append(node)
                 code = None
 
@@ -165,7 +231,7 @@ def writeHtmlFile(nodes, functionName, filename, errorsOnly):
 if len(sys.argv) <= 1 or '--help' in sys.argv:
     print('Extract test cases from test file')
     print(
-        'Syntax: extracttests.py [--html=folder] [--xml] [--code=folder] [--onlyTP] path/testfile.cpp')
+        'Syntax: extracttests.py [--html=folder] [--xml] [--code=folder] [--only-tp] [--check-function=check] path/testfile.cpp')
     sys.exit(0)
 
 # parse command line
@@ -174,10 +240,11 @@ filename = None
 htmldir = None
 codedir = None
 onlyTP = None
+check_function = 'check.*'
 for arg in sys.argv[1:]:
     if arg == '--xml':
         xml = True
-    elif arg == '--onlyTP':
+    elif arg == '--only-tp':
         onlyTP = True
     elif arg.startswith('--html='):
         htmldir = arg[7:]
@@ -185,6 +252,8 @@ for arg in sys.argv[1:]:
         codedir = arg[7:]
     elif arg.endswith('.cpp'):
         filename = arg
+    elif arg.startswith('--check-function='):
+        check_function = arg[17:]
     else:
         print('Invalid option: ' + arg)
         sys.exit(1)
@@ -284,7 +353,10 @@ if filename is not None:
         if not os.path.exists(codedir):
             os.mkdir(codedir)
 
-        errors = open(codedir + 'errors.txt', 'w')
+        testfile = filename
+        if testfile.find('/'):
+            testfile = testfile[testfile.rfind('/'):]
+        testfile = testfile[:testfile.find('.')]
 
         for node in e.nodes:
             if onlyTP and node['expected'] == '':
@@ -297,24 +369,25 @@ if filename is not None:
             code = code.replace('\\n', '\n')
             code = code.replace('\\"', '"')
             expected = node['expected']
+            if expected.endswith('\\n'):
+                expected = expected[:-2]
 
-            filename = '0000' + str(testnum) + '-'
-            filename = filename[-4:]
-            filename += functionName + '.cpp'
+            filename = '%s-%03i-%s.cpp' % (testfile, testnum, functionName)
+
+            # comment error
+            res = re.match(r'[^(]*\[([^:\]]+):([0-9]+)\]: \([a-z, ]+\) (.*)', expected)
+            if res:
+                line_number = int(res.group(2)) - 1
+                lines = code.split('\n')
+                if len(lines) > line_number:
+                    lines[line_number] += ' // ' + res.group(3)
+                    code = '\n'.join(lines)
+                else:
+                    print('filename:%s expected:%s' % (filename, expected))
 
             # source code
-            fout = open(codedir + filename, 'w')
-            fout.write(code)
-            fout.close()
-
-            # write 'expected' to errors.txt
-            if expected != '':
-                expected = expected.replace('\\n', '\n')
-                expected = expected.replace('\\"', '"')
-                expected = re.sub(
-                    '\\[test.cp?p?:', '[' + filename + ':', expected)
-                errors.write(expected)
-        errors.close()
+            with open(codedir + filename, 'w') as fout:
+                fout.write(code + '\n')
     else:
         for node in e.nodes:
             print(node['functionName'])

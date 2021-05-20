@@ -403,6 +403,7 @@ void nullPointer()
 
 void memleak_malloca()
 {
+    // cppcheck-suppress unusedAllocatedMemory
     // cppcheck-suppress unreadVariable
     void *pMem = _malloca(10);
     // cppcheck-suppress memleak
@@ -676,7 +677,7 @@ void uninitvar()
     SetLastError(dwordUninit);
 
     DWORD dwordUninit;
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     GetUserName(NULL, &dwordUninit);
 
     FILE *pFileUninit;

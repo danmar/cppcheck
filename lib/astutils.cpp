@@ -1669,6 +1669,8 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
     if (!Token::Match(tok, "{|("))
         return nullptr;
     tok = tok->astOperand1();
+    while (tok && (tok->isUnaryOp("*") || tok->str() == "["))
+        tok = tok->astOperand1();
     while (Token::simpleMatch(tok, "."))
         tok = tok->astOperand2();
     while (Token::simpleMatch(tok, "::")) {
@@ -2324,6 +2326,21 @@ const Variable *getLHSVariable(const Token *tok)
     return getLHSVariableRecursive(tok->astOperand1());
 }
 
+const Token* findAllocFuncCallToken(const Token *expr, const Library &library)
+{
+    if (!expr)
+        return nullptr;
+    if (Token::Match(expr, "[+-]")) {
+        const Token *tok1 = findAllocFuncCallToken(expr->astOperand1(), library);
+        return tok1 ? tok1 : findAllocFuncCallToken(expr->astOperand2(), library);
+    }
+    if (expr->isCast())
+        return findAllocFuncCallToken(expr->astOperand2() ? expr->astOperand2() : expr->astOperand1(), library);
+    if (Token::Match(expr->previous(), "%name% (") && library.getAllocFuncInfo(expr->astOperand1()))
+        return expr->astOperand1();
+    return (Token::simpleMatch(expr, "new") && expr->astOperand1()) ? expr : nullptr;
+}
+
 static bool nonLocal(const Variable* var, bool deref)
 {
     return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isReference() || var->isExtern();
@@ -2390,8 +2407,11 @@ bool isNullOperand(const Token *expr)
 bool isGlobalData(const Token *expr, bool cpp)
 {
     bool globalData = false;
+    bool var = false;
     visitAstNodes(expr,
-    [&](const Token *tok) {
+    [expr, cpp, &globalData, &var](const Token *tok) {
+        if (tok->varId())
+            var = true;
         if (tok->varId() && !tok->variable()) {
             // Bailout, this is probably global
             globalData = true;
@@ -2452,7 +2472,7 @@ bool isGlobalData(const Token *expr, bool cpp)
             return ChildrenToVisit::op1;
         return ChildrenToVisit::op1_and_op2;
     });
-    return globalData;
+    return globalData || !var;
 }
 
 struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local, bool inInnerClass, int depth)
@@ -2769,6 +2789,8 @@ std::set<nonneg int> FwdAnalysis::getExprVarIds(const Token* expr, bool* localOu
     bool unknownVarId = false;
     visitAstNodes(expr,
     [&](const Token *tok) {
+        if (tok->str() == "[" && mWhat == What::UnusedValue)
+            return ChildrenToVisit::op1;
         if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
             // unknown variable
             unknownVarId = true;

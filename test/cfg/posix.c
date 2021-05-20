@@ -197,6 +197,7 @@ void memleak_getaddrinfo()
 
 void memleak_mmap(int fd)
 {
+    // cppcheck-suppress unusedAllocatedMemory
     // cppcheck-suppress unreadVariable
     void *addr = mmap(NULL, 255, PROT_NONE, MAP_PRIVATE, fd, 0);
     // cppcheck-suppress memleak
@@ -392,11 +393,11 @@ void uninitvar(int fd)
     // cppcheck-suppress uninitvar
     strtok(strtok_arg1, ";");
 
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     pthread_mutex_lock(&mutex1);
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     (void)pthread_mutex_trylock(&mutex2);
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     pthread_mutex_unlock(&mutex3);
     // after initialization it must be OK to call lock, trylock and unlock for this mutex
     pthread_mutex_init(&mutex, NULL);
@@ -488,7 +489,7 @@ void asctime_r_test(struct tm * tm, char * bufSizeUnknown)
     asctime_r(tm, bufSize100);
 
     // cppcheck-suppress asctime_rCalled
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     asctime_r(&tm_uninit_data, bufSize100);
     // cppcheck-suppress asctime_rCalled
     // cppcheck-suppress uninitvar
@@ -519,7 +520,7 @@ void ctime_r_test(time_t * timep, char * bufSizeUnknown)
     ctime_r(timep, bufSize100);
 
     // cppcheck-suppress ctime_rCalled
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     ctime_r(&time_t_uninit_data, bufSize100);
     // cppcheck-suppress ctime_rCalled
     // cppcheck-suppress uninitvar

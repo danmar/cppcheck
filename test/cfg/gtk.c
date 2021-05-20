@@ -67,6 +67,12 @@ void validCode(int argInt, GHashTableIter * hash_table_iter, GHashTable * hash_t
     g_hash_table_iter_replace(hash_table_iter, g_strdup("test"));
     g_hash_table_insert(hash_table, g_strdup("key"), g_strdup("value"));
     g_hash_table_replace(hash_table, g_strdup("key"), g_strdup("value"));
+
+    // NULL is handled graciously
+    char* str = g_strdup(NULL);
+    if (g_strcmp0(str, NULL) || g_strcmp0(NULL, str))
+        printf("%s", str);
+    g_free(str);
 }
 
 void g_malloc_test()
@@ -391,7 +397,7 @@ void g_once_init_enter_leave_test()
     }
 
     gsize init_val2;
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     // cppcheck-suppress ignoredReturnValue
     g_once_init_enter(&init_val2);
 

@@ -87,6 +87,7 @@ void bufferAccessOutOfBounds(void)
 
 void memleak_aligned_alloc(void)
 {
+    // cppcheck-suppress unusedAllocatedMemory
     // cppcheck-suppress unreadVariable
     char * alignedBuf = aligned_alloc(8, 16);
     // cppcheck-suppress memleak
@@ -1118,6 +1119,7 @@ void uninitvar_calloc(void)
 {
     size_t nitems;
     size_t size;
+    // cppcheck-suppress unusedAllocatedMemory
     // cppcheck-suppress uninitvar
     int * p = (int*) calloc(nitems, size);
     free(p);
@@ -1773,7 +1775,7 @@ void uninitvar_mbsrtowcs(wchar_t* d, const char** s, size_t m, mbstate_t *p)
 
     // cppcheck-suppress uninitvar
     (void)mbsrtowcs(dest,s,m,p);
-    // cppcheck-suppress uninitvar
+    // TODO cppcheck-suppress uninitvar
     (void)mbsrtowcs(d,&src,m,p);
     // cppcheck-suppress uninitvar
     (void)mbsrtowcs(d,s,max,p);
@@ -2598,6 +2600,7 @@ void uninitvar_longjmp(void)
 void uninitvar_malloc(void)
 {
     size_t size;
+    // cppcheck-suppress unusedAllocatedMemory
     // cppcheck-suppress uninitvar
     int *p = (int*)malloc(size);
     free(p);

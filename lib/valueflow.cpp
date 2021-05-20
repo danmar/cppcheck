@@ -1461,7 +1461,7 @@ static std::vector<MathLib::bigint> minUnsignedValue(const Token* tok, int depth
         return result;
     if (tok->hasKnownIntValue()) {
         result = {tok->values().front().intvalue};
-    } else if (tok->isConstOp() && tok->astOperand1() && tok->astOperand2()) {
+    } else if (tok->str() != "-" && tok->isConstOp() && tok->astOperand1() && tok->astOperand2()) {
         std::vector<MathLib::bigint> op1 = minUnsignedValue(tok->astOperand1(), depth - 1);
         std::vector<MathLib::bigint> op2 = minUnsignedValue(tok->astOperand2(), depth - 1);
         if (!op1.empty() && !op2.empty()) {
@@ -4060,7 +4060,7 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
     const size_t sz = ValueFlow::getSizeOf(*valueType, settings);
 
     for (ValueFlow::Value &value : values) {
-        // Dont truncate impossible values since those can be outside of the valid range
+        // Don't truncate impossible values since those can be outside of the valid range
         if (value.isImpossible())
             continue;
         if (value.isFloatValue()) {
@@ -4911,10 +4911,13 @@ static bool valueFlowForLoop2(const Token *tok,
             execute(secondExpression, &programMemory, &result, &error);
     }
 
-    memory1->swap(startMemory);
+    if (memory1)
+        memory1->swap(startMemory);
     if (!error) {
-        memory2->swap(endMemory);
-        memoryAfter->swap(programMemory);
+        if (memory2)
+            memory2->swap(endMemory);
+        if (memoryAfter)
+            memoryAfter->swap(programMemory);
     }
 
     return true;
@@ -5229,6 +5232,11 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         const Token* condTok = getCondTokFromEnd(endBlock);
         if (scope && condTok)
             programMemoryParseCondition(pm, condTok, nullptr, getSettings(), scope->type != Scope::eElse);
+        if (condTok && Token::simpleMatch(condTok->astParent(), ";")) {
+            ProgramMemory endMemory;
+            if (valueFlowForLoop2(condTok->astTop()->previous(), nullptr, &endMemory, nullptr))
+                pm.replace(endMemory);
+        }
         // ProgramMemory pm = pms.get(endBlock->link()->next(), getProgramState());
         for (const auto& p:pm.values) {
             nonneg int varid = p.first;

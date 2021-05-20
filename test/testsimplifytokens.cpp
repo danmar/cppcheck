@@ -265,7 +265,8 @@ private:
         TEST_CASE(simplifyCharAt);
         TEST_CASE(simplifyOverride); // ticket #5069
         TEST_CASE(simplifyNestedNamespace);
-        TEST_CASE(simplifyNamespaceAliases);
+        TEST_CASE(simplifyNamespaceAliases1);
+        TEST_CASE(simplifyNamespaceAliases2); // ticket #10281
 
         TEST_CASE(simplifyKnownVariables1);
         TEST_CASE(simplifyKnownVariables2);
@@ -5156,7 +5157,7 @@ private:
         ASSERT_EQUALS("namespace A { namespace B { namespace C { int i ; } } }", tok("namespace A::B::C { int i; }"));
     }
 
-    void simplifyNamespaceAliases() {
+    void simplifyNamespaceAliases1() {
         ASSERT_EQUALS(";",
                       tok("namespace ios = boost::iostreams;"));
         ASSERT_EQUALS("boost :: iostreams :: istream foo ( \"foo\" ) ;",
@@ -5222,6 +5223,17 @@ private:
                           "}"));
     }
 
+    void simplifyNamespaceAliases2() {
+        ASSERT_EQUALS("void foo ( ) "
+                      "{ "
+                      "int maxResults ; maxResults = :: a :: b :: c :: d :: ef :: MAX ; "
+                      "}",
+                      tok("namespace ef = ::a::b::c::d::ef;"
+                          "void foo()"
+                          "{"
+                          "  int maxResults = ::a::b::c::d::ef::MAX;"
+                          "}"));
+    }
 
     std::string simplifyKnownVariables(const char code[]) {
         errout.str("");

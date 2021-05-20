@@ -2767,7 +2767,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     }
 
     // Warn about unhandled character literals
-    if (mSettings->severity.isEnabled(Severity::information)) {
+    if (mSettings->severity.isEnabled(Severity::portability)) {
         for (const Token *tok = tokens(); tok; tok = tok->next()) {
             if (tok->tokType() == Token::eChar && tok->values().empty()) {
                 try {
@@ -9551,9 +9551,9 @@ void Tokenizer::unhandledCharLiteral(const Token *tok, const std::string& msg) c
     }
 
     reportError(tok,
-                Severity::information,
-                "cppcheckUnhandledChar",
-                "Character literal" + s + " is not handled. " + msg);
+                Severity::portability,
+                "nonStandardCharLiteral",
+                "Non-standard character literal" + s + ". " + msg);
 }
 
 /**
@@ -12545,6 +12545,18 @@ static bool sameTokens(const Token *first, const Token *last, const Token *other
     return false;
 }
 
+static bool alreadyHasNamespace(const Token *first, const Token *last, const Token *end)
+{
+    while (end && last->str() == end->str()) {
+        if (first == last)
+            return true;
+        last = last->previous();
+        end = end->previous();
+    }
+
+    return false;
+}
+
 static Token * deleteAlias(Token * tok)
 {
     Token::eraseTokens(tok, Token::findsimplematch(tok, ";"));
@@ -12615,7 +12627,7 @@ void Tokenizer::simplifyNamespaceAliases()
                         }
                     }
 
-                    if (tok2->strAt(1) == "::") {
+                    if (tok2->strAt(1) == "::" && !alreadyHasNamespace(tokNameStart, tokNameEnd, tok2)) {
                         tok2->str(tokNameStart->str());
                         Token * tok3 = tokNameStart;
                         while (tok3 != tokNameEnd) {

@@ -306,7 +306,7 @@ protected:
 
     /**
     * @brief Hides/shows full file path on all error file items according to mShowFullPath
-    * @param item Parent item whose childrens paths to change
+    * @param item Parent item whose children's paths to change
     */
     void refreshFilePaths(QStandardItem *item);
 
