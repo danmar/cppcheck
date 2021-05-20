@@ -4247,8 +4247,9 @@ private:
                         "{\n"
                         "    int *x;\n"
                         "    int *&y = x;\n"
+                        "    y = nullptr;\n"
                         "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         valueFlowUninit("void foo()\n"
                         "{\n"
