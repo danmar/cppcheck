@@ -4817,6 +4817,7 @@ private:
                         "  g(&copied_all, 5, 6, &bytesCopied);\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:2]: (error) Uninitialized variable: *buflen\n", errout.str());
+
     }
 
     void uninitvar_memberfunction() {
@@ -4829,6 +4830,16 @@ private:
                         "    if (c->x() == 4) {}\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: c\n", errout.str());
+        
+        valueFlowUninit("struct A { \n"
+                        "    int i; \n"
+                        "    void f();\n"
+                        "};\n"
+                        "void g() {\n"
+                        "    A a;\n"
+                        "    a.f();\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_nonmember() {

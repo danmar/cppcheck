@@ -1419,17 +1419,20 @@ void CheckUninitVar::valueFlowUninit()
                 continue;
             if (v->indirect > 1 || v->indirect < 0)
                 continue;
+            bool uninitderef = false;
             if (tok->variable()) {
                 bool unknown;
-                const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
+                const bool isarray = !tok->variable() || tok->variable()->isArray();
+                const bool ispointer = astIsPointer(tok) && !isarray;
+                const bool deref = ispointer && CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
                 if (v->indirect == 1 && !deref)
                     continue;
-                const bool uninitderef = deref && v->indirect == 0;
+                uninitderef = deref && v->indirect == 0;
                 const bool isleaf = isLeafDot(tok) || uninitderef;
                 if (Token::Match(tok->astParent(), ". %var%") && !isleaf)
                     continue;
             }
-            if (!Token::Match(tok->astParent(), ". %name% (") &&
+            if (!(Token::Match(tok->astParent(), ". %name% (") && uninitderef) &&
                 isVariableChanged(tok, v->indirect, mSettings, mTokenizer->isCPP()))
                 continue;
             uninitvarError(tok, tok->expressionString(), v->errorPath);
