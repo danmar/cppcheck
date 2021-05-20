@@ -1412,6 +1412,8 @@ void CheckUninitVar::valueFlowUninit()
                 parent = parent->astParent();
             if (parent && parent->isUnaryOp("&"))
                 continue;
+            if (isVoidCast(parent))
+                continue;
             auto v = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
             if (v == tok->values().end())
                 continue;
