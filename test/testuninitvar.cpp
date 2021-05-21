@@ -3055,7 +3055,7 @@ private:
                        "    char c;\n"
                        "    a(&c);\n"
                        "}");
-        // FN ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
 
         // pointer variable
         checkUninitVar("void a(char c);\n"  // value => error
@@ -3064,13 +3064,6 @@ private:
                        "    a(*c);\n"
                        "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
-
-        checkUninitVar("void a(const char *c);\n"  // const value => error
-                       "void b() {\n"
-                       "    char c;\n"
-                       "    a(&c);\n"
-                       "}");
-        // FN ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
 
 
         checkUninitVar("void a(char *c);\n"  // address => error

@@ -1141,12 +1141,10 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
         return nullptr;
 
     // FIXME handle address of!!
-    if (valueExpr->astParent()->isUnaryOp("&"))
-        return nullptr;
     if (derefValue && derefValue->astParent() && derefValue->astParent()->isUnaryOp("&"))
         return nullptr;
 
-    // BAILOUT for binary &
+    // BAILOUT for binary & without parent
     if (Token::simpleMatch(valueExpr->astParent(), "&") && astIsRhs(valueExpr) && Token::Match(valueExpr->astParent()->tokAt(-3), "( %name% ) &"))
         return nullptr;
 
@@ -1183,7 +1181,14 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
         const int use = isFunctionParUsage(derefValue, false, NO_ALLOC, indirect);
         return (use>0) ? derefValue : nullptr;
     }
-
+    if (valueExpr->astParent()->isUnaryOp("&")) {
+        const Token *parent = valueExpr->astParent();
+        if (Token::Match(parent->astParent(), "[(,]") && (parent->astParent()->str() == "," || astIsRhs(parent))) {
+            const int use = isFunctionParUsage(valueExpr, pointer, alloc, indirect);
+            return (use>0) ? valueExpr : nullptr;
+        }
+        return nullptr;
+    }
 
     // Assignments;
     // * Is this LHS in assignment
