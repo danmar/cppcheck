@@ -775,8 +775,25 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 }
 
                 else {
-                    if (tok->strAt(1) == "=")
-                        checkRhs(tok, var, *alloc, number_of_if, emptyString);
+                    const Token *parent = tok;
+                    while (parent->astParent() && ((astIsLHS(parent) && parent->astParent()->str() == "[") || parent->astParent()->isUnaryOp("*"))) {
+                        parent = parent->astParent();
+                        if (parent->str() == "[") {
+                            if (const Token *errorToken = checkExpr(parent->astOperand2(), var, *alloc, number_of_if==0)) {
+                                if (!suppressErrors)
+                                    uninitvarError(errorToken, errorToken->expressionString(), *alloc);
+                                return true;
+                            }
+                        }
+                    }
+                    if (Token::simpleMatch(parent->astParent(), "=") && astIsLHS(parent)) {
+                        const Token *eq = parent->astParent();
+                        if (const Token *errorToken = checkExpr(eq->astOperand2(), var, *alloc, number_of_if==0)) {
+                            if (!suppressErrors)
+                                uninitvarError(errorToken, errorToken->expressionString(), *alloc);
+                            return true;
+                        }
+                    }
 
                     // assume that variable is assigned
                     return true;
@@ -786,6 +803,32 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
     }
 
     return false;
+}
+
+const Token *CheckUninitVar::checkExpr(const Token *tok, const Variable& var, const Alloc alloc, bool known, bool *bailout)
+{
+    if (!tok)
+        return nullptr;
+    if (tok->astOperand1()) {
+        bool bailout1 = false;
+        const Token *errorToken = checkExpr(tok->astOperand1(), var, alloc, known, &bailout1);
+        if (bailout && bailout1)
+            *bailout = true;
+        if (errorToken)
+            return errorToken;
+        if ((bailout1 || !known) && Token::Match(tok, "%oror%|&&|?"))
+            return nullptr;
+    }
+    if (tok->astOperand2())
+        return checkExpr(tok->astOperand2(), var, alloc, known, bailout);
+    if (tok->varId() == var.declarationId()) {
+        const Token *errorToken = isVariableUsage(tok, var.isPointer(), alloc);
+        if (errorToken)
+            return errorToken;
+        else if (bailout)
+            *bailout = true;
+    }
+    return nullptr;
 }
 
 bool CheckUninitVar::checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, Alloc alloc, const std::string &membervar)
@@ -1059,16 +1102,23 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
         int deref = 0;
         derefValue = valueExpr;
         while (Token::Match(derefValue->astParent(), "+|-|*|[|.") || (derefValue->astParent() && derefValue->astParent()->isCast())) {
-            if (derefValue->astParent()->isUnaryOp("*"))
-                ++deref;
-            else if (derefValue->astParent()->str() == "[") {
+            const Token * const derefValueParent = derefValue->astParent();
+            if (derefValueParent->str() == "*") {
+                if (derefValueParent->isUnaryOp("*"))
+                    ++deref;
+                else
+                    break;
+            } else if (derefValueParent->str() == "[") {
                 if (astIsLhs(derefValue))
                     ++deref;
                 else
                     break;
-            } else if (derefValue->astParent()->str() == ".")
+            } else if (Token::Match(derefValueParent, "[+-]")) {
+                if (derefValueParent->valueType() && derefValueParent->valueType()->pointer == 0)
+                    break;
+            } else if (derefValueParent->str() == ".")
                 ++deref;
-            derefValue = derefValue->astParent();
+            derefValue = derefValueParent;
             if (deref < arrayDim)
                 valueExpr = derefValue;
         }

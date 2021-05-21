@@ -624,7 +624,7 @@ private:
                        "    int a[10];\n"
                        "    a[0] = 10 - a[1];\n"
                        "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a[1]\n", errout.str());
 
         // goto/setjmp/longjmp..
         checkUninitVar("void foo(int x)\n"
@@ -1495,7 +1495,7 @@ private:
                        "    char a[10];\n"
                        "    a[a[0]] = 0;\n"
                        "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a[0]\n", errout.str());
 
         checkUninitVar("int f()\n"
                        "{\n"
@@ -4944,7 +4944,7 @@ private:
                         "    if (c->x() == 4) {}\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: c\n", errout.str());
-        
+
         valueFlowUninit("struct A { \n"
                         "    int i; \n"
                         "    void f();\n"
