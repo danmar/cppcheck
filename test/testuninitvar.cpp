@@ -1918,19 +1918,6 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVar("struct StgStrm {\n"
-                       "    StgIo& rIo;\n"
-                       "    StgStrm(StgIo&);\n"
-                       "    virtual sal_Int32 Write();\n"
-                       "};\n"
-                       "void Tmp2Strm() {\n"
-                       "    StgStrm* pNewStrm;\n"
-                       "    if (someflag)\n"
-                       "        pNewStrm = new StgStrm(rIo);\n"
-                       "    pNewStrm->Write();\n"
-                       "}");
-        // TODO ASSERT_EQUALS("[test.cpp:10]: (error) Uninitialized variable: pNewStrm\n", errout.str());
-
         // #6450 - calling a member function is allowed if memory was allocated by new
         checkUninitVar("struct EMFPFont {\n"
                        "    bool family;\n"
@@ -4399,6 +4386,19 @@ private:
                         "  p->a = 1;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct S {\n"
+                        "    S& rIo;\n"
+                        "    S(S&);\n"
+                        "    void Write();\n"
+                        "};\n"
+                        "void foo(bool b) {\n"
+                        "    S* p;\n"
+                        "    if (b)\n"
+                        "        p = new S;\n"
+                        "    p->Write();\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:10]: (error) Uninitialized variable: p\n", errout.str());
 
         // Unknown types
         {
