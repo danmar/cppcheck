@@ -207,12 +207,8 @@ static const Token * functionThrowsRecursive(const Function * function, std::set
 
     for (const Token *tok = function->functionScope->bodyStart->next();
          tok != function->functionScope->bodyEnd; tok = tok->next()) {
-        if (tok->str() == "try") {
-            tok = tok->next();
-            if (function->functionScope->bodyEnd == tok || tok->str() != "{")
-                break;
-            tok = tok->link();  // skip till start of catch clauses
-        }
+        if (Token::simpleMatch(tok, "try {"))
+            tok = tok->linkAt(1);  // skip till start of catch clauses
         if (tok->str() == "throw") {
             return tok;
         } else if (tok->function()) {

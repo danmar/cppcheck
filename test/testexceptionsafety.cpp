@@ -321,7 +321,7 @@ private:
     }
 
     void noexceptThrow() {
-        check("void func1() noexcept(false) { try {;} catch(...) {;} throw 1; }\n"
+        check("void func1() noexcept(false) { try {} catch(...) {;} throw 1; }\n"
               "void func2() noexcept { throw 1; }\n"
               "void func3() noexcept(true) { throw 1; }\n"
               "void func4() noexcept(false) { throw 1; }\n"
