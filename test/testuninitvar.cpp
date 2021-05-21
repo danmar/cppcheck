@@ -1376,7 +1376,7 @@ private:
                        "        if (true) {;}\n"
                        "        else\n"
                        "        {\n"
-                       "            return 1;\n"
+                       "            return;\n"
                        "        }\n"
                        "        *p = 7;\n" // <<
                        "        p = new int(9);\n"
@@ -1490,7 +1490,7 @@ private:
 
     // arrays..
     void uninitvar_arrays() {
-        checkUninitVar("int f()\n"
+        checkUninitVar("void f()\n"
                        "{\n"
                        "    char a[10];\n"
                        "    a[a[0]] = 0;\n"
