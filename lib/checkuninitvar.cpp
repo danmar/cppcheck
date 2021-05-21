@@ -1449,6 +1449,15 @@ void CheckUninitVar::valueFlowUninit()
             }
             if (!tok->variable() && !tok->isUnaryOp("*"))
                 continue;
+            if (Token::Match(tok, "%name% ("))
+                continue;
+            const Token* parent = tok->astParent();
+            while (Token::simpleMatch(parent, "."))
+                parent = parent->astParent();
+            if (parent && parent->isUnaryOp("&"))
+                continue;
+            if (isVoidCast(parent))
+                continue;
             auto v = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
             if (v == tok->values().end())
                 continue;
@@ -1458,10 +1467,10 @@ void CheckUninitVar::valueFlowUninit()
                 continue;
             bool uninitderef = false;
             if (tok->variable()) {
-                if (!isVariableUsage(tok, tok->variable()->isPointer(), tok->variable()->isArray() ? ARRAY : NO_ALLOC, v->indirect))
-                    continue;
                 bool unknown;
-                const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
+                const bool isarray = !tok->variable() || tok->variable()->isArray();
+                const bool ispointer = astIsPointer(tok) && !isarray;
+                const bool deref = ispointer && CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
                 if (v->indirect == 1 && !deref)
                     continue;
                 uninitderef = deref && v->indirect == 0;
@@ -1469,13 +1478,11 @@ void CheckUninitVar::valueFlowUninit()
                 if (Token::Match(tok->astParent(), ". %var%") && !isleaf)
                     continue;
             }
-            if (!Token::Match(tok->astParent(), ". %name% (") && !uninitderef && isVariableChanged(tok, v->indirect, mSettings, mTokenizer->isCPP()))
+            if (!(Token::Match(tok->astParent(), ". %name% (") && uninitderef) &&
+                isVariableChanged(tok, v->indirect, mSettings, mTokenizer->isCPP()))
                 continue;
             uninitvarError(tok, tok->expressionString(), v->errorPath);
-            const Token * nextTok = tok;
-            while (Token::simpleMatch(nextTok->astParent(), "."))
-                nextTok = nextTok->astParent();
-            nextTok = nextAfterAstRightmostLeaf(nextTok);
+            const Token* nextTok = nextAfterAstRightmostLeaf(parent);
             if (nextTok == scope.bodyEnd)
                 break;
             tok = nextTok ? nextTok : tok;
