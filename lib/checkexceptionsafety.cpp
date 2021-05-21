@@ -208,8 +208,10 @@ static const Token * functionThrowsRecursive(const Function * function, std::set
     for (const Token *tok = function->functionScope->bodyStart->next();
          tok != function->functionScope->bodyEnd; tok = tok->next()) {
         if (tok->str() == "try") {
-            // just bail for now
-            break;
+            tok = tok->next();
+            if (function->functionScope->bodyEnd == tok || tok->str() != "{")
+                break;
+            tok = tok->link();  // skip till start of catch clauses
         }
         if (tok->str() == "throw") {
             return tok;
@@ -232,7 +234,7 @@ static const Token * functionThrowsRecursive(const Function * function, std::set
 
 static const Token * functionThrows(const Function * function)
 {
-    std::set<const Function *>  recursive;
+    std::set<const Function *> recursive;
 
     return functionThrowsRecursive(function, recursive);
 }
@@ -306,4 +308,3 @@ void CheckExceptionSafety::unhandledExceptionSpecification()
         }
     }
 }
-
