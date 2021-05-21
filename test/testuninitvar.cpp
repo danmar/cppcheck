@@ -4127,7 +4127,7 @@ private:
                        "void f() {\n"
                        "  struct t_udf_file *newf;\n"
                        "  newf = malloc(sizeof(*newf));\n"
-                       "  if (!newf) return 0;\n"
+                       "  if (!newf) {};\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -4146,6 +4146,12 @@ private:
         checkUninitVar("void f() {\n"
                        "    char *p = malloc(100);\n"
                        "    x = p;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("int* f() {\n"
+                       "    int *p = (int*)malloc(40);\n"
+                       "    return p;\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
 

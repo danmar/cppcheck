@@ -1165,6 +1165,8 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
             return nullptr;
         if (alloc == CTOR_CALL && derefValue && Token::simpleMatch(derefValue->astParent(), "(") && astIsLhs(derefValue))
             return nullptr;
+        if (Token::simpleMatch(valueExpr->astParent(), "return"))
+            return nullptr;
     }
 
     // Passing variable to function..
