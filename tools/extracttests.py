@@ -127,9 +127,11 @@ class Extract:
                 continue
 
             # check
-            res = re.match('\\s+' + check_function + '\\(' + string, line)
-            if res is not None:
-                code = res.group(1)
+            for f in check_function:
+                res = re.match('\\s+' + f + '\\(' + string, line)
+                if res is not None:
+                    code = res.group(1)
+                    break
 
             # code..
             if code is not None:
@@ -240,7 +242,7 @@ filename = None
 htmldir = None
 codedir = None
 onlyTP = None
-check_function = 'check.*'
+check_function = ['check[A-Za-z0-9_]*']
 for arg in sys.argv[1:]:
     if arg == '--xml':
         xml = True
@@ -253,7 +255,7 @@ for arg in sys.argv[1:]:
     elif arg.endswith('.cpp'):
         filename = arg
     elif arg.startswith('--check-function='):
-        check_function = arg[17:]
+        check_function.append(arg[17:])
     else:
         print('Invalid option: ' + arg)
         sys.exit(1)
