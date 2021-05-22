@@ -1249,6 +1249,14 @@ private:
 
         check("void f()\n"
               "{\n"
+              "  float *p; p = (float *)malloc(10 * sizeof(float));\n"
+              "  p[10] = 7;\n"
+              "  free(p);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'p[10]' accessed at index 10, which is out of bounds.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
               "  char *p; p = (char *)malloc(10);\n"
               "  p[0] = 0;\n"
               "  p[9] = 9;\n"
