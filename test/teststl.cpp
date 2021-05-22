@@ -430,6 +430,16 @@ private:
                     "    v[0] = 1;\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void foo(std::vector<int>* PArr, int n) {\n"
+                    " std::vector<int> Arr;\n"
+                    " if (!PArr)\n"
+                    "   PArr = &Arr;\n"
+                    " PArr->resize(n);\n"
+                    " for (int i = 0; i < n; ++i)\n"
+                    "   (*PArr)[i] = 1;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
