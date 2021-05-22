@@ -3672,13 +3672,20 @@ private:
         check("struct Foo { char a[1]; };\n"
               "void f() {\n"
               "  struct Foo *x = malloc(sizeof(Foo));\n"
-              "  mysprintf(x.a, \"aa\");\n"
+              "  mysprintf(x->a, \"aa\");\n"
               "}", settings);
-        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Buffer is accessed out of bounds: x.a\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Buffer is accessed out of bounds: x.a\n", "", errout.str());
 
         check("struct Foo { char a[1]; };\n"
               "void f() {\n"
               "  struct Foo *x = malloc(sizeof(Foo) + 10);\n"
+              "  mysprintf(x->a, \"aa\");\n"
+              "}", settings);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Foo { char a[1]; };\n"
+              "void f() {\n"
+              "  struct Foo x;\n"
               "  mysprintf(x.a, \"aa\");\n"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Buffer is accessed out of bounds: x.a\n", errout.str());

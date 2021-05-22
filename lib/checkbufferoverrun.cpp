@@ -609,6 +609,21 @@ void CheckBufferOverrun::bufferOverflow()
                 const ValueFlow::Value bufferSize = getBufferSize(argtok);
                 if (bufferSize.intvalue <= 0)
                     continue;
+                // buffer size == 1 => do not warn for dynamic memory
+                if (bufferSize.intvalue == 1) {
+                    const Token *tok2 = argtok;
+                    while (Token::simpleMatch(tok2->astParent(), "."))
+                        tok2 = tok2->astParent();
+                    while (Token::Match(tok2, "[|."))
+                        tok2 = tok2->astOperand1();
+                    const Variable *var = tok2 ? tok2->variable() : nullptr;
+                    if (var) {
+                        if (var->isPointer())
+                            continue;
+                        if (var->isArgument() && (var->isPointer() || var->isReference()))
+                            continue;
+                    }
+                }
                 const bool error = std::none_of(minsizes->begin(), minsizes->end(), [=](const Library::ArgumentChecks::MinSize &minsize) {
                     return checkBufferSize(tok, minsize, args, bufferSize.intvalue, mSettings);
                 });
