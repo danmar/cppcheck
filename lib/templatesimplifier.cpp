@@ -528,7 +528,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             }
             tok = tok->next();
 
-            if (Token::simpleMatch(tok,"("))
+            if (Token::Match(tok, "(|["))
                 tok = tok->link()->next();
 
             if (!tok)
@@ -2939,7 +2939,7 @@ std::string TemplateSimplifier::getNewName(
     const Token * endToken = tok2->next()->findClosingBracket();
     for (Token *tok3 = tok2->tokAt(2); tok3 != endToken && (indentlevel > 0 || tok3->str() != ">"); tok3 = tok3->next()) {
         // #2721 - unhandled [ => bail out
-        if (tok3->str() == "[") {
+        if (tok3->str() == "[" && !Token::Match(tok3->next(), "%num%| ]")) {
             typeForNewName.clear();
             break;
         }
@@ -2954,9 +2954,9 @@ std::string TemplateSimplifier::getNewName(
         if (indentlevel == 0 && Token::Match(tok3->previous(), "[<,]")) {
             mTypesUsedInTemplateInstantiation.emplace_back(tok3, "");
         }
-        if (tok3->str() == "(")
+        if (Token::Match(tok3, "(|["))
             ++indentlevel;
-        else if (tok3->str() == ")")
+        else if (Token::Match(tok3, ")|]"))
             --indentlevel;
         const bool constconst = tok3->str() == "const" && tok3->strAt(1) == "const";
         if (!constconst) {

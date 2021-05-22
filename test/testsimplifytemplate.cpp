@@ -237,6 +237,7 @@ private:
         TEST_CASE(template_namespace_10);
         TEST_CASE(template_namespace_11); // #7145
         TEST_CASE(template_pointer_type);
+        TEST_CASE(template_array_type);
 
         // Test TemplateSimplifier::templateParameters
         TEST_CASE(templateParameters);
@@ -875,8 +876,7 @@ private:
                             "class C: public A<char[M]> {};\n"
                             "\n"
                             "C<2> a;\n";
-        // TODO: expand A also
-        ASSERT_EQUALS("template < class T > class A { public: T x ; } ; class C<2> ; C<2> a ; class C<2> : public A < char [ 2 ] > { } ;", tok(code));
+        ASSERT_EQUALS("class A<char[2]> ; class C<2> ; C<2> a ; class C<2> : public A<char[2]> { } ; class A<char[2]> { public: char [ 2 ] x ; } ;", tok(code));
     }
 
     void template27() {
@@ -5104,6 +5104,36 @@ private:
                       "void foo<int*> ( int * const x ) { }", tok(code));
     }
 
+    void template_array_type() {
+        ASSERT_EQUALS("void foo<int[]> ( int [ ] x ) ; "
+                      "void bar ( ) { int [ 3 ] y ; foo<int[]> ( y ) ; } "
+                      "void foo<int[]> ( int [ ] x ) { } ;",
+                      tok("template <class T> void foo(T x) {};\n"
+                          "void bar() {\n"
+                          "  int[3] y;\n"
+                          "  foo<int[]>(y);\n"
+                          "}"));
+        ASSERT_EQUALS("struct A<int[2]> ; "
+                      "A<int[2]> y ; "
+                      "struct A<int[2]> { int [ 2 ] x ; } ;",
+                      tok("template <class T> struct A { T x; };\n"
+                          "A<int[2]> y;"));
+
+		// Previously resulted in:
+		//   test.cpp:2:33: error: Syntax Error: AST broken, binary operator '>' doesn't have two operands. [internalAstError]
+        ASSERT_EQUALS("struct A<B<int>[]> ; "
+                      "struct B<B<int>> ; "
+                      "struct C<B<int>> ; "
+                      "C<B<int>> y ; "
+                      "struct C<B<int>> : B<B<int>> { } ; "
+                      "struct B<B<int>> { A<B<int>[]> x ; } ; "
+                      "struct A<B<int>[]> { } ;",
+                      tok("template <class  > struct A {};\n"
+                          "template <class T> struct B { A<T[]> x; };\n"
+                          "template <class T> struct C : B<T> {};\n"
+                          "C<B<int>> y;"));
+    }
+
     unsigned int templateParameters(const char code[]) {
         Tokenizer tokenizer(&settings, this);
 
@@ -5139,6 +5169,8 @@ private:
         ASSERT_EQUALS(1U, templateParameters("X<int...> x;"));
         ASSERT_EQUALS(2U, templateParameters("X<class, typename...> x;"));
         ASSERT_EQUALS(2U, templateParameters("X<1, T> x;"));
+        ASSERT_EQUALS(1U, templateParameters("X<T[]> x;"));
+        ASSERT_EQUALS(1U, templateParameters("X<T[2]> x;"));
         ASSERT_EQUALS(1U, templateParameters("X<i == 0> x;"));
         ASSERT_EQUALS(2U, templateParameters("X<int, i>=0> x;"));
         ASSERT_EQUALS(3U, templateParameters("X<int, i>=0, i - 2> x;"));
