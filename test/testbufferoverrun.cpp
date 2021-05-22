@@ -132,6 +132,7 @@ private:
         TEST_CASE(array_index_52); // #7682
         TEST_CASE(array_index_53); // #4750
         TEST_CASE(array_index_54); // #10268
+        TEST_CASE(array_index_55); // #10254
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1563,6 +1564,23 @@ private:
               "        b[i]   = 0;\n"
               "        b[i+1] = 0;\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_55() {
+        check("void make(const char* s, size_t len) {\n"
+              "    for (size_t i = 0; i < len; ++i)\n"
+              "        s[i];\n"
+              "}\n"
+              "void make(const char* s) {\n"
+              "    make(s, strlen(s));\n"
+              "}\n"
+              "void f() {\n"
+              "    make(\"my-utf8-payload\");\n"
+              "}\n"
+              "void f2() {\n"
+              "    make(\"false\");\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
