@@ -321,7 +321,7 @@ private:
     }
 
     void noexceptThrow() {
-        check("void func1() noexcept(false) { throw 1; }\n"
+        check("void func1() noexcept(false) { try {} catch(...) {;} throw 1; }\n"
               "void func2() noexcept { throw 1; }\n"
               "void func3() noexcept(true) { throw 1; }\n"
               "void func4() noexcept(false) { throw 1; }\n"
@@ -332,12 +332,13 @@ private:
                       "[test.cpp:5]: (error) Exception thrown in function declared not to throw exceptions.\n", errout.str());
 
         // avoid false positives
-        check("const char *func() noexcept { return 0; }");
+        check("const char *func() noexcept { return 0; }\n"
+              "const char *func1() noexcept { try { throw 1; } catch(...) {} return 0; }");
         ASSERT_EQUALS("", errout.str());
     }
 
     void nothrowThrow() {
-        check("void func1() throw(int) { throw 1; }\n"
+        check("void func1() throw(int) { try {;} catch(...) { throw 1; } ; }\n"
               "void func2() throw() { throw 1; }\n"
               "void func3() throw(int) { throw 1; }\n"
               "void func4() throw() { func1(); }\n"
