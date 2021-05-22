@@ -8179,12 +8179,18 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on 'ptr' - it's already a pointer.\n", errout.str());
 
         // no warning for macros
-        check("#define MUTEX_LOCK(m) pthread_mutex_lock(&(m))\n"
-              "void f(struct mutex *mut) {\n"
-              "    MUTEX_LOCK(*mut);\n"
-              "}\n", nullptr, false, true);
+        checkP("#define MUTEX_LOCK(m) pthread_mutex_lock(&(m))\n"
+               "void f(struct mutex *mut) {\n"
+               "    MUTEX_LOCK(*mut);\n"
+               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkP("#define B(op)        bar(op)\n"
+               "#define C(orf)       B(&orf)\n"
+               "void foo(const int * pkey) {\n"
+               "    C(*pkey);\n"
+               "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void test_isSameExpression() { // see #5738

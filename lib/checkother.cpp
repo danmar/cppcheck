@@ -2674,10 +2674,10 @@ void CheckOther::checkRedundantPointerOp()
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-        if (!tok->isUnaryOp("&") || !tok->astOperand1()->isUnaryOp("*"))
-            continue;
+        if (tok->isExpandedMacro() && tok->str() == "(")
+            tok = tok->link();
 
-        if (tok->isExpandedMacro())
+        if (!tok->isUnaryOp("&") || !tok->astOperand1()->isUnaryOp("*"))
             continue;
 
         // variable
