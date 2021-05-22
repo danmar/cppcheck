@@ -4391,10 +4391,10 @@ private:
                         "    S(S&);\n"
                         "    void Write();\n"
                         "};\n"
-                        "void foo(bool b) {\n"
+                        "void foo(bool b, struct S &io) {\n"
                         "    S* p;\n"
                         "    if (b)\n"
-                        "        p = new S;\n"
+                        "        p = new S(io);\n"
                         "    p->Write();\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:10]: (error) Uninitialized variable: p\n", errout.str());
@@ -4962,7 +4962,7 @@ private:
                         "\n"
                         "int main() {\n"
                         "  Foo* foo;\n"
-                        "  foo->b\n"
+                        "  foo->bar = 3;\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: foo\n", errout.str());
     }
