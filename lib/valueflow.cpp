@@ -544,12 +544,14 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
 
     // cast..
     if (const Token *castType = getCastTypeStartToken(parent)) {
-        if (((tok->valueType() == nullptr && value.isImpossible()) || astIsPointer(tok)) && 
+        if (((tok->valueType() == nullptr && value.isImpossible()) || astIsPointer(tok)) &&
             value.valueType == ValueFlow::Value::ValueType::INT &&
             Token::simpleMatch(parent->astOperand1(), "dynamic_cast"))
             return;
         const ValueType &valueType = ValueType::parseDecl(castType, settings);
-        if (value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok) && valueType.sign == ValueType::SIGNED && tok->valueType() && ValueFlow::getSizeOf(*tok->valueType(), settings) >= ValueFlow::getSizeOf(valueType, settings))
+        if (value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok) &&
+            valueType.sign == ValueType::SIGNED && tok->valueType() &&
+            ValueFlow::getSizeOf(*tok->valueType(), settings) >= ValueFlow::getSizeOf(valueType, settings))
             return;
         setTokenValueCast(parent, valueType, value, settings);
     }
