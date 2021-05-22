@@ -140,6 +140,7 @@ private:
 
         TEST_CASE(valueFlowUnknownMixedOperators);
         TEST_CASE(valueFlowIdempotent);
+        TEST_CASE(valueFlowUnsigned);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -5606,6 +5607,28 @@ private:
                "    bool result = x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 5U, 0));
+    }
+
+    void valueFlowUnsigned() {
+        const char *code;
+
+        code = "void f(unsigned int i) {\n"
+               "    auto x = i;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
+
+        code = "void f(unsigned int i) {\n"
+               "    int x = (int)i;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, -1));
+
+        code = "void f(unsigned int i) {\n"
+               "    int x = (long)i;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
     }
 };
 
