@@ -809,6 +809,9 @@ const Token *CheckUninitVar::checkExpr(const Token *tok, const Variable& var, co
 {
     if (!tok)
         return nullptr;
+    if (Token::Match(tok->previous(), "sizeof|typeof|offsetof|decltype ("))
+        return nullptr;
+
     if (tok->astOperand1()) {
         bool bailout1 = false;
         const Token *errorToken = checkExpr(tok->astOperand1(), var, alloc, known, &bailout1);

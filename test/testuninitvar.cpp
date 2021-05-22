@@ -80,6 +80,7 @@ private:
         TEST_CASE(uninitvar_cpp11ArrayInit); // #7010
         TEST_CASE(uninitvar_rangeBasedFor); // #7078
         TEST_CASE(uninitvar_static); // #8734
+        TEST_CASE(checkExpr);
         TEST_CASE(trac_4871);
         TEST_CASE(syntax_error); // Ticket #5073
         TEST_CASE(trac_5970);
@@ -4233,6 +4234,14 @@ private:
                        "  X::P_t P; "
                        "  P.p = 0; "
                        "  result.push_back(P); "
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkExpr() {
+        checkUninitVar("struct AB { int a; int b; };\n"
+                       "void f() {\n"
+                       "    struct AB *ab = (struct AB*)calloc(1, sizeof(*ab));\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
     }
