@@ -50,6 +50,10 @@ namespace {
 
 //---------------------------------------------------------------------------
 
+static bool isSizeOfEtc(const Token *tok) {
+    return Token::Match(tok, "sizeof|typeof|offsetof|decltype|__typeof__ (");
+}
+
 // get ast parent, skip possible address-of and casts
 static const Token *getAstParentSkipPossibleCastAndAddressOf(const Token *vartok, bool *unknown)
 {
@@ -580,7 +584,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
         }
 
         // skip sizeof / offsetof
-        if (Token::Match(tok, "sizeof|typeof|offsetof|decltype ("))
+        if (isSizeOfEtc(tok))
             tok = tok->linkAt(1);
 
         // for/while..
@@ -693,7 +697,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     return true;
                 }
 
-                else if (Token::Match(tok, "sizeof|typeof|offsetof|decltype ("))
+                else if (isSizeOfEtc(tok))
                     tok = tok->linkAt(1);
 
                 else if (tok->str() == "?") {
@@ -809,7 +813,7 @@ const Token *CheckUninitVar::checkExpr(const Token *tok, const Variable& var, co
 {
     if (!tok)
         return nullptr;
-    if (Token::Match(tok->previous(), "sizeof|typeof|offsetof|decltype ("))
+    if (isSizeOfEtc(tok->previous()))
         return nullptr;
 
     if (tok->astOperand1()) {
@@ -862,7 +866,7 @@ bool CheckUninitVar::checkIfForWhileHead(const Token *startparentheses, const Va
             return true;
         }
         // skip sizeof / offsetof
-        if (Token::Match(tok, "sizeof|typeof|offsetof|decltype ("))
+        if (isSizeOfEtc(tok))
             tok = tok->linkAt(1);
         if ((!isuninit || !membervar.empty()) && tok->str() == "&&")
             suppressErrors = true;
@@ -880,7 +884,7 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
     const Token *const end = start->link();
     for (const Token *tok = start->next(); tok != end; tok = tok->next()) {
         // skip sizeof / offsetof
-        if (Token::Match(tok, "sizeof|typeof|offsetof|decltype (")) {
+        if (isSizeOfEtc(tok)) {
             tok = tok->linkAt(1);
             continue;
         }
@@ -1002,7 +1006,7 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
                         varIsUsedInRhs = true;
                         return ChildrenToVisit::done;
                     }
-                    if (Token::Match(t->previous(), "sizeof|typeof|offsetof|decltype ("))
+                    if (isSizeOfEtc(t->previous()))
                         return ChildrenToVisit::none;
                     return ChildrenToVisit::op1_and_op2;
                 });
@@ -1067,7 +1071,7 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, Alloc alloc
             if (err)
                 uninitvarError(tok, var.nameToken()->str(), alloc);
             break;
-        } else if (Token::Match(tok, "sizeof|typeof|offsetof|decltype ("))
+        } else if (isSizeOfEtc(tok))
             tok = tok->linkAt(1);
 
     }
@@ -1503,7 +1507,7 @@ void CheckUninitVar::valueFlowUninit()
         if (!scope.isExecutable())
             continue;
         for (const Token* tok = scope.bodyStart; tok != scope.bodyEnd; tok = tok->next()) {
-            if (Token::Match(tok, "sizeof|typeof|offsetof|decltype (")) {
+            if (isSizeOfEtc(tok)) {
                 tok = tok->linkAt(1);
                 continue;
             }
