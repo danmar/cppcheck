@@ -620,7 +620,7 @@ void CheckBufferOverrun::bufferOverflow()
                     if (var) {
                         if (var->isPointer())
                             continue;
-                        if (var->isArgument() && (var->isPointer() || var->isReference()))
+                        if (var->isArgument() && var->isReference())
                             continue;
                     }
                 }
