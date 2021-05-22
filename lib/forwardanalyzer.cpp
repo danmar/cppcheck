@@ -111,8 +111,10 @@ struct ForwardTraversal {
             return Progress::Skip;
         T* firstOp = tok->astOperand1();
         T* secondOp = tok->astOperand2();
-        // Evaluate RHS of assignment before LHS
-        if (tok->isAssignmentOp())
+        // Evaluate: 
+        //     1. RHS of assignment before LHS
+        //     2. Unary op before operand
+        if (tok->isAssignmentOp() || !secondOp)
             std::swap(firstOp, secondOp);
         if (firstOp && traverseRecursive(firstOp, f, traverseUnknown, recursion+1) == Progress::Break)
             return Break();

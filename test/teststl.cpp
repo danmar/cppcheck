@@ -440,6 +440,13 @@ private:
                     "   (*PArr)[i] = 1;\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("int f() {\n"
+                    "    std::vector<int> v;\n"
+                    "    std::vector<int> * pv = &v;\n"
+                    "    return (*pv).at(42);\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression '(*pv).at(42)' because '*pv' is empty and 'at' may be non-zero.\n", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
