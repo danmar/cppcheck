@@ -1244,7 +1244,7 @@ static void valueFlowPointerAlias(TokenList *tokenlist)
     }
 }
 
-static void valueFlowPointerAliasDeref(TokenList *tokenlist)
+static void valueFlowUninitPointerAliasDeref(TokenList *tokenlist)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
         if (!tok->isUnaryOp("*"))
@@ -6869,7 +6869,6 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     while (n > 0 && values < getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
         valueFlowImpossibleValues(tokenlist, settings);
-        valueFlowPointerAliasDeref(tokenlist);
         valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);
         valueFlowAfterMove(tokenlist, symboldatabase, errorLogger, settings);
@@ -6883,6 +6882,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowUninit(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowUninitPointerAliasDeref(tokenlist);
         if (tokenlist->isCPP()) {
             valueFlowSmartPointer(tokenlist, errorLogger, settings);
             valueFlowIterators(tokenlist, settings);
