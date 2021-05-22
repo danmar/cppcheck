@@ -1270,9 +1270,8 @@ static void valueFlowPointerAliasDeref(TokenList *tokenlist)
         if (!var->isConst() && isVariableChanged(lifeTok->next(), tok, lifeTok->varId(), !var->isLocal(), tokenlist->getSettings(), tokenlist->isCPP()))
             continue;
         for (const ValueFlow::Value& v:lifeTok->values()) {
-            // TODO: Move container size values to generic forward
             // Forward uninit values since not all values can be forwarded directly
-            if (!(v.isContainerSizeValue() || v.isUninitValue()))
+            if (!v.isUninitValue())
                 continue;
             ValueFlow::Value value = v;
             value.errorPath.insert(value.errorPath.begin(), errorPath.begin(), errorPath.end());
