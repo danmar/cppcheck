@@ -51,6 +51,7 @@ private:
         TEST_CASE(nothrowAttributeThrow);
         TEST_CASE(nothrowAttributeThrow2); // #5703
         TEST_CASE(nothrowDeclspecThrow);
+        TEST_CASE(rethrowNoCurrentException);
     }
 
     void check(const char code[], bool inconclusive = false) {
@@ -406,6 +407,15 @@ private:
         // avoid false positives
         check("const char *func() __attribute((nothrow)); void func1() { return 0; }");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void rethrowNoCurrentException() {
+        check("void func1() { try{ throw; } catch (int&) { ; } }\n"
+              "void func2() { try{ ; } catch (const int&) { throw; } ; }\n"
+              "void func3() { try{ ; } catch (...) { ; } throw; }\n"
+              "void func4() { throw 0; }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Calling `throw;` without currently handled exception(not from catch block) calls std​::​​terminate()\n"
+                      "[test.cpp:3]: (error) Calling `throw;` without currently handled exception(not from catch block) calls std​::​​terminate()\n", errout.str());
     }
 };
 

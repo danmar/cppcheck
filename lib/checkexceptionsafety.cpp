@@ -304,3 +304,29 @@ void CheckExceptionSafety::unhandledExceptionSpecification()
         }
     }
 }
+
+//--------------------------------------------------------------------------
+// 7.6.18.4 If no exception is presently being handled, evaluating a throw-expression with no operand calls std​::​​terminate().
+//--------------------------------------------------------------------------
+void CheckExceptionSafety::rethrowNoCurrentException()
+{
+    if (!mSettings->severity.isEnabled(Severity::warning))
+        return;
+
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        const Function* function = scope->function;
+        if (!function)
+            continue;
+        for (const Token *tok = function->functionScope->bodyStart->next();
+            tok != function->functionScope->bodyEnd; tok = tok->next()) {
+            if (Token::simpleMatch(tok, "catch (")) {
+                tok = tok->linkAt(1);       // skip catch argument
+                tok = tok->next()->link();  // skip catch scope
+            }
+            if (Token::simpleMatch(tok, "throw ;")) {
+                rethrowNoCurrentExceptionError(tok);
+            }
+        }
+    }
+}
