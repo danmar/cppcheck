@@ -1149,8 +1149,6 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
         return nullptr;
 
     // FIXME handle address of!!
-    if (valueExpr->astParent()->isUnaryOp("&"))
-        return nullptr;
     if (derefValue && derefValue->astParent() && derefValue->astParent()->isUnaryOp("&"))
         return nullptr;
 
@@ -1192,6 +1190,14 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
     if (derefValue && Token::Match(derefValue->astParent(), "[(,]") && (derefValue->astParent()->str() == "," || astIsRhs(derefValue))) {
         const int use = isFunctionParUsage(derefValue, false, NO_ALLOC, indirect);
         return (use>0) ? derefValue : nullptr;
+    }
+    if (valueExpr->astParent()->isUnaryOp("&")) {
+        const Token *parent = valueExpr->astParent();
+        if (Token::Match(parent->astParent(), "[(,]") && (parent->astParent()->str() == "," || astIsRhs(parent))) {
+            const int use = isFunctionParUsage(valueExpr, pointer, alloc, indirect);
+            return (use>0) ? valueExpr : nullptr;
+        }
+        return nullptr;
     }
 
     // Assignments;
@@ -1323,8 +1329,6 @@ int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc 
                         return -1;
                     return 1;
                 }
-                if ((pointer || address) && alloc == NO_ALLOC && Token::Match(argStart, "const struct| %type% * %name% [,)]"))
-                    return 1;
                 if ((pointer || address) && Token::Match(argStart, "const %type% %name% [") && Token::Match(argStart->linkAt(3), "] [,)]"))
                     return 1;
             }
