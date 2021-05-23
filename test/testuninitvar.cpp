@@ -4769,6 +4769,15 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: flags\n", errout.str());
 
+        valueFlowUninit("void foo() {\n" // #10293
+                        "  union {\n"
+                        "    struct hdr cm;\n"
+                        "    char control[123];\n"
+                        "  } u;\n"
+                        "  char *x = u.control;\n" // <- no error
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         valueFlowUninit("struct pc_data {\n"
                         "    struct {\n"
                         "        char   * strefa;\n"

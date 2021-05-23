@@ -1497,10 +1497,8 @@ void CheckUninitVar::valueFlowUninit()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // check every executable scope
-    for (const Scope &scope : symbolDatabase->scopeList) {
-        if (!scope.isExecutable())
-            continue;
-        for (const Token* tok = scope.bodyStart; tok != scope.bodyEnd; tok = tok->next()) {
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (isSizeOfEtc(tok)) {
                 tok = tok->linkAt(1);
                 continue;
@@ -1528,9 +1526,11 @@ void CheckUninitVar::valueFlowUninit()
                 bool unknown;
                 const bool isarray = !tok->variable() || tok->variable()->isArray();
                 const bool ispointer = astIsPointer(tok) && !isarray;
-                const bool deref = ispointer && CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
-                if (v->indirect == 1 && !deref)
+                const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
+                if (ispointer && v->indirect == 1 && !deref)
                     continue;
+                if (isarray && !deref)
+					continue;
                 uninitderef = deref && v->indirect == 0;
                 const bool isleaf = isLeafDot(tok) || uninitderef;
                 if (Token::Match(tok->astParent(), ". %var%") && !isleaf)
@@ -1541,7 +1541,7 @@ void CheckUninitVar::valueFlowUninit()
                 continue;
             uninitvarError(tok, tok->expressionString(), v->errorPath);
             const Token* nextTok = nextAfterAstRightmostLeaf(parent);
-            if (nextTok == scope.bodyEnd)
+            if (nextTok == scope->bodyEnd)
                 break;
             tok = nextTok ? nextTok : tok;
         }
