@@ -4474,14 +4474,12 @@ private:
                             "}");
             ASSERT_EQUALS("", errout.str());
 
-            valueFlowUninit("int a(FArchive &arc) {\n"
+            valueFlowUninit("int a(FArchive &arc) {\n"  // #3060 (initialization through operator<<)
                             "    int *p;\n"
                             "    arc << p;\n"
-                            "    return *p;\n"
+                            "    return *p;\n" // fp: should not warn
                             "}");
-            ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: p\n"
-                          "[test.cpp:4]: (error) Uninitialized variable: p\n",
-                          errout.str());
+            TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
 
             // #4320
             valueFlowUninit("void f() {\n"
@@ -4601,6 +4599,12 @@ private:
                         "    retval = 2;\n"
                         "  return retval;\n"
                         "}");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void foo(struct qb_list_head *list) {\n"
+                        "    struct qb_list_head *iter;\n"
+                        "    qb_list_for_each(iter, list) {}\n"
+                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
         valueFlowUninit("int foo()\n"
