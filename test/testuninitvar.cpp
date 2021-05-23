@@ -4731,6 +4731,17 @@ private:
                         "  return (res);\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct Archive {\n"
+                        "    bool isNull;\n"
+                        "    friend void operator&(const Archive &, bool &isNull);\n"
+                        "};\n"
+                        "void load(Archive& ar) {\n"
+                        "    bool isNull;\n"
+                        "    ar & isNull;\n"
+                        "    if (!isNull) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_ipa() {
