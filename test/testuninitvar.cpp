@@ -3051,12 +3051,13 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVar("void a(const char *c);\n"  // const address => error
+        checkUninitVar("void a(const char *c);\n"  // const address => data is not changed
                        "void b() {\n"
                        "    char c;\n"
-                       "    a(&c);\n"
+                       "    a(&c);\n"  // <- no warning
+                       "    c++;\n"  // <- uninitialized variable
                        "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: c\n", "", errout.str());
 
         // pointer variable
         checkUninitVar("void a(char c);\n"  // value => error
