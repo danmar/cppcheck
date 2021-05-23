@@ -310,9 +310,6 @@ void CheckExceptionSafety::unhandledExceptionSpecification()
 //--------------------------------------------------------------------------
 void CheckExceptionSafety::rethrowNoCurrentException()
 {
-    if (!mSettings->severity.isEnabled(Severity::warning))
-        return;
-
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         const Function* function = scope->function;
@@ -322,11 +319,20 @@ void CheckExceptionSafety::rethrowNoCurrentException()
             tok != function->functionScope->bodyEnd; tok = tok->next()) {
             if (Token::simpleMatch(tok, "catch (")) {
                 tok = tok->linkAt(1);       // skip catch argument
-                tok = tok->next()->link();  // skip catch scope
+                if (Token::simpleMatch(tok, ") {"))
+                    tok = tok->linkAt(1);   // skip catch scope
+                else
+                    break;
             }
             if (Token::simpleMatch(tok, "throw ;")) {
                 rethrowNoCurrentExceptionError(tok);
             }
         }
     }
+}
+
+void CheckExceptionSafety::rethrowNoCurrentExceptionError(const Token *tok) {
+    reportError(tok, Severity::error, "rethrowNoCurrentException",
+                "Rethrowing exception with 'throw;' outside a catch scope calls std::terminate().",
+                CWE480, Certainty::normal);
 }

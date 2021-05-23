@@ -141,11 +141,7 @@ private:
     }
 
     /** Rethrow without currently handled exception */
-    void rethrowNoCurrentExceptionError(const Token *tok) {
-        reportError(tok, Severity::error, "rethrowNoCurrentException",
-                    "Calling `throw;` without currently handled exception(not from catch block) calls std​::​​terminate()",
-                    CWE480, Certainty::normal);
-    }
+    void rethrowNoCurrentExceptionError(const Token *tok);
 
     /** Generate all possible errors (for --errorlist) */
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
