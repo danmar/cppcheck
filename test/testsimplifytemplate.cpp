@@ -5119,8 +5119,8 @@ private:
                       tok("template <class T> struct A { T x; };\n"
                           "A<int[2]> y;"));
 
-		// Previously resulted in:
-		//   test.cpp:2:33: error: Syntax Error: AST broken, binary operator '>' doesn't have two operands. [internalAstError]
+        // Previously resulted in:
+        //   test.cpp:2:33: error: Syntax Error: AST broken, binary operator '>' doesn't have two operands. [internalAstError]
         ASSERT_EQUALS("struct A<B<int>[]> ; "
                       "struct B<B<int>> ; "
                       "struct C<B<int>> ; "

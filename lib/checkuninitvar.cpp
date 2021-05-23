@@ -50,7 +50,8 @@ namespace {
 
 //---------------------------------------------------------------------------
 
-static bool isSizeOfEtc(const Token *tok) {
+static bool isSizeOfEtc(const Token *tok)
+{
     return Token::Match(tok, "sizeof|typeof|offsetof|decltype|__typeof__ (");
 }
 
@@ -1530,7 +1531,7 @@ void CheckUninitVar::valueFlowUninit()
                 if (ispointer && v->indirect == 1 && !deref)
                     continue;
                 if (isarray && !deref)
-					continue;
+                    continue;
                 uninitderef = deref && v->indirect == 0;
                 const bool isleaf = isLeafDot(tok) || uninitderef;
                 if (Token::Match(tok->astParent(), ". %var%") && !isleaf)

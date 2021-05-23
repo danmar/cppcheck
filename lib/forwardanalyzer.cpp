@@ -111,7 +111,7 @@ struct ForwardTraversal {
             return Progress::Skip;
         T* firstOp = tok->astOperand1();
         T* secondOp = tok->astOperand2();
-        // Evaluate: 
+        // Evaluate:
         //     1. RHS of assignment before LHS
         //     2. Unary op before operand
         if (tok->isAssignmentOp() || !secondOp)
