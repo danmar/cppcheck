@@ -30,7 +30,6 @@
 #include "valueflow.h"
 
 #include <algorithm>
-#include <cstdio>
 #include <deque>
 #include <functional>
 #include <iterator>
