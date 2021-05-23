@@ -431,6 +431,19 @@ static T calculate(const std::string& s, const T& x, const T& y)
 /** Set token value for cast */
 static void setTokenValueCast(Token *parent, const ValueType &valueType, const ValueFlow::Value &value, const Settings *settings);
 
+static bool isCompatibleValues(const ValueFlow::Value& value1, const ValueFlow::Value& value2)
+{
+    if (value1.isKnown() || value2.isKnown())
+        return true;
+    if (value1.isImpossible() || value2.isImpossible())
+        return false;
+    if (value1.varId == 0 || value2.varId == 0)
+        return true;
+    if (value1.varId == value2.varId && value1.varvalue == value2.varvalue && value1.isIntValue() && value2.isIntValue())
+        return true;
+    return false;
+}
+
 /** set ValueFlow value and perform calculations if possible */
 static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Settings *settings)
 {
@@ -647,56 +660,54 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     continue;
                 if (value1.isIteratorValue() && value2.isIteratorValue())
                     continue;
-                if (value1.isKnown() || value2.isKnown() || value1.varId == 0 || value2.varId == 0 ||
-                    (value1.varId == value2.varId && value1.varvalue == value2.varvalue && value1.isIntValue() &&
-                     value2.isIntValue())) {
-                    ValueFlow::Value result(0);
-                    combineValueProperties(value1, value2, &result);
-                    const double floatValue1 = value1.isIntValue() ? value1.intvalue : value1.floatValue;
-                    const double floatValue2 = value2.isIntValue() ? value2.intvalue : value2.floatValue;
-                    const bool isFloat = value1.isFloatValue() || value2.isFloatValue();
-                    if (isFloat && Token::Match(parent, "&|^|%|<<|>>|%or%"))
+                if (!isCompatibleValues(value1, value2))
+                    continue;
+                ValueFlow::Value result(0);
+                combineValueProperties(value1, value2, &result);
+                const double floatValue1 = value1.isIntValue() ? value1.intvalue : value1.floatValue;
+                const double floatValue2 = value2.isIntValue() ? value2.intvalue : value2.floatValue;
+                const bool isFloat = value1.isFloatValue() || value2.isFloatValue();
+                if (isFloat && Token::Match(parent, "&|^|%|<<|>>|%or%"))
+                    continue;
+                if (Token::Match(parent, "<<|>>") &&
+                    !(value1.intvalue >= 0 && value2.intvalue >= 0 && value2.intvalue < MathLib::bigint_bits))
+                    continue;
+                if (Token::Match(parent, "/|%") && isZero<double>(floatValue2))
+                    continue;
+                if (Token::Match(parent, "==|!=")) {
+                    if ((value1.isIntValue() && value2.isTokValue()) || (value1.isTokValue() && value2.isIntValue())) {
+                        if (parent->str() == "==")
+                            result.intvalue = 0;
+                        else if (parent->str() == "!=")
+                            result.intvalue = 1;
+                    } else if (value1.isIntValue() && value2.isIntValue()) {
+                        result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
+                    } else {
                         continue;
-                    if (Token::Match(parent, "<<|>>") &&
-                        !(value1.intvalue >= 0 && value2.intvalue >= 0 && value2.intvalue < MathLib::bigint_bits))
-                        continue;
-                    if (Token::Match(parent, "/|%") && isZero<double>(floatValue2))
-                        continue;
-                    if (Token::Match(parent, "==|!=")) {
-                        if ((value1.isIntValue() && value2.isTokValue()) || (value1.isTokValue() && value2.isIntValue())) {
-                            if (parent->str() == "==")
-                                result.intvalue = 0;
-                            else if (parent->str() == "!=")
-                                result.intvalue = 1;
-                        } else if (value1.isIntValue() && value2.isIntValue()) {
-                            result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
-                        } else {
-                            continue;
-                        }
-                        setTokenValue(parent, result, settings);
-                    } else if (Token::Match(parent, "%comp%")) {
-                        if (!isFloat && !value1.isIntValue() && !value2.isIntValue())
-                            continue;
-                        if (isFloat)
-                            result.intvalue = calculate(parent->str(), floatValue1, floatValue2);
-                        else
-                            result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
-                        setTokenValue(parent, result, settings);
-                    } else if (Token::Match(parent, "%op%")) {
-                        if (value1.isTokValue() || value2.isTokValue())
-                            break;
-                        if (isFloat) {
-                            result.valueType = ValueFlow::Value::ValueType::FLOAT;
-                            result.floatValue = calculate(parent->str(), floatValue1, floatValue2);
-                        } else {
-                            result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
-                        }
-                        // If the bound comes from the second value then invert the bound when subtracting
-                        if (Token::simpleMatch(parent, "-") && value2.bound == result.bound &&
-                            value2.bound != ValueFlow::Value::Bound::Point)
-                            result.invertBound();
-                        setTokenValue(parent, result, settings);
                     }
+                    setTokenValue(parent, result, settings);
+                } else if (Token::Match(parent, "%comp%")) {
+                    if (!isFloat && !value1.isIntValue() && !value2.isIntValue())
+                        continue;
+                    if (isFloat)
+                        result.intvalue = calculate(parent->str(), floatValue1, floatValue2);
+                    else
+                        result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
+                    setTokenValue(parent, result, settings);
+                } else if (Token::Match(parent, "%op%")) {
+                    if (value1.isTokValue() || value2.isTokValue())
+                        break;
+                    if (isFloat) {
+                        result.valueType = ValueFlow::Value::ValueType::FLOAT;
+                        result.floatValue = calculate(parent->str(), floatValue1, floatValue2);
+                    } else {
+                        result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
+                    }
+                    // If the bound comes from the second value then invert the bound when subtracting
+                    if (Token::simpleMatch(parent, "-") && value2.bound == result.bound &&
+                        value2.bound != ValueFlow::Value::Bound::Point)
+                        result.invertBound();
+                    setTokenValue(parent, result, settings);
                 }
             }
         }
