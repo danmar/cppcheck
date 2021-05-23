@@ -3159,7 +3159,7 @@ private:
                        "    char now0;\n"
                        "    strcmp(&now0, sth);\n"
                        "}", "test.c");
-        // TODO ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: now0\n", errout.str());
+        ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: now0\n", errout.str());
 
         // #2775 - uninitialized struct pointer in subfunction
         // extracttests.start: struct Fred {int x;};
