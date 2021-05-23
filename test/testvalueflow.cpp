@@ -5612,20 +5612,20 @@ private:
     void valueFlowUnsigned() {
         const char *code;
 
-        code = "void f(unsigned int i) {\n"
+        code = "auto f(uint32_t i) {\n"
                "    auto x = i;\n"
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
 
-        code = "void f(unsigned int i) {\n"
-               "    int x = (int)i;\n"
+        code = "auto f(uint32_t i) {\n"
+               "    auto x = (int32_t)i;\n"
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, -1));
 
-        code = "void f(unsigned int i) {\n"
-               "    int x = (long)i;\n"
+        code = "auto f(uint32_t i) {\n"
+               "    auto x = (int64_t)i;\n"
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
