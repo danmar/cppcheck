@@ -4601,6 +4601,12 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        valueFlowUninit("void json_parse_nat_type_flags(json_t *root) {\n"
+                        "    int index;\n"
+                        "    json_array_foreach(root, index, value) {}\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         valueFlowUninit("int foo()\n"
                         "{\n"
                         "    int i;\n"

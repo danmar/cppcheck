@@ -1511,6 +1511,8 @@ void CheckUninitVar::valueFlowUninit()
                 continue;
             if (v->indirect > 1 || v->indirect < 0)
                 continue;
+            if (v->indirect == 0 && tok->valueType() && tok->valueType()->pointer == 0 && !isVariableUsage(tok, false, NO_ALLOC, 0))
+                continue;
             bool uninitderef = false;
             if (tok->variable()) {
                 bool unknown;
