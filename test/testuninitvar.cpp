@@ -4482,7 +4482,8 @@ private:
                             "    return *p;\n"
                             "}");
             ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: p\n"
-                          "[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
+                          "[test.cpp:4]: (error) Uninitialized variable: p\n",
+                          errout.str());
 
             // #4320
             valueFlowUninit("void f() {\n"
