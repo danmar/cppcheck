@@ -1098,6 +1098,17 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
     const Token *valueExpr = vartok;   // non-dereferenced , no address of value as variable
     while (Token::Match(valueExpr->astParent(), ".|::") && astIsRhs(valueExpr))
         valueExpr = valueExpr->astParent();
+    // stuff we ignore..
+    while (valueExpr->astParent()) {
+        // *&x
+        if (valueExpr->astParent()->isUnaryOp("&") && valueExpr->astParent()->astParent() && valueExpr->astParent()->astParent()->isUnaryOp("*"))
+            valueExpr = valueExpr->astParent()->astParent();
+        // (type &)x
+        else if (valueExpr->astParent()->isCast() && valueExpr->astParent()->isUnaryOp("(") && Token::simpleMatch(valueExpr->astParent()->link()->previous(), "& )"))
+            valueExpr = valueExpr->astParent();
+        else
+            break;
+    }
     if (!pointer) {
         if (Token::Match(vartok, "%name% [.(]") && vartok->variable() && !vartok->variable()->isPointer())
             return nullptr;

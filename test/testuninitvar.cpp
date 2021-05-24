@@ -57,6 +57,7 @@ private:
         TEST_CASE(func_uninit_var);     // analyse function calls for: 'int a(int x) { return x+x; }'
         TEST_CASE(func_uninit_pointer); // analyse function calls for: 'void a(int *p) { *p = 0; }'
         TEST_CASE(uninitvar_typeof);    // typeof
+        TEST_CASE(uninitvar_ignore);    // ignore cast, *&x, ..
         TEST_CASE(uninitvar2);
         TEST_CASE(uninitvar3);          // #3844
         TEST_CASE(uninitvar4);          // #3869 (reference)
@@ -2322,6 +2323,20 @@ private:
         checkUninitVar("void f() {\n"
                        "    int *n = ({ typeof(*n) z;  (typeof(*n)*)z; })\n"
                        "}", "test.cpp", false);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar_ignore() {
+        checkUninitVar("void foo() {\n"
+                       "  int i;\n"
+                       "  dostuff((int&)i, 0);\n" // <- cast is not use
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void foo() {\n"
+                       "  int i;\n"
+                       "  dostuff(*&i, 0);\n" // <- *& is not use
+                       "}");
         ASSERT_EQUALS("", errout.str());
     }
 
