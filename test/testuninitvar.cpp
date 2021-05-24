@@ -1259,6 +1259,16 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: x\n", errout.str());
 
+        checkUninitVar("void foo(int n) {\n"
+                       "  int one[10];\n"
+                       "  for (int rank = 0; rank < n; ++rank) {\n"
+                       "    for (int i=0;i<rank;i++)\n"
+                       "      f = one[i];\n"
+                       "    one[rank] = -1;\n"
+                       "  }\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         // Ticket #2226: C++0x loop
         checkUninitVar("void f() {\n"
                        "    container c;\n"
