@@ -450,10 +450,10 @@ private:
 
             checkUninitVar("int a(FArchive &arc) {\n"   // #3060 (initialization through operator<<)
                            "    int *p;\n"
-                           "    arc << p;\n"
+                           "    arc << p;\n" // <- TODO initialization?
                            "    return *p;\n"
                            "}");
-            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: p\n", errout.str());
 
             checkUninitVar("void a() {\n"
                            "    int ret;\n"
@@ -462,13 +462,13 @@ private:
                            "test.c");
             ASSERT_EQUALS("[test.c:3]: (error) Uninitialized variable: ret\n", errout.str());
 
-            // #4320
+            // #4320 says this is a FP. << is overloaded.
             checkUninitVar("int f() {\n"
                            "    int a;\n"
-                           "    a << 1;\n"
+                           "    a << 1;\n"  // <- TODO initialization?
                            "    return a;\n"
                            "}");
-            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
 
             // #4673
             checkUninitVar("void f() {\n"
@@ -2871,13 +2871,6 @@ private:
                        "    char a = c << 2;\n"
                        "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: c\n", errout.str());
-
-        // #4320
-        checkUninitVar("void f() {\n"
-                       "    int a;\n"
-                       "    a << 1;\n"  // there might be a operator<<
-                       "}");
-        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar8() {
@@ -4476,10 +4469,11 @@ private:
 
             valueFlowUninit("int a(FArchive &arc) {\n"  // #3060 (initialization through operator<<)
                             "    int *p;\n"
-                            "    arc << p;\n"
-                            "    return *p;\n" // fp: should not warn
+                            "    arc << p;\n"  // <- TODO initialization?
+                            "    return *p;\n"
                             "}");
-            TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: p\n"
+                          "[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
 
             // #4320
             valueFlowUninit("void f() {\n"

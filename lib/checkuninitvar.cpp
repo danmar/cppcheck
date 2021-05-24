@@ -1242,21 +1242,6 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
 
         if (valueExpr->valueType() && valueExpr->valueType()->type == ValueType::Type::VOID)
             return nullptr;
-
-        // overloaded << operator to initialize variable?
-        if (Token::simpleMatch(valueExpr->astParent(), "<<") && !valueExpr->astParent()->astParent()) {
-            if (astIsLhs(valueExpr))
-                return nullptr;
-            const Token *lhs = valueExpr->astParent()->astOperand1();
-            if (Token::simpleMatch(lhs, "<<"))
-                return valueExpr;
-            if (Token::simpleMatch(lhs->previous(), "std ::"))
-                return valueExpr;
-            const Variable *var = lhs->variable();
-            if (var && (var->typeStartToken()->isStandardType() || var->typeStartToken()->isEnumType() || Token::simpleMatch(var->typeStartToken(), "std ::")))
-                return valueExpr;
-            return nullptr;
-        }
     }
     if (astIsRhs(derefValue) && isLikelyStreamRead(mTokenizer->isCPP(), derefValue->astParent()))
         return nullptr;
