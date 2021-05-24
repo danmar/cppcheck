@@ -2333,11 +2333,23 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int foo() {\n"
+                       "  int i;\n"
+                       "  return (int&)i + 2;\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: i\n", errout.str());
+
         checkUninitVar("void foo() {\n"
                        "  int i;\n"
                        "  dostuff(*&i, 0);\n" // <- *& is not use
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("int foo() {\n"
+                       "  int i;\n"
+                       "  return *&i;\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: i\n", errout.str());
     }
 
     void uninitvar2() {
