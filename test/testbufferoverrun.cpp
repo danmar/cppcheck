@@ -3747,7 +3747,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
     }
-
+    // extracttests.disable
     void terminateStrncpy1() {
         check("void foo ( char *bar ) {\n"
               "    char baz[100];\n"
@@ -3826,6 +3826,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) The buffer 'buf' may not be null-terminated after the call to strncpy().\n", errout.str());
     }
+    // extracttests.enable
 
     void recursive_long_time() {
         // Just test that recursive check doesn't take long time
