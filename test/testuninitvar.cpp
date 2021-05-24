@@ -1619,6 +1619,12 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void foo() {\n"
+                       "  char buf[1024];\n"
+                       "  char *b = (char *) (((uintptr_t) buf + 63) & ~(uintptr_t) 63);\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // Passing array to function
         checkUninitVar("void f(int i);\n"
                        "void foo()\n"

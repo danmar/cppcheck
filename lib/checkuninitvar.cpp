@@ -1120,7 +1120,9 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
         const int arrayDim = (vartok->variable() && vartok->variable()->isArray()) ? vartok->variable()->dimensions().size() : 1;
         int deref = 0;
         derefValue = valueExpr;
-        while (Token::Match(derefValue->astParent(), "+|-|*|[|.") || (derefValue->astParent() && derefValue->astParent()->isCast())) {
+        while (Token::Match(derefValue->astParent(), "+|-|*|[|.") ||
+               (derefValue->astParent() && derefValue->astParent()->isCast()) ||
+               (deref < arrayDim && Token::Match(derefValue->astParent(), "&") && derefValue->astParent()->isBinaryOp())) {
             const Token * const derefValueParent = derefValue->astParent();
             if (derefValueParent->str() == "*") {
                 if (derefValueParent->isUnaryOp("*"))
@@ -1133,7 +1135,7 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
                 else
                     break;
             } else if (Token::Match(derefValueParent, "[+-]")) {
-                if (derefValueParent->valueType() && derefValueParent->valueType()->pointer == 0)
+                if (deref >= arrayDim)
                     break;
             } else if (derefValueParent->str() == ".")
                 ++deref;
