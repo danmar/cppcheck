@@ -53,7 +53,7 @@ struct ProgramMemoryState {
 
     void removeModifiedVars(const Token* tok);
 
-    ProgramMemory get(const Token *tok, const ProgramMemory::Map& vars) const;
+    ProgramMemory get(const Token *tok, const Token* ctx, const ProgramMemory::Map& vars) const;
 
 };
 

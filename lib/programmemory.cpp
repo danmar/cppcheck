@@ -336,9 +336,11 @@ void ProgramMemoryState::removeModifiedVars(const Token* tok)
     }
 }
 
-ProgramMemory ProgramMemoryState::get(const Token *tok, const ProgramMemory::Map& vars) const
+ProgramMemory ProgramMemoryState::get(const Token *tok, const Token* ctx, const ProgramMemory::Map& vars) const
 {
     ProgramMemoryState local = *this;
+    if (ctx)
+        local.addState(ctx, vars);
     local.addState(tok, vars);
     local.removeModifiedVars(tok);
     return local.state;

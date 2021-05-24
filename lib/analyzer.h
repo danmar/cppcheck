@@ -118,7 +118,7 @@ struct Analyzer {
     /// Update the state of the value
     virtual void update(Token* tok, Action a, Direction d) = 0;
     /// Try to evaluate the value of a token(most likely a condition)
-    virtual std::vector<int> evaluate(const Token* tok) const = 0;
+    virtual std::vector<int> evaluate(const Token* tok, const Token* ctx = nullptr) const = 0;
     /// Lower any values to possible
     virtual bool lowerToPossible() = 0;
     /// Lower any values to inconclusive

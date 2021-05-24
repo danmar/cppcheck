@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <tuple>
 
 struct ForwardTraversal {
     enum class Progress { Continue, Break, Skip };
@@ -317,6 +318,26 @@ struct ForwardTraversal {
         return bail;
     }
 
+    bool exitLoop(Token* writeTok, const Token* condTok, const Token* endBlock) {
+        // const Token* nextStatement = Token::findmatch(writeTok, ";|}", endBlock);
+        // if (Token::Match(nextStatement, ";|} break ;"))
+        //     return true;
+        const Scope* scope = writeTok->scope();
+        if (!scope)
+            return true;
+        // Is it an escape scope
+        bool unknown = false;
+        if (isEscapeScope(scope->bodyEnd, unknown))
+            return true;
+        // Does it change the loop condition to false
+        std::vector<int> r = analyzer->evaluate(condTok, scope->bodyEnd->previous());
+        if (std::any_of(r.begin(), r.end(), [&](int x) {
+            return x == 0;
+        }))
+            return true;
+        return false;
+    }
+
     void continueUpdateRangeAfterLoop(std::vector<ForwardTraversal>& ftv, Token* start, const Token* endToken) {
         for (ForwardTraversal& ft : ftv) {
             // If analysis has terminated normally, then continue analysis
@@ -366,11 +387,12 @@ struct ForwardTraversal {
         std::vector<ForwardTraversal> ftv = tryForkScope(endBlock, allAnalysis.isModified());
         if (bodyAnalysis.isModified()) {
             Token* writeTok = findRange(endBlock->link(), endBlock, std::mem_fn(&Analyzer::Action::isModified));
-            const Token* nextStatement = Token::findmatch(writeTok, ";|}", endBlock);
-            if (!Token::Match(nextStatement, ";|} break ;")) {
+            if (!exitLoop(writeTok, condTok, endBlock)) {
                 if (!allAnalysis.isIncremental())
                     continueUpdateRangeAfterLoop(ftv, endBlock, endToken);
                 return Break(Terminate::Bail);
+            } else {
+                return Break(Terminate::Modified);
             }
         } else {
             if (stepTok && updateRecursive(stepTok) == Progress::Break) {

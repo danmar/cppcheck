@@ -2110,11 +2110,11 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
-    virtual std::vector<int> evaluate(const Token* tok) const OVERRIDE {
+    virtual std::vector<int> evaluate(const Token* tok, const Token* ctx = nullptr) const OVERRIDE {
         if (tok->hasKnownIntValue())
             return {static_cast<int>(tok->values().front().intvalue)};
         std::vector<int> result;
-        ProgramMemory pm = pms.get(tok, getProgramState());
+        ProgramMemory pm = pms.get(tok, ctx, getProgramState());
         if (Token::Match(tok, "&&|%oror%")) {
             if (conditionIsTrue(tok, pm))
                 result.push_back(1);
