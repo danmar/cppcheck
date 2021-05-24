@@ -2221,7 +2221,7 @@ bool isLikelyStreamRead(bool cpp, const Token *op)
         return false;
     if (!parent->astOperand1() || !parent->astOperand2())
         return false;
-    return (!parent->astOperand1()->valueType() || !parent->astOperand1()->valueType()->isIntegral());
+    return isLikelyStream(cpp, parent->astOperand1());
 }
 
 bool isCPPCast(const Token* tok)

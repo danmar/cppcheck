@@ -4474,12 +4474,15 @@ private:
                             "}");
             ASSERT_EQUALS("", errout.str());
 
-            valueFlowUninit("int a(FArchive &arc) {\n"  // #3060 (initialization through operator<<)
+            // #3060 (initialization through operator<<) is no longer recognized
+            // So treat it as a true positive
+            valueFlowUninit("int a(FArchive &arc) {\n"
                             "    int *p;\n"
                             "    arc << p;\n"
-                            "    return *p;\n" // fp: should not warn
+                            "    return *p;\n"
                             "}");
-            TODO_ASSERT_EQUALS("", "[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: p\n"
+                          "[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
 
             // #4320
             valueFlowUninit("void f() {\n"

@@ -1532,12 +1532,8 @@ void CheckUninitVar::valueFlowUninit()
                 const bool isarray = !tok->variable() || tok->variable()->isArray();
                 const bool ispointer = astIsPointer(tok) && !isarray;
                 const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
-                if (ispointer && !deref) {
-                    if (v->indirect >= 1)
-                        continue;
-                    if (!isVariableUsage(tok, true, NO_ALLOC, 0))
-                        continue;
-                }
+                if (ispointer && v->indirect == 1 && !deref)
+                    continue;
                 if (isarray && !deref)
                     continue;
                 uninitderef = deref && v->indirect == 0;
@@ -1547,6 +1543,9 @@ void CheckUninitVar::valueFlowUninit()
             }
             if (!(Token::Match(tok->astParent(), ". %name% (") && uninitderef) &&
                 isVariableChanged(tok, v->indirect, mSettings, mTokenizer->isCPP()))
+                continue;
+            bool inconclusive = false;
+            if (isVariableChangedByFunctionCall(tok, v->indirect, mSettings, &inconclusive) || inconclusive)
                 continue;
             uninitvarError(tok, tok->expressionString(), v->errorPath);
             const Token* nextTok = nextAfterAstRightmostLeaf(parent);
