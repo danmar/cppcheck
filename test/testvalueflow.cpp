@@ -5629,6 +5629,14 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
+
+        code = "size_t g();\n"
+               "auto f(uint16_t j) {\n"
+               "    auto x = g() - j;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, -1));
     }
 };
 
