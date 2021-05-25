@@ -4639,6 +4639,13 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        // range for..
+        valueFlowUninit("void f() {\n"
+                        "    X *item;\n"
+                        "    for (item: itemList) {}\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         // macro_for..
         valueFlowUninit("int foo()\n"
                         "{\n"
