@@ -318,10 +318,7 @@ struct ForwardTraversal {
         return bail;
     }
 
-    bool exitLoop(Token* writeTok, const Token* condTok, const Token* endBlock) {
-        // const Token* nextStatement = Token::findmatch(writeTok, ";|}", endBlock);
-        // if (Token::Match(nextStatement, ";|} break ;"))
-        //     return true;
+    bool earlyExitLoop(const Token* writeTok, const Token* condTok) {
         const Scope* scope = writeTok->scope();
         if (!scope)
             return true;
@@ -387,11 +384,12 @@ struct ForwardTraversal {
         std::vector<ForwardTraversal> ftv = tryForkScope(endBlock, allAnalysis.isModified());
         if (bodyAnalysis.isModified()) {
             Token* writeTok = findRange(endBlock->link(), endBlock, std::mem_fn(&Analyzer::Action::isModified));
-            if (!exitLoop(writeTok, condTok, endBlock)) {
+            if (!earlyExitLoop(writeTok, condTok)) {
                 if (!allAnalysis.isIncremental())
                     continueUpdateRangeAfterLoop(ftv, endBlock, endToken);
                 return Break(Terminate::Bail);
             } else {
+                // TODO: Check if its a conditional exit
                 return Break(Terminate::Modified);
             }
         } else {
