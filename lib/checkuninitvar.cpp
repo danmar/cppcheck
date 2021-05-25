@@ -1218,6 +1218,10 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
     // * Passing address in RHS to pointer variable
     {
         const Token *tok = derefValue ? derefValue : valueExpr;
+        if (alloc == NO_ALLOC) {
+            while (tok->valueType() && tok->valueType()->pointer == 0 && Token::simpleMatch(tok->astParent(), "."))
+                tok = tok->astParent();
+        }
         if (Token::simpleMatch(tok->astParent(), "=")) {
             if (astIsLhs(tok))
                 return nullptr;

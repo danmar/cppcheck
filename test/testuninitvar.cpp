@@ -3516,6 +3516,15 @@ private:
                        "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("struct Cstring { char *text; int size, alloc; };\n"
+                       "int maybe();\n"
+                       "void f() {\n"
+                       "    Cstring res;\n"
+                       "    if ( ! maybe() ) return;\n"  // <- fp goes away if this is removed
+                       "    ( ((res).text = (void*)0), ((res).size = (res).alloc = 0) );\n"  // <- fp goes away if parentheses are removed
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         {
             const char argDirectionsTestXmlData[] = "<?xml version=\"1.0\"?>\n"
                                                     "<def>\n"
