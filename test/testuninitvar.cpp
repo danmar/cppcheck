@@ -4646,6 +4646,16 @@ private:
                         "}");
         ASSERT_EQUALS("", errout.str());
 
+        valueFlowUninit("X f() {\n"
+                        "    if (!itemList.empty()) {\n"
+                        "        X* item;\n"
+                        "        for(item: itemList) {}\n"
+                        "        return *item;\n"
+                        "    }\n"
+                        "    return X{};\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // macro_for..
         valueFlowUninit("int foo()\n"
                         "{\n"

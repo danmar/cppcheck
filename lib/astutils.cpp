@@ -1909,6 +1909,9 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     }
 
     if (Token::simpleMatch(tok2->astParent(), ":") && tok2->astParent()->astParent() && Token::simpleMatch(tok2->astParent()->astParent()->previous(), "for (")) {
+        // TODO: Check if container is empty or not
+        if (astIsLHS(tok2))
+            return true;
         const Token * varTok = tok2->astParent()->previous();
         if (!varTok)
             return false;
