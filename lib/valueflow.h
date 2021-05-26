@@ -393,7 +393,9 @@ namespace ValueFlow {
 
     size_t getSizeOf(const ValueType &vt, const Settings *settings);
 
-    const ValueFlow::Value* findValue(const std::list<ValueFlow::Value>& values, const Settings* settings, std::function<bool(const ValueFlow::Value&)> pred);
+    const ValueFlow::Value* findValue(const std::list<ValueFlow::Value>& values,
+                                      const Settings* settings,
+                                      std::function<bool(const ValueFlow::Value&)> pred);
 }
 
 struct LifetimeToken {

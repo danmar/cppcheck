@@ -444,7 +444,7 @@ static bool isCompatibleValues(const ValueFlow::Value& value1, const ValueFlow::
     return false;
 }
 
-static ValueFlow::Value truncateImplicitConversion(Token *parent, const ValueFlow::Value &value, const Settings *settings)
+static ValueFlow::Value truncateImplicitConversion(Token* parent, const ValueFlow::Value& value, const Settings* settings)
 {
     if (!value.isIntValue() && !value.isFloatValue())
         return value;
@@ -466,7 +466,7 @@ static ValueFlow::Value truncateImplicitConversion(Token *parent, const ValueFlo
     size_t n1 = ValueFlow::getSizeOf(*vt1, settings);
     size_t n2 = ValueFlow::getSizeOf(*vt2, settings);
     ValueType::Sign sign = ValueType::Sign::UNSIGNED;
-    if (n1 < n2) 
+    if (n1 < n2)
         sign = vt2->sign;
     else if (n1 > n2)
         sign = vt1->sign;
@@ -476,7 +476,7 @@ static ValueFlow::Value truncateImplicitConversion(Token *parent, const ValueFlo
 }
 
 /** set ValueFlow value and perform calculations if possible */
-static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings *settings)
+static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* settings)
 {
     // Skip setting values that are too big since its ambiguous
     if (!value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok) &&
@@ -6966,10 +6966,12 @@ std::string ValueFlow::eitherTheConditionIsRedundant(const Token *condition)
     return "Either the condition '" + condition->expressionString() + "' is redundant";
 }
 
-const ValueFlow::Value* ValueFlow::findValue(const std::list<ValueFlow::Value>& values, const Settings* settings, std::function<bool(const ValueFlow::Value&)> pred)
+const ValueFlow::Value* ValueFlow::findValue(const std::list<ValueFlow::Value>& values,
+                                             const Settings* settings,
+                                             std::function<bool(const ValueFlow::Value&)> pred)
 {
-    const ValueFlow::Value *ret = nullptr;
-    for(const ValueFlow::Value& v:values) {
+    const ValueFlow::Value* ret = nullptr;
+    for (const ValueFlow::Value& v : values) {
         if (pred(v)) {
             if (!ret || ret->isInconclusive() || (ret->condition && !v.isInconclusive()))
                 ret = &v;
