@@ -3626,6 +3626,12 @@ private:
               "    if ((100 - x) > 0) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10298
+        check("void foo(unsigned int x) {\n"
+              "    if (x == -1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {

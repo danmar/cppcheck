@@ -444,13 +444,48 @@ static bool isCompatibleValues(const ValueFlow::Value& value1, const ValueFlow::
     return false;
 }
 
+static ValueFlow::Value truncateImplicitConversion(Token *parent, const ValueFlow::Value &value, const Settings *settings)
+{
+    if (!value.isIntValue() && !value.isFloatValue())
+        return value;
+    if (!parent)
+        return value;
+    if (!parent->isBinaryOp())
+        return value;
+    if (!parent->isConstOp())
+        return value;
+    if (!astIsIntegral(parent->astOperand1(), false))
+        return value;
+    if (!astIsIntegral(parent->astOperand2(), false))
+        return value;
+    const ValueType* vt1 = parent->astOperand1()->valueType();
+    const ValueType* vt2 = parent->astOperand2()->valueType();
+    // If the sign is the same there is no truncation
+    if (vt1->sign == vt2->sign)
+        return value;
+    size_t n1 = ValueFlow::getSizeOf(*vt1, settings);
+    size_t n2 = ValueFlow::getSizeOf(*vt2, settings);
+    ValueType::Sign sign = ValueType::Sign::UNSIGNED;
+    if (n1 < n2) 
+        sign = vt2->sign;
+    else if (n1 > n2)
+        sign = vt1->sign;
+    ValueFlow::Value v = castValue(value, sign, std::max(n1, n2) * 8);
+    v.wideintvalue = value.intvalue;
+    return v;
+}
+
 /** set ValueFlow value and perform calculations if possible */
-static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Settings *settings)
+static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings *settings)
 {
     // Skip setting values that are too big since its ambiguous
     if (!value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok) &&
         ValueFlow::getSizeOf(*tok->valueType(), settings) >= sizeof(MathLib::bigint))
         return;
+
+    if (!value.isImpossible() && value.isIntValue())
+        value = truncateImplicitConversion(tok->astParent(), value, settings);
+
     if (!tok->addValue(value))
         return;
 
@@ -6929,4 +6964,24 @@ std::string ValueFlow::eitherTheConditionIsRedundant(const Token *condition)
         return "Either the switch case '" + expr + "' is redundant";
     }
     return "Either the condition '" + condition->expressionString() + "' is redundant";
+}
+
+const ValueFlow::Value* ValueFlow::findValue(const std::list<ValueFlow::Value>& values, const Settings* settings, std::function<bool(const ValueFlow::Value&)> pred)
+{
+    const ValueFlow::Value *ret = nullptr;
+    for(const ValueFlow::Value& v:values) {
+        if (pred(v)) {
+            if (!ret || ret->isInconclusive() || (ret->condition && !v.isInconclusive()))
+                ret = &v;
+            if (!ret->isInconclusive() && !ret->condition)
+                break;
+        }
+    }
+    if (settings && ret) {
+        if (ret->isInconclusive() && !settings->certainty.isEnabled(Certainty::inconclusive))
+            return nullptr;
+        if (ret->condition && !settings->severity.isEnabled(Severity::warning))
+            return nullptr;
+    }
+    return ret;
 }
