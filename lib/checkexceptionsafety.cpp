@@ -315,6 +315,13 @@ void CheckExceptionSafety::rethrowNoCurrentException()
         const Function* function = scope->function;
         if (!function)
             continue;
+
+        // Rethrow can be used in 'exception dispatcher' idiom which is FP in such case
+        // https://isocpp.org/wiki/faq/exceptions#throw-without-an-object
+        // We check the beggining of the function with idiom pattern
+        if (Token::simpleMatch(function->functionScope->bodyStart->next(), "try { throw ; } catch (" ))
+            continue;
+
         for (const Token *tok = function->functionScope->bodyStart->next();
             tok != function->functionScope->bodyEnd; tok = tok->next()) {
             if (Token::simpleMatch(tok, "catch (")) {

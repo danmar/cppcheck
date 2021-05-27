@@ -412,7 +412,7 @@ private:
     }
 
     void rethrowNoCurrentException1() {
-        check("void func1() { try{ throw; } catch (int&) { ; } }");
+        check("void func1(const bool flag) { try{ if(!flag) throw; } catch (int&) { ; } }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Rethrowing exception with 'throw;' outside a catch scope calls std::terminate().\n", errout.str());
     }
 
@@ -422,8 +422,9 @@ private:
     }
 
     void rethrowNoCurrentException3() {
-        check("void func1() { try{ ; } catch (const int&) { throw; } ; }\n"
-              "void func2() { throw 0; }");
+        check("void on_error() { try { throw; } catch (const int &) { ; } catch (...) { ; } }\n"      // exception dispatcher idiom
+              "void func2() { try{ ; } catch (const int&) { throw; } ; }\n"
+              "void func3() { throw 0; }");
         ASSERT_EQUALS("", errout.str());
     }
 };
