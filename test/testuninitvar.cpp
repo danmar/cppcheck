@@ -888,6 +888,16 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int bar(int x) {\n"
+                       "    int n;\n"
+                       "    if ( x == 23)\n"
+                       "      n = 1;\n"
+                       "    else if ( x == 11 )\n"
+                       "      n = 2;\n"
+                       "    return n;\n"
+                       "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+
         checkUninitVar("int foo()\n"
                        "{\n"
                        "    int i;\n"
