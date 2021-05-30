@@ -124,13 +124,19 @@ private:
         TEST_CASE(ifAddBraces18); // #3424 - if if { } else else
         TEST_CASE(ifAddBraces19); // #3928 - if for if else
         TEST_CASE(ifAddBraces20); // #5012 - syntax error 'else }'
-        TEST_CASE(ifAddBraces21); // #5332 - if (x) label: {} ..
+        TEST_CASE(ifAddBracesLabels); // #5332 - if (x) label: {} ..
+
+        TEST_CASE(switchAddBracesLabels);
 
         TEST_CASE(whileAddBraces);
+        TEST_CASE(whileAddBracesLabels);
+
         TEST_CASE(doWhileAddBraces);
+        TEST_CASE(doWhileAddBracesLabels);
 
         TEST_CASE(forAddBraces1);
         TEST_CASE(forAddBraces2); // #5088
+        TEST_CASE(forAddBracesLabels);
 
         TEST_CASE(simplifyExternC);
         TEST_CASE(simplifyKeyword); // #5842 - remove C99 static keyword between []
@@ -1227,14 +1233,117 @@ private:
         ASSERT_THROW(tokenizeAndStringify(code), InternalError);
     }
 
-    void ifAddBraces21() { // #5332 - if (x) label: {} ...
-        const char code[] = "void f() { if(x) label: {} a=1; }";
-        ASSERT_EQUALS("void f ( ) { if ( x ) { label : ; { } } a = 1 ; }", tokenizeAndStringify(code));
+    void ifAddBracesLabels() {
+        // Labels before statement
+        ASSERT_EQUALS("int f ( int x ) {\n"
+                      "if ( x ) {\n"
+                      "l1 : ; l2 : ; return x ; }\n"
+                      "}",
+                      tokenizeAndStringify("int f(int x) {\n"
+                                           "  if (x)\n"
+                                           "  l1: l2: return x;\n"
+                                           "}"));
+
+        // Labels before {
+        ASSERT_EQUALS("int f ( int x ) {\n"
+                      "if ( x )\n"
+                      "{ l1 : ; l2 : ; return x ; }\n"
+                      "}",
+                      tokenizeAndStringify("int f(int x) {\n"
+                                           "  if (x)\n"
+                                           "  l1: l2: { return x; }\n"
+                                           "}"));
+
+        // Labels before try/catch
+        ASSERT_EQUALS("int f ( int x ) {\n"
+                      "if ( x ) {\n"
+                      "l1 : ; l2 : ;\n"
+                      "try { throw 1 ; }\n"
+                      "catch ( ... ) { return x ; } }\n"
+                      "}",
+                      tokenizeAndStringify("int f(int x) {\n"
+                                           "  if (x)\n"
+                                           "  l1: l2:\n"
+                                           "    try { throw 1; }\n"
+                                           "    catch(...) { return x; }\n"
+                                           "}"));
+    }
+
+    void switchAddBracesLabels() {
+        // Labels before statement
+        ASSERT_EQUALS("int f ( int x ) {\n"
+                      "switch ( x ) {\n"
+                      "l1 : ; case 0 : ; l2 : ; case ( 1 ) : ; return x ; }\n"
+                      "}",
+                      tokenizeAndStringify("int f(int x) {\n"
+                                           "  switch (x)\n"
+                                           "  l1: case 0: l2: case (1): return x;\n"
+                                           "}"));
+
+        // Labels before {
+        ASSERT_EQUALS("int f ( int x ) {\n"
+                      "switch ( x )\n"
+                      "{ l1 : ; case 0 : ; l2 : ; case ( 1 ) : ; return x ; }\n"
+                      "}",
+                      tokenizeAndStringify("int f(int x) {\n"
+                                           "  switch (x)\n"
+                                           "  l1: case 0: l2: case (1): { return x; }\n"
+                                           "}"));
+
+        // Labels before try/catch
+        ASSERT_EQUALS("int f ( int x ) {\n"
+                      "switch ( x ) {\n"
+                      "l1 : ; case 0 : ; l2 : ; case ( 1 ) : ;\n"
+                      "try { throw 1 ; }\n"
+                      "catch ( ... ) { return x ; } }\n"
+                      "}",
+                      tokenizeAndStringify("int f(int x) {\n"
+                                           "  switch (x)\n"
+                                           "  l1: case 0: l2: case (1):\n"
+                                           "    try { throw 1; }\n"
+                                           "    catch(...) { return x; }\n"
+                                           "}"));
     }
 
     void whileAddBraces() {
         const char code[] = "{while(a);}";
         ASSERT_EQUALS("{ while ( a ) { ; } }", tokenizeAndStringify(code));
+    }
+
+    void whileAddBracesLabels() {
+        // Labels before statement
+        ASSERT_EQUALS("void f ( int x ) {\n"
+                      "while ( x ) {\n"
+                      "l1 : ; l2 : ; -- x ; }\n"
+                      "}",
+                      tokenizeAndStringify("void f(int x) {\n"
+                                           "  while (x)\n"
+                                           "  l1: l2: --x;\n"
+                                           "}"));
+
+        // Labels before {
+        ASSERT_EQUALS("void f ( int x ) {\n"
+                      "while ( x )\n"
+                      "{ l1 : ; l2 : ; -- x ; }\n"
+                      "}",
+                      tokenizeAndStringify("void f(int x) {\n"
+                                           "  while (x)\n"
+                                           "  l1: l2: { -- x; }\n"
+                                           "}"));
+
+        // Labels before try/catch
+        ASSERT_EQUALS("void f ( int x ) {\n"
+                      "while ( x ) {\n"
+                      "l1 : ; l2 : ;\n"
+                      "try { throw 1 ; }\n"
+                      "catch ( ... ) { -- x ; } }\n"
+                      "}",
+                      tokenizeAndStringify("void f(int x) {\n"
+                                           "  while (x)\n"
+                                           "  l1: l2:\n"
+                                           "    try { throw 1; }\n"
+                                           "    catch(...) { --x; }\n"
+                                           "}"));
     }
 
     void doWhileAddBraces() {
@@ -1307,6 +1416,48 @@ private:
         }
     }
 
+    void doWhileAddBracesLabels() {
+        // Labels before statement
+        ASSERT_EQUALS("void f ( int x ) {\n"
+                      "do {\n"
+                      "l1 : ; l2 : ; -- x ; }\n"
+                      "while ( x ) ;\n"
+                      "}",
+                      tokenizeAndStringify("void f(int x) {\n"
+                                           "  do\n"
+                                           "  l1: l2: --x;\n"
+                                           "  while (x);\n"
+                                           "}"));
+
+        // Labels before {
+        ASSERT_EQUALS("void f ( int x ) {\n"
+                      "do\n"
+                      "{ l1 : ; l2 : ; -- x ; }\n"
+                      "while ( x ) ;\n"
+                      "}",
+                      tokenizeAndStringify("void f(int x) {\n"
+                                           "  do\n"
+                                           "  l1: l2: { -- x; }\n"
+                                           "  while (x);\n"
+                                           "}"));
+
+        // Labels before try/catch
+        ASSERT_EQUALS("void f ( int x ) {\n"
+                      "do {\n"
+                      "l1 : ; l2 : ;\n"
+                      "try { throw 1 ; }\n"
+                      "catch ( ... ) { -- x ; } }\n"
+                      "while ( x ) ;\n"
+                      "}",
+                      tokenizeAndStringify("void f(int x) {\n"
+                                           "  do\n"
+                                           "  l1: l2:\n"
+                                           "    try { throw 1; }\n"
+                                           "    catch(...) { --x; }\n"
+                                           "  while (x);\n"
+                                           "}"));
+    }
+
     void forAddBraces1() {
         {
             const char code[] = "void f() {\n"
@@ -1348,6 +1499,43 @@ private:
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
+
+    void forAddBracesLabels() {
+        // Labels before statement
+        ASSERT_EQUALS("void f ( int x ) {\n"
+                      "for ( ; x ; ) {\n"
+                      "l1 : ; l2 : ; -- x ; }\n"
+                      "}",
+                      tokenizeAndStringify("void f(int x) {\n"
+                                           "  for ( ; x; )\n"
+                                           "  l1: l2: --x;\n"
+                                           "}"));
+
+        // Labels before {
+        ASSERT_EQUALS("void f ( int x ) {\n"
+                      "for ( ; x ; )\n"
+                      "{ l1 : ; l2 : ; -- x ; }\n"
+                      "}",
+                      tokenizeAndStringify("void f(int x) {\n"
+                                           "  for ( ; x; )\n"
+                                           "  l1: l2: { -- x; }\n"
+                                           "}"));
+
+        // Labels before try/catch
+        ASSERT_EQUALS("void f ( int x ) {\n"
+                      "for ( ; x ; ) {\n"
+                      "l1 : ; l2 : ;\n"
+                      "try { throw 1 ; }\n"
+                      "catch ( ... ) { -- x ; } }\n"
+                      "}",
+                      tokenizeAndStringify("void f(int x) {\n"
+                                           "  for ( ; x; )\n"
+                                           "  l1: l2:\n"
+                                           "    try { throw 1; }\n"
+                                           "    catch(...) { --x; }\n"
+                                           "}"));
+    }
+
 
     void simplifyExternC() {
         ASSERT_EQUALS("int foo ( ) ;", tokenizeAndStringify("extern \"C\" int foo();"));
