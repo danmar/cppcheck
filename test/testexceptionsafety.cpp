@@ -51,6 +51,9 @@ private:
         TEST_CASE(nothrowAttributeThrow);
         TEST_CASE(nothrowAttributeThrow2); // #5703
         TEST_CASE(nothrowDeclspecThrow);
+        TEST_CASE(rethrowNoCurrentException1);
+        TEST_CASE(rethrowNoCurrentException2);
+        TEST_CASE(rethrowNoCurrentException3);
     }
 
     void check(const char code[], bool inconclusive = false) {
@@ -405,6 +408,25 @@ private:
 
         // avoid false positives
         check("const char *func() __attribute((nothrow)); void func1() { return 0; }");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void rethrowNoCurrentException1() {
+        check("void func1(const bool flag) { try{ if(!flag) throw; } catch (int&) { ; } }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Rethrowing current exception with 'throw;', it seems there is no current exception to rethrow."
+                      " If there is no current exception this calls std::terminate(). More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object\n", errout.str());
+    }
+
+    void rethrowNoCurrentException2() {
+        check("void func1() { try{ ; } catch (...) { ; } throw; }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Rethrowing current exception with 'throw;', it seems there is no current exception to rethrow."
+                      " If there is no current exception this calls std::terminate(). More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object\n", errout.str());
+    }
+
+    void rethrowNoCurrentException3() {
+        check("void on_error() { try { throw; } catch (const int &) { ; } catch (...) { ; } }\n"      // exception dispatcher idiom
+              "void func2() { try{ ; } catch (const int&) { throw; } ; }\n"
+              "void func3() { throw 0; }");
         ASSERT_EQUALS("", errout.str());
     }
 };

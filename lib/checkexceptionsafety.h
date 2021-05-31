@@ -36,6 +36,7 @@ class ErrorLogger;
 // CWE ID used:
 static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
 static const struct CWE CWE703(703U);   // Improper Check or Handling of Exceptional Conditions
+static const struct CWE CWE480(480U);   // Use of Incorrect Operator
 
 
 /// @addtogroup Checks
@@ -72,6 +73,7 @@ public:
         checkExceptionSafety.checkCatchExceptionByValue();
         checkExceptionSafety.nothrowThrows();
         checkExceptionSafety.unhandledExceptionSpecification();
+        checkExceptionSafety.rethrowNoCurrentException();
     }
 
     /** Don't throw exceptions in destructors */
@@ -91,6 +93,9 @@ public:
 
     /** @brief %Check for unhandled exception specification */
     void unhandledExceptionSpecification();
+
+    /** @brief %Check for rethrow not from catch scope */
+    void rethrowNoCurrentException();
 
 private:
     /** Don't throw exceptions in destructors */
@@ -135,6 +140,9 @@ private:
                     "Either use a try/catch around the function call, or add a exception specification for " + funcname + "() also.", CWE703, Certainty::inconclusive);
     }
 
+    /** Rethrow without currently handled exception */
+    void rethrowNoCurrentExceptionError(const Token *tok);
+
     /** Generate all possible errors (for --errorlist) */
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckExceptionSafety c(nullptr, settings, errorLogger);
@@ -144,6 +152,7 @@ private:
         c.catchExceptionByValueError(nullptr);
         c.noexceptThrowError(nullptr);
         c.unhandledExceptionSpecificationError(nullptr, nullptr, "funcname");
+        c.rethrowNoCurrentExceptionError(nullptr);
     }
 
     /** Short description of class (for --doc) */
@@ -159,7 +168,8 @@ private:
                "- Throwing a copy of a caught exception instead of rethrowing the original exception\n"
                "- Exception caught by value instead of by reference\n"
                "- Throwing exception in noexcept, nothrow(), __attribute__((nothrow)) or __declspec(nothrow) function\n"
-               "- Unhandled exception specification when calling function foo()\n";
+               "- Unhandled exception specification when calling function foo()\n"
+               "- Rethrow without currently handled exception\n";
     }
 };
 /// @}

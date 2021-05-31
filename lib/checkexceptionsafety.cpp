@@ -304,3 +304,44 @@ void CheckExceptionSafety::unhandledExceptionSpecification()
         }
     }
 }
+
+//--------------------------------------------------------------------------
+// 7.6.18.4 If no exception is presently being handled, evaluating a throw-expression with no operand calls std​::​​terminate().
+//--------------------------------------------------------------------------
+void CheckExceptionSafety::rethrowNoCurrentException()
+{
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        const Function* function = scope->function;
+        if (!function)
+            continue;
+
+        // Rethrow can be used in 'exception dispatcher' idiom which is FP in such case
+        // https://isocpp.org/wiki/faq/exceptions#throw-without-an-object
+        // We check the beggining of the function with idiom pattern
+        if (Token::simpleMatch(function->functionScope->bodyStart->next(), "try { throw ; } catch (" ))
+            continue;
+
+        for (const Token *tok = function->functionScope->bodyStart->next();
+            tok != function->functionScope->bodyEnd; tok = tok->next()) {
+            if (Token::simpleMatch(tok, "catch (")) {
+                tok = tok->linkAt(1);       // skip catch argument
+                if (Token::simpleMatch(tok, ") {"))
+                    tok = tok->linkAt(1);   // skip catch scope
+                else
+                    break;
+            }
+            if (Token::simpleMatch(tok, "throw ;")) {
+                rethrowNoCurrentExceptionError(tok);
+            }
+        }
+    }
+}
+
+void CheckExceptionSafety::rethrowNoCurrentExceptionError(const Token *tok) {
+    reportError(tok, Severity::error, "rethrowNoCurrentException",
+                "Rethrowing current exception with 'throw;', it seems there is no current exception to rethrow."
+                " If there is no current exception this calls std::terminate()."
+                " More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object",
+                CWE480, Certainty::normal);
+}
