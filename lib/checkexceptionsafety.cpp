@@ -340,6 +340,8 @@ void CheckExceptionSafety::rethrowNoCurrentException()
 
 void CheckExceptionSafety::rethrowNoCurrentExceptionError(const Token *tok) {
     reportError(tok, Severity::error, "rethrowNoCurrentException",
-                "Rethrowing exception with 'throw;' outside a catch scope calls std::terminate().",
+                "Rethrowing current exception with 'throw;', it seems there is no current exception to rethrow."
+                " If there is no current exception this calls std::terminate()."
+                " More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object",
                 CWE480, Certainty::normal);
 }

@@ -413,12 +413,14 @@ private:
 
     void rethrowNoCurrentException1() {
         check("void func1(const bool flag) { try{ if(!flag) throw; } catch (int&) { ; } }");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Rethrowing exception with 'throw;' outside a catch scope calls std::terminate().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Rethrowing current exception with 'throw;', it seems there is no current exception to rethrow."
+                      " If there is no current exception this calls std::terminate(). More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object\n", errout.str());
     }
 
     void rethrowNoCurrentException2() {
         check("void func1() { try{ ; } catch (...) { ; } throw; }");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Rethrowing exception with 'throw;' outside a catch scope calls std::terminate().\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Rethrowing current exception with 'throw;', it seems there is no current exception to rethrow."
+                      " If there is no current exception this calls std::terminate(). More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object\n", errout.str());
     }
 
     void rethrowNoCurrentException3() {
