@@ -723,6 +723,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
         for (const ValueFlow::Value &val : tok->values()) {
             if (!val.isIntValue())
                 continue;
+            if (val.isImpossible() && val.intvalue != 0)
+                continue;
             ValueFlow::Value v(val);
             v.intvalue = !v.intvalue;
             setTokenValue(parent, v, settings);
