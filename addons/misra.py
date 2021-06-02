@@ -2963,7 +2963,7 @@ class MisraChecker:
 
         if self.settings.verify:
             self.verify_actual.append('%s:%d %d.%d' % (location.file, location.linenr, num1, num2))
-        elif self.isRuleSuppressed(location.file, location.linenr, ruleNum):
+        elif (self.isRuleSuppressed(location.file, location.linenr, ruleNum) or cppcheckdata.is_suppressed(location, '',  'misra-c2012-'+str(num1)+'.'+str(num2))):
             # Error is suppressed. Ignore
             self.suppressionStats.setdefault(ruleNum, 0)
             self.suppressionStats[ruleNum] += 1
