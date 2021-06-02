@@ -74,6 +74,7 @@ public:
         checkFunctions.checkMathFunctions();
         checkFunctions.memsetZeroBytes();
         checkFunctions.memsetInvalid2ndParam();
+        checkFunctions.returnLocalStdMove();
     }
 
     /** Check for functions that should not be used */
@@ -101,6 +102,9 @@ public:
     /** @brief %Check for invalid 2nd parameter of memset() */
     void memsetInvalid2ndParam();
 
+    /** @brief %Check for copy elision by RVO|NRVO */
+    void returnLocalStdMove();
+
     /** @brief --check-library: warn for unconfigured function calls */
     void checkLibraryMatchFunctions();
 
@@ -119,6 +123,7 @@ private:
     void memsetFloatError(const Token *tok, const std::string &var_value);
     void memsetValueOutOfRangeError(const Token *tok, const std::string &value);
     void missingReturnError(const Token *tok);
+    void copyElisionError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckFunctions c(nullptr, settings, errorLogger);
@@ -137,6 +142,7 @@ private:
         c.memsetFloatError(nullptr,  "varname");
         c.memsetValueOutOfRangeError(nullptr,  "varname");
         c.missingReturnError(nullptr);
+        c.copyElisionError(nullptr);
     }
 
     static std::string myName() {
@@ -151,7 +157,8 @@ private:
                "- Warn if a function is called whose usage is discouraged\n"
                "- memset() third argument is zero\n"
                "- memset() with a value out of range as the 2nd parameter\n"
-               "- memset() with a float as the 2nd parameter\n";
+               "- memset() with a float as the 2nd parameter\n"
+               "- copy elision optimization for returning value affected by std::move\n";
     }
 };
 /// @}
