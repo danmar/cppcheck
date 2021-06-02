@@ -95,6 +95,7 @@ namespace ValueFlow {
               defaultArg(false),
               indirect(0),
               path(0),
+              wideintvalue(0),
               lifetimeKind(LifetimeKind::Object),
               lifetimeScope(LifetimeScope::Local),
               valueKind(ValueKind::Possible)

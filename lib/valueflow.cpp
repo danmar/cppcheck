@@ -6824,6 +6824,7 @@ ValueFlow::Value::Value(const Token* c, long long val)
       defaultArg(false),
       indirect(0),
       path(0),
+      wideintvalue(0),
       lifetimeKind(LifetimeKind::Object),
       lifetimeScope(LifetimeScope::Local),
       valueKind(ValueKind::Possible)
