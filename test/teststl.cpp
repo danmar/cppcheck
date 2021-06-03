@@ -381,6 +381,86 @@ private:
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
 
+        check("struct T {\n"
+              "  std::vector<int>* v;\n"
+              "};\n"
+              "struct S {\n"
+              "  std::vector<T> t;\n"
+              "};\n"
+              "long g(S& s);\n"
+              "int f() {\n"
+              "  std::vector<int> ArrS;\n"
+              "  S s = { { { &ArrS } } };\n"
+              "  g(s);\n"
+              "  return ArrS[0];\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct T {\n"
+              "  std::vector<int>* v;\n"
+              "};\n"
+              "struct S {\n"
+              "  std::vector<std::vector<T>> t;\n"
+              "};\n"
+              "long g(S& s);\n"
+              "int f() {\n"
+              "  std::vector<int> ArrS;\n"
+              "  S s = { { { { &ArrS } } } };\n"
+              "  g(s);\n"
+              "  return ArrS[0];\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct T {\n"
+              "  std::vector<int>* v;\n"
+              "};\n"
+              "struct S {\n"
+              "  T t;\n"
+              "};\n"
+              "long g(S& s);\n"
+              "int f() {\n"
+              "  std::vector<int> ArrS;\n"
+              "  S s { { &ArrS } };\n"
+              "  g(s);\n"
+              "  return ArrS[0];\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct T {\n"
+              "  std::vector<int>* v;\n"
+              "};\n"
+              "struct S {\n"
+              "  std::vector<T> t;\n"
+              "};\n"
+              "long g(S& s);\n"
+              "int f() {\n"
+              "  std::vector<int> ArrS;\n"
+              "  S s { { { &ArrS } } };\n"
+              "  g(s);\n"
+              "  return ArrS[0];\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct T {\n"
+              "  std::vector<int>* v;\n"
+              "};\n"
+              "struct S {\n"
+              "  std::vector<std::vector<T>> t;\n"
+              "};\n"
+              "long g(S& s);\n"
+              "int f() {\n"
+              "  std::vector<int> ArrS;\n"
+              "  S s { { { { &ArrS } } } };\n"
+              "  g(s);\n"
+              "  return ArrS[0];\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
         checkNormal("extern void Bar(const double, const double);\n"
                     "void f(std::vector<double> &r, const double ) {\n"
                     "    std::vector<double> result;\n"
