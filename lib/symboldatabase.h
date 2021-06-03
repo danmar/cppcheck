@@ -1273,6 +1273,8 @@ public:
     static MatchResult matchParameter(const ValueType *call, const ValueType *func);
     static MatchResult matchParameter(const ValueType *call, const Variable *callVar, const Variable *funcVar);
 
+    bool isPrimitive() const { return (type >= ValueType::Type::BOOL); }
+
     bool isIntegral() const {
         return (type >= ValueType::Type::BOOL && type <= ValueType::Type::UNKNOWN_INT);
     }
