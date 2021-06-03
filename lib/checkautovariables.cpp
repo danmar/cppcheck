@@ -439,7 +439,7 @@ static int getPointerDepth(const Token *tok)
         return tok->valueType()->pointer;
     int n = 0;
     std::pair<const Token*, const Token*> decl = Token::typeDecl(tok);
-    for(const Token* tok2 = decl.first;tok2 != decl.second;tok2 = tok2->next())
+    for (const Token* tok2 = decl.first; tok2 != decl.second; tok2 = tok2->next())
         if (Token::simpleMatch(tok, "*"))
             n++;
     return n;
