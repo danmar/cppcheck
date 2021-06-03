@@ -28,6 +28,15 @@
 #include <vector>
 #include <cstdarg>
 #include <functional>
+#include <bitset>
+
+std::bitset<10> std_bitset_test_ignoredReturnValue()
+{
+    std::bitset<10> b1("1111010000");
+    // cppcheck-suppress ignoredReturnValue
+    b1.test(2);
+    return b1;
+}
 
 void valid_code()
 {
