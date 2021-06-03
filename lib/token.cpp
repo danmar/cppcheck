@@ -1773,7 +1773,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     out << "end=" << value.intvalue;
                     break;
                 case ValueFlow::Value::ValueType::LIFETIME:
-                    out << "lifetime=" << "(" << value.tokvalue->expressionString() << ")";
+                    out << "lifetime[" << ValueFlow::Value::toString(value.lifetimeKind) << "]=(" << value.tokvalue->expressionString() << ")";
                     break;
                 }
                 if (value.indirect > 0)

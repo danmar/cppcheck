@@ -324,6 +324,7 @@ namespace ValueFlow {
         enum class LifetimeScope { Local, Argument, SubFunction } lifetimeScope;
 
         static const char* toString(MoveKind moveKind);
+        static const char* toString(LifetimeKind lifetimeKind);
 
         /** How known is this value */
         enum class ValueKind {
