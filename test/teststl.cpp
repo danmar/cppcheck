@@ -4665,6 +4665,17 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:7] -> [test.cpp:1] -> [test.cpp:4]: (error) Using iterator to local container 'v' that may be invalid.\n",
             errout.str());
+
+        // #10264
+        check("void f(std::vector<std::string>& x) {\n"
+              "  struct I {\n"
+              "    std::vector<std::string> *px{};\n"
+              "  };\n"
+              "  I i = { &x };\n"
+              "  x.clear();\n"
+              "  Parse(i);\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidContainerLoop() {

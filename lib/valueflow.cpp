@@ -3462,7 +3462,7 @@ static void valueFlowLifetimeConstructor(Token* tok,
         // constructor, but make each lifetime inconclusive
         std::vector<const Token*> args = getArguments(tok);
         LifetimeStore::forEach(
-        args, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object, [&](LifetimeStore& ls) {
+        args, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::SubObject, [&](LifetimeStore& ls) {
             ls.inconclusive = true;
             ls.byVal(tok, tokenlist, errorLogger, settings);
         });
@@ -3477,7 +3477,7 @@ static void valueFlowLifetimeConstructor(Token* tok,
         auto it = scope->varlist.begin();
         LifetimeStore::forEach(args,
                                "Passed to constructor of '" + t->name() + "'.",
-                               ValueFlow::Value::LifetimeKind::Object,
+                               ValueFlow::Value::LifetimeKind::SubObject,
         [&](const LifetimeStore& ls) {
             if (it == scope->varlist.end())
                 return;
