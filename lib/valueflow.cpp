@@ -2894,6 +2894,8 @@ static bool isLifetimeBorrowed(const ValueType *vt, const ValueType *vtParent)
         return false;
     if (!vt)
         return false;
+    if (vt->pointer > 0 && vt->pointer == vtParent->pointer)
+        return true;
     if (vt->type != ValueType::UNKNOWN_TYPE && vtParent->type != ValueType::UNKNOWN_TYPE && vtParent->container == vt->container) {
         if (vtParent->pointer > vt->pointer)
             return true;
