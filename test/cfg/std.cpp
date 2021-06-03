@@ -62,6 +62,22 @@ std::bitset<10> std_bitset_any_ignoredReturnValue()
     return b1;
 }
 
+std::bitset<10> std_bitset_size_ignoredReturnValue()
+{
+    std::bitset<10> b1("1111010000");
+    // cppcheck-suppress ignoredReturnValue
+    b1.size();
+    return b1;
+}
+
+std::bitset<10> std_bitset_count_ignoredReturnValue()
+{
+    std::bitset<10> b1("1111010000");
+    // cppcheck-suppress ignoredReturnValue
+    b1.count();
+    return b1;
+}
+
 void valid_code()
 {
     std::vector<int> vecInt{0, 1, 2};
