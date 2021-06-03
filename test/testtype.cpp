@@ -264,7 +264,7 @@ private:
         check("x = (unsigned)y * -4;");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Expression '-4' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
 
-        check("unsigned int dostuff(int x) {\n" // x is signed
+        check("unsigned long long dostuff(long long x) {\n" // x is signed
               "  if (x==0) {}\n"
               "  return (x-1)*sizeof(int);\n"
               "}");
