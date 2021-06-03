@@ -1010,7 +1010,7 @@ public:
         return mTokType == eType ? mImpl->mType : nullptr;
     }
 
-    static const ::Type *typeOf(const Token *tok);
+    static const ::Type *typeOf(const Token *tok, const Token** typeTok=nullptr);
 
     static std::pair<const Token*, const Token*> typeDecl(const Token * tok);
 

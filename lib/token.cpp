@@ -2257,10 +2257,12 @@ void Token::type(const ::Type *t)
         tokType(eName);
 }
 
-const ::Type *Token::typeOf(const Token *tok)
+const ::Type *Token::typeOf(const Token *tok, const Token** typeTok)
 {
     if (!tok)
         return nullptr;
+    if (typeTok != nullptr)
+        *typeTok = tok;
     if (Token::simpleMatch(tok, "return")) {
         const Scope *scope = tok->scope();
         if (!scope)
@@ -2282,14 +2284,31 @@ const ::Type *Token::typeOf(const Token *tok)
             return nullptr;
         return function->retType;
     } else if (Token::Match(tok->previous(), "%type%|= (|{")) {
-        return typeOf(tok->previous());
+        return typeOf(tok->previous(), typeTok);
     } else if (Token::simpleMatch(tok, "=")) {
-        return Token::typeOf(tok->astOperand1());
+        return Token::typeOf(getLHSVariableToken(tok), typeTok);
     } else if (Token::simpleMatch(tok, ".")) {
-        return Token::typeOf(tok->astOperand2());
+        return Token::typeOf(tok->astOperand2(), typeTok);
     } else if (Token::simpleMatch(tok, "[")) {
-        return Token::typeOf(tok->astOperand1());
+        return Token::typeOf(tok->astOperand1(), typeTok);
+    } else if (Token::simpleMatch(tok, "{")) {
+        int argnr;
+        const Token* ftok = getTokenArgumentFunction(tok, argnr);
+        if (argnr < 0)
+            return nullptr;
+        if (!ftok)
+            return nullptr;
+        if (ftok == tok)
+            return nullptr;
+        std::vector<const Variable*> vars = getArgumentVars(ftok, argnr);
+        if (vars.empty())
+            return nullptr;
+        if (std::all_of(vars.begin(), vars.end(), [&](const Variable* var) {
+            return var->type() == vars.front()->type();
+        }))
+            return vars.front()->type();
     }
+
     return nullptr;
 }
 

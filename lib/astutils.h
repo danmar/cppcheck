@@ -188,6 +188,8 @@ bool isReturnScope(const Token* const endToken,
 /// Return the token to the function and the argument number
 const Token * getTokenArgumentFunction(const Token * tok, int& argn);
 
+std::vector<const Variable*> getArgumentVars(const Token* tok, int argnr);
+
 /** Is variable changed by function call?
  * In case the answer of the question is inconclusive, e.g. because the function declaration is not known
  * the return value is false and the output parameter inconclusive is set to true
@@ -278,6 +280,8 @@ bool isCPPCast(const Token* tok);
 bool isConstVarExpression(const Token *tok, const char * skipMatch = nullptr);
 
 const Variable *getLHSVariable(const Token *tok);
+
+const Token *getLHSVariableToken(const Token *tok);
 
 std::vector<const Variable*> getLHSVariables(const Token* tok);
 
