@@ -6275,9 +6275,9 @@ static std::vector<ValueFlow::Value> getContainerValues(const Token* tok)
     std::vector<ValueFlow::Value> values;
     if (tok) {
         std::copy_if(tok->values().begin(),
-                    tok->values().end(),
-                    std::back_inserter(values),
-                    std::mem_fn(&ValueFlow::Value::isContainerSizeValue));
+                     tok->values().end(),
+                     std::back_inserter(values),
+                     std::mem_fn(&ValueFlow::Value::isContainerSizeValue));
     }
     return values;
 }
@@ -6299,8 +6299,8 @@ static std::vector<ValueFlow::Value> makeContainerSizeValue(const Token* tok, bo
 }
 
 static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
-         const Library::Container* container,
-         bool known = true)
+                                                     const Library::Container* container,
+                                                     bool known = true)
 {
     std::vector<const Token*> args = getArguments(tok);
     // Strings dont use an init list
@@ -6319,9 +6319,8 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
                 return {makeContainerSizeValue(args[2], known)};
         }
         return {};
-    }
-    else if ((args.size() == 1 && astIsContainer(args[0]) && args[0]->valueType()->container == container) ||
-         (args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1]))) {
+    } else if ((args.size() == 1 && astIsContainer(args[0]) && args[0]->valueType()->container == container) ||
+               (args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1]))) {
         return getContainerValues(args[0]);
     }
     return {makeContainerSizeValue(args.size(), known)};
