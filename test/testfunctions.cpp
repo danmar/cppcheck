@@ -1436,7 +1436,8 @@ private:
     }
 
     void returnLocalStdMove4() {
-        check("struct A{} a; A f() { return std::move(a); }");
+        check("struct A{} a; A f1() { return std::move(a); }\n"
+              "A f2() { volatile A var; return std::move(var); }");
         ASSERT_EQUALS("", errout.str());
     }
 };

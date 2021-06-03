@@ -568,7 +568,7 @@ void CheckFunctions::returnLocalStdMove()
                 copyElisionError(retval);
             }
             // NRVO
-            if (Token::Match(matchToken, "std :: move ( %var% ) ;") && retval->variable()->isLocal()) {
+            if (Token::Match(matchToken, "std :: move ( %var% ) ;") && retval->variable()->isLocal() && !retval->variable()->isVolatile()) {
                 copyElisionError(retval);
             }
         }
