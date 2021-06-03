@@ -393,7 +393,8 @@ private:
               "  S s = { { { &ArrS } } };\n"
               "  g(s);\n"
               "  return ArrS[0];\n"
-              "}\n", true);
+              "}\n",
+              true);
         ASSERT_EQUALS("", errout.str());
 
         check("struct T {\n"
@@ -408,7 +409,8 @@ private:
               "  S s = { { { { &ArrS } } } };\n"
               "  g(s);\n"
               "  return ArrS[0];\n"
-              "}\n", true);
+              "}\n",
+              true);
         ASSERT_EQUALS("", errout.str());
 
         check("struct T {\n"
@@ -423,7 +425,8 @@ private:
               "  S s { { &ArrS } };\n"
               "  g(s);\n"
               "  return ArrS[0];\n"
-              "}\n", true);
+              "}\n",
+              true);
         ASSERT_EQUALS("", errout.str());
 
         check("struct T {\n"
@@ -438,7 +441,8 @@ private:
               "  S s { { { &ArrS } } };\n"
               "  g(s);\n"
               "  return ArrS[0];\n"
-              "}\n", true);
+              "}\n",
+              true);
         ASSERT_EQUALS("", errout.str());
 
         check("struct T {\n"
@@ -453,7 +457,8 @@ private:
               "  S s { { { { &ArrS } } } };\n"
               "  g(s);\n"
               "  return ArrS[0];\n"
-              "}\n", true);
+              "}\n",
+              true);
         ASSERT_EQUALS("", errout.str());
 
         checkNormal("extern void Bar(const double, const double);\n"

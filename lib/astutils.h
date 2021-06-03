@@ -281,7 +281,7 @@ bool isConstVarExpression(const Token *tok, const char * skipMatch = nullptr);
 
 const Variable *getLHSVariable(const Token *tok);
 
-const Token *getLHSVariableToken(const Token *tok);
+const Token* getLHSVariableToken(const Token* tok);
 
 std::vector<const Variable*> getLHSVariables(const Token* tok);
 

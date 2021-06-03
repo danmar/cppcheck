@@ -2257,7 +2257,7 @@ void Token::type(const ::Type *t)
         tokType(eName);
 }
 
-const ::Type *Token::typeOf(const Token *tok, const Token** typeTok)
+const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
 {
     if (!tok)
         return nullptr;
@@ -2303,9 +2303,8 @@ const ::Type *Token::typeOf(const Token *tok, const Token** typeTok)
         std::vector<const Variable*> vars = getArgumentVars(ftok, argnr);
         if (vars.empty())
             return nullptr;
-        if (std::all_of(vars.begin(), vars.end(), [&](const Variable* var) {
-            return var->type() == vars.front()->type();
-        }))
+        if (std::all_of(
+                vars.begin(), vars.end(), [&](const Variable* var) { return var->type() == vars.front()->type(); }))
             return vars.front()->type();
     }
 

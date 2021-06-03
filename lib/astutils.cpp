@@ -2329,12 +2329,12 @@ std::vector<const Variable*> getLHSVariables(const Token* tok)
     return result;
 }
 
-static const Token *getLHSVariableRecursive(const Token *tok)
+static const Token* getLHSVariableRecursive(const Token* tok)
 {
     if (!tok)
         return nullptr;
     if (Token::Match(tok, "*|&|&&|[")) {
-        const Token *vartok = getLHSVariableRecursive(tok->astOperand1());
+        const Token* vartok = getLHSVariableRecursive(tok->astOperand1());
         if ((vartok && vartok->variable()) || Token::simpleMatch(tok, "["))
             return vartok;
         return getLHSVariableRecursive(tok->astOperand2());
@@ -2358,7 +2358,7 @@ const Variable *getLHSVariable(const Token *tok)
     return vartok->variable();
 }
 
-const Token *getLHSVariableToken(const Token *tok)
+const Token* getLHSVariableToken(const Token* tok)
 {
     if (!Token::Match(tok, "%assign%"))
         return nullptr;
@@ -2371,7 +2371,6 @@ const Token *getLHSVariableToken(const Token *tok)
         return tok->astOperand1();
     return vartok;
 }
-
 
 const Token* findAllocFuncCallToken(const Token *expr, const Library &library)
 {
