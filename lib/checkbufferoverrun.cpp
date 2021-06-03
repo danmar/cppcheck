@@ -205,7 +205,7 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings *set
         dim.num = Token::getStrArraySize(stringLiteral);
         dim.known = array->hasKnownValue();
         dimensions->emplace_back(dim);
-    } else if (array->valueType() && array->valueType()->pointer >= 1 && array->valueType()->isIntegral()) {
+    } else if (array->valueType() && array->valueType()->pointer >= 1 && (array->valueType()->isIntegral() || array->valueType()->isFloat())) {
         const ValueFlow::Value *value = getBufferSizeValue(array);
         if (!value)
             return false;
@@ -609,6 +609,21 @@ void CheckBufferOverrun::bufferOverflow()
                 const ValueFlow::Value bufferSize = getBufferSize(argtok);
                 if (bufferSize.intvalue <= 0)
                     continue;
+                // buffer size == 1 => do not warn for dynamic memory
+                if (bufferSize.intvalue == 1) {
+                    const Token *tok2 = argtok;
+                    while (Token::simpleMatch(tok2->astParent(), "."))
+                        tok2 = tok2->astParent();
+                    while (Token::Match(tok2, "[|."))
+                        tok2 = tok2->astOperand1();
+                    const Variable *var = tok2 ? tok2->variable() : nullptr;
+                    if (var) {
+                        if (var->isPointer())
+                            continue;
+                        if (var->isArgument() && var->isReference())
+                            continue;
+                    }
+                }
                 const bool error = std::none_of(minsizes->begin(), minsizes->end(), [=](const Library::ArgumentChecks::MinSize &minsize) {
                     return checkBufferSize(tok, minsize, args, bufferSize.intvalue, mSettings);
                 });

@@ -140,6 +140,8 @@ private:
 
         TEST_CASE(valueFlowUnknownMixedOperators);
         TEST_CASE(valueFlowIdempotent);
+        TEST_CASE(valueFlowUnsigned);
+        TEST_CASE(valueFlowMod);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -2642,6 +2644,20 @@ private:
         ASSERT_EQUALS(false, testValueOfXKnown(code, 5U, 1));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 5U, 0));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 5U, 1));
+
+        code = "auto f(int i) {\n"
+               "    if (i == 0) return;\n"
+               "    auto x = !i;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 1));
+
+        code = "auto f(int i) {\n"
+               "    if (i == 1) return;\n"
+               "    auto x = !i;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
     }
 
     void valueFlowAfterConditionExpr() {
@@ -5606,6 +5622,53 @@ private:
                "    bool result = x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 5U, 0));
+    }
+
+    void valueFlowUnsigned() {
+        const char *code;
+
+        code = "auto f(uint32_t i) {\n"
+               "    auto x = i;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
+
+        code = "auto f(uint32_t i) {\n"
+               "    auto x = (int32_t)i;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, -1));
+
+        code = "auto f(uint32_t i) {\n"
+               "    auto x = (int64_t)i;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
+
+        code = "size_t g();\n"
+               "auto f(uint16_t j) {\n"
+               "    auto x = g() - j;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, -1));
+    }
+
+    void valueFlowMod() {
+        const char *code;
+
+        code = "auto f(int i) {\n"
+               "    auto x = i % 2;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, 2));
+
+        code = "auto f(int i) {\n"
+               "    auto x = !(i % 2);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 0));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 1));
     }
 };
 

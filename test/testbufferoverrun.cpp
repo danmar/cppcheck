@@ -132,6 +132,7 @@ private:
         TEST_CASE(array_index_52); // #7682
         TEST_CASE(array_index_53); // #4750
         TEST_CASE(array_index_54); // #10268
+        TEST_CASE(array_index_55); // #10254
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1248,6 +1249,14 @@ private:
 
         check("void f()\n"
               "{\n"
+              "  float *p; p = (float *)malloc(10 * sizeof(float));\n"
+              "  p[10] = 7;\n"
+              "  free(p);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'p[10]' accessed at index 10, which is out of bounds.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
               "  char *p; p = (char *)malloc(10);\n"
               "  p[0] = 0;\n"
               "  p[9] = 9;\n"
@@ -1563,6 +1572,23 @@ private:
               "        b[i]   = 0;\n"
               "        b[i+1] = 0;\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_55() {
+        check("void make(const char* s, size_t len) {\n"
+              "    for (size_t i = 0; i < len; ++i)\n"
+              "        s[i];\n"
+              "}\n"
+              "void make(const char* s) {\n"
+              "    make(s, strlen(s));\n"
+              "}\n"
+              "void f() {\n"
+              "    make(\"my-utf8-payload\");\n"
+              "}\n"
+              "void f2() {\n"
+              "    make(\"false\");\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -3654,13 +3680,20 @@ private:
         check("struct Foo { char a[1]; };\n"
               "void f() {\n"
               "  struct Foo *x = malloc(sizeof(Foo));\n"
-              "  mysprintf(x.a, \"aa\");\n"
+              "  mysprintf(x->a, \"aa\");\n"
               "}", settings);
-        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Buffer is accessed out of bounds: x.a\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Buffer is accessed out of bounds: x.a\n", "", errout.str());
 
         check("struct Foo { char a[1]; };\n"
               "void f() {\n"
               "  struct Foo *x = malloc(sizeof(Foo) + 10);\n"
+              "  mysprintf(x->a, \"aa\");\n"
+              "}", settings);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Foo { char a[1]; };\n"
+              "void f() {\n"
+              "  struct Foo x;\n"
               "  mysprintf(x.a, \"aa\");\n"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Buffer is accessed out of bounds: x.a\n", errout.str());
@@ -3714,7 +3747,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
     }
-
+    // extracttests.disable
     void terminateStrncpy1() {
         check("void foo ( char *bar ) {\n"
               "    char baz[100];\n"
@@ -3793,6 +3826,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) The buffer 'buf' may not be null-terminated after the call to strncpy().\n", errout.str());
     }
+    // extracttests.enable
 
     void recursive_long_time() {
         // Just test that recursive check doesn't take long time

@@ -51,6 +51,9 @@ private:
         TEST_CASE(nothrowAttributeThrow);
         TEST_CASE(nothrowAttributeThrow2); // #5703
         TEST_CASE(nothrowDeclspecThrow);
+        TEST_CASE(rethrowNoCurrentException1);
+        TEST_CASE(rethrowNoCurrentException2);
+        TEST_CASE(rethrowNoCurrentException3);
     }
 
     void check(const char code[], bool inconclusive = false) {
@@ -321,7 +324,7 @@ private:
     }
 
     void noexceptThrow() {
-        check("void func1() noexcept(false) { throw 1; }\n"
+        check("void func1() noexcept(false) { try {} catch(...) {;} throw 1; }\n"
               "void func2() noexcept { throw 1; }\n"
               "void func3() noexcept(true) { throw 1; }\n"
               "void func4() noexcept(false) { throw 1; }\n"
@@ -332,12 +335,13 @@ private:
                       "[test.cpp:5]: (error) Exception thrown in function declared not to throw exceptions.\n", errout.str());
 
         // avoid false positives
-        check("const char *func() noexcept { return 0; }");
+        check("const char *func() noexcept { return 0; }\n"
+              "const char *func1() noexcept { try { throw 1; } catch(...) {} return 0; }");
         ASSERT_EQUALS("", errout.str());
     }
 
     void nothrowThrow() {
-        check("void func1() throw(int) { throw 1; }\n"
+        check("void func1() throw(int) { try {;} catch(...) { throw 1; } ; }\n"
               "void func2() throw() { throw 1; }\n"
               "void func3() throw(int) { throw 1; }\n"
               "void func4() throw() { func1(); }\n"
@@ -404,6 +408,25 @@ private:
 
         // avoid false positives
         check("const char *func() __attribute((nothrow)); void func1() { return 0; }");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void rethrowNoCurrentException1() {
+        check("void func1(const bool flag) { try{ if(!flag) throw; } catch (int&) { ; } }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Rethrowing current exception with 'throw;', it seems there is no current exception to rethrow."
+                      " If there is no current exception this calls std::terminate(). More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object\n", errout.str());
+    }
+
+    void rethrowNoCurrentException2() {
+        check("void func1() { try{ ; } catch (...) { ; } throw; }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Rethrowing current exception with 'throw;', it seems there is no current exception to rethrow."
+                      " If there is no current exception this calls std::terminate(). More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object\n", errout.str());
+    }
+
+    void rethrowNoCurrentException3() {
+        check("void on_error() { try { throw; } catch (const int &) { ; } catch (...) { ; } }\n"      // exception dispatcher idiom
+              "void func2() { try{ ; } catch (const int&) { throw; } ; }\n"
+              "void func3() { throw 0; }");
         ASSERT_EQUALS("", errout.str());
     }
 };

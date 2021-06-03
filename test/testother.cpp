@@ -146,6 +146,7 @@ private:
         TEST_CASE(duplicateExpression9); // #9320
         TEST_CASE(duplicateExpression10); // #9485
         TEST_CASE(duplicateExpression11); // #8916 (function call)
+        TEST_CASE(duplicateExpression12); // #10026
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -5240,6 +5241,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void duplicateExpression12() { //#10026
+        check("int f(const std::vector<int> &buffer, const uint8_t index)\n"
+              "{\n"
+              "        int var = buffer[index - 1];\n"
+              "        return buffer[index - 1] - var;\n"  // <<
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Same expression on both sides of '-'.\n", errout.str());
+    }
+
     void duplicateExpressionLoop() {
         check("void f() {\n"
               "    int a = 1;\n"
@@ -8179,12 +8189,18 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on 'ptr' - it's already a pointer.\n", errout.str());
 
         // no warning for macros
-        check("#define MUTEX_LOCK(m) pthread_mutex_lock(&(m))\n"
-              "void f(struct mutex *mut) {\n"
-              "    MUTEX_LOCK(*mut);\n"
-              "}\n", nullptr, false, true);
+        checkP("#define MUTEX_LOCK(m) pthread_mutex_lock(&(m))\n"
+               "void f(struct mutex *mut) {\n"
+               "    MUTEX_LOCK(*mut);\n"
+               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkP("#define B(op)        bar(op)\n"
+               "#define C(orf)       B(&orf)\n"
+               "void foo(const int * pkey) {\n"
+               "    C(*pkey);\n"
+               "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void test_isSameExpression() { // see #5738

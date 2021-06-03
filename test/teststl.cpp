@@ -381,6 +381,86 @@ private:
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
 
+        check("struct T {\n"
+              "  std::vector<int>* v;\n"
+              "};\n"
+              "struct S {\n"
+              "  std::vector<T> t;\n"
+              "};\n"
+              "long g(S& s);\n"
+              "int f() {\n"
+              "  std::vector<int> ArrS;\n"
+              "  S s = { { { &ArrS } } };\n"
+              "  g(s);\n"
+              "  return ArrS[0];\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct T {\n"
+              "  std::vector<int>* v;\n"
+              "};\n"
+              "struct S {\n"
+              "  std::vector<std::vector<T>> t;\n"
+              "};\n"
+              "long g(S& s);\n"
+              "int f() {\n"
+              "  std::vector<int> ArrS;\n"
+              "  S s = { { { { &ArrS } } } };\n"
+              "  g(s);\n"
+              "  return ArrS[0];\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct T {\n"
+              "  std::vector<int>* v;\n"
+              "};\n"
+              "struct S {\n"
+              "  T t;\n"
+              "};\n"
+              "long g(S& s);\n"
+              "int f() {\n"
+              "  std::vector<int> ArrS;\n"
+              "  S s { { &ArrS } };\n"
+              "  g(s);\n"
+              "  return ArrS[0];\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct T {\n"
+              "  std::vector<int>* v;\n"
+              "};\n"
+              "struct S {\n"
+              "  std::vector<T> t;\n"
+              "};\n"
+              "long g(S& s);\n"
+              "int f() {\n"
+              "  std::vector<int> ArrS;\n"
+              "  S s { { { &ArrS } } };\n"
+              "  g(s);\n"
+              "  return ArrS[0];\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct T {\n"
+              "  std::vector<int>* v;\n"
+              "};\n"
+              "struct S {\n"
+              "  std::vector<std::vector<T>> t;\n"
+              "};\n"
+              "long g(S& s);\n"
+              "int f() {\n"
+              "  std::vector<int> ArrS;\n"
+              "  S s { { { { &ArrS } } } };\n"
+              "  g(s);\n"
+              "  return ArrS[0];\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
         checkNormal("extern void Bar(const double, const double);\n"
                     "void f(std::vector<double> &r, const double ) {\n"
                     "    std::vector<double> result;\n"
@@ -430,6 +510,23 @@ private:
                     "    v[0] = 1;\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void foo(std::vector<int>* PArr, int n) {\n"
+                    " std::vector<int> Arr;\n"
+                    " if (!PArr)\n"
+                    "   PArr = &Arr;\n"
+                    " PArr->resize(n);\n"
+                    " for (int i = 0; i < n; ++i)\n"
+                    "   (*PArr)[i] = 1;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("int f() {\n"
+                    "    std::vector<int> v;\n"
+                    "    std::vector<int> * pv = &v;\n"
+                    "    return (*pv).at(42);\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression '(*pv).at(42)' because '*pv' is empty and 'at' may be non-zero.\n", errout.str());
     }
 
     void outOfBoundsIndexExpression() {

@@ -2429,6 +2429,11 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
     int offset = 0;
     int openParen = 0;
 
+    // check for () == (void) and (void) == ()
+    if ((Token::simpleMatch(first, "( )") && Token::simpleMatch(second, "( void )")) ||
+        (Token::simpleMatch(first, "( void )") && Token::simpleMatch(second, "( )")))
+        return true;
+
     while (first->str() == second->str() &&
            first->isLong() == second->isLong() &&
            first->isUnsigned() == second->isUnsigned()) {

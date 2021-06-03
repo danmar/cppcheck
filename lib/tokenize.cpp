@@ -3168,6 +3168,27 @@ static Token *skipTernaryOp(Token *tok)
     return tok;
 }
 
+// Skips until the colon at the end of the case label, the argument must point to the "case" token.
+// In case of success returns the colon token.
+// In case of failure returns the token that caused the error.
+static Token *skipCaseLabel(Token *tok)
+{
+    assert(tok->str() == "case");
+    while (nullptr != (tok = tok->next())) {
+        if (Token::Match(tok, "(|["))
+            tok = tok->link();
+        else if (tok->str() == "?") {
+            Token * tok1 = skipTernaryOp(tok);
+            if (!tok1)
+                return tok;
+            tok = tok1;
+        }
+        if (Token::Match(tok, "[:{};]"))
+            return tok;
+    }
+    return nullptr;
+}
+
 const Token * Tokenizer::startOfExecutableScope(const Token * tok)
 {
     if (tok->str() != ")")
@@ -3217,32 +3238,15 @@ void Tokenizer::simplifyLabelsCaseDefault()
             tok = tok->link();
 
         if (Token::Match(tok, "[;{}:] case")) {
-            while (nullptr != (tok = tok->next())) {
-                if (Token::Match(tok, "(|[")) {
-                    tok = tok->link();
-                } else if (tok->str() == "?") {
-                    Token *tok1 = skipTernaryOp(tok);
-                    if (!tok1) {
-                        syntaxError(tok);
-                    }
-                    tok = tok1;
-                }
-                if (Token::Match(tok->next(),"[:{};]"))
-                    break;
-            }
+            tok = skipCaseLabel(tok->next());
             if (!tok)
                 break;
-            if (tok->str() != "case" && tok->next() && tok->next()->str() == ":") {
-                tok = tok->next();
-                if (!tok->next())
-                    syntaxError(tok);
-                if (tok->next()->str() != ";" && tok->next()->str() != "case")
-                    tok->insertToken(";");
-                else
-                    tok = tok->previous();
-            } else {
+            if (tok->str() != ":" || tok->strAt(-1) == "case" || !tok->next())
                 syntaxError(tok);
-            }
+            if (tok->next()->str() != ";" && tok->next()->str() != "case")
+                tok->insertToken(";");
+            else
+                tok = tok->previous();
         } else if (Token::Match(tok, "[;{}] %name% : !!;")) {
             if (!cpp || !Token::Match(tok->next(), "class|struct|enum")) {
                 tok = tok->tokAt(2);
@@ -6267,30 +6271,46 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
             return tok;
         }
     }
+    // Skip labels
+    Token * tokStatement = tokAfterCondition;
+    while (true) {
+        if (Token::Match(tokStatement, "%name% :"))
+            tokStatement = tokStatement->tokAt(2);
+        else if (tokStatement->str() == "case") {
+            tokStatement = skipCaseLabel(tokStatement);
+            if (!tokStatement)
+                return tok;
+            if (tokStatement->str() != ":")
+                syntaxError(tokStatement);
+            tokStatement = tokStatement->next();
+        } else
+            break;
+        if (!tokStatement)
+            return tok;
+    }
     Token * tokBracesEnd=nullptr;
-    if (tokAfterCondition->str()=="{") {
+    if (tokStatement->str() == "{") {
         // already surrounded by braces
-        tokBracesEnd=tokAfterCondition->link();
-    } else if (Token::simpleMatch(tokAfterCondition, "try {") &&
-               Token::simpleMatch(tokAfterCondition->linkAt(1), "} catch (")) {
+        if (tokStatement != tokAfterCondition) {
+            // Move the opening brace before labels
+            Token::move(tokStatement, tokStatement, tokAfterCondition->previous());
+        }
+        tokBracesEnd = tokStatement->link();
+    } else if (Token::simpleMatch(tokStatement, "try {") &&
+               Token::simpleMatch(tokStatement->linkAt(1), "} catch (")) {
         tokAfterCondition->previous()->insertToken("{");
         Token * tokOpenBrace = tokAfterCondition->previous();
-        Token * tokEnd = tokAfterCondition->linkAt(1)->linkAt(2)->linkAt(1);
+        Token * tokEnd = tokStatement->linkAt(1)->linkAt(2)->linkAt(1);
         if (!tokEnd) {
-            syntaxError(tokAfterCondition);
+            syntaxError(tokStatement);
         }
         tokEnd->insertToken("}");
         Token * tokCloseBrace = tokEnd->next();
 
         Token::createMutualLinks(tokOpenBrace, tokCloseBrace);
         tokBracesEnd = tokCloseBrace;
-    } else if (Token::Match(tokAfterCondition, "%name% : {")) {
-        tokAfterCondition->previous()->insertToken("{");
-        tokAfterCondition->linkAt(2)->insertToken("}");
-        tokBracesEnd = tokAfterCondition->linkAt(2)->next();
-        Token::createMutualLinks(tokAfterCondition->previous(), tokBracesEnd);
     } else {
-        Token * tokEnd = simplifyAddBracesToCommand(tokAfterCondition);
+        Token * tokEnd = simplifyAddBracesToCommand(tokStatement);
         if (!tokEnd) // Ticket #4887
             return tok;
         if (tokEnd->str()!="}") {
