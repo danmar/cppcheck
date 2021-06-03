@@ -6860,7 +6860,6 @@ const char* ValueFlow::Value::toString(LifetimeKind lifetimeKind)
     return "";
 }
 
-
 const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(Token *expr, const Settings *settings)
 {
     if (expr && expr->values().empty()) {
