@@ -433,13 +433,61 @@ static T calculate(const std::string& s, const T& x, const T& y)
 /** Set token value for cast */
 static void setTokenValueCast(Token *parent, const ValueType &valueType, const ValueFlow::Value &value, const Settings *settings);
 
+static bool isCompatibleValues(const ValueFlow::Value& value1, const ValueFlow::Value& value2)
+{
+    if (value1.isKnown() || value2.isKnown())
+        return true;
+    if (value1.isImpossible() || value2.isImpossible())
+        return false;
+    if (value1.varId == 0 || value2.varId == 0)
+        return true;
+    if (value1.varId == value2.varId && value1.varvalue == value2.varvalue && value1.isIntValue() && value2.isIntValue())
+        return true;
+    return false;
+}
+
+static ValueFlow::Value truncateImplicitConversion(Token* parent, const ValueFlow::Value& value, const Settings* settings)
+{
+    if (!value.isIntValue() && !value.isFloatValue())
+        return value;
+    if (!parent)
+        return value;
+    if (!parent->isBinaryOp())
+        return value;
+    if (!parent->isConstOp())
+        return value;
+    if (!astIsIntegral(parent->astOperand1(), false))
+        return value;
+    if (!astIsIntegral(parent->astOperand2(), false))
+        return value;
+    const ValueType* vt1 = parent->astOperand1()->valueType();
+    const ValueType* vt2 = parent->astOperand2()->valueType();
+    // If the sign is the same there is no truncation
+    if (vt1->sign == vt2->sign)
+        return value;
+    size_t n1 = ValueFlow::getSizeOf(*vt1, settings);
+    size_t n2 = ValueFlow::getSizeOf(*vt2, settings);
+    ValueType::Sign sign = ValueType::Sign::UNSIGNED;
+    if (n1 < n2)
+        sign = vt2->sign;
+    else if (n1 > n2)
+        sign = vt1->sign;
+    ValueFlow::Value v = castValue(value, sign, std::max(n1, n2) * 8);
+    v.wideintvalue = value.intvalue;
+    return v;
+}
+
 /** set ValueFlow value and perform calculations if possible */
-static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Settings *settings)
+static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* settings)
 {
     // Skip setting values that are too big since its ambiguous
     if (!value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok) &&
         ValueFlow::getSizeOf(*tok->valueType(), settings) >= sizeof(MathLib::bigint))
         return;
+
+    if (!value.isImpossible() && value.isIntValue())
+        value = truncateImplicitConversion(tok->astParent(), value, settings);
+
     if (!tok->addValue(value))
         return;
 
@@ -654,56 +702,54 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
                     continue;
                 if (value1.isIteratorValue() && value2.isIteratorValue())
                     continue;
-                if (value1.isKnown() || value2.isKnown() || value1.varId == 0 || value2.varId == 0 ||
-                    (value1.varId == value2.varId && value1.varvalue == value2.varvalue && value1.isIntValue() &&
-                     value2.isIntValue())) {
-                    ValueFlow::Value result(0);
-                    combineValueProperties(value1, value2, &result);
-                    const double floatValue1 = value1.isIntValue() ? value1.intvalue : value1.floatValue;
-                    const double floatValue2 = value2.isIntValue() ? value2.intvalue : value2.floatValue;
-                    const bool isFloat = value1.isFloatValue() || value2.isFloatValue();
-                    if (isFloat && Token::Match(parent, "&|^|%|<<|>>|%or%"))
+                if (!isCompatibleValues(value1, value2))
+                    continue;
+                ValueFlow::Value result(0);
+                combineValueProperties(value1, value2, &result);
+                const double floatValue1 = value1.isIntValue() ? value1.intvalue : value1.floatValue;
+                const double floatValue2 = value2.isIntValue() ? value2.intvalue : value2.floatValue;
+                const bool isFloat = value1.isFloatValue() || value2.isFloatValue();
+                if (isFloat && Token::Match(parent, "&|^|%|<<|>>|%or%"))
+                    continue;
+                if (Token::Match(parent, "<<|>>") &&
+                    !(value1.intvalue >= 0 && value2.intvalue >= 0 && value2.intvalue < MathLib::bigint_bits))
+                    continue;
+                if (Token::Match(parent, "/|%") && isZero<double>(floatValue2))
+                    continue;
+                if (Token::Match(parent, "==|!=")) {
+                    if ((value1.isIntValue() && value2.isTokValue()) || (value1.isTokValue() && value2.isIntValue())) {
+                        if (parent->str() == "==")
+                            result.intvalue = 0;
+                        else if (parent->str() == "!=")
+                            result.intvalue = 1;
+                    } else if (value1.isIntValue() && value2.isIntValue()) {
+                        result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
+                    } else {
                         continue;
-                    if (Token::Match(parent, "<<|>>") &&
-                        !(value1.intvalue >= 0 && value2.intvalue >= 0 && value2.intvalue < MathLib::bigint_bits))
-                        continue;
-                    if (Token::Match(parent, "/|%") && isZero<double>(floatValue2))
-                        continue;
-                    if (Token::Match(parent, "==|!=")) {
-                        if ((value1.isIntValue() && value2.isTokValue()) || (value1.isTokValue() && value2.isIntValue())) {
-                            if (parent->str() == "==")
-                                result.intvalue = 0;
-                            else if (parent->str() == "!=")
-                                result.intvalue = 1;
-                        } else if (value1.isIntValue() && value2.isIntValue()) {
-                            result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
-                        } else {
-                            continue;
-                        }
-                        setTokenValue(parent, result, settings);
-                    } else if (Token::Match(parent, "%comp%")) {
-                        if (!isFloat && !value1.isIntValue() && !value2.isIntValue())
-                            continue;
-                        if (isFloat)
-                            result.intvalue = calculate(parent->str(), floatValue1, floatValue2);
-                        else
-                            result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
-                        setTokenValue(parent, result, settings);
-                    } else if (Token::Match(parent, "%op%")) {
-                        if (value1.isTokValue() || value2.isTokValue())
-                            break;
-                        if (isFloat) {
-                            result.valueType = ValueFlow::Value::ValueType::FLOAT;
-                            result.floatValue = calculate(parent->str(), floatValue1, floatValue2);
-                        } else {
-                            result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
-                        }
-                        // If the bound comes from the second value then invert the bound when subtracting
-                        if (Token::simpleMatch(parent, "-") && value2.bound == result.bound &&
-                            value2.bound != ValueFlow::Value::Bound::Point)
-                            result.invertBound();
-                        setTokenValue(parent, result, settings);
                     }
+                    setTokenValue(parent, result, settings);
+                } else if (Token::Match(parent, "%comp%")) {
+                    if (!isFloat && !value1.isIntValue() && !value2.isIntValue())
+                        continue;
+                    if (isFloat)
+                        result.intvalue = calculate(parent->str(), floatValue1, floatValue2);
+                    else
+                        result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
+                    setTokenValue(parent, result, settings);
+                } else if (Token::Match(parent, "%op%")) {
+                    if (value1.isTokValue() || value2.isTokValue())
+                        break;
+                    if (isFloat) {
+                        result.valueType = ValueFlow::Value::ValueType::FLOAT;
+                        result.floatValue = calculate(parent->str(), floatValue1, floatValue2);
+                    } else {
+                        result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
+                    }
+                    // If the bound comes from the second value then invert the bound when subtracting
+                    if (Token::simpleMatch(parent, "-") && value2.bound == result.bound &&
+                        value2.bound != ValueFlow::Value::Bound::Point)
+                        result.invertBound();
+                    setTokenValue(parent, result, settings);
                 }
             }
         }
@@ -713,6 +759,8 @@ static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Setti
     else if (parent->str() == "!") {
         for (const ValueFlow::Value &val : tok->values()) {
             if (!val.isIntValue())
+                continue;
+            if (val.isImpossible() && val.intvalue != 0)
                 continue;
             ValueFlow::Value v(val);
             v.intvalue = !v.intvalue;
@@ -2885,6 +2933,8 @@ static bool isLifetimeBorrowed(const ValueType *vt, const ValueType *vtParent)
         return false;
     if (!vt)
         return false;
+    if (vt->pointer > 0 && vt->pointer == vtParent->pointer)
+        return true;
     if (vt->type != ValueType::UNKNOWN_TYPE && vtParent->type != ValueType::UNKNOWN_TYPE && vtParent->container == vt->container) {
         if (vtParent->pointer > vt->pointer)
             return true;
@@ -3451,7 +3501,7 @@ static void valueFlowLifetimeConstructor(Token* tok,
         // constructor, but make each lifetime inconclusive
         std::vector<const Token*> args = getArguments(tok);
         LifetimeStore::forEach(
-        args, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object, [&](LifetimeStore& ls) {
+        args, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::SubObject, [&](LifetimeStore& ls) {
             ls.inconclusive = true;
             ls.byVal(tok, tokenlist, errorLogger, settings);
         });
@@ -3466,7 +3516,7 @@ static void valueFlowLifetimeConstructor(Token* tok,
         auto it = scope->varlist.begin();
         LifetimeStore::forEach(args,
                                "Passed to constructor of '" + t->name() + "'.",
-                               ValueFlow::Value::LifetimeKind::Object,
+                               ValueFlow::Value::LifetimeKind::SubObject,
         [&](const LifetimeStore& ls) {
             if (it == scope->varlist.end())
                 return;
@@ -6259,25 +6309,60 @@ static void valueFlowIteratorInfer(TokenList *tokenlist, const Settings *setting
     }
 }
 
-static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
-        const Library::Container* container,
-        bool known = true)
+static std::vector<ValueFlow::Value> getContainerValues(const Token* tok)
 {
-    std::vector<const Token*> args = getArguments(tok);
-    if ((args.size() == 1 && astIsContainer(args[0]) && args[0]->valueType()->container == container) ||
-        (args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1]))) {
-        std::vector<ValueFlow::Value> values;
-        std::copy_if(args[0]->values().begin(),
-                     args[0]->values().end(),
+    std::vector<ValueFlow::Value> values;
+    if (tok) {
+        std::copy_if(tok->values().begin(),
+                     tok->values().end(),
                      std::back_inserter(values),
                      std::mem_fn(&ValueFlow::Value::isContainerSizeValue));
-        return values;
     }
-    ValueFlow::Value value(args.size());
+    return values;
+}
+
+static ValueFlow::Value makeContainerSizeValue(std::size_t s, bool known = true)
+{
+    ValueFlow::Value value(s);
     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
     if (known)
         value.setKnown();
-    return {value};
+    return value;
+}
+
+static std::vector<ValueFlow::Value> makeContainerSizeValue(const Token* tok, bool known = true)
+{
+    if (tok->hasKnownIntValue())
+        return {makeContainerSizeValue(tok->values().front().intvalue, known)};
+    return {};
+}
+
+static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
+                                                     const Library::Container* container,
+                                                     bool known = true)
+{
+    std::vector<const Token*> args = getArguments(tok);
+    // Strings dont use an init list
+    if (!args.empty() && container->stdStringLike) {
+        if (astIsIntegral(args[0], false)) {
+            if (args.size() > 1)
+                return {makeContainerSizeValue(args[0], known)};
+        } else if (astIsPointer(args[0])) {
+            // TODO: Try to read size of string literal
+            if (args.size() == 2 && astIsIntegral(args[1], false))
+                return {makeContainerSizeValue(args[1], known)};
+        } else if (astIsContainer(args[0])) {
+            if (args.size() == 1)
+                return getContainerValues(args[0]);
+            if (args.size() == 3)
+                return {makeContainerSizeValue(args[2], known)};
+        }
+        return {};
+    } else if ((args.size() == 1 && astIsContainer(args[0]) && args[0]->valueType()->container == container) ||
+               (args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1]))) {
+        return getContainerValues(args[0]);
+    }
+    return {makeContainerSizeValue(args.size(), known)};
 }
 
 static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger * /*errorLogger*/, const Settings *settings)
@@ -6780,6 +6865,7 @@ ValueFlow::Value::Value(const Token* c, long long val)
       defaultArg(false),
       indirect(0),
       path(0),
+      wideintvalue(0),
       lifetimeKind(LifetimeKind::Object),
       lifetimeScope(LifetimeScope::Local),
       valueKind(ValueKind::Possible)
@@ -6920,4 +7006,26 @@ std::string ValueFlow::eitherTheConditionIsRedundant(const Token *condition)
         return "Either the switch case '" + expr + "' is redundant";
     }
     return "Either the condition '" + condition->expressionString() + "' is redundant";
+}
+
+const ValueFlow::Value* ValueFlow::findValue(const std::list<ValueFlow::Value>& values,
+                                             const Settings* settings,
+                                             std::function<bool(const ValueFlow::Value&)> pred)
+{
+    const ValueFlow::Value* ret = nullptr;
+    for (const ValueFlow::Value& v : values) {
+        if (pred(v)) {
+            if (!ret || ret->isInconclusive() || (ret->condition && !v.isInconclusive()))
+                ret = &v;
+            if (!ret->isInconclusive() && !ret->condition)
+                break;
+        }
+    }
+    if (settings && ret) {
+        if (ret->isInconclusive() && !settings->certainty.isEnabled(Certainty::inconclusive))
+            return nullptr;
+        if (ret->condition && !settings->severity.isEnabled(Severity::warning))
+            return nullptr;
+    }
+    return ret;
 }

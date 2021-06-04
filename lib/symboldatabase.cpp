@@ -34,9 +34,10 @@
 #include <algorithm>
 #include <cassert>
 #include <cstring>
-#include <limits>
 #include <iomanip>
 #include <iostream>
+#include <limits>
+#include <string>
 #include <unordered_map>
 //---------------------------------------------------------------------------
 
@@ -2428,6 +2429,11 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
     int arg_path_length = path_length;
     int offset = 0;
     int openParen = 0;
+
+    // check for () == (void) and (void) == ()
+    if ((Token::simpleMatch(first, "( )") && Token::simpleMatch(second, "( void )")) ||
+        (Token::simpleMatch(first, "( void )") && Token::simpleMatch(second, "( )")))
+        return true;
 
     while (first->str() == second->str() &&
            first->isLong() == second->isLong() &&
@@ -6901,7 +6907,12 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
     if (callVar && ((res == ValueType::MatchResult::SAME && call->container) || res == ValueType::MatchResult::UNKNOWN)) {
         const std::string type1 = getTypeString(callVar->typeStartToken());
         const std::string type2 = getTypeString(funcVar->typeStartToken());
-        if (type1 != type2)
+        const bool templateVar =
+            funcVar->scope() && funcVar->scope()->function && funcVar->scope()->function->templateDef;
+        if (type1 == type2)
+            return ValueType::MatchResult::SAME;
+        if (!templateVar && type1.find("auto") == std::string::npos && type2.find("auto") == std::string::npos &&
+            type1 != type2)
             return ValueType::MatchResult::NOMATCH;
     }
     return res;

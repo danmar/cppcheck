@@ -347,6 +347,7 @@ private:
         TEST_CASE(symboldatabase92); // daca crash
         TEST_CASE(symboldatabase93); // alignas attribute
         TEST_CASE(symboldatabase94); // structured bindings
+        TEST_CASE(symboldatabase95); // #10295
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4718,6 +4719,24 @@ private:
         ASSERT(db != nullptr);
         ASSERT(db->getVariableFromVarId(1) != nullptr);
         ASSERT(db->getVariableFromVarId(2) != nullptr);
+    }
+
+    void symboldatabase95() { // #10295
+        GET_SYMBOL_DB("struct B {\n"
+                      "    void foo1(void);\n"
+                      "    void foo2();\n"
+                      "};\n"
+                      "void B::foo1() {}\n"
+                      "void B::foo2(void) {}\n");
+        ASSERT_EQUALS("", errout.str());
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "foo1 ( ) { }");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT(functok->function()->name() == "foo1");
+        functok = Token::findsimplematch(tokenizer.tokens(), "foo2 ( void ) { }");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT(functok->function()->name() == "foo2");
     }
 
     void createSymbolDatabaseFindAllScopes1() {

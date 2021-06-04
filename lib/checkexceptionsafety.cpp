@@ -72,7 +72,14 @@ void CheckExceptionSafety::destructors()
     }
 }
 
-
+void CheckExceptionSafety::destructorsError(const Token * const tok, const std::string &className)
+{
+    reportError(tok, Severity::warning, "exceptThrowInDestructor",
+                "Class " + className + " is not safe, destructor throws exception\n"
+                "The class " + className + " is not safe because its destructor "
+                "throws an exception. If " + className + " is used and an exception "
+                "is thrown that is caught in an outer scope the program will terminate.", CWE398, Certainty::normal);
+}
 
 
 void CheckExceptionSafety::deallocThrow()
@@ -136,6 +143,12 @@ void CheckExceptionSafety::deallocThrow()
     }
 }
 
+void CheckExceptionSafety::deallocThrowError(const Token * const tok, const std::string &varname)
+{
+    reportError(tok, Severity::warning, "exceptDeallocThrow", "Exception thrown in invalid state, '" +
+                varname + "' points at deallocated memory.", CWE398, Certainty::normal);
+}
+
 //---------------------------------------------------------------------------
 //      catch(const exception & err)
 //      {
@@ -173,6 +186,14 @@ void CheckExceptionSafety::checkRethrowCopy()
     }
 }
 
+void CheckExceptionSafety::rethrowCopyError(const Token * const tok, const std::string &varname)
+{
+    reportError(tok, Severity::style, "exceptRethrowCopy",
+                "Throwing a copy of the caught exception instead of rethrowing the original exception.\n"
+                "Rethrowing an exception with 'throw " + varname + ";' creates an unnecessary copy of '" + varname + "'. "
+                "To rethrow the caught exception without unnecessary copying or slicing, use a bare 'throw;'.", CWE398, Certainty::normal);
+}
+
 //---------------------------------------------------------------------------
 //    try {} catch (std::exception err) {} <- Should be "std::exception& err"
 //---------------------------------------------------------------------------
@@ -193,6 +214,14 @@ void CheckExceptionSafety::checkCatchExceptionByValue()
         if (var && var->isClass() && !var->isPointer() && !var->isReference())
             catchExceptionByValueError(scope.classDef);
     }
+}
+
+void CheckExceptionSafety::catchExceptionByValueError(const Token *tok)
+{
+    reportError(tok, Severity::style,
+                "catchExceptionByValue", "Exception should be caught by reference.\n"
+                "The exception is caught by value. It could be caught "
+                "as a (const) reference which is usually recommended in C++.", CWE398, Certainty::normal);
 }
 
 
@@ -273,6 +302,11 @@ void CheckExceptionSafety::nothrowThrows()
     }
 }
 
+void CheckExceptionSafety::noexceptThrowError(const Token * const tok)
+{
+    reportError(tok, Severity::error, "throwInNoexceptFunction", "Exception thrown in function declared not to throw exceptions.", CWE398, Certainty::normal);
+}
+
 //--------------------------------------------------------------------------
 //    void func() { functionWithExceptionSpecification(); }
 //--------------------------------------------------------------------------
@@ -303,4 +337,56 @@ void CheckExceptionSafety::unhandledExceptionSpecification()
             }
         }
     }
+}
+
+void CheckExceptionSafety::unhandledExceptionSpecificationError(const Token * const tok1, const Token * const tok2, const std::string & funcname)
+{
+    const std::string str1(tok1 ? tok1->str() : "foo");
+    const std::list<const Token*> locationList = { tok1, tok2 };
+    reportError(locationList, Severity::style, "unhandledExceptionSpecification",
+                "Unhandled exception specification when calling function " + str1 + "().\n"
+                "Unhandled exception specification when calling function " + str1 + "(). "
+                "Either use a try/catch around the function call, or add a exception specification for " + funcname + "() also.", CWE703, Certainty::inconclusive);
+}
+
+//--------------------------------------------------------------------------
+// 7.6.18.4 If no exception is presently being handled, evaluating a throw-expression with no operand calls std​::​​terminate().
+//--------------------------------------------------------------------------
+void CheckExceptionSafety::rethrowNoCurrentException()
+{
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        const Function* function = scope->function;
+        if (!function)
+            continue;
+
+        // Rethrow can be used in 'exception dispatcher' idiom which is FP in such case
+        // https://isocpp.org/wiki/faq/exceptions#throw-without-an-object
+        // We check the beggining of the function with idiom pattern
+        if (Token::simpleMatch(function->functionScope->bodyStart->next(), "try { throw ; } catch ("))
+            continue;
+
+        for (const Token *tok = function->functionScope->bodyStart->next();
+             tok != function->functionScope->bodyEnd; tok = tok->next()) {
+            if (Token::simpleMatch(tok, "catch (")) {
+                tok = tok->linkAt(1);       // skip catch argument
+                if (Token::simpleMatch(tok, ") {"))
+                    tok = tok->linkAt(1);   // skip catch scope
+                else
+                    break;
+            }
+            if (Token::simpleMatch(tok, "throw ;")) {
+                rethrowNoCurrentExceptionError(tok);
+            }
+        }
+    }
+}
+
+void CheckExceptionSafety::rethrowNoCurrentExceptionError(const Token *tok)
+{
+    reportError(tok, Severity::error, "rethrowNoCurrentException",
+                "Rethrowing current exception with 'throw;', it seems there is no current exception to rethrow."
+                " If there is no current exception this calls std::terminate()."
+                " More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object",
+                CWE480, Certainty::normal);
 }

@@ -1798,50 +1798,18 @@ const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Sett
 {
     if (!mImpl->mValues)
         return nullptr;
-    const ValueFlow::Value *ret = nullptr;
-    std::list<ValueFlow::Value>::const_iterator it;
-    for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
-        if (it->isImpossible())
-            continue;
-        if (it->isIntValue() && it->intvalue <= val) {
-            if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
-                ret = &(*it);
-            if (!ret->isInconclusive() && !ret->condition)
-                break;
-        }
-    }
-    if (settings && ret) {
-        if (ret->isInconclusive() && !settings->certainty.isEnabled(Certainty::inconclusive))
-            return nullptr;
-        if (ret->condition && !settings->severity.isEnabled(Severity::warning))
-            return nullptr;
-    }
-    return ret;
+    return ValueFlow::findValue(*mImpl->mValues, settings, [&](const ValueFlow::Value& v) {
+        return !v.isImpossible() && v.isIntValue() && v.intvalue <= val;
+    });
 }
 
 const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Settings *settings) const
 {
     if (!mImpl->mValues)
         return nullptr;
-    const ValueFlow::Value *ret = nullptr;
-    std::list<ValueFlow::Value>::const_iterator it;
-    for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
-        if (it->isImpossible())
-            continue;
-        if (it->isIntValue() && it->intvalue >= val) {
-            if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
-                ret = &(*it);
-            if (!ret->isInconclusive() && !ret->condition)
-                break;
-        }
-    }
-    if (settings && ret) {
-        if (ret->isInconclusive() && !settings->certainty.isEnabled(Certainty::inconclusive))
-            return nullptr;
-        if (ret->condition && !settings->severity.isEnabled(Severity::warning))
-            return nullptr;
-    }
-    return ret;
+    return ValueFlow::findValue(*mImpl->mValues, settings, [&](const ValueFlow::Value& v) {
+        return !v.isImpossible() && v.isIntValue() && v.intvalue >= val;
+    });
 }
 
 const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int argnr, const Settings *settings) const
@@ -2257,10 +2225,12 @@ void Token::type(const ::Type *t)
         tokType(eName);
 }
 
-const ::Type *Token::typeOf(const Token *tok)
+const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
 {
     if (!tok)
         return nullptr;
+    if (typeTok != nullptr)
+        *typeTok = tok;
     if (Token::simpleMatch(tok, "return")) {
         const Scope *scope = tok->scope();
         if (!scope)
@@ -2282,14 +2252,32 @@ const ::Type *Token::typeOf(const Token *tok)
             return nullptr;
         return function->retType;
     } else if (Token::Match(tok->previous(), "%type%|= (|{")) {
-        return typeOf(tok->previous());
+        return typeOf(tok->previous(), typeTok);
     } else if (Token::simpleMatch(tok, "=")) {
-        return Token::typeOf(tok->astOperand1());
+        return Token::typeOf(getLHSVariableToken(tok), typeTok);
     } else if (Token::simpleMatch(tok, ".")) {
-        return Token::typeOf(tok->astOperand2());
+        return Token::typeOf(tok->astOperand2(), typeTok);
     } else if (Token::simpleMatch(tok, "[")) {
-        return Token::typeOf(tok->astOperand1());
+        return Token::typeOf(tok->astOperand1(), typeTok);
+    } else if (Token::simpleMatch(tok, "{")) {
+        int argnr;
+        const Token* ftok = getTokenArgumentFunction(tok, argnr);
+        if (argnr < 0)
+            return nullptr;
+        if (!ftok)
+            return nullptr;
+        if (ftok == tok)
+            return nullptr;
+        std::vector<const Variable*> vars = getArgumentVars(ftok, argnr);
+        if (vars.empty())
+            return nullptr;
+        if (std::all_of(
+        vars.begin(), vars.end(), [&](const Variable* var) {
+        return var->type() == vars.front()->type();
+        }))
+        return vars.front()->type();
     }
+
     return nullptr;
 }
 

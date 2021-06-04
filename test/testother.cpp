@@ -146,6 +146,7 @@ private:
         TEST_CASE(duplicateExpression9); // #9320
         TEST_CASE(duplicateExpression10); // #9485
         TEST_CASE(duplicateExpression11); // #8916 (function call)
+        TEST_CASE(duplicateExpression12); // #10026
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -5238,6 +5239,15 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpression12() { //#10026
+        check("int f(const std::vector<int> &buffer, const uint8_t index)\n"
+              "{\n"
+              "        int var = buffer[index - 1];\n"
+              "        return buffer[index - 1] - var;\n"  // <<
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Same expression on both sides of '-'.\n", errout.str());
     }
 
     void duplicateExpressionLoop() {

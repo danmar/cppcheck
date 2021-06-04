@@ -1668,7 +1668,8 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
         return nullptr;
     if (!Token::Match(tok, "{|("))
         return nullptr;
-    tok = tok->astOperand1();
+    if (tok->astOperand2())
+        tok = tok->astOperand1();
     while (tok && (tok->isUnaryOp("*") || tok->str() == "["))
         tok = tok->astOperand1();
     while (Token::simpleMatch(tok, "."))
@@ -1690,21 +1691,31 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
     return tok;
 }
 
-static std::vector<const Variable*> getArgumentVars(const Token* tok, int argnr)
+std::vector<const Variable*> getArgumentVars(const Token* tok, int argnr)
 {
     std::vector<const Variable*> result;
     if (!tok)
         return result;
-    if (tok->function())
-        return {tok->function()->getArgumentVar(argnr)};
-    if (Token::Match(tok->previous(), "%type% (|{") || tok->variable()) {
-        const bool constructor = tok->variable() && tok->variable()->nameToken() == tok;
+    if (tok->function()) {
+        const Variable* argvar = tok->function()->getArgumentVar(argnr);
+        if (argvar)
+            return {argvar};
+        else
+            return result;
+    }
+    if (Token::Match(tok->previous(), "%type% (|{") || Token::simpleMatch(tok, "{") || tok->variable()) {
+        const bool constructor = Token::simpleMatch(tok, "{") || (tok->variable() && tok->variable()->nameToken() == tok);
         const Type* type = Token::typeOf(tok);
         if (!type)
             return result;
         const Scope* typeScope = type->classScope;
         if (!typeScope)
             return result;
+        // Aggregate constructor
+        if (Token::simpleMatch(tok, "{") && typeScope->numConstructors == 0 && argnr < typeScope->varlist.size()) {
+            auto it = std::next(typeScope->varlist.begin(), argnr);
+            return {&*it};
+        }
         const int argCount = numberOfArguments(tok);
         for (const Function &function : typeScope->functionList) {
             if (function.argCount() < argCount)
@@ -1713,7 +1724,9 @@ static std::vector<const Variable*> getArgumentVars(const Token* tok, int argnr)
                 continue;
             if (!constructor && !Token::simpleMatch(function.token, "operator()"))
                 continue;
-            result.push_back(function.getArgumentVar(argnr));
+            const Variable* argvar = function.getArgumentVar(argnr);
+            if (argvar)
+                result.push_back(argvar);
         }
     }
     return result;
@@ -1724,6 +1737,17 @@ static bool isCPPCastKeyword(const Token* tok)
     if (!tok)
         return false;
     return endsWith(tok->str(), "_cast", 5);
+}
+
+static bool isTrivialConstructor(const Token* tok)
+{
+    const Token* typeTok = nullptr;
+    const Type* t = Token::typeOf(tok, &typeTok);
+    if (t)
+        return false;
+    if (typeTok->valueType() && typeTok->valueType()->isPrimitive())
+        return true;
+    return false;
 }
 
 bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Settings *settings, bool *inconclusive)
@@ -1743,6 +1767,8 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     tok = getTokenArgumentFunction(tok, argnr);
     if (!tok)
         return false; // not a function => variable not changed
+    if (Token::simpleMatch(tok, "{") && isTrivialConstructor(tok))
+        return false;
     if (tok->isKeyword() && !isCPPCastKeyword(tok))
         return false;
     const Token * parenTok = tok->next();
@@ -1909,6 +1935,9 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     }
 
     if (Token::simpleMatch(tok2->astParent(), ":") && tok2->astParent()->astParent() && Token::simpleMatch(tok2->astParent()->astParent()->previous(), "for (")) {
+        // TODO: Check if container is empty or not
+        if (astIsLHS(tok2))
+            return true;
         const Token * varTok = tok2->astParent()->previous();
         if (!varTok)
             return false;
@@ -2300,19 +2329,19 @@ std::vector<const Variable*> getLHSVariables(const Token* tok)
     return result;
 }
 
-static const Variable *getLHSVariableRecursive(const Token *tok)
+static const Token* getLHSVariableRecursive(const Token* tok)
 {
     if (!tok)
         return nullptr;
     if (Token::Match(tok, "*|&|&&|[")) {
-        const Variable *var = getLHSVariableRecursive(tok->astOperand1());
-        if (var || Token::simpleMatch(tok, "["))
-            return var;
+        const Token* vartok = getLHSVariableRecursive(tok->astOperand1());
+        if ((vartok && vartok->variable()) || Token::simpleMatch(tok, "["))
+            return vartok;
         return getLHSVariableRecursive(tok->astOperand2());
     }
     if (Token::Match(tok->previous(), "this . %var%"))
-        return tok->next()->variable();
-    return tok->variable();
+        return tok->next();
+    return tok;
 }
 
 const Variable *getLHSVariable(const Token *tok)
@@ -2323,7 +2352,24 @@ const Variable *getLHSVariable(const Token *tok)
         return nullptr;
     if (tok->astOperand1()->varId() > 0 && tok->astOperand1()->variable())
         return tok->astOperand1()->variable();
-    return getLHSVariableRecursive(tok->astOperand1());
+    const Token* vartok = getLHSVariableRecursive(tok->astOperand1());
+    if (!vartok)
+        return nullptr;
+    return vartok->variable();
+}
+
+const Token* getLHSVariableToken(const Token* tok)
+{
+    if (!Token::Match(tok, "%assign%"))
+        return nullptr;
+    if (!tok->astOperand1())
+        return nullptr;
+    if (tok->astOperand1()->varId() > 0)
+        return tok->astOperand1();
+    const Token* vartok = getLHSVariableRecursive(tok->astOperand1());
+    if (!vartok)
+        return tok->astOperand1();
+    return vartok;
 }
 
 const Token* findAllocFuncCallToken(const Token *expr, const Library &library)
