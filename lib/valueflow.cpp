@@ -6307,25 +6307,60 @@ static void valueFlowIteratorInfer(TokenList *tokenlist, const Settings *setting
     }
 }
 
-static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
-        const Library::Container* container,
-        bool known = true)
+static std::vector<ValueFlow::Value> getContainerValues(const Token* tok)
 {
-    std::vector<const Token*> args = getArguments(tok);
-    if ((args.size() == 1 && astIsContainer(args[0]) && args[0]->valueType()->container == container) ||
-        (args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1]))) {
-        std::vector<ValueFlow::Value> values;
-        std::copy_if(args[0]->values().begin(),
-                     args[0]->values().end(),
+    std::vector<ValueFlow::Value> values;
+    if (tok) {
+        std::copy_if(tok->values().begin(),
+                     tok->values().end(),
                      std::back_inserter(values),
                      std::mem_fn(&ValueFlow::Value::isContainerSizeValue));
-        return values;
     }
-    ValueFlow::Value value(args.size());
+    return values;
+}
+
+static ValueFlow::Value makeContainerSizeValue(std::size_t s, bool known = true)
+{
+    ValueFlow::Value value(s);
     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
     if (known)
         value.setKnown();
-    return {value};
+    return value;
+}
+
+static std::vector<ValueFlow::Value> makeContainerSizeValue(const Token* tok, bool known = true)
+{
+    if (tok->hasKnownIntValue())
+        return {makeContainerSizeValue(tok->values().front().intvalue, known)};
+    return {};
+}
+
+static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
+                                                     const Library::Container* container,
+                                                     bool known = true)
+{
+    std::vector<const Token*> args = getArguments(tok);
+    // Strings dont use an init list
+    if (!args.empty() && container->stdStringLike) {
+        if (astIsIntegral(args[0], false)) {
+            if (args.size() > 1)
+                return {makeContainerSizeValue(args[0], known)};
+        } else if (astIsPointer(args[0])) {
+            // TODO: Try to read size of string literal
+            if (args.size() == 2 && astIsIntegral(args[1], false))
+                return {makeContainerSizeValue(args[1], known)};
+        } else if (astIsContainer(args[0])) {
+            if (args.size() == 1)
+                return getContainerValues(args[0]);
+            if (args.size() == 3)
+                return {makeContainerSizeValue(args[2], known)};
+        }
+        return {};
+    } else if ((args.size() == 1 && astIsContainer(args[0]) && args[0]->valueType()->container == container) ||
+               (args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1]))) {
+        return getContainerValues(args[0]);
+    }
+    return {makeContainerSizeValue(args.size(), known)};
 }
 
 static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger * /*errorLogger*/, const Settings *settings)
