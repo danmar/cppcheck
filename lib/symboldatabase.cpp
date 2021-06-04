@@ -34,9 +34,10 @@
 #include <algorithm>
 #include <cassert>
 #include <cstring>
-#include <limits>
 #include <iomanip>
 #include <iostream>
+#include <limits>
+#include <string>
 #include <unordered_map>
 //---------------------------------------------------------------------------
 
@@ -6906,7 +6907,12 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
     if (callVar && ((res == ValueType::MatchResult::SAME && call->container) || res == ValueType::MatchResult::UNKNOWN)) {
         const std::string type1 = getTypeString(callVar->typeStartToken());
         const std::string type2 = getTypeString(funcVar->typeStartToken());
-        if (type1 != type2)
+        const bool templateVar =
+            funcVar->scope() && funcVar->scope()->function && funcVar->scope()->function->templateDef;
+        if (type1 == type2)
+            return ValueType::MatchResult::SAME;
+        if (!templateVar && type1.find("auto") == std::string::npos && type2.find("auto") == std::string::npos &&
+            type1 != type2)
             return ValueType::MatchResult::NOMATCH;
     }
     return res;
