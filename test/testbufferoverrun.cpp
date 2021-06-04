@@ -1617,7 +1617,9 @@ private:
               "        x = c;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:5]: (warning) Either the condition 'i==4' is redundant or the array 'a[3]' is accessed at index 3, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:6] -> [test.cpp:5]: (warning) Either the condition 'i==4' is redundant or the array 'a[3]' is accessed at index 3, which is out of bounds.\n",
+            errout.str());
     }
 
     void array_index_multidim() {

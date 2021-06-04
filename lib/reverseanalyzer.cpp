@@ -43,7 +43,7 @@ struct ReverseTraversal {
         bool continueB = true;
         visitAstNodes(start, [&](Token* tok) {
             const Token* parent = tok->astParent();
-            while(Token::simpleMatch(parent, ":"))
+            while (Token::simpleMatch(parent, ":"))
                 parent = parent->astParent();
             if (isUnevaluated(tok) || isDeadCode(tok, parent))
                 return ChildrenToVisit::none;
