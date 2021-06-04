@@ -728,9 +728,8 @@ private:
               "    if (!p)\n"
               "        ;\n"
               "}");
-        TODO_ASSERT_EQUALS(
+        ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:3]: (warning) Either the condition '!p' is redundant or there is possible null pointer dereference: p.\n",
-            "",
             errout.str());
 
         // while
