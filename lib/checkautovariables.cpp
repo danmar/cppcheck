@@ -30,6 +30,7 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
+#include <algorithm>
 #include <list>
 
 //---------------------------------------------------------------------------
@@ -434,7 +435,14 @@ static int getPointerDepth(const Token *tok)
 {
     if (!tok)
         return 0;
-    return tok->valueType() ? tok->valueType()->pointer : 0;
+    if (tok->valueType())
+        return tok->valueType()->pointer;
+    int n = 0;
+    std::pair<const Token*, const Token*> decl = Token::typeDecl(tok);
+    for (const Token* tok2 = decl.first; tok2 != decl.second; tok2 = tok2->next())
+        if (Token::simpleMatch(tok, "*"))
+            n++;
+    return n;
 }
 
 static bool isDeadTemporary(bool cpp, const Token* tok, const Token* expr, const Library* library)

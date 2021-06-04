@@ -1799,50 +1799,18 @@ const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Sett
 {
     if (!mImpl->mValues)
         return nullptr;
-    const ValueFlow::Value *ret = nullptr;
-    std::list<ValueFlow::Value>::const_iterator it;
-    for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
-        if (it->isImpossible())
-            continue;
-        if (it->isIntValue() && it->intvalue <= val) {
-            if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
-                ret = &(*it);
-            if (!ret->isInconclusive() && !ret->condition)
-                break;
-        }
-    }
-    if (settings && ret) {
-        if (ret->isInconclusive() && !settings->certainty.isEnabled(Certainty::inconclusive))
-            return nullptr;
-        if (ret->condition && !settings->severity.isEnabled(Severity::warning))
-            return nullptr;
-    }
-    return ret;
+    return ValueFlow::findValue(*mImpl->mValues, settings, [&](const ValueFlow::Value& v) {
+        return !v.isImpossible() && v.isIntValue() && v.intvalue <= val;
+    });
 }
 
 const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Settings *settings) const
 {
     if (!mImpl->mValues)
         return nullptr;
-    const ValueFlow::Value *ret = nullptr;
-    std::list<ValueFlow::Value>::const_iterator it;
-    for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
-        if (it->isImpossible())
-            continue;
-        if (it->isIntValue() && it->intvalue >= val) {
-            if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
-                ret = &(*it);
-            if (!ret->isInconclusive() && !ret->condition)
-                break;
-        }
-    }
-    if (settings && ret) {
-        if (ret->isInconclusive() && !settings->certainty.isEnabled(Certainty::inconclusive))
-            return nullptr;
-        if (ret->condition && !settings->severity.isEnabled(Severity::warning))
-            return nullptr;
-    }
-    return ret;
+    return ValueFlow::findValue(*mImpl->mValues, settings, [&](const ValueFlow::Value& v) {
+        return !v.isImpossible() && v.isIntValue() && v.intvalue >= val;
+    });
 }
 
 const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int argnr, const Settings *settings) const

@@ -87,7 +87,7 @@ class ElementDef:
         if self.isFlexible:
             while len(self.children) <= index:
                 createChild(self, self.flexibleToken, len(self.children))
-        return self.children[index] if index >= 0 and len(self.children) > index else None
+        return self.children[index] if 0 <= index < len(self.children) else None
 
     def getChildByName(self, name):
         for c in self.children:
@@ -130,7 +130,7 @@ class ElementDef:
 
     def getChildByValueElement(self, ed):
         potentialChild = ed
-        while potentialChild and not potentialChild in self.children:
+        while potentialChild and potentialChild not in self.children:
             potentialChild = potentialChild.parent
 
         return self.children[self.children.index(potentialChild)] if potentialChild else None
@@ -182,7 +182,7 @@ class ElementDef:
 
     def isAllChildrenSet(self):
         myself = len(self.children) == 0 and (self.isDesignated or self.isPositional)
-        mychildren =  len(self.children) > 0 and all([child.isAllChildrenSet() for child in self.children])
+        mychildren = len(self.children) > 0 and all([child.isAllChildrenSet() for child in self.children])
         return myself or mychildren
 
     def isAllSet(self):
@@ -197,9 +197,9 @@ class ElementDef:
     def isMisra93Compliant(self):
         if self.elementType == 'array':
             result = self.isAllChildrenSet() or \
-                ((self.isAllSet() or \
-                self.isOnlyDesignated()) and \
-                all([not (child.isDesignated or child.isPositional) or child.isMisra93Compliant() for child in self.children]))
+                ((self.isAllSet() or
+                  self.isOnlyDesignated()) and
+                 all([not (child.isDesignated or child.isPositional) or child.isMisra93Compliant() for child in self.children]))
             return result
         elif self.elementType == 'record':
             result = all([child.isMisra93Compliant() for child in self.children])
@@ -213,7 +213,7 @@ class ElementDef:
     def isMisra95Compliant(self):
         return not self.isFlexible or all([not child.isDesignated for child in self.children])
 
-# Parses the initializers and uodate the ElementDefs status accordingly
+# Parses the initializers and update the ElementDefs status accordingly
 class InitializerParser:
     def __init__(self):
         self.token = None
@@ -254,7 +254,7 @@ class InitializerParser:
                 isDesignated = True
 
             elif self.token.str == '{':
-                nextChild = self.root.getNextChild()
+                nextChild = self.root.getNextChild() if self.root is not None else None
 
                 if nextChild:
                     if nextChild.isArray or nextChild.isRecord:
@@ -286,11 +286,12 @@ class InitializerParser:
                     self.token = self.token.astOperand1
                     isFirstElement = True
                 else:
-                    # {}
-                    if self.root.name == '<-':
-                        self.root.parent.markStuctureViolation(self.token)
-                    else:
-                        self.root.markStuctureViolation(self.token)
+                    if self.root:
+                        # {}
+                        if self.root.name == '<-':
+                            self.root.parent.markStuctureViolation(self.token)
+                        else:
+                            self.root.markStuctureViolation(self.token)
                     self.ed = None
                     self.unwindAndContinue()
 
@@ -403,6 +404,12 @@ def misra_9_x(self, data, rule, rawTokens = None):
 
         if variable.isArray or variable.isClass:
             ed = getElementDef(nameToken, rawTokens)
+            # No need to check non-arrays if valueType is missing,
+            # since we can't say anything useful about the structure
+            # without it.
+            if ed.valueType is None and not variable.isArray:
+                continue
+
             parser.parseInitializer(ed, eq.astOperand2)
             # print(rule, nameToken.str + '=', ed.getInitDump())
             if rule == 902 and not ed.isMisra92Compliant():
