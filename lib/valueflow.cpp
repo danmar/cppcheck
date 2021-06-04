@@ -444,13 +444,48 @@ static bool isCompatibleValues(const ValueFlow::Value& value1, const ValueFlow::
     return false;
 }
 
+static ValueFlow::Value truncateImplicitConversion(Token* parent, const ValueFlow::Value& value, const Settings* settings)
+{
+    if (!value.isIntValue() && !value.isFloatValue())
+        return value;
+    if (!parent)
+        return value;
+    if (!parent->isBinaryOp())
+        return value;
+    if (!parent->isConstOp())
+        return value;
+    if (!astIsIntegral(parent->astOperand1(), false))
+        return value;
+    if (!astIsIntegral(parent->astOperand2(), false))
+        return value;
+    const ValueType* vt1 = parent->astOperand1()->valueType();
+    const ValueType* vt2 = parent->astOperand2()->valueType();
+    // If the sign is the same there is no truncation
+    if (vt1->sign == vt2->sign)
+        return value;
+    size_t n1 = ValueFlow::getSizeOf(*vt1, settings);
+    size_t n2 = ValueFlow::getSizeOf(*vt2, settings);
+    ValueType::Sign sign = ValueType::Sign::UNSIGNED;
+    if (n1 < n2)
+        sign = vt2->sign;
+    else if (n1 > n2)
+        sign = vt1->sign;
+    ValueFlow::Value v = castValue(value, sign, std::max(n1, n2) * 8);
+    v.wideintvalue = value.intvalue;
+    return v;
+}
+
 /** set ValueFlow value and perform calculations if possible */
-static void setTokenValue(Token* tok, const ValueFlow::Value &value, const Settings *settings)
+static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* settings)
 {
     // Skip setting values that are too big since its ambiguous
     if (!value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok) &&
         ValueFlow::getSizeOf(*tok->valueType(), settings) >= sizeof(MathLib::bigint))
         return;
+
+    if (!value.isImpossible() && value.isIntValue())
+        value = truncateImplicitConversion(tok->astParent(), value, settings);
+
     if (!tok->addValue(value))
         return;
 
@@ -2896,6 +2931,8 @@ static bool isLifetimeBorrowed(const ValueType *vt, const ValueType *vtParent)
         return false;
     if (!vt)
         return false;
+    if (vt->pointer > 0 && vt->pointer == vtParent->pointer)
+        return true;
     if (vt->type != ValueType::UNKNOWN_TYPE && vtParent->type != ValueType::UNKNOWN_TYPE && vtParent->container == vt->container) {
         if (vtParent->pointer > vt->pointer)
             return true;
@@ -3462,7 +3499,7 @@ static void valueFlowLifetimeConstructor(Token* tok,
         // constructor, but make each lifetime inconclusive
         std::vector<const Token*> args = getArguments(tok);
         LifetimeStore::forEach(
-        args, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::Object, [&](LifetimeStore& ls) {
+        args, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::SubObject, [&](LifetimeStore& ls) {
             ls.inconclusive = true;
             ls.byVal(tok, tokenlist, errorLogger, settings);
         });
@@ -3477,7 +3514,7 @@ static void valueFlowLifetimeConstructor(Token* tok,
         auto it = scope->varlist.begin();
         LifetimeStore::forEach(args,
                                "Passed to constructor of '" + t->name() + "'.",
-                               ValueFlow::Value::LifetimeKind::Object,
+                               ValueFlow::Value::LifetimeKind::SubObject,
         [&](const LifetimeStore& ls) {
             if (it == scope->varlist.end())
                 return;
@@ -6270,25 +6307,60 @@ static void valueFlowIteratorInfer(TokenList *tokenlist, const Settings *setting
     }
 }
 
-static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
-        const Library::Container* container,
-        bool known = true)
+static std::vector<ValueFlow::Value> getContainerValues(const Token* tok)
 {
-    std::vector<const Token*> args = getArguments(tok);
-    if ((args.size() == 1 && astIsContainer(args[0]) && args[0]->valueType()->container == container) ||
-        (args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1]))) {
-        std::vector<ValueFlow::Value> values;
-        std::copy_if(args[0]->values().begin(),
-                     args[0]->values().end(),
+    std::vector<ValueFlow::Value> values;
+    if (tok) {
+        std::copy_if(tok->values().begin(),
+                     tok->values().end(),
                      std::back_inserter(values),
                      std::mem_fn(&ValueFlow::Value::isContainerSizeValue));
-        return values;
     }
-    ValueFlow::Value value(args.size());
+    return values;
+}
+
+static ValueFlow::Value makeContainerSizeValue(std::size_t s, bool known = true)
+{
+    ValueFlow::Value value(s);
     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
     if (known)
         value.setKnown();
-    return {value};
+    return value;
+}
+
+static std::vector<ValueFlow::Value> makeContainerSizeValue(const Token* tok, bool known = true)
+{
+    if (tok->hasKnownIntValue())
+        return {makeContainerSizeValue(tok->values().front().intvalue, known)};
+    return {};
+}
+
+static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
+                                                     const Library::Container* container,
+                                                     bool known = true)
+{
+    std::vector<const Token*> args = getArguments(tok);
+    // Strings dont use an init list
+    if (!args.empty() && container->stdStringLike) {
+        if (astIsIntegral(args[0], false)) {
+            if (args.size() > 1)
+                return {makeContainerSizeValue(args[0], known)};
+        } else if (astIsPointer(args[0])) {
+            // TODO: Try to read size of string literal
+            if (args.size() == 2 && astIsIntegral(args[1], false))
+                return {makeContainerSizeValue(args[1], known)};
+        } else if (astIsContainer(args[0])) {
+            if (args.size() == 1)
+                return getContainerValues(args[0]);
+            if (args.size() == 3)
+                return {makeContainerSizeValue(args[2], known)};
+        }
+        return {};
+    } else if ((args.size() == 1 && astIsContainer(args[0]) && args[0]->valueType()->container == container) ||
+               (args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1]))) {
+        return getContainerValues(args[0]);
+    }
+    return {makeContainerSizeValue(args.size(), known)};
 }
 
 static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger * /*errorLogger*/, const Settings *settings)
@@ -6791,6 +6863,7 @@ ValueFlow::Value::Value(const Token* c, long long val)
       defaultArg(false),
       indirect(0),
       path(0),
+      wideintvalue(0),
       lifetimeKind(LifetimeKind::Object),
       lifetimeScope(LifetimeScope::Local),
       valueKind(ValueKind::Possible)
@@ -6931,4 +7004,26 @@ std::string ValueFlow::eitherTheConditionIsRedundant(const Token *condition)
         return "Either the switch case '" + expr + "' is redundant";
     }
     return "Either the condition '" + condition->expressionString() + "' is redundant";
+}
+
+const ValueFlow::Value* ValueFlow::findValue(const std::list<ValueFlow::Value>& values,
+                                             const Settings* settings,
+                                             std::function<bool(const ValueFlow::Value&)> pred)
+{
+    const ValueFlow::Value* ret = nullptr;
+    for (const ValueFlow::Value& v : values) {
+        if (pred(v)) {
+            if (!ret || ret->isInconclusive() || (ret->condition && !v.isInconclusive()))
+                ret = &v;
+            if (!ret->isInconclusive() && !ret->condition)
+                break;
+        }
+    }
+    if (settings && ret) {
+        if (ret->isInconclusive() && !settings->certainty.isEnabled(Certainty::inconclusive))
+            return nullptr;
+        if (ret->condition && !settings->severity.isEnabled(Severity::warning))
+            return nullptr;
+    }
+    return ret;
 }
