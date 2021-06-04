@@ -42,6 +42,11 @@ struct ReverseTraversal {
     bool updateRecursive(Token* start) {
         bool continueB = true;
         visitAstNodes(start, [&](Token* tok) {
+            const Token* parent = tok->astParent();
+            while (Token::simpleMatch(parent, ":"))
+                parent = parent->astParent();
+            if (isUnevaluated(tok) || isDeadCode(tok, parent))
+                return ChildrenToVisit::none;
             continueB &= update(tok);
             if (continueB)
                 return ChildrenToVisit::op1_and_op2;
@@ -73,9 +78,11 @@ struct ReverseTraversal {
         return result;
     }
 
-    Token* isDeadCode(Token* tok) {
+    Token* isDeadCode(Token* tok, const Token* end = nullptr) {
         int opSide = 0;
         for (; tok && tok->astParent(); tok = tok->astParent()) {
+            if (tok == end)
+                break;
             Token* parent = tok->astParent();
             if (Token::simpleMatch(parent, ":")) {
                 if (astIsLHS(tok))
@@ -178,8 +185,7 @@ struct ReverseTraversal {
                 }
                 if (!continueB)
                     break;
-                Analyzer::Action a = valueFlowGenericForward(assignTop->astOperand2(), analyzer, settings);
-                if (a.isModified())
+                if (!updateRecursive(assignTop->astOperand2()))
                     break;
                 tok = previousBeforeAstLeftmostLeaf(assignTop)->next();
                 continue;
