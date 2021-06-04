@@ -323,11 +323,23 @@ namespace ValueFlow {
         /** int value before implicit truncation */
         long long wideintvalue;
 
-        enum class LifetimeKind {Object, SubObject, Lambda, Iterator, Address} lifetimeKind;
+        enum class LifetimeKind {
+            // Pointer points to a member of lifetime
+            Object, 
+            // A member of object points to the lifetime
+            SubObject, 
+            // Lambda has captured lifetime(similiar to SubObject)
+            Lambda, 
+            // Iterator points to the lifetime of a container(similiar to Object)
+            Iterator, 
+            // A pointer that holds the address of the lifetime
+            Address
+        } lifetimeKind;
 
         enum class LifetimeScope { Local, Argument, SubFunction } lifetimeScope;
 
         static const char* toString(MoveKind moveKind);
+        static const char* toString(LifetimeKind lifetimeKind);
 
         /** How known is this value */
         enum class ValueKind {

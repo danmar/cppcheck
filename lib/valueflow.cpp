@@ -6916,6 +6916,22 @@ const char* ValueFlow::Value::toString(MoveKind moveKind)
     return "";
 }
 
+const char* ValueFlow::Value::toString(LifetimeKind lifetimeKind)
+{
+    switch (lifetimeKind) {
+    case LifetimeKind::Object:
+        return "Object";
+    case LifetimeKind::SubObject:
+        return "SubObject";
+    case LifetimeKind::Lambda:
+        return "Lambda";
+    case LifetimeKind::Iterator:
+        return "Iterator";
+    case LifetimeKind::Address:
+        return "Address";
+    }
+    return "";
+}
 
 const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(Token *expr, const Settings *settings)
 {
