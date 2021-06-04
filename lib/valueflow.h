@@ -95,6 +95,7 @@ namespace ValueFlow {
               defaultArg(false),
               indirect(0),
               path(0),
+              wideintvalue(val),
               lifetimeKind(LifetimeKind::Object),
               lifetimeScope(LifetimeScope::Local),
               valueKind(ValueKind::Possible)
@@ -319,6 +320,9 @@ namespace ValueFlow {
         /** Path id */
         MathLib::bigint path;
 
+        /** int value before implicit truncation */
+        long long wideintvalue;
+
         enum class LifetimeKind {Object, SubObject, Lambda, Iterator, Address} lifetimeKind;
 
         enum class LifetimeScope { Local, Argument, SubFunction } lifetimeScope;
@@ -389,6 +393,10 @@ namespace ValueFlow {
     std::string eitherTheConditionIsRedundant(const Token *condition);
 
     size_t getSizeOf(const ValueType &vt, const Settings *settings);
+
+    const ValueFlow::Value* findValue(const std::list<ValueFlow::Value>& values,
+                                      const Settings* settings,
+                                      std::function<bool(const ValueFlow::Value&)> pred);
 }
 
 struct LifetimeToken {
