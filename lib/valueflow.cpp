@@ -2034,7 +2034,7 @@ struct ValueFlowAnalyzer : Analyzer {
         }
 
         // increment/decrement
-        if (Token::Match(tok->previous(), "++|-- %name%") || Token::Match(tok, "%name% ++|--")) {
+        if (Token::Match(tok->astParent(), "++|--")) {
             return Action::Read | Action::Write | Action::Incremental;
         }
         return Action::None;
