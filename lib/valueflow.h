@@ -325,13 +325,13 @@ namespace ValueFlow {
 
         enum class LifetimeKind {
             // Pointer points to a member of lifetime
-            Object, 
+            Object,
             // A member of object points to the lifetime
-            SubObject, 
+            SubObject,
             // Lambda has captured lifetime(similiar to SubObject)
-            Lambda, 
+            Lambda,
             // Iterator points to the lifetime of a container(similiar to Object)
-            Iterator, 
+            Iterator,
             // A pointer that holds the address of the lifetime
             Address
         } lifetimeKind;

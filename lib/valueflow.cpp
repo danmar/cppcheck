@@ -6336,8 +6336,8 @@ static std::vector<ValueFlow::Value> makeContainerSizeValue(const Token* tok, bo
 }
 
 static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
-                                                     const Library::Container* container,
-                                                     bool known = true)
+        const Library::Container* container,
+        bool known = true)
 {
     std::vector<const Token*> args = getArguments(tok);
     // Strings dont use an init list
@@ -7023,8 +7023,8 @@ std::string ValueFlow::eitherTheConditionIsRedundant(const Token *condition)
 }
 
 const ValueFlow::Value* ValueFlow::findValue(const std::list<ValueFlow::Value>& values,
-                                             const Settings* settings,
-                                             std::function<bool(const ValueFlow::Value&)> pred)
+        const Settings* settings,
+        std::function<bool(const ValueFlow::Value&)> pred)
 {
     const ValueFlow::Value* ret = nullptr;
     for (const ValueFlow::Value& v : values) {
