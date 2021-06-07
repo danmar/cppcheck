@@ -1218,8 +1218,8 @@ private:
               "        argv32[i] = 0;\n"
               "    }\n"
               "}");
-        TODO_ASSERT_EQUALS("error",
-                           "", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (warning) Possible null pointer dereference: argv32\n",
+                      errout.str());
 
         // #2231 - error if assignment in loop is not used
         // extracttests.start: int y[20];
