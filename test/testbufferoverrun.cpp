@@ -133,6 +133,8 @@ private:
         TEST_CASE(array_index_53); // #4750
         TEST_CASE(array_index_54); // #10268
         TEST_CASE(array_index_55); // #10254
+        TEST_CASE(array_index_56); // #10284
+        TEST_CASE(array_index_57); // #10023
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1591,6 +1593,46 @@ private:
               "    make(\"false\");\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_56() {
+        check("struct s {\n"
+              "    int array[1];\n"
+              "    int index;\n"
+              "};\n"
+              "void f(struct s foo) {\n"
+              "    foo.array[foo.index++] = 1;\n"
+              "    if (foo.index == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_57() {
+        check("void f(std::vector<int>& v) {\n"
+              "    int a[3] = { 1, 2, 3 };\n"
+              "    int i = 0;\n"
+              "    for (auto& x : v) {\n"
+              "        int c = a[i++];\n"
+              "        if (i == 3)\n"
+              "            i = 0;\n"
+              "        x = c;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int>& v) {\n"
+              "    int a[3] = { 1, 2, 3 };\n"
+              "    int i = 0;\n"
+              "    for (auto& x : v) {\n"
+              "        int c = a[i++];\n"
+              "        if (i == 4)\n"
+              "            i = 0;\n"
+              "        x = c;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:6] -> [test.cpp:5]: (warning) Either the condition 'i==4' is redundant or the array 'a[3]' is accessed at index 3, which is out of bounds.\n",
+            errout.str());
     }
 
     void array_index_multidim() {

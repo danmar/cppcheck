@@ -215,6 +215,7 @@ private:
         TEST_CASE(vardecl25);  // #4799 - segmentation fault
         TEST_CASE(vardecl26);  // #5907 - incorrect handling of extern declarations
         TEST_CASE(vardecl27);  // #7850 - crash on valid C code
+        TEST_CASE(vardecl28);
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_template_1);
@@ -2471,6 +2472,18 @@ private:
                             "  return 0;\n"
                             "}";
         tokenizeAndStringify(code, /*expand=*/true, Settings::Native, "test.c");
+    }
+
+    void vardecl28() {
+        const char code[] = "unsigned short f(void) {\n"
+                            "    unsigned short const int x = 1;\n"
+                            "    return x;\n"
+                            "}";
+        ASSERT_EQUALS("unsigned short f ( void ) {\n"
+                      "const unsigned short x ; x = 1 ;\n"
+                      "return x ;\n"
+                      "}",
+                      tokenizeAndStringify(code, /*expand=*/true, Settings::Native, "test.c"));
     }
 
     void volatile_variables() {

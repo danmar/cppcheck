@@ -241,7 +241,10 @@ void CheckType::checkSignConversion()
         for (const Token * tok1 : astOperands) {
             if (!tok1)
                 continue;
-            const ValueFlow::Value *negativeValue = tok1->getValueLE(-1,mSettings);
+            const ValueFlow::Value* negativeValue =
+            ValueFlow::findValue(tok1->values(), mSettings, [&](const ValueFlow::Value& v) {
+                return !v.isImpossible() && v.isIntValue() && (v.intvalue <= -1 || v.wideintvalue <= -1);
+            });
             if (!negativeValue)
                 continue;
             if (tok1->valueType() && tok1->valueType()->sign != ValueType::Sign::UNSIGNED)

@@ -479,7 +479,9 @@ void misra_9_struct_initializers(void) {
     dummy_struct dsc[2][2] = { {1,2}, {3,4} };
     dummy_struct dsd[2][2] = { 1, 2, 3, 4 };                  // 9.2
     dummy_struct dse[3]    = { {1,2}, {3,4}, [1] = {5,6} };   // 9.3 9.4
-    dummy_struct dsd[]     = { [0] = 1 };                     // 9.5
+    dummy_struct dsf[]     = { [0] = 1 };                     // 9.5
+    dummy_struct dsg       = { .a = {0}, .b = {0} };
+    dummy_struct dsh[2][2] = { { {.a = 0, .b = {0}}, { 0 } }, { { 0 }, {.a = 0, .b = {0}}} };
 
     // Obsolete initialization syntax for GCC
     struct1 os1 = { i1: 1, i2: 2 }; // 10.4 13.4
