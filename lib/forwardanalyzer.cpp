@@ -393,7 +393,7 @@ struct ForwardTraversal {
             if (!isDoWhile || (!bodyAnalysis.isModified() && !bodyAnalysis.isIdempotent()))
                 if (updateRecursive(condTok) == Progress::Break)
                     return Break();
-            // TODO: Check cond first
+            // TODO: Check cond first before lowering
             std::tie(checkThen, checkElse) = evalCond(condTok, isDoWhile ? endBlock->link()->previous() : nullptr);
         }
         // condition is false, we don't enter the loop

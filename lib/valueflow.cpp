@@ -112,8 +112,6 @@
 #include <tuple>
 #include <vector>
 
-#include <iostream>
-
 static void bailoutInternal(const std::string& type, TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what, const std::string &file, int line, std::string function)
 {
     if (function.find("operator") != std::string::npos)
