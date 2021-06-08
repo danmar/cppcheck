@@ -2191,7 +2191,7 @@ private:
                "  }\n"
                "  a = x;\n" // <- x can't be 0
                "}\n";
-        ASSERT_EQUALS(false, testValueOfX(code, 11U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 13U, 0));
 
         code = "bool maybe();\n"
                "void f() {\n"
@@ -2206,6 +2206,21 @@ private:
                "  a = x;\n" // <- x can't be 0
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 11U, 0));
+
+        code = "bool maybe();\n"
+               "void f() {\n"
+               "  int x = 0;\n"
+               "  bool found = false;\n"
+               "  while(!found) {\n"
+               "    if (maybe()) {\n"
+               "      x = i;\n"
+               "      found = true;\n"
+               "      break;\n"
+               "    }\n"
+               "  }\n"
+               "  a = x;\n" // <- x can't be 0
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 12U, 0));
 
         code = "void f(const int a[]) {\n" // #6616
                "  const int *x = 0;\n"
