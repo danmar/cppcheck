@@ -361,10 +361,22 @@ struct ForwardTraversal {
         }
     }
 
-    bool reentersLoop(Token* endBlock, const Token* condTok) {
+    bool reentersLoop(Token* endBlock, const Token* condTok, const Token* stepTok) {
         if (!condTok)
             return true;
         if (Token::simpleMatch(condTok, ":"))
+            return true;
+        bool changed = false;
+        if (stepTok) {
+            std::pair<const Token *, const Token *> exprToks = stepTok->findExpressionStartEndTokens();
+            changed |= isExpressionChanged(condTok, exprToks.first, exprToks.second, settings, true);
+        }
+        changed |= isExpressionChanged(condTok, endBlock->link(), endBlock, settings, true);
+        // Check for mutation in the condition
+        changed |= nullptr != findAstNode(condTok, [&](const Token* tok) {
+            return isVariableChanged(tok, 0, settings, true);
+        });
+        if (!changed)
             return true;
         ForwardTraversal ft = fork(true);
         ft.analyzer->assume(condTok, false, Analyzer::Assume::Absolute);
@@ -413,6 +425,7 @@ struct ForwardTraversal {
             if (!isDoWhile || (!bodyAnalysis.isModified() && !bodyAnalysis.isIdempotent()))
                 if (updateRecursive(condTok) == Progress::Break)
                     return Break();
+                // TODO: Check cond first
             std::tie(checkThen, checkElse) = evalCond(condTok, isDoWhile ? endBlock->link()->previous() : nullptr);
         }
         // condition is false, we don't enter the loop
@@ -422,7 +435,7 @@ struct ForwardTraversal {
             if (updateInnerLoop(endBlock, stepTok, condTok) == Progress::Break)
                 return Break();
             // If loop re-enters then it could be modified again
-            if (allAnalysis.isModified() && reentersLoop(endBlock, condTok))
+            if (allAnalysis.isModified() && reentersLoop(endBlock, condTok, stepTok))
                 return Break(Terminate::Bail);
             if (allAnalysis.isIncremental())
                 return Break(Terminate::Bail);
