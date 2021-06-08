@@ -246,6 +246,7 @@ struct ForwardTraversal {
             ft.analyzeTerminate = true;
         }
         ft.actions = Analyzer::Action::None;
+        ft.forked = true;
         return ft;
     }
 
