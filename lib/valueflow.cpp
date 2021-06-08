@@ -100,6 +100,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <functional>
 #include <iterator>
@@ -564,7 +565,7 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
         if (value.lifetimeKind == ValueFlow::Value::LifetimeKind::Iterator && astIsIterator(parent)) {
             setTokenValue(parent,value,settings);
         } else if (astIsPointer(tok) && astIsPointer(parent) &&
-                   (parent->isArithmeticalOp() || Token::Match(parent, "( %type%"))) {
+                   (parent->isArithmeticalOp() || parent->isCast())) {
             setTokenValue(parent,value,settings);
         }
         return;
