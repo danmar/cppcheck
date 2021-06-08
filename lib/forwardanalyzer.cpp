@@ -32,10 +32,10 @@ struct ForwardTraversal {
     }
 
     struct Branch {
-        Branch(const Token* tok = nullptr)
+        Branch(Token* tok = nullptr)
         : endBlock(tok)
         {}
-        const Token* endBlock = nullptr;
+        Token* endBlock = nullptr;
         Analyzer::Action action = Analyzer::Action::None;
         bool check = false;
         bool escape = false;
@@ -311,17 +311,17 @@ struct ForwardTraversal {
         return a;
     }
 
-    bool checkBranch(Branch& branch, Token* endBlock) {
-        Analyzer::Action a = analyzeScope(endBlock);
+    bool checkBranch(Branch& branch) {
+        Analyzer::Action a = analyzeScope(branch.endBlock);
         branch.action = a;
-        std::vector<ForwardTraversal> ft1 = tryForkUpdateScope(endBlock, a.isModified());
-        bool bail = hasGoto(endBlock);
+        std::vector<ForwardTraversal> ft1 = tryForkUpdateScope(branch.endBlock, a.isModified());
+        bool bail = hasGoto(branch.endBlock);
         if (!a.isModified() && !bail) {
             if (ft1.empty()) {
                 // Traverse into the branch to see if there is a conditional escape
-                if (!branch.escape && hasInnerReturnScope(endBlock->previous(), endBlock->link())) {
+                if (!branch.escape && hasInnerReturnScope(branch.endBlock->previous(), branch.endBlock->link())) {
                     ForwardTraversal ft2 = fork(true);
-                    ft2.updateScope(endBlock);
+                    ft2.updateScope(branch.endBlock);
                     if (ft2.terminate == Terminate::Escape) {
                         branch.escape = true;
                         branch.escapeUnknown = false;
@@ -335,31 +335,6 @@ struct ForwardTraversal {
             }
         }
         return bail;
-    }
-
-    bool earlyExitLoop(const Token* writeTok, const Token* condTok) {
-        const Scope* scope = writeTok->scope();
-        if (!scope)
-            return true;
-        // Is it an escape scope
-        bool unknown = false;
-        if (isEscapeScope(scope->bodyEnd, unknown))
-            return true;
-        // Does it change the loop condition to false
-        std::vector<int> r = analyzer->evaluate(condTok, scope->bodyEnd->previous());
-        if (std::any_of(r.begin(), r.end(), [&](int x) {
-            return x == 0;
-        }))
-            return true;
-        return false;
-    }
-
-    void continueUpdateRangeAfterLoop(std::vector<ForwardTraversal>& ftv, Token* start, const Token* endToken) {
-        for (ForwardTraversal& ft : ftv) {
-            // If analysis has terminated normally, then continue analysis
-            if (ft.terminate == Terminate::None && !ft.actions.isIncremental())
-                ft.updateRange(start, endToken);
-        }
     }
 
     bool reentersLoop(Token* endBlock, const Token* condTok, const Token* stepTok) {
@@ -406,7 +381,6 @@ struct ForwardTraversal {
         if (initTok && updateRecursive(initTok) == Progress::Break)
             return Break();
         const bool isDoWhile = precedes(endBlock, condTok);
-        const bool alwaysEnterLoop = !condTok || (condTok->hasKnownIntValue() && condTok->values().front().intvalue != 0);
         Analyzer::Action bodyAnalysis = analyzeScope(endBlock);
         Analyzer::Action allAnalysis = bodyAnalysis;
         if (condTok)
@@ -601,7 +575,7 @@ struct ForwardTraversal {
                         if (updateRange(endCond->next(), endBlock, depth - 1) == Progress::Break)
                             return Break();
                     } else if (!elseBranch.check) {
-                        if (checkBranch(thenBranch, endBlock))
+                        if (checkBranch(thenBranch))
                             bail = true;
                     }
                     // Traverse else block
@@ -612,7 +586,7 @@ struct ForwardTraversal {
                             if (result == Progress::Break)
                                 return Break();
                         } else if (!thenBranch.check) {
-                            if (checkBranch(elseBranch, endBlock->linkAt(2)))
+                            if (checkBranch(elseBranch))
                                 bail = true;
                         }
                         tok = endBlock->linkAt(2);
