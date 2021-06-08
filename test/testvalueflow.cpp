@@ -2192,7 +2192,7 @@ private:
                "  a = x;\n" // <- x can't be 0
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 11U, 0));
-        
+
         code = "bool maybe();\n"
                "void f() {\n"
                "  int x = 0;\n"

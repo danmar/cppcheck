@@ -32,9 +32,7 @@ struct ForwardTraversal {
     }
 
     struct Branch {
-        Branch(Token* tok = nullptr)
-        : endBlock(tok)
-        {}
+        Branch(Token* tok = nullptr) : endBlock(tok) {}
         Token* endBlock = nullptr;
         Analyzer::Action action = Analyzer::Action::None;
         bool check = false;
@@ -76,13 +74,9 @@ struct ForwardTraversal {
         return std::make_pair(checkThen, checkElse);
     }
 
-    bool isConditionTrue(const Token* tok, const Token* ctx = nullptr) const {
-        return evalCond(tok, ctx).first;
-    }
+    bool isConditionTrue(const Token* tok, const Token* ctx = nullptr) const { return evalCond(tok, ctx).first; }
 
-    bool isConditionFalse(const Token* tok, const Token* ctx = nullptr) const {
-        return evalCond(tok, ctx).second;
-    }
+    bool isConditionFalse(const Token* tok, const Token* ctx = nullptr) const { return evalCond(tok, ctx).second; }
 
     template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
     Progress traverseTok(T* tok, std::function<Progress(T*)> f, bool traverseUnknown, T** out = nullptr) {
@@ -258,9 +252,10 @@ struct ForwardTraversal {
         return std::vector<ForwardTraversal> {};
     }
 
-    std::vector<ForwardTraversal> tryForkUpdateScope(Token* endBlock, bool isModified = false) {
+    std::vector<ForwardTraversal> tryForkUpdateScope(Token* endBlock, bool isModified = false)
+    {
         std::vector<ForwardTraversal> result = tryForkScope(endBlock, isModified);
-        for(ForwardTraversal& ft:result)
+        for (ForwardTraversal& ft : result)
             ft.updateScope(endBlock);
         return result;
     }
@@ -344,15 +339,14 @@ struct ForwardTraversal {
             return true;
         bool changed = false;
         if (stepTok) {
-            std::pair<const Token *, const Token *> exprToks = stepTok->findExpressionStartEndTokens();
+            std::pair<const Token*, const Token*> exprToks = stepTok->findExpressionStartEndTokens();
             if (exprToks.first != nullptr && exprToks.second != nullptr)
                 changed |= isExpressionChanged(condTok, exprToks.first, exprToks.second->next(), settings, true);
         }
         changed |= isExpressionChanged(condTok, endBlock->link(), endBlock, settings, true);
         // Check for mutation in the condition
-        changed |= nullptr != findAstNode(condTok, [&](const Token* tok) {
-            return isVariableChanged(tok, 0, settings, true);
-        });
+        changed |= nullptr !=
+                   findAstNode(condTok, [&](const Token* tok) { return isVariableChanged(tok, 0, settings, true); });
         if (!changed)
             return true;
         ForwardTraversal ft = fork(true);
@@ -361,9 +355,7 @@ struct ForwardTraversal {
         return ft.isConditionTrue(condTok);
     }
 
-    Progress updateInnerLoop(Token* endBlock,
-                        Token* stepTok,
-                        Token* condTok) {
+    Progress updateInnerLoop(Token* endBlock, Token* stepTok, Token* condTok) {
         if (endBlock && updateScope(endBlock) == Progress::Break)
             return Break();
         if (stepTok && updateRecursive(stepTok) == Progress::Break)
@@ -401,7 +393,7 @@ struct ForwardTraversal {
             if (!isDoWhile || (!bodyAnalysis.isModified() && !bodyAnalysis.isIdempotent()))
                 if (updateRecursive(condTok) == Progress::Break)
                     return Break();
-                // TODO: Check cond first
+            // TODO: Check cond first
             std::tie(checkThen, checkElse) = evalCond(condTok, isDoWhile ? endBlock->link()->previous() : nullptr);
         }
         // condition is false, we don't enter the loop
@@ -418,7 +410,7 @@ struct ForwardTraversal {
         } else {
             std::vector<ForwardTraversal> ftv = tryForkScope(endBlock, allAnalysis.isModified());
             bool forkContinue = true;
-            for(ForwardTraversal& ft:ftv) {
+            for (ForwardTraversal& ft : ftv) {
                 if (condTok)
                     ft.analyzer->assume(condTok, false, Analyzer::Assume::Quiet);
                 if (ft.updateInnerLoop(endBlock, stepTok, condTok) == Progress::Break)
@@ -434,7 +426,7 @@ struct ForwardTraversal {
                 analyzer->assume(condTok, false);
             }
             if (forkContinue) {
-                for(ForwardTraversal& ft:ftv) {
+                for (ForwardTraversal& ft : ftv) {
                     if (!ft.actions.isIncremental())
                         ft.updateRange(endBlock, endToken);
                 }
