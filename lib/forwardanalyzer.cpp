@@ -370,7 +370,8 @@ struct ForwardTraversal {
         bool changed = false;
         if (stepTok) {
             std::pair<const Token *, const Token *> exprToks = stepTok->findExpressionStartEndTokens();
-            changed |= isExpressionChanged(condTok, exprToks.first, exprToks.second, settings, true);
+            if (exprToks.first != nullptr && exprToks.second != nullptr)
+                changed |= isExpressionChanged(condTok, exprToks.first, exprToks.second->next(), settings, true);
         }
         changed |= isExpressionChanged(condTok, endBlock->link(), endBlock, settings, true);
         // Check for mutation in the condition
