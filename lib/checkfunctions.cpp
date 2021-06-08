@@ -558,19 +558,17 @@ void CheckFunctions::returnLocalStdMove()
         // Expect return by-value
         if (Function::returnsReference(scope->function, true))
             continue;
-
         const auto rets = Function::findReturns(scope->function);
         for (const Token* ret : rets) {
-            const Token* retval = ret->next();
-            const Token* matchToken = retval->tokAt(-4);
-            // RVO
-            if (Token::Match(matchToken, "std :: move ( %type% (|{")) {
-                copyElisionError(retval);
-            }
+            if (!Token::simpleMatch(ret->tokAt(-3), "std :: move ("))
+                continue;
+            const Token* retval = ret->astOperand2();
             // NRVO
-            if (Token::Match(matchToken, "std :: move ( %var% ) ;") && retval->variable()->isLocal() && !retval->variable()->isVolatile()) {
+            if (retval->variable() && retval->variable()->isLocal() && !retval->variable()->isVolatile())
                 copyElisionError(retval);
-            }
+            // RVO
+            if (Token::Match(retval, "(|{") && !retval->isCast())
+                copyElisionError(retval);
         }
     }
 }

@@ -83,16 +83,16 @@ private:
         TEST_CASE(memsetZeroBytes);
         TEST_CASE(memsetInvalid2ndParam);
 
-<<<<<<< HEAD
         // missing "return"
         TEST_CASE(checkMissingReturn);
-=======
+
         // std::move for locar variable
         TEST_CASE(returnLocalStdMove1);
         TEST_CASE(returnLocalStdMove2);
         TEST_CASE(returnLocalStdMove3);
         TEST_CASE(returnLocalStdMove4);
->>>>>>> 7126f65dd (New check; F.48: Don’t return std::move(local))
+
+        TEST_CASE(returnLocalStdMove5);
     }
 
     void check(const char code[], const char filename[]="test.cpp", const Settings* settings_=nullptr) {
@@ -1414,6 +1414,7 @@ private:
               "    else\n"
               "        return {1, 2};\n"
               "}");
+    }
     // NRVO check
     void returnLocalStdMove1() {
         check("struct A{}; A f() { A var; return std::move(var); }");
@@ -1435,7 +1436,14 @@ private:
                       " More: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-return-move-local\n", errout.str());
     }
 
+    // Function argument
     void returnLocalStdMove4() {
+        check("struct A{}; A f(A a) { return std::move(A{}); }");
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Using std::move for returning object by-value from function will affect copy elision optimization."
+                      " More: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-return-move-local\n", errout.str());
+    }
+
+    void returnLocalStdMove5() {
         check("struct A{} a; A f1() { return std::move(a); }\n"
               "A f2() { volatile A var; return std::move(var); }");
         ASSERT_EQUALS("", errout.str());
