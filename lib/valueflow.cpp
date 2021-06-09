@@ -2441,7 +2441,7 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     ExpressionAnalyzer(const Token* e, const ValueFlow::Value& val, const TokenList* t)
         : SingleValueFlowAnalyzer(val, t), expr(e), local(true), unknown(false) {
 
-        setupExprVarIds();
+        setupExprVarIds(expr);
     }
 
     virtual const ValueType* getValueType(const Token*) const OVERRIDE {
@@ -2449,29 +2449,41 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     }
 
     static bool nonLocal(const Variable* var, bool deref) {
-        return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isReference() || var->isExtern();
+        return !var || 
+        (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isReference() || var->isExtern();
     }
 
-    void setupExprVarIds() {
-        visitAstNodes(expr,
-        [&](const Token *tok) {
-            if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
-                // unknown variable
-                unknown = true;
-                return ChildrenToVisit::none;
-            }
-            if (tok->varId() > 0) {
-                varids[tok->varId()] = tok->variable();
-                if (!Token::simpleMatch(tok->previous(), ".")) {
-                    const Variable *var = tok->variable();
-                    if (var && var->isReference() && var->isLocal() && Token::Match(var->nameToken(), "%var% [=(]") && !isGlobalData(var->nameToken()->next()->astOperand2(), isCPP()))
+    void setupExprVarIds(const Token* start, int depth = 4) {
+        if (depth < 0)
+            return;
+        visitAstNodes(start,
+                [&](const Token *tok) {
+                    for(const ValueFlow::Value& v:tok->values()) {
+                        if (!v.isLocalLifetimeValue())
+                            continue;
+                        if (!v.tokvalue)
+                            continue;
+                        if (v.tokvalue == tok)
+                            continue;
+                        setupExprVarIds(v.tokvalue, depth - 1);
+                    }
+                    if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
+                        // unknown variable
+                        unknown = true;
                         return ChildrenToVisit::none;
-                    const bool deref = tok->astParent() && (tok->astParent()->isUnaryOp("*") || (tok->astParent()->str() == "[" && tok == tok->astParent()->astOperand1()));
-                    local &= !nonLocal(tok->variable(), deref);
-                }
-            }
-            return ChildrenToVisit::op1_and_op2;
-        });
+                    }
+                    if (tok->varId() > 0) {
+                        varids[tok->varId()] = tok->variable();
+                        if (!Token::simpleMatch(tok->previous(), ".")) {
+                            const Variable *var = tok->variable();
+                            if (var && var->isReference() && var->isLocal() && Token::Match(var->nameToken(), "%var% [=(]") && !isGlobalData(var->nameToken()->next()->astOperand2(), isCPP()))
+                                return ChildrenToVisit::none;
+                            const bool deref = tok->astParent() && (tok->astParent()->isUnaryOp("*") || (tok->astParent()->str() == "[" && tok == tok->astParent()->astOperand1()));
+                            local &= !nonLocal(tok->variable(), deref);
+                        }
+                    }
+                    return ChildrenToVisit::op1_and_op2;
+                });
     }
 
     virtual bool invalid() const OVERRIDE {
@@ -3735,6 +3747,15 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
 
                 valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
             }
+        }
+        // member pointer
+        else if (Token::Match(tok, ".|[") && !Token::Match(tok->astParent(), ".") && astIsPointer(tok)) {
+            ValueFlow::Value value;
+            value.valueType = ValueFlow::Value::ValueType::LIFETIME;
+            value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
+            value.tokvalue = tok;
+            setTokenValue(tok, value, tokenlist->getSettings());
+            valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         }
         // container lifetimes
         else if (astIsContainer(tok)) {
