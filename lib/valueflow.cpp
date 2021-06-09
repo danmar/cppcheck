@@ -2449,41 +2449,43 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     }
 
     static bool nonLocal(const Variable* var, bool deref) {
-        return !var || 
-        (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isReference() || var->isExtern();
+        return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) ||
+               var->isStatic() || var->isReference() || var->isExtern();
     }
 
     void setupExprVarIds(const Token* start, int depth = 4) {
         if (depth < 0)
             return;
-        visitAstNodes(start,
-                [&](const Token *tok) {
-                    for(const ValueFlow::Value& v:tok->values()) {
-                        if (!v.isLocalLifetimeValue())
-                            continue;
-                        if (!v.tokvalue)
-                            continue;
-                        if (v.tokvalue == tok)
-                            continue;
-                        setupExprVarIds(v.tokvalue, depth - 1);
-                    }
-                    if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
-                        // unknown variable
-                        unknown = true;
+        visitAstNodes(start, [&](const Token* tok) {
+            for (const ValueFlow::Value& v : tok->values()) {
+                if (!v.isLocalLifetimeValue())
+                    continue;
+                if (!v.tokvalue)
+                    continue;
+                if (v.tokvalue == tok)
+                    continue;
+                setupExprVarIds(v.tokvalue, depth - 1);
+            }
+            if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
+                // unknown variable
+                unknown = true;
+                return ChildrenToVisit::none;
+            }
+            if (tok->varId() > 0) {
+                varids[tok->varId()] = tok->variable();
+                if (!Token::simpleMatch(tok->previous(), ".")) {
+                    const Variable* var = tok->variable();
+                    if (var && var->isReference() && var->isLocal() && Token::Match(var->nameToken(), "%var% [=(]") &&
+                        !isGlobalData(var->nameToken()->next()->astOperand2(), isCPP()))
                         return ChildrenToVisit::none;
-                    }
-                    if (tok->varId() > 0) {
-                        varids[tok->varId()] = tok->variable();
-                        if (!Token::simpleMatch(tok->previous(), ".")) {
-                            const Variable *var = tok->variable();
-                            if (var && var->isReference() && var->isLocal() && Token::Match(var->nameToken(), "%var% [=(]") && !isGlobalData(var->nameToken()->next()->astOperand2(), isCPP()))
-                                return ChildrenToVisit::none;
-                            const bool deref = tok->astParent() && (tok->astParent()->isUnaryOp("*") || (tok->astParent()->str() == "[" && tok == tok->astParent()->astOperand1()));
-                            local &= !nonLocal(tok->variable(), deref);
-                        }
-                    }
-                    return ChildrenToVisit::op1_and_op2;
-                });
+                    const bool deref = tok->astParent() &&
+                                       (tok->astParent()->isUnaryOp("*") ||
+                                        (tok->astParent()->str() == "[" && tok == tok->astParent()->astOperand1()));
+                    local &= !nonLocal(tok->variable(), deref);
+                }
+            }
+            return ChildrenToVisit::op1_and_op2;
+        });
     }
 
     virtual bool invalid() const OVERRIDE {
