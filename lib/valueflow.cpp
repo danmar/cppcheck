@@ -236,6 +236,12 @@ const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, Val
     if (tok->isComparisonOp()) {
         std::vector<MathLib::bigint> value1 = evaluate(tok->astOperand1());
         std::vector<MathLib::bigint> value2 = evaluate(tok->astOperand2());
+        if (!value1.empty() && !value2.empty()) {
+            if (tok->astOperand1()->hasKnownIntValue())
+                value2.clear();
+            if (tok->astOperand2()->hasKnownIntValue())
+                value1.clear();
+        }
         if (!value1.empty()) {
             if (isSaturated(value1.front()))
                 return nullptr;
@@ -2158,11 +2164,11 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
-    virtual std::vector<int> evaluate(const Token* tok) const OVERRIDE {
+    virtual std::vector<int> evaluate(const Token* tok, const Token* ctx = nullptr) const OVERRIDE {
         if (tok->hasKnownIntValue())
             return {static_cast<int>(tok->values().front().intvalue)};
         std::vector<int> result;
-        ProgramMemory pm = pms.get(tok, getProgramState());
+        ProgramMemory pm = pms.get(tok, ctx, getProgramState());
         if (Token::Match(tok, "&&|%oror%")) {
             if (conditionIsTrue(tok, pm))
                 result.push_back(1);
@@ -2179,19 +2185,33 @@ struct ValueFlowAnalyzer : Analyzer {
         return result;
     }
 
-    virtual void assume(const Token* tok, bool state, const Token* at) OVERRIDE {
+    virtual void assume(const Token* tok, bool state, unsigned int flags) OVERRIDE {
         // Update program state
         pms.removeModifiedVars(tok);
         pms.addState(tok, getProgramState());
         pms.assume(tok, state);
 
-        const bool isAssert = Token::Match(at, "assert|ASSERT");
+        bool isCondBlock = false;
+        const Token* parent = tok->astParent();
+        if (parent) {
+            isCondBlock = Token::Match(parent->previous(), "if|while (");
+        }
 
-        if (!isAssert && !Token::simpleMatch(at, "}")) {
+        if (isCondBlock) {
+            const Token* startBlock = parent->link()->next();
+            const Token* endBlock = startBlock->link();
+            pms.removeModifiedVars(endBlock);
+            if (state)
+                pms.addState(endBlock->previous(), getProgramState());
+            else if (Token::simpleMatch(endBlock, "} else {"))
+                pms.addState(endBlock->linkAt(2)->previous(), getProgramState());
+        }
+
+        if (!(flags & Assume::Quiet)) {
             std::string s = state ? "true" : "false";
             addErrorPath(tok, "Assuming condition is " + s);
         }
-        if (!isAssert)
+        if (!(flags & Assume::Absolute))
             makeConditional();
     }
 
