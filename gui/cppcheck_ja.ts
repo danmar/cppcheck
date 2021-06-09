@@ -1619,8 +1619,8 @@ Options:
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="819"/>
-        <source>Misra rule texts</source>
-        <translation>Misra ルールテキスト</translation>
+        <source>MISRA rule texts</source>
+        <translation>MISRA ルールテキスト</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="826"/>
@@ -1927,7 +1927,7 @@ Options:
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="803"/>
-        <source>Cert</source>
+        <source>CERT</source>
         <translation>CERT</translation>
     </message>
     <message>
@@ -2045,8 +2045,8 @@ Options:
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="831"/>
-        <source>Misra rule texts file (%1)</source>
-        <translation>Misraルールテキストファイル (%1)</translation>
+        <source>MISRA rule texts file (%1)</source>
+        <translation>MISRAルールテキストファイル (%1)</translation>
     </message>
 </context>
 <context>
@@ -2749,13 +2749,13 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <location filename="settings.ui" line="323"/>
-        <source>Misra addon</source>
-        <translation>Misraアドオン</translation>
+        <source>MISRA addon</source>
+        <translation>MISRAアドオン</translation>
     </message>
     <message>
         <location filename="settings.ui" line="331"/>
-        <source>Misra rule texts file</source>
-        <translation>Misra ルールテキストファイル</translation>
+        <source>MISRA rule texts file</source>
+        <translation>MISRA ルールテキストファイル</translation>
     </message>
     <message>
         <location filename="settings.ui" line="338"/>
