@@ -822,7 +822,7 @@ void ProjectFileDialog::browseMisraFile()
     const QString fileName = QFileDialog::getOpenFileName(this,
                              tr("Select MISRA rule texts file"),
                              QDir::homePath(),
-                             tr("Misra rule texts file (%1)").arg("*.txt"));
+                             tr("MISRA rule texts file (%1)").arg("*.txt"));
     if (!fileName.isEmpty()) {
         QSettings settings;
         mUI.mEditMisraFile->setText(fileName);

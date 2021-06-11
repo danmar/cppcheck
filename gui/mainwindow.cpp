@@ -1590,13 +1590,21 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
         if (!QDir::isAbsolutePath(buildDir))
             buildDir = inf.canonicalPath() + '/' + buildDir;
         if (!QDir(buildDir).exists()) {
-            QMessageBox msg(QMessageBox::Critical,
+            QMessageBox msg(QMessageBox::Question,
                             tr("Cppcheck"),
                             tr("Build dir '%1' does not exist, create it?").arg(buildDir),
                             QMessageBox::Yes | QMessageBox::No,
                             this);
             if (msg.exec() == QMessageBox::Yes) {
                 QDir().mkpath(buildDir);
+            } else if (!projectFile->getAddons().isEmpty()) {
+                QMessageBox m(QMessageBox::Critical,
+                              tr("Cppcheck"),
+                              tr("To check the project using addons, you need a build directory."),
+                              QMessageBox::Ok,
+                              this);
+                m.exec();
+                return;
             }
         }
     }
