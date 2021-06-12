@@ -13,8 +13,6 @@
 #include <ctime>
 #include <cstdlib>
 
-#include <iostream>
-
 const QString WORK_FOLDER(QDir::homePath() + "/triage");
 const QString DACA2_PACKAGES(QDir::homePath() + "/daca2-packages");
 
@@ -45,7 +43,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->hFilesFilter->setToolTip(hFiles.join(','));
     ui->srcFilesFilter->setToolTip(srcFiles.join(','));
-    std::cerr << "AAAAA\n";
 }
 
 MainWindow::~MainWindow()
