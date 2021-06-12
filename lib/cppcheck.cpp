@@ -1401,6 +1401,8 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) != mErrorList.end())
         return;
 
+    mAnalyzerInformation.reportErr(msg, mSettings.verbose);
+
     const Suppressions::ErrorMessage errorMessage = msg.toSuppressionsErrorMessage();
 
     if (mUseGlobalSuppressions) {
@@ -1422,7 +1424,6 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     mErrorList.push_back(errmsg);
 
     mErrorLogger.reportErr(msg);
-    mAnalyzerInformation.reportErr(msg, mSettings.verbose);
     if (!mSettings.plistOutput.empty() && plistFile.is_open()) {
         plistFile << ErrorLogger::plistData(msg);
     }
