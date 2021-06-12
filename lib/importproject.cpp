@@ -199,19 +199,25 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
 
     if (endsWith(filename, ".json", 5)) {
         importCompileCommands(fin);
+        setRelativePaths(filename);
         return ImportProject::Type::COMPILE_DB;
     } else if (endsWith(filename, ".sln", 4)) {
         importSln(fin, mPath, fileFilter);
+        setRelativePaths(filename);
         return ImportProject::Type::VS_SLN;
     } else if (endsWith(filename, ".vcxproj", 8)) {
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         importVcxproj(filename, variables, emptyString, fileFilter);
+        setRelativePaths(filename);
         return ImportProject::Type::VS_VCXPROJ;
     } else if (endsWith(filename, ".bpr", 4)) {
         importBcb6Prj(filename);
+        setRelativePaths(filename);
         return ImportProject::Type::BORLAND;
     } else if (settings && endsWith(filename, ".cppcheck", 9)) {
-        return importCppcheckGuiProject(fin, settings) ? ImportProject::Type::CPPCHECK_GUI : ImportProject::Type::MISSING;
+        const bool success = importCppcheckGuiProject(fin, settings);
+        setRelativePaths(filename);
+        return success ? ImportProject::Type::CPPCHECK_GUI : ImportProject::Type::MISSING;
     }
     return ImportProject::Type::UNKNOWN;
 }
@@ -1239,4 +1245,16 @@ void ImportProject::selectOneVsConfig(Settings::PlatformType platform)
 std::list<std::string> ImportProject::getVSConfigs()
 {
     return std::list<std::string> (mAllVSConfigs.begin(), mAllVSConfigs.end());
+}
+
+void ImportProject::setRelativePaths(const std::string &filename)
+{
+    if (Path::isAbsolute(filename))
+        return;
+    const std::vector<std::string> basePaths{Path::getCurrentPath()};
+    for (auto &fs: fileSettings) {
+        fs.filename = Path::getRelativePath(fs.filename, basePaths);
+        for (auto &includePath: fs.includePaths)
+            includePath = Path::getRelativePath(includePath, basePaths);
+    }
 }
