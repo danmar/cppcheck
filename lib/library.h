@@ -168,6 +168,13 @@ public:
     bool formatstr_scan(const Token* ftok) const;
     bool formatstr_secure(const Token* ftok) const;
 
+    struct NonOverlappingData {
+        int ptr1Arg;
+        int ptr2Arg;
+        int sizeArg;
+    };
+    const NonOverlappingData* getNonOverlappingData(const Token *ftok) const;
+
     struct WarnInfo {
         std::string message;
         Standards standards;
@@ -581,6 +588,7 @@ private:
     std::map<std::string, PlatformType> mPlatformTypes; // platform independent typedefs
     std::map<std::string, Platform> mPlatforms; // platform dependent typedefs
     std::map<std::pair<std::string,std::string>, TypeCheck> mTypeChecks;
+    std::unordered_map<std::string, NonOverlappingData> mNonOverlappingData;
 
     const ArgumentChecks * getarg(const Token *ftok, int argnr) const;
 

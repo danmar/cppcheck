@@ -166,6 +166,20 @@
             </element>
           </optional>
           <optional>
+            <element name="not-overlapping-data">
+              <optional>
+                <attribute name="ptr1-arg"><data type="positiveInteger"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="ptr2-arg"><data type="positiveInteger"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="size-arg"><data type="positiveInteger"/></attribute>
+              </optional>
+              <empty/>
+            </element>
+          </optional>
+          <optional>
             <element name="warn">
               <attribute name="severity">
                 <choice>

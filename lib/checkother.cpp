@@ -3358,3 +3358,116 @@ void CheckOther::checkModuloOfOneError(const Token *tok)
 {
     reportError(tok, Severity::style, "moduloofone", "Modulo of one is always equal to zero");
 }
+
+//-----------------------------------------------------------------------------
+// Overlapping write (undefined behavior)
+//-----------------------------------------------------------------------------
+static bool getBufAndOffset(const Token *expr, const Token **buf, MathLib::bigint *offset)
+{
+    if (!expr)
+        return false;
+    const Token *bufToken, *offsetToken;
+    if (expr->isUnaryOp("&") && Token::simpleMatch(expr->astOperand1(), "[")) {
+        bufToken = expr->astOperand1()->astOperand1();
+        offsetToken = expr->astOperand1()->astOperand2();
+    } else if (Token::Match(expr, "+|-") && expr->isBinaryOp()) {
+        const bool pointer1 = (expr->astOperand1()->valueType() && expr->astOperand1()->valueType()->pointer > 0);
+        const bool pointer2 = (expr->astOperand2()->valueType() && expr->astOperand2()->valueType()->pointer > 0);
+        if (pointer1 && !pointer2) {
+            bufToken = expr->astOperand1();
+            offsetToken = expr->astOperand2();
+        } else if (!pointer1 && pointer2) {
+            bufToken = expr->astOperand2();
+            offsetToken = expr->astOperand1();
+        } else {
+            return false;
+        }
+    } else if (expr->valueType() && expr->valueType()->pointer > 0) {
+        *buf = expr;
+        *offset = 0;
+        return true;
+    } else {
+        return false;
+    }
+    if (!bufToken->valueType() || !bufToken->valueType()->pointer)
+        return false;
+    if (!offsetToken->hasKnownIntValue())
+        return false;
+    *buf = bufToken;
+    *offset = offsetToken->getKnownIntValue();
+    return true;
+}
+
+void CheckOther::checkOverlappingWrite()
+{
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope *functionScope : symbolDatabase->functionScopes) {
+        for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (tok->isAssignmentOp()) {
+                // check if LHS is a union member..
+                const Token * const lhs = tok->astOperand1();
+                if (!Token::simpleMatch(lhs, ".") || !lhs->isBinaryOp())
+                    continue;
+                const Variable * const lhsvar = lhs->astOperand1()->variable();
+                if (!lhsvar || !lhsvar->typeScope() || lhsvar->typeScope()->type != Scope::ScopeType::eUnion)
+                    continue;
+                const Token* const lhsmember = lhs->astOperand2();
+                if (!lhsmember)
+                    continue;
+
+                // Is other union member used in RHS?
+                const Token *errorToken = nullptr;
+                visitAstNodes(tok->astOperand2(), [lhsvar, lhsmember, &errorToken](const Token *rhs) {
+                    if (!Token::simpleMatch(rhs, "."))
+                        return ChildrenToVisit::op1_and_op2;
+                    if (!rhs->isBinaryOp() || rhs->astOperand1()->variable() != lhsvar)
+                        return ChildrenToVisit::none;
+                    if (lhsmember->str() == rhs->astOperand2()->str())
+                        return ChildrenToVisit::none;
+                    errorToken = rhs->astOperand2();
+                    return ChildrenToVisit::done;
+                });
+                if (errorToken)
+                    overlappingWriteUnion(tok);
+            } else if (Token::Match(tok, "%name% (")) {
+                const Library::NonOverlappingData *nonOverlappingData = mSettings->library.getNonOverlappingData(tok);
+                if (!nonOverlappingData)
+                    continue;
+                const std::vector<const Token *> args = getArguments(tok);
+                if (nonOverlappingData->ptr1Arg <= 0 || nonOverlappingData->ptr1Arg > args.size())
+                    continue;
+                if (nonOverlappingData->ptr2Arg <= 0 || nonOverlappingData->ptr2Arg > args.size())
+                    continue;
+                if (nonOverlappingData->sizeArg <= 0 || nonOverlappingData->sizeArg > args.size())
+                    continue;
+                if (!args[nonOverlappingData->sizeArg-1]->hasKnownIntValue())
+                    continue;
+                const Token *buf1, *buf2;
+                MathLib::bigint offset1, offset2;
+                if (!getBufAndOffset(args[nonOverlappingData->ptr1Arg-1], &buf1, &offset1))
+                    continue;
+                if (!getBufAndOffset(args[nonOverlappingData->ptr2Arg-1], &buf2, &offset2))
+                    continue;
+
+                ErrorPath errorPath;
+                const bool macro = true;
+                const bool pure = true;
+                const bool follow = true;
+                if (!isSameExpression(mTokenizer->isCPP(), macro, buf1, buf2, mSettings->library, pure, follow, &errorPath))
+                    continue;
+                overlappingWriteFunction(tok);
+            }
+        }
+    }
+}
+
+void CheckOther::overlappingWriteUnion(const Token *tok)
+{
+    reportError(tok, Severity::error, "overlappingWriteUnion", "Overlapping read/write of union is undefined behavior");
+}
+
+void CheckOther::overlappingWriteFunction(const Token *tok)
+{
+    const std::string funcname = tok ? tok->str() : "";
+    reportError(tok, Severity::error, "overlappingWriteFunction", "Overlapping read/write in " + funcname + "() is undefined behavior");
+}
