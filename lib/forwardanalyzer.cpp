@@ -74,9 +74,13 @@ struct ForwardTraversal {
         return std::make_pair(checkThen, checkElse);
     }
 
-    bool isConditionTrue(const Token* tok, const Token* ctx = nullptr) const { return evalCond(tok, ctx).first; }
+    bool isConditionTrue(const Token* tok, const Token* ctx = nullptr) const {
+        return evalCond(tok, ctx).first;
+    }
 
-    bool isConditionFalse(const Token* tok, const Token* ctx = nullptr) const { return evalCond(tok, ctx).second; }
+    bool isConditionFalse(const Token* tok, const Token* ctx = nullptr) const {
+        return evalCond(tok, ctx).second;
+    }
 
     template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
     Progress traverseTok(T* tok, std::function<Progress(T*)> f, bool traverseUnknown, T** out = nullptr) {
@@ -252,8 +256,7 @@ struct ForwardTraversal {
         return std::vector<ForwardTraversal> {};
     }
 
-    std::vector<ForwardTraversal> tryForkUpdateScope(Token* endBlock, bool isModified = false)
-    {
+    std::vector<ForwardTraversal> tryForkUpdateScope(Token* endBlock, bool isModified = false) {
         std::vector<ForwardTraversal> result = tryForkScope(endBlock, isModified);
         for (ForwardTraversal& ft : result)
             ft.updateScope(endBlock);
@@ -346,7 +349,9 @@ struct ForwardTraversal {
         changed |= isExpressionChanged(condTok, endBlock->link(), endBlock, settings, true);
         // Check for mutation in the condition
         changed |= nullptr !=
-                   findAstNode(condTok, [&](const Token* tok) { return isVariableChanged(tok, 0, settings, true); });
+        findAstNode(condTok, [&](const Token* tok) {
+            return isVariableChanged(tok, 0, settings, true);
+        });
         if (!changed)
             return true;
         ForwardTraversal ft = fork(true);
