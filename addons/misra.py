@@ -919,8 +919,8 @@ def getAddonRules():
 
 def getCppcheckRules():
     """Returns list of rules handled by cppcheck."""
-    return ['1.3', '2.1', '2.2', '2.4', '2.6', '5.3', '8.3', '12.2',
-            '13.2', '13.6', '14.3', '17.5', '18.1', '18.2', '18.3',
+    return ['1.3', '2.1', '2.2', '2.6', '5.3', '8.3',
+            '13.2', '13.6', '17.5', '18.1', '18.2', '18.3',
             '18.6', '20.6', '22.1', '22.2', '22.4', '22.6']
 
 
@@ -1417,7 +1417,7 @@ class MisraChecker:
                                 reportErrorIfMissingSuffix(parameterDefinition.nameToken, usedParameter)
 
     def misra_7_3(self, rawTokens):
-        compiled = re.compile(r'^[0-9.uU]+l')
+        compiled = re.compile(r'^[0-9.]+[Uu]*l+[Uu]*$')
         for tok in rawTokens:
             if compiled.match(tok.str):
                 self.reportError(tok, 7, 3)
@@ -1460,6 +1460,79 @@ class MisraChecker:
 
                         if usedParameter.isString and parameterDefinition.nameToken:
                             reportErrorIfVariableIsNotConst(parameterDefinition.nameToken, usedParameter)
+
+    def misra_8_2(self, data, rawTokens):
+        def getFollowingRawTokens(rawTokens, token, count):
+            following =[]
+            for rawToken in rawTokens:
+                if (rawToken.file == token.file and
+                        rawToken.linenr == token.linenr and
+                        rawToken.column == token.column):
+                    for _ in range(count):
+                        rawToken = rawToken.next
+                        # Skip comments
+                        while rawTokens and (rawToken.str.startswith('/*') or rawToken.str.startswith('//')):
+                            rawToken = rawToken.next
+                        if rawToken is None:
+                            break
+                        following.append(rawToken)
+
+            return following
+
+        # Check arguments in function declaration
+        for func in data.functions:
+
+            startCall = func.tokenDef.next
+            if startCall is None or startCall.str != '(':
+                continue
+
+            endCall = startCall.link
+            if endCall is None or endCall.str != ')':
+                continue
+
+            # Zero arguments should be in form ( void )
+            if (len(func.argument) == 0):
+                voidArg = startCall.next
+                while voidArg is not endCall:
+                    if voidArg.str == 'void':
+                        break
+                    voidArg = voidArg.next
+                if not voidArg.str == 'void':
+                    self.reportError(func.tokenDef, 8, 2)
+
+            for arg in func.argument:
+                argument = func.argument[arg]
+                typeStartToken = argument.typeStartToken
+                if typeStartToken is None:
+                    continue
+
+                nameToken = argument.nameToken
+                # Arguments should have a name unless variable length arg
+                if nameToken is None and typeStartToken.str != '...':
+                    self.reportError(typeStartToken, 8, 2)
+
+                # Type declaration on next line (old style declaration list) is not allowed
+                if (typeStartToken.linenr > endCall.linenr) or (typeStartToken.column > endCall.column):
+                    self.reportError(typeStartToken, 8, 2)
+
+        # Check arguments in pointer declarations
+        for var in data.variables:
+            if not var.isPointer:
+                continue
+
+            if var.nameToken is None:
+                continue
+
+            rawTokensFollowingPtr = getFollowingRawTokens(rawTokens, var.nameToken, 3)
+            if len(rawTokensFollowingPtr) != 3:
+                continue
+
+            # Compliant:           returnType (*ptrName) ( ArgType )
+            # Non-compliant:       returnType (*ptrName) ( )
+            if (rawTokensFollowingPtr[0].str == ')' and
+                    rawTokensFollowingPtr[1].str == '(' and
+                    rawTokensFollowingPtr[2].str == ')'):
+                self.reportError(var.nameToken, 8, 2)
 
     def misra_8_11(self, data):
         for var in data.variables:
@@ -1875,26 +1948,6 @@ class MisraChecker:
                     elif prev.str in '({[':
                         break
                     prev = prev.previous
-
-    def misra_12_4(self, data):
-        if typeBits['INT'] == 16:
-            max_uint = 0xffff
-        elif typeBits['INT'] == 32:
-            max_uint = 0xffffffff
-        else:
-            return
-
-        for token in data.tokenlist:
-            if not token.values:
-                continue
-            if (not isConstantExpression(token)) or (not isUnsignedInt(token)):
-                continue
-            for value in token.values:
-                if value.intvalue is None:
-                    continue
-                if value.intvalue < 0 or value.intvalue > max_uint:
-                    self.reportError(token, 12, 4)
-                    break
 
     def misra_13_1(self, data):
         for token in data.tokenlist:
@@ -2909,7 +2962,7 @@ class MisraChecker:
         ruleNum = num1 * 100 + num2
 
         if self.settings.verify:
-            self.verify_actual.append(str(location.linenr) + ':' + str(num1) + '.' + str(num2))
+            self.verify_actual.append('%s:%d %d.%d' % (location.file, location.linenr, num1, num2))
         elif self.isRuleSuppressed(location.file, location.linenr, ruleNum):
             # Error is suppressed. Ignore
             self.suppressionStats.setdefault(ruleNum, 0)
@@ -3073,6 +3126,14 @@ class MisraChecker:
             check_function(*args)
 
     def parseDump(self, dumpfile):
+        def fillVerifyExpected(verify_expected, tok):
+            """Add expected suppressions to verify_expected list."""
+            rule_re = re.compile(r'[0-9]+\.[0-9]+')
+            if tok.str.startswith('//') and 'TODO' not in tok.str:
+                for word in tok.str[2:].split(' '):
+                    if rule_re.match(word):
+                        verify_expected.append('%s:%d %s' % (tok.file, tok.linenr, word))
+
         data = cppcheckdata.parsedump(dumpfile)
 
         typeBits['CHAR'] = data.platform.char_bit
@@ -3083,12 +3144,23 @@ class MisraChecker:
         typeBits['POINTER'] = data.platform.pointer_bit
 
         if self.settings.verify:
+            # Add suppressions from the current file
             for tok in data.rawTokens:
-                if tok.str.startswith('//') and 'TODO' not in tok.str:
-                    compiled = re.compile(r'[0-9]+\.[0-9]+')
-                    for word in tok.str[2:].split(' '):
-                        if compiled.match(word):
-                            self.verify_expected.append(str(tok.linenr) + ':' + word)
+                fillVerifyExpected(self.verify_expected, tok)
+            # Add suppressions from the included headers
+            include_re = re.compile(r'^#include [<"]([a-zA-Z0-9]+[a-zA-Z\-_./\\0-9]*)[">]$')
+            dump_dir = os.path.dirname(data.filename)
+            for conf in data.configurations:
+                for directive in conf.directives:
+                    m = re.match(include_re, directive.str)
+                    if not m:
+                        continue
+                    header_dump_path = os.path.join(dump_dir, m.group(1) + '.dump')
+                    if not os.path.exists(header_dump_path):
+                        continue
+                    header_data = cppcheckdata.parsedump(header_dump_path)
+                    for tok in header_data.rawTokens:
+                        fillVerifyExpected(self.verify_expected, tok)
         else:
             self.printStatus('Checking ' + dumpfile + '...')
 
@@ -3115,6 +3187,8 @@ class MisraChecker:
             if cfgNumber == 0:
                 self.executeCheck(703, self.misra_7_3, data.rawTokens)
             self.executeCheck(704, self.misra_7_4, cfg)
+            if cfgNumber == 0:
+                self.executeCheck(802, self.misra_8_2, cfg, data.rawTokens)
             self.executeCheck(811, self.misra_8_11, cfg)
             self.executeCheck(812, self.misra_8_12, cfg)
             if cfgNumber == 0:
@@ -3141,7 +3215,6 @@ class MisraChecker:
             self.executeCheck(1201, self.misra_12_1, cfg)
             self.executeCheck(1202, self.misra_12_2, cfg)
             self.executeCheck(1203, self.misra_12_3, cfg)
-            self.executeCheck(1204, self.misra_12_4, cfg)
             self.executeCheck(1301, self.misra_13_1, cfg)
             self.executeCheck(1303, self.misra_13_3, cfg)
             self.executeCheck(1304, self.misra_13_4, cfg)

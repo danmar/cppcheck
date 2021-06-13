@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,10 +33,11 @@
 
 #include <algorithm>
 #include <cassert>
-#include <climits>
 #include <cstring>
 #include <iomanip>
 #include <iostream>
+#include <limits>
+#include <string>
 #include <unordered_map>
 //---------------------------------------------------------------------------
 
@@ -78,11 +79,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
 static const Token* skipScopeIdentifiers(const Token* tok)
 {
-    if (tok && tok->str() == "::") {
+    if (Token::Match(tok, ":: %name%"))
         tok = tok->next();
-    }
     while (Token::Match(tok, "%name% ::") ||
-           (Token::Match(tok, "%name% <") && Token::simpleMatch(tok->linkAt(1), "> ::"))) {
+           (Token::Match(tok, "%name% <") && Token::Match(tok->linkAt(1), ">|>> ::"))) {
         if (tok->strAt(1) == "::")
             tok = tok->tokAt(2);
         else
@@ -1775,7 +1775,7 @@ void SymbolDatabase::validateExecutableScopes() const
             const ErrorMessage errmsg(callstack, &mTokenizer->list, Severity::debug,
                                       "symbolDatabaseWarning",
                                       msg,
-                                      false);
+                                      Certainty::normal);
             mErrorLogger->reportErr(errmsg);
         }
     }
@@ -2430,6 +2430,11 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
     int offset = 0;
     int openParen = 0;
 
+    // check for () == (void) and (void) == ()
+    if ((Token::simpleMatch(first, "( )") && Token::simpleMatch(second, "( void )")) ||
+        (Token::simpleMatch(first, "( void )") && Token::simpleMatch(second, "( )")))
+        return true;
+
     while (first->str() == second->str() &&
            first->isLong() == second->isLong() &&
            first->isUnsigned() == second->isUnsigned()) {
@@ -2629,6 +2634,34 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
     return false;
 }
 
+static bool isUnknownType(const Token* start, const Token* end)
+{
+    while (Token::Match(start, "const|volatile"))
+        start = start->next();
+    start = skipScopeIdentifiers(start);
+    if (start->tokAt(1) == end && !start->type() && !start->isStandardType())
+        return true;
+    // TODO: Try to deduce the type of the expression
+    if (Token::Match(start, "decltype|typeof"))
+        return true;
+    return false;
+}
+
+bool Function::returnsConst(const Function* function, bool unknown)
+{
+    if (!function)
+        return false;
+    if (function->type != Function::eFunction)
+        return false;
+    const Token* defEnd = function->returnDefEnd();
+    if (Token::findsimplematch(function->retDef, "const", defEnd))
+        return true;
+    // Check for unknown types, which could be a const
+    if (isUnknownType(function->retDef, defEnd))
+        return unknown;
+    return false;
+}
+
 bool Function::returnsReference(const Function* function, bool unknown)
 {
     if (!function)
@@ -2639,13 +2672,7 @@ bool Function::returnsReference(const Function* function, bool unknown)
     if (defEnd->strAt(-1) == "&")
         return true;
     // Check for unknown types, which could be a reference
-    const Token* start = function->retDef;
-    while (Token::Match(start, "const|volatile"))
-        start = start->next();
-    if (start->tokAt(1) == defEnd && !start->type() && !start->isStandardType())
-        return unknown;
-    // TODO: Try to deduce the type of the expression
-    if (Token::Match(start, "decltype|typeof"))
+    if (isUnknownType(function->retDef, defEnd))
         return unknown;
     return false;
 }
@@ -3091,7 +3118,7 @@ void SymbolDatabase::debugMessage(const Token *tok, const std::string &type, con
                                   Severity::debug,
                                   type,
                                   msg,
-                                  false);
+                                  Certainty::normal);
         if (mErrorLogger)
             mErrorLogger->reportErr(errmsg);
     }
@@ -4231,6 +4258,16 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
     // the start of the type tokens does not include the above modifiers
     const Token *typestart = tok;
 
+    // C++17 structured bindings
+    if (settings->standards.cpp >= Standards::CPP17 && Token::Match(tok, "auto &|&&| [")) {
+        const Token *typeend = Token::findsimplematch(typestart, "[")->previous();
+        for (tok = typeend->tokAt(2); Token::Match(tok, "%name%|,"); tok = tok->next()) {
+            if (tok->varId())
+                addVariable(tok, typestart, typeend, varaccess, nullptr, this, settings);
+        }
+        return typeend->linkAt(1);
+    }
+
     if (tok->isKeyword() && Token::Match(tok, "class|struct|union|enum")) {
         tok = tok->next();
     }
@@ -4752,9 +4789,9 @@ const Scope *Scope::findRecordInBase(const std::string & name) const
                     return base->classScope;
                 }
 
-                const ::Type * type = base->classScope->findType(name);
-                if (type)
-                    return type->classScope;
+                const ::Type * t = base->classScope->findType(name);
+                if (t)
+                    return t->classScope;
             }
         }
     }
@@ -4818,11 +4855,12 @@ static std::string getTypeString(const Token *typeToken)
             while (Token::Match(typeToken, ":: %name%")) {
                 ret += "::" + typeToken->strAt(1);
                 typeToken = typeToken->tokAt(2);
-            }
-            if (typeToken->str() == "<") {
-                for (const Token *tok = typeToken; tok != typeToken->link(); tok = tok->next())
-                    ret += tok->str();
-                ret += ">";
+                if (typeToken->str() == "<") {
+                    for (const Token *tok = typeToken; tok != typeToken->link(); tok = tok->next())
+                        ret += tok->str();
+                    ret += ">";
+                    typeToken = typeToken->link()->next();
+                }
             }
             return ret;
         }
@@ -5861,6 +5899,15 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         return;
     }
 
+    // c++17 auto type deduction of braced init list
+    if (mIsCpp && mSettings->standards.cpp >= Standards::CPP17 && vt2 && Token::Match(parent->tokAt(-2), "auto %var% {")) {
+        Token *autoTok = parent->tokAt(-2);
+        setValueType(autoTok, *vt2);
+        setAutoTokenProperties(autoTok);
+        const_cast<Variable *>(parent->previous()->variable())->setValueType(*vt2);
+        return;
+    }
+
     if (!vt1)
         return;
     if (parent->astOperand2() && !vt2)
@@ -6493,7 +6540,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
     if (reportDebugWarnings && mSettings->debugwarnings) {
         for (Token *tok = tokens; tok; tok = tok->next()) {
             if (tok->str() == "auto" && !tok->valueType())
-                debugMessage(tok, "debug", "auto token with no type.");
+                debugMessage(tok, "autoNoType", "auto token with no type.");
         }
     }
 
@@ -6830,18 +6877,25 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
         return ValueType::MatchResult::UNKNOWN; // TODO
     }
 
-    if (call->typeScope != nullptr || func->typeScope != nullptr)
-        return call->typeScope == func->typeScope ? ValueType::MatchResult::SAME : ValueType::MatchResult::NOMATCH;
+    if (call->typeScope != nullptr || func->typeScope != nullptr) {
+        if (call->typeScope != func->typeScope)
+            return ValueType::MatchResult::NOMATCH;
+    }
 
     if (call->container != nullptr || func->container != nullptr) {
         if (call->container != func->container)
             return ValueType::MatchResult::NOMATCH;
     }
 
-    else if (func->type < ValueType::Type::VOID || func->type == ValueType::Type::UNKNOWN_INT)
-        return ValueType::MatchResult::UNKNOWN;
+    if (func->typeScope != nullptr && func->container != nullptr) {
+        if (func->type < ValueType::Type::VOID || func->type == ValueType::Type::UNKNOWN_INT)
+            return ValueType::MatchResult::UNKNOWN;
+    }
 
     if (call->isIntegral() && func->isIntegral() && call->sign != ValueType::Sign::UNKNOWN_SIGN && func->sign != ValueType::Sign::UNKNOWN_SIGN && call->sign != func->sign)
+        return ValueType::MatchResult::FALLBACK1;
+
+    if (func->reference != Reference::None && func->constness > call->constness)
         return ValueType::MatchResult::FALLBACK1;
 
     return ValueType::MatchResult::SAME;
@@ -6850,10 +6904,15 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
 ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Variable *callVar, const Variable *funcVar)
 {
     ValueType::MatchResult res = ValueType::matchParameter(call, funcVar->valueType());
-    if (res == ValueType::MatchResult::SAME && callVar && call->container) {
+    if (callVar && ((res == ValueType::MatchResult::SAME && call->container) || res == ValueType::MatchResult::UNKNOWN)) {
         const std::string type1 = getTypeString(callVar->typeStartToken());
         const std::string type2 = getTypeString(funcVar->typeStartToken());
-        if (type1 != type2)
+        const bool templateVar =
+            funcVar->scope() && funcVar->scope()->function && funcVar->scope()->function->templateDef;
+        if (type1 == type2)
+            return ValueType::MatchResult::SAME;
+        if (!templateVar && type1.find("auto") == std::string::npos && type2.find("auto") == std::string::npos &&
+            type1 != type2)
             return ValueType::MatchResult::NOMATCH;
     }
     return res;

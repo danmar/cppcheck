@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -133,24 +133,24 @@ protected:
 
     /** report an error */
     void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg) {
-        reportError(tok, severity, id, msg, CWE(0U), false);
+        reportError(tok, severity, id, msg, CWE(0U), Certainty::normal);
     }
 
     /** report an error */
-    void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, bool inconclusive) {
+    void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty::CertaintyLevel certainty) {
         const std::list<const Token *> callstack(1, tok);
-        reportError(callstack, severity, id, msg, cwe, inconclusive);
+        reportError(callstack, severity, id, msg, cwe, certainty);
     }
 
     /** report an error */
     void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg) {
-        reportError(callstack, severity, id, msg, CWE(0U), false);
+        reportError(callstack, severity, id, msg, CWE(0U), Certainty::normal);
     }
 
     /** report an error */
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, bool inconclusive);
+    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty::CertaintyLevel certainty);
 
-    void reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive);
+    void reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty::CertaintyLevel certainty);
 
     ErrorPath getErrorPath(const Token* errtok, const ValueFlow::Value* value, const std::string& bug) const;
 

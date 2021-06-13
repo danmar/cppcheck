@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,9 +35,9 @@ private:
     Settings settings;
 
     void run() OVERRIDE {
-        settings.addEnabled("style");
-        settings.addEnabled("warning");
-        settings.addEnabled("portability");
+        settings.severity.enable(Severity::style);
+        settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::portability);
         settings.libraries.emplace_back("posix");
         settings.standards.c = Standards::C11;
         settings.standards.cpp = Standards::CPP11;
@@ -141,11 +141,12 @@ private:
 
     void prohibitedFunctions_index() {
         check("namespace n1 {\n"
-              "    int index(){};\n"
+              "    int index(){ return 1; };\n"
               "}\n"
               "int main()\n"
               "{\n"
               "    n1::index();\n"
+              "    return 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -303,11 +304,12 @@ private:
               "{\n"
               "    char s [ 10 ] ;\n"
               "    gets ( s ) ;\n"
+              "    return 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Obsolete function 'gets' called. It is recommended to use 'fgets' or 'gets_s' instead.\n", errout.str());
 
         check("int getcontext(ucontext_t *ucp);\n"
-              "int f (ucontext_t *ucp)\n"
+              "void f (ucontext_t *ucp)\n"
               "{\n"
               "    getcontext ( ucp ) ;\n"
               "}");
@@ -320,6 +322,7 @@ private:
               "{\n"
               "    char s [ 10 ] ;\n"
               "    gets ( s ) ;\n"
+              "    return 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -351,7 +354,7 @@ private:
     }
 
     void prohibitedFunctions_namespaceHandling() {
-        check("int f()\n"
+        check("void f()\n"
               "{\n"
               "    time_t t = 0;"
               "    std::localtime(&t);\n"
@@ -359,14 +362,14 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'localtime' called. For threadsafe applications it is recommended to use the reentrant replacement function 'localtime_r'.\n", errout.str());
 
         // Passed as function argument
-        check("int f()\n"
+        check("void f()\n"
               "{\n"
               "    printf(\"Magic guess: %d\", getpwent());\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'getpwent' called. For threadsafe applications it is recommended to use the reentrant replacement function 'getpwent_r'.\n", errout.str());
 
         // Pass return value
-        check("int f()\n"
+        check("void f()\n"
               "{\n"
               "    time_t t = 0;"
               "    struct tm *foo = localtime(&t);\n"
@@ -374,7 +377,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'localtime' called. For threadsafe applications it is recommended to use the reentrant replacement function 'localtime_r'.\n", errout.str());
 
         // Access via global namespace
-        check("int f()\n"
+        check("void f()\n"
               "{\n"
               "    ::getpwent();\n"
               "}");
@@ -389,14 +392,14 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // Be quiet on other namespaces
-        check("int f()\n"
+        check("void f()\n"
               "{\n"
               "    foobar::getpwent();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         // Be quiet on class member functions
-        check("int f()\n"
+        check("void f()\n"
               "{\n"
               "    foobar.getpwent();\n"
               "}");
@@ -404,19 +407,19 @@ private:
     }
 
     void invalidFunctionUsage1() {
-        check("int f() { memset(a,b,sizeof(a)!=12); }");
+        check("void f() { memset(a,b,sizeof(a)!=12); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
 
-        check("int f() { memset(a,b,sizeof(a)!=0); }");
+        check("void f() { memset(a,b,sizeof(a)!=0); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
 
-        check("int f() { memset(a,b,!c); }");
+        check("void f() { memset(a,b,!c); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
 
         // Ticket #6990
-        check("int f(bool c) { memset(a,b,c); }");
+        check("void f(bool c) { memset(a,b,c); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
-        check("int f() { memset(a,b,true); }");
+        check("void f() { memset(a,b,true); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
 
         // Ticket #6588 (c mode)
@@ -433,21 +436,20 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
 
-        check("void boolArgZeroIsInvalidButOneIsValid(int param) {\n"
-              "  void* buffer = calloc(param > 0, 10);\n"
-              "  free(buffer);\n"
+        check("int boolArgZeroIsInvalidButOneIsValid(int a, int param) {\n"
+              "  return div(a, param > 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid calloc() argument nr 1. The value is 0 or 1 (boolean) but the valid values are '1:'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid div() argument nr 2. The value is 0 or 1 (boolean) but the valid values are ':-1,1:'.\n", errout.str());
 
         check("void boolArgZeroIsValidButOneIsInvalid(int param) {\n"
               "  strtol(a, b, param > 0);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Invalid strtol() argument nr 3. The value is 0 or 1 (boolean) but the valid values are '0,2:36'.\n", errout.str());
 
-        check("int f() { strtol(a,b,1); }");
+        check("void f() { strtol(a,b,1); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strtol() argument nr 3. The value is 1 but the valid values are '0,2:36'.\n", errout.str());
 
-        check("int f() { strtol(a,b,10); }");
+        check("void f() { strtol(a,b,10); }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1092,7 +1094,7 @@ private:
 
     void checkIgnoredReturnValue() {
         Settings settings2;
-        settings2.addEnabled("warning");
+        settings2.severity.enable(Severity::warning);
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def version=\"2\">\n"
                                "  <function name=\"mystrcmp,foo::mystrcmp\">\n"
@@ -1211,6 +1213,7 @@ private:
               "    teststruct TestStruct1;\n"
               "    TestStruct1.testfunc1();\n"
               "    TestStruct1.testfunc2();\n"
+              "    return 0;\n"
               "}", "test.cpp", &settings2);
         ASSERT_EQUALS("[test.cpp:4]: (warning) Return value of function testfunc1() is not used.\n"
                       "[test.cpp:4]: (warning) Return value of function testfunc2() is not used.\n"
@@ -1231,6 +1234,13 @@ private:
               "}\n"
               "A g() { return f(1); }");
         ASSERT_EQUALS("", errout.str());
+
+        // #8412 - unused operator result
+        check("void foo() {\n"
+              "  !mystrcmp(a, b);\n"
+              "}", "test.cpp", &settings2);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of function mystrcmp() is not used.\n", errout.str());
+
     }
 
     void checkIgnoredErrorCode() {

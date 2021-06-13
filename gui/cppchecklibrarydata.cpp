@@ -21,7 +21,6 @@
 #include <stdexcept>
 
 #include <QXmlStreamReader>
-#include <QXmlStreamWriter>
 #include <QVariant>
 
 const unsigned int CppcheckLibraryData::Function::Arg::ANY = ~0U;

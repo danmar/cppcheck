@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ private:
     }
 
     void run() OVERRIDE {
-        settings.addEnabled("performance");
+        settings.severity.enable(Severity::performance);
 
         TEST_CASE(testsimple);
         TEST_CASE(testfor);

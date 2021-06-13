@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,7 @@ const char Settings::SafeChecks::XmlInternalFunctions[] = "internal-functions";
 const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
 
 Settings::Settings()
-    : mEnabled(0),
-      bugHunting(false),
+    : bugHunting(false),
       bugHuntingCheckFunctionMaxTime(60),
       checkAllConfigurations(true),
       checkConfiguration(false),
@@ -50,9 +49,7 @@ Settings::Settings()
       enforcedLang(None),
       exceptionHandling(false),
       exitCode(0),
-      experimental(false),
       force(false),
-      inconclusive(false),
       inlineSuppressions(false),
       jobs(1),
       jointSuppressionReport(false),
@@ -69,6 +66,8 @@ Settings::Settings()
       xml(false),
       xml_version(2)
 {
+    severity.setEnabled(Severity::error, true);
+    certainty.setEnabled(Certainty::normal, true);
 }
 
 std::string Settings::addEnabled(const std::string &str)
@@ -92,25 +91,28 @@ std::string Settings::addEnabled(const std::string &str)
     }
 
     if (str == "all") {
-        mEnabled |= WARNING | STYLE | PERFORMANCE | PORTABILITY | INFORMATION | UNUSED_FUNCTION | MISSING_INCLUDE;
+        severity.fill();
+        checks.enable(Checks::missingInclude);
+        checks.enable(Checks::unusedFunction);
     } else if (str == "warning") {
-        mEnabled |= WARNING;
+        severity.enable(Severity::warning);
     } else if (str == "style") {
-        mEnabled |= STYLE;
+        severity.enable(Severity::style);
     } else if (str == "performance") {
-        mEnabled |= PERFORMANCE;
+        severity.enable(Severity::performance);
     } else if (str == "portability") {
-        mEnabled |= PORTABILITY;
+        severity.enable(Severity::portability);
     } else if (str == "information") {
-        mEnabled |= INFORMATION | MISSING_INCLUDE;
+        severity.enable(Severity::information);
+        checks.enable(Checks::missingInclude);
     } else if (str == "unusedFunction") {
-        mEnabled |= UNUSED_FUNCTION;
+        checks.enable(Checks::unusedFunction);
     } else if (str == "missingInclude") {
-        mEnabled |= MISSING_INCLUDE;
+        checks.enable(Checks::missingInclude);
     }
 #ifdef CHECK_INTERNAL
     else if (str == "internal") {
-        mEnabled |= INTERNAL;
+        checks.enable(Checks::internalCheck);
     }
 #endif
     else {
@@ -123,35 +125,11 @@ std::string Settings::addEnabled(const std::string &str)
     return std::string();
 }
 
-bool Settings::isEnabled(Severity::SeverityType severity) const
-{
-    switch (severity) {
-    case Severity::none:
-        return true;
-    case Severity::error:
-        return true;
-    case Severity::warning:
-        return isEnabled(WARNING);
-    case Severity::style:
-        return isEnabled(STYLE);
-    case Severity::performance:
-        return isEnabled(PERFORMANCE);
-    case Severity::portability:
-        return isEnabled(PORTABILITY);
-    case Severity::information:
-        return isEnabled(INFORMATION);
-    case Severity::debug:
-        return false;
-    default:
-        return false;
-    }
-}
-
 bool Settings::isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck) const
 {
-    if (!isEnabled(Settings::WARNING) && (value->condition || value->defaultArg))
+    if (!severity.isEnabled(Severity::warning) && (value->condition || value->defaultArg))
         return false;
-    if (!inconclusive && (inconclusiveCheck || value->isInconclusive()))
+    if (!certainty.isEnabled(Certainty::inconclusive) && (inconclusiveCheck || value->isInconclusive()))
         return false;
     return true;
 }

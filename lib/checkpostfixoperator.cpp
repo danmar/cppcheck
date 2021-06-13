@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,6 @@
 #include "symboldatabase.h"
 #include "token.h"
 
-#include <cstddef>
-
 //---------------------------------------------------------------------------
 
 
@@ -44,7 +42,7 @@ static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
 
 void CheckPostfixOperator::postfixOperator()
 {
-    if (!mSettings->isEnabled(Settings::PERFORMANCE))
+    if (!mSettings->severity.isEnabled(Severity::performance))
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -82,5 +80,5 @@ void CheckPostfixOperator::postfixOperatorError(const Token *tok)
                 "Pre-increment/decrement can be more efficient than "
                 "post-increment/decrement. Post-increment/decrement usually "
                 "involves keeping a copy of the previous value around and "
-                "adds a little extra code.", CWE398, false);
+                "adds a little extra code.", CWE398, Certainty::normal);
 }

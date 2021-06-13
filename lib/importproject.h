@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -112,6 +112,8 @@ private:
     void importSln(std::istream &istr, const std::string &path, const std::string &fileFilter);
     void importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::string &fileFilter);
     void importBcb6Prj(const std::string &projectFilename);
+
+    void setRelativePaths(const std::string &filename);
 
     std::string mPath;
     std::set<std::string> mAllVSConfigs;

@@ -22,13 +22,13 @@
 #include <QDialog>
 #include <QString>
 #include <QStringList>
-#include <QCheckBox>
 
 #include "suppressions.h"
 
 #include "ui_projectfiledialog.h"
 
 class QWidget;
+class QCheckBox;
 
 /// @addtogroup GUI
 /// @{

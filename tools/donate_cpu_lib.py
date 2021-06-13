@@ -10,12 +10,13 @@ import re
 import signal
 import tarfile
 import shlex
+import psutil
 
 
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.8"
+CLIENT_VERSION = "1.3.12"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -30,7 +31,7 @@ def check_requirements():
         try:
             subprocess.call([app, '--version'])
         except OSError:
-            print(app + ' is required')
+            print("Error: '{}' is required".format(app))
             result = False
     return result
 
@@ -223,8 +224,7 @@ def unpack_package(work_path, tgz):
                     # Skip dangerous file names
                     continue
                 elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp',
-                                                   '.h++', '.hxx', '.hh', '.tpp', '.txx', '.qml',
-                                                   '.sln', '.vcproj', '.vcxproj')):
+                                                   '.h++', '.hxx', '.hh', '.tpp', '.txx', '.qml')):
                     try:
                         tf.extract(member.name)
                         found = True
@@ -255,14 +255,29 @@ def has_include(path, includes):
 def run_command(cmd):
     print(cmd)
     startTime = time.time()
+    comm = None
     p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
     try:
         comm = p.communicate(timeout=CPPCHECK_TIMEOUT)
         return_code = p.returncode
+        p = None
     except subprocess.TimeoutExpired:
-        os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
-        comm = p.communicate()
         return_code = RETURN_CODE_TIMEOUT
+        # terminate all the child processes so we get messages about which files were hanging
+        child_procs = psutil.Process(p.pid).children(recursive=True)
+        if len(child_procs) > 0:
+            for child in child_procs:
+                child.terminate()
+            try:
+                # call with timeout since it might get stuck e.g. gcc-arm-none-eabi
+                comm = p.communicate(timeout=5)
+                p = None
+            except subprocess.TimeoutExpired:
+                pass
+    finally:
+        if p:
+            os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
+            comm = p.communicate()
     stop_time = time.time()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore')
@@ -280,63 +295,15 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
 
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
     options = libs + jobs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --template=daca2 -rp=temp'
-    if os.path.isfile('temp/tortoisesvn/TortoiseSVN.sln'):
-        options = options.replace('--library=posix ', '')
-        options = options.replace('--library=gnu ', '')
-        options = '--library=windows ' + options
-        options += ' --platform=win64 --project=temp/tortoisesvn/TortoiseSVN.sln'
-    else:
-        options += ' -D__GNUC__ --platform=unix64 temp'
+    options += ' -D__GNUC__ --platform=unix64 temp'
     cppcheck_cmd = cppcheck_path + '/cppcheck' + ' ' + options
     cmd = 'nice ' + cppcheck_cmd
     returncode, stdout, stderr, elapsed_time = run_command(cmd)
-    sig_num = -1
-    sig_msg = 'Internal error: Child process crashed with signal '
-    sig_pos = stderr.find(sig_msg)
-    if sig_pos != -1:
-        sig_start_pos = sig_pos + len(sig_msg)
-        sig_num = int(stderr[sig_start_pos:stderr.find(' ', sig_start_pos)])
-    print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
-    if returncode == RETURN_CODE_TIMEOUT:
-        print('Timeout!')
-        return returncode, stdout, '', elapsed_time, options, ''
-    # generate stack trace for SIGSEGV, SIGABRT, SIGILL, SIGFPE, SIGBUS
-    if returncode in (-11, -6, -4, -8, -7) or sig_num in (11, 6, 4, 8, 7):
-        print('Crash!')
-        stacktrace = ''
-        if cppcheck_path == 'cppcheck':
-            # re-run within gdb to get a stacktrace
-            cmd = 'gdb --batch --eval-command=run --eval-command="bt 50" --return-child-result --args ' + cppcheck_cmd + " -j1"
-            dummy, st_stdout, dummy, dummy = run_command(cmd)
-            gdb_pos = st_stdout.find(" received signal")
-            if not gdb_pos == -1:
-                last_check_pos = st_stdout.rfind('Checking ', 0, gdb_pos)
-                if last_check_pos == -1:
-                    stacktrace = st_stdout[gdb_pos:]
-                else:
-                    stacktrace = st_stdout[last_check_pos:]
-        # if no stacktrace was generated return the original stdout
-        if not stacktrace:
-            stacktrace = stdout
-        return returncode, stacktrace, '', returncode, options, ''
-    if returncode != 0:
-        print('Error!')
-        if returncode > 0:
-            returncode = -100-returncode
-        return returncode, stdout, '', returncode, options, ''
-    err_s = 'Internal error: Child process crashed with signal '
-    err_pos = stderr.find(err_s)
-    if err_pos != -1:
-        print('Error!')
-        pos2 = stderr.find(' [cppcheckError]', err_pos)
-        signr = int(stderr[err_pos+len(err_s):pos2])
-        return -signr, '', '', -signr, options, ''
-    thr_pos = stderr.find('#### ThreadExecutor')
-    if thr_pos != -1:
-        print('Thread!')
-        return -222, stderr[thr_pos:], '', -222, options, ''
+
+    # collect messages
     information_messages_list = []
     issue_messages_list = []
+    internal_error_messages_list = []
     count = 0
     for line in stderr.split('\n'):
         if ': information: ' in line:
@@ -345,6 +312,8 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
             issue_messages_list.append(line + '\n')
             if re.match(r'.*:[0-9]+:.*\]$', line):
                 count += 1
+            if ': error: Internal error: ' in line:
+                internal_error_messages_list.append(line + '\n')
     print('Number of issues: ' + str(count))
     # Collect timing information
     stdout_lines = stdout.split('\n')
@@ -361,6 +330,55 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
             timing_info_list.insert(0, ' ' + reverse_line + '\n')
             current_timing_lines += 1
     timing_str = ''.join(timing_info_list)
+
+    # detect errors
+    sig_num = -1
+    sig_msg = 'Internal error: Child process crashed with signal '
+    sig_pos = stderr.find(sig_msg)
+    if sig_pos != -1:
+        sig_start_pos = sig_pos + len(sig_msg)
+        sig_num = int(stderr[sig_start_pos:stderr.find(' ', sig_start_pos)])
+    print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
+
+    if returncode == RETURN_CODE_TIMEOUT:
+        print('Timeout!')
+        return returncode, ''.join(internal_error_messages_list), '', elapsed_time, options, ''
+
+    # generate stack trace for SIGSEGV, SIGABRT, SIGILL, SIGFPE, SIGBUS
+    if returncode in (-11, -6, -4, -8, -7) or sig_num in (11, 6, 4, 8, 7):
+        print('Crash!')
+        stacktrace = ''
+        if cppcheck_path == 'cppcheck':
+            # re-run within gdb to get a stacktrace
+            cmd = 'gdb --batch --eval-command=run --eval-command="bt 50" --return-child-result --args ' + cppcheck_cmd + " -j1"
+            _, st_stdout, _, _ = run_command(cmd)
+            gdb_pos = st_stdout.find(" received signal")
+            if not gdb_pos == -1:
+                last_check_pos = st_stdout.rfind('Checking ', 0, gdb_pos)
+                if last_check_pos == -1:
+                    stacktrace = st_stdout[gdb_pos:]
+                else:
+                    stacktrace = st_stdout[last_check_pos:]
+        # if no stacktrace was generated return the original stdout
+        if not stacktrace:
+            stacktrace = stdout
+        return returncode, stacktrace, '', returncode, options, ''
+
+    if returncode != 0:
+        print('Error!')
+        if returncode > 0:
+            returncode = -100-returncode
+        return returncode, stdout, '', returncode, options, ''
+
+    if sig_num != -1:
+        print('Error!')
+        return -sig_num, ''.join(internal_error_messages_list), '', -sig_num, options, ''
+
+    thr_pos = stderr.find('#### ThreadExecutor')
+    if thr_pos != -1:
+        print('Thread!')
+        return -222, stderr[thr_pos:], '', -222, options, ''
+
     return count, ''.join(issue_messages_list), ''.join(information_messages_list), elapsed_time, options, timing_str
 
 
@@ -379,7 +397,7 @@ def split_results(results):
     return ret
 
 
-def diff_results(work_path, ver1, results1, ver2, results2):
+def diff_results(ver1, results1, ver2, results2):
     print('Diff results..')
     ret = ''
     r1 = sorted(split_results(results1))
@@ -495,6 +513,11 @@ def get_libraries():
         if has_include('temp', includes):
             libraries.append(library)
     return libraries
+
+
+def get_compiler_version():
+    _, stdout, _, _ = run_command('g++ --version')
+    return stdout.split('\n')[0]
 
 
 my_script_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]

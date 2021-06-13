@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ ErrorItem::ErrorItem(const ErrorMessage &errmsg)
     , errorId(QString::fromStdString(errmsg.id))
     , severity(errmsg.severity)
     , incomplete(errmsg.incomplete)
-    , inconclusive(errmsg.inconclusive)
+    , inconclusive(errmsg.certainty == Certainty::inconclusive)
     , summary(QString::fromStdString(errmsg.shortMessage()))
     , message(QString::fromStdString(errmsg.verboseMessage()))
     , cwe(errmsg.cwe.id)

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,8 +39,8 @@ private:
     Settings settings2;
 
     void run() OVERRIDE {
-        settings0.addEnabled("style");
-        settings2.addEnabled("style");
+        settings0.severity.enable(Severity::style);
+        settings2.severity.enable(Severity::style);
 
         // If there are unused templates, keep those
         settings0.checkUnusedTemplates = true;
@@ -69,6 +69,9 @@ private:
         TEST_CASE(simplifyUsing20);
         TEST_CASE(simplifyUsing21);
         TEST_CASE(simplifyUsing22);
+        TEST_CASE(simplifyUsing23);
+        TEST_CASE(simplifyUsing24);
+        TEST_CASE(simplifyUsing25);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -92,7 +95,7 @@ private:
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
         errout.str("");
 
-        settings0.inconclusive = true;
+        settings0.certainty.enable(Certainty::inconclusive);
         settings0.debugwarnings = debugwarnings;
         settings0.platform(type);
         Tokenizer tokenizer(&settings0, this);
@@ -552,6 +555,61 @@ private:
                                 "} "
                                 "} } } } }";
         ASSERT_EQUALS(expected, tok(code, false)); // don't hang
+    }
+
+    void simplifyUsing23() {
+        const char code[] = "class cmcch {\n"
+                            "public:\n"
+                            "   cmcch(icmsp const& icm, Rtnf&& rtnf = {});\n"
+                            "private:\n"
+                            "    using escs = aa::bb::cc::dd::ee;\n"
+                            "private:\n"
+                            "   icmsp m_icm;\n"
+                            "   mutable std::atomic<rt> m_rt;\n"
+                            "};\n"
+                            "cmcch::cmcch(cmcch::icmsp const& icm, Rtnf&& rtnf)\n"
+                            "   : m_icm(icm)\n"
+                            "   , m_rt{rt::UNKNOWN_} {\n"
+                            "  using escs = yy::zz::aa::bb::cc::dd::ee;\n"
+                            "}";
+        const char expected[] = "class cmcch { "
+                                "public: "
+                                "cmcch ( const icmsp & icm , Rtnf && rtnf = { } ) ; "
+                                "private: "
+                                "private: "
+                                "icmsp m_icm ; "
+                                "mutable std :: atomic < rt > m_rt ; "
+                                "} ; "
+                                "cmcch :: cmcch ( const cmcch :: icmsp & icm , Rtnf && rtnf ) "
+                                ": m_icm ( icm ) "
+                                ", m_rt { rt :: UNKNOWN_ } { "
+                                "}";
+        ASSERT_EQUALS(expected, tok(code, false)); // don't hang
+    }
+
+    void simplifyUsing24() {
+        const char code[] = "using value_type = const ValueFlow::Value;\n"
+                            "value_type vt;";
+        const char expected[] = "const ValueFlow :: Value vt ;";
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyUsing25() {
+        const char code[] = "struct UnusualType {\n"
+                            "  using T = vtkm::Id;\n"
+                            "  T X;\n"
+                            "};\n"
+                            "namespace vtkm {\n"
+                            "template <>\n"
+                            "struct VecTraits<UnusualType> : VecTraits<UnusualType::T> { };\n"
+                            "}";
+        const char expected[] = "struct UnusualType { "
+                                "vtkm :: Id X ; "
+                                "} ; "
+                                "namespace vtkm { "
+                                "struct VecTraits<UnusualType> : VecTraits < vtkm :: Id > { } ; "
+                                "}";
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void simplifyUsing8970() {

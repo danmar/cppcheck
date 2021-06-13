@@ -17,113 +17,113 @@ jobs:
       matrix:
         # windows 2016 should default to VS 2017. Not supported by setup-msbuild
         os: [windows-2019]
-      fail-fast: true
+        arch: [x64, x86]
+      fail-fast: false
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v2
 
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
       - name: Setup msbuild.exe
         uses: microsoft/setup-msbuild@v1.0.2
-                  
+
       - name: Install PCRE
         run: |
-          curl -fsSL https://ftp.pcre.org/pub/pcre/pcre-%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip
-          7z x pcre-%PCRE_VERSION%.zip
-          cd pcre-%PCRE_VERSION%
-          cmake . -G "Visual Studio 16 2019" -A x64
-          msbuild -m PCRE.sln /p:Configuration=Release /p:Platform=x64
-          dir
-          dir Release
-          dir x64
-          dir x64\Release
-          copy pcre.h ..\externals
-          copy Release\pcre.lib ..\externals\pcre64.lib
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
+          curl -fsSL https://ftp.pcre.org/pub/pcre/pcre-%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
+          7z x pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
+          cd pcre-%PCRE_VERSION% || exit /b !errorlevel!
+          cmake . -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DPCRE_BUILD_PCRECPP=Off -DPCRE_BUILD_TESTS=Off -DPCRE_BUILD_PCREGREP=Off || exit /b !errorlevel!
+          nmake || exit /b !errorlevel!
+          copy pcre.h ..\externals || exit /b !errorlevel!
+          if "${{ matrix.arch }}" == "x86" (
+            copy pcre.lib ..\externals\pcre.lib || exit /b !errorlevel!
+          ) else (
+            copy pcre.lib ..\externals\pcre64.lib || exit /b !errorlevel!
+          )
         env:
           # see https://www.pcre.org/original/changelog.txt
-          PCRE_VERSION: 8.44  
+          PCRE_VERSION: 8.44
+          CL: /MP
 
       - name: Install Z3 library
         run: |
-          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-x64-win.zip -o z3-%Z3_VERSION%-win.zip
-          7z x z3-%Z3_VERSION%-win.zip -oexternals -r -y
-          move externals\z3-%Z3_VERSION%-x64-win externals\z3
+          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -o z3-%Z3_VERSION%-win.zip || exit /b !errorlevel!
+          7z x z3-%Z3_VERSION%-win.zip -oexternals -r -y || exit /b !errorlevel!
+          move externals\z3-%Z3_VERSION%-${{ matrix.arch }}-win externals\z3 || exit /b !errorlevel!
         env:
           # see https://github.com/Z3Prover/z3/releases:  
           Z3_VERSION: 4.8.10
 
+      # no 32-bit Qt available
       - name: Install Qt
+        if: matrix.arch == 'x64'
         uses: jurplel/install-qt-action@v2
         with:
           modules: 'qtcharts'
 
-      - name: Build GUI x64 release
+      - name: Install missing Python packages
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" 
-          cd gui
-          qmake HAVE_QCHART=yes
-          nmake release
+          python -m pip install pip --upgrade
+          python -m pip install pytest
+          python -m pip install pytest-custom_exit_code
+
+      - name: Build GUI release
+        if: matrix.arch == 'x64'
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
+          cd gui || exit /b !errorlevel!
+          qmake HAVE_QCHART=yes || exit /b !errorlevel!
+          nmake release || exit /b !errorlevel!
+        env:
+          CL: /MP
       
       - name: Deploy GUI
+        if: matrix.arch == 'x64'
         run: |
-          windeployqt Build\gui
-          del Build\gui\cppcheck-gui.ilk
-          del Build\gui\cppcheck-gui.pdb
+          windeployqt Build\gui || exit /b !errorlevel!
+          del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
+          del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
           
-      - name: Build CLI x64 debug configuration using MSBuild
-        run: msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE /p:Platform=x64
+      - name: Build CLI debug configuration using MSBuild
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
+          set ARCH=${{ matrix.arch }}
+          if "${{ matrix.arch }}" == "x86" (
+            set ARCH=Win32
+          )
+          msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
 
       - name: Run Debug test
-        run: .\bin\debug\testrunner.exe
+        run: .\bin\debug\testrunner.exe || exit /b !errorlevel!
 
-      - name: Build x64 release configuration using MSBuild
-        run: msbuild -m cppcheck.sln /p:Configuration=Release-PCRE /p:Platform=x64
+      - name: Build CLI release configuration using MSBuild
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
+          set ARCH=${{ matrix.arch }}
+          if "${{ matrix.arch }}" == "x86" (
+            set ARCH=Win32
+          )
+          msbuild -m cppcheck.sln /p:Configuration=Release-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
 
       - name: Run Release test
-        run: .\bin\testrunner.exe
- 
-      - uses: actions/upload-artifact@v2
-        with:
-          name: cppcheck_gui
-          path: Build\gui
-          
-      - uses: actions/upload-artifact@v2
-        with:
-          name: cppcheck_gui
-          path: ./**/cfg/*.cfg
-        
-      - uses: actions/upload-artifact@v2
-        with:
-          name: cppcheck_gui
-          path: ./**/platforms/*.xml  
-          
-      - uses: actions/upload-artifact@v2
-        with:
-          name: cppcheck_gui
-          path: externals\z3\bin\*.dll
-        
-      - uses: actions/upload-artifact@v2
-        with:
-          name: cppcheck_cli
-          path: ./bin/cppcheck.exe
-        
-      - uses: actions/upload-artifact@v2
-        with:
-          name: cppcheck_cli
-          path: ./bin/cppcheck-core.dll
-          
-      - uses: actions/upload-artifact@v2
-        with:
-          name: cppcheck_cli
-          path: externals\z3\bin\*.dll
-          
-      - uses: actions/upload-artifact@v2
-        with:
-          name: cppcheck_cli
-          path: ./**/cfg/*.cfg
-        
-      - uses: actions/upload-artifact@v2
-        with:
-          name: cppcheck_cli
-          path: ./**/platforms/*.xml
+        run: .\bin\testrunner.exe || exit /b !errorlevel!
+
+      - name: Run test/cli
+        run: |
+          :: since FILESDIR is not set copy the binary to the root so the addons are found
+          copy .\bin\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
+          copy .\bin\cppcheck-core.dll .\cppcheck-core.dll || exit /b !errorlevel!
+          cd test/cli || exit /b !errorlevel!
+          python -m pytest --suppress-no-test-exit-code test-clang-import.py || exit /b !errorlevel!
+          python -m pytest test-helloworld.py || exit /b !errorlevel!
+          python -m pytest test-inline-suppress.py || exit /b !errorlevel!
+          python -m pytest test-more-projects.py || exit /b !errorlevel!
+          python -m pytest test-proj2.py || exit /b !errorlevel!
+          python -m pytest test-suppress-syntaxError.py || exit /b !errorlevel!

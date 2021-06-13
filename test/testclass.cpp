@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 #include <tinyxml2.h>
 
 #include "checkclass.h"
-#include "ctu.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -36,8 +35,8 @@ private:
     Settings settings1;
 
     void run() OVERRIDE {
-        settings0.addEnabled("style");
-        settings1.addEnabled("warning");
+        settings0.severity.enable(Severity::style);
+        settings1.severity.enable(Severity::warning);
 
         // Load std.cfg configuration
         {
@@ -72,6 +71,7 @@ private:
         TEST_CASE(copyConstructor2); // ticket #4458
         TEST_CASE(copyConstructor3); // defaulted/deleted
         TEST_CASE(copyConstructor4); // base class with private constructor
+        TEST_CASE(copyConstructor5); // multiple inheritance
         TEST_CASE(noOperatorEq); // class with memory management should have operator eq
         TEST_CASE(noDestructor); // class with memory management should have destructor
 
@@ -225,13 +225,15 @@ private:
         TEST_CASE(unsafeClassRefMember);
 
         TEST_CASE(ctuOneDefinitionRule);
+
+        TEST_CASE(getFileInfo);
     }
 
     void checkCopyCtorAndEqOperator(const char code[]) {
         // Clear the error log
         errout.str("");
         Settings settings;
-        settings.addEnabled("warning");
+        settings.severity.enable(Severity::warning);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -898,6 +900,30 @@ private:
                              "class Base : private noncopyable {};\n"
                              "\n"
                              "class Foo : public Base {\n"
+                             "public:\n"
+                             "    Foo() : m_ptr(new int) {}\n"
+                             "    ~Foo() { delete m_ptr; }\n"
+                             "private:\n"
+                             "    int* m_ptr;\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void copyConstructor5() {
+        checkCopyConstructor("class Copyable {};\n"
+                             "\n"
+                             "class Foo : public Copyable, public UnknownType {\n"
+                             "public:\n"
+                             "    Foo() : m_ptr(new int) {}\n"
+                             "    ~Foo() { delete m_ptr; }\n"
+                             "private:\n"
+                             "    int* m_ptr;\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkCopyConstructor("class Copyable {};\n"
+                             "\n"
+                             "class Foo : public UnknownType, public Copyable {\n"
                              "public:\n"
                              "    Foo() : m_ptr(new int) {}\n"
                              "    ~Foo() { delete m_ptr; }\n"
@@ -2427,8 +2453,8 @@ private:
         // Clear the error log
         errout.str("");
 
-        settings0.inconclusive = inconclusive;
-        settings0.addEnabled("warning");
+        settings0.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        settings0.severity.enable(Severity::warning);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
@@ -2719,8 +2745,8 @@ private:
 
     void checkNoMemset(const char code[]) {
         Settings settings;
-        settings.addEnabled("warning");
-        settings.addEnabled("portability");
+        settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::portability);
         checkNoMemset(code,settings);
     }
 
@@ -3353,7 +3379,7 @@ private:
         // Check..
         if (!s)
             s = &settings0;
-        s->inconclusive = inconclusive;
+        s->certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         // Tokenize..
         Tokenizer tokenizer(s, this);
@@ -6539,7 +6565,7 @@ private:
         errout.str("");
 
         // Check..
-        settings0.inconclusive = true;
+        settings0.certainty.setEnabled(Certainty::inconclusive, true);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
@@ -6574,7 +6600,7 @@ private:
 
         // Check..
         Settings settings;
-        settings.addEnabled("performance");
+        settings.severity.enable(Severity::performance);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -6884,9 +6910,9 @@ private:
         if (!s) {
             static Settings settings_;
             s = &settings_;
-            s->addEnabled("warning");
+            s->severity.enable(Severity::warning);
         }
-        s->inconclusive = inconclusive;
+        s->certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         // Tokenize..
         Tokenizer tokenizer(s, this);
@@ -7137,7 +7163,7 @@ private:
         // Clear the error log
         errout.str("");
         Settings settings;
-        settings.addEnabled("style");
+        settings.severity.enable(Severity::style);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -7220,7 +7246,7 @@ private:
         errout.str("");
         Settings settings;
         settings.safeChecks.classes = true;
-        settings.addEnabled("warning");
+        settings.severity.enable(Severity::warning);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -7427,6 +7453,31 @@ private:
 
         ctu({"class C { C(); }; C::C(){}", "class C { C(); }; C::C(){}"});
         ASSERT_EQUALS("", errout.str());
+
+        ctu({"class A::C { C() { std::cout << 0; } };", "class B::C { C() { std::cout << 1; } };"});
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void getFileInfo(const char code[]) {
+        // Clear the error log
+        errout.str("");
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings1, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check..
+        CheckClass checkClass(&tokenizer, &settings1, this);
+
+        Check::FileInfo * fileInfo = checkClass.getFileInfo(&tokenizer, &settings1);
+
+        delete fileInfo;
+    }
+
+    void getFileInfo() {
+        getFileInfo("void foo() { union { struct { }; }; }"); // don't crash
+        getFileInfo("struct sometype { sometype(); }; sometype::sometype() = delete;"); // don't crash
     }
 
 };

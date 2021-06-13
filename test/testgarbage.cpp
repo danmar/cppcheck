@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,13 +35,8 @@ private:
 
     void run() OVERRIDE {
         settings.debugwarnings = true;
-        settings.addEnabled("style");
-        settings.addEnabled("warning");
-        settings.addEnabled("portability");
-        settings.addEnabled("performance");
-        settings.addEnabled("information");
-        settings.inconclusive = true;
-        settings.experimental = true;
+        settings.severity.fill();
+        settings.certainty.fill();
 
         // don't freak out when the syntax is wrong
 
@@ -52,6 +47,7 @@ private:
         TEST_CASE(wrong_syntax4); // #3618
         TEST_CASE(wrong_syntax_if_macro);  // #2518 - if MACRO()
         TEST_CASE(wrong_syntax_class_x_y); // #3585 - class x y { };
+        TEST_CASE(wrong_syntax_anonymous_struct);
         TEST_CASE(syntax_case_default);
         TEST_CASE(garbageCode1);
         TEST_CASE(garbageCode2); // #4300
@@ -408,6 +404,11 @@ private:
         }
     }
 
+    void wrong_syntax_anonymous_struct() {
+        ASSERT_THROW(checkCode("struct { int x; } = {0};"), InternalError);
+        ASSERT_THROW(checkCode("struct { int x; } * = {0};"), InternalError);
+    }
+
     void syntax_case_default() {
         ASSERT_THROW(checkCode("void f() {switch (n) { case: z(); break;}}"), InternalError);
 
@@ -686,7 +687,7 @@ private:
     }
 
     void garbageCode55() { // #6724
-        checkCode("() __attribute__((constructor)); { } { }");
+        ASSERT_THROW(checkCode("() __attribute__((constructor)); { } { }"), InternalError);
     }
 
     void garbageCode56() { // #6713

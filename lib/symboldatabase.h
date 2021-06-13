@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include "token.h"
 #include "utils.h"
 
+#include <cctype>
 #include <cstddef>
 #include <list>
 #include <map>
@@ -903,6 +904,8 @@ public:
 
     bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length) const;
 
+    static bool returnsConst(const Function* function, bool unknown = false);
+
     static bool returnsReference(const Function* function, bool unknown = false);
 
     static std::vector<const Token*> findReturns(const Function* f);
@@ -1028,6 +1031,11 @@ public:
     bool enumClass;
 
     std::vector<Enumerator> enumeratorList;
+
+    bool isAnonymous() const {
+        // TODO: Check if class/struct is anonymous
+        return className.size() > 9 && className.compare(0,9,"Anonymous") == 0 && std::isdigit(className[9]);
+    }
 
     const Enumerator * findEnumerator(const std::string & name) const {
         for (const Enumerator & i : enumeratorList) {
@@ -1264,6 +1272,10 @@ public:
     enum class MatchResult { UNKNOWN, SAME, FALLBACK1, FALLBACK2, NOMATCH };
     static MatchResult matchParameter(const ValueType *call, const ValueType *func);
     static MatchResult matchParameter(const ValueType *call, const Variable *callVar, const Variable *funcVar);
+
+    bool isPrimitive() const {
+        return (type >= ValueType::Type::BOOL);
+    }
 
     bool isIntegral() const {
         return (type >= ValueType::Type::BOOL && type <= ValueType::Type::UNKNOWN_INT);

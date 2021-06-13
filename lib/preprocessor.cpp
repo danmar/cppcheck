@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <cstring>
 #include <iterator> // back_inserter
 #include <utility>
 
@@ -97,7 +96,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         return false;
 
     // skip spaces after "cppcheck-suppress"
-    const std::string::size_type pos2 = comment.find_first_not_of(" ", pos1+17);
+    const std::string::size_type pos2 = comment.find_first_not_of(" ", pos1+cppchecksuppress.size());
     if (pos2 == std::string::npos)
         return false;
 
@@ -411,6 +410,37 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
             if (isUndefined(config, undefined))
                 config.clear();
 
+            bool ifndef = false;
+            if (cmdtok->str() == "ifndef")
+                ifndef = true;
+            else {
+                const std::vector<std::string> match{"if", "!", "defined", "(", config, ")"};
+                int i = 0;
+                ifndef = true;
+                for (const simplecpp::Token *t = cmdtok; i < match.size(); t = t->next) {
+                    if (!t || t->str() != match[i++]) {
+                        ifndef = false;
+                        break;
+                    }
+                }
+            }
+
+            // include guard..
+            if (ifndef && tok->location.fileIndex > 0) {
+                bool includeGuard = true;
+                for (const simplecpp::Token *t = tok->previous; t; t = t->previous) {
+                    if (t->location.fileIndex == tok->location.fileIndex) {
+                        includeGuard = false;
+                        break;
+                    }
+                }
+                if (includeGuard) {
+                    configs_if.push_back(std::string());
+                    configs_ifndef.push_back(std::string());
+                    continue;
+                }
+            }
+
             configs_if.push_back((cmdtok->str() == "ifndef") ? std::string() : config);
             configs_ifndef.push_back((cmdtok->str() == "ifndef") ? config : std::string());
             ret.insert(cfg(configs_if,userDefines));
@@ -615,12 +645,11 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
         dui.defines.push_back(s);
     }
 
-    if (Path::isCPP(filename))
-        dui.defines.emplace_back("__cplusplus");
-
     dui.undefined = mSettings.userUndefs; // -U
     dui.includePaths = mSettings.includePaths; // -I
     dui.includes = mSettings.userIncludes;  // --include
+    if (Path::isCPP(filename))
+        dui.std = mSettings.standards.getCPP();
     return dui;
 }
 
@@ -822,7 +851,7 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
                                          Severity::error,
                                          msg,
                                          "preprocessorErrorDirective",
-                                         false));
+                                         Certainty::normal));
 }
 
 // Report that include is missing
@@ -857,7 +886,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
                             "Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results." :
                             "Include file: \"" + header + "\" not found.",
                             (headerType==SystemHeader) ? "missingIncludeSystem" : "missingInclude",
-                            false);
+                            Certainty::normal);
         mErrorLogger->reportInfo(errmsg);
     }
 }
@@ -882,7 +911,7 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
             });
 
             if (!directiveLocation) {
-                if (mSettings.isEnabled(Settings::INFORMATION))
+                if (mSettings.severity.isEnabled(Severity::information))
                     validateCfgError(mu.useLocation.file(), mu.useLocation.line, cfg, macroName);
                 ret = false;
             }
@@ -898,7 +927,7 @@ void Preprocessor::validateCfgError(const std::string &file, const unsigned int 
     std::list<ErrorMessage::FileLocation> locationList;
     const ErrorMessage::FileLocation loc(file, line, 0);
     locationList.push_back(loc);
-    const ErrorMessage errmsg(locationList, mFile0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, false);
+    const ErrorMessage errmsg(locationList, mFile0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, Certainty::normal);
     mErrorLogger->reportInfo(errmsg);
 }
 

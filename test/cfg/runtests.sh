@@ -93,7 +93,7 @@ else
         ${CXX} ${CXX_OPT} ${WXCONFIG} -Wno-deprecated-declarations ${DIR}wxwidgets.cpp
     fi
 fi
-${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=wxwidgets -f ${DIR}wxwidgets.cpp
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=wxwidgets,windows -f ${DIR}wxwidgets.cpp
 
 # gtk.c
 set +e

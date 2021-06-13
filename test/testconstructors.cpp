@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings.inconclusive = inconclusive;
+        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -47,9 +47,23 @@ private:
         checkClass.constructors();
     }
 
+    void check(const char code[], const Settings &s) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Tokenize..
+        Tokenizer tokenizer(&s, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check class constructors..
+        CheckClass checkClass(&tokenizer, &s, this);
+        checkClass.constructors();
+    }
+
     void run() OVERRIDE {
-        settings.addEnabled("style");
-        settings.addEnabled("warning");
+        settings.severity.enable(Severity::style);
+        settings.severity.enable(Severity::warning);
 
         TEST_CASE(simple1);
         TEST_CASE(simple2);
@@ -148,6 +162,7 @@ private:
         TEST_CASE(uninitVar30); // ticket #6417
         TEST_CASE(uninitVar31); // ticket #8271
         TEST_CASE(uninitVar32); // ticket #8835
+        TEST_CASE(uninitVar33); // ticket #10295
         TEST_CASE(uninitVarEnum1);
         TEST_CASE(uninitVarEnum2); // ticket #8146
         TEST_CASE(uninitVarStream);
@@ -175,6 +190,7 @@ private:
         TEST_CASE(privateCtor2);           // If constructor is private..
         TEST_CASE(function);               // Function is not variable
         TEST_CASE(uninitVarPublished);     // Borland C++: Variables in the published section are auto-initialized
+        TEST_CASE(uninitVarInheritClassInit); // Borland C++: if class inherits from TObject, all variables are initialized
         TEST_CASE(uninitOperator);         // No FP about uninitialized 'operator[]'
         TEST_CASE(uninitFunction1);        // No FP when initialized in function
         TEST_CASE(uninitFunction2);        // No FP when initialized in function
@@ -2524,6 +2540,18 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable 'Foo::member' is not initialized in the constructor.\n", errout.str());
     }
 
+    void uninitVar33() { // ticket #10295
+        check("namespace app {\n"
+              "    class B {\n"
+              "    public:\n"
+              "        B(void);\n"
+              "        int x;\n"
+              "    };\n"
+              "};\n"
+              "app::B::B(void){}");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Member variable 'B::x' is not initialized in the constructor.\n", errout.str());
+    }
+
     void uninitVarArray1() {
         check("class John\n"
               "{\n"
@@ -3147,6 +3175,20 @@ private:
               "public:\n"
               "    Fred() { }\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVarInheritClassInit() {
+        Settings s;
+        s.libraries.emplace_back("vcl");
+
+        check("class Fred: public TObject\n"
+              "{\n"
+              "public:\n"
+              "    Fred() { }\n"
+              "private:\n"
+              "    int x;\n"
+              "};", s);
         ASSERT_EQUALS("", errout.str());
     }
 

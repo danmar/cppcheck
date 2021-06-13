@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,12 +28,10 @@
 #include <vector>
 
 #include "errortypes.h"
-#include "mathlib.h"
 #include "utils.h"
 
 class Function;
 class Library;
-class Scope;
 class Settings;
 class Token;
 class Variable;
@@ -70,6 +68,7 @@ bool astIsSignedChar(const Token *tok);
 bool astIsUnknownSignChar(const Token *tok);
 /** Is expression of integral type? */
 bool astIsIntegral(const Token *tok, bool unknown);
+bool astIsUnsigned(const Token* tok);
 /** Is expression of floating point type? */
 bool astIsFloat(const Token *tok, bool unknown);
 /** Is expression of boolean type? */
@@ -189,6 +188,8 @@ bool isReturnScope(const Token* const endToken,
 /// Return the token to the function and the argument number
 const Token * getTokenArgumentFunction(const Token * tok, int& argn);
 
+std::vector<const Variable*> getArgumentVars(const Token* tok, int argnr);
+
 /** Is variable changed by function call?
  * In case the answer of the question is inconclusive, e.g. because the function declaration is not known
  * the return value is false and the output parameter inconclusive is set to true
@@ -280,7 +281,12 @@ bool isConstVarExpression(const Token *tok, const char * skipMatch = nullptr);
 
 const Variable *getLHSVariable(const Token *tok);
 
+const Token* getLHSVariableToken(const Token* tok);
+
 std::vector<const Variable*> getLHSVariables(const Token* tok);
+
+/** Find a allocation function call in expression, so result of expression is allocated memory/resource. */
+const Token* findAllocFuncCallToken(const Token *expr, const Library &library);
 
 bool isScopeBracket(const Token* tok);
 

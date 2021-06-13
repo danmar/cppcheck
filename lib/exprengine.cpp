@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -138,6 +138,7 @@
 #include "symboldatabase.h"
 #include "tokenize.h"
 
+#include <cctype>
 #include <limits>
 #include <memory>
 #include <iostream>
@@ -642,7 +643,7 @@ namespace {
 
             ErrorPath e = errorPath;
             e.push_back(ErrorPathItem(tok, text));
-            ErrorMessage errmsg(e, &tokenizer->list, severity, id, text, cwe, inconclusive, true);
+            ErrorMessage errmsg(e, &tokenizer->list, severity, id, text, cwe, inconclusive ? Certainty::inconclusive : Certainty::normal, true);
             errmsg.incomplete = incomplete;
             errmsg.function = functionName.empty() ? currentFunction : functionName;
             errorLogger->reportErr(errmsg);

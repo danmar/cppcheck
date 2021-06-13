@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
-#include <functional> // std::hash
 
 InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type type) :
     token(tok), errorMessage(errorMsg), type(type)
@@ -67,18 +66,18 @@ static std::size_t calculateWarningHash(const TokenList *tokenList, const std::s
 }
 
 ErrorMessage::ErrorMessage()
-    : incomplete(false), severity(Severity::none), cwe(0U), inconclusive(false), hash(0)
+    : incomplete(false), severity(Severity::none), cwe(0U), certainty(Certainty::normal), hash(0)
 {
 }
 
-ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, bool inconclusive) :
+ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, Certainty::CertaintyLevel certainty) :
     callStack(callStack), // locations for this error message
     id(id),               // set the message id
     file0(file1),
     incomplete(false),
     severity(severity),   // severity for this error message
     cwe(0U),
-    inconclusive(inconclusive),
+    certainty(certainty),
     hash(0)
 {
     // set the summary and verbose messages
@@ -87,22 +86,22 @@ ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::
 
 
 
-ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, const CWE &cwe, bool inconclusive) :
+ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, const CWE &cwe, Certainty::CertaintyLevel certainty) :
     callStack(callStack), // locations for this error message
     id(id),               // set the message id
     file0(file1),
     incomplete(false),
     severity(severity),   // severity for this error message
     cwe(cwe.id),
-    inconclusive(inconclusive),
+    certainty(certainty),
     hash(0)
 {
     // set the summary and verbose messages
     setmsg(msg);
 }
 
-ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, bool inconclusive)
-    : id(id), incomplete(false), severity(severity), cwe(0U), inconclusive(inconclusive), hash(0)
+ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, Certainty::CertaintyLevel certainty)
+    : id(id), incomplete(false), severity(severity), cwe(0U), certainty(certainty), hash(0)
 {
     // Format callstack
     for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
@@ -120,8 +119,8 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
 }
 
 
-ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, const CWE &cwe, bool inconclusive, bool bugHunting)
-    : id(id), incomplete(false), severity(severity), cwe(cwe.id), inconclusive(inconclusive)
+ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, const CWE &cwe, Certainty::CertaintyLevel certainty, bool bugHunting)
+    : id(id), incomplete(false), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack
     for (const Token *tok: callstack) {
@@ -145,8 +144,8 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
     hash = bugHunting ? calculateWarningHash(list, hashWarning.str()) : 0;
 }
 
-ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive, bool bugHunting)
-    : id(id), incomplete(false), severity(severity), cwe(cwe.id), inconclusive(inconclusive)
+ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty::CertaintyLevel certainty, bool bugHunting)
+    : id(id), incomplete(false), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack
     for (const ErrorPathItem& e: errorPath) {
@@ -181,7 +180,7 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     : incomplete(false),
       severity(Severity::none),
       cwe(0U),
-      inconclusive(false)
+      certainty(Certainty::normal)
 {
     const char * const unknown = "<UNKNOWN>";
 
@@ -195,7 +194,7 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     std::istringstream(attr ? attr : "0") >> cwe.id;
 
     attr = errmsg->Attribute("inconclusive");
-    inconclusive = attr && (std::strcmp(attr, "true") == 0);
+    certainty = (attr && (std::strcmp(attr, "true") == 0)) ? Certainty::inconclusive : Certainty::normal;
 
     attr = errmsg->Attribute("msg");
     mShortMessage = attr ? attr : "";
@@ -217,7 +216,7 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
             const char *info = strinfo ? strinfo : "";
             const int line = strline ? std::atoi(strline) : 0;
             const int column = strcolumn ? std::atoi(strcolumn) : 0;
-            callStack.emplace_back(file, info, line, column);
+            callStack.emplace_front(file, info, line, column);
         }
     }
 }
@@ -257,7 +256,7 @@ Suppressions::ErrorMessage ErrorMessage::toSuppressionsErrorMessage() const
         ret.setFileName(callStack.back().getfile(false));
         ret.lineNumber = callStack.back().line;
     }
-    ret.inconclusive = inconclusive;
+    ret.certainty = certainty;
     ret.symbolNames = mSymbolNames;
     return ret;
 }
@@ -271,7 +270,8 @@ std::string ErrorMessage::serialize() const
     oss << Severity::toString(severity).length() << " " << Severity::toString(severity);
     oss << MathLib::toString(cwe.id).length() << " " << MathLib::toString(cwe.id);
     oss << MathLib::toString(hash).length() << " " << MathLib::toString(hash);
-    if (inconclusive) {
+    oss << file0.size() << " " << file0;
+    if (certainty == Certainty::inconclusive) {
         const std::string text("inconclusive");
         oss << text.length() << " " << text;
     }
@@ -294,12 +294,12 @@ std::string ErrorMessage::serialize() const
 
 bool ErrorMessage::deserialize(const std::string &data)
 {
-    inconclusive = false;
+    certainty = Certainty::normal;
     callStack.clear();
     std::istringstream iss(data);
-    std::array<std::string, 6> results;
+    std::array<std::string, 7> results;
     std::size_t elem = 0;
-    while (iss.good() && elem < 6) {
+    while (iss.good() && elem < 7) {
         unsigned int len = 0;
         if (!(iss >> len))
             return false;
@@ -312,22 +312,23 @@ bool ErrorMessage::deserialize(const std::string &data)
         }
 
         if (temp == "inconclusive") {
-            inconclusive = true;
+            certainty = Certainty::inconclusive;
             continue;
         }
 
         results[elem++] = temp;
     }
 
-    if (elem != 6)
+    if (elem != 7)
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed");
 
     id = results[0];
     severity = Severity::fromString(results[1]);
     std::istringstream(results[2]) >> cwe.id;
     std::istringstream(results[3]) >> hash;
-    mShortMessage = results[4];
-    mVerboseMessage = results[5];
+    std::istringstream(results[4]) >> file0;
+    mShortMessage = results[5];
+    mVerboseMessage = results[6];
 
     unsigned int stackSize = 0;
     if (!(iss >> stackSize))
@@ -436,13 +437,14 @@ std::string ErrorMessage::toXML() const
         printer.PushAttribute("cwe", cwe.id);
     if (hash)
         printer.PushAttribute("hash", MathLib::toString(hash).c_str());
-    if (inconclusive)
+    if (certainty == Certainty::inconclusive)
         printer.PushAttribute("inconclusive", "true");
+
+    if (!file0.empty())
+        printer.PushAttribute("file0", file0.c_str());
 
     for (std::list<FileLocation>::const_reverse_iterator it = callStack.rbegin(); it != callStack.rend(); ++it) {
         printer.OpenElement("location", false);
-        if (!file0.empty() && (*it).getfile() != file0)
-            printer.PushAttribute("file0", Path::toNativeSeparators(file0).c_str());
         printer.PushAttribute("file", (*it).getfile().c_str());
         printer.PushAttribute("line", std::max((*it).line,0));
         printer.PushAttribute("column", (*it).column);
@@ -505,7 +507,7 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
             text << ErrorLogger::callStackToString(callStack) << ": ";
         if (severity != Severity::none) {
             text << '(' << Severity::toString(severity);
-            if (inconclusive)
+            if (certainty == Certainty::inconclusive)
                 text << ", inconclusive";
             text << ") ";
         }
@@ -527,7 +529,7 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
         const std::string::size_type pos1 = result.find("{inconclusive:");
         const std::string::size_type pos2 = result.find('}', pos1+1);
         const std::string replaceFrom = result.substr(pos1,pos2-pos1+1);
-        const std::string replaceWith = inconclusive ? result.substr(pos1+14, pos2-pos1-14) : std::string();
+        const std::string replaceWith = (certainty == Certainty::inconclusive) ? result.substr(pos1+14, pos2-pos1-14) : std::string();
         findAndReplace(result, replaceFrom, replaceWith);
     }
     findAndReplace(result, "{severity}", Severity::toString(severity));
@@ -614,7 +616,7 @@ bool ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
         std::list<ErrorMessage::FileLocation> callStack;
         if (!s.fileName.empty())
             callStack.emplace_back(s.fileName, s.lineNumber, 0);
-        reportErr(ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + s.errorId, "unmatchedSuppression", false));
+        reportErr(ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + s.errorId, "unmatchedSuppression", Certainty::normal));
         err = true;
     }
     return err;

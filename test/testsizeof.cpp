@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,9 +34,9 @@ private:
     Settings settings;
 
     void run() OVERRIDE {
-        settings.addEnabled("warning");
-        settings.addEnabled("portability");
-        settings.inconclusive = true;
+        settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::portability);
+        settings.certainty.enable(Certainty::inconclusive);
 
         TEST_CASE(sizeofsizeof);
         TEST_CASE(sizeofCalculation);

@@ -2,11 +2,11 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QListWidgetItem>
 #include <QString>
-#include <QTextStream>
 #include <QFileSystemModel>
 
+class QListWidgetItem;
+class QTextStream;
 namespace Ui {
     class MainWindow;
 }

@@ -17,6 +17,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
       - name: Install missing software on ubuntu 18.04
         if: matrix.os == 'ubuntu-18.04'
         run: |
@@ -37,6 +42,11 @@ jobs:
         run: |
           brew install coreutils z3
           cp externals/z3_version_old.h externals/z3_version.h
+
+      - name: Install missing Python packages
+        run: |
+          python -m pip install pip --upgrade
+          python -m pip install pytest
           
       - name: Install Qt
         if: contains(matrix.os, 'ubuntu')
@@ -74,6 +84,38 @@ jobs:
       - name: Run test
         run: |
           make -j$(nproc) check USE_Z3=yes HAVE_RULES=yes
+
+      # the script uses sed parameters not supported by MacOS
+      - name: Run extra tests
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          tools/generate_and_run_more_tests.sh
+
+      - name: Run test/cli
+        run: |
+          cd test/cli
+          pytest test-*.py
+          cd ../../..
+          ln -s cppcheck 'cpp check'
+          cd 'cpp check/test/cli'
+          pytest test-*.py
+
+      # fails on macos since some includes (e.g. sys/epoll.h) are not available
+      - name: Run cfg tests
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          make -j$(nproc) checkcfg
+
+      # it seems macos has no "wc" command
+      - name: Run showtimetop5 tests
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          ./tools/test_showtimetop5.sh
+
+      - name: Run --dump test
+        run: |
+          ./cppcheck test/testpreprocessor.cpp --dump
+          xmllint --noout test/testpreprocessor.cpp.dump
 
       - name: Validate
         run: |
@@ -119,12 +161,12 @@ jobs:
           make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2" MATCHCOMPILER=yes VERIFY=1
           # self check lib/cli
           mkdir b1
-          ./cppcheck -q -j$(nproc) --template=selfcheck --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings  cli lib
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings  cli lib
           # check gui with qt settings
           mkdir b2
-          ./cppcheck -q -j$(nproc) --template=selfcheck --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings  gui/*.cpp
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings  gui/*.cpp
           # self check test and tools
-          ./cppcheck -q -j$(nproc) --template=selfcheck -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings  test/*.cpp tools
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings  test/*.cpp tools
 
       - name: Build triage on ubuntu
         if: matrix.os == 'ubuntu-20.04'
@@ -138,18 +180,3 @@ jobs:
         run: |
           pushd oss-fuzz
           make -j$(nproc) CXX=clang++ CXXFLAGS="-fsanitize=address" fuzz-client translate
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: cppcheck_cli
-          path: ./cppcheck
-    
-      - uses: actions/upload-artifact@v2
-        with:
-          name: cppcheck_cli
-          path: ./**/cfg/*.cfg
-        
-      - uses: actions/upload-artifact@v2
-        with:
-          name: cppcheck_cli
-          path: ./**/platforms/*.xml

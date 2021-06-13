@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -126,12 +126,6 @@ public:
     static bool isOctalDigit(char c);
 
     static unsigned int encodeMultiChar(const std::string& str);
-
-    /**
-     * \param[in] str character literal
-     * @return Number of internal representation of the character literal
-     * */
-    static MathLib::bigint characterLiteralToLongNumber(const std::string& str);
 
     /**
      * \param[in] iCode Code being considered

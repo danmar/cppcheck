@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ namespace {
 
 void CheckAssert::assertWithSideEffects()
 {
-    if (!mSettings->isEnabled(Settings::WARNING))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
     for (const Token* tok = mTokenizer->list.front(); tok; tok = tok->next()) {
@@ -104,7 +104,7 @@ void CheckAssert::sideEffectInAssertError(const Token *tok, const std::string& f
                 "Non-pure function: '$symbol' is called inside assert statement. "
                 "Assert statements are removed from release builds so the code inside "
                 "assert statement is not executed. If the code is needed also in release "
-                "builds, this is a bug.", CWE398, false);
+                "builds, this is a bug.", CWE398, Certainty::normal);
 }
 
 void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& varname)
@@ -116,7 +116,7 @@ void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& v
                 "Variable '$symbol' is modified inside assert statement. "
                 "Assert statements are removed from release builds so the code inside "
                 "assert statement is not executed. If the code is needed also in release "
-                "builds, this is a bug.", CWE398, false);
+                "builds, this is a bug.", CWE398, Certainty::normal);
 }
 
 // checks if side effects happen on the variable prior to tmp

@@ -275,7 +275,7 @@ void bufferAccessOutOfBounds()
 
     uint8_t byteBuf[5] = {0};
     uint8_t byteBuf2[10] = {0};
-    // TODO ticket #8412 cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress bufferAccessOutOfBounds
     RtlEqualMemory(byteBuf, byteBuf2, 20);
     // cppcheck-suppress ignoredReturnValue
@@ -403,6 +403,7 @@ void nullPointer()
 
 void memleak_malloca()
 {
+    // cppcheck-suppress unusedAllocatedMemory
     // cppcheck-suppress unreadVariable
     void *pMem = _malloca(10);
     // cppcheck-suppress memleak

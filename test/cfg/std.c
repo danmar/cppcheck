@@ -87,6 +87,7 @@ void bufferAccessOutOfBounds(void)
 
 void memleak_aligned_alloc(void)
 {
+    // cppcheck-suppress unusedAllocatedMemory
     // cppcheck-suppress unreadVariable
     char * alignedBuf = aligned_alloc(8, 16);
     // cppcheck-suppress memleak
@@ -1118,6 +1119,7 @@ void uninitvar_calloc(void)
 {
     size_t nitems;
     size_t size;
+    // cppcheck-suppress unusedAllocatedMemory
     // cppcheck-suppress uninitvar
     int * p = (int*) calloc(nitems, size);
     free(p);
@@ -1759,6 +1761,9 @@ void uninitvar_mbstowcs(wchar_t* d, const char* s, size_t m)
 
     // No warning is expected
     (void)mbstowcs(d,s,m);
+
+    wchar_t buf[100];
+    (void)mbstowcs(buf,s,100);
 }
 
 void uninitvar_mbsrtowcs(wchar_t* d, const char** s, size_t m, mbstate_t *p)
@@ -2595,6 +2600,7 @@ void uninitvar_longjmp(void)
 void uninitvar_malloc(void)
 {
     size_t size;
+    // cppcheck-suppress unusedAllocatedMemory
     // cppcheck-suppress uninitvar
     int *p = (int*)malloc(size);
     free(p);
@@ -3545,6 +3551,28 @@ void uninitvar_strxfrm(void)
     size_t n;
     // cppcheck-suppress uninitvar
     (void)strxfrm(ds,ss,n);
+}
+
+void bufferAccessOutOfBounds_strxfrm(void)
+{
+    const char src[3] = "abc";
+    char dest[1] = "a";
+    (void)strxfrm(dest,src,1);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)strxfrm(dest,src,2);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)strxfrm(dest,src,3);
+}
+
+void bufferAccessOutOfBounds_strncmp(void)
+{
+    const char src[3] = "abc";
+    char dest[1] = "a";
+    (void)strncmp(dest,src,1);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)strncmp(dest,src,2);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)strncmp(dest,src,3);
 }
 
 void uninitvar_wcsxfrm(void)

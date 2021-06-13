@@ -155,7 +155,7 @@ if __name__ == "__main__":
 
         with open(result_file, 'a') as myfile:
             myfile.write(package + '\n')
-            diff = lib.diff_results(work_path, 'main', results_to_diff[0], 'your', results_to_diff[1])
+            diff = lib.diff_results('main', results_to_diff[0], 'your', results_to_diff[1])
             if diff != '':
                 myfile.write('diff:\n' + diff + '\n')
 

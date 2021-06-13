@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,20 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QWidget>
-#include <QDialog>
-#include <QString>
-#include <QStringList>
+#include "projectfiledialog.h"
+
 #include <QFileInfo>
 #include <QFileDialog>
-#include <QInputDialog>
 #include <QDir>
 #include <QSettings>
-#include <QProcess>
-#include <QListView>
 #include "common.h"
 #include "newsuppressiondialog.h"
-#include "projectfiledialog.h"
 #include "checkthread.h"
 #include "projectfile.h"
 #include "library.h"
@@ -828,7 +822,7 @@ void ProjectFileDialog::browseMisraFile()
     const QString fileName = QFileDialog::getOpenFileName(this,
                              tr("Select MISRA rule texts file"),
                              QDir::homePath(),
-                             tr("Misra rule texts file (%1)").arg("*.txt"));
+                             tr("MISRA rule texts file (%1)").arg("*.txt"));
     if (!fileName.isEmpty()) {
         QSettings settings;
         mUI.mEditMisraFile->setText(fileName);

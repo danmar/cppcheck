@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,14 +33,12 @@
 #include "valueflow.h"
 
 #include <algorithm>
-#include <cstddef>
 #include <iterator>
 #include <list>
 #include <map>
 #include <set>
 #include <sstream>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 
 // Register this check class (by creating a static instance of it)
@@ -80,9 +78,9 @@ void CheckStl::outOfBounds()
                     continue;
                 if (value.isImpossible())
                     continue;
-                if (value.isInconclusive() && !mSettings->inconclusive)
+                if (value.isInconclusive() && !mSettings->certainty.isEnabled(Certainty::inconclusive))
                     continue;
-                if (!value.errorSeverity() && !mSettings->isEnabled(Settings::WARNING))
+                if (!value.errorSeverity() && !mSettings->severity.isEnabled(Severity::warning))
                     continue;
                 if (Token::Match(parent, ". %name% (") && isElementAccessYield(container->getYield(parent->strAt(1)))) {
                     if (value.intvalue == 0) {
@@ -98,7 +96,7 @@ void CheckStl::outOfBounds()
                             parent, tok->expressionString(), &value, indexTok->expressionString(), indexValue);
                         continue;
                     }
-                    if (mSettings->isEnabled(Settings::WARNING)) {
+                    if (mSettings->severity.isEnabled(Severity::warning)) {
                         indexValue = indexTok->getMaxValue(true);
                         if (indexValue && indexValue->intvalue >= value.intvalue) {
                             outOfBoundsError(
@@ -134,7 +132,7 @@ void CheckStl::outOfBounds()
                         outOfBoundsError(parent, tok->expressionString(), &value, parent->astOperand2()->expressionString(), indexValue);
                         continue;
                     }
-                    if (mSettings->isEnabled(Settings::WARNING)) {
+                    if (mSettings->severity.isEnabled(Severity::warning)) {
                         indexValue = parent->astOperand2() ? parent->astOperand2()->getMaxValue(true) : nullptr;
                         if (indexValue && indexValue->intvalue >= value.intvalue) {
                             outOfBoundsError(parent, tok->expressionString(), &value, parent->astOperand2()->expressionString(), indexValue);
@@ -207,7 +205,7 @@ void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerNa
                 "containerOutOfBounds",
                 "$symbol:" + containerName +"\n" + errmsg,
                 CWE398,
-                (containerSize && containerSize->isInconclusive()) || (indexValue && indexValue->isInconclusive()));
+                (containerSize && containerSize->isInconclusive()) || (indexValue && indexValue->isInconclusive()) ? Certainty::inconclusive : Certainty::normal);
 }
 
 bool CheckStl::isContainerSize(const Token *containerToken, const Token *expr) const
@@ -281,7 +279,7 @@ void CheckStl::outOfBoundsIndexExpressionError(const Token *tok, const Token *in
                 "containerOutOfBoundsIndexExpression",
                 "$symbol:" + varname +"\n" + errmsg,
                 CWE398,
-                false);
+                Certainty::normal);
 }
 
 
@@ -289,7 +287,7 @@ void CheckStl::outOfBoundsIndexExpressionError(const Token *tok, const Token *in
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &iteratorName)
 {
-    reportError(tok, Severity::error, "invalidIterator1", "$symbol:"+iteratorName+"\nInvalid iterator: $symbol", CWE664, false);
+    reportError(tok, Severity::error, "invalidIterator1", "$symbol:"+iteratorName+"\nInvalid iterator: $symbol", CWE664, Certainty::normal);
 }
 
 void CheckStl::iteratorsError(const Token* tok, const std::string& containerName1, const std::string& containerName2)
@@ -297,7 +295,7 @@ void CheckStl::iteratorsError(const Token* tok, const std::string& containerName
     reportError(tok, Severity::error, "iterators1",
                 "$symbol:" + containerName1 + "\n"
                 "$symbol:" + containerName2 + "\n"
-                "Same iterator is used with different containers '" + containerName1 + "' and '" + containerName2 + "'.", CWE664, false);
+                "Same iterator is used with different containers '" + containerName1 + "' and '" + containerName2 + "'.", CWE664, Certainty::normal);
 }
 
 void CheckStl::iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName1, const std::string& containerName2)
@@ -306,7 +304,7 @@ void CheckStl::iteratorsError(const Token* tok, const Token* containerTok, const
     reportError(callstack, Severity::error, "iterators2",
                 "$symbol:" + containerName1 + "\n"
                 "$symbol:" + containerName2 + "\n"
-                "Same iterator is used with different containers '" + containerName1 + "' and '" + containerName2 + "'.", CWE664, false);
+                "Same iterator is used with different containers '" + containerName1 + "' and '" + containerName2 + "'.", CWE664, Certainty::normal);
 }
 
 void CheckStl::iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName)
@@ -314,7 +312,7 @@ void CheckStl::iteratorsError(const Token* tok, const Token* containerTok, const
     std::list<const Token*> callstack = { tok, containerTok };
     reportError(callstack, Severity::error, "iterators3",
                 "$symbol:" + containerName + "\n"
-                "Same iterator is used with containers '" + containerName + "' that are defined in different scopes.", CWE664, false);
+                "Same iterator is used with containers '" + containerName + "' that are defined in different scopes.", CWE664, Certainty::normal);
 }
 
 // Error message used when dereferencing an iterator that has been erased..
@@ -326,13 +324,13 @@ void CheckStl::dereferenceErasedError(const Token *erased, const Token* deref, c
                     "$symbol:" + itername + "\n"
                     "Iterator '$symbol' used after element has been erased.\n"
                     "The iterator '$symbol' is invalid after the element it pointed to has been erased. "
-                    "Dereferencing or comparing it with another iterator is invalid operation.", CWE664, inconclusive);
+                    "Dereferencing or comparing it with another iterator is invalid operation.", CWE664, inconclusive ? Certainty::inconclusive : Certainty::normal);
     } else {
         reportError(deref, Severity::error, "eraseDereference",
                     "$symbol:" + itername + "\n"
                     "Invalid iterator '$symbol' used.\n"
                     "The iterator '$symbol' is invalid before being assigned. "
-                    "Dereferencing or comparing it with another iterator is invalid operation.", CWE664, inconclusive);
+                    "Dereferencing or comparing it with another iterator is invalid operation.", CWE664, inconclusive ? Certainty::inconclusive : Certainty::normal);
     }
 }
 
@@ -413,7 +411,7 @@ void CheckStl::iterators()
         bool inconclusiveType=false;
         if (!isIterator(var, inconclusiveType))
             continue;
-        if (inconclusiveType && !mSettings->inconclusive)
+        if (inconclusiveType && !mSettings->certainty.isEnabled(Certainty::inconclusive))
             continue;
 
         const int iteratorId = var->declarationId();
@@ -586,7 +584,7 @@ void CheckStl::mismatchingContainerIteratorError(const Token* tok, const Token* 
                 "mismatchingContainerIterator",
                 "Iterator '" + iter + "' from different container '" + container + "' are used together.",
                 CWE664,
-                false);
+                Certainty::normal);
 }
 
 // Error message for bad iterator usage..
@@ -599,7 +597,7 @@ void CheckStl::mismatchingContainersError(const Token* tok1, const Token* tok2)
                 "mismatchingContainers",
                 "Iterators of different containers '" + expr1 + "' and '" + expr2 + "' are used together.",
                 CWE664,
-                false);
+                Certainty::normal);
 }
 
 void CheckStl::mismatchingContainerExpressionError(const Token *tok1, const Token *tok2)
@@ -608,12 +606,12 @@ void CheckStl::mismatchingContainerExpressionError(const Token *tok1, const Toke
     const std::string expr2(tok2 ? tok2->expressionString() : std::string("v2"));
     reportError(tok1, Severity::warning, "mismatchingContainerExpression",
                 "Iterators to containers from different expressions '" +
-                expr1 + "' and '" + expr2 + "' are used together.", CWE664, false);
+                expr1 + "' and '" + expr2 + "' are used together.", CWE664, Certainty::normal);
 }
 
 void CheckStl::sameIteratorExpressionError(const Token *tok)
 {
-    reportError(tok, Severity::style, "sameIteratorExpression", "Same iterators expression are used for algorithm.", CWE664, false);
+    reportError(tok, Severity::style, "sameIteratorExpression", "Same iterators expression are used for algorithm.", CWE664, Certainty::normal);
 }
 
 static const std::set<std::string> algorithm2 = { // func(begin1, end1
@@ -692,6 +690,11 @@ bool CheckStl::checkIteratorPair(const Token* tok1, const Token* tok2)
         return true;
     }
 
+    if (Token::Match(tok1->astParent(), "%comp%|-")) {
+        if (astIsIntegral(tok1, false) || astIsIntegral(tok2, false) || astIsFloat(tok1, false) ||
+            astIsFloat(tok2, false))
+            return false;
+    }
     const Token* iter1 = getIteratorExpression(tok1);
     const Token* iter2 = getIteratorExpression(tok2);
     if (iter1 && iter2 && !isSameExpression(true, false, iter1, iter2, mSettings->library, false, false)) {
@@ -1102,7 +1105,7 @@ void CheckStl::invalidContainerLoopError(const Token *tok, const Token * loopTok
 
     const std::string msg = "Calling '" + method + "' while iterating the container is invalid.";
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "invalidContainerLoop", msg, CWE664, false);
+    reportError(errorPath, Severity::error, "invalidContainerLoop", msg, CWE664, Certainty::normal);
 }
 
 void CheckStl::invalidContainerError(const Token *tok, const Token * /*contTok*/, const ValueFlow::Value *val, ErrorPath errorPath)
@@ -1112,7 +1115,7 @@ void CheckStl::invalidContainerError(const Token *tok, const Token * /*contTok*/
         errorPath.insert(errorPath.begin(), val->errorPath.begin(), val->errorPath.end());
     std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "invalidContainer", msg + " that may be invalid.", CWE664, inconclusive);
+    reportError(errorPath, Severity::error, "invalidContainer", msg + " that may be invalid.", CWE664, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckStl::invalidContainerReferenceError(const Token* tok, const Token* contTok, ErrorPath errorPath)
@@ -1120,7 +1123,7 @@ void CheckStl::invalidContainerReferenceError(const Token* tok, const Token* con
     std::string name = contTok ? contTok->expressionString() : "x";
     std::string msg = "Reference to " + name;
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "invalidContainerReference", msg + " that may be invalid.", CWE664, false);
+    reportError(errorPath, Severity::error, "invalidContainerReference", msg + " that may be invalid.", CWE664, Certainty::normal);
 }
 
 void CheckStl::stlOutOfBounds()
@@ -1207,9 +1210,9 @@ void CheckStl::stlOutOfBounds()
 void CheckStl::stlOutOfBoundsError(const Token *tok, const std::string &num, const std::string &var, bool at)
 {
     if (at)
-        reportError(tok, Severity::error, "stlOutOfBounds", "$symbol:" + var + "\nWhen " + num + "==$symbol.size(), $symbol.at(" + num + ") is out of bounds.", CWE788, false);
+        reportError(tok, Severity::error, "stlOutOfBounds", "$symbol:" + var + "\nWhen " + num + "==$symbol.size(), $symbol.at(" + num + ") is out of bounds.", CWE788, Certainty::normal);
     else
-        reportError(tok, Severity::error, "stlOutOfBounds", "$symbol:" + var + "\nWhen " + num + "==$symbol.size(), $symbol[" + num + "] is out of bounds.", CWE788, false);
+        reportError(tok, Severity::error, "stlOutOfBounds", "$symbol:" + var + "\nWhen " + num + "==$symbol.size(), $symbol[" + num + "] is out of bounds.", CWE788, Certainty::normal);
 }
 
 void CheckStl::negativeIndex()
@@ -1243,7 +1246,7 @@ void CheckStl::negativeIndexError(const Token *tok, const ValueFlow::Value &inde
                << ", otherwise there is negative array index " << index.intvalue << ".";
     else
         errmsg << "Array index " << index.intvalue << " is out of bounds.";
-    reportError(errorPath, index.errorSeverity() ? Severity::error : Severity::warning, "negativeContainerIndex", errmsg.str(), CWE786, index.isInconclusive());
+    reportError(errorPath, index.errorSeverity() ? Severity::error : Severity::warning, "negativeContainerIndex", errmsg.str(), CWE786, index.isInconclusive() ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckStl::erase()
@@ -1337,7 +1340,7 @@ void CheckStl::stlBoundariesError(const Token *tok)
     reportError(tok, Severity::error, "stlBoundaries",
                 "Dangerous comparison using operator< on iterator.\n"
                 "Iterator compared with operator<. This is dangerous since the order of items in the "
-                "container is not guaranteed. One should use operator!= instead to compare iterators.", CWE664, false);
+                "container is not guaranteed. One should use operator!= instead to compare iterators.", CWE664, Certainty::normal);
 }
 
 static bool if_findCompare(const Token * const tokBack, bool stdStringLike)
@@ -1363,8 +1366,8 @@ static bool if_findCompare(const Token * const tokBack, bool stdStringLike)
 
 void CheckStl::if_find()
 {
-    const bool printWarning = mSettings->isEnabled(Settings::WARNING);
-    const bool printPerformance = mSettings->isEnabled(Settings::PERFORMANCE);
+    const bool printWarning = mSettings->severity.isEnabled(Severity::warning);
+    const bool printPerformance = mSettings->severity.isEnabled(Severity::performance);
     if (!printWarning && !printPerformance)
         return;
 
@@ -1442,9 +1445,9 @@ void CheckStl::if_findError(const Token *tok, bool str)
                     "Either inefficient or wrong usage of string::find(). string::starts_with() will be faster if "
                     "string::find's result is compared with 0, because it will not scan the whole "
                     "string. If your intention is to check that there are no findings in the string, "
-                    "you should compare with std::string::npos.", CWE597, false);
+                    "you should compare with std::string::npos.", CWE597, Certainty::normal);
     if (!str)
-        reportError(tok, Severity::warning, "stlIfFind", "Suspicious condition. The result of find() is an iterator, but it is not properly checked.", CWE398, false);
+        reportError(tok, Severity::warning, "stlIfFind", "Suspicious condition. The result of find() is an iterator, but it is not properly checked.", CWE398, Certainty::normal);
 }
 
 static std::pair<const Token *, const Token *> isMapFind(const Token *tok)
@@ -1545,7 +1548,7 @@ static const Token *findInsertValue(const Token *tok, const Token *containerTok,
 
 void CheckStl::checkFindInsert()
 {
-    if (!mSettings->isEnabled(Settings::PERFORMANCE))
+    if (!mSettings->severity.isEnabled(Severity::performance))
         return;
 
     const SymbolDatabase *const symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1590,7 +1593,7 @@ void CheckStl::checkFindInsert()
 void CheckStl::checkFindInsertError(const Token *tok)
 {
     reportError(
-        tok, Severity::performance, "stlFindInsert", "Searching before insertion is not necessary.", CWE398, false);
+        tok, Severity::performance, "stlFindInsert", "Searching before insertion is not necessary.", CWE398, Certainty::normal);
 }
 
 /**
@@ -1606,7 +1609,7 @@ static bool isCpp03ContainerSizeSlow(const Token *tok)
 
 void CheckStl::size()
 {
-    if (!mSettings->isEnabled(Settings::PERFORMANCE))
+    if (!mSettings->severity.isEnabled(Severity::performance))
         return;
 
     if (mSettings->standards.cpp >= Standards::CPP11)
@@ -1660,12 +1663,12 @@ void CheckStl::sizeError(const Token *tok)
                 "Checking for '$symbol' emptiness might be inefficient. "
                 "Using $symbol.empty() instead of $symbol.size() can be faster. "
                 "$symbol.size() can take linear time but $symbol.empty() is "
-                "guaranteed to take constant time.", CWE398, false);
+                "guaranteed to take constant time.", CWE398, Certainty::normal);
 }
 
 void CheckStl::redundantCondition()
 {
-    if (!mSettings->isEnabled(Settings::STYLE))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1699,12 +1702,12 @@ void CheckStl::redundantIfRemoveError(const Token *tok)
     reportError(tok, Severity::style, "redundantIfRemove",
                 "Redundant checking of STL container element existence before removing it.\n"
                 "Redundant checking of STL container element existence before removing it. "
-                "It is safe to call the remove method on a non-existing element.", CWE398, false);
+                "It is safe to call the remove method on a non-existing element.", CWE398, Certainty::normal);
 }
 
 void CheckStl::missingComparison()
 {
-    if (!mSettings->isEnabled(Settings::WARNING))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1780,7 +1783,7 @@ void CheckStl::missingComparisonError(const Token *incrementToken1, const Token 
            << "There is no comparison between these increments to prevent that the iterator is "
            << "incremented beyond the end.";
 
-    reportError(callstack, Severity::warning, "StlMissingComparison", errmsg.str(), CWE834, false);
+    reportError(callstack, Severity::warning, "StlMissingComparison", errmsg.str(), CWE834, Certainty::normal);
 }
 
 
@@ -1798,8 +1801,8 @@ namespace {
 
 void CheckStl::string_c_str()
 {
-    const bool printInconclusive = mSettings->inconclusive;
-    const bool printPerformance = mSettings->isEnabled(Settings::PERFORMANCE);
+    const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
+    const bool printPerformance = mSettings->severity.isEnabled(Severity::performance);
 
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
 
@@ -1972,13 +1975,13 @@ void CheckStl::string_c_strThrowError(const Token* tok)
 void CheckStl::string_c_strError(const Token* tok)
 {
     reportError(tok, Severity::error, "stlcstr", "Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n"
-                "Dangerous usage of c_str(). The c_str() return value is only valid until its string is deleted.", CWE664, false);
+                "Dangerous usage of c_str(). The c_str() return value is only valid until its string is deleted.", CWE664, Certainty::normal);
 }
 
 void CheckStl::string_c_strReturn(const Token* tok)
 {
     reportError(tok, Severity::performance, "stlcstrReturn", "Returning the result of c_str() in a function that returns std::string is slow and redundant.\n"
-                "The conversion from const char* as returned by c_str() to std::string creates an unnecessary string copy. Solve that by directly returning the string.", CWE704, false);
+                "The conversion from const char* as returned by c_str() to std::string creates an unnecessary string copy. Solve that by directly returning the string.", CWE704, Certainty::normal);
 }
 
 void CheckStl::string_c_strParam(const Token* tok, nonneg int number)
@@ -1986,7 +1989,7 @@ void CheckStl::string_c_strParam(const Token* tok, nonneg int number)
     std::ostringstream oss;
     oss << "Passing the result of c_str() to a function that takes std::string as argument no. " << number << " is slow and redundant.\n"
         "The conversion from const char* as returned by c_str() to std::string creates an unnecessary string copy. Solve that by directly passing the string.";
-    reportError(tok, Severity::performance, "stlcstrParam", oss.str(), CWE704, false);
+    reportError(tok, Severity::performance, "stlcstrParam", oss.str(), CWE704, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -2005,8 +2008,8 @@ namespace {
 
 void CheckStl::uselessCalls()
 {
-    const bool printPerformance = mSettings->isEnabled(Settings::PERFORMANCE);
-    const bool printWarning = mSettings->isEnabled(Settings::WARNING);
+    const bool printPerformance = mSettings->severity.isEnabled(Severity::performance);
+    const bool printWarning = mSettings->severity.isEnabled(Severity::warning);
     if (!printPerformance && !printWarning)
         return;
 
@@ -2055,7 +2058,7 @@ void CheckStl::uselessCallsReturnValueError(const Token *tok, const std::string 
            << "(" << varname << "." << function << "(" << varname << ")). As it is currently the "
            << "code is inefficient. It is possible either the string searched ('"
            << varname << "') or searched for ('" << varname << "') is wrong.";
-    reportError(tok, Severity::warning, "uselessCallsCompare", errmsg.str(), CWE628, false);
+    reportError(tok, Severity::warning, "uselessCallsCompare", errmsg.str(), CWE628, Certainty::normal);
 }
 
 void CheckStl::uselessCallsSwapError(const Token *tok, const std::string &varname)
@@ -2065,20 +2068,20 @@ void CheckStl::uselessCallsSwapError(const Token *tok, const std::string &varnam
                 "It is inefficient to swap a object with itself by calling '$symbol.swap($symbol)'\n"
                 "The 'swap()' function has no logical effect when given itself as parameter "
                 "($symbol.swap($symbol)). As it is currently the "
-                "code is inefficient. Is the object or the parameter wrong here?", CWE628, false);
+                "code is inefficient. Is the object or the parameter wrong here?", CWE628, Certainty::normal);
 }
 
 void CheckStl::uselessCallsSubstrError(const Token *tok, bool empty)
 {
     if (empty)
-        reportError(tok, Severity::performance, "uselessCallsSubstr", "Ineffective call of function 'substr' because it returns an empty string.", CWE398, false);
+        reportError(tok, Severity::performance, "uselessCallsSubstr", "Ineffective call of function 'substr' because it returns an empty string.", CWE398, Certainty::normal);
     else
-        reportError(tok, Severity::performance, "uselessCallsSubstr", "Ineffective call of function 'substr' because it returns a copy of the object. Use operator= instead.", CWE398, false);
+        reportError(tok, Severity::performance, "uselessCallsSubstr", "Ineffective call of function 'substr' because it returns a copy of the object. Use operator= instead.", CWE398, Certainty::normal);
 }
 
 void CheckStl::uselessCallsEmptyError(const Token *tok)
 {
-    reportError(tok, Severity::warning, "uselessCallsEmpty", "Ineffective call of function 'empty()'. Did you intend to call 'clear()' instead?", CWE398, false);
+    reportError(tok, Severity::warning, "uselessCallsEmpty", "Ineffective call of function 'empty()'. Did you intend to call 'clear()' instead?", CWE398, Certainty::normal);
 }
 
 void CheckStl::uselessCallsRemoveError(const Token *tok, const std::string& function)
@@ -2087,14 +2090,14 @@ void CheckStl::uselessCallsRemoveError(const Token *tok, const std::string& func
                 "$symbol:" + function + "\n"
                 "Return value of std::$symbol() ignored. Elements remain in container.\n"
                 "The return value of std::$symbol() is ignored. This function returns an iterator to the end of the range containing those elements that should be kept. "
-                "Elements past new end remain valid but with unspecified values. Use the erase method of the container to delete them.", CWE762, false);
+                "Elements past new end remain valid but with unspecified values. Use the erase method of the container to delete them.", CWE762, Certainty::normal);
 }
 
 // Check for iterators being dereferenced before being checked for validity.
 // E.g.  if (*i && i != str.end()) { }
 void CheckStl::checkDereferenceInvalidIterator()
 {
-    if (!mSettings->isEnabled(Settings::WARNING))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
     // Iterate over "if", "while", and "for" conditions where there may
@@ -2156,7 +2159,7 @@ void CheckStl::checkDereferenceInvalidIterator()
 
 void CheckStl::checkDereferenceInvalidIterator2()
 {
-    const bool printInconclusive = (mSettings->inconclusive);
+    const bool printInconclusive = (mSettings->certainty.isEnabled(Certainty::inconclusive));
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "sizeof|decltype|typeid|typeof (")) {
@@ -2218,8 +2221,8 @@ void CheckStl::dereferenceInvalidIteratorError(const Token* tok, const ValueFlow
     const std::string& varname = tok ? tok->expressionString() : "var";
     const std::string errmsgcond("$symbol:" + varname + '\n' + ValueFlow::eitherTheConditionIsRedundant(value ? value->condition : nullptr) + " or there is possible dereference of an invalid iterator: $symbol.");
     if (!tok || !value) {
-        reportError(tok, Severity::error, "derefInvalidIterator", "Dereference of an invalid iterator", CWE825, false);
-        reportError(tok, Severity::warning, "derefInvalidIteratorRedundantCheck", errmsgcond, CWE825, false);
+        reportError(tok, Severity::error, "derefInvalidIterator", "Dereference of an invalid iterator", CWE825, Certainty::normal);
+        reportError(tok, Severity::warning, "derefInvalidIteratorRedundantCheck", errmsgcond, CWE825, Certainty::normal);
         return;
     }
     if (!mSettings->isEnabled(value, inconclusive))
@@ -2228,7 +2231,7 @@ void CheckStl::dereferenceInvalidIteratorError(const Token* tok, const ValueFlow
     const ErrorPath errorPath = getErrorPath(tok, value, "Dereference of an invalid iterator");
 
     if (value->condition) {
-        reportError(errorPath, Severity::warning, "derefInvalidIteratorRedundantCheck", errmsgcond, CWE825, inconclusive || value->isInconclusive());
+        reportError(errorPath, Severity::warning, "derefInvalidIteratorRedundantCheck", errmsgcond, CWE825, (inconclusive || value->isInconclusive()) ? Certainty::inconclusive : Certainty::normal);
     } else {
         std::string errmsg;
         errmsg = std::string(value->isKnown() ? "Dereference" : "Possible dereference") + " of an invalid iterator";
@@ -2239,7 +2242,7 @@ void CheckStl::dereferenceInvalidIteratorError(const Token* tok, const ValueFlow
                     value->isKnown() ? Severity::error : Severity::warning,
                     "derefInvalidIterator",
                     errmsg,
-                    CWE825, inconclusive || value->isInconclusive());
+                    CWE825, (inconclusive || value->isInconclusive()) ? Certainty::inconclusive : Certainty::normal);
     }
 }
 
@@ -2249,7 +2252,7 @@ void CheckStl::dereferenceInvalidIteratorError(const Token* deref, const std::st
                 "derefInvalidIterator",
                 "$symbol:" + iterName + "\n"
                 "Possible dereference of an invalid iterator: $symbol\n"
-                "Possible dereference of an invalid iterator: $symbol. Make sure to check that the iterator is valid before dereferencing it - not after.", CWE825, false);
+                "Possible dereference of an invalid iterator: $symbol. Make sure to check that the iterator is valid before dereferencing it - not after.", CWE825, Certainty::normal);
 }
 
 
@@ -2265,9 +2268,9 @@ void CheckStl::readingEmptyStlContainer2()
             const ValueFlow::Value *value = tok->getContainerSizeValue(0);
             if (!value)
                 continue;
-            if (value->isInconclusive() && !mSettings->inconclusive)
+            if (value->isInconclusive() && !mSettings->certainty.isEnabled(Certainty::inconclusive))
                 continue;
-            if (!value->errorSeverity() && !mSettings->isEnabled(Settings::WARNING))
+            if (!value->errorSeverity() && !mSettings->severity.isEnabled(Severity::warning))
                 continue;
             if (Token::Match(tok, "%name% . %name% (")) {
                 if (container->getYield(tok->strAt(2)) == Library::Container::Yield::ITEM)
@@ -2289,13 +2292,13 @@ void CheckStl::readingEmptyStlContainerError(const Token *tok, const ValueFlow::
 
     const ErrorPath errorPath = getErrorPath(tok, value, "Reading from empty container");
 
-    reportError(errorPath, value ? (value->errorSeverity() ? Severity::error : Severity::warning) : Severity::style, "reademptycontainer", "$symbol:" + varname +"\n" + errmsg, CWE398, !value);
+    reportError(errorPath, value ? (value->errorSeverity() ? Severity::error : Severity::warning) : Severity::style, "reademptycontainer", "$symbol:" + varname +"\n" + errmsg, CWE398, !value ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckStl::useStlAlgorithmError(const Token *tok, const std::string &algoName)
 {
     reportError(tok, Severity::style, "useStlAlgorithm",
-                "Consider using " + algoName + " algorithm instead of a raw loop.", CWE398, false);
+                "Consider using " + algoName + " algorithm instead of a raw loop.", CWE398, Certainty::normal);
 }
 
 static bool isEarlyExit(const Token *start)
@@ -2481,7 +2484,7 @@ static std::string minmaxCompare(const Token *condTok, nonneg int loopVar, nonne
 
 void CheckStl::useStlAlgorithm()
 {
-    if (!mSettings->isEnabled(Settings::STYLE))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
         for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
@@ -2643,7 +2646,7 @@ void CheckStl::knownEmptyContainerError(const Token *tok, const std::string& alg
 
     reportError(tok, Severity::style,
                 "knownEmptyContainer",
-                msg, CWE398, false);
+                msg, CWE398, Certainty::normal);
 }
 
 static bool isKnownEmptyContainer(const Token* tok)
@@ -2664,7 +2667,7 @@ static bool isKnownEmptyContainer(const Token* tok)
 
 void CheckStl::knownEmptyContainer()
 {
-    if (!mSettings->isEnabled(Settings::STYLE))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
         for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
@@ -2727,14 +2730,14 @@ void CheckStl::globalLockGuardError(const Token* tok)
 {
     reportError(tok, Severity::warning,
                 "globalLockGuard",
-                "Lock guard is defined globally. Lock guards are intended to be local. A global lock guard could lead to a deadlock since it won't unlock until the end of the program.", CWE833, false);
+                "Lock guard is defined globally. Lock guards are intended to be local. A global lock guard could lead to a deadlock since it won't unlock until the end of the program.", CWE833, Certainty::normal);
 }
 
 void CheckStl::localMutexError(const Token* tok)
 {
     reportError(tok, Severity::warning,
                 "localMutex",
-                "The lock is ineffective because the mutex is locked at the same scope as the mutex itself.", CWE667, false);
+                "The lock is ineffective because the mutex is locked at the same scope as the mutex itself.", CWE667, Certainty::normal);
 }
 
 void CheckStl::checkMutexes()

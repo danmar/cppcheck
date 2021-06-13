@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -146,6 +146,7 @@ private:
         TEST_CASE(duplicateExpression9); // #9320
         TEST_CASE(duplicateExpression10); // #9485
         TEST_CASE(duplicateExpression11); // #8916 (function call)
+        TEST_CASE(duplicateExpression12); // #10026
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -260,14 +261,14 @@ private:
         if (!settings) {
             settings = &_settings;
         }
-        settings->addEnabled("style");
-        settings->addEnabled("warning");
-        settings->addEnabled("portability");
-        settings->addEnabled("performance");
+        settings->severity.enable(Severity::style);
+        settings->severity.enable(Severity::warning);
+        settings->severity.enable(Severity::portability);
+        settings->severity.enable(Severity::performance);
         settings->standards.c = Standards::CLatest;
         settings->standards.cpp = Standards::CPPLatest;
-        settings->inconclusive = inconclusive;
-        settings->experimental = experimental;
+        settings->certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        settings->certainty.setEnabled(Certainty::experimental, experimental);
         settings->verbose = verbose;
 
         // Tokenize..
@@ -291,14 +292,14 @@ private:
         errout.str("");
 
         Settings* settings = &_settings;
-        settings->addEnabled("style");
-        settings->addEnabled("warning");
-        settings->addEnabled("portability");
-        settings->addEnabled("performance");
+        settings->severity.enable(Severity::style);
+        settings->severity.enable(Severity::warning);
+        settings->severity.enable(Severity::portability);
+        settings->severity.enable(Severity::performance);
         settings->standards.c = Standards::CLatest;
         settings->standards.cpp = Standards::CPPLatest;
-        settings->inconclusive = true;
-        settings->experimental = false;
+        settings->certainty.enable(Certainty::inconclusive);
+        settings->certainty.disable(Certainty::experimental);
 
         // Raw tokens..
         std::vector<std::string> files(1, filename);
@@ -326,7 +327,7 @@ private:
 
     void checkposix(const char code[]) {
         static Settings settings;
-        settings.addEnabled("warning");
+        settings.severity.enable(Severity::warning);
         settings.libraries.emplace_back("posix");
 
         check(code,
@@ -1298,7 +1299,7 @@ private:
         errout.str("");
 
         static Settings settings;
-        settings.addEnabled("style");
+        settings.severity.enable(Severity::style);
         settings.standards.cpp = Standards::CPP03; // #5560
 
         // Tokenize..
@@ -1439,10 +1440,10 @@ private:
         errout.str("");
 
         Settings settings;
-        settings.addEnabled("warning");
+        settings.severity.enable(Severity::warning);
         if (portability)
-            settings.addEnabled("portability");
-        settings.inconclusive = inconclusive;
+            settings.severity.enable(Severity::portability);
+        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         settings.defaultSign = 's';
         // Tokenize..
@@ -1864,6 +1865,11 @@ private:
               "    return x[0];\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("const int& f(std::vector<int>& x) {\n"
+              "    return x[0];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared with const\n", errout.str());
 
         check("int f(std::vector<int>& x) {\n"
               "    x[0]++;\n"
@@ -2325,6 +2331,16 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #10086
+        check("struct V {\n"
+              "    V& get(typename std::vector<V>::size_type i) {\n"
+              "        std::vector<V>& arr = v;\n"
+              "        return arr[i];\n"
+              "    }\n"
+              "    std::vector<V> v;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void e();\n"
               "void g(void);\n"
               "void h(void);\n"
@@ -2581,6 +2597,12 @@ private:
               "{\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:16]: (style) Parameter 'i' can be declared with const\n", "", errout.str());
+
+        check("void f(std::map<int, std::vector<int>> &map) {\n" // #10266
+              "  for (auto &[slave, panels] : map)\n"
+              "    panels.erase(it);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {
@@ -3549,13 +3571,19 @@ private:
               "    throw 0;\n"
               "    return 1;\n"
               "}", nullptr, false, false, false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
         check("void foo() {\n"
               "    throw 0;\n"
               "    return;\n"
               "}", nullptr, false, false, false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
+
+        check("int foo() {\n"
+              "    throw = 0;\n"
+              "    return 1;\n"
+              "}", "test.c", false, false, false);
+        ASSERT_EQUALS("", errout.str());
 
         check("int foo() {\n"
               "    return 0;\n"
@@ -5213,6 +5241,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void duplicateExpression12() { //#10026
+        check("int f(const std::vector<int> &buffer, const uint8_t index)\n"
+              "{\n"
+              "        int var = buffer[index - 1];\n"
+              "        return buffer[index - 1] - var;\n"  // <<
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Same expression on both sides of '-'.\n", errout.str());
+    }
+
     void duplicateExpressionLoop() {
         check("void f() {\n"
               "    int a = 1;\n"
@@ -6758,7 +6795,7 @@ private:
               "    Foo a[5];\n"
               "    memset(a, 'a', 5);\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n", errout.str());
 
         check("void f() {\n"
               "    Foo a[5];\n" // Size of foo is unknown
@@ -8152,12 +8189,18 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on 'ptr' - it's already a pointer.\n", errout.str());
 
         // no warning for macros
-        check("#define MUTEX_LOCK(m) pthread_mutex_lock(&(m))\n"
-              "void f(struct mutex *mut) {\n"
-              "    MUTEX_LOCK(*mut);\n"
-              "}\n", nullptr, false, true);
+        checkP("#define MUTEX_LOCK(m) pthread_mutex_lock(&(m))\n"
+               "void f(struct mutex *mut) {\n"
+               "    MUTEX_LOCK(*mut);\n"
+               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkP("#define B(op)        bar(op)\n"
+               "#define C(orf)       B(&orf)\n"
+               "void foo(const int * pkey) {\n"
+               "    C(*pkey);\n"
+               "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void test_isSameExpression() { // see #5738

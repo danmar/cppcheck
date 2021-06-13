@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -816,7 +816,9 @@ public:
     }
 
     nonneg int exprId() const {
-        return mImpl->mExprId;
+        if (mImpl->mExprId)
+            return mImpl->mExprId;
+        return mImpl->mVarId;
     }
     void exprId(nonneg int id) {
         mImpl->mExprId = id;
@@ -1012,7 +1014,7 @@ public:
         return mTokType == eType ? mImpl->mType : nullptr;
     }
 
-    static const ::Type *typeOf(const Token *tok);
+    static const ::Type* typeOf(const Token* tok, const Token** typeTok = nullptr);
 
     static std::pair<const Token*, const Token*> typeDecl(const Token * tok);
 

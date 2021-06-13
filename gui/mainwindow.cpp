@@ -16,18 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "mainwindow.h"
+
 #include <QApplication>
 #include <QDebug>
 #include <QMessageBox>
 #include <QFileInfo>
 #include <QDir>
-#include <QDesktopServices>
-#include <QUrl>
 #include <QAction>
 #include <QActionGroup>
 #include <QFile>
 #include <QInputDialog>
-#include "mainwindow.h"
+#include <QTimer>
+#include <QSettings>
 
 #include "cppcheck.h"
 
@@ -974,14 +975,14 @@ Settings MainWindow::getCppcheckSettings()
         addIncludeDirs(includes, result);
     }
 
-    result.addEnabled("warning");
-    result.addEnabled("style");
-    result.addEnabled("performance");
-    result.addEnabled("portability");
-    result.addEnabled("information");
-    result.addEnabled("missingInclude");
+    result.severity.enable(Severity::warning);
+    result.severity.enable(Severity::style);
+    result.severity.enable(Severity::performance);
+    result.severity.enable(Severity::portability);
+    result.severity.enable(Severity::information);
+    result.checks.enable(Checks::missingInclude);
     if (!result.buildDir.empty())
-        result.addEnabled("unusedFunction");
+        result.checks.enable(Checks::unusedFunction);
     result.debugwarnings = mSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool();
     result.quiet = false;
     result.verbose = true;
@@ -989,7 +990,7 @@ Settings MainWindow::getCppcheckSettings()
     result.xml = false;
     result.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
     result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
-    result.inconclusive = mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool();
+    result.certainty.setEnabled(Certainty::inconclusive, mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool());
     if (!mProjectFile || result.platformType == cppcheck::Platform::Unspecified)
         result.platform((cppcheck::Platform::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
     result.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
@@ -1589,13 +1590,21 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
         if (!QDir::isAbsolutePath(buildDir))
             buildDir = inf.canonicalPath() + '/' + buildDir;
         if (!QDir(buildDir).exists()) {
-            QMessageBox msg(QMessageBox::Critical,
+            QMessageBox msg(QMessageBox::Question,
                             tr("Cppcheck"),
                             tr("Build dir '%1' does not exist, create it?").arg(buildDir),
                             QMessageBox::Yes | QMessageBox::No,
                             this);
             if (msg.exec() == QMessageBox::Yes) {
                 QDir().mkpath(buildDir);
+            } else if (!projectFile->getAddons().isEmpty()) {
+                QMessageBox m(QMessageBox::Critical,
+                              tr("Cppcheck"),
+                              tr("To check the project using addons, you need a build directory."),
+                              QMessageBox::Ok,
+                              this);
+                m.exec();
+                return;
             }
         }
     }

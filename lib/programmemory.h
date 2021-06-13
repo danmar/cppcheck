@@ -1,7 +1,6 @@
 #ifndef GUARD_PROGRAMMEMORY_H
 #define GUARD_PROGRAMMEMORY_H
 
-#include "config.h"
 #include "utils.h"
 #include "valueflow.h" // needed for alias
 #include "mathlib.h"
@@ -54,8 +53,7 @@ struct ProgramMemoryState {
 
     void removeModifiedVars(const Token* tok);
 
-    ProgramMemory get(const Token *tok, const ProgramMemory::Map& vars) const;
-
+    ProgramMemory get(const Token* tok, const Token* ctx, const ProgramMemory::Map& vars) const;
 };
 
 void execute(const Token *expr,

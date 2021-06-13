@@ -2,7 +2,6 @@
 #include "ui_libraryaddfunctiondialog.h"
 
 #include <QRegExp>
-#include <QValidator>
 
 LibraryAddFunctionDialog::LibraryAddFunctionDialog(QWidget *parent) :
     QDialog(parent),

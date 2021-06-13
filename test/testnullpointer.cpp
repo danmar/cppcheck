@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ private:
 
     void run() OVERRIDE {
         LOAD_LIB_2(settings.library, "std.cfg");
-        settings.addEnabled("warning");
+        settings.severity.enable(Severity::warning);
 
         TEST_CASE(nullpointerAfterLoop);
         TEST_CASE(nullpointer1);
@@ -149,7 +149,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings.inconclusive = inconclusive;
+        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -166,7 +166,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings.inconclusive = false;
+        settings.certainty.setEnabled(Certainty::inconclusive, false);
 
         // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
@@ -191,7 +191,8 @@ private:
 
 
     void nullpointerAfterLoop() {
-        check("int foo(const Token *tok)\n"
+        // extracttests.start: struct Token { const Token *next() const; std::string str() const; };
+        check("void foo(const Token *tok)\n"
               "{\n"
               "    while (tok);\n"
               "    tok = tok->next();\n"
@@ -363,6 +364,8 @@ private:
     // This is checked by this function:
     //        CheckOther::nullPointerStructByDeRefAndChec
     void structDerefAndCheck() {
+        // extracttests.start: struct ABC { int a; int b; int x; };
+
         // errors..
         check("void foo(struct ABC *abc)\n"
               "{\n"
@@ -622,6 +625,8 @@ private:
 
     // Dereferencing a pointer and then checking if it is null
     void pointerDerefAndCheck() {
+        // extracttests.start: void bar(int);
+
         // errors..
         check("void foo(int *p)\n"
               "{\n"
@@ -723,9 +728,8 @@ private:
               "    if (!p)\n"
               "        ;\n"
               "}");
-        TODO_ASSERT_EQUALS(
+        ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:3]: (warning) Either the condition '!p' is redundant or there is possible null pointer dereference: p.\n",
-            "",
             errout.str());
 
         // while
@@ -992,14 +996,14 @@ private:
                            "", errout.str());
 
         check("static void foo() {\n"
-              "    int &r = *0;\n"
+              "    int &r = *(int*)0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference: (int*)0\n", errout.str());
 
         check("static void foo(int x) {\n"
-              "    int y = 5 + *0;\n"
+              "    int y = 5 + *(int*)0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference: (int*)0\n", errout.str());
 
         {
             const char code[] = "static void foo() {\n"
@@ -1012,9 +1016,9 @@ private:
         }
 
         check("static void foo() {\n"
-              "    std::cout << *0;"
+              "    std::cout << *(int*)0;"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference: (int*)0\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1027,9 +1031,9 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (error) Null pointer dereference: c\n", errout.str());
 
         check("static void foo() {\n"
-              "    if (3 > *0);\n"
+              "    if (3 > *(int*)0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference: (int*)0\n", errout.str());
 
         // no false positive..
         check("static void foo()\n"
@@ -1214,16 +1218,16 @@ private:
               "        argv32[i] = 0;\n"
               "    }\n"
               "}");
-        TODO_ASSERT_EQUALS("error",
-                           "", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (warning) Possible null pointer dereference: argv32\n", errout.str());
 
         // #2231 - error if assignment in loop is not used
+        // extracttests.start: int y[20];
         check("void f() {\n"
               "    char *p = 0;\n"
               "\n"
               "    for (int x = 0; x < 3; ++x) {\n"
               "        if (y[x] == 0) {\n"
-              "            p = malloc(10);\n"
+              "            p = (char *)malloc(10);\n"
               "            break;\n"
               "        }\n"
               "    }\n"
@@ -1252,6 +1256,7 @@ private:
     }
 
     void nullpointer10() {
+        // extracttests.start: struct my_type { int x; };
         check("void foo()\n"
               "{\n"
               "  struct my_type* p = 0;\n"
@@ -1261,6 +1266,8 @@ private:
     }
 
     void nullpointer11() { // ticket #2812
+        // extracttests.start: struct my_type { int x; };
+
         check("int foo()\n"
               "{\n"
               "  struct my_type* p;\n"
@@ -2184,7 +2191,7 @@ private:
               "    const Token* next() const;\n"
               "    int varId() const;\n"
               "};\n"
-              "int f(const Token *first, const Token* second) const {\n"
+              "int f(const Token *first, const Token* second) {\n"
               "    first = first->nextArgument();\n"
               "    if (first)\n"
               "        first = first->next();\n"
@@ -2203,8 +2210,9 @@ private:
               "    const Token* nextArgument() const;\n"
               "    const Token* next() const;\n"
               "    int varId() const;\n"
+              "    void str() const;"
               "};\n"
-              "int f(const Token *first) const {\n"
+              "void f(const Token *first) {\n"
               "    first = first->nextArgument();\n"
               "    if (first)\n"
               "        first = first->next();\n"
@@ -2246,6 +2254,7 @@ private:
     }
 
     void nullpointerSwitch() { // #2626
+        // extracttests.start: char *do_something();
         check("char *f(int x) {\n"
               "    char *p = do_something();\n"
               "    switch (x) {\n"
@@ -2667,7 +2676,7 @@ private:
 
     // Test CheckNullPointer::nullConstantDereference
     void nullConstantDereference() {
-        check("void f() {\n"
+        check("int f() {\n"
               "    int* p = 0;\n"
               "    return p[4];\n"
               "}");
@@ -2836,9 +2845,10 @@ private:
     }
 
     void nullpointer_in_return() {
+        // extracttests.start: int maybe(); int *g();
         check("int foo() {\n"
               "    int* iVal = 0;\n"
-              "    if(g()) iVal = g();\n"
+              "    if(maybe()) iVal = g();\n"
               "    return iVal[0];\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Possible null pointer dereference: iVal\n", errout.str());
@@ -3130,6 +3140,8 @@ private:
     }
 
     void nullpointerSmartPointer() {
+        // extracttests.start: void dostuff(int);
+
         check("struct Fred { int x; };\n"
               "void f(std::shared_ptr<Fred> p) {\n"
               "  if (p) {}\n"
@@ -3190,7 +3202,7 @@ private:
 
         check("struct Fred { int x; };\n"
               "void f(std::shared_ptr<Fred> p) {\n"
-              "  p.release();\n"
+              "  p.reset();\n"
               "  dostuff(p->x);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: p\n", errout.str());
@@ -3547,7 +3559,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(int *p = 0) {\n"
+        check("void foo(int x, int *p = 0) {\n"
               "    int var1 = x ? *p : 5;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Possible null pointer dereference if the default parameter value is used: p\n", errout.str());
@@ -3582,7 +3594,7 @@ private:
 
     void subtract() {
         check("void foo(char *s) {\n"
-              "  p = s - 20;\n"
+              "  char *p = s - 20;\n"
               "}\n"
               "void bar() { foo(0); }");
         ASSERT_EQUALS("[test.cpp:2]: (error) Overflow in pointer arithmetic, NULL pointer is subtracted.\n",
@@ -3590,7 +3602,7 @@ private:
 
         check("void foo(char *s) {\n"
               "  if (!s) {}\n"
-              "  p = s - 20;\n"
+              "  char *p = s - 20;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition '!s' is redundant or there is overflow in pointer subtraction.\n", errout.str());
 

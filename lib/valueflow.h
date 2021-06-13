@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #define valueflowH
 //---------------------------------------------------------------------------
 
+#include "astutils.h"
 #include "config.h"
 #include "mathlib.h"
 #include "utils.h"
@@ -54,6 +55,20 @@ namespace ValueFlow {
         }
     };
 
+    struct less {
+        template <class T, class U>
+        bool operator()(const T& x, const U& y) const {
+            return x < y;
+        }
+    };
+
+    struct adjacent {
+        template <class T, class U>
+        bool operator()(const T& x, const U& y) const {
+            return std::abs(x - y) == 1;
+        }
+    };
+
     struct equalVisitor {
         template <class T, class U>
         void operator()(bool& result, T x, U y) const {
@@ -80,6 +95,7 @@ namespace ValueFlow {
               defaultArg(false),
               indirect(0),
               path(0),
+              wideintvalue(val),
               lifetimeKind(LifetimeKind::Object),
               lifetimeScope(LifetimeScope::Local),
               valueKind(ValueKind::Possible)
@@ -141,6 +157,29 @@ namespace ValueFlow {
             case ValueType::MOVED:
                 break;
             }
+        }
+
+        struct compareVisitor {
+            struct innerVisitor {
+                template <class Compare, class T, class U>
+                void operator()(bool& result, Compare compare, T x, U y) const {
+                    result = compare(x, y);
+                }
+            };
+            template <class Compare, class T>
+            void operator()(bool& result, const Value& rhs, Compare compare, T x) const {
+                visitValue(rhs,
+                           std::bind(innerVisitor{}, std::ref(result), std::move(compare), x, std::placeholders::_1));
+            }
+        };
+
+        template <class Compare>
+        bool compareValue(const Value& rhs, Compare compare) const {
+            bool result = false;
+            visitValue(
+                *this,
+                std::bind(compareVisitor{}, std::ref(result), std::ref(rhs), std::move(compare), std::placeholders::_1));
+            return result;
         }
 
         bool operator==(const Value &rhs) const {
@@ -281,11 +320,26 @@ namespace ValueFlow {
         /** Path id */
         MathLib::bigint path;
 
-        enum class LifetimeKind {Object, SubObject, Lambda, Iterator, Address} lifetimeKind;
+        /** int value before implicit truncation */
+        long long wideintvalue;
+
+        enum class LifetimeKind {
+            // Pointer points to a member of lifetime
+            Object,
+            // A member of object points to the lifetime
+            SubObject,
+            // Lambda has captured lifetime(similiar to SubObject)
+            Lambda,
+            // Iterator points to the lifetime of a container(similiar to Object)
+            Iterator,
+            // A pointer that holds the address of the lifetime
+            Address
+        } lifetimeKind;
 
         enum class LifetimeScope { Local, Argument, SubFunction } lifetimeScope;
 
         static const char* toString(MoveKind moveKind);
+        static const char* toString(LifetimeKind lifetimeKind);
 
         /** How known is this value */
         enum class ValueKind {
@@ -351,6 +405,10 @@ namespace ValueFlow {
     std::string eitherTheConditionIsRedundant(const Token *condition);
 
     size_t getSizeOf(const ValueType &vt, const Settings *settings);
+
+    const ValueFlow::Value* findValue(const std::list<ValueFlow::Value>& values,
+                                      const Settings* settings,
+                                      std::function<bool(const ValueFlow::Value&)> pred);
 }
 
 struct LifetimeToken {
@@ -385,10 +443,14 @@ struct LifetimeToken {
 const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value, const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate);
 const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value);
 
+ValueFlow::Value inferCondition(std::string op, MathLib::bigint val, const Token* varTok);
+ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val);
+
 std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
         bool escape = false,
-        ValueFlow::Value::ErrorPath errorPath = ValueFlow::Value::ErrorPath{},
-        int depth = 20);
+        ValueFlow::Value::ErrorPath errorPath = ValueFlow::Value::ErrorPath{});
+
+bool hasLifetimeToken(const Token* tok, const Token* lifetime);
 
 const Variable* getLifetimeVariable(const Token* tok, ValueFlow::Value::ErrorPath& errorPath, bool* addressOf = nullptr);
 

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings.inconclusive = inconclusive;
+        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -47,8 +47,8 @@ private:
     }
 
     void run() OVERRIDE {
-        settings.addEnabled("warning");
-        settings.addEnabled("style");
+        settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::style);
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "qt.cfg");
 
@@ -2146,9 +2146,8 @@ private:
               "    return get_default(m, k, &x);\n"
               "}\n",
               true);
-        TODO_ASSERT_EQUALS(
+        ASSERT_EQUALS(
             "[test.cpp:9] -> [test.cpp:9] -> [test.cpp:8] -> [test.cpp:9]: (error, inconclusive) Returning pointer to local variable 'x' that will be invalid when returning.\n",
-            "",
             errout.str());
 
         check("std::vector<int> g();\n"
@@ -2597,6 +2596,19 @@ private:
               "    return e;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10214
+        check("struct A {\n"
+              "  std::string key;\n"
+              "  const char *value;\n"
+              "};\n"
+              "const char *f(const std::string &key, const std::vector<A> &lookup) {\n"
+              "  const auto &entry =\n"
+              "      std::find_if(lookup.begin(), lookup.end(),\n"
+              "                   [key](const auto &v) { return v.key == key; });\n"
+              "  return (entry == lookup.end()) ? \"\" : entry->value;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {
@@ -2913,6 +2925,19 @@ private:
         check("const std::string& getState() {\n"
               "    static const std::string& state = \"\";\n"
               "    return state;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct var {\n"
+              "    void fun();\n"
+              "}x;\n"
+              "var* T(const char*) {\n"
+              "    return &x;\n"
+              "}\n"
+              "std::string GetTemp();\n"
+              "void f() {\n"
+              "    auto a = T(GetTemp().c_str());\n"
+              "    a->fun();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

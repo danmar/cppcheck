@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,6 @@
 #include <cstddef>
 #include <list>
 #include <vector>
-#include <stack>
 #include <utility>
 
 //---------------------------------------------------------------------------
@@ -87,7 +86,7 @@ void CheckString::stringLiteralWriteError(const Token *tok, const Token *strValu
     }
     errmsg += " directly or indirectly is undefined behaviour.";
 
-    reportError(callstack, Severity::error, "stringLiteralWrite", errmsg, CWE758, false);
+    reportError(callstack, Severity::error, "stringLiteralWrite", errmsg, CWE758, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -96,7 +95,7 @@ void CheckString::stringLiteralWriteError(const Token *tok, const Token *strValu
 //---------------------------------------------------------------------------
 void CheckString::checkAlwaysTrueOrFalseStringCompare()
 {
-    if (!mSettings->isEnabled(Settings::WARNING))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
     for (const Token* tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -145,7 +144,7 @@ void CheckString::alwaysTrueFalseStringCompareError(const Token *tok, const std:
     reportError(tok, Severity::warning, "staticStringCompare",
                 "Unnecessary comparison of static strings.\n"
                 "The compared strings, '" + string1 + "' and '" + string2 + "', are always " + (str1==str2?"identical":"unequal") + ". "
-                "Therefore the comparison is unnecessary and looks suspicious.", (str1==str2)?CWE571:CWE570, false);
+                "Therefore the comparison is unnecessary and looks suspicious.", (str1==str2)?CWE571:CWE570, Certainty::normal);
 }
 
 void CheckString::alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2)
@@ -153,7 +152,7 @@ void CheckString::alwaysTrueStringVariableCompareError(const Token *tok, const s
     reportError(tok, Severity::warning, "stringCompare",
                 "Comparison of identical string variables.\n"
                 "The compared strings, '" + str1 + "' and '" + str2 + "', are identical. "
-                "This could be a logic bug.", CWE571, false);
+                "This could be a logic bug.", CWE571, Certainty::normal);
 }
 
 
@@ -163,7 +162,7 @@ void CheckString::alwaysTrueStringVariableCompareError(const Token *tok, const s
 //-----------------------------------------------------------------------------
 void CheckString::checkSuspiciousStringCompare()
 {
-    if (!mSettings->isEnabled(Settings::WARNING))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -202,13 +201,13 @@ void CheckString::suspiciousStringCompareError(const Token* tok, const std::stri
 {
     const std::string cmpFunc = isLong ? "wcscmp" : "strcmp";
     reportError(tok, Severity::warning, "literalWithCharPtrCompare",
-                "$symbol:" + var + "\nString literal compared with variable '$symbol'. Did you intend to use " + cmpFunc + "() instead?", CWE595, false);
+                "$symbol:" + var + "\nString literal compared with variable '$symbol'. Did you intend to use " + cmpFunc + "() instead?", CWE595, Certainty::normal);
 }
 
 void CheckString::suspiciousStringCompareError_char(const Token* tok, const std::string& var)
 {
     reportError(tok, Severity::warning, "charLiteralWithCharPtrCompare",
-                "$symbol:" + var + "\nChar literal compared with pointer '$symbol'. Did you intend to dereference it?", CWE595, false);
+                "$symbol:" + var + "\nChar literal compared with pointer '$symbol'. Did you intend to dereference it?", CWE595, Certainty::normal);
 }
 
 
@@ -243,7 +242,7 @@ void CheckString::strPlusCharError(const Token *tok)
         charType = tok->astOperand2()->variable()->typeStartToken()->str();
     else if (tok && tok->astOperand2() && tok->astOperand2()->tokType() == Token::eChar && tok->astOperand2()->isLong())
         charType = "wchar_t";
-    reportError(tok, Severity::error, "strPlusChar", "Unusual pointer arithmetic. A value of type '" + charType +"' is added to a string literal.", CWE665, false);
+    reportError(tok, Severity::error, "strPlusChar", "Unusual pointer arithmetic. A value of type '" + charType +"' is added to a string literal.", CWE665, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -252,7 +251,7 @@ void CheckString::strPlusCharError(const Token *tok)
 //---------------------------------------------------------------------------
 void CheckString::checkIncorrectStringCompare()
 {
-    if (!mSettings->isEnabled(Settings::WARNING))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -300,7 +299,7 @@ void CheckString::checkIncorrectStringCompare()
 
 void CheckString::incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string)
 {
-    reportError(tok, Severity::warning, "incorrectStringCompare", "$symbol:" + func + "\nString literal " + string + " doesn't match length argument for $symbol().", CWE570, false);
+    reportError(tok, Severity::warning, "incorrectStringCompare", "$symbol:" + func + "\nString literal " + string + " doesn't match length argument for $symbol().", CWE570, Certainty::normal);
 }
 
 void CheckString::incorrectStringBooleanError(const Token *tok, const std::string& string)
@@ -311,7 +310,7 @@ void CheckString::incorrectStringBooleanError(const Token *tok, const std::strin
     reportError(tok,
                 Severity::warning,
                 charLiteral ? "incorrectCharBooleanError" : "incorrectStringBooleanError",
-                "Conversion of " + literalType + " literal " + string + " to bool always evaluates to " + result + '.', CWE571, false);
+                "Conversion of " + literalType + " literal " + string + " to bool always evaluates to " + result + '.', CWE571, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -320,7 +319,7 @@ void CheckString::incorrectStringBooleanError(const Token *tok, const std::strin
 //---------------------------------------------------------------------------
 void CheckString::overlappingStrcmp()
 {
-    if (!mSettings->isEnabled(Settings::WARNING))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -442,5 +441,5 @@ void CheckString::sprintfOverlappingDataError(const Token *funcTok, const Token 
                 func + "(). The origin and destination buffers overlap. Quote from glibc (C-library) "
                 "documentation (http://www.gnu.org/software/libc/manual/html_mono/libc.html#Formatted-Output-Functions): "
                 "\"If copying takes place between objects that overlap as a result of a call "
-                "to sprintf() or snprintf(), the results are undefined.\"", CWE628, false);
+                "to sprintf() or snprintf(), the results are undefined.\"", CWE628, Certainty::normal);
 }

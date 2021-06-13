@@ -1,14 +1,13 @@
 #include "reverseanalyzer.h"
 #include "analyzer.h"
 #include "astutils.h"
+#include "errortypes.h"
 #include "forwardanalyzer.h"
-#include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueptr.h"
 
 #include <algorithm>
-#include <functional>
 
 struct ReverseTraversal {
     ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const Settings* settings)
@@ -43,6 +42,11 @@ struct ReverseTraversal {
     bool updateRecursive(Token* start) {
         bool continueB = true;
         visitAstNodes(start, [&](Token* tok) {
+            const Token* parent = tok->astParent();
+            while (Token::simpleMatch(parent, ":"))
+                parent = parent->astParent();
+            if (isUnevaluated(tok) || isDeadCode(tok, parent))
+                return ChildrenToVisit::none;
             continueB &= update(tok);
             if (continueB)
                 return ChildrenToVisit::op1_and_op2;
@@ -74,9 +78,11 @@ struct ReverseTraversal {
         return result;
     }
 
-    Token* isDeadCode(Token* tok) {
+    Token* isDeadCode(Token* tok, const Token* end = nullptr) {
         int opSide = 0;
         for (; tok && tok->astParent(); tok = tok->astParent()) {
+            if (tok == end)
+                break;
             Token* parent = tok->astParent();
             if (Token::simpleMatch(parent, ":")) {
                 if (astIsLHS(tok))
@@ -96,12 +102,6 @@ struct ReverseTraversal {
             bool checkThen, checkElse;
             std::tie(checkThen, checkElse) = evalCond(condTok);
 
-            if (!checkThen && !checkElse) {
-                Analyzer::Action action = analyzeRecursive(condTok);
-                if (action.isRead() || action.isModified())
-                    return parent;
-            }
-
             if (parent->str() == "?") {
                 if (checkElse && opSide == 1)
                     return parent;
@@ -119,7 +119,11 @@ struct ReverseTraversal {
     void traverse(Token* start, const Token* end = nullptr) {
         if (start == end)
             return;
+        std::size_t i = start->index();
         for (Token* tok = start->previous(); tok != end; tok = tok->previous()) {
+            if (tok->index() >= i)
+                throw InternalError(tok, "Cyclic reverse analysis.");
+            i = tok->index();
             if (tok == start || (tok->str() == "{" && (tok->scope()->type == Scope::ScopeType::eFunction ||
                                  tok->scope()->type == Scope::ScopeType::eLambda))) {
                 break;
@@ -181,8 +185,7 @@ struct ReverseTraversal {
                 }
                 if (!continueB)
                     break;
-                Analyzer::Action a = valueFlowGenericForward(assignTop->astOperand2(), analyzer, settings);
-                if (a.isModified())
+                if (!updateRecursive(assignTop->astOperand2()))
                     break;
                 tok = previousBeforeAstLeftmostLeaf(assignTop)->next();
                 continue;
@@ -215,9 +218,9 @@ struct ReverseTraversal {
                 if (thenAction.isModified() && inLoop)
                     break;
                 else if (thenAction.isModified() && !elseAction.isModified())
-                    analyzer->assume(condTok, hasElse, condTok);
+                    analyzer->assume(condTok, hasElse);
                 else if (elseAction.isModified() && !thenAction.isModified())
-                    analyzer->assume(condTok, !hasElse, condTok);
+                    analyzer->assume(condTok, !hasElse);
                 // Bail if one of the branches are read to avoid FPs due to over constraints
                 else if (thenAction.isIdempotent() || elseAction.isIdempotent() || thenAction.isRead() ||
                          elseAction.isRead())

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 #include "tokenize.h"
 
 #include <list>
-#include <ostream>
 #include <string>
 
 
@@ -486,8 +485,8 @@ private:
     }
 
     void run() OVERRIDE {
-        settings.addEnabled("warning");
-        settings.addEnabled("style");
+        settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::style);
 
         LOAD_LIB_2(settings.library, "std.cfg");
 
@@ -2141,9 +2140,9 @@ private:
     }
 
     void run() OVERRIDE {
-        settings.inconclusive = true;
+        settings.certainty.setEnabled(Certainty::inconclusive, true);
         settings.libraries.emplace_back("posix");
-        settings.addEnabled("warning");
+        settings.severity.enable(Severity::warning);
 
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "posix.cfg");
@@ -2172,6 +2171,11 @@ private:
         check("char *x() {\n"
               "    char *ret = strcpy(malloc(10), \"abc\");\n"
               "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("char *x() {\n"
+              "    return strcpy(malloc(10), \"abc\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 

@@ -22,9 +22,6 @@
 
 #include <QTreeView>
 #include <QStandardItemModel>
-#include <QStandardItem>
-#include <QSettings>
-#include <QContextMenuEvent>
 #include "errortypes.h"
 #include "showtypes.h"
 
@@ -36,6 +33,8 @@ class QModelIndex;
 class QWidget;
 class QItemSelectionModel;
 class ThreadHandler;
+class QContextMenuEvent;
+class QSettings;
 
 /// @addtogroup GUI
 /// @{
@@ -307,7 +306,7 @@ protected:
 
     /**
     * @brief Hides/shows full file path on all error file items according to mShowFullPath
-    * @param item Parent item whose childrens paths to change
+    * @param item Parent item whose children's paths to change
     */
     void refreshFilePaths(QStandardItem *item);
 

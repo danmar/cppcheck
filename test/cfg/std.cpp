@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <cctype>
+#include <clocale>
 #include <complex>
 #include <cassert>
 #include <cwchar>
@@ -27,6 +28,55 @@
 #include <vector>
 #include <cstdarg>
 #include <functional>
+#include <bitset>
+
+std::bitset<10> std_bitset_test_ignoredReturnValue()
+{
+    std::bitset<10> b1("1111010000");
+    // cppcheck-suppress ignoredReturnValue
+    b1.test(2);
+    return b1;
+}
+
+std::bitset<10> std_bitset_all_ignoredReturnValue()
+{
+    std::bitset<10> b1("1111010000");
+    // cppcheck-suppress ignoredReturnValue
+    b1.all();
+    return b1;
+}
+
+std::bitset<10> std_bitset_none_ignoredReturnValue()
+{
+    std::bitset<10> b1("1111010000");
+    // cppcheck-suppress ignoredReturnValue
+    b1.none();
+    return b1;
+}
+
+std::bitset<10> std_bitset_any_ignoredReturnValue()
+{
+    std::bitset<10> b1("1111010000");
+    // cppcheck-suppress ignoredReturnValue
+    b1.any();
+    return b1;
+}
+
+std::bitset<10> std_bitset_size_ignoredReturnValue()
+{
+    std::bitset<10> b1("1111010000");
+    // cppcheck-suppress ignoredReturnValue
+    b1.size();
+    return b1;
+}
+
+std::bitset<10> std_bitset_count_ignoredReturnValue()
+{
+    std::bitset<10> b1("1111010000");
+    // cppcheck-suppress ignoredReturnValue
+    b1.count();
+    return b1;
+}
 
 void valid_code()
 {
