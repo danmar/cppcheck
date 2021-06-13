@@ -8,6 +8,7 @@
 #include <QDirIterator>
 #include <QFileInfo>
 #include <QFileDialog>
+#include <QProgressDialog>
 #include <QMimeDatabase>
 #include <ctime>
 #include <cstdlib>
@@ -152,10 +153,29 @@ void MainWindow::filter(QString filter)
 
 bool MainWindow::runProcess(const QString &programName, const QStringList &arguments)
 {
+    QProgressDialog dialog("Running external process: " + programName, "Kill", 0 /*min*/, 1 /*max*/, this);
+    dialog.setWindowModality(Qt::WindowModal);
+    dialog.setMinimumDuration(0 /*msec*/);
+    dialog.setValue(0);
+
     QProcess process;
     process.setWorkingDirectory(WORK_FOLDER);
-    process.start(programName, arguments);
-    bool success = process.waitForFinished(-1);
+    process.start(programName, arguments);  // async action
+
+    bool success = false;
+    bool state = (QProcess::Running == process.state() || QProcess::Starting == process.state());
+    while (!success && state) {
+        success = process.waitForFinished(50 /*msec*/);
+        // Not the best way to keep UI unfreeze, keep work async in other thread much more a Qt style
+        QCoreApplication::processEvents();
+        if (dialog.wasCanceled()) {
+            process.kill();
+            success = false;
+            break;
+        }
+        state = (QProcess::Running == process.state() || QProcess::Starting == process.state());
+    }
+    dialog.setValue(1);
     if (!success) {
         QString errorstr(programName);
         errorstr.append(": ");
