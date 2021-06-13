@@ -51,7 +51,7 @@ private:
         auto tokenToString = [](const Token* t) { return t ? t->str() : "<null>"; };
         int index = 0;
         const Token* expected = start;
-        for (auto t : range)
+        for (const Token* t : range)
         {
             if (expected != t) {
                 std::ostringstream message;
@@ -111,7 +111,7 @@ private:
         const Scope& scope = *std::next(sd->scopeList.begin(), 3); //The scope of the if block
 
         std::ostringstream contents;
-        for (auto t : ConstTokenRange{ scope.bodyStart->next(), scope.bodyEnd })
+        for (const Token* t : ConstTokenRange{ scope.bodyStart->next(), scope.bodyEnd })
         {
             contents << t->str();
         }
