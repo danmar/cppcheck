@@ -111,6 +111,13 @@ struct Analyzer {
         unsigned int mFlag;
     };
 
+    enum class Terminate { None, Bail, Escape, Modified, Inconclusive, Conditional };
+
+    struct Result {
+        Action action;
+        Terminate terminate;
+    };
+
     enum class Direction { Forward, Reverse };
 
     /// Analyze a token
