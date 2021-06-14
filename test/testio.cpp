@@ -74,6 +74,7 @@ private:
         TEST_CASE(testPrintfTypeAlias1);
         TEST_CASE(testPrintfAuto); // #8992
         TEST_CASE(testPrintfParenthesis); // #8489
+        TEST_CASE(testStdDistance); // #10304
     }
 
     void check(const char* code, bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified, bool onlyFormatStr = false) {
@@ -4804,20 +4805,28 @@ private:
     }
 
     void testPrintfParenthesis() { // #8489
-        check("void f(int a) {\n"
-              "    printf(\"%f\", (a >> 24) & 0xff);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'.\n", errout.str());
+      check("void f(int a) {\n"
+        "    printf(\"%f\", (a >> 24) & 0xff);\n"
+        "}");
+      ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'.\n", errout.str());
 
-        check("void f(int a) {\n"
-              "    printf(\"%f\", 0xff & (a >> 24));\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'.\n", errout.str());
+      check("void f(int a) {\n"
+        "    printf(\"%f\", 0xff & (a >> 24));\n"
+        "}");
+      ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'.\n", errout.str());
 
-        check("void f(int a) {\n"
-              "    printf(\"%f\", ((a >> 24) + 1) & 0xff);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'.\n", errout.str());
+      check("void f(int a) {\n"
+        "    printf(\"%f\", ((a >> 24) + 1) & 0xff);\n"
+        "}");
+      ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'.\n", errout.str());
+    }
+
+    void testStdDistance() { // #10304
+      check("void foo(std::vector<int> IO, int* pio) {\n"
+        "const auto Idx = std::distance(&IO.front(), pio);\n"
+        "printf(\"Idx = %td\", Idx);\n"
+        "}", /*inconclusive*/ false, /*portability*/ true);
+      ASSERT_EQUALS("", errout.str());
     }
 };
 
