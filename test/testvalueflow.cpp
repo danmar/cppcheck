@@ -2151,6 +2151,7 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 11U, 0)); // x can't be 0 at line 11
 
         code = "void f(const int *buf) {\n"
+               "  int i = 0;\n"
                "  int x = 0;\n"
                "  while (++i < 10) {\n"
                "    if (buf[i] == 123) {\n"
@@ -2160,7 +2161,66 @@ private:
                "  }\n"
                "  a = x;\n" // <- x can be 0
                "}\n";
-        ASSERT_EQUALS(true, testValueOfX(code, 9U, 0)); // x can be 0 at line 9
+        ASSERT_EQUALS(true, testValueOfX(code, 10U, 0)); // x can be 0 at line 9
+
+        code = "bool maybe();\n"
+               "void f() {\n"
+               "  int x = 0;\n"
+               "  bool found = false;\n"
+               "  while(!found) {\n"
+               "    if (maybe()) {\n"
+               "      x = i;\n"
+               "      found = true;\n"
+               "    }\n"
+               "  }\n"
+               "  a = x;\n" // <- x can't be 0
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 11U, 0));
+
+        code = "bool maybe();\n"
+               "void f() {\n"
+               "  int x = 0;\n"
+               "  bool found = false;\n"
+               "  while(!found) {\n"
+               "    if (maybe()) {\n"
+               "      x = i;\n"
+               "      found = true;\n"
+               "    } else {\n"
+               "      found = false;\n"
+               "    }\n"
+               "  }\n"
+               "  a = x;\n" // <- x can't be 0
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 13U, 0));
+
+        code = "bool maybe();\n"
+               "void f() {\n"
+               "  int x = 0;\n"
+               "  bool found = false;\n"
+               "  while(!found) {\n"
+               "    if (maybe()) {\n"
+               "      x = i;\n"
+               "      break;\n"
+               "    }\n"
+               "  }\n"
+               "  a = x;\n" // <- x can't be 0
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 11U, 0));
+
+        code = "bool maybe();\n"
+               "void f() {\n"
+               "  int x = 0;\n"
+               "  bool found = false;\n"
+               "  while(!found) {\n"
+               "    if (maybe()) {\n"
+               "      x = i;\n"
+               "      found = true;\n"
+               "      break;\n"
+               "    }\n"
+               "  }\n"
+               "  a = x;\n" // <- x can't be 0
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 12U, 0));
 
         code = "void f(const int a[]) {\n" // #6616
                "  const int *x = 0;\n"
@@ -3199,7 +3259,9 @@ private:
                "    } while (condition)\n"
                "}";
         values = tokenValues(code, "==");
-        ASSERT_EQUALS(true, values.empty());
+        ASSERT_EQUALS(1, values.size());
+        ASSERT(values.front().isPossible());
+        ASSERT_EQUALS(1, values.front().intvalue);
 
         // for loops
         code = "struct S { int x; };\n" // #9036

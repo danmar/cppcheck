@@ -1415,8 +1415,8 @@ Options:
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="819"/>
-        <source>Misra rule texts</source>
-        <translation>Misra-Regeltexte</translation>
+        <source>MISRA rule texts</source>
+        <translation>MISRA-Regeltexte</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="826"/>
@@ -1695,8 +1695,8 @@ Options:
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="803"/>
-        <source>Cert</source>
-        <translation>Cert</translation>
+        <source>CERT</source>
+        <translation>CERT</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="858"/>
@@ -1793,7 +1793,7 @@ Options:
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="831"/>
-        <source>Misra rule texts file (%1)</source>
+        <source>MISRA rule texts file (%1)</source>
         <translation>MISRA-Regeltext-Datei</translation>
     </message>
 </context>
@@ -2451,12 +2451,12 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     </message>
     <message>
         <location filename="settings.ui" line="323"/>
-        <source>Misra addon</source>
+        <source>MISRA addon</source>
         <translation>MISRA-Addon</translation>
     </message>
     <message>
         <location filename="settings.ui" line="331"/>
-        <source>Misra rule texts file</source>
+        <source>MISRA rule texts file</source>
         <translation>MISRA-Regeltext-Datei</translation>
     </message>
     <message>

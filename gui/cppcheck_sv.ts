@@ -1817,7 +1817,7 @@ Sökvägar och defines importeras.</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="819"/>
-        <source>Misra rule texts</source>
+        <source>MISRA rule texts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1970,8 +1970,8 @@ Sökvägar och defines importeras.</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="803"/>
-        <source>Cert</source>
-        <translation>Cert</translation>
+        <source>CERT</source>
+        <translation>CERT</translation>
     </message>
     <message>
         <source>Extra Tools</source>
@@ -2050,7 +2050,7 @@ Sökvägar och defines importeras.</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="831"/>
-        <source>Misra rule texts file (%1)</source>
+        <source>MISRA rule texts file (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2795,12 +2795,12 @@ För att ställa in vilka fel som skall visas använd visa menyn.</translation>
     </message>
     <message>
         <location filename="settings.ui" line="323"/>
-        <source>Misra addon</source>
+        <source>MISRA addon</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="331"/>
-        <source>Misra rule texts file</source>
+        <source>MISRA rule texts file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

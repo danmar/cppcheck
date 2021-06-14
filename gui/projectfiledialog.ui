@@ -800,7 +800,7 @@
           <item>
            <widget class="QCheckBox" name="mAddonCert">
             <property name="text">
-             <string>Cert</string>
+             <string>CERT</string>
             </property>
            </widget>
           </item>
@@ -816,7 +816,7 @@
             <item>
              <widget class="QLabel" name="label_2">
               <property name="text">
-               <string>Misra rule texts</string>
+               <string>MISRA rule texts</string>
               </property>
              </widget>
             </item>

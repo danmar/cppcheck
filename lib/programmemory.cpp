@@ -199,7 +199,11 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Scope* scop
         const Token* condTok = getCondTokFromEnd(scope->bodyEnd);
         if (!condTok)
             return;
-        programMemoryParseCondition(pm, condTok, endTok, settings, scope->type != Scope::eElse);
+        MathLib::bigint result = 0;
+        bool error = false;
+        execute(condTok, &pm, &result, &error);
+        if (error)
+            programMemoryParseCondition(pm, condTok, endTok, settings, scope->type != Scope::eElse);
     }
 }
 
@@ -321,7 +325,11 @@ void ProgramMemoryState::assume(const Token* tok, bool b)
 {
     ProgramMemory pm = state;
     programMemoryParseCondition(pm, tok, nullptr, nullptr, b);
-    insert(pm, tok);
+    const Token* origin = tok;
+    const Token* top = tok->astTop();
+    if (top && Token::Match(top->previous(), "for|while ("))
+        origin = top->link();
+    replace(pm, origin);
 }
 
 void ProgramMemoryState::removeModifiedVars(const Token* tok)
@@ -336,11 +344,21 @@ void ProgramMemoryState::removeModifiedVars(const Token* tok)
     }
 }
 
-ProgramMemory ProgramMemoryState::get(const Token *tok, const ProgramMemory::Map& vars) const
+ProgramMemory ProgramMemoryState::get(const Token* tok, const Token* ctx, const ProgramMemory::Map& vars) const
 {
     ProgramMemoryState local = *this;
-    local.addState(tok, vars);
-    local.removeModifiedVars(tok);
+    if (ctx)
+        local.addState(ctx, vars);
+    const Token* start = previousBeforeAstLeftmostLeaf(tok);
+    if (!start)
+        start = tok;
+
+    if (!ctx || precedes(start, ctx)) {
+        local.addState(start, vars);
+        local.removeModifiedVars(start);
+    } else {
+        local.removeModifiedVars(ctx);
+    }
     return local.state;
 }
 

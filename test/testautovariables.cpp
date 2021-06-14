@@ -2927,6 +2927,19 @@ private:
               "    return state;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct var {\n"
+              "    void fun();\n"
+              "}x;\n"
+              "var* T(const char*) {\n"
+              "    return &x;\n"
+              "}\n"
+              "std::string GetTemp();\n"
+              "void f() {\n"
+              "    auto a = T(GetTemp().c_str());\n"
+              "    a->fun();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidLifetime() {

@@ -242,9 +242,9 @@ void CheckType::checkSignConversion()
             if (!tok1)
                 continue;
             const ValueFlow::Value* negativeValue =
-                ValueFlow::findValue(tok1->values(), mSettings, [&](const ValueFlow::Value& v) {
-                    return !v.isImpossible() && v.isIntValue() && (v.intvalue <= -1 || v.wideintvalue <= -1);
-                });
+            ValueFlow::findValue(tok1->values(), mSettings, [&](const ValueFlow::Value& v) {
+                return !v.isImpossible() && v.isIntValue() && (v.intvalue <= -1 || v.wideintvalue <= -1);
+            });
             if (!negativeValue)
                 continue;
             if (tok1->valueType() && tok1->valueType()->sign != ValueType::Sign::UNSIGNED)
