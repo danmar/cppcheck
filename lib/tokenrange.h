@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 #ifndef tokenrangeH
 #define tokenrangeH
 //---------------------------------------------------------------------------
@@ -24,16 +24,14 @@
 #include "config.h"
 
 template<typename T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
-class TokenRangeBase
-{
+class TokenRangeBase {
     T* mFront;
     T* mBack;
 
 public:
     TokenRangeBase(T* front, T* back) : mFront(front), mBack(back) {}
 
-    struct TokenIterator
-    {
+    struct TokenIterator {
         using iterator_category = std::forward_iterator_tag;
         using value_type = T*;
         using difference_type = std::ptrdiff_t;
@@ -43,14 +41,27 @@ public:
         T* mt;
         TokenIterator() : mt(nullptr) {}
         explicit TokenIterator(T* t) : mt(t) {}
-        TokenIterator& operator++() { mt = mt->next(); return *this; }
-        bool operator==(const TokenIterator& b) const { return mt == b.mt; }
-        bool operator!=(const TokenIterator& b) const { return mt != b.mt; }
-        T* operator*() const { return mt; }
+        TokenIterator& operator++() {
+            mt = mt->next();
+            return *this;
+        }
+        bool operator==(const TokenIterator& b) const {
+            return mt == b.mt;
+        }
+        bool operator!=(const TokenIterator& b) const {
+            return mt != b.mt;
+        }
+        T* operator*() const {
+            return mt;
+        }
     };
 
-    TokenIterator begin() const { return TokenIterator(mFront); }
-    TokenIterator end() const { return TokenIterator(mBack); }
+    TokenIterator begin() const {
+        return TokenIterator(mFront);
+    }
+    TokenIterator end() const {
+        return TokenIterator(mBack);
+    }
 };
 
 class TokenRange : public TokenRangeBase<Token> {

@@ -46,13 +46,13 @@ private:
         TEST_CASE(exampleAlgorithms);
     }
 
-    std::string testTokenRange(ConstTokenRange range, const Token* start, const Token* end) const
-    {
-        auto tokenToString = [](const Token* t) { return t ? t->str() : "<null>"; };
+    std::string testTokenRange(ConstTokenRange range, const Token* start, const Token* end) const {
+        auto tokenToString = [](const Token* t) {
+            return t ? t->str() : "<null>";
+        };
         int index = 0;
         const Token* expected = start;
-        for (const Token* t : range)
-        {
+        for (const Token* t : range) {
             if (expected != t) {
                 std::ostringstream message;
                 message << "Failed to match token " << tokenToString(expected) << " at position " << index << ". Got " << tokenToString(t) << " instead";
@@ -111,8 +111,7 @@ private:
         const Scope& scope = *std::next(sd->scopeList.begin(), 3); //The scope of the if block
 
         std::ostringstream contents;
-        for (const Token* t : ConstTokenRange{ scope.bodyStart->next(), scope.bodyEnd })
-        {
+        for (const Token* t : ConstTokenRange{ scope.bodyStart->next(), scope.bodyEnd }) {
             contents << t->str();
         }
         ASSERT_EQUALS("a();", contents.str());
@@ -123,10 +122,18 @@ private:
         TokenList tokenList(nullptr);
         tokenList.createTokens(istr, "test.cpp");
         ConstTokenRange range{ tokenList.front(), nullptr };
-        ASSERT_EQUALS(true, std::all_of(range.begin(), range.end(), [](const Token*) {return true;}));
-        ASSERT_EQUALS(true, std::any_of(range.begin(), range.end(), [](const Token* t) {return t->str() == "true";}));
-        ASSERT_EQUALS("true", (*std::find_if(range.begin(), range.end(), [](const Token* t) {return t->str() == "true";}))->str());
-        ASSERT_EQUALS(3, std::count_if(range.begin(), range.end(), [](const Token* t) {return t->str() == "{";}));
+        ASSERT_EQUALS(true, std::all_of(range.begin(), range.end(), [](const Token*) {
+            return true;
+        }));
+        ASSERT_EQUALS(true, std::any_of(range.begin(), range.end(), [](const Token* t) {
+            return t->str() == "true";
+        }));
+        ASSERT_EQUALS("true", (*std::find_if(range.begin(), range.end(), [](const Token* t) {
+            return t->str() == "true";
+        }))->str());
+        ASSERT_EQUALS(3, std::count_if(range.begin(), range.end(), [](const Token* t) {
+            return t->str() == "{";
+        }));
     }
 };
 
