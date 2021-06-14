@@ -88,6 +88,7 @@
     <ClCompile Include="testtoken.cpp" />
     <ClCompile Include="testtokenize.cpp" />
     <ClCompile Include="testtokenlist.cpp" />
+    <ClCompile Include="testtokenrange.cpp" />
     <ClCompile Include="testtype.cpp" />
     <ClCompile Include="testuninitvar.cpp" />
     <ClCompile Include="testunusedfunctions.cpp" />
