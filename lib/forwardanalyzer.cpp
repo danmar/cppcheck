@@ -25,7 +25,8 @@ struct ForwardTraversal {
     Analyzer::Terminate terminate = Analyzer::Terminate::None;
     bool forked = false;
 
-    Progress Break(Analyzer::Terminate t = Analyzer::Terminate::None) {
+    Progress Break(Analyzer::Terminate t = Analyzer::Terminate::None)
+    {
         if ((!analyzeOnly || analyzeTerminate) && t != Analyzer::Terminate::None)
             terminate = t;
         return Progress::Break;
@@ -742,10 +743,7 @@ struct ForwardTraversal {
 
 };
 
-Analyzer::Result valueFlowGenericForward(Token* start,
-        const Token* end,
-        const ValuePtr<Analyzer>& a,
-        const Settings* settings)
+Analyzer::Result valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings* settings)
 {
     ForwardTraversal ft{a, settings};
     ft.updateRange(start, end);
