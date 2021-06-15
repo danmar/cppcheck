@@ -4832,6 +4832,18 @@ private:
                         "    if (!isNull) {}\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10119
+        valueFlowUninit("struct Foo {\n"
+                        "    int i{};\n"
+                        "    static const float cf;\n"
+                        "};\n"
+                        "const float Foo::cf = 0.1f;\n"
+                        "int bar() {\n"
+                        "    Foo f;\n"
+                        "    return f.i;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_ipa() {
