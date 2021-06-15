@@ -114,8 +114,8 @@ struct Analyzer {
     enum class Terminate { None, Bail, Escape, Modified, Inconclusive, Conditional };
 
     struct Result {
-        Action action;
-        Terminate terminate;
+        Action action = Action::None;
+        Terminate terminate = Terminate::None;
     };
 
     enum class Direction { Forward, Reverse };
