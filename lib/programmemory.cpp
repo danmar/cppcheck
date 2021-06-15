@@ -271,17 +271,6 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                 }
             }
             break;
-#if 0
-            const Token *cond = tok2->link();
-            cond = Token::simpleMatch(cond->previous(), ") {") ? cond->linkAt(-1) : nullptr;
-            if (cond && conditionIsFalse(cond->astOperand2(), state))
-                tok2 = cond->previous();
-            else if (cond && conditionIsTrue(cond->astOperand2(), state)) {
-                ++indentlevel;
-                continue;
-            } else
-                break;
-#endif
         }
     }
 }
