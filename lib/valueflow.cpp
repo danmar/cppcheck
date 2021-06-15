@@ -2539,7 +2539,7 @@ static Analyzer::Result valueFlowForwardExpression(Token* startToken,
                                                    const Settings* settings)
 {
     Analyzer::Action actions;
-    Analyzer::Terminate terminate;
+    Analyzer::Terminate terminate = Analyzer::Terminate::None;
     for (const ValueFlow::Value& v : values) {
         ExpressionAnalyzer a(exprTok, v, tokenlist);
         Analyzer::Result r = valueFlowGenericForward(startToken, endToken, a, settings);
