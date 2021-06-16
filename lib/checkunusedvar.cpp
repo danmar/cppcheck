@@ -1615,12 +1615,29 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
             usageArgToken = usageArgToken->next()->link(); 
             continue; // move to the nested function call closing bracket, it's definitely not a global variable
         }
-        if (usageArgToken->isName() || usageArgToken->isLiteral()) {
-            const Variable* argVar = usageArgToken->variable();
-            if (argVar && argVar->isGlobal()) {
-                globalVarsIndexes.push_back(usageVarIndex);
+        if (Token::simpleMatch(usageArgToken, ",")) {
+            continue; // move to the next argument expression
+        }
+        
+        bool globalVarUsed = false;
+        for (const Token* argExprToken = usageArgToken; 
+            (!Token::simpleMatch(argExprToken, ",") && (argExprToken != argsClosingBracketToken));
+            argExprToken = argExprToken->next())
+        {
+            if (argExprToken->isName() || argExprToken->isLiteral()) {
+                const Variable* argVar = argExprToken->variable();
+                if (argVar && argVar->isGlobal()) {
+                    globalVarUsed = true;
+                    break;
+                }
             }
-            usageVarIndex++;
+        }
+        if (globalVarUsed) {
+            globalVarsIndexes.push_back(usageVarIndex);
+        }
+        usageVarIndex++;
+        while ( !Token::simpleMatch(usageArgToken->next(), ",") && (usageArgToken->next() != argsClosingBracketToken) ) {
+            usageArgToken = usageArgToken->next();
         }
     }
     
@@ -1633,9 +1650,11 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
         {
             const Variable* argVar = defArgToken->variable();
             if (argVar) {
+                // std::cout << definitionVarIndex << " defArgToken: " << defArgToken->str() << std::endl;
                 if (std::find(globalVarsIndexes.begin(), globalVarsIndexes.end(), definitionVarIndex) != 
                     globalVarsIndexes.end())
                 {
+                    // std::cout << "global found at index " << definitionVarIndex << std::endl;
                     pointersToGlobals.insert(argVar);
                 }
                 definitionVarIndex++;
