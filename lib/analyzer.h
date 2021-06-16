@@ -115,7 +115,7 @@ struct Analyzer {
 
     struct Result {
         Result(Action action = Action::None, Terminate terminate = Terminate::None)
-        : action(action), terminate(terminate)
+            : action(action), terminate(terminate)
         {}
         Action action;
         Terminate terminate;
