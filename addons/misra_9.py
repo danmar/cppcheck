@@ -435,7 +435,11 @@ def getElementDef(nameToken, rawTokens = None):
 def createArrayChildrenDefs(ed, token, rawTokens = None):
     if token.str == '[':
         if rawTokens is not None:
-            foundToken = next(rawToken for rawToken in rawTokens if rawToken.file == token.file and rawToken.linenr == token.linenr and rawToken.column == token.column)
+            foundToken = next((rawToken for rawToken in rawTokens
+                               if rawToken.file == token.file
+                               and rawToken.linenr == token.linenr
+                               and rawToken.column == token.column
+                               ), None)
 
             if foundToken and foundToken.next and foundToken.next.str == ']':
                 ed.markAsFlexibleArray(token)
