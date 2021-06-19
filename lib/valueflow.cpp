@@ -1665,11 +1665,11 @@ static void valueFlowGlobalStaticVar(TokenList *tokenList, const Settings *setti
 }
 
 static Analyzer::Result valueFlowForwardVariable(Token* const startToken,
-                                                 const Token* const endToken,
-                                                 const Variable* const var,
-                                                 std::list<ValueFlow::Value> values,
-                                                 TokenList* const tokenlist,
-                                                 const Settings* const settings);
+        const Token* const endToken,
+        const Variable* const var,
+        std::list<ValueFlow::Value> values,
+        TokenList* const tokenlist,
+        const Settings* const settings);
 
 static void valueFlowReverse(TokenList* tokenlist,
                              Token* tok,
@@ -2408,12 +2408,12 @@ static std::vector<const Variable*> getAliasesFromValues(std::list<ValueFlow::Va
 }
 
 static Analyzer::Result valueFlowForwardVariable(Token* const startToken,
-                                                 const Token* const endToken,
-                                                 const Variable* const var,
-                                                 std::list<ValueFlow::Value> values,
-                                                 std::vector<const Variable*> aliases,
-                                                 TokenList* const tokenlist,
-                                                 const Settings* const settings)
+        const Token* const endToken,
+        const Variable* const var,
+        std::list<ValueFlow::Value> values,
+        std::vector<const Variable*> aliases,
+        TokenList* const tokenlist,
+        const Settings* const settings)
 {
     Analyzer::Action actions;
     Analyzer::Terminate terminate = Analyzer::Terminate::None;
@@ -2428,11 +2428,11 @@ static Analyzer::Result valueFlowForwardVariable(Token* const startToken,
 }
 
 static Analyzer::Result valueFlowForwardVariable(Token* const startToken,
-                                                 const Token* const endToken,
-                                                 const Variable* const var,
-                                                 std::list<ValueFlow::Value> values,
-                                                 TokenList* const tokenlist,
-                                                 const Settings* const settings)
+        const Token* const endToken,
+        const Variable* const var,
+        std::list<ValueFlow::Value> values,
+        TokenList* const tokenlist,
+        const Settings* const settings)
 {
     auto aliases = getAliasesFromValues(values);
     return valueFlowForwardVariable(
@@ -2532,11 +2532,11 @@ struct OppositeExpressionAnalyzer : ExpressionAnalyzer {
 };
 
 static Analyzer::Result valueFlowForwardExpression(Token* startToken,
-                                                   const Token* endToken,
-                                                   const Token* exprTok,
-                                                   const std::list<ValueFlow::Value>& values,
-                                                   const TokenList* const tokenlist,
-                                                   const Settings* settings)
+        const Token* endToken,
+        const Token* exprTok,
+        const std::list<ValueFlow::Value>& values,
+        const TokenList* const tokenlist,
+        const Settings* settings)
 {
     Analyzer::Action actions;
     Analyzer::Terminate terminate = Analyzer::Terminate::None;
@@ -2623,11 +2623,11 @@ ValuePtr<Analyzer> makeAnalyzer(Token* exprTok, const ValueFlow::Value& value, c
 }
 
 static Analyzer::Result valueFlowForward(Token* startToken,
-                                         const Token* endToken,
-                                         const Token* exprTok,
-                                         std::list<ValueFlow::Value> values,
-                                         TokenList* const tokenlist,
-                                         const Settings* settings)
+        const Token* endToken,
+        const Token* exprTok,
+        std::list<ValueFlow::Value> values,
+        TokenList* const tokenlist,
+        const Settings* settings)
 {
     const Token* expr = solveExprValues(exprTok, values);
     if (expr->variable()) {
@@ -4733,8 +4733,7 @@ struct SimpleConditionHandler : ConditionHandler {
                                      const Token* exprTok,
                                      const std::list<ValueFlow::Value>& values,
                                      TokenList* tokenlist,
-                                     const Settings* settings) const OVERRIDE
-    {
+                                     const Settings* settings) const OVERRIDE {
         return valueFlowForward(start->next(), stop, exprTok, values, tokenlist, settings);
     }
 
@@ -6094,18 +6093,18 @@ struct ContainerVariableAnalyzer : VariableAnalyzer {
 };
 
 static Analyzer::Result valueFlowContainerForward(Token* tok,
-                                                  const Token* endToken,
-                                                  const Variable* var,
-                                                  ValueFlow::Value value,
-                                                  TokenList* tokenlist)
+        const Token* endToken,
+        const Variable* var,
+        ValueFlow::Value value,
+        TokenList* tokenlist)
 {
     ContainerVariableAnalyzer a(var, value, getAliasesFromValues({value}), tokenlist);
     return valueFlowGenericForward(tok, endToken, a, tokenlist->getSettings());
 }
 static Analyzer::Result valueFlowContainerForward(Token* tok,
-                                                  const Variable* var,
-                                                  ValueFlow::Value value,
-                                                  TokenList* tokenlist)
+        const Variable* var,
+        ValueFlow::Value value,
+        TokenList* tokenlist)
 {
     const Token * endOfVarScope = nullptr;
     if (var->isLocal() || var->isArgument())
@@ -6523,8 +6522,7 @@ struct ContainerConditionHandler : ConditionHandler {
                                      const Token* exprTok,
                                      const std::list<ValueFlow::Value>& values,
                                      TokenList* tokenlist,
-                                     const Settings*) const OVERRIDE
-    {
+                                     const Settings*) const OVERRIDE {
         // TODO: Forward multiple values
         if (values.empty())
             return {};

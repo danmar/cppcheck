@@ -25,8 +25,7 @@ struct ForwardTraversal {
     Analyzer::Terminate terminate = Analyzer::Terminate::None;
     bool forked = false;
 
-    Progress Break(Analyzer::Terminate t = Analyzer::Terminate::None)
-    {
+    Progress Break(Analyzer::Terminate t = Analyzer::Terminate::None) {
         if ((!analyzeOnly || analyzeTerminate) && t != Analyzer::Terminate::None)
             terminate = t;
         return Progress::Break;
