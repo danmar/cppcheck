@@ -2718,6 +2718,29 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
+
+        code = "int g(int x) {\n"
+               "    switch (x) {\n"
+               "    case 1:\n"
+               "        return 1;\n"
+               "    default:\n"
+               "        return 2;\n"
+               "    }\n"
+               "}\n"
+               "void f(int x) {\n"
+               "    if (x == 3)\n"
+               "        x = g(0);\n"
+               "    int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 12U, 3));
+
+        code = "int g(int x) { throw 0; }\n"
+               "void f(int x) {\n"
+               "    if (x == 3)\n"
+               "        x = g(0);\n"
+               "    int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 5U, 3));
     }
 
     void valueFlowAfterConditionExpr() {
