@@ -4819,6 +4819,13 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'.\n", errout.str());
     }
+
+    void testStdDistance() { // #10304
+      check("void foo(const std::vector<int>& IO, const int* pio) {\n"
+        "const auto Idx = std::distance(&IO.front(), pio);\n"
+        "printf(\"Idx = %td\", Idx);\n"
+        "}", /*inconclusive*/ false, /*portability*/ true);
+      ASSERT_EQUALS("", errout.str());
 };
 
 REGISTER_TEST(TestIO)
