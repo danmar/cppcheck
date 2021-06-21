@@ -4827,6 +4827,7 @@ private:
         "printf(\"Idx = %td\", Idx);\n"
         "}", /*inconclusive*/ false, /*portability*/ true);
       ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestIO)
