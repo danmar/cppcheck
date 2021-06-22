@@ -24,6 +24,7 @@
 #include "config.h"
 #include "errortypes.h"
 #include "suppressions.h"
+#include "color.h"
 
 #include <fstream>
 #include <list>
@@ -255,7 +256,7 @@ public:
      *
      * @param outmsg Message to show e.g. "Checking main.cpp..."
      */
-    virtual void reportOut(const std::string &outmsg) = 0;
+    virtual void reportOut(const std::string &outmsg, Color c = Color::Reset) = 0;
 
     /**
      * Information about found errors and warnings is directed

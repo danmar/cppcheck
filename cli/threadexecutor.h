@@ -19,6 +19,7 @@
 #ifndef THREADEXECUTOR_H
 #define THREADEXECUTOR_H
 
+#include "color.h"
 #include "config.h"
 #include "errorlogger.h"
 
@@ -53,7 +54,7 @@ public:
     void operator=(const ThreadExecutor &) = delete;
     unsigned int check();
 
-    void reportOut(const std::string &outmsg) OVERRIDE;
+    void reportOut(const std::string &outmsg, Color c) OVERRIDE;
     void reportErr(const ErrorMessage &msg) OVERRIDE;
     void reportInfo(const ErrorMessage &msg) OVERRIDE;
     void bughuntingReport(const std::string &str) OVERRIDE;
