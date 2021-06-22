@@ -18,6 +18,7 @@
 
 #include "testsuite.h"
 
+#include "color.h"
 #include "options.h"
 #include "redirect.h"
 
@@ -367,7 +368,7 @@ std::size_t TestFixture::runTests(const options& args)
     return fails_counter;
 }
 
-void TestFixture::reportOut(const std::string & outmsg)
+void TestFixture::reportOut(const std::string & outmsg, Color)
 {
     output << outmsg << std::endl;
 }

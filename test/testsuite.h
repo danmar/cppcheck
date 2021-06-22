@@ -20,6 +20,7 @@
 #ifndef testsuiteH
 #define testsuiteH
 
+#include "color.h"
 #include "config.h"
 #include "errorlogger.h"
 
@@ -102,7 +103,7 @@ protected:
     void processOptions(const options& args);
 public:
     void bughuntingReport(const std::string &/*str*/) OVERRIDE {}
-    void reportOut(const std::string &outmsg) OVERRIDE;
+    void reportOut(const std::string &outmsg, Color c = Color::Reset) OVERRIDE;
     void reportErr(const ErrorMessage &msg) OVERRIDE;
     void run(const std::string &str);
     static void printHelp();
