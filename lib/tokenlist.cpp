@@ -26,6 +26,7 @@
 #include "standards.h"
 #include "token.h"
 
+#include <exception>
 #include <simplecpp.h>
 #include <cctype>
 #include <cstring>
@@ -1349,35 +1350,22 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
 {
     for (Token *tok = tok1; tok && tok != endToken; tok = tok ? tok->next() : nullptr) {
         if (tok->str() == "{" && !iscpp11init(tok)) {
-            if (Token::simpleMatch(tok->astOperand1(), ","))
-                continue;
-            if (Token::simpleMatch(tok->previous(), "( {"))
-                ;
-            // struct assignment
-            else if (Token::simpleMatch(tok->previous(), ") {") && Token::simpleMatch(tok->linkAt(-1), "( struct"))
-                continue;
-            // Lambda function
-            else if (Token::simpleMatch(tok->astParent(), "(") &&
-                     Token::simpleMatch(tok->astParent()->astParent(), "[") &&
-                     tok->astParent()->astParent()->astOperand1() &&
-                     tok == tok->astParent()->astParent()->astOperand1()->astOperand1())
-                ;
-            else {
-                // function argument is initializer list?
-                const Token *parent = tok->astParent();
-                while (Token::simpleMatch(parent, ","))
-                    parent = parent->astParent();
-                if (!parent || !Token::Match(parent->previous(), "%name% ("))
-                    // not function argument..
-                    continue;
-            }
-
-            if (Token::simpleMatch(tok->previous(), "( { ."))
-                break;
-
             const Token * const endToken2 = tok->link();
-            for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
-                tok = createAstAtToken(tok, cpp);
+            bool hasAst = false;
+            for (const Token *inner = tok->next(); inner != endToken2; inner = inner->next()) {
+                if (inner->astOperand1()) {
+                    hasAst = true;
+                    break;
+                }
+                if (tok->isConstOp())
+                    break;
+                if (inner->str() == "{")
+                    inner = inner->link();
+            }
+            if (!hasAst) {
+                for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
+                    tok = createAstAtToken(tok, cpp);
+            }
         } else if (cpp && tok->str() == "[") {
             if (isLambdaCaptureList(tok)) {
                 tok = tok->astOperand1();
@@ -1635,8 +1623,21 @@ void TokenList::createAst() const
     }
 }
 
+struct OnException {
+    std::function<void()> f;
+
+    ~OnException() {
+        if (std::uncaught_exception())
+            f();
+    }
+};
+
 void TokenList::validateAst() const
 {
+    OnException oe{[&] {
+        if (mSettings->debugnormal)
+            mTokensFrontBack.front->printOut();
+    }};
     // Check for some known issues in AST to avoid crash/hang later on
     std::set < const Token* > safeAstTokens; // list of "safe" AST tokens without endless recursion
     for (const Token *tok = mTokensFrontBack.front; tok; tok = tok->next()) {

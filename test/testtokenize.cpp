@@ -6020,6 +6020,7 @@ private:
         ASSERT_EQUALS("a1{ b2{", testAst("auto a{1}; auto b{2};"));
         ASSERT_EQUALS("var1ab::23,{,{4ab::56,{,{,{", testAst("auto var{{1,a::b{2,3}}, {4,a::b{5,6}}};"));
         ASSERT_EQUALS("var{{,{,{{", testAst("auto var{ {{},{}}, {} };"));
+        ASSERT_EQUALS("fX{,{( abcfalse==CD:?", testAst("f({X, {Y, abc == false ? C : D}});"));
 
         // Initialization with decltype(expr) instead of a type
         ASSERT_EQUALS("decltypex((", testAst("decltype(x)();"));
@@ -6566,6 +6567,16 @@ private:
                             "  int e;\n"
                             "  for (int d = 0; d < e; d++)\n"
                             "    ;\n"
+                            "}\n"));
+
+        // #10309
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "using a = void *;\n"
+                            "void b() {\n"
+                            "  std::unique_ptr<a, void (*)(a *)>(new a(0), [](a *c) {\n"
+                            "    if (c)\n"
+                            "      ;\n"
+                            "  });\n"
                             "}\n"));
 
         ASSERT_NO_THROW(tokenizeAndStringify("a<b?0:1>()==3;"));
