@@ -1627,8 +1627,10 @@ struct OnException {
     std::function<void()> f;
 
     ~OnException() {
+#ifndef _MSC_VER
         if (std::uncaught_exception())
             f();
+#endif
     }
 };
 
