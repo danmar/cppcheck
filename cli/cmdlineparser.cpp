@@ -840,8 +840,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
 
                 if (mSettings->templateFormat == "gcc") {
-                    mSettings->templateFormat = "{file}:{line}:{column}: warning: {message} [{id}]\\n{code}";
-                    mSettings->templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
+                    mSettings->templateFormat = "{bold}{file}:{line}:{column}: {magenta}warning:{default} {message} [{id}]{reset}\\n{code}";
+                    mSettings->templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
                 } else if (mSettings->templateFormat == "daca2") {
                     mSettings->daca = true;
                     mSettings->templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
@@ -922,9 +922,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
     // Default template format..
     if (mSettings->templateFormat.empty()) {
-        mSettings->templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\\n{code}";
+        mSettings->templateFormat = "{bold}{file}:{line}:{column}: {red}{inconclusive:{magenta}}{severity}:{inconclusive: inconclusive:}{default} {message} [{id}]{reset}\\n{code}";
         if (mSettings->templateLocation.empty())
-            mSettings->templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
+            mSettings->templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
     }
 
     mSettings->project.ignorePaths(mIgnoredPaths);

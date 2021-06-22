@@ -221,15 +221,6 @@ public:
     Suppressions::ErrorMessage toSuppressionsErrorMessage() const;
 
 private:
-    /**
-     * Replace all occurrences of searchFor with replaceWith in the
-     * given source.
-     * @param source The string to modify
-     * @param searchFor What should be searched for
-     * @param replaceWith What will replace the found item
-     */
-    static void findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith);
-
     static std::string fixInvalidChars(const std::string& raw);
 
     /** Short message */
