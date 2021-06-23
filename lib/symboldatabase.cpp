@@ -907,7 +907,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                                             unknown = true;
                                     }
                                 }
-                            } else if (!var->hasDefault())
+                            } else if (!var->hasDefault() && !var->isStatic())
                                 needInitialization = true;
                         }
 

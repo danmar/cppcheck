@@ -361,6 +361,9 @@
     <ClInclude Include="bughuntingchecks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="tokenrange.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="errortypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>

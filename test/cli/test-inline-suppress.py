@@ -3,6 +3,7 @@
 
 import json
 import os
+import tempfile
 from testutils import cppcheck
 
 def create_unused_function_compile_commands():
@@ -56,3 +57,18 @@ def test_compile_commands_unused_function_suppression():
     ret, stdout, stderr = cppcheck(['--enable=all', '--inline-suppr', '--error-exitcode=1', '--project=./proj-inline-suppress-unusedFunction/compile_commands.json'])
     assert ret == 0, stdout
     assert 'unusedFunction' not in stderr
+
+
+def test_build_dir():
+    with tempfile.TemporaryDirectory() as tempdir:
+        args = f'--cppcheck-build-dir={tempdir} --enable=all --inline-suppr proj-inline-suppress/4.c'.split()
+
+        ret, stdout, stderr = cppcheck(args)
+        assert ret == 0, stdout
+        assert len(stderr) == 0
+
+        ret, stdout, stderr = cppcheck(args)
+        assert ret == 0, stdout
+        assert len(stderr) == 0
+
+

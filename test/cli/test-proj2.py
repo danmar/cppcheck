@@ -20,8 +20,8 @@ def realpath(s):
 def create_compile_commands():
     j = [{'directory': realpath('proj2/a'), 'command': 'gcc -c a.c', 'file': 'a.c'},
          {'directory': realpath('proj2'), 'command': 'gcc -c b/b.c', 'file': 'b/b.c'}]
-    f = open('proj2/' + COMPILE_COMMANDS_JSON, 'wt')
-    f.write(json.dumps(j))
+    with open('proj2/' + COMPILE_COMMANDS_JSON, 'wt') as f:
+        f.write(json.dumps(j))
 
 # Run Cppcheck from project path
 def cppcheck_local(args):
@@ -44,8 +44,8 @@ def test_file_filter():
 def test_local_path():
     create_compile_commands()
     ret, stdout, stderr = cppcheck_local(['--project=compile_commands.json'])
-    file1 = os.path.realpath('proj2/a/a.c')
-    file2 = os.path.realpath('proj2/b/b.c')
+    file1 = os.path.join('a', 'a.c')
+    file2 = os.path.join('b', 'b.c')
     assert ret == 0, stdout
     assert stdout.find('Checking %s ...' % file1) >= 0
     assert stdout.find('Checking %s ...' % file2) >= 0
@@ -65,8 +65,8 @@ def test_local_path_maxconfigs():
 def test_relative_path():
     create_compile_commands()
     ret, stdout, stderr = cppcheck(['--project=proj2/' + COMPILE_COMMANDS_JSON])
-    file1 = os.path.realpath('proj2/a/a.c')
-    file2 = os.path.realpath('proj2/b/b.c')
+    file1 = os.path.join('proj2', 'a', 'a.c')
+    file2 = os.path.join('proj2', 'b', 'b.c')
     assert ret == 0, stdout
     assert stdout.find('Checking %s ...' % file1) >= 0
     assert stdout.find('Checking %s ...' % file2) >= 0
@@ -83,21 +83,21 @@ def test_absolute_path():
 def test_gui_project_loads_compile_commands_1():
     create_compile_commands()
     ret, stdout, stderr = cppcheck(['--project=proj2/proj2.cppcheck'])
-    file1 = os.path.realpath('proj2/a/a.c')
-    file2 = os.path.realpath('proj2/b/b.c')
+    file1 = os.path.join('proj2', 'a', 'a.c')
+    file2 = os.path.join('proj2', 'b', 'b.c')
     assert ret == 0, stdout
     assert stdout.find('Checking %s ...' % file1) >= 0
     assert stdout.find('Checking %s ...' % file2) >= 0
 
 def test_gui_project_loads_compile_commands_2():
     create_compile_commands()
-    exclude_path_1 = realpath('proj2/b')
+    exclude_path_1 = 'proj2/b'
     create_gui_project_file('proj2/test.cppcheck',
                             import_project='compile_commands.json',
                             exclude_paths=[exclude_path_1])
     ret, stdout, stderr = cppcheck(['--project=proj2/test.cppcheck'])
-    file1 = os.path.realpath('proj2/a/a.c')
-    file2 = os.path.realpath('proj2/b/b.c') # Excluded by test.cppcheck
+    file1 = os.path.join('proj2', 'a', 'a.c')
+    file2 = os.path.join('proj2', 'b', 'b.c') # Excluded by test.cppcheck
     assert ret == 0, stdout
     assert stdout.find('Checking %s ...' % file1) >= 0
     assert stdout.find('Checking %s ...' % file2) < 0

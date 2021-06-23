@@ -47,6 +47,20 @@ private:
         checkClass.constructors();
     }
 
+    void check(const char code[], const Settings &s) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Tokenize..
+        Tokenizer tokenizer(&s, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check class constructors..
+        CheckClass checkClass(&tokenizer, &s, this);
+        checkClass.constructors();
+    }
+
     void run() OVERRIDE {
         settings.severity.enable(Severity::style);
         settings.severity.enable(Severity::warning);
@@ -176,6 +190,7 @@ private:
         TEST_CASE(privateCtor2);           // If constructor is private..
         TEST_CASE(function);               // Function is not variable
         TEST_CASE(uninitVarPublished);     // Borland C++: Variables in the published section are auto-initialized
+        TEST_CASE(uninitVarInheritClassInit); // Borland C++: if class inherits from TObject, all variables are initialized
         TEST_CASE(uninitOperator);         // No FP about uninitialized 'operator[]'
         TEST_CASE(uninitFunction1);        // No FP when initialized in function
         TEST_CASE(uninitFunction2);        // No FP when initialized in function
@@ -3160,6 +3175,20 @@ private:
               "public:\n"
               "    Fred() { }\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVarInheritClassInit() {
+        Settings s;
+        s.libraries.emplace_back("vcl");
+
+        check("class Fred: public TObject\n"
+              "{\n"
+              "public:\n"
+              "    Fred() { }\n"
+              "private:\n"
+              "    int x;\n"
+              "};", s);
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -888,6 +888,7 @@ Settings MainWindow::getCppcheckSettings()
 
         const QStringList libraries = mProjectFile->getLibraries();
         foreach (QString library, libraries) {
+            result.libraries.emplace_back(library.toStdString());
             const QString filename = library + ".cfg";
             tryLoadLibrary(&result.library, filename);
         }
