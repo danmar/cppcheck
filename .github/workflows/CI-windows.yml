@@ -100,7 +100,7 @@ jobs:
           )
           mkdir build
           cd build
-          cmake -DBUILD_TESTS-On ..
+          cmake -DBUILD_TESTS=On ..
 
       - name: Build CLI debug configuration using MSBuild
         run: |
