@@ -90,7 +90,17 @@ jobs:
           windeployqt Build\gui || exit /b !errorlevel!
           del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
           del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
-          
+
+      - name: Configure MSBuild
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
+          set ARCH=${{ matrix.arch }}
+          if "${{ matrix.arch }}" == "x86" (
+            set ARCH=Win32
+          )
+          mkdir build
+          cd build
+          cmake -DBUILD_TESTS-On ..
+
       - name: Build CLI debug configuration using MSBuild
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
@@ -98,7 +108,7 @@ jobs:
           if "${{ matrix.arch }}" == "x86" (
             set ARCH=Win32
           )
-          msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
+          cmake --build build --target check --config Debug
 
       - name: Run Debug test
         run: .\bin\debug\testrunner.exe || exit /b !errorlevel!
@@ -110,10 +120,7 @@ jobs:
           if "${{ matrix.arch }}" == "x86" (
             set ARCH=Win32
           )
-          msbuild -m cppcheck.sln /p:Configuration=Release-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
-
-      - name: Run Release test
-        run: .\bin\testrunner.exe || exit /b !errorlevel!
+          cmake --build build --target check --config Release
 
       - name: Run test/cli
         run: |
