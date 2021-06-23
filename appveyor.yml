@@ -43,7 +43,7 @@ build_script:
   # Visual studio project..
   - mkdir vsbuild
   - cd vsbuild
-  - cmake -DBUILD_TESTS=ON ..
+  - cmake -DBUILD_TESTS=ON -DCTEST_TIMEOUT=240 ..
   - cmake --build . --target check --config %configuration%
   - cd ..
   # the following builds are Debug ones so do not perform them in Release jobs
