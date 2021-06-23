@@ -36,8 +36,8 @@ if (BUILD_TESTS)
 
     add_custom_target(copy_cfg ALL
         ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/cfg"
-            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/cfg"
-        COMMENT "Copying cfg files to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/cfg"
+        COMMENT "Copying cfg files to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
     add_dependencies(testrunner copy_cfg)
 
     if (LIBXML2_XMLLINT_EXECUTABLE)
