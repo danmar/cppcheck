@@ -111,9 +111,6 @@ jobs:
           )
           cmake --build build --target check --config Debug
 
-      - name: Run Debug test
-        run: .\bin\debug\testrunner.exe || exit /b !errorlevel!
-
       - name: Build CLI release configuration using MSBuild
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
@@ -126,6 +123,7 @@ jobs:
       - name: Run test/cli
         run: |
           :: since FILESDIR is not set copy the binary to the root so the addons are found
+          ls -lR
           copy .\bin\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
           copy .\bin\cppcheck-core.dll .\cppcheck-core.dll || exit /b !errorlevel!
           cd test/cli || exit /b !errorlevel!
