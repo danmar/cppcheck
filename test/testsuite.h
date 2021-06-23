@@ -44,6 +44,7 @@ private:
     std::string mTestname;
 
 protected:
+    std::string exename;
     std::string testToRun;
     bool quiet_tests;
 
@@ -133,10 +134,11 @@ extern std::ostringstream output;
 #define EXPECT_EQ( EXPECTED, ACTUAL ) assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance_##CLASSNAME; }
 
-#ifdef _WIN32
-#define LOAD_LIB_2( LIB, NAME ) do { { if (((LIB).load("./testrunner", "../cfg/" NAME).errorcode != Library::ErrorCode::OK) && ((LIB).load("./testrunner", "cfg/" NAME).errorcode != Library::ErrorCode::OK)) { complainMissingLib(NAME); return; } } } while(false)
-#else
-#define LOAD_LIB_2( LIB, NAME ) do { { if (((LIB).load("./testrunner", "cfg/" NAME).errorcode != Library::ErrorCode::OK) && ((LIB).load("./bin/testrunner", "bin/cfg/" NAME).errorcode != Library::ErrorCode::OK)) { complainMissingLib(NAME); return; } } } while(false)
-#endif
+#define LOAD_LIB_2( LIB, NAME ) do { \
+    if (((LIB).load(exename.c_str(), NAME).errorcode != Library::ErrorCode::OK)) { \
+        complainMissingLib(NAME); \
+        return; \
+    } \
+} while(false)
 
 #endif

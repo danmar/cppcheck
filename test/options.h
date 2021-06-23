@@ -36,6 +36,8 @@ public:
     /** Which test should be run. Empty string means 'all tests' */
     const std::set<std::string>& which_test() const;
 
+    const std::string& exe() const;
+
 private:
     options();
     options(const options& non_copy);
@@ -45,6 +47,7 @@ private:
     std::set<std::string> mWhichTests;
     const bool mQuiet;
     const bool mHelp;
+    std::string mExe;
 };
 
 #endif
