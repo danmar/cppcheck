@@ -33,7 +33,7 @@ ThreadResult::~ThreadResult()
     //dtor
 }
 
-void ThreadResult::reportOut(const std::string &outmsg)
+void ThreadResult::reportOut(const std::string &outmsg, Color)
 {
     emit log(QString::fromStdString(outmsg));
 }
