@@ -124,8 +124,8 @@ jobs:
       - name: Run test/cli
         run: |
           :: since FILESDIR is not set copy the binary to the root so the addons are found
-          ls build/bin/Release
-          ls build/lib/Release
+          ls -l build/bin/Release
+          ls -lR build/
           copy .\build\bin\Release\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
           copy .\build\bin\Release\cppcheck-core.dll .\cppcheck-core.dll || exit /b !errorlevel!
           cd test/cli || exit /b !errorlevel!
