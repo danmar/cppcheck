@@ -4822,11 +4822,11 @@ private:
     }
 
     void testStdDistance() { // #10304
-      check("void foo(const std::vector<int>& IO, const int* pio) {\n"
-        "const auto Idx = std::distance(&IO.front(), pio);\n"
-        "printf(\"Idx = %td\", Idx);\n"
-        "}", /*inconclusive*/ false, /*portability*/ true);
-      ASSERT_EQUALS("", errout.str());
+        check("void foo(const std::vector<int>& IO, const int* pio) {\n"
+              "const auto Idx = std::distance(&IO.front(), pio);\n"
+              "printf(\"Idx = %td\", Idx);\n"
+              "}", /*inconclusive*/ false, /*portability*/ true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
