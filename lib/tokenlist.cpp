@@ -1637,9 +1637,9 @@ struct OnException {
 void TokenList::validateAst() const
 {
     OnException oe{[&] {
-        if (mSettings->debugnormal)
-            mTokensFrontBack.front->printOut();
-    }};
+            if (mSettings->debugnormal)
+                mTokensFrontBack.front->printOut();
+        }};
     // Check for some known issues in AST to avoid crash/hang later on
     std::set < const Token* > safeAstTokens; // list of "safe" AST tokens without endless recursion
     for (const Token *tok = mTokensFrontBack.front; tok; tok = tok->next()) {
