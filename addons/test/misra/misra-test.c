@@ -432,6 +432,12 @@ void misra_9_struct_initializers(void) {
         struct1 s[2][2];
     } struct3;
 
+    typedef struct {
+        unknown_field_type f1;
+        unknown_field_type f2[2];
+        int f3[2];
+    } struct_with_unknown_fields;
+
     struct3 sa[2]  = { [1].s[1][0].i1 = 3, 4 };         // 9.2
 
     struct1 sa          = 1;                            // 9.2
@@ -482,6 +488,19 @@ void misra_9_struct_initializers(void) {
     dummy_struct dsf[]     = { [0] = 1 };                     // 9.5
     dummy_struct dsg       = { .a = {0}, .b = {0} };
     dummy_struct dsh[2][2] = { { {.a = 0, .b = {0}}, { 0 } }, { { 0 }, {.a = 0, .b = {0}}} };
+
+    // Struct with fields of unknown type
+    struct_with_unknown_fields ufa       = { 1, { 1, 2 }, { 1, 2 } };
+    struct_with_unknown_fields ufb       = { 1, 1, 2 };                     // 9.2
+    struct_with_unknown_fields[2] ufc    = { {1, { 1, 2 }, { 1, 2 } },
+                                             { 2, { 1, 2 }, { 1, 2 } } };
+    struct_with_unknown_fields[2][2] ufd = { {1, { 1, 2 }, { 1, 2 } },
+                                             { 2, { 1, 2 }, { 1, 2 } } };
+    struct_with_unknown_fields[2] ufe    = { 1, { 1, 2 }, { 1, 2 },         // TODO: 9.2
+                                             2, { 1, 2 }, { 1, 2 } };
+    struct_with_unknown_fields[3] uff    = { { 1, { 1, 2 }, { 1, 2 }},      // TODO: 9.3 9.4
+                                             {2, { 1, 2 }, { 1, 2 }},
+                                             [1] = { 2, { 1, 2 }, { 1, 2 }} };
 
     // Obsolete initialization syntax for GCC
     struct1 os1 = { i1: 1, i2: 2 }; // 10.4 13.4
