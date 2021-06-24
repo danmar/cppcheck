@@ -303,7 +303,7 @@ class InitializerParser:
                     if isFirstElement and self.token.str == '0' and self.token.next.str == '}':
                         # Zero initializer causes recursive initialization
                         self.root.initializeChildren()
-                    elif self.token.isString and self.ed.valueType.pointer > 0:
+                    elif self.token.isString and self.ed.valueType and self.ed.valueType.pointer > 0:
                         if self.ed.valueType.pointer - self.ed.getEffectiveLevel() == 1:
                             if self.ed.parent != self.root:
                                 self.root.markStuctureViolation(self.token)
