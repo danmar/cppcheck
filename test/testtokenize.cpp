@@ -6014,11 +6014,14 @@ private:
         ASSERT_EQUALS("Abc({newreturn", testAst("return new A {b(c)};"));
         ASSERT_EQUALS("a{{return", testAst("return{{a}};"));
         ASSERT_EQUALS("a{b{,{return", testAst("return{{a},{b}};"));
-        ASSERT_EQUALS("stdvector::", testAst("std::vector<std::vector<int>>{{},{}}"));
+        ASSERT_EQUALS("stdvector::{{,{return", testAst("return std::vector<std::vector<int> >{{},{}};"));
+        ASSERT_EQUALS("stdvector::{2{,{return", testAst("return std::vector<std::vector<int> >{{}, {2}};"));
+        ASSERT_EQUALS("forbstdvector::{{,{:(", testAst("for (auto b : std::vector<std::vector<int> >{{},{}});"));
+        ASSERT_EQUALS("forbstdvector::{2{,{:(", testAst("for (auto b : std::vector<std::vector<int> >{{}, {2}});"));
         ASSERT_EQUALS("abR{{,P(,((", testAst("a(b(R{},{},P()));"));
         ASSERT_EQUALS("f1{2{,3{,{x,(", testAst("f({{1},{2},{3}},x);"));
         ASSERT_EQUALS("a1{ b2{", testAst("auto a{1}; auto b{2};"));
-        ASSERT_EQUALS("var1ab::23,{,{4ab::56,{,{,{", testAst("auto var{{1,a::b{2,3}}, {4,a::b{5,6}}};"));
+        ASSERT_EQUALS("var1ab::23,{,4ab::56,{,{,{{", testAst("auto var{{1,a::b{2,3}}, {4,a::b{5,6}}};"));
         ASSERT_EQUALS("var{{,{,{{", testAst("auto var{ {{},{}}, {} };"));
 
         // Initialization with decltype(expr) instead of a type

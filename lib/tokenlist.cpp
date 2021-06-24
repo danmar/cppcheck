@@ -1014,7 +1014,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 compileUnaryOp(tok, state, compileExpression);
             else
                 compileBinOp(tok, state, compileExpression);
-            if (Token::simpleMatch(tok, "}"))
+            while (Token::simpleMatch(tok, "}"))
                 tok = tok->next();
         } else break;
     }
