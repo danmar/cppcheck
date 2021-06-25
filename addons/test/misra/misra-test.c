@@ -322,6 +322,10 @@ static int misra_8_2_l ( // 8.2
 int16_t ( *misra_8_2_p_a ) (); // 8.2
 int16_t ( *misra_8_2_p_b ) (void);
 int16_t ( *misra_8_2_p_c ) (int);
+int misra_8_2_no_fp (int a)
+{
+    return a + 42;
+}
 
 extern int a811[]; // 8.11
 
