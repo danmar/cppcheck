@@ -4086,7 +4086,16 @@ static void valueFlowForwardAssign(Token* const tok,
     values.remove_if(std::mem_fn(&ValueFlow::Value::isTokValue));
     if (tok->astParent()) {
         for (ValueFlow::Value& value : values) {
-            const std::string info = "Assignment '" + tok->astParent()->expressionString() + "', assigned value is " + value.infoString();
+            std::string valueKind;
+            if (value.valueKind == ValueFlow::Value::ValueKind::Impossible) {
+                if (value.bound == ValueFlow::Value::Bound::Point)
+                    valueKind = "never ";
+                else if (value.bound == ValueFlow::Value::Bound::Lower)
+                    valueKind = "less than ";
+                else if (value.bound == ValueFlow::Value::Bound::Upper)
+                    valueKind = "greater than ";
+            }
+            const std::string info = "Assignment '" + tok->astParent()->expressionString() + "', assigned value is " + valueKind + value.infoString();
             value.errorPath.emplace_back(tok, info);
         }
     }
