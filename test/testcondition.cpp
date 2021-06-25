@@ -2375,8 +2375,8 @@ private:
         check("void f1(const std::string &s) { if(s.size() > 0) if(s.empty()) {}}");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
-        check("void f1(const std::string &s) { if(s.size() < 0) if(s.empty()) {}} ");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Condition 's.size()<0' is always false\n", errout.str());
+        check("void f1(const std::string &s) { if(s.size() < 0) if(s.empty()) {}} "); // <- CheckOther reports: checking if unsigned expression is less than zero
+        ASSERT_EQUALS("", errout.str());
 
         check("void f1(const std::string &s) { if(s.empty()) if(s.size() > 42) {}}");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
@@ -2411,8 +2411,8 @@ private:
         check("void f1(const std::string &s) { if(s.size() < 2) if(s.empty()) {}}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f1(const std::string &s) { if(s.size() >= 0) if(s.empty()) {}} ");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Condition 's.size()>=0' is always true\n", errout.str());
+        check("void f1(const std::string &s) { if(s.size() >= 0) if(s.empty()) {}} "); // CheckOther says: Unsigned expression 's.size()' can't be negative so it is unnecessary to test it. [unsignedPositive]
+        ASSERT_EQUALS("", errout.str());
 
         // TODO: These are identical condition since size cannot be negative
         check("void f1(const std::string &s) { if(s.size() <= 0) if(s.empty()) {}}");
@@ -3631,6 +3631,13 @@ private:
         check("void foo(unsigned int x) {\n"
               "    if (x == -1) {}\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // do not report both unsignedLessThanZero and knownConditionTrueFalse
+        check("void foo(unsigned int max) {\n"
+              "    unsigned int num = max - 1;\n"
+              "    if (num < 0) {}\n" // <- do not report knownConditionTrueFalse
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
