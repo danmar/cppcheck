@@ -464,7 +464,7 @@ class Function:
     def setId(self, IdMap):
         for argnr, argid in self.argumentId.items():
             self.argument[argnr] = IdMap[argid]
-        self.token = IdMap[self.tokenId]
+        self.token = IdMap.get(self.tokenId, None)
         self.tokenDef = IdMap[self.tokenDefId]
 
 
