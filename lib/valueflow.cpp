@@ -4156,7 +4156,7 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
     if (src) {
         const size_t osz = ValueFlow::getSizeOf(*src, settings);
         if (osz >= sz && dst->sign == ValueType::Sign::SIGNED && src->sign == ValueType::Sign::UNSIGNED) {
-            values.remove_if([&](ValueFlow::Value& value) {
+            values.remove_if([&](const ValueFlow::Value& value) {
                 if (!value.isIntValue())
                     return false;
                 if (!value.isImpossible())
