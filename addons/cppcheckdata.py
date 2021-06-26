@@ -415,6 +415,7 @@ class Function:
 
     Attributes
         argument                Argument list
+        token                   Token in function implementation
         tokenDef                Token in function definition
         isVirtual               Is this function is virtual
         isImplicitlyVirtual     Is this function is virtual this in the base classes
@@ -424,6 +425,8 @@ class Function:
     Id = None
     argument = None
     argumentId = None
+    token = None
+    tokenId = None
     tokenDef = None
     tokenDefId = None
     name = None
@@ -435,6 +438,7 @@ class Function:
 
     def __init__(self, element, nestedIn):
         self.Id = element.get('id')
+        self.tokenId = element.get('token')
         self.tokenDefId = element.get('tokenDef')
         self.name = element.get('name')
         self.type = element.get('type')
@@ -450,7 +454,7 @@ class Function:
         self.argumentId = {}
 
     def __repr__(self):
-        attrs = ["Id", "tokenDefId", "name", "type", "isVirtual",
+        attrs = ["Id", "tokenId", "tokenDefId", "name", "type", "isVirtual",
                  "isImplicitlyVirtual", "isStatic", "argumentId"]
         return "{}({})".format(
             "Function",
@@ -460,6 +464,7 @@ class Function:
     def setId(self, IdMap):
         for argnr, argid in self.argumentId.items():
             self.argument[argnr] = IdMap[argid]
+        self.token = IdMap[self.tokenId]
         self.tokenDef = IdMap[self.tokenDefId]
 
 
