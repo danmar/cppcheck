@@ -10903,6 +10903,8 @@ void Tokenizer::simplifyAttribute()
                     prev = prev->previous();
                 if (Token::simpleMatch(prev, ")") && Token::Match(prev->link()->previous(), "%name% ("))
                     functok = prev->link()->previous();
+                else if ((!prev || Token::Match(prev, "[;{}*]")) && Token::Match(tok->previous(), "%name%"))
+                    functok = tok->previous();
             }
 
             for (Token *attr = tok->tokAt(2); attr->str() != ")"; attr = attr->next()) {

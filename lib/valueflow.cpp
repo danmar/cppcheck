@@ -4151,9 +4151,9 @@ static void valueFlowForwardAssign(Token* const tok,
 }
 
 static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> values,
-                                                  const ValueType* dst,
-                                                  const ValueType* src,
-                                                  const Settings* settings)
+        const ValueType* dst,
+        const ValueType* src,
+        const Settings* settings)
 {
     if (!dst || !dst->isIntegral())
         return values;
@@ -4238,7 +4238,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 continue;
 
             std::list<ValueFlow::Value> values = truncateValues(
-                tok->astOperand2()->values(), tok->astOperand1()->valueType(), tok->astOperand2()->valueType(), settings);
+                    tok->astOperand2()->values(), tok->astOperand1()->valueType(), tok->astOperand2()->valueType(), settings);
             // Remove known values
             std::set<ValueFlow::Value::ValueType> types;
             if (tok->astOperand1()->hasKnownValue()) {
