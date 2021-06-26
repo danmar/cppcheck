@@ -4143,12 +4143,34 @@ static void valueFlowForwardAssign(Token* const tok,
     valueFlowForwardAssign(tok, var->nameToken(), {var}, values, init, tokenlist, errorLogger, settings);
 }
 
-static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> values, const ValueType *valueType, const Settings *settings)
+static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> values,
+                                                  const ValueType* dst,
+                                                  const ValueType* src,
+                                                  const Settings* settings)
 {
-    if (!valueType || !valueType->isIntegral())
+    if (!dst || !dst->isIntegral())
         return values;
 
-    const size_t sz = ValueFlow::getSizeOf(*valueType, settings);
+    const size_t sz = ValueFlow::getSizeOf(*dst, settings);
+
+    if (src) {
+        const size_t osz = ValueFlow::getSizeOf(*src, settings);
+        if (osz >= sz && dst->sign == ValueType::Sign::SIGNED && src->sign == ValueType::Sign::UNSIGNED) {
+            values.remove_if([&](const ValueFlow::Value& value) {
+                if (!value.isIntValue())
+                    return false;
+                if (!value.isImpossible())
+                    return false;
+                if (value.bound != ValueFlow::Value::Bound::Upper)
+                    return false;
+                if (osz == sz && value.intvalue < 0)
+                    return true;
+                if (osz > sz)
+                    return true;
+                return false;
+            });
+        }
+    }
 
     for (ValueFlow::Value &value : values) {
         // Don't truncate impossible values since those can be outside of the valid range
@@ -4163,7 +4185,7 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
             const MathLib::biguint unsignedMaxValue = (1ULL << (sz * 8)) - 1ULL;
             const MathLib::biguint signBit = 1ULL << (sz * 8 - 1);
             value.intvalue &= unsignedMaxValue;
-            if (valueType->sign == ValueType::Sign::SIGNED && (value.intvalue & signBit))
+            if (dst->sign == ValueType::Sign::SIGNED && (value.intvalue & signBit))
                 value.intvalue |= ~unsignedMaxValue;
         }
     }
@@ -4208,7 +4230,8 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             if (!tok->astOperand2() || tok->astOperand2()->values().empty())
                 continue;
 
-            std::list<ValueFlow::Value> values = truncateValues(tok->astOperand2()->values(), tok->astOperand1()->valueType(), settings);
+            std::list<ValueFlow::Value> values = truncateValues(
+                tok->astOperand2()->values(), tok->astOperand1()->valueType(), tok->astOperand2()->valueType(), settings);
             // Remove known values
             std::set<ValueFlow::Value::ValueType> types;
             if (tok->astOperand1()->hasKnownValue()) {

@@ -3639,6 +3639,15 @@ private:
               "    if (num < 0) {}\n" // <- do not report knownConditionTrueFalse
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #10297
+        check("void foo(size_t len, int start) {\n"
+              "    if (start < 0) {\n"
+              "        start = len+start;\n"
+              "        if (start < 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
