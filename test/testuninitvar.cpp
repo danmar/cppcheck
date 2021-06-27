@@ -4844,6 +4844,17 @@ private:
                         "    return f.i;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10326
+        valueFlowUninit("void foo() {\n"
+                        "    int cnt;\n"
+                        "    do {\n"
+                        "        cnt = 32 ;\n"
+                        "    }\n"
+                        "    while ( 0 ) ;\n"
+                        "    if (cnt != 0) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_ipa() {

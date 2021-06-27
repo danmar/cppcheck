@@ -378,6 +378,16 @@ struct ForwardTraversal {
         if (initTok && updateRecursive(initTok) == Progress::Break)
             return Break();
         const bool isDoWhile = precedes(endBlock, condTok);
+        bool checkThen = true;
+        bool checkElse = false;
+        if (condTok && !Token::simpleMatch(condTok, ":"))
+            std::tie(checkThen, checkElse) = evalCond(condTok, isDoWhile ? endBlock->link()->previous() : nullptr);
+        // do while(false) is not really a loop
+        if (checkElse && isDoWhile) {
+            if(updateRange(endBlock->link(), endBlock) == Progress::Break)
+                return Break();
+            return updateRecursive(condTok);
+        }
         Analyzer::Action bodyAnalysis = analyzeScope(endBlock);
         Analyzer::Action allAnalysis = bodyAnalysis;
         if (condTok)
@@ -392,14 +402,11 @@ struct ForwardTraversal {
             if (!analyzer->lowerToPossible())
                 return Break(Analyzer::Terminate::Bail);
         }
-        bool checkThen = true;
-        bool checkElse = false;
+        
         if (condTok && !Token::simpleMatch(condTok, ":")) {
             if (!isDoWhile || (!bodyAnalysis.isModified() && !bodyAnalysis.isIdempotent()))
                 if (updateRecursive(condTok) == Progress::Break)
                     return Break();
-            // TODO: Check cond first before lowering
-            std::tie(checkThen, checkElse) = evalCond(condTok, isDoWhile ? endBlock->link()->previous() : nullptr);
         }
         // condition is false, we don't enter the loop
         if (checkElse)
