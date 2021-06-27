@@ -319,9 +319,18 @@ static int misra_8_2_k ( //
  void);
 static int misra_8_2_l ( // 8.2
 );
+void misra_8_2_m(uint8_t * const x);
+void misra_8_2_m(uint8_t * const x)
+{
+(void)x;
+}
 int16_t ( *misra_8_2_p_a ) (); // 8.2
 int16_t ( *misra_8_2_p_b ) (void);
 int16_t ( *misra_8_2_p_c ) (int);
+int misra_8_2_no_fp (int a)
+{
+    return a + 42;
+}
 
 extern int a811[]; // 8.11
 
@@ -728,8 +737,8 @@ extern uint32_t misra_12_3_fn7(const uint32_t * const, const uint8_t); // 8.2
 #define MISRA_12_3_FN3_2(A, B) (misra_12_3_fn3(A, \
                                 B))
 #define MISRA_12_3_FN3_2_MSG(x) x, fflush(stderr)
-void misra_12_3(int, int, int); // no warning
-void misra_12_3(int a, int b, int c) { // 8.2
+void misra_12_3(int, int, int); // 8.2
+void misra_12_3(int a, int b, int c) {
   int a1, a2; // 12.3
   int a3; int a4; // no warning
   int a5 = 9, a6; // 12.3

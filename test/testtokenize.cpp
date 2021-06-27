@@ -255,7 +255,8 @@ private:
 
         TEST_CASE(removedeclspec);
         TEST_CASE(removeattribute);
-        TEST_CASE(functionAttributeBefore);
+        TEST_CASE(functionAttributeBefore1);
+        TEST_CASE(functionAttributeBefore2);
         TEST_CASE(functionAttributeAfter);
         TEST_CASE(functionAttributeListBefore);
         TEST_CASE(functionAttributeListAfter);
@@ -3506,7 +3507,7 @@ private:
         ASSERT_EQUALS("struct Payload_IR_config { uint8_t tap [ 16 ] ; } ;", tokenizeAndStringify("struct __attribute__((packed, gcc_struct)) Payload_IR_config { uint8_t tap[16]; };"));
     }
 
-    void functionAttributeBefore() {
+    void functionAttributeBefore1() {
         const char code[] = "void __attribute__((pure)) __attribute__((nothrow)) __attribute__((const)) func1();\n"
                             "void __attribute__((__pure__)) __attribute__((__nothrow__)) __attribute__((__const__)) func2();\n"
                             "void __attribute__((nothrow)) __attribute__((pure)) __attribute__((const)) func3();\n"
@@ -3535,6 +3536,22 @@ private:
         ASSERT(func3 && func3->isAttributePure() && func3->isAttributeNothrow() && func3->isAttributeConst());
         ASSERT(func4 && func4->isAttributePure() && func4->isAttributeNothrow() && func4->isAttributeConst());
         ASSERT(func5 && func5->isAttributeNoreturn());
+    }
+
+    void functionAttributeBefore2() {
+        const char code[] = "extern vas_f *VAS_Fail __attribute__((__noreturn__));";
+        const char expected[] = "extern vas_f * VAS_Fail ;";
+
+        errout.str("");
+
+        // tokenize..
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token * VAS_Fail = Token::findsimplematch(tokenizer.tokens(), "VAS_Fail");
+        ASSERT(VAS_Fail && VAS_Fail->isAttributeNoreturn());
     }
 
     void functionAttributeAfter() {

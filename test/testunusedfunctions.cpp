@@ -347,9 +347,8 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // Don't crash on wrong syntax
-        ASSERT_THROW(check("int x __attribute__((constructor));\n"
-                           "int x __attribute__((destructor));"),
-                     InternalError);
+        check("int x __attribute__((constructor));\n"
+              "int y __attribute__((destructor));");
     }
 
     void initializer_list() {

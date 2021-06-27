@@ -2340,39 +2340,67 @@ void CheckOther::checkSignOfUnsignedVariable()
     for (const Scope * scope : symbolDatabase->functionScopes) {
         // check all the code in the function
         for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (!tok->isComparisonOp() || !tok->astOperand1() || !tok->astOperand2())
-                continue;
-
-            const ValueFlow::Value *v1 = tok->astOperand1()->getValue(0);
-            const ValueFlow::Value *v2 = tok->astOperand2()->getValue(0);
-
-            if (Token::Match(tok, "<|<=") && v2 && v2->isKnown()) {
-                const ValueType* vt = tok->astOperand1()->valueType();
-                if (vt && vt->pointer)
-                    pointerLessThanZeroError(tok, v2);
-                if (vt && vt->sign == ValueType::UNSIGNED)
-                    unsignedLessThanZeroError(tok, v2, tok->astOperand1()->expressionString());
-            } else if (Token::Match(tok, ">|>=") && v1 && v1->isKnown()) {
-                const ValueType* vt = tok->astOperand2()->valueType();
-                if (vt && vt->pointer)
-                    pointerLessThanZeroError(tok, v1);
-                if (vt && vt->sign == ValueType::UNSIGNED)
-                    unsignedLessThanZeroError(tok, v1, tok->astOperand2()->expressionString());
-            } else if (Token::simpleMatch(tok, ">=") && v2 && v2->isKnown()) {
-                const ValueType* vt = tok->astOperand1()->valueType();
-                if (vt && vt->pointer)
-                    pointerPositiveError(tok, v2);
-                if (vt && vt->sign == ValueType::UNSIGNED)
-                    unsignedPositiveError(tok, v2, tok->astOperand1()->expressionString());
-            } else if (Token::simpleMatch(tok, "<=") && v1 && v1->isKnown()) {
-                const ValueType* vt = tok->astOperand2()->valueType();
-                if (vt && vt->pointer)
-                    pointerPositiveError(tok, v1);
-                if (vt && vt->sign == ValueType::UNSIGNED)
-                    unsignedPositiveError(tok, v1, tok->astOperand2()->expressionString());
+            const ValueFlow::Value *zeroValue = nullptr;
+            const Token *nonZeroExpr = nullptr;
+            if (comparisonNonZeroExpressionLessThanZero(tok, &zeroValue, &nonZeroExpr)) {
+                const ValueType* vt = nonZeroExpr->valueType();
+                if (vt->pointer)
+                    pointerLessThanZeroError(tok, zeroValue);
+                else
+                    unsignedLessThanZeroError(tok, zeroValue, nonZeroExpr->expressionString());
+            } else if (testIfNonZeroExpressionIsPositive(tok, &zeroValue, &nonZeroExpr)) {
+                const ValueType* vt = nonZeroExpr->valueType();
+                if (vt->pointer)
+                    pointerPositiveError(tok, zeroValue);
+                else
+                    unsignedPositiveError(tok, zeroValue, nonZeroExpr->expressionString());
             }
         }
     }
+}
+
+bool CheckOther::comparisonNonZeroExpressionLessThanZero(const Token *tok, const ValueFlow::Value **zeroValue, const Token **nonZeroExpr)
+{
+    if (!tok->isComparisonOp() || !tok->astOperand1() || !tok->astOperand2())
+        return false;
+
+    const ValueFlow::Value *v1 = tok->astOperand1()->getValue(0);
+    const ValueFlow::Value *v2 = tok->astOperand2()->getValue(0);
+
+    if (Token::Match(tok, "<|<=") && v2 && v2->isKnown()) {
+        *zeroValue = v2;
+        *nonZeroExpr = tok->astOperand1();
+    } else if (Token::Match(tok, ">|>=") && v1 && v1->isKnown()) {
+        *zeroValue = v1;
+        *nonZeroExpr = tok->astOperand2();
+    } else {
+        return false;
+    }
+
+    const ValueType* vt = (*nonZeroExpr)->valueType();
+    return vt && (vt->pointer || vt->sign == ValueType::UNSIGNED);
+}
+
+bool CheckOther::testIfNonZeroExpressionIsPositive(const Token *tok, const ValueFlow::Value **zeroValue, const Token **nonZeroExpr)
+{
+    if (!tok->isComparisonOp() || !tok->astOperand1() || !tok->astOperand2())
+        return false;
+
+    const ValueFlow::Value *v1 = tok->astOperand1()->getValue(0);
+    const ValueFlow::Value *v2 = tok->astOperand2()->getValue(0);
+
+    if (Token::simpleMatch(tok, ">=") && v2 && v2->isKnown()) {
+        *zeroValue = v2;
+        *nonZeroExpr = tok->astOperand1();
+    } else if (Token::simpleMatch(tok, "<=") && v1 && v1->isKnown()) {
+        *zeroValue = v1;
+        *nonZeroExpr = tok->astOperand2();
+    } else {
+        return false;
+    }
+
+    const ValueType* vt = (*nonZeroExpr)->valueType();
+    return vt && (vt->pointer || vt->sign == ValueType::UNSIGNED);
 }
 
 void CheckOther::unsignedLessThanZeroError(const Token *tok, const ValueFlow::Value * v, const std::string &varname)
