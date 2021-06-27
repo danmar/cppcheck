@@ -327,10 +327,17 @@ void misra_8_2_m(uint8_t * const x)
 int16_t ( *misra_8_2_p_a ) (); // 8.2
 int16_t ( *misra_8_2_p_b ) (void);
 int16_t ( *misra_8_2_p_c ) (int);
-int misra_8_2_no_fp (int a)
-{
-    return a + 42;
-}
+int misra_8_2_n(int a)
+{ return a + 42; }
+int misra_8_2_o(
+    const uint32_t a1,
+    const uint8_t *const a2
+)
+{ return *a2 + a1; }
+int misra_8_2_p(
+    const uint32_t a1,
+    const uint8_t *const a2
+);
 
 extern int a811[]; // 8.11
 
