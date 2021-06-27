@@ -1471,7 +1471,7 @@ class MisraChecker:
                     for _ in range(count):
                         rawToken = rawToken.next
                         # Skip comments
-                        while rawTokens and (rawToken.str.startswith('/*') or rawToken.str.startswith('//')):
+                        while rawToken and (rawToken.str.startswith('/*') or rawToken.str.startswith('//')):
                             rawToken = rawToken.next
                         if rawToken is None:
                             break
