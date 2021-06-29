@@ -112,6 +112,7 @@ private:
         TEST_CASE(nullpointer69);         // #8143
         TEST_CASE(nullpointer70);
         TEST_CASE(nullpointer71); // #10178
+        TEST_CASE(nullpointer72); // #10215
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2237,6 +2238,26 @@ private:
               "    DoSomething(dev);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer72() { // #10215
+      check("int test() {\n"
+        "int* p0 = nullptr, *p1 = nullptr;\n"
+        "getFoo(p0);\n"
+        "getBar(p1);\n"
+        "if (!(p0 != nullptr && p1 != nullptr))\n"
+        "return {};\n"
+        "return *p0 + *p1;\n"
+        "}\n", true /*inconclusive*/);
+      ASSERT_EQUALS("", errout.str());
+
+      check("int test2() {\n"
+        "int* p0 = nullptr; \n"
+        "if (!(getBaz(p0) && p0 != nullptr))\n"
+        "return 0;\n"
+        "return *p0;\n"
+        "}\n", true /*inconclusive*/);
+      ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_addressOf() { // address of
