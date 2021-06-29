@@ -1123,7 +1123,10 @@ class MisraChecker:
             # Setup list of function parameters
             func_param_list = list()
             for arg in func.argument:
-                func_param_list.append(func.argument[arg])
+                func_arg = func.argument[arg]
+                if func_arg.typeStartToken and func_arg.typeStartToken.str == '...':
+                    continue
+                func_param_list.append(func_arg)
             # Search for scope of current function
             for scope in data.scopes:
                 if (scope.type == "Function") and (scope.function == func):
