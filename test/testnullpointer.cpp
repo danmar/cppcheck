@@ -113,6 +113,7 @@ private:
         TEST_CASE(nullpointer70);
         TEST_CASE(nullpointer71); // #10178
         TEST_CASE(nullpointer72); // #10215
+        TEST_CASE(nullpointer73); // #10321
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2258,6 +2259,33 @@ private:
         "return *p0;\n"
         "}\n", true /*inconclusive*/);
       ASSERT_EQUALS("", errout.str());
+
+    void nullpointer73() {
+        check("void f(bool flag2, int* ptr) {\n"
+              "    bool flag1 = true;\n"
+              "    if (flag2) {\n"
+              "        if (ptr != nullptr)\n"
+              "            (*ptr)++;\n"
+              "        else\n"
+              "            flag1 = false;\n"
+              "    }\n"
+              "    if (flag1 && flag2)\n"
+              "        (*ptr)++;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool flag2, int* ptr) {\n"
+              "    bool flag1 = true;\n"
+              "    if (flag2) {\n"
+              "        if (ptr != nullptr)\n"
+              "            (*ptr)++;\n"
+              "        else\n"
+              "            flag1 = false;\n"
+              "    }\n"
+              "    if (!flag1 && flag2)\n"
+              "        (*ptr)++;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:10]: (warning) Either the condition 'ptr!=nullptr' is redundant or there is possible null pointer dereference: ptr.\n", errout.str());
     }
 
     void nullpointer_addressOf() { // address of

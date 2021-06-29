@@ -1123,7 +1123,10 @@ class MisraChecker:
             # Setup list of function parameters
             func_param_list = list()
             for arg in func.argument:
-                func_param_list.append(func.argument[arg])
+                func_arg = func.argument[arg]
+                if func_arg.typeStartToken and func_arg.typeStartToken.str == '...':
+                    continue
+                func_param_list.append(func_arg)
             # Search for scope of current function
             for scope in data.scopes:
                 if (scope.type == "Function") and (scope.function == func):
@@ -1133,9 +1136,19 @@ class MisraChecker:
                         if token.variable is not None and token.variable in func_param_list:
                             func_param_list.remove(token.variable)
                         token = token.next
-                    if len(func_param_list) > 0:
-                        # At least one parameter has not been referenced in function body
-                        self.reportError(func.tokenDef, 2, 7)
+                    # Emit a warning for each unused variable, but no more that one warning per line
+                    reported_linenrs = set()
+                    for func_param in func_param_list:
+                        if func_param.nameToken:
+                            linenr = func_param.nameToken
+                            if linenr not in reported_linenrs:
+                                self.reportError(func_param.nameToken, 2, 7)
+                                reported_linenrs.add(linenr)
+                        else:
+                            linenr = func.tokenDef.linenr
+                            if linenr not in reported_linenrs:
+                                self.reportError(func.tokenDef, 2, 7)
+                                reported_linenrs.add(linenr)
 
     def misra_3_1(self, rawTokens):
         for token in rawTokens:
@@ -1471,26 +1484,15 @@ class MisraChecker:
                     for _ in range(count):
                         rawToken = rawToken.next
                         # Skip comments
-                        while rawTokens and (rawToken.str.startswith('/*') or rawToken.str.startswith('//')):
+                        while rawToken and (rawToken.str.startswith('/*') or rawToken.str.startswith('//')):
                             rawToken = rawToken.next
                         if rawToken is None:
                             break
                         following.append(rawToken)
-
             return following
 
-        # Check arguments in function declaration
-        for func in data.functions:
-
-            startCall = func.tokenDef.next
-            if startCall is None or startCall.str != '(':
-                continue
-
-            endCall = startCall.link
-            if endCall is None or endCall.str != ')':
-                continue
-
-            # Zero arguments should be in form ( void )
+        # Zero arguments should be in form ( void )
+        def checkZeroArguments(func, startCall, endCall):
             if (len(func.argument) == 0):
                 voidArg = startCall.next
                 while voidArg is not endCall:
@@ -1500,20 +1502,83 @@ class MisraChecker:
                 if not voidArg.str == 'void':
                     self.reportError(func.tokenDef, 8, 2)
 
+        def checkDeclarationArgumentsViolations(func, startCall, endCall):
+            # Collect the tokens for the arguments in function definition
+            argNameTokens = set()
+            for arg in func.argument:
+                argument = func.argument[arg]
+                typeStartToken = argument.typeStartToken
+                if typeStartToken is None:
+                    continue
+                nameToken = argument.nameToken
+                if nameToken is None:
+                    continue
+                argNameTokens.add(nameToken)
+
+            # Check if we have the same number of variables in both the
+            # declaration and the definition.
+            #
+            # TODO: We actually need to check if the names of the arguments are
+            # the same. But we can't do this because we have no links to
+            # variables in the arguments in function defintion in the dump file.
+            foundVariables = 0
+            while startCall and startCall != endCall:
+                if startCall.varId:
+                    foundVariables += 1
+                startCall = startCall.next
+
+            if len(argNameTokens) != foundVariables:
+                self.reportError(func.tokenDef, 8, 2)
+
+        def checkDefinitionArgumentsViolations(func, startCall, endCall):
             for arg in func.argument:
                 argument = func.argument[arg]
                 typeStartToken = argument.typeStartToken
                 if typeStartToken is None:
                     continue
 
-                nameToken = argument.nameToken
                 # Arguments should have a name unless variable length arg
+                nameToken = argument.nameToken
                 if nameToken is None and typeStartToken.str != '...':
                     self.reportError(typeStartToken, 8, 2)
 
                 # Type declaration on next line (old style declaration list) is not allowed
-                if (typeStartToken.linenr > endCall.linenr) or (typeStartToken.column > endCall.column):
+                if typeStartToken.linenr > endCall.linenr:
                     self.reportError(typeStartToken, 8, 2)
+
+        # Check arguments in function declaration
+        for func in data.functions:
+
+            # Check arguments in function definition
+            tokenImpl = func.token
+            if tokenImpl:
+                startCall = tokenImpl.next
+                if startCall is None or startCall.str != '(':
+                    continue
+                endCall = startCall.link
+                if endCall is None or endCall.str != ')':
+                    continue
+                checkZeroArguments(func, startCall, endCall)
+                checkDefinitionArgumentsViolations(func, startCall, endCall)
+
+            # Check arguments in function declaration
+            tokenDef = func.tokenDef
+            if tokenDef:
+                startCall = func.tokenDef.next
+                if startCall is None or startCall.str != '(':
+                    continue
+                endCall = startCall.link
+                if endCall is None or endCall.str != ')':
+                    continue
+                checkZeroArguments(func, startCall, endCall)
+                if tokenImpl:
+                    checkDeclarationArgumentsViolations(func, startCall, endCall)
+                else:
+                    # When there is no function definition, we should execute
+                    # its checks for the declaration token. The point is that without
+                    # a known definition we have no Function.argument list required
+                    # for declaration check.
+                    checkDefinitionArgumentsViolations(func, startCall, endCall)
 
         # Check arguments in pointer declarations
         for var in data.variables:

@@ -104,6 +104,13 @@ public:
         checkOther.checkModuloOfOne();
     }
 
+    /** Is expression a comparison that checks if a nonzero (unsigned/pointer) expression is less than zero? */
+    static bool comparisonNonZeroExpressionLessThanZero(const Token *tok, const ValueFlow::Value **zeroValue, const Token **nonZeroExpr);
+
+    /** Is expression a comparison that checks if a nonzero (unsigned/pointer) expression is positive? */
+    static bool testIfNonZeroExpressionIsPositive(const Token *tok, const ValueFlow::Value **zeroValue, const Token **nonZeroExpr);
+
+
     /** @brief Clarify calculation for ".. a * b ? .." */
     void clarifyCalculation();
 
