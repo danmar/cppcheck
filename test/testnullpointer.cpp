@@ -2259,6 +2259,7 @@ private:
         "return *p0;\n"
         "}\n", true /*inconclusive*/);
       ASSERT_EQUALS("", errout.str());
+    }
 
     void nullpointer73() {
         check("void f(bool flag2, int* ptr) {\n"
