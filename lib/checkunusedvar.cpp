@@ -1596,6 +1596,7 @@ bool CheckUnusedVar::isEmptyType(const Type* type)
     return emptyType;
 }
 
+
 bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const Token* functionUsageToken,
         std::list<const Function*> checkedFuncs)
 {
@@ -1607,40 +1608,14 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
     // search for global variables in arguments list
     std::vector<unsigned int> globalVarsIndexes;
     unsigned int usageVarIndex = 0;
-    const Token* argsClosingBracketToken = functionUsageToken->next()->link();
-    for (const Token* usageArgToken = functionUsageToken->next(); usageArgToken != argsClosingBracketToken; 
-        usageArgToken = usageArgToken->next())
-    {
-        if (usageArgToken->function()) {
-            usageArgToken = usageArgToken->next()->link(); 
-            continue; // move to the nested function call closing bracket, it's definitely not a global variable
-        }
-        if (Token::simpleMatch(usageArgToken, ",")) {
-            continue; // move to the next argument expression
-        }
-        
-        bool globalVarUsed = false;
-        for (const Token* argExprToken = usageArgToken; 
-            (!Token::simpleMatch(argExprToken, ",") && (argExprToken != argsClosingBracketToken));
-            argExprToken = argExprToken->next())
-        {
-            if (argExprToken->isName() || argExprToken->isLiteral()) {
-                const Variable* argVar = argExprToken->variable();
-                if (argVar && argVar->isGlobal()) {
-                    globalVarUsed = true;
-                    break;
-                }
-            }
-        }
-        if (globalVarUsed) {
+    for (const Token* arg : getArguments(functionUsageToken)) {
+        const bool containsGlobal = isGlobalInExpression(arg);
+        if (containsGlobal) {
             globalVarsIndexes.push_back(usageVarIndex);
         }
         usageVarIndex++;
-        while ( !Token::simpleMatch(usageArgToken->next(), ",") && (usageArgToken->next() != argsClosingBracketToken) ) {
-            usageArgToken = usageArgToken->next();
-        }
     }
-    
+
     // match global variables from function usage with arguments at function declaration
     std::set<const Variable*> pointersToGlobals;
     if (!globalVarsIndexes.empty()) {
@@ -1650,11 +1625,9 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
         {
             const Variable* argVar = defArgToken->variable();
             if (argVar) {
-                // std::cout << definitionVarIndex << " defArgToken: " << defArgToken->str() << std::endl;
                 if (std::find(globalVarsIndexes.begin(), globalVarsIndexes.end(), definitionVarIndex) != 
                     globalVarsIndexes.end())
                 {
-                    // std::cout << "global found at index " << definitionVarIndex << std::endl;
                     pointersToGlobals.insert(argVar);
                 }
                 definitionVarIndex++;
@@ -1725,3 +1698,32 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
 
     return !sideEffectReturnFound;
 }
+
+
+bool CheckUnusedVar::isGlobalInExpression(const Token* token) {
+    if (!token) {
+        return false;
+    }
+
+    if (token->isName() || token->isLiteral()) {
+        const Variable* var = token->variable();
+        if (var && var->isGlobal()) {
+            return true;
+        }
+    }
+
+    const Token* astOp1 = token->astOperand1();
+    const bool isGlobalAtOp1 = isGlobalInExpression(astOp1);
+    if (isGlobalAtOp1) {
+        return true;
+    }
+
+    const Token* astOp2 = token->astOperand2();
+    const bool isGlobalAtOp2 = isGlobalInExpression(astOp2);
+    if (isGlobalAtOp2) {
+        return true;
+    }
+
+    return false;
+}
+

@@ -1311,7 +1311,7 @@ private:
             "}");
         ASSERT_EQUALS("", errout.str());
 
-        // global variable modified though function arg (arithmetic operation in function argument)
+        // global variable modified through function arg (arithmetic operation in function argument)
         functionVariableUsage(
             "char buf[10];\n"
             "int func(int arg1, char* arg2, int arg3) {\n"
@@ -1319,9 +1319,6 @@ private:
             "   arg2[0] = 1;\n"
             "   arg3 = 30; (void) arg3;\n"
             "   return 1;\n"
-            "}\n"
-            "int func1(int a, int b) {\n"
-            "   return 2;\n"
             "}\n"
             "class C {\n"
             "public:\n"
@@ -1335,16 +1332,13 @@ private:
             "}");
         ASSERT_EQUALS("", errout.str());
 
-        // global variable not modified though function arg (arithmetic operation in function argument)
+        // global variable not modified through function arg (arithmetic operation in function argument)
         functionVariableUsage(
             "char buf[10];\n"
             "int func(int arg1, char* arg2, int arg3) {\n"
             "   arg1 = 10; (void) arg1;\n"
             "   arg3 = 30; (void) arg3;\n"
             "   return 1;\n"
-            "}\n"
-            "int func1(int a, int b) {\n"
-            "   return 2;\n"
             "}\n"
             "class C {\n"
             "public:\n"
@@ -1356,7 +1350,7 @@ private:
             "void f() {\n"
             "   C c;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:18]: (style) Unused variable: c\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:15]: (style) Unused variable: c\n", errout.str());
 
         // unknown name used in function arg, arg modified (arithmetic operation in function argument)
         functionVariableUsage(
@@ -1366,9 +1360,6 @@ private:
             "   arg2[0] = 1;\n"
             "   arg3 = 30; (void) arg3;\n"
             "   return 1;\n"
-            "}\n"
-            "int func1(int a, int b) {\n"
-            "   return 2;\n"
             "}\n"
             "class C {\n"
             "public:\n"
@@ -1389,14 +1380,52 @@ private:
             "   arg3 = 30; (void) arg3;\n"
             "   return 1;\n"
             "}\n"
-            "int func1(int a, int b) {\n"
-            "   return 2;\n"
-            "}\n"
             "class C {\n"
             "public:\n"
             "   C() : x(func(y+unknown+2, buf, 3)) {}\n"
             "   int x;\n"
             "   int y = 0;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // global variable modified through function arg (inside arithmetic operation)
+        functionVariableUsage(
+            "int global = 0;\n"
+            "int func(int arg1, int arg2, int arg3) {\n"
+            "   arg1 = 1; (void) arg1;\n" 
+            "   arg2 = 10; (void) arg2;\n"
+            "   arg3 = 30; (void) arg3;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(y+buf+2, z, 3)) {}\n"
+            "   int x;\n"
+            "   int y = 0;\n"
+            "   int z = 1;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // global variable not modified through function arg (inside arithmetic operation)
+        functionVariableUsage(
+            "int global = 0;\n"
+            "int func(int arg1, int arg2, int arg3) {\n"
+            "   arg2 = 10; (void) arg2;\n"
+            "   arg3 = 30; (void) arg3;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(y+buf+2, z, 3)) {}\n"
+            "   int x;\n"
+            "   int y = 0;\n"
+            "   int z = 1;\n"
             "};\n"
             "void f() {\n"
             "   C c;\n"
