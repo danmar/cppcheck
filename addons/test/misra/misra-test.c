@@ -65,6 +65,9 @@ void misra_2_7_used_params (int *param1, int param2, int param3)
     *param1 = param2;
 }
 
+void misra_2_7_vararg(int a, ...) { (void)a; }
+void misra_2_7_unnamed_arg(int) { } // 2.7 8.2
+
 void misra_3_2(int enable)
 {
     // This won't generate a violation because of subsequent blank line \
