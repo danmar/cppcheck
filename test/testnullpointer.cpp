@@ -2242,23 +2242,23 @@ private:
     }
 
     void nullpointer72() { // #10215
-      check("int test() {\n"
-        "int* p0 = nullptr, *p1 = nullptr;\n"
-        "getFoo(p0);\n"
-        "getBar(p1);\n"
-        "if (!(p0 != nullptr && p1 != nullptr))\n"
-        "return {};\n"
-        "return *p0 + *p1;\n"
-        "}\n", true /*inconclusive*/);
-      ASSERT_EQUALS("", errout.str());
+        check("int test() {\n"
+              "int* p0 = nullptr, *p1 = nullptr;\n"
+              "getFoo(p0);\n"
+              "getBar(p1);\n"
+              "if (!(p0 != nullptr && p1 != nullptr))\n"
+              "return {};\n"
+              "return *p0 + *p1;\n"
+              "}\n", true /*inconclusive*/);
+        ASSERT_EQUALS("", errout.str());
 
-      check("int test2() {\n"
-        "int* p0 = nullptr; \n"
-        "if (!(getBaz(p0) && p0 != nullptr))\n"
-        "return 0;\n"
-        "return *p0;\n"
-        "}\n", true /*inconclusive*/);
-      ASSERT_EQUALS("", errout.str());
+        check("int test2() {\n"
+              "int* p0 = nullptr; \n"
+              "if (!(getBaz(p0) && p0 != nullptr))\n"
+              "return 0;\n"
+              "return *p0;\n"
+              "}\n", true /*inconclusive*/);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer73() {
