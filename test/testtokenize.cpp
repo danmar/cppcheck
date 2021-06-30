@@ -6047,6 +6047,12 @@ private:
         ASSERT_EQUALS("decltypex({", testAst("decltype(x){};"));
         ASSERT_EQUALS("decltypexy+(yx+(", testAst("decltype(x+y)(y+x);"));
         ASSERT_EQUALS("decltypexy+(yx+{", testAst("decltype(x+y){y+x};"));
+
+        // #10334: Do not hang!
+        tokenizeAndStringify("void foo(const std::vector<std::string>& locations = {\"\"}) {\n"
+                             "    for (int i = 0; i <= 123; ++i)\n"
+                             "        x->emplace_back(y);\n"
+                             "}");
     }
 
     void astbrackets() { // []

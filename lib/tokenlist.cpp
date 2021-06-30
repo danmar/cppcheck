@@ -1267,7 +1267,10 @@ static void compileAssignTernary(Token *&tok, AST_state& state)
     while (tok) {
         if (tok->isAssignmentOp()) {
             state.assign++;
+            const Token *tok1 = tok->next();
             compileBinOp(tok, state, compileAssignTernary);
+            if (Token::simpleMatch(tok1, "{") && tok == tok1->link() && tok->next())
+                tok = tok->next();
             if (state.assign > 0)
                 state.assign--;
         } else if (tok->str() == "?") {
