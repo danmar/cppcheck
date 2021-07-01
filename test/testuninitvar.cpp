@@ -4844,6 +4844,24 @@ private:
                         "    return f.i;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10327 - avoid extra warnings for uninitialized variable
+        valueFlowUninit("void dowork( int me ) {\n"
+                        "    if ( me == 0 ) {}\n" // <- not uninitialized
+                        "}\n"
+                        "\n"
+                        "int main() {\n"
+                        "    int me;\n"
+                        "     dowork(me);\n" // <- me is uninitialized
+                        "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: me\n", errout.str());
+
+        valueFlowUninit("int foo() {\n"
+                        "  int x;\n"
+                        "  int a = x;\n" // <- x is uninitialized
+                        "  return a;\n" // <- a has been initialized
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
     }
 
     void uninitvar_ipa() {

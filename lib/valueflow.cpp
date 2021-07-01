@@ -79,6 +79,7 @@
 
 #include "analyzer.h"
 #include "astutils.h"
+#include "checkuninitvar.h"
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "forwardanalyzer.h"
@@ -4255,6 +4256,12 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 values.remove_if([&](const ValueFlow::Value& value) {
                 return value.valueType == ValueFlow::Value::ValueType::CONTAINER_SIZE;
             });
+            // If assignment copy by value, remove Uninit values..
+            if ((tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->pointer == 0) ||
+                (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference() && tok->astOperand1()->variable()->nameToken() == tok->astOperand1()))
+                values.remove_if([&](const ValueFlow::Value& value) {
+                return value.isUninitValue();
+            });
             if (values.empty())
                 continue;
             const bool init = vars.size() == 1 && vars.front()->nameToken() == tok->astOperand1();
@@ -5777,6 +5784,11 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
                 });
                 // Don't forward container sizes for now since programmemory can't evaluate conditions
                 argvalues.remove_if(std::mem_fn(&ValueFlow::Value::isContainerSizeValue));
+                // Remove uninit values if argument is passed by value
+                if (argtok->variable() && !argtok->variable()->isPointer() && argvalues.size() == 1 && argvalues.front().isUninitValue()) {
+                    if (CheckUninitVar::isVariableUsage(tokenlist->isCPP(), argtok, settings->library, false, CheckUninitVar::Alloc::NO_ALLOC, 0))
+                        continue;
+                }
 
                 if (argvalues.empty())
                     continue;
