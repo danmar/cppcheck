@@ -1,3 +1,5 @@
+import re
+
 # Holds information about an array, struct or union's element definition.
 class ElementDef:
     def __init__(self, elementType, name, valueType, dimensions = None):
@@ -300,7 +302,7 @@ class InitializerParser:
                     if not isDesignated and len(self.rootStack) > 0 and self.rootStack[-1][1] == self.root:
                         self.rootStack[-1][0].markStuctureViolation(self.token)
 
-                    if isFirstElement and self.token.str == '0' and self.token.next.str == '}':
+                    if isFirstElement and re.match(r'^0([xb\.]0+)?[uUlL]*$', self.token.str) and self.token.next.str == '}':
                         # Zero initializer causes recursive initialization
                         self.root.initializeChildren()
                     elif self.token.isString and self.ed.valueType and self.ed.valueType.pointer > 0:

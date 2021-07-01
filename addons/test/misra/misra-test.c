@@ -380,6 +380,10 @@ void misra_9_empty_or_zero_initializers(void) {
     int k[2][2] = { [0] = { 1 , 2 }, { 0 } };
     int l[1][2] = { { 0 }, [0] = { 1 } };      // 9.3 9.4
 
+    int m[2]    = { 0u };
+    int n[2]    = { 0x00 };
+    int o[2]    = { 0x00ULL };
+
     typedef struct {
         int a;
         int b;
