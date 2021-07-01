@@ -488,20 +488,20 @@ private:
     }
 
     void simple15() { // #8942
-      check("class A\n"
-            "{\n"
-            "public:\n"
-            "  int member;\n"
-            "};\n"
-            "class B\n"
-            "{\n"
-            "public:\n"
-            "  B(const decltype(A::member)& x, const decltype(A::member)& y) : x(x), y(y) {}\n"
-            "private:\n"
-            "  const decltype(A::member)& x;\n"
-            "  const decltype(A::member)& y;\n"
-            "};\n");
-      ASSERT_EQUALS("", errout.str());
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "  int member;\n"
+              "};\n"
+              "class B\n"
+              "{\n"
+              "public:\n"
+              "  B(const decltype(A::member)& x, const decltype(A::member)& y) : x(x), y(y) {}\n"
+              "private:\n"
+              "  const decltype(A::member)& x;\n"
+              "  const decltype(A::member)& y;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void noConstructor1() {
