@@ -1500,7 +1500,10 @@ class MisraChecker:
                         break
                     voidArg = voidArg.next
                 if not voidArg.str == 'void':
-                    self.reportError(func.tokenDef, 8, 2)
+                    if func.tokenDef.next:
+                        self.reportError(func.tokenDef.next, 8, 2)
+                    else:
+                        self.reportError(func.tokenDef, 8, 2)
 
         def checkDeclarationArgumentsViolations(func, startCall, endCall):
             # Collect the tokens for the arguments in function definition
@@ -1528,7 +1531,10 @@ class MisraChecker:
                 startCall = startCall.next
 
             if len(argNameTokens) != foundVariables:
-                self.reportError(func.tokenDef, 8, 2)
+                if func.tokenDef.next:
+                    self.reportError(func.tokenDef.next, 8, 2)
+                else:
+                    self.reportError(func.tokenDef, 8, 2)
 
         def checkDefinitionArgumentsViolations(func, startCall, endCall):
             for arg in func.argument:

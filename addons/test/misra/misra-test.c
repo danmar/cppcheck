@@ -354,6 +354,8 @@ int misra_8_2_p(
     const uint32_t a1,
     const uint8_t *const a2
 );
+int misra_8_2_q
+(); // 8.2
 
 extern int a811[]; // 8.11
 
