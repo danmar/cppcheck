@@ -2368,7 +2368,15 @@ bool Tokenizer::simplifyUsing()
 
         std::string scope1 = currentScope1->fullName;
         bool skip = false; // don't erase type aliases we can't parse
+        Token *enumOpenBrace = nullptr;
         for (Token* tok1 = startToken; !skip && tok1 && tok1 != endToken; tok1 = tok1->next()) {
+            // skip enum body
+            if (tok1 && tok1 == enumOpenBrace) {
+                tok1 = tok1->link();
+                enumOpenBrace = nullptr;
+                continue;
+            }
+
             if ((Token::Match(tok1, "{|}|namespace|class|struct|union") && tok1->strAt(-1) != "using") ||
                 Token::Match(tok1, "using namespace %name% ;|::")) {
                 setScopeInfo(tok1, &currentScope1);
@@ -2389,12 +2397,15 @@ bool Tokenizer::simplifyUsing()
                 continue;
             }
 
-            // skip enum definitions
-            if (tok1->str() == "enum")
-                skipEnumBody(&tok1);
-
-            if (!tok1)
-                break;
+            // check for enum with body
+            if (tok1->str() == "enum") {
+                Token *defStart = tok1;
+                while (Token::Match(defStart, "%name%|::|:"))
+                    defStart = defStart->next();
+                if (Token::simpleMatch(defStart, "{"))
+                    enumOpenBrace = defStart;
+                continue;
+            }
 
             // check for member function and adjust scope
             if (isMemberFunction(tok1)) {

@@ -3772,6 +3772,12 @@ private:
                                 "    bar();\n"
                                 "}", nullptr, false, false, false, false, &settings), InternalError);
         //ASSERT_EQUALS("", errout.str());
+
+        check("int foo() {\n"
+              "    exit(0);\n"
+              "    return 1;\n" // <- clarify for tools that function does not continue..
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

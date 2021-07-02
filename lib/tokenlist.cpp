@@ -1267,7 +1267,10 @@ static void compileAssignTernary(Token *&tok, AST_state& state)
     while (tok) {
         if (tok->isAssignmentOp()) {
             state.assign++;
+            const Token *tok1 = tok->next();
             compileBinOp(tok, state, compileAssignTernary);
+            if (Token::simpleMatch(tok1, "{") && tok == tok1->link() && tok->next())
+                tok = tok->next();
             if (state.assign > 0)
                 state.assign--;
         } else if (tok->str() == "?") {
@@ -1658,7 +1661,7 @@ void TokenList::validateAst() const
         // Check for endless recursion
         const Token* parent = tok->astParent();
         if (parent) {
-            std::set < const Token* > astTokens; // list of anchestors
+            std::set < const Token* > astTokens; // list of ancestors
             astTokens.insert(tok);
             do {
                 if (safeAstTokens.find(parent) != safeAstTokens.end())

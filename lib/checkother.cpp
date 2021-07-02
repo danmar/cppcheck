@@ -802,6 +802,10 @@ void CheckOther::checkUnreachableCode()
             } else if (Token::Match(tok, "%name% (") && mSettings->library.isnoreturn(tok) && !Token::Match(tok->next()->astParent(), "?|:")) {
                 if ((!tok->function() || (tok->function()->token != tok && tok->function()->tokenDef != tok)) && tok->linkAt(1)->strAt(1) != "{")
                     secondBreak = tok->linkAt(1)->tokAt(2);
+                if (Token::simpleMatch(secondBreak, "return")) {
+                    // clarification for tools that function returns
+                    continue;
+                }
             }
 
             // Statements follow directly, no line between them. (#3383)

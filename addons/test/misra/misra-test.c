@@ -65,6 +65,22 @@ void misra_2_7_used_params (int *param1, int param2, int param3)
     *param1 = param2;
 }
 
+void misra_2_7_a(int a,
+                 int b, // 2.7
+                 int c,
+                 int d) // 2.7
+{
+    (void)a;
+    (void)c;
+}
+void misra_2_7_b(int a, int b, int c, // 2.7
+                 int d)               // 2.7
+{
+    (void)a;
+}
+void misra_2_7_c(int a, ...) { (void)a; }
+void misra_2_7_d(int) { } // 2.7 8.2
+
 void misra_3_2(int enable)
 {
     // This won't generate a violation because of subsequent blank line \
@@ -338,6 +354,8 @@ int misra_8_2_p(
     const uint32_t a1,
     const uint8_t *const a2
 );
+int misra_8_2_q
+(); // 8.2
 
 extern int a811[]; // 8.11
 

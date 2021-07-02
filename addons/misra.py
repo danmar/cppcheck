@@ -1123,7 +1123,10 @@ class MisraChecker:
             # Setup list of function parameters
             func_param_list = list()
             for arg in func.argument:
-                func_param_list.append(func.argument[arg])
+                func_arg = func.argument[arg]
+                if func_arg.typeStartToken and func_arg.typeStartToken.str == '...':
+                    continue
+                func_param_list.append(func_arg)
             # Search for scope of current function
             for scope in data.scopes:
                 if (scope.type == "Function") and (scope.function == func):
@@ -1133,9 +1136,19 @@ class MisraChecker:
                         if token.variable is not None and token.variable in func_param_list:
                             func_param_list.remove(token.variable)
                         token = token.next
-                    if len(func_param_list) > 0:
-                        # At least one parameter has not been referenced in function body
-                        self.reportError(func.tokenDef, 2, 7)
+                    # Emit a warning for each unused variable, but no more that one warning per line
+                    reported_linenrs = set()
+                    for func_param in func_param_list:
+                        if func_param.nameToken:
+                            linenr = func_param.nameToken
+                            if linenr not in reported_linenrs:
+                                self.reportError(func_param.nameToken, 2, 7)
+                                reported_linenrs.add(linenr)
+                        else:
+                            linenr = func.tokenDef.linenr
+                            if linenr not in reported_linenrs:
+                                self.reportError(func.tokenDef, 2, 7)
+                                reported_linenrs.add(linenr)
 
     def misra_3_1(self, rawTokens):
         for token in rawTokens:
@@ -1487,7 +1500,10 @@ class MisraChecker:
                         break
                     voidArg = voidArg.next
                 if not voidArg.str == 'void':
-                    self.reportError(func.tokenDef, 8, 2)
+                    if func.tokenDef.next:
+                        self.reportError(func.tokenDef.next, 8, 2)
+                    else:
+                        self.reportError(func.tokenDef, 8, 2)
 
         def checkDeclarationArgumentsViolations(func, startCall, endCall):
             # Collect the tokens for the arguments in function definition
@@ -1515,7 +1531,10 @@ class MisraChecker:
                 startCall = startCall.next
 
             if len(argNameTokens) != foundVariables:
-                self.reportError(func.tokenDef, 8, 2)
+                if func.tokenDef.next:
+                    self.reportError(func.tokenDef.next, 8, 2)
+                else:
+                    self.reportError(func.tokenDef, 8, 2)
 
         def checkDefinitionArgumentsViolations(func, startCall, endCall):
             for arg in func.argument:
