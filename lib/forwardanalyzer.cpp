@@ -423,7 +423,7 @@ struct ForwardTraversal {
             }
 
             if (allAnalysis.isModified() || !forkContinue) {
-                // TODO: Dont bail on missing condition
+                // TODO: Don't bail on missing condition
                 if (!condTok)
                     return Break(Analyzer::Terminate::Bail);
                 if (analyzer->isConditional() && stopUpdates())

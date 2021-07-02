@@ -1661,7 +1661,7 @@ void TokenList::validateAst() const
         // Check for endless recursion
         const Token* parent = tok->astParent();
         if (parent) {
-            std::set < const Token* > astTokens; // list of anchestors
+            std::set < const Token* > astTokens; // list of ancestors
             astTokens.insert(tok);
             do {
                 if (safeAstTokens.find(parent) != safeAstTokens.end())
