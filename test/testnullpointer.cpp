@@ -2268,7 +2268,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:10]: (warning) Either the condition 'ptr!=nullptr' is redundant or there is possible null pointer dereference: ptr.\n", errout.str());
     }
-    
+
     void nullpointer73() {
         check("struct d {\n"
               "  d* e();\n"
@@ -2291,7 +2291,9 @@ private:
               "    if (f) {}\n"
               "  } while (i > 0);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:7]: (warning) Either the condition 'f' is redundant or there is possible null pointer dereference: f.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:8] -> [test.cpp:7]: (warning) Either the condition 'f' is redundant or there is possible null pointer dereference: f.\n",
+            errout.str());
 
         check("struct d {\n"
               "  d* e();\n"

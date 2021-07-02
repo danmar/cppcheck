@@ -387,7 +387,7 @@ struct ForwardTraversal {
             return Progress::Continue;
         // do while(false) is not really a loop
         if (checkElse && isDoWhile) {
-            if(updateRange(endBlock->link(), endBlock) == Progress::Break)
+            if (updateRange(endBlock->link(), endBlock) == Progress::Break)
                 return Break();
             return updateRecursive(condTok);
         }
@@ -405,7 +405,7 @@ struct ForwardTraversal {
             if (!analyzer->lowerToPossible())
                 return Break(Analyzer::Terminate::Bail);
         }
-        
+
         if (condTok && !Token::simpleMatch(condTok, ":")) {
             if (!isDoWhile || (!bodyAnalysis.isModified() && !bodyAnalysis.isIdempotent()))
                 if (updateRecursive(condTok) == Progress::Break)
@@ -453,10 +453,11 @@ struct ForwardTraversal {
     }
 
     Progress updateLoopExit(const Token* endToken,
-                        Token* endBlock,
-                        Token* condTok,
-                        Token* initTok = nullptr,
-                        Token* stepTok = nullptr) {
+                            Token* endBlock,
+                            Token* condTok,
+                            Token* initTok = nullptr,
+                            Token* stepTok = nullptr)
+    {
         return updateLoop(endToken, endBlock, condTok, initTok, stepTok, true);
     }
 
