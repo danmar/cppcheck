@@ -374,7 +374,8 @@ struct ForwardTraversal {
                         Token* endBlock,
                         Token* condTok,
                         Token* initTok = nullptr,
-                        Token* stepTok = nullptr) {
+                        Token* stepTok = nullptr,
+                        bool exit = false) {
         if (initTok && updateRecursive(initTok) == Progress::Break)
             return Break();
         const bool isDoWhile = precedes(endBlock, condTok);
@@ -382,6 +383,8 @@ struct ForwardTraversal {
         bool checkElse = false;
         if (condTok && !Token::simpleMatch(condTok, ":"))
             std::tie(checkThen, checkElse) = evalCond(condTok, isDoWhile ? endBlock->link()->previous() : nullptr);
+        if (checkElse && exit)
+            return Progress::Continue;
         // do while(false) is not really a loop
         if (checkElse && isDoWhile) {
             if(updateRange(endBlock->link(), endBlock) == Progress::Break)
@@ -447,6 +450,14 @@ struct ForwardTraversal {
                 return Break(Analyzer::Terminate::Bail);
         }
         return Progress::Continue;
+    }
+
+    Progress updateLoopExit(const Token* endToken,
+                        Token* endBlock,
+                        Token* condTok,
+                        Token* initTok = nullptr,
+                        Token* stepTok = nullptr) {
+        return updateLoop(endToken, endBlock, condTok, initTok, stepTok, true);
     }
 
     Progress updateScope(Token* endBlock) {
@@ -535,7 +546,7 @@ struct ForwardTraversal {
                 } else if (scope->type == Scope::eLambda) {
                     return Break();
                 } else if (scope->type == Scope::eDo && Token::simpleMatch(tok, "} while (")) {
-                    if (updateLoop(end, tok, tok->tokAt(2)->astOperand2()) == Progress::Break)
+                    if (updateLoopExit(end, tok, tok->tokAt(2)->astOperand2()) == Progress::Break)
                         return Break();
                     tok = tok->linkAt(2);
                 } else if (Token::simpleMatch(tok->next(), "else {")) {
