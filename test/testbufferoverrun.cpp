@@ -3527,7 +3527,7 @@ private:
               "}", settings);
         ASSERT_EQUALS("", errout.str());
 
-        // #3124 - multidimension array
+        // #3124 - multidimensional array
         check("int main() {\n"
               "    char b[5][6];\n"
               "    mymemset(b, 0, 5 * 6);\n"

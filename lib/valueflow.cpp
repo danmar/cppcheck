@@ -6422,7 +6422,7 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
         bool known = true)
 {
     std::vector<const Token*> args = getArguments(tok);
-    // Strings dont use an init list
+    // Strings don't use an init list
     if (!args.empty() && container->stdStringLike) {
         if (astIsIntegral(args[0], false)) {
             if (args.size() > 1)
