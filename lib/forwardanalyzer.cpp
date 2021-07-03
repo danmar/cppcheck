@@ -456,8 +456,7 @@ struct ForwardTraversal {
                             Token* endBlock,
                             Token* condTok,
                             Token* initTok = nullptr,
-                            Token* stepTok = nullptr)
-    {
+                            Token* stepTok = nullptr) {
         return updateLoop(endToken, endBlock, condTok, initTok, stepTok, true);
     }
 
