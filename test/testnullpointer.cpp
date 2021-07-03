@@ -114,6 +114,7 @@ private:
         TEST_CASE(nullpointer71); // #10178
         TEST_CASE(nullpointer72); // #10215
         TEST_CASE(nullpointer73); // #10321
+        TEST_CASE(nullpointer74);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2287,6 +2288,45 @@ private:
               "        (*ptr)++;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:10]: (warning) Either the condition 'ptr!=nullptr' is redundant or there is possible null pointer dereference: ptr.\n", errout.str());
+    }
+
+    void nullpointer74() {
+        check("struct d {\n"
+              "  d* e();\n"
+              "};\n"
+              "void g(d* f) {\n"
+              "  do {\n"
+              "    f = f->e();\n"
+              "    if (f) {}\n"
+              "  } while (0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct d {\n"
+              "  d* e();\n"
+              "};\n"
+              "void g(d* f, int i) {\n"
+              "  do {\n"
+              "    i--;\n"
+              "    f = f->e();\n"
+              "    if (f) {}\n"
+              "  } while (i > 0);\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:8] -> [test.cpp:7]: (warning) Either the condition 'f' is redundant or there is possible null pointer dereference: f.\n",
+            errout.str());
+
+        check("struct d {\n"
+              "  d* e();\n"
+              "};\n"
+              "void g(d* f, int i) {\n"
+              "  do {\n"
+              "    i--;\n"
+              "    f = f->e();\n"
+              "    if (f) {}\n"
+              "  } while (f && i > 0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_addressOf() { // address of
