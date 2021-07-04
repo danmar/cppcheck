@@ -47,16 +47,16 @@
 # git tag 1.43
 # git push --tags
 #
+# Restore the Makefile:
+# make dmake && ./dmake
+# git commit -a -m "Makefile: Set debug mode"
+#
 # Create a release folder on sourceforge:
 # https://sourceforge.net/projects/cppcheck/files/cppcheck/
 #
 # Create release:
 # ./createrelease 1.43
-#
-# Restore the Makefile:
-# make dmake && ./dmake
-# git commit -a -m "Makefile: Set debug mode"
-#
+
 # Update download link on index.php main page
 #
 #
@@ -86,6 +86,8 @@ set -e
 
 cd ~/cppcheck
 
+git checkout $tag
+
 mkdir -p upload
 
 make clean
@@ -109,3 +111,14 @@ scp * danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
 cd ~/cppcheck
 rm -rf upload
 
+# Local cppcheck binary
+mkdir -p ~/.cppcheck/$tag
+cd ~/.cppcheck/$tag
+cp -R ~/cppcheck/cfg .
+cp -R ~/cppcheck/addons .
+cp -R ~/cppcheck/platforms .
+cd ~/cppcheck
+make clean ; make -j4 FILESDIR=~/.cppcheck/2.5 MATCHCOMPILER=yes USE_Z3=yes 
+mv cppcheck ~/.cppcheck/cppcheck-$tag
+
+git checkout main
