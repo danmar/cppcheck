@@ -3,4 +3,5 @@
 int main()
 {
     B b();
+    return 0;
 }
