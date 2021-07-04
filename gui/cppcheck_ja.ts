@@ -1406,7 +1406,7 @@ Do you want to stop the analysis and exit Cppcheck?</source>
     <message>
         <location filename="mainwindow.cpp" line="1604"/>
         <source>To check the project using addons, you need a build directory.</source>
-        <translation type="unfinished"></translation>
+        <translation>アドオンを使用してプロジェクトをチェックするためには、ビルドディレクトリが必要です。</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1627"/>
@@ -1714,7 +1714,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="415"/>
         <source>This is a workfolder that Cppcheck will use for various purposes.</source>
-        <translation>Cppcheckがさまざまな目的で使用するワークディレクトリ</translation>
+        <translation>Cppcheckがさまざまな目的で使用するワークディレクトリ。</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="432"/>
@@ -1836,7 +1836,7 @@ Options:
     <message>
         <location filename="projectfiledialog.ui" line="464"/>
         <source>Normal analysis -- Avoid false positives.</source>
-        <translation>通常解析--偽陽性を避ける</translation>
+        <translation>通常解析--偽陽性を避ける。</translation>
     </message>
     <message>
         <location filename="projectfiledialog.ui" line="474"/>
@@ -3088,7 +3088,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="statsdialog.cpp" line="127"/>
         <source> and </source>
-        <translation></translation>
+        <translation> と </translation>
     </message>
     <message>
         <location filename="statsdialog.cpp" line="154"/>
