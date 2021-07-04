@@ -3,7 +3,7 @@
 
 #define CPPCHECK_MAJOR 2
 #define CPPCHECK_MINOR 5
-#define CPPCHECK_DEVMINOR 5
+#define CPPCHECK_DEVMINOR 6
 
 #define STRINGIFY(x) STRING(x)
 #define STRING(VER) #VER
