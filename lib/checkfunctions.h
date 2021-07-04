@@ -63,8 +63,8 @@ public:
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckFunctions checkFunctions(tokenizer, settings, errorLogger);
 
-        // Checks
         checkFunctions.checkIgnoredReturnValue();
+        checkFunctions.checkMissingReturn();  // Missing "return" in exit path
 
         // --check-library : functions with nonmatching configuration
         checkFunctions.checkLibraryMatchFunctions();
@@ -105,6 +105,9 @@ public:
     void checkLibraryMatchFunctions();
 
 private:
+    /** @brief %Check for missing "return" */
+    void checkMissingReturn();
+
     void invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const ValueFlow::Value *invalidValue, const std::string &validstr);
     void invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr);
     void invalidFunctionArgStrError(const Token *tok, const std::string &functionName, nonneg int argnr);
@@ -115,6 +118,7 @@ private:
     void memsetZeroBytesError(const Token *tok);
     void memsetFloatError(const Token *tok, const std::string &var_value);
     void memsetValueOutOfRangeError(const Token *tok, const std::string &value);
+    void missingReturnError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckFunctions c(nullptr, settings, errorLogger);
@@ -132,6 +136,7 @@ private:
         c.memsetZeroBytesError(nullptr);
         c.memsetFloatError(nullptr,  "varname");
         c.memsetValueOutOfRangeError(nullptr,  "varname");
+        c.missingReturnError(nullptr);
     }
 
     static std::string myName() {
@@ -140,6 +145,7 @@ private:
 
     std::string classInfo() const OVERRIDE {
         return "Check function usage:\n"
+               "- missing 'return' in non-void function\n"
                "- return value of certain functions not used\n"
                "- invalid input values for functions\n"
                "- Warn if a function is called whose usage is discouraged\n"

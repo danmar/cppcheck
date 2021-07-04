@@ -246,6 +246,76 @@ void CheckFunctions::ignoredReturnErrorCode(const Token* tok, const std::string&
 }
 
 //---------------------------------------------------------------------------
+// Check for ignored return values.
+//---------------------------------------------------------------------------
+static const Token *checkMissingReturnScope(const Token *tok);
+
+void CheckFunctions::checkMissingReturn()
+{
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        const Function *function = scope->function;
+        if (!function || !function->hasBody())
+            continue;
+        if (function->type != Function::Type::eFunction && function->type != Function::Type::eOperatorEqual)
+            continue;
+        if (Token::Match(function->retDef, "void %name%"))
+            continue;
+        const Token *errorToken = checkMissingReturnScope(scope->bodyEnd);
+        if (errorToken)
+            missingReturnError(errorToken);
+    }
+}
+
+static const Token *checkMissingReturnScope(const Token *tok)
+{
+    tok = tok->previous();
+    while (tok) {
+        if (tok->str() == "{")
+            return tok->next();
+        if (tok->str() == "}") {
+            if (tok->scope()->type == Scope::ScopeType::eSwitch) {
+                // find break/default
+                bool hasDefault = false;
+                for (const Token *switchToken = tok->link(); switchToken != tok; switchToken = switchToken->next()) {
+                    if (Token::simpleMatch(switchToken, "break ;"))
+                        return switchToken;
+                    if (Token::simpleMatch(switchToken, "default :"))
+                        hasDefault = true;
+                    else if (switchToken->str() == "{" && switchToken->scope()->isLoopScope())
+                        switchToken = switchToken->link();
+                }
+                if (!hasDefault)
+                    return tok->link();
+            } else if (tok->scope()->type == Scope::ScopeType::eIf) {
+                return tok;
+            } else if (tok->scope()->type == Scope::ScopeType::eElse) {
+                const Token *errorToken = checkMissingReturnScope(tok);
+                if (errorToken)
+                    return errorToken;
+                tok = tok->link();
+                if (Token::simpleMatch(tok->tokAt(-2), "} else {"))
+                    return checkMissingReturnScope(tok->tokAt(-2));
+                return tok;
+            }
+            // FIXME
+            return nullptr;
+        }
+        if (tok->isKeyword() && Token::Match(tok, "return|throw"))
+            return nullptr;
+        if (Token::Match(tok, "; !!}"))
+            return tok->next();
+        tok = tok->previous();
+    }
+    return nullptr;
+}
+
+void CheckFunctions::missingReturnError(const Token* tok)
+{
+    reportError(tok, Severity::error, "missingReturn",
+                "Found a exit path from function with non-void return type that has missing return statement", CWE758, Certainty::normal);
+}
+//---------------------------------------------------------------------------
 // Detect passing wrong values to <cmath> functions like atan(0, x);
 //---------------------------------------------------------------------------
 void CheckFunctions::checkMathFunctions()

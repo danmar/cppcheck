@@ -81,6 +81,9 @@ private:
         // memset..
         TEST_CASE(memsetZeroBytes);
         TEST_CASE(memsetInvalid2ndParam);
+
+        // missing "return"
+        TEST_CASE(checkMissingReturn);
     }
 
     void check(const char code[], const char filename[]="test.cpp", const Settings* settings_=nullptr) {
@@ -1355,6 +1358,45 @@ private:
               "    memset(is, 1.0f + i, 40);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (portability) The 2nd memset() argument '1.0f+i' is a float, its representation is implementation defined.\n", errout.str());
+    }
+
+    void checkMissingReturn() {
+        check("int f() {}");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+        // switch
+        check("int f() {\n"
+              "    switch (x) {\n"
+              "        case 1: break;\n" // <- error
+              "        case 2: return 1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+        // if/else
+        check("int f(int x) {\n"
+              "    if (x) {\n"
+              "        return 1;\n"
+              "    }\n" // <- error (missing else)
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+        check("int f(int x) {\n"
+              "    if (x) {\n"
+              "        ;\n" // <- error
+              "    } else {\n"
+              "        return 1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+        // loop
+        check("int f(int x) {\n"
+              "    while (1) {\n"
+              "        dostuff();\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
