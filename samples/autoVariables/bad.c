@@ -8,4 +8,5 @@ int main()
 {
     int *c;
     foo(&c);
+    return 0;
 }
