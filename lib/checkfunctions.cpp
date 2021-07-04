@@ -274,6 +274,10 @@ static const Token *checkMissingReturnScope(const Token *tok)
         if (tok->str() == "{")
             return tok->next();
         if (tok->str() == "}") {
+            for (const Token *prev = tok->link()->previous(); prev && prev->scope() == tok->scope() && !Token::Match(prev, "[;{}]"); prev = prev->previous()) {
+                if (prev->isKeyword() && Token::Match(prev, "return|throw"))
+                    return nullptr;
+            }
             if (tok->scope()->type == Scope::ScopeType::eSwitch) {
                 // find break/default
                 bool hasDefault = false;

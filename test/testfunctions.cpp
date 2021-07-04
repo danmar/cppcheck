@@ -1397,6 +1397,15 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // return {..}
+        check("std::pair<int, int> typeDecl(int tok) {\n"
+              "    if (!tok)\n"
+              "        return {};\n"
+              "    else\n"
+              "        return {1, 2};\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
