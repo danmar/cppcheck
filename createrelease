@@ -37,11 +37,11 @@
 # egrep "2\.[0-9]+" */*.h */*.cpp man/*.md | grep -v "test/test" | less
 # git commit -a -m "1.43: Set versions"
 #
+# Build and test the windows installer
+#
 # Update the Makefile:
 # make dmake && ./dmake --release
 # git commit -a -m "1.43: Updated Makefile"
-#
-# Build and test the windows installer
 #
 # Tag:
 # git tag 1.43
