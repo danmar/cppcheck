@@ -404,7 +404,9 @@ class Scope:
         self.nestedIn = IdMap[self.nestedInId]
         self.function = IdMap[self.functionId]
         for v in self.varlistId:
-            self.varlist.append(IdMap[v])
+            value = IdMap.get(v)
+            if value:
+                self.varlist.append(value)
 
 
 class Function:
