@@ -541,3 +541,43 @@ void CheckFunctions::checkLibraryMatchFunctions()
                     "--check-library: There is no matching configuration for function " + functionName + "()");
     }
 }
+
+// Check for problems to compiler apply (Named) Return Value Optimization for local variable
+// Technically we have different guarantees between standard versions
+// details: https://en.cppreference.com/w/cpp/language/copy_elision
+void CheckFunctions::returnLocalStdMove()
+{
+    if(!mTokenizer->isCPP() || mSettings->standards.cpp < Standards::CPP11)
+        return;
+
+    if (!mSettings->severity.isEnabled(Severity::performance))
+        return;
+
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        // Expect return by-value
+        if (Function::returnsReference(scope->function, true))
+            continue;
+        const auto rets = Function::findReturns(scope->function);
+        for (const Token* ret : rets) {
+            if (!Token::simpleMatch(ret->tokAt(-3), "std :: move ("))
+                continue;
+            const Token* retval = ret->astOperand2();
+            // NRVO
+            if (retval->variable() && retval->variable()->isLocal() && !retval->variable()->isVolatile())
+                copyElisionError(retval);
+            // RVO
+            if (Token::Match(retval, "(|{") && !retval->isCast())
+                copyElisionError(retval);
+        }
+    }
+}
+
+void CheckFunctions::copyElisionError(const Token *tok)
+{
+    reportError(tok,
+                Severity::performance,
+                "returnStdMoveLocal",
+                "Using std::move for returning object by-value from function will affect copy elision optimization."
+                " More: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-return-move-local");
+}
