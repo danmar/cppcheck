@@ -73,6 +73,7 @@ private:
         TEST_CASE(uninitvar10); // ticket #9467
         TEST_CASE(uninitvar11); // ticket #9123
         TEST_CASE(uninitvar12); // #10218 - stream read
+        TEST_CASE(uninitvar13); // #9772
         TEST_CASE(uninitvar_unconditionalTry);
         TEST_CASE(uninitvar_funcptr); // #6404
         TEST_CASE(uninitvar_operator); // #6680
@@ -2990,6 +2991,28 @@ private:
         const char code[] = "void fp() {\n"
                             "  std::stringstream ss;\n"
                             "  for (int i; ss >> i;) {}\n"
+                            "}";
+        checkUninitVar(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar13() { // #9772 - FP
+        const char code[] = "int func(void)\n"
+                            "{ int rez;\n"
+                            "  struct sccb* ccb;\n"
+                            " \n"
+                            "  do\n"
+                            "  { if ((ccb = calloc(1, sizeof(*ccb))) == NULL)\n"
+                            "    { rez = 1;\n"
+                            "      break;\n"
+                            "    }\n"
+                            "    rez = 0;\n"
+                            "  } while (0);\n"
+                            " \n"
+                            "  if (rez != 0)\n"
+                            "    free(ccb);\n"
+                            " \n"
+                            "  return rez;\n"
                             "}";
         checkUninitVar(code);
         ASSERT_EQUALS("", errout.str());
