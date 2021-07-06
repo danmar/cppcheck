@@ -41,6 +41,16 @@
 #include <tgmath.h> // 21.11
 #include <fenv.h>
 
+// Check that the addon doesn't crash
+typedef struct {
+  union { // 19.2
+    struct {
+      unsigned a : 2;
+      unsigned : 14;
+    };
+    uint16_t value;
+  };
+} STRUCT_BITS;
 
 typedef unsigned char      u8;
 typedef unsigned short     u16;
