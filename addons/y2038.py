@@ -226,13 +226,14 @@ def check_y2038_safe(dumpfile, quiet=False):
     return y2038safe
 
 
-def get_args():
+def get_args_parser():
     parser = cppcheckdata.ArgumentParser()
-    return parser.parse_args()
+    return parser
 
 
 if __name__ == '__main__':
-    args = get_args()
+    parser = get_args_parser()
+    args = parser.parse_args()
 
     exit_code = 0
     quiet = not any((args.quiet, args.cli))

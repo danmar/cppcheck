@@ -3377,7 +3377,7 @@ and 20.13, run:
 '''
 
 
-def get_args():
+def get_args_parser():
     """Generates list of command-line arguments acceptable by misra.py script."""
     parser = cppcheckdata.ArgumentParser()
     parser.add_argument("--rule-texts", type=str, help=RULE_TEXTS_HELP)
@@ -3391,11 +3391,12 @@ def get_args():
     parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
     parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
     parser.add_argument("--severity", type=str, help="Set a custom severity string, for example 'error' or 'warning'. ")
-    return parser.parse_args()
+    return parser
 
 
 def main():
-    args = get_args()
+    parser = get_args_parser()
+    args = parser.parse_args()
     settings = MisraSettings(args)
     checker = MisraChecker(settings)
 
