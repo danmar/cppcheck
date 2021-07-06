@@ -547,7 +547,7 @@ void CheckFunctions::checkLibraryMatchFunctions()
 // details: https://en.cppreference.com/w/cpp/language/copy_elision
 void CheckFunctions::returnLocalStdMove()
 {
-    if(!mTokenizer->isCPP() || mSettings->standards.cpp < Standards::CPP11)
+    if (!mTokenizer->isCPP() || mSettings->standards.cpp < Standards::CPP11)
         return;
 
     if (!mSettings->severity.isEnabled(Severity::performance))

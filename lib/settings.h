@@ -114,7 +114,7 @@ public:
     /** Filename for bug hunting report */
     std::string bugHuntingReport;
 
-    /** @brief --cppcheck-build-dir */
+    /** @brief --cppcheck-build-dir. Always uses / as path separator. No trailing path separator. */
     std::string buildDir;
 
     /** @brief check all configurations (false if -D or --max-configs is used */
