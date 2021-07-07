@@ -597,7 +597,7 @@ bool precedes(const Token * tok1, const Token * tok2)
     if (!tok1)
         return false;
     if (!tok2)
-        return false;
+        return true;
     return tok1->index() < tok2->index();
 }
 

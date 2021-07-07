@@ -453,7 +453,7 @@ struct ForwardTraversal {
         if (depth < 0)
             return Break(Analyzer::Terminate::Bail);
         std::size_t i = 0;
-        for (Token* tok = start; tok && tok != end; tok = tok->next()) {
+        for (Token* tok = start; precedes(tok, end); tok = tok->next()) {
             Token* next = nullptr;
             if (tok->index() <= i)
                 throw InternalError(tok, "Cyclic forward analysis.");

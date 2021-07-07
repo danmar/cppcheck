@@ -5630,6 +5630,15 @@ private:
                "  return e;\n"
                "}\n";
         valueOfTok(code, "x");
+
+        code = "void a() {\n"
+               "  int b = 0;\n"
+               "  do\n"
+               "    for (;;)\n"
+               "      break;\n"
+               "  while (b < 1);\n"
+               "}\n";
+        valueOfTok(code, "b");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577
