@@ -559,6 +559,21 @@ class Variable:
         self.scope = IdMap[self.scopeId]
 
 
+class TypedefInfo:
+    """
+    TypedefInfo class -- information about typedefs
+    """
+    name = None
+    filename = None
+    lineNumber = None
+    used = None
+
+    def __init__(self, element):
+        self.name = element.get('name')
+        self.filename = element.get('file')
+        self.lineNumber = int(element.get('line'))
+        self.used = (element.get('used') == '1')
+
 class Value:
     """
     Value class
@@ -707,6 +722,7 @@ class Configuration:
     scopes = []
     functions = []
     variables = []
+    typedefInfo = []
     valueflow = []
     standards = None
 
@@ -717,6 +733,7 @@ class Configuration:
         self.scopes = []
         self.functions = []
         self.variables = []
+        self.typedefInfo = []
         self.valueflow = []
         self.standards = Standards()
 
@@ -939,6 +956,9 @@ class CppcheckData:
         # Iterating <varlist> in a <scope>.
         iter_scope_varlist = False
 
+        # Iterating <typedef-info>
+        iter_typedef_info = False
+
         # Use iterable objects to traverse XML tree for dump files incrementally.
         # Iterative approach is required to avoid large memory consumption.
         # Calling .clear() is necessary to let the element be garbage collected.
@@ -1012,6 +1032,12 @@ class CppcheckData:
                         cfg.variables.append(var)
                     else:
                         cfg_arguments.append(var)
+
+            # Parse typedef info
+            elif node.tag == 'typedef-info':
+                iter_typedef_info = (event == 'start')
+            elif iter_typedef_info and node.tag == 'info' and event == 'start':
+                cfg.typedefInfo.append(TypedefInfo(node))
 
             # Parse valueflows (list of values)
             elif node.tag == 'valueflow' and event == 'start':
@@ -1163,3 +1189,10 @@ def reportError(location, severity, message, addon, errorId, extra=''):
         sys.stderr.write('%s (%s) %s [%s-%s]\n' % (loc, severity, message, addon, errorId))
         global EXIT_CODE
         EXIT_CODE = 1
+
+def reportSummary(dumpfile, summary_type, summary_data):
+    # dumpfile ends with ".dump"
+    ctu_info_file = dumpfile[:-4] + "ctu-info"
+    with open(ctu_info_file, 'at') as f:
+        msg = {'summary': summary_type, 'data': summary_data}
+        f.write(json.dumps(msg) + '\n')

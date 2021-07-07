@@ -987,6 +987,14 @@ private:
     /** sizeof information for known types */
     std::map<std::string, int> mTypeSize;
 
+    struct TypedefInfo {
+        std::string name;
+        std::string filename;
+        int lineNumber;
+        bool used;
+    };
+    std::vector<TypedefInfo> mTypedefInfo;
+
     /** variable count */
     nonneg int mVarId;
 

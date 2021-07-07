@@ -172,7 +172,13 @@ private:
     /**
      * Execute addons
      */
+    void executeAddons(const std::vector<std::string>& files);
     void executeAddons(const std::string &dumpFile);
+
+    /**
+     * Execute addons
+     */
+    void executeAddonsWholeProgram(const std::map<std::string, std::size_t> &files);
 
     /**
      * @brief Execute rules, if any

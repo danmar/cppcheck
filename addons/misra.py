@@ -17,12 +17,15 @@ from __future__ import print_function
 
 import cppcheckdata
 import itertools
+import json
 import sys
 import re
 import os
 import argparse
 import codecs
 import string
+
+from collections import namedtuple
 
 try:
     from itertools import izip as zip
@@ -1335,6 +1338,15 @@ class MisraChecker:
             if scope.className and scope.className[:num_sign_chars] in macroNames:
                 self.reportError(scope.bodyStart, 5, 5)
 
+
+    def misra_5_6(self, data):
+        dumpfile = data[0]
+        typedefInfo = data[1]
+        summary = []
+        for ti in typedefInfo:
+            summary.append({ 'name': ti.name, 'file': ti.filename, 'line': ti.lineNumber })
+        if len(summary) > 0:
+            cppcheckdata.reportSummary(dumpfile, 'misra_5_6', summary)
 
     def misra_6_1(self, data):
         # Bitfield type must be bool or explicitly signed/unsigned int
@@ -3250,6 +3262,7 @@ class MisraChecker:
             self.executeCheck(502, self.misra_5_2, cfg)
             self.executeCheck(504, self.misra_5_4, cfg)
             self.executeCheck(505, self.misra_5_5, cfg)
+            self.executeCheck(506, self.misra_5_6, (dumpfile, cfg.typedefInfo))
             self.executeCheck(601, self.misra_6_1, cfg)
             self.executeCheck(602, self.misra_6_2, cfg)
             if cfgNumber == 0:
@@ -3342,6 +3355,32 @@ class MisraChecker:
             self.executeCheck(2112, self.misra_21_12, cfg)
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
 
+    def analyse_ctu_info(self, files):
+        data_misra_5_6 = []
+
+        Location = namedtuple('Location', 'file linenr column')
+
+        for filename in files:
+            if not filename.endswith('.ctu-info'):
+                continue
+            for line in open(filename, 'rt'):
+                if line.startswith('{'):
+                    s = json.loads(line)
+                    summary_type = s['summary']
+                    summary_data = s['data']
+
+                    # TODO break out info some function
+                    if summary_type == 'misra_5_6':
+                        for info1 in summary_data:
+                            found = False
+                            for info2 in data_misra_5_6:
+                                if info1['name'] == info2['name']:
+                                    found = True
+                                    if info1['file'] != info2['file'] or info1['line'] != info2['line']:
+                                        self.reportError(Location(info2['file'], info2['line'], 0), 5, 6)
+                                        self.reportError(Location(info1['file'], info1['line'], 0), 5, 6)
+                            if not found:
+                                data_misra_5_6.append(info1)
 
 RULE_TEXTS_HELP = '''Path to text file of MISRA rules
 
@@ -3434,6 +3473,9 @@ def main():
         checker.setSeverity(args.severity)
 
     for item in args.dumpfile:
+        if item.endswith('.ctu-info'):
+            continue
+
         checker.parseDump(item)
 
         if settings.verify:
@@ -3456,6 +3498,8 @@ def main():
             # all input files have been processed
             if exitCode != 0:
                 sys.exit(exitCode)
+
+    checker.analyse_ctu_info(args.dumpfile)
 
     if settings.verify:
         sys.exit(exitCode)
