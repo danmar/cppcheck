@@ -1103,6 +1103,8 @@ class MisraChecker:
 
         self.existing_violations = set()
 
+        self._ctu_summary_typedefs = False
+
     def __repr__(self):
         attrs = ["settings", "verify_expected", "verify_actual", "violations",
                  "ruleTexts", "suppressedRules", "filePrefix",
@@ -1117,6 +1119,23 @@ class MisraChecker:
             return 31
         else:
             return 63
+
+    def _save_ctu_summary_typedefs(self, dumpfile, typedef_info):
+        if self._ctu_summary_typedefs:
+            return
+
+        self._ctu_summary_typedefs = True
+
+        summary = []
+        for ti in typedef_info:
+            summary.append({ 'name': ti.name, 'file': ti.filename, 'line': ti.lineNumber, 'column': ti.column, 'used': ti.used })
+        if len(summary) > 0:
+            cppcheckdata.reportSummary(dumpfile, 'MisraTypedefInfo', summary)
+
+    def misra_2_3(self, data):
+        dumpfile = data[0]
+        typedefInfo = data[1]
+        self._save_ctu_summary_typedefs(dumpfile, typedefInfo)
 
     def misra_2_7(self, data):
         for func in data.functions:
@@ -1342,11 +1361,8 @@ class MisraChecker:
     def misra_5_6(self, data):
         dumpfile = data[0]
         typedefInfo = data[1]
-        summary = []
-        for ti in typedefInfo:
-            summary.append({ 'name': ti.name, 'file': ti.filename, 'line': ti.lineNumber })
-        if len(summary) > 0:
-            cppcheckdata.reportSummary(dumpfile, 'misra_5_6', summary)
+        self._save_ctu_summary_typedefs(dumpfile, typedefInfo)
+
 
     def misra_6_1(self, data):
         # Bitfield type must be bool or explicitly signed/unsigned int
@@ -3256,6 +3272,7 @@ class MisraChecker:
             if not self.settings.quiet:
                 self.printStatus('Checking %s, config %s...' % (dumpfile, cfg.name))
 
+            self.executeCheck(203, self.misra_2_3, (dumpfile, cfg.typedefInfo))
             self.executeCheck(207, self.misra_2_7, cfg)
             # data.rawTokens is same for all configurations
             if cfgNumber == 0:
@@ -3362,7 +3379,7 @@ class MisraChecker:
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
 
     def analyse_ctu_info(self, files):
-        data_misra_5_6 = []
+        all_typedef_info = []
 
         Location = namedtuple('Location', 'file linenr column')
 
@@ -3370,23 +3387,33 @@ class MisraChecker:
             if not filename.endswith('.ctu-info'):
                 continue
             for line in open(filename, 'rt'):
-                if line.startswith('{'):
-                    s = json.loads(line)
-                    summary_type = s['summary']
-                    summary_data = s['data']
+                if not line.startswith('{'):
+                    continue
 
-                    # TODO break out info some function
-                    if summary_type == 'misra_5_6':
-                        for info1 in summary_data:
-                            found = False
-                            for info2 in data_misra_5_6:
-                                if info1['name'] == info2['name']:
-                                    found = True
-                                    if info1['file'] != info2['file'] or info1['line'] != info2['line']:
-                                        self.reportError(Location(info2['file'], info2['line'], 0), 5, 6)
-                                        self.reportError(Location(info1['file'], info1['line'], 0), 5, 6)
-                            if not found:
-                                data_misra_5_6.append(info1)
+                s = json.loads(line)
+                summary_type = s['summary']
+                summary_data = s['data']
+
+                # TODO break out info some function
+                if summary_type != 'MisraTypedefInfo':
+                    continue
+                for new_typedef_info in summary_data:
+                    found = False
+                    for old_typedef_info in all_typedef_info:
+                        if old_typedef_info['name'] == new_typedef_info['name']:
+                            found = True
+                            if old_typedef_info['file'] != new_typedef_info['file'] or old_typedef_info['line'] != new_typedef_info['line']:
+                                self.reportError(Location(old_typedef_info['file'], old_typedef_info['line'], old_typedef_info['column']), 5, 6)
+                                self.reportError(Location(new_typedef_info['file'], new_typedef_info['line'], new_typedef_info['column']), 5, 6)
+                            else:
+                                if new_typedef_info['used']:
+                                    old_typedef_info['used'] = True
+                    if not found:
+                        all_typedef_info.append(new_typedef_info)
+
+        for ti in all_typedef_info:
+            if not ti['used']:
+                self.reportError(Location(ti['file'], ti['line'], ti['column']), 2, 3)
 
 RULE_TEXTS_HELP = '''Path to text file of MISRA rules
 

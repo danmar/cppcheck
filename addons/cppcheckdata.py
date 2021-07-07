@@ -571,12 +571,14 @@ class TypedefInfo:
     name = None
     filename = None
     lineNumber = None
+    column = None
     used = None
 
     def __init__(self, element):
         self.name = element.get('name')
         self.filename = element.get('file')
         self.lineNumber = int(element.get('line'))
+        self.column = int(element.get('column'))
         self.used = (element.get('used') == '1')
 
 class Value:

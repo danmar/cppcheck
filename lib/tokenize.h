@@ -991,6 +991,7 @@ private:
         std::string name;
         std::string filename;
         int lineNumber;
+        int column;
         bool used;
     };
     std::vector<TypedefInfo> mTypedefInfo;
