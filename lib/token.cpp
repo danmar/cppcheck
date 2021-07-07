@@ -1340,18 +1340,29 @@ std::string Token::stringifyList(bool varid) const
     return stringifyList(varid, false, true, true, true, nullptr, nullptr);
 }
 
+static Token* checkAstCycle(Token* tok)
+{
+    std::set<const Token*> visited;
+    visitAstNodes(tok, [&](const Token* child) {
+        if (!visited.insert(child).second)
+            throw InternalError(child, "Internal error. AST cyclic dependency.");
+        return ChildrenToVisit::op1_and_op2;
+    });
+    while (tok->astParent()) {
+        if (!visited.insert(tok->astParent()).second) // #6838/#6726/#8352 avoid hang on garbage code
+            throw InternalError(tok, "Internal error. AST cyclic dependency.");
+        tok = tok->astParent();
+    }
+    return tok;
+}
+
 void Token::astOperand1(Token *tok)
 {
     if (mImpl->mAstOperand1)
         mImpl->mAstOperand1->mImpl->mAstParent = nullptr;
     // goto parent operator
     if (tok) {
-        std::set<Token*> visitedParents;
-        while (tok->mImpl->mAstParent) {
-            if (!visitedParents.insert(tok->mImpl->mAstParent).second) // #6838/#6726/#8352 avoid hang on garbage code
-                throw InternalError(this, "Internal error. Token::astOperand1() cyclic dependency.");
-            tok = tok->mImpl->mAstParent;
-        }
+        tok = checkAstCycle(tok);
         tok->mImpl->mAstParent = this;
     }
     mImpl->mAstOperand1 = tok;
@@ -1363,13 +1374,7 @@ void Token::astOperand2(Token *tok)
         mImpl->mAstOperand2->mImpl->mAstParent = nullptr;
     // goto parent operator
     if (tok) {
-        std::set<Token*> visitedParents;
-        while (tok->mImpl->mAstParent) {
-            //std::cout << tok << " -> " << tok->mAstParent ;
-            if (!visitedParents.insert(tok->mImpl->mAstParent).second) // #6838/#6726 avoid hang on garbage code
-                throw InternalError(this, "Internal error. Token::astOperand2() cyclic dependency.");
-            tok = tok->mImpl->mAstParent;
-        }
+        tok = checkAstCycle(tok);
         tok->mImpl->mAstParent = this;
     }
     mImpl->mAstOperand2 = tok;
