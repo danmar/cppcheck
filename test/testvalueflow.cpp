@@ -5633,10 +5633,10 @@ private:
 
         code = "void a() {\n"
                "  int b = 0;\n"
-               "  do\n"
+               "  do {\n"
                "    for (;;)\n"
                "      break;\n"
-               "  while (b < 1);\n"
+               "  } while (b < 1);\n"
                "}\n";
         valueOfTok(code, "b");
     }
