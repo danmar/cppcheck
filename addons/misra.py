@@ -2872,6 +2872,13 @@ class MisraChecker:
                         'fetestexcept')):
                     self.reportError(token, 21, 12)
 
+    def misra_22_5(self, cfg):
+        for token in cfg.tokenlist:
+            if token.isUnaryOp("*") or (token.isBinaryOp() and token.str == '.'):
+                fileptr = token.astOperand1
+                if fileptr.variable and cppcheckdata.simpleMatch(fileptr.variable.typeStartToken, 'FILE *'):
+                    self.reportError(token, 22, 5)
+
     def get_verify_expected(self):
         """Return the list of expected violations in the verify test"""
         return self.verify_expected
@@ -3414,6 +3421,7 @@ class MisraChecker:
             self.executeCheck(2111, self.misra_21_11, cfg)
             self.executeCheck(2112, self.misra_21_12, cfg)
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
+            self.executeCheck(2205, self.misra_22_5, cfg)
 
     def analyse_ctu_info(self, files):
         all_typedef_info = []

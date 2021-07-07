@@ -346,6 +346,11 @@ class Token:
                 return value.intvalue
         return None
 
+    def isUnaryOp(self, op):
+        return self.astOperand1 and (self.astOperand2 is None) and self.str == op
+
+    def isBinaryOp(self):
+        return self.astOperand1 and self.astOperand2
 
 class Scope:
     """
