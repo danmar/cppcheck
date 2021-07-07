@@ -326,6 +326,8 @@ void misra_7_4(void)
    misra_7_4_call(1, "text_call"); // 7.4 11.8
 }
 
+const misra_8_1_a; // 8.1
+
 static int misra_8_2_a (int n, ...);
 extern int misra_8_2_b (int n);
 extern int misra_8_2_c (int); // 8.2

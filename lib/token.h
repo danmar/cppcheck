@@ -633,6 +633,13 @@ public:
         setFlag(fIsSplitVarDeclEq, b);
     }
 
+    bool isImplicitInt() const {
+        return getFlag(fIsImplicitInt);
+    }
+    void isImplicitInt(bool b) {
+        setFlag(fIsImplicitInt, b);
+    }
+
     bool isBitfield() const {
         return mImpl->mBits > 0;
     }
@@ -1196,7 +1203,7 @@ private:
     Token *mPrevious;
     Token *mLink;
 
-    enum {
+    enum : uint32_t {
         fIsUnsigned             = (1 << 0),
         fIsSigned               = (1 << 1),
         fIsPointerCompare       = (1 << 2),
@@ -1227,7 +1234,8 @@ private:
         fConstexpr              = (1 << 27),
         fExternC                = (1 << 28),
         fIsSplitVarDeclComma    = (1 << 29), // set to true when variable declarations are split up ('int a,b;' => 'int a; int b;')
-        fIsSplitVarDeclEq       = (1 << 30)  // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
+        fIsSplitVarDeclEq       = (1 << 30), // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
+        fIsImplicitInt          = (1U << 31)  // Is "int" token implicitly added?
     };
 
     Token::Type mTokType;

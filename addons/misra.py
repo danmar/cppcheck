@@ -1486,6 +1486,11 @@ class MisraChecker:
                         if usedParameter.isString and parameterDefinition.nameToken:
                             reportErrorIfVariableIsNotConst(parameterDefinition.nameToken, usedParameter)
 
+    def misra_8_1(self, cfg):
+        for token in cfg.tokenlist:
+            if token.isImplicitInt:
+                self.reportError(token, 8, 1)
+
     def misra_8_2(self, data, rawTokens):
         def getFollowingRawTokens(rawTokens, token, count):
             following =[]
@@ -3271,6 +3276,7 @@ class MisraChecker:
             if cfgNumber == 0:
                 self.executeCheck(703, self.misra_7_3, data.rawTokens)
             self.executeCheck(704, self.misra_7_4, cfg)
+            self.executeCheck(801, self.misra_8_1, cfg)
             if cfgNumber == 0:
                 self.executeCheck(802, self.misra_8_2, cfg, data.rawTokens)
             self.executeCheck(811, self.misra_8_11, cfg)

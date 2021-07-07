@@ -1860,6 +1860,16 @@ void TokenList::simplifyPlatformTypes()
 void TokenList::simplifyStdType()
 {
     for (Token *tok = front(); tok; tok = tok->next()) {
+
+        if (Token::Match(tok, "const|extern *|&|%name%") && (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
+            if (Token::Match(tok->next(), "%name% !!;"))
+                continue;
+
+            tok->insertToken("int");
+            tok->next()->isImplicitInt(true);
+            continue;
+        }
+
         if (Token::Match(tok, "char|short|int|long|unsigned|signed|double|float") || (mSettings->standards.c >= Standards::C99 && Token::Match(tok, "complex|_Complex"))) {
             bool isFloat= false;
             bool isSigned = false;
@@ -1897,6 +1907,7 @@ void TokenList::simplifyStdType()
                     tok->str("int");
                     tok->isSigned(isSigned);
                     tok->isUnsigned(isUnsigned);
+                    tok->isImplicitInt(true);
                 }
             } else {
                 typeSpec->isLong(typeSpec->isLong() || (isFloat && countLong == 1) || countLong > 1);
