@@ -1137,6 +1137,27 @@ class MisraChecker:
         typedefInfo = data[1]
         self._save_ctu_summary_typedefs(dumpfile, typedefInfo)
 
+    def misra_2_4(self, data):
+        dumpfile = data[0]
+        cfg = data[1]
+        summary = []
+        # structs/enums
+        for scope in cfg.scopes:
+            if scope.className is None:
+                continue
+            if scope.type not in ('Struct', 'Enum'):
+                continue
+            used = False
+            tok = scope.bodyEnd
+            while tok:
+                if tok.str == scope.className:
+                    used = True
+                    break
+                tok = tok.next
+            summary.append({'name': scope.className, 'used':used, 'file': scope.bodyStart.file, 'line': scope.bodyStart.linenr, 'column': scope.bodyStart.column})
+        if len(summary) > 0:
+            cppcheckdata.reportSummary(dumpfile, 'MisraTagName', summary)
+
     def misra_2_7(self, data):
         for func in data.functions:
             # Skip function with no parameter
@@ -3273,6 +3294,7 @@ class MisraChecker:
                 self.printStatus('Checking %s, config %s...' % (dumpfile, cfg.name))
 
             self.executeCheck(203, self.misra_2_3, (dumpfile, cfg.typedefInfo))
+            self.executeCheck(204, self.misra_2_4, (dumpfile, cfg))
             self.executeCheck(207, self.misra_2_7, cfg)
             # data.rawTokens is same for all configurations
             if cfgNumber == 0:
@@ -3380,6 +3402,7 @@ class MisraChecker:
 
     def analyse_ctu_info(self, files):
         all_typedef_info = []
+        all_tagname_info = []
 
         Location = namedtuple('Location', 'file linenr column')
 
@@ -3394,26 +3417,40 @@ class MisraChecker:
                 summary_type = s['summary']
                 summary_data = s['data']
 
-                # TODO break out info some function
-                if summary_type != 'MisraTypedefInfo':
-                    continue
-                for new_typedef_info in summary_data:
-                    found = False
-                    for old_typedef_info in all_typedef_info:
-                        if old_typedef_info['name'] == new_typedef_info['name']:
-                            found = True
-                            if old_typedef_info['file'] != new_typedef_info['file'] or old_typedef_info['line'] != new_typedef_info['line']:
-                                self.reportError(Location(old_typedef_info['file'], old_typedef_info['line'], old_typedef_info['column']), 5, 6)
-                                self.reportError(Location(new_typedef_info['file'], new_typedef_info['line'], new_typedef_info['column']), 5, 6)
-                            else:
-                                if new_typedef_info['used']:
-                                    old_typedef_info['used'] = True
-                    if not found:
-                        all_typedef_info.append(new_typedef_info)
+                if summary_type == 'MisraTypedefInfo':
+                    for new_typedef_info in summary_data:
+                        found = False
+                        for old_typedef_info in all_typedef_info:
+                            if old_typedef_info['name'] == new_typedef_info['name']:
+                                found = True
+                                if old_typedef_info['file'] != new_typedef_info['file'] or old_typedef_info['line'] != new_typedef_info['line']:
+                                    self.reportError(Location(old_typedef_info['file'], old_typedef_info['line'], old_typedef_info['column']), 5, 6)
+                                    self.reportError(Location(new_typedef_info['file'], new_typedef_info['line'], new_typedef_info['column']), 5, 6)
+                                else:
+                                    if new_typedef_info['used']:
+                                        old_typedef_info['used'] = True
+                        if not found:
+                            all_typedef_info.append(new_typedef_info)
+
+                if summary_type == 'MisraTagName':
+                    for new_tagname_info in summary_data:
+                        found = False
+                        for old_tagname_info in all_tagname_info:
+                            if old_tagname_info['name'] == new_tagname_info['name']:
+                                found = True
+                                if new_tagname_info['used']:
+                                    old_tagname_info['used'] = True
+                        if not found:
+                            all_tagname_info.append(new_tagname_info)
 
         for ti in all_typedef_info:
             if not ti['used']:
                 self.reportError(Location(ti['file'], ti['line'], ti['column']), 2, 3)
+
+        for ti in all_tagname_info:
+            if not ti['used']:
+                self.reportError(Location(ti['file'], ti['line'], ti['column']), 2, 4)
+
 
 RULE_TEXTS_HELP = '''Path to text file of MISRA rules
 
