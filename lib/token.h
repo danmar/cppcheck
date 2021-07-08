@@ -1278,6 +1278,7 @@ private:
 public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);
+    void astParent(Token *tok);
 
     Token * astOperand1() {
         return mImpl->mAstOperand1;
