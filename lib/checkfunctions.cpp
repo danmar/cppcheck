@@ -259,7 +259,9 @@ void CheckFunctions::checkMissingReturn()
             continue;
         if (function->type != Function::Type::eFunction && function->type != Function::Type::eOperatorEqual)
             continue;
-        if (Token::Match(function->retDef, "void| %name% ("))
+        if (Token::Match(function->retDef, "%name% (") && function->retDef->isUpperCaseName())
+            continue;
+        if (Function::returnsVoid(function, true))
             continue;
         const Token *errorToken = checkMissingReturnScope(scope->bodyEnd);
         if (errorToken)

@@ -1376,6 +1376,9 @@ private:
         check("F(A,B) { x=1; }");
         ASSERT_EQUALS("", errout.str());
 
+        check("auto foo4() -> void {}");
+        ASSERT_EQUALS("", errout.str());
+
         // switch
         check("int f() {\n"
               "    switch (x) {\n"
