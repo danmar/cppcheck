@@ -1340,30 +1340,33 @@ std::string Token::stringifyList(bool varid) const
     return stringifyList(varid, false, true, true, true, nullptr, nullptr);
 }
 
-static Token* checkAstCycle(Token* tok)
+void Token::astParent(Token* tok)
 {
-    std::set<const Token*> visited;
-    visitAstNodes(tok, [&](const Token* child) {
-        if (!visited.insert(child).second)
-            throw InternalError(child, "Internal error. AST cyclic dependency.");
-        return ChildrenToVisit::op1_and_op2;
-    });
-    while (tok->astParent()) {
-        if (!visited.insert(tok->astParent()).second) // #6838/#6726/#8352 avoid hang on garbage code
-            throw InternalError(tok, "Internal error. AST cyclic dependency.");
-        tok = tok->astParent();
+    const Token* tok2 = tok;
+    while (tok2) {
+        if (this == tok2)
+            throw InternalError(this, "Internal error. AST cyclic dependency.");
+        tok2 = tok2->astParent();
     }
-    return tok;
+    // Clear children to avoid nodes referenced twice
+    if (this->astParent()) {
+        Token* parent = this->astParent();
+        if (parent->astOperand1() == this)
+            parent->mImpl->mAstOperand1 = nullptr;
+        if (parent->astOperand2() == this)
+            parent->mImpl->mAstOperand2 = nullptr;
+    }
+    mImpl->mAstParent = tok;
 }
 
 void Token::astOperand1(Token *tok)
 {
     if (mImpl->mAstOperand1)
-        mImpl->mAstOperand1->mImpl->mAstParent = nullptr;
+        mImpl->mAstOperand1->astParent(nullptr);
     // goto parent operator
     if (tok) {
-        tok = checkAstCycle(tok);
-        tok->mImpl->mAstParent = this;
+        tok = tok->astTop();
+        tok->astParent(this);
     }
     mImpl->mAstOperand1 = tok;
 }
@@ -1371,11 +1374,11 @@ void Token::astOperand1(Token *tok)
 void Token::astOperand2(Token *tok)
 {
     if (mImpl->mAstOperand2)
-        mImpl->mAstOperand2->mImpl->mAstParent = nullptr;
+        mImpl->mAstOperand2->astParent(nullptr);
     // goto parent operator
     if (tok) {
-        tok = checkAstCycle(tok);
-        tok->mImpl->mAstParent = this;
+        tok = tok->astTop();
+        tok->astParent(this);
     }
     mImpl->mAstOperand2 = tok;
 }
