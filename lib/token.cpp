@@ -1340,10 +1340,10 @@ std::string Token::stringifyList(bool varid) const
     return stringifyList(varid, false, true, true, true, nullptr, nullptr);
 }
 
-void Token::astParent(Token *tok)
+void Token::astParent(Token* tok)
 {
     const Token* tok2 = tok;
-    while(tok2) {
+    while (tok2) {
         if (this == tok2)
             throw InternalError(this, "Internal error. AST cyclic dependency.");
         tok2 = tok2->astParent();
