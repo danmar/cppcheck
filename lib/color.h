@@ -22,8 +22,7 @@
 #include <ostream>
 #include <string>
 
-enum class Color
-{
+enum class Color {
     Reset      = 0,
     Bold       = 1,
     Dim        = 2,
