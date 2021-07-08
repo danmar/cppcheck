@@ -6620,6 +6620,20 @@ private:
                             "}\n"));
 
         ASSERT_NO_THROW(tokenizeAndStringify("a<b?0:1>()==3;"));
+
+        // #10336
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                            "  template <class b> a(b);\n"
+                                            "};\n"
+                                            "struct c;\n"
+                                            "void fn1(int, a);\n"
+                                            "void f() { fn1(0, {a{0}}); }\n"
+                                            "template <class> std::vector<c> g() {\n"
+                                            "  int d;\n"
+                                            "  for (size_t e = 0; e < d; e++)\n"
+                                            "    ;\n"
+                                            "}\n"
+                                            ));
     }
 
     void checkNamespaces() {
