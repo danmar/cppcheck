@@ -19,6 +19,7 @@
 #ifndef CPPCHECKEXECUTOR_H
 #define CPPCHECKEXECUTOR_H
 
+#include "color.h"
 #include "errorlogger.h"
 
 #include <cstdio>
@@ -69,7 +70,7 @@ public:
      *
      * @param outmsg Progress message e.g. "Checking main.cpp..."
      */
-    void reportOut(const std::string &outmsg) OVERRIDE;
+    void reportOut(const std::string &outmsg, Color c = Color::Reset) OVERRIDE;
 
     /** xml output of errors */
     void reportErr(const ErrorMessage &msg) OVERRIDE;

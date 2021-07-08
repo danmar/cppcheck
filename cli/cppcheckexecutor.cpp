@@ -20,6 +20,7 @@
 
 #include "analyzerinfo.h"
 #include "cmdlineparser.h"
+#include "color.h"
 #include "config.h"
 #include "cppcheck.h"
 #include "filelister.h"
@@ -1046,9 +1047,9 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
     }
 }
 
-void CppCheckExecutor::reportOut(const std::string &outmsg)
+void CppCheckExecutor::reportOut(const std::string &outmsg, Color c)
 {
-    std::cout << ansiToOEM(outmsg, true) << std::endl;
+    std::cout << c << ansiToOEM(outmsg, true) << Color::Reset << std::endl;
 }
 
 void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
@@ -1087,7 +1088,7 @@ void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount
         oss << fileindex << '/' << filecount
             << " files checked " << percentDone
             << "% done";
-        std::cout << oss.str() << std::endl;
+        std::cout << Color::FgBlue << oss.str() << Color::Reset << std::endl;
     }
 }
 

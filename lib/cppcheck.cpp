@@ -20,6 +20,7 @@
 #include "check.h"
 #include "checkunusedfunctions.h"
 #include "clangimport.h"
+#include "color.h"
 #include "ctu.h"
 #include "library.h"
 #include "mathlib.h"
@@ -396,7 +397,7 @@ unsigned int CppCheck::check(const std::string &path)
 {
     if (mSettings.clang) {
         if (!mSettings.quiet)
-            mErrorLogger.reportOut(std::string("Checking ") + path + "...");
+            mErrorLogger.reportOut(std::string("Checking ") + path + "...", Color::FgGreen);
 
         const std::string lang = Path::isCPP(path) ? "-x c++" : "-x c";
         const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "");
@@ -549,7 +550,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     if (!mSettings.quiet) {
         std::string fixedpath = Path::simplifyPath(filename);
         fixedpath = Path::toNativeSeparators(fixedpath);
-        mErrorLogger.reportOut(std::string("Checking ") + fixedpath + ' ' + cfgname + std::string("..."));
+        mErrorLogger.reportOut(std::string("Checking ") + fixedpath + ' ' + cfgname + std::string("..."), Color::FgGreen);
 
         if (mSettings.verbose) {
             mErrorLogger.reportOut("Defines:" + mSettings.userDefines);
@@ -783,7 +784,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 if (!mSettings.quiet && (!mCurrentConfig.empty() || checkCount > 1)) {
                     std::string fixedpath = Path::simplifyPath(filename);
                     fixedpath = Path::toNativeSeparators(fixedpath);
-                    mErrorLogger.reportOut("Checking " + fixedpath + ": " + mCurrentConfig + "...");
+                    mErrorLogger.reportOut("Checking " + fixedpath + ": " + mCurrentConfig + "...", Color::FgGreen);
                 }
 
                 if (!tokenizer.tokens())
@@ -1178,7 +1179,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
             continue;
 
         if (!mSettings.quiet) {
-            reportOut("Processing rule: " + rule.pattern);
+            reportOut("Processing rule: " + rule.pattern, Color::FgGreen);
         }
 
         const char *pcreCompileErrorStr = nullptr;
@@ -1307,7 +1308,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
         struct AddonInfo addonInfo;
         const std::string &failedToGetAddonInfo = addonInfo.getAddonInfo(addon, mSettings.exename);
         if (!failedToGetAddonInfo.empty()) {
-            reportOut(failedToGetAddonInfo);
+            reportOut(failedToGetAddonInfo, Color::FgRed);
             mExitCode = 1;
             continue;
         }
@@ -1482,9 +1483,9 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     }
 }
 
-void CppCheck::reportOut(const std::string &outmsg)
+void CppCheck::reportOut(const std::string &outmsg, Color c)
 {
-    mErrorLogger.reportOut(outmsg);
+    mErrorLogger.reportOut(outmsg, c);
 }
 
 void CppCheck::reportProgress(const std::string &filename, const char stage[], const std::size_t value)

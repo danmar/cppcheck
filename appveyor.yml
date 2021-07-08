@@ -41,7 +41,11 @@ build_script:
   - ECHO Building %configuration% %platform% with MSVC %VisualStudioVersion% using %PlatformToolset% PlatformToolset
   - 'CALL "C:\Program Files (x86)\Microsoft Visual Studio %VisualStudioVersion%\VC\vcvarsall.bat" %vcvarsall_platform%'
   # Visual studio project..
-  - msbuild "cppcheck.sln" /consoleloggerparameters:Verbosity=minimal /target:Build /property:Configuration="%configuration%";Platform=%platform% /p:PlatformToolset=%PlatformToolset% /maxcpucount /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - mkdir vsbuild
+  - cd vsbuild
+  - cmake -DBUILD_TESTS=ON -DCTEST_TIMEOUT=240 ..
+  - cmake --build . --target check --config %configuration%
+  - cd ..
   # the following builds are Debug ones so do not perform them in Release jobs
   - 'IF "%configuration%" == "Release" exit /b 0'
   # use all available processes for nmake
