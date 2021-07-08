@@ -907,6 +907,14 @@ private:
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(1, values.back().intvalue);
 
+        code  = "void f() {\n"
+                "    char a[10];"
+                "    x = sizeof(a[0]);\n"
+                "}";
+        values = tokenValues(code,"( a");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(1, values.back().intvalue);
+
         code = "enum testEnum : uint32_t { a };\n"
                "sizeof(testEnum);";
         values = tokenValues(code,"( testEnum");
