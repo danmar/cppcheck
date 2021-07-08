@@ -17,6 +17,27 @@ EXIT_CODE = 0
 
 current_dumpfile_suppressions = []
 
+def _load_location(location, element):
+    """Load location from element/dict"""
+    location.file = element.get('file')
+    line = element.get('line')
+    if line is None:
+        line = element.get('linenr')
+    if line is None:
+        line = '0'
+    location.linenr = int(line)
+    location.column = int(element.get('column', '0'))
+
+
+class Location:
+    """Utility location class"""
+    file = None
+    linenr = None
+    column = None
+    def __init__(self, element):
+        _load_location(self, element)
+
+
 class Directive:
     """
     Directive class. Contains information about each preprocessor directive in the source code.
@@ -38,12 +59,11 @@ class Directive:
     str = None
     file = None
     linenr = None
-    column = 0
+    column = None
 
     def __init__(self, element):
         self.str = element.get('str')
-        self.file = element.get('file')
-        self.linenr = int(element.get('linenr'))
+        _load_location(self, element)
 
     def __repr__(self):
         attrs = ["str", "file", "linenr"]
@@ -51,6 +71,28 @@ class Directive:
             "Directive",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
         )
+
+class MacroUsage:
+    """
+    Tracks preprocessor macro usage
+    """
+
+    name = None  # Macro name
+    file = None
+    linenr = None
+    column = None
+
+    def __init__(self, element):
+        self.name = element.get('name')
+        _load_location(self, element)
+
+    def __repr__(self):
+        attrs = ["name", "file", "linenr", "column"]
+        return "{}({})".format(
+            "Directive",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
 
 
 class ValueType:
@@ -283,9 +325,7 @@ class Token:
         self.astOperand1 = None
         self.astOperand2Id = element.get('astOperand2')
         self.astOperand2 = None
-        self.file = element.get('file')
-        self.linenr = int(element.get('linenr'))
-        self.column = int(element.get('column'))
+        _load_location(self, element)
 
     def __repr__(self):
         attrs = ["Id", "str", "scopeId", "isName", "isUnsigned", "isSigned",
@@ -574,16 +614,14 @@ class TypedefInfo:
     TypedefInfo class -- information about typedefs
     """
     name = None
-    filename = None
-    lineNumber = None
-    column = None
     used = None
+    file = None
+    linenr = None
+    column = None
 
     def __init__(self, element):
         self.name = element.get('name')
-        self.filename = element.get('file')
-        self.lineNumber = int(element.get('line'))
-        self.column = int(element.get('column'))
+        _load_location(self, element)
         self.used = (element.get('used') == '1')
 
 class Value:
@@ -720,6 +758,7 @@ class Configuration:
     Attributes:
         name          Name of the configuration, "" for default
         directives    List of Directive items
+        macro_usage   List of used macros
         tokenlist     List of Token items
         scopes        List of Scope items
         functions     List of Function items
@@ -730,6 +769,7 @@ class Configuration:
 
     name = ''
     directives = []
+    macro_usage = []
     tokenlist = []
     scopes = []
     functions = []
@@ -741,6 +781,7 @@ class Configuration:
     def __init__(self, name):
         self.name = name
         self.directives = []
+        self.macro_usage = []
         self.tokenlist = []
         self.scopes = []
         self.functions = []
@@ -999,6 +1040,10 @@ class CppcheckData:
             # Parse directives list
             elif node.tag == 'directive' and event == 'start':
                 cfg.directives.append(Directive(node))
+
+            # Parse macro usage
+            elif node.tag == 'macro' and event == 'start':
+                cfg.macro_usage.append(MacroUsage(node))
 
             # Parse tokens
             elif node.tag == 'tokenlist' and event == 'start':

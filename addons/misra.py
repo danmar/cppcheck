@@ -25,8 +25,6 @@ import argparse
 import codecs
 import string
 
-from collections import namedtuple
-
 try:
     from itertools import izip as zip
 except ImportError:
@@ -1129,7 +1127,7 @@ class MisraChecker:
 
         summary = []
         for ti in typedef_info:
-            summary.append({ 'name': ti.name, 'file': ti.filename, 'line': ti.lineNumber, 'column': ti.column, 'used': ti.used })
+            summary.append({ 'name': ti.name, 'file': ti.file, 'line': ti.linenr, 'column': ti.column, 'used': ti.used })
         if len(summary) > 0:
             cppcheckdata.reportSummary(dumpfile, 'MisraTypedefInfo', summary)
 
@@ -1166,6 +1164,21 @@ class MisraChecker:
         dumpfile = data[0]
         cfg = data[1]
         self._save_ctu_summary_tagnames(dumpfile, cfg)
+
+    def misra_2_5(self, data):
+        dumpfile = data[0]
+        cfg = data[1]
+        used_macros = list()
+        for m in cfg.macro_usage:
+            used_macros.append(m.name)
+        summary = []
+        for directive in cfg.directives:
+            res = re.match(r'#define[ \t]+([a-zA-Z_][a-zA-Z_0-9]*).*', directive.str)
+            if res:
+                macro_name = res.group(1)
+                summary.append({'name': macro_name, 'used': (macro_name in used_macros), 'file': directive.file, 'line': directive.linenr, 'column': directive.column})
+        if len(summary) > 0:
+            cppcheckdata.reportSummary(dumpfile, 'MisraMacro', summary)
 
     def misra_2_7(self, data):
         for func in data.functions:
@@ -3316,6 +3329,7 @@ class MisraChecker:
 
             self.executeCheck(203, self.misra_2_3, (dumpfile, cfg.typedefInfo))
             self.executeCheck(204, self.misra_2_4, (dumpfile, cfg))
+            self.executeCheck(205, self.misra_2_5, (dumpfile, cfg))
             self.executeCheck(207, self.misra_2_7, cfg)
             # data.rawTokens is same for all configurations
             if cfgNumber == 0:
@@ -3426,8 +3440,9 @@ class MisraChecker:
     def analyse_ctu_info(self, files):
         all_typedef_info = []
         all_tagname_info = []
+        all_macro_info = []
 
-        Location = namedtuple('Location', 'file linenr column')
+        from cppcheckdata import Location
 
         for filename in files:
             if not filename.endswith('.ctu-info'):
@@ -3447,11 +3462,12 @@ class MisraChecker:
                             if old_typedef_info['name'] == new_typedef_info['name']:
                                 found = True
                                 if old_typedef_info['file'] != new_typedef_info['file'] or old_typedef_info['line'] != new_typedef_info['line']:
-                                    self.reportError(Location(old_typedef_info['file'], old_typedef_info['line'], old_typedef_info['column']), 5, 6)
-                                    self.reportError(Location(new_typedef_info['file'], new_typedef_info['line'], new_typedef_info['column']), 5, 6)
+                                    self.reportError(Location(old_typedef_info), 5, 6)
+                                    self.reportError(Location(new_typedef_info), 5, 6)
                                 else:
                                     if new_typedef_info['used']:
                                         old_typedef_info['used'] = True
+                                break
                         if not found:
                             all_typedef_info.append(new_typedef_info)
 
@@ -3462,22 +3478,38 @@ class MisraChecker:
                             if old_tagname_info['name'] == new_tagname_info['name']:
                                 found = True
                                 if old_tagname_info['file'] != new_tagname_info['file'] or old_tagname_info['line'] != new_tagname_info['line']:
-                                    self.reportError(Location(old_tagname_info['file'], old_tagname_info['line'], old_tagname_info['column']), 5, 7)
-                                    self.reportError(Location(new_tagname_info['file'], new_tagname_info['line'], new_tagname_info['column']), 5, 7)
+                                    self.reportError(Location(old_tagname_info), 5, 7)
+                                    self.reportError(Location(new_tagname_info), 5, 7)
                                 else:
                                     if new_tagname_info['used']:
                                         old_tagname_info['used'] = True
+                                break
                         if not found:
                             all_tagname_info.append(new_tagname_info)
 
+                if summary_type == 'MisraMacro':
+                    for new_macro in summary_data:
+                        found = False
+                        for old_macro in all_macro_info:
+                            if old_macro['name'] == new_macro['name']:
+                                found = True
+                                if new_macro['used']:
+                                    old_macro['used'] = True
+                                break
+                        if not found:
+                            all_macro_info.append(new_macro)
+
         for ti in all_typedef_info:
             if not ti['used']:
-                self.reportError(Location(ti['file'], ti['line'], ti['column']), 2, 3)
+                self.reportError(Location(ti), 2, 3)
 
         for ti in all_tagname_info:
             if not ti['used']:
-                self.reportError(Location(ti['file'], ti['line'], ti['column']), 2, 4)
+                self.reportError(Location(ti), 2, 4)
 
+        for m in all_macro_info:
+            if not m['used']:
+                self.reportError(Location(m), 2, 5)
 
 RULE_TEXTS_HELP = '''Path to text file of MISRA rules
 

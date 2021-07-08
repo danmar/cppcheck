@@ -14,3 +14,5 @@ struct misra_5_7_violation_t {
     int x;
 };
 static misra_5_7_violation_t misra_5_7_var;
+
+x = MISRA_2_5_OK_2;
