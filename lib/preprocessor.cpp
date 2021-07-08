@@ -740,6 +740,7 @@ simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens
     std::list<simplecpp::MacroUsage> macroUsage;
     simplecpp::TokenList tokens2(files);
     simplecpp::preprocess(tokens2, tokens1, files, mTokenLists, dui, &outputList, &macroUsage);
+    mMacroUsage = macroUsage;
 
     handleErrors(outputList, throwError);
 
@@ -944,11 +945,9 @@ void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *se
 
 void Preprocessor::dump(std::ostream &out) const
 {
-    // Create a xml directive dump.
-    // The idea is not that this will be readable for humans. It's a
-    // data dump that 3rd party tools could load and get useful info from.
-    out << "  <directivelist>" << std::endl;
+    // Create a xml dump.
 
+    out << "  <directivelist>" << std::endl;
     for (const Directive &dir : mDirectives) {
         out << "    <directive "
             << "file=\"" << ErrorLogger::toxml(dir.file) << "\" "
@@ -958,6 +957,22 @@ void Preprocessor::dump(std::ostream &out) const
             << "str=\"" << ErrorLogger::toxml(dir.str) << "\"/>" << std::endl;
     }
     out << "  </directivelist>" << std::endl;
+
+    if (!mMacroUsage.empty()) {
+        out << "  <macro-usage>" << std::endl;
+        for (const simplecpp::MacroUsage &macroUsage: mMacroUsage) {
+            out << "    <macro "
+                << " name=\"" << macroUsage.macroName << "\""
+                << " file=\"" << macroUsage.macroLocation.file() << "\""
+                << " line=\"" << macroUsage.macroLocation.line << "\""
+                << " column=\"" << macroUsage.macroLocation.col << "\""
+                << " usefile=\"" << macroUsage.useLocation.file() << "\""
+                << " useline=\"" << macroUsage.useLocation.line << "\""
+                << " usecolumn=\"" << macroUsage.useLocation.col << "\""
+                << " known-value=\"" << (macroUsage.macroValueKnown ? 1 : 0) << "\"/>" << std::endl;
+        }
+        out << "  </macro-usage>" << std::endl;
+    }
 }
 
 static const std::uint32_t crc32Table[] = {

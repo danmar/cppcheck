@@ -328,9 +328,9 @@ namespace ValueFlow {
             Object,
             // A member of object points to the lifetime
             SubObject,
-            // Lambda has captured lifetime(similiar to SubObject)
+            // Lambda has captured lifetime(similar to SubObject)
             Lambda,
-            // Iterator points to the lifetime of a container(similiar to Object)
+            // Iterator points to the lifetime of a container(similar to Object)
             Iterator,
             // A pointer that holds the address of the lifetime
             Address

@@ -908,6 +908,8 @@ public:
 
     static bool returnsReference(const Function* function, bool unknown = false);
 
+    static bool returnsVoid(const Function* function, bool unknown = false);
+
     static std::vector<const Token*> findReturns(const Function* f);
 
     const Token* returnDefEnd() const {

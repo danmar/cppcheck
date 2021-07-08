@@ -907,6 +907,14 @@ private:
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(1, values.back().intvalue);
 
+        code  = "void f() {\n"
+                "    char a[10];"
+                "    x = sizeof(a[0]);\n"
+                "}";
+        values = tokenValues(code,"( a");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(1, values.back().intvalue);
+
         code = "enum testEnum : uint32_t { a };\n"
                "sizeof(testEnum);";
         values = tokenValues(code,"( testEnum");
@@ -5630,6 +5638,15 @@ private:
                "  return e;\n"
                "}\n";
         valueOfTok(code, "x");
+
+        code = "void a() {\n"
+               "  int b = 0;\n"
+               "  do {\n"
+               "    for (;;)\n"
+               "      break;\n"
+               "  } while (b < 1);\n"
+               "}\n";
+        valueOfTok(code, "b");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577

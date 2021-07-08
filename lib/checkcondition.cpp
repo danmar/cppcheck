@@ -29,6 +29,8 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
+#include "checkother.h" // comparisonNonZeroExpressionLessThanZero and testIfNonZeroExpressionIsPositive
+
 #include <algorithm>
 #include <limits>
 #include <list>
@@ -1426,6 +1428,15 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (isConstVarExpression(tok, "[|(|&|+|-|*|/|%|^|>>|<<"))
                 continue;
+
+            // there are specific warnings about nonzero expressions (pointer/unsigned)
+            // do not write alwaysTrueFalse for these comparisons.
+            {
+                const ValueFlow::Value *zeroValue = nullptr;
+                const Token *nonZeroExpr = nullptr;
+                if (CheckOther::comparisonNonZeroExpressionLessThanZero(tok, &zeroValue, &nonZeroExpr) || CheckOther::testIfNonZeroExpressionIsPositive(tok, &zeroValue, &nonZeroExpr))
+                    continue;
+            }
 
             const bool constIfWhileExpression =
                 tok->astParent() && Token::Match(tok->astTop()->astOperand1(), "if|while") && !tok->astTop()->astOperand1()->isConstexpr() &&

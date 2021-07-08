@@ -90,6 +90,7 @@ private:
         TEST_CASE(simplifyUsing10171);
         TEST_CASE(simplifyUsing10172);
         TEST_CASE(simplifyUsing10173);
+        TEST_CASE(simplifyUsing10335);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -1303,6 +1304,13 @@ private:
                                 "}";
             ASSERT_EQUALS(exp, tok(code, true));
         }
+    }
+
+    void simplifyUsing10335() {
+        const char code[] = "using uint8_t = unsigned char;\n"
+                            "enum E : uint8_t { E0 };";
+        const char exp[]  = "enum E : unsigned char { E0 } ;";
+        ASSERT_EQUALS(exp, tok(code, false));
     }
 };
 

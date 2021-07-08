@@ -125,6 +125,7 @@ jobs:
         run: |
           ./cppcheck --addon=threadsafety addons/test/threadsafety
           ./cppcheck --addon=threadsafety --std=c++03 addons/test/threadsafety
+          ./cppcheck --addon=misra --inline-suppr --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
 
       - name: Build GUI on ubuntu
         if: contains(matrix.os, 'ubuntu')

@@ -112,7 +112,9 @@ private:
         TEST_CASE(nullpointer69);         // #8143
         TEST_CASE(nullpointer70);
         TEST_CASE(nullpointer71); // #10178
-        TEST_CASE(nullpointer72); // #10321
+        TEST_CASE(nullpointer72); // #10215
+        TEST_CASE(nullpointer73); // #10321
+        TEST_CASE(nullpointer74);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2240,7 +2242,27 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void nullpointer72() {
+    void nullpointer72() { // #10215
+        check("int test() {\n"
+              "int* p0 = nullptr, *p1 = nullptr;\n"
+              "getFoo(p0);\n"
+              "getBar(p1);\n"
+              "if (!(p0 != nullptr && p1 != nullptr))\n"
+              "return {};\n"
+              "return *p0 + *p1;\n"
+              "}\n", true /*inconclusive*/);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int test2() {\n"
+              "int* p0 = nullptr; \n"
+              "if (!(getBaz(p0) && p0 != nullptr))\n"
+              "return 0;\n"
+              "return *p0;\n"
+              "}\n", true /*inconclusive*/);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer73() {
         check("void f(bool flag2, int* ptr) {\n"
               "    bool flag1 = true;\n"
               "    if (flag2) {\n"
@@ -2266,6 +2288,45 @@ private:
               "        (*ptr)++;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:10]: (warning) Either the condition 'ptr!=nullptr' is redundant or there is possible null pointer dereference: ptr.\n", errout.str());
+    }
+
+    void nullpointer74() {
+        check("struct d {\n"
+              "  d* e();\n"
+              "};\n"
+              "void g(d* f) {\n"
+              "  do {\n"
+              "    f = f->e();\n"
+              "    if (f) {}\n"
+              "  } while (0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct d {\n"
+              "  d* e();\n"
+              "};\n"
+              "void g(d* f, int i) {\n"
+              "  do {\n"
+              "    i--;\n"
+              "    f = f->e();\n"
+              "    if (f) {}\n"
+              "  } while (i > 0);\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:8] -> [test.cpp:7]: (warning) Either the condition 'f' is redundant or there is possible null pointer dereference: f.\n",
+            errout.str());
+
+        check("struct d {\n"
+              "  d* e();\n"
+              "};\n"
+              "void g(d* f, int i) {\n"
+              "  do {\n"
+              "    i--;\n"
+              "    f = f->e();\n"
+              "    if (f) {}\n"
+              "  } while (f && i > 0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_addressOf() { // address of

@@ -79,6 +79,7 @@
 
 #include "analyzer.h"
 #include "astutils.h"
+#include "checkuninitvar.h"
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "forwardanalyzer.h"
@@ -998,6 +999,18 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
             value.setKnown();
         setTokenValue(tok, value, settings);
     } else if (Token::simpleMatch(tok, "sizeof (")) {
+        if (tok->next()->astOperand2() && !tok->next()->astOperand2()->isLiteral() && tok->next()->astOperand2()->valueType() &&
+            tok->next()->astOperand2()->valueType()->pointer == 0 && // <- TODO this is a bailout, abort when there are array->pointer conversions
+            !tok->next()->astOperand2()->valueType()->isEnum()) { // <- TODO this is a bailout, handle enum with non-int types
+            const size_t sz = ValueFlow::getSizeOf(*tok->next()->astOperand2()->valueType(), settings);
+            if (sz) {
+                ValueFlow::Value value(sz);
+                value.setKnown();
+                setTokenValue(tok->next(), value, settings);
+                return tok->linkAt(1);
+            }
+        }
+
         const Token *tok2 = tok->tokAt(2);
         // skip over tokens to find variable or type
         while (Token::Match(tok2, "%name% ::|.|[")) {
@@ -4014,6 +4027,7 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
             const Token* condTok = parenTok->astOperand2();
             if (condTok->hasKnownIntValue())
                 continue;
+            const bool is1 = (condTok->isComparisonOp() || condTok->tokType() == Token::eLogicalOp || astIsBool(condTok));
 
             Token* startTok = blockTok;
             // Inner condition
@@ -4024,8 +4038,10 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
                     conds.insert(conds.end(), args.begin(), args.end());
                 }
                 for (const Token* condTok2:conds) {
-                    ExpressionAnalyzer a1(condTok2, makeConditionValue(1, condTok2, true), tokenlist);
-                    valueFlowGenericForward(startTok, startTok->link(), a1, settings);
+                    if (is1) {
+                        ExpressionAnalyzer a1(condTok2, makeConditionValue(1, condTok2, true), tokenlist);
+                        valueFlowGenericForward(startTok, startTok->link(), a1, settings);
+                    }
 
                     OppositeExpressionAnalyzer a2(true, condTok2, makeConditionValue(0, condTok2, true), tokenlist);
                     valueFlowGenericForward(startTok, startTok->link(), a2, settings);
@@ -4045,8 +4061,10 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
                     ExpressionAnalyzer a1(condTok2, makeConditionValue(0, condTok2, false), tokenlist);
                     valueFlowGenericForward(startTok, startTok->link(), a1, settings);
 
-                    OppositeExpressionAnalyzer a2(true, condTok2, makeConditionValue(1, condTok2, false), tokenlist);
-                    valueFlowGenericForward(startTok, startTok->link(), a2, settings);
+                    if (is1) {
+                        OppositeExpressionAnalyzer a2(true, condTok2, makeConditionValue(1, condTok2, false), tokenlist);
+                        valueFlowGenericForward(startTok, startTok->link(), a2, settings);
+                    }
                 }
             }
 
@@ -4056,8 +4074,10 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
                     ExpressionAnalyzer a1(condTok2, makeConditionValue(0, condTok2, false), tokenlist);
                     valueFlowGenericForward(startTok->link()->next(), scope->bodyEnd, a1, settings);
 
-                    OppositeExpressionAnalyzer a2(true, condTok2, makeConditionValue(1, condTok2, false), tokenlist);
-                    valueFlowGenericForward(startTok->link()->next(), scope->bodyEnd, a2, settings);
+                    if (is1) {
+                        OppositeExpressionAnalyzer a2(true, condTok2, makeConditionValue(1, condTok2, false), tokenlist);
+                        valueFlowGenericForward(startTok->link()->next(), scope->bodyEnd, a2, settings);
+                    }
                 }
             }
 
@@ -4086,7 +4106,16 @@ static void valueFlowForwardAssign(Token* const tok,
     values.remove_if(std::mem_fn(&ValueFlow::Value::isTokValue));
     if (tok->astParent()) {
         for (ValueFlow::Value& value : values) {
-            const std::string info = "Assignment '" + tok->astParent()->expressionString() + "', assigned value is " + value.infoString();
+            std::string valueKind;
+            if (value.valueKind == ValueFlow::Value::ValueKind::Impossible) {
+                if (value.bound == ValueFlow::Value::Bound::Point)
+                    valueKind = "never ";
+                else if (value.bound == ValueFlow::Value::Bound::Lower)
+                    valueKind = "less than ";
+                else if (value.bound == ValueFlow::Value::Bound::Upper)
+                    valueKind = "greater than ";
+            }
+            const std::string info = "Assignment '" + tok->astParent()->expressionString() + "', assigned value is " + valueKind + value.infoString();
             value.errorPath.emplace_back(tok, info);
         }
     }
@@ -4134,12 +4163,34 @@ static void valueFlowForwardAssign(Token* const tok,
     valueFlowForwardAssign(tok, var->nameToken(), {var}, values, init, tokenlist, errorLogger, settings);
 }
 
-static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> values, const ValueType *valueType, const Settings *settings)
+static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> values,
+        const ValueType* dst,
+        const ValueType* src,
+        const Settings* settings)
 {
-    if (!valueType || !valueType->isIntegral())
+    if (!dst || !dst->isIntegral())
         return values;
 
-    const size_t sz = ValueFlow::getSizeOf(*valueType, settings);
+    const size_t sz = ValueFlow::getSizeOf(*dst, settings);
+
+    if (src) {
+        const size_t osz = ValueFlow::getSizeOf(*src, settings);
+        if (osz >= sz && dst->sign == ValueType::Sign::SIGNED && src->sign == ValueType::Sign::UNSIGNED) {
+            values.remove_if([&](const ValueFlow::Value& value) {
+                if (!value.isIntValue())
+                    return false;
+                if (!value.isImpossible())
+                    return false;
+                if (value.bound != ValueFlow::Value::Bound::Upper)
+                    return false;
+                if (osz == sz && value.intvalue < 0)
+                    return true;
+                if (osz > sz)
+                    return true;
+                return false;
+            });
+        }
+    }
 
     for (ValueFlow::Value &value : values) {
         // Don't truncate impossible values since those can be outside of the valid range
@@ -4154,7 +4205,7 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
             const MathLib::biguint unsignedMaxValue = (1ULL << (sz * 8)) - 1ULL;
             const MathLib::biguint signBit = 1ULL << (sz * 8 - 1);
             value.intvalue &= unsignedMaxValue;
-            if (valueType->sign == ValueType::Sign::SIGNED && (value.intvalue & signBit))
+            if (dst->sign == ValueType::Sign::SIGNED && (value.intvalue & signBit))
                 value.intvalue |= ~unsignedMaxValue;
         }
     }
@@ -4199,7 +4250,8 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             if (!tok->astOperand2() || tok->astOperand2()->values().empty())
                 continue;
 
-            std::list<ValueFlow::Value> values = truncateValues(tok->astOperand2()->values(), tok->astOperand1()->valueType(), settings);
+            std::list<ValueFlow::Value> values = truncateValues(
+                    tok->astOperand2()->values(), tok->astOperand1()->valueType(), tok->astOperand2()->valueType(), settings);
             // Remove known values
             std::set<ValueFlow::Value::ValueType> types;
             if (tok->astOperand1()->hasKnownValue()) {
@@ -4215,6 +4267,12 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             if (!astIsContainer(tok->astOperand2()))
                 values.remove_if([&](const ValueFlow::Value& value) {
                 return value.valueType == ValueFlow::Value::ValueType::CONTAINER_SIZE;
+            });
+            // If assignment copy by value, remove Uninit values..
+            if ((tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->pointer == 0) ||
+                (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference() && tok->astOperand1()->variable()->nameToken() == tok->astOperand1()))
+                values.remove_if([&](const ValueFlow::Value& value) {
+                return value.isUninitValue();
             });
             if (values.empty())
                 continue;
@@ -5738,6 +5796,11 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
                 });
                 // Don't forward container sizes for now since programmemory can't evaluate conditions
                 argvalues.remove_if(std::mem_fn(&ValueFlow::Value::isContainerSizeValue));
+                // Remove uninit values if argument is passed by value
+                if (argtok->variable() && !argtok->variable()->isPointer() && argvalues.size() == 1 && argvalues.front().isUninitValue()) {
+                    if (CheckUninitVar::isVariableUsage(tokenlist->isCPP(), argtok, settings->library, false, CheckUninitVar::Alloc::NO_ALLOC, 0))
+                        continue;
+                }
 
                 if (argvalues.empty())
                     continue;
@@ -6371,7 +6434,7 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
         bool known = true)
 {
     std::vector<const Token*> args = getArguments(tok);
-    // Strings dont use an init list
+    // Strings don't use an init list
     if (!args.empty() && container->stdStringLike) {
         if (astIsIntegral(args[0], false)) {
             if (args.size() > 1)

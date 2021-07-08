@@ -41,6 +41,16 @@
 #include <tgmath.h> // 21.11
 #include <fenv.h>
 
+// Check that the addon doesn't crash
+typedef struct {
+  union { // 19.2
+    struct {
+      unsigned a : 2; // 8.1
+      unsigned : 14;
+    };
+    uint16_t value;
+  };
+} STRUCT_BITS;
 
 typedef unsigned char      u8;
 typedef unsigned short     u16;
@@ -64,6 +74,22 @@ void misra_2_7_used_params (int *param1, int param2, int param3)
     (void)param3;
     *param1 = param2;
 }
+
+void misra_2_7_a(int a,
+                 int b, // 2.7
+                 int c,
+                 int d) // 2.7
+{
+    (void)a;
+    (void)c;
+}
+void misra_2_7_b(int a, int b, int c, // 2.7
+                 int d)               // 2.7
+{
+    (void)a;
+}
+void misra_2_7_c(int a, ...) { (void)a; }
+void misra_2_7_d(int) { } // 2.7 8.2
 
 void misra_3_2(int enable)
 {
@@ -300,6 +326,8 @@ void misra_7_4(void)
    misra_7_4_call(1, "text_call"); // 7.4 11.8
 }
 
+const misra_8_1_a; // 8.1
+
 static int misra_8_2_a (int n, ...);
 extern int misra_8_2_b (int n);
 extern int misra_8_2_c (int); // 8.2
@@ -319,9 +347,27 @@ static int misra_8_2_k ( //
  void);
 static int misra_8_2_l ( // 8.2
 );
+void misra_8_2_m(uint8_t * const x);
+void misra_8_2_m(uint8_t * const x)
+{
+(void)x;
+}
 int16_t ( *misra_8_2_p_a ) (); // 8.2
 int16_t ( *misra_8_2_p_b ) (void);
 int16_t ( *misra_8_2_p_c ) (int);
+int misra_8_2_n(int a)
+{ return a + 42; }
+int misra_8_2_o(
+    const uint32_t a1,
+    const uint8_t *const a2
+)
+{ return *a2 + a1; }
+int misra_8_2_p(
+    const uint32_t a1,
+    const uint8_t *const a2
+);
+int misra_8_2_q
+(); // 8.2
 
 extern int a811[]; // 8.11
 
@@ -432,6 +478,12 @@ void misra_9_struct_initializers(void) {
         struct1 s[2][2];
     } struct3;
 
+    typedef struct {
+        unknown_field_type f1;
+        unknown_field_type f2[2];
+        int f3[2];
+    } struct_with_unknown_fields;
+
     struct3 sa[2]  = { [1].s[1][0].i1 = 3, 4 };         // 9.2
 
     struct1 sa          = 1;                            // 9.2
@@ -482,6 +534,19 @@ void misra_9_struct_initializers(void) {
     dummy_struct dsf[]     = { [0] = 1 };                     // 9.5
     dummy_struct dsg       = { .a = {0}, .b = {0} };
     dummy_struct dsh[2][2] = { { {.a = 0, .b = {0}}, { 0 } }, { { 0 }, {.a = 0, .b = {0}}} };
+
+    // Struct with fields of unknown type
+    struct_with_unknown_fields ufa       = { 1, { 1, 2 }, { 1, 2 } };
+    struct_with_unknown_fields ufb       = { 1, 1, 2 };                     // 9.2
+    struct_with_unknown_fields[2] ufc    = { {1, { 1, 2 }, { 1, 2 } },
+                                             { 2, { 1, 2 }, { 1, 2 } } };
+    struct_with_unknown_fields[2][2] ufd = { {1, { 1, 2 }, { 1, 2 } },
+                                             { 2, { 1, 2 }, { 1, 2 } } };
+    struct_with_unknown_fields[2] ufe    = { 1, { 1, 2 }, { 1, 2 },         // TODO: 9.2
+                                             2, { 1, 2 }, { 1, 2 } };
+    struct_with_unknown_fields[3] uff    = { { 1, { 1, 2 }, { 1, 2 }},      // TODO: 9.3 9.4
+                                             {2, { 1, 2 }, { 1, 2 }},
+                                             [1] = { 2, { 1, 2 }, { 1, 2 }} };
 
     // Obsolete initialization syntax for GCC
     struct1 os1 = { i1: 1, i2: 2 }; // 10.4 13.4
@@ -709,8 +774,8 @@ extern uint32_t misra_12_3_fn7(const uint32_t * const, const uint8_t); // 8.2
 #define MISRA_12_3_FN3_2(A, B) (misra_12_3_fn3(A, \
                                 B))
 #define MISRA_12_3_FN3_2_MSG(x) x, fflush(stderr)
-void misra_12_3(int, int, int); // no warning
-void misra_12_3(int a, int b, int c) { // 8.2
+void misra_12_3(int, int, int); // 8.2
+void misra_12_3(int a, int b, int c) {
   int a1, a2; // 12.3
   int a3; int a4; // no warning
   int a5 = 9, a6; // 12.3
@@ -1633,3 +1698,8 @@ static uint8_t misra_13_1_large_bad[1024] = { // 13.1
 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
+
+void misra_22_5(FILE *f) {
+    int x = *f; // 22.5
+    int y = f->pos; // 22.5
+}

@@ -68,6 +68,7 @@ namespace {
         std::string scriptFile;
         std::string args;
         std::string python;
+        bool ctu = false;
 
         static std::string getFullPath(const std::string &fileName, const std::string &exename) {
             if (Path::fileExists(fileName))
@@ -101,6 +102,15 @@ namespace {
                     return "Loading " + fileName + " failed. args must be array.";
                 for (const picojson::value &v : obj["args"].get<picojson::array>())
                     args += " " + v.get<std::string>();
+            }
+
+            if (obj.count("ctu")) {
+                // ctu is specified in the config file
+                if (!obj["ctu"].is<bool>())
+                    return "Loading " + fileName + " failed. ctu must be array.";
+                ctu = obj["ctu"].get<bool>();
+            } else {
+                ctu = false;
             }
 
             if (obj.count("python")) {
@@ -188,6 +198,20 @@ static std::vector<std::string> split(const std::string &str, const std::string 
     return ret;
 }
 
+static std::string getDumpFileName(const Settings& settings, const std::string& filename)
+{
+    if (!settings.dumpFile.empty())
+        return settings.dumpFile;
+    if (!settings.dump && !settings.buildDir.empty())
+        return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, "") + ".dump";
+    return filename + ".dump";
+}
+
+static std::string getCtuInfoFileName(const std::string &dumpFile)
+{
+    return dumpFile.substr(0, dumpFile.size()-4) + "ctu-info";
+}
+
 static void createDumpFile(const Settings& settings,
                            const std::string& filename,
                            const std::vector<std::string>& files,
@@ -197,16 +221,16 @@ static void createDumpFile(const Settings& settings,
 {
     if (!settings.dump && settings.addons.empty())
         return;
-    if (!settings.dumpFile.empty())
-        dumpFile = settings.dumpFile;
-    else if (!settings.dump && !settings.buildDir.empty())
-        dumpFile = AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, "") + ".dump";
-    else
-        dumpFile = filename + ".dump";
+    dumpFile = getDumpFileName(settings, filename);
 
     fdump.open(dumpFile);
     if (!fdump.is_open())
         return;
+
+    {
+        std::ofstream fout(getCtuInfoFileName(dumpFile));
+    }
+
     fdump << "<?xml version=\"1.0\"?>" << std::endl;
     fdump << "<dumps>" << std::endl;
     fdump << "  <platform"
@@ -236,7 +260,7 @@ static void createDumpFile(const Settings& settings,
 
 static std::string executeAddon(const AddonInfo &addonInfo,
                                 const std::string &defaultPythonExe,
-                                const std::string &dumpFile,
+                                const std::vector<std::string> &files,
                                 std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand)
 {
     const std::string redirect = "2>&1";
@@ -264,7 +288,9 @@ static std::string executeAddon(const AddonInfo &addonInfo,
             throw InternalError(nullptr, "Failed to auto detect python");
     }
 
-    const std::string args = cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args + " " + cmdFileName(dumpFile);
+    std::string args = cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args;
+    for (const std::string& filename: files)
+        args += " " + cmdFileName(filename);
     std::string result;
     if (!executeCommand(pythonExe, split(args), redirect, &result))
         throw InternalError(nullptr, "Failed to execute addon (command: '" + pythonExe + " " + args + "')");
@@ -273,8 +299,10 @@ static std::string executeAddon(const AddonInfo &addonInfo,
     std::istringstream istr(result);
     std::string line;
     while (std::getline(istr, line)) {
-        if (line.compare(0,9,"Checking ", 0, 9) != 0 && !line.empty() && line[0] != '{')
+        if (line.compare(0,9,"Checking ", 0, 9) != 0 && !line.empty() && line[0] != '{') {
+            result.erase(result.find_last_not_of('\n') + 1, std::string::npos); // Remove trailing newlines
             throw InternalError(nullptr, "Failed to execute '" + pythonExe + " " + args + "'. " + result);
+        }
     }
 
     // Valid results
@@ -1263,56 +1291,81 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
 
 void CppCheck::executeAddons(const std::string& dumpFile)
 {
+    if (!dumpFile.empty()) {
+        std::vector<std::string> f{dumpFile};
+        executeAddons(f);
+        if (!mSettings.dump && mSettings.buildDir.empty())
+            std::remove(dumpFile.c_str());
+    }
+}
 
-    if (!mSettings.addons.empty() && !dumpFile.empty()) {
-        for (const std::string &addon : mSettings.addons) {
-            struct AddonInfo addonInfo;
-            const std::string &failedToGetAddonInfo = addonInfo.getAddonInfo(addon, mSettings.exename);
-            if (!failedToGetAddonInfo.empty()) {
-                reportOut(failedToGetAddonInfo, Color::FgRed);
-                mExitCode = 1;
-                continue;
-            }
-            const std::string results =
-                executeAddon(addonInfo, mSettings.addonPython, dumpFile, mExecuteCommand);
-            std::istringstream istr(results);
-            std::string line;
+void CppCheck::executeAddons(const std::vector<std::string>& files)
+{
+    if (mSettings.addons.empty() || files.empty())
+        return;
 
-            while (std::getline(istr, line)) {
-                if (line.compare(0,1,"{") != 0)
-                    continue;
-
-                picojson::value res;
-                std::istringstream istr2(line);
-                istr2 >> res;
-                if (!res.is<picojson::object>())
-                    continue;
-
-                picojson::object obj = res.get<picojson::object>();
-
-                const std::string fileName = obj["file"].get<std::string>();
-                const int64_t lineNumber = obj["linenr"].get<int64_t>();
-                const int64_t column = obj["column"].get<int64_t>();
-
-                ErrorMessage errmsg;
-
-                errmsg.callStack.emplace_back(ErrorMessage::FileLocation(fileName, lineNumber, column));
-
-                errmsg.id = obj["addon"].get<std::string>() + "-" + obj["errorId"].get<std::string>();
-                const std::string text = obj["message"].get<std::string>();
-                errmsg.setmsg(text);
-                const std::string severity = obj["severity"].get<std::string>();
-                errmsg.severity = Severity::fromString(severity);
-                if (errmsg.severity == Severity::SeverityType::none)
-                    continue;
-                errmsg.file0 = fileName;
-
-                reportErr(errmsg);
-            }
+    for (const std::string &addon : mSettings.addons) {
+        struct AddonInfo addonInfo;
+        const std::string &failedToGetAddonInfo = addonInfo.getAddonInfo(addon, mSettings.exename);
+        if (!failedToGetAddonInfo.empty()) {
+            reportOut(failedToGetAddonInfo, Color::FgRed);
+            mExitCode = 1;
+            continue;
         }
-        std::remove(dumpFile.c_str());
+        if (addon != "misra" && !addonInfo.ctu && endsWith(files.back(), ".ctu-info", 9))
+            continue;
+
+        const std::string results =
+            executeAddon(addonInfo, mSettings.addonPython, files, mExecuteCommand);
+        std::istringstream istr(results);
+        std::string line;
+
+        while (std::getline(istr, line)) {
+            if (line.compare(0,1,"{") != 0)
+                continue;
+
+            picojson::value res;
+            std::istringstream istr2(line);
+            istr2 >> res;
+            if (!res.is<picojson::object>())
+                continue;
+
+            picojson::object obj = res.get<picojson::object>();
+
+            const std::string fileName = obj["file"].get<std::string>();
+            const int64_t lineNumber = obj["linenr"].get<int64_t>();
+            const int64_t column = obj["column"].get<int64_t>();
+
+            ErrorMessage errmsg;
+
+            errmsg.callStack.emplace_back(ErrorMessage::FileLocation(fileName, lineNumber, column));
+
+            errmsg.id = obj["addon"].get<std::string>() + "-" + obj["errorId"].get<std::string>();
+            const std::string text = obj["message"].get<std::string>();
+            errmsg.setmsg(text);
+            const std::string severity = obj["severity"].get<std::string>();
+            errmsg.severity = Severity::fromString(severity);
+            if (errmsg.severity == Severity::SeverityType::none)
+                continue;
+            errmsg.file0 = fileName;
+
+            reportErr(errmsg);
+        }
+    }
+}
+
+void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t> &files)
+{
+    if (mSettings.addons.empty())
+        return;
+
+    std::vector<std::string> ctuInfoFiles;
+    for (const auto f: files) {
+        const std::string &dumpFileName = getDumpFileName(mSettings, f.first);
+        ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
 
+    executeAddons(ctuInfoFiles);
 }
 
 Settings &CppCheck::settings()
@@ -1577,7 +1630,7 @@ bool CppCheck::analyseWholeProgram()
 
 void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files)
 {
-    (void)files;
+    executeAddonsWholeProgram(files);
     if (buildDir.empty())
         return;
     if (mSettings.checks.isEnabled(Checks::unusedFunction))

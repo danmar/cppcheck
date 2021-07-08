@@ -69,6 +69,7 @@ private:
         TEST_CASE(iterator23);
         TEST_CASE(iterator24);
         TEST_CASE(iterator25); // #9742
+        TEST_CASE(iterator26); // #9176
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
         TEST_CASE(mismatchingContainerIterator);
@@ -1350,6 +1351,20 @@ private:
               "        return &lhs.v != &rhs.v;\n"
               "    }\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator26() { // #9176
+        check(
+            "#include <map>\n"
+            "int main()\n"
+            "{"
+            "  std::map<char const*, int> m{ {\"a\", 1} };\n"
+            "  if (auto iter = m.find(\"x\"); iter != m.end()) {\n"
+            "    return iter->second;\n"
+            "  }\n"
+            "  return 0;\n"
+            "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

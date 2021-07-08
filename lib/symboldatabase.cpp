@@ -2677,6 +2677,21 @@ bool Function::returnsReference(const Function* function, bool unknown)
     return false;
 }
 
+bool Function::returnsVoid(const Function* function, bool unknown)
+{
+    if (!function)
+        return false;
+    if (function->type != Function::eFunction)
+        return false;
+    const Token* defEnd = function->returnDefEnd();
+    if (defEnd->strAt(-1) == "void")
+        return true;
+    // Check for unknown types, which could be a void type
+    if (isUnknownType(function->retDef, defEnd))
+        return unknown;
+    return false;
+}
+
 std::vector<const Token*> Function::findReturns(const Function* f)
 {
     std::vector<const Token*> result;
@@ -3679,7 +3694,10 @@ void SymbolDatabase::printXml(std::ostream &out) const
             if (!scope->functionList.empty()) {
                 out << "      <functionList>" << std::endl;
                 for (std::list<Function>::const_iterator function = scope->functionList.begin(); function != scope->functionList.end(); ++function) {
-                    out << "        <function id=\"" << &*function << "\" tokenDef=\"" << function->tokenDef << "\" name=\"" << ErrorLogger::toxml(function->name()) << '\"';
+                    out << "        <function id=\"" << &*function
+                        << "\" token=\"" << function->token
+                        << "\" tokenDef=\"" << function->tokenDef
+                        << "\" name=\"" << ErrorLogger::toxml(function->name()) << '\"';
                     out << " type=\"" << (function->type == Function::eConstructor? "Constructor" :
                                           function->type == Function::eCopyConstructor ? "CopyConstructor" :
                                           function->type == Function::eMoveConstructor ? "MoveConstructor" :
