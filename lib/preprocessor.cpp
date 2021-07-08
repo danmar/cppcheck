@@ -958,19 +958,21 @@ void Preprocessor::dump(std::ostream &out) const
     }
     out << "  </directivelist>" << std::endl;
 
-    out << "  <macro-usage>" << std::endl;
-    for (const simplecpp::MacroUsage &macroUsage: mMacroUsage) {
-        out << "    <macro "
-            << " name=\"" << macroUsage.macroName << "\""
-            << " file=\"" << macroUsage.macroLocation.file() << "\""
-            << " line=\"" << macroUsage.macroLocation.line << "\""
-            << " column=\"" << macroUsage.macroLocation.col << "\""
-            << " usefile=\"" << macroUsage.useLocation.file() << "\""
-            << " useline=\"" << macroUsage.useLocation.line << "\""
-            << " usecolumn=\"" << macroUsage.useLocation.col << "\""
-            << " known-value=\"" << (macroUsage.macroValueKnown ? 1 : 0) << "\"/>" << std::endl;
+    if (!mMacroUsage.empty()) {
+        out << "  <macro-usage>" << std::endl;
+        for (const simplecpp::MacroUsage &macroUsage: mMacroUsage) {
+            out << "    <macro "
+                << " name=\"" << macroUsage.macroName << "\""
+                << " file=\"" << macroUsage.macroLocation.file() << "\""
+                << " line=\"" << macroUsage.macroLocation.line << "\""
+                << " column=\"" << macroUsage.macroLocation.col << "\""
+                << " usefile=\"" << macroUsage.useLocation.file() << "\""
+                << " useline=\"" << macroUsage.useLocation.line << "\""
+                << " usecolumn=\"" << macroUsage.useLocation.col << "\""
+                << " known-value=\"" << (macroUsage.macroValueKnown ? 1 : 0) << "\"/>" << std::endl;
+        }
+        out << "  </macro-usage>" << std::endl;
     }
-    out << "  </macro-usage>" << std::endl;
 }
 
 static const std::uint32_t crc32Table[] = {
