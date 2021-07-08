@@ -147,6 +147,8 @@ struct Analyzer {
     virtual void forkScope(const Token* /*endBlock*/) {}
     /// If the value is conditional
     virtual bool isConditional() const = 0;
+    /// If the value is known
+    virtual bool isKnown() const = 0;
     /// The condition that will be assumed during analysis
     virtual void assume(const Token* tok, bool state, unsigned int flags = 0) = 0;
     /// Return analyzer for expression at token
