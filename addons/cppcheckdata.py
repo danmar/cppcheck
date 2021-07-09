@@ -1206,10 +1206,28 @@ def ArgumentParser():
     parser.add_argument("--cli",
                         help="Addon is executed from Cppcheck",
                         action="store_true")
+    parser.add_argument("--file-list", metavar='<text>',
+                        default=None,
+                        help="file list in a text file")
     parser.add_argument("-q", "--quiet",
                         help='do not print "Checking ..." lines',
                         action="store_true")
     return parser
+
+
+def get_files(args):
+    """Return dump_files, ctu_info_files"""
+    dump_files = args.dumpfile
+    ctu_info_files = []
+    if args.file_list:
+        with open(args.file_list, 'rt') as f:
+            for line in f.readlines():
+                line = line.rstrip()
+                if line.endswith('.ctu-info'):
+                    ctu_info_files.append(line)
+                else:
+                    dump_files.append(line)
+    return dump_files, ctu_info_files
 
 
 def simpleMatch(token, pattern):

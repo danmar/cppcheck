@@ -3437,16 +3437,14 @@ class MisraChecker:
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
             self.executeCheck(2205, self.misra_22_5, cfg)
 
-    def analyse_ctu_info(self, files):
+    def analyse_ctu_info(self, ctu_info_files):
         all_typedef_info = []
         all_tagname_info = []
         all_macro_info = []
 
         from cppcheckdata import Location
 
-        for filename in files:
-            if not filename.endswith('.ctu-info'):
-                continue
+        for filename in ctu_info_files:
             for line in open(filename, 'rt'):
                 if not line.startswith('{'):
                     continue
@@ -3593,7 +3591,9 @@ def main():
     if args.file_prefix:
         checker.setFilePrefix(args.file_prefix)
 
-    if not args.dumpfile:
+    dump_files, ctu_info_files = cppcheckdata.get_files(args)
+
+    if (not dump_files) and (not ctu_info_files):
         if not args.quiet:
             print("No input files.")
         sys.exit(0)
@@ -3601,10 +3601,7 @@ def main():
     if args.severity:
         checker.setSeverity(args.severity)
 
-    for item in args.dumpfile:
-        if item.endswith('.ctu-info'):
-            continue
-
+    for item in dump_files:
         checker.parseDump(item)
 
         if settings.verify:
@@ -3628,7 +3625,7 @@ def main():
             if exitCode != 0:
                 sys.exit(exitCode)
 
-    checker.analyse_ctu_info(args.dumpfile)
+    checker.analyse_ctu_info(ctu_info_files)
 
     if settings.verify:
         sys.exit(exitCode)

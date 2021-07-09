@@ -57,6 +57,8 @@
 static const char Version[] = CPPCHECK_VERSION_STRING;
 static const char ExtraVersion[] = "";
 
+static const char FILELIST[] = "cppcheck-addon-ctu-file-list";
+
 static TimerResults s_timerResults;
 
 // CWE ids used
@@ -260,7 +262,7 @@ static void createDumpFile(const Settings& settings,
 
 static std::string executeAddon(const AddonInfo &addonInfo,
                                 const std::string &defaultPythonExe,
-                                const std::vector<std::string> &files,
+                                const std::string &file,
                                 std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand)
 {
     const std::string redirect = "2>&1";
@@ -288,9 +290,9 @@ static std::string executeAddon(const AddonInfo &addonInfo,
             throw InternalError(nullptr, "Failed to auto detect python");
     }
 
-    std::string args = cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args;
-    for (const std::string& filename: files)
-        args += " " + cmdFileName(filename);
+    const std::string fileArg = (endsWith(file, FILELIST, sizeof(FILELIST)-1) ? " --file-list " : " ") + cmdFileName(file);
+    const std::string args = cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args + fileArg;
+
     std::string result;
     if (!executeCommand(pythonExe, split(args), redirect, &result))
         throw InternalError(nullptr, "Failed to execute addon (command: '" + pythonExe + " " + args + "')");
@@ -1304,6 +1306,16 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
     if (mSettings.addons.empty() || files.empty())
         return;
 
+    std::string fileList;
+
+    if (files.size() >= 2 || endsWith(files[0], ".ctu-info", 9))
+    {
+        fileList = Path::getPathFromFilename(files[0]) + FILELIST;
+        std::ofstream fout(fileList);
+        for (const std::string& f: files)
+            fout << f << std::endl;
+    }
+
     for (const std::string &addon : mSettings.addons) {
         struct AddonInfo addonInfo;
         const std::string &failedToGetAddonInfo = addonInfo.getAddonInfo(addon, mSettings.exename);
@@ -1316,7 +1328,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             continue;
 
         const std::string results =
-            executeAddon(addonInfo, mSettings.addonPython, files, mExecuteCommand);
+            executeAddon(addonInfo, mSettings.addonPython, fileList.empty() ? files[0] : fileList, mExecuteCommand);
         std::istringstream istr(results);
         std::string line;
 
