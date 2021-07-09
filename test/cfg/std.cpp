@@ -33,7 +33,7 @@
 char * overlappingWriteFunction_strncpy(char *buf)
 {
     // cppcheck-suppress overlappingWriteFunction
-    return strncpy(&buf[0], &buf[3], 2U);
+    return strncpy(&buf[0], &buf[3], 5U);
 }
 
 std::bitset<10> std_bitset_test_ignoredReturnValue()

@@ -3462,11 +3462,17 @@ void CheckOther::checkOverlappingWrite()
                 }
                 if (!args[nonOverlappingData->sizeArg-1]->hasKnownIntValue())
                     continue;
+                const MathLib::bigint sizeValue = args[nonOverlappingData->sizeArg-1]->getKnownIntValue();
                 const Token *buf1, *buf2;
                 MathLib::bigint offset1, offset2;
                 if (!getBufAndOffset(ptr1, &buf1, &offset1))
                     continue;
                 if (!getBufAndOffset(ptr2, &buf2, &offset2))
+                    continue;
+
+                if (offset1 < offset2 && offset1 + sizeValue <= offset2)
+                    continue;
+                if (offset2 < offset1 && offset2 + sizeValue <= offset1)
                     continue;
 
                 ErrorPath errorPath;
