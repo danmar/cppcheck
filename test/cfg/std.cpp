@@ -30,6 +30,12 @@
 #include <functional>
 #include <bitset>
 
+char * overlappingWriteFunction_strncpy(char *buf)
+{
+    // cppcheck-suppress overlappingWriteFunction
+    return strncpy(&buf[0], &buf[3], 2U);
+}
+
 std::bitset<10> std_bitset_test_ignoredReturnValue()
 {
     std::bitset<10> b1("1111010000");
