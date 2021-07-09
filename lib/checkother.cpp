@@ -3441,11 +3441,11 @@ void CheckOther::checkOverlappingWrite()
 
                 const Token *ptr1 = args[nonOverlappingData->ptr1Arg - 1];
                 if (ptr1->hasKnownIntValue() && ptr1->getKnownIntValue() == 0)
-                      continue;
+                    continue;
 
                 const Token *ptr2 = args[nonOverlappingData->ptr2Arg - 1];
                 if (ptr2->hasKnownIntValue() && ptr2->getKnownIntValue() == 0)
-                      continue;
+                    continue;
 
                 // TODO: nonOverlappingData->strlenArg
                 if (nonOverlappingData->sizeArg <= 0 || nonOverlappingData->sizeArg > args.size()) {
