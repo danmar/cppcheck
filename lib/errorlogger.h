@@ -24,6 +24,7 @@
 #include "config.h"
 #include "errortypes.h"
 #include "suppressions.h"
+#include "color.h"
 
 #include <fstream>
 #include <list>
@@ -221,15 +222,6 @@ public:
     Suppressions::ErrorMessage toSuppressionsErrorMessage() const;
 
 private:
-    /**
-     * Replace all occurrences of searchFor with replaceWith in the
-     * given source.
-     * @param source The string to modify
-     * @param searchFor What should be searched for
-     * @param replaceWith What will replace the found item
-     */
-    static void findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith);
-
     static std::string fixInvalidChars(const std::string& raw);
 
     /** Short message */
@@ -264,7 +256,7 @@ public:
      *
      * @param outmsg Message to show e.g. "Checking main.cpp..."
      */
-    virtual void reportOut(const std::string &outmsg) = 0;
+    virtual void reportOut(const std::string &outmsg, Color c = Color::Reset) = 0;
 
     /**
      * Information about found errors and warnings is directed

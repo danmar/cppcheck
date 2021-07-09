@@ -19,6 +19,7 @@
 //---------------------------------------------------------------------------
 #include "tokenlist.h"
 
+#include "astutils.h"
 #include "errorlogger.h"
 #include "library.h"
 #include "path.h"
@@ -1267,7 +1268,10 @@ static void compileAssignTernary(Token *&tok, AST_state& state)
     while (tok) {
         if (tok->isAssignmentOp()) {
             state.assign++;
+            const Token *tok1 = tok->next();
             compileBinOp(tok, state, compileAssignTernary);
+            if (Token::simpleMatch(tok1, "{") && tok == tok1->link() && tok->next())
+                tok = tok->next();
             if (state.assign > 0)
                 state.assign--;
         } else if (tok->str() == "?") {
@@ -1348,7 +1352,7 @@ static Token * createAstAtToken(Token *tok, bool cpp);
 // Compile inner expressions inside inner ({..}) and lambda bodies
 static void createAstAtTokenInner(Token * const tok1, const Token *endToken, bool cpp)
 {
-    for (Token *tok = tok1; tok && tok != endToken; tok = tok ? tok->next() : nullptr) {
+    for (Token* tok = tok1; precedes(tok, endToken); tok = tok ? tok->next() : nullptr) {
         if (tok->str() == "{" && !iscpp11init(tok)) {
             const Token * const endToken2 = tok->link();
             bool hasAst = false;
@@ -1658,7 +1662,7 @@ void TokenList::validateAst() const
         // Check for endless recursion
         const Token* parent = tok->astParent();
         if (parent) {
-            std::set < const Token* > astTokens; // list of anchestors
+            std::set < const Token* > astTokens; // list of ancestors
             astTokens.insert(tok);
             do {
                 if (safeAstTokens.find(parent) != safeAstTokens.end())
@@ -1857,6 +1861,16 @@ void TokenList::simplifyPlatformTypes()
 void TokenList::simplifyStdType()
 {
     for (Token *tok = front(); tok; tok = tok->next()) {
+
+        if (Token::Match(tok, "const|extern *|&|%name%") && (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
+            if (Token::Match(tok->next(), "%name% !!;"))
+                continue;
+
+            tok->insertToken("int");
+            tok->next()->isImplicitInt(true);
+            continue;
+        }
+
         if (Token::Match(tok, "char|short|int|long|unsigned|signed|double|float") || (mSettings->standards.c >= Standards::C99 && Token::Match(tok, "complex|_Complex"))) {
             bool isFloat= false;
             bool isSigned = false;
@@ -1894,6 +1908,7 @@ void TokenList::simplifyStdType()
                     tok->str("int");
                     tok->isSigned(isSigned);
                     tok->isUnsigned(isUnsigned);
+                    tok->isImplicitInt(true);
                 }
             } else {
                 typeSpec->isLong(typeSpec->isLong() || (isFloat && countLong == 1) || countLong > 1);

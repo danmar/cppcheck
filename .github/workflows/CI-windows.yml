@@ -90,7 +90,19 @@ jobs:
           windeployqt Build\gui || exit /b !errorlevel!
           del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
           del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
-          
+
+      - name: Configure MSBuild
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
+          set ARCH=${{ matrix.arch }}
+          if "${{ matrix.arch }}" == "x86" (
+            set ARCH=Win32
+          )
+          rm -rf build
+          mkdir build
+          cd build
+          cmake -DBUILD_TESTS=On ..
+
       - name: Build CLI debug configuration using MSBuild
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
@@ -98,10 +110,7 @@ jobs:
           if "${{ matrix.arch }}" == "x86" (
             set ARCH=Win32
           )
-          msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
-
-      - name: Run Debug test
-        run: .\bin\debug\testrunner.exe || exit /b !errorlevel!
+          cmake --build build --target check --config Debug
 
       - name: Build CLI release configuration using MSBuild
         run: |
@@ -110,16 +119,12 @@ jobs:
           if "${{ matrix.arch }}" == "x86" (
             set ARCH=Win32
           )
-          msbuild -m cppcheck.sln /p:Configuration=Release-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
-
-      - name: Run Release test
-        run: .\bin\testrunner.exe || exit /b !errorlevel!
+          cmake --build build --target check --config Release
 
       - name: Run test/cli
         run: |
           :: since FILESDIR is not set copy the binary to the root so the addons are found
-          copy .\bin\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
-          copy .\bin\cppcheck-core.dll .\cppcheck-core.dll || exit /b !errorlevel!
+          copy .\build\bin\Release\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
           cd test/cli || exit /b !errorlevel!
           python -m pytest --suppress-no-test-exit-code test-clang-import.py || exit /b !errorlevel!
           python -m pytest test-helloworld.py || exit /b !errorlevel!
@@ -127,3 +132,8 @@ jobs:
           python -m pytest test-more-projects.py || exit /b !errorlevel!
           python -m pytest test-proj2.py || exit /b !errorlevel!
           python -m pytest test-suppress-syntaxError.py || exit /b !errorlevel!
+
+      - name: Test addons
+        run: |
+          .\cppcheck.exe --addon=misra --inline-suppr --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
+

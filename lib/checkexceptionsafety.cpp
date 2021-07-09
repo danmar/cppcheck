@@ -362,7 +362,7 @@ void CheckExceptionSafety::rethrowNoCurrentException()
 
         // Rethrow can be used in 'exception dispatcher' idiom which is FP in such case
         // https://isocpp.org/wiki/faq/exceptions#throw-without-an-object
-        // We check the beggining of the function with idiom pattern
+        // We check the beginning of the function with idiom pattern
         if (Token::simpleMatch(function->functionScope->bodyStart->next(), "try { throw ; } catch ("))
             continue;
 

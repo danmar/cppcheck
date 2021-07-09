@@ -1093,7 +1093,7 @@ static bool isVoidCast(const Token *tok)
     return Token::simpleMatch(tok, "(") && tok->isCast() && tok->valueType() && tok->valueType()->type == ValueType::Type::VOID && tok->valueType()->pointer == 0;
 }
 
-const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect) const
+const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, const Library& library, bool pointer, Alloc alloc, int indirect)
 {
     const Token *valueExpr = vartok;   // non-dereferenced , no address of value as variable
     while (Token::Match(valueExpr->astParent(), ".|::") && astIsRhs(valueExpr))
@@ -1197,17 +1197,17 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
             parent = parent->astParent();
         if (Token::simpleMatch(parent, "{"))
             return valueExpr;
-        const int use = isFunctionParUsage(valueExpr, pointer, alloc, indirect);
+        const int use = isFunctionParUsage(valueExpr, library, pointer, alloc, indirect);
         return (use>0) ? valueExpr : nullptr;
     }
     if (derefValue && Token::Match(derefValue->astParent(), "[(,]") && (derefValue->astParent()->str() == "," || astIsRhs(derefValue))) {
-        const int use = isFunctionParUsage(derefValue, false, NO_ALLOC, indirect);
+        const int use = isFunctionParUsage(derefValue, library, false, NO_ALLOC, indirect);
         return (use>0) ? derefValue : nullptr;
     }
     if (valueExpr->astParent()->isUnaryOp("&")) {
         const Token *parent = valueExpr->astParent();
         if (Token::Match(parent->astParent(), "[(,]") && (parent->astParent()->str() == "," || astIsRhs(parent))) {
-            const int use = isFunctionParUsage(valueExpr, pointer, alloc, indirect);
+            const int use = isFunctionParUsage(valueExpr, library, pointer, alloc, indirect);
             return (use>0) ? valueExpr : nullptr;
         }
         return nullptr;
@@ -1253,18 +1253,18 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
 
     // Stream read/write
     // FIXME this code is a hack!!
-    if (mTokenizer->isCPP() && Token::Match(valueExpr->astParent(), "<<|>>")) {
-        if (isLikelyStreamRead(mTokenizer->isCPP(), vartok->previous()))
+    if (cpp && Token::Match(valueExpr->astParent(), "<<|>>")) {
+        if (isLikelyStreamRead(cpp, vartok->previous()))
             return nullptr;
 
         if (valueExpr->valueType() && valueExpr->valueType()->type == ValueType::Type::VOID)
             return nullptr;
     }
-    if (astIsRhs(derefValue) && isLikelyStreamRead(mTokenizer->isCPP(), derefValue->astParent()))
+    if (astIsRhs(derefValue) && isLikelyStreamRead(cpp, derefValue->astParent()))
         return nullptr;
 
     // Assignment with overloaded &
-    if (mTokenizer->isCPP() && Token::simpleMatch(valueExpr->astParent(), "&") && astIsRhs(valueExpr)) {
+    if (cpp && Token::simpleMatch(valueExpr->astParent(), "&") && astIsRhs(valueExpr)) {
         const Token *parent = valueExpr->astParent();
         while (Token::simpleMatch(parent, "&") && parent->isBinaryOp())
             parent = parent->astParent();
@@ -1280,13 +1280,18 @@ const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, 
     return derefValue ? derefValue : valueExpr;
 }
 
+const Token* CheckUninitVar::isVariableUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect) const
+{
+    return CheckUninitVar::isVariableUsage(mTokenizer->isCPP(), vartok, mSettings->library, pointer, alloc, indirect);
+}
+
 /***
  * Is function parameter "used" so a "usage of uninitialized variable" can
  * be written? If parameter is passed "by value" then it is "used". If it
  * is passed "by reference" then it is not necessarily "used".
  * @return  -1 => unknown   0 => not used   1 => used
  */
-int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect) const
+int CheckUninitVar::isFunctionParUsage(const Token *vartok, const Library& library, bool pointer, Alloc alloc, int indirect)
 {
     bool unknown = false;
     const Token *parent = getAstParentSkipPossibleCastAndAddressOf(vartok, &unknown);
@@ -1339,11 +1344,11 @@ int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc 
             // control-flow statement reading the variable "by value"
             return alloc == NO_ALLOC;
         } else {
-            const bool isnullbad = mSettings->library.isnullargbad(start->previous(), argumentNumber + 1);
+            const bool isnullbad = library.isnullargbad(start->previous(), argumentNumber + 1);
             if (indirect == 0 && pointer && !address && isnullbad && alloc == NO_ALLOC)
                 return 1;
             bool hasIndirect = false;
-            const bool isuninitbad = mSettings->library.isuninitargbad(start->previous(), argumentNumber + 1, indirect, &hasIndirect);
+            const bool isuninitbad = library.isuninitargbad(start->previous(), argumentNumber + 1, indirect, &hasIndirect);
             if (alloc != NO_ALLOC)
                 return (isnullbad || hasIndirect) && isuninitbad;
             return isuninitbad && (!address || isnullbad);
@@ -1352,6 +1357,11 @@ int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc 
 
     // unknown
     return -1;
+}
+
+int CheckUninitVar::isFunctionParUsage(const Token *vartok, bool pointer, Alloc alloc, int indirect) const
+{
+    return CheckUninitVar::isFunctionParUsage(vartok, mSettings->library, pointer, alloc, indirect);
 }
 
 bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::string &membervar) const

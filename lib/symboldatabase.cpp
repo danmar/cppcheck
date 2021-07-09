@@ -2677,6 +2677,21 @@ bool Function::returnsReference(const Function* function, bool unknown)
     return false;
 }
 
+bool Function::returnsVoid(const Function* function, bool unknown)
+{
+    if (!function)
+        return false;
+    if (function->type != Function::eFunction)
+        return false;
+    const Token* defEnd = function->returnDefEnd();
+    if (defEnd->strAt(-1) == "void")
+        return true;
+    // Check for unknown types, which could be a void type
+    if (isUnknownType(function->retDef, defEnd))
+        return unknown;
+    return false;
+}
+
 std::vector<const Token*> Function::findReturns(const Function* f)
 {
     std::vector<const Token*> result;

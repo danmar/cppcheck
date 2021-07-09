@@ -1,6 +1,7 @@
 #include "newsuppressiondialog.h"
 #include "ui_newsuppressiondialog.h"
 #include "cppcheck.h"
+#include "color.h"
 #include "errorlogger.h"
 #include "suppressions.h"
 
@@ -12,7 +13,7 @@ NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
 
     class QErrorLogger : public ErrorLogger {
     public:
-        void reportOut(const std::string &/*outmsg*/) override {}
+        void reportOut(const std::string &/*outmsg*/, Color) override {}
         void reportErr(const ErrorMessage &msg) override {
             errorIds << QString::fromStdString(msg.id);
         }

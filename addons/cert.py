@@ -379,13 +379,14 @@ def api01(data):
             token = token.next
 
 
-def get_args():
+def get_args_parser():
     parser = cppcheckdata.ArgumentParser()
     parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
-    return parser.parse_args()
+    return parser
 
 if __name__ == '__main__':
-    args = get_args()
+    parser = get_args_parser()
+    args = parser.parse_args()
 
     if args.verify:
         VERIFY = True

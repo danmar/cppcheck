@@ -17,6 +17,27 @@ EXIT_CODE = 0
 
 current_dumpfile_suppressions = []
 
+def _load_location(location, element):
+    """Load location from element/dict"""
+    location.file = element.get('file')
+    line = element.get('line')
+    if line is None:
+        line = element.get('linenr')
+    if line is None:
+        line = '0'
+    location.linenr = int(line)
+    location.column = int(element.get('column', '0'))
+
+
+class Location:
+    """Utility location class"""
+    file = None
+    linenr = None
+    column = None
+    def __init__(self, element):
+        _load_location(self, element)
+
+
 class Directive:
     """
     Directive class. Contains information about each preprocessor directive in the source code.
@@ -38,12 +59,11 @@ class Directive:
     str = None
     file = None
     linenr = None
-    column = 0
+    column = None
 
     def __init__(self, element):
         self.str = element.get('str')
-        self.file = element.get('file')
-        self.linenr = int(element.get('linenr'))
+        _load_location(self, element)
 
     def __repr__(self):
         attrs = ["str", "file", "linenr"]
@@ -51,6 +71,28 @@ class Directive:
             "Directive",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
         )
+
+class MacroUsage:
+    """
+    Tracks preprocessor macro usage
+    """
+
+    name = None  # Macro name
+    file = None
+    linenr = None
+    column = None
+
+    def __init__(self, element):
+        self.name = element.get('name')
+        _load_location(self, element)
+
+    def __repr__(self):
+        attrs = ["name", "file", "linenr", "column"]
+        return "{}({})".format(
+            "Directive",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
 
 
 class ValueType:
@@ -141,6 +183,7 @@ class Token:
         isExpandedMacro    Is this token a expanded macro token
         isSplittedVarDeclComma  Is this a comma changed to semicolon in a splitted variable declaration ('int a,b;' => 'int a; int b;')
         isSplittedVarDeclEq     Is this a '=' changed to semicolon in a splitted variable declaration ('int a=5;' => 'int a; a=5;')
+        isImplicitInt      Is this token an implicit "int"?
         varId              varId for token, each variable has a unique non-zero id
         variable           Variable information for this token. See the Variable class.
         function           If this token points at a function call, this attribute has the Function
@@ -192,6 +235,7 @@ class Token:
     isExpandedMacro = False
     isSplittedVarDeclComma = False
     isSplittedVarDeclEq = False
+    isImplicitInt = False
     varId = None
     variableId = None
     variable = None
@@ -257,6 +301,8 @@ class Token:
             self.isSplittedVarDeclComma = True
         if element.get('isSplittedVarDeclEq'):
             self.isSplittedVarDeclEq = True
+        if element.get('isImplicitInt'):
+            self.isImplicitInt = True
         self.linkId = element.get('link')
         self.link = None
         if element.get('varId'):
@@ -279,18 +325,17 @@ class Token:
         self.astOperand1 = None
         self.astOperand2Id = element.get('astOperand2')
         self.astOperand2 = None
-        self.file = element.get('file')
-        self.linenr = int(element.get('linenr'))
-        self.column = int(element.get('column'))
+        _load_location(self, element)
 
     def __repr__(self):
         attrs = ["Id", "str", "scopeId", "isName", "isUnsigned", "isSigned",
                 "isNumber", "isInt", "isFloat", "isString", "strlen",
                 "isChar", "isOp", "isArithmeticalOp", "isComparisonOp",
                 "isLogicalOp", "isExpandedMacro", "isSplittedVarDeclComma",
-                "isSplittedVarDeclEq","linkId", "varId", "variableId",
-                "functionId", "valuesId", "valueType", "typeScopeId",
-                "astParentId", "astOperand1Id", "file", "linenr", "column"]
+                "isSplittedVarDeclEq", "isImplicitInt", "linkId", "varId",
+                "variableId", "functionId", "valuesId", "valueType",
+                "typeScopeId", "astParentId", "astOperand1Id", "file",
+                "linenr", "column"]
         return "{}({})".format(
             "Token",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -341,6 +386,11 @@ class Token:
                 return value.intvalue
         return None
 
+    def isUnaryOp(self, op):
+        return self.astOperand1 and (self.astOperand2 is None) and self.str == op
+
+    def isBinaryOp(self):
+        return self.astOperand1 and self.astOperand2
 
 class Scope:
     """
@@ -404,7 +454,9 @@ class Scope:
         self.nestedIn = IdMap[self.nestedInId]
         self.function = IdMap[self.functionId]
         for v in self.varlistId:
-            self.varlist.append(IdMap[v])
+            value = IdMap.get(v)
+            if value:
+                self.varlist.append(value)
 
 
 class Function:
@@ -557,6 +609,21 @@ class Variable:
         self.scope = IdMap[self.scopeId]
 
 
+class TypedefInfo:
+    """
+    TypedefInfo class -- information about typedefs
+    """
+    name = None
+    used = None
+    file = None
+    linenr = None
+    column = None
+
+    def __init__(self, element):
+        self.name = element.get('name')
+        _load_location(self, element)
+        self.used = (element.get('used') == '1')
+
 class Value:
     """
     Value class
@@ -691,6 +758,7 @@ class Configuration:
     Attributes:
         name          Name of the configuration, "" for default
         directives    List of Directive items
+        macro_usage   List of used macros
         tokenlist     List of Token items
         scopes        List of Scope items
         functions     List of Function items
@@ -701,20 +769,24 @@ class Configuration:
 
     name = ''
     directives = []
+    macro_usage = []
     tokenlist = []
     scopes = []
     functions = []
     variables = []
+    typedefInfo = []
     valueflow = []
     standards = None
 
     def __init__(self, name):
         self.name = name
         self.directives = []
+        self.macro_usage = []
         self.tokenlist = []
         self.scopes = []
         self.functions = []
         self.variables = []
+        self.typedefInfo = []
         self.valueflow = []
         self.standards = Standards()
 
@@ -937,6 +1009,9 @@ class CppcheckData:
         # Iterating <varlist> in a <scope>.
         iter_scope_varlist = False
 
+        # Iterating <typedef-info>
+        iter_typedef_info = False
+
         # Use iterable objects to traverse XML tree for dump files incrementally.
         # Iterative approach is required to avoid large memory consumption.
         # Calling .clear() is necessary to let the element be garbage collected.
@@ -965,6 +1040,10 @@ class CppcheckData:
             # Parse directives list
             elif node.tag == 'directive' and event == 'start':
                 cfg.directives.append(Directive(node))
+
+            # Parse macro usage
+            elif node.tag == 'macro' and event == 'start':
+                cfg.macro_usage.append(MacroUsage(node))
 
             # Parse tokens
             elif node.tag == 'tokenlist' and event == 'start':
@@ -1010,6 +1089,12 @@ class CppcheckData:
                         cfg.variables.append(var)
                     else:
                         cfg_arguments.append(var)
+
+            # Parse typedef info
+            elif node.tag == 'typedef-info':
+                iter_typedef_info = (event == 'start')
+            elif iter_typedef_info and node.tag == 'info' and event == 'start':
+                cfg.typedefInfo.append(TypedefInfo(node))
 
             # Parse valueflows (list of values)
             elif node.tag == 'valueflow' and event == 'start':
@@ -1121,10 +1206,28 @@ def ArgumentParser():
     parser.add_argument("--cli",
                         help="Addon is executed from Cppcheck",
                         action="store_true")
+    parser.add_argument("--file-list", metavar='<text>',
+                        default=None,
+                        help="file list in a text file")
     parser.add_argument("-q", "--quiet",
                         help='do not print "Checking ..." lines',
                         action="store_true")
     return parser
+
+
+def get_files(args):
+    """Return dump_files, ctu_info_files"""
+    dump_files = args.dumpfile
+    ctu_info_files = []
+    if args.file_list:
+        with open(args.file_list, 'rt') as f:
+            for line in f.readlines():
+                line = line.rstrip()
+                if line.endswith('.ctu-info'):
+                    ctu_info_files.append(line)
+                else:
+                    dump_files.append(line)
+    return dump_files, ctu_info_files
 
 
 def simpleMatch(token, pattern):
@@ -1161,3 +1264,10 @@ def reportError(location, severity, message, addon, errorId, extra=''):
         sys.stderr.write('%s (%s) %s [%s-%s]\n' % (loc, severity, message, addon, errorId))
         global EXIT_CODE
         EXIT_CODE = 1
+
+def reportSummary(dumpfile, summary_type, summary_data):
+    # dumpfile ends with ".dump"
+    ctu_info_file = dumpfile[:-4] + "ctu-info"
+    with open(ctu_info_file, 'at') as f:
+        msg = {'summary': summary_type, 'data': summary_data}
+        f.write(json.dumps(msg) + '\n')

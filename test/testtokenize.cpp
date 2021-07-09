@@ -228,15 +228,17 @@ private:
         TEST_CASE(volatile_variables);
 
         // unsigned i; => unsigned int i;
-        TEST_CASE(unsigned1);
-        TEST_CASE(unsigned2);
-        TEST_CASE(unsigned3);   // template arguments
+        TEST_CASE(implicitIntConst);
+        TEST_CASE(implicitIntExtern);
+        TEST_CASE(implicitIntSigned1);
+        TEST_CASE(implicitIntUnsigned1);
+        TEST_CASE(implicitIntUnsigned2);
+        TEST_CASE(implicitIntUnsigned3);   // template arguments
 
         TEST_CASE(simplifyStdType); // #4947, #4950, #4951
 
         TEST_CASE(createLinks);
         TEST_CASE(createLinks2);
-        TEST_CASE(signed1);
 
         TEST_CASE(simplifyString);
         TEST_CASE(simplifyConst);
@@ -2535,10 +2537,22 @@ private:
         }
     }
 
+    void implicitIntConst() {
+        ASSERT_EQUALS("const int x ;", tokenizeAndStringify("const x;"));
+        ASSERT_EQUALS("const int * x ;", tokenizeAndStringify("const *x;"));
+        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();"));
+    }
+
+    void implicitIntExtern() {
+        ASSERT_EQUALS("extern int x ;", tokenizeAndStringify("extern x;"));
+        ASSERT_EQUALS("extern int * x ;", tokenizeAndStringify("extern *x;"));
+        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();"));
+    }
+
     /**
      * tokenize "signed i" => "signed int i"
      */
-    void signed1() {
+    void implicitIntSigned1() {
         {
             const char code1[] = "void foo ( signed int , float ) ;";
             ASSERT_EQUALS(code1, tokenizeAndStringify(code1));
@@ -2572,7 +2586,7 @@ private:
      * tokenize "unsigned i" => "unsigned int i"
      * tokenize "unsigned" => "unsigned int"
      */
-    void unsigned1() {
+    void implicitIntUnsigned1() {
         // No changes..
         {
             const char code[] = "void foo ( unsigned int , float ) ;";
@@ -2607,14 +2621,14 @@ private:
         }
     }
 
-    void unsigned2() {
+    void implicitIntUnsigned2() {
         const char code[] = "i = (unsigned)j;";
         const char expected[] = "i = ( unsigned int ) j ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
     // simplify "unsigned" when using templates..
-    void unsigned3() {
+    void implicitIntUnsigned3() {
         {
             const char code[] = "; foo<unsigned>();";
             const char expected[] = "; foo < unsigned int > ( ) ;";
@@ -6047,6 +6061,12 @@ private:
         ASSERT_EQUALS("decltypex({", testAst("decltype(x){};"));
         ASSERT_EQUALS("decltypexy+(yx+(", testAst("decltype(x+y)(y+x);"));
         ASSERT_EQUALS("decltypexy+(yx+{", testAst("decltype(x+y){y+x};"));
+
+        // #10334: Do not hang!
+        tokenizeAndStringify("void foo(const std::vector<std::string>& locations = {\"\"}) {\n"
+                             "    for (int i = 0; i <= 123; ++i)\n"
+                             "        x->emplace_back(y);\n"
+                             "}");
     }
 
     void astbrackets() { // []
@@ -6600,6 +6620,19 @@ private:
                             "}\n"));
 
         ASSERT_NO_THROW(tokenizeAndStringify("a<b?0:1>()==3;"));
+
+        // #10336
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  template <class b> a(b);\n"
+                                             "};\n"
+                                             "struct c;\n"
+                                             "void fn1(int, a);\n"
+                                             "void f() { fn1(0, {a{0}}); }\n"
+                                             "template <class> std::vector<c> g() {\n"
+                                             "  int d;\n"
+                                             "  for (size_t e = 0; e < d; e++)\n"
+                                             "    ;\n"
+                                             "}\n"));
     }
 
     void checkNamespaces() {

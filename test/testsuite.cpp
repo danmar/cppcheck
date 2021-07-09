@@ -18,6 +18,7 @@
 
 #include "testsuite.h"
 
+#include "color.h"
 #include "options.h"
 #include "redirect.h"
 
@@ -74,6 +75,7 @@ std::set<std::string> TestFixture::missingLibs;
 
 TestFixture::TestFixture(const char * const _name)
     :mVerbose(false),
+     exename(),
      quiet_tests(false),
      classname(_name)
 {
@@ -324,6 +326,7 @@ void TestFixture::run(const std::string &str)
 void TestFixture::processOptions(const options& args)
 {
     quiet_tests = args.quiet();
+    exename = args.exe();
 }
 
 std::size_t TestFixture::runTests(const options& args)
@@ -367,7 +370,7 @@ std::size_t TestFixture::runTests(const options& args)
     return fails_counter;
 }
 
-void TestFixture::reportOut(const std::string & outmsg)
+void TestFixture::reportOut(const std::string & outmsg, Color)
 {
     output << outmsg << std::endl;
 }
