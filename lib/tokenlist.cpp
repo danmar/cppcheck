@@ -19,6 +19,7 @@
 //---------------------------------------------------------------------------
 #include "tokenlist.h"
 
+#include "astutils.h"
 #include "errorlogger.h"
 #include "library.h"
 #include "path.h"
@@ -1351,7 +1352,7 @@ static Token * createAstAtToken(Token *tok, bool cpp);
 // Compile inner expressions inside inner ({..}) and lambda bodies
 static void createAstAtTokenInner(Token * const tok1, const Token *endToken, bool cpp)
 {
-    for (Token *tok = tok1; tok && tok != endToken; tok = tok ? tok->next() : nullptr) {
+    for (Token* tok = tok1; precedes(tok, endToken); tok = tok ? tok->next() : nullptr) {
         if (tok->str() == "{" && !iscpp11init(tok)) {
             const Token * const endToken2 = tok->link();
             bool hasAst = false;
