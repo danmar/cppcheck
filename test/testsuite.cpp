@@ -124,8 +124,10 @@ static std::string writestr(const std::string &str, bool gccStyle = false)
             ostr << "\\t";
         else if (*i == '\"')
             ostr << "\\\"";
-        else
+        else if (std::isprint(static_cast<unsigned char>(*i)))
             ostr << *i;
+        else
+            ostr << "\\x" << std::hex << short{*i};
     }
     if (!str.empty() && !gccStyle)
         ostr << std::endl;
