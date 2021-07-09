@@ -1411,6 +1411,33 @@ class MisraChecker:
         cfg = data[1]
         self._save_ctu_summary_tagnames(dumpfile, cfg)
 
+    def misra_5_8(self, data):
+        dumpfile = data[0]
+        cfg = data[1]
+        global_identifiers = []
+        local_identifiers = []
+
+        def identifier(nameToken):
+            return {'name':nameToken.str, 'file':nameToken.file, 'line':nameToken.linenr, 'column':nameToken.column}
+
+        for var in cfg.variables:
+            if var.nameToken is None:
+                continue
+            if var.access == 'Global' and not var.isStatic:
+                global_identifiers.append(identifier(var.nameToken))
+            else:
+                local_identifiers.append(identifier(var.nameToken))
+
+        for func in cfg.functions:
+            if func.tokenDef is None:
+                continue
+            if func.isStatic:
+                local_identifiers.append(identifier(func.tokenDef))
+            else:
+                global_identifiers.append(identifier(func.tokenDef))
+
+        cppcheckdata.reportSummary(dumpfile, 'MisraGlobalIdentifiers', global_identifiers)
+        cppcheckdata.reportSummary(dumpfile, 'MisraLocalIdentifiers', local_identifiers)
 
     def misra_6_1(self, data):
         # Bitfield type must be bool or explicitly signed/unsigned int
@@ -3343,6 +3370,7 @@ class MisraChecker:
             self.executeCheck(505, self.misra_5_5, cfg)
             self.executeCheck(506, self.misra_5_6, (dumpfile, cfg.typedefInfo))
             self.executeCheck(507, self.misra_5_7, (dumpfile, cfg))
+            self.executeCheck(508, self.misra_5_8, (dumpfile, cfg))
             self.executeCheck(601, self.misra_6_1, cfg)
             self.executeCheck(602, self.misra_6_2, cfg)
             if cfgNumber == 0:
@@ -3441,6 +3469,8 @@ class MisraChecker:
         all_typedef_info = []
         all_tagname_info = []
         all_macro_info = []
+        all_global_identifiers = {}
+        all_local_identifiers = {}
 
         from cppcheckdata import Location
 
@@ -3497,6 +3527,14 @@ class MisraChecker:
                         if not found:
                             all_macro_info.append(new_macro)
 
+                if summary_type == 'MisraGlobalIdentifiers':
+                    for s in summary_data:
+                        all_global_identifiers[s['name']] = s
+
+                if summary_type == 'MisraLocalIdentifiers':
+                    for s in summary_data:
+                        all_local_identifiers[s['name']] = s
+
         for ti in all_typedef_info:
             if not ti['used']:
                 self.reportError(Location(ti), 2, 3)
@@ -3508,6 +3546,13 @@ class MisraChecker:
         for m in all_macro_info:
             if not m['used']:
                 self.reportError(Location(m), 2, 5)
+
+        for local_identifier in all_local_identifiers.values():
+            global_identifier = all_global_identifiers.get(local_identifier['name'])
+            if global_identifier:
+                self.reportError(Location(local_identifier), 5, 8)
+                self.reportError(Location(global_identifier), 5, 8)
+
 
 RULE_TEXTS_HELP = '''Path to text file of MISRA rules
 
