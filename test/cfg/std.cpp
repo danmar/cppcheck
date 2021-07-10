@@ -30,6 +30,17 @@
 #include <functional>
 #include <bitset>
 
+wchar_t * overlappingWriteFunction_wcscpy(wchar_t *src, wchar_t *dest)
+{
+    // No warning shall be shown:
+    (void)wcscpy(dest, src);
+    const wchar_t * destBuf = dest;
+    // TODO-cppcheck-suppress overlappingWriteFunction  #10355
+    (void)wcscpy(dest, destBuf);
+    // cppcheck-suppress overlappingWriteFunction
+    return wcscpy(src, src);
+}
+
 wchar_t * overlappingWriteFunction_wcsncpy(wchar_t *buf, const std::size_t count)
 {
     // No warning shall be shown:
