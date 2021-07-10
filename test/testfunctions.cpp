@@ -1386,6 +1386,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("int foo(int x) {\n"
+              "  if (x) goto out;\n"
+              "  return 1;\n"
+              "out:\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
         // switch
         check("int f() {\n"
               "    switch (x) {\n"

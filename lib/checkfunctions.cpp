@@ -314,6 +314,8 @@ static const Token *checkMissingReturnScope(const Token *tok)
         }
         if (tok->isKeyword() && Token::Match(tok, "return|throw"))
             return nullptr;
+        if (Token::Match(tok, "[;{}] %name% :"))
+            return tok;
         if (Token::Match(tok, "; !!}") && !lastStatement)
             lastStatement = tok->next();
     }
