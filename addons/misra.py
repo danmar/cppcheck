@@ -1103,6 +1103,7 @@ class MisraChecker:
 
         self._ctu_summary_typedefs = False
         self._ctu_summary_tagnames = False
+        self._ctu_summary_identifiers = False
 
     def __repr__(self):
         attrs = ["settings", "verify_expected", "verify_actual", "violations",
@@ -1154,6 +1155,47 @@ class MisraChecker:
             summary.append({'name': scope.className, 'used':used, 'file': scope.bodyStart.file, 'line': scope.bodyStart.linenr, 'column': scope.bodyStart.column})
         if len(summary) > 0:
             cppcheckdata.reportSummary(dumpfile, 'MisraTagName', summary)
+
+    def _save_ctu_summary_identifiers(self, dumpfile, cfg):
+        if self._ctu_summary_identifiers:
+            return
+        self._ctu_summary_identifiers = True
+
+        external_identifiers = []
+        internal_identifiers = []
+        local_identifiers = []
+
+        def identifier(nameToken):
+            return {'name':nameToken.str, 'file':nameToken.file, 'line':nameToken.linenr, 'column':nameToken.column}
+
+        names = []
+
+        for var in cfg.variables:
+            if var.nameToken is None:
+                continue
+            if var.access != 'Global':
+                if var.nameToken.str in names:
+                    continue
+                names.append(var.nameToken.str)
+                local_identifiers.append(identifier(var.nameToken))
+            elif var.isStatic:
+                names.append(var.nameToken.str)
+                internal_identifiers.append(identifier(var.nameToken))
+            else:
+                names.append(var.nameToken.str)
+                external_identifiers.append(identifier(var.nameToken))
+
+        for func in cfg.functions:
+            if func.tokenDef is None:
+                continue
+            if func.isStatic:
+                internal_identifiers.append(identifier(func.tokenDef))
+            else:
+                external_identifiers.append(identifier(func.tokenDef))
+
+        cppcheckdata.reportSummary(dumpfile, 'MisraExternalIdentifiers', external_identifiers)
+        cppcheckdata.reportSummary(dumpfile, 'MisraInternalIdentifiers', internal_identifiers)
+        cppcheckdata.reportSummary(dumpfile, 'MisraLocalIdentifiers', local_identifiers)
 
     def misra_2_3(self, data):
         dumpfile = data[0]
@@ -1414,30 +1456,12 @@ class MisraChecker:
     def misra_5_8(self, data):
         dumpfile = data[0]
         cfg = data[1]
-        global_identifiers = []
-        local_identifiers = []
+        self._save_ctu_summary_identifiers(dumpfile, cfg)
 
-        def identifier(nameToken):
-            return {'name':nameToken.str, 'file':nameToken.file, 'line':nameToken.linenr, 'column':nameToken.column}
-
-        for var in cfg.variables:
-            if var.nameToken is None:
-                continue
-            if var.access == 'Global' and not var.isStatic:
-                global_identifiers.append(identifier(var.nameToken))
-            else:
-                local_identifiers.append(identifier(var.nameToken))
-
-        for func in cfg.functions:
-            if func.tokenDef is None:
-                continue
-            if func.isStatic:
-                local_identifiers.append(identifier(func.tokenDef))
-            else:
-                global_identifiers.append(identifier(func.tokenDef))
-
-        cppcheckdata.reportSummary(dumpfile, 'MisraGlobalIdentifiers', global_identifiers)
-        cppcheckdata.reportSummary(dumpfile, 'MisraLocalIdentifiers', local_identifiers)
+    def misra_5_9(self, data):
+        dumpfile = data[0]
+        cfg = data[1]
+        self._save_ctu_summary_identifiers(dumpfile, cfg)
 
     def misra_6_1(self, data):
         # Bitfield type must be bool or explicitly signed/unsigned int
@@ -3147,6 +3171,9 @@ class MisraChecker:
     def reportError(self, location, num1, num2):
         ruleNum = num1 * 100 + num2
 
+        if self.isRuleGloballySuppressed(ruleNum):
+            return
+
         if self.settings.verify:
             self.verify_actual.append('%s:%d %d.%d' % (location.file, location.linenr, num1, num2))
         elif self.isRuleSuppressed(location.file, location.linenr, ruleNum):
@@ -3371,6 +3398,7 @@ class MisraChecker:
             self.executeCheck(506, self.misra_5_6, (dumpfile, cfg.typedefInfo))
             self.executeCheck(507, self.misra_5_7, (dumpfile, cfg))
             self.executeCheck(508, self.misra_5_8, (dumpfile, cfg))
+            self.executeCheck(509, self.misra_5_8, (dumpfile, cfg))
             self.executeCheck(601, self.misra_6_1, cfg)
             self.executeCheck(602, self.misra_6_2, cfg)
             if cfgNumber == 0:
@@ -3469,7 +3497,8 @@ class MisraChecker:
         all_typedef_info = []
         all_tagname_info = []
         all_macro_info = []
-        all_global_identifiers = {}
+        all_external_identifiers = {}
+        all_internal_identifiers = {}
         all_local_identifiers = {}
 
         from cppcheckdata import Location
@@ -3529,7 +3558,14 @@ class MisraChecker:
 
                 if summary_type == 'MisraGlobalIdentifiers':
                     for s in summary_data:
-                        all_global_identifiers[s['name']] = s
+                        all_external_identifiers[s['name']] = s
+
+                if summary_type == 'MisraInternalIdentifiers':
+                    for s in summary_data:
+                        if s['name'] in all_internal_identifiers:
+                            self.reportError(Location(s), 5, 9)
+                            self.reportError(Location(all_internal_identifiers[s['name']]), 5, 9)
+                        all_internal_identifiers[s['name']] = s
 
                 if summary_type == 'MisraLocalIdentifiers':
                     for s in summary_data:
@@ -3547,11 +3583,16 @@ class MisraChecker:
             if not m['used']:
                 self.reportError(Location(m), 2, 5)
 
-        for local_identifier in all_local_identifiers.values():
-            global_identifier = all_global_identifiers.get(local_identifier['name'])
-            if global_identifier:
+        for name, external_identifier in all_external_identifiers.items():
+            internal_identifier = all_internal_identifiers.get(name)
+            if internal_identifier:
+                self.reportError(Location(internal_identifier), 5, 8)
+                self.reportError(Location(external_identifier), 5, 8)
+
+            local_identifier = all_local_identifiers.get(name)
+            if local_identifier:
                 self.reportError(Location(local_identifier), 5, 8)
-                self.reportError(Location(global_identifier), 5, 8)
+                self.reportError(Location(external_identifier), 5, 8)
 
 
 RULE_TEXTS_HELP = '''Path to text file of MISRA rules
