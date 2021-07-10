@@ -385,12 +385,6 @@ public:
                                         mTokType == eBoolean || mTokType == eLiteral || mTokType == eEnumerator);
         setFlag(fIsLiteral, memoizedIsLiteral);
     }
-    void isKeyword(const bool kwd) {
-        if (kwd)
-            tokType(eKeyword);
-        else if (mTokType == eKeyword)
-            tokType(eName);
-    }
     bool isKeyword() const {
         return mTokType == eKeyword;
     }
