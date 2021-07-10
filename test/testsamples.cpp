@@ -101,6 +101,11 @@ private:
             setSettings(set);
         }
 
+#ifndef _WIN32
+        virtual void reportOut(const std::string &outmsg, Color = Color::Reset) override {
+            std::cout << outmsg << std::endl;
+        }
+#endif
     };
 
     void runConsoleCodePageTranslationOnWindows() const {
