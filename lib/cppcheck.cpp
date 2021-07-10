@@ -1308,8 +1308,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
 
     std::string fileList;
 
-    if (files.size() >= 2 || endsWith(files[0], ".ctu-info", 9))
-    {
+    if (files.size() >= 2 || endsWith(files[0], ".ctu-info", 9)) {
         fileList = Path::getPathFromFilename(files[0]) + FILELIST;
         std::ofstream fout(fileList);
         for (const std::string& f: files)

@@ -248,7 +248,7 @@ void CheckFunctions::ignoredReturnErrorCode(const Token* tok, const std::string&
 //---------------------------------------------------------------------------
 // Check for ignored return values.
 //---------------------------------------------------------------------------
-static const Token *checkMissingReturnScope(const Token *tok);
+static const Token *checkMissingReturnScope(const Token *tok, const Library &library);
 
 void CheckFunctions::checkMissingReturn()
 {
@@ -263,29 +263,36 @@ void CheckFunctions::checkMissingReturn()
             continue;
         if (Function::returnsVoid(function, true))
             continue;
-        const Token *errorToken = checkMissingReturnScope(scope->bodyEnd);
+        const Token *errorToken = checkMissingReturnScope(scope->bodyEnd, mSettings->library);
         if (errorToken)
             missingReturnError(errorToken);
     }
 }
 
-static const Token *checkMissingReturnScope(const Token *tok)
+static const Token *checkMissingReturnScope(const Token *tok, const Library &library)
 {
-    tok = tok->previous();
-    while (tok) {
+    const Token *lastStatement = nullptr;
+    while ((tok = tok->previous()) != nullptr) {
         if (tok->str() == "{")
-            return tok->next();
+            return lastStatement ? lastStatement : tok->next();
         if (tok->str() == "}") {
             for (const Token *prev = tok->link()->previous(); prev && prev->scope() == tok->scope() && !Token::Match(prev, "[;{}]"); prev = prev->previous()) {
                 if (prev->isKeyword() && Token::Match(prev, "return|throw"))
                     return nullptr;
             }
             if (tok->scope()->type == Scope::ScopeType::eSwitch) {
-                // find break/default
+                // find reachable break / !default
                 bool hasDefault = false;
+                bool reachable = false;
                 for (const Token *switchToken = tok->link(); switchToken != tok; switchToken = switchToken->next()) {
-                    if (Token::simpleMatch(switchToken, "break ;"))
+                    if (reachable && Token::simpleMatch(switchToken, "break ;"))
                         return switchToken;
+                    if (switchToken->isKeyword() && Token::Match(switchToken, "return|throw"))
+                        reachable = false;
+                    if (Token::Match(switchToken, "%name% (") && library.isnoreturn(switchToken))
+                        reachable = false;
+                    if (Token::Match(switchToken, "case|default"))
+                        reachable = true;
                     if (Token::simpleMatch(switchToken, "default :"))
                         hasDefault = true;
                     else if (switchToken->str() == "{" && switchToken->scope()->isLoopScope())
@@ -296,12 +303,12 @@ static const Token *checkMissingReturnScope(const Token *tok)
             } else if (tok->scope()->type == Scope::ScopeType::eIf) {
                 return tok;
             } else if (tok->scope()->type == Scope::ScopeType::eElse) {
-                const Token *errorToken = checkMissingReturnScope(tok);
+                const Token *errorToken = checkMissingReturnScope(tok, library);
                 if (errorToken)
                     return errorToken;
                 tok = tok->link();
                 if (Token::simpleMatch(tok->tokAt(-2), "} else {"))
-                    return checkMissingReturnScope(tok->tokAt(-2));
+                    return checkMissingReturnScope(tok->tokAt(-2), library);
                 return tok;
             }
             // FIXME
@@ -309,9 +316,12 @@ static const Token *checkMissingReturnScope(const Token *tok)
         }
         if (tok->isKeyword() && Token::Match(tok, "return|throw"))
             return nullptr;
-        if (Token::Match(tok, "; !!}"))
-            return tok->next();
-        tok = tok->previous();
+        if (Token::Match(tok, "%name% (") && library.isnoreturn(tok))
+            return nullptr;
+        if (Token::Match(tok, "[;{}] %name% :"))
+            return tok;
+        if (Token::Match(tok, "; !!}") && !lastStatement)
+            lastStatement = tok->next();
     }
     return nullptr;
 }

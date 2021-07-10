@@ -1379,6 +1379,20 @@ private:
         check("auto foo4() -> void {}");
         ASSERT_EQUALS("", errout.str());
 
+        // unreachable code..
+        check("int foo(int x) {\n"
+              "  return 1;\n"
+              "  (void)x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo(int x) {\n"
+              "  if (x) goto out;\n"
+              "  return 1;\n"
+              "out:\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
         // switch
         check("int f() {\n"
               "    switch (x) {\n"
@@ -1387,6 +1401,14 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+        check("int f() {\n"
+              "    switch (x) {\n"
+              "        case 1: return 2; break;\n"
+              "        default: return 1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         // if/else
         check("int f(int x) {\n"
@@ -1420,6 +1442,11 @@ private:
               "    else\n"
               "        return {1, 2};\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // noreturn function
+        check("int f(int x) { exit(0); }");
+        ASSERT_EQUALS("", errout.str());
     }
     // NRVO check
     void returnLocalStdMove1() {

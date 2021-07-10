@@ -30,6 +30,24 @@
 #include <functional>
 #include <bitset>
 
+wchar_t * overlappingWriteFunction_wcsncpy(wchar_t *buf, const std::size_t count)
+{
+    // No warning shall be shown:
+    (void)wcsncpy(&buf[0], &buf[3], count); // size is not known
+    (void)wcsncpy(&buf[0], &buf[3], 3U);    // no-overlap
+    // cppcheck-suppress overlappingWriteFunction
+    return wcsncpy(&buf[0], &buf[3], 4U);
+}
+
+char * overlappingWriteFunction_strncpy(char *buf, const std::size_t count)
+{
+    // No warning shall be shown:
+    (void)strncpy(&buf[0], &buf[3], count); // size is not known
+    (void)strncpy(&buf[0], &buf[3], 3U);    // no-overlap
+    // cppcheck-suppress overlappingWriteFunction
+    return strncpy(&buf[0], &buf[3], 4U);
+}
+
 std::bitset<10> std_bitset_test_ignoredReturnValue()
 {
     std::bitset<10> b1("1111010000");

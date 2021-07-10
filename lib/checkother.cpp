@@ -3438,15 +3438,41 @@ void CheckOther::checkOverlappingWrite()
                     continue;
                 if (nonOverlappingData->ptr2Arg <= 0 || nonOverlappingData->ptr2Arg > args.size())
                     continue;
-                if (nonOverlappingData->sizeArg <= 0 || nonOverlappingData->sizeArg > args.size())
+
+                const Token *ptr1 = args[nonOverlappingData->ptr1Arg - 1];
+                if (ptr1->hasKnownIntValue() && ptr1->getKnownIntValue() == 0)
                     continue;
+
+                const Token *ptr2 = args[nonOverlappingData->ptr2Arg - 1];
+                if (ptr2->hasKnownIntValue() && ptr2->getKnownIntValue() == 0)
+                    continue;
+
+                // TODO: nonOverlappingData->strlenArg
+                if (nonOverlappingData->sizeArg <= 0 || nonOverlappingData->sizeArg > args.size()) {
+                    if (nonOverlappingData->sizeArg == -1) {
+                        ErrorPath errorPath;
+                        const bool macro = true;
+                        const bool pure = true;
+                        const bool follow = true;
+                        if (!isSameExpression(mTokenizer->isCPP(), macro, ptr1, ptr2, mSettings->library, pure, follow, &errorPath))
+                            continue;
+                        overlappingWriteFunction(tok);
+                    }
+                    continue;
+                }
                 if (!args[nonOverlappingData->sizeArg-1]->hasKnownIntValue())
                     continue;
+                const MathLib::bigint sizeValue = args[nonOverlappingData->sizeArg-1]->getKnownIntValue();
                 const Token *buf1, *buf2;
                 MathLib::bigint offset1, offset2;
-                if (!getBufAndOffset(args[nonOverlappingData->ptr1Arg-1], &buf1, &offset1))
+                if (!getBufAndOffset(ptr1, &buf1, &offset1))
                     continue;
-                if (!getBufAndOffset(args[nonOverlappingData->ptr2Arg-1], &buf2, &offset2))
+                if (!getBufAndOffset(ptr2, &buf2, &offset2))
+                    continue;
+
+                if (offset1 < offset2 && offset1 + sizeValue <= offset2)
+                    continue;
+                if (offset2 < offset1 && offset2 + sizeValue <= offset1)
                     continue;
 
                 ErrorPath errorPath;

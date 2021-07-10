@@ -176,6 +176,9 @@
               <optional>
                 <attribute name="size-arg"><data type="positiveInteger"/></attribute>
               </optional>
+              <optional>
+                <attribute name="strlen-arg"><data type="positiveInteger"/></attribute>
+              </optional>
               <empty/>
             </element>
           </optional>
