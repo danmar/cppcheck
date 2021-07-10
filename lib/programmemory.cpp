@@ -364,8 +364,8 @@ ProgramMemory ProgramMemoryState::get(const Token* tok, const Token* ctx, const 
         start = tok;
 
     if (!ctx || precedes(start, ctx)) {
-        local.addState(start, vars);
         local.removeModifiedVars(start);
+        local.addState(start, vars);
     } else {
         local.removeModifiedVars(ctx);
     }
