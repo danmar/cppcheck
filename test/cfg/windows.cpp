@@ -12,6 +12,13 @@
 #include <stdlib.h>
 #include <time.h>
 
+unsigned char * overlappingWriteFunction__mbscpy(unsigned char *src, unsigned char *dest)
+{
+    // No warning shall be shown:
+    (void)_mbscpy(dest, src);
+    // cppcheck-suppress overlappingWriteFunction
+    return _mbscpy(src, src);
+}
 
 SYSTEM_INFO uninitvar_GetSystemInfo(char * envstr)
 {
@@ -20,7 +27,6 @@ SYSTEM_INFO uninitvar_GetSystemInfo(char * envstr)
     GetSystemInfo(&SystemInfo);
     return SystemInfo;
 }
-
 
 void uninitvar__putenv(char * envstr)
 {
