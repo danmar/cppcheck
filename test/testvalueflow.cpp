@@ -2283,6 +2283,22 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 7U, 1));
         ASSERT_EQUALS(true, testValueOfXInconclusive(code, 7U, 1));
+
+        code = "long foo();\n"
+               "long bar();\n"
+               "int test() {\n"
+               "  bool b = true;\n"
+               "  long a = foo();\n"
+               "  if (a != 0)\n"
+               "    return 1;\n"
+               "  a = bar();\n"
+               "  if (a != 0)\n"
+               "    b = false;\n"
+               "  int x = b;\n"
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 12U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 12U, 0));
     }
 
     void valueFlowAfterCondition() {
