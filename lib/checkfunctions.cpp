@@ -248,7 +248,7 @@ void CheckFunctions::ignoredReturnErrorCode(const Token* tok, const std::string&
 //---------------------------------------------------------------------------
 // Check for ignored return values.
 //---------------------------------------------------------------------------
-static const Token *checkMissingReturnScope(const Token *tok);
+static const Token *checkMissingReturnScope(const Token *tok, const Library &library);
 
 void CheckFunctions::checkMissingReturn()
 {
@@ -263,13 +263,13 @@ void CheckFunctions::checkMissingReturn()
             continue;
         if (Function::returnsVoid(function, true))
             continue;
-        const Token *errorToken = checkMissingReturnScope(scope->bodyEnd);
+        const Token *errorToken = checkMissingReturnScope(scope->bodyEnd, mSettings->library);
         if (errorToken)
             missingReturnError(errorToken);
     }
 }
 
-static const Token *checkMissingReturnScope(const Token *tok)
+static const Token *checkMissingReturnScope(const Token *tok, const Library &library)
 {
     const Token *lastStatement = nullptr;
     while ((tok = tok->previous()) != nullptr) {
@@ -289,6 +289,8 @@ static const Token *checkMissingReturnScope(const Token *tok)
                         return switchToken;
                     if (switchToken->isKeyword() && Token::Match(switchToken, "return|throw"))
                         reachable = false;
+                    if (Token::Match(switchToken, "%name% (") && library.isnoreturn(switchToken))
+                        reachable = false;
                     if (Token::Match(switchToken, "case|default"))
                         reachable = true;
                     if (Token::simpleMatch(switchToken, "default :"))
@@ -301,18 +303,20 @@ static const Token *checkMissingReturnScope(const Token *tok)
             } else if (tok->scope()->type == Scope::ScopeType::eIf) {
                 return tok;
             } else if (tok->scope()->type == Scope::ScopeType::eElse) {
-                const Token *errorToken = checkMissingReturnScope(tok);
+                const Token *errorToken = checkMissingReturnScope(tok, library);
                 if (errorToken)
                     return errorToken;
                 tok = tok->link();
                 if (Token::simpleMatch(tok->tokAt(-2), "} else {"))
-                    return checkMissingReturnScope(tok->tokAt(-2));
+                    return checkMissingReturnScope(tok->tokAt(-2), library);
                 return tok;
             }
             // FIXME
             return nullptr;
         }
         if (tok->isKeyword() && Token::Match(tok, "return|throw"))
+            return nullptr;
+        if (Token::Match(tok, "%name% (") && library.isnoreturn(tok))
             return nullptr;
         if (Token::Match(tok, "[;{}] %name% :"))
             return tok;

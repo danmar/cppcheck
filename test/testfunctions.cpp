@@ -1443,6 +1443,10 @@ private:
               "        return {1, 2};\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // noreturn function
+        check("int f(int x) { exit(0); }");
+        ASSERT_EQUALS("", errout.str());
     }
     // NRVO check
     void returnLocalStdMove1() {
