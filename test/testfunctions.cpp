@@ -1435,6 +1435,7 @@ private:
               "    else\n"
               "        return {1, 2};\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
     }
     // NRVO check
     void returnLocalStdMove1() {
