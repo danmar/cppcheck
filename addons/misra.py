@@ -367,6 +367,14 @@ def isKeyword(keyword, standard='c99'):
     return keyword in kw_set
 
 
+def is_source_file(file):
+    return file.endswith('.c')
+
+
+def is_header(file):
+    return file.endswith('.h')
+
+
 def getEssentialTypeCategory(expr):
     if not expr:
         return None
@@ -1197,19 +1205,13 @@ class MisraChecker:
         cppcheckdata.reportSummary(dumpfile, 'MisraInternalIdentifiers', internal_identifiers)
         cppcheckdata.reportSummary(dumpfile, 'MisraLocalIdentifiers', local_identifiers)
 
-    def misra_2_3(self, data):
-        dumpfile = data[0]
-        typedefInfo = data[1]
+    def misra_2_3(self, dumpfile, typedefInfo):
         self._save_ctu_summary_typedefs(dumpfile, typedefInfo)
 
-    def misra_2_4(self, data):
-        dumpfile = data[0]
-        cfg = data[1]
+    def misra_2_4(self, dumpfile, cfg):
         self._save_ctu_summary_tagnames(dumpfile, cfg)
 
-    def misra_2_5(self, data):
-        dumpfile = data[0]
-        cfg = data[1]
+    def misra_2_5(self, dumpfile, cfg):
         used_macros = list()
         for m in cfg.macro_usage:
             used_macros.append(m.name)
@@ -1443,24 +1445,16 @@ class MisraChecker:
                 self.reportError(scope.bodyStart, 5, 5)
 
 
-    def misra_5_6(self, data):
-        dumpfile = data[0]
-        typedefInfo = data[1]
+    def misra_5_6(self, dumpfile, typedefInfo):
         self._save_ctu_summary_typedefs(dumpfile, typedefInfo)
 
-    def misra_5_7(self, data):
-        dumpfile = data[0]
-        cfg = data[1]
+    def misra_5_7(self, dumpfile, cfg):
         self._save_ctu_summary_tagnames(dumpfile, cfg)
 
-    def misra_5_8(self, data):
-        dumpfile = data[0]
-        cfg = data[1]
+    def misra_5_8(self, dumpfile, cfg):
         self._save_ctu_summary_identifiers(dumpfile, cfg)
 
-    def misra_5_9(self, data):
-        dumpfile = data[0]
-        cfg = data[1]
+    def misra_5_9(self, dumpfile, cfg):
         self._save_ctu_summary_identifiers(dumpfile, cfg)
 
     def misra_6_1(self, data):
@@ -1736,6 +1730,25 @@ class MisraChecker:
                     rawTokensFollowingPtr[1].str == '(' and
                     rawTokensFollowingPtr[2].str == ')'):
                 self.reportError(var.nameToken, 8, 2)
+
+
+    def misra_8_4(self, cfg):
+        for func in cfg.functions:
+            if func.isStatic:
+                continue
+            if func.token is None:
+                continue
+            if not is_source_file(func.token.file):
+                continue
+            if func.token.file != func.tokenDef.file:
+                continue
+            if func.tokenDef.str == 'main':
+                continue
+            self.reportError(func.tokenDef, 8, 4)
+        for var in cfg.variables:
+            # extern variable declaration in source file
+            if var.isExtern and var.nameToken and not is_header(var.nameToken.file):
+                self.reportError(var.nameToken, 8, 4)
 
     def misra_8_11(self, data):
         for var in data.variables:
@@ -3381,9 +3394,9 @@ class MisraChecker:
             if not self.settings.quiet:
                 self.printStatus('Checking %s, config %s...' % (dumpfile, cfg.name))
 
-            self.executeCheck(203, self.misra_2_3, (dumpfile, cfg.typedefInfo))
-            self.executeCheck(204, self.misra_2_4, (dumpfile, cfg))
-            self.executeCheck(205, self.misra_2_5, (dumpfile, cfg))
+            self.executeCheck(203, self.misra_2_3, dumpfile, cfg.typedefInfo)
+            self.executeCheck(204, self.misra_2_4, dumpfile, cfg)
+            self.executeCheck(205, self.misra_2_5, dumpfile, cfg)
             self.executeCheck(207, self.misra_2_7, cfg)
             # data.rawTokens is same for all configurations
             if cfgNumber == 0:
@@ -3395,10 +3408,10 @@ class MisraChecker:
             self.executeCheck(502, self.misra_5_2, cfg)
             self.executeCheck(504, self.misra_5_4, cfg)
             self.executeCheck(505, self.misra_5_5, cfg)
-            self.executeCheck(506, self.misra_5_6, (dumpfile, cfg.typedefInfo))
-            self.executeCheck(507, self.misra_5_7, (dumpfile, cfg))
-            self.executeCheck(508, self.misra_5_8, (dumpfile, cfg))
-            self.executeCheck(509, self.misra_5_8, (dumpfile, cfg))
+            self.executeCheck(506, self.misra_5_6, dumpfile, cfg.typedefInfo)
+            self.executeCheck(507, self.misra_5_7, dumpfile, cfg)
+            self.executeCheck(508, self.misra_5_8, dumpfile, cfg)
+            self.executeCheck(509, self.misra_5_9, dumpfile, cfg)
             self.executeCheck(601, self.misra_6_1, cfg)
             self.executeCheck(602, self.misra_6_2, cfg)
             if cfgNumber == 0:
@@ -3410,6 +3423,7 @@ class MisraChecker:
             self.executeCheck(801, self.misra_8_1, cfg)
             if cfgNumber == 0:
                 self.executeCheck(802, self.misra_8_2, cfg, data.rawTokens)
+            self.executeCheck(804, self.misra_8_4, cfg)
             self.executeCheck(811, self.misra_8_11, cfg)
             self.executeCheck(812, self.misra_8_12, cfg)
             if cfgNumber == 0:

@@ -19,6 +19,7 @@ static misra_5_7_violation_t misra_5_7_use_type_2;
 
 // cppcheck-suppress misra-c2012-5.8
 static int misra_5_8_var1;
+// cppcheck-suppress misra-c2012-8.4
 // cppcheck-suppress misra-c2012-5.8
 void misra_5_8_f(void) {
     // cppcheck-suppress misra-c2012-5.8
