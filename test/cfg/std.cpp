@@ -30,6 +30,22 @@
 #include <functional>
 #include <bitset>
 
+void overlappingWriteFunction_wcscat(wchar_t *src, wchar_t *dest)
+{
+    // No warning shall be shown:
+    (void)wcscat(dest, src);
+    // cppcheck-suppress overlappingWriteFunction
+    (void)wcscat(src, src);
+}
+
+char * overlappingWriteFunction_strcat(char *src, char *dest)
+{
+    // No warning shall be shown:
+    (void)strcat(dest, src);
+    // cppcheck-suppress overlappingWriteFunction
+    return strcat(src, src);
+}
+
 wchar_t * overlappingWriteFunction_wcscpy(wchar_t *src, wchar_t *dest)
 {
     // No warning shall be shown:
@@ -57,6 +73,13 @@ char * overlappingWriteFunction_strncpy(char *buf, const std::size_t count)
     (void)strncpy(&buf[0], &buf[3], 3U);    // no-overlap
     // cppcheck-suppress overlappingWriteFunction
     return strncpy(&buf[0], &buf[3], 4U);
+}
+
+void * overlappingWriteFunction_memmove(void)
+{
+    // No warning shall be shown:
+    char str[] = "memmove handles overlapping data well";
+    return memmove(str,str+3,4);
 }
 
 std::bitset<10> std_bitset_test_ignoredReturnValue()

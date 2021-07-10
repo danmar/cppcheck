@@ -27,6 +27,14 @@
 #include <ctype.h>
 #include <stdbool.h>
 
+void overlappingWriteFunction_swab(char *src, char *dest, ssize_t n)
+{
+    // No warning shall be shown:
+    swab(dest, src, n);
+    // cppcheck-suppress overlappingWriteFunction
+    swab(src, src+3, 4);
+}
+
 bool invalidFunctionArgBool_isascii(bool b, int c)
 {
     // cppcheck-suppress invalidFunctionArgBool
