@@ -685,6 +685,12 @@ static void misra_10_8(u8 x, s32 a, s32 b) {
 int (*misra_11_1_p)(void);
 void *misra_11_1_bad1 = (void*)misra_11_1_p; // 11.1
 
+struct misra_11_2_s;
+struct misra_11_2_t;
+
+static struct misra_11_2_s * sp;
+static struct misra_11_2_t * tp = sp; // 11.2
+
 struct Fred {}; struct Wilma {};
 static void misra_11_3(u8* p, struct Fred *fred) {
   x = (u64*)p; // 11.3
