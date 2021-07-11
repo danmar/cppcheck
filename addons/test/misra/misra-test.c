@@ -369,6 +369,10 @@ int misra_8_2_p(
 int misra_8_2_q
 (); // 8.2
 
+void misra_8_4_foo(void) {} // 8.4
+void misra_8_4_bar(void) {} // Declared in header
+extern int16_t misra_8_4_count; // 8.4
+
 extern int a811[]; // 8.11
 
 enum misra_8_12_a { misra_a1 = 1, misra_a2 = 2, misra_a3, misra_a4 = 3 }; //8.12
@@ -676,6 +680,9 @@ void misra_10_8(u8 x, s32 a, s32 b) {
   y = (u16)(x+x); // 10.8
   y = (u16) (a + b) //10.8
 }
+
+int (*misra_11_1_p)(void);
+void *misra_11_1_bad1 = (void*)misra_11_1_p; // 11.1
 
 struct Fred {}; struct Wilma {};
 void misra_11_3(u8* p, struct Fred *fred) {

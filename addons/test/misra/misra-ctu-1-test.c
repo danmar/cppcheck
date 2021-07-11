@@ -15,11 +15,17 @@ typedef int MISRA_5_6_VIOLATION;
 struct misra_5_7_violation_t {
     int x;
 };
-static misra_5_7_violation_t misra_5_7_var;
+static misra_5_7_violation_t misra_5_7_use_type_1;
 
 // cppcheck-suppress misra-c2012-5.8
-int misra_5_8_var;
+int misra_5_8_var1;
+// cppcheck-suppress misra-c2012-5.8
+int misra_5_8_var2;
 // cppcheck-suppress misra-c2012-5.8
 static void misra_5_8_f(void) {}
 
 
+// cppcheck-suppress misra-c2012-5.9
+static int misra_5_9_count;
+// cppcheck-suppress misra-c2012-5.9
+static void misra_5_8_foo(void) {}

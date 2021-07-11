@@ -263,7 +263,6 @@ TESTOBJ =     test/options.o \
               test/testpostfixoperator.o \
               test/testpreprocessor.o \
               test/testrunner.o \
-              test/testsamples.o \
               test/testsimplifytemplate.o \
               test/testsimplifytokens.o \
               test/testsimplifytypedef.o \
@@ -713,9 +712,6 @@ test/testpreprocessor.o: test/testpreprocessor.cpp externals/simplecpp/simplecpp
 
 test/testrunner.o: test/testrunner.cpp externals/simplecpp/simplecpp.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/preprocessor.h lib/suppressions.h test/options.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testrunner.o test/testrunner.cpp
-
-test/testsamples.o: test/testsamples.cpp cli/cppcheckexecutor.h cli/filelister.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/path.h lib/pathmatch.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h test/redirect.h test/testsuite.h
-	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testsamples.o test/testsamples.cpp
 
 test/testsimplifytemplate.o: test/testsimplifytemplate.cpp lib/astutils.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testsimplifytemplate.o test/testsimplifytemplate.cpp
