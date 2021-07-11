@@ -29,6 +29,14 @@
 #include <wchar.h>
 #include <string.h>
 
+char * overlappingWriteFunction_stpcpy(char *src, char *dest)
+{
+    // No warning shall be shown:
+    (void) stpcpy(dest, src);
+    // cppcheck-suppress overlappingWriteFunction
+    return stpcpy(src, src);
+}
+
 void overlappingWriteFunction_bcopy(char *buf, const size_t count)
 {
     // No warning shall be shown:
