@@ -681,6 +681,9 @@ void misra_10_8(u8 x, s32 a, s32 b) {
   y = (u16) (a + b) //10.8
 }
 
+int (*misra_11_1_p)(void);
+void *misra_11_1_bad1 = (void*)misra_11_1_p; // 11.1
+
 struct Fred {}; struct Wilma {};
 void misra_11_3(u8* p, struct Fred *fred) {
   x = (u64*)p; // 11.3

@@ -476,6 +476,26 @@ def bitsOfEssentialType(ty):
     return 0
 
 
+def get_function_pointer_type(tok):
+    ret = ''
+    par = 0
+    while tok and (tok.isName or tok.str == '*'):
+        ret += ' ' + tok.str
+        tok = tok.next
+    if tok is None or tok.str != '(':
+        return None
+    tok = tok.link
+    if not simpleMatch(tok, ') ('):
+        return None
+    ret += '('
+    tok = tok.next.next
+    while tok and (tok.str not in '()'):
+        ret += ' ' + tok.str
+        tok = tok.next
+    if (tok is None) or tok.str != ')':
+        return None
+    return ret[1:] + ')'
+
 def isCast(expr):
     if not expr or expr.str != '(' or not expr.astOperand1 or expr.astOperand2:
         return False
@@ -1948,6 +1968,32 @@ class MisraChecker:
                         self.reportError(token, 10, 8)
                 except ValueError:
                     pass
+
+    def misra_11_1(self, data):
+        for token in data.tokenlist:
+            if not isCast(token):
+                continue
+            vartok = token
+            while vartok:
+                if isCast(vartok):
+                    if vartok.astOperand2 is None:
+                        vartok = vartok.astOperand1
+                    else:
+                        vartok = vartok.astOperand2
+                elif vartok.str in ('.', '::'):
+                    vartok = vartok.astOperand2
+                elif vartok.str == '[':
+                    vartok = vartok.astOperand1
+                else:
+                    break
+            if (vartok is None) or (not vartok.variable):
+                continue
+            var_type = get_function_pointer_type(vartok.variable.typeStartToken)
+            if var_type is None:
+                continue
+            cast_type = get_function_pointer_type(token.next)
+            if cast_type is None or cast_type != var_type:
+                self.reportError(token, 11, 1)
 
     def misra_11_3(self, data):
         for token in data.tokenlist:
@@ -3438,6 +3484,7 @@ class MisraChecker:
             self.executeCheck(1004, self.misra_10_4, cfg)
             self.executeCheck(1006, self.misra_10_6, cfg)
             self.executeCheck(1008, self.misra_10_8, cfg)
+            self.executeCheck(1101, self.misra_11_1, cfg)
             self.executeCheck(1103, self.misra_11_3, cfg)
             self.executeCheck(1104, self.misra_11_4, cfg)
             self.executeCheck(1105, self.misra_11_5, cfg)
