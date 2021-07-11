@@ -29,6 +29,18 @@
 #include <wchar.h>
 #include <string.h>
 
+void overlappingWriteFunction_bcopy(char *buf, const size_t count)
+{
+    // No warning shall be shown:
+    // cppcheck-suppress bcopyCalled
+    bcopy(&buf[0], &buf[3], count); // size is not known
+    // cppcheck-suppress bcopyCalled
+    bcopy(&buf[0], &buf[3], 3U);    // no-overlap
+    // cppcheck-suppress bcopyCalled
+    // cppcheck-suppress overlappingWriteFunction
+    bcopy(&buf[0], &buf[3], 4U);
+}
+
 void overlappingWriteFunction_memccpy(unsigned char *src, unsigned char *dest, int c, size_t count)
 {
     // No warning shall be shown:
