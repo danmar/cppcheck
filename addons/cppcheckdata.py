@@ -800,7 +800,7 @@ class Configuration:
             prev = token
 
     def set_id_map(self, arguments):
-        IdMap = {None: None, '0': None, '00000000': None, '0000000000000000': None}
+        IdMap = {None: None, '0': None, '00000000': None, '0000000000000000': None, '0x0': None}
         for token in self.tokenlist:
             IdMap[token.Id] = token
         for scope in self.scopes:

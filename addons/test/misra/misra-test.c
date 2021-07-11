@@ -1,6 +1,6 @@
 // To test:
 // ~/cppcheck/cppcheck --dump misra/misra-test.h --std=c89
-// ~/cppcheck/cppcheck --dump --suppress=uninitvar --suppress=uninitStructMember misra/misra-test.c --std=c89 && python3 ../misra.py -verify misra/misra-test.c.dump
+// ~/cppcheck/cppcheck --dump --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 && python3 ../misra.py -verify misra/misra-test.c.dump
 
 #include "path\file.h" // 20.2
 #include "file//.h" // 20.2
@@ -64,34 +64,34 @@ typedef unsigned long long u64;
 
 // http://example.com // no warning
 
-void misra_2_7_unused_param (int *param1, int unused_param)  // 2.7
+static void misra_2_7_unused_param (int *param1, int unused_param)  // 2.7
 {
     *param1 = 42U;
 }
 
-void misra_2_7_used_params (int *param1, int param2, int param3)
+static void misra_2_7_used_params (int *param1, int param2, int param3)
 {
     (void)param3;
     *param1 = param2;
 }
 
-void misra_2_7_a(int a,
-                 int b, // 2.7
-                 int c,
-                 int d) // 2.7
+static void misra_2_7_a(int a,
+                        int b, // 2.7
+                        int c,
+                        int d) // 2.7
 {
     (void)a;
     (void)c;
 }
-void misra_2_7_b(int a, int b, int c, // 2.7
-                 int d)               // 2.7
+static void misra_2_7_b(int a, int b, int c, // 2.7
+                        int d)               // 2.7
 {
     (void)a;
 }
-void misra_2_7_c(int a, ...) { (void)a; }
-void misra_2_7_d(int) { } // 2.7 8.2
+static void misra_2_7_c(int a, ...) { (void)a; }
+static void misra_2_7_d(int) { } // 2.7 8.2
 
-void misra_3_2(int enable)
+static void misra_3_2(int enable)
 {
     // This won't generate a violation because of subsequent blank line \
 
@@ -107,21 +107,21 @@ void misra_3_2(int enable)
     (void)printf("x=%i, y=%i\n", x, y);
 }
 
-extern int misra_5_1_extern_var_hides_var_x;
-extern int misra_5_1_extern_var_hides_var_y; //5.1
+extern int misra_5_1_extern_var_hides_var_x; // 8.4
+extern int misra_5_1_extern_var_hides_var_y; //5.1 8.4
 int misra_5_1_var_hides_var________a;
 int misra_5_1_var_hides_var________b; int misra_5_1_var_hides_var________b1; int misra_5_1_var_hides_var________b2; //5.1
 int misra_5_1_var_hides_var________c; //5.1
 int misra_5_1_var_hides_var________d; //5.1
 int misra_5_1_var_hides_var________e; //5.1
 
-extern const uint8_t misra_5_2_var1;
+extern const uint8_t misra_5_2_var1; // 8.4
 const uint8_t        misra_5_2_var1 = 3; // no warning
 static int misra_5_2_var_hides_var______31x;
 static int misra_5_2_var_hides_var______31y;//5.2
 static int misra_5_2_function_hides_var_31x;
-void misra_5_2_function_hides_var_31y(void) {}//5.2
-void foo(void)
+static void misra_5_2_function_hides_var_31y(void) {}//5.2
+static void foo(void)
 {
   int i;
   switch(misra_5_2_func1()) //16.4 16.6
@@ -176,7 +176,7 @@ int c41_13         = '\123\3';
 // TODO int c41_14         = '\777\777';
 int c41_15         = 'a';
 
-void misra_4_1(void)
+static void misra_4_1(void)
 {
     (void)printf("\x41g"); // 4.1
     (void)printf("\x41\x42");
@@ -187,7 +187,7 @@ const char *s42_1 = "String containing trigraphs ??-??-??";   // 4.2
 const char *s42_2 = "String containing trigraph???=preceded by question mark";   // 4.2
 const char *s42_3 = "No trigraph?(?'?)";
 
-void misra_4_2(void)
+static void misra_4_2(void)
 {
     (void)printf("??=Trigraph\n");   // 4.2
     (void)printf("No?/Trigraph\n");
@@ -211,11 +211,11 @@ void misra_4_2(void)
 #define misra_5_5_hides_macro________31x 1
 
 int misra_5_5_var_hides_macro____31y; //5.5
-void misra_5_5_functionhides_macro31y(int misra_5_5_param_hides_macro__31y){(void)misra_5_5_param_hides_macro__31y;} //5.5
+static void misra_5_5_functionhides_macro31y(int misra_5_5_param_hides_macro__31y){(void)misra_5_5_param_hides_macro__31y;} //5.5
 struct misra_5_5_tag_hides_macro____31y { //5.5
 int x;
 };
-void misra_5_5_func1(void)
+static void misra_5_5_func1(void)
 {
   switch(misra_5_5_func2()) //16.4 16.6
   {
@@ -244,21 +244,21 @@ struct struct_with_bitfields
   signed int   h:1; // 6.2 - signed int with size 1 is not compliant
 };
 
-void misra6_1_fn(void) {
+static void misra6_1_fn(void) {
     // "Use" occurrence should not generate warnings
     struct_with_bitfields s;
     s.h = 61;
 }
 
-void misra_7_1(void) {
+static void misra_7_1(void) {
   int x = 066; // 7.1
 }
 
-void misra_7_2_call_test(int a, unsigned int b, unsigned int c) { } // 2.7
+static void misra_7_2_call_test(int a, unsigned int b, unsigned int c) { } // 2.7
 
-void misra_7_2_call_va_test(int a, ...) { } // 2.7
+static void misra_7_2_call_va_test(int a, ...) { } // 2.7
 
-void misra_7_2(void) {
+static void misra_7_2(void) {
     unsigned int a = 2147483647;
     const unsigned int b = 2147483648U;
     const unsigned int c = 2147483648; // 7.2
@@ -288,7 +288,7 @@ struct misra_7_3_s
   uint32_t test123l;
 };
 
-void misra_7_3(void) {
+static void misra_7_3(void) {
   long misra_7_3_a = 0l; //7.3
   long misra_7_3_b = 0lU; //7.3
   long long misra_7_3_c = 0Ull; //7.3
@@ -302,15 +302,15 @@ void misra_7_3(void) {
 }
 
 typedef const char* MISRA_7_4_CHAR_CONST;
-MISRA_7_4_CHAR_CONST misra_7_4_return_const_type_def (void) { return "return_typedef_const"; }
-char *misra_7_4_return_non_const (void) { return 1 + "return_non_const"; } // 7.4 18.4
-const char *misra_7_4_return_const (void) { return 1 + "return_const"; } // 18.4
+static MISRA_7_4_CHAR_CONST misra_7_4_return_const_type_def (void) { return "return_typedef_const"; }
+static char *misra_7_4_return_non_const (void) { return 1 + "return_non_const"; } // 7.4 18.4
+static const char *misra_7_4_return_const (void) { return 1 + "return_const"; } // 18.4
 
-void misra_7_4_const_call(int a, const char* b) { } // 2.7
-void misra_7_4_const_ptr_call(int a, const char const* b) { } // 2.7
-void misra_7_4_call(int a, char* b) { } // 2.7
+static void misra_7_4_const_call(int a, const char* b) { } // 2.7
+static void misra_7_4_const_ptr_call(int a, const char const* b) { } // 2.7
+static void misra_7_4_call(int a, char* b) { } // 2.7
 
-void misra_7_4(void)
+static void misra_7_4(void)
 {
    const char *a = "text a";
    char* const b = "text_b"; // 7.4
@@ -347,33 +347,33 @@ static int misra_8_2_k ( //
  void);
 static int misra_8_2_l ( // 8.2
 );
-void misra_8_2_m(uint8_t * const x);
-void misra_8_2_m(uint8_t * const x)
+static void misra_8_2_m(uint8_t * const x);
+static void misra_8_2_m(uint8_t * const x)
 {
 (void)x;
 }
 int16_t ( *misra_8_2_p_a ) (); // 8.2
 int16_t ( *misra_8_2_p_b ) (void);
 int16_t ( *misra_8_2_p_c ) (int);
-int misra_8_2_n(int a)
+static int misra_8_2_n(int a)
 { return a + 42; }
-int misra_8_2_o(
+static int misra_8_2_o(
     const uint32_t a1,
     const uint8_t *const a2
 )
 { return *a2 + a1; }
-int misra_8_2_p(
+static int misra_8_2_p(
     const uint32_t a1,
     const uint8_t *const a2
 );
-int misra_8_2_q
+static int misra_8_2_q
 (); // 8.2
 
 void misra_8_4_foo(void) {} // 8.4
-void misra_8_4_bar(void) {} // Declared in header
+static void misra_8_4_bar(void) {} // Declared in header
 extern int16_t misra_8_4_count; // 8.4
 
-extern int a811[]; // 8.11
+extern int a811[]; // 8.11 8.4
 
 enum misra_8_12_a { misra_a1 = 1, misra_a2 = 2, misra_a3, misra_a4 = 3 }; //8.12
 enum misra_8_12_b { misra_b1, misra_b2, misra_b3 = 3, misra_b4 = 3 }; // no-warning
@@ -381,9 +381,9 @@ enum misra_8_12_c { misra_c1 = misra_a1, misra_c2 = 1 }; // no-warning
 enum misra_8_12_d { misra_d1 = 1, misra_d2 = 2, misra_d3 = misra_d1 }; // no-warning
 enum misra_8_12_e { misra_e1 = sizeof(int), misra_e2}; // no-crash
 
-void misra_8_14(char * restrict str) {(void)str;} // 8.14
+static void misra_8_14(char * restrict str) {(void)str;} // 8.14
 
-void misra_9_empty_or_zero_initializers(void) {
+static void misra_9_empty_or_zero_initializers(void) {
     int a[2]    = {};                          // 9.2
     int b[2][2] = {};                          // 9.2
     int c[2][2] = { {} };                      // 9.2 9.3
@@ -407,7 +407,7 @@ void misra_9_empty_or_zero_initializers(void) {
     struct1 n   = { 0 };
 }
 
-void misra_9_string_initializers(void) {
+static void misra_9_string_initializers(void) {
     const char a[12]    = { "Hello world" };           // 9.2
     const char b[2][20] = "Hello world";               // 9.2 9.3
     const char c[]      = "Hello world";
@@ -424,7 +424,7 @@ void misra_9_string_initializers(void) {
     char **j[1]         = { { str_p } };               // 9.2
 }
 
-void misra_9_array_initializers(void) {
+static void misra_9_array_initializers(void) {
     char    a[4]        = { 1, 2, 3, 4 };
     char    b[2][2]     = { {1, 2}, {3, 4} };
     char    c[2][2]     = { 1, 2, 3, 4 };                                   // 9.2
@@ -441,7 +441,7 @@ void misra_9_array_initializers(void) {
     char    l[3]        = { 1, { 2, 3 } };                                  // 9.2 9.3
 }
 
-void misra_9_array_initializers_with_designators(void) {
+static void misra_9_array_initializers_with_designators(void) {
     char    a[1]        = { [0][1] = 1 };                                   // 9.2
     char    b[1]        = { [0] = { 1, 2 } };                               // 9.2
     char    c[2][2]     = { [0] = {1, 2, 3} };
@@ -458,6 +458,7 @@ void misra_9_array_initializers_with_designators(void) {
     char    n[2][2]     = { [0] = { 1 } };                                  // 9.3
     char    o[2][2]     = { { 1 }, [1][0] = 3 };                            // 9.3
     char    p[2][2]     = { { 1, 2 }, { 3, 4 }, [1] = { 3 } };              // 9.3 9.4
+    // cppcheck-suppress unknownEvaluationOrder
     char    q[2][2]     = { { 1, 2 }, { 1 }, [1] = { [1] = 3 } };           // 9.4
     char    r[2][2][2]  = { [0][0] = { 1, 2 }, [1] = { [0] = {5, 6} } };
     char    s[2][2][2]  = { [0][0] = { 1, 2 }, [1] = {5, 6, 7, 8}};         // 9.2
@@ -466,7 +467,7 @@ void misra_9_array_initializers_with_designators(void) {
     char    v[2][2][2]  = { [0] = { 1, 2, [1] = {3, 4} }};                  // 9.2
 }
 
-void misra_9_struct_initializers(void) {
+static void misra_9_struct_initializers(void) {
     typedef struct {
         int i1;
         int i2;
@@ -556,18 +557,18 @@ void misra_9_struct_initializers(void) {
     struct1 os1 = { i1: 1, i2: 2 }; // 10.4 13.4
 }
 
-void misra_9_broken_initializers(void) {
+static void misra_9_broken_initializers(void) {
     char a[UNKNOWN_MACRO] = { 19, 23, 0 };             // 18.8
 }
 
-void misra_9_2(void) {
+static void misra_9_2(void) {
     union misra_9_2_union {     // 19.2
         char c;
         struct1 i;
     } u = { 3 };                // 19.2
 }
 
-void misra_9_5(void) {
+static void misra_9_5(void) {
     char a[]    = { 1, 2, 3 };
     char b[]    = { [2] = 5 };                          // 9.5
     char c[]    = { 1, [1] = 5 };                       // 9.5
@@ -581,7 +582,7 @@ void misra_9_5(void) {
 
 typedef char misra_10_1_char_t;
 #define MISRA_10_1_CHAR char
-void misra_10_1(uint8_t u, char c1, char c2) {
+static void misra_10_1(uint8_t u, char c1, char c2) {
   int32_t i;
   char c;
   enum { E1 = 1 };
@@ -607,7 +608,7 @@ void misra_10_1(uint8_t u, char c1, char c2) {
   MISRA_10_1_CHAR cd3;
   cd3 = cd1 & cd2; // 10.1
 }
-void misra_10_1_ternary(void)
+static void misra_10_1_ternary(void)
 {
     int a;
     uint8_t ui8;
@@ -633,7 +634,7 @@ void misra_10_1_ternary(void)
     a = (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8) << (get_bool(19) ? i16 : ui8); // 10.1 10.4
 }
 
-void misra_10_2(void) {
+static void misra_10_2(void) {
     unsigned int u8a = 0;
     signed char cha = 0;
     signed int s8a = 0;
@@ -651,7 +652,7 @@ void misra_10_2(void) {
     res = '0' + f32a; // 10.2 10.4
 }
 
-void misra_10_4(u32 x, s32 y) {
+static void misra_10_4(u32 x, s32 y) {
   z = x + 3; // 10.4
   enum misra_10_4_enuma { misra_10_4_A1, misra_10_4_A2, misra_10_4_A3 } a;
   enum misra_10_4_enumb { misra_10_4_B1, misra_10_4_B2, misra_10_4_B3 };
@@ -664,18 +665,18 @@ void misra_10_4(u32 x, s32 y) {
   z = (a == misra_10_4_A3) ? y : y; // no-warning
 }
 
-void misra_10_6(u8 x, u32 a, u32 b, char c1, char c2) {
+static void misra_10_6(u8 x, u32 a, u32 b, char c1, char c2) {
   u16 y = x+x; // 10.6
   u16 z = ~u8 x ;//10.6
   u32 c = ( u16) ( u32 a + u32 b ); //10.6
   s32 i = c1 - c2; // FIXME: False positive for 10.6 (this is compliant). Trac #9488
 }
-void misra_10_6_1(uint32_t *a, uint16_t b, uint16_t c)
+static void misra_10_6_1(uint32_t *a, uint16_t b, uint16_t c)
 {
     *a = b + c ; // 10.6
 }
 
-void misra_10_8(u8 x, s32 a, s32 b) {
+static void misra_10_8(u8 x, s32 a, s32 b) {
   y = (u16)x;
   y = (u16)(x+x); // 10.8
   y = (u16) (a + b) //10.8
@@ -685,12 +686,12 @@ int (*misra_11_1_p)(void);
 void *misra_11_1_bad1 = (void*)misra_11_1_p; // 11.1
 
 struct Fred {}; struct Wilma {};
-void misra_11_3(u8* p, struct Fred *fred) {
+static void misra_11_3(u8* p, struct Fred *fred) {
   x = (u64*)p; // 11.3
   struct Wilma *wilma = (struct Wilma *)fred; // 11.3
 }
 
-void misra_11_4(u8*p) {
+static void misra_11_4(u8*p) {
   u64 y = (u64)p; // 11.4
   u8 *misra_11_4_A = ( u8 * ) 0x0005;// 11.4
   s32 misra_11_4_B;
@@ -698,13 +699,13 @@ void misra_11_4(u8*p) {
 
 }
 
-void misra_11_5(void *p) {
+static void misra_11_5(void *p) {
   u16 *p16;
   x = (u8 *)p; // 11.5
   p16 = p;     // 11.5
 }
 
-void misra_11_6(void) {
+static void misra_11_6(void) {
   void *p;
   p = (void*)123;  // 11.6
   x = (u64)p;      // 11.6
@@ -713,19 +714,19 @@ void misra_11_6(void) {
 }
 
 
-void misra_11_7(int *p, float f) {
+static void misra_11_7(int *p, float f) {
   x = ( float ) p; //11.7
   y = ( int * ) f; //11.7
 }
 
-void misra_11_7_extra(int *p, float f, bool b) {
+static void misra_11_7_extra(int *p, float f, bool b) {
   (void) p; // no-warning
   (void) f; // no-warning
   (void) b; // no-warning
 }
 
-char * misra_11_8_const(const char *str) {(void)str;}
-char * misra_11_8(const char *str) {
+static void misra_11_8_const(const char *str) {(void)str;}
+static char * misra_11_8(const char *str) {
   (void)misra_11_8_const(str); // no-warning
   return (char *)str; // 11.8
 }
@@ -733,7 +734,7 @@ char * misra_11_8(const char *str) {
 #define MISRA_11_9_NULL_1 (1-1)
 #define MISRA_11_9_NULL_2 ( void * ) 0
 #define MISRA_11_9_NULL_3 NULL
-void misra_11_9(void) {
+static void misra_11_9(void) {
   int *p1 = (5-5); //11.9
   int *p2 = MISRA_11_9_NULL_2 ; // no-warning
   int *p3 = MISRA_11_9_NULL_3 ; // no-warning
@@ -745,13 +746,13 @@ void misra_11_9(void) {
 }
 
 
-void misra_12_1(void) {
+static void misra_12_1(void) {
   sz = sizeof x + y; // 12.1
   a = (b * c) + d;
   a = b << c + d; // 12.1
 }
 
-void misra_12_2(u8 x) {
+static void misra_12_2(u8 x) {
   a = x << 8;  // 12.2
 }
 
@@ -769,19 +770,19 @@ static struct misra_12_3_s1 misra_12_3_s1_inst = {
 };
 typedef struct misra_12_3_s2 { int a; int b; int c, d; } misra_12_3_s2_t; // 12.3
 typedef struct { int a; int b; int c, d; } misra_12_3_s3_t; // 12.3
-void misra_12_3_fn1(int, int); static int misra_12_3_v5, misra_12_4_v6; // 12.3 8.2
-void misra_12_3_fn2(int a, int b) // 2.7
+static void misra_12_3_fn1(int, int); static int misra_12_3_v5, misra_12_4_v6; // 12.3 8.2
+static void misra_12_3_fn2(int a, int b) // 2.7
 { int d, e; } // 12.3
-int misra_12_3_fn3(int a, int b) { return a+b;} static int misra_12_3_v5, misra_12_4_v6; // 12.3
-void misra_12_3_fn4(const uint32_t value, uint8_t * const y) {} // 2.7
-uint32_t misra_12_3_fn5(const uint32_t * const, const uint8_t) {} // 2.7 8.2
+static int misra_12_3_fn3(int a, int b) { return a+b;} static int misra_12_3_v5, misra_12_4_v6; // 12.3
+static void misra_12_3_fn4(const uint32_t value, uint8_t * const y) {} // 2.7
+static void misra_12_3_fn5(const uint32_t * const, const uint8_t) {} // 2.7 8.2
 extern void misra_12_3_fn6(const uint32_t value, uint8_t * const y);
 extern uint32_t misra_12_3_fn7(const uint32_t * const, const uint8_t); // 8.2
 #define MISRA_12_3_FN3_1(A, B) (misra_12_3_fn3(A, B))
 #define MISRA_12_3_FN3_2(A, B) (misra_12_3_fn3(A, \
                                 B))
 #define MISRA_12_3_FN3_2_MSG(x) x, fflush(stderr)
-void misra_12_3(int, int, int); // 8.2
+static void misra_12_3(int, int, int); // 8.2
 void misra_12_3(int a, int b, int c) {
   int a1, a2; // 12.3
   int a3; int a4; // no warning
@@ -807,6 +808,7 @@ void misra_12_3(int a, int b, int c) {
   struct misra_12_3_s2 a32, a33; // 12.3
   struct misra_12_3_s2 a34, a35 = {1, 2}, a36; // 12.3
 
+  // cppcheck-suppress uninitStructMember
   int a37 = MISRA_12_3_FN3_1(a34, a35), a38; // 12.3
   int a39, a40 = MISRA_12_3_FN3_1(a34, a35); // 12.3
   int a41 = MISRA_12_3_FN3_2(a34, a35), a42; // 12.3
@@ -844,7 +846,7 @@ void misra_12_3(int a, int b, int c) {
 #define MISRA12_4a 2000000000u
 #define MISRA12_4b 4000000000u
 #define volatile_macro_12_4  (*(volatile U32 *) 0xFFFFFC10u)
-void misra_12_4(void) {
+static void misra_12_4(void) {
   uint32_t x;
   bool t;
   x = 123456u * 123456u; // TODO 12.4
@@ -857,8 +859,8 @@ void misra_12_4(void) {
 
 struct misra_13_1_t { int a; int b; };
 uint8_t misra_13_1_x = 0;
-void misra_13_1_bar(uint8_t a[2]);
-void misra_13_1(int *p) {
+static void misra_13_1_bar(uint8_t a[2]);
+static void misra_13_1(int *p) {
   volatile int v;
   int a1[3] = {0, (*p)++, 2}; // 13.1
   int a2[3] = {0, ((*p) += 1), 2}; // 13.1
@@ -895,7 +897,7 @@ void misra_13_1(int *p) {
   struct misra_13_1_t c14 = { (*p)/=(int)(4.5) }; // 13.1
 }
 
-void misra_13_3(void) {
+static void misra_13_3(void) {
   x = y++; // 13.3
 }
 
@@ -911,12 +913,12 @@ static s13_4_t s13_4 =
     .string = STRING_DEF_13_4 // no-warning
 };
 
-void misra_13_4(void) {
+static void misra_13_4(void) {
   if (x != (y = z)) {} // 13.4
   else {}
 }
 
-void misra_13_5(void) {
+static void misra_13_5(void) {
   if (x && (y++ < 123)){} // 13.5
   if (x || ((y += 19) > 33)){} // 13.5
   if (x || ((y = 25) > 33)){} // 13.5 13.4
@@ -924,13 +926,13 @@ void misra_13_5(void) {
   else {}
 }
 
-void misra_13_6(void) {
+static void misra_13_6(void) {
   int a = sizeof(x|=42); // 13.6
   a = sizeof(--x); // 13.6 13.3
   return sizeof(x++); // 13.6
 }
 
-void misra_14_1(void) {
+static void misra_14_1(void) {
   for (float f=0.1f; f<1.0f; f += 0.1f){} // 14.1
   float a = 0.0f;
   int b = 10;
@@ -945,10 +947,10 @@ void misra_14_1(void) {
 
 }
 
-void misra_14_2_init_value(int32_t *var) {
+static void misra_14_2_init_value(int32_t *var) {
     *var = 0;
 }
-void misra_14_2_fn1(bool b) {
+static void misra_14_2_fn1(bool b) {
   for (;i++<10;) {} // 14.2
   for (;i<10;dostuff()) {} // TODO
   int32_t g = 0;
@@ -1045,7 +1047,7 @@ struct {
   unsigned int x:1;
   unsigned int y:1;
 } r14_4_struct;
-void misra_14_4(bool b) {
+static void misra_14_4(bool b) {
   if (x+4){} // 14.4
   else {}
 
@@ -1055,17 +1057,17 @@ void misra_14_4(bool b) {
   if (r14_4_struct.x) {}
 }
 
-void misra_15_1(void) {
+static void misra_15_1(void) {
   goto a1; // 15.1
 a1:
 }
 
-void misra_15_2(void) {
+static void misra_15_2(void) {
 label:
   goto label; // 15.2 15.1
 }
 
-void misra_15_3(void) {
+static void misra_15_3(void) {
   if (x!=0) {
     goto L1; // 15.3 15.1
     if (y!=0) {
@@ -1096,7 +1098,7 @@ void misra_15_3(void) {
   }
 }
 
-void misra_15_4(void) {
+static void misra_15_4(void) {
   misra_15_4_label:
     return;
 
@@ -1180,14 +1182,14 @@ void misra_15_4(void) {
   }
 }
 
-int misra_15_5(void) {
+static int misra_15_5(void) {
   if (x!=0) {
     return 1; // 15.5
   } else {}
   return 2;
 }
 
-void misra_15_6(void) {
+static void misra_15_6(void) {
   if (x!=0); // 15.6
   else{}
 
@@ -1206,7 +1208,7 @@ void misra_15_6(void) {
   do {} while (x<0); // no-warning
 }
 
-void misra_15_7(void) {
+static void misra_15_7(void) {
   uint32_t var = 0;
   uint32_t var2 = 0;
 
@@ -1231,7 +1233,7 @@ void misra_15_7(void) {
   if (a==2) {} else { if (b==4) {} } // no-warning
 }
 
-void misra_16_2(void) {
+static void misra_16_2(void) {
   switch (x) {
     default:
       break;
@@ -1243,7 +1245,7 @@ void misra_16_2(void) {
   }
 }
 
-void misra_16_3(void) {
+static void misra_16_3(void) {
   switch (x) {
     case 1:
     case 2:
@@ -1328,7 +1330,7 @@ void misra_16_3(void) {
   } // 16.3
 }
 
-void misra_16_4(void) {
+static void misra_16_4(void) {
   switch (x) { // 16.4
     case 1:
       break;
@@ -1337,7 +1339,7 @@ void misra_16_4(void) {
   }
 }
 
-void misra_16_5(void) {
+static void misra_16_5(void) {
   switch (x) {
     case 1:
       break;
@@ -1348,7 +1350,7 @@ void misra_16_5(void) {
   }
 }
 
-void misra_16_6(void) {
+static void misra_16_6(void) {
   switch (x) { // 16.6
     default:
       break;
@@ -1369,7 +1371,7 @@ void misra_16_6(void) {
   }
 }
 
-void misra_16_7(void) {
+static void misra_16_7(void) {
   switch (x != 123) { // 16.7
     case 1:
       break;
@@ -1378,7 +1380,7 @@ void misra_16_7(void) {
   }
 }
 
-void misra_17_1(void) {
+static void misra_17_1(void) {
   va_list(); // 17.1
   va_arg(); // 17.1
   va_start(); // 17.1
@@ -1386,45 +1388,45 @@ void misra_17_1(void) {
   va_copy(); // 17.1
 }
 
-void misra_17_2_ok_1(void) { ; }
-void misra_17_2_ok_2(void) {
+static void misra_17_2_ok_1(void) { ; }
+static void misra_17_2_ok_2(void) {
     misra_17_2_ok_1(); // no-warning
 }
-void misra_17_2_1(void) {
+static void misra_17_2_1(void) {
   misra_17_2_ok_1(); // no-warning
   misra_17_2_1(); // 17.2
   misra_17_2_ok_2(); // no-warning
   misra_17_2_1(); // 17.2
 }
-void misra_17_2_2(void) {
+static void misra_17_2_2(void) {
   misra_17_2_3(); // 17.2
 }
-void misra_17_2_3(void) {
+static void misra_17_2_3(void) {
   misra_17_2_4(); // 17.2
 }
-void misra_17_2_4(void) {
+static void misra_17_2_4(void) {
   misra_17_2_2(); // 17.2
   misra_17_2_3(); // 17.2
 }
 
-void misra_17_2_5(void) {
+static void misra_17_2_5(void) {
   misra_17_2_ok_1(); // no-warning
   misra_17_2_5(); // 17.2
   misra_17_2_1(); // no-warning
 }
 
-void misra_17_6(int x[static 20]) {(void)x;} // 17.6
+static void misra_17_6(int x[static 20]) {(void)x;} // 17.6
 
-int calculation(int x) { return x + 1; }
-void misra_17_7(void) {
+static int calculation(int x) { return x + 1; }
+static void misra_17_7(void) {
   calculation(123); // 17.7
 }
 
-void misra_17_8(int x) {
+static void misra_17_8(int x) {
   x = 3; // 17.8
 }
 
-void misra_18_4(void)
+static void misra_18_4(void)
 {
   int b = 42;
   int *bp = &b;
@@ -1438,7 +1440,7 @@ void misra_18_4(void)
   b = b + 9; // no-warning
 }
 
-void misra_18_5(void) {
+static void misra_18_5(void) {
   int *** p;  // 18.5
 }
 
@@ -1466,7 +1468,7 @@ typedef enum {
     R18_8_ENUM_CONSTANT_1,
 } r18_8_enum;
 
-void misra_18_8(int x) {
+static void misra_18_8(int x) {
   int buf1[10];
   int buf2[sizeof(int)];
   int vla[x]; // 18.8
@@ -1526,7 +1528,7 @@ struct { int a; } struct_20_7_s;
 #define _macro_starts_with_lower 1 // no warning
 static int _file_scope_id_21_1 = 42; // no warning
 static int _file_scope_id_21_1_fn(void) { return 42; } // no warning
-int misra_21_1(void) {
+static int misra_21_1(void) {
     int _a = 42; // no warning: only directives affected
     errno = EINVAL; // no warning
     _a ++; // no warning
@@ -1536,33 +1538,33 @@ int misra_21_1(void) {
 static int _misra_21_1_2(void); // no warning
 #define errno 11 // 21.1
 
-void misra_21_3(void) {
+static void misra_21_3(void) {
   p1=malloc(10); // 21.3
   p2=calloc(10); // 21.3
   realloc(10); // 21.3
   free(p1); // 21.3
 }
 
-void misra_21_7(void) {
+static void misra_21_7(void) {
   (void)atof(str); // 21.7
   (void)atoi(str); // 21.7
   (void)atol(str); // 21.7
   (void)atoll(str); // 21.7
 }
 
-void misra_21_8(void) {
+static void misra_21_8(void) {
   abort(); // 21.8
   (void)getenv("foo"); // 21.8
   (void)system(""); // 21.8
   exit(-1); // 21.8
 }
 
-void misra_21_9(void) {
+static void misra_21_9(void) {
   (void)bsearch(key,base,num,size,cmp); // 21.9
   qsort(base,num,size,cmp); // 21.9
 }
 
-void misra_21_12(void) {
+static void misra_21_12(void) {
     int rc;
     fexcept_t f; // 21.12
     rc = feclearexcept(1); // 21.12
@@ -1706,7 +1708,8 @@ static uint8_t misra_13_1_large_bad[1024] = { // 13.1
 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
 
-void misra_22_5(FILE *f) {
+static void misra_22_5(FILE *f) {
     int x = *f; // 22.5
     int y = f->pos; // 22.5
 }
+
