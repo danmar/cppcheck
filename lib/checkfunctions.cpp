@@ -316,6 +316,9 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
                 if (!hasDefault)
                     return tok->link();
             } else if (tok->scope()->type == Scope::ScopeType::eIf) {
+                const Token *condition = tok->scope()->classDef->next()->astOperand2();
+                if (condition && condition->hasKnownIntValue() && condition->getKnownIntValue() == 1)
+                    return checkMissingReturnScope(tok, library);
                 return tok;
             } else if (tok->scope()->type == Scope::ScopeType::eElse) {
                 const Token *errorToken = checkMissingReturnScope(tok, library);

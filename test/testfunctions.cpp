@@ -1436,6 +1436,18 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
 
+        check("int f() {\n"
+              "    if (!0) {\n"
+              "        return 1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    if (!0) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
         // loop
         check("int f(int x) {\n"
               "    while (1) {\n"
