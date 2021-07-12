@@ -63,8 +63,8 @@ public:
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckFunctions checkFunctions(tokenizer, settings, errorLogger);
 
-        // Checks
         checkFunctions.checkIgnoredReturnValue();
+        checkFunctions.checkMissingReturn();  // Missing "return" in exit path
 
         // --check-library : functions with nonmatching configuration
         checkFunctions.checkLibraryMatchFunctions();
@@ -74,6 +74,7 @@ public:
         checkFunctions.checkMathFunctions();
         checkFunctions.memsetZeroBytes();
         checkFunctions.memsetInvalid2ndParam();
+        checkFunctions.returnLocalStdMove();
     }
 
     /** Check for functions that should not be used */
@@ -101,10 +102,16 @@ public:
     /** @brief %Check for invalid 2nd parameter of memset() */
     void memsetInvalid2ndParam();
 
+    /** @brief %Check for copy elision by RVO|NRVO */
+    void returnLocalStdMove();
+
     /** @brief --check-library: warn for unconfigured function calls */
     void checkLibraryMatchFunctions();
 
 private:
+    /** @brief %Check for missing "return" */
+    void checkMissingReturn();
+
     void invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const ValueFlow::Value *invalidValue, const std::string &validstr);
     void invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr);
     void invalidFunctionArgStrError(const Token *tok, const std::string &functionName, nonneg int argnr);
@@ -115,6 +122,8 @@ private:
     void memsetZeroBytesError(const Token *tok);
     void memsetFloatError(const Token *tok, const std::string &var_value);
     void memsetValueOutOfRangeError(const Token *tok, const std::string &value);
+    void missingReturnError(const Token *tok);
+    void copyElisionError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckFunctions c(nullptr, settings, errorLogger);
@@ -132,6 +141,8 @@ private:
         c.memsetZeroBytesError(nullptr);
         c.memsetFloatError(nullptr,  "varname");
         c.memsetValueOutOfRangeError(nullptr,  "varname");
+        c.missingReturnError(nullptr);
+        c.copyElisionError(nullptr);
     }
 
     static std::string myName() {
@@ -140,12 +151,14 @@ private:
 
     std::string classInfo() const OVERRIDE {
         return "Check function usage:\n"
+               "- missing 'return' in non-void function\n"
                "- return value of certain functions not used\n"
                "- invalid input values for functions\n"
                "- Warn if a function is called whose usage is discouraged\n"
                "- memset() third argument is zero\n"
                "- memset() with a value out of range as the 2nd parameter\n"
-               "- memset() with a float as the 2nd parameter\n";
+               "- memset() with a float as the 2nd parameter\n"
+               "- copy elision optimization for returning value affected by std::move\n";
     }
 };
 /// @}

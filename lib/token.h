@@ -385,12 +385,6 @@ public:
                                         mTokType == eBoolean || mTokType == eLiteral || mTokType == eEnumerator);
         setFlag(fIsLiteral, memoizedIsLiteral);
     }
-    void isKeyword(const bool kwd) {
-        if (kwd)
-            tokType(eKeyword);
-        else if (mTokType == eKeyword)
-            tokType(eName);
-    }
     bool isKeyword() const {
         return mTokType == eKeyword;
     }
@@ -631,6 +625,13 @@ public:
     }
     void isSplittedVarDeclEq(bool b) {
         setFlag(fIsSplitVarDeclEq, b);
+    }
+
+    bool isImplicitInt() const {
+        return getFlag(fIsImplicitInt);
+    }
+    void isImplicitInt(bool b) {
+        setFlag(fIsImplicitInt, b);
     }
 
     bool isBitfield() const {
@@ -1196,7 +1197,7 @@ private:
     Token *mPrevious;
     Token *mLink;
 
-    enum {
+    enum : uint32_t {
         fIsUnsigned             = (1 << 0),
         fIsSigned               = (1 << 1),
         fIsPointerCompare       = (1 << 2),
@@ -1227,7 +1228,8 @@ private:
         fConstexpr              = (1 << 27),
         fExternC                = (1 << 28),
         fIsSplitVarDeclComma    = (1 << 29), // set to true when variable declarations are split up ('int a,b;' => 'int a; int b;')
-        fIsSplitVarDeclEq       = (1 << 30)  // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
+        fIsSplitVarDeclEq       = (1 << 30), // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
+        fIsImplicitInt          = (1U << 31)  // Is "int" token implicitly added?
     };
 
     Token::Type mTokType;
@@ -1270,6 +1272,7 @@ private:
 public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);
+    void astParent(Token* tok);
 
     Token * astOperand1() {
         return mImpl->mAstOperand1;

@@ -37,7 +37,7 @@ public:
         , stoptime(std::time(nullptr)+2U)
         , cppcheck(*this, false, nullptr) {
         cppcheck.settings().addEnabled("all");
-        cppcheck.settings().inconclusive = true;
+        cppcheck.settings().certainty.enable(Certainty::inconclusive);
     }
 
     void run(const char code[]) {

@@ -24,8 +24,10 @@
   || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
   || defined(__CPPCHECK__)
 #  define OVERRIDE override
+#  define FINAL final
 #else
 #  define OVERRIDE
+#  define FINAL
 #endif
 
 // C++11 noexcept

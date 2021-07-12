@@ -45,6 +45,7 @@ private:
         TEST_CASE(fileIOwithoutPositioning);
         TEST_CASE(seekOnAppendedFile);
         TEST_CASE(fflushOnInputStream);
+        TEST_CASE(incompatibleFileOpen);
 
         TEST_CASE(testScanf1); // Scanf without field limiters
         TEST_CASE(testScanf2);
@@ -74,6 +75,7 @@ private:
         TEST_CASE(testPrintfTypeAlias1);
         TEST_CASE(testPrintfAuto); // #8992
         TEST_CASE(testPrintfParenthesis); // #8489
+        TEST_CASE(testStdDistance); // #10304
     }
 
     void check(const char* code, bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified, bool onlyFormatStr = false) {
@@ -714,7 +716,13 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
+    void incompatibleFileOpen() {
+        check("void foo() {\n"
+              "    FILE *f1 = fopen(\"tmp\", \"wt\");\n"
+              "    FILE *f2 = fopen(\"tmp\", \"rt\");\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) The file '\"tmp\"' is opened for read and write access at the same time on different streams\n", errout.str());
+    }
 
 
     void testScanf1() {
@@ -4818,6 +4826,14 @@ private:
               "    printf(\"%f\", ((a >> 24) + 1) & 0xff);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'.\n", errout.str());
+    }
+
+    void testStdDistance() { // #10304
+        check("void foo(const std::vector<int>& IO, const int* pio) {\n"
+              "const auto Idx = std::distance(&IO.front(), pio);\n"
+              "printf(\"Idx = %td\", Idx);\n"
+              "}", /*inconclusive*/ false, /*portability*/ true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

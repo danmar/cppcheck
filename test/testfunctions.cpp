@@ -37,6 +37,7 @@ private:
     void run() OVERRIDE {
         settings.severity.enable(Severity::style);
         settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::performance);
         settings.severity.enable(Severity::portability);
         settings.libraries.emplace_back("posix");
         settings.standards.c = Standards::C11;
@@ -81,6 +82,17 @@ private:
         // memset..
         TEST_CASE(memsetZeroBytes);
         TEST_CASE(memsetInvalid2ndParam);
+
+        // missing "return"
+        TEST_CASE(checkMissingReturn);
+
+        // std::move for locar variable
+        TEST_CASE(returnLocalStdMove1);
+        TEST_CASE(returnLocalStdMove2);
+        TEST_CASE(returnLocalStdMove3);
+        TEST_CASE(returnLocalStdMove4);
+
+        TEST_CASE(returnLocalStdMove5);
     }
 
     void check(const char code[], const char filename[]="test.cpp", const Settings* settings_=nullptr) {
@@ -1355,6 +1367,119 @@ private:
               "    memset(is, 1.0f + i, 40);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (portability) The 2nd memset() argument '1.0f+i' is a float, its representation is implementation defined.\n", errout.str());
+    }
+
+    void checkMissingReturn() {
+        check("int f() {}");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+        check("F(A,B) { x=1; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("auto foo4() -> void {}");
+        ASSERT_EQUALS("", errout.str());
+
+        // unreachable code..
+        check("int foo(int x) {\n"
+              "  return 1;\n"
+              "  (void)x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo(int x) {\n"
+              "  if (x) goto out;\n"
+              "  return 1;\n"
+              "out:\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+        // switch
+        check("int f() {\n"
+              "    switch (x) {\n"
+              "        case 1: break;\n" // <- error
+              "        case 2: return 1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+        check("int f() {\n"
+              "    switch (x) {\n"
+              "        case 1: return 2; break;\n"
+              "        default: return 1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // if/else
+        check("int f(int x) {\n"
+              "    if (x) {\n"
+              "        return 1;\n"
+              "    }\n" // <- error (missing else)
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+        check("int f(int x) {\n"
+              "    if (x) {\n"
+              "        ;\n" // <- error
+              "    } else {\n"
+              "        return 1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+        // loop
+        check("int f(int x) {\n"
+              "    while (1) {\n"
+              "        dostuff();\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // return {..}
+        check("std::pair<int, int> typeDecl(int tok) {\n"
+              "    if (!tok)\n"
+              "        return {};\n"
+              "    else\n"
+              "        return {1, 2};\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // noreturn function
+        check("int f(int x) { exit(0); }");
+        ASSERT_EQUALS("", errout.str());
+    }
+    // NRVO check
+    void returnLocalStdMove1() {
+        check("struct A{}; A f() { A var; return std::move(var); }");
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Using std::move for returning object by-value from function will affect copy elision optimization."
+                      " More: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-return-move-local\n", errout.str());
+    }
+
+    // RVO, C++03 ctor style
+    void returnLocalStdMove2() {
+        check("struct A{}; A f() { return std::move( A() ); }");
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Using std::move for returning object by-value from function will affect copy elision optimization."
+                      " More: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-return-move-local\n", errout.str());
+    }
+
+    // RVO, new ctor style
+    void returnLocalStdMove3() {
+        check("struct A{}; A f() { return std::move(A{}); }");
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Using std::move for returning object by-value from function will affect copy elision optimization."
+                      " More: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-return-move-local\n", errout.str());
+    }
+
+    // Function argument
+    void returnLocalStdMove4() {
+        check("struct A{}; A f(A a) { return std::move(A{}); }");
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Using std::move for returning object by-value from function will affect copy elision optimization."
+                      " More: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-return-move-local\n", errout.str());
+    }
+
+    void returnLocalStdMove5() {
+        check("struct A{} a; A f1() { return std::move(a); }\n"
+              "A f2() { volatile A var; return std::move(var); }");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

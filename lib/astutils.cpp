@@ -597,7 +597,7 @@ bool precedes(const Token * tok1, const Token * tok2)
     if (!tok1)
         return false;
     if (!tok2)
-        return false;
+        return true;
     return tok1->index() < tok2->index();
 }
 
@@ -1563,7 +1563,8 @@ bool isReturnScope(const Token* const endToken, const Library* library, const To
         if (Token::simpleMatch(prev->link()->tokAt(-2), "} else {"))
             return isReturnScope(prev, library, unknownFunc, functionScope) &&
                    isReturnScope(prev->link()->tokAt(-2), library, unknownFunc, functionScope);
-        if (Token::simpleMatch(prev->link()->previous(), ") {") &&
+        // TODO: Check all cases
+        if (!functionScope && Token::simpleMatch(prev->link()->previous(), ") {") &&
             Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "switch (") &&
             !Token::findsimplematch(prev->link(), "break", prev)) {
             return true;

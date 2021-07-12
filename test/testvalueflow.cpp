@@ -907,6 +907,14 @@ private:
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(1, values.back().intvalue);
 
+        code  = "void f() {\n"
+                "    char a[10];"
+                "    x = sizeof(a[0]);\n"
+                "}";
+        values = tokenValues(code,"( a");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(1, values.back().intvalue);
+
         code = "enum testEnum : uint32_t { a };\n"
                "sizeof(testEnum);";
         values = tokenValues(code,"( testEnum");
@@ -2275,6 +2283,22 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 7U, 1));
         ASSERT_EQUALS(true, testValueOfXInconclusive(code, 7U, 1));
+
+        code = "long foo();\n"
+               "long bar();\n"
+               "int test() {\n"
+               "  bool b = true;\n"
+               "  long a = foo();\n"
+               "  if (a != 0)\n"
+               "    return 1;\n"
+               "  a = bar();\n"
+               "  if (a != 0)\n"
+               "    b = false;\n"
+               "  int x = b;\n"
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 12U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 12U, 0));
     }
 
     void valueFlowAfterCondition() {
@@ -2718,6 +2742,29 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
+
+        code = "int g(int x) {\n"
+               "    switch (x) {\n"
+               "    case 1:\n"
+               "        return 1;\n"
+               "    default:\n"
+               "        return 2;\n"
+               "    }\n"
+               "}\n"
+               "void f(int x) {\n"
+               "    if (x == 3)\n"
+               "        x = g(0);\n"
+               "    int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 12U, 3));
+
+        code = "int g(int x) { throw 0; }\n"
+               "void f(int x) {\n"
+               "    if (x == 3)\n"
+               "        x = g(0);\n"
+               "    int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 5U, 3));
     }
 
     void valueFlowAfterConditionExpr() {
@@ -5607,6 +5654,15 @@ private:
                "  return e;\n"
                "}\n";
         valueOfTok(code, "x");
+
+        code = "void a() {\n"
+               "  int b = 0;\n"
+               "  do {\n"
+               "    for (;;)\n"
+               "      break;\n"
+               "  } while (b < 1);\n"
+               "}\n";
+        valueOfTok(code, "b");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577

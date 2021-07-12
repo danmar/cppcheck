@@ -20,6 +20,7 @@
 #ifndef testsuiteH
 #define testsuiteH
 
+#include "color.h"
 #include "config.h"
 #include "errorlogger.h"
 
@@ -43,6 +44,7 @@ private:
     std::string mTestname;
 
 protected:
+    std::string exename;
     std::string testToRun;
     bool quiet_tests;
 
@@ -102,7 +104,7 @@ protected:
     void processOptions(const options& args);
 public:
     void bughuntingReport(const std::string &/*str*/) OVERRIDE {}
-    void reportOut(const std::string &outmsg) OVERRIDE;
+    void reportOut(const std::string &outmsg, Color c = Color::Reset) OVERRIDE;
     void reportErr(const ErrorMessage &msg) OVERRIDE;
     void run(const std::string &str);
     static void printHelp();
@@ -132,10 +134,11 @@ extern std::ostringstream output;
 #define EXPECT_EQ( EXPECTED, ACTUAL ) assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance_##CLASSNAME; }
 
-#ifdef _WIN32
-#define LOAD_LIB_2( LIB, NAME ) do { { if (((LIB).load("./testrunner", "../cfg/" NAME).errorcode != Library::ErrorCode::OK) && ((LIB).load("./testrunner", "cfg/" NAME).errorcode != Library::ErrorCode::OK)) { complainMissingLib(NAME); return; } } } while(false)
-#else
-#define LOAD_LIB_2( LIB, NAME ) do { { if (((LIB).load("./testrunner", "cfg/" NAME).errorcode != Library::ErrorCode::OK) && ((LIB).load("./bin/testrunner", "bin/cfg/" NAME).errorcode != Library::ErrorCode::OK)) { complainMissingLib(NAME); return; } } } while(false)
-#endif
+#define LOAD_LIB_2( LIB, NAME ) do { \
+    if (((LIB).load(exename.c_str(), NAME).errorcode != Library::ErrorCode::OK)) { \
+        complainMissingLib(NAME); \
+        return; \
+    } \
+} while(false)
 
 #endif

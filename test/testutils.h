@@ -19,6 +19,7 @@
 #ifndef TestUtilsH
 #define TestUtilsH
 
+#include "color.h"
 #include "errorlogger.h"
 #include "settings.h"
 #include "tokenize.h"
@@ -51,7 +52,7 @@ public:
     SimpleSuppressor(Settings &settings, ErrorLogger *next)
         : settings(settings), next(next) {
     }
-    void reportOut(const std::string &outmsg) OVERRIDE {
+    void reportOut(const std::string &outmsg, Color = Color::Reset) OVERRIDE {
         next->reportOut(outmsg);
     }
     void reportErr(const ErrorMessage &msg) OVERRIDE {
