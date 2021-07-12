@@ -1379,6 +1379,15 @@ private:
         check("auto foo4() -> void {}");
         ASSERT_EQUALS("", errout.str());
 
+        check("int f() {\n"
+              "back:\n"
+              "    return 0;\n"
+              "ng:\n"
+              "    x=y;\n"
+              "    goto back;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // unreachable code..
         check("int foo(int x) {\n"
               "  return 1;\n"
