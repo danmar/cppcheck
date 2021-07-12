@@ -506,7 +506,7 @@ struct ForwardTraversal {
                     if (!condTok->hasKnownIntValue() || inLoop) {
                         if (!analyzer->lowerToPossible())
                             return Break(Terminate::Bail);
-                    } else if (condTok->values().front().intvalue == inElse) {
+                    } else if (condTok->values().front().intvalue == static_cast<long long>(inElse)) {
                         return Break();
                     }
                     // Handle for loop
