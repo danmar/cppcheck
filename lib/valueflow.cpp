@@ -1677,6 +1677,13 @@ static void valueFlowGlobalStaticVar(TokenList *tokenList, const Settings *setti
     }
 }
 
+static Analyzer::Result valueFlowForward(Token* startToken,
+        const Token* endToken,
+        const Token* exprTok,
+        std::list<ValueFlow::Value> values,
+        TokenList* const tokenlist,
+        const Settings* settings);
+
 static Analyzer::Result valueFlowForwardVariable(Token* const startToken,
         const Token* const endToken,
         const Variable* const var,
@@ -2424,33 +2431,27 @@ static Analyzer::Result valueFlowForwardVariable(Token* const startToken,
         const Token* const endToken,
         const Variable* const var,
         std::list<ValueFlow::Value> values,
-        std::vector<const Variable*> aliases,
         TokenList* const tokenlist,
         const Settings* const settings)
 {
-    Analyzer::Action actions;
-    Analyzer::Terminate terminate = Analyzer::Terminate::None;
-    for (ValueFlow::Value& v : values) {
-        VariableAnalyzer a(var, v, aliases, tokenlist);
-        Analyzer::Result r = valueFlowGenericForward(startToken, endToken, a, settings);
-        actions |= r.action;
-        if (terminate == Analyzer::Terminate::None)
-            terminate = r.terminate;
-    }
-    return {actions, terminate};
+    const Token * exprTok = Token::findmatch(startToken, "%varid%", var->declarationId());
+    if (!exprTok)
+        exprTok = var->nameToken();
+    return valueFlowForward(startToken, endToken, exprTok, std::move(values), tokenlist, settings);
 }
 
 static Analyzer::Result valueFlowForwardVariable(Token* const startToken,
         const Token* const endToken,
         const Variable* const var,
         std::list<ValueFlow::Value> values,
+        std::vector<const Variable*>,
         TokenList* const tokenlist,
         const Settings* const settings)
 {
-    auto aliases = getAliasesFromValues(values);
     return valueFlowForwardVariable(
-               startToken, endToken, var, std::move(values), std::move(aliases), tokenlist, settings);
+               startToken, endToken, var, std::move(values), tokenlist, settings);
 }
+
 
 // Old deprecated version
 static bool valueFlowForwardVariable(Token* const startToken,
@@ -2478,7 +2479,7 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     ExpressionAnalyzer(const Token* e, const ValueFlow::Value& val, const TokenList* t)
         : SingleValueFlowAnalyzer(val, t), expr(e), local(true), unknown(false) {
 
-        setupExprVarIds();
+        setupExprVarIds(expr);
     }
 
     virtual const ValueType* getValueType(const Token*) const OVERRIDE {
@@ -2486,12 +2487,23 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     }
 
     static bool nonLocal(const Variable* var, bool deref) {
-        return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isReference() || var->isExtern();
+        return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) ||
+               var->isStatic() || var->isReference() || var->isExtern();
     }
 
-    void setupExprVarIds() {
-        visitAstNodes(expr,
-        [&](const Token *tok) {
+    void setupExprVarIds(const Token* start, int depth = 4) {
+        if (depth < 0)
+            return;
+        visitAstNodes(start, [&](const Token* tok) {
+            for (const ValueFlow::Value& v : tok->values()) {
+                if (!v.isLocalLifetimeValue())
+                    continue;
+                if (!v.tokvalue)
+                    continue;
+                if (v.tokvalue == tok)
+                    continue;
+                setupExprVarIds(v.tokvalue, depth - 1);
+            }
             if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
                 // unknown variable
                 unknown = true;
@@ -2500,10 +2512,13 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
             if (tok->varId() > 0) {
                 varids[tok->varId()] = tok->variable();
                 if (!Token::simpleMatch(tok->previous(), ".")) {
-                    const Variable *var = tok->variable();
-                    if (var && var->isReference() && var->isLocal() && Token::Match(var->nameToken(), "%var% [=(]") && !isGlobalData(var->nameToken()->next()->astOperand2(), isCPP()))
+                    const Variable* var = tok->variable();
+                    if (var && var->isReference() && var->isLocal() && Token::Match(var->nameToken(), "%var% [=(]") &&
+                        !isGlobalData(var->nameToken()->next()->astOperand2(), isCPP()))
                         return ChildrenToVisit::none;
-                    const bool deref = tok->astParent() && (tok->astParent()->isUnaryOp("*") || (tok->astParent()->str() == "[" && tok == tok->astParent()->astOperand1()));
+                    const bool deref = tok->astParent() &&
+                                       (tok->astParent()->isUnaryOp("*") ||
+                                        (tok->astParent()->str() == "[" && tok == tok->astParent()->astOperand1()));
                     local &= !nonLocal(tok->variable(), deref);
                 }
             }
@@ -2628,11 +2643,7 @@ ValuePtr<Analyzer> makeAnalyzer(Token* exprTok, const ValueFlow::Value& value, c
 {
     std::list<ValueFlow::Value> values = {value};
     const Token* expr = solveExprValues(exprTok, values);
-    if (expr->variable()) {
-        return VariableAnalyzer(expr->variable(), value, getAliasesFromValues(values), tokenlist);
-    } else {
-        return ExpressionAnalyzer(expr, value, tokenlist);
-    }
+    return ExpressionAnalyzer(expr, value, tokenlist);
 }
 
 static Analyzer::Result valueFlowForward(Token* startToken,
@@ -2643,12 +2654,23 @@ static Analyzer::Result valueFlowForward(Token* startToken,
         const Settings* settings)
 {
     const Token* expr = solveExprValues(exprTok, values);
-    if (expr->variable()) {
-        return valueFlowForwardVariable(startToken, endToken, expr->variable(), values, tokenlist, settings);
-    } else {
-        return valueFlowForwardExpression(startToken, endToken, expr, values, tokenlist, settings);
+    return valueFlowForwardExpression(startToken, endToken, expr, values, tokenlist, settings);
+}
+
+
+static void valueFlowReverse(Token* tok,
+                             const Token* const endToken,
+                             const Token* const varToken,
+                             const std::list<ValueFlow::Value>& values,
+                             TokenList* tokenlist,
+                             const Settings* settings)
+{
+    for (const ValueFlow::Value& v : values) {
+        ExpressionAnalyzer a(varToken, v, tokenlist);
+        valueFlowGenericReverse(tok, endToken, a, settings);
     }
 }
+
 
 static void valueFlowReverse(TokenList* tokenlist,
                              Token* tok,
@@ -2661,34 +2683,7 @@ static void valueFlowReverse(TokenList* tokenlist,
     std::list<ValueFlow::Value> values = {val};
     if (val2.varId != 0)
         values.push_back(val2);
-    const Variable* var = varToken->variable();
-    auto aliases = getAliasesFromValues(values);
-    for (ValueFlow::Value& v : values) {
-        VariableAnalyzer a(var, v, aliases, tokenlist);
-        valueFlowGenericReverse(tok, a, settings);
-    }
-}
-
-static void valueFlowReverse(Token* tok,
-                             const Token* const endToken,
-                             const Token* const varToken,
-                             const std::list<ValueFlow::Value>& values,
-                             TokenList* tokenlist,
-                             const Settings* settings)
-{
-    const Variable* var = varToken->variable();
-    if (var) {
-        auto aliases = getAliasesFromValues(values);
-        for (const ValueFlow::Value& v : values) {
-            VariableAnalyzer a(var, v, aliases, tokenlist);
-            valueFlowGenericReverse(tok, endToken, a, settings);
-        }
-    } else {
-        for (const ValueFlow::Value& v : values) {
-            ExpressionAnalyzer a(varToken, v, tokenlist);
-            valueFlowGenericReverse(tok, endToken, a, settings);
-        }
-    }
+    valueFlowReverse(tok, nullptr, varToken, values, tokenlist, settings);
 }
 
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
