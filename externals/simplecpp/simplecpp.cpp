@@ -1504,8 +1504,11 @@ namespace simplecpp {
                                 expanded = true;
                             }
                         }
-                        if (!expanded)
+                        if (!expanded) {
                             tokens->push_back(new Token(*tok));
+                            if (tok->macro.empty() && (par > 0 || tok->str() != "("))
+                                tokens->back()->macro = name();
+                        }
                     }
 
                     if (tok->op == '(')
@@ -1609,7 +1612,14 @@ namespace simplecpp {
                     if (sameline(tok, tok->next) && tok->next && tok->next->op == '#' && tok->next->next && tok->next->next->op == '#') {
                         if (!sameline(tok, tok->next->next->next))
                             throw invalidHashHash(tok->location, name());
-                        output->push_back(newMacroToken(expandArgStr(tok, parametertokens2), loc, isReplaced(expandedmacros)));
+                        TokenList new_output(files);
+                        if (!expandArg(&new_output, tok, parametertokens2))
+                            output->push_back(newMacroToken(tok->str(), loc, isReplaced(expandedmacros)));
+                        else if (new_output.empty()) // placemarker token
+                            output->push_back(newMacroToken("", loc, isReplaced(expandedmacros)));
+                        else
+                            for (const Token *tok2 = new_output.cfront(); tok2; tok2 = tok2->next)
+                                output->push_back(newMacroToken(tok2->str(), loc, isReplaced(expandedmacros)));
                         tok = tok->next;
                     } else {
                         tok = expandToken(output, loc, tok, macros, expandedmacros, parametertokens2);
@@ -1805,27 +1815,11 @@ namespace simplecpp {
                     partok = it->second.expand(output, loc, partok, macros, expandedmacros);
                 else {
                     output->push_back(newMacroToken(partok->str(), loc, isReplaced(expandedmacros)));
+                    output->back()->macro = partok->macro;
                     partok = partok->next;
                 }
             }
             return true;
-        }
-
-        /**
-         * Get string for token. If token is argument, the expanded string is returned.
-         * @param tok              The token
-         * @param parametertokens  parameters given when expanding this macro
-         * @return string
-         */
-        std::string expandArgStr(const Token *tok, const std::vector<const Token *> &parametertokens) const {
-            TokenList tokens(files);
-            if (expandArg(&tokens, tok, parametertokens)) {
-                std::string s;
-                for (const Token *tok2 = tokens.cfront(); tok2; tok2 = tok2->next)
-                    s += tok2->str();
-                return s;
-            }
-            return tok->str();
         }
 
         /**

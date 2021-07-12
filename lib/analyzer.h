@@ -111,6 +111,16 @@ struct Analyzer {
         unsigned int mFlag;
     };
 
+    enum class Terminate { None, Bail, Escape, Modified, Inconclusive, Conditional };
+
+    struct Result {
+        Result(Action action = Action::None, Terminate terminate = Terminate::None)
+            : action(action), terminate(terminate)
+        {}
+        Action action;
+        Terminate terminate;
+    };
+
     enum class Direction { Forward, Reverse };
 
     struct Assume {

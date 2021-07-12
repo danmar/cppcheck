@@ -23,6 +23,7 @@
 #include <QMutex>
 #include <QObject>
 #include <QStringList>
+#include "color.h"
 #include "errorlogger.h"
 #include "importproject.h"
 
@@ -72,7 +73,7 @@ public:
     /**
     * ErrorLogger methods
     */
-    void reportOut(const std::string &outmsg) override;
+    void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;
     void bughuntingReport(const std::string &str) override;
 

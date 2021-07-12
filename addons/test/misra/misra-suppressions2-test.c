@@ -12,3 +12,8 @@ int misra_5_2_field_hides_field1_31y;//5.2
 };
 const char *s41_1 = "\x41g"; // 4.1
 const char *s41_2 = "\x41\x42";
+
+// cppcheck-suppress misra-c2012-5.7
+struct misra_5_7_violation_t {
+    int x;
+};

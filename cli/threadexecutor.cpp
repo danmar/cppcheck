@@ -18,6 +18,7 @@
 
 #include "threadexecutor.h"
 
+#include "color.h"
 #include "config.h"
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
@@ -340,9 +341,9 @@ void ThreadExecutor::writeToPipe(PipeSignal type, const std::string &data)
     delete [] out;
 }
 
-void ThreadExecutor::reportOut(const std::string &outmsg)
+void ThreadExecutor::reportOut(const std::string &outmsg, Color c)
 {
-    writeToPipe(REPORT_OUT, outmsg);
+    writeToPipe(REPORT_OUT, ::toString(c) + outmsg + ::toString(Color::Reset));
 }
 
 void ThreadExecutor::reportErr(const ErrorMessage &msg)
@@ -504,11 +505,11 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
     return result;
 }
 
-void ThreadExecutor::reportOut(const std::string &outmsg)
+void ThreadExecutor::reportOut(const std::string &outmsg, Color c)
 {
     EnterCriticalSection(&mReportSync);
 
-    mErrorLogger.reportOut(outmsg);
+    mErrorLogger.reportOut(outmsg, c);
 
     LeaveCriticalSection(&mReportSync);
 }
@@ -571,7 +572,7 @@ unsigned int ThreadExecutor::check()
     return 0;
 }
 
-void ThreadExecutor::reportOut(const std::string &/*outmsg*/)
+void ThreadExecutor::reportOut(const std::string &/*outmsg*/, Color)
 {
 
 }

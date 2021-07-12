@@ -1,4 +1,5 @@
 
+#include "color.h"
 #include "cppcheck.h"
 #include "type2.h"
 
@@ -19,7 +20,7 @@ public:
         cppcheck.check("test.cpp", code);
     }
 
-    void reportOut(const std::string &outmsg) OVERRIDE {
+    void reportOut(const std::string &outmsg, Color) OVERRIDE {
         (void)outmsg;
     }
     void reportErr(const ErrorMessage &msg) OVERRIDE {

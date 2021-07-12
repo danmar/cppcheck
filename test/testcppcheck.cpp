@@ -17,6 +17,7 @@
  */
 
 #include "check.h"
+#include "color.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
 #include "testsuite.h"
@@ -37,7 +38,7 @@ private:
     public:
         std::list<std::string> id;
 
-        void reportOut(const std::string & /*outmsg*/) OVERRIDE {}
+        void reportOut(const std::string & /*outmsg*/, Color = Color::Reset) OVERRIDE {}
         void bughuntingReport(const std::string & /*str*/) OVERRIDE {}
 
         void reportErr(const ErrorMessage &msg) OVERRIDE {

@@ -6951,17 +6951,23 @@ private:
                                  "    virtual int f() = 0;\n"
                                  "};\n"
                                  "class A : B {\n"
-                                 "    int f();\n"
+                                 "    int f();\n" // <- not explicitly virtual
                                  "    A() {f();}\n"
                                  "};\n"
                                  "int A::f() { return 1; }");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:5]: (style) Virtual function 'f' is called from constructor 'A()' at line 6. Dynamic binding is not used.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         checkVirtualFunctionCall("class A\n"
                                  "{\n"
                                  "    A() { A::f(); }\n"
                                  "    virtual void f() {}\n"
                                  "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkVirtualFunctionCall("class A : B {\n"
+                                 "    int f() final { return 1; }\n"
+                                 "    A() { f(); }\n"
+                                 "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 

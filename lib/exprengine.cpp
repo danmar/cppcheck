@@ -476,7 +476,7 @@ namespace {
             }
         }
 
-        std::string getNewSymbolName() OVERRIDE {
+        std::string getNewSymbolName() FINAL {
             return "$" + std::to_string(++(*symbolValueIndex));
         }
 

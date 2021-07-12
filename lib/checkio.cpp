@@ -106,6 +106,7 @@ struct Filepointer {
     nonneg int op_indent;
     enum class AppendMode { UNKNOWN_AM, APPEND, APPEND_EX };
     AppendMode append_mode;
+    std::string filename;
     explicit Filepointer(OpenMode mode_ = OpenMode::UNKNOWN_OM)
         : mode(mode_), mode_indent(0), lastOperation(Operation::NONE), op_indent(0), append_mode(AppendMode::UNKNOWN_AM) {
     }
@@ -174,6 +175,7 @@ void CheckIO::checkFileUsage()
             } else if (Token::Match(tok, "%name% (") && tok->previous() && (!tok->previous()->isName() || Token::Match(tok->previous(), "return|throw"))) {
                 std::string mode;
                 const Token* fileTok = nullptr;
+                const Token* fileNameTok = nullptr;
                 Filepointer::Operation operation = Filepointer::Operation::NONE;
 
                 if ((tok->str() == "fopen" || tok->str() == "freopen" || tok->str() == "tmpfile" ||
@@ -187,6 +189,8 @@ void CheckIO::checkFileUsage()
                         mode = "wb+";
                     fileTok = tok->tokAt(-2);
                     operation = Filepointer::Operation::OPEN;
+                    if (Token::Match(tok, "fopen ( %str% ,"))
+                        fileNameTok = tok->tokAt(2);
                 } else if (windows && Token::Match(tok, "fopen_s|freopen_s|_wfopen_s|_wfreopen_s ( & %name%")) {
                     const Token* modeTok = tok->tokAt(2)->nextArgument()->nextArgument();
                     if (modeTok && modeTok->tokType() == Token::eString)
@@ -266,10 +270,21 @@ void CheckIO::checkFileUsage()
                 if (filepointers.find(fileTok->varId()) == filepointers.end()) { // function call indicates: Its a File
                     filepointers.insert(std::make_pair(fileTok->varId(), Filepointer(OpenMode::UNKNOWN_OM)));
                 }
+
                 Filepointer& f = filepointers[fileTok->varId()];
 
                 switch (operation) {
                 case Filepointer::Operation::OPEN:
+                    if (fileNameTok) {
+                        for (std::map<int, Filepointer>::const_iterator it = filepointers.cbegin(); it != filepointers.cend(); ++it) {
+                            const Filepointer &fptr = it->second;
+                            if (fptr.filename == fileNameTok->str() && (fptr.mode == OpenMode::RW_MODE || fptr.mode == OpenMode::WRITE_MODE))
+                                incompatibleFileOpenError(tok, fileNameTok->str());
+                        }
+
+                        f.filename = fileNameTok->str();
+                    }
+
                     f.mode = getMode(mode);
                     if (mode.find('a') != std::string::npos) {
                         if (f.mode == OpenMode::RW_MODE)
@@ -368,6 +383,12 @@ void CheckIO::seekOnAppendedFileError(const Token *tok)
 {
     reportError(tok, Severity::warning,
                 "seekOnAppendedFile", "Repositioning operation performed on a file opened in append mode has no effect.", CWE398, Certainty::normal);
+}
+
+void CheckIO::incompatibleFileOpenError(const Token *tok, const std::string &filename)
+{
+    reportError(tok, Severity::warning,
+                "incompatibleFileOpen", "The file '" + filename + "' is opened for read and write access at the same time on different streams", CWE664, Certainty::normal);
 }
 
 

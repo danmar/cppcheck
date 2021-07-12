@@ -249,17 +249,27 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
             if (indentlevel <= 0)
                 break;
             --indentlevel;
+            if (Token::simpleMatch(tok2->previous(), "else {"))
+                tok2 = tok2->linkAt(-2)->previous();
         }
         if (tok2->str() == "}") {
-            const Token *cond = tok2->link();
-            cond = Token::simpleMatch(cond->previous(), ") {") ? cond->linkAt(-1) : nullptr;
-            if (cond && conditionIsFalse(cond->astOperand2(), state))
-                tok2 = cond->previous();
-            else if (cond && conditionIsTrue(cond->astOperand2(), state)) {
-                ++indentlevel;
-                continue;
-            } else
-                break;
+            const Token *cond = getCondTokFromEnd(tok2);
+            const bool inElse = Token::simpleMatch(tok2->link()->previous(), "else {");
+            if (cond) {
+                if (conditionIsFalse(cond, state)) {
+                    if (inElse) {
+                        ++indentlevel;
+                        continue;
+                    }
+                    tok2 = cond->astParent()->previous();
+                } else if (conditionIsTrue(cond, state)) {
+                    if (inElse)
+                        tok2 = tok2->link()->tokAt(-2);
+                    ++indentlevel;
+                    continue;
+                }
+            }
+            break;
         }
     }
 }
@@ -354,8 +364,8 @@ ProgramMemory ProgramMemoryState::get(const Token* tok, const Token* ctx, const 
         start = tok;
 
     if (!ctx || precedes(start, ctx)) {
-        local.addState(start, vars);
         local.removeModifiedVars(start);
+        local.addState(start, vars);
     } else {
         local.removeModifiedVars(ctx);
     }
