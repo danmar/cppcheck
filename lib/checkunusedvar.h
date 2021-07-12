@@ -76,6 +76,7 @@ private:
     bool isEmptyType(const Type* type);
     bool isFunctionWithoutSideEffects(const Function& func, const Token* functionUsageToken,
                                       std::list<const Function*> checkedFuncs);
+    bool isGlobalInExpression(const Token* token);
 
     // Error messages..
     void unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname, bool isUnion = false);

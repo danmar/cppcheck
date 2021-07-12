@@ -1596,6 +1596,7 @@ bool CheckUnusedVar::isEmptyType(const Type* type)
     return emptyType;
 }
 
+
 bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const Token* functionUsageToken,
         std::list<const Function*> checkedFuncs)
 {
@@ -1604,15 +1605,38 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
         return false;
     }
 
-    for (const Token* argsToken = functionUsageToken->next(); !Token::simpleMatch(argsToken, ")"); argsToken = argsToken->next()) {
-        const Variable* argVar = argsToken->variable();
-        if (argVar && argVar->isGlobal()) {
-            return false; // TODO: analyze global variable usage
+    // search for global variables in arguments list
+    std::vector<unsigned int> globalVarsIndexes;
+    unsigned int usageVarIndex = 0;
+    for (const Token* arg : getArguments(functionUsageToken)) {
+        const bool containsGlobal = isGlobalInExpression(arg);
+        if (containsGlobal) {
+            globalVarsIndexes.push_back(usageVarIndex);
+        }
+        usageVarIndex++;
+    }
+
+    // match global variables from function usage with arguments at function declaration
+    std::set<const Variable*> pointersToGlobals;
+    if (!globalVarsIndexes.empty()) {
+        unsigned int definitionVarIndex = 0;
+        for (const Token* defArgToken = func.argDef->next(); !Token::simpleMatch(defArgToken, ")"); 
+            defArgToken = defArgToken->next())
+        {
+            const Variable* argVar = defArgToken->variable();
+            if (argVar) {
+                if (std::find(globalVarsIndexes.begin(), globalVarsIndexes.end(), definitionVarIndex) != 
+                    globalVarsIndexes.end())
+                {
+                    pointersToGlobals.insert(argVar);
+                }
+                definitionVarIndex++;
+            }
         }
     }
 
+    // main check loop: go through all function body
     bool sideEffectReturnFound = false;
-    std::set<const Variable*> pointersToGlobals;
     for (Token* bodyToken = func.functionScope->bodyStart->next(); bodyToken != func.functionScope->bodyEnd;
          bodyToken = bodyToken->next()) {
         // check variable inside function body
@@ -1674,3 +1698,32 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
 
     return !sideEffectReturnFound;
 }
+
+
+bool CheckUnusedVar::isGlobalInExpression(const Token* token) {
+    if (!token) {
+        return false;
+    }
+
+    if (token->isName() || token->isLiteral()) {
+        const Variable* var = token->variable();
+        if (var && var->isGlobal()) {
+            return true;
+        }
+    }
+
+    const Token* astOp1 = token->astOperand1();
+    const bool isGlobalAtOp1 = isGlobalInExpression(astOp1);
+    if (isGlobalAtOp1) {
+        return true;
+    }
+
+    const Token* astOp2 = token->astOperand2();
+    const bool isGlobalAtOp2 = isGlobalInExpression(astOp2);
+    if (isGlobalAtOp2) {
+        return true;
+    }
+
+    return false;
+}
+
