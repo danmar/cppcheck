@@ -76,6 +76,7 @@
     <ClCompile Include="checkunusedvar.cpp" />
     <ClCompile Include="checkvaarg.cpp" />
     <ClCompile Include="clangimport.cpp" />
+    <ClCompile Include="color.cpp" />
     <ClCompile Include="cppcheck.cpp" />
     <ClCompile Include="ctu.cpp" />
     <ClCompile Include="errorlogger.cpp" />
@@ -137,6 +138,7 @@
     <ClInclude Include="checkunusedvar.h" />
     <ClInclude Include="checkvaarg.h" />
     <ClInclude Include="clangimport.h" />
+    <ClInclude Include="color.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="cppcheck.h" />
     <ClInclude Include="ctu.h" />
