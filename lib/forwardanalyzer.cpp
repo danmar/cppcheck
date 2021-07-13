@@ -524,7 +524,9 @@ struct ForwardTraversal {
                     if (!condTok->hasKnownIntValue() || inLoop) {
                         if (!analyzer->lowerToPossible())
                             return Break(Analyzer::Terminate::Bail);
-#pragma warning (suppress : 4805) // unsafe mix of types
+#ifdef _MSC_VER
+    #pragma warning (suppress : 4805) // unsafe mix of types
+#endif
                     } else if (condTok->values().front().intvalue == inElse) {
                         return Break();
                     }

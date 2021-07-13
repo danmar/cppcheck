@@ -22,6 +22,10 @@
 
 #include <limits>
 
+#ifdef _MSC_VER
+    #pragma warning (disable : 4146) // unary minus operator applied to unsigned type
+#endif
+
 struct InternalError;
 
 
@@ -364,13 +368,11 @@ private:
             ASSERT_EQUALS(u, MathLib::toULongNumber("0xFFFFFFFFFFFFFFFF"));
         }
         {
-#pragma warning (suppress : 4146) // unary minus operator applied to unsigned type
             const MathLib::bigint i = -0xFFFFFFFFFFFFFFFF;
             ASSERT_EQUALS(i, MathLib::toLongNumber(std::to_string(i)));
             ASSERT_EQUALS(i, MathLib::toLongNumber("-0xFFFFFFFFFFFFFFFF"));
         }
         {
-#pragma warning (suppress : 4146)
             const MathLib::biguint u = -0xFFFFFFFFFFFFFFFF;
             ASSERT_EQUALS(u, MathLib::toULongNumber(std::to_string(u)));
             ASSERT_EQUALS(u, MathLib::toULongNumber("-0xFFFFFFFFFFFFFFFF"));
@@ -393,13 +395,11 @@ private:
             ASSERT_EQUALS(u, MathLib::toULongNumber("01777777777777777777777"));
         }
         {
-#pragma warning (suppress : 4146)
             const MathLib::bigint i = -01777777777777777777777;
             ASSERT_EQUALS(i, MathLib::toLongNumber(std::to_string(i)));
             ASSERT_EQUALS(i, MathLib::toLongNumber("-01777777777777777777777"));
         }
         {
-#pragma warning (suppress : 4146)
             const MathLib::biguint u = -01777777777777777777777;
             ASSERT_EQUALS(u, MathLib::toULongNumber(std::to_string(u)));
             ASSERT_EQUALS(u, MathLib::toULongNumber("-01777777777777777777777"));
@@ -422,13 +422,11 @@ private:
             ASSERT_EQUALS(u, MathLib::toULongNumber("18446744073709551615"));
         }
         {
-#pragma warning (suppress : 4146)
             const MathLib::bigint i = -18446744073709551615;
             ASSERT_EQUALS(i, MathLib::toLongNumber(std::to_string(i)));
             ASSERT_EQUALS(i, MathLib::toLongNumber("-18446744073709551615"));
         }
         {
-#pragma warning (suppress : 4146)
             const MathLib::biguint u = -18446744073709551615;
             ASSERT_EQUALS(u, MathLib::toULongNumber(std::to_string(u)));
             ASSERT_EQUALS(u, MathLib::toULongNumber("-18446744073709551615"));
