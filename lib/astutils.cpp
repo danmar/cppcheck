@@ -1396,6 +1396,8 @@ bool isConstExpression(const Token *tok, const Library& library, bool pure, bool
 {
     if (!tok)
         return true;
+    if (tok->variable() && tok->variable()->isVolatile())
+        return false;
     if (tok->isName() && tok->next()->str() == "(") {
         if (!tok->function() && !Token::Match(tok->previous(), ".|::") && !library.isFunctionConst(tok->str(), pure))
             return false;

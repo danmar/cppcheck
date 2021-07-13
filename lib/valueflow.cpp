@@ -2537,7 +2537,7 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     }
 
     virtual bool match(const Token* tok) const OVERRIDE {
-        return isSameExpression(isCPP(), true, expr, tok, getSettings()->library, true, true);
+        return tok->exprId() == expr->exprId() || isSameExpression(isCPP(), true, expr, tok, getSettings()->library, true, true);
     }
 
     virtual bool isGlobal() const OVERRIDE {
@@ -4012,15 +4012,14 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "if ("))
                 continue;
-            // Skip known values
-            if (tok->next()->hasKnownValue())
-                continue;
             Token * parenTok = tok->next();
             if (!Token::simpleMatch(parenTok->link(), ") {"))
                 continue;
             Token * blockTok = parenTok->link()->tokAt(1);
             const Token* condTok = parenTok->astOperand2();
             if (condTok->hasKnownIntValue())
+                continue;
+            if (!isConstExpression(condTok, settings->library, true, tokenlist->isCPP()))
                 continue;
             const bool is1 = (condTok->isComparisonOp() || condTok->tokType() == Token::eLogicalOp || astIsBool(condTok));
 
@@ -4387,11 +4386,10 @@ struct ConditionHandler {
                 Condition cond = parse(tok, settings);
                 if (!cond.vartok)
                     continue;
-                if (cond.vartok->variable() && cond.vartok->variable()->isVolatile())
-                    continue;
                 if (cond.true_values.empty() || cond.false_values.empty())
                     continue;
-
+                if (!isConstExpression(cond.vartok, settings->library, true, tokenlist->isCPP()))
+                    continue;
                 if (exprDependsOnThis(cond.vartok))
                     continue;
                 std::vector<const Variable*> vars = getExprVariables(cond.vartok, tokenlist, symboldatabase, settings);
