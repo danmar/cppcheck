@@ -524,7 +524,8 @@ struct ForwardTraversal {
                     if (!condTok->hasKnownIntValue() || inLoop) {
                         if (!analyzer->lowerToPossible())
                             return Break(Analyzer::Terminate::Bail);
-                    } else if (condTok->values().front().intvalue == static_cast<long long>(inElse)) {
+#pragma warning (suppress : 4805) // unsafe mix of types
+                    } else if (condTok->values().front().intvalue == inElse) {
                         return Break();
                     }
                     // Handle for loop
