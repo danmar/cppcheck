@@ -181,6 +181,12 @@ bool FileLister::fileExists(const std::string &path)
 #include <sys/stat.h>
 #include <cerrno>
 
+#ifndef NAME_MAX
+#ifdef MAXNAMLEN
+#define NAME_MAX MAXNAMLEN
+#endif
+#endif
+
 
 static std::string addFiles2(std::map<std::string, std::size_t> &files,
                              const std::string &path,
