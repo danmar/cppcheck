@@ -2192,9 +2192,9 @@ struct ValueFlowAnalyzer : Analyzer {
             if (tok->function()) {
                 if (!tok->function()->isConst() && !tok->function()->isPure())
                     return Action::Invalid;
-            } else if (const Library::Function* f = getSettings()->library.getFunction(tok)) {
-                if (!f->ispure && !f->isconst)
-                    return Action::Invalid;
+            } else if (getSettings()->library.getFunction(tok)) {
+                // Assume library functions doesn't modify user-global variables
+                return Action::None;
             } else {
                 return Action::Invalid;
             }
