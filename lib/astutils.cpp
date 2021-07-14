@@ -2094,6 +2094,20 @@ bool isVariablesChanged(const Token* start,
     return false;
 }
 
+bool isThisChanged(const Token* tok, int indirect, const Settings* settings, bool cpp)
+{
+    if (Token::Match(tok->previous(), "%name% (")) {
+        if (tok->previous()->function()) {
+            return (!tok->previous()->function()->isConst());
+        } else if (!tok->previous()->isKeyword()) {
+            return true;
+        }
+    }
+    if (isVariableChanged(tok, indirect, settings, cpp))
+        return true;
+    return false;
+}
+
 bool isThisChanged(const Token* start, const Token* end, int indirect, const Settings* settings, bool cpp)
 {
     if (!precedes(start, end))
@@ -2101,17 +2115,7 @@ bool isThisChanged(const Token* start, const Token* end, int indirect, const Set
     for (const Token* tok = start; tok != end; tok = tok->next()) {
         if (!exprDependsOnThis(tok))
             continue;
-        if (Token::Match(tok->previous(), "%name% (")) {
-            if (tok->previous()->function()) {
-                if (!tok->previous()->function()->isConst())
-                    return true;
-                else
-                    continue;
-            } else if (!tok->previous()->isKeyword()) {
-                return true;
-            }
-        }
-        if (isVariableChanged(tok, indirect, settings, cpp))
+        if (isThisChanged(tok, indirect, settings, cpp))
             return true;
     }
     return false;

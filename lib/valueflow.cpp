@@ -2032,6 +2032,12 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
+    virtual Action isThisModified(const Token* tok) const {
+        if (isThisChanged(tok, 0, getSettings(), isCPP()))
+            return Action::Invalid;
+        return Action::None;
+    }
+
     virtual Action isWritable(const Token* tok, Direction d) const {
         const ValueFlow::Value* value = getValue(tok);
         if (!value)
@@ -2178,7 +2184,7 @@ struct ValueFlowAnalyzer : Analyzer {
         }
 
         if (dependsOnThis() && exprDependsOnThis(tok))
-            return isAliasModified(tok);
+            return isThisModified(tok);
 
         // TODO: Check if function is pure
         if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
@@ -4402,8 +4408,6 @@ struct ConditionHandler {
                 if (cond.true_values.empty() || cond.false_values.empty())
                     continue;
                 if (!isConstExpression(cond.vartok, settings->library, true, tokenlist->isCPP()))
-                    continue;
-                if (exprDependsOnThis(cond.vartok))
                     continue;
                 std::vector<const Variable*> vars = getExprVariables(cond.vartok, tokenlist, symboldatabase, settings);
                 if (std::any_of(vars.begin(), vars.end(), [](const Variable* var) {
