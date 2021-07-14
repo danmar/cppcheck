@@ -135,5 +135,7 @@ jobs:
 
       - name: Test addons
         run: |
-          .\cppcheck.exe --addon=misra --inline-suppr --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
+          .\cppcheck.exe --addon=misra --inline-suppr --error-exitcode=1 addons\test\misra\misra-ctu-*-test.c
+          cd addons\test
+          ..\..\cppcheck.exe --dump --suppress=uninitvar --inline-suppr misra\misra-test.c --std=c89 && python3 ..\misra.py -verify misra\misra-test.c.dump
 

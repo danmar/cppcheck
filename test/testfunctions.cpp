@@ -1379,6 +1379,18 @@ private:
         check("auto foo4() -> void {}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void STDCALL foo() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "back:\n"
+              "    return 0;\n"
+              "ng:\n"
+              "    x=y;\n"
+              "    goto back;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // unreachable code..
         check("int foo(int x) {\n"
               "  return 1;\n"
@@ -1426,6 +1438,18 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+        check("int f() {\n"
+              "    if (!0) {\n"
+              "        return 1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    if (!0) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
 
         // loop
         check("int f(int x) {\n"

@@ -269,6 +269,19 @@ void CheckFunctions::checkMissingReturn()
     }
 }
 
+static bool isForwardJump(const Token *gotoToken)
+{
+    if (!Token::Match(gotoToken, "goto %name% ;"))
+        return false;
+    for (const Token *prev = gotoToken; gotoToken; gotoToken = gotoToken->previous()) {
+        if (Token::Match(prev, "%name% :") && prev->str() == gotoToken->next()->str())
+            return true;
+        if (prev->str() == "{" && prev->scope()->type == Scope::eFunction)
+            return false;
+    }
+    return false;
+}
+
 static const Token *checkMissingReturnScope(const Token *tok, const Library &library)
 {
     const Token *lastStatement = nullptr;
@@ -278,6 +291,8 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
         if (tok->str() == "}") {
             for (const Token *prev = tok->link()->previous(); prev && prev->scope() == tok->scope() && !Token::Match(prev, "[;{}]"); prev = prev->previous()) {
                 if (prev->isKeyword() && Token::Match(prev, "return|throw"))
+                    return nullptr;
+                if (prev->str() == "goto" && !isForwardJump(prev))
                     return nullptr;
             }
             if (tok->scope()->type == Scope::ScopeType::eSwitch) {
@@ -301,6 +316,9 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
                 if (!hasDefault)
                     return tok->link();
             } else if (tok->scope()->type == Scope::ScopeType::eIf) {
+                const Token *condition = tok->scope()->classDef->next()->astOperand2();
+                if (condition && condition->hasKnownIntValue() && condition->getKnownIntValue() == 1)
+                    return checkMissingReturnScope(tok, library);
                 return tok;
             } else if (tok->scope()->type == Scope::ScopeType::eElse) {
                 const Token *errorToken = checkMissingReturnScope(tok, library);
@@ -315,6 +333,8 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
             return nullptr;
         }
         if (tok->isKeyword() && Token::Match(tok, "return|throw"))
+            return nullptr;
+        if (tok->str() == "goto" && !isForwardJump(tok))
             return nullptr;
         if (Token::Match(tok, "%name% (") && library.isnoreturn(tok))
             return nullptr;

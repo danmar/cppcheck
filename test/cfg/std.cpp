@@ -7,28 +7,75 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
-#include <cstring>
+#include <bitset>
+#include <cassert>
+#include <cctype>
+#include <cfenv>
+#include <cinttypes>
+#include <clocale>
+#include <cmath>
+#include <complex>
+#include <csetjmp>
+#include <csignal>
+#include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
-#include <cctype>
-#include <clocale>
-#include <complex>
-#include <cassert>
 #include <cwchar>
-#include <cfenv>
-#include <csetjmp>
-#include <cmath>
-#include <csignal>
-#include <iostream>
-#include <iomanip>
-#include <cinttypes>
-#include <istream>
 #include <fstream>
-#include <vector>
-#include <cstdarg>
 #include <functional>
-#include <bitset>
+#include <iomanip>
+#include <iostream>
+#include <istream>
+#include <iterator>
+#include <vector>
+
+void uninitvar_std_next(const std::vector<int> &v, int count)
+{
+    // No warning shall be shown:
+    if (std::next(v.begin()) != v.end()) {}
+    if (std::next(v.begin(), count) != v.end()) {}
+
+    std::vector<int>::iterator it;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::next(it) != v.end()) {}
+
+    std::vector<int>::const_iterator const_it;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::next(const_it) != v.end()) {}
+
+    std::vector<int>::reverse_iterator rit;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::next(rit) != v.rend()) {}
+
+    std::vector<int>::const_reverse_iterator const_rit;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::next(const_rit) != v.rend()) {}
+}
+
+void uninitvar_std_prev(const std::vector<int> &v, int count)
+{
+    // No warning shall be shown:
+    if (std::prev(v.begin()) != v.end()) {}
+    if (std::prev(v.begin(), count) != v.end()) {}
+
+    std::vector<int>::iterator it;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::prev(it) != v.end()) {}
+
+    std::vector<int>::const_iterator const_it;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::prev(const_it) != v.end()) {}
+
+    std::vector<int>::reverse_iterator rit;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::prev(rit) != v.rend()) {}
+
+    std::vector<int>::const_reverse_iterator const_rit;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::prev(const_rit) != v.rend()) {}
+}
 
 void overlappingWriteFunction_wcscat(wchar_t *src, wchar_t *dest)
 {
