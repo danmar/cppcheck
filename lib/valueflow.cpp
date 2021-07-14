@@ -1980,6 +1980,9 @@ struct ValueFlowAnalyzer : Analyzer {
     virtual bool isGlobal() const {
         return false;
     }
+    virtual bool dependsOnThis() const {
+        return false;
+    }
 
     virtual bool invalid() const {
         return false;
@@ -2173,6 +2176,9 @@ struct ValueFlowAnalyzer : Analyzer {
             if (a != Action::None)
                 return a;
         }
+
+        if (dependsOnThis() && exprDependsOnThis(tok))
+            return isAliasModified(tok);
 
         // TODO: Check if function is pure
         if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
@@ -2473,12 +2479,14 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     const Token* expr;
     bool local;
     bool unknown;
+    bool dependOnThis;
 
-    ExpressionAnalyzer() : SingleValueFlowAnalyzer(), expr(nullptr), local(true), unknown(false) {}
+    ExpressionAnalyzer() : SingleValueFlowAnalyzer(), expr(nullptr), local(true), unknown(false), dependOnThis(false) {}
 
     ExpressionAnalyzer(const Token* e, const ValueFlow::Value& val, const TokenList* t)
-        : SingleValueFlowAnalyzer(val, t), expr(e), local(true), unknown(false) {
+        : SingleValueFlowAnalyzer(val, t), expr(e), local(true), unknown(false), dependOnThis(false) {
 
+        dependOnThis = exprDependsOnThis(expr);
         setupExprVarIds(expr);
     }
 
@@ -2539,6 +2547,10 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
 
     virtual bool match(const Token* tok) const OVERRIDE {
         return tok->exprId() == expr->exprId() || isSameExpression(isCPP(), true, expr, tok, getSettings()->library, true, true);
+    }
+
+    virtual bool dependsOnThis() const OVERRIDE {
+        return dependOnThis;
     }
 
     virtual bool isGlobal() const OVERRIDE {
