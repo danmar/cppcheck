@@ -2546,7 +2546,7 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     }
 
     virtual bool match(const Token* tok) const OVERRIDE {
-        return tok->exprId() == expr->exprId() || isSameExpression(isCPP(), true, expr, tok, getSettings()->library, true, true);
+        return tok->exprId() == expr->exprId();
     }
 
     virtual bool dependsOnThis() const OVERRIDE {
