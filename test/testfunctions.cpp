@@ -1373,8 +1373,20 @@ private:
         check("int f() {}");
         ASSERT_EQUALS("[test.cpp:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
 
-        check("int main(void) {}");
-        ASSERT_EQUALS("", errout.str());
+        {
+            const char code[] = "int main(void) {}";
+            Settings s;
+
+            s.standards.c = Standards::C89;
+            check(code, "test.c", &s); // c code (c89)
+            ASSERT_EQUALS("[test.c:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+            s.standards.c = Standards::C99; check(code, "test.c", &s); // c code (c99)
+            ASSERT_EQUALS("", errout.str());
+
+            check(code, "test.cpp", &s); // c++ code
+            ASSERT_EQUALS("", errout.str());
+        }
 
         check("F(A,B) { x=1; }");
         ASSERT_EQUALS("", errout.str());
