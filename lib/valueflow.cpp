@@ -4411,6 +4411,8 @@ struct ConditionHandler {
                 Condition cond = parse(tok, settings);
                 if (!cond.vartok)
                     continue;
+                if (cond.vartok->hasKnownIntValue())
+                    continue;
                 if (cond.true_values.empty() || cond.false_values.empty())
                     continue;
                 if (!isConstExpression(cond.vartok, settings->library, true, tokenlist->isCPP()))
