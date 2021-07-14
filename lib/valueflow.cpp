@@ -2491,8 +2491,9 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
                var->isStatic() || var->isReference() || var->isExtern();
     }
 
-    void setupExprVarIds(const Token* start, int depth = 4) {
-        if (depth < 0)
+    void setupExprVarIds(const Token* start, int depth = 0) {
+        const int maxDepth = 4;
+        if (depth > maxDepth)
             return;
         visitAstNodes(start, [&](const Token* tok) {
             for (const ValueFlow::Value& v : tok->values()) {
@@ -2502,9 +2503,9 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
                     continue;
                 if (v.tokvalue == tok)
                     continue;
-                setupExprVarIds(v.tokvalue, depth - 1);
+                setupExprVarIds(v.tokvalue, depth + 1);
             }
-            if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
+            if (depth == 0 && tok->varId() == 0 && !tok->function() && tok->isName() && tok->previous()->str() != ".") {
                 // unknown variable
                 unknown = true;
                 return ChildrenToVisit::none;
