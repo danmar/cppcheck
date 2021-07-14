@@ -257,6 +257,8 @@ void CheckFunctions::checkMissingReturn()
         const Function *function = scope->function;
         if (!function || !function->hasBody())
             continue;
+        if (function->name() == "main" && !(mSettings->standards.c < Standards::C99 && mTokenizer->isC()))
+            continue;
         if (function->type != Function::Type::eFunction && function->type != Function::Type::eOperatorEqual)
             continue;
         if (Token::Match(function->retDef, "%name% (") && function->retDef->isUpperCaseName())
