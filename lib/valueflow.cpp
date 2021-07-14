@@ -2186,10 +2186,16 @@ struct ValueFlowAnalyzer : Analyzer {
         if (dependsOnThis() && exprDependsOnThis(tok))
             return isThisModified(tok);
 
-        // TODO: Check if function is pure
-        if (Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
-            // bailout: global non-const variables
-            if (isGlobal()) {
+        // bailout: global non-const variables
+        if (isGlobal() && Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
+            // TODO: Check for constexpr functions
+            if (tok->function()) {
+                if (!tok->function()->isConst() && !tok->function()->isPure())
+                    return Action::Invalid;
+            } else if (const Library::Function* f = getSettings()->library.getFunction(tok)) {
+                if (!f->ispure && !f->isconst)
+                    return Action::Invalid;
+            } else {
                 return Action::Invalid;
             }
         }

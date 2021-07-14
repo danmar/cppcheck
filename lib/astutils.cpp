@@ -1401,7 +1401,7 @@ bool isConstExpression(const Token *tok, const Library& library, bool pure, bool
     if (tok->isName() && tok->next()->str() == "(") {
         if (!tok->function() && !Token::Match(tok->previous(), ".|::") && !library.isFunctionConst(tok->str(), pure))
             return false;
-        else if (tok->function() && !tok->function()->isConst())
+        else if (tok->function() && !tok->function()->isConst() && !tok->function()->isPure())
             return false;
     }
     if (tok->tokType() == Token::eIncDecOp)
