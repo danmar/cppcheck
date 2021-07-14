@@ -1658,6 +1658,20 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
                         pointersToGlobals.insert(assigned_var_token->variable());
                     }
                 }
+                // dereference & assignment to unknown name (unknown_var = *global_var)
+                if (Token::simpleMatch(bodyToken->tokAt(-1), "*") && Token::simpleMatch(bodyToken->tokAt(-2), "=")) {
+                    const Token* assigned_var_token = bodyToken->tokAt(-3);
+                    if (assigned_var_token && (assigned_var_token->tokType() == Token::Type::eName)) {
+                        return false;
+                    }
+                }
+                // unknown name assignment (unknown_var = global_var)
+                if (Token::simpleMatch(bodyToken->tokAt(-1), "=")) {
+                    const Token* assigned_var_token = bodyToken->tokAt(-2);
+                    if (assigned_var_token && (assigned_var_token->tokType() == Token::Type::eName)) {
+                        return false;
+                    }
+                }
             }
         }
 

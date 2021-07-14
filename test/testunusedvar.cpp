@@ -1431,6 +1431,40 @@ private:
             "   C c;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        // global var derefence to unknown name
+        functionVariableUsage(
+            "char buf[10];\n"
+            "int func(char* p) {\n"
+            "   abc = *p;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(buf)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // global var assignment to unknown name
+        functionVariableUsage(
+            "char buf[10];\n"
+            "int func(char* p) {\n"
+            "   abc = p;\n"
+            "   return 1;\n"
+            "}\n"
+            "class C {\n"
+            "public:\n"
+            "   C() : x(func(buf)) {}\n"
+            "   int x;\n"
+            "};\n"
+            "void f() {\n"
+            "   C c;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // #5355 - False positive: Variable is not assigned a value.
