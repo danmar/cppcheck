@@ -1402,7 +1402,7 @@ private:
             "}\n"
             "class C {\n"
             "public:\n"
-            "   C() : x(func(y+buf+2, z, 3)) {}\n"
+            "   C() : x(func(y+global+2, z, 3)) {}\n"
             "   int x;\n"
             "   int y = 0;\n"
             "   int z = 1;\n"
@@ -1422,7 +1422,7 @@ private:
             "}\n"
             "class C {\n"
             "public:\n"
-            "   C() : x(func(y+buf+2, z, 3)) {}\n"
+            "   C() : x(func(y+global+2, z, 3)) {}\n"
             "   int x;\n"
             "   int y = 0;\n"
             "   int z = 1;\n"
@@ -1430,7 +1430,7 @@ private:
             "void f() {\n"
             "   C c;\n"
             "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:15]: (style) Unused variable: c\n", errout.str());
 
         // global var derefence to unknown name
         functionVariableUsage(

@@ -1609,8 +1609,7 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
     std::vector<unsigned int> globalVarsIndexes;
     unsigned int usageVarIndex = 0;
     for (const Token* arg : getArguments(functionUsageToken)) {
-        const bool containsGlobal = isGlobalInExpression(arg);
-        if (containsGlobal) {
+        if (isGlobalInExpression(arg)) {
             globalVarsIndexes.push_back(usageVarIndex);
         }
         usageVarIndex++;
