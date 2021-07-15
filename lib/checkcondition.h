@@ -71,6 +71,7 @@ public:
         checkCondition.comparison();
         checkCondition.checkModuloAlwaysTrueFalse();
         checkCondition.checkAssignmentInCondition();
+        checkCondition.checkCompareValueOutOfTypeRange();
     }
 
     /** mismatching assignment / comparison */
@@ -167,6 +168,9 @@ private:
 
     void assignmentInCondition(const Token *eq);
 
+    void checkCompareValueOutOfTypeRange();
+    void compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, long long value);
+
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckCondition c(nullptr, settings, errorLogger);
 
@@ -190,6 +194,7 @@ private:
         c.pointerAdditionResultNotNullError(nullptr, nullptr);
         c.duplicateConditionalAssignError(nullptr, nullptr);
         c.assignmentInCondition(nullptr);
+        c.compareValueOutOfTypeRangeError(nullptr, "unsigned char", 256);
     }
 
     static std::string myName() {
