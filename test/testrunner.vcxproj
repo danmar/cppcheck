@@ -183,14 +183,14 @@
       <PreprocessorDefinitions>CPPCHECKLIB_IMPORT;SIMPLECPP_IMPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
-      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>precompiled.h</ForcedIncludeFiles>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpp14</LanguageStandard>
-      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus /wd4146 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <Link>
@@ -213,14 +213,14 @@
       <PreprocessorDefinitions>CPPCHECKLIB_IMPORT;SIMPLECPP_IMPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
-      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>precompiled.h</ForcedIncludeFiles>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpp14</LanguageStandard>
-      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus /wd4146 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -246,14 +246,14 @@
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>precompiled.h</ForcedIncludeFiles>
-      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus /wd4146 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
@@ -285,14 +285,14 @@
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>precompiled.h</ForcedIncludeFiles>
-      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus /wd4146 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:throwingNew /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
