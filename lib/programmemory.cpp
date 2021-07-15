@@ -74,6 +74,15 @@ bool ProgramMemory::getContainerEmptyValue(nonneg int exprid, MathLib::bigint* r
     return false;
 }
 
+void ProgramMemory::setContainerSizeValue(nonneg int exprid, MathLib::bigint value, bool isEqual)
+{
+    ValueFlow::Value v(value);
+    v.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+    if (!isEqual)
+        v.valueKind = ValueFlow::Value::ValueKind::Impossible;
+    values[exprid] = v;
+}
+
 void ProgramMemory::setUnknown(nonneg int exprid)
 {
     values[exprid].valueType = ValueFlow::Value::ValueType::UNINIT;
@@ -142,6 +151,34 @@ bool conditionIsTrue(const Token *condition, const ProgramMemory &programMemory)
     return !error && result == 1;
 }
 
+static const Token* getContainerFromEmpty(const Token* tok)
+{
+    if (!Token::Match(tok->tokAt(-2), ". %name% ("))
+        return nullptr;
+    const Token* containerTok = tok->tokAt(-2)->astOperand1();
+    if (!astIsContainer(containerTok))
+        return nullptr;
+    if (containerTok->valueType()->container && containerTok->valueType()->container->getYield(tok->strAt(-1)) == Library::Container::Yield::EMPTY)
+        return containerTok;
+    if (Token::simpleMatch(tok->tokAt(-1), "empty ( )"))
+        return containerTok;
+    return nullptr;
+}
+
+static const Token* getContainerFromSize(const Token* tok)
+{
+    if (!Token::Match(tok->tokAt(-2), ". %name% ("))
+        return nullptr;
+    const Token* containerTok = tok->tokAt(-2)->astOperand1();
+    if (!astIsContainer(containerTok))
+        return nullptr;
+    if (containerTok->valueType()->container && containerTok->valueType()->container->getYield(tok->strAt(-1)) == Library::Container::Yield::SIZE)
+        return containerTok;
+    if (Token::Match(tok->tokAt(-1), "size|length ( )"))
+        return containerTok;
+    return nullptr;
+}
+
 void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings, bool then)
 {
     if (Token::Match(tok, "==|>=|<=|<|>|!=")) {
@@ -169,7 +206,12 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
             return;
         if (endTok && isExpressionChanged(vartok, tok->next(), endTok, settings, true))
             return;
-        pm.setIntValue(vartok->exprId(), then ? truevalue.intvalue : falsevalue.intvalue);
+        bool impossible = (tok->str() == "==" && !then) || (tok->str() == "!=" && then);
+        if (!impossible)
+            pm.setIntValue(vartok->exprId(), then ? truevalue.intvalue : falsevalue.intvalue);
+        const Token* containerTok = getContainerFromSize(vartok);
+        if (containerTok)
+            pm.setContainerSizeValue(containerTok->exprId(), then ? truevalue.intvalue : falsevalue.intvalue, !impossible);
     } else if (Token::simpleMatch(tok, "!")) {
         programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, !then);
     } else if (then && Token::simpleMatch(tok, "&&")) {
@@ -184,6 +226,9 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
         if (endTok && isExpressionChanged(tok, tok->next(), endTok, settings, true))
             return;
         pm.setIntValue(tok->exprId(), then);
+        const Token* containerTok = getContainerFromEmpty(tok);
+        if (containerTok)
+            pm.setContainerSizeValue(containerTok->exprId(), 0, then);
     }
 }
 
@@ -331,10 +376,13 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
     replace(pm, tok);
 }
 
-void ProgramMemoryState::assume(const Token* tok, bool b)
+void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
 {
     ProgramMemory pm = state;
-    programMemoryParseCondition(pm, tok, nullptr, nullptr, b);
+    if (isEmpty)
+        pm.setContainerSizeValue(tok->exprId(), 0, b);
+    else
+        programMemoryParseCondition(pm, tok, nullptr, nullptr, b);
     const Token* origin = tok;
     const Token* top = tok->astTop();
     if (top && Token::Match(top->previous(), "for|while ("))
