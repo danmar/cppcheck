@@ -158,7 +158,8 @@ static const Token* getContainerFromEmpty(const Token* tok)
     const Token* containerTok = tok->tokAt(-2)->astOperand1();
     if (!astIsContainer(containerTok))
         return nullptr;
-    if (containerTok->valueType()->container && containerTok->valueType()->container->getYield(tok->strAt(-1)) == Library::Container::Yield::EMPTY)
+    if (containerTok->valueType()->container &&
+        containerTok->valueType()->container->getYield(tok->strAt(-1)) == Library::Container::Yield::EMPTY)
         return containerTok;
     if (Token::simpleMatch(tok->tokAt(-1), "empty ( )"))
         return containerTok;
@@ -172,7 +173,8 @@ static const Token* getContainerFromSize(const Token* tok)
     const Token* containerTok = tok->tokAt(-2)->astOperand1();
     if (!astIsContainer(containerTok))
         return nullptr;
-    if (containerTok->valueType()->container && containerTok->valueType()->container->getYield(tok->strAt(-1)) == Library::Container::Yield::SIZE)
+    if (containerTok->valueType()->container &&
+        containerTok->valueType()->container->getYield(tok->strAt(-1)) == Library::Container::Yield::SIZE)
         return containerTok;
     if (Token::Match(tok->tokAt(-1), "size|length ( )"))
         return containerTok;
