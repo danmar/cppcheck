@@ -38,6 +38,10 @@ private:
     Settings settings1;
 
     void run() OVERRIDE {
+        // known platform..
+        settings0.platform(cppcheck::Platform::PlatformType::Native);
+        settings1.platform(cppcheck::Platform::PlatformType::Native);
+
         LOAD_LIB_2(settings0.library, "qt.cfg");
         LOAD_LIB_2(settings0.library, "std.cfg");
 
@@ -123,13 +127,13 @@ private:
         TEST_CASE(duplicateConditionalAssign);
 
         TEST_CASE(checkAssignmentInCondition);
+
+        TEST_CASE(compareOutOfTypeRange);
     }
 
-    void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
+    void check(const char code[], Settings *settings, const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
-
-        settings0.certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         // Raw tokens..
         std::vector<std::string> files(1, filename);
@@ -141,18 +145,23 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(settings0, nullptr);
+        Preprocessor preprocessor(*settings, nullptr);
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(settings, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
         tokenizer.setPreprocessor(&preprocessor);
 
         // Run checks..
         CheckCondition checkCondition;
-        checkCondition.runChecks(&tokenizer, &settings0, this);
+        checkCondition.runChecks(&tokenizer, settings, this);
+    }
+
+    void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
+        settings0.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        check(code, &settings0, filename);
     }
 
     void assignAndCompare() {
@@ -4287,6 +4296,17 @@ private:
               "    if (p=foo()){}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void compareOutOfTypeRange() {
+        Settings settingsUnix64;
+        settingsUnix64.severity.enable(Severity::style);
+        settingsUnix64.platform(cppcheck::Platform::PlatformType::Unix64);
+
+        check("void f(unsigned char c) {\n"
+              "  if (c == 1234) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 1234. Condition is always true/false.\n", errout.str());
     }
 };
 
