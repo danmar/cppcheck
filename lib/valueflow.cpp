@@ -2000,7 +2000,7 @@ struct ValueFlowAnalyzer : Analyzer {
             // Check if its assigned to the same value
             if (value && !value->isImpossible() && Token::simpleMatch(tok->astParent(), "=") && astIsLHS(tok) &&
                 astIsIntegral(tok->astParent()->astOperand2(), false)) {
-                std::vector<int> result = evaluate(tok->astParent()->astOperand2());
+                std::vector<int> result = evaluate(Evaluate::Integral, tok->astParent()->astOperand2());
                 if (!result.empty() && value->equalTo(result.front()))
                     return Action::Idempotent;
             }
@@ -2177,32 +2177,48 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
-    virtual std::vector<int> evaluate(const Token* tok, const Token* ctx = nullptr) const OVERRIDE {
-        if (tok->hasKnownIntValue())
-            return {static_cast<int>(tok->values().front().intvalue)};
-        std::vector<int> result;
-        ProgramMemory pm = pms.get(tok, ctx, getProgramState());
-        if (Token::Match(tok, "&&|%oror%")) {
-            if (conditionIsTrue(tok, pm))
-                result.push_back(1);
-            if (conditionIsFalse(tok, pm))
-                result.push_back(0);
-        } else {
-            MathLib::bigint out = 0;
-            bool error = false;
-            execute(tok, &pm, &out, &error);
-            if (!error)
-                result.push_back(out);
-        }
+    virtual std::vector<int> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const OVERRIDE
+    {
+        if (e == Evaluate::Integral) {
+            if (tok->hasKnownIntValue())
+                return {static_cast<int>(tok->values().front().intvalue)};
+            std::vector<int> result;
+            ProgramMemory pm = pms.get(tok, ctx, getProgramState());
+            if (Token::Match(tok, "&&|%oror%")) {
+                if (conditionIsTrue(tok, pm))
+                    result.push_back(1);
+                if (conditionIsFalse(tok, pm))
+                    result.push_back(0);
+            } else {
+                MathLib::bigint out = 0;
+                bool error = false;
+                execute(tok, &pm, &out, &error);
+                if (!error)
+                    result.push_back(out);
+            }
 
-        return result;
+            return result;
+        } else if (e == Evaluate::ContainerEmpty) {
+            const ValueFlow::Value* value = ValueFlow::findValue(tok->values(), nullptr, [](const ValueFlow::Value& v) {
+                return v.isKnown() && v.isContainerSizeValue();
+            });
+            if (value)
+                return {value->intvalue == 0};
+            ProgramMemory pm = pms.get(tok, ctx, getProgramState());
+            MathLib::bigint out = 0;
+            if (pm.getContainerEmptyValue(tok->exprId(), &out))
+                return {static_cast<int>(out)};
+            return {};
+        } else {
+            return {};
+        }
     }
 
     virtual void assume(const Token* tok, bool state, unsigned int flags) OVERRIDE {
         // Update program state
         pms.removeModifiedVars(tok);
         pms.addState(tok, getProgramState());
-        pms.assume(tok, state);
+        pms.assume(tok, state, flags & Assume::ContainerEmpty);
 
         bool isCondBlock = false;
         const Token* parent = tok->astParent();
@@ -2221,8 +2237,13 @@ struct ValueFlowAnalyzer : Analyzer {
         }
 
         if (!(flags & Assume::Quiet)) {
-            std::string s = state ? "true" : "false";
-            addErrorPath(tok, "Assuming condition is " + s);
+            if (flags & Assume::ContainerEmpty) {
+                std::string s = state ? "empty" : "not empty";
+                addErrorPath(tok, "Assuming container is " + s);
+            } else {
+                std::string s = state ? "true" : "false";
+                addErrorPath(tok, "Assuming condition is " + s);
+            }
         }
         if (!(flags & Assume::Absolute))
             makeConditional();
