@@ -2482,16 +2482,12 @@ static Analyzer::Result valueFlowForwardExpression(Token* startToken,
         const TokenList* const tokenlist,
         const Settings* settings)
 {
-    Analyzer::Action actions;
-    Analyzer::Terminate terminate = Analyzer::Terminate::None;
+    Analyzer::Result result{};
     for (const ValueFlow::Value& v : values) {
         ExpressionAnalyzer a(exprTok, v, tokenlist);
-        Analyzer::Result r = valueFlowGenericForward(startToken, endToken, a, settings);
-        actions |= r.action;
-        if (terminate == Analyzer::Terminate::None)
-            terminate = r.terminate;
+        result.update(valueFlowGenericForward(startToken, endToken, a, settings));
     }
-    return {actions, terminate};
+    return result;
 }
 
 static const Token* parseBinaryIntOp(const Token* expr, MathLib::bigint& known)
