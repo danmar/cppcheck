@@ -2806,7 +2806,7 @@ private:
                "    x = x->b();\n"
                "  x->c();\n"
                "}\n";
-        ASSERT_EQUALS(true, testValueOfX(code, 9U, 0));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 9U, 0));
     }
 
     void valueFlowAfterConditionExpr() {

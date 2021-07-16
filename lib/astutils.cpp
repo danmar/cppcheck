@@ -1394,6 +1394,68 @@ bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * cons
     return false;
 }
 
+static bool functionModifiesArguments(const Function* f)
+{
+    return std::any_of(f->argumentList.begin(), f->argumentList.end(), [](const Variable& var) {
+        if (var.isReference() || var.isPointer())
+            return !var.isConst();
+        return true;
+    });
+}
+
+bool isConstFunctionCall(const Token *ftok, const Library& library)
+{
+    if (!Token::Match(ftok, "%name% ("))
+        return false;
+    if (const Function* f = ftok->function()) {
+        if (f->isAttributePure() || f->isAttributeConst())
+            return true;
+        if (Function::returnsVoid(f))
+            return false;
+        // Any modified arguments
+        if (functionModifiesArguments(f))
+            return false;
+        // Member function call
+        if (Token::simpleMatch(ftok->previous(), ".")) {
+            if (f->isConst())
+                return true;
+            // Check for const overloaded function that just return the const version
+            if (!Function::returnsConst(f)) {
+                std::vector<const Function*> fs = f->getOverloadedFunctions();
+                if (std::any_of(fs.begin(), fs.end(), [&](const Function* g) {
+                    if (f->argumentList.size() != g->argumentList.size())
+                        return false;
+                    if (functionModifiesArguments(g))
+                        return false;
+                    if (g->isConst() && Function::returnsConst(g))
+                        return true;
+                    return false;
+                }))
+                    return true;
+            }
+            return false;
+        } else if (f->argumentList.empty()) {
+            // TODO: Check for constexpr
+            return false;
+        }
+    } else if (const Library::Function* f = library.getFunction(ftok)) {
+        if (f->ispure)
+            return true;
+        for(auto&& p:f->argumentChecks) {
+            const Library::ArgumentChecks& ac = p.second;
+            if (ac.direction != Library::ArgumentChecks::Direction::DIR_IN)
+                return false;
+        }
+        if (Token::simpleMatch(ftok->previous(), ".")) {
+            if (!f->isconst)
+                return false;
+        } else if (f->argumentChecks.empty()) {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool isConstExpression(const Token *tok, const Library& library, bool pure, bool cpp)
 {
     if (!tok)
@@ -1401,9 +1463,7 @@ bool isConstExpression(const Token *tok, const Library& library, bool pure, bool
     if (tok->variable() && tok->variable()->isVolatile())
         return false;
     if (tok->isName() && tok->next()->str() == "(") {
-        if (!tok->function() && !Token::Match(tok->previous(), ".|::") && !library.isFunctionConst(tok->str(), pure))
-            return false;
-        else if (tok->function() && !tok->function()->isConst() && !tok->function()->isPure())
+        if (!isConstFunctionCall(tok, library))
             return false;
     }
     if (tok->tokType() == Token::eIncDecOp)
