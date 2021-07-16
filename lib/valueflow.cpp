@@ -2476,11 +2476,11 @@ struct OppositeExpressionAnalyzer : ExpressionAnalyzer {
 };
 
 static Analyzer::Result valueFlowForwardExpression(Token* startToken,
-        const Token* endToken,
-        const Token* exprTok,
-        const std::list<ValueFlow::Value>& values,
-        const TokenList* const tokenlist,
-        const Settings* settings)
+            const Token* endToken,
+            const Token* exprTok,
+            const std::list<ValueFlow::Value>& values,
+            const TokenList* const tokenlist,
+            const Settings* settings)
 {
     Analyzer::Result result{};
     for (const ValueFlow::Value& v : values) {
