@@ -1455,7 +1455,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                         continue;
                     if (tok1->exprId() == tok2->exprId())
                         continue;
-                    if (!isSameExpression(isCPP(), true, tok1, tok2, mSettings->library, true, false))
+                    if (!isSameExpression(isCPP(), true, tok1, tok2, mSettings->library, false, false))
                         continue;
                     nonneg int cid = std::min(tok1->exprId(), tok2->exprId());
                     tok1->exprId(cid);

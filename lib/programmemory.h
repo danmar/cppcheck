@@ -21,6 +21,7 @@ struct ProgramMemory {
 
     bool getContainerSizeValue(nonneg int exprid, MathLib::bigint* result) const;
     bool getContainerEmptyValue(nonneg int exprid, MathLib::bigint* result) const;
+    void setContainerSizeValue(nonneg int exprid, MathLib::bigint value, bool isEqual = true);
 
     void setUnknown(nonneg int exprid);
 
@@ -49,7 +50,7 @@ struct ProgramMemoryState {
 
     void addState(const Token* tok, const ProgramMemory::Map& vars);
 
-    void assume(const Token* tok, bool b);
+    void assume(const Token* tok, bool b, bool isEmpty = false);
 
     void removeModifiedVars(const Token* tok);
 

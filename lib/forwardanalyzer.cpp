@@ -570,7 +570,13 @@ struct ForwardTraversal {
                         Token* conTok = condTok->astOperand2();
                         if (conTok && updateRecursive(conTok) == Progress::Break)
                             return Break();
-                        if (updateLoop(end, endBlock, condTok) == Progress::Break)
+                        bool isEmpty = false;
+                        std::vector<int> result = analyzer->evaluate(Analyzer::Evaluate::ContainerEmpty, conTok);
+                        if (result.empty())
+                            analyzer->assume(conTok, false, Analyzer::Assume::ContainerEmpty);
+                        else
+                            isEmpty = result.front() != 0;
+                        if (!isEmpty && updateLoop(end, endBlock, condTok) == Progress::Break)
                             return Break();
                     } else {
                         Token* stepTok = getStepTok(tok);
