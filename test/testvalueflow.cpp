@@ -5663,6 +5663,29 @@ private:
                "  } while (b < 1);\n"
                "}\n";
         valueOfTok(code, "b");
+
+        code = "void ParseEvent(tinyxml2::XMLDocument& doc, std::set<Item*>& retItems) {\n"
+               "    auto ParseAddItem = [&](Item* item) {\n"
+               "        return retItems.insert(item).second;\n"
+               "    };\n"
+               "    tinyxml2::XMLElement *root = doc.RootElement();\n"
+               "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
+               "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
+               "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
+               "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
+               "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
+               "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
+               "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
+               "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
+               "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
+               "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
+               "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
+               "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
+               "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
+               "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
+               "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
+               "}\n";
+        valueOfTok(code, "root");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577
