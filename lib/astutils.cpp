@@ -1455,7 +1455,8 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
             return false;
         }
     } else {
-        bool constMember = !Token::Match(ftok->previous(), ". %name% (");
+        bool memberFunction = Token::Match(ftok->previous(), ". %name% (");
+        bool constMember = !memberFunction;
         if (Token::Match(ftok->tokAt(-2), "%var% . %name% (")) {
             const Variable* var = ftok->tokAt(-2)->variable();
             if (var)
@@ -1463,6 +1464,8 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
         }
         // TODO: Only check const on lvalues
         std::vector<const Token*> args = getArguments(ftok);
+        if (memberFunction && args.empty())
+            return false;
         return constMember && std::all_of(args.begin(), args.end(), [](const Token* tok) {
             const Variable* var = tok->variable();
             if (var)
