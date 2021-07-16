@@ -978,7 +978,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
             if (!tok->isTemplateArg())
                 value.setKnown();
             setTokenValue(tok, value, settings);
-        } catch (const std::exception &e) {
+        } catch (const std::exception &/*e*/) {
             // Bad character literal
         }
     } else if (tok->isNumber() && MathLib::isFloat(tok->str())) {

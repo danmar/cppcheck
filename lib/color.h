@@ -19,6 +19,8 @@
 #ifndef colorH
 #define colorH
 
+#include "config.h"
+
 #include <ostream>
 #include <string>
 
@@ -36,7 +38,7 @@ enum class Color {
     BgBlue     = 44,
     BgDefault  = 49
 };
-std::ostream& operator<<(std::ostream& os, const Color& c);
+CPPCHECKLIB std::ostream& operator<<(std::ostream& os, const Color& c);
 
 std::string toString(const Color& c);
 
