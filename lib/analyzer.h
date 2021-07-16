@@ -120,7 +120,8 @@ struct Analyzer {
         Action action;
         Terminate terminate;
 
-        void update(Result rhs) {
+        void update(Result rhs)
+        {
             if (terminate == Terminate::None)
                 terminate = rhs.terminate;
             action |= rhs.action;

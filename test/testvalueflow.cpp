@@ -152,21 +152,13 @@ private:
         return !val.isLifetimeValue();
     }
 
-    static bool isNotPossible(const ValueFlow::Value& val) {
-        return !val.isPossible();
-    }
+    static bool isNotPossible(const ValueFlow::Value& val) { return !val.isPossible(); }
 
-    static bool isNotKnown(const ValueFlow::Value& val) {
-        return !val.isKnown();
-    }
+    static bool isNotKnown(const ValueFlow::Value& val) { return !val.isKnown(); }
 
-    static bool isNotInconclusive(const ValueFlow::Value& val) {
-        return !val.isInconclusive();
-    }
+    static bool isNotInconclusive(const ValueFlow::Value& val) { return !val.isInconclusive(); }
 
-    static bool isNotImpossible(const ValueFlow::Value& val) {
-        return !val.isImpossible();
-    }
+    static bool isNotImpossible(const ValueFlow::Value& val) { return !val.isImpossible(); }
 
     bool testValueOfXKnown(const char code[], unsigned int linenr, int value) {
         // Tokenize..
@@ -4647,7 +4639,10 @@ private:
         ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 0));
     }
 
-    static std::string isPossibleContainerSizeValue(std::list<ValueFlow::Value> values, MathLib::bigint i, bool unique = true) {
+    static std::string isPossibleContainerSizeValue(std::list<ValueFlow::Value> values,
+                                                    MathLib::bigint i,
+                                                    bool unique = true)
+    {
         if (!unique)
             values.remove_if(&isNotPossible);
         if (values.size() != 1)
@@ -4661,7 +4656,10 @@ private:
         return "";
     }
 
-    static std::string isImpossibleContainerSizeValue(std::list<ValueFlow::Value> values, MathLib::bigint i, bool unique = true) {
+    static std::string isImpossibleContainerSizeValue(std::list<ValueFlow::Value> values,
+                                                      MathLib::bigint i,
+                                                      bool unique = true)
+    {
         if (!unique)
             values.remove_if(&isNotImpossible);
         if (values.size() != 1)
@@ -4675,7 +4673,10 @@ private:
         return "";
     }
 
-    static std::string isInconclusiveContainerSizeValue(std::list<ValueFlow::Value> values, MathLib::bigint i, bool unique = true) {
+    static std::string isInconclusiveContainerSizeValue(std::list<ValueFlow::Value> values,
+                                                        MathLib::bigint i,
+                                                        bool unique = true)
+    {
         if (!unique)
             values.remove_if(&isNotInconclusive);
         if (values.size() != 1)
@@ -4689,7 +4690,8 @@ private:
         return "";
     }
 
-    static std::string isKnownContainerSizeValue(std::list<ValueFlow::Value> values, MathLib::bigint i, bool unique = true) {
+    static std::string isKnownContainerSizeValue(std::list<ValueFlow::Value> values, MathLib::bigint i, bool unique = true)
+    {
         if (!unique)
             values.remove_if(&isNotKnown);
         if (values.size() != 1)
