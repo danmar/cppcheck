@@ -441,10 +441,10 @@ void CheckCondition::duplicateCondition()
         if (scope.type != Scope::eIf)
             continue;
 
-        const Token *tok2 = scope.classDef->next();
+        const Token* tok2 = scope.classDef->next();
         if (!tok2)
             continue;
-        const Token *cond1 = tok2->astOperand2();
+        const Token* cond1 = tok2->astOperand2();
         if (!cond1)
             continue;
         if (cond1->hasKnownIntValue())

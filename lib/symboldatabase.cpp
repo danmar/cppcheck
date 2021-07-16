@@ -3941,8 +3941,10 @@ std::vector<const Function*> Function::getOverloadedFunctions() const
 
     while (scope) {
         const bool isMemberFunction = scope->isClassOrStruct() && !isStatic();
-        for (std::multimap<std::string, const Function *>::const_iterator it = scope->functionMap.find(tokenDef->str()); it != scope->functionMap.end() && it->first == tokenDef->str(); ++it) {
-            const Function * func = it->second;
+        for (std::multimap<std::string, const Function*>::const_iterator it = scope->functionMap.find(tokenDef->str());
+             it != scope->functionMap.end() && it->first == tokenDef->str();
+             ++it) {
+            const Function* func = it->second;
             if (isMemberFunction == func->isStatic())
                 continue;
             result.push_back(func);
@@ -3953,7 +3955,6 @@ std::vector<const Function*> Function::getOverloadedFunctions() const
     }
 
     return result;
-
 }
 
 const Function *Function::getOverriddenFunction(bool *foundAllBaseClasses) const

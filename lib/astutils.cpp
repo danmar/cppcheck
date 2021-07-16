@@ -1403,7 +1403,7 @@ static bool functionModifiesArguments(const Function* f)
     });
 }
 
-bool isConstFunctionCall(const Token *ftok, const Library& library)
+bool isConstFunctionCall(const Token* ftok, const Library& library)
 {
     if (!Token::Match(ftok, "%name% ("))
         return false;
@@ -1423,14 +1423,14 @@ bool isConstFunctionCall(const Token *ftok, const Library& library)
             if (!Function::returnsConst(f)) {
                 std::vector<const Function*> fs = f->getOverloadedFunctions();
                 if (std::any_of(fs.begin(), fs.end(), [&](const Function* g) {
-                    if (f->argumentList.size() != g->argumentList.size())
+                        if (f->argumentList.size() != g->argumentList.size())
+                            return false;
+                        if (functionModifiesArguments(g))
+                            return false;
+                        if (g->isConst() && Function::returnsConst(g))
+                            return true;
                         return false;
-                    if (functionModifiesArguments(g))
-                        return false;
-                    if (g->isConst() && Function::returnsConst(g))
-                        return true;
-                    return false;
-                }))
+                    }))
                     return true;
             }
             return false;
@@ -1441,7 +1441,7 @@ bool isConstFunctionCall(const Token *ftok, const Library& library)
     } else if (const Library::Function* f = library.getFunction(ftok)) {
         if (f->ispure)
             return true;
-        for(auto&& p:f->argumentChecks) {
+        for (auto&& p : f->argumentChecks) {
             const Library::ArgumentChecks& ac = p.second;
             if (ac.direction != Library::ArgumentChecks::Direction::DIR_IN)
                 return false;
