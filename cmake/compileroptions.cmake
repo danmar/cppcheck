@@ -26,7 +26,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
     add_compile_options(-Wall)
     add_compile_options(-Wextra)
     add_compile_options(-Wcast-qual)                # Cast for removing type qualifiers
-    add_compile_options(-Wno-deprecated-declarations)
     add_compile_options(-Wfloat-equal)              # Floating values used in equality comparisons
     add_compile_options(-Wmissing-declarations)     # If a global function is defined without a previous declaration
     add_compile_options(-Wmissing-format-attribute) #
