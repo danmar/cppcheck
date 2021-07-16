@@ -2689,6 +2689,15 @@ bool Function::returnsVoid(const Function* function, bool unknown)
     // Check for unknown types, which could be a void type
     if (isUnknownType(function->retDef, defEnd))
         return unknown;
+    if (unknown) {
+        // void STDCALL foo()
+        const Token *def;
+        bool isVoid = false;
+        for (def = function->retDef; def && def->isName(); def = def->next())
+            isVoid |= (def->str() == "void");
+        if (isVoid && def && !Token::Match(def, "*|&|&&"))
+            return true;
+    }
     return false;
 }
 

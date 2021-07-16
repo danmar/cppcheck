@@ -1757,3 +1757,74 @@ void CheckCondition::assignmentInCondition(const Token *eq)
         Certainty::normal);
 }
 
+void CheckCondition::checkCompareValueOutOfTypeRange()
+{
+    if (!mSettings->severity.isEnabled(Severity::style))
+        return;
+
+    if (mSettings->platformType == cppcheck::Platform::PlatformType::Native ||
+        mSettings->platformType == cppcheck::Platform::PlatformType::Unspecified)
+        return;
+
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (!tok->isComparisonOp() || !tok->isBinaryOp())
+                continue;
+
+            for (int i = 0; i < 2; ++i) {
+                const Token * const valueTok = (i == 0) ? tok->astOperand1() : tok->astOperand2();
+                const Token * const typeTok = valueTok->astSibling();
+                if (!valueTok->hasKnownIntValue() || !typeTok->valueType() || typeTok->valueType()->pointer)
+                    continue;
+                if (valueTok->getKnownIntValue() < 0 && valueTok->valueType() && valueTok->valueType()->sign != ValueType::Sign::SIGNED)
+                    continue;
+                int bits = 0;
+                switch (typeTok->valueType()->type) {
+                case ValueType::Type::BOOL:
+                    bits = 1;
+                    break;
+                case ValueType::Type::CHAR:
+                    bits = mSettings->char_bit;
+                    break;
+                case ValueType::Type::SHORT:
+                    bits = mSettings->short_bit;
+                    break;
+                case ValueType::Type::INT:
+                    bits = mSettings->int_bit;
+                    break;
+                case ValueType::Type::LONG:
+                    bits = mSettings->long_bit;
+                    break;
+                case ValueType::Type::LONGLONG:
+                    bits = mSettings->long_long_bit;
+                    break;
+                default:
+                    break;
+                };
+                if (bits == 0 || bits >= 64)
+                    continue;
+
+                const auto typeMinValue = (typeTok->valueType()->sign == ValueType::Sign::SIGNED) ? (-(1LL << (bits-1))) : 0;
+                const auto unsignedTypeMaxValue = (1LL << (bits-1)) - 1LL;
+                const auto typeMaxValue = (typeTok->valueType()->sign == ValueType::Sign::SIGNED) ? (unsignedTypeMaxValue / 2) : unsignedTypeMaxValue;
+
+                if (valueTok->getKnownIntValue() < typeMinValue)
+                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), valueTok->getKnownIntValue());
+                else if (valueTok->getKnownIntValue() > typeMaxValue)
+                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), valueTok->getKnownIntValue());
+            }
+        }
+    }
+}
+
+void CheckCondition::compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, long long value)
+{
+    reportError(
+        comparison,
+        Severity::style,
+        "compareValueOutOfTypeRangeError",
+        "Comparing expression of type '" + type + "' against value " + std::to_string(value) + ". Condition is always true/false.",
+        CWE398,
+        Certainty::normal);
+}
