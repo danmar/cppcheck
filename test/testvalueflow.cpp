@@ -2795,6 +2795,18 @@ private:
                "  x->c();\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 8U, 0));
+
+        code = "struct a {\n"
+               "  a *b();\n"
+               "  a *b() const;\n"
+               "  void c();\n"
+               "};\n"
+               "void e(a *x) {\n"
+               "  while (x && x->b())\n"
+               "    x = x->b();\n"
+               "  x->c();\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 9U, 0));
     }
 
     void valueFlowAfterConditionExpr() {
