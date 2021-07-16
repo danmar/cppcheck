@@ -2773,6 +2773,17 @@ private:
                "    int a = x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 5U, 3));
+
+        code = "struct a {\n"
+               "  a *b();\n"
+               "  void c();\n"
+               "};\n"
+               "void e(a *x) {\n"
+               "  while (x && x->b())\n"
+               "    x = x->b();\n"
+               "  x->c();\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 8U, 0));
     }
 
     void valueFlowAfterConditionExpr() {

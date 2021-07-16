@@ -347,8 +347,10 @@ static bool hasToken(const Token * startTok, const Token * stopTok, const Token 
 template <class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
 static T* previousBeforeAstLeftmostLeafGeneric(T* tok)
 {
+    if (!tok)
+        return nullptr;
     T* leftmostLeaf = tok;
-    while (leftmostLeaf && leftmostLeaf->astOperand1())
+    while (leftmostLeaf->astOperand1())
         leftmostLeaf = leftmostLeaf->astOperand1();
     return leftmostLeaf->previous();
 }
