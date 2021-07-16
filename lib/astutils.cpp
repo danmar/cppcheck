@@ -1423,6 +1423,8 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
             if (!Function::returnsConst(f)) {
                 std::vector<const Function*> fs = f->getOverloadedFunctions();
                 if (std::any_of(fs.begin(), fs.end(), [&](const Function* g) {
+                        if (f == g)
+                            return false;
                         if (f->argumentList.size() != g->argumentList.size())
                             return false;
                         if (functionModifiesArguments(g))
@@ -1452,6 +1454,21 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
         } else if (f->argumentChecks.empty()) {
             return false;
         }
+    } else {
+        bool constMember = !Token::Match(ftok->previous(), ". %name% (");
+        if (Token::Match(ftok->tokAt(-2), "%var% . %name% (")) {
+            const Variable* var = ftok->tokAt(-2)->variable();
+            if (var)
+                constMember = var->isConst();
+        }
+        // TODO: Only check const on lvalues
+        std::vector<const Token*> args = getArguments(ftok);
+        return constMember && std::all_of(args.begin(), args.end(), [](const Token* tok) {
+            const Variable* var = tok->variable();
+            if (var)
+                return var->isConst();
+            return false;
+        });
     }
     return true;
 }
