@@ -67,7 +67,7 @@
  * ===============================
  *
  * In forward value flow analysis we know a value and see what happens when we are stepping the program forward. Like
- * normal execution. The valueFlowForwardVariable is used in this analysis.
+ * normal execution. The valueFlowForward is used in this analysis.
  *
  * In reverse value flow analysis we know the value of a variable at line X. And try to "execute backwards" to determine
  * possible values before line X. The valueFlowReverse is used in this analysis.
@@ -1685,13 +1685,6 @@ static Analyzer::Result valueFlowForward(Token* startToken,
         TokenList* const tokenlist,
         const Settings* settings);
 
-static Analyzer::Result valueFlowForwardVariable(Token* const startToken,
-        const Token* const endToken,
-        const Variable* const var,
-        std::list<ValueFlow::Value> values,
-        TokenList* const tokenlist,
-        const Settings* const settings);
-
 static void valueFlowReverse(TokenList* tokenlist,
                              Token* tok,
                              const Token* const varToken,
@@ -2387,31 +2380,6 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
         return makeAnalyzer(tok, newValue, tokenlist);
     }
 };
-
-static Analyzer::Result valueFlowForwardVariable(Token* const startToken,
-        const Token* const endToken,
-        const Variable* const var,
-        std::list<ValueFlow::Value> values,
-        TokenList* const tokenlist,
-        const Settings* const settings)
-{
-    const Token * exprTok = Token::findmatch(startToken, "%varid%", var->declarationId());
-    if (!exprTok)
-        exprTok = var->nameToken();
-    return valueFlowForward(startToken, endToken, exprTok, std::move(values), tokenlist, settings);
-}
-
-static Analyzer::Result valueFlowForwardVariable(Token* const startToken,
-        const Token* const endToken,
-        const Variable* const var,
-        std::list<ValueFlow::Value> values,
-        std::vector<const Variable*>,
-        TokenList* const tokenlist,
-        const Settings* const settings)
-{
-    return valueFlowForwardVariable(
-               startToken, endToken, var, std::move(values), tokenlist, settings);
-}
 
 struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     const Token* expr;
