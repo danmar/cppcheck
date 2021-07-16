@@ -2775,7 +2775,7 @@ private:
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 5U, 3));
 
         code = "struct a {\n"
-               "  a *b();\n"
+               "  a *b() const;\n"
                "  void c();\n"
                "};\n"
                "void e(a *x) {\n"
