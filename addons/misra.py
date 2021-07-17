@@ -3611,6 +3611,9 @@ class MisraChecker:
 
         from cppcheckdata import Location
 
+        def is_different_location(loc1, loc2):
+            return loc1['file'] != loc2['file'] or loc1['line'] != loc2['line']
+
         for filename in ctu_info_files:
             for line in open(filename, 'rt'):
                 if not line.startswith('{'):
@@ -3626,7 +3629,7 @@ class MisraChecker:
                         for old_typedef_info in all_typedef_info:
                             if old_typedef_info['name'] == new_typedef_info['name']:
                                 found = True
-                                if old_typedef_info['file'] != new_typedef_info['file'] or old_typedef_info['line'] != new_typedef_info['line']:
+                                if is_different_location(old_typedef_info, new_typedef_info):
                                     self.reportError(Location(old_typedef_info), 5, 6)
                                     self.reportError(Location(new_typedef_info), 5, 6)
                                 else:
@@ -3642,7 +3645,7 @@ class MisraChecker:
                         for old_tagname_info in all_tagname_info:
                             if old_tagname_info['name'] == new_tagname_info['name']:
                                 found = True
-                                if old_tagname_info['file'] != new_tagname_info['file'] or old_tagname_info['line'] != new_tagname_info['line']:
+                                if is_different_location(old_tagname_info, new_tagname_info):
                                     self.reportError(Location(old_tagname_info), 5, 7)
                                     self.reportError(Location(new_tagname_info), 5, 7)
                                 else:
@@ -3664,8 +3667,11 @@ class MisraChecker:
                         if not found:
                             all_macro_info.append(new_macro)
 
-                if summary_type == 'MisraGlobalIdentifiers':
+                if summary_type == 'MisraExternalIdentifiers':
                     for s in summary_data:
+                        if s['name'] in all_external_identifiers and is_different_location(s, all_external_identifiers[s['name']]):
+                            self.reportError(Location(s), 8, 5)
+                            self.reportError(Location(all_external_identifiers[s['name']]), 8, 5)
                         all_external_identifiers[s['name']] = s
 
                 if summary_type == 'MisraInternalIdentifiers':

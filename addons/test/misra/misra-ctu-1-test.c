@@ -29,3 +29,7 @@ static void misra_5_8_f(void) {}
 static int misra_5_9_count;
 // cppcheck-suppress misra-c2012-5.9
 static void misra_5_8_foo(void) {}
+
+// cppcheck-suppress misra-c2012-8.4
+// cppcheck-suppress misra-c2012-8.5
+extern int misra_8_5;
