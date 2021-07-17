@@ -53,7 +53,7 @@
 #   include <ucontext.h>
 
 #   undef _XOPEN_SOURCE
-#elif !defined(__OpenBSD__)
+#elif !defined(__OpenBSD__) && !defined(__HAIKU__)
 #   include <ucontext.h>
 #endif
 #ifdef __linux__
