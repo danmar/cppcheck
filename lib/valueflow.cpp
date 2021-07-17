@@ -2177,8 +2177,7 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
-    virtual std::vector<int> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const OVERRIDE
-    {
+    virtual std::vector<int> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const OVERRIDE {
         if (e == Evaluate::Integral) {
             if (tok->hasKnownIntValue())
                 return {static_cast<int>(tok->values().front().intvalue)};

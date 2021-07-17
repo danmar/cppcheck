@@ -1381,7 +1381,8 @@ private:
             check(code, "test.c", &s); // c code (c89)
             ASSERT_EQUALS("[test.c:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
 
-            s.standards.c = Standards::C99; check(code, "test.c", &s); // c code (c99)
+            s.standards.c = Standards::C99;
+            check(code, "test.c", &s); // c code (c99)
             ASSERT_EQUALS("", errout.str());
 
             check(code, "test.cpp", &s); // c++ code
