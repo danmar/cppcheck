@@ -23,9 +23,6 @@ def quote(s):
     text = s.replace("'", "'\"'\"'")
     return "'{}'".format(text)
 
-# def grep(s):
-#     return "grep -q -F {}".format(quote(s))
-
 class ScriptBuilder:
     def __init__(self):
         self.commands = ['#!/bin/bash', '', 'rm -rf .tmp.output', '']
