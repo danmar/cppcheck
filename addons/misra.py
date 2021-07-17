@@ -1240,7 +1240,9 @@ class MisraChecker:
                 internal_identifiers.append(identifier(var.nameToken))
             else:
                 names.append(var.nameToken.str)
-                external_identifiers.append(identifier(var.nameToken))
+                i = identifier(var.nameToken)
+                i['decl'] = var.isExtern
+                external_identifiers.append(i)
 
         for func in cfg.functions:
             if func.tokenDef is None:
@@ -1248,7 +1250,9 @@ class MisraChecker:
             if func.isStatic:
                 internal_identifiers.append(identifier(func.tokenDef))
             else:
-                external_identifiers.append(identifier(func.tokenDef))
+                i = identifier(func.tokenDef)
+                i['decl'] = func.token is None
+                external_identifiers.append(i)
 
         cppcheckdata.reportSummary(dumpfile, 'MisraExternalIdentifiers', external_identifiers)
         cppcheckdata.reportSummary(dumpfile, 'MisraInternalIdentifiers', internal_identifiers)
@@ -3605,7 +3609,8 @@ class MisraChecker:
         all_typedef_info = []
         all_tagname_info = []
         all_macro_info = []
-        all_external_identifiers = {}
+        all_external_identifiers_decl = {}
+        all_external_identifiers_def = {}
         all_internal_identifiers = {}
         all_local_identifiers = {}
 
@@ -3669,10 +3674,18 @@ class MisraChecker:
 
                 if summary_type == 'MisraExternalIdentifiers':
                     for s in summary_data:
-                        if s['name'] in all_external_identifiers and is_different_location(s, all_external_identifiers[s['name']]):
-                            self.reportError(Location(s), 8, 5)
-                            self.reportError(Location(all_external_identifiers[s['name']]), 8, 5)
-                        all_external_identifiers[s['name']] = s
+                        is_declaration = s['decl']
+                        if is_declaration:
+                            all_external_identifiers = all_external_identifiers_decl
+                        else:
+                            all_external_identifiers = all_external_identifiers_def
+
+                        name = s['name']
+                        if name in all_external_identifiers and is_different_location(s, all_external_identifiers[name]):
+                            num = 5 if is_declaration else 6
+                            self.reportError(Location(s), 8, num)
+                            self.reportError(Location(all_external_identifiers[name]), 8, num)
+                        all_external_identifiers[name] = s
 
                 if summary_type == 'MisraInternalIdentifiers':
                     for s in summary_data:
@@ -3697,6 +3710,8 @@ class MisraChecker:
             if not m['used']:
                 self.reportError(Location(m), 2, 5)
 
+        all_external_identifiers = all_external_identifiers_decl
+        all_external_identifiers.update(all_external_identifiers_def)
         for name, external_identifier in all_external_identifiers.items():
             internal_identifier = all_internal_identifiers.get(name)
             if internal_identifier:
