@@ -1,5 +1,5 @@
 // Test with command:
-// ./cppcheck --addon=misra --inline-suppr addons/test/misra/misra-ctu-*-test.c
+// ./cppcheck --enable=information --addon=misra --inline-suppr addons/test/misra/misra-ctu-*-test.c
 
 #include "misra-ctu-test.h"
 
@@ -37,4 +37,9 @@ extern int misra_8_5;
 
 // cppcheck-suppress misra-c2012-8.6
 int32_t misra_8_6 = 2;
+
+// cppcheck-suppress misra-c2012-8.4
+// cppcheck-suppress misra-c2012-8.7
+void misra_8_7(void) {}
+static void misra_8_7_caller(void) { misra_8_7(); }
 
