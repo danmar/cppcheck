@@ -115,6 +115,7 @@ private:
         TEST_CASE(nullpointer72); // #10215
         TEST_CASE(nullpointer73); // #10321
         TEST_CASE(nullpointer74);
+        TEST_CASE(nullpointer75);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2325,6 +2326,22 @@ private:
               "    f = f->e();\n"
               "    if (f) {}\n"
               "  } while (f && i > 0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer75()
+    {
+        check("struct a {\n"
+              "  a *b() const;\n"
+              "  void c();\n"
+              "  int d() const;\n"
+              "};\n"
+              "void e(a *x) {\n"
+              "  while (x->b()->d() == 0)\n"
+              "    x->c();\n"
+              "  x->c();\n"
+              "  if (x->b()) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

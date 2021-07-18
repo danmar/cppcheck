@@ -152,6 +152,14 @@ private:
         return !val.isLifetimeValue();
     }
 
+    static bool isNotPossible(const ValueFlow::Value& val) { return !val.isPossible(); }
+
+    static bool isNotKnown(const ValueFlow::Value& val) { return !val.isKnown(); }
+
+    static bool isNotInconclusive(const ValueFlow::Value& val) { return !val.isInconclusive(); }
+
+    static bool isNotImpossible(const ValueFlow::Value& val) { return !val.isImpossible(); }
+
     bool testValueOfXKnown(const char code[], unsigned int linenr, int value) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -2765,6 +2773,28 @@ private:
                "    int a = x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 5U, 3));
+
+        code = "struct a {\n"
+               "  a *b() const;\n"
+               "  void c();\n"
+               "};\n"
+               "void e(a *x) {\n"
+               "  while (x && x->b())\n"
+               "    x = x->b();\n"
+               "  x->c();\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 8U, 0));
+
+        code = "struct a {\n"
+               "  a *b();\n"
+               "  void c();\n"
+               "};\n"
+               "void e(a *x) {\n"
+               "  while (x && x->b())\n"
+               "    x = x->b();\n"
+               "  x->c();\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 8U, 0));
     }
 
     void valueFlowAfterConditionExpr() {
@@ -4631,7 +4661,12 @@ private:
         ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 0));
     }
 
-    static std::string isPossibleContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {
+    static std::string isPossibleContainerSizeValue(std::list<ValueFlow::Value> values,
+                                                    MathLib::bigint i,
+                                                    bool unique = true)
+    {
+        if (!unique)
+            values.remove_if(&isNotPossible);
         if (values.size() != 1)
             return "values.size():" + std::to_string(values.size());
         if (!values.front().isContainerSizeValue())
@@ -4643,7 +4678,12 @@ private:
         return "";
     }
 
-    static std::string isImpossibleContainerSizeValue(const std::list<ValueFlow::Value>& values, MathLib::bigint i) {
+    static std::string isImpossibleContainerSizeValue(std::list<ValueFlow::Value> values,
+                                                      MathLib::bigint i,
+                                                      bool unique = true)
+    {
+        if (!unique)
+            values.remove_if(&isNotImpossible);
         if (values.size() != 1)
             return "values.size():" + std::to_string(values.size());
         if (!values.front().isContainerSizeValue())
@@ -4655,7 +4695,12 @@ private:
         return "";
     }
 
-    static std::string isInconclusiveContainerSizeValue(const std::list<ValueFlow::Value>& values, MathLib::bigint i) {
+    static std::string isInconclusiveContainerSizeValue(std::list<ValueFlow::Value> values,
+                                                        MathLib::bigint i,
+                                                        bool unique = true)
+    {
+        if (!unique)
+            values.remove_if(&isNotInconclusive);
         if (values.size() != 1)
             return "values.size():" + std::to_string(values.size());
         if (!values.front().isContainerSizeValue())
@@ -4667,7 +4712,10 @@ private:
         return "";
     }
 
-    static std::string isKnownContainerSizeValue(const std::list<ValueFlow::Value> &values, MathLib::bigint i) {
+    static std::string isKnownContainerSizeValue(std::list<ValueFlow::Value> values, MathLib::bigint i, bool unique = true)
+    {
+        if (!unique)
+            values.remove_if(&isNotKnown);
         if (values.size() != 1)
             return "values.size():" + std::to_string(values.size());
         if (!values.front().isContainerSizeValue())
@@ -4790,28 +4838,32 @@ private:
                "    ints.front();\n" // <- container size is 3
                "  }\n"
                "}";
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 3));
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 3, false));
+        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 4, false));
 
         code = "void f(const std::list<int> &ints) {\n"
                "  if (ints.size() >= 3) {\n"
                "    ints.front();\n" // <- container size is 3
                "  }\n"
                "}";
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 3));
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 3, false));
+        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 2, false));
 
         code = "void f(const std::list<int> &ints) {\n"
                "  if (ints.size() < 3) {\n"
                "    ints.front();\n" // <- container size is 2
                "  }\n"
                "}";
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 2));
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 2, false));
+        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 3, false));
 
         code = "void f(const std::list<int> &ints) {\n"
                "  if (ints.size() > 3) {\n"
                "    ints.front();\n" // <- container size is 4
                "  }\n"
                "}";
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 4));
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 4, false));
+        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 3, false));
 
         code = "void f(const std::list<int> &ints) {\n"
                "  if (ints.empty() == false) {\n"

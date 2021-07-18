@@ -769,6 +769,8 @@ public:
     /** @brief check if this function is virtual in the base classes */
     bool isImplicitlyVirtual(bool defaultVal = false) const;
 
+    std::vector<const Function*> getOverloadedFunctions() const;
+
     /** @brief get function in base class that is overridden */
     const Function *getOverriddenFunction(bool *foundAllBaseClasses = nullptr) const;
 
