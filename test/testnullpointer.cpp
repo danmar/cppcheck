@@ -2330,8 +2330,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void nullpointer75()
-    {
+    void nullpointer75() {
         check("struct a {\n"
               "  a *b() const;\n"
               "  void c();\n"

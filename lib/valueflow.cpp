@@ -1679,11 +1679,11 @@ static void valueFlowGlobalStaticVar(TokenList *tokenList, const Settings *setti
 }
 
 static Analyzer::Result valueFlowForward(Token* startToken,
-                                         const Token* endToken,
-                                         const Token* exprTok,
-                                         std::list<ValueFlow::Value> values,
-                                         TokenList* const tokenlist,
-                                         const Settings* settings);
+        const Token* endToken,
+        const Token* exprTok,
+        std::list<ValueFlow::Value> values,
+        TokenList* const tokenlist,
+        const Settings* settings);
 
 static void valueFlowReverse(TokenList* tokenlist,
                              Token* tok,
@@ -1974,7 +1974,9 @@ struct ValueFlowAnalyzer : Analyzer {
     virtual bool isGlobal() const {
         return false;
     }
-    virtual bool dependsOnThis() const { return false; }
+    virtual bool dependsOnThis() const {
+        return false;
+    }
 
     virtual bool invalid() const {
         return false;
@@ -2020,8 +2022,7 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
-    virtual Action isThisModified(const Token* tok) const
-    {
+    virtual Action isThisModified(const Token* tok) const {
         if (isThisChanged(tok, 0, getSettings(), isCPP()))
             return Action::Invalid;
         return Action::None;
@@ -2405,8 +2406,7 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     ExpressionAnalyzer() : SingleValueFlowAnalyzer(), expr(nullptr), local(true), unknown(false), dependOnThis(false) {}
 
     ExpressionAnalyzer(const Token* e, const ValueFlow::Value& val, const TokenList* t)
-        : SingleValueFlowAnalyzer(val, t), expr(e), local(true), unknown(false), dependOnThis(false)
-    {
+        : SingleValueFlowAnalyzer(val, t), expr(e), local(true), unknown(false), dependOnThis(false) {
 
         dependOnThis = exprDependsOnThis(expr);
         setupExprVarIds(expr);
@@ -2421,8 +2421,7 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
                var->isStatic() || var->isReference() || var->isExtern();
     }
 
-    void setupExprVarIds(const Token* start, int depth = 0)
-    {
+    void setupExprVarIds(const Token* start, int depth = 0) {
         const int maxDepth = 4;
         if (depth > maxDepth)
             return;
@@ -2468,9 +2467,13 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
         return ps;
     }
 
-    virtual bool match(const Token* tok) const OVERRIDE { return tok->exprId() == expr->exprId(); }
+    virtual bool match(const Token* tok) const OVERRIDE {
+        return tok->exprId() == expr->exprId();
+    }
 
-    virtual bool dependsOnThis() const OVERRIDE { return dependOnThis; }
+    virtual bool dependsOnThis() const OVERRIDE {
+        return dependOnThis;
+    }
 
     virtual bool isGlobal() const OVERRIDE {
         return !local;
@@ -2492,11 +2495,11 @@ struct OppositeExpressionAnalyzer : ExpressionAnalyzer {
 };
 
 static Analyzer::Result valueFlowForwardExpression(Token* startToken,
-                                                   const Token* endToken,
-                                                   const Token* exprTok,
-                                                   const std::list<ValueFlow::Value>& values,
-                                                   const TokenList* const tokenlist,
-                                                   const Settings* settings)
+        const Token* endToken,
+        const Token* exprTok,
+        const std::list<ValueFlow::Value>& values,
+        const TokenList* const tokenlist,
+        const Settings* settings)
 {
     Analyzer::Result result{};
     for (const ValueFlow::Value& v : values) {
@@ -5043,10 +5046,10 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const nonneg int v
 }
 
 static void valueFlowForLoopSimplifyAfter(Token* fortok,
-                                          nonneg int varid,
-                                          const MathLib::bigint num,
-                                          TokenList* tokenlist,
-                                          const Settings* settings)
+        nonneg int varid,
+        const MathLib::bigint num,
+        TokenList* tokenlist,
+        const Settings* settings)
 {
     const Token *vartok = nullptr;
     for (const Token *tok = fortok; tok; tok = tok->next()) {
@@ -6035,19 +6038,19 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
 };
 
 static Analyzer::Result valueFlowContainerForward(Token* startToken,
-                                                  const Token* endToken,
-                                                  const Token* exprTok,
-                                                  const ValueFlow::Value& value,
-                                                  TokenList* tokenlist)
+        const Token* endToken,
+        const Token* exprTok,
+        const ValueFlow::Value& value,
+        TokenList* tokenlist)
 {
     ContainerExpressionAnalyzer a(exprTok, value, tokenlist);
     return valueFlowGenericForward(startToken, endToken, a, tokenlist->getSettings());
 }
 
 static Analyzer::Result valueFlowContainerForward(Token* startToken,
-                                                  const Token* exprTok,
-                                                  const ValueFlow::Value& value,
-                                                  TokenList* tokenlist)
+        const Token* exprTok,
+        const ValueFlow::Value& value,
+        TokenList* tokenlist)
 {
     const Token* endToken = nullptr;
     const Function* f = Scope::nestedInFunction(startToken->scope());
