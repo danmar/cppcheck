@@ -373,6 +373,9 @@ void misra_8_4_foo(void) {} // 8.4
 static void misra_8_4_bar(void) {} // Declared in header
 extern int16_t misra_8_4_count; // 8.4
 
+static int32_t misra_8_8 = 123;
+extern int32_t misra_8_8; // 8.8 8.4
+
 extern int a811[]; // 8.11 8.4
 
 enum misra_8_12_a { misra_a1 = 1, misra_a2 = 2, misra_a3, misra_a4 = 3 }; //8.12
