@@ -95,6 +95,7 @@ public:
         checkOther.clarifyCalculation();
         checkOther.checkPassByReference();
         checkOther.checkConstVariable();
+        checkOther.checkConstPointer();
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
         checkOther.checkInvalidFree();
         checkOther.clarifyStatement();
@@ -135,6 +136,7 @@ public:
     void checkPassByReference();
 
     void checkConstVariable();
+    void checkConstPointer();
 
     /** @brief Using char variable as array index / as operand in bit operation */
     void checkCharVariable();

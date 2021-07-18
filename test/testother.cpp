@@ -99,6 +99,7 @@ private:
 
         TEST_CASE(constVariable);
         TEST_CASE(constParameterCallback);
+        TEST_CASE(constPointer);
 
         TEST_CASE(switchRedundantAssignmentTest);
         TEST_CASE(switchRedundantOperationTest);
@@ -2629,6 +2630,29 @@ private:
               "    switch (signal.signum) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:13]: (style) Parameter 'signal' can be declared with const. However it seems that 'signalEvent' is a callback function, if 'signal' is declared with const you might also need to cast function pointer(s).\n", errout.str());
+    }
+
+    void constPointer() {
+        check("void foo(int *p) { return *p; }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { x = *p; }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { int &ref = *p; ref = 12; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int *p) { x = *p + 10; }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { return p[10]; }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { int &ref = p[0]; ref = 12; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int *p) { x[*p] = 12; }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -5667,7 +5691,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void test(int * p, int * q) {\n"
+        check("void test(const int * p, const int * q) {\n"
               "    int i = *p;\n"
               "    int j = *p;\n"
               "}");
@@ -5795,7 +5819,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
-        check("void test(int * p) {\n"
+        check("void test(const int * p) {\n"
               "    int i = *p;\n"
               "    int j = *p;\n"
               "}");
@@ -8160,7 +8184,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on 'y' - it's already a pointer.\n", errout.str());
 
         // no warning for bitwise AND
-        check("void f(int *b) {\n"
+        check("void f(const int *b) {\n"
               "    int x = 0x20 & *b;\n"
               "}\n", nullptr, false, true);
         ASSERT_EQUALS("", errout.str());
