@@ -1467,11 +1467,11 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
         if (memberFunction && args.empty())
             return false;
         return constMember && std::all_of(args.begin(), args.end(), [](const Token* tok) {
-            const Variable* var = tok->variable();
-            if (var)
-                return var->isConst();
-            return false;
-        });
+                   const Variable* var = tok->variable();
+                   if (var)
+                       return var->isConst();
+                   return false;
+               });
     }
     return true;
 }
