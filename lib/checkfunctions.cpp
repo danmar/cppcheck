@@ -338,7 +338,7 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
             return nullptr;
         if (tok->str() == "goto" && !isForwardJump(tok))
             return nullptr;
-        if (Token::Match(tok, "%name% (") && library.isnoreturn(tok))
+        if (Token::Match(tok, "%name% (") && !library.isnotnoreturn(tok))
             return nullptr;
         if (Token::Match(tok, "[;{}] %name% :"))
             return tok;

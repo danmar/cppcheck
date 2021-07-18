@@ -1487,6 +1487,9 @@ private:
         // noreturn function
         check("int f(int x) { exit(0); }");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(int x) { assert(0); }");
+        ASSERT_EQUALS("", errout.str());
     }
     // NRVO check
     void returnLocalStdMove1() {
