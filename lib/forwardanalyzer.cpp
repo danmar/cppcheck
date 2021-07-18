@@ -422,7 +422,7 @@ struct ForwardTraversal {
                 return Break(Analyzer::Terminate::Bail);
             if (allAnalysis.isIncremental())
                 return Break(Analyzer::Terminate::Bail);
-        } else {
+        } else if (allAnalysis.isModified()) {
             std::vector<ForwardTraversal> ftv = tryForkScope(endBlock, allAnalysis.isModified());
             bool forkContinue = true;
             for (ForwardTraversal& ft : ftv) {
@@ -446,6 +446,11 @@ struct ForwardTraversal {
                         ft.updateRange(endBlock, endToken);
                 }
             }
+            if (allAnalysis.isIncremental())
+                return Break(Analyzer::Terminate::Bail);
+        } else {
+            if (updateInnerLoop(endBlock, stepTok, condTok) == Progress::Break)
+                return Progress::Break;
             if (allAnalysis.isIncremental())
                 return Break(Analyzer::Terminate::Bail);
         }
