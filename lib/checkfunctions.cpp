@@ -273,7 +273,7 @@ void CheckFunctions::checkMissingReturn()
         }
         if (inconclusive && Token::simpleMatch(scope->bodyEnd->tokAt(-2), ") ; }")) {
             const Token *ftok = scope->bodyEnd->linkAt(-2)->previous();
-            if (mSettings->library.isNotLibraryFunction(ftok)) {
+            if (mSettings->library.isNotLibraryFunction(ftok) && !ftok->isKeyword()) {
                 const Token *tok = ftok;
                 while (Token::Match(tok->tokAt(-2), "%name% :: %name%"))
                     tok = tok->tokAt(-2);
