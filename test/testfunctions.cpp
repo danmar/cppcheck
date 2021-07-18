@@ -39,6 +39,7 @@ private:
         settings.severity.enable(Severity::warning);
         settings.severity.enable(Severity::performance);
         settings.severity.enable(Severity::portability);
+        settings.certainty.enable(Certainty::inconclusive);
         settings.libraries.emplace_back("posix");
         settings.standards.c = Standards::C11;
         settings.standards.cpp = Standards::CPP11;
@@ -1490,7 +1491,11 @@ private:
 
         check("int f(int x) { assert(0); }");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(int x) { RETURN(0); }");
+        ASSERT_EQUALS("[test.cpp:1]: (error, inconclusive) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
     }
+
     // NRVO check
     void returnLocalStdMove1() {
         check("struct A{}; A f() { A var; return std::move(var); }");
