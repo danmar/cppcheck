@@ -441,15 +441,15 @@ void CheckCondition::duplicateCondition()
         if (scope.type != Scope::eIf)
             continue;
 
-        const Token *cond1 = scope.classDef->next()->astOperand2();
+        const Token* tok2 = scope.classDef->next();
+        if (!tok2)
+            continue;
+        const Token* cond1 = tok2->astOperand2();
         if (!cond1)
             continue;
         if (cond1->hasKnownIntValue())
             continue;
 
-        const Token *tok2 = scope.classDef->next();
-        if (!tok2)
-            continue;
         tok2 = tok2->link();
         if (!Token::simpleMatch(tok2, ") {"))
             continue;
@@ -1806,7 +1806,7 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
                     continue;
 
                 const auto typeMinValue = (typeTok->valueType()->sign == ValueType::Sign::SIGNED) ? (-(1LL << (bits-1))) : 0;
-                const auto unsignedTypeMaxValue = (1LL << (bits-1)) - 1LL;
+                const auto unsignedTypeMaxValue = (1LL << bits) - 1LL;
                 const auto typeMaxValue = (typeTok->valueType()->sign == ValueType::Sign::SIGNED) ? (unsignedTypeMaxValue / 2) : unsignedTypeMaxValue;
 
                 if (valueTok->getKnownIntValue() < typeMinValue)

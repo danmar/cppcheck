@@ -1161,6 +1161,7 @@ class MisraChecker:
         self._ctu_summary_typedefs = False
         self._ctu_summary_tagnames = False
         self._ctu_summary_identifiers = False
+        self._ctu_summary_usage = False
 
     def __repr__(self):
         attrs = ["settings", "verify_expected", "verify_actual", "violations",
@@ -1240,7 +1241,9 @@ class MisraChecker:
                 internal_identifiers.append(identifier(var.nameToken))
             else:
                 names.append(var.nameToken.str)
-                external_identifiers.append(identifier(var.nameToken))
+                i = identifier(var.nameToken)
+                i['decl'] = var.isExtern
+                external_identifiers.append(i)
 
         for func in cfg.functions:
             if func.tokenDef is None:
@@ -1248,11 +1251,35 @@ class MisraChecker:
             if func.isStatic:
                 internal_identifiers.append(identifier(func.tokenDef))
             else:
-                external_identifiers.append(identifier(func.tokenDef))
+                i = identifier(func.tokenDef)
+                i['decl'] = func.token is None
+                external_identifiers.append(i)
 
         cppcheckdata.reportSummary(dumpfile, 'MisraExternalIdentifiers', external_identifiers)
         cppcheckdata.reportSummary(dumpfile, 'MisraInternalIdentifiers', internal_identifiers)
         cppcheckdata.reportSummary(dumpfile, 'MisraLocalIdentifiers', local_identifiers)
+
+    def _save_ctu_summary_usage(self, dumpfile, cfg):
+        if self._ctu_summary_usage:
+            return
+        self._ctu_summary_usage = True
+
+        names = []
+        for token in cfg.tokenlist:
+            if not token.isName:
+                continue
+            if token.function and token.scope.isExecutable:
+                if (not token.function.isStatic) and (token.str not in names):
+                    names.append(token.str)
+            elif token.variable:
+                if token == token.variable.nameToken:
+                    continue
+                if token.variable.access == 'Global' and (not token.variable.isStatic) and (token.str not in names):
+                    names.append(token.str)
+
+        if len(names) > 0:
+            cppcheckdata.reportSummary(dumpfile, 'MisraUsage', names)
+
 
     def misra_2_3(self, dumpfile, typedefInfo):
         self._save_ctu_summary_typedefs(dumpfile, typedefInfo)
@@ -1798,6 +1825,38 @@ class MisraChecker:
             # extern variable declaration in source file
             if var.isExtern and var.nameToken and not is_header(var.nameToken.file):
                 self.reportError(var.nameToken, 8, 4)
+
+    def misra_8_5(self, dumpfile, cfg):
+        self._save_ctu_summary_identifiers(dumpfile, cfg)
+
+    def misra_8_6(self, dumpfile, cfg):
+        self._save_ctu_summary_identifiers(dumpfile, cfg)
+
+    def misra_8_7(self, dumpfile, cfg):
+        self._save_ctu_summary_usage(dumpfile, cfg)
+
+    def misra_8_8(self, cfg):
+        vars = {}
+        for var in cfg.variables:
+            if var.access != 'Global':
+                continue
+            if var.nameToken is None:
+                continue
+            varname = var.nameToken.str
+            if varname in vars:
+                vars[varname].append(var)
+            else:
+                vars[varname] = [var]
+        for varname, varlist in vars.items():
+            static_var = None
+            extern_var = None
+            for var in varlist:
+                if var.isStatic:
+                    static_var = var
+                elif var.isExtern:
+                    extern_var = var
+            if static_var and extern_var:
+                self.reportError(extern_var.nameToken, 8, 8)
 
     def misra_8_11(self, data):
         for var in data.variables:
@@ -3516,6 +3575,10 @@ class MisraChecker:
             if cfgNumber == 0:
                 self.executeCheck(802, self.misra_8_2, cfg, data.rawTokens)
             self.executeCheck(804, self.misra_8_4, cfg)
+            self.executeCheck(805, self.misra_8_5, dumpfile, cfg)
+            self.executeCheck(806, self.misra_8_6, dumpfile, cfg)
+            self.executeCheck(807, self.misra_8_7, dumpfile, cfg)
+            self.executeCheck(808, self.misra_8_8, cfg)
             self.executeCheck(811, self.misra_8_11, cfg)
             self.executeCheck(812, self.misra_8_12, cfg)
             if cfgNumber == 0:
@@ -3605,11 +3668,16 @@ class MisraChecker:
         all_typedef_info = []
         all_tagname_info = []
         all_macro_info = []
-        all_external_identifiers = {}
+        all_external_identifiers_decl = {}
+        all_external_identifiers_def = {}
         all_internal_identifiers = {}
         all_local_identifiers = {}
+        all_usage_count = {}
 
         from cppcheckdata import Location
+
+        def is_different_location(loc1, loc2):
+            return loc1['file'] != loc2['file'] or loc1['line'] != loc2['line']
 
         for filename in ctu_info_files:
             for line in open(filename, 'rt'):
@@ -3626,7 +3694,7 @@ class MisraChecker:
                         for old_typedef_info in all_typedef_info:
                             if old_typedef_info['name'] == new_typedef_info['name']:
                                 found = True
-                                if old_typedef_info['file'] != new_typedef_info['file'] or old_typedef_info['line'] != new_typedef_info['line']:
+                                if is_different_location(old_typedef_info, new_typedef_info):
                                     self.reportError(Location(old_typedef_info), 5, 6)
                                     self.reportError(Location(new_typedef_info), 5, 6)
                                 else:
@@ -3642,7 +3710,7 @@ class MisraChecker:
                         for old_tagname_info in all_tagname_info:
                             if old_tagname_info['name'] == new_tagname_info['name']:
                                 found = True
-                                if old_tagname_info['file'] != new_tagname_info['file'] or old_tagname_info['line'] != new_tagname_info['line']:
+                                if is_different_location(old_tagname_info, new_tagname_info):
                                     self.reportError(Location(old_tagname_info), 5, 7)
                                     self.reportError(Location(new_tagname_info), 5, 7)
                                 else:
@@ -3664,9 +3732,20 @@ class MisraChecker:
                         if not found:
                             all_macro_info.append(new_macro)
 
-                if summary_type == 'MisraGlobalIdentifiers':
+                if summary_type == 'MisraExternalIdentifiers':
                     for s in summary_data:
-                        all_external_identifiers[s['name']] = s
+                        is_declaration = s['decl']
+                        if is_declaration:
+                            all_external_identifiers = all_external_identifiers_decl
+                        else:
+                            all_external_identifiers = all_external_identifiers_def
+
+                        name = s['name']
+                        if name in all_external_identifiers and is_different_location(s, all_external_identifiers[name]):
+                            num = 5 if is_declaration else 6
+                            self.reportError(Location(s), 8, num)
+                            self.reportError(Location(all_external_identifiers[name]), 8, num)
+                        all_external_identifiers[name] = s
 
                 if summary_type == 'MisraInternalIdentifiers':
                     for s in summary_data:
@@ -3678,6 +3757,13 @@ class MisraChecker:
                 if summary_type == 'MisraLocalIdentifiers':
                     for s in summary_data:
                         all_local_identifiers[s['name']] = s
+
+                if summary_type == 'MisraUsage':
+                    for s in summary_data:
+                        if s in all_usage_count:
+                            all_usage_count[s] += 1
+                        else:
+                            all_usage_count[s] = 1
 
         for ti in all_typedef_info:
             if not ti['used']:
@@ -3691,6 +3777,8 @@ class MisraChecker:
             if not m['used']:
                 self.reportError(Location(m), 2, 5)
 
+        all_external_identifiers = all_external_identifiers_decl
+        all_external_identifiers.update(all_external_identifiers_def)
         for name, external_identifier in all_external_identifiers.items():
             internal_identifier = all_internal_identifiers.get(name)
             if internal_identifier:
@@ -3702,6 +3790,12 @@ class MisraChecker:
                 self.reportError(Location(local_identifier), 5, 8)
                 self.reportError(Location(external_identifier), 5, 8)
 
+        for name, count in all_usage_count.items():
+            #print('%s:%i' % (name, count))
+            if count != 1:
+                continue
+            if name in all_external_identifiers:
+                self.reportError(Location(all_external_identifiers[name]), 8, 7)
 
 RULE_TEXTS_HELP = '''Path to text file of MISRA rules
 

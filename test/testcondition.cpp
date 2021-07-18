@@ -4304,9 +4304,19 @@ private:
         settingsUnix64.platform(cppcheck::Platform::PlatformType::Unix64);
 
         check("void f(unsigned char c) {\n"
-              "  if (c == 1234) {}\n"
+              "  if (c == 256) {}\n"
               "}", &settingsUnix64);
-        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 1234. Condition is always true/false.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always true/false.\n", errout.str());
+
+        check("void f(unsigned char c) {\n"
+              "  if (c == 255) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b) {\n"
+              "  if (b == true) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

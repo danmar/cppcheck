@@ -100,6 +100,7 @@
   <ItemGroup>
     <ClCompile Include="..\externals\simplecpp\simplecpp.cpp" />
     <ClCompile Include="..\lib\pathmatch.cpp" />
+    <ClCompile Include="..\lib\utils.cpp" />
     <ClCompile Include="dmake.cpp" />
     <ClCompile Include="..\cli\filelister.cpp" />
     <ClCompile Include="..\lib\path.cpp" />
@@ -107,6 +108,7 @@
   <ItemGroup>
     <ClInclude Include="..\cli\filelister.h" />
     <ClInclude Include="..\lib\path.h" />
+    <ClInclude Include="..\lib\utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

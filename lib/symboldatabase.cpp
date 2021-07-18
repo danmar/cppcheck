@@ -1455,7 +1455,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                         continue;
                     if (tok1->exprId() == tok2->exprId())
                         continue;
-                    if (!isSameExpression(isCPP(), true, tok1, tok2, mSettings->library, true, false))
+                    if (!isSameExpression(isCPP(), true, tok1, tok2, mSettings->library, false, false))
                         continue;
                     nonneg int cid = std::min(tok1->exprId(), tok2->exprId());
                     tok1->exprId(cid);
@@ -3941,6 +3941,29 @@ bool Function::isImplicitlyVirtual(bool defaultVal) const
     if (foundAllBaseClasses) //If we've seen all the base classes and none of the above were true then it must not be virtual
         return false;
     return defaultVal; //If we can't see all the bases classes then we can't say conclusively
+}
+
+std::vector<const Function*> Function::getOverloadedFunctions() const
+{
+    std::vector<const Function*> result;
+    const Scope* scope = nestedIn;
+
+    while (scope) {
+        const bool isMemberFunction = scope->isClassOrStruct() && !isStatic();
+        for (std::multimap<std::string, const Function*>::const_iterator it = scope->functionMap.find(tokenDef->str());
+             it != scope->functionMap.end() && it->first == tokenDef->str();
+             ++it) {
+            const Function* func = it->second;
+            if (isMemberFunction == func->isStatic())
+                continue;
+            result.push_back(func);
+        }
+        if (isMemberFunction)
+            break;
+        scope = scope->nestedIn;
+    }
+
+    return result;
 }
 
 const Function *Function::getOverriddenFunction(bool *foundAllBaseClasses) const
