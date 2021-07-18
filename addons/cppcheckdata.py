@@ -1217,16 +1217,18 @@ def ArgumentParser():
 
 def get_files(args):
     """Return dump_files, ctu_info_files"""
-    dump_files = args.dumpfile
-    ctu_info_files = []
+    all_files = args.dumpfile
     if args.file_list:
         with open(args.file_list, 'rt') as f:
             for line in f.readlines():
-                line = line.rstrip()
-                if line.endswith('.ctu-info'):
-                    ctu_info_files.append(line)
-                else:
-                    dump_files.append(line)
+                all_files.append(line.rstrip())
+    dump_files = []
+    ctu_info_files = []
+    for f in all_files:
+        if f.endswith('.ctu-info'):
+            ctu_info_files.append(f)
+        else:
+            dump_files.append(f)
     return dump_files, ctu_info_files
 
 

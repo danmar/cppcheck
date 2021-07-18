@@ -70,6 +70,7 @@ if (MSVC)
     add_compile_options(/W4)
     add_compile_options(/wd4018) # warning C4018: '>': signed/unsigned mismatch
     add_compile_options(/wd4127) # warning C4127: conditional expression is constant
+    add_compile_options(/wd4146) # warning C4146: unary minus operator applied to unsigned type, result still unsigned
     add_compile_options(/wd4244) # warning C4244: 'initializing': conversion from 'int' to 'char', possible loss of data
     add_compile_options(/wd4251)
     # Clang: -Wshorten-64-to-32 -Wimplicit-int-conversion
@@ -80,6 +81,7 @@ if (MSVC)
     add_compile_options(/wd4701) # warning C4701: potentially uninitialized local variable 'err' used
     add_compile_options(/wd4706) # warning C4706: assignment within conditional expression
     add_compile_options(/wd4800) # warning C4800: 'const SymbolDatabase *' : forcing value to bool 'true' or 'false' (performance warning)
+    add_compile_options(/wd4805) # warning C4805: '==' : unsafe mix of type 'bool' and type 'long long' in operation
 
     if (WARNINGS_ARE_ERRORS)
         add_compile_options(/WX)
