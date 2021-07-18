@@ -432,7 +432,11 @@ public:
 
     std::vector<std::string> defines; // to provide some library defines
 
-    std::unordered_set<std::string> smartPointers;
+    struct SmartPointer {
+        bool unique = false;
+    };
+
+    std::map<std::string, SmartPointer> smartPointers;
     bool isSmartPointer(const Token *tok) const;
 
     struct PodType {

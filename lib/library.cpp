@@ -498,8 +498,14 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
 
         else if (nodename == "smart-pointer") {
             const char *className = node->Attribute("class-name");
-            if (className)
-                smartPointers.insert(className);
+            if (!className)
+                return Error(ErrorCode::MISSING_ATTRIBUTE, "class-name");
+            SmartPointer& smartPointer = smartPointers[className];
+            for (const tinyxml2::XMLElement *smartPointerNode = node->FirstChildElement(); smartPointerNode; smartPointerNode = smartPointerNode->NextSiblingElement()) {
+                const std::string smartPointerNodeName = smartPointerNode->Name();
+                if (smartPointerNodeName == "unique")
+                    smartPointer.unique = true;
+            }
         }
 
         else if (nodename == "type-checks") {

@@ -2910,6 +2910,8 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
             return LifetimeToken::setAddressOf(getLifetimeTokens(vartok, escape, std::move(errorPath), pred, depth - 1),
                                                !(astIsContainer(vartok) && Token::simpleMatch(vartok->astParent(), "[")));
         }
+    } else if (tok->isUnaryOp("*") && astIsSmartPointer(tok->astOperand1())) {
+        return getLifetimeTokens(tok->astOperand1(), escape, std::move(errorPath), pred, depth - 1);
     }
     return {{tok, std::move(errorPath)}};
 }
