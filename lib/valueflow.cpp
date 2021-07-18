@@ -2013,12 +2013,8 @@ struct ValueFlowAnalyzer : Analyzer {
 
     virtual Action isAliasModified(const Token* tok) const {
         int indirect = 0;
-        int baseIndirect = 0;
-        const ValueType* vt = getValueType(tok);
-        if (vt)
-            baseIndirect = vt->pointer;
         if (tok->valueType())
-            indirect = std::max<int>(0, tok->valueType()->pointer - baseIndirect);
+            indirect = tok->valueType()->pointer;
         if (isVariableChanged(tok, indirect, getSettings(), isCPP()))
             return Action::Invalid;
         return Action::None;

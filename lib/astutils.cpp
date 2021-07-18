@@ -1965,7 +1965,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     if (tok->variable() && Token::Match(tok2->astParent(), ". %name%") && isFunctionCall(tok2->astParent()->next()) && tok2->astParent()->astOperand1() == tok2) {
         const Variable * var = tok->variable();
         // Member function cannot change what `this` points to
-        if (indirect == 0 && var->isPointer())
+        if (indirect == 0 && astIsPointer(tok))
             return false;
         bool isConst = var && var->isConst();
         if (!isConst) {
