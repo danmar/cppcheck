@@ -1880,6 +1880,11 @@ class MisraChecker:
                 self.reportError(var.nameToken, 8, 9)
 
 
+    def misra_8_10(self, cfg):
+        for func in cfg.functions:
+            if func.isInlineKeyword and not func.isStatic:
+                self.reportError(func.tokenDef, 8, 10)
+
     def misra_8_11(self, data):
         for var in data.variables:
             if var.isExtern and simpleMatch(var.nameToken.next, '[ ]') and var.nameToken.scope.type == 'Global':
@@ -3602,6 +3607,7 @@ class MisraChecker:
             self.executeCheck(807, self.misra_8_7, dumpfile, cfg)
             self.executeCheck(808, self.misra_8_8, cfg)
             self.executeCheck(809, self.misra_8_9, cfg)
+            self.executeCheck(810, self.misra_8_10, cfg)
             self.executeCheck(811, self.misra_8_11, cfg)
             self.executeCheck(812, self.misra_8_12, cfg)
             if cfgNumber == 0:

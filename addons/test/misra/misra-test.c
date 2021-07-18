@@ -379,6 +379,8 @@ extern int32_t misra_8_8; // 8.8 8.4
 static int32_t misra_8_9_i; // 8.9
 static int32_t misra_8_9_foo(void) { return misra_8_9_i++; }
 
+inline int32_t misra_8_10_value(void) { return 123; } // 8.10 8.4
+
 extern int a811[]; // 8.11 8.4
 
 enum misra_8_12_a { misra_a1 = 1, misra_a2 = 2, misra_a3, misra_a4 = 3 }; //8.12

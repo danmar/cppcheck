@@ -722,6 +722,7 @@ class CPPCHECKLIB Function {
         fIsVolatile            = (1 << 20), ///< @brief is volatile
         fHasTrailingReturnType = (1 << 21), ///< @brief has trailing return type
         fIsEscapeFunction      = (1 << 22), ///< @brief Function throws or exits
+        fIsInlineKeyword       = (1 << 23), ///< @brief Function has "inline" keyword
     };
 
     /**
@@ -878,6 +879,9 @@ public:
     void hasBody(bool state) {
         setFlag(fHasBody, state);
     }
+    bool isInlineKeyword() const {
+        return getFlag(fIsInlineKeyword);
+    }
 
     bool isEscapeFunction() const {
         return getFlag(fIsEscapeFunction);
@@ -990,6 +994,9 @@ private:
     }
     void hasTrailingReturnType(bool state) {
         return setFlag(fHasTrailingReturnType, state);
+    }
+    void isInlineKeyword(bool state) {
+        setFlag(fIsInlineKeyword, state);
     }
     const Token *setFlags(const Token *tok1, const Scope *scope);
 };
