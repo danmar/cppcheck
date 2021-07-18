@@ -1858,6 +1858,28 @@ class MisraChecker:
             if static_var and extern_var:
                 self.reportError(extern_var.nameToken, 8, 8)
 
+    def misra_8_9(self, cfg):
+        variables = {}
+        for scope in cfg.scopes:
+            if scope.type != 'Function':
+                continue
+            variables_used_in_scope = []
+            tok = scope.bodyStart
+            while tok != scope.bodyEnd:
+                if tok.variable and tok.variable.access == 'Global' and tok.variable.isStatic:
+                    if tok.variable not in variables_used_in_scope:
+                        variables_used_in_scope.append(tok.variable)
+                tok = tok.next
+            for var in variables_used_in_scope:
+                if var in variables:
+                    variables[var] += 1
+                else:
+                    variables[var] = 1
+        for var, count in variables.items():
+            if count == 1:
+                self.reportError(var.nameToken, 8, 9)
+
+
     def misra_8_11(self, data):
         for var in data.variables:
             if var.isExtern and simpleMatch(var.nameToken.next, '[ ]') and var.nameToken.scope.type == 'Global':
@@ -3579,6 +3601,7 @@ class MisraChecker:
             self.executeCheck(806, self.misra_8_6, dumpfile, cfg)
             self.executeCheck(807, self.misra_8_7, dumpfile, cfg)
             self.executeCheck(808, self.misra_8_8, cfg)
+            self.executeCheck(809, self.misra_8_9, cfg)
             self.executeCheck(811, self.misra_8_11, cfg)
             self.executeCheck(812, self.misra_8_12, cfg)
             if cfgNumber == 0:
