@@ -8,7 +8,7 @@ def mkdtemp():
 
 def print_lines(lines):
     for line in lines:
-        print line
+        print(line)
 
 def write_to(file, lines):
     content = list((line + "\n" for line in lines))
