@@ -1993,6 +1993,17 @@ class MisraChecker:
                 if not isEssentiallyChar(operand2) and not isEssentiallySignedOrUnsigned(operand2):
                     self.reportError(token, 10, 2)
 
+    def misra_10_3(self, cfg):
+        for tok in cfg.tokenlist:
+            if tok.isAssignmentOp:
+                lhs = getEssentialType(tok.astOperand1)
+                rhs = getEssentialType(tok.astOperand2)
+                #print(lhs)
+                #print(rhs)
+                if lhs and rhs and bitsOfEssentialType(lhs) < bitsOfEssentialType(rhs):
+                    self.reportError(tok, 10, 3)
+
+
     def misra_10_4(self, data):
         op = {'+', '-', '*', '/', '%', '&', '|', '^', '+=', '-=', ':'}
         for token in data.tokenlist:
@@ -3619,6 +3630,7 @@ class MisraChecker:
                 self.executeCheck(905, self.misra_9_5, cfg, data.rawTokens)
             self.executeCheck(1001, self.misra_10_1, cfg)
             self.executeCheck(1002, self.misra_10_2, cfg)
+            self.executeCheck(1003, self.misra_10_3, cfg)
             self.executeCheck(1004, self.misra_10_4, cfg)
             self.executeCheck(1006, self.misra_10_6, cfg)
             self.executeCheck(1008, self.misra_10_8, cfg)

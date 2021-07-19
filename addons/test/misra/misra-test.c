@@ -660,6 +660,10 @@ static void misra_10_2(void) {
     res = '0' + f32a; // 10.2 10.4
 }
 
+static void misra_10_3(uint32_t u32a, uint32_t u32b) {
+    uint8_t res = u32a + u32b; // 10.3
+}
+
 static void misra_10_4(u32 x, s32 y) {
   z = x + 3; // 10.4
   enum misra_10_4_enuma { misra_10_4_A1, misra_10_4_A2, misra_10_4_A3 } a;
