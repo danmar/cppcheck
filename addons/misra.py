@@ -3384,7 +3384,7 @@ class MisraChecker:
             elif len(self.ruleTexts) == 0:
                 errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
             else:
-                return
+                errmsg = f'misra violation {ruleNum} with no text in the supplied rule-texts-file'
 
             if self.severity:
                 cppcheck_severity = self.severity
