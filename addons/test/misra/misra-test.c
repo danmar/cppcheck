@@ -590,7 +590,7 @@ static void misra_9_5(void) {
 
 typedef char misra_10_1_char_t;
 #define MISRA_10_1_CHAR char
-static void misra_10_1(uint8_t u, char c1, char c2) {
+static void misra_10_1(uint32_t u, char c1, char c2) {
   int32_t i;
   char c;
   enum { E1 = 1 };

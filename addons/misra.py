@@ -458,12 +458,15 @@ def getEssentialCategorylist(operand1, operand2):
 def getEssentialType(expr):
     if not expr:
         return None
+
     if expr.variable:
-        typeToken = expr.variable.typeStartToken
-        while typeToken and typeToken.isName:
-            if typeToken.str in INT_TYPES + STDINT_TYPES + ['float', 'double']:
-                return typeToken.str
-            typeToken = typeToken.next
+        if expr.valueType:
+            if expr.valueType.type == 'bool':
+                return 'Boolean'
+            if expr.valueType.isFloat():
+                return expr.valueType.type
+            if expr.valueType.isIntegral():
+                return '%s %s' % (expr.valueType.sign, expr.valueType.type)
 
     elif expr.astOperand1 and expr.astOperand2 and expr.str in (
     '+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":"):
@@ -489,6 +492,7 @@ def getEssentialType(expr):
 def bitsOfEssentialType(ty):
     if ty is None:
         return 0
+    ty = ty.split(' ')[-1]
     if ty == 'char':
         return typeBits['CHAR']
     if ty == 'short':
@@ -1953,8 +1957,8 @@ class MisraChecker:
                     elif not isUnsignedType(e2) and not token.astOperand2.isNumber:
                         self.reportError(token, 10, 1)
                 elif token.str in ('~', '&', '|', '^'):
-                    e1_et = getEssentialType(token.astOperand1)
-                    e2_et = getEssentialType(token.astOperand2)
+                    e1_et = getEssentialType(token.astOperand1).split(' ')[-1]
+                    e2_et = getEssentialType(token.astOperand2).split(' ')[-1]
                     if e1_et == 'char' and e2_et == 'char':
                         self.reportError(token, 10, 1)
 
@@ -1967,7 +1971,7 @@ class MisraChecker:
 
         def isEssentiallyChar(op):
             if op.isName:
-                return getEssentialType(op) == 'char'
+                return getEssentialType(op).split(' ')[-1] == 'char'
             return op.isChar
 
         for token in data.tokenlist:
