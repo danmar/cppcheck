@@ -3842,10 +3842,12 @@ Format:
 
 <..arbitrary text..>
 Appendix A Summary of guidelines
-Rule 1.1
+Rule 1.1 Required
 Rule text for 1.1
-Rule 1.2
+continuation of rule text for 1.1
+Rule 1.2 Mandatory
 Rule text for 1.2
+continuation of rule text for 1.2
 <...>
 
 '''
