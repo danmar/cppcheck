@@ -1452,6 +1452,54 @@ void CheckOther::checkConstVariable()
     }
 }
 
+void CheckOther::checkConstPointer()
+{
+    if (!mSettings->severity.isEnabled(Severity::style))
+        return;
+
+    std::set<const Variable *> pointers;
+    std::set<const Variable *> nonConstPointers;
+    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+        if (!tok->variable())
+            continue;
+        if (tok == tok->variable()->nameToken())
+            continue;
+        if (!tok->valueType())
+            continue;
+        if (tok->valueType()->pointer == 0 || tok->valueType()->constness > 0)
+            continue;
+        if (nonConstPointers.find(tok->variable()) != nonConstPointers.end())
+            continue;
+        pointers.insert(tok->variable());
+        bool nonConst = true;
+        const Token *parent = tok->astParent();
+        bool deref = false;
+        if (parent && parent->isUnaryOp("*"))
+            deref = true;
+        else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok)
+            deref = true;
+        if (deref) {
+            while (Token::Match(parent->astParent(), "%cop%") && parent->astParent()->isBinaryOp())
+                parent = parent->astParent();
+            if (Token::simpleMatch(parent->astParent(), "return"))
+                nonConst = false;
+            else if (Token::Match(parent->astParent(), "%assign%") && parent == parent->astParent()->astOperand2()) {
+                bool takingRef = false;
+                const Token *lhs = parent->astParent()->astOperand1();
+                if (lhs && lhs->variable() && lhs->variable()->isReference() && lhs->variable()->nameToken() == lhs)
+                    takingRef = true;
+                nonConst = takingRef;
+            } else if (Token::simpleMatch(parent->astParent(), "[") && parent->astParent()->astOperand2() == parent)
+                nonConst = false;
+        }
+        if (nonConst)
+            nonConstPointers.insert(tok->variable());
+    }
+    for (const Variable *p: pointers) {
+        if (nonConstPointers.find(p) == nonConstPointers.end())
+            constVariableError(p, nullptr);
+    }
+}
 void CheckOther::constVariableError(const Variable *var, const Function *function)
 {
     const std::string vartype((var && var->isArgument()) ? "Parameter" : "Variable");

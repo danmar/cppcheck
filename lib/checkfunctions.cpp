@@ -252,6 +252,7 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
 
 void CheckFunctions::checkMissingReturn()
 {
+    const bool inconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         const Function *function = scope->function;
@@ -266,8 +267,20 @@ void CheckFunctions::checkMissingReturn()
         if (Function::returnsVoid(function, true))
             continue;
         const Token *errorToken = checkMissingReturnScope(scope->bodyEnd, mSettings->library);
-        if (errorToken)
+        if (errorToken) {
             missingReturnError(errorToken);
+            continue;
+        }
+        if (inconclusive && Token::simpleMatch(scope->bodyEnd->tokAt(-2), ") ; }")) {
+            const Token *ftok = scope->bodyEnd->linkAt(-2)->previous();
+            if (mSettings->library.isNotLibraryFunction(ftok)) {
+                const Token *tok = ftok;
+                while (Token::Match(tok->tokAt(-2), "%name% :: %name%"))
+                    tok = tok->tokAt(-2);
+                if (Token::Match(tok->previous(), "[;{}] %name% (|::") && !tok->isKeyword())
+                    missingReturnError(tok, Certainty::inconclusive);
+            }
+        }
     }
 }
 
@@ -338,8 +351,13 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
             return nullptr;
         if (tok->str() == "goto" && !isForwardJump(tok))
             return nullptr;
-        if (Token::Match(tok, "%name% (") && library.isnoreturn(tok))
-            return nullptr;
+        if (Token::Match(tok, "%name% (") && !library.isnotnoreturn(tok)) {
+            const Token *start = tok;
+            while (Token::Match(start->tokAt(-2), "%name% :: %name%"))
+                start = start->tokAt(-2);
+            if (Token::Match(start->previous(), "[;{}] %name% ::|("))
+                return nullptr;
+        }
         if (Token::Match(tok, "[;{}] %name% :"))
             return tok;
         if (Token::Match(tok, "; !!}") && !lastStatement)
@@ -348,10 +366,10 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
     return nullptr;
 }
 
-void CheckFunctions::missingReturnError(const Token* tok)
+void CheckFunctions::missingReturnError(const Token* tok, Certainty::CertaintyLevel certainty)
 {
     reportError(tok, Severity::error, "missingReturn",
-                "Found a exit path from function with non-void return type that has missing return statement", CWE758, Certainty::normal);
+                "Found a exit path from function with non-void return type that has missing return statement", CWE758, certainty);
 }
 //---------------------------------------------------------------------------
 // Detect passing wrong values to <cmath> functions like atan(0, x);

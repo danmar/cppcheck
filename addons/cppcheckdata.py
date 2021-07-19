@@ -471,7 +471,8 @@ class Function:
         tokenDef                Token in function definition
         isVirtual               Is this function is virtual
         isImplicitlyVirtual     Is this function is virtual this in the base classes
-        isStatic                Is this function is static
+        isInlineKeyword         Is inline keyword used
+        isStatic                Is this function static?
     """
 
     Id = None
@@ -485,6 +486,7 @@ class Function:
     type = None
     isVirtual = None
     isImplicitlyVirtual = None
+    isInlineKeyword = None
     isStatic = None
     nestedIn = None
 
@@ -494,12 +496,10 @@ class Function:
         self.tokenDefId = element.get('tokenDef')
         self.name = element.get('name')
         self.type = element.get('type')
-        isVirtual = element.get('isVirtual')
-        self.isVirtual = (isVirtual and isVirtual == 'true')
-        isImplicitlyVirtual = element.get('isImplicitlyVirtual')
-        self.isImplicitlyVirtual = (isImplicitlyVirtual and isImplicitlyVirtual == 'true')
-        isStatic = element.get('isStatic')
-        self.isStatic = (isStatic and isStatic == 'true')
+        self.isImplicitlyVirtual = element.get('isImplicitlyVirtual', 'false') == 'true'
+        self.isVirtual = element.get('isVirtual', 'false') == 'true'
+        self.isInlineKeyword = element.get('isInlineKeyword', 'false') == 'true'
+        self.isStatic = element.get('isStatic', 'false') == 'true'
         self.nestedIn = nestedIn
 
         self.argument = {}
@@ -507,7 +507,7 @@ class Function:
 
     def __repr__(self):
         attrs = ["Id", "tokenId", "tokenDefId", "name", "type", "isVirtual",
-                 "isImplicitlyVirtual", "isStatic", "argumentId"]
+                 "isImplicitlyVirtual", "isInlineKeyword", "isStatic", "argumentId"]
         return "{}({})".format(
             "Function",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))

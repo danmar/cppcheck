@@ -2268,9 +2268,15 @@ Function::Function(const Token *tokenDef, const std::string &clangType)
 
 const Token *Function::setFlags(const Token *tok1, const Scope *scope)
 {
+    if (tok1->isInline())
+        isInlineKeyword(true);
+
     // look for end of previous statement
     while (tok1->previous() && !Token::Match(tok1->previous(), ";|}|{|public:|protected:|private:")) {
         tok1 = tok1->previous();
+
+        if (tok1->isInline())
+            isInlineKeyword(true);
 
         // extern function
         if (tok1->str() == "extern") {
@@ -3721,6 +3727,8 @@ void SymbolDatabase::printXml(std::ostream &out) const
                         else if (function->isImplicitlyVirtual())
                             out << " isImplicitlyVirtual=\"true\"";
                     }
+                    if (function->isInlineKeyword())
+                        out << " isInlineKeyword=\"true\"";
                     if (function->isStatic())
                         out << " isStatic=\"true\"";
                     if (function->argCount() == 0U)

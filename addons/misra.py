@@ -458,12 +458,15 @@ def getEssentialCategorylist(operand1, operand2):
 def getEssentialType(expr):
     if not expr:
         return None
+
     if expr.variable:
-        typeToken = expr.variable.typeStartToken
-        while typeToken and typeToken.isName:
-            if typeToken.str in INT_TYPES + STDINT_TYPES + ['float', 'double']:
-                return typeToken.str
-            typeToken = typeToken.next
+        if expr.valueType:
+            if expr.valueType.type == 'bool':
+                return 'Boolean'
+            if expr.valueType.isFloat():
+                return expr.valueType.type
+            if expr.valueType.isIntegral():
+                return '%s %s' % (expr.valueType.sign, expr.valueType.type)
 
     elif expr.astOperand1 and expr.astOperand2 and expr.str in (
     '+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":"):
@@ -489,6 +492,7 @@ def getEssentialType(expr):
 def bitsOfEssentialType(ty):
     if ty is None:
         return 0
+    ty = ty.split(' ')[-1]
     if ty == 'char':
         return typeBits['CHAR']
     if ty == 'short':
@@ -1858,6 +1862,33 @@ class MisraChecker:
             if static_var and extern_var:
                 self.reportError(extern_var.nameToken, 8, 8)
 
+    def misra_8_9(self, cfg):
+        variables = {}
+        for scope in cfg.scopes:
+            if scope.type != 'Function':
+                continue
+            variables_used_in_scope = []
+            tok = scope.bodyStart
+            while tok != scope.bodyEnd:
+                if tok.variable and tok.variable.access == 'Global' and tok.variable.isStatic:
+                    if tok.variable not in variables_used_in_scope:
+                        variables_used_in_scope.append(tok.variable)
+                tok = tok.next
+            for var in variables_used_in_scope:
+                if var in variables:
+                    variables[var] += 1
+                else:
+                    variables[var] = 1
+        for var, count in variables.items():
+            if count == 1:
+                self.reportError(var.nameToken, 8, 9)
+
+
+    def misra_8_10(self, cfg):
+        for func in cfg.functions:
+            if func.isInlineKeyword and not func.isStatic:
+                self.reportError(func.tokenDef, 8, 10)
+
     def misra_8_11(self, data):
         for var in data.variables:
             if var.isExtern and simpleMatch(var.nameToken.next, '[ ]') and var.nameToken.scope.type == 'Global':
@@ -1926,8 +1957,8 @@ class MisraChecker:
                     elif not isUnsignedType(e2) and not token.astOperand2.isNumber:
                         self.reportError(token, 10, 1)
                 elif token.str in ('~', '&', '|', '^'):
-                    e1_et = getEssentialType(token.astOperand1)
-                    e2_et = getEssentialType(token.astOperand2)
+                    e1_et = getEssentialType(token.astOperand1).split(' ')[-1]
+                    e2_et = getEssentialType(token.astOperand2).split(' ')[-1]
                     if e1_et == 'char' and e2_et == 'char':
                         self.reportError(token, 10, 1)
 
@@ -1940,7 +1971,7 @@ class MisraChecker:
 
         def isEssentiallyChar(op):
             if op.isName:
-                return getEssentialType(op) == 'char'
+                return getEssentialType(op).split(' ')[-1] == 'char'
             return op.isChar
 
         for token in data.tokenlist:
@@ -1965,6 +1996,17 @@ class MisraChecker:
                     self.reportError(token, 10, 2)
                 if not isEssentiallyChar(operand2) and not isEssentiallySignedOrUnsigned(operand2):
                     self.reportError(token, 10, 2)
+
+    def misra_10_3(self, cfg):
+        for tok in cfg.tokenlist:
+            if tok.isAssignmentOp:
+                lhs = getEssentialType(tok.astOperand1)
+                rhs = getEssentialType(tok.astOperand2)
+                #print(lhs)
+                #print(rhs)
+                if lhs and rhs and bitsOfEssentialType(lhs) < bitsOfEssentialType(rhs):
+                    self.reportError(tok, 10, 3)
+
 
     def misra_10_4(self, data):
         op = {'+', '-', '*', '/', '%', '&', '|', '^', '+=', '-=', ':'}
@@ -3357,7 +3399,7 @@ class MisraChecker:
             elif len(self.ruleTexts) == 0:
                 errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
             else:
-                return
+                errmsg = 'misra violation %s with no text in the supplied rule-texts-file' % (ruleNum)
 
             if self.severity:
                 cppcheck_severity = self.severity
@@ -3579,6 +3621,8 @@ class MisraChecker:
             self.executeCheck(806, self.misra_8_6, dumpfile, cfg)
             self.executeCheck(807, self.misra_8_7, dumpfile, cfg)
             self.executeCheck(808, self.misra_8_8, cfg)
+            self.executeCheck(809, self.misra_8_9, cfg)
+            self.executeCheck(810, self.misra_8_10, cfg)
             self.executeCheck(811, self.misra_8_11, cfg)
             self.executeCheck(812, self.misra_8_12, cfg)
             if cfgNumber == 0:
@@ -3590,6 +3634,7 @@ class MisraChecker:
                 self.executeCheck(905, self.misra_9_5, cfg, data.rawTokens)
             self.executeCheck(1001, self.misra_10_1, cfg)
             self.executeCheck(1002, self.misra_10_2, cfg)
+            self.executeCheck(1003, self.misra_10_3, cfg)
             self.executeCheck(1004, self.misra_10_4, cfg)
             self.executeCheck(1006, self.misra_10_6, cfg)
             self.executeCheck(1008, self.misra_10_8, cfg)
@@ -3813,10 +3858,12 @@ Format:
 
 <..arbitrary text..>
 Appendix A Summary of guidelines
-Rule 1.1
+Rule 1.1 Required
 Rule text for 1.1
-Rule 1.2
+continuation of rule text for 1.1
+Rule 1.2 Mandatory
 Rule text for 1.2
+continuation of rule text for 1.2
 <...>
 
 '''

@@ -11174,8 +11174,11 @@ void Tokenizer::simplifyKeyword()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (keywords.find(tok->str()) != keywords.end()) {
             // Don't remove struct members
-            if (!Token::simpleMatch(tok->previous(), "."))
+            if (!Token::simpleMatch(tok->previous(), ".")) {
+                if (tok->str().find("inline") != std::string::npos && Token::Match(tok->next(), "%name%"))
+                    tok->next()->isInline(true);
                 tok->deleteThis(); // Simplify..
+            }
         }
 
         if (isC() || mSettings->standards.cpp == Standards::CPP03) {

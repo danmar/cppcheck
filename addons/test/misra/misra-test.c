@@ -376,6 +376,11 @@ extern int16_t misra_8_4_count; // 8.4
 static int32_t misra_8_8 = 123;
 extern int32_t misra_8_8; // 8.8 8.4
 
+static int32_t misra_8_9_i; // 8.9
+static int32_t misra_8_9_foo(void) { return misra_8_9_i++; }
+
+inline int32_t misra_8_10_value(void) { return 123; } // 8.10 8.4
+
 extern int a811[]; // 8.11 8.4
 
 enum misra_8_12_a { misra_a1 = 1, misra_a2 = 2, misra_a3, misra_a4 = 3 }; //8.12
@@ -585,7 +590,7 @@ static void misra_9_5(void) {
 
 typedef char misra_10_1_char_t;
 #define MISRA_10_1_CHAR char
-static void misra_10_1(uint8_t u, char c1, char c2) {
+static void misra_10_1(uint32_t u, char c1, char c2) {
   int32_t i;
   char c;
   enum { E1 = 1 };
@@ -653,6 +658,10 @@ static void misra_10_2(void) {
 
     res = s16a - 'a'; // 10.2
     res = '0' + f32a; // 10.2 10.4
+}
+
+static void misra_10_3(uint32_t u32a, uint32_t u32b) {
+    uint8_t res = u32a + u32b; // 10.3
 }
 
 static void misra_10_4(u32 x, s32 y) {

@@ -247,6 +247,8 @@ private:
 
         TEST_CASE(functionImplicitlyVirtual);
 
+        TEST_CASE(functionIsInlineKeyword);
+
         TEST_CASE(functionStatic);
 
         TEST_CASE(functionReturnsReference); // Function::returnsReference
@@ -2462,6 +2464,14 @@ private:
         ASSERT_EQUALS(4, db->scopeList.size());
         const Function *function = db->scopeList.back().function;
         ASSERT_EQUALS(true, function && function->isImplicitlyVirtual(false));
+    }
+
+    void functionIsInlineKeyword() {
+        GET_SYMBOL_DB("inline void fs() {}");
+        (void)db;
+        const Function *func = db->scopeList.back().function;
+        ASSERT(func);
+        ASSERT(func->isInlineKeyword());
     }
 
     void functionStatic() {
