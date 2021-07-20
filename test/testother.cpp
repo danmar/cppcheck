@@ -2653,6 +2653,18 @@ private:
 
         check("void foo(int *p) { x[*p] = 12; }");
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { if (p) {} }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { if (p || x) {} }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { if (p == 0) {} }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { if (!p) {} }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -5453,32 +5465,32 @@ private:
     }
 
     void duplicateExpressionCompareWithZero() {
-        check("void f(int* x, bool b) {\n"
+        check("void f(const int* x, bool b) {\n"
               "    if ((x && b) || (x != 0 && b)) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because 'x&&b' and 'x!=0&&b' represent the same value.\n", errout.str());
 
-        check("void f(int* x, bool b) {\n"
+        check("void f(const int* x, bool b) {\n"
               "    if ((x != 0 && b) || (x && b)) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because 'x!=0&&b' and 'x&&b' represent the same value.\n", errout.str());
 
-        check("void f(int* x, bool b) {\n"
+        check("void f(const int* x, bool b) {\n"
               "    if ((x && b) || (b && x != 0)) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because 'x&&b' and 'b&&x!=0' represent the same value.\n", errout.str());
 
-        check("void f(int* x, bool b) {\n"
+        check("void f(const int* x, bool b) {\n"
               "    if ((!x && b) || (x == 0 && b)) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because '!x&&b' and 'x==0&&b' represent the same value.\n", errout.str());
 
-        check("void f(int* x, bool b) {\n"
+        check("void f(const int* x, bool b) {\n"
               "    if ((x == 0 && b) || (!x && b)) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because 'x==0&&b' and '!x&&b' represent the same value.\n", errout.str());
 
-        check("void f(int* x, bool b) {\n"
+        check("void f(const int* x, bool b) {\n"
               "    if ((!x && b) || (b && x == 0)) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because '!x&&b' and 'b&&x==0' represent the same value.\n", errout.str());
@@ -5492,12 +5504,12 @@ private:
               "};\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) Same expression on both sides of '||' because 'getX()&&getB()' and 'getX()!=0&&getB()' represent the same value.\n", errout.str());
 
-        check("void f(int* x, bool b) {\n"
+        check("void f(const int* x, bool b) {\n"
               "    if ((x && b) || (x == 0 && b)) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f(int* x, bool b) {\n"
+        check("void f(const int* x, bool b) {\n"
               "    if ((!x && b) || (x != 0 && b)) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
@@ -6269,13 +6281,13 @@ private:
     }
 
     void checkSignOfPointer() {
-        check("void foo(int* x) {\n"
+        check("void foo(const int* x) {\n"
               "  if (x >= 0) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
 
         {
-            const char code[] = "void foo(int* x) {\n"
+            const char code[] = "void foo(const int* x) {\n"
                                 "  int y = 0;\n"
                                 "  if (x >= y) {}\n"
                                 "}";
@@ -6289,13 +6301,13 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(int* x) {\n"
+        check("void foo(const int* x) {\n"
               "  if (x < 0) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
 
         {
-            const char code[] = "void foo(int* x) {\n"
+            const char code[] = "void foo(const int* x) {\n"
                                 "  unsigned y = 0u;\n"
                                 "  if (x < y) {}\n"
                                 "}";
@@ -6311,27 +6323,27 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(int* x, int* y) {\n"
+        check("void foo(const int* x, const int* y) {\n"
               "  if (x - y < 0) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(int* x, int* y) {\n"
+        check("void foo(const int* x, const int* y) {\n"
               "  if (x - y <= 0) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(int* x, int* y) {\n"
+        check("void foo(const int* x, const int* y) {\n"
               "  if (x - y > 0) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(int* x, int* y) {\n"
+        check("void foo(const int* x, const int* y) {\n"
               "  if (x - y >= 0) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(Bar* x) {\n"
+        check("void foo(const Bar* x) {\n"
               "  if (0 <= x) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
@@ -6428,7 +6440,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(Bar* x) {\n"
+        check("void foo(const Bar* x) {\n"
               "  if (0 > x) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
@@ -9175,8 +9187,8 @@ private:
 
     void checkComparePointers() {
         check("int f() {\n"
-              "    int foo[1] = {0};\n"
-              "    int bar[1] = {0};\n"
+              "    const int foo[1] = {0};\n"
+              "    const int bar[1] = {0};\n"
               "    int diff = 0;\n"
               "    if(foo > bar) {\n"
               "       diff = 1;\n"
@@ -9255,7 +9267,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("bool f(int * xp, int* yp) {\n"
+        check("bool f(const int * xp, const int* yp) {\n"
               "    return xp > yp;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -9331,7 +9343,7 @@ private:
 
     void sameExpressionPointers() {
         check("int f(int *i);\n"
-              "void g(int *a, int *b) {\n"
+              "void g(int *a, const int *b) {\n"
               "    int c = *a;\n"
               "    f(a);\n"
               "    if (b && c != *a) {}\n"

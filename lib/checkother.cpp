@@ -1491,6 +1491,11 @@ void CheckOther::checkConstPointer()
                 nonConst = takingRef;
             } else if (Token::simpleMatch(parent->astParent(), "[") && parent->astParent()->astOperand2() == parent)
                 nonConst = false;
+        } else {
+            if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-"))
+                nonConst = false;
+            else if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
+                nonConst = false;
         }
         if (nonConst)
             nonConstPointers.insert(tok->variable());
