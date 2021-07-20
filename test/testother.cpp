@@ -2685,6 +2685,11 @@ private:
               "};\n");
         CHECK_EQUALS("", errout.str());
 
+        check("struct a { void b(); };\n"
+              "struct c { a* d; };\n"
+              "void e(c);\n");
+        CHECK_EQUALS("", errout.str());
+
         check("struct V {\n"
               "    V& get(typename std::vector<V>::size_type i, std::vector<V>* arr) {\n"
               "        return arr->at(i);\n"
