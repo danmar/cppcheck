@@ -459,6 +459,12 @@ def getEssentialType(expr):
     if not expr:
         return None
 
+    # See Appendix D, section D.6, Character constants
+    if expr.str[0] == "'" and expr.str[-1] == "'":
+        if len(expr.str) == 3 or (len(expr.str) == 4 and expr.str[1] == '\\'):
+            return 'char'
+        return '%s %s' % (expr.valueType.sign, expr.valueType.type)
+
     if expr.variable:
         if expr.valueType:
             if expr.valueType.type == 'bool':
@@ -1964,37 +1970,33 @@ class MisraChecker:
 
     def misra_10_2(self, data):
         def isEssentiallySignedOrUnsigned(op):
-            if op and op.valueType:
-                if op.valueType.sign in ['unsigned', 'signed']:
-                    return True
-            return False
+            e = getEssentialType(op)
+            return e and (e.split(' ')[0] in ('unsigned', 'signed'))
 
         def isEssentiallyChar(op):
-            if op.isName:
-                return getEssentialType(op).split(' ')[-1] == 'char'
+            if op is None:
+                return False
+            if op.str == '+':
+                return isEssentiallyChar(op.astOperand1) or isEssentiallyChar(op.astOperand2)
             return op.isChar
 
         for token in data.tokenlist:
-            if not token.isArithmeticalOp or token.str not in ['+', '-']:
+            if token.str not in ('+', '-'):
                 continue
 
-            operand1 = token.astOperand1
-            operand2 = token.astOperand2
-            if not operand1 or not operand2:
-                continue
-            if not operand1.isChar and not operand2.isChar:
+            if (not isEssentiallyChar(token.astOperand1)) and (not isEssentiallyChar(token.astOperand2)):
                 continue
 
             if token.str == '+':
-                if isEssentiallyChar(operand1) and not isEssentiallySignedOrUnsigned(operand2):
+                if isEssentiallyChar(token.astOperand1) and not isEssentiallySignedOrUnsigned(token.astOperand2):
                     self.reportError(token, 10, 2)
-                if isEssentiallyChar(operand2) and not isEssentiallySignedOrUnsigned(operand1):
+                if isEssentiallyChar(token.astOperand2) and not isEssentiallySignedOrUnsigned(token.astOperand1):
                     self.reportError(token, 10, 2)
 
             if token.str == '-':
-                if not isEssentiallyChar(operand1):
+                if getEssentialType(token.astOperand1).split(' ')[-1] != 'char':
                     self.reportError(token, 10, 2)
-                if not isEssentiallyChar(operand2) and not isEssentiallySignedOrUnsigned(operand2):
+                if not isEssentiallyChar(token.astOperand2) and not isEssentiallySignedOrUnsigned(token.astOperand2):
                     self.reportError(token, 10, 2)
 
     def misra_10_3(self, cfg):
