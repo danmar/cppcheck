@@ -1442,6 +1442,13 @@ private:
               "    return *g();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("struct A { int x; };\n"
+              "int& f() {\n"
+              "    std::unique_ptr<A> p = std::make_unique<A>();\n"
+              "    return p->x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Reference to local variable returned.\n", errout.str());
     }
 
     void returnReferenceFunction() {
