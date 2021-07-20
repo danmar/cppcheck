@@ -2674,6 +2674,68 @@ private:
 
         check("void foo(int *p) { return *p > 1; }");
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("struct a { void b(); };\n"
+              "struct c {\n"
+              "    a* d;\n"
+              "    a& g() { return *d; }\n"
+              "};\n");
+        CHECK_EQUALS("", errout.str());
+
+        check("struct V {\n"
+              "    V& get(typename std::vector<V>::size_type i, std::vector<V>* arr) {\n"
+              "        return arr[i];\n"
+              "    }\n"
+              "};\n");
+        CHECK_EQUALS("", errout.str());
+
+        check("struct A {};\n"
+              "struct B : A {};\n"
+              "B* f(A* x) {\n"
+              "    return static_cast<B*>(x);\n"
+              "}\n");
+        CHECK_EQUALS("", errout.str());
+
+        check("int f(std::vector<int>* x) {\n"
+              "    int& i = (*x)[0];\n"
+              "    i++;\n"
+              "    return i;\n"
+              "}");
+        CHECK_EQUALS("", errout.str());
+
+        check("struct A { int a; };\n"
+              "A f(std::vector<A>* x) {\n"
+              "    x->front().a = 1;\n"
+              "    return x->front();\n"
+              "}");
+        CHECK_EQUALS("", errout.str());
+
+        check("void f(std::vector<int>* v) {\n"
+              "    for(auto&& x:*v)\n"
+              "        x = 1;\n"
+              "}");
+        CHECK_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    int* x;\n"
+              "    A(int* y) : x(y)\n"
+              "    {}\n"
+              "};");
+        CHECK_EQUALS("", errout.str());
+
+        check("void f(bool b, int* x, int* y) {\n"
+              "  int* z = x;\n"
+              "  int* w = b ? y : z;\n"
+              "  *w = 1;\n"
+              "}");
+        CHECK_EQUALS("", errout.str());
+
+        check("void f(bool b, int* x, int* y) {\n"
+              "  int& z = *x;\n"
+              "  int& w = b ? *y : z;\n"
+              "  w = 1;\n"
+              "}");
+        CHECK_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
