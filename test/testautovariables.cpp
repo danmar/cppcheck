@@ -1430,6 +1430,18 @@ private:
               "    return *p;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::shared_ptr<int> g();\n"
+              "int& f() {\n"
+              "    return *g();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::unique_ptr<int> g();\n"
+              "int& f() {\n"
+              "    return *g();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Reference to temporary returned.\n", errout.str());
     }
 
     void returnReferenceFunction() {
