@@ -259,21 +259,21 @@ static void misra_7_2_call_test(int a, unsigned int b, unsigned int c) { } // 2.
 static void misra_7_2_call_va_test(int a, ...) { } // 2.7
 
 static void misra_7_2(void) {
-    unsigned int a = 2147483647;
-    const unsigned int b = 2147483648U;
-    const unsigned int c = 2147483648; // 7.2
-    unsigned int d = 2147483649; // 7.2
+    uint32_t a = 2147483647;
+    const uint32_t b = 2147483648U;
+    const uint32_t c = 2147483648; // 7.2 10.3
+    uint32_t d = 2147483649; // 7.2 10.3
 
-    unsigned char e = 0x80; // 7.2
-    unsigned char f = 0x80U;
-    unsigned short g = 0x8000; // 7.2
-    unsigned short h = 0x8000U;
-    unsigned int i = 0x80000000; // 7.2
-    unsigned int j = 0x80000000U;
-    unsigned long long k = 0x8000000000000000; // TODO 7.2
-    unsigned long long l = 0x8000000000000000ULL;
+    uint8_t e = 0x80; // 7.2 10.3
+    uint8_t f = 0x80U;
+    uint16_t g = 0x8000; // 7.2 10.3
+    uint16_t h = 0x8000U;
+    uint32_t i = 0x80000000; // 7.2
+    uint32_t j = 0x80000000U;
+    uint64_t k = 0x8000000000000000; // TODO 7.2
+    uint64_t l = 0x8000000000000000ULL;
 
-    unsigned int m = 1 + 0x80000000; // 7.2 10.4
+    uint32_t m = 1 + 0x80000000; // 7.2 10.4
 
     misra_7_2_call_test(1, 2, 2147483648U);
     misra_7_2_call_test(1, 2, 2147483648); // 7.2
@@ -594,7 +594,7 @@ static void misra_10_1(uint32_t u, char c1, char c2) {
   int32_t i;
   char c;
   enum { E1 = 1 };
-  i = 3 << 1; // 10.1
+  i = 3 << 1; // 10.1 10.6
   i = (u & u) << 4; // no-warning
   c = c1 & c2; // 10.1
   c = c1 << 1; // 10.1
@@ -869,9 +869,9 @@ static void misra_12_4(void) {
   bool t;
   x = 123456u * 123456u; // TODO 12.4
   x = MISRA12_4a + MISRA12_4b; // TODO 12.4
-  x = 0u - 1u; // TODO 12.4
-  x = t ? 0u : (0u-1u); // TODO 12.4
-  x = 556200230913ULL;
+  //x = 0u - 1u; // TODO 12.4
+  //x = t ? 0u : (0u-1u); // TODO 12.4
+  x = 556200230913ULL; // 10.3
   foo(&volatile_macro_12_4); // no crash
 }
 

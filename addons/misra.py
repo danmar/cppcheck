@@ -455,6 +455,26 @@ def getEssentialCategorylist(operand1, operand2):
     return e1, e2
 
 
+def get_essential_type_from_value(value, is_signed):
+    if value is None:
+        return None
+    for t in ('char', 'short', 'int', 'long', 'long long'):
+        bits = bitsOfEssentialType(t)
+        if bits >= 64:
+            continue
+        if is_signed:
+            range_min = -(1 << (bits - 1))
+            range_max = (1 << (bits - 1)) - 1
+        else:
+            range_min = 0
+            range_max = (1 << bits) - 1
+        sign = 'signed' if is_signed else 'unsigned'
+        if is_signed and value < 0 and value >= range_min:
+            return '%s %s' % (sign, t)
+        if value >= 0 and value <= range_max:
+            return '%s %s' % (sign, t)
+    return None
+
 def getEssentialType(expr):
     if not expr:
         return None
@@ -474,7 +494,19 @@ def getEssentialType(expr):
             if expr.valueType.isIntegral():
                 return '%s %s' % (expr.valueType.sign, expr.valueType.type)
 
-    if expr.str in ('<', '<=', '>=', '>', '==', '!=', '&&', '||', '!'):
+    elif expr.isNumber:
+        # Appendix D, D.6 The essential type of literal constants
+        # Integer constants
+        if expr.valueType.type == 'bool':
+            return 'Boolean'
+        if expr.valueType.isFloat():
+            return expr.valueType.type
+        if expr.valueType.isIntegral():
+            if expr.valueType.type != 'int':
+                return '%s %s' % (expr.valueType.sign, expr.valueType.type)
+            return get_essential_type_from_value(expr.getKnownIntValue(), expr.valueType.sign == 'signed')
+
+    elif expr.str in ('<', '<=', '>=', '>', '==', '!=', '&&', '||', '!'):
         return 'Boolean'
 
     elif expr.astOperand1 and expr.astOperand2 and expr.str in (
@@ -491,6 +523,7 @@ def getEssentialType(expr):
             return e2
         else:
             return e1
+
     elif expr.str == "~":
         e1 = getEssentialType(expr.astOperand1)
         return e1
