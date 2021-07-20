@@ -2665,6 +2665,15 @@ private:
 
         check("void foo(int *p) { if (!p) {} }");
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { if (*p > 123) {} }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { return *p + 1; }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { return *p > 1; }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -3858,7 +3867,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
 
-        check("void foo(int* c) {\n"
+        check("void foo(const int* c) {\n"
               "    if (x) *c == 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
@@ -5548,7 +5557,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n"
                       "[test.cpp:2] -> [test.cpp:4]: (style) Opposite expression on both sides of '=='.\n", errout.str());
 
-        check("void f2(bool *a) {\n"
+        check("void f2(const bool *a) {\n"
               "    const bool b = *a;\n"
               "    if( *a == !(b) ) {}\n"
               "    if( b == !(*a) ) {}\n"
@@ -5602,25 +5611,25 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f(bool *a) {\n"
+        check("void f(const bool *a) {\n"
               "    const bool b = a[42];\n"
               "    if( b == !(a[42]) ) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n", errout.str());
 
-        check("void f(bool *a) {\n"
+        check("void f(const bool *a) {\n"
               "    const bool b = a[42];\n"
               "    if( a[42] == !(b) ) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n", errout.str());
 
-        check("void f(bool *a) {\n"
+        check("void f(const bool *a) {\n"
               "    const bool b = *a;\n"
               "    if( b == !(*a) ) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n", errout.str());
 
-        check("void f(bool *a) {\n"
+        check("void f(const bool *a) {\n"
               "    const bool b = *a;\n"
               "    if( *a == !(b) ) {}\n"
               "}\n");
@@ -6296,7 +6305,7 @@ private:
             check(code, nullptr, false, false, true, true);
             ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
         }
-        check("void foo(int* x) {\n"
+        check("void foo(const int* x) {\n"
               "  if (*x >= 0) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -6318,7 +6327,7 @@ private:
             ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
         }
 
-        check("void foo(int* x) {\n"
+        check("void foo(const int* x) {\n"
               "  if (*x < 0) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -6420,7 +6429,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(int* x) {\n"
+        check("void foo(const int* x) {\n"
               "  if (0 <= x[0]) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -6445,7 +6454,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
 
-        check("void foo(int* x) {\n"
+        check("void foo(const int* x) {\n"
               "  if (0 > x[0]) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());

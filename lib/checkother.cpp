@@ -1471,7 +1471,6 @@ void CheckOther::checkConstPointer()
         if (nonConstPointers.find(tok->variable()) != nonConstPointers.end())
             continue;
         pointers.insert(tok->variable());
-        bool nonConst = true;
         const Token *parent = tok->astParent();
         bool deref = false;
         if (parent && parent->isUnaryOp("*"))
@@ -1479,26 +1478,26 @@ void CheckOther::checkConstPointer()
         else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok)
             deref = true;
         if (deref) {
-            while (Token::Match(parent->astParent(), "%cop%") && parent->astParent()->isBinaryOp())
-                parent = parent->astParent();
+            if (Token::Match(parent->astParent(), "%cop%") && !parent->astParent()->isUnaryOp("&") && !parent->astParent()->isUnaryOp("*"))
+                continue;
             if (Token::simpleMatch(parent->astParent(), "return"))
-                nonConst = false;
+                continue;
             else if (Token::Match(parent->astParent(), "%assign%") && parent == parent->astParent()->astOperand2()) {
                 bool takingRef = false;
                 const Token *lhs = parent->astParent()->astOperand1();
                 if (lhs && lhs->variable() && lhs->variable()->isReference() && lhs->variable()->nameToken() == lhs)
                     takingRef = true;
-                nonConst = takingRef;
+                if (!takingRef)
+                    continue;
             } else if (Token::simpleMatch(parent->astParent(), "[") && parent->astParent()->astOperand2() == parent)
-                nonConst = false;
+                continue;
         } else {
             if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-"))
-                nonConst = false;
+                continue;
             else if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
-                nonConst = false;
+                continue;
         }
-        if (nonConst)
-            nonConstPointers.insert(tok->variable());
+        nonConstPointers.insert(tok->variable());
     }
     for (const Variable *p: pointers) {
         if (nonConstPointers.find(p) == nonConstPointers.end())
