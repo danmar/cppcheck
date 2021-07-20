@@ -474,6 +474,9 @@ def getEssentialType(expr):
             if expr.valueType.isIntegral():
                 return '%s %s' % (expr.valueType.sign, expr.valueType.type)
 
+    if expr.str in ('<', '<=', '>=', '>', '==', '!=', '&&', '||', '!'):
+        return 'Boolean'
+
     elif expr.astOperand1 and expr.astOperand2 and expr.str in (
     '+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":"):
         if expr.astOperand1.valueType and expr.astOperand1.valueType.pointer > 0:
@@ -499,6 +502,8 @@ def bitsOfEssentialType(ty):
     if ty is None:
         return 0
     ty = ty.split(' ')[-1]
+    if ty == 'Boolean':
+        return 1
     if ty == 'char':
         return typeBits['CHAR']
     if ty == 'short':
