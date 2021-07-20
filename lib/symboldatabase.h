@@ -1199,6 +1199,7 @@ public:
     const Scope *typeScope;               ///< if the type definition is seen this point out the type scope
     const ::Type *smartPointerType;       ///< Smart pointer type
     const Token* smartPointerTypeToken;   ///< Smart pointer type token
+    const Library::SmartPointer* smartPointer;   ///< Smart pointer
     const Library::Container *container;  ///< If the type is a container defined in a cfg file, this is the used container
     const Token *containerTypeToken;      ///< The container type token. the template argument token that defines the container element type.
     std::string originalTypeName;         ///< original type name as written in the source code. eg. this might be "uint8_t" when type is CHAR.
@@ -1212,6 +1213,7 @@ public:
           typeScope(nullptr),
           smartPointerType(nullptr),
           smartPointerTypeToken(nullptr),
+          smartPointer(nullptr),
           container(nullptr),
           containerTypeToken(nullptr)
     {}
@@ -1224,6 +1226,7 @@ public:
           typeScope(nullptr),
           smartPointerType(nullptr),
           smartPointerTypeToken(nullptr),
+          smartPointer(nullptr),
           container(nullptr),
           containerTypeToken(nullptr)
     {}
@@ -1236,6 +1239,7 @@ public:
           typeScope(nullptr),
           smartPointerType(nullptr),
           smartPointerTypeToken(nullptr),
+          smartPointer(nullptr),
           container(nullptr),
           containerTypeToken(nullptr)
     {}
@@ -1248,23 +1252,10 @@ public:
           typeScope(nullptr),
           smartPointerType(nullptr),
           smartPointerTypeToken(nullptr),
+          smartPointer(nullptr),
           container(nullptr),
           containerTypeToken(nullptr),
           originalTypeName(otn)
-    {}
-    ValueType(const ValueType &vt)
-        : sign(vt.sign)
-        , type(vt.type)
-        , bits(vt.bits)
-        , pointer(vt.pointer)
-        , constness(vt.constness)
-        , reference(vt.reference)
-        , typeScope(vt.typeScope)
-        , smartPointerType(vt.smartPointerType)
-        , smartPointerTypeToken(vt.smartPointerTypeToken)
-        , container(vt.container)
-        , containerTypeToken(vt.containerTypeToken)
-        , originalTypeName(vt.originalTypeName)
     {}
 
     static ValueType parseDecl(const Token *type, const Settings *settings);

@@ -438,6 +438,7 @@ public:
 
     std::map<std::string, SmartPointer> smartPointers;
     bool isSmartPointer(const Token *tok) const;
+    const SmartPointer* detectSmartPointer(const Token *tok) const;
 
     struct PodType {
         unsigned int   size;

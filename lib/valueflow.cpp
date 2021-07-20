@@ -2711,6 +2711,15 @@ static void valueFlowReverse(Token* tok,
     }
 }
 
+static bool isUniqueSmartPointer(const Token* tok)
+{
+    if (!astIsSmartPointer(tok))
+        return false;
+    if (!tok->valueType()->smartPointer)
+        return false;
+    return tok->valueType()->smartPointer->unique;
+}
+
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
 {
     std::string result;
@@ -2910,7 +2919,7 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
             return LifetimeToken::setAddressOf(getLifetimeTokens(vartok, escape, std::move(errorPath), pred, depth - 1),
                                                !(astIsContainer(vartok) && Token::simpleMatch(vartok->astParent(), "[")));
         }
-    } else if (tok->isUnaryOp("*") && astIsSmartPointer(tok->astOperand1())) {
+    } else if (tok->isUnaryOp("*") && isUniqueSmartPointer(tok->astOperand1())) {
         return getLifetimeTokens(tok->astOperand1(), escape, std::move(errorPath), pred, depth - 1);
     }
     return {{tok, std::move(errorPath)}};

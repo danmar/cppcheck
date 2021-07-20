@@ -1509,12 +1509,20 @@ bool Library::isimporter(const std::string& file, const std::string &importer) c
 
 bool Library::isSmartPointer(const Token *tok) const
 {
+    return detectSmartPointer(tok);
+}
+
+const Library::SmartPointer* Library::detectSmartPointer(const Token *tok) const
+{
     std::string typestr;
     while (Token::Match(tok, "%name%|::")) {
         typestr += tok->str();
         tok = tok->next();
     }
-    return smartPointers.find(typestr) != smartPointers.end();
+    auto it = smartPointers.find(typestr);
+    if (it == smartPointers.end())
+        return nullptr;
+    return &it->second;
 }
 
 CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok)
