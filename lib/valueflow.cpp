@@ -6211,7 +6211,7 @@ static void valueFlowIterators(TokenList *tokenlist, const Settings *settings)
     }
 }
 
-static std::list<ValueFlow::Value> getIteratorValues(std::list<ValueFlow::Value> values, ValueFlow::Value::ValueKind* kind = nullptr)
+static std::list<ValueFlow::Value> getIteratorValues(std::list<ValueFlow::Value> values, const ValueFlow::Value::ValueKind* kind = nullptr)
 {
     values.remove_if([&](const ValueFlow::Value& v) {
         if (kind && v.valueKind != *kind)
