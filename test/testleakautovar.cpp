@@ -48,8 +48,9 @@ private:
         settings.library.setalloc("fopen", id, -1);
         settings.library.setrealloc("freopen", id, -1, 3);
         settings.library.setdealloc("fclose", id, 1);
-        settings.library.smartPointers.insert("std::shared_ptr");
-        settings.library.smartPointers.insert("std::unique_ptr");
+        settings.library.smartPointers["std::shared_ptr"];
+        settings.library.smartPointers["std::unique_ptr"];
+        settings.library.smartPointers["std::unique_ptr"].unique = true;
 
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
         "<def>\n"

@@ -2615,6 +2615,15 @@ static void valueFlowReverse(TokenList* tokenlist,
     valueFlowReverse(tok, nullptr, varToken, values, tokenlist, settings);
 }
 
+static bool isUniqueSmartPointer(const Token* tok)
+{
+    if (!astIsSmartPointer(tok))
+        return false;
+    if (!tok->valueType()->smartPointer)
+        return false;
+    return tok->valueType()->smartPointer->unique;
+}
+
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
 {
     std::string result;
@@ -2786,8 +2795,11 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                            false);
             }
         }
-    } else if (Token::Match(tok, ".|::|[")) {
+    } else if (Token::Match(tok, ".|::|[") || tok->isUnaryOp("*")) {
+
         const Token *vartok = tok;
+        if (tok->isUnaryOp("*"))
+            vartok = tok->astOperand1();
         while (vartok) {
             if (vartok->str() == "[" || vartok->originalName() == "->")
                 vartok = vartok->astOperand1();
@@ -2800,7 +2812,8 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
         if (!vartok)
             return {{tok, std::move(errorPath)}};
         const Variable *tokvar = vartok->variable();
-        if (!astIsContainer(vartok) && !(tokvar && tokvar->isArray() && !tokvar->isArgument()) &&
+        if (!isUniqueSmartPointer(vartok) && !astIsContainer(vartok) &&
+            !(tokvar && tokvar->isArray() && !tokvar->isArgument()) &&
             (Token::Match(vartok->astParent(), "[|*") || vartok->astParent()->originalName() == "->")) {
             for (const ValueFlow::Value &v : vartok->values()) {
                 if (!v.isLocalLifetimeValue())
