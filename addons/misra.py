@@ -580,6 +580,14 @@ def isCast(expr):
         return False
     return True
 
+def is_constant_integer_expression(expr):
+    if expr is None:
+        return False
+    if expr.astOperand1 and not is_constant_integer_expression(expr.astOperand1):
+        return False
+    if expr.astOperand2 and not is_constant_integer_expression(expr.astOperand2):
+        return False
+    return expr.astOperand1 or expr.astOperand2 or expr.isInt
 
 def isFunctionCall(expr, std='c99'):
     if not expr:
@@ -2398,6 +2406,38 @@ class MisraChecker:
                         break
                     prev = prev.previous
 
+    def misra_12_4(self, cfg):
+        for expr in cfg.tokenlist:
+            if not expr.astOperand2 or not expr.astOperand1:
+                continue
+            if expr.valueType is None:
+                continue
+            if expr.valueType.sign is None or expr.valueType.sign != 'unsigned':
+                continue
+            if expr.valueType.pointer > 0:
+                continue
+            if not expr.valueType.isIntegral():
+                continue
+            op1 = expr.astOperand1.getKnownIntValue()
+            if op1 is None:
+                continue
+            op2 = expr.astOperand2.getKnownIntValue()
+            if op2 is None:
+                continue
+            bits = bitsOfEssentialType('unsigned ' + expr.valueType.type)
+            if bits <= 0 or bits >= 64:
+                continue
+            max_value = (1 << bits) - 1
+            if not is_constant_integer_expression(expr):
+                continue
+            if expr.str == '+' and op1 + op2 > max_value:
+                self.reportError(expr, 12, 4)
+            elif expr.str == '-' and op1 - op2 < 0:
+                self.reportError(expr, 12, 4)
+            elif expr.str == '*' and op1 * op2 > max_value:
+                self.reportError(expr, 12, 4)
+
+
     def misra_13_1(self, data):
         for token in data.tokenlist:
             if simpleMatch(token, ") {") and token.next.astParent == token.link:
@@ -3692,6 +3732,7 @@ class MisraChecker:
             self.executeCheck(1201, self.misra_12_1, cfg)
             self.executeCheck(1202, self.misra_12_2, cfg)
             self.executeCheck(1203, self.misra_12_3, cfg)
+            self.executeCheck(1204, self.misra_12_4, cfg)
             self.executeCheck(1301, self.misra_13_1, cfg)
             self.executeCheck(1303, self.misra_13_3, cfg)
             self.executeCheck(1304, self.misra_13_4, cfg)

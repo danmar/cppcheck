@@ -863,16 +863,11 @@ void misra_12_3(int a, int b, int c) {
 
 #define MISRA12_4a 2000000000u
 #define MISRA12_4b 4000000000u
-#define volatile_macro_12_4  (*(volatile U32 *) 0xFFFFFC10u)
-static void misra_12_4(void) {
-  uint32_t x;
-  bool t;
-  x = 123456u * 123456u; // TODO 12.4
-  x = MISRA12_4a + MISRA12_4b; // TODO 12.4
-  //x = 0u - 1u; // TODO 12.4
-  //x = t ? 0u : (0u-1u); // TODO 12.4
-  x = 556200230913ULL; // 10.3
-  foo(&volatile_macro_12_4); // no crash
+static void misra_12_4(uint8_t t) {
+  x = 123456u * 123456u; // 12.4
+  x = MISRA12_4a + MISRA12_4b; // 12.4
+  x = 0u - 1u; // 12.4
+  x = t ? 0u : (0u-1u); // 12.4
 }
 
 struct misra_13_1_t { int a; int b; };
