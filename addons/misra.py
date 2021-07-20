@@ -2696,7 +2696,27 @@ class MisraChecker:
             if not simpleMatch(tok, '} else'):
                 self.reportError(tok, 15, 7)
 
-    # TODO add 16.1 rule
+    def misra_16_1(self, cfg):
+        for scope in cfg.scopes:
+            if scope.type != 'Switch':
+                continue
+            in_case_or_default = False
+            tok = scope.bodyStart.next
+            while tok != scope.bodyEnd:
+                if not in_case_or_default:
+                    if tok.str not in ('case', 'default'):
+                        self.reportError(tok, 16, 1)
+                    else:
+                        in_case_or_default = True
+                else:
+                    if simpleMatch(tok, 'break ;'):
+                        in_case_or_default = False
+                        tok = tok.next
+                if tok.str == '{':
+                    tok = tok.link
+                    if tok.scope.type == 'Unconditional' and simpleMatch(tok.previous.previous, 'break ;'):
+                        in_case_or_default = False
+                tok = tok.next
 
     def misra_16_2(self, data):
         for token in data.tokenlist:
@@ -3749,6 +3769,7 @@ class MisraChecker:
             if cfgNumber == 0:
                 self.executeCheck(1506, self.misra_15_6, data.rawTokens)
             self.executeCheck(1507, self.misra_15_7, cfg)
+            self.executeCheck(1601, self.misra_16_1, cfg)
             self.executeCheck(1602, self.misra_16_2, cfg)
             if cfgNumber == 0:
                 self.executeCheck(1603, self.misra_16_3, data.rawTokens)

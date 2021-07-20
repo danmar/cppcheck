@@ -140,6 +140,7 @@ static void foo(void)
         }
       } while(misra_5_2_func2()); //14.4
     }
+    break;
   }
 }
 
@@ -229,6 +230,7 @@ static void misra_5_5_func1(void)
         }
       } while(misra_5_5_func2()); //14.4
     }
+    break;
   }
 }
 
@@ -1244,6 +1246,17 @@ static void misra_15_7(void) {
 
   if (a==2) {} else if (b==4) {} // 15.7
   if (a==2) {} else { if (b==4) {} } // no-warning
+}
+
+static void misra_16_1(int32_t i) {
+  switch (i) {
+    int8_t x; // 16.1
+    default: // 16.3 16.5
+      break;
+    if (i != 18) {} // 16.1
+    case 1: // 16.3
+      break;
+  }
 }
 
 static void misra_16_2(void) {
