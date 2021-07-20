@@ -2675,6 +2675,9 @@ private:
         check("void foo(int *p) { return *p > 1; }");
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
 
+        check("void foo(const int* c) { if (c == 0) {}; }");
+        ASSERT_EQUALS("", errout.str());
+
         check("struct a { void b(); };\n"
               "struct c {\n"
               "    a* d;\n"
@@ -2684,7 +2687,7 @@ private:
 
         check("struct V {\n"
               "    V& get(typename std::vector<V>::size_type i, std::vector<V>* arr) {\n"
-              "        return arr[i];\n"
+              "        return arr->at(i);\n"
               "    }\n"
               "};\n");
         CHECK_EQUALS("", errout.str());
