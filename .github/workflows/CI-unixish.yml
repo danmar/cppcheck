@@ -127,7 +127,7 @@ jobs:
           ./cppcheck --addon=threadsafety --std=c++03 addons/test/threadsafety
           ./cppcheck --addon=misra --inline-suppr --enable=information --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
           cd addons/test
-          ../../cppcheck --dump --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 && python3 ../misra.py -verify misra/misra-test.c.dump
+          ../../cppcheck --dump --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64 && python3 ../misra.py -verify misra/misra-test.c.dump
 
       - name: Build GUI on ubuntu
         if: contains(matrix.os, 'ubuntu')
