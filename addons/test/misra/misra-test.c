@@ -1,6 +1,6 @@
 // To test:
 // ~/cppcheck/cppcheck --dump misra/misra-test.h --std=c89
-// ~/cppcheck/cppcheck --dump --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 && python3 ../misra.py -verify misra/misra-test.c.dump
+// ~/cppcheck/cppcheck --dump --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64 && python3 ../misra.py -verify misra/misra-test.c.dump
 
 #include "path\file.h" // 20.2
 #include "file//.h" // 20.2
