@@ -501,7 +501,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             if (!className)
                 return Error(ErrorCode::MISSING_ATTRIBUTE, "class-name");
             SmartPointer& smartPointer = smartPointers[className];
-            for (const tinyxml2::XMLElement *smartPointerNode = node->FirstChildElement(); smartPointerNode; smartPointerNode = smartPointerNode->NextSiblingElement()) {
+            for (const tinyxml2::XMLElement* smartPointerNode = node->FirstChildElement(); smartPointerNode;
+                 smartPointerNode = smartPointerNode->NextSiblingElement()) {
                 const std::string smartPointerNodeName = smartPointerNode->Name();
                 if (smartPointerNodeName == "unique")
                     smartPointer.unique = true;
@@ -1507,12 +1508,9 @@ bool Library::isimporter(const std::string& file, const std::string &importer) c
     return (it != mImporters.end() && it->second.count(importer) > 0);
 }
 
-bool Library::isSmartPointer(const Token *tok) const
-{
-    return detectSmartPointer(tok);
-}
+bool Library::isSmartPointer(const Token* tok) const { return detectSmartPointer(tok); }
 
-const Library::SmartPointer* Library::detectSmartPointer(const Token *tok) const
+const Library::SmartPointer* Library::detectSmartPointer(const Token* tok) const
 {
     std::string typestr;
     while (Token::Match(tok, "%name%|::")) {
