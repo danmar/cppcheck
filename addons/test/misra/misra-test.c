@@ -165,7 +165,7 @@ const char *s41_10 = "simple\nsequence";
 const char *s41_11 = "string";
 int c41_3         = '\141t'; // 4.1
 int c41_4         = '\141\t';
-int c41_5         = '\0';
+int c41_5         = '\0'; // 10.3
 int c41_6         = '\0\t';
 int c41_7         = '\12\t';
 int c41_8         = '\0t';   // 4.1
@@ -175,7 +175,7 @@ int c41_11        = '\12n';  // 4.1
 int c41_12         = '\12323'; // 4.1
 int c41_13         = '\123\3';
 // TODO int c41_14         = '\777\777';
-int c41_15         = 'a';
+int c41_15         = 'a'; // 10.3
 
 static void misra_4_1(void)
 {
@@ -600,7 +600,7 @@ static void misra_10_1(uint32_t u, char c1, char c2) {
   i = (u & u) << 4; // no-warning
   c = c1 & c2; // 10.1
   c = c1 << 1; // 10.1
-  i = c1 > c2; // no-warning
+  i = c1 > c2; // 10.3
   i = E1 + i; // no-warning
 
   char ch1 = 'a';
@@ -663,7 +663,11 @@ static void misra_10_2(void) {
 }
 
 static void misra_10_3(uint32_t u32a, uint32_t u32b) {
-    uint8_t res = u32a + u32b; // 10.3
+    uint8_t res;
+    res = u32a + u32b; // 10.3
+    res = (uint16_t)(2U + 3U); // 10.3 10.8
+    res = (uint16_t)2U + (uint16_t)3U;
+    res = 0.1f; // 10.3
 }
 
 static void misra_10_4(u32 x, s32 y) {
