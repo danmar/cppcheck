@@ -2584,7 +2584,7 @@ private:
                                 "  constexpr const foo &c_str() const noexcept { return _a; }\n"
                                 "};";
 
-            const char exp [] = "class c { char _a [ 4 ] ; const const char ( & c_str ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
+            const char exp [] = "class c { char _a [ 4 ] ; const constexpr char ( & c_str ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
             ASSERT_EQUALS(exp, tok(code, false));
         }
 
