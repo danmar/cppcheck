@@ -1408,8 +1408,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnReference22()
-    {
+    void returnReference22() {
         check("int& f() {\n"
               "    std::unique_ptr<int> p = std::make_unique<int>(1);\n"
               "    return *p;\n"

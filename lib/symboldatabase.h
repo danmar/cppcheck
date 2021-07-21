@@ -1205,17 +1205,17 @@ public:
     nonneg int pointer;                        ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
     nonneg int constness;                      ///< bit 0=data, bit 1=*, bit 2=**
     Reference reference = Reference::None;     ///< Is the outermost indirection of this type a reference or rvalue
-                                               ///< reference or not? pointer=2, Reference=LValue would be a T**&
+    ///< reference or not? pointer=2, Reference=LValue would be a T**&
     const Scope* typeScope;                    ///< if the type definition is seen this point out the type scope
     const ::Type* smartPointerType;            ///< Smart pointer type
     const Token* smartPointerTypeToken;        ///< Smart pointer type token
     const Library::SmartPointer* smartPointer; ///< Smart pointer
     const Library::Container* container;       ///< If the type is a container defined in a cfg file, this is the used
-                                               ///< container
+    ///< container
     const Token* containerTypeToken; ///< The container type token. the template argument token that defines the
-                                     ///< container element type.
+    ///< container element type.
     std::string originalTypeName;    ///< original type name as written in the source code. eg. this might be "uint8_t"
-                                     ///< when type is CHAR.
+    ///< when type is CHAR.
 
     ValueType()
         : sign(UNKNOWN_SIGN),
