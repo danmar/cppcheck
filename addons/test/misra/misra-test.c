@@ -704,6 +704,15 @@ static void misra_10_6_1(uint32_t *a, uint16_t b, uint16_t c)
     *a = b + c ; // 10.6
 }
 
+static void misra_10_7(uint16_t u16a, uint16_t u16b) {
+    uint32_t u32a = 100u;
+    res = u32a * u16a + u16b; // 12.1 no-warning
+    res = (u32a * u16a) + u16b; // no-warning
+    res = u32a * ( ( uint32_t ) u16a + u16b ); // no-warning
+    res = u32a * (u16a + u16b); // 10.7
+    u32a *= u16a + u16b; // 10.7
+}
+
 static void misra_10_8(u8 x, s32 a, s32 b) {
   y = (u16)x;
   y = (u16)(x+x); // 10.8

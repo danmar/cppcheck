@@ -2177,6 +2177,32 @@ class MisraChecker:
             except ValueError:
                 pass
 
+    def misra_10_7(self, cfg):
+        for token in cfg.tokenlist:
+            if token.astOperand1 is None or token.astOperand2 is None:
+                continue
+            if not token.isArithmeticalOp:
+                continue
+            parent = token.astParent
+            if parent is None:
+                continue
+            if not parent.isArithmeticalOp:
+                if not parent.isAssignmentOp:
+                    continue
+                if parent.str == '=':
+                    continue
+            token_type = getEssentialType(token)
+            if token_type is None:
+                continue
+            sibling = parent.astOperand1 if (token == parent.astOperand2) else parent.astOperand2
+            sibling_type = getEssentialType(sibling)
+            if sibling_type is None:
+                continue
+            b1 = bitsOfEssentialType(token_type)
+            b2 = bitsOfEssentialType(sibling_type)
+            if b1 > 0 and b1 < b2:
+                self.reportError(token, 10, 7)
+
     def misra_10_8(self, data):
         for token in data.tokenlist:
             if not isCast(token):
@@ -3801,6 +3827,7 @@ class MisraChecker:
             self.executeCheck(1004, self.misra_10_4, cfg)
             self.executeCheck(1005, self.misra_10_5, cfg)
             self.executeCheck(1006, self.misra_10_6, cfg)
+            self.executeCheck(1007, self.misra_10_7, cfg)
             self.executeCheck(1008, self.misra_10_8, cfg)
             self.executeCheck(1101, self.misra_11_1, cfg)
             self.executeCheck(1102, self.misra_11_2, cfg)
