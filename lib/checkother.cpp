@@ -1462,6 +1462,8 @@ void CheckOther::checkConstPointer()
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (!tok->variable())
             continue;
+        if (!tok->variable()->isLocal() && !tok->variable()->isArgument())
+            continue;
         if (tok == tok->variable()->nameToken())
             continue;
         if (!tok->valueType())
