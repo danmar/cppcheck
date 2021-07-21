@@ -488,7 +488,7 @@ def getEssentialType(expr):
     if expr.variable or isCast(expr):
         if expr.valueType:
             if expr.valueType.type == 'bool':
-                return 'Boolean'
+                return 'bool'
             if expr.valueType.isFloat():
                 return expr.valueType.type
             if expr.valueType.isIntegral():
@@ -498,7 +498,7 @@ def getEssentialType(expr):
         # Appendix D, D.6 The essential type of literal constants
         # Integer constants
         if expr.valueType.type == 'bool':
-            return 'Boolean'
+            return 'bool'
         if expr.valueType.isFloat():
             return expr.valueType.type
         if expr.valueType.isIntegral():
@@ -507,7 +507,7 @@ def getEssentialType(expr):
             return get_essential_type_from_value(expr.getKnownIntValue(), expr.valueType.sign == 'signed')
 
     elif expr.str in ('<', '<=', '>=', '>', '==', '!=', '&&', '||', '!'):
-        return 'Boolean'
+        return 'bool'
 
     elif expr.astOperand1 and expr.astOperand2 and expr.str in (
     '+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":"):
@@ -2053,13 +2053,28 @@ class MisraChecker:
                     self.reportError(token, 10, 2)
 
     def misra_10_3(self, cfg):
+        def get_category(essential_type):
+            if essential_type:
+                if essential_type in ('bool', 'char'):
+                    return essential_type
+                if essential_type.split(' ')[-1] in ('float', 'double'):
+                    return 'floating'
+                if essential_type.split(' ')[0] in ('unsigned', 'signed'):
+                    return essential_type.split(' ')[0]
+            return None
         for tok in cfg.tokenlist:
             if tok.isAssignmentOp:
                 lhs = getEssentialType(tok.astOperand1)
                 rhs = getEssentialType(tok.astOperand2)
                 #print(lhs)
                 #print(rhs)
-                if lhs and rhs and bitsOfEssentialType(lhs) < bitsOfEssentialType(rhs):
+                if lhs is None or rhs is None:
+                    continue
+                lhs_category = get_category(lhs)
+                rhs_category = get_category(rhs)
+                if lhs_category and rhs_category and lhs_category != rhs_category and rhs_category not in ('signed','unsigned'):
+                    self.reportError(tok, 10, 3)
+                if bitsOfEssentialType(lhs) < bitsOfEssentialType(rhs):
                     self.reportError(tok, 10, 3)
 
 
