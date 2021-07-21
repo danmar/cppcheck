@@ -4857,7 +4857,7 @@ private:
         }
         {
             const char code[] = "constexpr std::complex<float> operator\"\"if(long double __num) { }";
-            ASSERT_EQUALS("const std :: complex < float > operator\"\"if ( long double __num ) { }",
+            ASSERT_EQUALS("constexpr std :: complex < float > operator\"\"if ( long double __num ) { }",
                           tokenizeAndStringify(code));
         }
     }
