@@ -165,6 +165,7 @@ private:
         TEST_CASE(isVariablePointerToConstVolatilePointer);
         TEST_CASE(isVariableMultiplePointersAndQualifiers);
         TEST_CASE(variableVolatile);
+        TEST_CASE(variableConstexpr);
         TEST_CASE(isVariableDecltype);
 
         TEST_CASE(VariableValueType1);
@@ -1315,6 +1316,20 @@ private:
         ASSERT(y);
         ASSERT(y->variable());
         ASSERT(y->variable()->isVolatile());
+    }
+
+    void variableConstexpr() {
+        GET_SYMBOL_DB("constexpr int x = 16;");
+
+        const Token *x = Token::findsimplematch(tokenizer.tokens(), "x");
+        ASSERT(x);
+        ASSERT(x->variable());
+        ASSERT(x->variable()->isConst());
+        ASSERT(x->variable()->isStatic());
+        ASSERT(x->valueType());
+        ASSERT(x->valueType()->pointer == 0);
+        ASSERT(x->valueType()->constness == 1);
+        ASSERT(x->valueType()->reference == Reference::None);
     }
 
     void isVariableDecltype() {

@@ -1985,7 +1985,10 @@ void Variable::evaluate(const Settings* settings)
             setFlag(fIsMutable, true);
         else if (tok->str() == "const")
             setFlag(fIsConst, true);
-        else if (tok->str() == "*") {
+        else if (tok->str() == "constexpr") {
+            setFlag(fIsConst, true);
+            setFlag(fIsStatic, true);
+        } else if (tok->str() == "*") {
             setFlag(fIsPointer, !isArray() || Token::Match(tok->previous(), "( * %name% )"));
             setFlag(fIsConst, false); // Points to const, isn't necessarily const itself
         } else if (tok->str() == "&") {
@@ -2007,7 +2010,7 @@ void Variable::evaluate(const Settings* settings)
             tok = tok->next();
     }
 
-    while (Token::Match(mTypeStartToken, "static|const|volatile %any%"))
+    while (Token::Match(mTypeStartToken, "static|const|constexpr|volatile %any%"))
         mTypeStartToken = mTypeStartToken->next();
     while (mTypeEndToken && mTypeEndToken->previous() && Token::Match(mTypeEndToken, "const|volatile"))
         mTypeEndToken = mTypeEndToken->previous();
@@ -4309,7 +4312,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
     }
 
     // skip const|volatile|static|mutable|extern
-    while (tok->isKeyword() && Token::Match(tok, "const|volatile|static|mutable|extern")) {
+    while (tok->isKeyword() && Token::Match(tok, "const|constexpr|volatile|static|mutable|extern")) {
         tok = tok->next();
     }
 
@@ -6126,7 +6129,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             type->type() && type->type()->isTypeAlias() && type->type()->typeStart &&
             type->type()->typeStart->str() != type->str() && type->type()->typeStart != previousType)
             parsedecl(type->type()->typeStart, valuetype, defaultSignedness, settings);
-        else if (type->str() == "const")
+        else if (Token::Match(type, "const|constexpr"))
             valuetype->constness |= (1 << (valuetype->pointer - pointer0));
         else if (settings->clang && type->str().size() > 2 && type->str().find("::") < type->str().find("<")) {
             TokenList typeTokens(settings);
