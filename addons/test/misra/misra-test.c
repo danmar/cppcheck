@@ -663,7 +663,10 @@ static void misra_10_2(void) {
 }
 
 static void misra_10_3(uint32_t u32a, uint32_t u32b) {
-    uint8_t res = u32a + u32b; // 10.3
+    uint8_t res;
+    res = u32a + u32b; // 10.3
+    res = (uint16_t)(2U + 3U); // 10.3 10.8
+    res = (uint16_t)2U + (uint16_t)3U;
 }
 
 static void misra_10_4(u32 x, s32 y) {

@@ -485,7 +485,7 @@ def getEssentialType(expr):
             return 'char'
         return '%s %s' % (expr.valueType.sign, expr.valueType.type)
 
-    if expr.variable:
+    if expr.variable or isCast(expr):
         if expr.valueType:
             if expr.valueType.type == 'bool':
                 return 'Boolean'
@@ -519,6 +519,13 @@ def getEssentialType(expr):
         e2 = getEssentialType(expr.astOperand2)
         if not e1 or not e2:
             return None
+        if is_constant_integer_expression(expr):
+            sign1 = e1.split(' ')[0]
+            sign2 = e1.split(' ')[0]
+            if sign1 == sign2 and sign1 in ('signed', 'unsigned'):
+                e = get_essential_type_from_value(expr.getKnownIntValue(), sign1 == 'signed')
+                if e:
+                    return e
         if bitsOfEssentialType(e2) >= bitsOfEssentialType(e1):
             return e2
         else:
