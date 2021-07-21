@@ -498,8 +498,15 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
 
         else if (nodename == "smart-pointer") {
             const char *className = node->Attribute("class-name");
-            if (className)
-                smartPointers.insert(className);
+            if (!className)
+                return Error(ErrorCode::MISSING_ATTRIBUTE, "class-name");
+            SmartPointer& smartPointer = smartPointers[className];
+            for (const tinyxml2::XMLElement* smartPointerNode = node->FirstChildElement(); smartPointerNode;
+                 smartPointerNode = smartPointerNode->NextSiblingElement()) {
+                const std::string smartPointerNodeName = smartPointerNode->Name();
+                if (smartPointerNodeName == "unique")
+                    smartPointer.unique = true;
+            }
         }
 
         else if (nodename == "type-checks") {
@@ -1501,14 +1508,19 @@ bool Library::isimporter(const std::string& file, const std::string &importer) c
     return (it != mImporters.end() && it->second.count(importer) > 0);
 }
 
-bool Library::isSmartPointer(const Token *tok) const
+bool Library::isSmartPointer(const Token* tok) const { return detectSmartPointer(tok); }
+
+const Library::SmartPointer* Library::detectSmartPointer(const Token* tok) const
 {
     std::string typestr;
     while (Token::Match(tok, "%name%|::")) {
         typestr += tok->str();
         tok = tok->next();
     }
-    return smartPointers.find(typestr) != smartPointers.end();
+    auto it = smartPointers.find(typestr);
+    if (it == smartPointers.end())
+        return nullptr;
+    return &it->second;
 }
 
 CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok)

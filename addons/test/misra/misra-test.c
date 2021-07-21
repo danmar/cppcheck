@@ -140,6 +140,7 @@ static void foo(void)
         }
       } while(misra_5_2_func2()); //14.4
     }
+    break;
   }
 }
 
@@ -229,6 +230,7 @@ static void misra_5_5_func1(void)
         }
       } while(misra_5_5_func2()); //14.4
     }
+    break;
   }
 }
 
@@ -259,21 +261,21 @@ static void misra_7_2_call_test(int a, unsigned int b, unsigned int c) { } // 2.
 static void misra_7_2_call_va_test(int a, ...) { } // 2.7
 
 static void misra_7_2(void) {
-    unsigned int a = 2147483647;
-    const unsigned int b = 2147483648U;
-    const unsigned int c = 2147483648; // 7.2
-    unsigned int d = 2147483649; // 7.2
+    uint32_t a = 2147483647;
+    const uint32_t b = 2147483648U;
+    const uint32_t c = 2147483648; // 7.2 10.3
+    uint32_t d = 2147483649; // 7.2 10.3
 
-    unsigned char e = 0x80; // 7.2
-    unsigned char f = 0x80U;
-    unsigned short g = 0x8000; // 7.2
-    unsigned short h = 0x8000U;
-    unsigned int i = 0x80000000; // 7.2
-    unsigned int j = 0x80000000U;
-    unsigned long long k = 0x8000000000000000; // TODO 7.2
-    unsigned long long l = 0x8000000000000000ULL;
+    uint8_t e = 0x80; // 7.2 10.3
+    uint8_t f = 0x80U;
+    uint16_t g = 0x8000; // 7.2 10.3
+    uint16_t h = 0x8000U;
+    uint32_t i = 0x80000000; // 7.2
+    uint32_t j = 0x80000000U;
+    uint64_t k = 0x8000000000000000; // TODO 7.2
+    uint64_t l = 0x8000000000000000ULL;
 
-    unsigned int m = 1 + 0x80000000; // 7.2 10.4
+    uint32_t m = 1 + 0x80000000; // 7.2 10.4
 
     misra_7_2_call_test(1, 2, 2147483648U);
     misra_7_2_call_test(1, 2, 2147483648); // 7.2
@@ -594,7 +596,7 @@ static void misra_10_1(uint32_t u, char c1, char c2) {
   int32_t i;
   char c;
   enum { E1 = 1 };
-  i = 3 << 1; // 10.1
+  i = 3 << 1; // 10.1 10.6
   i = (u & u) << 4; // no-warning
   c = c1 & c2; // 10.1
   c = c1 << 1; // 10.1
@@ -643,10 +645,10 @@ static void misra_10_1_ternary(void)
 }
 
 static void misra_10_2(void) {
-    unsigned int u8a = 0;
-    signed char cha = 0;
-    signed int s8a = 0;
-    signed short s16a = 0;
+    uint8_t u8a = 0;
+    char cha = 0;
+    int8_t s8a = 0;
+    int16_t s16a = 0;
     float f32a = 0.0;
     char res;
 
@@ -654,9 +656,9 @@ static void misra_10_2(void) {
     res = s8a + '0';
     res = cha - '0';
     res = '0' - s8a;
-    res = cha + ':';
+    res = cha + ':'; // 10.2
 
-    res = s16a - 'a'; // 10.2
+    res = s16a - 'a'; // 10.2 10.3
     res = '0' + f32a; // 10.2 10.4
 }
 
@@ -863,16 +865,11 @@ void misra_12_3(int a, int b, int c) {
 
 #define MISRA12_4a 2000000000u
 #define MISRA12_4b 4000000000u
-#define volatile_macro_12_4  (*(volatile U32 *) 0xFFFFFC10u)
-static void misra_12_4(void) {
-  uint32_t x;
-  bool t;
-  x = 123456u * 123456u; // TODO 12.4
-  x = MISRA12_4a + MISRA12_4b; // TODO 12.4
-  x = 0u - 1u; // TODO 12.4
-  x = t ? 0u : (0u-1u); // TODO 12.4
-  x = 556200230913ULL;
-  foo(&volatile_macro_12_4); // no crash
+static void misra_12_4(uint8_t t) {
+  x = 123456u * 123456u; // 12.4
+  x = MISRA12_4a + MISRA12_4b; // 12.4
+  x = 0u - 1u; // 12.4
+  x = t ? 0u : (0u-1u); // 12.4
 }
 
 struct misra_13_1_t { int a; int b; };
@@ -1249,6 +1246,17 @@ static void misra_15_7(void) {
 
   if (a==2) {} else if (b==4) {} // 15.7
   if (a==2) {} else { if (b==4) {} } // no-warning
+}
+
+static void misra_16_1(int32_t i) {
+  switch (i) {
+    int8_t x; // 16.1
+    default: // 16.3 16.5
+      break;
+    if (i != 18) {} // 16.1
+    case 1: // 16.3
+      break;
+  }
 }
 
 static void misra_16_2(void) {

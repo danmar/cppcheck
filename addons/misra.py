@@ -455,9 +455,35 @@ def getEssentialCategorylist(operand1, operand2):
     return e1, e2
 
 
+def get_essential_type_from_value(value, is_signed):
+    if value is None:
+        return None
+    for t in ('char', 'short', 'int', 'long', 'long long'):
+        bits = bitsOfEssentialType(t)
+        if bits >= 64:
+            continue
+        if is_signed:
+            range_min = -(1 << (bits - 1))
+            range_max = (1 << (bits - 1)) - 1
+        else:
+            range_min = 0
+            range_max = (1 << bits) - 1
+        sign = 'signed' if is_signed else 'unsigned'
+        if is_signed and value < 0 and value >= range_min:
+            return '%s %s' % (sign, t)
+        if value >= 0 and value <= range_max:
+            return '%s %s' % (sign, t)
+    return None
+
 def getEssentialType(expr):
     if not expr:
         return None
+
+    # See Appendix D, section D.6, Character constants
+    if expr.str[0] == "'" and expr.str[-1] == "'":
+        if len(expr.str) == 3 or (len(expr.str) == 4 and expr.str[1] == '\\'):
+            return 'char'
+        return '%s %s' % (expr.valueType.sign, expr.valueType.type)
 
     if expr.variable:
         if expr.valueType:
@@ -467,6 +493,21 @@ def getEssentialType(expr):
                 return expr.valueType.type
             if expr.valueType.isIntegral():
                 return '%s %s' % (expr.valueType.sign, expr.valueType.type)
+
+    elif expr.isNumber:
+        # Appendix D, D.6 The essential type of literal constants
+        # Integer constants
+        if expr.valueType.type == 'bool':
+            return 'Boolean'
+        if expr.valueType.isFloat():
+            return expr.valueType.type
+        if expr.valueType.isIntegral():
+            if expr.valueType.type != 'int':
+                return '%s %s' % (expr.valueType.sign, expr.valueType.type)
+            return get_essential_type_from_value(expr.getKnownIntValue(), expr.valueType.sign == 'signed')
+
+    elif expr.str in ('<', '<=', '>=', '>', '==', '!=', '&&', '||', '!'):
+        return 'Boolean'
 
     elif expr.astOperand1 and expr.astOperand2 and expr.str in (
     '+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":"):
@@ -482,6 +523,7 @@ def getEssentialType(expr):
             return e2
         else:
             return e1
+
     elif expr.str == "~":
         e1 = getEssentialType(expr.astOperand1)
         return e1
@@ -493,6 +535,8 @@ def bitsOfEssentialType(ty):
     if ty is None:
         return 0
     ty = ty.split(' ')[-1]
+    if ty == 'Boolean':
+        return 1
     if ty == 'char':
         return typeBits['CHAR']
     if ty == 'short':
@@ -536,6 +580,14 @@ def isCast(expr):
         return False
     return True
 
+def is_constant_integer_expression(expr):
+    if expr is None:
+        return False
+    if expr.astOperand1 and not is_constant_integer_expression(expr.astOperand1):
+        return False
+    if expr.astOperand2 and not is_constant_integer_expression(expr.astOperand2):
+        return False
+    return expr.astOperand1 or expr.astOperand2 or expr.isInt
 
 def isFunctionCall(expr, std='c99'):
     if not expr:
@@ -1964,37 +2016,33 @@ class MisraChecker:
 
     def misra_10_2(self, data):
         def isEssentiallySignedOrUnsigned(op):
-            if op and op.valueType:
-                if op.valueType.sign in ['unsigned', 'signed']:
-                    return True
-            return False
+            e = getEssentialType(op)
+            return e and (e.split(' ')[0] in ('unsigned', 'signed'))
 
         def isEssentiallyChar(op):
-            if op.isName:
-                return getEssentialType(op).split(' ')[-1] == 'char'
+            if op is None:
+                return False
+            if op.str == '+':
+                return isEssentiallyChar(op.astOperand1) or isEssentiallyChar(op.astOperand2)
             return op.isChar
 
         for token in data.tokenlist:
-            if not token.isArithmeticalOp or token.str not in ['+', '-']:
+            if token.str not in ('+', '-'):
                 continue
 
-            operand1 = token.astOperand1
-            operand2 = token.astOperand2
-            if not operand1 or not operand2:
-                continue
-            if not operand1.isChar and not operand2.isChar:
+            if (not isEssentiallyChar(token.astOperand1)) and (not isEssentiallyChar(token.astOperand2)):
                 continue
 
             if token.str == '+':
-                if isEssentiallyChar(operand1) and not isEssentiallySignedOrUnsigned(operand2):
+                if isEssentiallyChar(token.astOperand1) and not isEssentiallySignedOrUnsigned(token.astOperand2):
                     self.reportError(token, 10, 2)
-                if isEssentiallyChar(operand2) and not isEssentiallySignedOrUnsigned(operand1):
+                if isEssentiallyChar(token.astOperand2) and not isEssentiallySignedOrUnsigned(token.astOperand1):
                     self.reportError(token, 10, 2)
 
             if token.str == '-':
-                if not isEssentiallyChar(operand1):
+                if getEssentialType(token.astOperand1).split(' ')[-1] != 'char':
                     self.reportError(token, 10, 2)
-                if not isEssentiallyChar(operand2) and not isEssentiallySignedOrUnsigned(operand2):
+                if not isEssentiallyChar(token.astOperand2) and not isEssentiallySignedOrUnsigned(token.astOperand2):
                     self.reportError(token, 10, 2)
 
     def misra_10_3(self, cfg):
@@ -2358,6 +2406,38 @@ class MisraChecker:
                         break
                     prev = prev.previous
 
+    def misra_12_4(self, cfg):
+        for expr in cfg.tokenlist:
+            if not expr.astOperand2 or not expr.astOperand1:
+                continue
+            if expr.valueType is None:
+                continue
+            if expr.valueType.sign is None or expr.valueType.sign != 'unsigned':
+                continue
+            if expr.valueType.pointer > 0:
+                continue
+            if not expr.valueType.isIntegral():
+                continue
+            op1 = expr.astOperand1.getKnownIntValue()
+            if op1 is None:
+                continue
+            op2 = expr.astOperand2.getKnownIntValue()
+            if op2 is None:
+                continue
+            bits = bitsOfEssentialType('unsigned ' + expr.valueType.type)
+            if bits <= 0 or bits >= 64:
+                continue
+            max_value = (1 << bits) - 1
+            if not is_constant_integer_expression(expr):
+                continue
+            if expr.str == '+' and op1 + op2 > max_value:
+                self.reportError(expr, 12, 4)
+            elif expr.str == '-' and op1 - op2 < 0:
+                self.reportError(expr, 12, 4)
+            elif expr.str == '*' and op1 * op2 > max_value:
+                self.reportError(expr, 12, 4)
+
+
     def misra_13_1(self, data):
         for token in data.tokenlist:
             if simpleMatch(token, ") {") and token.next.astParent == token.link:
@@ -2616,7 +2696,27 @@ class MisraChecker:
             if not simpleMatch(tok, '} else'):
                 self.reportError(tok, 15, 7)
 
-    # TODO add 16.1 rule
+    def misra_16_1(self, cfg):
+        for scope in cfg.scopes:
+            if scope.type != 'Switch':
+                continue
+            in_case_or_default = False
+            tok = scope.bodyStart.next
+            while tok != scope.bodyEnd:
+                if not in_case_or_default:
+                    if tok.str not in ('case', 'default'):
+                        self.reportError(tok, 16, 1)
+                    else:
+                        in_case_or_default = True
+                else:
+                    if simpleMatch(tok, 'break ;'):
+                        in_case_or_default = False
+                        tok = tok.next
+                if tok.str == '{':
+                    tok = tok.link
+                    if tok.scope.type == 'Unconditional' and simpleMatch(tok.previous.previous, 'break ;'):
+                        in_case_or_default = False
+                tok = tok.next
 
     def misra_16_2(self, data):
         for token in data.tokenlist:
@@ -3652,6 +3752,7 @@ class MisraChecker:
             self.executeCheck(1201, self.misra_12_1, cfg)
             self.executeCheck(1202, self.misra_12_2, cfg)
             self.executeCheck(1203, self.misra_12_3, cfg)
+            self.executeCheck(1204, self.misra_12_4, cfg)
             self.executeCheck(1301, self.misra_13_1, cfg)
             self.executeCheck(1303, self.misra_13_3, cfg)
             self.executeCheck(1304, self.misra_13_4, cfg)
@@ -3668,6 +3769,7 @@ class MisraChecker:
             if cfgNumber == 0:
                 self.executeCheck(1506, self.misra_15_6, data.rawTokens)
             self.executeCheck(1507, self.misra_15_7, cfg)
+            self.executeCheck(1601, self.misra_16_1, cfg)
             self.executeCheck(1602, self.misra_16_2, cfg)
             if cfgNumber == 0:
                 self.executeCheck(1603, self.misra_16_3, data.rawTokens)

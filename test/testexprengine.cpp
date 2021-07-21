@@ -221,7 +221,7 @@ private:
     std::string getRange(const char code[], const std::string &str, int linenr = 0) {
         Settings settings;
         settings.platform(cppcheck::Platform::Unix64);
-        settings.library.smartPointers.insert("std::shared_ptr");
+        settings.library.smartPointers["std::shared_ptr"];
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
@@ -248,7 +248,7 @@ private:
         settings->bugHunting = true;
         settings->debugBugHunting = true;
         settings->platform(cppcheck::Platform::Unix64);
-        settings->library.smartPointers.insert("std::shared_ptr");
+        settings->library.smartPointers["std::shared_ptr"];
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
