@@ -123,6 +123,7 @@ void TokenList::determineCppC()
         //mKeywords.insert("bool"); // type
         mKeywords.insert("catch");
         mKeywords.insert("class");
+        mKeywords.insert("constexpr");
         mKeywords.insert("const_cast");
         mKeywords.insert("decltype");
         mKeywords.insert("delete");
@@ -666,7 +667,7 @@ static bool iscpp11init_impl(const Token * const tok)
         endtok = nameToken->linkAt(1);
     else
         return false;
-    if (Token::Match(nameToken, "else|try|do|const|override|volatile|&|&&"))
+    if (Token::Match(nameToken, "else|try|do|const|constexpr|override|volatile|&|&&"))
         return false;
     if (Token::simpleMatch(nameToken->previous(), "namespace"))
         return false;
@@ -956,7 +957,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 if (Token::simpleMatch(squareBracket->link(), "] (")) {
                     Token* const roundBracket = squareBracket->link()->next();
                     Token* curlyBracket = roundBracket->link()->next();
-                    while (Token::Match(curlyBracket, "mutable|const"))
+                    while (Token::Match(curlyBracket, "mutable|const|constexpr"))
                         curlyBracket = curlyBracket->next();
                     if (Token::simpleMatch(curlyBracket, "noexcept ("))
                         curlyBracket = curlyBracket->linkAt(1)->next();

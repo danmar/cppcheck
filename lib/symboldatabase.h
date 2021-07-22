@@ -723,6 +723,7 @@ class CPPCHECKLIB Function {
         fHasTrailingReturnType = (1 << 21), ///< @brief has trailing return type
         fIsEscapeFunction      = (1 << 22), ///< @brief Function throws or exits
         fIsInlineKeyword       = (1 << 23), ///< @brief Function has "inline" keyword
+        fIsConstexpr           = (1 << 24), ///< @brief is constexpr
     };
 
     /**
@@ -888,6 +889,13 @@ public:
     }
     void isEscapeFunction(bool state) {
         setFlag(fIsEscapeFunction, state);
+    }
+
+    bool isConstexpr() const {
+        return getFlag(fIsConstexpr);
+    }
+    void isConstexpr(bool state) {
+        setFlag(fIsConstexpr, state);
     }
     bool isSafe(const Settings *settings) const;
 
