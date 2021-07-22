@@ -1602,6 +1602,9 @@ static int misra_21_1(void) {
 static int _misra_21_1_2(void); // no warning
 #define errno 11 // 21.1
 
+#define __BUILTIN_SOMETHING 123 // 21.2 21.1
+extern void *memcpy ( void *restrict s1, const void *restrict s2, size_t n ); // 21.2 8.14
+
 static void misra_21_3(void) {
   p1=malloc(10); // 21.3
   p2=calloc(10); // 21.3

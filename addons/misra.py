@@ -330,7 +330,7 @@ def isStdLibId(id_, standard='c99'):
     id_lists = []
     if standard == 'c89':
         id_lists = C90_STDLIB_IDENTIFIERS.values()
-    elif standard == 'c99':
+    elif standard in ('c99', 'c11'):
         id_lists = C99_STDLIB_IDENTIFIERS.values()
     for l in id_lists:
         if id_ in l:
@@ -1008,18 +1008,23 @@ def tokenFollowsSequence(token, sequence):
 
 class Define:
     def __init__(self, directive):
+        self.name = ''
         self.args = []
         self.expansionList = ''
 
-        res = re.match(r'#define [A-Za-z0-9_]+\(([A-Za-z0-9_, ]+)\)[ ]+(.*)', directive.str)
-        if res is None:
-            return
-
-        self.args = res.group(1).strip().split(',')
-        self.expansionList = res.group(2)
+        res = re.match(r'#define ([A-Za-z0-9_]+)\(([A-Za-z0-9_, ]+)\)[ ]+(.*)', directive.str)
+        if res:
+            self.name = res.group(1)
+            self.args = res.group(2).strip().split(',')
+            self.expansionList = res.group(3)
+        else:
+            res = re.match(r'#define ([A-Za-z0-9_]+)[ ]+(.*)', directive.str)
+            if res:
+                self.name = res.group(1)
+                self.expansionList = res.group(2)
 
     def __repr__(self):
-        attrs = ["args", "expansionList"]
+        attrs = ["name", "args", "expansionList"]
         return "{}({})".format(
             "Define",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -1041,8 +1046,16 @@ def getAddonRules():
 def getCppcheckRules():
     """Returns list of rules handled by cppcheck."""
     return ['1.3', '2.1', '2.2', '2.6', '5.3', '8.3',
-            '13.2', '13.6', '17.5', '18.1', '18.2', '18.3',
-            '18.6', '20.6', '22.1', '22.2', '22.4', '22.6']
+            '8.13', # constPointer
+            '9.1', # uninitvar
+            '14.3', # alwaysTrue, alwaysFalse, compareValueOutOfTypeRangeError
+            '13.2', '13.6',
+            '17.4', # missingReturn
+            '17.5', '18.1', '18.2', '18.3', '18.6',
+            '19.1', # overlappingWriteUnion, overlappingWriteFunction
+            '20.6', '22.1', '22.2',
+            '22.3', # incompatibleFileOpen
+            '22.4', '22.6']
 
 
 def generateTable():
@@ -3341,6 +3354,16 @@ class MisraChecker:
             if isStdLibId(name, data.standards.c):
                 self.reportError(d, 21, 1)
 
+    def misra_21_2(self, cfg):
+        for directive in cfg.directives:
+            define = Define(directive)
+            if re.match(r'_+BUILTIN_.*', define.name.upper()):
+                self.reportError(directive, 21, 2)
+        for func in cfg.functions:
+            if isStdLibId(func.name, cfg.standards.c):
+                tok = func.tokenDef if func.tokenDef else func.token
+                self.reportError(tok, 21, 2)
+
     def misra_21_3(self, data):
         for token in data.tokenlist:
             if isFunctionCall(token) and (token.astOperand1.str in ('malloc', 'calloc', 'realloc', 'free')):
@@ -3968,6 +3991,7 @@ class MisraChecker:
             self.executeCheck(2013, self.misra_20_13, cfg)
             self.executeCheck(2014, self.misra_20_14, cfg)
             self.executeCheck(2101, self.misra_21_1, cfg)
+            self.executeCheck(2102, self.misra_21_2, cfg)
             self.executeCheck(2103, self.misra_21_3, cfg)
             self.executeCheck(2104, self.misra_21_4, cfg)
             self.executeCheck(2105, self.misra_21_5, cfg)
