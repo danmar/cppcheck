@@ -2178,9 +2178,8 @@ struct ValueFlowAnalyzer : Analyzer {
 
         // bailout: global non-const variables
         if (isGlobal() && Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
-            // TODO: Check for constexpr functions
             if (tok->function()) {
-                if (!isConstFunctionCall(tok, getSettings()->library))
+                if (!tok->function()->isConstexpr() && !isConstFunctionCall(tok, getSettings()->library))
                     return Action::Invalid;
             } else if (getSettings()->library.getFunction(tok)) {
                 // Assume library function doesn't modify user-global variables

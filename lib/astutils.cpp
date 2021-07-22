@@ -1410,10 +1410,12 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
     if (const Function* f = ftok->function()) {
         if (f->isAttributePure() || f->isAttributeConst())
             return true;
-        if (Function::returnsVoid(f))
-            return false;
         // Any modified arguments
         if (functionModifiesArguments(f))
+            return false;
+        if (f->isConstexpr())
+            return true;
+        if (Function::returnsVoid(f))
             return false;
         // Member function call
         if (Token::simpleMatch(ftok->previous(), ".")) {
@@ -1437,7 +1439,6 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
             }
             return false;
         } else if (f->argumentList.empty()) {
-            // TODO: Check for constexpr
             return false;
         }
     } else if (const Library::Function* f = library.getFunction(ftok)) {
