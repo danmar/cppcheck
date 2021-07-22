@@ -3231,6 +3231,14 @@ class MisraChecker:
             if d.expansionList.find('#') >= 0:
                 self.reportError(directive, 20, 10)
 
+    def misra_20_11(self, cfg):
+        for directive in cfg.directives:
+            d = Define(directive)
+            for arg in d.args:
+                res = re.search(r'[^#]#[ ]*%s[ ]*##' % arg, ' ' + d.expansionList)
+                if res:
+                    self.reportError(directive, 20, 11)
+
     def misra_20_13(self, data):
         dir_pattern = re.compile(r'#[ ]*([^ (<]*)')
         for directive in data.directives:
@@ -3904,6 +3912,7 @@ class MisraChecker:
             self.executeCheck(2008, self.misra_20_8, cfg)
             self.executeCheck(2009, self.misra_20_9, cfg)
             self.executeCheck(2010, self.misra_20_10, cfg)
+            self.executeCheck(2011, self.misra_20_11, cfg)
             self.executeCheck(2013, self.misra_20_13, cfg)
             self.executeCheck(2014, self.misra_20_14, cfg)
             self.executeCheck(2101, self.misra_21_1, cfg)

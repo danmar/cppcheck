@@ -1569,6 +1569,8 @@ struct { int a; } struct_20_7_s;
 
 #define M_20_10(a) (#a) // 20.10
 
+#define M_20_11(a)  # a ## 1 // 20.11 20.10
+
 #else1 // 20.13
 
 #ifdef A
