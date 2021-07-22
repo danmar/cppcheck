@@ -3215,6 +3215,16 @@ class MisraChecker:
             if cond.result and cond.result not in (0,1):
                 self.reportError(cond, 20, 8)
 
+    def misra_20_9(self, cfg):
+        for cond in cfg.preprocessor_if_conditions:
+            if cond.E is None:
+                continue
+            for s in cond.E.split(' '):
+                if (s[0] >= 'A' and s[0] <= 'Z') or (s[0] >= 'a' and s[0] <= 'z'):
+                    if isKeyword(s):
+                        continue
+                    self.reportError(cond, 20, 9)
+
     def misra_20_10(self, data):
         for directive in data.directives:
             d = Define(directive)
@@ -3892,6 +3902,7 @@ class MisraChecker:
             self.executeCheck(2005, self.misra_20_5, cfg)
             self.executeCheck(2007, self.misra_20_7, cfg)
             self.executeCheck(2008, self.misra_20_8, cfg)
+            self.executeCheck(2009, self.misra_20_9, cfg)
             self.executeCheck(2010, self.misra_20_10, cfg)
             self.executeCheck(2013, self.misra_20_13, cfg)
             self.executeCheck(2014, self.misra_20_14, cfg)

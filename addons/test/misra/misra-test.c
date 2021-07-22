@@ -1231,11 +1231,11 @@ static void misra_15_6(void) {
   if (x!=0); // 15.6
   else{}
 
-#if A>1  // no-warning
+#if A>1  // 20.9
   (void)0;
 #endif
 
-#if A > 0x42
+#if A > 0x42 // 20.9
   if (true) {
     (void)0;
   }
@@ -1559,13 +1559,19 @@ struct { int a; } struct_20_7_s;
 #define MUL(a  ,b ) ( a * b ) // 20.7
 
 #if __LINE__  // 20.8
+#elif 2+5  // 20.8
+#elif 2-2
+#endif
+
+#if A // 20.9
+#elif B || C // 20.9
 #endif
 
 #define M_20_10(a) (#a) // 20.10
 
 #else1 // 20.13
 
-#ifdef A>1
+#ifdef A
 # define somethingis 5 // no warning
 # define func_20_13(v) (v) // no warning
 #else
