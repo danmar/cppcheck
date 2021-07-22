@@ -1508,7 +1508,10 @@ bool Library::isimporter(const std::string& file, const std::string &importer) c
     return (it != mImporters.end() && it->second.count(importer) > 0);
 }
 
-bool Library::isSmartPointer(const Token* tok) const { return detectSmartPointer(tok); }
+bool Library::isSmartPointer(const Token* tok) const
+{
+    return detectSmartPointer(tok);
+}
 
 const Library::SmartPointer* Library::detectSmartPointer(const Token* tok) const
 {

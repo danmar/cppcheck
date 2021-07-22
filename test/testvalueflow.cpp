@@ -2803,6 +2803,16 @@ private:
                "  x->c();\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 8U, 0));
+
+        code = "constexpr int f();\n"
+               "int g() {\n"
+               "    if (f() == 1) {\n"
+               "        int x = f();\n"
+               "        return x;\n"
+               "    }\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
     }
 
     void valueFlowAfterConditionExpr() {

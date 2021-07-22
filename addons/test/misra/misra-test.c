@@ -683,6 +683,16 @@ static void misra_10_4(u32 x, s32 y) {
   z = (a == misra_10_4_A3) ? y : y; // no-warning
 }
 
+static void misra_10_5(uint16_t x) {
+    // bool
+    res = (uint16_t) (x > 10u); // 10.5
+    res = (bool) 1u; // no-warning
+
+    // char <=> float
+    res = (char) 0.1f;
+    res = (float) 'x';
+}
+
 static void misra_10_6(u8 x, u32 a, u32 b, char c1, char c2) {
   u16 y = x+x; // 10.6
   u16 z = ~u8 x ;//10.6
@@ -692,6 +702,15 @@ static void misra_10_6(u8 x, u32 a, u32 b, char c1, char c2) {
 static void misra_10_6_1(uint32_t *a, uint16_t b, uint16_t c)
 {
     *a = b + c ; // 10.6
+}
+
+static void misra_10_7(uint16_t u16a, uint16_t u16b) {
+    uint32_t u32a = 100u;
+    res = u32a * u16a + u16b; // 12.1 no-warning
+    res = (u32a * u16a) + u16b; // no-warning
+    res = u32a * ( ( uint32_t ) u16a + u16b ); // no-warning
+    res = u32a * (u16a + u16b); // 10.7
+    u32a *= u16a + u16b; // 10.7
 }
 
 static void misra_10_8(u8 x, s32 a, s32 b) {

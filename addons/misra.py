@@ -2111,6 +2111,47 @@ class MisraChecker:
             if e1 and e2 and e1 != e2:
                 self.reportError(token, 10, 4)
 
+    def misra_10_5(self, cfg):
+        def _get_essential_category(token):
+            essential_type = getEssentialType(token)
+            #print(essential_type)
+            if essential_type:
+                if essential_type in ('bool', 'char'):
+                    return essential_type
+                if essential_type.split(' ')[-1] in ('float', 'double'):
+                    return 'floating'
+                if essential_type.split(' ')[0] in ('unsigned', 'signed'):
+                    return essential_type.split(' ')[0]
+            return None
+        for token in cfg.tokenlist:
+            if not isCast(token):
+                continue
+            to_type = _get_essential_category(token)
+            #print(to_type)
+            if to_type is None:
+                continue
+            from_type = _get_essential_category(token.astOperand1)
+            #print(from_type)
+            if from_type is None:
+                continue
+            if to_type == from_type:
+                continue
+            if to_type == 'bool' or from_type == 'bool':
+                if token.astOperand1.isInt and token.astOperand1.getKnownIntValue() == 1:
+                    # Exception
+                    continue
+                self.reportError(token, 10, 5)
+                continue
+            if to_type == 'enum':
+                self.reportError(token, 10, 5)
+                continue
+            if from_type == 'float' and to_type == 'char':
+                self.reportError(token, 10, 5)
+                continue
+            if from_type == 'char' and to_type == 'float':
+                self.reportError(token, 10, 5)
+                continue
+
     def misra_10_6(self, data):
         for token in data.tokenlist:
             if token.str != '=' or not token.astOperand1 or not token.astOperand2:
@@ -2135,6 +2176,32 @@ class MisraChecker:
                     self.reportError(token, 10, 6)
             except ValueError:
                 pass
+
+    def misra_10_7(self, cfg):
+        for token in cfg.tokenlist:
+            if token.astOperand1 is None or token.astOperand2 is None:
+                continue
+            if not token.isArithmeticalOp:
+                continue
+            parent = token.astParent
+            if parent is None:
+                continue
+            if not parent.isArithmeticalOp:
+                if not parent.isAssignmentOp:
+                    continue
+                if parent.str == '=':
+                    continue
+            token_type = getEssentialType(token)
+            if token_type is None:
+                continue
+            sibling = parent.astOperand1 if (token == parent.astOperand2) else parent.astOperand2
+            sibling_type = getEssentialType(sibling)
+            if sibling_type is None:
+                continue
+            b1 = bitsOfEssentialType(token_type)
+            b2 = bitsOfEssentialType(sibling_type)
+            if b1 > 0 and b1 < b2:
+                self.reportError(token, 10, 7)
 
     def misra_10_8(self, data):
         for token in data.tokenlist:
@@ -3758,7 +3825,9 @@ class MisraChecker:
             self.executeCheck(1002, self.misra_10_2, cfg)
             self.executeCheck(1003, self.misra_10_3, cfg)
             self.executeCheck(1004, self.misra_10_4, cfg)
+            self.executeCheck(1005, self.misra_10_5, cfg)
             self.executeCheck(1006, self.misra_10_6, cfg)
+            self.executeCheck(1007, self.misra_10_7, cfg)
             self.executeCheck(1008, self.misra_10_8, cfg)
             self.executeCheck(1101, self.misra_11_1, cfg)
             self.executeCheck(1102, self.misra_11_2, cfg)

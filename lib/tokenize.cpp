@@ -7259,15 +7259,15 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
 
         //check if variable is declared 'const' or 'static' or both
         while (tok2) {
-            if (!Token::Match(tok2, "const|static") && Token::Match(tok2, "%type% const|static")) {
+            if (!Token::Match(tok2, "const|static|constexpr") && Token::Match(tok2, "%type% const|static")) {
                 tok2 = tok2->next();
                 ++typelen;
             }
 
-            if (tok2->str() == "const")
+            if (Token::Match(tok2, "const|constexpr"))
                 isconst = true;
 
-            else if (tok2->str() == "static")
+            else if (Token::Match(tok2, "static|constexpr"))
                 isstatic = true;
 
             else if (Token::Match(tok2, "%type% :: %type%")) {
@@ -11202,11 +11202,6 @@ void Tokenizer::simplifyKeyword()
         }
 
         else if (cpp11) {
-            if (tok->str() == "constexpr") {
-                tok->originalName(tok->str());
-                tok->str("const");
-            }
-
             // final:
             // 1) struct name final { };   <- struct is final
             if (Token::Match(tok->previous(), "struct|class|union %type% final [:{]")) {
