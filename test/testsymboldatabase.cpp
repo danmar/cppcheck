@@ -209,6 +209,7 @@ private:
         TEST_CASE(functionDeclarationTemplate);
         TEST_CASE(functionDeclarations);
         TEST_CASE(functionDeclarations2);
+        TEST_CASE(constexprFunction);
         TEST_CASE(constructorInitialization);
         TEST_CASE(memberFunctionOfUnknownClassMacro1);
         TEST_CASE(memberFunctionOfUnknownClassMacro2);
@@ -1890,6 +1891,24 @@ private:
         const Token*parenthesis = foo->tokenDef->next();
         ASSERT(parenthesis->str() == "(" && parenthesis->previous()->str() == "foo");
         ASSERT(parenthesis->valueType()->type == ValueType::Type::CONTAINER);
+    }
+
+    void constexprFunction() {
+        GET_SYMBOL_DB_STD("constexpr int foo();");
+
+        // 1 scopes: Global
+        ASSERT(db && db->scopeList.size() == 1);
+
+        const Scope *scope = &db->scopeList.front();
+
+        ASSERT(scope && scope->functionList.size() == 1);
+
+        const Function *foo = &scope->functionList.front();
+
+        ASSERT(foo);
+        ASSERT(foo->tokenDef->str() == "foo");
+        ASSERT(!foo->hasBody());
+        ASSERT(foo->isConstexpr());
     }
 
     void constructorInitialization() {

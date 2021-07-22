@@ -2303,6 +2303,11 @@ const Token *Function::setFlags(const Token *tok1, const Scope *scope)
             isFriend(true);
         }
 
+        // constexpr function
+        else if (tok1->str() == "constexpr") {
+            isConstexpr(true);
+        }
+
         // Function template
         else if (tok1->link() && tok1->str() == ">" && Token::simpleMatch(tok1->link()->previous(), "template <")) {
             templateDef = tok1->link()->previous();
