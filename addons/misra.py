@@ -3239,6 +3239,57 @@ class MisraChecker:
                 if res:
                     self.reportError(directive, 20, 11)
 
+    def misra_20_12(self, cfg):
+        def _is_hash_hash_op(expansion_list, arg):
+            return re.search(r'##[ ]*%s[^a-zA-Z0-9_]' % arg, expansion_list) or \
+                   re.search(r'[^a-zA-Z0-9_]%s[ ]*##' % arg, expansion_list)
+
+        def _is_other_op(expansion_list, arg):
+            pos = expansion_list.find(arg)
+            while pos >= 0:
+                pos1 = pos - 1
+                pos2 = pos + len(arg)
+                pos = expansion_list.find(arg, pos2)
+                if isalnum(expansion_list[pos1]) or expansion_list[pos1] == '_':
+                    continue
+                if isalnum(expansion_list[pos2]) or expansion_list[pos2] == '_':
+                    continue
+                while expansion_list[pos1] == ' ':
+                    pos1 = pos1 - 1
+                if expansion_list[pos1] == '#':
+                    continue
+                while expansion_list[pos2] == ' ':
+                    pos2 = pos2 + 1
+                if expansion_list[pos2] == '#':
+                    continue
+                return True
+            return False
+
+        def _is_arg_macro_usage(directive, arg):
+            for macro_usage in cfg.macro_usage:
+                if macro_usage.file == directive.file and macro_usage.linenr == directive.linenr:
+                    for macro_usage_arg in cfg.macro_usage:
+                        if macro_usage_arg == macro_usage:
+                            continue
+                        if (macro_usage.usefile == macro_usage_arg.usefile and
+                            macro_usage.uselinenr == macro_usage_arg.uselinenr and
+                            macro_usage.usecolumn == macro_usage_arg.usecolumn):
+                            # TODO: check arg better
+                            return True
+            return False
+
+        for directive in cfg.directives:
+            define = Define(directive)
+            expansion_list = '(%s)' % define.expansionList
+            for arg in define.args:
+                if not _is_hash_hash_op(expansion_list, arg):
+                    continue
+                if not _is_other_op(expansion_list, arg):
+                    continue
+                if _is_arg_macro_usage(directive, arg):
+                    self.reportError(directive, 20, 12)
+                    break
+
     def misra_20_13(self, data):
         dir_pattern = re.compile(r'#[ ]*([^ (<]*)')
         for directive in data.directives:
@@ -3913,6 +3964,7 @@ class MisraChecker:
             self.executeCheck(2009, self.misra_20_9, cfg)
             self.executeCheck(2010, self.misra_20_10, cfg)
             self.executeCheck(2011, self.misra_20_11, cfg)
+            self.executeCheck(2012, self.misra_20_12, cfg)
             self.executeCheck(2013, self.misra_20_13, cfg)
             self.executeCheck(2014, self.misra_20_14, cfg)
             self.executeCheck(2101, self.misra_21_1, cfg)

@@ -1571,6 +1571,10 @@ struct { int a; } struct_20_7_s;
 
 #define M_20_11(a)  # a ## 1 // 20.11 20.10
 
+#define M_20_12_AA       0xffff
+#define M_20_12_BB(x)    (x) + wow ## x // 20.12 20.10
+misra_20_12 = M_20_12_BB(M_20_12_AA);
+
 #else1 // 20.13
 
 #ifdef A

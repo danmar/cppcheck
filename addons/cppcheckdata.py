@@ -81,15 +81,21 @@ class MacroUsage:
     file = None
     linenr = None
     column = None
+    usefile = None
+    uselinenr = None
+    usecolumn = None
 
     def __init__(self, element):
         self.name = element.get('name')
         _load_location(self, element)
+        self.usefile = element.get('usefile')
+        self.useline = element.get('useline')
+        self.usecolumn = element.get('usecolumn')
 
     def __repr__(self):
-        attrs = ["name", "file", "linenr", "column"]
+        attrs = ["name", "file", "linenr", "column", "usefile", "useline", "usecolumn"]
         return "{}({})".format(
-            "Directive",
+            "MacroUsage",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
         )
 
