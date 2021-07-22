@@ -158,6 +158,12 @@ private:
     void setLibraries(const QStringList &libraries);
 
     /**
+    * @brief Add a single suppression to dialog control.
+    * @param suppression A suppressions to add to dialog control.
+    */
+    void addSingleSuppression(const Suppressions::Suppression &suppression);
+
+    /**
     * @brief Set suppressions to dialog control.
     * @param suppressions List of suppressions to set to dialog control.
     */
