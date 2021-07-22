@@ -545,6 +545,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--max-ctu-depth=", 16) == 0)
                 mSettings->maxCtuDepth = std::atoi(argv[i] + 16);
 
+            // output file management
+            else if (std::strncmp(argv[i], "--output-file-type=", 19) == 0)
+                mSettings->outputFileType = Path::simplifyPath(Path::fromNativeSeparators(argv[i] + 19));
+
             // Write results in file
             else if (std::strncmp(argv[i], "--output-file=", 14) == 0)
                 mSettings->outputFile = Path::simplifyPath(Path::fromNativeSeparators(argv[i] + 14));
@@ -1109,6 +1113,9 @@ void CmdLineParser::printHelp()
               "                         is 2. A larger value will mean more errors can be found\n"
               "                         but also means the analysis will be slower.\n"
               "    --output-file=<file> Write results to file, rather than standard error.\n"
+              "    --output-file-type=<append or uniq>\n"
+              "                         append: will append to file if it exists\n"
+              "                         uniq: will generate a filename base on --output-file and the files being analyzed\n"
               "    --project=<file>     Run Cppcheck on project. The <file> can be a Visual\n"
               "                         Studio Solution (*.sln), Visual Studio Project\n"
               "                         (*.vcxproj), compile database (compile_commands.json),\n"
