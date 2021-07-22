@@ -1,6 +1,6 @@
 // To test:
 // ~/cppcheck/cppcheck --dump misra/misra-test.h --std=c89
-// ~/cppcheck/cppcheck --dump --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64 && python3 ../misra.py -verify misra/misra-test.c.dump
+// ~/cppcheck/cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64 && python3 ../misra.py -verify misra/misra-test.c.dump
 
 #include "path\file.h" // 20.2
 #include "file//.h" // 20.2
@@ -1557,6 +1557,9 @@ struct { int a; } struct_20_7_s;
 #define M_20_7_7(M) (struct_20_7).M
 
 #define MUL(a  ,b ) ( a * b ) // 20.7
+
+#if __LINE__  // 20.8
+#endif
 
 #define M_20_10(a) (#a) // 20.10
 

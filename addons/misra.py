@@ -3209,6 +3209,12 @@ class MisraChecker:
                         self.reportError(directive, 20, 7)
                         break
 
+    def misra_20_8(self, cfg):
+        for cond in cfg.preprocessor_if_conditions:
+            #print(cond)
+            if cond.result and cond.result not in (0,1):
+                self.reportError(cond, 20, 8)
+
     def misra_20_10(self, data):
         for directive in data.directives:
             d = Define(directive)
@@ -3884,7 +3890,8 @@ class MisraChecker:
             self.executeCheck(2003, self.misra_20_3, cfg)
             self.executeCheck(2004, self.misra_20_4, cfg)
             self.executeCheck(2005, self.misra_20_5, cfg)
-            self.executeCheck(2006, self.misra_20_7, cfg)
+            self.executeCheck(2007, self.misra_20_7, cfg)
+            self.executeCheck(2008, self.misra_20_8, cfg)
             self.executeCheck(2010, self.misra_20_10, cfg)
             self.executeCheck(2013, self.misra_20_13, cfg)
             self.executeCheck(2014, self.misra_20_14, cfg)
