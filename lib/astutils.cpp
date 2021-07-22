@@ -1413,8 +1413,6 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
         // Any modified arguments
         if (functionModifiesArguments(f))
             return false;
-        if (f->isConstexpr())
-            return true;
         if (Function::returnsVoid(f))
             return false;
         // Member function call
@@ -1439,7 +1437,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
             }
             return false;
         } else if (f->argumentList.empty()) {
-            return false;
+            return f->isConstexpr();
         }
     } else if (const Library::Function* f = library.getFunction(ftok)) {
         if (f->ispure)
