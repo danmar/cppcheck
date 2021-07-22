@@ -893,7 +893,26 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         mLatestProgressOutputTime = std::time(nullptr);
 
     if (!settings.outputFile.empty()) {
-        mErrorOutput = new std::ofstream(settings.outputFile);
+
+      if (settings.outputFileType == "append") {
+	using std::ios;
+
+	mErrorOutput = new std::ofstream(settings.outputFile, ios::app); // open it in append mode
+      } else if (settings.outputFileType == "uniq") {
+	std::size_t extensionOffset = settings.outputFile.find_last_of(".");
+	std::string filename = settings.outputFile.substr(0, extensionOffset);
+
+        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
+	  std::size_t curFileNameOffset = i->first.find_last_of("/\\");
+	  std::string tmp = i->first.substr(curFileNameOffset + 1);
+	  std::replace(tmp.begin(), tmp.end(), '.', '_');
+	  filename += "_" + tmp;
+	}
+	filename += settings.outputFile.substr(extensionOffset);
+	mErrorOutput = new std::ofstream(filename); // open it in uniq mode
+      } else {
+	mErrorOutput = new std::ofstream(settings.outputFile);
+      }
     }
 
     if (settings.xml) {
