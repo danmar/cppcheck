@@ -211,6 +211,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 name = name->next();
 
             Scope *new_scope = findScope(name, scope);
+            if (new_scope && new_scope->bodyStart && Token::Match(name, "%name% {") && new_scope->type == Scope::ScopeType::eNamespace)
+                new_scope = nullptr;
 
             if (new_scope) {
                 // only create base list for classes and structures

@@ -354,6 +354,7 @@ private:
         TEST_CASE(symboldatabase95); // #10295
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
+        TEST_CASE(createSymbolDatabaseFindAllScopes2);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -3794,31 +3795,31 @@ private:
                           "}");
 
             ASSERT(db != nullptr);
-            ASSERT(db && db->scopeList.size() == 8);
-            ASSERT(db && db->classAndStructScopes.size() == 2);
-            ASSERT(db && db->typeList.size() == 2);
-            ASSERT(db && db->functionScopes.size() == 4);
+            ASSERT_EQUALS(9, db->scopeList.size());
+            ASSERT_EQUALS(2, db->classAndStructScopes.size());
+            ASSERT_EQUALS(2, db->typeList.size());
+            ASSERT_EQUALS(4, db->functionScopes.size());
 
             const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
-            ASSERT(db && functionToken && functionToken->function() &&
+            ASSERT(functionToken && functionToken->function() &&
                    functionToken->function()->functionScope &&
                    functionToken->function()->tokenDef->linenr() == 5 &&
                    functionToken->function()->token->linenr() == 11);
 
             functionToken = Token::findsimplematch(tokenizer.tokens(), "~ impl ( ) { }");
-            ASSERT(db && functionToken && functionToken->next()->function() &&
+            ASSERT(functionToken && functionToken->next()->function() &&
                    functionToken->next()->function()->functionScope &&
                    functionToken->next()->function()->tokenDef->linenr() == 6 &&
                    functionToken->next()->function()->token->linenr() == 12);
 
             functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const Fred :: impl & ) { }");
-            ASSERT(db && functionToken && functionToken->function() &&
+            ASSERT(functionToken && functionToken->function() &&
                    functionToken->function()->functionScope &&
                    functionToken->function()->tokenDef->linenr() == 7 &&
                    functionToken->function()->token->linenr() == 13);
 
             functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const Fred :: impl & , const Fred :: impl & ) const { }");
-            ASSERT(db && functionToken && functionToken->function() &&
+            ASSERT(functionToken && functionToken->function() &&
                    functionToken->function()->functionScope &&
                    functionToken->function()->tokenDef->linenr() == 8 &&
                    functionToken->function()->token->linenr() == 14);
@@ -4186,31 +4187,31 @@ private:
                           "}");
 
             ASSERT(db != nullptr);
-            ASSERT(db && db->scopeList.size() == 8);
-            ASSERT(db && db->classAndStructScopes.size() == 2);
-            ASSERT(db && db->typeList.size() == 2);
-            ASSERT(db && db->functionScopes.size() == 4);
+            ASSERT_EQUALS(9, db->scopeList.size());
+            ASSERT_EQUALS(2, db->classAndStructScopes.size());
+            ASSERT_EQUALS(2, db->typeList.size());
+            ASSERT_EQUALS(4, db->functionScopes.size());
 
             const Token * functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( ) { }");
-            ASSERT(db && functionToken && functionToken->function() &&
+            ASSERT(functionToken && functionToken->function() &&
                    functionToken->function()->functionScope &&
                    functionToken->function()->tokenDef->linenr() == 5 &&
                    functionToken->function()->token->linenr() == 11);
 
             functionToken = Token::findsimplematch(tokenizer.tokens(), "~ impl ( ) { }");
-            ASSERT(db && functionToken && functionToken->next()->function() &&
+            ASSERT(functionToken && functionToken->next()->function() &&
                    functionToken->next()->function()->functionScope &&
                    functionToken->next()->function()->tokenDef->linenr() == 6 &&
                    functionToken->next()->function()->token->linenr() == 12);
 
             functionToken = Token::findsimplematch(tokenizer.tokens(), "impl ( const Fred < A > :: impl & ) { }");
-            ASSERT(db && functionToken && functionToken->function() &&
+            ASSERT(functionToken && functionToken->function() &&
                    functionToken->function()->functionScope &&
                    functionToken->function()->tokenDef->linenr() == 7 &&
                    functionToken->function()->token->linenr() == 13);
 
             functionToken = Token::findsimplematch(tokenizer.tokens(), "foo ( const Fred < A > :: impl & , const Fred < A > :: impl & ) const { }");
-            ASSERT(db && functionToken && functionToken->function() &&
+            ASSERT(functionToken && functionToken->function() &&
                    functionToken->function()->functionScope &&
                    functionToken->function()->tokenDef->linenr() == 8 &&
                    functionToken->function()->token->linenr() == 14);
@@ -4787,6 +4788,17 @@ private:
         GET_SYMBOL_DB("void f() { union {int x; char *p;} a={0}; }");
         ASSERT(db->scopeList.size() == 3);
         ASSERT_EQUALS(Scope::eUnion, db->scopeList.back().type);
+    }
+
+    void createSymbolDatabaseFindAllScopes2() {
+        GET_SYMBOL_DB("namespace ns { auto var1{0}; }\n"
+                      "namespace ns { auto var2{0}; }\n");
+        ASSERT(db);
+        ASSERT_EQUALS(3, db->scopeList.size());
+        const Token* const var1 = Token::findsimplematch(tokenizer.tokens(), "var1");
+        const Token* const var2 = Token::findsimplematch(tokenizer.tokens(), "var2");
+        ASSERT(var1->variable());
+        ASSERT(var2->variable());
     }
 
     void enum1() {
