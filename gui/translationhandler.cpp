@@ -86,8 +86,8 @@ bool TranslationHandler::setLanguage(const QString &code)
     bool failure = false;
     QString error;
 
-    //If English is the language
-    if (code == "en") {
+    //If English is the language. Code can be e.g. en_US
+    if (code.indexOf("en") == 0) {
         //Just remove all extra translators
         if (mTranslator) {
             qApp->removeTranslator(mTranslator);
