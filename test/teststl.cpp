@@ -1393,18 +1393,18 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void iterator27() { // #10378
-        check(
-            "struct A {\n"
-            "    int a;\n"
-            "    int b;\n"
-            "};\n"
-            "int f(std::map<int, A> m) {\n"
-            "    auto it =  m.find( 1 );\n"
-            "    const int a( it == m.cend() ? 0 : it->second.a );\n"
-            "    const int b( it == m.cend() ? 0 : it->second.b );\n"
-            "    return a + b;\n"
-            "}\n");
+    void iterator27()
+    { // #10378
+        check("struct A {\n"
+              "    int a;\n"
+              "    int b;\n"
+              "};\n"
+              "int f(std::map<int, A> m) {\n"
+              "    auto it =  m.find( 1 );\n"
+              "    const int a( it == m.cend() ? 0 : it->second.a );\n"
+              "    const int b( it == m.cend() ? 0 : it->second.b );\n"
+              "    return a + b;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

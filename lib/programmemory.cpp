@@ -461,7 +461,7 @@ ProgramMemory getProgramMemory(const Token* tok, nonneg int exprid, const ValueF
 
 static PMEvaluateFunction evaluateAsInt(PMEvaluateFunction f, ValueFlow::Value::ValueType t)
 {
-    return [=](const Token * expr, ProgramMemory * const programMemory, MathLib::bigint *result) -> bool {
+    return [=](const Token* expr, ProgramMemory* const programMemory, MathLib::bigint* result) -> bool {
         const ValueFlow::Value* value = expr->getKnownValue(t);
         if (!value)
             value = programMemory->getValue(expr->exprId());
@@ -476,7 +476,7 @@ static PMEvaluateFunction evaluateAsInt(PMEvaluateFunction f, ValueFlow::Value::
 static std::set<ValueFlow::Value::ValueType> findIteratorTypes(const ProgramMemory& pm)
 {
     std::set<ValueFlow::Value::ValueType> result;
-    for(auto&& p:pm.values) {
+    for (auto&& p : pm.values) {
         if (p.second.isIteratorValue())
             result.insert(p.second.valueType);
         if (result.size() == 2)
@@ -494,10 +494,10 @@ static bool isIterator(const Token* expr)
     return std::any_of(expr->values().begin(), expr->values().end(), std::mem_fn(&ValueFlow::Value::isIteratorValue));
 }
 
-void execute(const Token *expr,
-             ProgramMemory * const programMemory,
-             MathLib::bigint *result,
-             bool *error,
+void execute(const Token* expr,
+             ProgramMemory* const programMemory,
+             MathLib::bigint* result,
+             bool* error,
              const PMEvaluateFunction& f)
 {
     if (!expr)
@@ -547,7 +547,7 @@ void execute(const Token *expr,
         execute(expr->astOperand1(), programMemory, &result1, &error1, f);
         execute(expr->astOperand2(), programMemory, &result2, &error2, f);
         if (error1 && error2 && (isIterator(expr->astOperand1()) || isIterator(expr->astOperand2()))) {
-            for(ValueFlow::Value::ValueType t:findIteratorTypes(*programMemory)) {
+            for (ValueFlow::Value::ValueType t : findIteratorTypes(*programMemory)) {
                 execute(expr->astOperand1(), programMemory, &result1, &error1, evaluateAsInt(f, t));
                 execute(expr->astOperand2(), programMemory, &result2, &error2, evaluateAsInt(f, t));
                 if (!error1 && !error2)
