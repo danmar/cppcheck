@@ -2385,6 +2385,23 @@ bool Token::hasKnownValue() const
     return mImpl->mValues && std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), std::mem_fn(&ValueFlow::Value::isKnown));
 }
 
+bool Token::hasKnownValue(ValueFlow::Value::ValueType t) const
+{
+    return mImpl->mValues && std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) {
+        return value.isKnown() && value.valueType == t;
+    });
+}
+
+const ValueFlow::Value* Token::getKnownValue(ValueFlow::Value::ValueType t) const
+{
+    if (!mImpl->mValues)
+        return nullptr;
+    auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) {
+        return value.isKnown() && value.valueType == t;
+    });
+    return it == mImpl->mValues->end() ? nullptr : &*it;
+}
+
 bool Token::isImpossibleIntValue(const MathLib::bigint val) const
 {
     if (!mImpl->mValues)

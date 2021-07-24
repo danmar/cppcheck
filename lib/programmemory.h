@@ -4,6 +4,7 @@
 #include "utils.h"
 #include "valueflow.h" // needed for alias
 #include "mathlib.h"
+#include <functional>
 #include <map>
 #include <unordered_map>
 
@@ -57,10 +58,13 @@ struct ProgramMemoryState {
     ProgramMemory get(const Token* tok, const Token* ctx, const ProgramMemory::Map& vars) const;
 };
 
+using PMEvaluateFunction = std::function<bool(const Token * expr, ProgramMemory * const programMemory, MathLib::bigint *result)>;
+
 void execute(const Token *expr,
              ProgramMemory * const programMemory,
              MathLib::bigint *result,
-             bool *error);
+             bool *error,
+             const PMEvaluateFunction& f = nullptr);
 
 /**
  * Is condition always false when variable has given value?
