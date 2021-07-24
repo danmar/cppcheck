@@ -259,6 +259,7 @@ private:
         TEST_CASE(namespaces2);
         TEST_CASE(namespaces3);  // #3854 - unknown macro
         TEST_CASE(namespaces4);
+        TEST_CASE(namespacesSameName1);
 
         TEST_CASE(tryCatch1);
 
@@ -2605,6 +2606,14 @@ private:
         ASSERT_EQUALS("fredA", fredA->name());
         const Type *fredAType = fredA->type();
         ASSERT_EQUALS(2U, fredAType->classDef->linenr());
+    }
+
+    void namespacesSameName1() {
+        GET_SYMBOL_DB("namespace N { struct Base{}; }\n"
+                      "namespace N { class Derived : public Base {}; }\n");
+        const Token *Base = Token::findsimplematch(tokenizer.tokens(), "public Base")->next();
+        const Type *baseType = Base->type();
+        ASSERT(baseType);
     }
 
     void tryCatch1() {

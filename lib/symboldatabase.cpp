@@ -4690,6 +4690,18 @@ const Type* SymbolDatabase::findVariableTypeInBase(const Scope* scope, const Tok
 
 //---------------------------------------------------------------------------
 
+static std::vector<const Scope *> getExtraScopesForNamespace(const Scope *scope)
+{
+    std::vector<const Scope *> ret;
+    if (scope && scope->nestedIn) {
+        for (const Scope *s: scope->nestedIn->nestedList) {
+            if (s != scope && s->type == Scope::ScopeType::eNamespace && s->className == scope->className)
+                ret.push_back(s);
+        }
+    }
+    return ret;
+}
+
 const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *typeTok) const
 {
     const Scope *scope = start;
@@ -4706,6 +4718,13 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
 
             if (type)
                 return type;
+
+            for (const Scope *extraScope: getExtraScopesForNamespace(scope)) {
+                // look for type in this scope
+                const Type * type = extraScope->findType(typeTok->str());
+                if (type)
+                    return type;
+            }
 
             // look for type in base classes if possible
             if (scope->isClassOrStruct()) {
