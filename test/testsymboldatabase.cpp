@@ -2614,6 +2614,10 @@ private:
         const Token *Base = Token::findsimplematch(tokenizer.tokens(), "public Base")->next();
         const Type *baseType = Base->type();
         ASSERT(baseType);
+        const Type *derivedType = Token::findsimplematch(tokenizer.tokens(), "Derived")->type();
+        ASSERT(derivedType);
+        ASSERT_EQUALS(1, derivedType->derivedFrom.size());
+        ASSERT_EQUALS(baseType, derivedType->derivedFrom[0].type);
     }
 
     void tryCatch1() {
