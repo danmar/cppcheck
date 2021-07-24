@@ -81,18 +81,47 @@ class MacroUsage:
     file = None
     linenr = None
     column = None
+    usefile = None
+    uselinenr = None
+    usecolumn = None
 
     def __init__(self, element):
         self.name = element.get('name')
         _load_location(self, element)
+        self.usefile = element.get('usefile')
+        self.useline = element.get('useline')
+        self.usecolumn = element.get('usecolumn')
 
     def __repr__(self):
-        attrs = ["name", "file", "linenr", "column"]
+        attrs = ["name", "file", "linenr", "column", "usefile", "useline", "usecolumn"]
         return "{}({})".format(
-            "Directive",
+            "MacroUsage",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
         )
 
+
+class PreprocessorIfCondition:
+    """
+    Information about #if/#elif conditions
+    """
+
+    file = None
+    linenr = None
+    column = None
+    E = None
+    result = None
+
+    def __init__(self, element):
+        _load_location(self, element)
+        self.E = element.get('E')
+        self.result = int(element.get('result'))
+
+    def __repr__(self):
+        attrs = ["file", "linenr", "column", "E", "result"]
+        return "{}({})".format(
+            "PreprocessorIfCondition",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
 
 
 class ValueType:
@@ -759,6 +788,7 @@ class Configuration:
         name          Name of the configuration, "" for default
         directives    List of Directive items
         macro_usage   List of used macros
+        preprocessor_if_conditions  List of preprocessor if conditions that was evaluated during preprocessing
         tokenlist     List of Token items
         scopes        List of Scope items
         functions     List of Function items
@@ -770,6 +800,7 @@ class Configuration:
     name = ''
     directives = []
     macro_usage = []
+    preprocessor_if_conditions = []
     tokenlist = []
     scopes = []
     functions = []
@@ -782,6 +813,7 @@ class Configuration:
         self.name = name
         self.directives = []
         self.macro_usage = []
+        self.preprocessor_if_conditions = []
         self.tokenlist = []
         self.scopes = []
         self.functions = []
@@ -1044,6 +1076,10 @@ class CppcheckData:
             # Parse macro usage
             elif node.tag == 'macro' and event == 'start':
                 cfg.macro_usage.append(MacroUsage(node))
+
+            # Preprocessor #if/#elif condition
+            elif node.tag == "if-cond" and event == 'start':
+                cfg.preprocessor_if_conditions.append(PreprocessorIfCondition(node))
 
             # Parse tokens
             elif node.tag == 'tokenlist' and event == 'start':

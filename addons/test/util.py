@@ -20,7 +20,7 @@ def find_cppcheck_binary():
 
 def dump_create(fpath, *argv):
     cppcheck_binary = find_cppcheck_binary()
-    cmd = [cppcheck_binary, "--dump", "--quiet", fpath] + list(argv)
+    cmd = [cppcheck_binary, "--dump", "-DDUMMY", "--quiet", fpath] + list(argv)
     p = subprocess.Popen(cmd)
     p.communicate()
     if p.returncode != 0:

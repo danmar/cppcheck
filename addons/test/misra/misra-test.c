@@ -1,6 +1,6 @@
 // To test:
 // ~/cppcheck/cppcheck --dump misra/misra-test.h --std=c89
-// ~/cppcheck/cppcheck --dump --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64 && python3 ../misra.py -verify misra/misra-test.c.dump
+// ~/cppcheck/cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64 && python3 ../misra.py -verify misra/misra-test.c.dump
 
 #include "path\file.h" // 20.2
 #include "file//.h" // 20.2
@@ -1231,11 +1231,11 @@ static void misra_15_6(void) {
   if (x!=0); // 15.6
   else{}
 
-#if A>1  // no-warning
+#if A>1  // 20.9
   (void)0;
 #endif
 
-#if A > 0x42
+#if A > 0x42 // 20.9
   if (true) {
     (void)0;
   }
@@ -1558,11 +1558,26 @@ struct { int a; } struct_20_7_s;
 
 #define MUL(a  ,b ) ( a * b ) // 20.7
 
+#if __LINE__  // 20.8
+#elif 2+5  // 20.8
+#elif 2-2
+#endif
+
+#if A // 20.9
+#elif B || C // 20.9
+#endif
+
 #define M_20_10(a) (#a) // 20.10
+
+#define M_20_11(a)  # a ## 1 // 20.11 20.10
+
+#define M_20_12_AA       0xffff
+#define M_20_12_BB(x)    (x) + wow ## x // 20.12 20.10
+misra_20_12 = M_20_12_BB(M_20_12_AA);
 
 #else1 // 20.13
 
-#ifdef A>1
+#ifdef A
 # define somethingis 5 // no warning
 # define func_20_13(v) (v) // no warning
 #else
@@ -1586,6 +1601,9 @@ static int misra_21_1(void) {
 }
 static int _misra_21_1_2(void); // no warning
 #define errno 11 // 21.1
+
+#define __BUILTIN_SOMETHING 123 // 21.2 21.1
+extern void *memcpy ( void *restrict s1, const void *restrict s2, size_t n ); // 21.2 8.14
 
 static void misra_21_3(void) {
   p1=malloc(10); // 21.3
