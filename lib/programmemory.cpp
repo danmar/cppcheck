@@ -7,6 +7,7 @@
 #include "valueflow.h"
 #include <algorithm>
 #include <cassert>
+#include <functional>
 #include <limits>
 #include <memory>
 
@@ -458,13 +459,52 @@ ProgramMemory getProgramMemory(const Token* tok, nonneg int exprid, const ValueF
     return programMemory;
 }
 
-void execute(const Token *expr,
-             ProgramMemory * const programMemory,
-             MathLib::bigint *result,
-             bool *error)
+static PMEvaluateFunction evaluateAsInt(PMEvaluateFunction f, ValueFlow::Value::ValueType t)
+{
+    return [=](const Token* expr, ProgramMemory* const programMemory, MathLib::bigint* result) -> bool {
+        const ValueFlow::Value* value = expr->getKnownValue(t);
+        if (!value)
+            value = programMemory->getValue(expr->exprId());
+        if (value && value->valueType == t) {
+            *result = value->intvalue;
+            return true;
+        }
+        return f && f(expr, programMemory, result);
+    };
+}
+
+static std::set<ValueFlow::Value::ValueType> findIteratorTypes(const ProgramMemory& pm)
+{
+    std::set<ValueFlow::Value::ValueType> result;
+    for (auto&& p : pm.values) {
+        if (p.second.isIteratorValue())
+            result.insert(p.second.valueType);
+        if (result.size() == 2)
+            break;
+    }
+    return result;
+}
+
+static bool isIterator(const Token* expr)
+{
+    if (!expr)
+        return false;
+    if (astIsIterator(expr))
+        return true;
+    return std::any_of(expr->values().begin(), expr->values().end(), std::mem_fn(&ValueFlow::Value::isIteratorValue));
+}
+
+void execute(const Token* expr,
+             ProgramMemory* const programMemory,
+             MathLib::bigint* result,
+             bool* error,
+             const PMEvaluateFunction& f)
 {
     if (!expr)
         *error = true;
+
+    else if (f && f(expr, programMemory, result))
+        *error = false;
 
     else if (expr->hasKnownIntValue() && !expr->isAssignmentOp()) {
         *result = expr->values().front().intvalue;
@@ -504,8 +544,16 @@ void execute(const Token *expr,
         MathLib::bigint result1(0), result2(0);
         bool error1 = false;
         bool error2 = false;
-        execute(expr->astOperand1(), programMemory, &result1, &error1);
-        execute(expr->astOperand2(), programMemory, &result2, &error2);
+        execute(expr->astOperand1(), programMemory, &result1, &error1, f);
+        execute(expr->astOperand2(), programMemory, &result2, &error2, f);
+        if (error1 && error2 && (isIterator(expr->astOperand1()) || isIterator(expr->astOperand2()))) {
+            for (ValueFlow::Value::ValueType t : findIteratorTypes(*programMemory)) {
+                execute(expr->astOperand1(), programMemory, &result1, &error1, evaluateAsInt(f, t));
+                execute(expr->astOperand2(), programMemory, &result2, &error2, evaluateAsInt(f, t));
+                if (!error1 && !error2)
+                    break;
+            }
+        }
         if (error1 && error2) {
             *error = true;
         } else if (error1 && !error2) {
@@ -533,7 +581,7 @@ void execute(const Token *expr,
     }
 
     else if (expr->isAssignmentOp()) {
-        execute(expr->astOperand2(), programMemory, result, error);
+        execute(expr->astOperand2(), programMemory, result, error, f);
         if (!expr->astOperand1() || !expr->astOperand1()->exprId())
             *error = true;
         if (*error)
@@ -588,8 +636,8 @@ void execute(const Token *expr,
 
     else if (expr->isArithmeticalOp() && expr->astOperand1() && expr->astOperand2()) {
         MathLib::bigint result1(0), result2(0);
-        execute(expr->astOperand1(), programMemory, &result1, error);
-        execute(expr->astOperand2(), programMemory, &result2, error);
+        execute(expr->astOperand1(), programMemory, &result1, error, f);
+        execute(expr->astOperand2(), programMemory, &result2, error, f);
         if (expr->str() == "+")
             *result = result1 + result2;
         else if (expr->str() == "-")
@@ -622,33 +670,33 @@ void execute(const Token *expr,
 
     else if (expr->str() == "&&") {
         bool error1 = false;
-        execute(expr->astOperand1(), programMemory, result, &error1);
+        execute(expr->astOperand1(), programMemory, result, &error1, f);
         if (!error1 && *result == 0)
             *result = 0;
         else {
             bool error2 = false;
-            execute(expr->astOperand2(), programMemory, result, &error2);
+            execute(expr->astOperand2(), programMemory, result, &error2, f);
             if (error1 || error2)
                 *error = true;
         }
     }
 
     else if (expr->str() == "||") {
-        execute(expr->astOperand1(), programMemory, result, error);
+        execute(expr->astOperand1(), programMemory, result, error, f);
         if (*result == 1 && *error == false)
             *result = 1;
         else if (*result == 0 && *error == false)
-            execute(expr->astOperand2(), programMemory, result, error);
+            execute(expr->astOperand2(), programMemory, result, error, f);
     }
 
     else if (expr->str() == "!") {
-        execute(expr->astOperand1(), programMemory, result, error);
+        execute(expr->astOperand1(), programMemory, result, error, f);
         *result = !(*result);
     }
 
     else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
-        execute(expr->astOperand1(), programMemory, result, error);
-        execute(expr->astOperand2(), programMemory, result, error);
+        execute(expr->astOperand1(), programMemory, result, error, f);
+        execute(expr->astOperand2(), programMemory, result, error, f);
     }
 
     else if (expr->str() == "[" && expr->astOperand1() && expr->astOperand2()) {
@@ -669,7 +717,7 @@ void execute(const Token *expr,
         }
         const std::string strValue = tokvalue->strValue();
         MathLib::bigint index = 0;
-        execute(expr->astOperand2(), programMemory, &index, error);
+        execute(expr->astOperand2(), programMemory, &index, error, f);
         if (index >= 0 && index < strValue.size())
             *result = strValue[index];
         else if (index == strValue.size())
