@@ -681,9 +681,9 @@ void ProjectFileDialog::addSingleSuppression(const Suppressions::Suppression &su
         (suppression.fileName.find(sep) == std::string::npos)) {
         QFileInfo inf(mProjectFile->getFilename());
         QString rootpath = inf.absolutePath();
-        if (QFile::exists(QString{"%1%2%3"}.arg(rootpath,
-                                                QDir::separator(),
-                                                QString::fromStdString(suppression.fileName)))) {
+        if (QFile::exists(QString{"%1%2%3"} .arg(rootpath,
+                          QDir::separator(),
+                          QString::fromStdString(suppression.fileName)))) {
             Suppressions::Suppression sup = suppression;
             sup.fileName = rootpath.toLatin1().constData();
             sup.fileName += sep;
