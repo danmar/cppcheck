@@ -6408,19 +6408,20 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                     for (const ValueFlow::Value& value : values)
                         valueFlowContainerForward(containerTok->next(), containerTok, value, tokenlist);
                 }
-            } else if (Token::Match(tok, "%var% . %name% (") && tok->valueType() && tok->valueType()->container) {
-                Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
+            } else if (Token::Match(tok, ". %name% (") && tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->container) {
+                const Token* containerTok = tok->astOperand1();
+                Library::Container::Action action = containerTok->valueType()->container->getAction(tok->strAt(1));
                 if (action == Library::Container::Action::CLEAR) {
                     ValueFlow::Value value(0);
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
-                    valueFlowContainerForward(tok->next(), tok, value, tokenlist);
-                } else if (action == Library::Container::Action::RESIZE && tok->tokAt(3)->astOperand2() &&
-                           tok->tokAt(3)->astOperand2()->hasKnownIntValue()) {
-                    ValueFlow::Value value(tok->tokAt(3)->astOperand2()->values().front());
+                    valueFlowContainerForward(tok->next(), containerTok, value, tokenlist);
+                } else if (action == Library::Container::Action::RESIZE && tok->tokAt(2)->astOperand2() &&
+                           tok->tokAt(2)->astOperand2()->hasKnownIntValue()) {
+                    ValueFlow::Value value(tok->tokAt(2)->astOperand2()->values().front());
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
-                    valueFlowContainerForward(tok->next(), tok, value, tokenlist);
+                    valueFlowContainerForward(tok->next(), containerTok, value, tokenlist);
                 }
             }
         }
