@@ -563,6 +563,32 @@ private:
                     "  return false;\n"
                     "}\n");
         ASSERT_EQUALS("test.cpp:8:style:Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
+
+        checkNormal("bool g();\n"
+                    "int f(int x) {\n"
+                    "    std::vector<int> v;\n"
+                    "    if (g())\n"
+                    "        v.emplace_back(x);\n"
+                    "    const auto n = (int)v.size();\n"
+                    "    for (int i = 0; i < n; ++i)\n"
+                    "        if (v[i] > 0)\n"
+                    "            return i;\n"
+                    "    return 0;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("bool g();\n"
+                    "int f(int x) {\n"
+                    "    std::vector<int> v;\n"
+                    "    if (g())\n"
+                    "        v.emplace_back(x);\n"
+                    "    const auto n = static_cast<int>(v.size());\n"
+                    "    for (int i = 0; i < n; ++i)\n"
+                    "        if (v[i] > 0)\n"
+                    "            return i;\n"
+                    "    return 0;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
