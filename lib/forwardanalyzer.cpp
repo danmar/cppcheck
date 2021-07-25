@@ -382,7 +382,7 @@ struct ForwardTraversal {
         bool checkThen = true;
         bool checkElse = false;
         if (condTok && !Token::simpleMatch(condTok, ":"))
-            std::tie(checkThen, checkElse) = evalCond(condTok, isDoWhile ? endBlock->link()->previous() : nullptr);
+            std::tie(checkThen, checkElse) = evalCond(condTok, isDoWhile ? endBlock->previous() : nullptr);
         if (checkElse && exit)
             return Progress::Continue;
         // do while(false) is not really a loop
