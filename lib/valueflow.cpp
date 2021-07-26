@@ -4295,8 +4295,8 @@ struct ConditionHandler {
 
                 if (!Token::Match(top->previous(), "if|while|for (") && !Token::Match(tok->astParent(), "&&|%oror%|?"))
                     continue;
-
-                for(const Condition& cond : parse(tok, settings)) {
+                // *INDENT-OFF*
+                for (const Condition& cond : parse(tok, settings)) {
                     if (!cond.vartok)
                         continue;
                     if (cond.vartok->hasKnownIntValue())
@@ -4305,24 +4305,25 @@ struct ConditionHandler {
                         continue;
                     if (!isConstExpression(cond.vartok, settings->library, true, tokenlist->isCPP()))
                         continue;
-                    std::vector<const Variable*> vars = getExprVariables(cond.vartok, tokenlist, symboldatabase, settings);
-                    if (std::any_of(vars.begin(), vars.end(), [](const Variable* var) {
-                    return !var;
-                }))
-                    continue;
-                    if (!vars.empty() && (vars.front()))
-                        if (std::any_of(vars.begin(), vars.end(), [&](const Variable* var) {
-                        return var && aliased.find(var->declarationId()) != aliased.end();
-                        })) {
-                        if (settings->debugwarnings)
-                            bailout(tokenlist,
-                                    errorLogger,
-                                    cond.vartok,
-                                    "variable is aliased so we just skip all valueflow after condition");
+                    std::vector<const Variable*> vars =
+                        getExprVariables(cond.vartok, tokenlist, symboldatabase, settings);
+                    if (std::any_of(vars.begin(), vars.end(), [](const Variable* var) { return !var; }))
                         continue;
+                    if (!vars.empty() && (vars.front())) {
+                        if (std::any_of(vars.begin(), vars.end(), [&](const Variable* var) {
+                                return var && aliased.find(var->declarationId()) != aliased.end();
+                            })) {
+                            if (settings->debugwarnings)
+                                bailout(tokenlist,
+                                        errorLogger,
+                                        cond.vartok,
+                                        "variable is aliased so we just skip all valueflow after condition");
+                            continue;
+                        }
                     }
                     f(cond, tok, scope, vars);
                 }
+                // *INDENT-ON*
             }
         }
     }
@@ -4711,7 +4712,8 @@ struct SimpleConditionHandler : ConditionHandler {
         return valueFlowReverse(start, endToken, exprTok, values, tokenlist, settings);
     }
 
-    virtual std::vector<Condition> parse(const Token* tok, const Settings*) const OVERRIDE {
+    virtual std::vector<Condition> parse(const Token* tok, const Settings*) const OVERRIDE
+    {
         Condition cond;
         ValueFlow::Value true_value;
         ValueFlow::Value false_value;
@@ -6235,7 +6237,8 @@ static std::list<ValueFlow::Value> getIteratorValues(std::list<ValueFlow::Value>
 }
 
 struct IteratorConditionHandler : SimpleConditionHandler {
-    virtual std::vector<Condition> parse(const Token* tok, const Settings*) const OVERRIDE {
+    virtual std::vector<Condition> parse(const Token* tok, const Settings*) const OVERRIDE
+    {
         Condition cond;
 
         ValueFlow::Value true_value;
@@ -6451,7 +6454,8 @@ struct ContainerConditionHandler : ConditionHandler {
         return valueFlowContainerReverse(start, endTok, exprTok, values, tokenlist, settings);
     }
 
-    virtual std::vector<Condition> parse(const Token* tok, const Settings*) const OVERRIDE {
+    virtual std::vector<Condition> parse(const Token* tok, const Settings*) const OVERRIDE
+    {
         Condition cond;
         ValueFlow::Value true_value;
         ValueFlow::Value false_value;
