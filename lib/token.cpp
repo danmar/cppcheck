@@ -2388,9 +2388,9 @@ bool Token::hasKnownValue() const
 bool Token::hasKnownValue(ValueFlow::Value::ValueType t) const
 {
     return mImpl->mValues &&
-           std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) {
-               return value.isKnown() && value.valueType == t;
-           });
+    std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) {
+        return value.isKnown() && value.valueType == t;
+    });
 }
 
 const ValueFlow::Value* Token::getKnownValue(ValueFlow::Value::ValueType t) const

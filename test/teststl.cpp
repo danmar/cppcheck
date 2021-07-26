@@ -1394,7 +1394,8 @@ private:
     }
 
     void iterator27()
-    { // #10378
+    {
+        // #10378
         check("struct A {\n"
               "    int a;\n"
               "    int b;\n"
