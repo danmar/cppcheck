@@ -4272,7 +4272,7 @@ struct ConditionHandler {
                          TokenList* tokenlist,
                          const Settings* settings) const = 0;
 
-    virtual Condition parse(const Token* tok, const Settings* settings) const = 0;
+    virtual std::vector<Condition> parse(const Token* tok, const Settings* settings) const = 0;
 
     void traverseCondition(
         TokenList* tokenlist,
@@ -4296,32 +4296,33 @@ struct ConditionHandler {
                 if (!Token::Match(top->previous(), "if|while|for (") && !Token::Match(tok->astParent(), "&&|%oror%|?"))
                     continue;
 
-                Condition cond = parse(tok, settings);
-                if (!cond.vartok)
+                for(const Condition& cond : parse(tok, settings)) {
+                    if (!cond.vartok)
+                        continue;
+                    if (cond.vartok->hasKnownIntValue())
+                        continue;
+                    if (cond.true_values.empty() || cond.false_values.empty())
+                        continue;
+                    if (!isConstExpression(cond.vartok, settings->library, true, tokenlist->isCPP()))
+                        continue;
+                    std::vector<const Variable*> vars = getExprVariables(cond.vartok, tokenlist, symboldatabase, settings);
+                    if (std::any_of(vars.begin(), vars.end(), [](const Variable* var) {
+                    return !var;
+                }))
                     continue;
-                if (cond.vartok->hasKnownIntValue())
-                    continue;
-                if (cond.true_values.empty() || cond.false_values.empty())
-                    continue;
-                if (!isConstExpression(cond.vartok, settings->library, true, tokenlist->isCPP()))
-                    continue;
-                std::vector<const Variable*> vars = getExprVariables(cond.vartok, tokenlist, symboldatabase, settings);
-                if (std::any_of(vars.begin(), vars.end(), [](const Variable* var) {
-                return !var;
-            }))
-                continue;
-                if (!vars.empty() && (vars.front()))
-                    if (std::any_of(vars.begin(), vars.end(), [&](const Variable* var) {
-                    return var && aliased.find(var->declarationId()) != aliased.end();
-                    })) {
-                    if (settings->debugwarnings)
-                        bailout(tokenlist,
-                                errorLogger,
-                                cond.vartok,
-                                "variable is aliased so we just skip all valueflow after condition");
-                    continue;
+                    if (!vars.empty() && (vars.front()))
+                        if (std::any_of(vars.begin(), vars.end(), [&](const Variable* var) {
+                        return var && aliased.find(var->declarationId()) != aliased.end();
+                        })) {
+                        if (settings->debugwarnings)
+                            bailout(tokenlist,
+                                    errorLogger,
+                                    cond.vartok,
+                                    "variable is aliased so we just skip all valueflow after condition");
+                        continue;
+                    }
+                    f(cond, tok, scope, vars);
                 }
-                f(cond, tok, scope, vars);
             }
         }
     }
@@ -4710,20 +4711,20 @@ struct SimpleConditionHandler : ConditionHandler {
         return valueFlowReverse(start, endToken, exprTok, values, tokenlist, settings);
     }
 
-    virtual Condition parse(const Token* tok, const Settings*) const OVERRIDE {
+    virtual std::vector<Condition> parse(const Token* tok, const Settings*) const OVERRIDE {
         Condition cond;
         ValueFlow::Value true_value;
         ValueFlow::Value false_value;
         const Token *vartok = parseCompareInt(tok, true_value, false_value);
         if (vartok) {
             if (vartok->hasKnownValue())
-                return cond;
+                return {};
             if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
                 vartok = vartok->astOperand1();
             cond.true_values.push_back(true_value);
             cond.false_values.push_back(false_value);
             cond.vartok = vartok;
-            return cond;
+            return {cond};
         }
 
         if (tok->str() == "!") {
@@ -4738,12 +4739,12 @@ struct SimpleConditionHandler : ConditionHandler {
         }
 
         if (!vartok)
-            return cond;
+            return {};
         cond.true_values.emplace_back(tok, 0LL);
         cond.false_values.emplace_back(tok, 0LL);
         cond.vartok = vartok;
 
-        return cond;
+        return {cond};
     }
 };
 
@@ -6234,7 +6235,7 @@ static std::list<ValueFlow::Value> getIteratorValues(std::list<ValueFlow::Value>
 }
 
 struct IteratorConditionHandler : SimpleConditionHandler {
-    virtual Condition parse(const Token* tok, const Settings*) const OVERRIDE {
+    virtual std::vector<Condition> parse(const Token* tok, const Settings*) const OVERRIDE {
         Condition cond;
 
         ValueFlow::Value true_value;
@@ -6242,7 +6243,7 @@ struct IteratorConditionHandler : SimpleConditionHandler {
 
         if (Token::Match(tok, "==|!=")) {
             if (!tok->astOperand1() || !tok->astOperand2())
-                return cond;
+                return {};
 
             ValueFlow::Value::ValueKind kind = ValueFlow::Value::ValueKind::Known;
             std::list<ValueFlow::Value> values = getIteratorValues(tok->astOperand1()->values(), &kind);
@@ -6261,7 +6262,7 @@ struct IteratorConditionHandler : SimpleConditionHandler {
             cond.false_values = values;
         }
 
-        return cond;
+        return {cond};
     }
 };
 
@@ -6450,7 +6451,7 @@ struct ContainerConditionHandler : ConditionHandler {
         return valueFlowContainerReverse(start, endTok, exprTok, values, tokenlist, settings);
     }
 
-    virtual Condition parse(const Token* tok, const Settings*) const OVERRIDE {
+    virtual std::vector<Condition> parse(const Token* tok, const Settings*) const OVERRIDE {
         Condition cond;
         ValueFlow::Value true_value;
         ValueFlow::Value false_value;
@@ -6458,13 +6459,13 @@ struct ContainerConditionHandler : ConditionHandler {
         if (vartok) {
             vartok = vartok->tokAt(-3);
             if (!isContainerSize(vartok))
-                return cond;
+                return {};
             true_value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             false_value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             cond.true_values.push_back(true_value);
             cond.false_values.push_back(false_value);
             cond.vartok = vartok;
-            return cond;
+            return {cond};
         }
 
         // Empty check
@@ -6472,11 +6473,11 @@ struct ContainerConditionHandler : ConditionHandler {
             vartok = tok->tokAt(-3);
             // TODO: Handle .size()
             if (!isContainerEmpty(vartok))
-                return cond;
+                return {};
             const Token *parent = tok->astParent();
             while (parent) {
                 if (Token::Match(parent, "%comp%"))
-                    return cond;
+                    return {};
                 parent = parent->astParent();
             }
             ValueFlow::Value value(tok, 0LL);
@@ -6485,7 +6486,7 @@ struct ContainerConditionHandler : ConditionHandler {
             cond.false_values.emplace_back(std::move(value));
             cond.vartok = vartok;
             cond.inverted = true;
-            return cond;
+            return {cond};
         }
         // String compare
         if (Token::Match(tok, "==|!=")) {
@@ -6498,17 +6499,17 @@ struct ContainerConditionHandler : ConditionHandler {
                 vartok = tok->astOperand1();
             }
             if (!strtok)
-                return cond;
+                return {};
             if (!astIsContainer(vartok))
-                return cond;
+                return {};
             ValueFlow::Value value(tok, Token::getStrLength(strtok));
             value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             cond.false_values.emplace_back(value);
             cond.true_values.emplace_back(std::move(value));
             cond.vartok = vartok;
-            return cond;
+            return {cond};
         }
-        return cond;
+        return {};
     }
 };
 
