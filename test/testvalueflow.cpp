@@ -5868,14 +5868,14 @@ private:
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
 
         code = "auto f(uint32_t i) {\n"
-               "    auto x = x ^ 3;\n"
+               "    auto x = i ^ 3;\n"
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 2));
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
 
         code = "auto f(uint32_t i) {\n"
-               "    auto x = x & 3;\n"
+               "    auto x = i & 3;\n"
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 2));
