@@ -1533,7 +1533,7 @@ static std::vector<MathLib::bigint> minUnsignedValue(const Token* tok, int depth
         return result;
     if (tok->hasKnownIntValue()) {
         result = {tok->values().front().intvalue};
-    } else if (tok->str() != "-" && tok->isConstOp() && tok->astOperand1() && tok->astOperand2()) {
+    } else if (!Token::Match(tok, "-|%") && tok->isConstOp() && tok->astOperand1() && tok->astOperand2()) {
         std::vector<MathLib::bigint> op1 = minUnsignedValue(tok->astOperand1(), depth - 1);
         std::vector<MathLib::bigint> op2 = minUnsignedValue(tok->astOperand2(), depth - 1);
         if (!op1.empty() && !op2.empty()) {
@@ -6408,65 +6408,22 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                     for (const ValueFlow::Value& value : values)
                         valueFlowContainerForward(containerTok->next(), containerTok, value, tokenlist);
                 }
-            } else if (Token::Match(tok, "%var% . %name% (") && tok->valueType() && tok->valueType()->container) {
-                Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
+            } else if (Token::Match(tok, ". %name% (") && tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->container) {
+                const Token* containerTok = tok->astOperand1();
+                Library::Container::Action action = containerTok->valueType()->container->getAction(tok->strAt(1));
                 if (action == Library::Container::Action::CLEAR) {
                     ValueFlow::Value value(0);
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
-                    valueFlowContainerForward(tok->next(), tok, value, tokenlist);
-                } else if (action == Library::Container::Action::RESIZE && tok->tokAt(3)->astOperand2() &&
-                           tok->tokAt(3)->astOperand2()->hasKnownIntValue()) {
-                    ValueFlow::Value value(tok->tokAt(3)->astOperand2()->values().front());
+                    valueFlowContainerForward(tok->next(), containerTok, value, tokenlist);
+                } else if (action == Library::Container::Action::RESIZE && tok->tokAt(2)->astOperand2() &&
+                           tok->tokAt(2)->astOperand2()->hasKnownIntValue()) {
+                    ValueFlow::Value value(tok->tokAt(2)->astOperand2()->values().front());
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
-                    valueFlowContainerForward(tok->next(), tok, value, tokenlist);
+                    valueFlowContainerForward(tok->next(), containerTok, value, tokenlist);
                 }
             }
-        }
-    }
-
-    // conditional conditionSize
-    for (const Scope &scope : symboldatabase->scopeList) {
-        if (scope.type != Scope::ScopeType::eIf) // TODO: while
-            continue;
-        for (const Token *tok = scope.classDef; tok && tok->str() != "{"; tok = tok->next()) {
-            if (!tok->isName() || !tok->valueType() || tok->valueType()->type != ValueType::CONTAINER || !tok->valueType()->container)
-                continue;
-
-            const Token *conditionToken;
-            MathLib::bigint intval;
-
-            if (Token::Match(tok, "%name% . %name% (")) {
-                if (tok->valueType()->container->getYield(tok->strAt(2)) == Library::Container::Yield::SIZE) {
-                    const Token *parent = tok->tokAt(3)->astParent();
-                    if (!parent || !parent->isComparisonOp() || !parent->astOperand2())
-                        continue;
-                    if (parent->astOperand1()->hasKnownIntValue())
-                        intval = parent->astOperand1()->values().front().intvalue;
-                    else if (parent->astOperand2()->hasKnownIntValue())
-                        intval = parent->astOperand2()->values().front().intvalue;
-                    else
-                        continue;
-                    conditionToken = parent;
-                } else if (tok->valueType()->container->getYield(tok->strAt(2)) == Library::Container::Yield::EMPTY) {
-                    conditionToken = tok->tokAt(3);
-                    intval = 0;
-                } else {
-                    continue;
-                }
-            } else if (tok->valueType()->container->stdStringLike && Token::Match(tok, "%name% ==|!= %str%") && tok->next()->astOperand2() == tok->tokAt(2)) {
-                intval = Token::getStrLength(tok->tokAt(2));
-                conditionToken = tok->next();
-            } else {
-                continue;
-            }
-
-            ValueFlow::Value value(conditionToken, intval);
-            value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
-
-            // possible value before condition
-            valueFlowContainerReverse(const_cast<Token*>(scope.classDef), tok, {value}, tokenlist, settings);
         }
     }
 }

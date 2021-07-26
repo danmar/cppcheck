@@ -465,7 +465,8 @@ static PMEvaluateFunction evaluateAsInt(PMEvaluateFunction f, ValueFlow::Value::
         const ValueFlow::Value* value = expr->getKnownValue(t);
         if (!value)
             value = programMemory->getValue(expr->exprId());
-        if (value && value->valueType == t) {
+        if (value && value->valueType == t)
+        {
             *result = value->intvalue;
             return true;
         }

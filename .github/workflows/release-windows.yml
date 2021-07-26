@@ -53,7 +53,6 @@ jobs:
         with:
           version: '5.15.2'
           modules: 'qtcharts qthelp'
-          mirror: 'http://mirrors.ocf.berkeley.edu/qt/'
 
       - name: Create .qm
         run: |
