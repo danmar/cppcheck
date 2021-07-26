@@ -725,6 +725,12 @@ void execute(const Token* expr,
             *result = 0;
         else
             *error = true;
+    }
+    else if (expr->str() == "(" && expr->isCast()) {
+        if (Token::simpleMatch(expr->previous(), ">") && expr->previous()->link())
+            execute(expr->astOperand2(), programMemory, result, error);
+        else
+            execute(expr->astOperand1(), programMemory, result, error);
     } else
         *error = true;
 }
