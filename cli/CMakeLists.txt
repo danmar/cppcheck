@@ -34,6 +34,9 @@ if(tinyxml2_FOUND AND NOT USE_BUNDLED_TINYXML2)
     target_link_libraries(cppcheck tinyxml2)
 endif()
 
+add_dependencies(cppcheck copy_cfg)
+add_dependencies(cppcheck copy_addons)
+
 install(TARGETS cppcheck
     RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR}
     COMPONENT applications)

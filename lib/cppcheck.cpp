@@ -71,6 +71,7 @@ namespace {
         std::string args;
         std::string python;
         bool ctu = false;
+        std::string runScript = "";
 
         static std::string getFullPath(const std::string &fileName, const std::string &exename) {
             if (Path::fileExists(fileName))
@@ -152,6 +153,22 @@ namespace {
                 if (pos2 < pos1)
                     pos2 = std::string::npos;
                 name = scriptFile.substr(pos1, pos2 - pos1);
+
+                std::ifstream fin(scriptFile);
+                if (!fin.is_open())
+                    return "Failed to open " + scriptFile;
+
+                bool legacy = false;
+                std::string line;
+                while(getline(fin, line)) {
+                    if (line.find("__main__", 0) != std::string::npos) {
+                        legacy = true;
+                        break;
+                    }
+                }
+
+                if (!legacy)
+                    runScript = getFullPath("run.py", exename);
 
                 return "";
             }
@@ -291,7 +308,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
     }
 
     const std::string fileArg = (endsWith(file, FILELIST, sizeof(FILELIST)-1) ? " --file-list " : " ") + cmdFileName(file);
-    const std::string args = cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args + fileArg;
+    const std::string args = addonInfo.runScript + " " + cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args + fileArg;
 
     std::string result;
     if (!executeCommand(pythonExe, split(args), redirect, &result))

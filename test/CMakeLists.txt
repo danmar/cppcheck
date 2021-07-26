@@ -34,11 +34,8 @@ if (BUILD_TESTS)
         target_precompile_headers(testrunner PRIVATE precompiled.h)
     endif()
 
-    add_custom_target(copy_cfg ALL
-        ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/cfg"
-            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/cfg"
-        COMMENT "Copying cfg files to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
     add_dependencies(testrunner copy_cfg)
+    add_dependencies(testrunner copy_addons)
 
     if (LIBXML2_XMLLINT_EXECUTABLE)
         # TODO: get rid of the copy
