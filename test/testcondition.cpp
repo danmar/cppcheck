@@ -3671,6 +3671,23 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10362
+        check("int tok;\n"
+              "void next();\n"
+              "void parse_attribute() {\n"
+              "    if (tok == '(') {\n"
+              "        int parenthesis = 0;\n"
+              "        do {\n"
+              "            if (tok == '(')\n"
+              "                parenthesis++;\n"
+              "            else if (tok == ')')\n"
+              "                parenthesis--;\n"
+              "            next();\n"
+              "        } while (parenthesis && tok != -1);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
