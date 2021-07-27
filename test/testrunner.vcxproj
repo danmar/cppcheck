@@ -66,7 +66,6 @@
     <ClCompile Include="testpostfixoperator.cpp" />
     <ClCompile Include="testpreprocessor.cpp" />
     <ClCompile Include="testrunner.cpp" />
-    <ClCompile Include="testsamples.cpp" />
     <ClCompile Include="testsimplifytemplate.cpp" />
     <ClCompile Include="testsimplifytokens.cpp" />
     <ClCompile Include="testsimplifytypedef.cpp" />
@@ -184,7 +183,7 @@
       <PreprocessorDefinitions>CPPCHECKLIB_IMPORT;SIMPLECPP_IMPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
-      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
@@ -214,7 +213,7 @@
       <PreprocessorDefinitions>CPPCHECKLIB_IMPORT;SIMPLECPP_IMPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
-      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
@@ -247,7 +246,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -286,7 +285,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
       <DebugInformationFormat>
       </DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>

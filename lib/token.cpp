@@ -1340,19 +1340,33 @@ std::string Token::stringifyList(bool varid) const
     return stringifyList(varid, false, true, true, true, nullptr, nullptr);
 }
 
+void Token::astParent(Token* tok)
+{
+    const Token* tok2 = tok;
+    while (tok2) {
+        if (this == tok2)
+            throw InternalError(this, "Internal error. AST cyclic dependency.");
+        tok2 = tok2->astParent();
+    }
+    // Clear children to avoid nodes referenced twice
+    if (this->astParent()) {
+        Token* parent = this->astParent();
+        if (parent->astOperand1() == this)
+            parent->mImpl->mAstOperand1 = nullptr;
+        if (parent->astOperand2() == this)
+            parent->mImpl->mAstOperand2 = nullptr;
+    }
+    mImpl->mAstParent = tok;
+}
+
 void Token::astOperand1(Token *tok)
 {
     if (mImpl->mAstOperand1)
-        mImpl->mAstOperand1->mImpl->mAstParent = nullptr;
+        mImpl->mAstOperand1->astParent(nullptr);
     // goto parent operator
     if (tok) {
-        std::set<Token*> visitedParents;
-        while (tok->mImpl->mAstParent) {
-            if (!visitedParents.insert(tok->mImpl->mAstParent).second) // #6838/#6726/#8352 avoid hang on garbage code
-                throw InternalError(this, "Internal error. Token::astOperand1() cyclic dependency.");
-            tok = tok->mImpl->mAstParent;
-        }
-        tok->mImpl->mAstParent = this;
+        tok = tok->astTop();
+        tok->astParent(this);
     }
     mImpl->mAstOperand1 = tok;
 }
@@ -1360,17 +1374,11 @@ void Token::astOperand1(Token *tok)
 void Token::astOperand2(Token *tok)
 {
     if (mImpl->mAstOperand2)
-        mImpl->mAstOperand2->mImpl->mAstParent = nullptr;
+        mImpl->mAstOperand2->astParent(nullptr);
     // goto parent operator
     if (tok) {
-        std::set<Token*> visitedParents;
-        while (tok->mImpl->mAstParent) {
-            //std::cout << tok << " -> " << tok->mAstParent ;
-            if (!visitedParents.insert(tok->mImpl->mAstParent).second) // #6838/#6726 avoid hang on garbage code
-                throw InternalError(this, "Internal error. Token::astOperand2() cyclic dependency.");
-            tok = tok->mImpl->mAstParent;
-        }
-        tok->mImpl->mAstParent = this;
+        tok = tok->astTop();
+        tok->astParent(this);
     }
     mImpl->mAstOperand2 = tok;
 }
@@ -2375,6 +2383,24 @@ bool Token::hasKnownIntValue() const
 bool Token::hasKnownValue() const
 {
     return mImpl->mValues && std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), std::mem_fn(&ValueFlow::Value::isKnown));
+}
+
+bool Token::hasKnownValue(ValueFlow::Value::ValueType t) const
+{
+    return mImpl->mValues &&
+    std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) {
+        return value.isKnown() && value.valueType == t;
+    });
+}
+
+const ValueFlow::Value* Token::getKnownValue(ValueFlow::Value::ValueType t) const
+{
+    if (!mImpl->mValues)
+        return nullptr;
+    auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) {
+        return value.isKnown() && value.valueType == t;
+    });
+    return it == mImpl->mValues->end() ? nullptr : &*it;
 }
 
 bool Token::isImpossibleIntValue(const MathLib::bigint val) const

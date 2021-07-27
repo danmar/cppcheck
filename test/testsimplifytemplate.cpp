@@ -2296,10 +2296,10 @@ private:
                                 "long f1 = fib<1>;\n"
                                 "long f2 = fib<2>;\n"
                                 "long f3 = fib<3>;";
-            const char exp[] = "const long fib<2> = fib<1> + fib<0> ; "
-                               "const long fib<3> = fib<2> + fib<1> ; "
-                               "const long fib<0> = 0 ; "
-                               "const long fib<1> = 1 ; "
+            const char exp[] = "constexpr long fib<2> = fib<1> + fib<0> ; "
+                               "constexpr long fib<3> = fib<2> + fib<1> ; "
+                               "constexpr long fib<0> = 0 ; "
+                               "constexpr long fib<1> = 1 ; "
                                "long f0 ; f0 = fib<0> ; "
                                "long f1 ; f1 = fib<1> ; "
                                "long f2 ; f2 = fib<2> ; "
@@ -2314,12 +2314,12 @@ private:
                                 "template<>\n"
                                 "  constexpr long fib<1> = 1;\n"
                                 "long f5 = fib<5>;\n";
-            const char exp[] = "const long fib<5> = fib<4> + fib<3> ; "
-                               "const long fib<4> = fib<3> + fib<2> ; "
-                               "const long fib<3> = fib<2> + fib<1> ; "
-                               "const long fib<2> = fib<1> + fib<0> ; "
-                               "const long fib<0> = 0 ; "
-                               "const long fib<1> = 1 ; "
+            const char exp[] = "constexpr long fib<5> = fib<4> + fib<3> ; "
+                               "constexpr long fib<4> = fib<3> + fib<2> ; "
+                               "constexpr long fib<3> = fib<2> + fib<1> ; "
+                               "constexpr long fib<2> = fib<1> + fib<0> ; "
+                               "constexpr long fib<0> = 0 ; "
+                               "constexpr long fib<1> = 1 ; "
                                "long f5 ; f5 = fib<5> ;";
             ASSERT_EQUALS(exp, tok(code));
         }
@@ -2933,8 +2933,8 @@ private:
                                 "constexpr auto funcBraced = [](auto x){ return T{x};};\n"
                                 "double f(int x) { return func<double>(x); }\n"
                                 "double fBraced(int x) { return funcBraced<int>(x); }";
-            const char exp[] = "const auto func<double> = [ ] ( auto x ) { return double ( x ) ; } ; "
-                               "const auto funcBraced<int> = [ ] ( auto x ) { return int { x } ; } ; "
+            const char exp[] = "constexpr auto func<double> = [ ] ( auto x ) { return double ( x ) ; } ; "
+                               "constexpr auto funcBraced<int> = [ ] ( auto x ) { return int { x } ; } ; "
                                "double f ( int x ) { return func<double> ( x ) ; } "
                                "double fBraced ( int x ) { return funcBraced<int> ( x ) ; }";
             ASSERT_EQUALS(exp, tok(code));
@@ -2946,8 +2946,8 @@ private:
                                 "    func<int>(x);\n"
                                 "    func<double>(x);\n"
                                 "}";
-            const char exp[] = "const auto func<int> = [ ] ( auto x ) { return int ( x ) ; } ; "
-                               "const auto func<double> = [ ] ( auto x ) { return double ( x ) ; } ; "
+            const char exp[] = "constexpr auto func<int> = [ ] ( auto x ) { return int ( x ) ; } ; "
+                               "constexpr auto func<double> = [ ] ( auto x ) { return double ( x ) ; } ; "
                                "void foo ( ) { "
                                "func<int> ( x ) ; "
                                "func<double> ( x ) ; "
@@ -3084,19 +3084,19 @@ private:
                                "a<int> c ; "
                                "template < typename d > "
                                "template < typename b > "
-                               "const decltype ( auto ) a < d > :: operator() ( b && ) const { } "
+                               "constexpr decltype ( auto ) a < d > :: operator() ( b && ) const { } "
                                "struct a<int> { "
-                               "template < typename b > const decltype ( auto ) operator() ( b && ) const ; "
+                               "template < typename b > constexpr decltype ( auto ) operator() ( b && ) const ; "
                                "} ;";
             const char act[] = "struct a<int> ; "
                                "a<int> c ; "
                                "template < typename d > "
                                "template < typename b > "
-                               "const decltype ( auto ) a < d > :: operator() ( b && ) const { } "
+                               "constexpr decltype ( auto ) a < d > :: operator() ( b && ) const { } "
                                "struct a<int> { "
-                               "template < typename b > const decltype ( auto ) operator() ( b && ) const ; "
+                               "template < typename b > constexpr decltype ( auto ) operator() ( b && ) const ; "
                                "} ; "
-                               "const decltype ( auto ) a<int> :: operator() ( b && ) const { }";
+                               "constexpr decltype ( auto ) a<int> :: operator() ( b && ) const { }";
             TODO_ASSERT_EQUALS(exp, act, tok(code));
         }
         {
@@ -3270,7 +3270,7 @@ private:
                             "  return foo<TrueFalse>();\n"
                             "}";
         const char exp[] = "struct TrueFalse { "
-                           "static const bool v ( ) { return true ; } "
+                           "static constexpr bool v ( ) { return true ; } "
                            "} ; "
                            "int global ; "
                            "int foo<TrueFalse> ( ) ; "
@@ -3538,11 +3538,11 @@ private:
                                 "static_assert(!e<f<char>>());\n"
                                 "}";
             const char exp[] = "namespace a { "
-                               "const bool e<f<char>> ( ) ; "
+                               "constexpr bool e<f<char>> ( ) ; "
                                "class f<char> ; "
                                "static_assert ( ! e<f<char>> ( ) ) ; } "
                                "class a :: f<char> { f<char> ( a :: f < b :: d > ) ; } ; "
-                               "const bool a :: e<f<char>> ( ) { return false ; }";
+                               "constexpr bool a :: e<f<char>> ( ) { return false ; }";
             ASSERT_EQUALS(exp, tok(code));
         }
     }
@@ -3584,7 +3584,7 @@ private:
                             "using A3 = enum B3 {b = 0;};\n"
                             "A3<int> a3;";
         const char exp[] = "template < int N > "
-                           "using A1 = struct B1 { static const auto value = N ; } ; "
+                           "using A1 = struct B1 { static auto constexpr value = N ; } ; "
                            "A1 < 0 > a1 ; "
                            "template < class T > "
                            "using A2 = struct B2 { void f ( T ) { } } ; "
@@ -4807,7 +4807,7 @@ private:
 
         //both of these should work but in cppcheck 2.1 only the first option will work (ticket #9843)
         {
-            const std::string expected = "template < long Num > const bool foo < bar < Num > > = true ;";
+            const std::string expected = "template < long Num > constexpr bool foo < bar < Num > > = true ;";
             ASSERT_EQUALS(expected,
                           tok("template <long Num>\n"
                               "constexpr bool foo<bar<Num> > = true;\n"));
@@ -5974,28 +5974,28 @@ private:
         {
             const char code[] = "template<class T> constexpr T pi = T(3.1415926535897932385L);\n"
                                 "float x = pi<float>;";
-            const char expected[] = "const float pi<float> = float ( 3.1415926535897932385L ) ; "
+            const char expected[] = "constexpr float pi<float> = float ( 3.1415926535897932385L ) ; "
                                     "float x ; x = pi<float> ;";
             ASSERT_EQUALS(expected, tok(code));
         }
         {
             const char code[] = "template<class> constexpr float pi = float(3.1415926535897932385L);\n"
                                 "float x = pi<float>;";
-            const char expected[] = "const float pi<float> = float ( 3.1415926535897932385L ) ; "
+            const char expected[] = "constexpr float pi<float> = float ( 3.1415926535897932385L ) ; "
                                     "float x ; x = pi<float> ;";
             ASSERT_EQUALS(expected, tok(code));
         }
         {
             const char code[] = "template<class T = float> constexpr T pi = T(3.1415926535897932385L);\n"
                                 "float x = pi<float>;";
-            const char expected[] = "const float pi<float> = float ( 3.1415926535897932385L ) ; "
+            const char expected[] = "constexpr float pi<float> = float ( 3.1415926535897932385L ) ; "
                                     "float x ; x = pi<float> ;";
             ASSERT_EQUALS(expected, tok(code));
         }
         {
             const char code[] = "template<class T = float> constexpr T pi = T(3.1415926535897932385L);\n"
                                 "float x = pi<>;";
-            const char expected[] = "const float pi<float> = float ( 3.1415926535897932385L ) ; "
+            const char expected[] = "constexpr float pi<float> = float ( 3.1415926535897932385L ) ; "
                                     "float x ; x = pi<float> ;";
             ASSERT_EQUALS(expected, tok(code));
         }
@@ -6005,35 +6005,35 @@ private:
         {
             const char code[] = "template<class T, int N> constexpr T foo = T(N*N);\n"
                                 "float x = foo<float,7>;";
-            const char expected[] = "const float foo<float,7> = float ( 49 ) ; "
+            const char expected[] = "constexpr float foo<float,7> = float ( 49 ) ; "
                                     "float x ; x = foo<float,7> ;";
             ASSERT_EQUALS(expected, tok(code));
         }
         {
             const char code[] = "template<class,int> constexpr float foo = float(7);\n"
                                 "float x = foo<float,7>;";
-            const char expected[] = "const float foo<float,7> = float ( 7 ) ; "
+            const char expected[] = "constexpr float foo<float,7> = float ( 7 ) ; "
                                     "float x ; x = foo<float,7> ;";
             ASSERT_EQUALS(expected, tok(code));
         }
         {
             const char code[] = "template<class T = float, int N = 7> constexpr T foo = T(7);\n"
                                 "double x = foo<double, 14>;";
-            const char expected[] = "const double foo<double,14> = double ( 7 ) ; "
+            const char expected[] = "constexpr double foo<double,14> = double ( 7 ) ; "
                                     "double x ; x = foo<double,14> ;";
             ASSERT_EQUALS(expected, tok(code));
         }
         {
             const char code[] = "template<class T = float, int N = 7> constexpr T foo = T(7);\n"
                                 "float x = foo<>;";
-            const char expected[] = "const float foo<float,7> = float ( 7 ) ; "
+            const char expected[] = "constexpr float foo<float,7> = float ( 7 ) ; "
                                     "float x ; x = foo<float,7> ;";
             ASSERT_EQUALS(expected, tok(code));
         }
         {
             const char code[] = "template<class T = float, int N = 7> constexpr T foo = T(7);\n"
                                 "double x = foo<double>;";
-            const char expected[] = "const double foo<double,7> = double ( 7 ) ; "
+            const char expected[] = "constexpr double foo<double,7> = double ( 7 ) ; "
                                     "double x ; x = foo<double,7> ;";
             ASSERT_EQUALS(expected, tok(code));
         }

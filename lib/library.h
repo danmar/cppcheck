@@ -168,6 +168,14 @@ public:
     bool formatstr_scan(const Token* ftok) const;
     bool formatstr_secure(const Token* ftok) const;
 
+    struct NonOverlappingData {
+        int ptr1Arg;
+        int ptr2Arg;
+        int sizeArg;
+        int strlenArg;
+    };
+    const NonOverlappingData* getNonOverlappingData(const Token *ftok) const;
+
     struct WarnInfo {
         std::string message;
         Standards standards;
@@ -424,8 +432,13 @@ public:
 
     std::vector<std::string> defines; // to provide some library defines
 
-    std::unordered_set<std::string> smartPointers;
+    struct SmartPointer {
+        bool unique = false;
+    };
+
+    std::map<std::string, SmartPointer> smartPointers;
     bool isSmartPointer(const Token *tok) const;
+    const SmartPointer* detectSmartPointer(const Token* tok) const;
 
     struct PodType {
         unsigned int   size;
@@ -581,6 +594,7 @@ private:
     std::map<std::string, PlatformType> mPlatformTypes; // platform independent typedefs
     std::map<std::string, Platform> mPlatforms; // platform dependent typedefs
     std::map<std::pair<std::string,std::string>, TypeCheck> mTypeChecks;
+    std::unordered_map<std::string, NonOverlappingData> mNonOverlappingData;
 
     const ArgumentChecks * getarg(const Token *ftok, int argnr) const;
 

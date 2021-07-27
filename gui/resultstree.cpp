@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -138,7 +138,7 @@ QStandardItem *ResultsTree::createCheckboxItem(bool checked)
 QStandardItem *ResultsTree::createLineNumberItem(const QString &linenumber)
 {
     QStandardItem *item = new QStandardItem();
-    item->setData(QVariant(linenumber.toULongLong()), Qt::DisplayRole);
+    item->setData(QVariant(linenumber.toInt()), Qt::DisplayRole);
     item->setToolTip(linenumber);
     item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
     item->setEditable(false);
@@ -1318,7 +1318,7 @@ void ResultsTree::readErrorItem(const QStandardItem *error, ErrorItem *item) con
 
         QErrorPathItem e;
         e.file = stripPath(child_data[FILENAME].toString(), true);
-        e.line = child_data[LINE].toUInt();
+        e.line = child_data[LINE].toInt();
         e.info = child_data[MESSAGE].toString();
         item->errorPath << e;
     }

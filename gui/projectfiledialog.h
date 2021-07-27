@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -156,6 +156,12 @@ private:
     * @param libraries List of libraries to set to dialog control.
     */
     void setLibraries(const QStringList &libraries);
+
+    /**
+    * @brief Add a single suppression to dialog control.
+    * @param suppression A suppressions to add to dialog control.
+    */
+    void addSingleSuppression(const Suppressions::Suppression &suppression);
 
     /**
     * @brief Set suppressions to dialog control.

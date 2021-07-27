@@ -69,6 +69,8 @@ private:
         TEST_CASE(iterator23);
         TEST_CASE(iterator24);
         TEST_CASE(iterator25); // #9742
+        TEST_CASE(iterator26); // #9176
+        TEST_CASE(iterator27); // #10378
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
         TEST_CASE(mismatchingContainerIterator);
@@ -535,6 +537,56 @@ private:
                     "  if (!Name.empty() && Name.back() != '\\')\n"
                     "    Name += '\\';\n"
                     "  return Name;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("bool f(bool b) {\n"
+                    "  std::vector<int> v;\n"
+                    "  if (b)\n"
+                    "    v.push_back(0);\n"
+                    "  for(auto i:v)\n"
+                    "    if (v[i] > 0)\n"
+                    "      return true;\n"
+                    "  return false;\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:6:style:Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
+
+        checkNormal("std::vector<int> range(int n);\n"
+                    "bool f(bool b) {\n"
+                    "  std::vector<int> v;\n"
+                    "  if (b)\n"
+                    "    v.push_back(1);\n"
+                    "  assert(range(v.size()).size() == v.size());\n"
+                    "  for(auto i:range(v.size()))\n"
+                    "    if (v[i] > 0)\n"
+                    "      return true;\n"
+                    "  return false;\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:8:style:Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
+
+        checkNormal("bool g();\n"
+                    "int f(int x) {\n"
+                    "    std::vector<int> v;\n"
+                    "    if (g())\n"
+                    "        v.emplace_back(x);\n"
+                    "    const auto n = (int)v.size();\n"
+                    "    for (int i = 0; i < n; ++i)\n"
+                    "        if (v[i] > 0)\n"
+                    "            return i;\n"
+                    "    return 0;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("bool g();\n"
+                    "int f(int x) {\n"
+                    "    std::vector<int> v;\n"
+                    "    if (g())\n"
+                    "        v.emplace_back(x);\n"
+                    "    const auto n = static_cast<int>(v.size());\n"
+                    "    for (int i = 0; i < n; ++i)\n"
+                    "        if (v[i] > 0)\n"
+                    "            return i;\n"
+                    "    return 0;\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1350,6 +1402,36 @@ private:
               "        return &lhs.v != &rhs.v;\n"
               "    }\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator26() { // #9176
+        check(
+            "#include <map>\n"
+            "int main()\n"
+            "{"
+            "  std::map<char const*, int> m{ {\"a\", 1} };\n"
+            "  if (auto iter = m.find(\"x\"); iter != m.end()) {\n"
+            "    return iter->second;\n"
+            "  }\n"
+            "  return 0;\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator27()
+    {
+        // #10378
+        check("struct A {\n"
+              "    int a;\n"
+              "    int b;\n"
+              "};\n"
+              "int f(std::map<int, A> m) {\n"
+              "    auto it =  m.find( 1 );\n"
+              "    const int a( it == m.cend() ? 0 : it->second.a );\n"
+              "    const int b( it == m.cend() ? 0 : it->second.b );\n"
+              "    return a + b;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5030,6 +5112,17 @@ private:
               "}",
               true);
         ASSERT_EQUALS("[test.cpp:7]: (style) Iterating over container 'arr' that is always empty.\n", errout.str());
+
+        check("struct S {\n"
+              "    std::vector<int> v;\n"
+              "};\n"
+              "void foo(S& s) {\n"
+              "    s.v.clear();\n"
+              "    bar(s);\n"
+              "    std::sort(s.v.begin(), s.v.end());\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkMutexes() {

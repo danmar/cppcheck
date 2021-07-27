@@ -39,3 +39,11 @@ jobs:
       - name: Run test
         run: |
           C:\tools\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && make -j2 check
+
+      - name: Extra test for misra
+        run: |
+          C:\tools\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE%\addons\test
+          ..\..\cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra\misra-test.c --std=c89 --platform=unix64 && python3 ..\misra.py -verify misra\misra-test.c.dump
+          C:\tools\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE%
+          .\cppcheck --addon=misra --inline-suppr --enable=information --error-exitcode=1 addons\test\misra\misra-ctu-*-test.c
+

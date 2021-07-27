@@ -114,6 +114,7 @@ private:
     void writeReadOnlyFileError(const Token *tok);
     void useClosedFileError(const Token *tok);
     void seekOnAppendedFileError(const Token *tok);
+    void incompatibleFileOpenError(const Token *tok, const std::string &filename);
     void invalidScanfError(const Token *tok);
     void wrongPrintfScanfArgumentsError(const Token* tok,
                                         const std::string &functionName,
@@ -145,6 +146,7 @@ private:
         c.writeReadOnlyFileError(nullptr);
         c.useClosedFileError(nullptr);
         c.seekOnAppendedFileError(nullptr);
+        c.incompatibleFileOpenError(nullptr, "tmp");
         c.invalidScanfError(nullptr);
         c.wrongPrintfScanfArgumentsError(nullptr, "printf",3,2);
         c.invalidScanfArgTypeError_s(nullptr,  1, "s", nullptr);
@@ -174,6 +176,7 @@ private:
                "- File input/output without positioning results in undefined behaviour\n"
                "- Read to a file that has only been opened for writing (or vice versa)\n"
                "- Repositioning operation on a file opened in append mode\n"
+               "- The same file can't be open for read and write at the same time on different streams\n"
                "- Using fflush() on an input stream\n"
                "- Invalid usage of output stream. For example: 'std::cout << std::cout;'\n"
                "- Wrong number of arguments given to 'printf' or 'scanf;'\n";

@@ -1,9 +1,10 @@
 #ifndef GUARD_PROGRAMMEMORY_H
 #define GUARD_PROGRAMMEMORY_H
 
+#include "mathlib.h"
 #include "utils.h"
 #include "valueflow.h" // needed for alias
-#include "mathlib.h"
+#include <functional>
 #include <map>
 #include <unordered_map>
 
@@ -21,6 +22,7 @@ struct ProgramMemory {
 
     bool getContainerSizeValue(nonneg int exprid, MathLib::bigint* result) const;
     bool getContainerEmptyValue(nonneg int exprid, MathLib::bigint* result) const;
+    void setContainerSizeValue(nonneg int exprid, MathLib::bigint value, bool isEqual = true);
 
     void setUnknown(nonneg int exprid);
 
@@ -49,17 +51,21 @@ struct ProgramMemoryState {
 
     void addState(const Token* tok, const ProgramMemory::Map& vars);
 
-    void assume(const Token* tok, bool b);
+    void assume(const Token* tok, bool b, bool isEmpty = false);
 
     void removeModifiedVars(const Token* tok);
 
     ProgramMemory get(const Token* tok, const Token* ctx, const ProgramMemory::Map& vars) const;
 };
 
-void execute(const Token *expr,
-             ProgramMemory * const programMemory,
-             MathLib::bigint *result,
-             bool *error);
+using PMEvaluateFunction =
+    std::function<bool(const Token* expr, ProgramMemory* const programMemory, MathLib::bigint* result)>;
+
+void execute(const Token* expr,
+             ProgramMemory* const programMemory,
+             MathLib::bigint* result,
+             bool* error,
+             const PMEvaluateFunction& f = nullptr);
 
 /**
  * Is condition always false when variable has given value?

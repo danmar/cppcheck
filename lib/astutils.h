@@ -171,6 +171,8 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
 
 bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * const tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
 
+bool isConstFunctionCall(const Token* ftok, const Library& library);
+
 bool isConstExpression(const Token *tok, const Library& library, bool pure, bool cpp);
 
 bool isWithoutSideEffects(bool cpp, const Token* tok);
@@ -226,6 +228,7 @@ bool isVariablesChanged(const Token* start,
                         const Settings* settings,
                         bool cpp);
 
+bool isThisChanged(const Token* tok, int indirect, const Settings* settings, bool cpp);
 bool isThisChanged(const Token* start, const Token* end, int indirect, const Settings* settings, bool cpp);
 
 const Token* findVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);

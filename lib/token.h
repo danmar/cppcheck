@@ -385,12 +385,6 @@ public:
                                         mTokType == eBoolean || mTokType == eLiteral || mTokType == eEnumerator);
         setFlag(fIsLiteral, memoizedIsLiteral);
     }
-    void isKeyword(const bool kwd) {
-        if (kwd)
-            tokType(eKeyword);
-        else if (mTokType == eKeyword)
-            tokType(eName);
-    }
     bool isKeyword() const {
         return mTokType == eKeyword;
     }
@@ -631,6 +625,20 @@ public:
     }
     void isSplittedVarDeclEq(bool b) {
         setFlag(fIsSplitVarDeclEq, b);
+    }
+
+    bool isImplicitInt() const {
+        return getFlag(fIsImplicitInt);
+    }
+    void isImplicitInt(bool b) {
+        setFlag(fIsImplicitInt, b);
+    }
+
+    bool isInline() const {
+        return getFlag(fIsInline);
+    }
+    void isInline(bool b) {
+        setFlag(fIsInline, b);
     }
 
     bool isBitfield() const {
@@ -1125,7 +1133,9 @@ public:
 
     bool hasKnownIntValue() const;
     bool hasKnownValue() const;
+    bool hasKnownValue(ValueFlow::Value::ValueType t) const;
 
+    const ValueFlow::Value* getKnownValue(ValueFlow::Value::ValueType t) const;
     MathLib::bigint getKnownIntValue() const {
         return mImpl->mValues->front().intvalue;
     }
@@ -1196,7 +1206,7 @@ private:
     Token *mPrevious;
     Token *mLink;
 
-    enum {
+    enum : uint64_t {
         fIsUnsigned             = (1 << 0),
         fIsSigned               = (1 << 1),
         fIsPointerCompare       = (1 << 2),
@@ -1227,12 +1237,14 @@ private:
         fConstexpr              = (1 << 27),
         fExternC                = (1 << 28),
         fIsSplitVarDeclComma    = (1 << 29), // set to true when variable declarations are split up ('int a,b;' => 'int a; int b;')
-        fIsSplitVarDeclEq       = (1 << 30)  // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
+        fIsSplitVarDeclEq       = (1 << 30), // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
+        fIsImplicitInt          = (1U << 31),   // Is "int" token implicitly added?
+        fIsInline               = (1ULL << 32)  // Is this a inline type
     };
 
     Token::Type mTokType;
 
-    unsigned int mFlags;
+    uint64_t mFlags;
 
     TokenImpl *mImpl;
 
@@ -1241,7 +1253,7 @@ private:
      * @param flag_ flag to get state of
      * @return true if flag set or false in flag not set
      */
-    bool getFlag(unsigned int flag_) const {
+    bool getFlag(uint64_t flag_) const {
         return ((mFlags & flag_) != 0);
     }
 
@@ -1250,7 +1262,7 @@ private:
      * @param flag_ flag to set state
      * @param state_ new state of flag
      */
-    void setFlag(unsigned int flag_, bool state_) {
+    void setFlag(uint64_t flag_, bool state_) {
         mFlags = state_ ? mFlags | flag_ : mFlags & ~flag_;
     }
 
@@ -1270,6 +1282,7 @@ private:
 public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);
+    void astParent(Token* tok);
 
     Token * astOperand1() {
         return mImpl->mAstOperand1;

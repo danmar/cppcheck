@@ -9,4 +9,5 @@ int main()
     int b;
     int *c = &b;
     foo(&c);
+    return 0;
 }

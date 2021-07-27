@@ -347,8 +347,10 @@ static bool hasToken(const Token * startTok, const Token * stopTok, const Token 
 template <class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
 static T* previousBeforeAstLeftmostLeafGeneric(T* tok)
 {
+    if (!tok)
+        return nullptr;
     T* leftmostLeaf = tok;
-    while (leftmostLeaf && leftmostLeaf->astOperand1())
+    while (leftmostLeaf->astOperand1())
         leftmostLeaf = leftmostLeaf->astOperand1();
     return leftmostLeaf->previous();
 }
@@ -597,7 +599,7 @@ bool precedes(const Token * tok1, const Token * tok2)
     if (!tok1)
         return false;
     if (!tok2)
-        return false;
+        return true;
     return tok1->index() < tok2->index();
 }
 
@@ -1392,14 +1394,95 @@ bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * cons
     return false;
 }
 
+static bool functionModifiesArguments(const Function* f)
+{
+    return std::any_of(f->argumentList.begin(), f->argumentList.end(), [](const Variable& var) {
+        if (var.isReference() || var.isPointer())
+            return !var.isConst();
+        return true;
+    });
+}
+
+bool isConstFunctionCall(const Token* ftok, const Library& library)
+{
+    if (!Token::Match(ftok, "%name% ("))
+        return false;
+    if (const Function* f = ftok->function()) {
+        if (f->isAttributePure() || f->isAttributeConst())
+            return true;
+        // Any modified arguments
+        if (functionModifiesArguments(f))
+            return false;
+        if (Function::returnsVoid(f))
+            return false;
+        // Member function call
+        if (Token::simpleMatch(ftok->previous(), ".")) {
+            if (f->isConst())
+                return true;
+            // Check for const overloaded function that just return the const version
+            if (!Function::returnsConst(f)) {
+                std::vector<const Function*> fs = f->getOverloadedFunctions();
+                if (std::any_of(fs.begin(), fs.end(), [&](const Function* g) {
+                if (f == g)
+                        return false;
+                    if (f->argumentList.size() != g->argumentList.size())
+                        return false;
+                    if (functionModifiesArguments(g))
+                        return false;
+                    if (g->isConst() && Function::returnsConst(g))
+                        return true;
+                    return false;
+                }))
+                return true;
+            }
+            return false;
+        } else if (f->argumentList.empty()) {
+            return f->isConstexpr();
+        }
+    } else if (const Library::Function* f = library.getFunction(ftok)) {
+        if (f->ispure)
+            return true;
+        for (auto&& p : f->argumentChecks) {
+            const Library::ArgumentChecks& ac = p.second;
+            if (ac.direction != Library::ArgumentChecks::Direction::DIR_IN)
+                return false;
+        }
+        if (Token::simpleMatch(ftok->previous(), ".")) {
+            if (!f->isconst)
+                return false;
+        } else if (f->argumentChecks.empty()) {
+            return false;
+        }
+    } else {
+        bool memberFunction = Token::Match(ftok->previous(), ". %name% (");
+        bool constMember = !memberFunction;
+        if (Token::Match(ftok->tokAt(-2), "%var% . %name% (")) {
+            const Variable* var = ftok->tokAt(-2)->variable();
+            if (var)
+                constMember = var->isConst();
+        }
+        // TODO: Only check const on lvalues
+        std::vector<const Token*> args = getArguments(ftok);
+        if (memberFunction && args.empty())
+            return false;
+        return constMember && std::all_of(args.begin(), args.end(), [](const Token* tok) {
+            const Variable* var = tok->variable();
+            if (var)
+                return var->isConst();
+            return false;
+        });
+    }
+    return true;
+}
+
 bool isConstExpression(const Token *tok, const Library& library, bool pure, bool cpp)
 {
     if (!tok)
         return true;
+    if (tok->variable() && tok->variable()->isVolatile())
+        return false;
     if (tok->isName() && tok->next()->str() == "(") {
-        if (!tok->function() && !Token::Match(tok->previous(), ".|::") && !library.isFunctionConst(tok->str(), pure))
-            return false;
-        else if (tok->function() && !tok->function()->isConst())
+        if (!isConstFunctionCall(tok, library))
             return false;
     }
     if (tok->tokType() == Token::eIncDecOp)
@@ -1563,7 +1646,8 @@ bool isReturnScope(const Token* const endToken, const Library* library, const To
         if (Token::simpleMatch(prev->link()->tokAt(-2), "} else {"))
             return isReturnScope(prev, library, unknownFunc, functionScope) &&
                    isReturnScope(prev->link()->tokAt(-2), library, unknownFunc, functionScope);
-        if (Token::simpleMatch(prev->link()->previous(), ") {") &&
+        // TODO: Check all cases
+        if (!functionScope && Token::simpleMatch(prev->link()->previous(), ") {") &&
             Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "switch (") &&
             !Token::findsimplematch(prev->link(), "break", prev)) {
             return true;
@@ -1879,6 +1963,9 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     // Member function call
     if (tok->variable() && Token::Match(tok2->astParent(), ". %name%") && isFunctionCall(tok2->astParent()->next()) && tok2->astParent()->astOperand1() == tok2) {
         const Variable * var = tok->variable();
+        // Member function cannot change what `this` points to
+        if (indirect == 0 && astIsPointer(tok))
+            return false;
         bool isConst = var && var->isConst();
         if (!isConst) {
             const ValueType * valueType = var->valueType();
@@ -2091,6 +2178,20 @@ bool isVariablesChanged(const Token* start,
     return false;
 }
 
+bool isThisChanged(const Token* tok, int indirect, const Settings* settings, bool cpp)
+{
+    if (Token::Match(tok->previous(), "%name% (")) {
+        if (tok->previous()->function()) {
+            return (!tok->previous()->function()->isConst());
+        } else if (!tok->previous()->isKeyword()) {
+            return true;
+        }
+    }
+    if (isVariableChanged(tok, indirect, settings, cpp))
+        return true;
+    return false;
+}
+
 bool isThisChanged(const Token* start, const Token* end, int indirect, const Settings* settings, bool cpp)
 {
     if (!precedes(start, end))
@@ -2098,17 +2199,7 @@ bool isThisChanged(const Token* start, const Token* end, int indirect, const Set
     for (const Token* tok = start; tok != end; tok = tok->next()) {
         if (!exprDependsOnThis(tok))
             continue;
-        if (Token::Match(tok->previous(), "%name% (")) {
-            if (tok->previous()->function()) {
-                if (!tok->previous()->function()->isConst())
-                    return true;
-                else
-                    continue;
-            } else if (!tok->previous()->isKeyword()) {
-                return true;
-            }
-        }
-        if (isVariableChanged(tok, indirect, settings, cpp))
+        if (isThisChanged(tok, indirect, settings, cpp))
             return true;
     }
     return false;

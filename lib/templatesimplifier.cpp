@@ -2371,7 +2371,7 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok, bool isTemplate
     return ret;
 }
 
-static Token *skipTernaryOp(Token *tok, Token *backToken)
+static Token *skipTernaryOp(Token *tok, const Token *backToken)
 {
     unsigned int colonLevel = 1;
     while (nullptr != (tok = tok->next())) {

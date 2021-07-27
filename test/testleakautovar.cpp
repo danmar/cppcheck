@@ -48,8 +48,9 @@ private:
         settings.library.setalloc("fopen", id, -1);
         settings.library.setrealloc("freopen", id, -1, 3);
         settings.library.setdealloc("fclose", id, 1);
-        settings.library.smartPointers.insert("std::shared_ptr");
-        settings.library.smartPointers.insert("std::unique_ptr");
+        settings.library.smartPointers["std::shared_ptr"];
+        settings.library.smartPointers["std::unique_ptr"];
+        settings.library.smartPointers["std::unique_ptr"].unique = true;
 
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
         "<def>\n"
@@ -217,20 +218,20 @@ private:
         c.runChecks(&tokenizer, &settings, this);
     }
 
-    void check(const char code[], Settings & settings) {
+    void check(const char code[], Settings & settings_) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings_, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
         // Check for leaks..
         CheckLeakAutoVar c;
-        settings.checkLibrary = true;
-        settings.severity.enable(Severity::information);
-        c.runChecks(&tokenizer, &settings, this);
+        settings_.checkLibrary = true;
+        settings_.severity.enable(Severity::information);
+        c.runChecks(&tokenizer, &settings_, this);
     }
 
     void assign1() {

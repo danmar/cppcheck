@@ -7,6 +7,7 @@
 #include "valueflow.h"
 #include <algorithm>
 #include <cassert>
+#include <functional>
 #include <limits>
 #include <memory>
 
@@ -72,6 +73,15 @@ bool ProgramMemory::getContainerEmptyValue(nonneg int exprid, MathLib::bigint* r
         }
     }
     return false;
+}
+
+void ProgramMemory::setContainerSizeValue(nonneg int exprid, MathLib::bigint value, bool isEqual)
+{
+    ValueFlow::Value v(value);
+    v.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+    if (!isEqual)
+        v.valueKind = ValueFlow::Value::ValueKind::Impossible;
+    values[exprid] = v;
 }
 
 void ProgramMemory::setUnknown(nonneg int exprid)
@@ -142,6 +152,36 @@ bool conditionIsTrue(const Token *condition, const ProgramMemory &programMemory)
     return !error && result == 1;
 }
 
+static const Token* getContainerFromEmpty(const Token* tok)
+{
+    if (!Token::Match(tok->tokAt(-2), ". %name% ("))
+        return nullptr;
+    const Token* containerTok = tok->tokAt(-2)->astOperand1();
+    if (!astIsContainer(containerTok))
+        return nullptr;
+    if (containerTok->valueType()->container &&
+        containerTok->valueType()->container->getYield(tok->strAt(-1)) == Library::Container::Yield::EMPTY)
+        return containerTok;
+    if (Token::simpleMatch(tok->tokAt(-1), "empty ( )"))
+        return containerTok;
+    return nullptr;
+}
+
+static const Token* getContainerFromSize(const Token* tok)
+{
+    if (!Token::Match(tok->tokAt(-2), ". %name% ("))
+        return nullptr;
+    const Token* containerTok = tok->tokAt(-2)->astOperand1();
+    if (!astIsContainer(containerTok))
+        return nullptr;
+    if (containerTok->valueType()->container &&
+        containerTok->valueType()->container->getYield(tok->strAt(-1)) == Library::Container::Yield::SIZE)
+        return containerTok;
+    if (Token::Match(tok->tokAt(-1), "size|length ( )"))
+        return containerTok;
+    return nullptr;
+}
+
 void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings, bool then)
 {
     if (Token::Match(tok, "==|>=|<=|<|>|!=")) {
@@ -169,7 +209,12 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
             return;
         if (endTok && isExpressionChanged(vartok, tok->next(), endTok, settings, true))
             return;
-        pm.setIntValue(vartok->exprId(), then ? truevalue.intvalue : falsevalue.intvalue);
+        bool impossible = (tok->str() == "==" && !then) || (tok->str() == "!=" && then);
+        if (!impossible)
+            pm.setIntValue(vartok->exprId(), then ? truevalue.intvalue : falsevalue.intvalue);
+        const Token* containerTok = getContainerFromSize(vartok);
+        if (containerTok)
+            pm.setContainerSizeValue(containerTok->exprId(), then ? truevalue.intvalue : falsevalue.intvalue, !impossible);
     } else if (Token::simpleMatch(tok, "!")) {
         programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, !then);
     } else if (then && Token::simpleMatch(tok, "&&")) {
@@ -184,6 +229,9 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
         if (endTok && isExpressionChanged(tok, tok->next(), endTok, settings, true))
             return;
         pm.setIntValue(tok->exprId(), then);
+        const Token* containerTok = getContainerFromEmpty(tok);
+        if (containerTok)
+            pm.setContainerSizeValue(containerTok->exprId(), 0, then);
     }
 }
 
@@ -249,17 +297,27 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
             if (indentlevel <= 0)
                 break;
             --indentlevel;
+            if (Token::simpleMatch(tok2->previous(), "else {"))
+                tok2 = tok2->linkAt(-2)->previous();
         }
         if (tok2->str() == "}") {
-            const Token *cond = tok2->link();
-            cond = Token::simpleMatch(cond->previous(), ") {") ? cond->linkAt(-1) : nullptr;
-            if (cond && conditionIsFalse(cond->astOperand2(), state))
-                tok2 = cond->previous();
-            else if (cond && conditionIsTrue(cond->astOperand2(), state)) {
-                ++indentlevel;
-                continue;
-            } else
-                break;
+            const Token *cond = getCondTokFromEnd(tok2);
+            const bool inElse = Token::simpleMatch(tok2->link()->previous(), "else {");
+            if (cond) {
+                if (conditionIsFalse(cond, state)) {
+                    if (inElse) {
+                        ++indentlevel;
+                        continue;
+                    }
+                    tok2 = cond->astParent()->previous();
+                } else if (conditionIsTrue(cond, state)) {
+                    if (inElse)
+                        tok2 = tok2->link()->tokAt(-2);
+                    ++indentlevel;
+                    continue;
+                }
+            }
+            break;
         }
     }
 }
@@ -321,10 +379,13 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
     replace(pm, tok);
 }
 
-void ProgramMemoryState::assume(const Token* tok, bool b)
+void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
 {
     ProgramMemory pm = state;
-    programMemoryParseCondition(pm, tok, nullptr, nullptr, b);
+    if (isEmpty)
+        pm.setContainerSizeValue(tok->exprId(), 0, b);
+    else
+        programMemoryParseCondition(pm, tok, nullptr, nullptr, b);
     const Token* origin = tok;
     const Token* top = tok->astTop();
     if (top && Token::Match(top->previous(), "for|while ("))
@@ -354,8 +415,8 @@ ProgramMemory ProgramMemoryState::get(const Token* tok, const Token* ctx, const 
         start = tok;
 
     if (!ctx || precedes(start, ctx)) {
-        local.addState(start, vars);
         local.removeModifiedVars(start);
+        local.addState(start, vars);
     } else {
         local.removeModifiedVars(ctx);
     }
@@ -398,13 +459,53 @@ ProgramMemory getProgramMemory(const Token* tok, nonneg int exprid, const ValueF
     return programMemory;
 }
 
-void execute(const Token *expr,
-             ProgramMemory * const programMemory,
-             MathLib::bigint *result,
-             bool *error)
+static PMEvaluateFunction evaluateAsInt(PMEvaluateFunction f, ValueFlow::Value::ValueType t)
+{
+    return [=](const Token* expr, ProgramMemory* const programMemory, MathLib::bigint* result) -> bool {
+        const ValueFlow::Value* value = expr->getKnownValue(t);
+        if (!value)
+            value = programMemory->getValue(expr->exprId());
+        if (value && value->valueType == t)
+        {
+            *result = value->intvalue;
+            return true;
+        }
+        return f && f(expr, programMemory, result);
+    };
+}
+
+static std::set<ValueFlow::Value::ValueType> findIteratorTypes(const ProgramMemory& pm)
+{
+    std::set<ValueFlow::Value::ValueType> result;
+    for (auto&& p : pm.values) {
+        if (p.second.isIteratorValue())
+            result.insert(p.second.valueType);
+        if (result.size() == 2)
+            break;
+    }
+    return result;
+}
+
+static bool isIterator(const Token* expr)
+{
+    if (!expr)
+        return false;
+    if (astIsIterator(expr))
+        return true;
+    return std::any_of(expr->values().begin(), expr->values().end(), std::mem_fn(&ValueFlow::Value::isIteratorValue));
+}
+
+void execute(const Token* expr,
+             ProgramMemory* const programMemory,
+             MathLib::bigint* result,
+             bool* error,
+             const PMEvaluateFunction& f)
 {
     if (!expr)
         *error = true;
+
+    else if (f && f(expr, programMemory, result))
+        *error = false;
 
     else if (expr->hasKnownIntValue() && !expr->isAssignmentOp()) {
         *result = expr->values().front().intvalue;
@@ -444,8 +545,16 @@ void execute(const Token *expr,
         MathLib::bigint result1(0), result2(0);
         bool error1 = false;
         bool error2 = false;
-        execute(expr->astOperand1(), programMemory, &result1, &error1);
-        execute(expr->astOperand2(), programMemory, &result2, &error2);
+        execute(expr->astOperand1(), programMemory, &result1, &error1, f);
+        execute(expr->astOperand2(), programMemory, &result2, &error2, f);
+        if (error1 && error2 && (isIterator(expr->astOperand1()) || isIterator(expr->astOperand2()))) {
+            for (ValueFlow::Value::ValueType t : findIteratorTypes(*programMemory)) {
+                execute(expr->astOperand1(), programMemory, &result1, &error1, evaluateAsInt(f, t));
+                execute(expr->astOperand2(), programMemory, &result2, &error2, evaluateAsInt(f, t));
+                if (!error1 && !error2)
+                    break;
+            }
+        }
         if (error1 && error2) {
             *error = true;
         } else if (error1 && !error2) {
@@ -473,7 +582,7 @@ void execute(const Token *expr,
     }
 
     else if (expr->isAssignmentOp()) {
-        execute(expr->astOperand2(), programMemory, result, error);
+        execute(expr->astOperand2(), programMemory, result, error, f);
         if (!expr->astOperand1() || !expr->astOperand1()->exprId())
             *error = true;
         if (*error)
@@ -528,8 +637,8 @@ void execute(const Token *expr,
 
     else if (expr->isArithmeticalOp() && expr->astOperand1() && expr->astOperand2()) {
         MathLib::bigint result1(0), result2(0);
-        execute(expr->astOperand1(), programMemory, &result1, error);
-        execute(expr->astOperand2(), programMemory, &result2, error);
+        execute(expr->astOperand1(), programMemory, &result1, error, f);
+        execute(expr->astOperand2(), programMemory, &result2, error, f);
         if (expr->str() == "+")
             *result = result1 + result2;
         else if (expr->str() == "-")
@@ -562,33 +671,33 @@ void execute(const Token *expr,
 
     else if (expr->str() == "&&") {
         bool error1 = false;
-        execute(expr->astOperand1(), programMemory, result, &error1);
+        execute(expr->astOperand1(), programMemory, result, &error1, f);
         if (!error1 && *result == 0)
             *result = 0;
         else {
             bool error2 = false;
-            execute(expr->astOperand2(), programMemory, result, &error2);
+            execute(expr->astOperand2(), programMemory, result, &error2, f);
             if (error1 || error2)
                 *error = true;
         }
     }
 
     else if (expr->str() == "||") {
-        execute(expr->astOperand1(), programMemory, result, error);
+        execute(expr->astOperand1(), programMemory, result, error, f);
         if (*result == 1 && *error == false)
             *result = 1;
         else if (*result == 0 && *error == false)
-            execute(expr->astOperand2(), programMemory, result, error);
+            execute(expr->astOperand2(), programMemory, result, error, f);
     }
 
     else if (expr->str() == "!") {
-        execute(expr->astOperand1(), programMemory, result, error);
+        execute(expr->astOperand1(), programMemory, result, error, f);
         *result = !(*result);
     }
 
     else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
-        execute(expr->astOperand1(), programMemory, result, error);
-        execute(expr->astOperand2(), programMemory, result, error);
+        execute(expr->astOperand1(), programMemory, result, error, f);
+        execute(expr->astOperand2(), programMemory, result, error, f);
     }
 
     else if (expr->str() == "[" && expr->astOperand1() && expr->astOperand2()) {
@@ -609,13 +718,19 @@ void execute(const Token *expr,
         }
         const std::string strValue = tokvalue->strValue();
         MathLib::bigint index = 0;
-        execute(expr->astOperand2(), programMemory, &index, error);
+        execute(expr->astOperand2(), programMemory, &index, error, f);
         if (index >= 0 && index < strValue.size())
             *result = strValue[index];
         else if (index == strValue.size())
             *result = 0;
         else
             *error = true;
+    }
+    else if (expr->str() == "(" && expr->isCast()) {
+        if (Token::simpleMatch(expr->previous(), ">") && expr->previous()->link())
+            execute(expr->astOperand2(), programMemory, result, error);
+        else
+            execute(expr->astOperand1(), programMemory, result, error);
     } else
         *error = true;
 }

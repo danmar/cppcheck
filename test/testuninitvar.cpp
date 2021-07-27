@@ -73,6 +73,7 @@ private:
         TEST_CASE(uninitvar10); // ticket #9467
         TEST_CASE(uninitvar11); // ticket #9123
         TEST_CASE(uninitvar12); // #10218 - stream read
+        TEST_CASE(uninitvar13); // #9772
         TEST_CASE(uninitvar_unconditionalTry);
         TEST_CASE(uninitvar_funcptr); // #6404
         TEST_CASE(uninitvar_operator); // #6680
@@ -2995,6 +2996,28 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void uninitvar13() { // #9772 - FP
+        const char code[] = "int func(void)\n"
+                            "{ int rez;\n"
+                            "  struct sccb* ccb;\n"
+                            " \n"
+                            "  do\n"
+                            "  { if ((ccb = calloc(1, sizeof(*ccb))) == NULL)\n"
+                            "    { rez = 1;\n"
+                            "      break;\n"
+                            "    }\n"
+                            "    rez = 0;\n"
+                            "  } while (0);\n"
+                            " \n"
+                            "  if (rez != 0)\n"
+                            "    free(ccb);\n"
+                            " \n"
+                            "  return rez;\n"
+                            "}";
+        checkUninitVar(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void uninitvar_unconditionalTry() {
         // Unconditional scopes and try{} scopes
         checkUninitVar("int f() {\n"
@@ -4832,6 +4855,47 @@ private:
                         "    if (!isNull) {}\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10119
+        valueFlowUninit("struct Foo {\n"
+                        "    int i{};\n"
+                        "    static const float cf;\n"
+                        "};\n"
+                        "const float Foo::cf = 0.1f;\n"
+                        "int bar() {\n"
+                        "    Foo f;\n"
+                        "    return f.i;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10326
+        valueFlowUninit("void foo() {\n"
+                        "    int cnt;\n"
+                        "    do {\n"
+                        "        cnt = 32 ;\n"
+                        "    }\n"
+                        "    while ( 0 ) ;\n"
+                        "    if (cnt != 0) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10327 - avoid extra warnings for uninitialized variable
+        valueFlowUninit("void dowork( int me ) {\n"
+                        "    if ( me == 0 ) {}\n" // <- not uninitialized
+                        "}\n"
+                        "\n"
+                        "int main() {\n"
+                        "    int me;\n"
+                        "     dowork(me);\n" // <- me is uninitialized
+                        "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: me\n", errout.str());
+
+        valueFlowUninit("int foo() {\n"
+                        "  int x;\n"
+                        "  int a = x;\n" // <- x is uninitialized
+                        "  return a;\n" // <- a has been initialized
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
     }
 
     void uninitvar_ipa() {

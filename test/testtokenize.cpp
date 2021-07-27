@@ -228,15 +228,17 @@ private:
         TEST_CASE(volatile_variables);
 
         // unsigned i; => unsigned int i;
-        TEST_CASE(unsigned1);
-        TEST_CASE(unsigned2);
-        TEST_CASE(unsigned3);   // template arguments
+        TEST_CASE(implicitIntConst);
+        TEST_CASE(implicitIntExtern);
+        TEST_CASE(implicitIntSigned1);
+        TEST_CASE(implicitIntUnsigned1);
+        TEST_CASE(implicitIntUnsigned2);
+        TEST_CASE(implicitIntUnsigned3);   // template arguments
 
         TEST_CASE(simplifyStdType); // #4947, #4950, #4951
 
         TEST_CASE(createLinks);
         TEST_CASE(createLinks2);
-        TEST_CASE(signed1);
 
         TEST_CASE(simplifyString);
         TEST_CASE(simplifyConst);
@@ -255,7 +257,8 @@ private:
 
         TEST_CASE(removedeclspec);
         TEST_CASE(removeattribute);
-        TEST_CASE(functionAttributeBefore);
+        TEST_CASE(functionAttributeBefore1);
+        TEST_CASE(functionAttributeBefore2);
         TEST_CASE(functionAttributeAfter);
         TEST_CASE(functionAttributeListBefore);
         TEST_CASE(functionAttributeListAfter);
@@ -2534,10 +2537,22 @@ private:
         }
     }
 
+    void implicitIntConst() {
+        ASSERT_EQUALS("const int x ;", tokenizeAndStringify("const x;"));
+        ASSERT_EQUALS("const int * x ;", tokenizeAndStringify("const *x;"));
+        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();"));
+    }
+
+    void implicitIntExtern() {
+        ASSERT_EQUALS("extern int x ;", tokenizeAndStringify("extern x;"));
+        ASSERT_EQUALS("extern int * x ;", tokenizeAndStringify("extern *x;"));
+        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();"));
+    }
+
     /**
      * tokenize "signed i" => "signed int i"
      */
-    void signed1() {
+    void implicitIntSigned1() {
         {
             const char code1[] = "void foo ( signed int , float ) ;";
             ASSERT_EQUALS(code1, tokenizeAndStringify(code1));
@@ -2571,7 +2586,7 @@ private:
      * tokenize "unsigned i" => "unsigned int i"
      * tokenize "unsigned" => "unsigned int"
      */
-    void unsigned1() {
+    void implicitIntUnsigned1() {
         // No changes..
         {
             const char code[] = "void foo ( unsigned int , float ) ;";
@@ -2606,14 +2621,14 @@ private:
         }
     }
 
-    void unsigned2() {
+    void implicitIntUnsigned2() {
         const char code[] = "i = (unsigned)j;";
         const char expected[] = "i = ( unsigned int ) j ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
     // simplify "unsigned" when using templates..
-    void unsigned3() {
+    void implicitIntUnsigned3() {
         {
             const char code[] = "; foo<unsigned>();";
             const char expected[] = "; foo < unsigned int > ( ) ;";
@@ -3506,7 +3521,7 @@ private:
         ASSERT_EQUALS("struct Payload_IR_config { uint8_t tap [ 16 ] ; } ;", tokenizeAndStringify("struct __attribute__((packed, gcc_struct)) Payload_IR_config { uint8_t tap[16]; };"));
     }
 
-    void functionAttributeBefore() {
+    void functionAttributeBefore1() {
         const char code[] = "void __attribute__((pure)) __attribute__((nothrow)) __attribute__((const)) func1();\n"
                             "void __attribute__((__pure__)) __attribute__((__nothrow__)) __attribute__((__const__)) func2();\n"
                             "void __attribute__((nothrow)) __attribute__((pure)) __attribute__((const)) func3();\n"
@@ -3535,6 +3550,22 @@ private:
         ASSERT(func3 && func3->isAttributePure() && func3->isAttributeNothrow() && func3->isAttributeConst());
         ASSERT(func4 && func4->isAttributePure() && func4->isAttributeNothrow() && func4->isAttributeConst());
         ASSERT(func5 && func5->isAttributeNoreturn());
+    }
+
+    void functionAttributeBefore2() {
+        const char code[] = "extern vas_f *VAS_Fail __attribute__((__noreturn__));";
+        const char expected[] = "extern vas_f * VAS_Fail ;";
+
+        errout.str("");
+
+        // tokenize..
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token * VAS_Fail = Token::findsimplematch(tokenizer.tokens(), "VAS_Fail");
+        ASSERT(VAS_Fail && VAS_Fail->isAttributeNoreturn());
     }
 
     void functionAttributeAfter() {
@@ -4821,12 +4852,12 @@ private:
     void simplifyOperatorName14() { // std::complex operator "" if
         {
             const char code[] = "constexpr std::complex<float> operator\"\"if(long double __num);";
-            ASSERT_EQUALS("const std :: complex < float > operator\"\"if ( long double __num ) ;",
+            ASSERT_EQUALS("constexpr std :: complex < float > operator\"\"if ( long double __num ) ;",
                           tokenizeAndStringify(code));
         }
         {
             const char code[] = "constexpr std::complex<float> operator\"\"if(long double __num) { }";
-            ASSERT_EQUALS("const std :: complex < float > operator\"\"if ( long double __num ) { }",
+            ASSERT_EQUALS("constexpr std :: complex < float > operator\"\"if ( long double __num ) { }",
                           tokenizeAndStringify(code));
         }
     }
@@ -6014,18 +6045,28 @@ private:
         ASSERT_EQUALS("Abc({newreturn", testAst("return new A {b(c)};"));
         ASSERT_EQUALS("a{{return", testAst("return{{a}};"));
         ASSERT_EQUALS("a{b{,{return", testAst("return{{a},{b}};"));
-        ASSERT_EQUALS("stdvector::", testAst("std::vector<std::vector<int>>{{},{}}"));
+        ASSERT_EQUALS("stdvector::{{,{return", testAst("return std::vector<std::vector<int> >{{},{}};"));
+        ASSERT_EQUALS("stdvector::{2{,{return", testAst("return std::vector<std::vector<int> >{{}, {2}};"));
+        ASSERT_EQUALS("forbstdvector::{{,{:(", testAst("for (auto b : std::vector<std::vector<int> >{{},{}});"));
+        ASSERT_EQUALS("forbstdvector::{2{,{:(", testAst("for (auto b : std::vector<std::vector<int> >{{}, {2}});"));
         ASSERT_EQUALS("abR{{,P(,((", testAst("a(b(R{},{},P()));"));
         ASSERT_EQUALS("f1{2{,3{,{x,(", testAst("f({{1},{2},{3}},x);"));
         ASSERT_EQUALS("a1{ b2{", testAst("auto a{1}; auto b{2};"));
-        ASSERT_EQUALS("var1ab::23,{,{4ab::56,{,{,{", testAst("auto var{{1,a::b{2,3}}, {4,a::b{5,6}}};"));
+        ASSERT_EQUALS("var1ab::23,{,4ab::56,{,{,{{", testAst("auto var{{1,a::b{2,3}}, {4,a::b{5,6}}};"));
         ASSERT_EQUALS("var{{,{,{{", testAst("auto var{ {{},{}}, {} };"));
+        ASSERT_EQUALS("fX{,{( abcfalse==CD:?", testAst("f({X, {Y, abc == false ? C : D}});"));
 
         // Initialization with decltype(expr) instead of a type
         ASSERT_EQUALS("decltypex((", testAst("decltype(x)();"));
         ASSERT_EQUALS("decltypex({", testAst("decltype(x){};"));
         ASSERT_EQUALS("decltypexy+(yx+(", testAst("decltype(x+y)(y+x);"));
         ASSERT_EQUALS("decltypexy+(yx+{", testAst("decltype(x+y){y+x};"));
+
+        // #10334: Do not hang!
+        tokenizeAndStringify("void foo(const std::vector<std::string>& locations = {\"\"}) {\n"
+                             "    for (int i = 0; i <= 123; ++i)\n"
+                             "        x->emplace_back(y);\n"
+                             "}");
     }
 
     void astbrackets() { // []
@@ -6568,7 +6609,30 @@ private:
                             "    ;\n"
                             "}\n"));
 
+        // #10309
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "using a = void *;\n"
+                            "void b() {\n"
+                            "  std::unique_ptr<a, void (*)(a *)>(new a(0), [](a *c) {\n"
+                            "    if (c)\n"
+                            "      ;\n"
+                            "  });\n"
+                            "}\n"));
+
         ASSERT_NO_THROW(tokenizeAndStringify("a<b?0:1>()==3;"));
+
+        // #10336
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  template <class b> a(b);\n"
+                                             "};\n"
+                                             "struct c;\n"
+                                             "void fn1(int, a);\n"
+                                             "void f() { fn1(0, {a{0}}); }\n"
+                                             "template <class> std::vector<c> g() {\n"
+                                             "  int d;\n"
+                                             "  for (size_t e = 0; e < d; e++)\n"
+                                             "    ;\n"
+                                             "}\n"));
     }
 
     void checkNamespaces() {

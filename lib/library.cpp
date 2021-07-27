@@ -498,8 +498,15 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
 
         else if (nodename == "smart-pointer") {
             const char *className = node->Attribute("class-name");
-            if (className)
-                smartPointers.insert(className);
+            if (!className)
+                return Error(ErrorCode::MISSING_ATTRIBUTE, "class-name");
+            SmartPointer& smartPointer = smartPointers[className];
+            for (const tinyxml2::XMLElement* smartPointerNode = node->FirstChildElement(); smartPointerNode;
+                 smartPointerNode = smartPointerNode->NextSiblingElement()) {
+                const std::string smartPointerNodeName = smartPointerNode->Name();
+                if (smartPointerNodeName == "unique")
+                    smartPointer.unique = true;
+            }
         }
 
         else if (nodename == "type-checks") {
@@ -640,7 +647,14 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             func.isconst = true; // a constant function is pure
         } else if (functionnodename == "leak-ignore")
             func.leakignore = true;
-        else if (functionnodename == "use-retval") {
+        else if (functionnodename == "not-overlapping-data") {
+            NonOverlappingData nonOverlappingData;
+            nonOverlappingData.ptr1Arg = functionnode->IntAttribute("ptr1-arg", -1);
+            nonOverlappingData.ptr2Arg = functionnode->IntAttribute("ptr2-arg", -1);
+            nonOverlappingData.sizeArg = functionnode->IntAttribute("size-arg", -1);
+            nonOverlappingData.strlenArg = functionnode->IntAttribute("strlen-arg", -1);
+            mNonOverlappingData[name] = nonOverlappingData;
+        } else if (functionnodename == "use-retval") {
             func.useretval = Library::UseRetValType::DEFAULT;
             if (const char *type = functionnode->Attribute("type"))
                 if (std::strcmp(type, "error-code") == 0)
@@ -1265,6 +1279,14 @@ bool Library::formatstr_secure(const Token* ftok) const
     return functions.at(getFunctionName(ftok)).formatstr_secure;
 }
 
+const Library::NonOverlappingData* Library::getNonOverlappingData(const Token *ftok) const
+{
+    if (isNotLibraryFunction(ftok))
+        return nullptr;
+    const std::unordered_map<std::string, NonOverlappingData>::const_iterator it = mNonOverlappingData.find(getFunctionName(ftok));
+    return (it != mNonOverlappingData.cend()) ? &it->second : nullptr;
+}
+
 Library::UseRetValType Library::getUseRetValType(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))
@@ -1486,14 +1508,22 @@ bool Library::isimporter(const std::string& file, const std::string &importer) c
     return (it != mImporters.end() && it->second.count(importer) > 0);
 }
 
-bool Library::isSmartPointer(const Token *tok) const
+bool Library::isSmartPointer(const Token* tok) const
+{
+    return detectSmartPointer(tok);
+}
+
+const Library::SmartPointer* Library::detectSmartPointer(const Token* tok) const
 {
     std::string typestr;
     while (Token::Match(tok, "%name%|::")) {
         typestr += tok->str();
         tok = tok->next();
     }
-    return smartPointers.find(typestr) != smartPointers.end();
+    auto it = smartPointers.find(typestr);
+    if (it == smartPointers.end())
+        return nullptr;
+    return &it->second;
 }
 
 CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok)

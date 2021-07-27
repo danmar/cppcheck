@@ -165,6 +165,7 @@ private:
         TEST_CASE(isVariablePointerToConstVolatilePointer);
         TEST_CASE(isVariableMultiplePointersAndQualifiers);
         TEST_CASE(variableVolatile);
+        TEST_CASE(variableConstexpr);
         TEST_CASE(isVariableDecltype);
 
         TEST_CASE(VariableValueType1);
@@ -208,6 +209,7 @@ private:
         TEST_CASE(functionDeclarationTemplate);
         TEST_CASE(functionDeclarations);
         TEST_CASE(functionDeclarations2);
+        TEST_CASE(constexprFunction);
         TEST_CASE(constructorInitialization);
         TEST_CASE(memberFunctionOfUnknownClassMacro1);
         TEST_CASE(memberFunctionOfUnknownClassMacro2);
@@ -246,6 +248,8 @@ private:
         TEST_CASE(functionArgs17);
 
         TEST_CASE(functionImplicitlyVirtual);
+
+        TEST_CASE(functionIsInlineKeyword);
 
         TEST_CASE(functionStatic);
 
@@ -1315,6 +1319,20 @@ private:
         ASSERT(y->variable()->isVolatile());
     }
 
+    void variableConstexpr() {
+        GET_SYMBOL_DB("constexpr int x = 16;");
+
+        const Token *x = Token::findsimplematch(tokenizer.tokens(), "x");
+        ASSERT(x);
+        ASSERT(x->variable());
+        ASSERT(x->variable()->isConst());
+        ASSERT(x->variable()->isStatic());
+        ASSERT(x->valueType());
+        ASSERT(x->valueType()->pointer == 0);
+        ASSERT(x->valueType()->constness == 1);
+        ASSERT(x->valueType()->reference == Reference::None);
+    }
+
     void isVariableDecltype() {
         GET_SYMBOL_DB("int x;\n"
                       "decltype(x) a;\n"
@@ -1873,6 +1891,24 @@ private:
         const Token*parenthesis = foo->tokenDef->next();
         ASSERT(parenthesis->str() == "(" && parenthesis->previous()->str() == "foo");
         ASSERT(parenthesis->valueType()->type == ValueType::Type::CONTAINER);
+    }
+
+    void constexprFunction() {
+        GET_SYMBOL_DB_STD("constexpr int foo();");
+
+        // 1 scopes: Global
+        ASSERT(db && db->scopeList.size() == 1);
+
+        const Scope *scope = &db->scopeList.front();
+
+        ASSERT(scope && scope->functionList.size() == 1);
+
+        const Function *foo = &scope->functionList.front();
+
+        ASSERT(foo);
+        ASSERT(foo->tokenDef->str() == "foo");
+        ASSERT(!foo->hasBody());
+        ASSERT(foo->isConstexpr());
     }
 
     void constructorInitialization() {
@@ -2462,6 +2498,14 @@ private:
         ASSERT_EQUALS(4, db->scopeList.size());
         const Function *function = db->scopeList.back().function;
         ASSERT_EQUALS(true, function && function->isImplicitlyVirtual(false));
+    }
+
+    void functionIsInlineKeyword() {
+        GET_SYMBOL_DB("inline void fs() {}");
+        (void)db;
+        const Function *func = db->scopeList.back().function;
+        ASSERT(func);
+        ASSERT(func->isInlineKeyword());
     }
 
     void functionStatic() {

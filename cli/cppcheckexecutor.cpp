@@ -20,6 +20,7 @@
 
 #include "analyzerinfo.h"
 #include "cmdlineparser.h"
+#include "color.h"
 #include "config.h"
 #include "cppcheck.h"
 #include "filelister.h"
@@ -52,7 +53,7 @@
 #   include <ucontext.h>
 
 #   undef _XOPEN_SOURCE
-#elif !defined(__OpenBSD__)
+#elif !defined(__OpenBSD__) && !defined(__HAIKU__)
 #   include <ucontext.h>
 #endif
 #ifdef __linux__
@@ -1046,9 +1047,9 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
     }
 }
 
-void CppCheckExecutor::reportOut(const std::string &outmsg)
+void CppCheckExecutor::reportOut(const std::string &outmsg, Color c)
 {
-    std::cout << ansiToOEM(outmsg, true) << std::endl;
+    std::cout << c << ansiToOEM(outmsg, true) << Color::Reset << std::endl;
 }
 
 void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
@@ -1087,7 +1088,7 @@ void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount
         oss << fileindex << '/' << filecount
             << " files checked " << percentDone
             << "% done";
-        std::cout << oss.str() << std::endl;
+        std::cout << Color::FgBlue << oss.str() << Color::Reset << std::endl;
     }
 }
 
@@ -1175,9 +1176,9 @@ bool CppCheckExecutor::tryLoadLibrary(Library& destination, const char* basepath
  * Execute a shell command and read the output from it. Returns true if command terminated successfully.
  */
 // cppcheck-suppress passedByValue - "exe" copy needed in _WIN32 code
-bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> args, const std::string &redirect, std::string *output)
+bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> args, const std::string &redirect, std::string *output_)
 {
-    output->clear();
+    output_->clear();
 
     std::string joinedArgs;
     for (const std::string &arg : args) {
@@ -1203,7 +1204,7 @@ bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> 
         return false;
     char buffer[1024];
     while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
-        *output += buffer;
+        *output_ += buffer;
     return true;
 }
 

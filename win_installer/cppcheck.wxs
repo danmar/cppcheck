@@ -89,10 +89,12 @@
             </Component>
             <Component Id='OptionalCfgs' Guid='$(var.optionalCfgsGUID)'>
               <File Id='avr.cfg' Name='avr.cfg' Source='$(var.CfgsDir)\avr.cfg' />
+              <File Id='bento4.cfg' Name='bento4.cfg' Source='$(var.CfgsDir)\bento4.cfg' />
               <File Id='boost.cfg' Name='boost.cfg' Source='$(var.CfgsDir)\boost.cfg' />
               <File Id='bsd.cfg' Name='bsd.cfg' Source='$(var.CfgsDir)\bsd.cfg' />
               <File Id='cairo.cfg' Name='cairo.cfg' Source='$(var.CfgsDir)\cairo.cfg' />
               <File Id='cppunit.cfg' Name='cppunit.cfg' Source='$(var.CfgsDir)\cppunit.cfg' />
+              <File Id='dpdk.cfg' Name='dpdk.cfg' Source='$(var.CfgsDir)\dpdk.cfg' />
               <File Id='embedded_sql.cfg' Name='embedded_sql.cfg' Source='$(var.CfgsDir)\embedded_sql.cfg' />
               <File Id='gnu.cfg' Name='gnu.cfg' Source='$(var.CfgsDir)\gnu.cfg' />
               <File Id='googletest.cfg' Name='googletest.cfg' Source='$(var.CfgsDir)\googletest.cfg' />
@@ -120,6 +122,7 @@
               <File Id='sfml.cfg' Name='sfml.cfg' Source='$(var.CfgsDir)\sfml.cfg' />
               <File Id='sqlite3.cfg' Name='sqlite3.cfg' Source='$(var.CfgsDir)\sqlite3.cfg' />
               <File Id='tinyxml2.cfg' Name='tinyxml2.cfg' Source='$(var.CfgsDir)\tinyxml2.cfg' />
+              <File Id='vcl.cfg' Name='vcl.cfg' Source='$(var.CfgsDir)\vcl.cfg' />
               <File Id='wxwidgets.cfg' Name='wxwidgets.cfg' Source='$(var.CfgsDir)\wxwidgets.cfg' />
               <File Id='zlib.cfg' Name='zlib.cfg' Source='$(var.CfgsDir)\zlib.cfg' />
             </Component>

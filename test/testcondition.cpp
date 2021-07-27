@@ -38,6 +38,10 @@ private:
     Settings settings1;
 
     void run() OVERRIDE {
+        // known platform..
+        settings0.platform(cppcheck::Platform::PlatformType::Native);
+        settings1.platform(cppcheck::Platform::PlatformType::Native);
+
         LOAD_LIB_2(settings0.library, "qt.cfg");
         LOAD_LIB_2(settings0.library, "std.cfg");
 
@@ -123,14 +127,13 @@ private:
         TEST_CASE(duplicateConditionalAssign);
 
         TEST_CASE(checkAssignmentInCondition);
+        TEST_CASE(compareOutOfTypeRange);
         TEST_CASE(knownConditionCast); // #9976
     }
 
-    void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
+    void check(const char code[], Settings *settings, const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
-
-        settings0.certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         // Raw tokens..
         std::vector<std::string> files(1, filename);
@@ -142,18 +145,23 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(settings0, nullptr);
+        Preprocessor preprocessor(*settings, nullptr);
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(settings, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
         tokenizer.setPreprocessor(&preprocessor);
 
         // Run checks..
         CheckCondition checkCondition;
-        checkCondition.runChecks(&tokenizer, &settings0, this);
+        checkCondition.runChecks(&tokenizer, settings, this);
+    }
+
+    void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
+        settings0.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        check(code, &settings0, filename);
     }
 
     void assignAndCompare() {
@@ -2376,8 +2384,8 @@ private:
         check("void f1(const std::string &s) { if(s.size() > 0) if(s.empty()) {}}");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
-        check("void f1(const std::string &s) { if(s.size() < 0) if(s.empty()) {}} ");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Condition 's.size()<0' is always false\n", errout.str());
+        check("void f1(const std::string &s) { if(s.size() < 0) if(s.empty()) {}} "); // <- CheckOther reports: checking if unsigned expression is less than zero
+        ASSERT_EQUALS("", errout.str());
 
         check("void f1(const std::string &s) { if(s.empty()) if(s.size() > 42) {}}");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
@@ -2412,8 +2420,8 @@ private:
         check("void f1(const std::string &s) { if(s.size() < 2) if(s.empty()) {}}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f1(const std::string &s) { if(s.size() >= 0) if(s.empty()) {}} ");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Condition 's.size()>=0' is always true\n", errout.str());
+        check("void f1(const std::string &s) { if(s.size() >= 0) if(s.empty()) {}} "); // CheckOther says: Unsigned expression 's.size()' can't be negative so it is unnecessary to test it. [unsignedPositive]
+        ASSERT_EQUALS("", errout.str());
 
         // TODO: These are identical condition since size cannot be negative
         check("void f1(const std::string &s) { if(s.size() <= 0) if(s.empty()) {}}");
@@ -3633,6 +3641,53 @@ private:
               "    if (x == -1) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10323
+        check("void foo(int x) {\n"
+              "    if(x)\n"
+              "        if(x == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int x) {\n"
+              "    if(x) {}\n"
+              "    else\n"
+              "        if(x == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x==1' is always false\n", errout.str());
+
+        // do not report both unsignedLessThanZero and knownConditionTrueFalse
+        check("void foo(unsigned int max) {\n"
+              "    unsigned int num = max - 1;\n"
+              "    if (num < 0) {}\n" // <- do not report knownConditionTrueFalse
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10297
+        check("void foo(size_t len, int start) {\n"
+              "    if (start < 0) {\n"
+              "        start = len+start;\n"
+              "        if (start < 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10362
+        check("int tok;\n"
+              "void next();\n"
+              "void parse_attribute() {\n"
+              "    if (tok == '(') {\n"
+              "        int parenthesis = 0;\n"
+              "        do {\n"
+              "            if (tok == '(')\n"
+              "                parenthesis++;\n"
+              "            else if (tok == ')')\n"
+              "                parenthesis--;\n"
+              "            next();\n"
+              "        } while (parenthesis && tok != -1);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
@@ -4259,7 +4314,28 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
     }
-    
+
+    void compareOutOfTypeRange() {
+        Settings settingsUnix64;
+        settingsUnix64.severity.enable(Severity::style);
+        settingsUnix64.platform(cppcheck::Platform::PlatformType::Unix64);
+
+        check("void f(unsigned char c) {\n"
+              "  if (c == 256) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always true/false.\n", errout.str());
+
+        check("void f(unsigned char c) {\n"
+              "  if (c == 255) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b) {\n"
+              "  if (b == true) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
+    }  
+  
     void knownConditionCast() { // #9976
         check("void f(int i) {\n"
               "    if (i < 0 || (unsigned)i > 5) {}\n"
