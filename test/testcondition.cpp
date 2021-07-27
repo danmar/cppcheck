@@ -123,6 +123,7 @@ private:
         TEST_CASE(duplicateConditionalAssign);
 
         TEST_CASE(checkAssignmentInCondition);
+        TEST_CASE(knownConditionCast); // #9976
     }
 
     void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
@@ -4256,6 +4257,13 @@ private:
         check("void f(std::string *p) {\n"
               "    if (p=foo()){}\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+    
+    void knownConditionCast() { // #9976
+        check("void f(int i) {\n"
+              "    if (i < 0 || (unsigned)i > 5) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
