@@ -170,7 +170,7 @@ namespace {
                     if (line.compare(i, i+strlen("cppcheck"), "cppcheck") != 0)
                         continue;
                     if (line.compare(i, i+strlen("cppcheckdata"), "cppcheckdata") != 0) {
-                        runScript = getFullPath("run.py", exename);
+                        runScript = getFullPath("cppcheck.py", exename);
                         break;
                     }
                 }
