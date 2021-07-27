@@ -4759,7 +4759,7 @@ struct SimpleConditionHandler : ConditionHandler {
         ValueFlow::Value false_value;
         const Token *vartok = parseCompareInt(tok, true_value, false_value);
         if (vartok) {
-            if (vartok->hasKnownValue())
+            if (vartok->hasKnownIntValue())
                 return {};
             if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
                 vartok = vartok->astOperand1();

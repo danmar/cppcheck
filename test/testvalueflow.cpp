@@ -152,6 +152,10 @@ private:
         return !val.isLifetimeValue();
     }
 
+    static bool isNotUninitValue(const ValueFlow::Value& val) {
+        return !val.isUninitValue();
+    }
+
     static bool isNotPossible(const ValueFlow::Value& val) {
         return !val.isPossible();
     }
@@ -177,6 +181,8 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 for (const ValueFlow::Value& val:tok->values()) {
+                    if (val.isSymbolicValue())
+                        continue;
                     if (val.isKnown() && val.intvalue == value)
                         return true;
                 }
@@ -195,6 +201,8 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 for (const ValueFlow::Value& val:tok->values()) {
+                    if (val.isSymbolicValue())
+                        continue;
                     if (val.isImpossible() && val.intvalue == value)
                         return true;
                 }
@@ -213,6 +221,8 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 for (const ValueFlow::Value& val:tok->values()) {
+                    if (val.isSymbolicValue())
+                        continue;
                     if (val.isInconclusive() && val.intvalue == value)
                         return true;
                 }
@@ -1152,7 +1162,8 @@ private:
                "  y += 12;\n"
                "  if (y == 32) {}"
                "}\n";
-        ASSERT_EQUALS("5,Assuming that condition 'y==32' is not redundant\n"
+        ASSERT_EQUALS("2,x is assigned 'y' here.\n"
+                      "5,Assuming that condition 'y==32' is not redundant\n"
                       "4,Compound assignment '+=', assigned value is 20\n"
                       "2,Assignment 'x=y', assigned value is 20\n",
                       getErrorPathForX(code, 3U));
@@ -1173,7 +1184,10 @@ private:
                "  for (x = a; x < 50; x++) {}\n"
                "  b = x;\n"
                "}\n";
-        ASSERT_EQUALS("3,After for loop, x has value 50\n",
+        ASSERT_EQUALS("3,x is assigned 'a' here.\n"
+                      "3,x is incremented', new value is symbolic=a+1\n"
+                      "3,x is incremented', new value is symbolic=a+2\n"
+                      "3,After for loop, x has value 50\n",
                       getErrorPathForX(code, 4U));
     }
 
@@ -4298,6 +4312,7 @@ private:
                "    a = x + 1;\n"
                "}\n";
         values = tokenValues(code, "x +");
+        values.remove_if(&isNotUninitValue);
         ASSERT_EQUALS(true, values.empty());
 
         // #8494 - overloaded operator &
