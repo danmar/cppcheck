@@ -2032,7 +2032,7 @@ struct ValueFlowAnalyzer : Analyzer {
         const ValueFlow::Value* value = getValue(tok);
         if (!value)
             return Action::None;
-        if (!(value->isIntValue() || value->isFloatValue()))
+        if (!(value->isIntValue() || value->isFloatValue() || value->isSymbolicValue()))
             return Action::None;
         const Token* parent = tok->astParent();
 
@@ -2409,6 +2409,8 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
 
         dependOnThis = exprDependsOnThis(expr);
         setupExprVarIds(expr);
+        if (val.isSymbolicValue())
+            setupExprVarIds(val.tokvalue);
     }
 
     virtual const ValueType* getValueType(const Token*) const OVERRIDE {
@@ -3992,6 +3994,48 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
     }
 }
 
+static ValueFlow::Value makeSymbolic(const Token* tok, MathLib::bigint delta = 0)
+{
+    ValueFlow::Value value;
+    value.setKnown();
+    value.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
+    value.tokvalue = tok;
+    value.intvalue = delta;
+    return value;
+}
+
+static void valueFlowSymbolic(TokenList *tokenlist, SymbolDatabase* symboldatabase)
+{
+    for (const Scope * scope : symboldatabase->functionScopes) {
+        std::set<nonneg int> aliased;
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+
+            if (!Token::simpleMatch(tok, "="))
+                continue;
+
+            if (!tok->astOperand1())
+                continue;
+            if (!tok->astOperand2())
+                continue;
+            if (tok->astOperand1()->hasKnownValue())
+                continue;
+            if (tok->astOperand2()->hasKnownValue())
+                continue;
+
+            Token* start = nextAfterAstRightmostLeaf(tok);
+            const Token* end = scope->bodyEnd;
+
+            ValueFlow::Value rhs = makeSymbolic(tok->astOperand2());
+            rhs.errorPath.emplace_back(tok, tok->astOperand1()->expressionString() + " is assigned '" + tok->astOperand2()->expressionString() + "' here.");
+            valueFlowForward(start, end, tok->astOperand1(), {rhs}, tokenlist, tokenlist->getSettings());
+
+            ValueFlow::Value lhs = makeSymbolic(tok->astOperand1());
+            lhs.errorPath.emplace_back(tok, tok->astOperand1()->expressionString() + " is assigned '" + tok->astOperand2()->expressionString() + "' here.");
+            valueFlowForward(start, end, tok->astOperand2(), {lhs}, tokenlist, tokenlist->getSettings());
+        }
+    }
+}
+
 static void valueFlowForwardAssign(Token* const tok,
                                    const Token* expr,
                                    std::vector<const Variable*> vars,
@@ -4044,17 +4088,13 @@ static void valueFlowForwardAssign(Token* const tok,
     // Skip RHS
     const Token * nextExpression = tok->astParent() ? nextAfterAstRightmostLeaf(tok->astParent()) : tok->next();
 
-    if (std::any_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isTokValue))) {
-        std::list<ValueFlow::Value> tokvalues;
-        std::copy_if(values.begin(),
-                     values.end(),
-                     std::back_inserter(tokvalues),
-                     std::mem_fn(&ValueFlow::Value::isTokValue));
-        valueFlowForward(const_cast<Token*>(nextExpression), endOfVarScope, expr, values, tokenlist, settings);
-        values.remove_if(std::mem_fn(&ValueFlow::Value::isTokValue));
-    }
-    for (ValueFlow::Value& value:values)
+    for (ValueFlow::Value& value:values) {
+        if (value.isSymbolicValue())
+            continue;
+        if (value.isTokValue())
+            continue;
         value.tokvalue = tok;
+    }
     valueFlowForward(const_cast<Token*>(nextExpression), endOfVarScope, expr, values, tokenlist, settings);
 }
 
@@ -6824,6 +6864,8 @@ std::string ValueFlow::Value::infoString() const
         return "end=" + MathLib::toString(intvalue);
     case ValueType::LIFETIME:
         return "lifetime=" + tokvalue->str();
+    case ValueType::SYMBOLIC:
+        return "symbolic=" + tokvalue->str() + "+" + MathLib::toString(intvalue);
     }
     throw InternalError(nullptr, "Invalid ValueFlow Value type");
 }
@@ -6892,6 +6934,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowGlobalStaticVar(tokenlist, settings);
     valueFlowPointerAlias(tokenlist);
     valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings);
+    valueFlowSymbolic(tokenlist, symboldatabase);
     valueFlowBitAnd(tokenlist);
     valueFlowSameExpressions(tokenlist);
     valueFlowConditionExpressions(tokenlist, symboldatabase, errorLogger, settings);
