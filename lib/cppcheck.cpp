@@ -72,7 +72,7 @@ namespace {
         std::string args;
         std::string python;
         bool ctu = false;
-        std::string runScript = "";
+        std::string runScript{};
 
         static std::string getFullPath(const std::string &fileName, const std::string &exename) {
             if (Path::fileExists(fileName))
