@@ -132,6 +132,13 @@ namespace ValueFlow {
             case ValueType::LIFETIME:
                 if (tokvalue != rhs.tokvalue)
                     return false;
+                break;
+            case ValueType::SYMBOLIC:
+                if (tokvalue != rhs.tokvalue)
+                    return false;
+                if (intvalue != rhs.intvalue)
+                    return false;
+                break;
             }
             return true;
         }
@@ -140,6 +147,7 @@ namespace ValueFlow {
         static void visitValue(T& self, F f) {
             switch (self.valueType) {
             case ValueType::INT:
+            case ValueType::SYMBOLIC:
             case ValueType::BUFFER_SIZE:
             case ValueType::CONTAINER_SIZE:
             case ValueType::ITERATOR_START:
@@ -175,6 +183,7 @@ namespace ValueFlow {
 
         template <class Compare>
         bool compareValue(const Value& rhs, Compare compare) const {
+            assert((!this->isSymbolicValue() && !rhs.isSymbolicValue()) || (this->valueType == rhs.valueType && this->tokvalue == rhs.tokvalue));
             bool result = false;
             visitValue(
                 *this,
@@ -229,7 +238,7 @@ namespace ValueFlow {
 
         std::string infoString() const;
 
-        enum class ValueType { INT, TOK, FLOAT, MOVED, UNINIT, CONTAINER_SIZE, LIFETIME, BUFFER_SIZE, ITERATOR_START, ITERATOR_END } valueType;
+        enum class ValueType { INT, TOK, FLOAT, MOVED, UNINIT, CONTAINER_SIZE, LIFETIME, BUFFER_SIZE, ITERATOR_START, ITERATOR_END, SYMBOLIC } valueType;
         bool isIntValue() const {
             return valueType == ValueType::INT;
         }
@@ -262,6 +271,9 @@ namespace ValueFlow {
         }
         bool isIteratorEndValue() const {
             return valueType == ValueType::ITERATOR_END;
+        }
+        bool isSymbolicValue() const {
+            return valueType == ValueType::SYMBOLIC;
         }
 
         bool isLocalLifetimeValue() const {

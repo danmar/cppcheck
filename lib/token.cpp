@@ -1742,6 +1742,10 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::ValueType::LIFETIME:
                     out << "lifetime=\"" << value.tokvalue << '\"';
                     break;
+                case ValueFlow::Value::ValueType::SYMBOLIC:
+                    out << "tokvalue=\"" << value.tokvalue << '\"';
+                    out << " intvalue=\"" << value.tokvalue << '\"';
+                    break;
                 }
                 if (value.condition)
                     out << " condition-line=\"" << value.condition->linenr() << '\"';
@@ -1794,6 +1798,10 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::ValueType::LIFETIME:
                     out << "lifetime[" << ValueFlow::Value::toString(value.lifetimeKind) << "]=("
                         << value.tokvalue->expressionString() << ")";
+                    break;
+                case ValueFlow::Value::ValueType::SYMBOLIC:
+                    out << "symbolic=("
+                        << value.tokvalue->expressionString() << ")+" << value.intvalue;
                     break;
                 }
                 if (value.indirect > 0)
@@ -2146,31 +2154,7 @@ bool Token::addValue(const ValueFlow::Value &value)
                 continue;
 
             // different value => continue
-            bool differentValue = true;
-            switch (it->valueType) {
-            case ValueFlow::Value::ValueType::INT:
-            case ValueFlow::Value::ValueType::CONTAINER_SIZE:
-            case ValueFlow::Value::ValueType::BUFFER_SIZE:
-            case ValueFlow::Value::ValueType::ITERATOR_START:
-            case ValueFlow::Value::ValueType::ITERATOR_END:
-                differentValue = (it->intvalue != value.intvalue);
-                break;
-            case ValueFlow::Value::ValueType::TOK:
-            case ValueFlow::Value::ValueType::LIFETIME:
-                differentValue = (it->tokvalue != value.tokvalue);
-                break;
-            case ValueFlow::Value::ValueType::FLOAT:
-                // TODO: Write some better comparison
-                differentValue = (it->floatValue > value.floatValue || it->floatValue < value.floatValue);
-                break;
-            case ValueFlow::Value::ValueType::MOVED:
-                differentValue = (it->moveKind != value.moveKind);
-                break;
-            case ValueFlow::Value::ValueType::UNINIT:
-                differentValue = false;
-                break;
-            }
-            if (differentValue)
+            if (!it->equalValue(value))
                 continue;
 
             if ((value.isTokValue() || value.isLifetimeValue()) && (it->tokvalue != value.tokvalue) && (it->tokvalue->str() != value.tokvalue->str()))
