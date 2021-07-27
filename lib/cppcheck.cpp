@@ -34,6 +34,7 @@
 #include "version.h"
 
 #include "exprengine.h"
+#include <string>
 
 #define PICOJSON_USE_INT64
 #include <picojson.h>
@@ -158,17 +159,21 @@ namespace {
                 if (!fin.is_open())
                     return "Failed to open " + scriptFile;
 
-                bool legacy = false;
                 std::string line;
                 while(getline(fin, line)) {
-                    if (line.find("__main__", 0) != std::string::npos) {
-                        legacy = true;
+                    std::string::size_type i = line.find("import", 0);
+                    if (i == std::string::npos)
+                        continue;
+                    i = line.find_first_not_of(' ', i+strlen("import"));
+                    if (i == std::string::npos)
+                        continue;
+                    if (line.compare(i, i+strlen("cppcheck"), "cppcheck") != 0)
+                        continue;
+                    if (line.compare(i, i+strlen("cppcheckdata"), "cppcheckdata") != 0) {
+                        runScript = getFullPath("run.py", exename);
                         break;
                     }
                 }
-
-                if (!legacy)
-                    runScript = getFullPath("run.py", exename);
 
                 return "";
             }
