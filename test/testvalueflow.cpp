@@ -142,6 +142,7 @@ private:
         TEST_CASE(valueFlowIdempotent);
         TEST_CASE(valueFlowUnsigned);
         TEST_CASE(valueFlowMod);
+        TEST_CASE(valueFlowSymbolic);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -184,6 +185,26 @@ private:
                     if (val.isSymbolicValue())
                         continue;
                     if (val.isKnown() && val.intvalue == value)
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    bool testValueOfXKnown(const char code[], unsigned int linenr, const std::string& expr, int value) {
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == "x" && tok->linenr() == linenr) {
+                for (const ValueFlow::Value& val:tok->values()) {
+                    if (!val.isSymbolicValue())
+                        continue;
+                    if (val.isKnown() && val.intvalue == value && val.tokvalue->expressionString() == expr)
                         return true;
                 }
             }
@@ -5912,6 +5933,36 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 1));
+    }
+
+    void valueFlowSymbolic() {
+        const char *code;
+
+        code = "int f(int i) {\n"
+               "    int j = i;\n"
+               "    int x = i;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, "j", 0));
+
+        code = "int f(int i) {\n"
+               "    int j = i;\n"
+               "    int x = j;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, "i", 0));
+
+        code = "void g(int&);\n"
+               "int f(int i) {\n"
+               "    int j = i;\n"
+               "    g(i);\n"
+               "    int x = i;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, "i", 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, "j", 0));
+
+
     }
 };
 
