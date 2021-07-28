@@ -127,8 +127,8 @@ private:
         TEST_CASE(duplicateConditionalAssign);
 
         TEST_CASE(checkAssignmentInCondition);
-
         TEST_CASE(compareOutOfTypeRange);
+        TEST_CASE(knownConditionCast); // #9976
     }
 
     void check(const char code[], Settings *settings, const char* filename = "test.cpp") {
@@ -4333,6 +4333,13 @@ private:
         check("void f(bool b) {\n"
               "  if (b == true) {}\n"
               "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
+    }  
+  
+    void knownConditionCast() { // #9976
+        check("void f(int i) {\n"
+              "    if (i < 0 || (unsigned)i > 5) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
