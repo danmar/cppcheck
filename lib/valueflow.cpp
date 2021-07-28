@@ -1387,7 +1387,7 @@ static void valueFlowBitAnd(TokenList *tokenlist)
 static void valueFlowSameExpressions(TokenList *tokenlist)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-        if (tok->hasKnownValue())
+        if (tok->hasKnownIntValue())
             continue;
 
         if (!tok->astOperand1() || !tok->astOperand2())
@@ -4927,7 +4927,7 @@ static void valueFlowInferCondition(TokenList* tokenlist,
     for (Token* tok = tokenlist->front(); tok; tok = tok->next()) {
         if (!tok->astParent())
             continue;
-        if (tok->hasKnownValue())
+        if (tok->hasKnownIntValue())
             continue;
         if (tok->variable() && (Token::Match(tok->astParent(), "?|&&|!|%oror%") ||
                                 Token::Match(tok->astParent()->previous(), "if|while ("))) {
@@ -6405,7 +6405,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
             continue;
         if (!astIsContainer(var->nameToken()))
             continue;
-        if (var->nameToken()->hasKnownValue())
+        if (var->nameToken()->hasKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
             continue;
         if (!Token::Match(var->nameToken(), "%name% ;") &&
             !(Token::Match(var->nameToken(), "%name% {") && Token::simpleMatch(var->nameToken()->next()->link(), "} ;")))
