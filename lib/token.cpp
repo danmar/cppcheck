@@ -1801,7 +1801,12 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     break;
                 case ValueFlow::Value::ValueType::SYMBOLIC:
                     out << "symbolic=("
-                        << value.tokvalue->expressionString() << ")+" << value.intvalue;
+                        << value.tokvalue->expressionString();
+                    if (value.intvalue > 0)
+                         out << "+" << value.intvalue;
+                    else if (value.intvalue < 0)
+                         out << "-" << -value.intvalue;
+                    out << ")";
                     break;
                 }
                 if (value.indirect > 0)

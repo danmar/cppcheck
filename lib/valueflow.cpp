@@ -6865,7 +6865,12 @@ std::string ValueFlow::Value::infoString() const
     case ValueType::LIFETIME:
         return "lifetime=" + tokvalue->str();
     case ValueType::SYMBOLIC:
-        return "symbolic=" + tokvalue->str() + "+" + MathLib::toString(intvalue);
+        std::string result = "symbolic=" + tokvalue->str();
+        if (intvalue > 0)
+            result += "+" + MathLib::toString(intvalue);
+        else if (intvalue < 0)
+            result += "-" + MathLib::toString(-intvalue);
+        return result;
     }
     throw InternalError(nullptr, "Invalid ValueFlow Value type");
 }
