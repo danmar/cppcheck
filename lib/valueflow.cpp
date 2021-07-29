@@ -4078,14 +4078,11 @@ static void valueFlowSymbolicInfer(TokenList* tokenlist, SymbolDatabase* symbold
                 combineValueProperties(*lhs, *rhs, &value);
             } else if (lhs) {
                 value.valueKind = lhs->valueKind;
+                value.errorPath = lhs->errorPath;
             } else if (rhs) {
                 value.valueKind = rhs->valueKind;
+                value.errorPath = rhs->errorPath;
             }
-            value.errorPath.clear();
-            if (lhs)
-                value.errorPath.insert(value.errorPath.end(), lhs->errorPath.begin(), lhs->errorPath.end());
-            if (rhs)
-                value.errorPath.insert(value.errorPath.end(), rhs->errorPath.begin(), rhs->errorPath.end());
             setTokenValue(tok, value, tokenlist->getSettings());
         }
     }
