@@ -246,6 +246,9 @@ public:
     /** @brief suppress message (--suppressions) */
     Suppressions nomsg;
 
+    /** @brief write results type (--output-file-type=&lt;None|append|uniq&gt;) */
+    std::string outputFileType;
+
     /** @brief write results (--output-file=&lt;file&gt;) */
     std::string outputFile;
 
