@@ -1743,7 +1743,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     break;
                 case ValueFlow::Value::ValueType::SYMBOLIC:
                     out << "tokvalue=\"" << value.tokvalue << '\"';
-                    out << " intvalue=\"" << value.tokvalue << '\"';
+                    out << " intvalue=\"" << value.intvalue << '\"';
                     break;
                 }
                 if (value.condition)
