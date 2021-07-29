@@ -901,7 +901,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
       } else if (settings.outputFileType == "uniq") {
 	std::string filename = settings.outputFile;
         std::size_t extensionOffset = settings.outputFile.find_last_of(".");
-	if (extensionOffset != -1)
+	if (extensionOffset != std::string::npos)
           filename = filename.substr(0, extensionOffset);
 
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
@@ -910,7 +910,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
             std::replace(tmp.begin(), tmp.end(), '.', '_');
             filename += "_" + tmp;
         }
-	if (extensionOffset != -1)
+	if (extensionOffset != std::string::npos)
           filename += settings.outputFile.substr(extensionOffset);
         mErrorOutput = new std::ofstream(filename); // open it in uniq mode
       } else {
