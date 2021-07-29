@@ -5969,6 +5969,37 @@ private:
         ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, "i", 0));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, "j", 0));
 
+        code = "int f(int i) {\n"
+               "    int j = i;\n"
+               "    j++;\n"
+               "    int x = i == j;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 0));
+
+        code = "int f(int i) {\n"
+               "    int j = i;\n"
+               "    i++;\n"
+               "    int x = i - j;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
+
+        code = "int f(int i) {\n"
+               "    int j = i;\n"
+               "    i++;\n"
+               "    int x = i > j;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
+
+        code = "int f(int i) {\n"
+               "    int j = i;\n"
+               "    j++;\n"
+               "    int x = j > i;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
 
     }
 };

@@ -4036,6 +4036,60 @@ static void valueFlowSymbolic(TokenList *tokenlist, SymbolDatabase* symboldataba
     }
 }
 
+static void valueFlowSymbolicInfer(TokenList *tokenlist, SymbolDatabase* symboldatabase)
+{
+    for (const Scope * scope : symboldatabase->functionScopes) {
+        std::set<nonneg int> aliased;
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+
+            if (!Token::Match(tok, "-|%comp%"))
+                continue;
+            if (tok->hasKnownIntValue())
+                continue;
+            if (!tok->astOperand1())
+                continue;
+            if (!tok->astOperand2())
+                continue;
+            if (tok->astOperand1()->hasKnownIntValue())
+                continue;
+            if (tok->astOperand2()->hasKnownIntValue())
+                continue;
+
+            MathLib::bigint rhsvalue = 0;
+            const ValueFlow::Value* rhs = ValueFlow::findValue(tok->astOperand2()->values(), nullptr, [&](const ValueFlow::Value& v) {
+                return v.isSymbolicValue() && v.tokvalue && v.tokvalue->exprId() == tok->astOperand1()->exprId();
+            });
+            if (rhs)
+                rhsvalue = rhs->intvalue;
+            MathLib::bigint lhsvalue = 0;
+            const ValueFlow::Value* lhs = ValueFlow::findValue(tok->astOperand1()->values(), nullptr, [&](const ValueFlow::Value& v) {
+                return v.isSymbolicValue() && v.tokvalue && v.tokvalue->exprId() == tok->astOperand2()->exprId();
+            });
+            if (lhs)
+                lhsvalue = lhs->intvalue;
+            if (!lhs && !rhs)
+                continue;
+
+            ValueFlow::Value value{calculate(tok->str(), lhsvalue, rhsvalue)};
+            if (lhs && rhs) {
+                if (lhs->isImpossible() != rhs->isImpossible())
+                    continue;
+                combineValueProperties(*lhs, *rhs, &value);
+            } else if (lhs) {
+                value.valueKind = lhs->valueKind;
+            } else if (rhs) {
+                value.valueKind = rhs->valueKind;
+            }
+            value.errorPath.clear();
+            if (lhs)
+                value.errorPath.insert(value.errorPath.end(), lhs->errorPath.begin(), lhs->errorPath.end());
+            if (rhs)
+                value.errorPath.insert(value.errorPath.end(), rhs->errorPath.begin(), rhs->errorPath.end());
+            setTokenValue(tok, value, tokenlist->getSettings());
+        }
+    }
+}
+
 static void valueFlowForwardAssign(Token* const tok,
                                    const Token* expr,
                                    std::vector<const Variable*> vars,
@@ -6865,7 +6919,7 @@ std::string ValueFlow::Value::infoString() const
     case ValueType::LIFETIME:
         return "lifetime=" + tokvalue->str();
     case ValueType::SYMBOLIC:
-        std::string result = "symbolic=" + tokvalue->str();
+        std::string result = "symbolic=" + tokvalue->expressionString();
         if (intvalue > 0)
             result += "+" + MathLib::toString(intvalue);
         else if (intvalue < 0)
@@ -6949,6 +7003,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     while (n > 0 && values < getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
         valueFlowImpossibleValues(tokenlist, settings);
+        valueFlowSymbolicInfer(tokenlist, symboldatabase);
         valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);
         valueFlowAfterMove(tokenlist, symboldatabase, settings);
