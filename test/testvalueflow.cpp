@@ -24,17 +24,17 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
-#include <functional>
-#include <simplecpp.h>
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
+#include <cstring>
+#include <functional>
 #include <list>
 #include <map>
+#include <simplecpp.h>
 #include <string>
 #include <utility>
 #include <vector>
-#include <cstdint>
-#include <cstring>
 
 class TestValueFlow : public TestFixture {
 public:
@@ -154,9 +154,7 @@ private:
         return !val.isLifetimeValue();
     }
 
-    static bool isNotUninitValue(const ValueFlow::Value& val) {
-        return !val.isUninitValue();
-    }
+    static bool isNotUninitValue(const ValueFlow::Value& val) { return !val.isUninitValue(); }
 
     static bool isNotPossible(const ValueFlow::Value& val) {
         return !val.isPossible();
@@ -200,9 +198,9 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+        for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                for (const ValueFlow::Value& val:tok->values()) {
+                for (const ValueFlow::Value& val : tok->values()) {
                     if (!val.isSymbolicValue())
                         continue;
                     if (val.isKnown() && val.intvalue == value && val.tokvalue->expressionString() == expr)
@@ -5941,7 +5939,7 @@ private:
     }
 
     void valueFlowSymbolic() {
-        const char *code;
+        const char* code;
 
         code = "int f(int i) {\n"
                "    int j = i;\n"
@@ -6000,7 +5998,6 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
-
     }
 };
 

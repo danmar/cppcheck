@@ -4004,9 +4004,9 @@ static ValueFlow::Value makeSymbolic(const Token* tok, MathLib::bigint delta = 0
     return value;
 }
 
-static void valueFlowSymbolic(TokenList *tokenlist, SymbolDatabase* symboldatabase)
+static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldatabase)
 {
-    for (const Scope * scope : symboldatabase->functionScopes) {
+    for (const Scope* scope : symboldatabase->functionScopes) {
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "="))
                 continue;
@@ -4023,19 +4023,23 @@ static void valueFlowSymbolic(TokenList *tokenlist, SymbolDatabase* symboldataba
             const Token* end = scope->bodyEnd;
 
             ValueFlow::Value rhs = makeSymbolic(tok->astOperand2());
-            rhs.errorPath.emplace_back(tok, tok->astOperand1()->expressionString() + " is assigned '" + tok->astOperand2()->expressionString() + "' here.");
+            rhs.errorPath.emplace_back(tok,
+                                       tok->astOperand1()->expressionString() + " is assigned '" +
+                                           tok->astOperand2()->expressionString() + "' here.");
             valueFlowForward(start, end, tok->astOperand1(), {rhs}, tokenlist, tokenlist->getSettings());
 
             ValueFlow::Value lhs = makeSymbolic(tok->astOperand1());
-            lhs.errorPath.emplace_back(tok, tok->astOperand1()->expressionString() + " is assigned '" + tok->astOperand2()->expressionString() + "' here.");
+            lhs.errorPath.emplace_back(tok,
+                                       tok->astOperand1()->expressionString() + " is assigned '" +
+                                           tok->astOperand2()->expressionString() + "' here.");
             valueFlowForward(start, end, tok->astOperand2(), {lhs}, tokenlist, tokenlist->getSettings());
         }
     }
 }
 
-static void valueFlowSymbolicInfer(TokenList *tokenlist, SymbolDatabase* symboldatabase)
+static void valueFlowSymbolicInfer(TokenList* tokenlist, SymbolDatabase* symboldatabase)
 {
-    for (const Scope * scope : symboldatabase->functionScopes) {
+    for (const Scope* scope : symboldatabase->functionScopes) {
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "-|%comp%"))
                 continue;
@@ -4051,15 +4055,17 @@ static void valueFlowSymbolicInfer(TokenList *tokenlist, SymbolDatabase* symbold
                 continue;
 
             MathLib::bigint rhsvalue = 0;
-            const ValueFlow::Value* rhs = ValueFlow::findValue(tok->astOperand2()->values(), nullptr, [&](const ValueFlow::Value& v) {
-                return v.isSymbolicValue() && v.tokvalue && v.tokvalue->exprId() == tok->astOperand1()->exprId();
-            });
+            const ValueFlow::Value* rhs =
+                ValueFlow::findValue(tok->astOperand2()->values(), nullptr, [&](const ValueFlow::Value& v) {
+                    return v.isSymbolicValue() && v.tokvalue && v.tokvalue->exprId() == tok->astOperand1()->exprId();
+                });
             if (rhs)
                 rhsvalue = rhs->intvalue;
             MathLib::bigint lhsvalue = 0;
-            const ValueFlow::Value* lhs = ValueFlow::findValue(tok->astOperand1()->values(), nullptr, [&](const ValueFlow::Value& v) {
-                return v.isSymbolicValue() && v.tokvalue && v.tokvalue->exprId() == tok->astOperand2()->exprId();
-            });
+            const ValueFlow::Value* lhs =
+                ValueFlow::findValue(tok->astOperand1()->values(), nullptr, [&](const ValueFlow::Value& v) {
+                    return v.isSymbolicValue() && v.tokvalue && v.tokvalue->exprId() == tok->astOperand2()->exprId();
+                });
             if (lhs)
                 lhsvalue = lhs->intvalue;
             if (!lhs && !rhs)
@@ -4137,7 +4143,7 @@ static void valueFlowForwardAssign(Token* const tok,
     // Skip RHS
     const Token * nextExpression = tok->astParent() ? nextAfterAstRightmostLeaf(tok->astParent()) : tok->next();
 
-    for (ValueFlow::Value& value:values) {
+    for (ValueFlow::Value& value : values) {
         if (value.isSymbolicValue())
             continue;
         if (value.isTokValue())

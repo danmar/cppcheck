@@ -1800,12 +1800,11 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                         << value.tokvalue->expressionString() << ")";
                     break;
                 case ValueFlow::Value::ValueType::SYMBOLIC:
-                    out << "symbolic=("
-                        << value.tokvalue->expressionString();
+                    out << "symbolic=(" << value.tokvalue->expressionString();
                     if (value.intvalue > 0)
-                         out << "+" << value.intvalue;
+                        out << "+" << value.intvalue;
                     else if (value.intvalue < 0)
-                         out << "-" << -value.intvalue;
+                        out << "-" << -value.intvalue;
                     out << ")";
                     break;
                 }
@@ -2137,7 +2136,7 @@ bool Token::addValue(const ValueFlow::Value &value)
 {
     if (value.isKnown() && mImpl->mValues) {
         // Clear all other values of the same type since value is known
-        mImpl->mValues->remove_if([&](const ValueFlow::Value & x) {
+        mImpl->mValues->remove_if([&](const ValueFlow::Value& x) {
             if (x.valueType != value.valueType)
                 return false;
             // Allow multiple known symbolic values
