@@ -24,6 +24,7 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
+#include <functional>
 #include <simplecpp.h>
 #include <algorithm>
 #include <cmath>
@@ -4718,6 +4719,7 @@ private:
     static std::string isPossibleContainerSizeValue(std::list<ValueFlow::Value> values,
             MathLib::bigint i,
             bool unique = true) {
+        values.remove_if(std::mem_fn(&ValueFlow::Value::isSymbolicValue));
         if (!unique)
             values.remove_if(&isNotPossible);
         if (values.size() != 1)
@@ -4734,6 +4736,7 @@ private:
     static std::string isImpossibleContainerSizeValue(std::list<ValueFlow::Value> values,
             MathLib::bigint i,
             bool unique = true) {
+        values.remove_if(std::mem_fn(&ValueFlow::Value::isSymbolicValue));
         if (!unique)
             values.remove_if(&isNotImpossible);
         if (values.size() != 1)
@@ -4750,6 +4753,7 @@ private:
     static std::string isInconclusiveContainerSizeValue(std::list<ValueFlow::Value> values,
             MathLib::bigint i,
             bool unique = true) {
+        values.remove_if(std::mem_fn(&ValueFlow::Value::isSymbolicValue));
         if (!unique)
             values.remove_if(&isNotInconclusive);
         if (values.size() != 1)
@@ -4764,6 +4768,7 @@ private:
     }
 
     static std::string isKnownContainerSizeValue(std::list<ValueFlow::Value> values, MathLib::bigint i, bool unique = true) {
+        values.remove_if(std::mem_fn(&ValueFlow::Value::isSymbolicValue));
         if (!unique)
             values.remove_if(&isNotKnown);
         if (values.size() != 1)
@@ -5944,6 +5949,7 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, "j", 0));
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, "i", 0));
 
         code = "int f(int i) {\n"
                "    int j = i;\n"
@@ -5951,6 +5957,7 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, "i", 0));
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, "j", 0));
 
         code = "void g(int&);\n"
                "int f(int i) {\n"

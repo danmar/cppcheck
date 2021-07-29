@@ -4017,9 +4017,9 @@ static void valueFlowSymbolic(TokenList *tokenlist, SymbolDatabase* symboldataba
                 continue;
             if (!tok->astOperand2())
                 continue;
-            if (tok->astOperand1()->hasKnownValue())
+            if (tok->astOperand1()->hasKnownIntValue())
                 continue;
-            if (tok->astOperand2()->hasKnownValue())
+            if (tok->astOperand2()->hasKnownIntValue())
                 continue;
 
             Token* start = nextAfterAstRightmostLeaf(tok);
@@ -4203,7 +4203,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             std::set<ValueFlow::Value::ValueType> types;
             if (tok->astOperand1()->hasKnownValue()) {
                 for (const ValueFlow::Value& value:tok->astOperand1()->values()) {
-                    if (value.isKnown())
+                    if (value.isKnown() && !value.isSymbolicValue())
                         types.insert(value.valueType);
                 }
             }

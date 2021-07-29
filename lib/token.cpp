@@ -2138,7 +2138,12 @@ bool Token::addValue(const ValueFlow::Value &value)
     if (value.isKnown() && mImpl->mValues) {
         // Clear all other values of the same type since value is known
         mImpl->mValues->remove_if([&](const ValueFlow::Value & x) {
-            return x.valueType == value.valueType;
+            if (x.valueType != value.valueType)
+                return false;
+            // Allow multiple known symbolic values
+            if (x.isSymbolicValue())
+                return !x.isKnown();
+            return true;
         });
     }
 
