@@ -255,6 +255,8 @@ private:
         TEST_CASE(sameExpressionPointers);
 
         TEST_CASE(checkOverlappingWrite);
+      
+        TEST_CASE(constVariableArrayMember); // #10371
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
@@ -9488,6 +9490,16 @@ private:
               "    strcpy(ptr, ptr);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Overlapping read/write in strcpy() is undefined behavior\n", errout.str());
+    }
+  
+    void constVariableArrayMember() { // #10371
+        check("class Foo {\n"
+              "public:\n"
+              "    Foo();\n"
+              "    int GetVal() const { return m_Arr[0]; }\n"
+              "    int m_Arr[1];\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

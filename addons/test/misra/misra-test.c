@@ -1569,6 +1569,12 @@ struct { int a; } struct_20_7_s;
 
 #define M_20_10(a) (#a) // 20.10
 
+#define M_20_11(a)  # a ## 1 // 20.11 20.10
+
+#define M_20_12_AA       0xffff
+#define M_20_12_BB(x)    (x) + wow ## x // 20.12 20.10
+misra_20_12 = M_20_12_BB(M_20_12_AA);
+
 #else1 // 20.13
 
 #ifdef A
@@ -1595,6 +1601,9 @@ static int misra_21_1(void) {
 }
 static int _misra_21_1_2(void); // no warning
 #define errno 11 // 21.1
+
+#define __BUILTIN_SOMETHING 123 // 21.2 21.1
+extern void *memcpy ( void *restrict s1, const void *restrict s2, size_t n ); // 21.2 8.14
 
 static void misra_21_3(void) {
   p1=malloc(10); // 21.3

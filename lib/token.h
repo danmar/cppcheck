@@ -1133,7 +1133,9 @@ public:
 
     bool hasKnownIntValue() const;
     bool hasKnownValue() const;
+    bool hasKnownValue(ValueFlow::Value::ValueType t) const;
 
+    const ValueFlow::Value* getKnownValue(ValueFlow::Value::ValueType t) const;
     MathLib::bigint getKnownIntValue() const {
         return mImpl->mValues->front().intvalue;
     }

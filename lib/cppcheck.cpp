@@ -1371,7 +1371,7 @@ void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t
         return;
 
     std::vector<std::string> ctuInfoFiles;
-    for (const auto f: files) {
+    for (const auto &f: files) {
         const std::string &dumpFileName = getDumpFileName(mSettings, f.first);
         ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }

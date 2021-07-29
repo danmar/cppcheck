@@ -110,7 +110,7 @@ Q_DECLARE_METATYPE(ErrorItem)
 class ErrorLine {
 public:
     QString file;
-    unsigned int line;
+    int line;
     QString file0;
     QString errorId;
     bool incomplete;

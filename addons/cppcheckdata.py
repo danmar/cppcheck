@@ -81,15 +81,21 @@ class MacroUsage:
     file = None
     linenr = None
     column = None
+    usefile = None
+    uselinenr = None
+    usecolumn = None
 
     def __init__(self, element):
         self.name = element.get('name')
         _load_location(self, element)
+        self.usefile = element.get('usefile')
+        self.useline = element.get('useline')
+        self.usecolumn = element.get('usecolumn')
 
     def __repr__(self):
-        attrs = ["name", "file", "linenr", "column"]
+        attrs = ["name", "file", "linenr", "column", "usefile", "useline", "usecolumn"]
         return "{}({})".format(
-            "Directive",
+            "MacroUsage",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
         )
 
@@ -1269,6 +1275,36 @@ def simpleMatch(token, pattern):
         token = token.next
     return True
 
+def get_function_call_name_args(token):
+    """Get function name and arguments for function call
+    name, args = get_function_call_name_args(tok)
+    """
+    if token is None:
+        return None, None
+    if not token.isName or not token.scope.isExecutable:
+        return None, None
+    if not simpleMatch(token.next, '('):
+        return None, None
+    if token.function:
+        nametok = token.function.token
+        if token in (token.function.token, token.function.tokenDef):
+            return None, None
+        name = nametok.str
+        while nametok.previous and nametok.previous.previous and nametok.previous.str == '::' and nametok.previous.previous.isName:
+            name = nametok.previous.previous.str + '::' + name
+            nametok = nametok.previous.previous
+        scope = token.function.nestedIn
+        while scope:
+            if scope.className:
+                name = scope.className + '::' + name
+            scope = scope.nestedIn
+    else:
+        nametok = token
+        name = nametok.str
+        while nametok.previous and nametok.previous.previous and nametok.previous.str == '::' and nametok.previous.previous.isName:
+            name = nametok.previous.previous.str + '::' + name
+            nametok = nametok.previous.previous
+    return name, getArguments(token)
 
 def is_suppressed(location, message, errorId):
     for suppression in current_dumpfile_suppressions:
