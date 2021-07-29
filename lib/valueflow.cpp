@@ -4007,12 +4007,9 @@ static ValueFlow::Value makeSymbolic(const Token* tok, MathLib::bigint delta = 0
 static void valueFlowSymbolic(TokenList *tokenlist, SymbolDatabase* symboldatabase)
 {
     for (const Scope * scope : symboldatabase->functionScopes) {
-        std::set<nonneg int> aliased;
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
-
             if (!Token::simpleMatch(tok, "="))
                 continue;
-
             if (!tok->astOperand1())
                 continue;
             if (!tok->astOperand2())
@@ -4039,9 +4036,7 @@ static void valueFlowSymbolic(TokenList *tokenlist, SymbolDatabase* symboldataba
 static void valueFlowSymbolicInfer(TokenList *tokenlist, SymbolDatabase* symboldatabase)
 {
     for (const Scope * scope : symboldatabase->functionScopes) {
-        std::set<nonneg int> aliased;
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
-
             if (!Token::Match(tok, "-|%comp%"))
                 continue;
             if (tok->hasKnownIntValue())
