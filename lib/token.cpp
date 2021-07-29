@@ -1292,8 +1292,7 @@ std::string Token::stringifyList(const stringifyOptions& options, const std::vec
                 if (options.linenumbers) {
                     ret += std::to_string(lineNumber);
                     ret += ':';
-                    if (lineNumber == tok->linenr())
-                        ret += ' ';
+                    ret += ' ';
                 }
             } else {
                 while (lineNumber < tok->linenr()) {
