@@ -4509,7 +4509,7 @@ struct ConditionHandler {
                         values = thenValues;
                     else if (op == "||")
                         values = elseValues;
-                    if (Token::Match(tok, "==|!="))
+                    if (Token::Match(tok, "==|!=") || (tok == cond.vartok && astIsBool(tok)))
                         changePossibleToKnown(values);
                     if (astIsFloat(cond.vartok, false) ||
                         (!cond.vartok->valueType() &&
