@@ -3688,6 +3688,12 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9948
+        check("bool f(bool a, bool b) {\n"
+              "    return a || ! b || ! a;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition '!a' is always true\n", errout.str());
     }
 
     void alwaysTrueInfer() {
