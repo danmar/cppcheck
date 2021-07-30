@@ -111,14 +111,44 @@ struct Analyzer {
         unsigned int mFlag;
     };
 
+    enum class Terminate { None, Bail, Escape, Modified, Inconclusive, Conditional };
+
+    struct Result {
+        Result(Action action = Action::None, Terminate terminate = Terminate::None)
+            : action(action), terminate(terminate)
+        {}
+        Action action;
+        Terminate terminate;
+
+        void update(Result rhs) {
+            if (terminate == Terminate::None)
+                terminate = rhs.terminate;
+            action |= rhs.action;
+        }
+    };
+
     enum class Direction { Forward, Reverse };
+
+    struct Assume {
+        enum Flags {
+            None = 0,
+            Quiet = (1 << 0),
+            Absolute = (1 << 1),
+            ContainerEmpty = (1 << 2),
+        };
+    };
+
+    enum class Evaluate { Integral, ContainerEmpty };
 
     /// Analyze a token
     virtual Action analyze(const Token* tok, Direction d) const = 0;
     /// Update the state of the value
     virtual void update(Token* tok, Action a, Direction d) = 0;
     /// Try to evaluate the value of a token(most likely a condition)
-    virtual std::vector<int> evaluate(const Token* tok) const = 0;
+    virtual std::vector<int> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const = 0;
+    std::vector<int> evaluate(const Token* tok, const Token* ctx = nullptr) const {
+        return evaluate(Evaluate::Integral, tok, ctx);
+    }
     /// Lower any values to possible
     virtual bool lowerToPossible() = 0;
     /// Lower any values to inconclusive
@@ -130,7 +160,7 @@ struct Analyzer {
     /// If the value is conditional
     virtual bool isConditional() const = 0;
     /// The condition that will be assumed during analysis
-    virtual void assume(const Token* tok, bool state, const Token* at = nullptr) = 0;
+    virtual void assume(const Token* tok, bool state, unsigned int flags = 0) = 0;
     /// Return analyzer for expression at token
     virtual ValuePtr<Analyzer> reanalyze(Token* tok, const std::string& msg = "") const = 0;
     virtual ~Analyzer() {}

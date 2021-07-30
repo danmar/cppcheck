@@ -7,28 +7,153 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
-#include <cstring>
+#include <bitset>
+#include <cassert>
+#include <cctype>
+#include <cfenv>
+#include <cinttypes>
+#include <clocale>
+#include <cmath>
+#include <complex>
+#include <csetjmp>
+#include <csignal>
+#include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
-#include <cctype>
-#include <clocale>
-#include <complex>
-#include <cassert>
 #include <cwchar>
-#include <cfenv>
-#include <csetjmp>
-#include <cmath>
-#include <csignal>
-#include <iostream>
-#include <iomanip>
-#include <cinttypes>
-#include <istream>
 #include <fstream>
-#include <vector>
-#include <cstdarg>
 #include <functional>
-#include <bitset>
+#include <iomanip>
+#include <iostream>
+#include <istream>
+#include <iterator>
+#include <vector>
+
+void uninitvar_std_next(const std::vector<int> &v, int count)
+{
+    // No warning shall be shown:
+    if (std::next(v.begin()) != v.end()) {}
+    if (std::next(v.begin(), count) != v.end()) {}
+
+    std::vector<int>::iterator it;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::next(it) != v.end()) {}
+
+    std::vector<int>::const_iterator const_it;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::next(const_it) != v.end()) {}
+
+    std::vector<int>::reverse_iterator rit;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::next(rit) != v.rend()) {}
+
+    std::vector<int>::const_reverse_iterator const_rit;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::next(const_rit) != v.rend()) {}
+}
+
+void uninitvar_std_prev(const std::vector<int> &v, int count)
+{
+    // No warning shall be shown:
+    if (std::prev(v.begin()) != v.end()) {}
+    if (std::prev(v.begin(), count) != v.end()) {}
+
+    std::vector<int>::iterator it;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::prev(it) != v.end()) {}
+
+    std::vector<int>::const_iterator const_it;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::prev(const_it) != v.end()) {}
+
+    std::vector<int>::reverse_iterator rit;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::prev(rit) != v.rend()) {}
+
+    std::vector<int>::const_reverse_iterator const_rit;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::prev(const_rit) != v.rend()) {}
+}
+
+void overlappingWriteFunction_wcscat(wchar_t *src, wchar_t *dest)
+{
+    // No warning shall be shown:
+    (void)wcscat(dest, src);
+    // cppcheck-suppress overlappingWriteFunction
+    (void)wcscat(src, src);
+}
+
+char * overlappingWriteFunction_strcat(char *src, char *dest)
+{
+    // No warning shall be shown:
+    (void)strcat(dest, src);
+    // cppcheck-suppress overlappingWriteFunction
+    return strcat(src, src);
+}
+
+char * overlappingWriteFunction_strncat(char *src, char *dest, const std::size_t count)
+{
+    // No warning shall be shown:
+    (void)strncat(dest, src, 42);
+    (void)strncat(dest, src, count);
+    (void)strncat(dest, dest, count);
+    // cppcheck-suppress overlappingWriteFunction
+    (void)strncat(dest, dest+1, 2);
+    char buffer[] = "strncat";
+    // cppcheck-suppress overlappingWriteFunction
+    return strncat(buffer, buffer + 1, 3);
+}
+
+wchar_t * overlappingWriteFunction_wcsncat(wchar_t *src, wchar_t *dest, const std::size_t count)
+{
+    // No warning shall be shown:
+    (void)wcsncat(dest, src, 42);
+    (void)wcsncat(dest, src, count);
+    (void)wcsncat(dest, dest, count);
+    // cppcheck-suppress overlappingWriteFunction
+    (void)wcsncat(dest, dest+1, 2);
+    wchar_t buffer[] = L"strncat";
+    // cppcheck-suppress overlappingWriteFunction
+    return wcsncat(buffer, buffer + 1, 3);
+}
+
+wchar_t * overlappingWriteFunction_wcscpy(wchar_t *src, wchar_t *dest)
+{
+    // No warning shall be shown:
+    (void)wcscpy(dest, src);
+    const wchar_t * destBuf = dest;
+    // TODO-cppcheck-suppress overlappingWriteFunction  #10355
+    (void)wcscpy(dest, destBuf);
+    // cppcheck-suppress overlappingWriteFunction
+    return wcscpy(src, src);
+}
+
+wchar_t * overlappingWriteFunction_wcsncpy(wchar_t *buf, const std::size_t count)
+{
+    // No warning shall be shown:
+    (void)wcsncpy(&buf[0], &buf[3], count); // size is not known
+    (void)wcsncpy(&buf[0], &buf[3], 3U);    // no-overlap
+    // cppcheck-suppress overlappingWriteFunction
+    return wcsncpy(&buf[0], &buf[3], 4U);
+}
+
+char * overlappingWriteFunction_strncpy(char *buf, const std::size_t count)
+{
+    // No warning shall be shown:
+    (void)strncpy(&buf[0], &buf[3], count); // size is not known
+    (void)strncpy(&buf[0], &buf[3], 3U);    // no-overlap
+    // cppcheck-suppress overlappingWriteFunction
+    return strncpy(&buf[0], &buf[3], 4U);
+}
+
+void * overlappingWriteFunction_memmove(void)
+{
+    // No warning shall be shown:
+    char str[] = "memmove handles overlapping data well";
+    return memmove(str,str+3,4);
+}
 
 std::bitset<10> std_bitset_test_ignoredReturnValue()
 {

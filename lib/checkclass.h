@@ -70,8 +70,7 @@ public:
         checkClass.virtualDestructor();
         checkClass.checkConst();
         checkClass.copyconstructors();
-        // FIXME: Only report warnings for inherited classes
-        // checkClass.checkVirtualFunctionCallInConstructor();
+        checkClass.checkVirtualFunctionCallInConstructor();
         checkClass.checkDuplInheritedMembers();
         checkClass.checkExplicitConstructors();
         checkClass.checkCopyCtorAndEqOperator();

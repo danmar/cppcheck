@@ -76,6 +76,7 @@
     <ClCompile Include="checkunusedvar.cpp" />
     <ClCompile Include="checkvaarg.cpp" />
     <ClCompile Include="clangimport.cpp" />
+    <ClCompile Include="color.cpp" />
     <ClCompile Include="cppcheck.cpp" />
     <ClCompile Include="ctu.cpp" />
     <ClCompile Include="errorlogger.cpp" />
@@ -137,6 +138,7 @@
     <ClInclude Include="checkunusedvar.h" />
     <ClInclude Include="checkvaarg.h" />
     <ClInclude Include="clangimport.h" />
+    <ClInclude Include="color.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="cppcheck.h" />
     <ClInclude Include="ctu.h" />
@@ -160,6 +162,7 @@
     <ClInclude Include="token.h" />
     <ClInclude Include="tokenize.h" />
     <ClInclude Include="tokenlist.h" />
+    <ClInclude Include="tokenrange.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="valueflow.h" />
     <ClInclude Include="version.h" />
@@ -297,7 +300,7 @@
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4146;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
@@ -328,7 +331,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;TIXML_USE_STL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4146;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
@@ -359,7 +362,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4146;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
@@ -388,7 +391,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4146;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>precompiled.h</PrecompiledHeaderFile>
@@ -421,7 +424,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4146;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;NDEBUG;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
@@ -461,7 +464,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4146;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;NDEBUG;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;TIXML_USE_STL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
@@ -502,7 +505,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4146;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;NDEBUG;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>
@@ -541,7 +544,7 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4018;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4146;4127;4244;4251;4267;4389;4482;4512;4701;4706;4800;4805</DisableSpecificWarnings>
       <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;NDEBUG;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>

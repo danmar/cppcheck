@@ -722,6 +722,8 @@ class CPPCHECKLIB Function {
         fIsVolatile            = (1 << 20), ///< @brief is volatile
         fHasTrailingReturnType = (1 << 21), ///< @brief has trailing return type
         fIsEscapeFunction      = (1 << 22), ///< @brief Function throws or exits
+        fIsInlineKeyword       = (1 << 23), ///< @brief Function has "inline" keyword
+        fIsConstexpr           = (1 << 24), ///< @brief is constexpr
     };
 
     /**
@@ -768,6 +770,8 @@ public:
 
     /** @brief check if this function is virtual in the base classes */
     bool isImplicitlyVirtual(bool defaultVal = false) const;
+
+    std::vector<const Function*> getOverloadedFunctions() const;
 
     /** @brief get function in base class that is overridden */
     const Function *getOverriddenFunction(bool *foundAllBaseClasses = nullptr) const;
@@ -876,12 +880,22 @@ public:
     void hasBody(bool state) {
         setFlag(fHasBody, state);
     }
+    bool isInlineKeyword() const {
+        return getFlag(fIsInlineKeyword);
+    }
 
     bool isEscapeFunction() const {
         return getFlag(fIsEscapeFunction);
     }
     void isEscapeFunction(bool state) {
         setFlag(fIsEscapeFunction, state);
+    }
+
+    bool isConstexpr() const {
+        return getFlag(fIsConstexpr);
+    }
+    void isConstexpr(bool state) {
+        setFlag(fIsConstexpr, state);
     }
     bool isSafe(const Settings *settings) const;
 
@@ -907,6 +921,8 @@ public:
     static bool returnsConst(const Function* function, bool unknown = false);
 
     static bool returnsReference(const Function* function, bool unknown = false);
+
+    static bool returnsVoid(const Function* function, bool unknown = false);
 
     static std::vector<const Token*> findReturns(const Function* f);
 
@@ -986,6 +1002,9 @@ private:
     }
     void hasTrailingReturnType(bool state) {
         return setFlag(fHasTrailingReturnType, state);
+    }
+    void isInlineKeyword(bool state) {
+        setFlag(fIsInlineKeyword, state);
     }
     const Token *setFlags(const Token *tok1, const Scope *scope);
 };
@@ -1190,16 +1209,21 @@ class CPPCHECKLIB ValueType {
 public:
     enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
     enum Type { UNKNOWN_TYPE, NONSTD, RECORD, CONTAINER, ITERATOR, VOID, BOOL, CHAR, SHORT, WCHAR_T, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE } type;
-    nonneg int bits;                    ///< bitfield bitcount
-    nonneg int pointer;                 ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
-    nonneg int constness;               ///< bit 0=data, bit 1=*, bit 2=**
-    Reference reference = Reference::None;///< Is the outermost indirection of this type a reference or rvalue reference or not? pointer=2, Reference=LValue would be a T**&
-    const Scope *typeScope;               ///< if the type definition is seen this point out the type scope
-    const ::Type *smartPointerType;       ///< Smart pointer type
-    const Token* smartPointerTypeToken;   ///< Smart pointer type token
-    const Library::Container *container;  ///< If the type is a container defined in a cfg file, this is the used container
-    const Token *containerTypeToken;      ///< The container type token. the template argument token that defines the container element type.
-    std::string originalTypeName;         ///< original type name as written in the source code. eg. this might be "uint8_t" when type is CHAR.
+    nonneg int bits;                           ///< bitfield bitcount
+    nonneg int pointer;                        ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
+    nonneg int constness;                      ///< bit 0=data, bit 1=*, bit 2=**
+    Reference reference = Reference::None;     ///< Is the outermost indirection of this type a reference or rvalue
+    ///< reference or not? pointer=2, Reference=LValue would be a T**&
+    const Scope* typeScope;                    ///< if the type definition is seen this point out the type scope
+    const ::Type* smartPointerType;            ///< Smart pointer type
+    const Token* smartPointerTypeToken;        ///< Smart pointer type token
+    const Library::SmartPointer* smartPointer; ///< Smart pointer
+    const Library::Container* container;       ///< If the type is a container defined in a cfg file, this is the used
+    ///< container
+    const Token* containerTypeToken; ///< The container type token. the template argument token that defines the
+    ///< container element type.
+    std::string originalTypeName;    ///< original type name as written in the source code. eg. this might be "uint8_t"
+    ///< when type is CHAR.
 
     ValueType()
         : sign(UNKNOWN_SIGN),
@@ -1210,6 +1234,7 @@ public:
           typeScope(nullptr),
           smartPointerType(nullptr),
           smartPointerTypeToken(nullptr),
+          smartPointer(nullptr),
           container(nullptr),
           containerTypeToken(nullptr)
     {}
@@ -1222,6 +1247,7 @@ public:
           typeScope(nullptr),
           smartPointerType(nullptr),
           smartPointerTypeToken(nullptr),
+          smartPointer(nullptr),
           container(nullptr),
           containerTypeToken(nullptr)
     {}
@@ -1234,6 +1260,7 @@ public:
           typeScope(nullptr),
           smartPointerType(nullptr),
           smartPointerTypeToken(nullptr),
+          smartPointer(nullptr),
           container(nullptr),
           containerTypeToken(nullptr)
     {}
@@ -1246,23 +1273,10 @@ public:
           typeScope(nullptr),
           smartPointerType(nullptr),
           smartPointerTypeToken(nullptr),
+          smartPointer(nullptr),
           container(nullptr),
           containerTypeToken(nullptr),
           originalTypeName(otn)
-    {}
-    ValueType(const ValueType &vt)
-        : sign(vt.sign)
-        , type(vt.type)
-        , bits(vt.bits)
-        , pointer(vt.pointer)
-        , constness(vt.constness)
-        , reference(vt.reference)
-        , typeScope(vt.typeScope)
-        , smartPointerType(vt.smartPointerType)
-        , smartPointerTypeToken(vt.smartPointerTypeToken)
-        , container(vt.container)
-        , containerTypeToken(vt.containerTypeToken)
-        , originalTypeName(vt.originalTypeName)
     {}
 
     static ValueType parseDecl(const Token *type, const Settings *settings);

@@ -11,7 +11,43 @@
 #include <direct.h>
 #include <stdlib.h>
 #include <time.h>
+#include <memory.h>
+#include <mbstring.h>
 
+unsigned char * overlappingWriteFunction__mbscat(unsigned char *src, unsigned char *dest)
+{
+    // No warning shall be shown:
+    (void)_mbscat(dest, src);
+    // cppcheck-suppress overlappingWriteFunction
+    return _mbscat(src, src);
+}
+
+unsigned char * overlappingWriteFunction__memccpy(unsigned char *src, unsigned char *dest, int c, size_t count)
+{
+    // No warning shall be shown:
+    (void)_memccpy(dest, src, c, count);
+    (void)_memccpy(dest, src, 42, count);
+    // cppcheck-suppress overlappingWriteFunction
+    (void) _memccpy(dest, dest, c, 4);
+    // cppcheck-suppress overlappingWriteFunction
+    return _memccpy(dest, dest+3, c, 4);
+}
+
+unsigned char * overlappingWriteFunction__mbscpy(unsigned char *src, unsigned char *dest)
+{
+    // No warning shall be shown:
+    (void)_mbscpy(dest, src);
+    // cppcheck-suppress overlappingWriteFunction
+    return _mbscpy(src, src);
+}
+
+void overlappingWriteFunction__swab(char *src, char *dest, int n)
+{
+    // No warning shall be shown:
+    _swab(dest, src, n);
+    // cppcheck-suppress overlappingWriteFunction
+    _swab(src, src+3, 4);
+}
 
 SYSTEM_INFO uninitvar_GetSystemInfo(char * envstr)
 {
@@ -20,7 +56,6 @@ SYSTEM_INFO uninitvar_GetSystemInfo(char * envstr)
     GetSystemInfo(&SystemInfo);
     return SystemInfo;
 }
-
 
 void uninitvar__putenv(char * envstr)
 {
@@ -871,8 +906,6 @@ unsigned char * uninitvar_mbscat(unsigned char *strDestination, const unsigned c
     (void)_mbscat(uninit_deststr,uninit_srcstr);
     // cppcheck-suppress uninitvar
     (void)_mbscat(strDestination,uninit_srcstr);
-    // cppcheck-suppress uninitvar
-    (void)_mbscat(uninit_deststr,uninit_deststr);
 
     // no warning shall be shown for
     return _mbscat(strDestination,strSource);

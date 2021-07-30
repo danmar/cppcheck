@@ -738,8 +738,11 @@ simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens
 
     simplecpp::OutputList outputList;
     std::list<simplecpp::MacroUsage> macroUsage;
+    std::list<simplecpp::IfCond> ifCond;
     simplecpp::TokenList tokens2(files);
-    simplecpp::preprocess(tokens2, tokens1, files, mTokenLists, dui, &outputList, &macroUsage);
+    simplecpp::preprocess(tokens2, tokens1, files, mTokenLists, dui, &outputList, &macroUsage, &ifCond);
+    mMacroUsage = macroUsage;
+    mIfCond = ifCond;
 
     handleErrors(outputList, throwError);
 
@@ -799,6 +802,9 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
     std::string ret;
     try {
         ret = getcode(tokens1, cfg, files, filedata.find("#file") != std::string::npos);
+        // Since "files" is a local variable the tracking info must be cleared..
+        mMacroUsage.clear();
+        mIfCond.clear();
     } catch (const simplecpp::Output &) {
         ret.clear();
     }
@@ -944,11 +950,9 @@ void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *se
 
 void Preprocessor::dump(std::ostream &out) const
 {
-    // Create a xml directive dump.
-    // The idea is not that this will be readable for humans. It's a
-    // data dump that 3rd party tools could load and get useful info from.
-    out << "  <directivelist>" << std::endl;
+    // Create a xml dump.
 
+    out << "  <directivelist>" << std::endl;
     for (const Directive &dir : mDirectives) {
         out << "    <directive "
             << "file=\"" << ErrorLogger::toxml(dir.file) << "\" "
@@ -958,6 +962,37 @@ void Preprocessor::dump(std::ostream &out) const
             << "str=\"" << ErrorLogger::toxml(dir.str) << "\"/>" << std::endl;
     }
     out << "  </directivelist>" << std::endl;
+
+    if (!mMacroUsage.empty()) {
+        out << "  <macro-usage>" << std::endl;
+        for (const simplecpp::MacroUsage &macroUsage: mMacroUsage) {
+            out << "    <macro"
+                << " name=\"" << macroUsage.macroName << "\""
+                << " file=\"" << macroUsage.macroLocation.file() << "\""
+                << " line=\"" << macroUsage.macroLocation.line << "\""
+                << " column=\"" << macroUsage.macroLocation.col << "\""
+                << " usefile=\"" << macroUsage.useLocation.file() << "\""
+                << " useline=\"" << macroUsage.useLocation.line << "\""
+                << " usecolumn=\"" << macroUsage.useLocation.col << "\""
+                << " is-known-value=\"" << (macroUsage.macroValueKnown ? "true" : "false") << "\""
+                << "/>" << std::endl;
+        }
+        out << "  </macro-usage>" << std::endl;
+    }
+
+    if (!mIfCond.empty()) {
+        out << "  <simplecpp-if-cond>" << std::endl;
+        for (const simplecpp::IfCond &ifCond: mIfCond) {
+            out << "    <if-cond"
+                << " file=\"" << ErrorLogger::toxml(ifCond.location.file()) << "\""
+                << " line=\"" << ifCond.location.line << "\""
+                << " column=\"" << ifCond.location.col << "\""
+                << " E=\"" << ErrorLogger::toxml(ifCond.E) << "\""
+                << " result=\"" << ifCond.result << "\""
+                << "/>" << std::endl;
+        }
+        out << "  </simplecpp-if-cond>" << std::endl;
+    }
 }
 
 static const std::uint32_t crc32Table[] = {

@@ -117,6 +117,7 @@ private:
         TEST_CASE(returnReference19); // #9597
         TEST_CASE(returnReference20); // #9536
         TEST_CASE(returnReference21); // #9530
+        TEST_CASE(returnReference22);
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1405,6 +1406,49 @@ private:
               "    return {x};\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReference22() {
+        check("int& f() {\n"
+              "    std::unique_ptr<int> p = std::make_unique<int>(1);\n"
+              "    return *p;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Reference to local variable returned.\n", errout.str());
+
+        check("void g(const std::unique_ptr<int>&);\n"
+              "int& f() {\n"
+              "    std::unique_ptr<int> p = std::make_unique<int>(1);\n"
+              "    g(p);\n"
+              "    return *p;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Reference to local variable returned.\n", errout.str());
+
+        check("void g(std::shared_ptr<int>);\n"
+              "int& f() {\n"
+              "    std::shared_ptr<int> p = std::make_shared<int>(1);\n"
+              "    g(p);\n"
+              "    return *p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::shared_ptr<int> g();\n"
+              "int& f() {\n"
+              "    return *g();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::unique_ptr<int> g();\n"
+              "int& f() {\n"
+              "    return *g();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Reference to temporary returned.\n", errout.str());
+
+        check("struct A { int x; };\n"
+              "int& f() {\n"
+              "    std::unique_ptr<A> p = std::make_unique<A>();\n"
+              "    return p->x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Reference to local variable returned.\n", errout.str());
     }
 
     void returnReferenceFunction() {
@@ -2925,6 +2969,19 @@ private:
         check("const std::string& getState() {\n"
               "    static const std::string& state = \"\";\n"
               "    return state;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct var {\n"
+              "    void fun();\n"
+              "}x;\n"
+              "var* T(const char*) {\n"
+              "    return &x;\n"
+              "}\n"
+              "std::string GetTemp();\n"
+              "void f() {\n"
+              "    auto a = T(GetTemp().c_str());\n"
+              "    a->fun();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

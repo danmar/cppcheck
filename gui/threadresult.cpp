@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ ThreadResult::~ThreadResult()
     //dtor
 }
 
-void ThreadResult::reportOut(const std::string &outmsg)
+void ThreadResult::reportOut(const std::string &outmsg, Color)
 {
     emit log(QString::fromStdString(outmsg));
 }

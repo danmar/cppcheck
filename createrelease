@@ -27,36 +27,36 @@
 # git log --format='%aN' 1.81..HEAD | sort -u > AUTHORS2 && diff -y AUTHORS AUTHORS2 | less
 #
 # Update version numbers in:
-# sed -i "s/[12].[0-9][0-9]*.99/2.1/" cli/main.cpp
-# sed -i "s/[12].[0-9][0-9]*/2.1/" cmake/versions.cmake
-# sed -i "s/MINOR [0-9][0-9]*/MINOR 1/" lib/version.h
-# sed -i "s/[12].[0-9][0-9]* dev/2.1/" win_installer/productInfo.wxi
-# sed -i "s/[12].[0-9][0-9]*/2.1/" win_installer/productInfo.wxi
-# sed -i "s/subtitle: Version 2[.0-9]*/subtitle: Version 2.2/" man/*.md
+# sed -i "s/2.[0-9][0-9]*.99/2.5/" cli/main.cpp
+# sed -i "s/2.[0-9][0-9]*/2.5/" cmake/versions.cmake
+# sed -i "s/MINOR [0-9]+/MINOR 5/" lib/version.h
+# sed -i "s/2\.[0-9]+/2.5/" win_installer/productInfo.wxi
+# sed -i "s/subtitle: Version 2\.[0-9]+/subtitle: Version 2.5/" man/*.md
 # Verify:
 # grep '\.99' */*.[ch]* && grep '[0-9][0-9] dev' */*.[ch]*
+# egrep "2\.[0-9]+" */*.h */*.cpp man/*.md | grep -v "test/test" | less
 # git commit -a -m "1.43: Set versions"
+#
+# Build and test the windows installer
 #
 # Update the Makefile:
 # make dmake && ./dmake --release
 # git commit -a -m "1.43: Updated Makefile"
 #
-# Build and test the windows installer
-#
 # Tag:
 # git tag 1.43
 # git push --tags
+#
+# Restore the Makefile:
+# make dmake && ./dmake
+# git commit -a -m "Makefile: Set debug mode"
 #
 # Create a release folder on sourceforge:
 # https://sourceforge.net/projects/cppcheck/files/cppcheck/
 #
 # Create release:
 # ./createrelease 1.43
-#
-# Restore the Makefile:
-# make dmake && ./dmake
-# git commit -a -m "Makefile: Set debug mode"
-#
+
 # Update download link on index.php main page
 #
 #
@@ -74,7 +74,8 @@
 #
 # self check, fix stylistic issues:
 # ./cppcheck -D__CPPCHECK__ --library=cppcheck-lib --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h cli gui/*.cpp lib
-
+#
+# Set debug version (see 803eea912c9512c810a7e78d58bb927d89a6daa1)
 
 # Tag to use
 tag=$1
@@ -85,6 +86,8 @@ releasename=cppcheck-$tag
 set -e
 
 cd ~/cppcheck
+
+git checkout $tag
 
 mkdir -p upload
 
@@ -109,3 +112,14 @@ scp * danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
 cd ~/cppcheck
 rm -rf upload
 
+# Local cppcheck binary
+mkdir -p ~/.cppcheck/$tag
+cd ~/.cppcheck/$tag
+cp -R ~/cppcheck/cfg .
+cp -R ~/cppcheck/addons .
+cp -R ~/cppcheck/platforms .
+cd ~/cppcheck
+make clean ; make -j4 FILESDIR=~/.cppcheck/2.5 MATCHCOMPILER=yes USE_Z3=yes 
+mv cppcheck ~/.cppcheck/cppcheck-$tag
+
+git checkout main

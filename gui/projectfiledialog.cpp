@@ -670,17 +670,46 @@ void ProjectFileDialog::setLibraries(const QStringList &libraries)
     }
 }
 
-void ProjectFileDialog::setSuppressions(const QList<Suppressions::Suppression> &suppressions)
+void ProjectFileDialog::addSingleSuppression(const Suppressions::Suppression &suppression)
 {
-    mSuppressions = suppressions;
+    QString suppression_name;
+    static char sep = QDir::separator().toLatin1();
+    bool found_relative = false;
 
-    QStringList s;
-    foreach (const Suppressions::Suppression &suppression, mSuppressions) {
-        s << QString::fromStdString(suppression.getText());
+    // Replace relative file path in the suppression with the absolute one
+    if ((suppression.fileName.find("*") == std::string::npos) &&
+        (suppression.fileName.find(sep) == std::string::npos)) {
+        QFileInfo inf(mProjectFile->getFilename());
+        QString rootpath = inf.absolutePath();
+        if (QFile::exists(QString{"%1%2%3"} .arg(rootpath,
+                          QDir::separator(),
+                          QString::fromStdString(suppression.fileName)))) {
+            Suppressions::Suppression sup = suppression;
+            sup.fileName = rootpath.toLatin1().constData();
+            sup.fileName += sep;
+            sup.fileName += suppression.fileName;
+            mSuppressions += sup;
+            suppression_name = QString::fromStdString(sup.getText());
+            found_relative = true;
+        }
     }
 
+    if (!found_relative) {
+        mSuppressions += suppression;
+        suppression_name = QString::fromStdString(suppression.getText());
+    }
+
+    mUI.mListSuppressions->addItem(suppression_name);
+}
+
+void ProjectFileDialog::setSuppressions(const QList<Suppressions::Suppression> &suppressions)
+{
     mUI.mListSuppressions->clear();
-    mUI.mListSuppressions->addItems(s);
+    QList<Suppressions::Suppression> new_suppressions = suppressions;
+    mSuppressions.clear();
+    foreach (const Suppressions::Suppression &suppression, new_suppressions) {
+        addSingleSuppression(suppression);
+    }
     mUI.mListSuppressions->sortItems();
 }
 
@@ -775,7 +804,7 @@ void ProjectFileDialog::addSuppression()
 {
     NewSuppressionDialog dlg;
     if (dlg.exec() == QDialog::Accepted) {
-        setSuppressions(mSuppressions << dlg.getSuppression());
+        addSingleSuppression(dlg.getSuppression());
     }
 }
 
@@ -822,7 +851,7 @@ void ProjectFileDialog::browseMisraFile()
     const QString fileName = QFileDialog::getOpenFileName(this,
                              tr("Select MISRA rule texts file"),
                              QDir::homePath(),
-                             tr("Misra rule texts file (%1)").arg("*.txt"));
+                             tr("MISRA rule texts file (%1)").arg("*.txt"));
     if (!fileName.isEmpty()) {
         QSettings settings;
         mUI.mEditMisraFile->setText(fileName);

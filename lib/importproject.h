@@ -113,6 +113,8 @@ private:
     void importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::string &fileFilter);
     void importBcb6Prj(const std::string &projectFilename);
 
+    void setRelativePaths(const std::string &filename);
+
     std::string mPath;
     std::set<std::string> mAllVSConfigs;
 };

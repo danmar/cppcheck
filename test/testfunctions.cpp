@@ -37,7 +37,9 @@ private:
     void run() OVERRIDE {
         settings.severity.enable(Severity::style);
         settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::performance);
         settings.severity.enable(Severity::portability);
+        settings.certainty.enable(Certainty::inconclusive);
         settings.libraries.emplace_back("posix");
         settings.standards.c = Standards::C11;
         settings.standards.cpp = Standards::CPP11;
@@ -81,6 +83,17 @@ private:
         // memset..
         TEST_CASE(memsetZeroBytes);
         TEST_CASE(memsetInvalid2ndParam);
+
+        // missing "return"
+        TEST_CASE(checkMissingReturn);
+
+        // std::move for locar variable
+        TEST_CASE(returnLocalStdMove1);
+        TEST_CASE(returnLocalStdMove2);
+        TEST_CASE(returnLocalStdMove3);
+        TEST_CASE(returnLocalStdMove4);
+
+        TEST_CASE(returnLocalStdMove5);
     }
 
     void check(const char code[], const char filename[]="test.cpp", const Settings* settings_=nullptr) {
@@ -141,11 +154,12 @@ private:
 
     void prohibitedFunctions_index() {
         check("namespace n1 {\n"
-              "    int index(){};\n"
+              "    int index(){ return 1; };\n"
               "}\n"
               "int main()\n"
               "{\n"
               "    n1::index();\n"
+              "    return 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -303,11 +317,12 @@ private:
               "{\n"
               "    char s [ 10 ] ;\n"
               "    gets ( s ) ;\n"
+              "    return 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Obsolete function 'gets' called. It is recommended to use 'fgets' or 'gets_s' instead.\n", errout.str());
 
         check("int getcontext(ucontext_t *ucp);\n"
-              "int f (ucontext_t *ucp)\n"
+              "void f (ucontext_t *ucp)\n"
               "{\n"
               "    getcontext ( ucp ) ;\n"
               "}");
@@ -320,6 +335,7 @@ private:
               "{\n"
               "    char s [ 10 ] ;\n"
               "    gets ( s ) ;\n"
+              "    return 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -351,7 +367,7 @@ private:
     }
 
     void prohibitedFunctions_namespaceHandling() {
-        check("int f()\n"
+        check("void f()\n"
               "{\n"
               "    time_t t = 0;"
               "    std::localtime(&t);\n"
@@ -359,14 +375,14 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'localtime' called. For threadsafe applications it is recommended to use the reentrant replacement function 'localtime_r'.\n", errout.str());
 
         // Passed as function argument
-        check("int f()\n"
+        check("void f()\n"
               "{\n"
               "    printf(\"Magic guess: %d\", getpwent());\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'getpwent' called. For threadsafe applications it is recommended to use the reentrant replacement function 'getpwent_r'.\n", errout.str());
 
         // Pass return value
-        check("int f()\n"
+        check("void f()\n"
               "{\n"
               "    time_t t = 0;"
               "    struct tm *foo = localtime(&t);\n"
@@ -374,7 +390,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'localtime' called. For threadsafe applications it is recommended to use the reentrant replacement function 'localtime_r'.\n", errout.str());
 
         // Access via global namespace
-        check("int f()\n"
+        check("void f()\n"
               "{\n"
               "    ::getpwent();\n"
               "}");
@@ -389,14 +405,14 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // Be quiet on other namespaces
-        check("int f()\n"
+        check("void f()\n"
               "{\n"
               "    foobar::getpwent();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         // Be quiet on class member functions
-        check("int f()\n"
+        check("void f()\n"
               "{\n"
               "    foobar.getpwent();\n"
               "}");
@@ -404,19 +420,19 @@ private:
     }
 
     void invalidFunctionUsage1() {
-        check("int f() { memset(a,b,sizeof(a)!=12); }");
+        check("void f() { memset(a,b,sizeof(a)!=12); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
 
-        check("int f() { memset(a,b,sizeof(a)!=0); }");
+        check("void f() { memset(a,b,sizeof(a)!=0); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
 
-        check("int f() { memset(a,b,!c); }");
+        check("void f() { memset(a,b,!c); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
 
         // Ticket #6990
-        check("int f(bool c) { memset(a,b,c); }");
+        check("void f(bool c) { memset(a,b,c); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
-        check("int f() { memset(a,b,true); }");
+        check("void f() { memset(a,b,true); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
 
         // Ticket #6588 (c mode)
@@ -443,10 +459,10 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Invalid strtol() argument nr 3. The value is 0 or 1 (boolean) but the valid values are '0,2:36'.\n", errout.str());
 
-        check("int f() { strtol(a,b,1); }");
+        check("void f() { strtol(a,b,1); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strtol() argument nr 3. The value is 1 but the valid values are '0,2:36'.\n", errout.str());
 
-        check("int f() { strtol(a,b,10); }");
+        check("void f() { strtol(a,b,10); }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1210,6 +1226,7 @@ private:
               "    teststruct TestStruct1;\n"
               "    TestStruct1.testfunc1();\n"
               "    TestStruct1.testfunc2();\n"
+              "    return 0;\n"
               "}", "test.cpp", &settings2);
         ASSERT_EQUALS("[test.cpp:4]: (warning) Return value of function testfunc1() is not used.\n"
                       "[test.cpp:4]: (warning) Return value of function testfunc2() is not used.\n"
@@ -1351,6 +1368,166 @@ private:
               "    memset(is, 1.0f + i, 40);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (portability) The 2nd memset() argument '1.0f+i' is a float, its representation is implementation defined.\n", errout.str());
+    }
+
+    void checkMissingReturn() {
+        check("int f() {}");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+        {
+            const char code[] = "int main(void) {}";
+            Settings s;
+
+            s.standards.c = Standards::C89;
+            check(code, "test.c", &s); // c code (c89)
+            ASSERT_EQUALS("[test.c:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+            s.standards.c = Standards::C99;
+            check(code, "test.c", &s); // c code (c99)
+            ASSERT_EQUALS("", errout.str());
+
+            check(code, "test.cpp", &s); // c++ code
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        check("F(A,B) { x=1; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("auto foo4() -> void {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void STDCALL foo() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "back:\n"
+              "    return 0;\n"
+              "ng:\n"
+              "    x=y;\n"
+              "    goto back;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // unreachable code..
+        check("int foo(int x) {\n"
+              "  return 1;\n"
+              "  (void)x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo(int x) {\n"
+              "  if (x) goto out;\n"
+              "  return 1;\n"
+              "out:\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+        // switch
+        check("int f() {\n"
+              "    switch (x) {\n"
+              "        case 1: break;\n" // <- error
+              "        case 2: return 1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+        check("int f() {\n"
+              "    switch (x) {\n"
+              "        case 1: return 2; break;\n"
+              "        default: return 1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // if/else
+        check("int f(int x) {\n"
+              "    if (x) {\n"
+              "        return 1;\n"
+              "    }\n" // <- error (missing else)
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+        check("int f(int x) {\n"
+              "    if (x) {\n"
+              "        ;\n" // <- error
+              "    } else {\n"
+              "        return 1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+        check("int f() {\n"
+              "    if (!0) {\n"
+              "        return 1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    if (!0) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+
+        // loop
+        check("int f(int x) {\n"
+              "    while (1) {\n"
+              "        dostuff();\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // return {..}
+        check("std::pair<int, int> typeDecl(int tok) {\n"
+              "    if (!tok)\n"
+              "        return {};\n"
+              "    else\n"
+              "        return {1, 2};\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // noreturn function
+        check("int f(int x) { exit(0); }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int x) { assert(0); }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int x) { RETURN(0); }");
+        ASSERT_EQUALS("[test.cpp:1]: (error, inconclusive) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+    }
+
+    // NRVO check
+    void returnLocalStdMove1() {
+        check("struct A{}; A f() { A var; return std::move(var); }");
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Using std::move for returning object by-value from function will affect copy elision optimization."
+                      " More: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-return-move-local\n", errout.str());
+    }
+
+    // RVO, C++03 ctor style
+    void returnLocalStdMove2() {
+        check("struct A{}; A f() { return std::move( A() ); }");
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Using std::move for returning object by-value from function will affect copy elision optimization."
+                      " More: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-return-move-local\n", errout.str());
+    }
+
+    // RVO, new ctor style
+    void returnLocalStdMove3() {
+        check("struct A{}; A f() { return std::move(A{}); }");
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Using std::move for returning object by-value from function will affect copy elision optimization."
+                      " More: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-return-move-local\n", errout.str());
+    }
+
+    // Function argument
+    void returnLocalStdMove4() {
+        check("struct A{}; A f(A a) { return std::move(A{}); }");
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Using std::move for returning object by-value from function will affect copy elision optimization."
+                      " More: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-return-move-local\n", errout.str());
+    }
+
+    void returnLocalStdMove5() {
+        check("struct A{} a; A f1() { return std::move(a); }\n"
+              "A f2() { volatile A var; return std::move(var); }");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

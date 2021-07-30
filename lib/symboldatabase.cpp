@@ -907,7 +907,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                                             unknown = true;
                                     }
                                 }
-                            } else if (!var->hasDefault())
+                            } else if (!var->hasDefault() && !var->isStatic())
                                 needInitialization = true;
                         }
 
@@ -1455,7 +1455,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                         continue;
                     if (tok1->exprId() == tok2->exprId())
                         continue;
-                    if (!isSameExpression(isCPP(), true, tok1, tok2, mSettings->library, true, false))
+                    if (!isSameExpression(isCPP(), true, tok1, tok2, mSettings->library, false, false))
                         continue;
                     nonneg int cid = std::min(tok1->exprId(), tok2->exprId());
                     tok1->exprId(cid);
@@ -1985,7 +1985,10 @@ void Variable::evaluate(const Settings* settings)
             setFlag(fIsMutable, true);
         else if (tok->str() == "const")
             setFlag(fIsConst, true);
-        else if (tok->str() == "*") {
+        else if (tok->str() == "constexpr") {
+            setFlag(fIsConst, true);
+            setFlag(fIsStatic, true);
+        } else if (tok->str() == "*") {
             setFlag(fIsPointer, !isArray() || Token::Match(tok->previous(), "( * %name% )"));
             setFlag(fIsConst, false); // Points to const, isn't necessarily const itself
         } else if (tok->str() == "&") {
@@ -2007,7 +2010,7 @@ void Variable::evaluate(const Settings* settings)
             tok = tok->next();
     }
 
-    while (Token::Match(mTypeStartToken, "static|const|volatile %any%"))
+    while (Token::Match(mTypeStartToken, "static|const|constexpr|volatile %any%"))
         mTypeStartToken = mTypeStartToken->next();
     while (mTypeEndToken && mTypeEndToken->previous() && Token::Match(mTypeEndToken, "const|volatile"))
         mTypeEndToken = mTypeEndToken->previous();
@@ -2268,9 +2271,15 @@ Function::Function(const Token *tokenDef, const std::string &clangType)
 
 const Token *Function::setFlags(const Token *tok1, const Scope *scope)
 {
+    if (tok1->isInline())
+        isInlineKeyword(true);
+
     // look for end of previous statement
     while (tok1->previous() && !Token::Match(tok1->previous(), ";|}|{|public:|protected:|private:")) {
         tok1 = tok1->previous();
+
+        if (tok1->isInline())
+            isInlineKeyword(true);
 
         // extern function
         if (tok1->str() == "extern") {
@@ -2292,6 +2301,11 @@ const Token *Function::setFlags(const Token *tok1, const Scope *scope)
         // friend function
         else if (tok1->str() == "friend") {
             isFriend(true);
+        }
+
+        // constexpr function
+        else if (tok1->str() == "constexpr") {
+            isConstexpr(true);
         }
 
         // Function template
@@ -2674,6 +2688,30 @@ bool Function::returnsReference(const Function* function, bool unknown)
     // Check for unknown types, which could be a reference
     if (isUnknownType(function->retDef, defEnd))
         return unknown;
+    return false;
+}
+
+bool Function::returnsVoid(const Function* function, bool unknown)
+{
+    if (!function)
+        return false;
+    if (function->type != Function::eFunction)
+        return false;
+    const Token* defEnd = function->returnDefEnd();
+    if (defEnd->strAt(-1) == "void")
+        return true;
+    // Check for unknown types, which could be a void type
+    if (isUnknownType(function->retDef, defEnd))
+        return unknown;
+    if (unknown) {
+        // void STDCALL foo()
+        const Token *def;
+        bool isVoid = false;
+        for (def = function->retDef; def && def->isName(); def = def->next())
+            isVoid |= (def->str() == "void");
+        if (isVoid && def && !Token::Match(def, "*|&|&&"))
+            return true;
+    }
     return false;
 }
 
@@ -3679,7 +3717,10 @@ void SymbolDatabase::printXml(std::ostream &out) const
             if (!scope->functionList.empty()) {
                 out << "      <functionList>" << std::endl;
                 for (std::list<Function>::const_iterator function = scope->functionList.begin(); function != scope->functionList.end(); ++function) {
-                    out << "        <function id=\"" << &*function << "\" tokenDef=\"" << function->tokenDef << "\" name=\"" << ErrorLogger::toxml(function->name()) << '\"';
+                    out << "        <function id=\"" << &*function
+                        << "\" token=\"" << function->token
+                        << "\" tokenDef=\"" << function->tokenDef
+                        << "\" name=\"" << ErrorLogger::toxml(function->name()) << '\"';
                     out << " type=\"" << (function->type == Function::eConstructor? "Constructor" :
                                           function->type == Function::eCopyConstructor ? "CopyConstructor" :
                                           function->type == Function::eMoveConstructor ? "MoveConstructor" :
@@ -3694,6 +3735,8 @@ void SymbolDatabase::printXml(std::ostream &out) const
                         else if (function->isImplicitlyVirtual())
                             out << " isImplicitlyVirtual=\"true\"";
                     }
+                    if (function->isInlineKeyword())
+                        out << " isInlineKeyword=\"true\"";
                     if (function->isStatic())
                         out << " isStatic=\"true\"";
                     if (function->argCount() == 0U)
@@ -3914,6 +3957,29 @@ bool Function::isImplicitlyVirtual(bool defaultVal) const
     if (foundAllBaseClasses) //If we've seen all the base classes and none of the above were true then it must not be virtual
         return false;
     return defaultVal; //If we can't see all the bases classes then we can't say conclusively
+}
+
+std::vector<const Function*> Function::getOverloadedFunctions() const
+{
+    std::vector<const Function*> result;
+    const Scope* scope = nestedIn;
+
+    while (scope) {
+        const bool isMemberFunction = scope->isClassOrStruct() && !isStatic();
+        for (std::multimap<std::string, const Function*>::const_iterator it = scope->functionMap.find(tokenDef->str());
+             it != scope->functionMap.end() && it->first == tokenDef->str();
+             ++it) {
+            const Function* func = it->second;
+            if (isMemberFunction == func->isStatic())
+                continue;
+            result.push_back(func);
+        }
+        if (isMemberFunction)
+            break;
+        scope = scope->nestedIn;
+    }
+
+    return result;
 }
 
 const Function *Function::getOverriddenFunction(bool *foundAllBaseClasses) const
@@ -4251,7 +4317,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
     }
 
     // skip const|volatile|static|mutable|extern
-    while (tok->isKeyword() && Token::Match(tok, "const|volatile|static|mutable|extern")) {
+    while (tok->isKeyword() && Token::Match(tok, "const|constexpr|volatile|static|mutable|extern")) {
         tok = tok->next();
     }
 
@@ -6068,7 +6134,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             type->type() && type->type()->isTypeAlias() && type->type()->typeStart &&
             type->type()->typeStart->str() != type->str() && type->type()->typeStart != previousType)
             parsedecl(type->type()->typeStart, valuetype, defaultSignedness, settings);
-        else if (type->str() == "const")
+        else if (Token::Match(type, "const|constexpr"))
             valuetype->constness |= (1 << (valuetype->pointer - pointer0));
         else if (settings->clang && type->str().size() > 2 && type->str().find("::") < type->str().find("<")) {
             TokenList typeTokens(settings);
@@ -6112,10 +6178,11 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
                 // we are past the end of the type
                 type = type->previous();
             continue;
-        } else if (settings->library.isSmartPointer(type)) {
+        } else if (const Library::SmartPointer* smartPointer = settings->library.detectSmartPointer(type)) {
             const Token* argTok = Token::findsimplematch(type, "<");
             if (!argTok)
                 continue;
+            valuetype->smartPointer = smartPointer;
             valuetype->smartPointerTypeToken = argTok->next();
             valuetype->smartPointerType = argTok->next()->type();
             valuetype->type = ValueType::Type::NONSTD;

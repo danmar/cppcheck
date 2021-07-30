@@ -23,6 +23,7 @@
 
 #include "analyzerinfo.h"
 #include "check.h"
+#include "color.h"
 #include "config.h"
 #include "errorlogger.h"
 #include "importproject.h"
@@ -172,7 +173,13 @@ private:
     /**
      * Execute addons
      */
+    void executeAddons(const std::vector<std::string>& files);
     void executeAddons(const std::string &dumpFile);
+
+    /**
+     * Execute addons
+     */
+    void executeAddonsWholeProgram(const std::map<std::string, std::size_t> &files);
 
     /**
      * @brief Execute rules, if any
@@ -195,7 +202,7 @@ private:
      *
      * @param outmsg Message to show, e.g. "Checking main.cpp..."
      */
-    void reportOut(const std::string &outmsg) OVERRIDE;
+    void reportOut(const std::string &outmsg, Color c = Color::Reset) OVERRIDE;
 
     void bughuntingReport(const std::string &str) OVERRIDE;
 

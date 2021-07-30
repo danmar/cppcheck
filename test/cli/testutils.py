@@ -43,22 +43,12 @@ def create_gui_project_file(project_file, root_path=None, import_project=None, p
 # Run Cppcheck with args
 def cppcheck(args):
     exe = None
-    if os.path.isfile('../../cppcheck.exe'):
-        exe = '../../cppcheck.exe'
-    elif os.path.isfile('../../../cppcheck.exe'):
-        exe = '../../../cppcheck.exe'
-    elif os.path.isfile('../../bin/cppcheck.exe'):
-        exe = '../../bin/cppcheck.exe'
-    elif os.path.isfile('../../../bin/cppcheck.exe'):
-        exe = '../../../bin/cppcheck.exe'
-    elif os.path.isfile('../../bin/cppcheck'):
-        exe = '../../bin/cppcheck'
-    elif os.path.isfile('../../../bin/cppcheck'):
-        exe = '../../../bin/cppcheck'
-    elif os.path.isfile('../../cppcheck'):
-        exe = '../../cppcheck'
-    else:
-        exe = '../../../cppcheck'
+    for ext in ('', '.exe'):
+        for base in ('../../', '../../../'):
+            for path in ('', 'bin/', 'bin/debug/'):
+                if (exe is None) and os.path.isfile(base + path + 'cppcheck' + ext):
+                    exe = base + path + 'cppcheck' + ext
+    assert exe is not None
 
     logging.info(exe + ' ' + ' '.join(args))
     p = subprocess.Popen([exe] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

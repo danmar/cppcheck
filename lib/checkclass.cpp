@@ -79,6 +79,28 @@ static bool isVariableCopyNeeded(const Variable &var)
            (var.valueType() && var.valueType()->type >= ValueType::Type::CHAR);
 }
 
+static bool isVcl(const Settings *settings)
+{
+    for (const std::string &library: settings->libraries) {
+        if (library == "vcl")
+            return true;
+    }
+    return false;
+}
+
+static bool isVclTypeInit(const Type *type)
+{
+    if (!type)
+        return false;
+    for (const Type::BaseInfo &baseInfo: type->derivedFrom) {
+        if (!baseInfo.type)
+            return true;
+        if (isVclTypeInit(baseInfo.type))
+            return true;
+    }
+    return false;
+}
+
 //---------------------------------------------------------------------------
 
 CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -101,6 +123,9 @@ void CheckClass::constructors()
 
     const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
+        if (isVcl(mSettings) && isVclTypeInit(scope->definedType))
+            continue;
+
         const bool unusedTemplate = Token::simpleMatch(scope->classDef->previous(), ">");
 
         bool usedInUnion = false;
@@ -2395,6 +2420,8 @@ void CheckClass::checkVirtualFunctionCallInConstructor()
             std::list<const Token *> callstack(1, callToken);
             getFirstVirtualFunctionCallStack(virtualFunctionCallsMap, callToken, callstack);
             if (callstack.empty())
+                continue;
+            if (!(callstack.back()->function()->hasVirtualSpecifier() || callstack.back()->function()->hasOverrideSpecifier()))
                 continue;
             if (callstack.back()->function()->isPure())
                 pureVirtualFunctionCallInConstructorError(scope->function, callstack, callstack.back()->str());

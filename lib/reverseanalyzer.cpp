@@ -3,6 +3,7 @@
 #include "astutils.h"
 #include "errortypes.h"
 #include "forwardanalyzer.h"
+#include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueptr.h"
@@ -171,7 +172,8 @@ struct ReverseTraversal {
                                                     settings);
                         }
                         // Assignment to
-                    } else if (lhsAction.matches() && !assignTok->astOperand2()->hasKnownValue()) {
+                    } else if (lhsAction.matches() && !assignTok->astOperand2()->hasKnownIntValue() &&
+                               isConstExpression(assignTok->astOperand2(), settings->library, true, true)) {
                         const std::string info = "Assignment to '" + assignTok->expressionString() + "'";
                         ValuePtr<Analyzer> a = analyzer->reanalyze(assignTok->astOperand2(), info);
                         if (a) {
@@ -218,9 +220,9 @@ struct ReverseTraversal {
                 if (thenAction.isModified() && inLoop)
                     break;
                 else if (thenAction.isModified() && !elseAction.isModified())
-                    analyzer->assume(condTok, hasElse, condTok);
+                    analyzer->assume(condTok, hasElse);
                 else if (elseAction.isModified() && !thenAction.isModified())
-                    analyzer->assume(condTok, !hasElse, condTok);
+                    analyzer->assume(condTok, !hasElse);
                 // Bail if one of the branches are read to avoid FPs due to over constraints
                 else if (thenAction.isIdempotent() || elseAction.isIdempotent() || thenAction.isRead() ||
                          elseAction.isRead())

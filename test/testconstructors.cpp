@@ -47,6 +47,20 @@ private:
         checkClass.constructors();
     }
 
+    void check(const char code[], const Settings &s) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Tokenize..
+        Tokenizer tokenizer(&s, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check class constructors..
+        CheckClass checkClass(&tokenizer, &s, this);
+        checkClass.constructors();
+    }
+
     void run() OVERRIDE {
         settings.severity.enable(Severity::style);
         settings.severity.enable(Severity::warning);
@@ -65,6 +79,7 @@ private:
         TEST_CASE(simple12); // ticket #4620
         TEST_CASE(simple13); // #5498 - no constructor, c++11 assignments
         TEST_CASE(simple14); // #6253 template base
+        TEST_CASE(simple15); // #8942 multiple arguments, decltype
 
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
@@ -176,6 +191,7 @@ private:
         TEST_CASE(privateCtor2);           // If constructor is private..
         TEST_CASE(function);               // Function is not variable
         TEST_CASE(uninitVarPublished);     // Borland C++: Variables in the published section are auto-initialized
+        TEST_CASE(uninitVarInheritClassInit); // Borland C++: if class inherits from TObject, all variables are initialized
         TEST_CASE(uninitOperator);         // No FP about uninitialized 'operator[]'
         TEST_CASE(uninitFunction1);        // No FP when initialized in function
         TEST_CASE(uninitFunction2);        // No FP when initialized in function
@@ -468,6 +484,23 @@ private:
               "private:\n"
               "    int x;\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simple15() { // #8942
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "  int member;\n"
+              "};\n"
+              "class B\n"
+              "{\n"
+              "public:\n"
+              "  B(const decltype(A::member)& x, const decltype(A::member)& y) : x(x), y(y) {}\n"
+              "private:\n"
+              "  const decltype(A::member)& x;\n"
+              "  const decltype(A::member)& y;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3160,6 +3193,20 @@ private:
               "public:\n"
               "    Fred() { }\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVarInheritClassInit() {
+        Settings s;
+        s.libraries.emplace_back("vcl");
+
+        check("class Fred: public TObject\n"
+              "{\n"
+              "public:\n"
+              "    Fred() { }\n"
+              "private:\n"
+              "    int x;\n"
+              "};", s);
         ASSERT_EQUALS("", errout.str());
     }
 

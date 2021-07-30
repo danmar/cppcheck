@@ -222,6 +222,10 @@ private:
 
     /** filename for cpp/c file - useful when reporting errors */
     std::string mFile0;
+
+    /** simplecpp tracking info */
+    std::list<simplecpp::MacroUsage> mMacroUsage;
+    std::list<simplecpp::IfCond> mIfCond;
 };
 
 /// @}
