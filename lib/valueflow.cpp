@@ -2588,10 +2588,10 @@ static Analyzer::Result valueFlowForward(Token* startToken,
 }
 
 static Analyzer::Result valueFlowForward(Token* top,
-        const Token* exprTok,
-        const std::list<ValueFlow::Value>& values,
-        TokenList* const tokenlist,
-        const Settings* settings)
+                                         const Token* exprTok,
+                                         const std::list<ValueFlow::Value>& values,
+                                         TokenList* const tokenlist,
+                                         const Settings* settings)
 {
     Analyzer::Result result{};
     for (const ValueFlow::Value& v : values) {
@@ -4496,7 +4496,8 @@ struct ConditionHandler {
 
             if (Token::Match(tok->astParent(), "%oror%|&&")) {
                 Token* parent = tok->astParent();
-                if (astIsRHS(tok) && astIsLHS(parent) && parent->astParent() && parent->str() == parent->astParent()->str())
+                if (astIsRHS(tok) && astIsLHS(parent) && parent->astParent() &&
+                    parent->str() == parent->astParent()->str())
                     parent = parent->astParent();
                 else if (!astIsLHS(tok)) {
                     parent = nullptr;
@@ -4510,9 +4511,11 @@ struct ConditionHandler {
                         values = elseValues;
                     if (Token::Match(tok, "==|!="))
                         changePossibleToKnown(values);
-                    if (astIsFloat(cond.vartok, false) || (!cond.vartok->valueType() && std::all_of(values.begin(), values.end(), [](const ValueFlow::Value& v) {
-                        return v.isIntValue() || v.isFloatValue();
-                    })))
+                    if (astIsFloat(cond.vartok, false) ||
+                        (!cond.vartok->valueType() &&
+                         std::all_of(values.begin(), values.end(), [](const ValueFlow::Value& v) {
+                             return v.isIntValue() || v.isFloatValue();
+                         })))
                         values.remove_if([&](const ValueFlow::Value& v) { return v.isImpossible(); });
                     Analyzer::Result r = forward(parent->astOperand2(), cond.vartok, values, tokenlist, settings);
                     if (r.terminate != Analyzer::Terminate::None)
@@ -4710,7 +4713,8 @@ struct SimpleConditionHandler : ConditionHandler {
                                      const Token* exprTok,
                                      const std::list<ValueFlow::Value>& values,
                                      TokenList* tokenlist,
-                                     const Settings* settings) const OVERRIDE {
+                                     const Settings* settings) const OVERRIDE
+    {
         return valueFlowForward(top, exprTok, values, tokenlist, settings);
     }
 
@@ -6074,9 +6078,9 @@ static Analyzer::Result valueFlowContainerForward(Token* startToken,
 }
 
 static Analyzer::Result valueFlowContainerForwardRecursive(Token* top,
-        const Token* exprTok,
-        const ValueFlow::Value& value,
-        TokenList* tokenlist)
+                                                           const Token* exprTok,
+                                                           const ValueFlow::Value& value,
+                                                           TokenList* tokenlist)
 {
     ContainerExpressionAnalyzer a(exprTok, value, tokenlist);
     return valueFlowGenericForward(top, a, tokenlist->getSettings());
@@ -6469,7 +6473,8 @@ struct ContainerConditionHandler : ConditionHandler {
                                      const Token* exprTok,
                                      const std::list<ValueFlow::Value>& values,
                                      TokenList* tokenlist,
-                                     const Settings*) const OVERRIDE {
+                                     const Settings*) const OVERRIDE
+    {
         Analyzer::Result result{};
         for (const ValueFlow::Value& value : values)
             result.update(valueFlowContainerForwardRecursive(top, exprTok, value, tokenlist));
