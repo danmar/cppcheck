@@ -4503,6 +4503,10 @@ struct ConditionHandler {
                     parent = nullptr;
                 }
                 if (parent) {
+                    std::vector<Token*> nextExprs = {parent->astOperand2()};
+                    if (astIsLHS(parent) && parent->astParent() && parent->astParent()->str() == parent->str()) {
+                        nextExprs.push_back(parent->astParent()->astOperand2());
+                    }
                     const std::string& op(parent->str());
                     std::list<ValueFlow::Value> values;
                     if (op == "&&")
@@ -4517,9 +4521,12 @@ struct ConditionHandler {
                              return v.isIntValue() || v.isFloatValue();
                          })))
                         values.remove_if([&](const ValueFlow::Value& v) { return v.isImpossible(); });
-                    Analyzer::Result r = forward(parent->astOperand2(), cond.vartok, values, tokenlist, settings);
-                    if (r.terminate != Analyzer::Terminate::None)
-                        return;
+                    for(Token* start:nextExprs) {
+                        Analyzer::Result r = forward(start, cond.vartok, values, tokenlist, settings);
+                        if (r.terminate != Analyzer::Terminate::None)
+                            return;
+                    }
+
                 }
             }
 
