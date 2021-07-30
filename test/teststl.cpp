@@ -4768,6 +4768,22 @@ private:
               "  Parse(i);\n"
               "}\n",true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  std::string x;\n"
+              "  struct V {\n"
+              "    std::string* pStr{};\n"
+              "  };\n"
+              "  struct I {\n"
+              "    std::vector<V> v;\n"
+              "  };\n"
+              "  I b[] = {{{{ &x }}}};\n"
+              "  x = \"Arial\";\n"
+              "  I cb[1];\n"
+              "  for (long i = 0; i < 1; ++i)\n"
+              "    cb[i] = b[i];\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidContainerLoop() {
