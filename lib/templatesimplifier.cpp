@@ -1802,9 +1802,13 @@ void TemplateSimplifier::expandTemplate(
                 if (start->link()) {
                     if (Token::Match(start, "[|{|(")) {
                         links[start->link()] = dst->previous();
-                    } else if (Token::Match(start, "]|}|)") && links[start]) {
-                        Token::createMutualLinks(links[start], dst->previous());
-                        links.erase(start);
+                    } else if (Token::Match(start, "]|}|)")) {
+                        std::map<const Token *, Token *>::iterator link = links.find(start);
+                        // make sure link is valid
+                        if (link != links.end()) {
+                            Token::createMutualLinks(link->second, dst->previous());
+                            links.erase(start);
+                        }
                     }
                 }
             }
