@@ -3707,7 +3707,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'abs(i)==-1' is always false\n", errout.str());
 
         check("void f(int i) {\n"
-              "    if(i > -3 && abs(i) == -1) {}\n"
+              "    if(i > -3 && abs(i) == i) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
