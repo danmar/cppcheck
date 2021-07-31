@@ -3693,7 +3693,25 @@ private:
         check("void f(int i) {\n"
               "    if(abs(i) == -1) {}\n"
               "}\n");
-        ASSERT_EQUALS("error", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'abs(i)==-1' is always false\n", errout.str());
+
+        // #7844
+        check("void f(int i) {\n"
+              "    if(i > 0 && abs(i) == -1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'abs(i)==-1' is always false\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    if(i < 0 && abs(i) == -1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'abs(i)==-1' is always false\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    if(i > -3 && abs(i) == -1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+
     }
 
     void alwaysTrueInfer() {

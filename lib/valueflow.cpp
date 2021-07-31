@@ -4068,13 +4068,16 @@ static void valueFlowSymbolicAbs(TokenList* tokenlist, SymbolDatabase* symboldat
             if (!arg)
                 continue;
             ValueFlow::Value c = inferCondition(">=", arg, 0);
-            if (!c.isKnown() && c.intvalue == 0)
+            if (!c.isKnown())
                 continue;
 
             ValueFlow::Value v = makeSymbolic(arg);
             v.errorPath = c.errorPath;
             v.errorPath.emplace_back(tok, "Passed to abs");
-            v.setKnown();
+            if (c.intvalue == 0)
+                v.setImpossible();
+            else
+                v.setKnown();
             setTokenValue(tok->next(), v, tokenlist->getSettings());
         }
     }
@@ -4125,6 +4128,10 @@ static void valueFlowSymbolicInfer(TokenList* tokenlist, SymbolDatabase* symbold
             } else if (rhs) {
                 value.valueKind = rhs->valueKind;
                 value.errorPath = rhs->errorPath;
+            }
+            if (Token::Match(tok, "%comp%") && value.isImpossible() && value.intvalue != 0) {
+                value.intvalue = 0;
+                value.setKnown();
             }
             setTokenValue(tok, value, tokenlist->getSettings());
         }
