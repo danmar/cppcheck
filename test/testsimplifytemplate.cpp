@@ -214,6 +214,7 @@ private:
         TEST_CASE(template170); // crash
         TEST_CASE(template171); // crash
         TEST_CASE(template172); // #10258 crash
+        TEST_CASE(template173); // #10332 crash
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -4413,6 +4414,29 @@ private:
         const char exp[]  = "void bar<int> ( int t , Args && ... args ) ; "
                             "void foo ( ) { bar<int> ( 0 , 1 ) ; } "
                             "void bar<int> ( int t , Args && ... args ) { }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template173() { // #10332 crash
+        const char code[] = "namespace a {\n"
+                            "template <typename, typename> struct b;\n"
+                            "template <template <typename, typename> class = b> class c;\n"
+                            "using d = c<>;\n"
+                            "template <template <typename, typename = void> class> class c {};\n"
+                            "}\n"
+                            "namespace std {\n"
+                            "template <> void swap<a::d>(a::d &, a::d &) {}\n"
+                            "}";
+        const char exp[]  = "namespace a { "
+                            "template < typename , typename > struct b ; "
+                            "template < template < typename , typename > class > class c ; "
+                            "class c<b> ; "
+                            "} "
+                            "namespace std { "
+                            "void swap<a::c<b>> ( a :: c<b> & , a :: c<b> & ) ; "
+                            "void swap<a::c<b>> ( a :: c<b> & , a :: c<b> & ) { } "
+                            "} "
+                            "class a :: c<b> { } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
