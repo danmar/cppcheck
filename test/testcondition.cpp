@@ -3688,6 +3688,12 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #7843
+        check("void f(int i) {\n"
+              "    if(abs(i) == -1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("error", errout.str());
     }
 
     void alwaysTrueInfer() {
