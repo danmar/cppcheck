@@ -4042,6 +4042,31 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
     }
 }
 
+static void valueFlowSymbolicAbs(TokenList* tokenlist, SymbolDatabase* symboldatabase)
+{
+    for (const Scope* scope : symboldatabase->functionScopes) {
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "abs|labs|llabs|fabs|fabsf|fabsl ("))
+                continue;
+            if (tok->hasKnownIntValue())
+                continue;
+
+            const Token* arg = tok->next()->astOperand2();
+            if (!arg)
+                continue;
+            ValueFlow::Value c = inferCondition(">=", arg, 0);
+            if (!c.isKnown() && c.intvalue == 0)
+                continue;
+
+            ValueFlow::Value v = makeSymbolic(arg);
+            v.errorPath = c.errorPath;
+            v.errorPath.emplace_back(tok, "Passed to abs");
+            v.setKnown();
+            setTokenValue(tok->next(), v, tokenlist->getSettings());
+        }
+    }
+}
+
 static void valueFlowSymbolicInfer(TokenList* tokenlist, SymbolDatabase* symboldatabase)
 {
     for (const Scope* scope : symboldatabase->functionScopes) {
@@ -7006,6 +7031,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     while (n > 0 && values < getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
         valueFlowImpossibleValues(tokenlist, settings);
+        valueFlowSymbolicAbs(tokenlist, symboldatabase);
         valueFlowSymbolicInfer(tokenlist, symboldatabase);
         valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);
