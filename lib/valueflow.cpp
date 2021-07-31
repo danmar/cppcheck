@@ -1564,6 +1564,11 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
             value.bound = ValueFlow::Value::Bound::Lower;
             value.setImpossible();
             setTokenValue(tok, value, settings);
+        } else if (Token::Match(tok, "abs|labs|llabs|fabs|fabsf|fabsl (")) {
+            ValueFlow::Value value{-1};
+            value.bound = ValueFlow::Value::Bound::Upper;
+            value.setImpossible();
+            setTokenValue(tok->next(), value, settings);
         }
     }
 }
