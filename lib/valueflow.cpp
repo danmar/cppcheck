@@ -2289,7 +2289,7 @@ struct ValueFlowAnalyzer : Analyzer {
     }
 };
 
-ValuePtr<Analyzer> makeAnalyzer(Token* exprTok, const ValueFlow::Value& value, const TokenList* tokenlist);
+ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, const ValueFlow::Value& value, const TokenList* tokenlist);
 
 struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
     std::unordered_map<nonneg int, const Variable*> varids;
@@ -2576,11 +2576,11 @@ static const Token* solveExprValues(const Token* expr, std::list<ValueFlow::Valu
     return expr;
 }
 
-ValuePtr<Analyzer> makeAnalyzer(Token* exprTok, const ValueFlow::Value& value, const TokenList* tokenlist)
+ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, const ValueFlow::Value& value, const TokenList* tokenlist)
 {
     std::list<ValueFlow::Value> values = {value};
     const Token* expr = solveExprValues(exprTok, values);
-    return ExpressionAnalyzer(expr, value, tokenlist);
+    return ExpressionAnalyzer(expr, values.front(), tokenlist);
 }
 
 static Analyzer::Result valueFlowForward(Token* startToken,
@@ -2592,6 +2592,19 @@ static Analyzer::Result valueFlowForward(Token* startToken,
 {
     const Token* expr = solveExprValues(exprTok, values);
     return valueFlowForwardExpression(startToken, endToken, expr, values, tokenlist, settings);
+}
+
+static Analyzer::Result valueFlowForward(Token* top,
+                                         const Token* exprTok,
+                                         const std::list<ValueFlow::Value>& values,
+                                         TokenList* const tokenlist,
+                                         const Settings* settings)
+{
+    Analyzer::Result result{};
+    for (const ValueFlow::Value& v : values) {
+        result.update(valueFlowGenericForward(top, makeAnalyzer(exprTok, v, tokenlist), settings));
+    }
+    return result;
 }
 
 static void valueFlowReverse(Token* tok,
@@ -4387,6 +4400,12 @@ struct ConditionHandler {
                                      TokenList* tokenlist,
                                      const Settings* settings) const = 0;
 
+    virtual Analyzer::Result forward(Token* top,
+                                     const Token* exprTok,
+                                     const std::list<ValueFlow::Value>& values,
+                                     TokenList* tokenlist,
+                                     const Settings* settings) const = 0;
+
     virtual void reverse(Token* start,
                          const Token* endToken,
                          const Token* exprTok,
@@ -4599,7 +4618,8 @@ struct ConditionHandler {
 
             if (Token::Match(tok->astParent(), "%oror%|&&")) {
                 Token* parent = tok->astParent();
-                if (astIsRHS(tok) && parent->astParent() && parent->str() == parent->astParent()->str())
+                if (astIsRHS(tok) && astIsLHS(parent) && parent->astParent() &&
+                    parent->str() == parent->astParent()->str())
                     parent = parent->astParent();
                 else if (!astIsLHS(tok)) {
                     parent = nullptr;
@@ -4611,31 +4631,17 @@ struct ConditionHandler {
                         values = thenValues;
                     else if (op == "||")
                         values = elseValues;
-                    if (Token::Match(tok, "==|!="))
+                    if (Token::Match(tok, "==|!=") || (tok == cond.vartok && astIsBool(tok)))
                         changePossibleToKnown(values);
-                    if (!values.empty()) {
-                        bool assign = false;
-                        visitAstNodes(parent->astOperand2(), [&](Token* tok2) {
-                            if (tok2 == tok)
-                                return ChildrenToVisit::done;
-                            if (isSameExpression(
-                                    tokenlist->isCPP(), false, cond.vartok, tok2, settings->library, true, false))
-                                setTokenValue(tok2, values.front(), settings);
-                            else if (Token::Match(tok2, "++|--|=") && isSameExpression(tokenlist->isCPP(),
-                                     false,
-                                     cond.vartok,
-                                     tok2->astOperand1(),
-                                     settings->library,
-                                     true,
-                                     false)) {
-                                assign = true;
-                                return ChildrenToVisit::done;
-                            }
-                            return ChildrenToVisit::op1_and_op2;
-                        });
-                        if (assign)
-                            return;
-                    }
+                    if (astIsFloat(cond.vartok, false) ||
+                        (!cond.vartok->valueType() &&
+                         std::all_of(values.begin(), values.end(), [](const ValueFlow::Value& v) {
+                             return v.isIntValue() || v.isFloatValue();
+                         })))
+                        values.remove_if([&](const ValueFlow::Value& v) { return v.isImpossible(); });
+                    Analyzer::Result r = forward(parent->astOperand2(), cond.vartok, values, tokenlist, settings);
+                    if (r.terminate != Analyzer::Terminate::None)
+                        return;
                 }
             }
 
@@ -4823,6 +4829,15 @@ struct SimpleConditionHandler : ConditionHandler {
                                      TokenList* tokenlist,
                                      const Settings* settings) const OVERRIDE {
         return valueFlowForward(start->next(), stop, exprTok, values, tokenlist, settings);
+    }
+
+    virtual Analyzer::Result forward(Token* top,
+                                     const Token* exprTok,
+                                     const std::list<ValueFlow::Value>& values,
+                                     TokenList* tokenlist,
+                                     const Settings* settings) const OVERRIDE
+    {
+        return valueFlowForward(top, exprTok, values, tokenlist, settings);
     }
 
     virtual void reverse(Token* start,
@@ -6184,6 +6199,15 @@ static Analyzer::Result valueFlowContainerForward(Token* startToken,
     return valueFlowGenericForward(startToken, endToken, a, tokenlist->getSettings());
 }
 
+static Analyzer::Result valueFlowContainerForwardRecursive(Token* top,
+                                                           const Token* exprTok,
+                                                           const ValueFlow::Value& value,
+                                                           TokenList* tokenlist)
+{
+    ContainerExpressionAnalyzer a(exprTok, value, tokenlist);
+    return valueFlowGenericForward(top, a, tokenlist->getSettings());
+}
+
 static Analyzer::Result valueFlowContainerForward(Token* startToken,
         const Token* exprTok,
         const ValueFlow::Value& value,
@@ -6564,6 +6588,18 @@ struct ContainerConditionHandler : ConditionHandler {
         Analyzer::Result result{};
         for (const ValueFlow::Value& value : values)
             result.update(valueFlowContainerForward(start->next(), stop, exprTok, value, tokenlist));
+        return result;
+    }
+
+    virtual Analyzer::Result forward(Token* top,
+                                     const Token* exprTok,
+                                     const std::list<ValueFlow::Value>& values,
+                                     TokenList* tokenlist,
+                                     const Settings*) const OVERRIDE
+    {
+        Analyzer::Result result{};
+        for (const ValueFlow::Value& value : values)
+            result.update(valueFlowContainerForwardRecursive(top, exprTok, value, tokenlist));
         return result;
     }
 
