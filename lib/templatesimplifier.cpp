@@ -1025,7 +1025,7 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
 
     // Scan template declaration..
     for (Token *tok = declaration.token()->next(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "template <")) {
+        if (Token::simpleMatch(tok, "template <")) {
             Token* end = tok->next()->findClosingBracket();
             if (end)
                 tok = end;
