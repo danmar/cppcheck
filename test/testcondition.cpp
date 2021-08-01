@@ -3642,6 +3642,27 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #10121
+        check("struct AB {\n"
+              "    int a;\n"
+              "};\n"
+              "struct ABC {\n"
+              "    AB* ab;\n"
+              "};\n"
+              "void g(ABC*);\n"
+              "int f(struct ABC *abc) {\n"
+              "    int err = 0;\n"
+              "    AB *ab = abc->ab;\n"
+              "    if (ab->a == 123){\n"
+              "        g(abc);\n"
+              "        if (ab->a != 123) {\n"
+              "            err = 1;\n"
+              "        }\n"
+              "    }\n"
+              "    return err;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // #10323
         check("void foo(int x) {\n"
               "    if(x)\n"
