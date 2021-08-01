@@ -2949,6 +2949,23 @@ private:
     }
 
     void alwaysTrue() {
+
+        check("void f ()\n"// #8220
+              "{\n"
+              "    int a;\n"
+              "    int b = 0;\n"
+              "    int ret;\n"
+              " \n"
+              "    a = rand();\n"
+              "    while (((0 < a) && (a < 2)) && ((8 < a) && (a < 10))) \n"
+              "    {\n"
+              "        b += a;\n"
+              "        a ++;\n"
+              "    }\n"
+              "    ret = b;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:8]: (style) Condition '8<a' is always false\n", errout.str());
+
         check("void f() {\n" // #4842
               "  int x = 0;\n"
               "  if (a) { return; }\n" // <- this is just here to fool simplifyKnownVariabels
@@ -4355,8 +4372,8 @@ private:
               "  if (b == true) {}\n"
               "}", &settingsUnix64);
         ASSERT_EQUALS("", errout.str());
-    }  
-  
+    }
+
     void knownConditionCast() { // #9976
         check("void f(int i) {\n"
               "    if (i < 0 || (unsigned)i > 5) {}\n"
