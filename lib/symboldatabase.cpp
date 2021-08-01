@@ -41,6 +41,21 @@
 #include <unordered_map>
 //---------------------------------------------------------------------------
 
+static std::vector<const Scope *> getAllScopes(const Scope *scope)
+{
+    std::vector<const Scope *> ret;
+    if (scope && scope->nestedIn) {
+        for (const Scope *s: scope->nestedIn->nestedList) {
+            if (s->type == Scope::ScopeType::eNamespace && s->className == scope->className)
+                ret.push_back(s);
+        }
+    }
+    if (scope && ret.empty())
+        ret.push_back(scope);
+    return ret;
+}
+//---------------------------------------------------------------------------
+
 SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger)
 {
@@ -732,14 +747,21 @@ void SymbolDatabase::createSymbolDatabaseClassInfo()
 
     // fill in base class info
     for (Type& type : typeList) {
+        const std::vector<const Scope *> allEnclosingScopes = getAllScopes(type.enclosingScope);
         // finish filling in base class info
-        for (Type::BaseInfo & i : type.derivedFrom) {
-            const Type* found = findType(i.nameTok, type.enclosingScope);
-            if (found && found->findDependency(&type)) {
-                // circular dependency
-                //mTokenizer->syntaxError(nullptr);
-            } else {
-                i.type = found;
+        for (Type::BaseInfo & baseInfo : type.derivedFrom) {
+            baseInfo.type = nullptr;
+            for (const Scope *enclosingScope: allEnclosingScopes) {
+                const Type* found = findType(baseInfo.nameTok, enclosingScope);
+                if (found) {
+                    if (found->findDependency(&type)) {
+                        // circular dependency
+                        //mTokenizer->syntaxError(nullptr);
+                    } else {
+                        baseInfo.type = found;
+                        break;
+                    }
+                }
             }
         }
     }
@@ -4690,18 +4712,6 @@ const Type* SymbolDatabase::findVariableTypeInBase(const Scope* scope, const Tok
 
 //---------------------------------------------------------------------------
 
-static std::vector<const Scope *> getExtraScopesForNamespace(const Scope *scope)
-{
-    std::vector<const Scope *> ret;
-    if (scope && scope->nestedIn) {
-        for (const Scope *s: scope->nestedIn->nestedList) {
-            if (s != scope && s->type == Scope::ScopeType::eNamespace && s->className == scope->className)
-                ret.push_back(s);
-        }
-    }
-    return ret;
-}
-
 const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *typeTok) const
 {
     const Scope *scope = start;
@@ -4713,22 +4723,16 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
             return start->definedType;
 
         while (scope) {
-            // look for type in this scope
-            const Type * type = scope->findType(typeTok->str());
-
-            if (type)
-                return type;
-
-            for (const Scope *extraScope: getExtraScopesForNamespace(scope)) {
+            for (const Scope *scope2: getAllScopes(scope)) {
                 // look for type in this scope
-                const Type * type = extraScope->findType(typeTok->str());
+                const Type * type = scope2->findType(typeTok->str());
                 if (type)
                     return type;
             }
 
             // look for type in base classes if possible
             if (scope->isClassOrStruct()) {
-                type = findVariableTypeInBase(scope, typeTok);
+                const Type* type = findVariableTypeInBase(scope, typeTok);
 
                 if (type)
                     return type;
@@ -4738,7 +4742,7 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
             if (scope->type == Scope::eFunction && scope->functionOf) {
                 const Scope *scope1 = scope->functionOf;
 
-                type = scope1->findType(typeTok->str());
+                const Type* type = scope1->findType(typeTok->str());
 
                 if (type)
                     return type;

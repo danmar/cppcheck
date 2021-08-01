@@ -154,7 +154,9 @@ private:
         return !val.isLifetimeValue();
     }
 
-    static bool isNotUninitValue(const ValueFlow::Value& val) { return !val.isUninitValue(); }
+    static bool isNotUninitValue(const ValueFlow::Value& val) {
+        return !val.isUninitValue();
+    }
 
     static bool isNotPossible(const ValueFlow::Value& val) {
         return !val.isPossible();

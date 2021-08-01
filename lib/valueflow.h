@@ -286,7 +286,9 @@ namespace ValueFlow {
         bool isIteratorEndValue() const {
             return valueType == ValueType::ITERATOR_END;
         }
-        bool isSymbolicValue() const { return valueType == ValueType::SYMBOLIC; }
+        bool isSymbolicValue() const {
+            return valueType == ValueType::SYMBOLIC;
+        }
 
         bool isLocalLifetimeValue() const {
             return valueType == ValueType::LIFETIME && lifetimeScope == LifetimeScope::Local;
