@@ -1419,8 +1419,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void iterator27()
-    {
+    void iterator27() {
         // #10378
         check("struct A {\n"
               "    int a;\n"
