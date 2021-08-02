@@ -2589,11 +2589,13 @@ static Analyzer::Result valueFlowForward(Token* startToken,
     return valueFlowForwardExpression(startToken, endToken, expr, values, tokenlist, settings);
 }
 
+// *INDENT-OFF*
 static Analyzer::Result valueFlowForward(Token* top,
-        const Token* exprTok,
-        const std::list<ValueFlow::Value>& values,
-        TokenList* const tokenlist,
-        const Settings* settings)
+                                         const Token* exprTok,
+                                         const std::list<ValueFlow::Value>& values,
+                                         TokenList* const tokenlist,
+                                         const Settings* settings)
+// *INDENT-ON*
 {
     Analyzer::Result result{};
     for (const ValueFlow::Value& v : values) {
@@ -4031,6 +4033,10 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
                 continue;
             if (tok->astOperand2()->hasKnownIntValue())
                 continue;
+            if (tok->astOperand1()->exprId() == 0)
+                continue;
+            if (tok->astOperand2()->exprId() == 0)
+                continue;
             if (!isConstExpression(tok->astOperand2(), tokenlist->getSettings()->library, true, tokenlist->isCPP()))
                 continue;
 
@@ -4067,6 +4073,10 @@ static void valueFlowSymbolicInfer(TokenList* tokenlist, SymbolDatabase* symbold
             if (tok->astOperand1()->hasKnownIntValue())
                 continue;
             if (tok->astOperand2()->hasKnownIntValue())
+                continue;
+            if (astIsFloat(tok->astOperand1(), false))
+                continue;
+            if (astIsFloat(tok->astOperand2(), false))
                 continue;
 
             MathLib::bigint rhsvalue = 0;
@@ -4597,6 +4607,10 @@ struct ConditionHandler {
                     parent = nullptr;
                 }
                 if (parent) {
+                    std::vector<Token*> nextExprs = {parent->astOperand2()};
+                    if (astIsLHS(parent) && parent->astParent() && parent->astParent()->str() == parent->str()) {
+                        nextExprs.push_back(parent->astParent()->astOperand2());
+                    }
                     const std::string& op(parent->str());
                     std::list<ValueFlow::Value> values;
                     if (op == "&&")
@@ -4605,17 +4619,20 @@ struct ConditionHandler {
                         values = elseValues;
                     if (Token::Match(tok, "==|!=") || (tok == cond.vartok && astIsBool(tok)))
                         changePossibleToKnown(values);
+                    // *INDENT-OFF*
                     if (astIsFloat(cond.vartok, false) ||
                         (!cond.vartok->valueType() &&
-                    std::all_of(values.begin(), values.end(), [](const ValueFlow::Value& v) {
-                    return v.isIntValue() || v.isFloatValue();
-                    })))
-                    values.remove_if([&](const ValueFlow::Value& v) {
-                        return v.isImpossible();
-                    });
-                    Analyzer::Result r = forward(parent->astOperand2(), cond.vartok, values, tokenlist, settings);
-                    if (r.terminate != Analyzer::Terminate::None)
-                        return;
+                         std::all_of(values.begin(), values.end(), [](const ValueFlow::Value& v) {
+                             return v.isIntValue() || v.isFloatValue();
+                         })))
+                        values.remove_if([&](const ValueFlow::Value& v) { return v.isImpossible(); });
+                    for(Token* start:nextExprs) {
+                        Analyzer::Result r = forward(start, cond.vartok, values, tokenlist, settings);
+                        if (r.terminate != Analyzer::Terminate::None)
+                            return;
+                    }
+                    // *INDENT-ON*
+
                 }
             }
 
@@ -6171,10 +6188,12 @@ static Analyzer::Result valueFlowContainerForward(Token* startToken,
     return valueFlowGenericForward(startToken, endToken, a, tokenlist->getSettings());
 }
 
+// *INDENT-OFF*
 static Analyzer::Result valueFlowContainerForwardRecursive(Token* top,
-        const Token* exprTok,
-        const ValueFlow::Value& value,
-        TokenList* tokenlist)
+                                                           const Token* exprTok,
+                                                           const ValueFlow::Value& value,
+                                                           TokenList* tokenlist)
+// *INDENT-ON*
 {
     ContainerExpressionAnalyzer a(exprTok, value, tokenlist);
     return valueFlowGenericForward(top, a, tokenlist->getSettings());

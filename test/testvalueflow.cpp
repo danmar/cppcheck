@@ -6007,6 +6007,20 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, "i++", 0));
+
+        code = "float foo() {\n"
+               "    float f = 1.0f;\n"
+               "    float x = f;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, "1.0f", 0));
+
+        code = "int foo(float f) {\n"
+               "    float g = f;\n"
+               "    int x = f == g;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
     }
 };
 
