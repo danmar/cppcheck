@@ -154,7 +154,9 @@ private:
         return !val.isLifetimeValue();
     }
 
-    static bool isNotUninitValue(const ValueFlow::Value& val) { return !val.isUninitValue(); }
+    static bool isNotUninitValue(const ValueFlow::Value& val) {
+        return !val.isUninitValue();
+    }
 
     static bool isNotPossible(const ValueFlow::Value& val) {
         return !val.isPossible();
@@ -5998,6 +6000,27 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
+
+        code = "int f(int i) {\n"
+               "    int j = i++;\n"
+               "    int x = i++;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, "i++", 0));
+
+        code = "float foo() {\n"
+               "    float f = 1.0f;\n"
+               "    float x = f;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, "1.0f", 0));
+
+        code = "int foo(float f) {\n"
+               "    float g = f;\n"
+               "    int x = f == g;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
     }
 };
 

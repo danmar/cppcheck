@@ -246,6 +246,7 @@ private:
 
         // Access array and then check if the used index is within bounds
         TEST_CASE(arrayIndexThenCheck);
+        TEST_CASE(arrayIndexEarlyReturn); // #6884
 
         TEST_CASE(bufferNotZeroTerminated);
 
@@ -4307,6 +4308,21 @@ private:
               "  if ((i < 10 ? buf[i] : 1) && (i < 5 ? buf[i] : 5)){}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void arrayIndexEarlyReturn() { // #6884
+        check("extern const char *Names[2];\n"
+              "const char* getName(int value) {\n"
+              "  if ((value < 0) || (value > 1))\n"
+              "    return \"???\";\n"
+              "  const char* name = Names[value]; \n"
+              "  switch (value) {\n"
+              "  case 2:\n"
+              "    break; \n"
+              "  }\n"
+              "  return name;\n"
+              "}\n");
+      ASSERT_EQUALS("", errout.str());
     }
 
     void bufferNotZeroTerminated() {
