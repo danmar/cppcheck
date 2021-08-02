@@ -172,7 +172,8 @@ struct ReverseTraversal {
                                                     settings);
                         }
                         // Assignment to
-                } else if (lhsAction.matches() && !assignTok->astOperand2()->hasKnownIntValue() && assignTok->astOperand2()->exprId() > 0 &&
+                    } else if (lhsAction.matches() && !assignTok->astOperand2()->hasKnownIntValue() &&
+                               assignTok->astOperand2()->exprId() > 0 &&
                                isConstExpression(assignTok->astOperand2(), settings->library, true, true)) {
                         const std::string info = "Assignment to '" + assignTok->expressionString() + "'";
                         ValuePtr<Analyzer> a = analyzer->reanalyze(assignTok->astOperand2(), info);

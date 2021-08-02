@@ -3980,7 +3980,7 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
             Token* startTok = blockTok;
             // Inner condition
             {
-                for (const Token* condTok2:getConditions(condTok, "&&")) {
+                for (const Token* condTok2 : getConditions(condTok, "&&")) {
                     if (is1) {
                         ExpressionAnalyzer a1(condTok2, makeConditionValue(1, condTok2, true), tokenlist);
                         valueFlowGenericForward(startTok, startTok->link(), a1, settings);
