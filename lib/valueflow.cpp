@@ -2828,7 +2828,8 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
         if (!vartok)
             return {{tok, std::move(errorPath)}};
         const Variable *tokvar = vartok->variable();
-        if (!isUniqueSmartPointer(vartok) && !astIsContainer(vartok) &&
+        const bool isContainer = astIsContainer(vartok) && !astIsPointer(vartok);
+        if (!isUniqueSmartPointer(vartok) && !isContainer &&
             !(tokvar && tokvar->isArray() && !tokvar->isArgument()) &&
             (Token::Match(vartok->astParent(), "[|*") || vartok->astParent()->originalName() == "->")) {
             for (const ValueFlow::Value &v : vartok->values()) {
