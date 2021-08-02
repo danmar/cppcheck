@@ -24,16 +24,17 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
-#include <simplecpp.h>
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
+#include <cstring>
+#include <functional>
 #include <list>
 #include <map>
+#include <simplecpp.h>
 #include <string>
 #include <utility>
 #include <vector>
-#include <cstdint>
-#include <cstring>
 
 class TestValueFlow : public TestFixture {
 public:
@@ -142,6 +143,7 @@ private:
         TEST_CASE(valueFlowIdempotent);
         TEST_CASE(valueFlowUnsigned);
         TEST_CASE(valueFlowMod);
+        TEST_CASE(valueFlowSymbolic);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -150,6 +152,10 @@ private:
 
     static bool isNotLifetimeValue(const ValueFlow::Value& val) {
         return !val.isLifetimeValue();
+    }
+
+    static bool isNotUninitValue(const ValueFlow::Value& val) {
+        return !val.isUninitValue();
     }
 
     static bool isNotPossible(const ValueFlow::Value& val) {
@@ -177,7 +183,29 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 for (const ValueFlow::Value& val:tok->values()) {
+                    if (val.isSymbolicValue())
+                        continue;
                     if (val.isKnown() && val.intvalue == value)
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    bool testValueOfXKnown(const char code[], unsigned int linenr, const std::string& expr, int value) {
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == "x" && tok->linenr() == linenr) {
+                for (const ValueFlow::Value& val : tok->values()) {
+                    if (!val.isSymbolicValue())
+                        continue;
+                    if (val.isKnown() && val.intvalue == value && val.tokvalue->expressionString() == expr)
                         return true;
                 }
             }
@@ -195,6 +223,8 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 for (const ValueFlow::Value& val:tok->values()) {
+                    if (val.isSymbolicValue())
+                        continue;
                     if (val.isImpossible() && val.intvalue == value)
                         return true;
                 }
@@ -213,6 +243,8 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 for (const ValueFlow::Value& val:tok->values()) {
+                    if (val.isSymbolicValue())
+                        continue;
                     if (val.isInconclusive() && val.intvalue == value)
                         return true;
                 }
@@ -1152,7 +1184,8 @@ private:
                "  y += 12;\n"
                "  if (y == 32) {}"
                "}\n";
-        ASSERT_EQUALS("5,Assuming that condition 'y==32' is not redundant\n"
+        ASSERT_EQUALS("2,x is assigned 'y' here.\n"
+                      "5,Assuming that condition 'y==32' is not redundant\n"
                       "4,Compound assignment '+=', assigned value is 20\n"
                       "2,Assignment 'x=y', assigned value is 20\n",
                       getErrorPathForX(code, 3U));
@@ -1173,7 +1206,10 @@ private:
                "  for (x = a; x < 50; x++) {}\n"
                "  b = x;\n"
                "}\n";
-        ASSERT_EQUALS("3,After for loop, x has value 50\n",
+        ASSERT_EQUALS("3,x is assigned 'a' here.\n"
+                      "3,x is incremented', new value is symbolic=a+1\n"
+                      "3,x is incremented', new value is symbolic=a+2\n"
+                      "3,After for loop, x has value 50\n",
                       getErrorPathForX(code, 4U));
     }
 
@@ -4298,6 +4334,7 @@ private:
                "    a = x + 1;\n"
                "}\n";
         values = tokenValues(code, "x +");
+        values.remove_if(&isNotUninitValue);
         ASSERT_EQUALS(true, values.empty());
 
         // #8494 - overloaded operator &
@@ -4682,6 +4719,7 @@ private:
     static std::string isPossibleContainerSizeValue(std::list<ValueFlow::Value> values,
             MathLib::bigint i,
             bool unique = true) {
+        values.remove_if(std::mem_fn(&ValueFlow::Value::isSymbolicValue));
         if (!unique)
             values.remove_if(&isNotPossible);
         if (values.size() != 1)
@@ -4698,6 +4736,7 @@ private:
     static std::string isImpossibleContainerSizeValue(std::list<ValueFlow::Value> values,
             MathLib::bigint i,
             bool unique = true) {
+        values.remove_if(std::mem_fn(&ValueFlow::Value::isSymbolicValue));
         if (!unique)
             values.remove_if(&isNotImpossible);
         if (values.size() != 1)
@@ -4714,6 +4753,7 @@ private:
     static std::string isInconclusiveContainerSizeValue(std::list<ValueFlow::Value> values,
             MathLib::bigint i,
             bool unique = true) {
+        values.remove_if(std::mem_fn(&ValueFlow::Value::isSymbolicValue));
         if (!unique)
             values.remove_if(&isNotInconclusive);
         if (values.size() != 1)
@@ -4728,6 +4768,7 @@ private:
     }
 
     static std::string isKnownContainerSizeValue(std::list<ValueFlow::Value> values, MathLib::bigint i, bool unique = true) {
+        values.remove_if(std::mem_fn(&ValueFlow::Value::isSymbolicValue));
         if (!unique)
             values.remove_if(&isNotKnown);
         if (values.size() != 1)
@@ -5897,6 +5938,89 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 1));
+    }
+
+    void valueFlowSymbolic() {
+        const char* code;
+
+        code = "int f(int i) {\n"
+               "    int j = i;\n"
+               "    int x = i;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, "j", 0));
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, "i", 0));
+
+        code = "int f(int i) {\n"
+               "    int j = i;\n"
+               "    int x = j;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, "i", 0));
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, "j", 0));
+
+        code = "void g(int&);\n"
+               "int f(int i) {\n"
+               "    int j = i;\n"
+               "    g(i);\n"
+               "    int x = i;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, "i", 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, "j", 0));
+
+        code = "int f(int i) {\n"
+               "    int j = i;\n"
+               "    j++;\n"
+               "    int x = i == j;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 0));
+
+        code = "int f(int i) {\n"
+               "    int j = i;\n"
+               "    i++;\n"
+               "    int x = i - j;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
+
+        code = "int f(int i) {\n"
+               "    int j = i;\n"
+               "    i++;\n"
+               "    int x = i > j;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
+
+        code = "int f(int i) {\n"
+               "    int j = i;\n"
+               "    j++;\n"
+               "    int x = j > i;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
+
+        code = "int f(int i) {\n"
+               "    int j = i++;\n"
+               "    int x = i++;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, "i++", 0));
+
+        code = "float foo() {\n"
+               "    float f = 1.0f;\n"
+               "    float x = f;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, "1.0f", 0));
+
+        code = "int foo(float f) {\n"
+               "    float g = f;\n"
+               "    int x = f == g;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
     }
 };
 
