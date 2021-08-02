@@ -129,6 +129,7 @@ private:
         TEST_CASE(checkAssignmentInCondition);
         TEST_CASE(compareOutOfTypeRange);
         TEST_CASE(knownConditionCast); // #9976
+        TEST_CASE(knownConditionIncrementLoop); // #9808
     }
 
     void check(const char code[], Settings *settings, const char* filename = "test.cpp") {
@@ -3726,6 +3727,12 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9948
+        check("bool f(bool a, bool b) {\n"
+              "    return a || ! b || ! a;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition '!a' is always true\n", errout.str());
     }
 
     void alwaysTrueInfer() {
@@ -4377,6 +4384,16 @@ private:
     void knownConditionCast() { // #9976
         check("void f(int i) {\n"
               "    if (i < 0 || (unsigned)i > 5) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void knownConditionIncrementLoop() { // #9808
+        check("void f() {\n"
+              "    int a = 0;\n"
+              "    while (++a < 5) {}\n"
+              "    if (a == 1) {}\n"
+              "    std::cout << a;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

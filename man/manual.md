@@ -25,9 +25,9 @@ The checks in Cppcheck are not perfect. There are bugs that should be found, tha
 
 The kinds of bugs that you can find with static analysis are:
 
-- undefined behavior
-- using dangerous code patterns
-- coding style
+- Undefined behavior
+- Using dangerous code patterns
+- Coding style
 
 There are many bugs that you can not find with static analysis. Static analysis tools do not have human knowledge about
 what your program is intended to do. If the output from your program is valid but unexpected then in most cases this is
@@ -36,10 +36,10 @@ it is unlikely that any tool will complain about that.
 
 Static analysis should be used as a complement in your quality assurance. It does not replace any of;
 
-- careful design
-- testing
-- dynamic analysis
-- fuzzing
+- Careful design
+- Testing
+- Dynamic analysis
+- Fuzzing
 
 # Getting started
 
@@ -237,10 +237,17 @@ Using a Cppcheck build folder is not mandatory but it is recommended.
 Cppcheck save analyzer information in that folder.
 
 The advantages are;
- * It speeds up the analysis as it makes incremental analysis possible. Only changed files are analyzed when you recheck.
- * Whole program analysis also when multiple threads are used.
 
-On the command line you configure that through `--cppcheck-build-dir=path`. In the GUI it is configured in the project settings.
+- It speeds up the analysis as it makes incremental analysis possible. Only changed files are analyzed when you recheck.
+- Whole program analysis also when multiple threads are used.
+
+On the command line you configure that through `--cppcheck-build-dir=path`. Example:
+
+    mkdir b
+    cppcheck --cppcheck-build-dir=b src # <- All files are analyzed
+    cppcheck --cppcheck-build-dir=b src # <- Faster! Results of unchanged files are reused
+
+In the GUI it is configured in the project settings.
 
 # Importing a project
 
