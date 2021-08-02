@@ -1287,6 +1287,8 @@ def get_function_call_name_args(token):
         return None, None
     if token.function:
         nametok = token.function.token
+        if nametok is None:
+            nametok = token.function.tokenDef
         if token in (token.function.token, token.function.tokenDef):
             return None, None
         name = nametok.str

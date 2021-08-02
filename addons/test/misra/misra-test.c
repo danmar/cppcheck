@@ -1641,6 +1641,12 @@ static void misra_21_12(void) {
     rc = fetestexcept(1); // 21.12
 }
 
+static void misra_21_15(uint8_t *x, uint16_t *y) {
+    (void)memcpy(x, y, 10); // 21.15
+    (void)memmove(x, y, 10); // 21.15
+    (void)memcmp(x, y, 10); // 21.15
+}
+
 // Large arrays for R13.1. Size exceeds default Python's max recursion depth.
 static uint8_t misra_13_1_large_ok[1024] = {
 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,

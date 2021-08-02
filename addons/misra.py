@@ -3429,6 +3429,23 @@ class MisraChecker:
                         'fetestexcept')):
                     self.reportError(token, 21, 12)
 
+    def misra_21_15(self, data):
+        for token in data.tokenlist:
+            if token.str not in ('memcpy', 'memmove', 'memcmp'):
+                continue
+            name, args = cppcheckdata.get_function_call_name_args(token)
+            if name is None:
+                continue
+            if len(args) != 3:
+                continue
+            if args[0].valueType is None or args[1].valueType is None:
+                continue
+            if args[0].valueType.type == args[1].valueType.type:
+                continue
+            if args[0].valueType.type == 'void' or args[1].valueType.type == 'void':
+                continue
+            self.reportError(token, 21, 15)
+
     def misra_22_5(self, cfg):
         for token in cfg.tokenlist:
             if token.isUnaryOp("*") or (token.isBinaryOp() and token.str == '.'):
@@ -4002,6 +4019,7 @@ class MisraChecker:
             self.executeCheck(2110, self.misra_21_10, cfg)
             self.executeCheck(2111, self.misra_21_11, cfg)
             self.executeCheck(2112, self.misra_21_12, cfg)
+            self.executeCheck(2115, self.misra_21_15, cfg)
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
             self.executeCheck(2205, self.misra_22_5, cfg)
 
