@@ -4073,7 +4073,7 @@ static void valueFlowSymbolicAbs(TokenList* tokenlist, SymbolDatabase* symboldat
 
             ValueFlow::Value v = makeSymbolic(arg);
             v.errorPath = c.errorPath;
-            v.errorPath.emplace_back(tok, "Passed to abs");
+            v.errorPath.emplace_back(tok, "Passed to " + tok->str());
             if (c.intvalue == 0)
                 v.setImpossible();
             else
