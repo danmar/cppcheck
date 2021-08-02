@@ -4031,6 +4031,10 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
                 continue;
             if (tok->astOperand2()->hasKnownIntValue())
                 continue;
+            if (tok->astOperand1()->exprId() == 0)
+                continue;
+            if (tok->astOperand2()->exprId() == 0)
+                continue;
             if (!isConstExpression(tok->astOperand2(), tokenlist->getSettings()->library, true, tokenlist->isCPP()))
                 continue;
 
@@ -4067,6 +4071,10 @@ static void valueFlowSymbolicInfer(TokenList* tokenlist, SymbolDatabase* symbold
             if (tok->astOperand1()->hasKnownIntValue())
                 continue;
             if (tok->astOperand2()->hasKnownIntValue())
+                continue;
+            if (astIsFloat(tok->astOperand1(), false))
+                continue;
+            if (astIsFloat(tok->astOperand2(), false))
                 continue;
 
             MathLib::bigint rhsvalue = 0;
