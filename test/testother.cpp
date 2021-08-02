@@ -255,7 +255,7 @@ private:
         TEST_CASE(sameExpressionPointers);
 
         TEST_CASE(checkOverlappingWrite);
-      
+
         TEST_CASE(constVariableArrayMember); // #10371
     }
 
@@ -9491,7 +9491,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Overlapping read/write in strcpy() is undefined behavior\n", errout.str());
     }
-  
+
     void constVariableArrayMember() { // #10371
         check("class Foo {\n"
               "public:\n"

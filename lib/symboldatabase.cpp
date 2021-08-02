@@ -5262,9 +5262,9 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
 
 const Scope *SymbolDatabase::findScopeByName(const std::string& name) const
 {
-    for (std::list<Scope>::const_iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-        if (it->className == name)
-            return &*it;
+    for (const Scope &scope: scopeList) {
+        if (scope.className == name)
+            return &scope;
     }
     return nullptr;
 }
@@ -5273,11 +5273,9 @@ const Scope *SymbolDatabase::findScopeByName(const std::string& name) const
 
 Scope *Scope::findInNestedList(const std::string & name)
 {
-    std::list<Scope *>::iterator it;
-
-    for (it = nestedList.begin(); it != nestedList.end(); ++it) {
-        if ((*it)->className == name)
-            return (*it);
+    for (Scope *scope: nestedList) {
+        if (scope->className == name)
+            return scope;
     }
     return nullptr;
 }
@@ -5286,11 +5284,9 @@ Scope *Scope::findInNestedList(const std::string & name)
 
 const Scope *Scope::findRecordInNestedList(const std::string & name) const
 {
-    std::list<Scope *>::const_iterator it;
-
-    for (it = nestedList.begin(); it != nestedList.end(); ++it) {
-        if ((*it)->className == name && (*it)->type != eFunction)
-            return (*it);
+    for (const Scope* scope: nestedList) {
+        if (scope->className == name && scope->type != eFunction)
+            return scope;
     }
 
     const Type * nested_type = findType(name);
@@ -5336,15 +5332,13 @@ const Type* Scope::findType(const std::string & name) const
 
 Scope *Scope::findInNestedListRecursive(const std::string & name)
 {
-    std::list<Scope *>::iterator it;
-
-    for (it = nestedList.begin(); it != nestedList.end(); ++it) {
-        if ((*it)->className == name)
-            return (*it);
+    for (Scope *scope: nestedList) {
+        if (scope->className == name)
+            return scope;
     }
 
-    for (it = nestedList.begin(); it != nestedList.end(); ++it) {
-        Scope *child = (*it)->findInNestedListRecursive(name);
+    for (Scope* scope: nestedList) {
+        Scope *child = scope->findInNestedListRecursive(name);
         if (child)
             return child;
     }
@@ -5355,10 +5349,9 @@ Scope *Scope::findInNestedListRecursive(const std::string & name)
 
 const Function *Scope::getDestructor() const
 {
-    std::list<Function>::const_iterator it;
-    for (it = functionList.begin(); it != functionList.end(); ++it) {
-        if (it->type == Function::eDestructor)
-            return &(*it);
+    for (const Function &function: functionList) {
+        if (function.type == Function::eDestructor)
+            return &function;
     }
     return nullptr;
 }

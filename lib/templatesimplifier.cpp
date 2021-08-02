@@ -1024,7 +1024,14 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
     std::map<std::string, unsigned int> typeParameterNames;
 
     // Scan template declaration..
-    for (Token *tok = declaration.token(); tok; tok = tok->next()) {
+    for (Token *tok = declaration.token()->next(); tok; tok = tok->next()) {
+        if (Token::simpleMatch(tok, "template <")) {
+            Token* end = tok->next()->findClosingBracket();
+            if (end)
+                tok = end;
+            continue;
+        }
+
         if (tok->link() && Token::Match(tok, "{|(|[")) { // Ticket #6835
             tok = tok->link();
             continue;
@@ -1796,8 +1803,12 @@ void TemplateSimplifier::expandTemplate(
                     if (Token::Match(start, "[|{|(")) {
                         links[start->link()] = dst->previous();
                     } else if (Token::Match(start, "]|}|)")) {
-                        Token::createMutualLinks(links[start], dst->previous());
-                        links.erase(start);
+                        std::map<const Token *, Token *>::iterator link = links.find(start);
+                        // make sure link is valid
+                        if (link != links.end()) {
+                            Token::createMutualLinks(link->second, dst->previous());
+                            links.erase(start);
+                        }
                     }
                 }
             }
