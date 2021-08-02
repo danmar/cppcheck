@@ -2102,6 +2102,23 @@ struct ValueFlowAnalyzer : Analyzer {
         }
     }
 
+    bool isSameSymbolicValue(const Token* tok, ErrorPath* errorPath = nullptr) const {
+        for(const ValueFlow::Value& v:tok->values()) {
+            if (!v.isSymbolicValue())
+                continue;
+            if (!v.isKnown())
+                continue;
+            if (v.intvalue != 0)
+                continue;
+            if (match(v.tokvalue)) {
+                if (errorPath)
+                    errorPath->insert(errorPath->end(), v.errorPath.begin(), v.errorPath.end());
+                return true;
+            }
+        }
+        return false;
+    }
+
     Action analyzeMatch(const Token* tok, Direction d) const {
         const Token* parent = tok->astParent();
         if (astIsPointer(tok) && (Token::Match(parent, "*|[") || (parent && parent->originalName() == "->")) && getIndirect(tok) <= 0)
@@ -2129,6 +2146,8 @@ struct ValueFlowAnalyzer : Analyzer {
             } else {
                 return analyzeMatch(tok, d) | Action::Match;
             }
+        } else if (isSameSymbolicValue(ref)) {
+            return Action::Read | Action::SymbolicMatch;
         } else if (ref->isUnaryOp("*")) {
             const Token* lifeTok = nullptr;
             for (const ValueFlow::Value& v:ref->astOperand1()->values()) {
@@ -2266,6 +2285,13 @@ struct ValueFlowAnalyzer : Analyzer {
         ValueFlow::Value* value = getValue(tok);
         if (!value)
             return;
+        ValueFlow::Value localValue;
+        if (a.isSymbolicMatch()) {
+            // Make a copy of the value to modify it
+            localValue = *value;
+            value = &localValue;
+            isSameSymbolicValue(tok, &value->errorPath);
+        }
         // Read first when moving forward
         if (d == Direction::Forward && a.isRead())
             setTokenValue(tok, *value, getSettings());
