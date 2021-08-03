@@ -2605,13 +2605,13 @@ static Analyzer::Result valueFlowForward(Token* top,
                                          const std::list<ValueFlow::Value>& values,
                                          TokenList* const tokenlist,
                                          const Settings* settings)
-// *INDENT-ON* {
-Analyzer::Result result{};
-for (const ValueFlow::Value& v : values)
+// *INDENT-ON*
 {
-    result.update(valueFlowGenericForward(top, makeAnalyzer(exprTok, v, tokenlist), settings));
-}
-return result;
+    Analyzer::Result result{};
+    for (const ValueFlow::Value& v : values) {
+        result.update(valueFlowGenericForward(top, makeAnalyzer(exprTok, v, tokenlist), settings));
+    }
+    return result;
 }
 
 static void valueFlowReverse(Token* tok,
@@ -6246,9 +6246,10 @@ static Analyzer::Result valueFlowContainerForwardRecursive(Token* top,
                                                            const Token* exprTok,
                                                            const ValueFlow::Value& value,
                                                            TokenList* tokenlist)
-// *INDENT-ON* {
-ContainerExpressionAnalyzer a(exprTok, value, tokenlist);
-return valueFlowGenericForward(top, a, tokenlist->getSettings());
+// *INDENT-ON*
+{
+    ContainerExpressionAnalyzer a(exprTok, value, tokenlist);
+    return valueFlowGenericForward(top, a, tokenlist->getSettings());
 }
 
 static Analyzer::Result valueFlowContainerForward(Token* startToken,
