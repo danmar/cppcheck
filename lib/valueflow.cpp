@@ -2102,14 +2102,13 @@ struct ValueFlowAnalyzer : Analyzer {
         }
     }
 
-    virtual bool useSymbolicValues() const {
-        return true;
-    }
+    virtual bool useSymbolicValues() const { return true; }
 
-    bool isSameSymbolicValue(const Token* tok, ErrorPath* errorPath = nullptr) const {
+    bool isSameSymbolicValue(const Token* tok, ErrorPath* errorPath = nullptr) const
+    {
         if (!useSymbolicValues())
             return false;
-        for(const ValueFlow::Value& v:tok->values()) {
+        for (const ValueFlow::Value& v : tok->values()) {
             if (!v.isSymbolicValue())
                 continue;
             if (!v.isKnown())
@@ -2346,7 +2345,8 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
         value.conditional = true;
     }
 
-    virtual bool useSymbolicValues() const OVERRIDE {
+    virtual bool useSymbolicValues() const OVERRIDE
+    {
         if (value.isUninitValue())
             return false;
         return true;
@@ -3031,8 +3031,8 @@ static bool isNotEqual(std::pair<const Token*, const Token*> x, const ValueType*
 
 static bool isDifferentType(const Token* src, const Token* dst)
 {
-    const Type *t = Token::typeOf(src);
-    const Type *parentT = Token::typeOf(dst);
+    const Type* t = Token::typeOf(src);
+    const Type* parentT = Token::typeOf(dst);
     if (t && parentT) {
         if (t->classDef && parentT->classDef && t->classDef != parentT->classDef)
             return true;
@@ -4107,7 +4107,8 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
             if (!isConstExpression(tok->astOperand2(), tokenlist->getSettings()->library, true, tokenlist->isCPP()))
                 continue;
             if (tok->astOperand1()->valueType() && tok->astOperand2()->valueType()) {
-                if (isTruncated(tok->astOperand2()->valueType(), tok->astOperand1()->valueType(), tokenlist->getSettings()))
+                if (isTruncated(
+                        tok->astOperand2()->valueType(), tok->astOperand1()->valueType(), tokenlist->getSettings()))
                     continue;
             } else if (isDifferentType(tok->astOperand2(), tok->astOperand1())) {
                 continue;

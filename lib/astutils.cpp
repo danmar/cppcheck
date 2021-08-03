@@ -379,7 +379,8 @@ static T* nextAfterAstRightmostLeafGeneric(T* tok)
             rightmostLeaf = rightmostLeaf->astOperand2();
         else if (rightmostLeaf->astOperand1() && precedes(rightmostLeaf, rightmostLeaf->astOperand1()))
             rightmostLeaf = rightmostLeaf->astOperand1();
-        else break;
+        else
+            break;
     } while (rightmostLeaf->astOperand1() || rightmostLeaf->astOperand2());
     while (Token::Match(rightmostLeaf->next(), "]|)") && !hasToken(rightmostLeaf->next()->link(), rightmostLeaf->next(), tok))
         rightmostLeaf = rightmostLeaf->next();

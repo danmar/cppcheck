@@ -86,9 +86,7 @@ struct Analyzer {
             return get(Incremental);
         }
 
-        bool isSymbolicMatch() const {
-            return get(SymbolicMatch);
-        }
+        bool isSymbolicMatch() const { return get(SymbolicMatch); }
 
         bool matches() const {
             return get(Match);

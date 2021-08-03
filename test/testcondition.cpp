@@ -3736,7 +3736,8 @@ private:
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition '!a' is always true\n", errout.str());
     }
 
-    void alwaysTrueSymbolic() {
+    void alwaysTrueSymbolic()
+    {
         check("void f(const uint32_t x) {\n"
               "    uint32_t y[1];\n"
               "    y[0]=x;\n"
