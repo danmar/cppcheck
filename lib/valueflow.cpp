@@ -2146,8 +2146,6 @@ struct ValueFlowAnalyzer : Analyzer {
             } else {
                 return analyzeMatch(tok, d) | Action::Match;
             }
-        } else if (isSameSymbolicValue(ref)) {
-            return Action::Read | Action::SymbolicMatch;
         } else if (ref->isUnaryOp("*")) {
             const Token* lifeTok = nullptr;
             for (const ValueFlow::Value& v:ref->astOperand1()->values()) {
@@ -2176,6 +2174,8 @@ struct ValueFlowAnalyzer : Analyzer {
                 return Action::Inconclusive;
             else
                 return a;
+        } else if (isSameSymbolicValue(ref)) {
+            return Action::Read | Action::SymbolicMatch;
         }
         return Action::None;
     }
@@ -3017,6 +3017,26 @@ static bool isNotEqual(std::pair<const Token*, const Token*> x, const ValueType*
     return isNotEqual(x, y->originalTypeName);
 }
 
+static bool isDifferentType(const Token* src, const Token* dst)
+{
+    const Type *t = Token::typeOf(src);
+    const Type *parentT = Token::typeOf(dst);
+    if (t && parentT) {
+        if (t->classDef && parentT->classDef && t->classDef != parentT->classDef)
+            return true;
+    } else {
+        std::pair<const Token*, const Token*> decl = Token::typeDecl(src);
+        std::pair<const Token*, const Token*> parentdecl = Token::typeDecl(dst);
+        if (isNotEqual(decl, parentdecl))
+            return true;
+        if (isNotEqual(decl, dst->valueType()))
+            return true;
+        if (isNotEqual(parentdecl, src->valueType()))
+            return true;
+    }
+    return false;
+}
+
 bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
 {
     if (!tok)
@@ -3035,21 +3055,8 @@ bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
                 return false;
         }
         if (Token::Match(tok->astParent(), "return|(|{|%assign%")) {
-            const Type *t = Token::typeOf(tok);
-            const Type *parentT = Token::typeOf(tok->astParent());
-            if (t && parentT) {
-                if (t->classDef && parentT->classDef && t->classDef != parentT->classDef)
-                    return false;
-            } else {
-                std::pair<const Token*, const Token*> decl = Token::typeDecl(tok);
-                std::pair<const Token*, const Token*> parentdecl = Token::typeDecl(tok->astParent());
-                if (isNotEqual(decl, parentdecl))
-                    return false;
-                if (isNotEqual(decl, tok->astParent()->valueType()))
-                    return false;
-                if (isNotEqual(parentdecl, tok->valueType()))
-                    return false;
-            }
+            if (isDifferentType(tok, tok->astParent()))
+                return false;
         }
     } else if (Token::Match(tok->astParent()->tokAt(-3), "%var% . push_back|push_front|insert|push (") &&
                astIsContainer(tok->astParent()->tokAt(-3))) {
@@ -4035,6 +4042,28 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
     }
 }
 
+static bool isTruncated(const ValueType* src, const ValueType* dst, const Settings* settings)
+{
+    if (src->pointer > 0 || dst->pointer > 0)
+        return src->pointer != dst->pointer;
+    if (src->smartPointer && dst->smartPointer)
+        return false;
+    if ((src->isIntegral() && dst->isIntegral()) || (src->isFloat() && src->isFloat())) {
+        size_t srcSize = ValueFlow::getSizeOf(*src, settings);
+        size_t dstSize = ValueFlow::getSizeOf(*dst, settings);
+        if (srcSize > dstSize)
+            return true;
+        if (srcSize == dstSize && src->sign != dst->sign)
+            return true;
+    } else if (src->type == dst->type) {
+        if (src->type == ValueType::Type::RECORD)
+            return src->typeScope != dst->typeScope;
+    } else {
+        return true;
+    }
+    return false;
+}
+
 static ValueFlow::Value makeSymbolic(const Token* tok, MathLib::bigint delta = 0)
 {
     ValueFlow::Value value;
@@ -4065,6 +4094,13 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
                 continue;
             if (!isConstExpression(tok->astOperand2(), tokenlist->getSettings()->library, true, tokenlist->isCPP()))
                 continue;
+            if (tok->astOperand1()->valueType() && tok->astOperand2()->valueType()) {
+                if (isTruncated(tok->astOperand2()->valueType(), tok->astOperand1()->valueType(), tokenlist->getSettings()))
+                    continue;
+            } else if (isDifferentType(tok->astOperand2(), tok->astOperand1())) {
+                continue;
+            }
+
 
             Token* start = nextAfterAstRightmostLeaf(tok);
             const Token* end = scope->bodyEnd;
