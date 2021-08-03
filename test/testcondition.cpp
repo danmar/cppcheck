@@ -3743,6 +3743,16 @@ private:
               "    if(x > 0 || y[0] < 42){}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (style) Condition 'y[0]<42' is always true\n", errout.str());
+
+        check("struct a {\n"
+              "  a *b() const;\n"
+              "} c;\n"
+              "void d() {\n"
+              "  a *e = nullptr;\n"
+              "  e = c.b();\n"
+              "  if (e) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
