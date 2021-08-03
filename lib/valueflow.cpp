@@ -1564,6 +1564,11 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
             value.bound = ValueFlow::Value::Bound::Lower;
             value.setImpossible();
             setTokenValue(tok, value, settings);
+        } else if (Token::Match(tok, "abs|labs|llabs|fabs|fabsf|fabsl (")) {
+            ValueFlow::Value value{-1};
+            value.bound = ValueFlow::Value::Bound::Upper;
+            value.setImpossible();
+            setTokenValue(tok->next(), value, settings);
         }
     }
 }
@@ -4058,6 +4063,34 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
     }
 }
 
+static void valueFlowSymbolicAbs(TokenList* tokenlist, SymbolDatabase* symboldatabase)
+{
+    for (const Scope* scope : symboldatabase->functionScopes) {
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "abs|labs|llabs|fabs|fabsf|fabsl ("))
+                continue;
+            if (tok->hasKnownIntValue())
+                continue;
+
+            const Token* arg = tok->next()->astOperand2();
+            if (!arg)
+                continue;
+            ValueFlow::Value c = inferCondition(">=", arg, 0);
+            if (!c.isKnown())
+                continue;
+
+            ValueFlow::Value v = makeSymbolic(arg);
+            v.errorPath = c.errorPath;
+            v.errorPath.emplace_back(tok, "Passed to " + tok->str());
+            if (c.intvalue == 0)
+                v.setImpossible();
+            else
+                v.setKnown();
+            setTokenValue(tok->next(), v, tokenlist->getSettings());
+        }
+    }
+}
+
 static void valueFlowSymbolicInfer(TokenList* tokenlist, SymbolDatabase* symboldatabase)
 {
     for (const Scope* scope : symboldatabase->functionScopes) {
@@ -4107,6 +4140,10 @@ static void valueFlowSymbolicInfer(TokenList* tokenlist, SymbolDatabase* symbold
             } else if (rhs) {
                 value.valueKind = rhs->valueKind;
                 value.errorPath = rhs->errorPath;
+            }
+            if (Token::Match(tok, "%comp%") && value.isImpossible() && value.intvalue != 0) {
+                value.intvalue = 0;
+                value.setKnown();
             }
             setTokenValue(tok, value, tokenlist->getSettings());
         }
@@ -4632,7 +4669,6 @@ struct ConditionHandler {
                             return;
                     }
                     // *INDENT-ON*
-
                 }
             }
 
@@ -7055,6 +7091,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     while (n > 0 && values < getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
         valueFlowImpossibleValues(tokenlist, settings);
+        valueFlowSymbolicAbs(tokenlist, symboldatabase);
         valueFlowSymbolicInfer(tokenlist, symboldatabase);
         valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);
