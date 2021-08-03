@@ -2412,6 +2412,7 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     ExpressionAnalyzer(const Token* e, const ValueFlow::Value& val, const TokenList* t)
         : SingleValueFlowAnalyzer(val, t), expr(e), local(true), unknown(false), dependOnThis(false) {
 
+        assert(e && e->exprId() != 0 && "Not a valid expression");
         dependOnThis = exprDependsOnThis(expr);
         setupExprVarIds(expr);
         if (val.isSymbolicValue())
@@ -2520,6 +2521,10 @@ static const Token* parseBinaryIntOp(const Token* expr, MathLib::bigint& known)
     if (!expr)
         return nullptr;
     if (!expr->astOperand1() || !expr->astOperand2())
+        return nullptr;
+    if (expr->astOperand1()->exprId() == 0 && !expr->astOperand1()->hasKnownIntValue())
+        return nullptr;
+    if (expr->astOperand2()->exprId() == 0 && !expr->astOperand2()->hasKnownIntValue())
         return nullptr;
     const Token* knownTok = nullptr;
     const Token* varTok = nullptr;
@@ -3932,6 +3937,23 @@ static ValueFlow::Value makeConditionValue(long long val, const Token* condTok, 
         v.errorPath.emplace_back(condTok, "Assuming condition '" + condTok->expressionString() + "' is false");
     return v;
 }
+
+static std::vector<const Token*> getConditions(const Token* tok, const char* op)
+{
+    std::vector<const Token*> conds = {tok};
+    if (tok->str() == op) {
+        std::vector<const Token*> args = astFlatten(tok, op);
+        std::copy_if(args.begin(), args.end(), std::back_inserter(conds), [&](const Token* tok2) {
+            if (tok2->exprId() == 0)
+                return false;
+            if (tok2->hasKnownIntValue())
+                return false;
+            return true;
+        });
+    }
+    return conds;
+}
+
 //
 static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
@@ -3952,6 +3974,8 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
                 continue;
             Token * blockTok = parenTok->link()->tokAt(1);
             const Token* condTok = parenTok->astOperand2();
+            if (condTok->exprId() == 0)
+                continue;
             if (condTok->hasKnownIntValue())
                 continue;
             if (!isConstExpression(condTok, settings->library, true, tokenlist->isCPP()))
@@ -3961,12 +3985,7 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
             Token* startTok = blockTok;
             // Inner condition
             {
-                std::vector<const Token*> conds = {condTok};
-                if (Token::simpleMatch(condTok, "&&")) {
-                    std::vector<const Token*> args = astFlatten(condTok, "&&");
-                    conds.insert(conds.end(), args.begin(), args.end());
-                }
-                for (const Token* condTok2:conds) {
+                for (const Token* condTok2 : getConditions(condTok, "&&")) {
                     if (is1) {
                         ExpressionAnalyzer a1(condTok2, makeConditionValue(1, condTok2, true), tokenlist);
                         valueFlowGenericForward(startTok, startTok->link(), a1, settings);
@@ -3977,11 +3996,7 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
                 }
             }
 
-            std::vector<const Token*> conds = {condTok};
-            if (Token::simpleMatch(condTok, "||")) {
-                std::vector<const Token*> args = astFlatten(condTok, "||");
-                conds.insert(conds.end(), args.begin(), args.end());
-            }
+            std::vector<const Token*> conds = getConditions(condTok, "||");
 
             // Check else block
             if (Token::simpleMatch(startTok->link(), "} else {")) {
@@ -4458,6 +4473,8 @@ struct ConditionHandler {
                 // *INDENT-OFF*
                 for (const Condition& cond : parse(tok, settings)) {
                     if (!cond.vartok)
+                        continue;
+                    if (cond.vartok->exprId() == 0)
                         continue;
                     if (cond.vartok->hasKnownIntValue())
                         continue;
