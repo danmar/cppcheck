@@ -4060,7 +4060,7 @@ static bool isTruncated(const ValueType* src, const ValueType* dst, const Settin
         return src->pointer != dst->pointer;
     if (src->smartPointer && dst->smartPointer)
         return false;
-    if ((src->isIntegral() && dst->isIntegral()) || (src->isFloat() && src->isFloat())) {
+    if ((src->isIntegral() && dst->isIntegral()) || (src->isFloat() && dst->isFloat())) {
         size_t srcSize = ValueFlow::getSizeOf(*src, settings);
         size_t dstSize = ValueFlow::getSizeOf(*dst, settings);
         if (srcSize > dstSize)
