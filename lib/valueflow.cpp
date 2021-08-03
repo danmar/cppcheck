@@ -4365,6 +4365,12 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 values.remove_if([&](const ValueFlow::Value& value) {
                 return value.valueType == ValueFlow::Value::ValueType::CONTAINER_SIZE;
             });
+            // Remove symbolic values that are the same as the LHS
+            values.remove_if([&](const ValueFlow::Value& value) {
+                if (value.isSymbolicValue() && value.tokvalue)
+                    return value.tokvalue->exprId() == tok->astOperand1()->exprId();
+                return false;
+            });
             // If assignment copy by value, remove Uninit values..
             if ((tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->pointer == 0) ||
                 (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference() && tok->astOperand1()->variable()->nameToken() == tok->astOperand1()))
