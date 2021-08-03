@@ -375,14 +375,15 @@ static T* nextAfterAstRightmostLeafGeneric(T* tok)
             rightmostLeaf = lam;
             break;
         }
-        if (rightmostLeaf->astOperand2())
+        if (rightmostLeaf->astOperand2() && precedes(rightmostLeaf, rightmostLeaf->astOperand2()))
             rightmostLeaf = rightmostLeaf->astOperand2();
-        else
+        else if (rightmostLeaf->astOperand1() && precedes(rightmostLeaf, rightmostLeaf->astOperand1()))
             rightmostLeaf = rightmostLeaf->astOperand1();
-    } while (rightmostLeaf->astOperand1());
+        else break;
+    } while (rightmostLeaf->astOperand1() || rightmostLeaf->astOperand2());
     while (Token::Match(rightmostLeaf->next(), "]|)") && !hasToken(rightmostLeaf->next()->link(), rightmostLeaf->next(), tok))
         rightmostLeaf = rightmostLeaf->next();
-    if (rightmostLeaf->str() == "{" && rightmostLeaf->link())
+    if (Token::Match(rightmostLeaf, "{|(|[") && rightmostLeaf->link())
         rightmostLeaf = rightmostLeaf->link();
     return rightmostLeaf->next();
 }
