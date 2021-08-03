@@ -2102,7 +2102,13 @@ struct ValueFlowAnalyzer : Analyzer {
         }
     }
 
+    virtual bool useSymbolicValues() const {
+        return true;
+    }
+
     bool isSameSymbolicValue(const Token* tok, ErrorPath* errorPath = nullptr) const {
+        if (!useSymbolicValues())
+            return false;
         for(const ValueFlow::Value& v:tok->values()) {
             if (!v.isSymbolicValue())
                 continue;
@@ -2338,6 +2344,12 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
 
     virtual void makeConditional() OVERRIDE {
         value.conditional = true;
+    }
+
+    virtual bool useSymbolicValues() const OVERRIDE {
+        if (value.isUninitValue())
+            return false;
+        return true;
     }
 
     virtual void addErrorPath(const Token* tok, const std::string& s) OVERRIDE {
@@ -4100,7 +4112,6 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
             } else if (isDifferentType(tok->astOperand2(), tok->astOperand1())) {
                 continue;
             }
-
 
             Token* start = nextAfterAstRightmostLeaf(tok);
             const Token* end = scope->bodyEnd;
