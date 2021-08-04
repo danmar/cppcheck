@@ -788,7 +788,7 @@ private:
     }
 
     void garbageCode83() { // #6771
-        ASSERT_THROW(checkCode("namespace A { class } class A { friend C ; } { } ;"), InternalError);
+        checkCode("namespace A { class } class A { friend C ; } { } ;");
     }
 
     void garbageCode84() { // #6780
