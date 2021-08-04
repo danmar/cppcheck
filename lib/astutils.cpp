@@ -1441,18 +1441,18 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
         } else if (f->argumentList.empty()) {
             return f->isConstexpr();
         }
-    } else if (const Library::Function* f = library.getFunction(ftok)) {
-        if (f->ispure)
+    } else if (const Library::Function* lf = library.getFunction(ftok)) {
+        if (lf->ispure)
             return true;
-        for (auto&& p : f->argumentChecks) {
+        for (auto&& p : lf->argumentChecks) {
             const Library::ArgumentChecks& ac = p.second;
             if (ac.direction != Library::ArgumentChecks::Direction::DIR_IN)
                 return false;
         }
         if (Token::simpleMatch(ftok->previous(), ".")) {
-            if (!f->isconst)
+            if (!lf->isconst)
                 return false;
-        } else if (f->argumentChecks.empty()) {
+        } else if (lf->argumentChecks.empty()) {
             return false;
         }
     } else {

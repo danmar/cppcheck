@@ -3729,6 +3729,28 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #7843
+        check("void f(int i) {\n"
+              "    if(abs(i) == -1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'abs(i)==-1' is always false\n", errout.str());
+
+        // #7844
+        check("void f(int i) {\n"
+              "    if(i > 0 && abs(i) == i) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'abs(i)==i' is always true\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    if(i < 0 && abs(i) == i) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'abs(i)==i' is always false\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    if(i > -3 && abs(i) == i) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // #9948
         check("bool f(bool a, bool b) {\n"
               "    return a || ! b || ! a;\n"

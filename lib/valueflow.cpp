@@ -1564,6 +1564,11 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
             value.bound = ValueFlow::Value::Bound::Lower;
             value.setImpossible();
             setTokenValue(tok, value, settings);
+        } else if (Token::Match(tok, "abs|labs|llabs|fabs|fabsf|fabsl (")) {
+            ValueFlow::Value value{-1};
+            value.bound = ValueFlow::Value::Bound::Upper;
+            value.setImpossible();
+            setTokenValue(tok->next(), value, settings);
         }
     }
 }
@@ -2445,6 +2450,7 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     ExpressionAnalyzer(const Token* e, const ValueFlow::Value& val, const TokenList* t)
         : SingleValueFlowAnalyzer(val, t), expr(e), local(true), unknown(false), dependOnThis(false) {
 
+        assert(e && e->exprId() != 0 && "Not a valid expression");
         dependOnThis = exprDependsOnThis(expr);
         setupExprVarIds(expr);
         if (val.isSymbolicValue())
@@ -2553,6 +2559,10 @@ static const Token* parseBinaryIntOp(const Token* expr, MathLib::bigint& known)
     if (!expr)
         return nullptr;
     if (!expr->astOperand1() || !expr->astOperand2())
+        return nullptr;
+    if (expr->astOperand1()->exprId() == 0 && !expr->astOperand1()->hasKnownIntValue())
+        return nullptr;
+    if (expr->astOperand2()->exprId() == 0 && !expr->astOperand2()->hasKnownIntValue())
         return nullptr;
     const Token* knownTok = nullptr;
     const Token* varTok = nullptr;
@@ -2866,7 +2876,8 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
         if (!vartok)
             return {{tok, std::move(errorPath)}};
         const Variable *tokvar = vartok->variable();
-        if (!isUniqueSmartPointer(vartok) && !astIsContainer(vartok) &&
+        const bool isContainer = astIsContainer(vartok) && !astIsPointer(vartok);
+        if (!isUniqueSmartPointer(vartok) && !isContainer &&
             !(tokvar && tokvar->isArray() && !tokvar->isArgument()) &&
             (Token::Match(vartok->astParent(), "[|*") || vartok->astParent()->originalName() == "->")) {
             for (const ValueFlow::Value &v : vartok->values()) {
@@ -3972,6 +3983,23 @@ static ValueFlow::Value makeConditionValue(long long val, const Token* condTok, 
         v.errorPath.emplace_back(condTok, "Assuming condition '" + condTok->expressionString() + "' is false");
     return v;
 }
+
+static std::vector<const Token*> getConditions(const Token* tok, const char* op)
+{
+    std::vector<const Token*> conds = {tok};
+    if (tok->str() == op) {
+        std::vector<const Token*> args = astFlatten(tok, op);
+        std::copy_if(args.begin(), args.end(), std::back_inserter(conds), [&](const Token* tok2) {
+            if (tok2->exprId() == 0)
+                return false;
+            if (tok2->hasKnownIntValue())
+                return false;
+            return true;
+        });
+    }
+    return conds;
+}
+
 //
 static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
@@ -3992,6 +4020,8 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
                 continue;
             Token * blockTok = parenTok->link()->tokAt(1);
             const Token* condTok = parenTok->astOperand2();
+            if (condTok->exprId() == 0)
+                continue;
             if (condTok->hasKnownIntValue())
                 continue;
             if (!isConstExpression(condTok, settings->library, true, tokenlist->isCPP()))
@@ -4001,12 +4031,7 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
             Token* startTok = blockTok;
             // Inner condition
             {
-                std::vector<const Token*> conds = {condTok};
-                if (Token::simpleMatch(condTok, "&&")) {
-                    std::vector<const Token*> args = astFlatten(condTok, "&&");
-                    conds.insert(conds.end(), args.begin(), args.end());
-                }
-                for (const Token* condTok2:conds) {
+                for (const Token* condTok2 : getConditions(condTok, "&&")) {
                     if (is1) {
                         ExpressionAnalyzer a1(condTok2, makeConditionValue(1, condTok2, true), tokenlist);
                         valueFlowGenericForward(startTok, startTok->link(), a1, settings);
@@ -4017,11 +4042,7 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
                 }
             }
 
-            std::vector<const Token*> conds = {condTok};
-            if (Token::simpleMatch(condTok, "||")) {
-                std::vector<const Token*> args = astFlatten(condTok, "||");
-                conds.insert(conds.end(), args.begin(), args.end());
-            }
+            std::vector<const Token*> conds = getConditions(condTok, "||");
 
             // Check else block
             if (Token::simpleMatch(startTok->link(), "} else {")) {
@@ -4132,6 +4153,34 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
     }
 }
 
+static void valueFlowSymbolicAbs(TokenList* tokenlist, SymbolDatabase* symboldatabase)
+{
+    for (const Scope* scope : symboldatabase->functionScopes) {
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "abs|labs|llabs|fabs|fabsf|fabsl ("))
+                continue;
+            if (tok->hasKnownIntValue())
+                continue;
+
+            const Token* arg = tok->next()->astOperand2();
+            if (!arg)
+                continue;
+            ValueFlow::Value c = inferCondition(">=", arg, 0);
+            if (!c.isKnown())
+                continue;
+
+            ValueFlow::Value v = makeSymbolic(arg);
+            v.errorPath = c.errorPath;
+            v.errorPath.emplace_back(tok, "Passed to " + tok->str());
+            if (c.intvalue == 0)
+                v.setImpossible();
+            else
+                v.setKnown();
+            setTokenValue(tok->next(), v, tokenlist->getSettings());
+        }
+    }
+}
+
 static void valueFlowSymbolicInfer(TokenList* tokenlist, SymbolDatabase* symboldatabase)
 {
     for (const Scope* scope : symboldatabase->functionScopes) {
@@ -4181,6 +4230,10 @@ static void valueFlowSymbolicInfer(TokenList* tokenlist, SymbolDatabase* symbold
             } else if (rhs) {
                 value.valueKind = rhs->valueKind;
                 value.errorPath = rhs->errorPath;
+            }
+            if (Token::Match(tok, "%comp%") && value.isImpossible() && value.intvalue != 0) {
+                value.intvalue = 0;
+                value.setKnown();
             }
             setTokenValue(tok, value, tokenlist->getSettings());
         }
@@ -4502,6 +4555,8 @@ struct ConditionHandler {
                 for (const Condition& cond : parse(tok, settings)) {
                     if (!cond.vartok)
                         continue;
+                    if (cond.vartok->exprId() == 0)
+                        continue;
                     if (cond.vartok->hasKnownIntValue())
                         continue;
                     if (cond.true_values.empty() || cond.false_values.empty())
@@ -4712,7 +4767,6 @@ struct ConditionHandler {
                             return;
                     }
                     // *INDENT-ON*
-
                 }
             }
 
@@ -7135,6 +7189,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     while (n > 0 && values < getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
         valueFlowImpossibleValues(tokenlist, settings);
+        valueFlowSymbolicAbs(tokenlist, symboldatabase);
         valueFlowSymbolicInfer(tokenlist, symboldatabase);
         valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);
