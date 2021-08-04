@@ -1187,7 +1187,7 @@ private:
         ASSERT_EQUALS("2,x is assigned 'y' here.\n"
                       "5,Assuming that condition 'y==32' is not redundant\n"
                       "4,Compound assignment '+=', assigned value is 20\n"
-                      "2,Assignment 'x=y', assigned value is 20\n",
+                      "2,x is assigned 'y' here.\n",
                       getErrorPathForX(code, 3U));
 
         code = "void f1(int x) {\n"
