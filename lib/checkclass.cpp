@@ -2934,7 +2934,7 @@ std::string CheckClass::MyFileInfo::toString() const
 {
     std::string ret;
     for (const MyFileInfo::NameLoc &nameLoc: classDefinitions) {
-        ret += "<class name=\"" + nameLoc.className +
+        ret += "<class name=\"" + ErrorLogger::toxml(nameLoc.className) +
                "\" file=\"" + ErrorLogger::toxml(nameLoc.fileName) +
                "\" line=\"" + std::to_string(nameLoc.lineNumber) +
                "\" col=\"" + std::to_string(nameLoc.column) +
