@@ -973,7 +973,7 @@ void CmdLineParser::printHelp()
               "    cppcheck [OPTIONS] [files or paths]\n"
               "\n"
               "If a directory is given instead of a filename, *.cpp, *.cxx, *.cc, *.c++, *.c,\n"
-              "*.tpp, and *.txx files are checked recursively from the given directory.\n\n"
+              "*.ipp, *.ixx, *.tpp, and *.txx files are checked recursively from the given directory.\n\n"
               "Options:\n"
               "    --addon=<addon>\n"
               "                         Execute addon. i.e. --addon=cert. If options must be\n"
