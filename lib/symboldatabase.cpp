@@ -41,21 +41,6 @@
 #include <unordered_map>
 //---------------------------------------------------------------------------
 
-static std::vector<const Scope *> getAllScopes(const Scope *scope)
-{
-    if (!scope)
-        return {};
-    if (scope->type != Scope::ScopeType::eNamespace)
-        return {scope};
-    std::vector<const Scope *> ret;
-    for (const Scope *s: scope->nestedIn->nestedList) {
-        if (s->type == Scope::ScopeType::eNamespace && s->className == scope->className)
-            ret.push_back(s);
-    }
-    return ret;
-}
-//---------------------------------------------------------------------------
-
 SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger)
 {
@@ -226,8 +211,6 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 name = name->next();
 
             Scope *new_scope = findScope(name, scope);
-            if (new_scope && new_scope->bodyStart && Token::Match(name, "%name% {") && new_scope->type == Scope::ScopeType::eNamespace)
-                new_scope = nullptr;
 
             if (new_scope) {
                 // only create base list for classes and structures
@@ -747,21 +730,14 @@ void SymbolDatabase::createSymbolDatabaseClassInfo()
 
     // fill in base class info
     for (Type& type : typeList) {
-        const std::vector<const Scope *> allEnclosingScopes = getAllScopes(type.enclosingScope);
         // finish filling in base class info
-        for (Type::BaseInfo & baseInfo : type.derivedFrom) {
-            baseInfo.type = nullptr;
-            for (const Scope *enclosingScope: allEnclosingScopes) {
-                const Type* found = findType(baseInfo.nameTok, enclosingScope);
-                if (found) {
-                    if (found->findDependency(&type)) {
-                        // circular dependency
-                        //mTokenizer->syntaxError(nullptr);
-                    } else {
-                        baseInfo.type = found;
-                        break;
-                    }
-                }
+        for (Type::BaseInfo & i : type.derivedFrom) {
+            const Type* found = findType(i.nameTok, type.enclosingScope);
+            if (found && found->findDependency(&type)) {
+                // circular dependency
+                //mTokenizer->syntaxError(nullptr);
+            } else {
+                i.type = found;
             }
         }
     }
@@ -4723,16 +4699,15 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
             return start->definedType;
 
         while (scope) {
-            for (const Scope *scope2: getAllScopes(scope)) {
-                // look for type in this scope
-                const Type * type = scope2->findType(typeTok->str());
-                if (type)
-                    return type;
-            }
+            // look for type in this scope
+            const Type * type = scope->findType(typeTok->str());
+
+            if (type)
+                return type;
 
             // look for type in base classes if possible
             if (scope->isClassOrStruct()) {
-                const Type* type = findVariableTypeInBase(scope, typeTok);
+                type = findVariableTypeInBase(scope, typeTok);
 
                 if (type)
                     return type;
@@ -4742,7 +4717,7 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
             if (scope->type == Scope::eFunction && scope->functionOf) {
                 const Scope *scope1 = scope->functionOf;
 
-                const Type* type = scope1->findType(typeTok->str());
+                type = scope1->findType(typeTok->str());
 
                 if (type)
                     return type;
