@@ -118,6 +118,7 @@ private:
         TEST_CASE(returnReference20); // #9536
         TEST_CASE(returnReference21); // #9530
         TEST_CASE(returnReference22);
+        TEST_CASE(returnReference23);
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1449,6 +1450,14 @@ private:
               "    return p->x;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Reference to local variable returned.\n", errout.str());
+    }
+
+    void returnReference23() {
+        check("const std::vector<int> * g();\n"
+              "const std::vector<int>& f() {\n"
+              "    return *g();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnReferenceFunction() {
