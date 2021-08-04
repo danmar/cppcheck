@@ -7140,6 +7140,13 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
 }
 
 
+ValueFlow::Value ValueFlow::Value::unknown()
+{
+    Value v;
+    v.valueType = Value::ValueType::UNINIT;
+    return v;
+}
+
 std::string ValueFlow::eitherTheConditionIsRedundant(const Token *condition)
 {
     if (!condition)

@@ -103,6 +103,8 @@ namespace ValueFlow {
         {}
         Value(const Token *c, long long val);
 
+        static Value unknown();
+
         bool equalValue(const ValueFlow::Value& rhs) const {
             if (valueType != rhs.valueType)
                 return false;
