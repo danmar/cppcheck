@@ -4113,6 +4113,8 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "="))
                 continue;
+            if (tok->astParent())
+                continue;
             if (!tok->astOperand1())
                 continue;
             if (!tok->astOperand2())
