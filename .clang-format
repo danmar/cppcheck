@@ -1,4 +1,4 @@
-AccessModifierOffset: 0
+AccessModifierOffset: -4
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortIfStatementsOnASingleLine: false
