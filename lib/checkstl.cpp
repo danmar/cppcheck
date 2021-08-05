@@ -66,7 +66,7 @@ static bool isElementAccessYield(const Library::Container::Yield& yield)
     return yield == Library::Container::Yield::ITEM || yield == Library::Container::Yield::AT_INDEX;
 }
 
-static std::vector<ValueFlow::Value> isOutOfBounds(MathLib::bigint size, const Token * indexTok, bool condition)
+static std::vector<ValueFlow::Value> isOutOfBounds(MathLib::bigint size, const Token* indexTok, bool condition)
 {
     if (!indexTok)
         return {};
@@ -86,7 +86,9 @@ static std::vector<ValueFlow::Value> isOutOfBounds(MathLib::bigint size, const T
     value.bound = ValueFlow::Value::Bound::Lower;
     return {value};
 }
-static std::vector<ValueFlow::Value> isOutOfBounds(MathLib::bigint size, const Token * indexTok, const Settings* settings)
+static std::vector<ValueFlow::Value> isOutOfBounds(MathLib::bigint size,
+                                                   const Token* indexTok,
+                                                   const Settings* settings)
 {
     std::vector<ValueFlow::Value> result = isOutOfBounds(size, indexTok, false);
     if (!result.empty())
@@ -151,7 +153,7 @@ void CheckStl::outOfBounds()
                     continue;
                 }
                 if (container->arrayLike_indexOp && Token::Match(parent, "[")) {
-                    const Token* indexTok =parent->astOperand2();
+                    const Token* indexTok = parent->astOperand2();
                     if (!indexTok)
                         continue;
                     std::vector<ValueFlow::Value> indexValues = isOutOfBounds(value.intvalue, indexTok, mSettings);

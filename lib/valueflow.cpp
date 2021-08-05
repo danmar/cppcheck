@@ -7140,7 +7140,6 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowDynamicBufferSize(tokenlist, symboldatabase, settings);
 }
 
-
 ValueFlow::Value ValueFlow::Value::unknown()
 {
     Value v;

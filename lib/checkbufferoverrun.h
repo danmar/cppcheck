@@ -97,8 +97,12 @@ public:
 private:
 
     void arrayIndex();
-    void arrayIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<ValueFlow::Value> &indexes);
-    void negativeIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<ValueFlow::Value> &indexes);
+    void arrayIndexError(const Token* tok,
+                         const std::vector<Dimension>& dimensions,
+                         const std::vector<ValueFlow::Value>& indexes);
+    void negativeIndexError(const Token* tok,
+                            const std::vector<Dimension>& dimensions,
+                            const std::vector<ValueFlow::Value>& indexes);
 
     void pointerArithmetic();
     void pointerArithmeticError(const Token *tok, const Token *indexToken, const ValueFlow::Value *indexValue);
