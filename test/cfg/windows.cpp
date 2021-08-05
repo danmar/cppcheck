@@ -868,7 +868,7 @@ HANDLE test_CreateThread(LPSECURITY_ATTRIBUTES  lpThreadAttributes,
     LPTHREAD_START_ROUTINE uninit_lpStartAddress;
     LPVOID                 uninit_lpParameter;
     DWORD                  uninit_dwCreationFlags;
-
+    // clang-format off
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress uninitvar
     (void) CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, uninit_dwCreationFlags, lpThreadId);
@@ -884,6 +884,7 @@ HANDLE test_CreateThread(LPSECURITY_ATTRIBUTES  lpThreadAttributes,
     // @todo uninitvar shall be reported
     // cppcheck-suppress leakReturnValNotUsed
     (void) CreateThread(uninit_lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+    // clang-format on
 
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress nullPointer

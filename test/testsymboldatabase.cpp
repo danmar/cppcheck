@@ -7325,6 +7325,7 @@ private:
         sF.library.load(doc); \
         ASSERT_EQUALS(#type, typeOf("void f() { auto x = g(); }", "x", "test.cpp", &sF)); \
     } while (false)
+        // clang-format off
         CHECK_LIBRARY_FUNCTION_RETURN_TYPE(bool);
         CHECK_LIBRARY_FUNCTION_RETURN_TYPE(signed char);
         CHECK_LIBRARY_FUNCTION_RETURN_TYPE(unsigned char);
@@ -7339,6 +7340,7 @@ private:
         CHECK_LIBRARY_FUNCTION_RETURN_TYPE(void *);
         CHECK_LIBRARY_FUNCTION_RETURN_TYPE(void * *);
         CHECK_LIBRARY_FUNCTION_RETURN_TYPE(const void *);
+        // clang-format on
 #undef CHECK_LIBRARY_FUNCTION_RETURN_TYPE
 
         // Library types
