@@ -2952,6 +2952,13 @@ private:
 
     void alwaysTrue() {
 
+        check("void f(const struct S *s) {\n" //#8196
+              "  int x1 = s->x;\n"
+              "  int x2 = s->x;\n"
+              "  if (x1 == 10 && x2 == 10) {}\n" // <<
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (style) Condition 'x2==10' is always true\n", errout.str());
+
         check("void f ()\n"// #8220
               "{\n"
               "    int a;\n"
