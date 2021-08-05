@@ -1,0 +1,42 @@
+#!/bin/bash
+CLANG_FORMAT_VERSION="10.0.0"
+CLANG_FORMAT="${CLANG_FORMAT-clang-format-10}"
+
+DETECTED_VERSION=$("$CLANG_FORMAT" --version 2>&1 | awk '{ print $NF; }')
+if [ "$DETECTED_VERSION" != "${CLANG_FORMAT_VERSION}" ]; then
+  echo "You should use version: ${CLANG_FORMAT_VERSION}"
+  echo "Detected version: ${DETECTED_VERSION}"
+  exit 1
+fi
+
+# OS variables
+[ $(uname -s) = "Darwin" ] && export OSX=1 && export UNIX=1
+[ $(uname -s) = "Linux" ] && export LINUX=1 && export UNIX=1
+uname -s | grep -q "_NT-" && export WINDOWS=1
+
+if [ $OSX ]
+then
+  export CPUCOUNT=$(sysctl -n hw.ncpu)
+elif [ $LINUX ]
+then
+  export CPUCOUNT=$(nproc)
+else
+  export CPUCOUNT="1"
+fi
+
+function formatCplusplus {
+  find $1 -iname '*.h' \
+      -o -iname '*.c' \
+      -o -iname '*.cpp' \
+      | xargs -n 1 -P $CPUCOUNT -I{} -t $CLANG_FORMAT --style=file -i {}
+
+}
+
+formatCplusplus cli/
+formatCplusplus democlient/
+formatCplusplus gui/
+formatCplusplus lib/
+formatCplusplus oss-fuzz/
+formatCplusplus test/
+formatCplusplus tools/
+formatCplusplus samples/
