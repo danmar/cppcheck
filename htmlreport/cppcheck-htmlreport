@@ -17,6 +17,8 @@ from xml.sax import parse as xml_parse
 from xml.sax import SAXParseException as XmlParseException
 from xml.sax.handler import ContentHandler as XmlContentHandler
 from xml.sax.saxutils import escape
+
+from info_from_cmd import *
 """
 Turns a cppcheck xml file into a browsable html report along
 with syntax highlighted source code.
@@ -388,6 +390,7 @@ class CppCheckHandler(XmlContentHandler):
                 'info': attributes.get('info')
             })
 
+
 if __name__ == '__main__':
     # Configure all the options this little utility is using.
     parser = optparse.OptionParser()
@@ -405,8 +408,15 @@ if __name__ == '__main__':
     parser.add_option('--source-dir', dest='source_dir',
                       help='Base directory where source code files can be '
                            'found.')
+    parser.add_option('--add-author-information', dest='add_author_information',
+                      help='Initially set to false'
+                           'Adds author, author-mail and time to htmlreport')
     parser.add_option('--source-encoding', dest='source_encoding',
                       help='Encoding of source code.', default='utf-8')
+    parser.add_option('--blame-options', dest='blame_options',
+                      help='[-w, -M] blame options which you can use to get author and author mail  '
+                           '-w --> not including white spaces and returns original author of the line  '
+                           '-M --> not including moving of lines and returns original author of the line')
 
     # Parse options and make sure that we have an output directory set.
     options, args = parser.parse_args()
@@ -421,10 +431,19 @@ if __name__ == '__main__':
         parser.error('No report directory set.')
 
     # Get the directory where source code files are located.
+    cwd = os.getcwd()
     source_dir = os.getcwd()
     if options.source_dir:
         source_dir = options.source_dir
 
+    add_author_information = False
+    if options.add_author_information:
+        add_author_information = True
+
+    blame_options = ''
+    if options.blame_options:
+        blame_options = options.blame_options
+        add_author_information = True
     # Parse the xml from all files defined in file argument
     # or from stdin. If no input is provided, stdin is used
     # Produce a simple list of errors.
@@ -476,7 +495,7 @@ if __name__ == '__main__':
                         newError['msg'] = location['info']
                         newError['severity'] = 'information'
                         del newError['verbose']
-
+                        
                     errors.append(newError)
 
         lines = []
@@ -486,6 +505,7 @@ if __name__ == '__main__':
         if filename == '':
             continue
 
+        # os.chdir(cwd)       # going back to cwd to find html files
         source_filename = os.path.join(source_dir, filename)
         try:
             with io.open(source_filename, 'r', encoding=options.source_encoding) as input_file:
@@ -519,7 +539,8 @@ if __name__ == '__main__':
                                filename.split('/')[-1]))
 
             for error in sorted(errors, key=lambda k: k['line']):
-                output_file.write("<a href=\"%s#line-%d\"> %s %s</a>" % (data['htmlfile'], error['line'], error['id'],   error['line']))
+                output_file.write("<a href=\"%s#line-%d\"> %s %s</a>" % (data['htmlfile'], error['line'],
+                                                                         error['id'], error['line']))
 
             output_file.write(HTML_HEAD_END)
             try:
@@ -589,7 +610,7 @@ if __name__ == '__main__':
         output_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
 
         output_file.write('\n       <table>')
-        output_file.write('\n       <tr><th>Line</th><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th></tr>')
+        output_file.write(f'\n       <tr><th>Line</th>><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th><th></th>{"<th>Author</th><th></th><th>Author mail</th><th></th><th>Date (DD/MM/YYYY)</th></tr>" if add_author_information else ""}')
         for filename, data in sorted(files.items()):
             if filename in decode_errors:  # don't print a link but a note
                 output_file.write("\n       <tr><td colspan=\"5\">%s</td></tr>" % filename)
@@ -605,6 +626,11 @@ if __name__ == '__main__':
                         (data['htmlfile'], filename))
 
                 for error in sorted(data['errors'], key=lambda k: k['line']):
+                    if add_author_information:
+                        result = get_results(error['line'], source_dir, error['file'], blame_options)
+                        error['author'] = get_author(result)
+                        error['author_mail'] = get_author_mail(result)
+                        error['time'] = get_time(result)
                     error_class = ''
                     try:
                         if error['inconclusive'] == 'true':
@@ -621,21 +647,18 @@ if __name__ == '__main__':
 
                     if error['severity'] == 'error':
                         error_class = 'class="error"'
+
                     if error['id'] == 'missingInclude':
                         output_file.write(
-                            '\n         <tr class="%s"><td></td><td>%s</td><td></td><td>%s</td><td>%s</td></tr>' %
-                            (error['id'], error['id'], error['severity'], html_escape(error['msg'])))
+                            f'\n         <tr class={error["id"]}><td></td><td>{error["id"]}</td><td></td><td>{error["severity"]}</td><td>{html_escape(error["msg"])}</td><td></td>{f"""<td>{error["author"]}</td><td></td><td>{error["author_mail"]}</td><td></td><td>{error["time"]}</td>""" if add_author_information else ""}</tr>')
+
                     elif (error['id'] == 'unmatchedSuppression') and filename.endswith('*'):
                         output_file.write(
-                            '\n         <tr class="%s"><td></td><td>%s</td><td></td><td>%s</td><td %s>%s</td></tr>' %
-                            (error['id'], error['id'], error['severity'], error_class,
-                             html_escape(error['msg'])))
+                            f'\n         <tr class={error["id"]}><td></td><td>{error["id"]}</td><td></td><td>{error["severity"]}</td><td {error_class}>{html_escape(error["msg"])}</td><td></td>{f"""<td>{error["author"]}</td><td></td><td>{error["author_mail"]}</td><td></td><td>{error["time"]}</td>""" if add_author_information else ""}</tr>')
+
                     else:
                         output_file.write(
-                            '\n       <tr class="%s"><td><a href="%s#line-%d">%d</a></td><td>%s</td><td>%s</td><td>%s</td><td %s>%s</td></tr>' %
-                            (error['id'], data['htmlfile'], error['line'], error['line'],
-                             error['id'], cwe_url, error['severity'], error_class,
-                             html_escape(error['msg'])))
+                            f'\n       <tr class={error["id"]}><td><a href="{data["htmlfile"]}#line-{int(error["line"])}">{int(error["line"])}</a></td><td>{error["id"]}</td><td>{cwe_url}</td><td>{error["severity"]}</td><td {error_class}>{html_escape(error["msg"])}</td><td></td>{f"""<td>{error["author"]}</td><td></td><td>{error["author_mail"]}</td><td></td><td>{error["time"]}</td>""" if add_author_information else ""}</tr>')
 
         output_file.write('\n       </table>')
         output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
@@ -645,6 +668,7 @@ if __name__ == '__main__':
         sys.stderr.write("\nConsider changing source-encoding (for example: \"htmlreport ... --source-encoding=\"iso8859-1\"\"\n")
 
     print('Creating style.css file')
+    os.chdir(cwd)       # going back to the cwd to find style.css
     with io.open(os.path.join(options.report_dir, 'style.css'),
                  'w') as css_file:
         css_file.write(STYLE_FILE)
