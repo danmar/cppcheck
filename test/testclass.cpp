@@ -24,43 +24,42 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-
 class TestClass : public TestFixture {
 public:
-    TestClass() : TestFixture("TestClass") {
-    }
+    TestClass() : TestFixture("TestClass") {}
 
 private:
     Settings settings0;
     Settings settings1;
 
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
         settings0.severity.enable(Severity::style);
         settings1.severity.enable(Severity::warning);
 
         // Load std.cfg configuration
         {
             const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-            "<def>\n"
-            "  <memory>\n"
-            "    <alloc init=\"false\">malloc</alloc>\n"
-            "    <dealloc>free</dealloc>\n"
-            "  </memory>\n"
-            "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
-            "</def>";
+                                   "<def>\n"
+                                   "  <memory>\n"
+                                   "    <alloc init=\"false\">malloc</alloc>\n"
+                                   "    <dealloc>free</dealloc>\n"
+                                   "  </memory>\n"
+                                   "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
+                                   "</def>";
             tinyxml2::XMLDocument doc;
             doc.Parse(xmldata, sizeof(xmldata));
             settings0.library.load(doc);
             settings1.library.load(doc);
         }
 
-
-        TEST_CASE(virtualDestructor1);      // Base class not found => no error
-        TEST_CASE(virtualDestructor2);      // Base class doesn't have a destructor
-        TEST_CASE(virtualDestructor3);      // Base class has a destructor, but it's not virtual
-        TEST_CASE(virtualDestructor4);      // Derived class doesn't have a destructor => no error
-        TEST_CASE(virtualDestructor5);      // Derived class has empty destructor => no error
-        TEST_CASE(virtualDestructor6);      // only report error if base class pointer that points at derived class is deleted
+        TEST_CASE(virtualDestructor1); // Base class not found => no error
+        TEST_CASE(virtualDestructor2); // Base class doesn't have a destructor
+        TEST_CASE(virtualDestructor3); // Base class has a destructor, but it's not virtual
+        TEST_CASE(virtualDestructor4); // Derived class doesn't have a destructor => no error
+        TEST_CASE(virtualDestructor5); // Derived class has empty destructor => no error
+        TEST_CASE(virtualDestructor6); // only report error if base class pointer that points at derived class is
+                                       // deleted
         TEST_CASE(virtualDestructorProtected);
         TEST_CASE(virtualDestructorInherited);
         TEST_CASE(virtualDestructorTemplate);
@@ -72,8 +71,8 @@ private:
         TEST_CASE(copyConstructor3); // defaulted/deleted
         TEST_CASE(copyConstructor4); // base class with private constructor
         TEST_CASE(copyConstructor5); // multiple inheritance
-        TEST_CASE(noOperatorEq); // class with memory management should have operator eq
-        TEST_CASE(noDestructor); // class with memory management should have destructor
+        TEST_CASE(noOperatorEq);     // class with memory management should have operator eq
+        TEST_CASE(noDestructor);     // class with memory management should have destructor
 
         TEST_CASE(operatorEqRetRefThis1);
         TEST_CASE(operatorEqRetRefThis2); // ticket #1323
@@ -82,15 +81,15 @@ private:
         TEST_CASE(operatorEqRetRefThis5); // ticket #1550
         TEST_CASE(operatorEqRetRefThis6); // ticket #2479
         TEST_CASE(operatorEqRetRefThis7); // ticket #5782 endless recursion
-        TEST_CASE(operatorEqToSelf1);   // single class
-        TEST_CASE(operatorEqToSelf2);   // nested class
-        TEST_CASE(operatorEqToSelf3);   // multiple inheritance
-        TEST_CASE(operatorEqToSelf4);   // nested class with multiple inheritance
-        TEST_CASE(operatorEqToSelf5);   // ticket # 1233
-        TEST_CASE(operatorEqToSelf6);   // ticket # 1550
+        TEST_CASE(operatorEqToSelf1);     // single class
+        TEST_CASE(operatorEqToSelf2);     // nested class
+        TEST_CASE(operatorEqToSelf3);     // multiple inheritance
+        TEST_CASE(operatorEqToSelf4);     // nested class with multiple inheritance
+        TEST_CASE(operatorEqToSelf5);     // ticket # 1233
+        TEST_CASE(operatorEqToSelf6);     // ticket # 1550
         TEST_CASE(operatorEqToSelf7);
-        TEST_CASE(operatorEqToSelf8);   // ticket #2179
-        TEST_CASE(operatorEqToSelf9);   // ticket #2592
+        TEST_CASE(operatorEqToSelf8); // ticket #2179
+        TEST_CASE(operatorEqToSelf9); // ticket #2592
 
         TEST_CASE(memsetOnStruct);
         TEST_CASE(memsetVector);
@@ -101,7 +100,7 @@ private:
         TEST_CASE(memsetOnUnknown);    // Ticket #7183
         TEST_CASE(mallocOnClass);
 
-        TEST_CASE(this_subtraction);    // warn about "this-x"
+        TEST_CASE(this_subtraction); // warn about "this-x"
 
         // can member function be made const
         TEST_CASE(const1);
@@ -111,8 +110,8 @@ private:
         TEST_CASE(const5); // ticket #1482
         TEST_CASE(const6); // ticket #1491
         TEST_CASE(const7);
-        TEST_CASE(const8); // ticket #1517
-        TEST_CASE(const9); // ticket #1515
+        TEST_CASE(const8);  // ticket #1517
+        TEST_CASE(const9);  // ticket #1515
         TEST_CASE(const10); // ticket #1522
         TEST_CASE(const11); // ticket #1529
         TEST_CASE(const12); // ticket #1552
@@ -178,25 +177,25 @@ private:
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
         TEST_CASE(assigningArrayElementIsNotAConstOperation);
-        TEST_CASE(constoperator1);  // operator< can often be const
-        TEST_CASE(constoperator2);  // operator<<
+        TEST_CASE(constoperator1); // operator< can often be const
+        TEST_CASE(constoperator2); // operator<<
         TEST_CASE(constoperator3);
         TEST_CASE(constoperator4);
         TEST_CASE(constoperator5); // ticket #3252
         TEST_CASE(constoperator6); // ticket #8669
-        TEST_CASE(constincdec);     // increment/decrement => non-const
+        TEST_CASE(constincdec);    // increment/decrement => non-const
         TEST_CASE(constassign1);
         TEST_CASE(constassign2);
-        TEST_CASE(constincdecarray);     // increment/decrement array element => non-const
+        TEST_CASE(constincdecarray); // increment/decrement array element => non-const
         TEST_CASE(constassignarray);
         TEST_CASE(constReturnReference);
-        TEST_CASE(constDelete);     // delete member variable => not const
-        TEST_CASE(constLPVOID);     // a function that returns LPVOID can't be const
-        TEST_CASE(constFunc); // a function that calls const functions can be const
+        TEST_CASE(constDelete); // delete member variable => not const
+        TEST_CASE(constLPVOID); // a function that returns LPVOID can't be const
+        TEST_CASE(constFunc);   // a function that calls const functions can be const
         TEST_CASE(constVirtualFunc);
-        TEST_CASE(constIfCfg);  // ticket #1881 - fp when there are #if
-        TEST_CASE(constFriend); // ticket #1921 - fp for friend function
-        TEST_CASE(constUnion);  // ticket #2111 - fp when there is a union
+        TEST_CASE(constIfCfg);         // ticket #1881 - fp when there are #if
+        TEST_CASE(constFriend);        // ticket #1921 - fp for friend function
+        TEST_CASE(constUnion);         // ticket #2111 - fp when there is a union
         TEST_CASE(constArrayOperator); // #4406
         TEST_CASE(constRangeBasedFor); // #5514
         TEST_CASE(const_shared_ptr);
@@ -229,7 +228,8 @@ private:
         TEST_CASE(getFileInfo);
     }
 
-    void checkCopyCtorAndEqOperator(const char code[]) {
+    void checkCopyCtorAndEqOperator(const char code[])
+    {
         // Clear the error log
         errout.str("");
         Settings settings;
@@ -245,7 +245,8 @@ private:
         checkClass.checkCopyCtorAndEqOperator();
     }
 
-    void copyCtorAndEqOperator() {
+    void copyCtorAndEqOperator()
+    {
         checkCopyCtorAndEqOperator("class A\n"
                                    "{\n"
                                    "    A(const A& other) { }\n"
@@ -253,7 +254,6 @@ private:
                                    "};");
         ASSERT_EQUALS("", errout.str());
 
-
         checkCopyCtorAndEqOperator("class A\n"
                                    "{\n"
                                    "};");
@@ -270,23 +270,28 @@ private:
                                    "    A& operator=(const A& other) { return *this; }\n"
                                    "};");
         ASSERT_EQUALS("", errout.str());
-
 
         checkCopyCtorAndEqOperator("class A\n"
                                    "{\n"
                                    "    A(const A& other) { }\n"
                                    "    int x;\n"
                                    "};");
-        TODO_ASSERT_EQUALS("[test.cpp:1]: (warning) The class 'A' has 'copy constructor' but lack of 'operator='.\n", "", errout.str());
-        // TODO the error message should be clarified. It should say something like 'copy constructor is empty and will not assign i and therefore the behaviour is different to the default assignment operator'
+        TODO_ASSERT_EQUALS("[test.cpp:1]: (warning) The class 'A' has 'copy constructor' but lack of 'operator='.\n",
+                           "",
+                           errout.str());
+        // TODO the error message should be clarified. It should say something like 'copy constructor is empty and will
+        // not assign i and therefore the behaviour is different to the default assignment operator'
 
         checkCopyCtorAndEqOperator("class A\n"
                                    "{\n"
                                    "    A& operator=(const A& other) { return *this; }\n"
                                    "    int x;\n"
                                    "};");
-        TODO_ASSERT_EQUALS("[test.cpp:1]: (warning) The class 'A' has 'operator=' but lack of 'copy constructor'.\n", "", errout.str());
-        // TODO the error message should be clarified. It should say something like 'assignment operator does not assign i and therefore the behaviour is different to the default copy constructor'
+        TODO_ASSERT_EQUALS("[test.cpp:1]: (warning) The class 'A' has 'operator=' but lack of 'copy constructor'.\n",
+                           "",
+                           errout.str());
+        // TODO the error message should be clarified. It should say something like 'assignment operator does not assign
+        // i and therefore the behaviour is different to the default copy constructor'
 
         checkCopyCtorAndEqOperator("class A\n"
                                    "{\n"
@@ -334,7 +339,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkExplicitConstructors(const char code[]) {
+    void checkExplicitConstructors(const char code[])
+    {
         // Clear the error log
         errout.str("");
 
@@ -348,7 +354,8 @@ private:
         checkClass.checkExplicitConstructors();
     }
 
-    void explicitConstructors() {
+    void explicitConstructors()
+    {
         checkExplicitConstructors("class Class {\n"
                                   "    Class() = delete;\n"
                                   "    Class(const Class& other) { }\n"
@@ -378,7 +385,8 @@ private:
         checkExplicitConstructors("class Class {\n"
                                   "    Class(int i) { }\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Class 'Class' has a constructor with 1 argument that is not explicit.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Class 'Class' has a constructor with 1 argument that is not explicit.\n",
+                      errout.str());
 
         checkExplicitConstructors("class Class {\n"
                                   "    Class(const Class& other) { }\n"
@@ -414,7 +422,9 @@ private:
                                   "  Test <int> test;\n"
                                   "  return 0;\n"
                                   "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Struct 'Test < int >' has a constructor with 1 argument that is not explicit.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Struct 'Test < int >' has a constructor with 1 argument that is not explicit.\n",
+            errout.str());
 
         // #7465: No error for copy or move constructors
         checkExplicitConstructors("template <class T> struct Test {\n"
@@ -440,10 +450,12 @@ private:
         checkExplicitConstructors("struct A{"
                                   "    A(int, int y=2) {}"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Struct 'A' has a constructor with 1 argument that is not explicit.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Struct 'A' has a constructor with 1 argument that is not explicit.\n",
+                      errout.str());
     }
 
-    void checkDuplInheritedMembers(const char code[]) {
+    void checkDuplInheritedMembers(const char code[])
+    {
         // Clear the error log
         errout.str("");
 
@@ -457,7 +469,8 @@ private:
         checkClass.checkDuplInheritedMembers();
     }
 
-    void duplInheritedMembers() {
+    void duplInheritedMembers()
+    {
         checkDuplInheritedMembers("class Base {\n"
                                   "   int x;\n"
                                   "};\n"
@@ -473,7 +486,9 @@ private:
                                   "struct Derived : Base {\n"
                                   "   int x;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:6]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n",
+            errout.str());
 
         checkDuplInheritedMembers("class Base {\n"
                                   "   protected:\n"
@@ -482,7 +497,9 @@ private:
                                   "struct Derived : public Base {\n"
                                   "   int x;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:6]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base'.\n",
+            errout.str());
 
         checkDuplInheritedMembers("class Base0 {\n"
                                   "   int x;\n"
@@ -505,7 +522,9 @@ private:
                                   "struct Derived : Base0, Base1 {\n"
                                   "   int x;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:9]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:9]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n",
+            errout.str());
 
         checkDuplInheritedMembers("class Base0 {\n"
                                   "   protected:\n"
@@ -518,8 +537,10 @@ private:
                                   "struct Derived : Base0, Base1 {\n"
                                   "   int x;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:10]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n"
-                      "[test.cpp:7] -> [test.cpp:10]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base1'.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:10]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base0'.\n"
+            "[test.cpp:7] -> [test.cpp:10]: (warning) The struct 'Derived' defines member variable with name 'x' also defined in its parent class 'Base1'.\n",
+            errout.str());
 
         checkDuplInheritedMembers("class Base {\n"
                                   "   int x;\n"
@@ -574,7 +595,9 @@ private:
                                   "class Derived2 : public Derived1 {\n"
                                   "    int i;\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:10]: (warning) The class 'Derived2' defines member variable with name 'i' also defined in its parent class 'Base'.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:10]: (warning) The class 'Derived2' defines member variable with name 'i' also defined in its parent class 'Base'.\n",
+            errout.str());
 
         // don't crash on recursive template
         checkDuplInheritedMembers("template<size_t N>\n"
@@ -597,7 +620,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkCopyConstructor(const char code[]) {
+    void checkCopyConstructor(const char code[])
+    {
         // Clear the error log
         errout.str("");
 
@@ -611,7 +635,8 @@ private:
         checkClass.copyconstructors();
     }
 
-    void copyConstructor1() {
+    void copyConstructor1()
+    {
         checkCopyConstructor("class F\n"
                              "{\n"
                              "   public:\n"
@@ -629,7 +654,10 @@ private:
                              "   F&operator=(const F&);\n"
                              "   ~F();\n"
                              "};");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (warning) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n", "", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:5]: (warning) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n",
+            "",
+            errout.str());
 
         checkCopyConstructor("class F {\n"
                              "   char *p;\n"
@@ -642,10 +670,11 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
-                           "[test.cpp:3] -> [test.cpp:7]: (warning) Copy constructor does not allocate memory for member 'p' although memory has been allocated in other constructors.\n",
-                           "[test.cpp:4]: (warning) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
-                           , errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:4]: (warning) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
+            "[test.cpp:3] -> [test.cpp:7]: (warning) Copy constructor does not allocate memory for member 'p' although memory has been allocated in other constructors.\n",
+            "[test.cpp:4]: (warning) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n",
+            errout.str());
 
         checkCopyConstructor("class F\n"
                              "{\n"
@@ -662,10 +691,11 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (warning) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
-                           "[test.cpp:5] -> [test.cpp:10]: (warning) Copy constructor does not allocate memory for member 'p' although memory has been allocated in other constructors.\n",
-                           ""
-                           , errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:5]: (warning) Value of pointer 'p', which points to allocated memory, is copied in copy constructor instead of allocating new memory.\n"
+            "[test.cpp:5] -> [test.cpp:10]: (warning) Copy constructor does not allocate memory for member 'p' although memory has been allocated in other constructors.\n",
+            "",
+            errout.str());
 
         checkCopyConstructor("class kalci\n"
                              "{\n"
@@ -717,7 +747,10 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        TODO_ASSERT_EQUALS("[test.cpp:14] -> [test.cpp:11]: (warning) Copy constructor does not allocate memory for member 'd' although memory has been allocated in other constructors.\n", "", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:14] -> [test.cpp:11]: (warning) Copy constructor does not allocate memory for member 'd' although memory has been allocated in other constructors.\n",
+            "",
+            errout.str());
 
         checkCopyConstructor("class F {\n"
                              "   char *c;\n"
@@ -745,7 +778,10 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        TODO_ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:4]: (warning) Copy constructor does not allocate memory for member 'd' although memory has been allocated in other constructors.\n", "", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:4]: (warning) Copy constructor does not allocate memory for member 'd' although memory has been allocated in other constructors.\n",
+            "",
+            errout.str());
 
         checkCopyConstructor("class F\n"
                              "{\n"
@@ -760,7 +796,10 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        TODO_ASSERT_EQUALS("[test.cpp:8]: (warning) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n", "", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:8]: (warning) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n",
+            "",
+            errout.str());
 
         checkCopyConstructor("class F\n"
                              "{\n"
@@ -818,7 +857,9 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5]: (warning) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n",
+            errout.str());
 
         checkCopyConstructor("class F {\n"
                              "   char *p;\n"
@@ -837,7 +878,9 @@ private:
                              "   ~F();\n"
                              "   F& operator=(const F&f);\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (warning) Class 'F' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n",
+            errout.str());
 
         // #7198
         checkCopyConstructor("struct F {\n"
@@ -849,7 +892,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void copyConstructor2() { // ticket #4458
+    void copyConstructor2()
+    { // ticket #4458
         checkCopyConstructor("template <class _Tp>\n"
                              "class Vector\n"
                              "{\n"
@@ -866,7 +910,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void copyConstructor3() {
+    void copyConstructor3()
+    {
         checkCopyConstructor("struct F {\n"
                              "   char* c;\n"
                              "   F() { c = malloc(100); }\n"
@@ -883,10 +928,13 @@ private:
                              "   F&operator=(const F &f);\n"
                              "   ~F();\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Struct 'F' has dynamic memory/resource allocation(s). The copy constructor is explicitly defaulted but the default copy constructor does not work well. It is recommended to define or delete the copy constructor.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (warning) Struct 'F' has dynamic memory/resource allocation(s). The copy constructor is explicitly defaulted but the default copy constructor does not work well. It is recommended to define or delete the copy constructor.\n",
+            errout.str());
     }
 
-    void copyConstructor4() {
+    void copyConstructor4()
+    {
         checkCopyConstructor("class noncopyable {\n"
                              "protected:\n"
                              "    noncopyable() {}\n"
@@ -909,7 +957,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void copyConstructor5() {
+    void copyConstructor5()
+    {
         checkCopyConstructor("class Copyable {};\n"
                              "\n"
                              "class Foo : public Copyable, public UnknownType {\n"
@@ -933,14 +982,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void noOperatorEq() {
+    void noOperatorEq()
+    {
         checkCopyConstructor("struct F {\n"
                              "   char* c;\n"
                              "   F() { c = malloc(100); }\n"
                              "   F(const F &f);\n"
                              "   ~F();\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Struct 'F' does not have a operator= which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (warning) Struct 'F' does not have a operator= which is recommended since it has dynamic memory/resource allocation(s).\n",
+            errout.str());
 
         // defaulted operator=
         checkCopyConstructor("struct F {\n"
@@ -950,7 +1002,9 @@ private:
                              "   F &operator=(const F &f) = default;\n"
                              "   ~F();\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Struct 'F' has dynamic memory/resource allocation(s). The operator= is explicitly defaulted but the default operator= does not work well. It is recommended to define or delete the operator=.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (warning) Struct 'F' has dynamic memory/resource allocation(s). The operator= is explicitly defaulted but the default operator= does not work well. It is recommended to define or delete the operator=.\n",
+            errout.str());
 
         // deleted operator=
         checkCopyConstructor("struct F {\n"
@@ -972,14 +1026,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void noDestructor() {
+    void noDestructor()
+    {
         checkCopyConstructor("struct F {\n"
                              "   char* c;\n"
                              "   F() { c = malloc(100); }\n"
                              "   F(const F &f);\n"
                              "   F&operator=(const F&);"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Struct 'F' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (warning) Struct 'F' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n",
+            errout.str());
 
         checkCopyConstructor("struct F {\n"
                              "   C* c;\n"
@@ -995,7 +1052,9 @@ private:
                              "   F(const F &f);\n"
                              "   F& operator=(const F&);"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Struct 'F' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (warning) Struct 'F' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n",
+            errout.str());
 
         checkCopyConstructor("struct Data { int x; int y; };\n"
                              "struct F {\n"
@@ -1004,7 +1063,9 @@ private:
                              "   F(const F &f);\n"
                              "   F&operator=(const F&);"
                              "};");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Struct 'F' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (warning) Struct 'F' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n",
+            errout.str());
 
         // defaulted destructor
         checkCopyConstructor("struct F {\n"
@@ -1014,7 +1075,9 @@ private:
                              "   F &operator=(const F &f);\n"
                              "   ~F() = default;\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Struct 'F' has dynamic memory/resource allocation(s). The destructor is explicitly defaulted but the default destructor does not work well. It is recommended to define the destructor.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (warning) Struct 'F' has dynamic memory/resource allocation(s). The destructor is explicitly defaulted but the default destructor does not work well. It is recommended to define the destructor.\n",
+            errout.str());
 
         // deleted destructor
         checkCopyConstructor("struct F {\n"
@@ -1028,7 +1091,8 @@ private:
     }
 
     // Check that operator Equal returns reference to this
-    void checkOpertorEqRetRefThis(const char code[]) {
+    void checkOpertorEqRetRefThis(const char code[])
+    {
         // Clear the error log
         errout.str("");
 
@@ -1042,342 +1106,322 @@ private:
         checkClass.operatorEqRetRefThis();
     }
 
-    void operatorEqRetRefThis1() {
-        checkOpertorEqRetRefThis(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    A & operator=(const A &a) { return *this; }\n"
-            "};");
+    void operatorEqRetRefThis1()
+    {
+        checkOpertorEqRetRefThis("class A\n"
+                                 "{\n"
+                                 "public:\n"
+                                 "    A & operator=(const A &a) { return *this; }\n"
+                                 "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    A & operator=(const A &a) { return a; }\n"
-            "};");
+        checkOpertorEqRetRefThis("class A\n"
+                                 "{\n"
+                                 "public:\n"
+                                 "    A & operator=(const A &a) { return a; }\n"
+                                 "};");
         ASSERT_EQUALS("[test.cpp:4]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    A & operator=(const A &);\n"
-            "};\n"
-            "A & A::operator=(const A &a) { return *this; }");
+        checkOpertorEqRetRefThis("class A\n"
+                                 "{\n"
+                                 "public:\n"
+                                 "    A & operator=(const A &);\n"
+                                 "};\n"
+                                 "A & A::operator=(const A &a) { return *this; }");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    A & operator=(const A &a);\n"
-            "};\n"
-            "A & A::operator=(const A &a) { return *this; }");
+        checkOpertorEqRetRefThis("class A\n"
+                                 "{\n"
+                                 "public:\n"
+                                 "    A & operator=(const A &a);\n"
+                                 "};\n"
+                                 "A & A::operator=(const A &a) { return *this; }");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    A & operator=(const A &);\n"
-            "};\n"
-            "A & A::operator=(const A &a) { return a; }");
+        checkOpertorEqRetRefThis("class A\n"
+                                 "{\n"
+                                 "public:\n"
+                                 "    A & operator=(const A &);\n"
+                                 "};\n"
+                                 "A & A::operator=(const A &a) { return a; }");
         ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    A & operator=(const A &a);\n"
-            "};\n"
-            "A & A::operator=(const A &a) { return a; }");
+        checkOpertorEqRetRefThis("class A\n"
+                                 "{\n"
+                                 "public:\n"
+                                 "    A & operator=(const A &a);\n"
+                                 "};\n"
+                                 "A & A::operator=(const A &a) { return a; }");
         ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    class B\n"
-            "    {\n"
-            "    public:\n"
-            "        B & operator=(const B &b) { return *this; }\n"
-            "    };\n"
-            "};");
+        checkOpertorEqRetRefThis("class A\n"
+                                 "{\n"
+                                 "public:\n"
+                                 "    class B\n"
+                                 "    {\n"
+                                 "    public:\n"
+                                 "        B & operator=(const B &b) { return *this; }\n"
+                                 "    };\n"
+                                 "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    class B\n"
-            "    {\n"
-            "    public:\n"
-            "        B & operator=(const B &b) { return b; }\n"
-            "    };\n"
-            "};");
+        checkOpertorEqRetRefThis("class A\n"
+                                 "{\n"
+                                 "public:\n"
+                                 "    class B\n"
+                                 "    {\n"
+                                 "    public:\n"
+                                 "        B & operator=(const B &b) { return b; }\n"
+                                 "    };\n"
+                                 "};");
         ASSERT_EQUALS("[test.cpp:7]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    class B\n"
-            "    {\n"
-            "    public:\n"
-            "        B & operator=(const B &);\n"
-            "    };\n"
-            "};\n"
-            "A::B & A::B::operator=(const A::B &b) { return *this; }");
+        checkOpertorEqRetRefThis("class A\n"
+                                 "{\n"
+                                 "public:\n"
+                                 "    class B\n"
+                                 "    {\n"
+                                 "    public:\n"
+                                 "        B & operator=(const B &);\n"
+                                 "    };\n"
+                                 "};\n"
+                                 "A::B & A::B::operator=(const A::B &b) { return *this; }");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    class B\n"
-            "    {\n"
-            "    public:\n"
-            "        B & operator=(const B &);\n"
-            "    };\n"
-            "};\n"
-            "A::B & A::B::operator=(const A::B &b) { return b; }");
+        checkOpertorEqRetRefThis("class A\n"
+                                 "{\n"
+                                 "public:\n"
+                                 "    class B\n"
+                                 "    {\n"
+                                 "    public:\n"
+                                 "        B & operator=(const B &);\n"
+                                 "    };\n"
+                                 "};\n"
+                                 "A::B & A::B::operator=(const A::B &b) { return b; }");
         ASSERT_EQUALS("[test.cpp:10]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "    class B;\n"
-            "};\n"
-            "class A::B\n"
-            "{\n"
-            "  B & operator=(const B & b) { return b; }\n"
-            "};");
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "    class B;\n"
+                                 "};\n"
+                                 "class A::B\n"
+                                 "{\n"
+                                 "  B & operator=(const B & b) { return b; }\n"
+                                 "};");
         ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "    class B;\n"
-            "};\n"
-            "class A::B\n"
-            "{\n"
-            "  B & operator=(const B &);\n"
-            "};\n"
-            "A::B & A::B::operator=(const A::B & b) { return b; }");
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "    class B;\n"
+                                 "};\n"
+                                 "class A::B\n"
+                                 "{\n"
+                                 "  B & operator=(const B &);\n"
+                                 "};\n"
+                                 "A::B & A::B::operator=(const A::B & b) { return b; }");
         ASSERT_EQUALS("[test.cpp:8]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "    class B;\n"
-            "};\n"
-            "class A::B\n"
-            "{\n"
-            "  A::B & operator=(const A::B & b) { return b; }\n"
-            "};");
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "    class B;\n"
+                                 "};\n"
+                                 "class A::B\n"
+                                 "{\n"
+                                 "  A::B & operator=(const A::B & b) { return b; }\n"
+                                 "};");
         ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "    class B;\n"
-            "};\n"
-            "class A::B\n"
-            "{\n"
-            "  A::B & operator=(const A::B &);\n"
-            "};\n"
-            "A::B & A::B::operator=(const A::B & b) { return b; }");
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "    class B;\n"
+                                 "};\n"
+                                 "class A::B\n"
+                                 "{\n"
+                                 "  A::B & operator=(const A::B &);\n"
+                                 "};\n"
+                                 "A::B & A::B::operator=(const A::B & b) { return b; }");
         ASSERT_EQUALS("[test.cpp:8]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "namespace A {\n"
-            "    class B;\n"
-            "}\n"
-            "class A::B\n"
-            "{\n"
-            "  B & operator=(const B & b) { return b; }\n"
-            "};");
+        checkOpertorEqRetRefThis("namespace A {\n"
+                                 "    class B;\n"
+                                 "}\n"
+                                 "class A::B\n"
+                                 "{\n"
+                                 "  B & operator=(const B & b) { return b; }\n"
+                                 "};");
         ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "namespace A {\n"
-            "    class B;\n"
-            "}\n"
-            "class A::B\n"
-            "{\n"
-            "  B & operator=(const B &);\n"
-            "};\n"
-            "A::B & A::B::operator=(const A::B & b) { return b; }");
+        checkOpertorEqRetRefThis("namespace A {\n"
+                                 "    class B;\n"
+                                 "}\n"
+                                 "class A::B\n"
+                                 "{\n"
+                                 "  B & operator=(const B &);\n"
+                                 "};\n"
+                                 "A::B & A::B::operator=(const A::B & b) { return b; }");
         ASSERT_EQUALS("[test.cpp:8]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "namespace A {\n"
-            "    class B;\n"
-            "}\n"
-            "class A::B\n"
-            "{\n"
-            "  A::B & operator=(const A::B & b) { return b; }\n"
-            "};");
+        checkOpertorEqRetRefThis("namespace A {\n"
+                                 "    class B;\n"
+                                 "}\n"
+                                 "class A::B\n"
+                                 "{\n"
+                                 "  A::B & operator=(const A::B & b) { return b; }\n"
+                                 "};");
         ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "namespace A {\n"
-            "    class B;\n"
-            "}\n"
-            "class A::B\n"
-            "{\n"
-            "  A::B & operator=(const A::B &);\n"
-            "};\n"
-            "A::B & A::B::operator=(const A::B & b) { return b; }");
+        checkOpertorEqRetRefThis("namespace A {\n"
+                                 "    class B;\n"
+                                 "}\n"
+                                 "class A::B\n"
+                                 "{\n"
+                                 "  A::B & operator=(const A::B &);\n"
+                                 "};\n"
+                                 "A::B & A::B::operator=(const A::B & b) { return b; }");
         ASSERT_EQUALS("[test.cpp:8]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
     }
 
-    void operatorEqRetRefThis2() {
+    void operatorEqRetRefThis2()
+    {
         // ticket # 1323
-        checkOpertorEqRetRefThis(
-            "class szp\n"
-            "{\n"
-            "  szp &operator =(int *other) {}\n"
-            "};");
-        ASSERT_EQUALS("[test.cpp:3]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+        checkOpertorEqRetRefThis("class szp\n"
+                                 "{\n"
+                                 "  szp &operator =(int *other) {}\n"
+                                 "};");
+        ASSERT_EQUALS("[test.cpp:3]: (error) No 'return' statement in non-void function causes undefined behavior.\n",
+                      errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class szp\n"
-            "{\n"
-            "  szp &operator =(int *other);\n"
-            "};\n"
-            "szp &szp::operator =(int *other) {}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+        checkOpertorEqRetRefThis("class szp\n"
+                                 "{\n"
+                                 "  szp &operator =(int *other);\n"
+                                 "};\n"
+                                 "szp &szp::operator =(int *other) {}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) No 'return' statement in non-void function causes undefined behavior.\n",
+                      errout.str());
 
-        checkOpertorEqRetRefThis(
-            "namespace NS {\n"
-            "    class szp;\n"
-            "}\n"
-            "class NS::szp\n"
-            "{\n"
-            "  szp &operator =(int *other) {}\n"
-            "};");
-        ASSERT_EQUALS("[test.cpp:6]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+        checkOpertorEqRetRefThis("namespace NS {\n"
+                                 "    class szp;\n"
+                                 "}\n"
+                                 "class NS::szp\n"
+                                 "{\n"
+                                 "  szp &operator =(int *other) {}\n"
+                                 "};");
+        ASSERT_EQUALS("[test.cpp:6]: (error) No 'return' statement in non-void function causes undefined behavior.\n",
+                      errout.str());
 
-        checkOpertorEqRetRefThis(
-            "namespace NS {\n"
-            "    class szp;\n"
-            "}\n"
-            "class NS::szp\n"
-            "{\n"
-            "  szp &operator =(int *other);\n"
-            "};\n"
-            "NS::szp &NS::szp::operator =(int *other) {}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+        checkOpertorEqRetRefThis("namespace NS {\n"
+                                 "    class szp;\n"
+                                 "}\n"
+                                 "class NS::szp\n"
+                                 "{\n"
+                                 "  szp &operator =(int *other);\n"
+                                 "};\n"
+                                 "NS::szp &NS::szp::operator =(int *other) {}");
+        ASSERT_EQUALS("[test.cpp:8]: (error) No 'return' statement in non-void function causes undefined behavior.\n",
+                      errout.str());
 
-        checkOpertorEqRetRefThis(
-            "namespace NS {\n"
-            "    class szp;\n"
-            "}\n"
-            "class NS::szp\n"
-            "{\n"
-            "  NS::szp &operator =(int *other) {}\n"
-            "};");
-        ASSERT_EQUALS("[test.cpp:6]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+        checkOpertorEqRetRefThis("namespace NS {\n"
+                                 "    class szp;\n"
+                                 "}\n"
+                                 "class NS::szp\n"
+                                 "{\n"
+                                 "  NS::szp &operator =(int *other) {}\n"
+                                 "};");
+        ASSERT_EQUALS("[test.cpp:6]: (error) No 'return' statement in non-void function causes undefined behavior.\n",
+                      errout.str());
 
-        checkOpertorEqRetRefThis(
-            "namespace NS {\n"
-            "    class szp;\n"
-            "}\n"
-            "class NS::szp\n"
-            "{\n"
-            "  NS::szp &operator =(int *other);\n"
-            "};\n"
-            "NS::szp &NS::szp::operator =(int *other) {}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+        checkOpertorEqRetRefThis("namespace NS {\n"
+                                 "    class szp;\n"
+                                 "}\n"
+                                 "class NS::szp\n"
+                                 "{\n"
+                                 "  NS::szp &operator =(int *other);\n"
+                                 "};\n"
+                                 "NS::szp &NS::szp::operator =(int *other) {}");
+        ASSERT_EQUALS("[test.cpp:8]: (error) No 'return' statement in non-void function causes undefined behavior.\n",
+                      errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "    class szp;\n"
-            "};\n"
-            "class A::szp\n"
-            "{\n"
-            "  szp &operator =(int *other) {}\n"
-            "};");
-        ASSERT_EQUALS("[test.cpp:6]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "    class szp;\n"
+                                 "};\n"
+                                 "class A::szp\n"
+                                 "{\n"
+                                 "  szp &operator =(int *other) {}\n"
+                                 "};");
+        ASSERT_EQUALS("[test.cpp:6]: (error) No 'return' statement in non-void function causes undefined behavior.\n",
+                      errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "    class szp;\n"
-            "};\n"
-            "class A::szp\n"
-            "{\n"
-            "  szp &operator =(int *other);\n"
-            "};\n"
-            "A::szp &A::szp::operator =(int *other) {}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "    class szp;\n"
+                                 "};\n"
+                                 "class A::szp\n"
+                                 "{\n"
+                                 "  szp &operator =(int *other);\n"
+                                 "};\n"
+                                 "A::szp &A::szp::operator =(int *other) {}");
+        ASSERT_EQUALS("[test.cpp:8]: (error) No 'return' statement in non-void function causes undefined behavior.\n",
+                      errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "    class szp;\n"
-            "};\n"
-            "class A::szp\n"
-            "{\n"
-            "  A::szp &operator =(int *other) {}\n"
-            "};");
-        ASSERT_EQUALS("[test.cpp:6]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "    class szp;\n"
+                                 "};\n"
+                                 "class A::szp\n"
+                                 "{\n"
+                                 "  A::szp &operator =(int *other) {}\n"
+                                 "};");
+        ASSERT_EQUALS("[test.cpp:6]: (error) No 'return' statement in non-void function causes undefined behavior.\n",
+                      errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "    class szp;\n"
-            "};\n"
-            "class A::szp\n"
-            "{\n"
-            "  A::szp &operator =(int *other);\n"
-            "};\n"
-            "A::szp &A::szp::operator =(int *other) {}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "    class szp;\n"
+                                 "};\n"
+                                 "class A::szp\n"
+                                 "{\n"
+                                 "  A::szp &operator =(int *other);\n"
+                                 "};\n"
+                                 "A::szp &A::szp::operator =(int *other) {}");
+        ASSERT_EQUALS("[test.cpp:8]: (error) No 'return' statement in non-void function causes undefined behavior.\n",
+                      errout.str());
     }
 
-    void operatorEqRetRefThis3() {
+    void operatorEqRetRefThis3()
+    {
         // ticket # 1405
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "public:\n"
-            "  inline A &operator =(int *other) { return (*this); };\n"
-            "  inline A &operator =(long *other) { return (*this = 0); };\n"
-            "};");
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "public:\n"
+                                 "  inline A &operator =(int *other) { return (*this); };\n"
+                                 "  inline A &operator =(long *other) { return (*this = 0); };\n"
+                                 "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "public:\n"
-            "  A &operator =(int *other);\n"
-            "  A &operator =(long *other);\n"
-            "};\n"
-            "A &A::operator =(int *other) { return (*this); };\n"
-            "A &A::operator =(long *other) { return (*this = 0); };");
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "public:\n"
+                                 "  A &operator =(int *other);\n"
+                                 "  A &operator =(long *other);\n"
+                                 "};\n"
+                                 "A &A::operator =(int *other) { return (*this); };\n"
+                                 "A &A::operator =(long *other) { return (*this = 0); };");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "public:\n"
-            "  inline A &operator =(int *other) { return (*this); };\n"
-            "  inline A &operator =(long *other) { return operator = (*(int *)other); };\n"
-            "};");
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "public:\n"
+                                 "  inline A &operator =(int *other) { return (*this); };\n"
+                                 "  inline A &operator =(long *other) { return operator = (*(int *)other); };\n"
+                                 "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "public:\n"
-            "  A &operator =(int *other);\n"
-            "  A &operator =(long *other);\n"
-            "};\n"
-            "A &A::operator =(int *other) { return (*this); };\n"
-            "A &A::operator =(long *other) { return operator = (*(int *)other); };");
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "public:\n"
+                                 "  A &operator =(int *other);\n"
+                                 "  A &operator =(long *other);\n"
+                                 "};\n"
+                                 "A &A::operator =(int *other) { return (*this); };\n"
+                                 "A &A::operator =(long *other) { return operator = (*(int *)other); };");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "public:\n"
-            "  A &operator =(int *other);\n"
-            "  A &operator =(long *other);\n"
-            "};\n"
-            "A &A::operator =(int *other) { return (*this); };\n"
-            "A &A::operator =(long *other) { return this->operator = (*(int *)other); };");
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "public:\n"
+                                 "  A &operator =(int *other);\n"
+                                 "  A &operator =(long *other);\n"
+                                 "};\n"
+                                 "A &A::operator =(int *other) { return (*this); };\n"
+                                 "A &A::operator =(long *other) { return this->operator = (*(int *)other); };");
         ASSERT_EQUALS("", errout.str());
 
         checkOpertorEqRetRefThis( // #9045
@@ -1393,105 +1437,107 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void operatorEqRetRefThis4() {
+    void operatorEqRetRefThis4()
+    {
         // ticket # 1451
-        checkOpertorEqRetRefThis(
-            "P& P::operator = (const P& pc)\n"
-            "{\n"
-            "  return (P&)(*this += pc);\n"
-            "}");
+        checkOpertorEqRetRefThis("P& P::operator = (const P& pc)\n"
+                                 "{\n"
+                                 "  return (P&)(*this += pc);\n"
+                                 "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void operatorEqRetRefThis5() {
+    void operatorEqRetRefThis5()
+    {
         // ticket # 1550
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "public:\n"
-            "    A & operator=(const A &a) { }\n"
-            "};");
-        ASSERT_EQUALS("[test.cpp:3]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "public:\n"
+                                 "    A & operator=(const A &a) { }\n"
+                                 "};");
+        ASSERT_EQUALS("[test.cpp:3]: (error) No 'return' statement in non-void function causes undefined behavior.\n",
+                      errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "protected:\n"
-            "    A & operator=(const A &a) {}\n"
-            "};");
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "protected:\n"
+                                 "    A & operator=(const A &a) {}\n"
+                                 "};");
         ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "private:\n"
-            "    A & operator=(const A &a) {}\n"
-            "};");
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "private:\n"
+                                 "    A & operator=(const A &a) {}\n"
+                                 "};");
         ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "public:\n"
-            "    A & operator=(const A &a) {\n"
-            "        rand();\n"
-            "        throw std::exception();\n"
-            "    }\n"
-            "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should either return reference to 'this' instance or be declared private and left unimplemented.\n", errout.str());
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "public:\n"
+                                 "    A & operator=(const A &a) {\n"
+                                 "        rand();\n"
+                                 "        throw std::exception();\n"
+                                 "    }\n"
+                                 "};");
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) 'operator=' should either return reference to 'this' instance or be declared private and left unimplemented.\n",
+            errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "public:\n"
-            "    A & operator=(const A &a) {\n"
-            "        rand();\n"
-            "        abort();\n"
-            "    }\n"
-            "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should either return reference to 'this' instance or be declared private and left unimplemented.\n", errout.str());
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "public:\n"
+                                 "    A & operator=(const A &a) {\n"
+                                 "        rand();\n"
+                                 "        abort();\n"
+                                 "    }\n"
+                                 "};");
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) 'operator=' should either return reference to 'this' instance or be declared private and left unimplemented.\n",
+            errout.str());
 
-        checkOpertorEqRetRefThis(
-            "class A {\n"
-            "public:\n"
-            "    A & operator=(const A &a);\n"
-            "};\n"
-            "A & A :: operator=(const A &a) { }");
-        ASSERT_EQUALS("[test.cpp:5]: (error) No 'return' statement in non-void function causes undefined behavior.\n", errout.str());
+        checkOpertorEqRetRefThis("class A {\n"
+                                 "public:\n"
+                                 "    A & operator=(const A &a);\n"
+                                 "};\n"
+                                 "A & A :: operator=(const A &a) { }");
+        ASSERT_EQUALS("[test.cpp:5]: (error) No 'return' statement in non-void function causes undefined behavior.\n",
+                      errout.str());
     }
 
-    void operatorEqRetRefThis6() { // ticket #2478 (segmentation fault)
-        checkOpertorEqRetRefThis(
-            "class UString {\n"
-            "public:\n"
-            "    UString& assign( const char* c_str );\n"
-            "    UString& operator=( const UString& s );\n"
-            "};\n"
-            "UString& UString::assign( const char* c_str ) {\n"
-            "    std::string tmp( c_str );\n"
-            "    return assign( tmp );\n"
-            "}\n"
-            "UString& UString::operator=( const UString& s ) {\n"
-            "    return assign( s );\n"
-            "}");
+    void operatorEqRetRefThis6()
+    { // ticket #2478 (segmentation fault)
+        checkOpertorEqRetRefThis("class UString {\n"
+                                 "public:\n"
+                                 "    UString& assign( const char* c_str );\n"
+                                 "    UString& operator=( const UString& s );\n"
+                                 "};\n"
+                                 "UString& UString::assign( const char* c_str ) {\n"
+                                 "    std::string tmp( c_str );\n"
+                                 "    return assign( tmp );\n"
+                                 "}\n"
+                                 "UString& UString::operator=( const UString& s ) {\n"
+                                 "    return assign( s );\n"
+                                 "}");
     }
 
-    void operatorEqRetRefThis7() { // ticket #5782 Endless recursion in CheckClass::checkReturnPtrThis()
-        checkOpertorEqRetRefThis(
-            "class basic_fbstring {\n"
-            "  basic_fbstring& operator=(int il) {\n"
-            "    return assign();\n"
-            "  }\n"
-            "  basic_fbstring& assign() {\n"
-            "    return replace();\n"
-            "  }\n"
-            "  basic_fbstring& replaceImplDiscr() {\n"
-            "    return replace();\n"
-            "  }\n"
-            "  basic_fbstring& replace() {\n"
-            "    return replaceImplDiscr();\n"
-            "  }\n"
-            "};");
+    void operatorEqRetRefThis7()
+    { // ticket #5782 Endless recursion in CheckClass::checkReturnPtrThis()
+        checkOpertorEqRetRefThis("class basic_fbstring {\n"
+                                 "  basic_fbstring& operator=(int il) {\n"
+                                 "    return assign();\n"
+                                 "  }\n"
+                                 "  basic_fbstring& assign() {\n"
+                                 "    return replace();\n"
+                                 "  }\n"
+                                 "  basic_fbstring& replaceImplDiscr() {\n"
+                                 "    return replace();\n"
+                                 "  }\n"
+                                 "  basic_fbstring& replace() {\n"
+                                 "    return replaceImplDiscr();\n"
+                                 "  }\n"
+                                 "};");
         ASSERT_EQUALS("", errout.str());
     }
 
     // Check that operator Equal checks for assignment to self
-    void checkOpertorEqToSelf(const char code[]) {
+    void checkOpertorEqToSelf(const char code[])
+    {
         // Clear the error log
         errout.str("");
 
@@ -1505,951 +1551,933 @@ private:
         checkClass.operatorEqToSelf();
     }
 
-    void operatorEqToSelf1() {
+    void operatorEqToSelf1()
+    {
         // this test has an assignment test but it is not needed
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    A & operator=(const A &a) { if (&a != this) { } return *this; }\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    A & operator=(const A &a) { if (&a != this) { } return *this; }\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
         // this test doesn't have an assignment test but it is not needed
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    A & operator=(const A &a) { return *this; }\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    A & operator=(const A &a) { return *this; }\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
         // this test needs an assignment test and has it
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a)\n"
-            "    {\n"
-            "        if (&a != this)\n"
-            "        {\n"
-            "            free(s);\n"
-            "            s = strdup(a.s);\n"
-            "        }\n"
-            "        return *this;\n"
-            "    }\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a)\n"
+                             "    {\n"
+                             "        if (&a != this)\n"
+                             "        {\n"
+                             "            free(s);\n"
+                             "            s = strdup(a.s);\n"
+                             "        }\n"
+                             "        return *this;\n"
+                             "    }\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
         // this class needs an assignment test but doesn't have it
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a)\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(a.s);\n"
-            "        return *this;\n"
-            "    }\n"
-            "};");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a)\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(a.s);\n"
+                             "        return *this;\n"
+                             "    }\n"
+                             "};");
+        ASSERT_EQUALS(
+            "[test.cpp:5]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n",
+            errout.str());
 
         // this test has an assignment test but doesn't need it
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    A & operator=(const A &);\n"
-            "};\n"
-            "A & A::operator=(const A &a) { if (&a != this) { } return *this; }");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    A & operator=(const A &);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a) { if (&a != this) { } return *this; }");
         ASSERT_EQUALS("", errout.str());
 
         // this test doesn't have an assignment test but doesn't need it
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    A & operator=(const A &);\n"
-            "};\n"
-            "A & A::operator=(const A &a) { return *this; }");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    A & operator=(const A &);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a) { return *this; }");
         ASSERT_EQUALS("", errout.str());
 
         // this test needs an assignment test and has it
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &);\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    if (&a != this)\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(a.s);\n"
-            "    }\n"
-            "    return *this;\n"
-            "}");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    if (&a != this)\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(a.s);\n"
+                             "    }\n"
+                             "    return *this;\n"
+                             "}");
         ASSERT_EQUALS("", errout.str());
 
         // this test needs an assignment test and has the inverse test
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &);\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    if (&a == this)\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(a.s);\n"
-            "    }\n"
-            "    return *this;\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    if (&a == this)\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(a.s);\n"
+                             "    }\n"
+                             "    return *this;\n"
+                             "}");
+        ASSERT_EQUALS(
+            "[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n",
+            errout.str());
 
         // this test needs an assignment test and has the inverse test
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &);\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    if ((&a == this) == true)\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(a.s);\n"
-            "    }\n"
-            "    return *this;\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    if ((&a == this) == true)\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(a.s);\n"
+                             "    }\n"
+                             "    return *this;\n"
+                             "}");
+        ASSERT_EQUALS(
+            "[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n",
+            errout.str());
 
         // this test needs an assignment test and has the inverse test
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &);\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    if ((&a == this) != false)\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(a.s);\n"
-            "    }\n"
-            "    return *this;\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    if ((&a == this) != false)\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(a.s);\n"
+                             "    }\n"
+                             "    return *this;\n"
+                             "}");
+        ASSERT_EQUALS(
+            "[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n",
+            errout.str());
 
         // this test needs an assignment test and has the inverse test
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &);\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    if (!((&a == this) == false))\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(a.s);\n"
-            "    }\n"
-            "    return *this;\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    if (!((&a == this) == false))\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(a.s);\n"
+                             "    }\n"
+                             "    return *this;\n"
+                             "}");
+        ASSERT_EQUALS(
+            "[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n",
+            errout.str());
 
         // this test needs an assignment test and has the inverse test
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &);\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    if ((&a != this) == false)\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(a.s);\n"
-            "    }\n"
-            "    return *this;\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    if ((&a != this) == false)\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(a.s);\n"
+                             "    }\n"
+                             "    return *this;\n"
+                             "}");
+        ASSERT_EQUALS(
+            "[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n",
+            errout.str());
 
         // this test needs an assignment test and has the inverse test
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &);\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    if (&a != this)\n"
-            "    {\n"
-            "    }\n"
-            "    else\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(a.s);\n"
-            "    }\n"
-            "    return *this;\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    if (&a != this)\n"
+                             "    {\n"
+                             "    }\n"
+                             "    else\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(a.s);\n"
+                             "    }\n"
+                             "    return *this;\n"
+                             "}");
+        ASSERT_EQUALS(
+            "[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n",
+            errout.str());
 
         // this test needs an assignment test and has the inverse test
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &);\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    if (&a != this)\n"
-            "        free(s);\n"
-            "    else\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(a.s);\n"
-            "    }\n"
-            "    return *this;\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
-
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    if (&a != this)\n"
+                             "        free(s);\n"
+                             "    else\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(a.s);\n"
+                             "    }\n"
+                             "    return *this;\n"
+                             "}");
+        ASSERT_EQUALS(
+            "[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n",
+            errout.str());
 
         // this test needs an assignment test but doesn’t have it
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &);\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    free(s);\n"
-            "    s = strdup(a.s);\n"
-            "    return *this;\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    free(s);\n"
+                             "    s = strdup(a.s);\n"
+                             "    return *this;\n"
+                             "}");
+        ASSERT_EQUALS(
+            "[test.cpp:7]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n",
+            errout.str());
 
         // ticket #1224
-        checkOpertorEqToSelf(
-            "const SubTree &SubTree::operator= (const SubTree &b)\n"
-            "{\n"
-            "    CodeTree *oldtree = tree;\n"
-            "    tree = new CodeTree(*b.tree);\n"
-            "    delete oldtree;\n"
-            "    return *this;\n"
-            "}\n"
-            "const SubTree &SubTree::operator= (const CodeTree &b)\n"
-            "{\n"
-            "    CodeTree *oldtree = tree;\n"
-            "    tree = new CodeTree(b);\n"
-            "    delete oldtree;\n"
-            "    return *this;\n"
-            "}");
+        checkOpertorEqToSelf("const SubTree &SubTree::operator= (const SubTree &b)\n"
+                             "{\n"
+                             "    CodeTree *oldtree = tree;\n"
+                             "    tree = new CodeTree(*b.tree);\n"
+                             "    delete oldtree;\n"
+                             "    return *this;\n"
+                             "}\n"
+                             "const SubTree &SubTree::operator= (const CodeTree &b)\n"
+                             "{\n"
+                             "    CodeTree *oldtree = tree;\n"
+                             "    tree = new CodeTree(b);\n"
+                             "    delete oldtree;\n"
+                             "    return *this;\n"
+                             "}");
         ASSERT_EQUALS("", errout.str());
-
     }
 
-    void operatorEqToSelf2() {
+    void operatorEqToSelf2()
+    {
         // this test has an assignment test but doesn't need it
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    class B\n"
-            "    {\n"
-            "    public:\n"
-            "        B & operator=(const B &b) { if (&b != this) { } return *this; }\n"
-            "    };\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    class B\n"
+                             "    {\n"
+                             "    public:\n"
+                             "        B & operator=(const B &b) { if (&b != this) { } return *this; }\n"
+                             "    };\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
         // this test doesn't have an assignment test but doesn't need it
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    class B\n"
-            "    {\n"
-            "    public:\n"
-            "        B & operator=(const B &b) { return *this; }\n"
-            "    };\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    class B\n"
+                             "    {\n"
+                             "    public:\n"
+                             "        B & operator=(const B &b) { return *this; }\n"
+                             "    };\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
         // this test needs an assignment test but has it
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    class B\n"
-            "    {\n"
-            "    public:\n"
-            "        char *s;\n"
-            "        B & operator=(const B &b)\n"
-            "        {\n"
-            "            if (&b != this)\n"
-            "            {\n"
-            "            }\n"
-            "            return *this;\n"
-            "        }\n"
-            "    };\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    class B\n"
+                             "    {\n"
+                             "    public:\n"
+                             "        char *s;\n"
+                             "        B & operator=(const B &b)\n"
+                             "        {\n"
+                             "            if (&b != this)\n"
+                             "            {\n"
+                             "            }\n"
+                             "            return *this;\n"
+                             "        }\n"
+                             "    };\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
         // this test needs an assignment test but doesn't have it
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    class B\n"
-            "    {\n"
-            "    public:\n"
-            "        char *s;\n"
-            "        B & operator=(const B &b)\n"
-            "        {\n"
-            "            free(s);\n"
-            "            s = strdup(b.s);\n"
-            "            return *this;\n"
-            "        }\n"
-            "    };\n"
-            "};");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    class B\n"
+                             "    {\n"
+                             "    public:\n"
+                             "        char *s;\n"
+                             "        B & operator=(const B &b)\n"
+                             "        {\n"
+                             "            free(s);\n"
+                             "            s = strdup(b.s);\n"
+                             "            return *this;\n"
+                             "        }\n"
+                             "    };\n"
+                             "};");
+        ASSERT_EQUALS(
+            "[test.cpp:8]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n",
+            errout.str());
 
         // this test has an assignment test but doesn't need it
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    class B\n"
-            "    {\n"
-            "    public:\n"
-            "        B & operator=(const B &);\n"
-            "    };\n"
-            "};\n"
-            "A::B & A::B::operator=(const A::B &b) { if (&b != this) { } return *this; }");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    class B\n"
+                             "    {\n"
+                             "    public:\n"
+                             "        B & operator=(const B &);\n"
+                             "    };\n"
+                             "};\n"
+                             "A::B & A::B::operator=(const A::B &b) { if (&b != this) { } return *this; }");
         ASSERT_EQUALS("", errout.str());
 
         // this test doesn't have an assignment test but doesn't need it
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    class B\n"
-            "    {\n"
-            "    public:\n"
-            "        B & operator=(const B &);\n"
-            "    };\n"
-            "};\n"
-            "A::B & A::B::operator=(const A::B &b) { return *this; }");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    class B\n"
+                             "    {\n"
+                             "    public:\n"
+                             "        B & operator=(const B &);\n"
+                             "    };\n"
+                             "};\n"
+                             "A::B & A::B::operator=(const A::B &b) { return *this; }");
         ASSERT_EQUALS("", errout.str());
 
         // this test needs an assignment test and has it
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    class B\n"
-            "    {\n"
-            "    public:\n"
-            "        char * s;\n"
-            "        B & operator=(const B &);\n"
-            "    };\n"
-            "};\n"
-            "A::B & A::B::operator=(const A::B &b)\n"
-            "{\n"
-            "    if (&b != this)\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(b.s);\n"
-            "    }\n"
-            "    return *this;\n"
-            " }");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    class B\n"
+                             "    {\n"
+                             "    public:\n"
+                             "        char * s;\n"
+                             "        B & operator=(const B &);\n"
+                             "    };\n"
+                             "};\n"
+                             "A::B & A::B::operator=(const A::B &b)\n"
+                             "{\n"
+                             "    if (&b != this)\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(b.s);\n"
+                             "    }\n"
+                             "    return *this;\n"
+                             " }");
         ASSERT_EQUALS("", errout.str());
 
         // this test needs an assignment test but doesn't have it
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    class B\n"
-            "    {\n"
-            "    public:\n"
-            "        char * s;\n"
-            "        B & operator=(const B &);\n"
-            "    };\n"
-            "};\n"
-            "A::B & A::B::operator=(const A::B &b)\n"
-            "{\n"
-            "    free(s);\n"
-            "    s = strdup(b.s);\n"
-            "    return *this;\n"
-            " }");
-        ASSERT_EQUALS("[test.cpp:11]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    class B\n"
+                             "    {\n"
+                             "    public:\n"
+                             "        char * s;\n"
+                             "        B & operator=(const B &);\n"
+                             "    };\n"
+                             "};\n"
+                             "A::B & A::B::operator=(const A::B &b)\n"
+                             "{\n"
+                             "    free(s);\n"
+                             "    s = strdup(b.s);\n"
+                             "    return *this;\n"
+                             " }");
+        ASSERT_EQUALS(
+            "[test.cpp:11]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n",
+            errout.str());
     }
 
-    void operatorEqToSelf3() {
+    void operatorEqToSelf3()
+    {
         // this test has multiple inheritance so there is no trivial way to test for self assignment but doesn't need it
-        checkOpertorEqToSelf(
-            "class A : public B, public C\n"
-            "{\n"
-            "public:\n"
-            "    A & operator=(const A &a) { return *this; }\n"
-            "};");
+        checkOpertorEqToSelf("class A : public B, public C\n"
+                             "{\n"
+                             "public:\n"
+                             "    A & operator=(const A &a) { return *this; }\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
         // this test has multiple inheritance and needs an assignment test but there is no trivial way to test for it
-        checkOpertorEqToSelf(
-            "class A : public B, public C\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a)\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(a.s);\n"
-            "        return *this;\n"
-            "    }\n"
-            "};");
+        checkOpertorEqToSelf("class A : public B, public C\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a)\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(a.s);\n"
+                             "        return *this;\n"
+                             "    }\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
         // this test has multiple inheritance so there is no trivial way to test for self assignment but doesn't need it
-        checkOpertorEqToSelf(
-            "class A : public B, public C\n"
-            "{\n"
-            "public:\n"
-            "    A & operator=(const A &);\n"
-            "};\n"
-            "A & A::operator=(const A &a) { return *this; }");
+        checkOpertorEqToSelf("class A : public B, public C\n"
+                             "{\n"
+                             "public:\n"
+                             "    A & operator=(const A &);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a) { return *this; }");
         ASSERT_EQUALS("", errout.str());
 
         // this test has multiple inheritance and needs an assignment test but there is no trivial way to test for it
-        checkOpertorEqToSelf(
-            "class A : public B, public C\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &);\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    free(s);\n"
-            "    s = strdup(a.s);\n"
-            "    return *this;\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void operatorEqToSelf4() {
-        // this test has multiple inheritance so there is no trivial way to test for self assignment but doesn't need it
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    class B : public C, public D\n"
-            "    {\n"
-            "    public:\n"
-            "        B & operator=(const B &b) { return *this; }\n"
-            "    };\n"
-            "};");
-        ASSERT_EQUALS("", errout.str());
-
-        // this test has multiple inheritance and needs an assignment test but there is no trivial way to test for it
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    class B : public C, public D\n"
-            "    {\n"
-            "    public:\n"
-            "        char * s;\n"
-            "        B & operator=(const B &b)\n"
-            "        {\n"
-            "            free(s);\n"
-            "            s = strdup(b.s);\n"
-            "            return *this;\n"
-            "        }\n"
-            "    };\n"
-            "};");
-        ASSERT_EQUALS("", errout.str());
-
-        // this test has multiple inheritance so there is no trivial way to test for self assignment but doesn't need it
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    class B : public C, public D\n"
-            "    {\n"
-            "    public:\n"
-            "        B & operator=(const B &);\n"
-            "    };\n"
-            "};\n"
-            "A::B & A::B::operator=(const A::B &b) { return *this; }");
-        ASSERT_EQUALS("", errout.str());
-
-        // this test has multiple inheritance and needs an assignment test but there is no trivial way to test for it
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    class B : public C, public D\n"
-            "    {\n"
-            "    public:\n"
-            "        char * s;\n"
-            "        B & operator=(const B &);\n"
-            "    };\n"
-            "};\n"
-            "A::B & A::B::operator=(const A::B &b)\n"
-            "{\n"
-            "    free(s);\n"
-            "    s = strdup(b.s);\n"
-            "    return *this;\n"
-            "}");
+        checkOpertorEqToSelf("class A : public B, public C\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    free(s);\n"
+                             "    s = strdup(a.s);\n"
+                             "    return *this;\n"
+                             "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void operatorEqToSelf5() {
+    void operatorEqToSelf4()
+    {
+        // this test has multiple inheritance so there is no trivial way to test for self assignment but doesn't need it
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    class B : public C, public D\n"
+                             "    {\n"
+                             "    public:\n"
+                             "        B & operator=(const B &b) { return *this; }\n"
+                             "    };\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        // this test has multiple inheritance and needs an assignment test but there is no trivial way to test for it
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    class B : public C, public D\n"
+                             "    {\n"
+                             "    public:\n"
+                             "        char * s;\n"
+                             "        B & operator=(const B &b)\n"
+                             "        {\n"
+                             "            free(s);\n"
+                             "            s = strdup(b.s);\n"
+                             "            return *this;\n"
+                             "        }\n"
+                             "    };\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        // this test has multiple inheritance so there is no trivial way to test for self assignment but doesn't need it
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    class B : public C, public D\n"
+                             "    {\n"
+                             "    public:\n"
+                             "        B & operator=(const B &);\n"
+                             "    };\n"
+                             "};\n"
+                             "A::B & A::B::operator=(const A::B &b) { return *this; }");
+        ASSERT_EQUALS("", errout.str());
+
+        // this test has multiple inheritance and needs an assignment test but there is no trivial way to test for it
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    class B : public C, public D\n"
+                             "    {\n"
+                             "    public:\n"
+                             "        char * s;\n"
+                             "        B & operator=(const B &);\n"
+                             "    };\n"
+                             "};\n"
+                             "A::B & A::B::operator=(const A::B &b)\n"
+                             "{\n"
+                             "    free(s);\n"
+                             "    s = strdup(b.s);\n"
+                             "    return *this;\n"
+                             "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void operatorEqToSelf5()
+    {
         // ticket # 1233
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a)\n"
-            "    {\n"
-            "        if((&a!=this))\n"
-            "        {\n"
-            "            free(s);\n"
-            "            s = strdup(a.s);\n"
-            "        }\n"
-            "        return *this;\n"
-            "    }\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a)\n"
+                             "    {\n"
+                             "        if((&a!=this))\n"
+                             "        {\n"
+                             "            free(s);\n"
+                             "            s = strdup(a.s);\n"
+                             "        }\n"
+                             "        return *this;\n"
+                             "    }\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a)\n"
-            "    {\n"
-            "        if((this!=&a))\n"
-            "        {\n"
-            "            free(s);\n"
-            "            s = strdup(a.s);\n"
-            "        }\n"
-            "        return *this;\n"
-            "    }\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a)\n"
+                             "    {\n"
+                             "        if((this!=&a))\n"
+                             "        {\n"
+                             "            free(s);\n"
+                             "            s = strdup(a.s);\n"
+                             "        }\n"
+                             "        return *this;\n"
+                             "    }\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a)\n"
-            "    {\n"
-            "        if(!(&a==this))\n"
-            "        {\n"
-            "            free(s);\n"
-            "            s = strdup(a.s);\n"
-            "        }\n"
-            "        return *this;\n"
-            "    }\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a)\n"
+                             "    {\n"
+                             "        if(!(&a==this))\n"
+                             "        {\n"
+                             "            free(s);\n"
+                             "            s = strdup(a.s);\n"
+                             "        }\n"
+                             "        return *this;\n"
+                             "    }\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a)\n"
-            "    {\n"
-            "        if(!(this==&a))\n"
-            "        {\n"
-            "            free(s);\n"
-            "            s = strdup(a.s);\n"
-            "        }\n"
-            "        return *this;\n"
-            "    }\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a)\n"
+                             "    {\n"
+                             "        if(!(this==&a))\n"
+                             "        {\n"
+                             "            free(s);\n"
+                             "            s = strdup(a.s);\n"
+                             "        }\n"
+                             "        return *this;\n"
+                             "    }\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a)\n"
-            "    {\n"
-            "        if(false==(&a==this))\n"
-            "        {\n"
-            "            free(s);\n"
-            "            s = strdup(a.s);\n"
-            "        }\n"
-            "        return *this;\n"
-            "    }\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a)\n"
+                             "    {\n"
+                             "        if(false==(&a==this))\n"
+                             "        {\n"
+                             "            free(s);\n"
+                             "            s = strdup(a.s);\n"
+                             "        }\n"
+                             "        return *this;\n"
+                             "    }\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a)\n"
-            "    {\n"
-            "        if(false==(this==&a))\n"
-            "        {\n"
-            "            free(s);\n"
-            "            s = strdup(a.s);\n"
-            "        }\n"
-            "        return *this;\n"
-            "    }\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a)\n"
+                             "    {\n"
+                             "        if(false==(this==&a))\n"
+                             "        {\n"
+                             "            free(s);\n"
+                             "            s = strdup(a.s);\n"
+                             "        }\n"
+                             "        return *this;\n"
+                             "    }\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a)\n"
-            "    {\n"
-            "        if(true!=(&a==this))\n"
-            "        {\n"
-            "            free(s);\n"
-            "            s = strdup(a.s);\n"
-            "        }\n"
-            "        return *this;\n"
-            "    }\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a)\n"
+                             "    {\n"
+                             "        if(true!=(&a==this))\n"
+                             "        {\n"
+                             "            free(s);\n"
+                             "            s = strdup(a.s);\n"
+                             "        }\n"
+                             "        return *this;\n"
+                             "    }\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a)\n"
-            "    {\n"
-            "        if(true!=(this==&a))\n"
-            "        {\n"
-            "            free(s);\n"
-            "            s = strdup(a.s);\n"
-            "        }\n"
-            "        return *this;\n"
-            "    }\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a)\n"
+                             "    {\n"
+                             "        if(true!=(this==&a))\n"
+                             "        {\n"
+                             "            free(s);\n"
+                             "            s = strdup(a.s);\n"
+                             "        }\n"
+                             "        return *this;\n"
+                             "    }\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a);\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    if((&a!=this))\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(a.s);\n"
-            "    }\n"
-            "    return *this;\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    if((&a!=this))\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(a.s);\n"
+                             "    }\n"
+                             "    return *this;\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a);\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    if((this!=&a))\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(a.s);\n"
-            "    }\n"
-            "    return *this;\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    if((this!=&a))\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(a.s);\n"
+                             "    }\n"
+                             "    return *this;\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a);\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    if(!(&a==this))\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(a.s);\n"
-            "    }\n"
-            "    return *this;\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    if(!(&a==this))\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(a.s);\n"
+                             "    }\n"
+                             "    return *this;\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a);\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    if(!(this==&a))\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(a.s);\n"
-            "    }\n"
-            "    return *this;\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    if(!(this==&a))\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(a.s);\n"
+                             "    }\n"
+                             "    return *this;\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a);\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    if(false==(&a==this))\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(a.s);\n"
-            "    }\n"
-            "    return *this;\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    if(false==(&a==this))\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(a.s);\n"
+                             "    }\n"
+                             "    return *this;\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a);\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    if(false==(this==&a))\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(a.s);\n"
-            "    }\n"
-            "    return *this;\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    if(false==(this==&a))\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(a.s);\n"
+                             "    }\n"
+                             "    return *this;\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a);\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    if(true!=(&a==this))\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(a.s);\n"
-            "    }\n"
-            "    return *this;\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    if(true!=(&a==this))\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(a.s);\n"
+                             "    }\n"
+                             "    return *this;\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    char *s;\n"
-            "    A & operator=(const A &a);\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    if(true!=(this==&a))\n"
-            "    {\n"
-            "        free(s);\n"
-            "        s = strdup(a.s);\n"
-            "    }\n"
-            "    return *this;\n"
-            "};");
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    char *s;\n"
+                             "    A & operator=(const A &a);\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    if(true!=(this==&a))\n"
+                             "    {\n"
+                             "        free(s);\n"
+                             "        s = strdup(a.s);\n"
+                             "    }\n"
+                             "    return *this;\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqToSelf(
-            "struct A {\n"
-            "    char *s;\n"
-            "    A& operator=(const B &b);\n"
-            "};\n"
-            "A& A::operator=(const B &b) {\n"
-            "    free(s);\n"
-            "    s = strdup(a.s);\n"
-            "    return *this;\n"
-            "};");
+        checkOpertorEqToSelf("struct A {\n"
+                             "    char *s;\n"
+                             "    A& operator=(const B &b);\n"
+                             "};\n"
+                             "A& A::operator=(const B &b) {\n"
+                             "    free(s);\n"
+                             "    s = strdup(a.s);\n"
+                             "    return *this;\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void operatorEqToSelf6() {
+    void operatorEqToSelf6()
+    {
         // ticket # 1550
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    A & operator=(const A &a)\n"
-            "    {\n"
-            "        delete [] data;\n"
-            "        data = new char[strlen(a.data) + 1];\n"
-            "        strcpy(data, a.data);\n"
-            "        return *this;\n"
-            "    }\n"
-            "private:\n"
-            "    char * data;\n"
-            "};");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    A & operator=(const A &a)\n"
+                             "    {\n"
+                             "        delete [] data;\n"
+                             "        data = new char[strlen(a.data) + 1];\n"
+                             "        strcpy(data, a.data);\n"
+                             "        return *this;\n"
+                             "    }\n"
+                             "private:\n"
+                             "    char * data;\n"
+                             "};");
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n",
+            errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    A & operator=(const A &a);\n"
-            "private:\n"
-            "    char * data;\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    delete [] data;\n"
-            "    data = new char[strlen(a.data) + 1];\n"
-            "    strcpy(data, a.data);\n"
-            "    return *this;\n"
-            "};");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    A & operator=(const A &a);\n"
+                             "private:\n"
+                             "    char * data;\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    delete [] data;\n"
+                             "    data = new char[strlen(a.data) + 1];\n"
+                             "    strcpy(data, a.data);\n"
+                             "    return *this;\n"
+                             "};");
+        ASSERT_EQUALS(
+            "[test.cpp:8]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n",
+            errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    A & operator=(const A &a)\n"
-            "    {\n"
-            "        delete data;\n"
-            "        data = new char;\n"
-            "        *data  = *a.data;\n"
-            "        return *this;\n"
-            "    }\n"
-            "private:\n"
-            "    char * data;\n"
-            "};");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    A & operator=(const A &a)\n"
+                             "    {\n"
+                             "        delete data;\n"
+                             "        data = new char;\n"
+                             "        *data  = *a.data;\n"
+                             "        return *this;\n"
+                             "    }\n"
+                             "private:\n"
+                             "    char * data;\n"
+                             "};");
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n",
+            errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    A & operator=(const A &a);\n"
-            "private:\n"
-            "    char * data;\n"
-            "};\n"
-            "A & A::operator=(const A &a)\n"
-            "{\n"
-            "    delete data;\n"
-            "    data = new char;\n"
-            "    *data = *a.data;\n"
-            "    return *this;\n"
-            "};");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n", errout.str());
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    A & operator=(const A &a);\n"
+                             "private:\n"
+                             "    char * data;\n"
+                             "};\n"
+                             "A & A::operator=(const A &a)\n"
+                             "{\n"
+                             "    delete data;\n"
+                             "    data = new char;\n"
+                             "    *data = *a.data;\n"
+                             "    return *this;\n"
+                             "};");
+        ASSERT_EQUALS(
+            "[test.cpp:8]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.\n",
+            errout.str());
     }
 
-    void operatorEqToSelf7() {
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    A & assign(const A & a)\n"
-            "    {\n"
-            "        return *this;\n"
-            "    }\n"
-            "    A & operator=(const A &a)\n"
-            "    {\n"
-            "        return assign(a);\n"
-            "    }\n"
-            "};");
+    void operatorEqToSelf7()
+    {
+        checkOpertorEqToSelf("class A\n"
+                             "{\n"
+                             "public:\n"
+                             "    A & assign(const A & a)\n"
+                             "    {\n"
+                             "        return *this;\n"
+                             "    }\n"
+                             "    A & operator=(const A &a)\n"
+                             "    {\n"
+                             "        return assign(a);\n"
+                             "    }\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void operatorEqToSelf8() {
-        checkOpertorEqToSelf(
-            "class FMat\n"
-            "{\n"
-            "public:\n"
-            "    FMat& copy(const FMat& rhs);\n"
-            "    FMat& operator=(const FMat& in);\n"
-            "};\n"
-            "FMat& FMat::copy(const FMat& rhs)\n"
-            "{\n"
-            "    return *this;\n"
-            "}\n"
-            "FMat& FMat::operator=(const FMat& in)\n"
-            "{\n"
-            "    return copy(in);\n"
-            "}");
+    void operatorEqToSelf8()
+    {
+        checkOpertorEqToSelf("class FMat\n"
+                             "{\n"
+                             "public:\n"
+                             "    FMat& copy(const FMat& rhs);\n"
+                             "    FMat& operator=(const FMat& in);\n"
+                             "};\n"
+                             "FMat& FMat::copy(const FMat& rhs)\n"
+                             "{\n"
+                             "    return *this;\n"
+                             "}\n"
+                             "FMat& FMat::operator=(const FMat& in)\n"
+                             "{\n"
+                             "    return copy(in);\n"
+                             "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void operatorEqToSelf9() {
-        checkOpertorEqToSelf(
-            "class Foo\n"
-            "{\n"
-            "public:\n"
-            "    Foo& operator=(Foo* pOther);\n"
-            "    Foo& operator=(Foo& other);\n"
-            "};\n"
-            "Foo& Foo::operator=(Foo* pOther)\n"
-            "{\n"
-            "    return *this;\n"
-            "}\n"
-            "Foo& Foo::operator=(Foo& other)\n"
-            "{\n"
-            "    return Foo::operator=(&other);\n"
-            "}");
+    void operatorEqToSelf9()
+    {
+        checkOpertorEqToSelf("class Foo\n"
+                             "{\n"
+                             "public:\n"
+                             "    Foo& operator=(Foo* pOther);\n"
+                             "    Foo& operator=(Foo& other);\n"
+                             "};\n"
+                             "Foo& Foo::operator=(Foo* pOther)\n"
+                             "{\n"
+                             "    return *this;\n"
+                             "}\n"
+                             "Foo& Foo::operator=(Foo& other)\n"
+                             "{\n"
+                             "    return Foo::operator=(&other);\n"
+                             "}");
         ASSERT_EQUALS("", errout.str());
     }
 
     // Check that base classes have virtual destructors
-    void checkVirtualDestructor(const char code[], bool inconclusive = false) {
+    void checkVirtualDestructor(const char code[], bool inconclusive = false)
+    {
         // Clear the error log
         errout.str("");
 
@@ -2466,7 +2494,8 @@ private:
         checkClass.virtualDestructor();
     }
 
-    void virtualDestructor1() {
+    void virtualDestructor1()
+    {
         // Base class not found
 
         checkVirtualDestructor("class Derived : public Base { };\n"
@@ -2480,20 +2509,25 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void virtualDestructor2() {
+    void virtualDestructor2()
+    {
         // Base class doesn't have a destructor
 
         checkVirtualDestructor("class Base { };\n"
                                "class Derived : public Base { public: ~Derived() { (void)11; } };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n",
+            errout.str());
 
         checkVirtualDestructor("class Base { };\n"
                                "class Derived : protected Base { public: ~Derived() { (void)11; } };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n",
+            errout.str());
 
         checkVirtualDestructor("class Base { };\n"
                                "class Derived : private Base { public: ~Derived() { (void)11; } };"
@@ -2508,61 +2542,79 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void virtualDestructor3() {
+    void virtualDestructor3()
+    {
         // Base class has a destructor, but it's not virtual
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived() { (void)11; } };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n",
+            errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : protected Base { public: ~Derived() { (void)11; } };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n",
+            errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : private Fred, public Base { public: ~Derived() { (void)11; } };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n",
+            errout.str());
     }
 
-    void virtualDestructor4() {
+    void virtualDestructor4()
+    {
         // Derived class doesn't have a destructor => undefined behaviour according to paragraph 3 in [expr.delete]
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n",
+            errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : private Fred, public Base { };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n",
+            errout.str());
     }
 
-    void virtualDestructor5() {
+    void virtualDestructor5()
+    {
         // Derived class has empty destructor => undefined behaviour according to paragraph 3 in [expr.delete]
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived() {} };"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n",
+            errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived(); }; Derived::~Derived() {}"
                                "Base *base = new Derived;\n"
                                "delete base;");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n",
+            errout.str());
     }
 
-    void virtualDestructor6() {
+    void virtualDestructor6()
+    {
         // Only report error if base class pointer is deleted that
         // points at derived class
 
@@ -2571,7 +2623,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void virtualDestructorProtected() {
+    void virtualDestructorProtected()
+    {
         // Base class has protected destructor, it makes Base *p = new Derived(); fail
         // during compilation time, so error is not possible. => no error
         checkVirtualDestructor("class A\n"
@@ -2588,7 +2641,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void virtualDestructorInherited() {
+    void virtualDestructorInherited()
+    {
         // class A inherits virtual destructor from class Base -> no error
         checkVirtualDestructor("class Base\n"
                                "{\n"
@@ -2678,11 +2732,14 @@ private:
                                "public:\n"
                                "    ~B() { int a; }\n"
                                "};");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Class 'Base' which is inherited by class 'B' does not have a virtual destructor.\n",
-                           "", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:7]: (error) Class 'Base' which is inherited by class 'B' does not have a virtual destructor.\n",
+            "",
+            errout.str());
     }
 
-    void virtualDestructorTemplate() {
+    void virtualDestructorTemplate()
+    {
         checkVirtualDestructor("template <typename T> class A\n"
                                "{\n"
                                " public:\n"
@@ -2700,16 +2757,22 @@ private:
                                "};\n"
                                "\n"
                                "AA<double> *p = new B; delete p;");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Class 'AA < double >' which is inherited by class 'B' does not have a virtual destructor.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:9]: (error) Class 'AA < double >' which is inherited by class 'B' does not have a virtual destructor.\n",
+            errout.str());
     }
 
-    void virtualDestructorInconclusive() {
+    void virtualDestructorInconclusive()
+    {
         checkVirtualDestructor("class Base {\n"
                                "public:\n"
                                "    ~Base(){}\n"
                                "    virtual void foo(){}\n"
-                               "};\n", true);
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Class 'Base' which has virtual members does not have a virtual destructor.\n", errout.str());
+                               "};\n",
+                               true);
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (warning, inconclusive) Class 'Base' which has virtual members does not have a virtual destructor.\n",
+            errout.str());
 
         checkVirtualDestructor("class Base {\n"
                                "public:\n"
@@ -2723,8 +2786,11 @@ private:
                                "void foo() {\n"
                                "    Base * base = new Derived();\n"
                                "    delete base;\n"
-                               "}\n", true);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
+                               "}\n",
+                               true);
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n",
+            errout.str());
 
         // class Base destructor is not virtual but protected -> no error
         checkVirtualDestructor("class Base {\n"
@@ -2732,25 +2798,29 @@ private:
                                "    virtual void foo(){}\n"
                                "protected:\n"
                                "    ~Base(){}\n"
-                               "};\n", true);
+                               "};\n",
+                               true);
         ASSERT_EQUALS("", errout.str());
 
         checkVirtualDestructor("class C {\n"
                                "private:\n"
                                "    C();\n"
                                "    virtual ~C();\n"
-                               "};\n", true);
+                               "};\n",
+                               true);
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkNoMemset(const char code[]) {
+    void checkNoMemset(const char code[])
+    {
         Settings settings;
         settings.severity.enable(Severity::warning);
         settings.severity.enable(Severity::portability);
-        checkNoMemset(code,settings);
+        checkNoMemset(code, settings);
     }
 
-    void checkNoMemset(const char code[], const Settings &settings) {
+    void checkNoMemset(const char code[], const Settings& settings)
+    {
         // Clear the error log
         errout.str("");
 
@@ -2764,7 +2834,8 @@ private:
         checkClass.checkMemset();
     }
 
-    void memsetOnClass() {
+    void memsetOnClass()
+    {
         checkNoMemset("class Fred\n"
                       "{\n"
                       "};\n"
@@ -2870,7 +2941,8 @@ private:
                       "    Fred fred;\n"
                       "    memset(&fred, 0, sizeof(fred));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a virtual function.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a virtual function.\n",
+                      errout.str());
 
         checkNoMemset("class Fred\n"
                       "{\n"
@@ -2881,7 +2953,8 @@ private:
                       "    static Fred fred;\n"
                       "    memset(&fred, 0, sizeof(fred));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a virtual function.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Using 'memset' on class that contains a virtual function.\n",
+                      errout.str());
 
         checkNoMemset("class Fred\n"
                       "{\n"
@@ -2896,7 +2969,8 @@ private:
                       "    Pebbles pebbles;\n"
                       "    memset(&pebbles, 0, sizeof(pebbles));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:12]: (error) Using 'memset' on class that contains a virtual function.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12]: (error) Using 'memset' on class that contains a virtual function.\n",
+                      errout.str());
 
         // Fred not defined in scope
         checkNoMemset("namespace n1 {\n"
@@ -2993,7 +3067,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void memsetOnInvalid() { // Ticket #5425
+    void memsetOnInvalid()
+    { // Ticket #5425
         checkNoMemset("union ASFStreamHeader {\n"
                       "  struct AVMPACKED {\n"
                       "    union  {\n"
@@ -3009,7 +3084,8 @@ private:
                       "}");
     }
 
-    void memsetOnStruct() {
+    void memsetOnStruct()
+    {
         checkNoMemset("struct A\n"
                       "{\n"
                       "};\n"
@@ -3085,7 +3161,8 @@ private:
         ASSERT_EQUALS("[test.cpp:9]: (error) Using 'memset' on struct that contains a 'std::string'.\n", errout.str());
     }
 
-    void memsetVector() {
+    void memsetVector()
+    {
         checkNoMemset("class A\n"
                       "{ std::vector<int> ints; };\n"
                       "\n"
@@ -3195,7 +3272,8 @@ private:
         ASSERT_EQUALS("[test.cpp:9]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
                       "[test.cpp:11]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
                       "[test.cpp:12]: (error) Using 'memset' on struct that contains a 'std::string'.\n"
-                      "[test.cpp:13]: (error) Using 'memset' on struct that contains a 'std::string'.\n", errout.str());
+                      "[test.cpp:13]: (error) Using 'memset' on struct that contains a 'std::string'.\n",
+                      errout.str());
 
         // Ticket #6953
         checkNoMemset("typedef float realnum;\n"
@@ -3208,10 +3286,12 @@ private:
                       "  memset(d, 0, sizeof(multilevel_data));\n"
                       "  return (void*) d;\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:8]: (portability) Using memset() on struct which contains a floating point number.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (portability) Using memset() on struct which contains a floating point number.\n",
+                      errout.str());
     }
 
-    void memsetOnStdPodType() { // Ticket #5901
+    void memsetOnStdPodType()
+    { // Ticket #5901
         Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
@@ -3239,11 +3319,13 @@ private:
                       "void f() {\n"
                       "  st s;\n"
                       "  std::memset(&s, 0, sizeof(st));\n"
-                      "}", settings);
+                      "}",
+                      settings);
         ASSERT_EQUALS("", errout.str());
     }
 
-    void memsetOnFloat() {
+    void memsetOnFloat()
+    {
         checkNoMemset("struct A {\n"
                       "    float f;\n"
                       "};\n"
@@ -3251,7 +3333,8 @@ private:
                       "    A a;\n"
                       "    memset(&a, 0, sizeof(A));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:6]: (portability) Using memset() on struct which contains a floating point number.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (portability) Using memset() on struct which contains a floating point number.\n",
+                      errout.str());
 
         checkNoMemset("struct A {\n"
                       "    float f[4];\n"
@@ -3260,7 +3343,8 @@ private:
                       "    A a;\n"
                       "    memset(&a, 0, sizeof(A));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:6]: (portability) Using memset() on struct which contains a floating point number.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (portability) Using memset() on struct which contains a floating point number.\n",
+                      errout.str());
 
         checkNoMemset("struct A {\n"
                       "    float f[4];\n"
@@ -3281,7 +3365,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void memsetOnUnknown() {
+    void memsetOnUnknown()
+    {
         checkNoMemset("void clang_tokenize(CXToken **Tokens) {\n"
                       "  *Tokens = (CXToken *)malloc(sizeof(CXToken) * CXTokens.size());\n"
                       "  memmove(*Tokens, CXTokens.data(), sizeof(CXToken) * CXTokens.size());\n"
@@ -3289,36 +3374,47 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void mallocOnClass() {
+    void mallocOnClass()
+    {
         checkNoMemset("class C { C() {} };\n"
                       "void foo(C*& p) {\n"
                       "    p = malloc(sizeof(C));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (warning) Memory for class instance allocated with malloc(), but class provides constructors.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:1]: (warning) Memory for class instance allocated with malloc(), but class provides constructors.\n",
+            errout.str());
 
         checkNoMemset("class C { C(int z, Foo bar) { bar(); } };\n"
                       "void foo(C*& p) {\n"
                       "    p = malloc(sizeof(C));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (warning) Memory for class instance allocated with malloc(), but class provides constructors.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:1]: (warning) Memory for class instance allocated with malloc(), but class provides constructors.\n",
+            errout.str());
 
         checkNoMemset("struct C { C() {} };\n"
                       "void foo(C*& p) {\n"
                       "    p = realloc(p, sizeof(C));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (warning) Memory for class instance allocated with realloc(), but class provides constructors.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:1]: (warning) Memory for class instance allocated with realloc(), but class provides constructors.\n",
+            errout.str());
 
         checkNoMemset("struct C { virtual void bar(); };\n"
                       "void foo(C*& p) {\n"
                       "    p = malloc(sizeof(C));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (error) Memory for class instance allocated with malloc(), but class contains a virtual function.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:1]: (error) Memory for class instance allocated with malloc(), but class contains a virtual function.\n",
+            errout.str());
 
         checkNoMemset("struct C { std::string s; };\n"
                       "void foo(C*& p) {\n"
                       "    p = malloc(sizeof(C));\n"
                       "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (error) Memory for class instance allocated with malloc(), but class contains a 'std::string'.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:1]: (error) Memory for class instance allocated with malloc(), but class contains a 'std::string'.\n",
+            errout.str());
 
         checkNoMemset("class C { };\n" // C-Style class/struct
                       "void foo(C*& p) {\n"
@@ -3339,8 +3435,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-    void checkThisSubtraction(const char code[]) {
+    void checkThisSubtraction(const char code[])
+    {
         // Clear the error log
         errout.str("");
 
@@ -3354,25 +3450,30 @@ private:
         checkClass.thisSubtraction();
     }
 
-    void this_subtraction() {
+    void this_subtraction()
+    {
         checkThisSubtraction("; this-x ;");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n",
+                      errout.str());
 
         checkThisSubtraction("; *this = *this-x ;");
         ASSERT_EQUALS("", errout.str());
 
         checkThisSubtraction("; *this = *this-x ;\n"
                              "this-x ;");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n",
+                      errout.str());
 
         checkThisSubtraction("; *this = *this-x ;\n"
                              "this-x ;\n"
                              "this-x ;");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n"
-                      "[test.cpp:3]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n", errout.str());
+                      "[test.cpp:3]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n",
+                      errout.str());
     }
 
-    void checkConst(const char code[], Settings *s = nullptr, bool inconclusive = true) {
+    void checkConst(const char code[], Settings* s = nullptr, bool inconclusive = true)
+    {
         // Clear the error log
         errout.str("");
 
@@ -3390,23 +3491,30 @@ private:
         checkClass.checkConst();
     }
 
-    void const1() {
+    void const1()
+    {
         checkConst("class Fred {\n"
                    "    int a;\n"
                    "    int getA() { return a; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::getA' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::getA' can be const.\n",
+            errout.str());
 
         checkConst("class Fred {\n"
                    "    const std::string foo() { return \"\"; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("class Fred {\n"
                    "    std::string s;\n"
                    "    const std::string & foo() { return \"\"; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         // constructors can't be const..
         checkConst("class Fred {\n"
@@ -3438,14 +3546,17 @@ private:
                    "    int a() const { return x; }\n"
                    "    void b() { a(); }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Technically the member function 'Fred::b' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Technically the member function 'Fred::b' can be const.\n",
+                      errout.str());
 
         checkConst("class Fred {\n"
                    "public:\n"
                    "    int x;\n"
                    "    void b() { a(); }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Technically the member function 'Fred::b' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (performance, inconclusive) Technically the member function 'Fred::b' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         // static functions can't be const..
         checkConst("class foo\n"
@@ -3459,10 +3570,13 @@ private:
         checkConst("class Fred {\n"
                    "    const std::string foo() const throw() { return \"\"; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
     }
 
-    void const2() {
+    void const2()
+    {
         // ticket 1344
         // assignment to variable can't be const
         checkConst("class Fred {\n"
@@ -3476,7 +3590,8 @@ private:
                    "    std::string s;\n"
                    "    void foo(std::string & a) { a = s; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n",
+                      errout.str());
 
         // assignment to variable can't be const
         checkConst("class Fred {\n"
@@ -3490,7 +3605,8 @@ private:
                    "    std::string s;\n"
                    "    void foo(std::string & a, std::string & b) { a = s; b = s; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n",
+                      errout.str());
 
         // assignment to variable, can't be const
         checkConst("class Fred {\n"
@@ -3514,13 +3630,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const3() {
+    void const3()
+    {
         // assignment to function argument pointer can be const
         checkConst("class Fred {\n"
                    "    int s;\n"
                    "    void foo(int * a) { *a = s; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n",
+                      errout.str());
 
         // assignment to variable, can't be const
         checkConst("class Fred {\n"
@@ -3534,7 +3652,8 @@ private:
                    "    std::string s;\n"
                    "    void foo(std::string * a, std::string * b) { *a = s; *b = s; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n",
+                      errout.str());
 
         // assignment to variable, can't be const
         checkConst("class Fred {\n"
@@ -3558,20 +3677,25 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const4() {
+    void const4()
+    {
         checkConst("class Fred {\n"
                    "    int a;\n"
                    "    int getA();\n"
                    "};\n"
                    "int Fred::getA() { return a; }");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::getA' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::getA' can be const.\n",
+            errout.str());
 
         checkConst("class Fred {\n"
                    "    std::string s;\n"
                    "    const std::string & foo();\n"
                    "};\n"
                    "const std::string & Fred::foo() { return \"\"; }");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         // functions with a function call to a non-const member can't be const.. (#1305)
         checkConst("class Fred\n"
@@ -3607,7 +3731,9 @@ private:
                    "    void foo(std::string & a);\n"
                    "};\n"
                    "void Fred::foo(std::string & a) { a = s; }");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n",
+            errout.str());
 
         // assignment to variable can't be const
         checkConst("class Fred {\n"
@@ -3623,7 +3749,9 @@ private:
                    "    void foo(std::string & a, std::string & b);\n"
                    "};\n"
                    "void Fred::foo(std::string & a, std::string & b) { a = s; b = s; }");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n",
+            errout.str());
 
         // assignment to variable, can't be const
         checkConst("class Fred {\n"
@@ -3655,7 +3783,9 @@ private:
                    "    void foo(int * a);\n"
                    "};\n"
                    "void Fred::foo(int * a) { *a = s; }");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n",
+            errout.str());
 
         // assignment to variable, can't be const
         checkConst("class Fred {\n"
@@ -3671,7 +3801,9 @@ private:
                    "    void foo(std::string * a, std::string * b);\n"
                    "};\n"
                    "void Fred::foo(std::string * a, std::string * b) { *a = s; *b = s; }");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n",
+            errout.str());
 
         // assignment to variable, can't be const
         checkConst("class Fred {\n"
@@ -3707,8 +3839,10 @@ private:
                    "void Fred::foo() { }"
                    "void Fred::foo(std::string & a) { a = s; }"
                    "void Fred::foo(const std::string & a) { s = a; }");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static (but you may consider moving to unnamed namespace).\n"
-                      "[test.cpp:7] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static (but you may consider moving to unnamed namespace).\n"
+            "[test.cpp:7] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::foo' can be const.\n",
+            errout.str());
 
         // check functions with different or missing parameter names
         checkConst("class Fred {\n"
@@ -3724,11 +3858,13 @@ private:
                    "void Fred::foo3(int a, int b) { }\n"
                    "void Fred::foo4(int a, int b) { }\n"
                    "void Fred::foo5(int, int) { }");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo1' can be static (but you may consider moving to unnamed namespace).\n"
-                      "[test.cpp:10] -> [test.cpp:4]: (performance, inconclusive) Technically the member function 'Fred::foo2' can be static (but you may consider moving to unnamed namespace).\n"
-                      "[test.cpp:11] -> [test.cpp:5]: (performance, inconclusive) Technically the member function 'Fred::foo3' can be static (but you may consider moving to unnamed namespace).\n"
-                      "[test.cpp:12] -> [test.cpp:6]: (performance, inconclusive) Technically the member function 'Fred::foo4' can be static (but you may consider moving to unnamed namespace).\n"
-                      "[test.cpp:13] -> [test.cpp:7]: (performance, inconclusive) Technically the member function 'Fred::foo5' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:9] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::foo1' can be static (but you may consider moving to unnamed namespace).\n"
+            "[test.cpp:10] -> [test.cpp:4]: (performance, inconclusive) Technically the member function 'Fred::foo2' can be static (but you may consider moving to unnamed namespace).\n"
+            "[test.cpp:11] -> [test.cpp:5]: (performance, inconclusive) Technically the member function 'Fred::foo3' can be static (but you may consider moving to unnamed namespace).\n"
+            "[test.cpp:12] -> [test.cpp:6]: (performance, inconclusive) Technically the member function 'Fred::foo4' can be static (but you may consider moving to unnamed namespace).\n"
+            "[test.cpp:13] -> [test.cpp:7]: (performance, inconclusive) Technically the member function 'Fred::foo5' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         // check nested classes
         checkConst("class Fred {\n"
@@ -3737,7 +3873,9 @@ private:
                    "        int getA() { return a; }\n"
                    "    };\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::A::getA' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::A::getA' can be const.\n",
+            errout.str());
 
         checkConst("class Fred {\n"
                    "    class A {\n"
@@ -3746,7 +3884,9 @@ private:
                    "    };\n"
                    "    int A::getA() { return a; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::A::getA' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:6] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::A::getA' can be const.\n",
+            errout.str());
 
         checkConst("class Fred {\n"
                    "    class A {\n"
@@ -3755,7 +3895,9 @@ private:
                    "    };\n"
                    "};\n"
                    "int Fred::A::getA() { return a; }");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::A::getA' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::A::getA' can be const.\n",
+            errout.str());
 
         // check deeply nested classes
         checkConst("class Fred {\n"
@@ -3768,9 +3910,10 @@ private:
                    "        };\n"
                    "    };\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::B::getB' can be const.\n"
-                      "[test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n"
-                      , errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::B::getB' can be const.\n"
+            "[test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n",
+            errout.str());
 
         checkConst("class Fred {\n"
                    "    class B {\n"
@@ -3784,8 +3927,10 @@ private:
                    "    };\n"
                    "    int B::getB() { return b; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::B::getB' can be const.\n"
-                      "[test.cpp:9] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:11] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::B::getB' can be const.\n"
+            "[test.cpp:9] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n",
+            errout.str());
 
         checkConst("class Fred {\n"
                    "    class B {\n"
@@ -3799,8 +3944,10 @@ private:
                    "    int B::A::getA() { return a; }\n"
                    "    int B::getB() { return b; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::B::getB' can be const.\n"
-                      "[test.cpp:10] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:11] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::B::getB' can be const.\n"
+            "[test.cpp:10] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n",
+            errout.str());
 
         checkConst("class Fred {\n"
                    "    class B {\n"
@@ -3814,21 +3961,27 @@ private:
                    "};\n"
                    "int Fred::B::A::getA() { return a; }\n"
                    "int Fred::B::getB() { return b; }");
-        ASSERT_EQUALS("[test.cpp:12] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::B::getB' can be const.\n"
-                      "[test.cpp:11] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:12] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::B::getB' can be const.\n"
+            "[test.cpp:11] -> [test.cpp:7]: (style, inconclusive) Technically the member function 'Fred::B::A::getA' can be const.\n",
+            errout.str());
     }
 
     // operator< can often be const
-    void constoperator1() {
+    void constoperator1()
+    {
         checkConst("struct Fred {\n"
                    "    int a;\n"
                    "    bool operator<(const Fred &f) { return a < f.a; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::operator<' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::operator<' can be const.\n",
+            errout.str());
     }
 
     // operator<<
-    void constoperator2() {
+    void constoperator2()
+    {
         checkConst("struct Foo {\n"
                    "    void operator<<(int);\n"
                    "};\n"
@@ -3851,10 +4004,12 @@ private:
                    "        std::cout << foo << 123;\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:6]: (style, inconclusive) Technically the member function 'Fred::x' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style, inconclusive) Technically the member function 'Fred::x' can be const.\n",
+                      errout.str());
     }
 
-    void constoperator3() {
+    void constoperator3()
+    {
         checkConst("struct Fred {\n"
                    "    int array[10];\n"
                    "    int const & operator [] (unsigned int index) const { return array[index]; }\n"
@@ -3866,10 +4021,13 @@ private:
                    "    int array[10];\n"
                    "    int const & operator [] (unsigned int index) { return array[index]; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::operator[]' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::operator[]' can be const.\n",
+            errout.str());
     }
 
-    void constoperator4() {
+    void constoperator4()
+    {
         // #7953
         checkConst("class A {\n"
                    "    int c;\n"
@@ -3883,7 +4041,9 @@ private:
                    "public:\n"
                    "    operator const int*() { return &c; };\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::operatorconstint*' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::operatorconstint*' can be const.\n",
+            errout.str());
 
         // #2375
         checkConst("struct Fred {\n"
@@ -3891,7 +4051,10 @@ private:
                    "    typedef int* (Fred::*UnspecifiedBoolType);\n"
                    "    operator UnspecifiedBoolType() { };\n"
                    "};");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::operatorint**' can be const.\n", "", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::operatorint**' can be const.\n",
+            "",
+            errout.str());
 
         checkConst("struct Fred {\n"
                    "    int array[10];\n"
@@ -3901,7 +4064,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void constoperator5() { // ticket #3252
+    void constoperator5()
+    { // ticket #3252
         checkConst("class A {\n"
                    "    int c;\n"
                    "public:\n"
@@ -3914,17 +4078,22 @@ private:
                    "public:\n"
                    "    operator const int& () {return c}\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::operatorconstint&' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::operatorconstint&' can be const.\n",
+            errout.str());
 
         checkConst("class A {\n"
                    "    int c;\n"
                    "public:\n"
                    "    operator int () {return c}\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::operatorint' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::operatorint' can be const.\n",
+            errout.str());
     }
 
-    void constoperator6() { // ticket #8669
+    void constoperator6()
+    { // ticket #8669
         checkConst("class A {\n"
                    "    int c;\n"
                    "    void f() { os >> *this; }\n"
@@ -3932,7 +4101,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const5() {
+    void const5()
+    {
         // ticket #1482
         checkConst("class A {\n"
                    "    int a;\n"
@@ -3943,10 +4113,12 @@ private:
                    "        return same;\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'A::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'A::foo' can be const.\n",
+                      errout.str());
     }
 
-    void const6() {
+    void const6()
+    {
         // ticket #1491
         checkConst("class foo {\n"
                    "public:\n"
@@ -3959,7 +4131,9 @@ private:
                    "public:\n"
                    "    void foo() { }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("struct fast_string\n"
                    "{\n"
@@ -3976,7 +4150,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const7() {
+    void const7()
+    {
         checkConst("class foo {\n"
                    "    int a;\n"
                    "public:\n"
@@ -3987,7 +4162,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const8() {
+    void const8()
+    {
         // ticket #1517
         checkConst("class A {\n"
                    "public:\n"
@@ -3996,10 +4172,13 @@ private:
                    "private:\n"
                    "    std::string m_strValue;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::strGetString' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::strGetString' can be const.\n",
+            errout.str());
     }
 
-    void const9() {
+    void const9()
+    {
         // ticket #1515
         checkConst("class wxThreadInternal {\n"
                    "public:\n"
@@ -4010,7 +4189,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const10() {
+    void const10()
+    {
         // ticket #1522
         checkConst("class A {\n"
                    "public:\n"
@@ -4037,7 +4217,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const11() {
+    void const11()
+    {
         // ticket #1529
         checkConst("class A {\n"
                    "public:\n"
@@ -4048,7 +4229,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const12() {
+    void const12()
+    {
         // ticket #1525
         checkConst("class A {\n"
                    "public:\n"
@@ -4056,10 +4238,12 @@ private:
                    "private:\n"
                    "    mutable int x;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'A::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'A::foo' can be const.\n",
+                      errout.str());
     }
 
-    void const13() {
+    void const13()
+    {
         // ticket #1519
         checkConst("class A {\n"
                    "public:\n"
@@ -4070,8 +4254,10 @@ private:
                    "    std::vector<int> m_vec;\n"
                    "    std::pair<int,double> m_pair;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetVec' can be const.\n"
-                      "[test.cpp:5]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetVec' can be const.\n"
+            "[test.cpp:5]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n",
+            errout.str());
 
         checkConst("class A {\n"
                    "public:\n"
@@ -4082,11 +4268,14 @@ private:
                    "    std::vector<int> m_vec;\n"
                    "    std::pair<int,double> m_pair;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetVec' can be const.\n"
-                      "[test.cpp:5]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetVec' can be const.\n"
+            "[test.cpp:5]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n",
+            errout.str());
     }
 
-    void const14() {
+    void const14()
+    {
         // extends ticket 1519
         checkConst("class A {\n"
                    "public:\n"
@@ -4095,7 +4284,9 @@ private:
                    "private:\n"
                    "    std::pair<std::vector<int>,double> m_pair;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n",
+            errout.str());
 
         checkConst("class A {\n"
                    "public:\n"
@@ -4104,7 +4295,9 @@ private:
                    "private:\n"
                    "    std::pair<std::vector<int>,double> m_pair;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n",
+            errout.str());
 
         checkConst("class A {\n"
                    "public:\n"
@@ -4115,7 +4308,6 @@ private:
                    "};");
         ASSERT_EQUALS("", errout.str());
 
-
         checkConst("using namespace std;"
                    "class A {\n"
                    "public:\n"
@@ -4124,7 +4316,9 @@ private:
                    "private:\n"
                    "    pair<int ,double> m_pair;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n",
+            errout.str());
 
         checkConst("using namespace std;"
                    "class A {\n"
@@ -4134,7 +4328,9 @@ private:
                    "private:\n"
                    "    pair<int ,double> m_pair;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n",
+            errout.str());
 
         checkConst("using namespace std;"
                    "class A {\n"
@@ -4146,7 +4342,6 @@ private:
                    "};");
         ASSERT_EQUALS("", errout.str());
 
-
         checkConst("class A {\n"
                    "public:\n"
                    "    A(){}\n"
@@ -4154,7 +4349,9 @@ private:
                    "private:\n"
                    "    std::pair< int,std::vector<int> >  m_pair;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n",
+            errout.str());
 
         checkConst("class A {\n"
                    "public:\n"
@@ -4163,7 +4360,9 @@ private:
                    "private:\n"
                    "    std::pair< int,std::vector<int> >  m_pair;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n",
+            errout.str());
 
         checkConst("class A {\n"
                    "public:\n"
@@ -4174,7 +4373,6 @@ private:
                    "};");
         ASSERT_EQUALS("", errout.str());
 
-
         checkConst("using namespace std;"
                    "class A {\n"
                    "public:\n"
@@ -4183,7 +4381,9 @@ private:
                    "private:\n"
                    "    pair< vector<int>, int >  m_pair;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n",
+            errout.str());
 
         checkConst("using namespace std;"
                    "class A {\n"
@@ -4193,7 +4393,9 @@ private:
                    "private:\n"
                    "    pair< vector<int>, int >  m_pair;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n",
+            errout.str());
 
         checkConst("using namespace std;"
                    "class A {\n"
@@ -4212,7 +4414,9 @@ private:
                    "private:\n"
                    "    std::pair< std::vector<int>,std::vector<int> >  m_pair;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n",
+            errout.str());
 
         checkConst("class A {\n"
                    "public:\n"
@@ -4221,7 +4425,9 @@ private:
                    "private:\n"
                    "    std::pair< std::vector<int>,std::vector<int> >  m_pair;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n",
+            errout.str());
 
         checkConst("class A {\n"
                    "public:\n"
@@ -4232,8 +4438,6 @@ private:
                    "};");
         ASSERT_EQUALS("", errout.str());
 
-
-
         checkConst("class A {\n"
                    "public:\n"
                    "    A(){}\n"
@@ -4241,7 +4445,9 @@ private:
                    "private:\n"
                    "    std::pair< std::pair < int, char > , int >  m_pair;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n",
+            errout.str());
 
         checkConst("class A {\n"
                    "public:\n"
@@ -4250,7 +4456,9 @@ private:
                    "private:\n"
                    "    std::pair< std::pair < int, char > , int >  m_pair;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n",
+            errout.str());
 
         checkConst("class A {\n"
                    "public:\n"
@@ -4261,7 +4469,6 @@ private:
                    "};");
         ASSERT_EQUALS("", errout.str());
 
-
         checkConst("class A {\n"
                    "public:\n"
                    "    A(){}\n"
@@ -4269,7 +4476,9 @@ private:
                    "private:\n"
                    "    std::pair< int , std::pair < int, char > >  m_pair;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n",
+            errout.str());
 
         checkConst("class A {\n"
                    "public:\n"
@@ -4278,7 +4487,9 @@ private:
                    "private:\n"
                    "    std::pair< int , std::pair < int, char > >  m_pair;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetPair' can be const.\n",
+            errout.str());
 
         checkConst("class A {\n"
                    "public:\n"
@@ -4289,7 +4500,6 @@ private:
                    "};");
         ASSERT_EQUALS("", errout.str());
 
-
         checkConst("using namespace std;"
                    "class A {\n"
                    "public:\n"
@@ -4298,7 +4508,8 @@ private:
                    "private:\n"
                    "    vector<int>  m_Vec;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetVec' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetVec' can be const.\n",
+                      errout.str());
 
         checkConst("using namespace std;"
                    "class A {\n"
@@ -4308,7 +4519,8 @@ private:
                    "private:\n"
                    "    vector<int>  m_Vec;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetVec' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::GetVec' can be const.\n",
+                      errout.str());
 
         checkConst("using namespace std;"
                    "class A {\n"
@@ -4319,7 +4531,6 @@ private:
                    "    vector<int>  m_Vec;\n"
                    "};");
         ASSERT_EQUALS("", errout.str());
-
 
         checkConst("class A {\n"
                    "public:\n"
@@ -4335,15 +4546,19 @@ private:
                    "private:\n"
                    "    const int * x;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'A::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'A::foo' can be const.\n",
+                      errout.str());
     }
 
-    void const15() {
+    void const15()
+    {
         checkConst("class Fred {\n"
                    "    unsigned long long int a;\n"
                    "    unsigned long long int getA() { return a; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::getA' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::getA' can be const.\n",
+            errout.str());
 
         // constructors can't be const..
         checkConst("class Fred {\n"
@@ -4370,7 +4585,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const16() {
+    void const16()
+    {
         // ticket #1551
         checkConst("class Fred {\n"
                    "    int a;\n"
@@ -4379,7 +4595,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const17() {
+    void const17()
+    {
         // ticket #1552
         checkConst("class Fred {\n"
                    "public:\n"
@@ -4390,16 +4607,20 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const18() {
+    void const18()
+    {
         checkConst("class Fred {\n"
                    "static int x;\n"
                    "public:\n"
                    "    void set(int i) { x = i; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Technically the member function 'Fred::set' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (performance, inconclusive) Technically the member function 'Fred::set' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
     }
 
-    void const19() {
+    void const19()
+    {
         // ticket #1612
         checkConst("using namespace std;\n"
                    "class Fred {\n"
@@ -4411,7 +4632,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const20() {
+    void const20()
+    {
         // ticket #1602
         checkConst("class Fred {\n"
                    "    int x : 3;\n"
@@ -4432,7 +4654,8 @@ private:
                    "public:\n"
                    "    list<const int *> get() { return x; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::get' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::get' can be const.\n",
+                      errout.str());
 
         checkConst("class Fred {\n"
                    "    std::list<std::string &> x;\n"
@@ -4446,10 +4669,12 @@ private:
                    "public:\n"
                    "    std::list<const std::string &> get() { return x; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::get' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::get' can be const.\n",
+                      errout.str());
     }
 
-    void const21() {
+    void const21()
+    {
         // ticket #1683
         checkConst("class A\n"
                    "{\n"
@@ -4465,7 +4690,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const22() {
+    void const22()
+    {
         checkConst("class A\n"
                    "{\n"
                    "private:\n"
@@ -4485,7 +4711,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const23() {
+    void const23()
+    {
         checkConst("class Class {\n"
                    "public:\n"
                    "    typedef Template<double> Type;\n"
@@ -4497,7 +4724,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const24() {
+    void const24()
+    {
         checkConst("class Class {\n"
                    "public:\n"
                    "void Settings::SetSetting(QString strSetting, QString strNewVal)\n"
@@ -4510,8 +4738,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-    void const25() { // ticket #1724
+    void const25()
+    { // ticket #1724
         checkConst("class A{\n"
                    "public:\n"
                    "A(){m_strVal=\"\";}\n"
@@ -4532,7 +4760,9 @@ private:
                    "private:\n"
                    "std::string m_strVal;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::strGetString' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::strGetString' can be const.\n",
+            errout.str());
 
         checkConst("class A{\n"
                    "public:\n"
@@ -4542,7 +4772,9 @@ private:
                    "private:\n"
                    "std::string m_strVal;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::strGetString1' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::strGetString1' can be const.\n",
+            errout.str());
 
         checkConst("class A{\n"
                    "public:\n"
@@ -4552,7 +4784,9 @@ private:
                    "private:\n"
                    "std::vector<std::string> m_strVec;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::strGetSize' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::strGetSize' can be const.\n",
+            errout.str());
 
         checkConst("class A{\n"
                    "public:\n"
@@ -4562,10 +4796,13 @@ private:
                    "private:\n"
                    "std::vector<std::string> m_strVec;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'A::strGetEmpty' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'A::strGetEmpty' can be const.\n",
+            errout.str());
     }
 
-    void const26() { // ticket #1847
+    void const26()
+    { // ticket #1847
         checkConst("class DelayBase {\n"
                    "public:\n"
                    "void swapSpecificDelays(int index1, int index2) {\n"
@@ -4581,10 +4818,13 @@ private:
                    "    }\n"
                    "    float delays_[4];\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Technically the member function 'DelayBase::swapSpecificDelays' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style, inconclusive) Technically the member function 'DelayBase::swapSpecificDelays' can be const.\n",
+            errout.str());
     }
 
-    void const27() { // ticket #1882
+    void const27()
+    { // ticket #1882
         checkConst("class A {\n"
                    "public:\n"
                    "    A(){m_d=1.0; m_iRealVal=2.0;}\n"
@@ -4598,11 +4838,16 @@ private:
                    "    if( m_d != 0 )\n"
                    "        return m_iRealVal / m_d;\n"
                    "    return dRet;\n"
-                   "};", nullptr, true);
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'A::dGetValue' can be const.\n", errout.str());
+                   "};",
+                   nullptr,
+                   true);
+        ASSERT_EQUALS(
+            "[test.cpp:9] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'A::dGetValue' can be const.\n",
+            errout.str());
     }
 
-    void const28() { // ticket #1883
+    void const28()
+    { // ticket #1883
         checkConst("class P {\n"
                    "public:\n"
                    "    P() { x=0.0; y=0.0; }\n"
@@ -4636,11 +4881,13 @@ private:
                    "        UnknownScope::x = x_;\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Technically the member function 'AA::vSetXPos' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
-
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (performance, inconclusive) Technically the member function 'AA::vSetXPos' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
     }
 
-    void const29() { // ticket #1922
+    void const29()
+    { // ticket #1922
         checkConst("class test {\n"
                    "  public:\n"
                    "    test();\n"
@@ -4664,7 +4911,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const30() {
+    void const30()
+    {
         // check for false negatives
         checkConst("class Base {\n"
                    "public:\n"
@@ -4676,7 +4924,9 @@ private:
                    "        return a;\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'Derived::get' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:7]: (style, inconclusive) Technically the member function 'Derived::get' can be const.\n",
+            errout.str());
 
         checkConst("class Base1 {\n"
                    "public:\n"
@@ -4695,8 +4945,10 @@ private:
                    "        return b;\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:11]: (style, inconclusive) Technically the member function 'Derived::getA' can be const.\n"
-                      "[test.cpp:14]: (style, inconclusive) Technically the member function 'Derived::getB' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:11]: (style, inconclusive) Technically the member function 'Derived::getA' can be const.\n"
+            "[test.cpp:14]: (style, inconclusive) Technically the member function 'Derived::getB' can be const.\n",
+            errout.str());
 
         checkConst("class Base {\n"
                    "public:\n"
@@ -4709,7 +4961,9 @@ private:
                    "        return a;\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'Derived2::get' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:8]: (style, inconclusive) Technically the member function 'Derived2::get' can be const.\n",
+            errout.str());
 
         checkConst("class Base {\n"
                    "public:\n"
@@ -4724,7 +4978,9 @@ private:
                    "        return a;\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:10]: (style, inconclusive) Technically the member function 'Derived4::get' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:10]: (style, inconclusive) Technically the member function 'Derived4::get' can be const.\n",
+            errout.str());
 
         // check for false positives
         checkConst("class Base {\n"
@@ -4787,17 +5043,20 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const31() {
+    void const31()
+    {
         checkConst("namespace std { }\n"
                    "class Fred {\n"
                    "public:\n"
                    "    int a;\n"
                    "    int get() { return a; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Technically the member function 'Fred::get' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Technically the member function 'Fred::get' can be const.\n",
+                      errout.str());
     }
 
-    void const32() {
+    void const32()
+    {
         checkConst("class Fred {\n"
                    "public:\n"
                    "    std::string a[10];\n"
@@ -4806,7 +5065,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const33() {
+    void const33()
+    {
         checkConst("class derived : public base {\n"
                    "public:\n"
                    "    void f(){}\n"
@@ -4814,7 +5074,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const34() { // ticket #1964
+    void const34()
+    { // ticket #1964
         checkConst("class Bar {\n"
                    "    void init(Foo * foo) {\n"
                    "        foo.bar = this;\n"
@@ -4823,7 +5084,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const35() { // ticket #2001
+    void const35()
+    { // ticket #2001
         checkConst("namespace N\n"
                    "{\n"
                    "        class Base\n"
@@ -4839,7 +5101,9 @@ private:
                    "                int var;\n"
                    "        };\n"
                    "}");
-        ASSERT_EQUALS("[test.cpp:12]: (style, inconclusive) Technically the member function 'N::Derived::getResourceName' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:12]: (style, inconclusive) Technically the member function 'N::Derived::getResourceName' can be const.\n",
+            errout.str());
 
         checkConst("namespace N\n"
                    "{\n"
@@ -4851,7 +5115,9 @@ private:
                    "        };\n"
                    "}\n"
                    "int N::Base::getResourceName() { return var; }");
-        ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'N::Base::getResourceName' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:10] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'N::Base::getResourceName' can be const.\n",
+            errout.str());
 
         checkConst("namespace N\n"
                    "{\n"
@@ -4866,7 +5132,9 @@ private:
                    "{\n"
                    "        int Base::getResourceName() { return var; }\n"
                    "}");
-        ASSERT_EQUALS("[test.cpp:12] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'N::Base::getResourceName' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:12] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'N::Base::getResourceName' can be const.\n",
+            errout.str());
 
         checkConst("namespace N\n"
                    "{\n"
@@ -4879,10 +5147,13 @@ private:
                    "}\n"
                    "using namespace N;\n"
                    "int Base::getResourceName() { return var; }");
-        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'N::Base::getResourceName' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:11] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'N::Base::getResourceName' can be const.\n",
+            errout.str());
     }
 
-    void const36() { // ticket #2003
+    void const36()
+    { // ticket #2003
         checkConst("class Foo {\n"
                    "public:\n"
                    "    Blue::Utility::Size m_MaxQueueSize;\n"
@@ -4894,7 +5165,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const37() { // ticket #2081 and #2085
+    void const37()
+    { // ticket #2081 and #2085
         checkConst("class A\n"
                    "{\n"
                    "public:\n"
@@ -4906,7 +5178,9 @@ private:
                    "private:\n"
                    "    std::string m_str;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Technically the member function 'A::operator+' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5]: (style, inconclusive) Technically the member function 'A::operator+' can be const.\n",
+            errout.str());
 
         checkConst("class Fred\n"
                    "{\n"
@@ -4920,10 +5194,13 @@ private:
                    "        return (x == 0x11224488);\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:9]: (style, inconclusive) Technically the member function 'Fred::isValid' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:9]: (style, inconclusive) Technically the member function 'Fred::isValid' can be const.\n",
+            errout.str());
     }
 
-    void const38() { // ticket #2135
+    void const38()
+    { // ticket #2135
         checkConst("class Foo {\n"
                    "public:\n"
                    "    ~Foo() { delete oArq; }\n"
@@ -4939,7 +5216,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const39() {
+    void const39()
+    {
         checkConst("class Foo\n"
                    "{\n"
                    "    int * p;\n"
@@ -4960,7 +5238,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const40() { // ticket #2228
+    void const40()
+    { // ticket #2228
         checkConst("class SharedPtrHolder\n"
                    "{\n"
                    "  private:\n"
@@ -4977,7 +5256,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const41() { // ticket #2255
+    void const41()
+    { // ticket #2255
         checkConst("class Fred\n"
                    "{\n"
                    "   ::std::string m_name;\n"
@@ -5053,7 +5333,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const42() { // ticket #2282
+    void const42()
+    { // ticket #2282
         checkConst("class Fred\n"
                    "{\n"
                    "public:\n"
@@ -5064,7 +5345,9 @@ private:
                    "{\n"
                    "}");
 
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:5]: (performance, inconclusive) Technically the member function 'Fred::f' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:5]: (performance, inconclusive) Technically the member function 'Fred::f' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("class Fred\n"
                    "{\n"
@@ -5078,7 +5361,9 @@ private:
                    "{\n"
                    "}");
 
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:7]: (performance, inconclusive) Technically the member function 'Fred::f' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:9] -> [test.cpp:7]: (performance, inconclusive) Technically the member function 'Fred::f' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("namespace NS {\n"
                    "    class Fred\n"
@@ -5094,7 +5379,9 @@ private:
                    "    }\n"
                    "}");
 
-        ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:8]: (performance, inconclusive) Technically the member function 'NS::Fred::f' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:10] -> [test.cpp:8]: (performance, inconclusive) Technically the member function 'NS::Fred::f' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("namespace NS {\n"
                    "    class Fred\n"
@@ -5110,7 +5397,9 @@ private:
                    "{\n"
                    "}");
 
-        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:8]: (performance, inconclusive) Technically the member function 'NS::Fred::f' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:11] -> [test.cpp:8]: (performance, inconclusive) Technically the member function 'NS::Fred::f' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("class Foo {\n"
                    "    class Fred\n"
@@ -5126,10 +5415,13 @@ private:
                    "{\n"
                    "}");
 
-        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:8]: (performance, inconclusive) Technically the member function 'Foo::Fred::f' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:11] -> [test.cpp:8]: (performance, inconclusive) Technically the member function 'Foo::Fred::f' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
     }
 
-    void const43() { // ticket 2377
+    void const43()
+    { // ticket 2377
         checkConst("class A\n"
                    "{\n"
                    "public:\n"
@@ -5187,7 +5479,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const44() { // ticket 2595
+    void const44()
+    { // ticket 2595
         checkConst("class A\n"
                    "{\n"
                    "public:\n"
@@ -5201,7 +5494,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const45() { // ticket 2664
+    void const45()
+    { // ticket 2664
         checkConst("namespace wraps {\n"
                    "    class BaseLayout {};\n"
                    "}\n"
@@ -5215,10 +5509,13 @@ private:
                    "    };\n"
                    "}");
 
-        ASSERT_EQUALS("[test.cpp:8]: (performance, inconclusive) Technically the member function 'tools::WorkspaceControl::toGrid' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:8]: (performance, inconclusive) Technically the member function 'tools::WorkspaceControl::toGrid' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
     }
 
-    void const46() { // ticket 2663
+    void const46()
+    { // ticket 2663
         checkConst("class Altren {\n"
                    "public:\n"
                    "    int fun1() {\n"
@@ -5230,11 +5527,14 @@ private:
                    "    }\n"
                    "};");
 
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Altren::fun1' can be static (but you may consider moving to unnamed namespace).\n"
-                      "[test.cpp:7]: (performance, inconclusive) Technically the member function 'Altren::fun2' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Altren::fun1' can be static (but you may consider moving to unnamed namespace).\n"
+            "[test.cpp:7]: (performance, inconclusive) Technically the member function 'Altren::fun2' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
     }
 
-    void const47() { // ticket 2670
+    void const47()
+    { // ticket 2670
         checkConst("class Altren {\n"
                    "public:\n"
                    "  void foo() { delete this; }\n"
@@ -5242,7 +5542,9 @@ private:
                    "  void bar() { foo(); }\n"
                    "};");
 
-        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Technically the member function 'Altren::foo' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (performance, inconclusive) Technically the member function 'Altren::foo' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("class Altren {\n"
                    "public:\n"
@@ -5251,11 +5553,14 @@ private:
                    "  void bar() { foo(1); }\n"
                    "};");
 
-        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Technically the member function 'Altren::foo' can be static (but you may consider moving to unnamed namespace).\n"
-                      "[test.cpp:5]: (style, inconclusive) Technically the member function 'Altren::bar' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (performance, inconclusive) Technically the member function 'Altren::foo' can be static (but you may consider moving to unnamed namespace).\n"
+            "[test.cpp:5]: (style, inconclusive) Technically the member function 'Altren::bar' can be const.\n",
+            errout.str());
     }
 
-    void const48() { // ticket 2672
+    void const48()
+    { // ticket 2672
         checkConst("class S0 {\n"
                    "    class S1 {\n"
                    "        class S2 {\n"
@@ -5277,7 +5582,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const49() { // ticket 2795
+    void const49()
+    { // ticket 2795
         checkConst("class A {\n"
                    "    private:\n"
                    "         std::map<unsigned int,unsigned int> _hash;\n"
@@ -5291,7 +5597,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const50() { // ticket 2943
+    void const50()
+    { // ticket 2943
         checkConst("class Altren\n"
                    "{\n"
                    "        class SubClass : public std::vector<int>\n"
@@ -5307,7 +5614,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const51() { // ticket 3040
+    void const51()
+    { // ticket 3040
         checkConst("class PSIPTable {\n"
                    "public:\n"
                    "    PSIPTable() : _pesdata(0) { }\n"
@@ -5335,17 +5643,21 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const52() { // ticket 3048
+    void const52()
+    { // ticket 3048
         checkConst("class foo {\n"
                    "    void DoSomething(int &a) const { a = 1; }\n"
                    "    void DoSomethingElse() { DoSomething(bar); }\n"
                    "private:\n"
                    "    int bar;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'foo::DoSomething' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (performance, inconclusive) Technically the member function 'foo::DoSomething' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
     }
 
-    void const53() { // ticket 3049
+    void const53()
+    { // ticket 3049
         checkConst("class A {\n"
                    "  public:\n"
                    "    A() : foo(false) {};\n"
@@ -5361,7 +5673,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const54() { // ticket 3052
+    void const54()
+    { // ticket 3052
         checkConst("class Example {\n"
                    "  public:\n"
                    "    void Clear(void) { Example tmp; (*this) = tmp; }\n"
@@ -5369,7 +5682,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const55() {
+    void const55()
+    {
         checkConst("class MyObject {\n"
                    "    int tmp;\n"
                    "    MyObject() : tmp(0) {}\n"
@@ -5379,14 +5693,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const56() { // ticket #3149
+    void const56()
+    { // ticket #3149
         checkConst("class MyObject {\n"
                    "public:\n"
                    "    void foo(int x) {\n"
                    "    switch (x) { }\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'MyObject::foo' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'MyObject::foo' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("class A\n"
                    "{\n"
@@ -5426,7 +5743,9 @@ private:
                    "\n"
                    "    return RET_NOK;\n"
                    "}");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:4]: (performance, inconclusive) Technically the member function 'A::f' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:9] -> [test.cpp:4]: (performance, inconclusive) Technically the member function 'A::f' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("class MyObject {\n"
                    "public:\n"
@@ -5434,10 +5753,13 @@ private:
                    "    for (int i = 0; i < 5; i++) { }\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'MyObject::foo' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'MyObject::foo' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
     }
 
-    void const57() { // tickets #2669 and #2477
+    void const57()
+    { // tickets #2669 and #2477
         checkConst("namespace MyGUI\n"
                    "{\n"
                    "  namespace types\n"
@@ -5459,9 +5781,11 @@ private:
                    "private:\n"
                    "  MyGUI::IntCoord mCoordValue;\n"
                    "};");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (performance, inconclusive) Technically the member function 'MyGUI::types::TCoord::size' can be static (but you may consider moving to unnamed namespace).\n"
-                           "[test.cpp:15]: (style, inconclusive) Technically the member function 'SelectorControl::getSize' can be const.\n",
-                           "[test.cpp:7]: (performance, inconclusive) Technically the member function 'MyGUI::types::TCoord::size' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:7]: (performance, inconclusive) Technically the member function 'MyGUI::types::TCoord::size' can be static (but you may consider moving to unnamed namespace).\n"
+            "[test.cpp:15]: (style, inconclusive) Technically the member function 'SelectorControl::getSize' can be const.\n",
+            "[test.cpp:7]: (performance, inconclusive) Technically the member function 'MyGUI::types::TCoord::size' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("struct Foo {\n"
                    "    Bar b;\n"
@@ -5492,24 +5816,31 @@ private:
                    "        b.run();\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'Bar::run' can be static (but you may consider moving to unnamed namespace).\n"
-                      "[test.cpp:6]: (style, inconclusive) Technically the member function 'Foo::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (performance, inconclusive) Technically the member function 'Bar::run' can be static (but you may consider moving to unnamed namespace).\n"
+            "[test.cpp:6]: (style, inconclusive) Technically the member function 'Foo::foo' can be const.\n",
+            errout.str());
     }
 
-    void const58() {
+    void const58()
+    {
         checkConst("struct MyObject {\n"
                    "    void foo(Foo f) {\n"
                    "        f.clear();\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'MyObject::foo' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (performance, inconclusive) Technically the member function 'MyObject::foo' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("struct MyObject {\n"
                    "    int foo(Foo f) {\n"
                    "        return f.length();\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'MyObject::foo' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (performance, inconclusive) Technically the member function 'MyObject::foo' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("struct MyObject {\n"
                    "    Foo f;\n"
@@ -5525,10 +5856,13 @@ private:
                    "        return f.length();\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'MyObject::foo' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style, inconclusive) Technically the member function 'MyObject::foo' can be const.\n",
+            errout.str());
     }
 
-    void const59() { // ticket #4646
+    void const59()
+    { // ticket #4646
         checkConst("class C {\n"
                    "public:\n"
                    "    inline void operator += (const int &x ) { re += x; }\n"
@@ -5540,7 +5874,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const60() { // ticket #3322
+    void const60()
+    { // ticket #3322
         checkConst("class MyString {\n"
                    "public:\n"
                    "    MyString() : m_ptr(0){}\n"
@@ -5564,7 +5899,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const61() { // ticket #5606 - don't crash
+    void const61()
+    { // ticket #5606 - don't crash
         // this code is invalid so a false negative is OK
         checkConst("class MixerParticipant : public MixerParticipant {\n"
                    "    int GetAudioFrame();\n"
@@ -5596,11 +5932,14 @@ private:
                    "  void set(const Key& key) {\n"
                    "      inherited::set(inherited::Key(key));\n"
                    "  }\n"
-                   "};\n", nullptr, false);
+                   "};\n",
+                   nullptr,
+                   false);
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const62() {
+    void const62()
+    {
         checkConst("class A {\n"
                    "    private:\n"
                    "         std::unordered_map<unsigned int,unsigned int> _hash;\n"
@@ -5614,7 +5953,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const63() {
+    void const63()
+    {
         checkConst("struct A {\n"
                    "    std::string s;\n"
                    "    void clear() {\n"
@@ -5640,7 +5980,8 @@ private:
                    "         r.clear();\n"
                    "     }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'A::clear' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'A::clear' can be const.\n",
+                      errout.str());
 
         checkConst("struct A {\n"
                    "    std::string s;\n"
@@ -5649,7 +5990,8 @@ private:
                    "         p->somefunction();\n"
                    "     }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'A::clear' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'A::clear' can be const.\n",
+                      errout.str());
 
         checkConst("struct A {\n"
                    "    std::string s;\n"
@@ -5658,10 +6000,12 @@ private:
                    "         r.somefunction();\n"
                    "     }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'A::clear' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'A::clear' can be const.\n",
+                      errout.str());
     }
 
-    void const64() {
+    void const64()
+    {
         checkConst("namespace B {\n"
                    "    namespace D {\n"
                    "        typedef int DKIPtr;\n"
@@ -5676,7 +6020,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const65() {
+    void const65()
+    {
         checkConst("template <typename T>\n"
                    "class TemplateClass {\n"
                    "public:\n"
@@ -5695,7 +6040,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const66() {
+    void const66()
+    {
         checkConst("struct C {\n"
                    "    C() : n(0) {}\n"
                    "    void f(int v) { g((char *) &v); }\n"
@@ -5705,7 +6051,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const67() { // #9193
+    void const67()
+    { // #9193
         checkConst("template <class VALUE_T, class LIST_T = std::list<VALUE_T> >\n"
                    "class TestList {\n"
                    "public:\n"
@@ -5716,10 +6063,12 @@ private:
                    "    const std::list<std::shared_ptr<int>>& get() { return m_test.m_list; }\n"
                    "    TestList<std::shared_ptr<int>> m_test;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'Test::get' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'Test::get' can be const.\n",
+                      errout.str());
     }
 
-    void const68() { // #6471
+    void const68()
+    { // #6471
         checkConst("class MyClass {\n"
                    "    void clear() {\n"
                    "        SVecPtr v = (SVecPtr) m_data;\n"
@@ -5730,7 +6079,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const69() { // #9806
+    void const69()
+    { // #9806
         checkConst("struct A {\n"
                    "    int a = 0;\n"
                    "    template <typename... Args> void call(const Args &... args) { a = 1; }\n"
@@ -5749,7 +6099,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const70() {
+    void const70()
+    {
         checkConst("struct A {\n"
                    "    template <typename... Args> void call(Args ... args) {\n"
                    "        func(this);\n"
@@ -5762,7 +6113,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const_handleDefaultParameters() {
+    void const_handleDefaultParameters()
+    {
         checkConst("struct Foo {\n"
                    "    void foo1(int i, int j = 0) {\n"
                    "        return func(this);\n"
@@ -5792,11 +6144,14 @@ private:
                    "        return foo3();\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:11]: (performance, inconclusive) Technically the member function 'Foo::bar3' can be static (but you may consider moving to unnamed namespace).\n"
-                      "[test.cpp:14]: (performance, inconclusive) Technically the member function 'Foo::bar4' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:11]: (performance, inconclusive) Technically the member function 'Foo::bar3' can be static (but you may consider moving to unnamed namespace).\n"
+            "[test.cpp:14]: (performance, inconclusive) Technically the member function 'Foo::bar4' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
     }
 
-    void const_passThisToMemberOfOtherClass() {
+    void const_passThisToMemberOfOtherClass()
+    {
         checkConst("struct Foo {\n"
                    "    void foo() {\n"
                    "        Bar b;\n"
@@ -5811,7 +6166,9 @@ private:
                    "        f.foo();\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'Foo::foo' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (performance, inconclusive) Technically the member function 'Foo::foo' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("struct A;\n" // #5839 - operator()
                    "struct B {\n"
@@ -5825,7 +6182,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void assigningPointerToPointerIsNotAConstOperation() {
+    void assigningPointerToPointerIsNotAConstOperation()
+    {
         checkConst("struct s\n"
                    "{\n"
                    "    int** v;\n"
@@ -5837,7 +6195,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void assigningArrayElementIsNotAConstOperation() {
+    void assigningArrayElementIsNotAConstOperation()
+    {
         checkConst("struct s\n"
                    "{\n"
                    "    ::std::string v[3];\n"
@@ -5850,7 +6209,8 @@ private:
     }
 
     // increment/decrement => not const
-    void constincdec() {
+    void constincdec()
+    {
         checkConst("class Fred {\n"
                    "    int a;\n"
                    "    void nextA() { return ++a; }\n"
@@ -5879,28 +6239,37 @@ private:
                    "class Fred {\n"
                    "    void nextA() { return ++a; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return --a; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return a++; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return a--; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
     }
 
-    void constassign1() {
+    void constassign1()
+    {
         checkConst("class Fred {\n"
                    "    int a;\n"
                    "    void nextA() { return a=1; }\n"
@@ -5935,34 +6304,45 @@ private:
                    "class Fred {\n"
                    "    void nextA() { return a=1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return a-=1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return a+=1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return a*=-1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return a/=-2; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
     }
 
-    void constassign2() {
+    void constassign2()
+    {
         checkConst("class Fred {\n"
                    "    struct A { int a; } s;\n"
                    "    void nextA() { return s.a=1; }\n"
@@ -5991,31 +6371,41 @@ private:
                    "class Fred {\n"
                    "    void nextA() { return s.a=1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("struct A { int a; } s;\n"
                    "class Fred {\n"
                    "    void nextA() { return s.a-=1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("struct A { int a; } s;\n"
                    "class Fred {\n"
                    "    void nextA() { return s.a+=1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("struct A { int a; } s;\n"
                    "class Fred {\n"
                    "    void nextA() { return s.a*=-1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("struct A { int a; } s;\n"
                    "class Fred {\n"
                    "    void nextA() { return s.a/=-2; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("struct A { int a; };\n"
                    "class Fred {\n"
@@ -6054,7 +6444,8 @@ private:
     }
 
     // increment/decrement array element => not const
-    void constincdecarray() {
+    void constincdecarray()
+    {
         checkConst("class Fred {\n"
                    "    int a[2];\n"
                    "    void nextA() { return ++a[0]; }\n"
@@ -6083,28 +6474,37 @@ private:
                    "class Fred {\n"
                    "    void nextA() { return ++a[0]; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return --a[0]; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return a[0]++; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return a[0]--; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
     }
 
-    void constassignarray() {
+    void constassignarray()
+    {
         checkConst("class Fred {\n"
                    "    int a[2];\n"
                    "    void nextA() { return a[0]=1; }\n"
@@ -6139,35 +6539,46 @@ private:
                    "class Fred {\n"
                    "    void nextA() { return a[0]=1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return a[0]-=1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return a[0]+=1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return a[0]*=-1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return a[0]/=-2; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
     }
 
     // return pointer/reference => not const
-    void constReturnReference() {
+    void constReturnReference()
+    {
         checkConst("class Fred {\n"
                    "    int a;\n"
                    "    int &getR() { return a; }\n"
@@ -6177,7 +6588,8 @@ private:
     }
 
     // delete member variable => not const (but technically it can, it compiles without errors)
-    void constDelete() {
+    void constDelete()
+    {
         checkConst("class Fred {\n"
                    "    int *a;\n"
                    "    void clean() { delete a; }\n"
@@ -6186,11 +6598,15 @@ private:
     }
 
     // A function that returns unknown types can't be const (#1579)
-    void constLPVOID() {
+    void constLPVOID()
+    {
         checkConst("class Fred {\n"
                    "    UNKNOWN a() { return 0; };\n"
                    "};");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'Fred::a' can be static.\n", "", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:2]: (performance, inconclusive) Technically the member function 'Fred::a' can be static.\n",
+            "",
+            errout.str());
 
         // #1579 - HDC
         checkConst("class Fred {\n"
@@ -6201,13 +6617,16 @@ private:
     }
 
     // a function that calls const functions can be const
-    void constFunc() {
+    void constFunc()
+    {
         checkConst("class Fred {\n"
                    "    void f() const { };\n"
                    "    void a() { f(); };\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'Fred::f' can be static (but you may consider moving to unnamed namespace).\n"
-                      "[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::a' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (performance, inconclusive) Technically the member function 'Fred::f' can be static (but you may consider moving to unnamed namespace).\n"
+            "[test.cpp:3]: (style, inconclusive) Technically the member function 'Fred::a' can be const.\n",
+            errout.str());
 
         // ticket #1593
         checkConst("class A\n"
@@ -6217,7 +6636,9 @@ private:
                    "   A(){}\n"
                    "   unsigned int GetVecSize()  {return m_v.size();}\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:6]: (style, inconclusive) Technically the member function 'A::GetVecSize' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:6]: (style, inconclusive) Technically the member function 'A::GetVecSize' can be const.\n",
+            errout.str());
 
         checkConst("class A\n"
                    "{\n"
@@ -6226,10 +6647,13 @@ private:
                    "   A(){}\n"
                    "   bool GetVecEmpty()  {return m_v.empty();}\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:6]: (style, inconclusive) Technically the member function 'A::GetVecEmpty' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:6]: (style, inconclusive) Technically the member function 'A::GetVecEmpty' can be const.\n",
+            errout.str());
     }
 
-    void constVirtualFunc() {
+    void constVirtualFunc()
+    {
         // base class has no virtual function
         checkConst("class A { };\n"
                    "class B : public A {\n"
@@ -6238,7 +6662,8 @@ private:
                    "   B() : b(0) { }\n"
                    "   int func() { return b; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:6]: (style, inconclusive) Technically the member function 'B::func' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style, inconclusive) Technically the member function 'B::func' can be const.\n",
+                      errout.str());
 
         checkConst("class A { };\n"
                    "class B : public A {\n"
@@ -6248,7 +6673,9 @@ private:
                    "   int func();\n"
                    "};\n"
                    "int B::func() { return b; }");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'B::func' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:8] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'B::func' can be const.\n",
+            errout.str());
 
         // base class has no virtual function
         checkConst("class A {\n"
@@ -6261,7 +6688,8 @@ private:
                    "    B() : b(0) { }\n"
                    "    int func() { return b; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:9]: (style, inconclusive) Technically the member function 'B::func' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (style, inconclusive) Technically the member function 'B::func' can be const.\n",
+                      errout.str());
 
         checkConst("class A {\n"
                    "public:\n"
@@ -6274,7 +6702,9 @@ private:
                    "    int func();\n"
                    "};\n"
                    "int B::func() { return b; }");
-        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:9]: (style, inconclusive) Technically the member function 'B::func' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:11] -> [test.cpp:9]: (style, inconclusive) Technically the member function 'B::func' can be const.\n",
+            errout.str());
 
         // base class has virtual function
         checkConst("class A {\n"
@@ -6336,7 +6766,8 @@ private:
                    "};");
         ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Technically the member function 'A::func' can be const.\n"
                       "[test.cpp:11]: (style, inconclusive) Technically the member function 'B::func' can be const.\n"
-                      "[test.cpp:17]: (style, inconclusive) Technically the member function 'C::func' can be const.\n", errout.str());
+                      "[test.cpp:17]: (style, inconclusive) Technically the member function 'C::func' can be const.\n",
+                      errout.str());
 
         checkConst("class A {\n"
                    "    int a;\n"
@@ -6359,9 +6790,11 @@ private:
                    "    int func();\n"
                    "};\n"
                    "int C::func() { return c; }");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:5]: (style, inconclusive) Technically the member function 'A::func' can be const.\n"
-                      "[test.cpp:14] -> [test.cpp:12]: (style, inconclusive) Technically the member function 'B::func' can be const.\n"
-                      "[test.cpp:21] -> [test.cpp:19]: (style, inconclusive) Technically the member function 'C::func' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:5]: (style, inconclusive) Technically the member function 'A::func' can be const.\n"
+            "[test.cpp:14] -> [test.cpp:12]: (style, inconclusive) Technically the member function 'B::func' can be const.\n"
+            "[test.cpp:21] -> [test.cpp:19]: (style, inconclusive) Technically the member function 'C::func' can be const.\n",
+            errout.str());
 
         // base class has virtual function
         checkConst("class A {\n"
@@ -6428,7 +6861,8 @@ private:
                    "};");
         ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Technically the member function 'X::getX' can be const.\n"
                       "[test.cpp:11]: (style, inconclusive) Technically the member function 'Y::getY' can be const.\n"
-                      "[test.cpp:17]: (style, inconclusive) Technically the member function 'Z::getZ' can be const.\n", errout.str());
+                      "[test.cpp:17]: (style, inconclusive) Technically the member function 'Z::getZ' can be const.\n",
+                      errout.str());
 
         checkConst("class X {\n"
                    "    int x;\n"
@@ -6451,12 +6885,15 @@ private:
                    "    int getZ();\n"
                    "};\n"
                    "int Z::getZ() { return z; }");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:5]: (style, inconclusive) Technically the member function 'X::getX' can be const.\n"
-                      "[test.cpp:14] -> [test.cpp:12]: (style, inconclusive) Technically the member function 'Y::getY' can be const.\n"
-                      "[test.cpp:21] -> [test.cpp:19]: (style, inconclusive) Technically the member function 'Z::getZ' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:5]: (style, inconclusive) Technically the member function 'X::getX' can be const.\n"
+            "[test.cpp:14] -> [test.cpp:12]: (style, inconclusive) Technically the member function 'Y::getY' can be const.\n"
+            "[test.cpp:21] -> [test.cpp:19]: (style, inconclusive) Technically the member function 'Z::getZ' can be const.\n",
+            errout.str());
     }
 
-    void constIfCfg() {
+    void constIfCfg()
+    {
         const char code[] = "struct foo {\n"
                             "    int i;\n"
                             "    void f() {\n"
@@ -6467,13 +6904,16 @@ private:
                             "};";
 
         checkConst(code, &settings0, true);
-        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'foo::f' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance, inconclusive) Technically the member function 'foo::f' can be static (but you may consider moving to unnamed namespace).\n",
+            errout.str());
 
         checkConst(code, &settings0, false); // TODO: Set inconclusive to true (preprocess it)
         ASSERT_EQUALS("", errout.str());
     }
 
-    void constFriend() { // ticket #1921
+    void constFriend()
+    { // ticket #1921
         const char code[] = "class foo {\n"
                             "    friend void f() { }\n"
                             "};";
@@ -6481,7 +6921,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void constUnion() { // ticket #2111
+    void constUnion()
+    { // ticket #2111
         checkConst("class foo {\n"
                    "public:\n"
                    "    union {\n"
@@ -6495,7 +6936,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void constArrayOperator() {
+    void constArrayOperator()
+    {
         checkConst("struct foo {\n"
                    "    int x;\n"
                    "    int y[5][724];\n"
@@ -6509,10 +6951,12 @@ private:
                    "        return y[1][6];\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:10]: (style, inconclusive) Technically the member function 'foo::c' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (style, inconclusive) Technically the member function 'foo::c' can be const.\n",
+                      errout.str());
     }
 
-    void constRangeBasedFor() { // #5514
+    void constRangeBasedFor()
+    { // #5514
         checkConst("class Fred {\n"
                    "    int array[256];\n"
                    "public:\n"
@@ -6529,10 +6973,12 @@ private:
                    "            foo(e);\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'Fred::f2' can be const.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'Fred::f2' can be const.\n",
+                      errout.str());
     }
 
-    void const_shared_ptr() { // #8674
+    void const_shared_ptr()
+    { // #8674
         checkConst("class Fred {\n"
                    "public:\n"
                    "    std::shared_ptr<Data> getData();\n"
@@ -6544,15 +6990,19 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void constPtrToConstPtr() {
+    void constPtrToConstPtr()
+    {
         checkConst("class Fred {\n"
                    "public:\n"
                    "    const char *const *data;\n"
                    "    const char *const *getData() { return data; }\n}");
-        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::getData' can be const.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style, inconclusive) Technically the member function 'Fred::getData' can be const.\n",
+            errout.str());
     }
 
-    void constTrailingReturnType() { // #9814
+    void constTrailingReturnType()
+    { // #9814
         checkConst("struct A {\n"
                    "    int x = 1;\n"
                    "    auto get() -> int & { return x; }\n"
@@ -6560,7 +7010,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkInitializerListOrder(const char code[]) {
+    void checkInitializerListOrder(const char code[])
+    {
         // Clear the error log
         errout.str("");
 
@@ -6576,25 +7027,31 @@ private:
         checkClass.initializerListOrder();
     }
 
-    void initializerListOrder() {
+    void initializerListOrder()
+    {
         checkInitializerListOrder("class Fred {\n"
                                   "    int a, b, c;\n"
                                   "public:\n"
                                   "    Fred() : c(0), b(0), a(0) { }\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::b' is in the wrong place in the initializer list.\n"
-                      "[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::a' is in the wrong place in the initializer list.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::b' is in the wrong place in the initializer list.\n"
+            "[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::a' is in the wrong place in the initializer list.\n",
+            errout.str());
 
         checkInitializerListOrder("class Fred {\n"
                                   "    int a, b, c;\n"
                                   "public:\n"
                                   "    Fred() : c{0}, b{0}, a{0} { }\n"
                                   "};");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::b' is in the wrong place in the initializer list.\n"
-                      "[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::a' is in the wrong place in the initializer list.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::b' is in the wrong place in the initializer list.\n"
+            "[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::a' is in the wrong place in the initializer list.\n",
+            errout.str());
     }
 
-    void checkInitializationListUsage(const char code[]) {
+    void checkInitializationListUsage(const char code[])
+    {
         // Clear the error log
         errout.str("");
 
@@ -6611,7 +7068,8 @@ private:
         checkClass.initializationListUsage();
     }
 
-    void initializerListUsage() {
+    void initializerListUsage()
+    {
         checkInitializationListUsage("enum Enum { C = 0 };\n"
                                      "class Fred {\n"
                                      "    int a;\n"  // No message for builtin types: No performance gain
@@ -6625,10 +7083,14 @@ private:
                                      "    std::string s;\n"
                                      "    Fred() { a = 0; s = \"foo\"; }\n"
                                      "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Variable 's' is assigned in constructor body. Consider performing initialization in initialization list.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance) Variable 's' is assigned in constructor body. Consider performing initialization in initialization list.\n",
+            errout.str());
 
         checkInitializationListUsage("class Fred {\n"
-                                     "    std::string& s;\n" // Message is invalid for references, since their initialization in initializer list is required anyway and behaves different from assignment (#5004)
+                                     "    std::string& s;\n" // Message is invalid for references, since their
+                                                             // initialization in initializer list is required anyway
+                                                             // and behaves different from assignment (#5004)
                                      "    Fred(const std::string& s_) : s(s_) { s = \"foo\"; }\n"
                                      "};");
         ASSERT_EQUALS("", errout.str());
@@ -6637,35 +7099,45 @@ private:
                                      "    std::vector<int> v;\n"
                                      "    Fred() { v = unknown; }\n"
                                      "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Variable 'v' is assigned in constructor body. Consider performing initialization in initialization list.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance) Variable 'v' is assigned in constructor body. Consider performing initialization in initialization list.\n",
+            errout.str());
 
         checkInitializationListUsage("class C { std::string s; };\n"
                                      "class Fred {\n"
                                      "    C c;\n"
                                      "    Fred() { c = unknown; }\n"
                                      "};");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Variable 'c' is assigned in constructor body. Consider performing initialization in initialization list.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (performance) Variable 'c' is assigned in constructor body. Consider performing initialization in initialization list.\n",
+            errout.str());
 
         checkInitializationListUsage("class C;\n"
                                      "class Fred {\n"
                                      "    C c;\n"
                                      "    Fred() { c = unknown; }\n"
                                      "};");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Variable 'c' is assigned in constructor body. Consider performing initialization in initialization list.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (performance) Variable 'c' is assigned in constructor body. Consider performing initialization in initialization list.\n",
+            errout.str());
 
         checkInitializationListUsage("class C;\n"
                                      "class Fred {\n"
                                      "    C c;\n"
                                      "    Fred(Fred const & other) { c = other.c; }\n"
                                      "};");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Variable 'c' is assigned in constructor body. Consider performing initialization in initialization list.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (performance) Variable 'c' is assigned in constructor body. Consider performing initialization in initialization list.\n",
+            errout.str());
 
         checkInitializationListUsage("class C;\n"
                                      "class Fred {\n"
                                      "    C c;\n"
                                      "    Fred(Fred && other) { c = other.c; }\n"
                                      "};");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Variable 'c' is assigned in constructor body. Consider performing initialization in initialization list.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (performance) Variable 'c' is assigned in constructor body. Consider performing initialization in initialization list.\n",
+            errout.str());
 
         checkInitializationListUsage("class C;\n"
                                      "class Fred {\n"
@@ -6691,7 +7163,10 @@ private:
         checkInitializationListUsage("class C;\n"
                                      "class Fred {\n"
                                      "    C a; int b;\n"
-                                     "    Fred() : b(5) { a = b; }\n" // Don't issue a message here: You actually could move it to the initialization list, but it would cause problems if you change the order of the variable declarations.
+                                     "    Fred() : b(5) { a = b; }\n" // Don't issue a message here: You actually could
+                                                                      // move it to the initialization list, but it
+                                                                      // would cause problems if you change the order of
+                                                                      // the variable declarations.
                                      "};");
         ASSERT_EQUALS("", errout.str());
 
@@ -6719,7 +7194,9 @@ private:
                                      "    std::string a;\n"
                                      "    Fred() { a = foo(); }\n"
                                      "};");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Variable 'a' is assigned in constructor body. Consider performing initialization in initialization list.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (performance) Variable 'a' is assigned in constructor body. Consider performing initialization in initialization list.\n",
+            errout.str());
 
         checkInitializationListUsage("class Fred {\n" // #4332
                                      "    static std::string s;\n"
@@ -6808,8 +7285,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-    void checkSelfInitialization(const char code []) {
+    void checkSelfInitialization(const char code[])
+    {
         // Clear the error log
         errout.str("");
 
@@ -6822,7 +7299,8 @@ private:
         checkClass.checkSelfInitialization();
     }
 
-    void selfInitialization() {
+    void selfInitialization()
+    {
         checkSelfInitialization("class Fred {\n"
                                 "    int i;\n"
                                 "    Fred() : i(i) {\n"
@@ -6883,26 +7361,30 @@ private:
         checkSelfInitialization("struct Foo : Bar {\n"
                                 "    int i;\n"
                                 "    Foo(int i)\n"
-                                "        : Bar(""), i(i) {}\n"
+                                "        : Bar("
+                                "), i(i) {}\n"
                                 "};");
         ASSERT_EQUALS("", errout.str());
 
         checkSelfInitialization("struct Foo : std::Bar {\n" // #6073
                                 "    int i;\n"
                                 "    Foo(int i)\n"
-                                "        : std::Bar(""), i(i) {}\n"
+                                "        : std::Bar("
+                                "), i(i) {}\n"
                                 "};");
         ASSERT_EQUALS("", errout.str());
 
         checkSelfInitialization("struct Foo : std::Bar {\n" // #6073
                                 "    int i;\n"
                                 "    Foo(int i)\n"
-                                "        : std::Bar(""), i{i} {}\n"
+                                "        : std::Bar("
+                                "), i{i} {}\n"
                                 "};");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkVirtualFunctionCall(const char code[], Settings *s = nullptr, bool inconclusive = true) {
+    void checkVirtualFunctionCall(const char code[], Settings* s = nullptr, bool inconclusive = true)
+    {
         // Clear the error log
         errout.str("");
 
@@ -6923,7 +7405,8 @@ private:
         checkClass.checkVirtualFunctionCallInConstructor();
     }
 
-    void virtualFunctionCallInConstructor() {
+    void virtualFunctionCallInConstructor()
+    {
         checkVirtualFunctionCall("class A\n"
                                  "{\n"
                                  "    virtual int f() { return 1; }\n"
@@ -6931,21 +7414,27 @@ private:
                                  "};\n"
                                  "A::A()\n"
                                  "{f();}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (style) Virtual function 'f' is called from constructor 'A()' at line 7. Dynamic binding is not used.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:3]: (style) Virtual function 'f' is called from constructor 'A()' at line 7. Dynamic binding is not used.\n",
+            errout.str());
 
         checkVirtualFunctionCall("class A {\n"
                                  "    virtual int f();\n"
                                  "    A() {f();}\n"
                                  "};\n"
                                  "int A::f() { return 1; }");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Virtual function 'f' is called from constructor 'A()' at line 3. Dynamic binding is not used.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2]: (style) Virtual function 'f' is called from constructor 'A()' at line 3. Dynamic binding is not used.\n",
+            errout.str());
 
         checkVirtualFunctionCall("class A : B {\n"
                                  "    int f() override;\n"
                                  "    A() {f();}\n"
                                  "};\n"
                                  "int A::f() { return 1; }");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (style) Virtual function 'f' is called from constructor 'A()' at line 3. Dynamic binding is not used.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2]: (style) Virtual function 'f' is called from constructor 'A()' at line 3. Dynamic binding is not used.\n",
+            errout.str());
 
         checkVirtualFunctionCall("class B {\n"
                                  "    virtual int f() = 0;\n"
@@ -6971,7 +7460,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void pureVirtualFunctionCall() {
+    void pureVirtualFunctionCall()
+    {
         checkVirtualFunctionCall("class A\n"
                                  "{\n"
                                  "    virtual void pure()=0;\n"
@@ -6979,7 +7469,8 @@ private:
                                  "};\n"
                                  "A::A()\n"
                                  "{pure();}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n",
+                      errout.str());
 
         checkVirtualFunctionCall("class A\n"
                                  "{\n"
@@ -6989,7 +7480,8 @@ private:
                                  "};\n"
                                  "A::A():m(A::pure())\n"
                                  "{}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n",
+                      errout.str());
 
         checkVirtualFunctionCall("class A\n"
                                  " {\n"
@@ -6999,7 +7491,8 @@ private:
                                  "};\n"
                                  "A::~A()\n"
                                  "{pure();}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in destructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in destructor.\n",
+                      errout.str());
 
         checkVirtualFunctionCall("class A\n"
                                  " {\n"
@@ -7010,7 +7503,9 @@ private:
                                  "};\n"
                                  "A::A()\n"
                                  "{nonpure();}");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:5] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:9] -> [test.cpp:5] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n",
+            errout.str());
 
         checkVirtualFunctionCall("class A\n"
                                  " {\n"
@@ -7022,7 +7517,10 @@ private:
                                  "};\n"
                                  "A::A():m(nonpure())\n"
                                  "{}");
-        TODO_ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:5] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n", "", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:9] -> [test.cpp:5] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n",
+            "",
+            errout.str());
 
         checkVirtualFunctionCall("class A\n"
                                  " {\n"
@@ -7034,7 +7532,9 @@ private:
                                  "};\n"
                                  "A::~A()\n"
                                  "{nonpure();}");
-        ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:5] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in destructor.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:10] -> [test.cpp:5] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in destructor.\n",
+            errout.str());
 
         checkVirtualFunctionCall("class A\n"
                                  "{\n"
@@ -7043,7 +7543,8 @@ private:
                                  "};\n"
                                  "A::A(bool b)\n"
                                  "{if (b) pure();}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n",
+                      errout.str());
 
         checkVirtualFunctionCall("class A\n"
                                  "{\n"
@@ -7053,7 +7554,8 @@ private:
                                  "};\n"
                                  "A::~A()\n"
                                  "{if (b) pure();}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in destructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in destructor.\n",
+                      errout.str());
 
         // #5831
         checkVirtualFunctionCall("class abc {\n"
@@ -7075,7 +7577,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void pureVirtualFunctionCallOtherClass() {
+    void pureVirtualFunctionCallOtherClass()
+    {
         checkVirtualFunctionCall("class A\n"
                                  "{\n"
                                  "    virtual void pure()=0;\n"
@@ -7099,7 +7602,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void pureVirtualFunctionCallWithBody() {
+    void pureVirtualFunctionCallWithBody()
+    {
         checkVirtualFunctionCall("class A\n"
                                  "{\n"
                                  "    virtual void pureWithBody()=0;\n"
@@ -7123,10 +7627,10 @@ private:
                                  "void A::pureWithBody()\n"
                                  "{}");
         ASSERT_EQUALS("", errout.str());
-
     }
 
-    void pureVirtualFunctionCallPrevented() {
+    void pureVirtualFunctionCallPrevented()
+    {
         checkVirtualFunctionCall("class A\n"
                                  " {\n"
                                  "    virtual void pure()=0;\n"
@@ -7165,7 +7669,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkOverride(const char code[]) {
+    void checkOverride(const char code[])
+    {
         // Clear the error log
         errout.str("");
         Settings settings;
@@ -7181,10 +7686,13 @@ private:
         checkClass.checkOverride();
     }
 
-    void override1() {
+    void override1()
+    {
         checkOverride("class Base { virtual void f(); };\n"
                       "class Derived : Base { virtual void f(); };");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) The function 'f' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:2]: (style) The function 'f' overrides a function in a base class but is not marked with a 'override' specifier.\n",
+            errout.str());
 
         checkOverride("class Base { virtual void f(); };\n"
                       "class Derived : Base { virtual void f() override; };");
@@ -7204,7 +7712,9 @@ private:
                       "    auto foo( ) const -> size_t { return 0; }\n"
                       "    auto bar( ) const -> size_t override { return 0; }\n"
                       "};");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:8]: (style) The function 'foo' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:8]: (style) The function 'foo' overrides a function in a base class but is not marked with a 'override' specifier.\n",
+            errout.str());
 
         checkOverride("namespace Test {\n"
                       "    class C {\n"
@@ -7216,7 +7726,9 @@ private:
                       "public:\n"
                       "    ~C();\n"
                       "};");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:9]: (style) The destructor '~C' overrides a destructor in a base class but is not marked with a 'override' specifier.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:9]: (style) The destructor '~C' overrides a destructor in a base class but is not marked with a 'override' specifier.\n",
+            errout.str());
 
         checkOverride("struct Base {\n"
                       "    virtual void foo();\n"
@@ -7229,7 +7741,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void overrideCVRefQualifiers() {
+    void overrideCVRefQualifiers()
+    {
         checkOverride("class Base { virtual void f(); };\n"
                       "class Derived : Base { void f() const; }");
         ASSERT_EQUALS("", errout.str());
@@ -7247,7 +7760,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkUnsafeClassRefMember(const char code[]) {
+    void checkUnsafeClassRefMember(const char code[])
+    {
         // Clear the error log
         errout.str("");
         Settings settings;
@@ -7264,12 +7778,16 @@ private:
         checkClass.checkUnsafeClassRefMember();
     }
 
-    void unsafeClassRefMember() {
+    void unsafeClassRefMember()
+    {
         checkUnsafeClassRefMember("class C { C(const std::string &s) : s(s) {} const std::string &s; };");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Unsafe class: The const reference member 'C::s' is initialized by a const reference constructor argument. You need to be careful about lifetime issues.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (warning) Unsafe class: The const reference member 'C::s' is initialized by a const reference constructor argument. You need to be careful about lifetime issues.\n",
+            errout.str());
     }
 
-    void checkThisUseAfterFree(const char code[]) {
+    void checkThisUseAfterFree(const char code[])
+    {
         // Clear the error log
         errout.str("");
 
@@ -7283,7 +7801,8 @@ private:
         checkClass.checkThisUseAfterFree();
     }
 
-    void checkThisUseAfterFree() {
+    void checkThisUseAfterFree()
+    {
         setMultiline();
 
         // Calling method..
@@ -7423,14 +7942,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-    void ctu(const std::vector<std::string> &code) {
+    void ctu(const std::vector<std::string>& code)
+    {
         Settings settings;
         CheckClass check;
 
         // getFileInfo
         std::list<Check::FileInfo*> fileInfo;
-        for (const std::string& c: code) {
+        for (const std::string& c : code) {
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(c);
             tokenizer.tokenize(istr, (std::to_string(fileInfo.size()) + ".cpp").c_str());
@@ -7447,12 +7966,17 @@ private:
         }
     }
 
-    void ctuOneDefinitionRule() {
+    void ctuOneDefinitionRule()
+    {
         ctu({"class C { C() { std::cout << 0; } };", "class C { C() { std::cout << 1; } };"});
-        ASSERT_EQUALS("[1.cpp:1] -> [0.cpp:1]: (error) The one definition rule is violated, different classes/structs have the same name 'C'\n", errout.str());
+        ASSERT_EQUALS(
+            "[1.cpp:1] -> [0.cpp:1]: (error) The one definition rule is violated, different classes/structs have the same name 'C'\n",
+            errout.str());
 
         ctu({"class C { C(); }; C::C() { std::cout << 0; }", "class C { C(); }; C::C() { std::cout << 1; }"});
-        ASSERT_EQUALS("[1.cpp:1] -> [0.cpp:1]: (error) The one definition rule is violated, different classes/structs have the same name 'C'\n", errout.str());
+        ASSERT_EQUALS(
+            "[1.cpp:1] -> [0.cpp:1]: (error) The one definition rule is violated, different classes/structs have the same name 'C'\n",
+            errout.str());
 
         ctu({"class C { C() {} };\n", "class C { C() {} };\n"});
         ASSERT_EQUALS("", errout.str());
@@ -7464,7 +7988,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void getFileInfo(const char code[]) {
+    void getFileInfo(const char code[])
+    {
         // Clear the error log
         errout.str("");
 
@@ -7476,16 +8001,16 @@ private:
         // Check..
         CheckClass checkClass(&tokenizer, &settings1, this);
 
-        Check::FileInfo * fileInfo = checkClass.getFileInfo(&tokenizer, &settings1);
+        Check::FileInfo* fileInfo = checkClass.getFileInfo(&tokenizer, &settings1);
 
         delete fileInfo;
     }
 
-    void getFileInfo() {
-        getFileInfo("void foo() { union { struct { }; }; }"); // don't crash
+    void getFileInfo()
+    {
+        getFileInfo("void foo() { union { struct { }; }; }");                           // don't crash
         getFileInfo("struct sometype { sometype(); }; sometype::sometype() = delete;"); // don't crash
     }
-
 };
 
 REGISTER_TEST(TestClass)

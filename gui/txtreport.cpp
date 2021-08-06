@@ -21,14 +21,9 @@
 #include <QDir>
 #include "erroritem.h"
 
-TxtReport::TxtReport(const QString &filename) :
-    Report(filename)
-{
-}
+TxtReport::TxtReport(const QString& filename) : Report(filename) {}
 
-TxtReport::~TxtReport()
-{
-}
+TxtReport::~TxtReport() {}
 
 bool TxtReport::create()
 {
@@ -49,7 +44,7 @@ void TxtReport::writeFooter()
     // No footer for txt report
 }
 
-void TxtReport::writeError(const ErrorItem &error)
+void TxtReport::writeError(const ErrorItem& error)
 {
     /*
     Error example from the core program in text

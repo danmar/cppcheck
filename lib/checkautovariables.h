@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
 #ifndef checkautovariablesH
 #define checkautovariablesH
@@ -38,20 +37,19 @@ class Variable;
 /** @brief Various small checks for automatic variables */
 /// @{
 
-
 class CPPCHECKLIB CheckAutoVariables : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckAutoVariables() : Check(myName()) {
-    }
+    CheckAutoVariables() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
-    CheckAutoVariables(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+    CheckAutoVariables(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE
+    {
         CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
         checkAutoVariables.assignFunctionArg();
         checkAutoVariables.checkVarLifetime();
@@ -67,33 +65,34 @@ public:
     /**
      * Check variable assignment.. value must be changed later or there will be a error reported
      * @return true if error is reported */
-    bool checkAutoVariableAssignment(const Token *expr, bool inconclusive, const Token *startToken = nullptr);
+    bool checkAutoVariableAssignment(const Token* expr, bool inconclusive, const Token* startToken = nullptr);
 
     void checkVarLifetime();
 
-    void checkVarLifetimeScope(const Token * start, const Token * end);
+    void checkVarLifetimeScope(const Token* start, const Token* end);
 
 private:
-    void errorReturnAddressToAutoVariable(const Token *tok);
-    void errorReturnAddressToAutoVariable(const Token *tok, const ValueFlow::Value *value);
-    void errorReturnPointerToLocalArray(const Token *tok);
-    void errorAutoVariableAssignment(const Token *tok, bool inconclusive);
-    void errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val);
-    void errorInvalidLifetime(const Token *tok, const ValueFlow::Value* val);
-    void errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val);
+    void errorReturnAddressToAutoVariable(const Token* tok);
+    void errorReturnAddressToAutoVariable(const Token* tok, const ValueFlow::Value* value);
+    void errorReturnPointerToLocalArray(const Token* tok);
+    void errorAutoVariableAssignment(const Token* tok, bool inconclusive);
+    void errorReturnDanglingLifetime(const Token* tok, const ValueFlow::Value* val);
+    void errorInvalidLifetime(const Token* tok, const ValueFlow::Value* val);
+    void errorDanglngLifetime(const Token* tok, const ValueFlow::Value* val);
     void errorDanglingTemporaryLifetime(const Token* tok, const ValueFlow::Value* val);
     void errorReturnReference(const Token* tok, ErrorPath errorPath, bool inconclusive);
-    void errorDanglingReference(const Token *tok, const Variable *var, ErrorPath errorPath);
+    void errorDanglingReference(const Token* tok, const Variable* var, ErrorPath errorPath);
     void errorDanglingTempReference(const Token* tok, ErrorPath errorPath, bool inconclusive);
     void errorReturnTempReference(const Token* tok, ErrorPath errorPath, bool inconclusive);
-    void errorInvalidDeallocation(const Token *tok, const ValueFlow::Value *val);
-    void errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname);
-    void errorUselessAssignmentArg(const Token *tok);
-    void errorUselessAssignmentPtrArg(const Token *tok);
+    void errorInvalidDeallocation(const Token* tok, const ValueFlow::Value* val);
+    void errorReturnAddressOfFunctionParameter(const Token* tok, const std::string& varname);
+    void errorUselessAssignmentArg(const Token* tok);
+    void errorUselessAssignmentPtrArg(const Token* tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE
+    {
         ErrorPath errorPath;
-        CheckAutoVariables c(nullptr,settings,errorLogger);
+        CheckAutoVariables c(nullptr, settings, errorLogger);
         c.errorAutoVariableAssignment(nullptr, false);
         c.errorReturnAddressToAutoVariable(nullptr);
         c.errorReturnPointerToLocalArray(nullptr);
@@ -111,11 +110,10 @@ private:
         c.errorDanglingTemporaryLifetime(nullptr, nullptr);
     }
 
-    static std::string myName() {
-        return "Auto Variables";
-    }
+    static std::string myName() { return "Auto Variables"; }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const OVERRIDE
+    {
         return "A pointer to a variable is only valid as long as the variable is in scope.\n"
                "Check:\n"
                "- returning a pointer to auto or temporary variable\n"

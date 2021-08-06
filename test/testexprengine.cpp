@@ -29,11 +29,11 @@
 
 class TestExprEngine : public TestFixture {
 public:
-    TestExprEngine() : TestFixture("TestExprEngine") {
-    }
+    TestExprEngine() : TestFixture("TestExprEngine") {}
 
 private:
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
 #ifdef USE_Z3
         TEST_CASE(annotation1);
         TEST_CASE(annotation2);
@@ -135,13 +135,15 @@ private:
 #endif
     }
 
-    static void replace(std::string& str, const std::string& from, const std::string& to) {
+    static void replace(std::string& str, const std::string& from, const std::string& to)
+    {
         size_t pos = 0;
         while ((pos = str.find(from, pos)) != std::string::npos)
             str.replace(pos, from.length(), to);
     }
 
-    static std::string cleanupExpr(std::string rawexpr) {
+    static std::string cleanupExpr(std::string rawexpr)
+    {
         std::string ret;
         std::istringstream istr(rawexpr);
         std::string line;
@@ -149,13 +151,13 @@ private:
             if (line.empty())
                 continue;
             line = line.substr(line.find_first_not_of(" "));
-            if (line.compare(0,13,"(declare-fun ") == 0)
+            if (line.compare(0, 13, "(declare-fun ") == 0)
                 continue;
             if (line == "(solver")
                 continue;
-            if (line.compare(0,9,"(assert (") == 0) {
-                line.erase(0,8);
-                line.erase(line.size()-1);
+            if (line.compare(0, 9, "(assert (") == 0) {
+                line.erase(0, 8);
+                line.erase(line.size() - 1);
             }
             replace(line, "(fp.gt ", "(> ");
             replace(line, "(fp.lt ", "(< ");
@@ -176,17 +178,18 @@ private:
         return ret;
     }
 
-    std::string expr(const char code[], const std::string &binop) {
+    std::string expr(const char code[], const std::string& binop)
+    {
         Settings settings;
         settings.platform(cppcheck::Platform::Unix64);
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         std::string ret;
-        ExprEngine::Callback f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
+        ExprEngine::Callback f = [&](const Token* tok, const ExprEngine::Value& value, ExprEngine::DataBase* dataBase) {
             if (tok->str() != binop)
                 return;
-            const auto *b = dynamic_cast<const ExprEngine::BinOpResult *>(&value);
+            const auto* b = dynamic_cast<const ExprEngine::BinOpResult*>(&value);
             if (!b)
                 return;
             ret += TestExprEngine::cleanupExpr(b->getExpr(dataBase));
@@ -198,7 +201,8 @@ private:
         return ret;
     }
 
-    std::string functionCallContractExpr(const char code[], const Settings &s) {
+    std::string functionCallContractExpr(const char code[], const Settings& s)
+    {
         Settings settings;
         settings.bugHunting = true;
         settings.debugBugHunting = true;
@@ -215,10 +219,11 @@ private:
         std::string::size_type pos2 = ret.find("}", pos1);
         if (pos2 == std::string::npos)
             return "Error:" + ret;
-        return TestExprEngine::cleanupExpr(ret.substr(pos1, pos2+1-pos1));
+        return TestExprEngine::cleanupExpr(ret.substr(pos1, pos2 + 1 - pos1));
     }
 
-    std::string getRange(const char code[], const std::string &str, int linenr = 0) {
+    std::string getRange(const char code[], const std::string& str, int linenr = 0)
+    {
         Settings settings;
         settings.platform(cppcheck::Platform::Unix64);
         settings.library.smartPointers["std::shared_ptr"];
@@ -226,7 +231,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         std::string ret;
-        ExprEngine::Callback f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
+        ExprEngine::Callback f = [&](const Token* tok, const ExprEngine::Value& value, ExprEngine::DataBase* dataBase) {
             (void)dataBase;
             if ((linenr == 0 || linenr == tok->linenr()) && tok->expressionString() == str) {
                 if (!ret.empty())
@@ -241,7 +246,8 @@ private:
         return ret;
     }
 
-    std::string trackExecution(const char code[], Settings *settings = nullptr) {
+    std::string trackExecution(const char code[], Settings* settings = nullptr)
+    {
         Settings s;
         if (!settings)
             settings = &s;
@@ -258,7 +264,8 @@ private:
         return ret.str();
     }
 
-    void annotation1() {
+    void annotation1()
+    {
         const char code[] = "void f(__cppcheck_low__(100) short x) {\n"
                             "    return x < 10;\n"
                             "}";
@@ -271,7 +278,8 @@ private:
         ASSERT_EQUALS(expected, expr(code, "<"));
     }
 
-    void annotation2() {
+    void annotation2()
+    {
         const char code[] = "__cppcheck_low__(100) short x;\n"
                             " void f() {\n"
                             "    return x < 10;\n"
@@ -285,27 +293,21 @@ private:
         ASSERT_EQUALS(expected, expr(code, "<"));
     }
 
-    void expr1() {
-        ASSERT_EQUALS("-32768:32767", getRange("void f(short x) { a = x; }", "x"));
-    }
+    void expr1() { ASSERT_EQUALS("-32768:32767", getRange("void f(short x) { a = x; }", "x")); }
 
-    void expr2() {
-        ASSERT_EQUALS("($1)+($1)", getRange("void f(short x) { a = x + x; }", "x+x"));
-    }
+    void expr2() { ASSERT_EQUALS("($1)+($1)", getRange("void f(short x) { a = x + x; }", "x+x")); }
 
-    void expr3() {
-        ASSERT_EQUALS("($1)+($1)", getRange("int f(short x) { int a = x + x; return a; }", "return a"));
-    }
+    void expr3() { ASSERT_EQUALS("($1)+($1)", getRange("int f(short x) { int a = x + x; return a; }", "return a")); }
 
-    void expr4() {
-        ASSERT_EQUALS("($1)-($1)", getRange("int f(short x) { int a = x - x; return a; }", "return a"));
-    }
+    void expr4() { ASSERT_EQUALS("($1)-($1)", getRange("int f(short x) { int a = x - x; return a; }", "return a")); }
 
-    void expr5() {
+    void expr5()
+    {
         ASSERT_EQUALS("($1)+($2)", getRange("void f(short a, short b, short c, short d) { if (a+b<c+d) {} }", "a+b"));
     }
 
-    void expr6() {
+    void expr6()
+    {
         const char code[] = "void f(unsigned char x) {\n"
                             "    unsigned char result = 8 - x;\n"
                             "    result > 1000;"
@@ -319,7 +321,8 @@ private:
                       expr(code, ">"));
     }
 
-    void expr7() {
+    void expr7()
+    {
         const char code[] = "void f(bool a, bool b, int c) {\n"
                             "    if (a||b) {}\n"
                             "    c > 1000;"
@@ -340,7 +343,8 @@ private:
                       expr(code, ">"));
     }
 
-    void expr8() {
+    void expr8()
+    {
         const char code[] = "void foo(int x, int y) {\n"
                             "    if (x % 32) {}\n"
                             "    y==3;\n"
@@ -349,7 +353,8 @@ private:
         expr(code, "==");
     }
 
-    void expr9() {
+    void expr9()
+    {
         Settings settings;
         LOAD_LIB_2(settings.library, "std.cfg");
 
@@ -359,32 +364,27 @@ private:
                       "1:27: 0:memory:{s=($4,[$3],[:]=$2)}\n",
                       trackExecution("void foo() { std::string s; }", &settings));
 
-
-        ASSERT_EQUALS("1:52: $4=ArrayValue([$3],[:]=$2)\n"
-                      "1:52: $3=IntRange(0:2147483647)\n"
-                      "1:52: $2=IntRange(-128:127)\n"
-                      "1:66: 0:memory:{s=($4,[$3],[:]=$2)}\n",
-                      trackExecution("std::string getName(int); void foo() { std::string s = getName(1); }", &settings));
+        ASSERT_EQUALS(
+            "1:52: $4=ArrayValue([$3],[:]=$2)\n"
+            "1:52: $3=IntRange(0:2147483647)\n"
+            "1:52: $2=IntRange(-128:127)\n"
+            "1:66: 0:memory:{s=($4,[$3],[:]=$2)}\n",
+            trackExecution("std::string getName(int); void foo() { std::string s = getName(1); }", &settings));
     }
 
-    void exprAssign1() {
-        ASSERT_EQUALS("($1)+(1)", getRange("void f(unsigned char a) { a += 1; }", "a+=1"));
-    }
+    void exprAssign1() { ASSERT_EQUALS("($1)+(1)", getRange("void f(unsigned char a) { a += 1; }", "a+=1")); }
 
-    void exprAssign2() {
-        ASSERT_EQUALS("2", getRange("void f(unsigned char x) { x = 258; int a = x }", "a=x"));
-    }
+    void exprAssign2() { ASSERT_EQUALS("2", getRange("void f(unsigned char x) { x = 258; int a = x }", "a=x")); }
 
-    void exprNot() {
-        ASSERT_EQUALS("($1)==(0)", getRange("void f(unsigned char a) { return !a; }", "!a"));
-    }
+    void exprNot() { ASSERT_EQUALS("($1)==(0)", getRange("void f(unsigned char a) { return !a; }", "!a")); }
 
-    void getValueConst1() { // Data::getValue
+    void getValueConst1()
+    { // Data::getValue
         ASSERT_EQUALS("512", getRange("const int x=512; void func() { x=x }", "x=x"));
     }
 
-
-    void inc1() {
+    void inc1()
+    {
         ASSERT_EQUALS("(and (>= $1 (- 2147483648)) (<= $1 2147483647))\n"
                       "(= (+ $1 1) $1)\n"
                       "z3::unsat\n",
@@ -396,13 +396,15 @@ private:
                       expr("void f(int x) { int y = ++x; x == y; }", "=="));
     }
 
-    void inc2() {
+    void inc2()
+    {
         ASSERT_EQUALS("(= 2 2)\n"
                       "z3::sat\n",
                       expr("void f() { unsigned char a[2]; a[0] = 1; a[0]++; a[0] == a[0]; }", "=="));
     }
 
-    void if1() {
+    void if1()
+    {
         ASSERT_EQUALS("(< $1 $2)\n"
                       "(and (>= $1 (- 2147483648)) (<= $1 2147483647))\n"
                       "(and (>= $2 (- 2147483648)) (<= $2 2147483647))\n"
@@ -411,7 +413,8 @@ private:
                       expr("void f(int x, int y) { if (x < y) return x == y; }", "=="));
     }
 
-    void if2() {
+    void if2()
+    {
         const char code[] = "void foo(int x) {\n"
                             "  if (x > 0 && x == 20) {}\n"
                             "}";
@@ -423,7 +426,8 @@ private:
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
-    void if3() {
+    void if3()
+    {
         const char code[] = "void foo(int x) {\n"
                             "  if (x > 0 || x == 20) {}\n"
                             "}";
@@ -435,7 +439,8 @@ private:
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
-    void if4() {
+    void if4()
+    {
         const char code[] = "void foo(unsigned int x, unsigned int y) {\n"
                             "    unsigned int z = y;"
                             "    if (x < z) { return z == 0; }\n"
@@ -448,7 +453,8 @@ private:
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
-    void if5() {
+    void if5()
+    {
         ASSERT_EQUALS("(> |$2:0| 12)\n"
                       "(and (>= |$2:0| (- 2147483648)) (<= |$2:0| 2147483647))\n"
                       "(= |$2:0| 5)\n"
@@ -456,7 +462,8 @@ private:
                       expr("void foo(const int *x) { if (f1() && *x > 12) dostuff(*x == 5); }", "=="));
     }
 
-    void ifAlwaysTrue1() {
+    void ifAlwaysTrue1()
+    {
         const char code[] = "int foo() {\n"
                             "  int a = 42;\n"
                             "  if (1) {\n"
@@ -469,7 +476,8 @@ private:
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
-    void ifAlwaysTrue2() {
+    void ifAlwaysTrue2()
+    {
         const char code[] = "int foo() {\n"
                             "  int a = 42;\n"
                             "  if (12.3) {\n"
@@ -482,7 +490,8 @@ private:
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
-    void ifAlwaysTrue3() {
+    void ifAlwaysTrue3()
+    {
         const char code[] = "int foo() {\n"
                             "  int a = 42;\n"
                             "  if (\"test\") {\n"
@@ -496,7 +505,8 @@ private:
                       expr(code, "=="));
     }
 
-    void ifAlwaysFalse1() {
+    void ifAlwaysFalse1()
+    {
         const char code[] = "int foo() {\n"
                             "  int a = 42;\n"
                             "  if (0) {\n"
@@ -509,7 +519,8 @@ private:
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
-    void ifAlwaysFalse2() {
+    void ifAlwaysFalse2()
+    {
         const char code[] = "int foo() {\n"
                             "  int a = 42;\n"
                             "  if (0.0) {\n"
@@ -522,7 +533,8 @@ private:
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
-    void ifelse1() {
+    void ifelse1()
+    {
         ASSERT_EQUALS("(<= $1 5)\n"
                       "(and (>= $1 (- 32768)) (<= $1 32767))\n"
                       "(= (+ $1 2) 40)\n"
@@ -530,8 +542,8 @@ private:
                       expr("void f(short x) { if (x > 5) ; else if (x+2==40); }", "=="));
     }
 
-
-    void ifif() {
+    void ifif()
+    {
         const char code[] = "void foo(unsigned char x) {\n"
                             "    if (x > 5) {}\n"
                             "    if (x > 5) {}\n"
@@ -549,8 +561,8 @@ private:
                       expr(code, "=="));
     }
 
-
-    void ifreturn() { // Early return
+    void ifreturn()
+    { // Early return
         const char code[] = "void foo(unsigned char x) {\n"
                             "    if (x > 5) { return; }\n"
                             "    return x == 13;\n"
@@ -563,11 +575,12 @@ private:
                       expr(code, "=="));
     }
 
-    void ifIntRangeAlwaysFalse() {
+    void ifIntRangeAlwaysFalse()
+    {
         const char code[] = "void foo(unsigned char x) {\n"
                             "  if (x > 0)\n"
                             "      return;\n"
-                            "  if (x) {\n"  // <-- condition should be "always false".
+                            "  if (x) {\n" // <-- condition should be "always false".
                             "      x++;\n"
                             "  }\n"
                             "  return x == 0;\n" // <- sat
@@ -579,11 +592,12 @@ private:
                       expr(code, "=="));
     }
 
-    void ifIntRangeAlwaysTrue() {
+    void ifIntRangeAlwaysTrue()
+    {
         const char code[] = "void foo(unsigned char x) {\n"
                             "  if (x < 1)\n"
                             "      return;\n"
-                            "  if (x) {\n"  // <-- condition should be "always true".
+                            "  if (x) {\n" // <-- condition should be "always true".
                             "      x++;\n"
                             "  }\n"
                             "  return x == 0;\n" // <- unsat
@@ -595,7 +609,8 @@ private:
                       expr(code, "=="));
     }
 
-    void istream() {
+    void istream()
+    {
         const char code[] = "void foo(const std::string& in) {\n"
                             "    std::istringstream istr(in);\n"
                             "    unsigned short x=5;\n"
@@ -609,7 +624,8 @@ private:
                       expr(code, "=="));
     }
 
-    void switch1() {
+    void switch1()
+    {
         const char code[] = "void f(int x) {\n"
                             "    switch (x) {\n"
                             "    case 1: x==3; break;\n"
@@ -624,7 +640,8 @@ private:
                       expr(code, "=="));
     }
 
-    void switch2() {
+    void switch2()
+    {
         const char code[] = "void foo(char type, int mcc) {\n"
                             "    switch (type) {\n"
                             "        case '1':\n"
@@ -648,8 +665,8 @@ private:
                       expr(code, "=="));
     }
 
-
-    void for1() {
+    void for1()
+    {
         const char code[] = "void f() {\n"
                             "  int x[10];\n"
                             "  for (int i = 0; i < 10; i++) x[i] = 0;\n"
@@ -660,7 +677,8 @@ private:
                       expr(code, "=="));
     }
 
-    void forAlwaysFalse1() {
+    void forAlwaysFalse1()
+    {
         const char code[] = "int f() {\n"
                             "  int a = 19;\n"
                             "  for (int i = 0; i < 0; i++)\n"
@@ -677,7 +695,8 @@ private:
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
-    void while1() {
+    void while1()
+    {
         const char code[] = "void f(int y) {\n"
                             "  int x = 0;\n"
                             "  while (x < y)\n"
@@ -694,7 +713,8 @@ private:
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
-    void while2() {
+    void while2()
+    {
         const char code[] = "void f(int y) {\n"
                             "  int x = 0;\n"
                             "  while (x < y)\n"
@@ -711,7 +731,8 @@ private:
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
-    void while3() {
+    void while3()
+    {
         const char code[] = "struct AB {int a; int b;};\n"
                             "void f() {\n"
                             "  struct AB ab;\n"
@@ -724,7 +745,8 @@ private:
                       expr(code, "=="));
     }
 
-    void while4() {
+    void while4()
+    {
         const char code[] = "void f(const char *host, int *len) {\n"
                             "  while (*host)\n"
                             "    *len = 0;\n"
@@ -740,7 +762,8 @@ private:
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
-    void while5() {
+    void while5()
+    {
         const char code[] = "void f() {\n"
                             "  int x;\n"
                             "  while (cond)\n"
@@ -749,20 +772,24 @@ private:
         ASSERT(getRange(code, "x", 4).find("?") != std::string::npos);
     }
 
-
-    void array1() {
-        ASSERT_EQUALS("(= 5 0)\nz3::unsat\n",
-                      expr("int f() { int arr[10]; arr[4] = 5; return arr[4]==0; }", "=="));
+    void array1()
+    {
+        ASSERT_EQUALS("(= 5 0)\nz3::unsat\n", expr("int f() { int arr[10]; arr[4] = 5; return arr[4]==0; }", "=="));
     }
 
-    void array2() {
-        ASSERT_EQUALS("(and (>= |$4:4| 0) (<= |$4:4| 255))\n"
-                      "(= |$4:4| 365)\n"
-                      "z3::unsat\n",
-                      expr("void dostuff(unsigned char *); int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4] == 365; }", "=="));
+    void array2()
+    {
+        ASSERT_EQUALS(
+            "(and (>= |$4:4| 0) (<= |$4:4| 255))\n"
+            "(= |$4:4| 365)\n"
+            "z3::unsat\n",
+            expr(
+                "void dostuff(unsigned char *); int f() { unsigned char arr[10] = \"\"; dostuff(arr); return arr[4] == 365; }",
+                "=="));
     }
 
-    void array3() {
+    void array3()
+    {
         const char code[] = "void f(unsigned char x) { int arr[10]; arr[4] = 43; return arr[x] == 12; }";
         ASSERT_EQUALS("?,43", getRange(code, "arr[x]"));
         ASSERT_EQUALS("(and (>= $1 0) (<= $1 255))\n"
@@ -771,7 +798,8 @@ private:
                       expr(code, "=="));
     }
 
-    void array4() {
+    void array4()
+    {
         const char code[] = "int buf[10];\n"
                             "void f() { int x = buf[0]; }";
         ASSERT_EQUALS("2:16: $2:0=IntRange(-2147483648:2147483647)\n"
@@ -781,7 +809,8 @@ private:
                       trackExecution(code));
     }
 
-    void array5() {
+    void array5()
+    {
         const char code[] = "int f(int x) {\n"
                             "  int buf[3][4][5];\n"
                             "  buf[x][1][2] = 10;\n"
@@ -795,7 +824,8 @@ private:
                       trackExecution(code));
     }
 
-    void array6() {
+    void array6()
+    {
         const char code[] = "void foo(int *x) {\n"
                             "  *x = 2;\n"
                             "  if (*x == 21) {}"
@@ -805,7 +835,8 @@ private:
                       expr(code, "=="));
     }
 
-    void array7() {
+    void array7()
+    {
         const char code[] = "void foo(unsigned char *x) {\n"
                             "  *x = 2;\n"
                             "  *x = 1;\n"
@@ -818,23 +849,22 @@ private:
                       trackExecution(code));
     }
 
-    void arrayInit1() {
-        ASSERT_EQUALS("0", getRange("inf f() { char arr[10] = \"\"; return arr[4]; }", "arr[4]"));
-    }
+    void arrayInit1() { ASSERT_EQUALS("0", getRange("inf f() { char arr[10] = \"\"; return arr[4]; }", "arr[4]")); }
 
-    void arrayInit2() {
+    void arrayInit2()
+    {
         ASSERT_EQUALS("66", getRange("void f() { char str[] = \"hello\"; str[0] = \'B\'; }", "str[0]=\'B\'"));
     }
 
-    void arrayInit3() {
+    void arrayInit3()
+    {
         ASSERT_EQUALS("-32768:32767", getRange("void f() { short buf[5] = {2, 1, 0, 3, 4}; ret = buf[2]; }", "buf[2]"));
     }
 
-    void arrayUninit() {
-        ASSERT_EQUALS("?", getRange("int f() { int arr[10]; return arr[4]; }", "arr[4]"));
-    }
+    void arrayUninit() { ASSERT_EQUALS("?", getRange("int f() { int arr[10]; return arr[4]; }", "arr[4]")); }
 
-    void arrayInLoop() {
+    void arrayInLoop()
+    {
         const char code[] = "void f() {\n"
                             "  int arr[3][3];\n"
                             "  for (int i = 0; i < 3; i++) arr[i][0] = arr[1][2];\n"
@@ -843,41 +873,45 @@ private:
         ASSERT_EQUALS("?", getRange(code, "arr[1][2]"));
     }
 
+    void floatValue1() { ASSERT_EQUALS("-inf:inf", getRange("float f; void func() { f=f; }", "f=f")); }
 
-    void floatValue1() {
-        ASSERT_EQUALS("-inf:inf", getRange("float f; void func() { f=f; }", "f=f"));
-    }
-
-    void floatValue2() {
+    void floatValue2()
+    {
         ASSERT_EQUALS("(29.0)/(2.0)", getRange("void func() { float f = 29.0; f = f / 2.0; }", "f/2.0"));
     }
 
-    void floatValue3() {
+    void floatValue3()
+    {
         const char code[] = "void foo(float f) { return f > 12.3; }";
         const char expected[] = "(> $1 12.3)\n"
                                 "z3::sat\n";
         ASSERT_EQUALS(expected, expr(code, ">"));
     }
 
-    void floatValue4() {
+    void floatValue4()
+    {
         const char code[] = "void foo(float f) { return f > 12.3f; }";
         const char expected[] = "(> $1 12.3)\n"
                                 "z3::sat\n";
         ASSERT_EQUALS(expected, expr(code, ">"));
     }
 
-    void floatValue5() { // float < int
+    void floatValue5()
+    { // float < int
         const char code[] = "void foo(float f) { if (f < 1){} }";
         const char expected[] = "(< $1 (to_real 1))\n"
                                 "z3::sat\n";
         ASSERT_EQUALS(expected, expr(code, "<"));
     }
 
-    void functionCall1() {
-        ASSERT_EQUALS("-2147483648:2147483647", getRange("int atoi(const char *p); void f() { int x = atoi(a); x = x; }", "x=x"));
+    void functionCall1()
+    {
+        ASSERT_EQUALS("-2147483648:2147483647",
+                      getRange("int atoi(const char *p); void f() { int x = atoi(a); x = x; }", "x=x"));
     }
 
-    void functionCall2() {
+    void functionCall2()
+    {
         const char code[] = "namespace NS {\n"
                             "    short getValue();\n"
                             "}"
@@ -888,15 +922,18 @@ private:
         ASSERT_EQUALS("-32768:32767", getRange(code, "value=value"));
     }
 
-    void functionCall3() {
-        ASSERT_EQUALS("-2147483648:2147483647", getRange("int fgets(int, const char *, void *); void f() { int x = -1; fgets(stdin, \"%d\", &x); x=x; }", "x=x"));
+    void functionCall3()
+    {
+        ASSERT_EQUALS(
+            "-2147483648:2147483647",
+            getRange("int fgets(int, const char *, void *); void f() { int x = -1; fgets(stdin, \"%d\", &x); x=x; }",
+                     "x=x"));
     }
 
-    void functionCall4() {
-        ASSERT_EQUALS("1:2147483647", getRange("void f() { sizeof(data); }", "sizeof(data)"));
-    }
+    void functionCall4() { ASSERT_EQUALS("1:2147483647", getRange("void f() { sizeof(data); }", "sizeof(data)")); }
 
-    void functionCall5() { // unknown result from function, pointer type..
+    void functionCall5()
+    { // unknown result from function, pointer type..
         ASSERT_EQUALS("1:36: $3=ArrayValue([$2],[:]=bailout,null)\n"
                       "1:36: $2=IntRange(1:2147483647)\n"
                       "1:36: bailout=BailoutValue(bailout)\n"
@@ -904,7 +941,8 @@ private:
                       trackExecution("char *foo(int); void bar() { char *p = foo(1); }"));
     }
 
-    void functionCallContract1() {
+    void functionCallContract1()
+    {
         const char code[] = "void foo(int x);\n"
                             "void bar(unsigned short x) { foo(x); }";
 
@@ -920,7 +958,8 @@ private:
                       functionCallContractExpr(code, s));
     }
 
-    void functionCallContract2() {
+    void functionCallContract2()
+    {
         const char code[] = "void foo(float x);\n"
                             "void bar(float x) { foo(x); }";
 
@@ -933,16 +972,16 @@ private:
                       functionCallContractExpr(code, s));
     }
 
-
-    void int1() {
+    void int1()
+    {
         ASSERT_EQUALS("(and (>= $1 (- 2147483648)) (<= $1 2147483647))\n"
                       "(= (+ 2 $1) 3)\n"
                       "z3::sat\n",
                       expr("void f(int x) { return 2+x==3; }", "=="));
     }
 
-
-    void pointer1() {
+    void pointer1()
+    {
         const char code[] = "void f(unsigned char *p) { return *p == 7; }";
         ASSERT_EQUALS("[$1],[:]=?,null", getRange(code, "p"));
         ASSERT_EQUALS("(and (>= $3 0) (<= $3 255))\n"
@@ -951,7 +990,8 @@ private:
                       expr(code, "=="));
     }
 
-    void pointer2() {
+    void pointer2()
+    {
         const char code[] = "void f(unsigned char *p) { return p[2] == 7; }";
         ASSERT_EQUALS("(and (>= $3 0) (<= $3 255))\n"
                       "(= $3 7)\n"
@@ -959,7 +999,8 @@ private:
                       expr(code, "=="));
     }
 
-    void pointer3() {
+    void pointer3()
+    {
         const char code[] = "void f(void *p) {\n"
                             "    double *data = (double *)p;\n"
                             "    return *data;"
@@ -968,33 +1009,38 @@ private:
         ASSERT_EQUALS("[$4],[:]=?,null", getRange(code, "data"));
     }
 
-    void pointerAlias1() {
+    void pointerAlias1()
+    {
         ASSERT_EQUALS("3", getRange("int f() { int x; int *p = &x; x = 3; return *p; }", "return*p"));
     }
 
-    void pointerAlias2() {
+    void pointerAlias2()
+    {
         ASSERT_EQUALS("1", getRange("int f() { int x; int *p = &x; *p = 1; return *p; }", "return*p"));
     }
 
-    void pointerAlias3() {
-        ASSERT_EQUALS("7", getRange("int f() {\n"
-                                    "  int x = 18;\n"
-                                    "  int *p = &x;\n"
-                                    "  *p = 7;\n"
-                                    "  return x;\n"
-                                    "}", "x", 5));
+    void pointerAlias3()
+    {
+        ASSERT_EQUALS("7",
+                      getRange("int f() {\n"
+                               "  int x = 18;\n"
+                               "  int *p = &x;\n"
+                               "  *p = 7;\n"
+                               "  return x;\n"
+                               "}",
+                               "x",
+                               5));
     }
 
-    void pointerAlias4() {
+    void pointerAlias4()
+    {
         ASSERT_EQUALS("71", getRange("int f() { int x[10]; int *p = x+3; *p = 71; return x[3]; }", "x[3]"));
     }
 
-    void pointerNull1() {
-        ASSERT_EQUALS("1", getRange("void f(void *p) { p = NULL; p += 1; }", "p+=1"));
-    }
+    void pointerNull1() { ASSERT_EQUALS("1", getRange("void f(void *p) { p = NULL; p += 1; }", "p+=1")); }
 
-
-    void structMember1() {
+    void structMember1()
+    {
         ASSERT_EQUALS("(and (>= $2 0) (<= $2 255))\n"
                       "(and (>= $3 0) (<= $3 255))\n"
                       "(= (+ $2 $3) 0)\n"
@@ -1003,10 +1049,12 @@ private:
                            "    unsigned char a;\n"
                            "    unsigned char b;\n"
                            "};\n"
-                           "void f(struct S s) { return s.a + s.b == 0; }", "=="));
+                           "void f(struct S s) { return s.a + s.b == 0; }",
+                           "=="));
     }
 
-    void structMember2() {
+    void structMember2()
+    {
         const char code[] = "struct S { int x; };\n"
                             "void foo(struct S *s) { return s->x == 123; }";
 
@@ -1017,7 +1065,8 @@ private:
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
-    void structMember3() {
+    void structMember3()
+    {
         const char code[] = "struct S { int x; };\n"
                             "void foo(struct S *s) {\n"
                             "  s->x = iter->second.data;\n" // assign some unknown value
@@ -1031,7 +1080,8 @@ private:
         ASSERT_EQUALS(expected, expr(code, "=="));
     }
 
-    void pointerToStructInLoop() {
+    void pointerToStructInLoop()
+    {
         const char code[] = "struct S { int x; };\n"
                             "void foo(struct S *s) {\n"
                             "  while (1)\n"
@@ -1045,8 +1095,8 @@ private:
         TODO_ASSERT_EQUALS(expected, "", expr(code, "=="));
     }
 
-
-    void ternaryOperator1() {
+    void ternaryOperator1()
+    {
         const char code[] = "void foo(signed char x) {\n"
                             "  x = (x > 0) ? (0==x) : 0;\n"
                             "}";

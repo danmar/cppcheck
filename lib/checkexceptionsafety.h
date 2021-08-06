@@ -34,14 +34,12 @@ class Settings;
 class ErrorLogger;
 
 // CWE ID used:
-static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
-static const struct CWE CWE703(703U);   // Improper Check or Handling of Exceptional Conditions
-static const struct CWE CWE480(480U);   // Use of Incorrect Operator
-
+static const struct CWE CWE398(398U); // Indicator of Poor Code Quality
+static const struct CWE CWE703(703U); // Improper Check or Handling of Exceptional Conditions
+static const struct CWE CWE480(480U); // Use of Incorrect Operator
 
 /// @addtogroup Checks
 /// @{
-
 
 /**
  * @brief %Check exception safety (exceptions shouldn't cause leaks nor corrupt data)
@@ -54,15 +52,15 @@ static const struct CWE CWE480(480U);   // Use of Incorrect Operator
 class CPPCHECKLIB CheckExceptionSafety : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckExceptionSafety() : Check(myName()) {
-    }
+    CheckExceptionSafety() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
-    CheckExceptionSafety(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+    CheckExceptionSafety(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE
+    {
         if (tokenizer->isC())
             return;
 
@@ -99,18 +97,21 @@ public:
 
 private:
     /** Don't throw exceptions in destructors */
-    void destructorsError(const Token * const tok, const std::string &className);
-    void deallocThrowError(const Token * const tok, const std::string &varname);
-    void rethrowCopyError(const Token * const tok, const std::string &varname);
-    void catchExceptionByValueError(const Token *tok);
-    void noexceptThrowError(const Token * const tok);
+    void destructorsError(const Token* const tok, const std::string& className);
+    void deallocThrowError(const Token* const tok, const std::string& varname);
+    void rethrowCopyError(const Token* const tok, const std::string& varname);
+    void catchExceptionByValueError(const Token* tok);
+    void noexceptThrowError(const Token* const tok);
     /** Missing exception specification */
-    void unhandledExceptionSpecificationError(const Token * const tok1, const Token * const tok2, const std::string & funcname);
+    void unhandledExceptionSpecificationError(const Token* const tok1,
+                                              const Token* const tok2,
+                                              const std::string& funcname);
     /** Rethrow without currently handled exception */
-    void rethrowNoCurrentExceptionError(const Token *tok);
+    void rethrowNoCurrentExceptionError(const Token* tok);
 
     /** Generate all possible errors (for --errorlist) */
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE
+    {
         CheckExceptionSafety c(nullptr, settings, errorLogger);
         c.destructorsError(nullptr, "Class");
         c.deallocThrowError(nullptr, "p");
@@ -122,12 +123,11 @@ private:
     }
 
     /** Short description of class (for --doc) */
-    static std::string myName() {
-        return "Exception Safety";
-    }
+    static std::string myName() { return "Exception Safety"; }
 
     /** wiki formatted description of the class (for --doc) */
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const OVERRIDE
+    {
         return "Checking exception safety\n"
                "- Throwing exceptions in destructors\n"
                "- Throwing exception during invalid state\n"

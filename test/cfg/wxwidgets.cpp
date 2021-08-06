@@ -2,7 +2,9 @@
 // Test library configuration for wxwidgets.cfg
 //
 // Usage:
-// $ ./cppcheck --check-library --enable=information --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr '--template="{file}:{line}:{severity}:{id}:{message}"' --inconclusive --library=wxwidgets -f test/cfg/wxwidgets.cpp
+// $ ./cppcheck --check-library --enable=information --enable=style --error-exitcode=1 --suppress=missingIncludeSystem
+// --inline-suppr '--template="{file}:{line}:{severity}:{id}:{message}"' --inconclusive --library=wxwidgets -f
+// test/cfg/wxwidgets.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -31,10 +33,10 @@
 #ifdef __VISUALC__
 // Ensure no duplicateBreak warning is issued after wxLogApiError() calls.
 // This function does not terminate execution.
-bool duplicateBreak_wxLogApiError(const wxString &msg, const HRESULT &hr, wxString &str)
+bool duplicateBreak_wxLogApiError(const wxString& msg, const HRESULT& hr, wxString& str)
 {
     if (hr) {
-        wxLogApiError(msg,hr);
+        wxLogApiError(msg, hr);
         str = "fail";
         return false;
     }
@@ -42,19 +44,19 @@ bool duplicateBreak_wxLogApiError(const wxString &msg, const HRESULT &hr, wxStri
 }
 #endif
 
-void useRetval_wxString_MakeCapitalized(wxString &str)
+void useRetval_wxString_MakeCapitalized(wxString& str)
 {
     // No warning is expected for
     str.MakeCapitalized();
 }
 
-void useRetval_wxString_MakeLower(wxString &str)
+void useRetval_wxString_MakeLower(wxString& str)
 {
     // No warning is expected for
     str.MakeLower();
 }
 
-void useRetval_wxString_MakeUpper(wxString &str)
+void useRetval_wxString_MakeUpper(wxString& str)
 {
     // No warning is expected for
     str.MakeUpper();
@@ -80,7 +82,7 @@ int containerOutOfBounds_wxArrayInt(void)
     return a[0];
 }
 
-void ignoredReturnValue_wxDC_GetSize(const wxDC &dc, wxCoord *width, wxCoord *height)
+void ignoredReturnValue_wxDC_GetSize(const wxDC& dc, wxCoord* width, wxCoord* height)
 {
     // No warning is expected for
     dc.GetSize(width, height);
@@ -88,7 +90,7 @@ void ignoredReturnValue_wxDC_GetSize(const wxDC &dc, wxCoord *width, wxCoord *he
     (void)dc.GetSize();
 }
 
-void ignoredReturnValue_wxDC_GetSizeMM(const wxDC &dc, wxCoord *width, wxCoord *height)
+void ignoredReturnValue_wxDC_GetSizeMM(const wxDC& dc, wxCoord* width, wxCoord* height)
 {
     // No warning is expected for
     dc.GetSizeMM(width, height);
@@ -96,13 +98,13 @@ void ignoredReturnValue_wxDC_GetSizeMM(const wxDC &dc, wxCoord *width, wxCoord *
     (void)dc.GetSizeMM();
 }
 
-wxSizerItem* invalidFunctionArgBool_wxSizer_Add(wxSizer *sizer, wxWindow * window, const wxSizerFlags &flags)
+wxSizerItem* invalidFunctionArgBool_wxSizer_Add(wxSizer* sizer, wxWindow* window, const wxSizerFlags& flags)
 {
     // No warning is expected for
-    return sizer->Add(window,flags);
+    return sizer->Add(window, flags);
 }
 
-bool invalidFunctionArgBool_wxPGProperty_Hide(wxPGProperty *pg, bool hide, int flags)
+bool invalidFunctionArgBool_wxPGProperty_Hide(wxPGProperty* pg, bool hide, int flags)
 {
     // cppcheck-suppress invalidFunctionArgBool
     (void)pg->Hide(hide, true);
@@ -132,10 +134,10 @@ void validCode()
     (void)translation3;
 }
 
-#if wxUSE_GUI==1
+#if wxUSE_GUI == 1
 void validGuiCode()
 {
-#if wxUSE_SPINCTRL==1
+#if wxUSE_SPINCTRL == 1
     extern wxSpinCtrl spinCtrlInstance;
     spinCtrlInstance.SetBase(10);
     spinCtrlInstance.SetBase(16);
@@ -143,64 +145,64 @@ void validGuiCode()
 }
 #endif
 
-void nullPointer(const wxString &str)
+void nullPointer(const wxString& str)
 {
     // cppcheck-suppress nullPointer
     wxLogGeneric(wxLOG_Message, (char*)NULL);
     // cppcheck-suppress nullPointer
     wxLogMessage((char*)NULL);
 
-    double *doublePtr = NULL;
+    double* doublePtr = NULL;
     // cppcheck-suppress nullPointer
     (void)str.ToDouble(doublePtr);
-    double *doublePtr1 = NULL;
+    double* doublePtr1 = NULL;
     // cppcheck-suppress nullPointer
     (void)str.ToCDouble(doublePtr1);
 
-    long * longPtr = NULL;
+    long* longPtr = NULL;
     // cppcheck-suppress nullPointer
     (void)str.ToLong(longPtr);
-    long * longPtr1 = NULL;
+    long* longPtr1 = NULL;
     // cppcheck-suppress nullPointer
     (void)str.ToCLong(longPtr1);
 
-    unsigned long * ulongPtr = NULL;
+    unsigned long* ulongPtr = NULL;
     // cppcheck-suppress nullPointer
     (void)str.ToULong(ulongPtr);
-    unsigned long * ulongPtr1 = NULL;
+    unsigned long* ulongPtr1 = NULL;
     // cppcheck-suppress nullPointer
     (void)str.ToCULong(ulongPtr1);
 
-    long long * longLongPtr = NULL;
+    long long* longLongPtr = NULL;
     // cppcheck-suppress nullPointer
     (void)str.ToLongLong(longLongPtr);
 
-    unsigned long long * ulongLongPtr = NULL;
+    unsigned long long* ulongLongPtr = NULL;
     // cppcheck-suppress nullPointer
     (void)str.ToULongLong(ulongLongPtr);
 }
 
-void nullPointer_wxSizer_Add(wxSizer &sizer, wxWindow *w)
+void nullPointer_wxSizer_Add(wxSizer& sizer, wxWindow* w)
 {
-    wxWindow * const ptr = 0;
+    wxWindow* const ptr = 0;
     // @todo cppcheck-suppress nullPointer
     sizer.Add(ptr);
     // No warning shall be issued for
     sizer.Add(w);
 }
 
-void uninitvar_wxSizer_Add(wxSizer &sizer, wxWindow *w,wxObject* userData)
+void uninitvar_wxSizer_Add(wxSizer& sizer, wxWindow* w, wxObject* userData)
 {
     int uninit1, uninit2, uninit3;
     // cppcheck-suppress uninitvar
-    sizer.Add(w,uninit1);
+    sizer.Add(w, uninit1);
     // cppcheck-suppress uninitvar
-    sizer.Add(w,4,uninit2);
+    sizer.Add(w, 4, uninit2);
     // cppcheck-suppress uninitvar
-    sizer.Add(w,4,2,uninit3,userData);
+    sizer.Add(w, 4, 2, uninit3, userData);
 }
 
-void ignoredReturnValue(const wxString &s)
+void ignoredReturnValue(const wxString& s)
 {
     // cppcheck-suppress ignoredReturnValue
     wxGetCwd();
@@ -212,9 +214,9 @@ void ignoredReturnValue(const wxString &s)
     wxAtof(s);
 }
 
-void invalidFunctionArg(const wxString &str)
+void invalidFunctionArg(const wxString& str)
 {
-#if wxUSE_SPINCTRL==1
+#if wxUSE_SPINCTRL == 1
     extern wxSpinCtrl spinCtrlInstance;
     // cppcheck-suppress invalidFunctionArg
     spinCtrlInstance.SetBase(0);
@@ -231,11 +233,11 @@ void invalidFunctionArg(const wxString &str)
     (void)str.ToLong(&l, 37);
 }
 
-void uninitvar(wxWindow &w)
+void uninitvar(wxWindow& w)
 {
     wxLogLevel logLevelUninit;
     char cBufUninit[10];
-    char *pcUninit;
+    char* pcUninit;
     bool uninitBool;
     // cppcheck-suppress uninitvar
     wxLogGeneric(logLevelUninit, "test");
@@ -247,7 +249,7 @@ void uninitvar(wxWindow &w)
     w.Close(uninitBool);
 }
 
-void uninitvar_wxStaticText(wxStaticText &s)
+void uninitvar_wxStaticText(wxStaticText& s)
 {
     // no warning
     s.Wrap(-1);
@@ -256,7 +258,7 @@ void uninitvar_wxStaticText(wxStaticText &s)
     s.Wrap(uninitInt);
 }
 
-void uninitvar_wxString_NumberConversion(const wxString &str, const int numberBase)
+void uninitvar_wxString_NumberConversion(const wxString& str, const int numberBase)
 {
     int uninitInteger1;
     int uninitInteger2;
@@ -284,23 +286,28 @@ void uninitvar_wxString_NumberConversion(const wxString &str, const int numberBa
     (void)str.ToCULong(&ul, uninitInteger6);
 }
 
-void uninitvar_SetMenuBar(wxFrame * const framePtr, wxMenuBar * const menuBarPtr)
+void uninitvar_SetMenuBar(wxFrame* const framePtr, wxMenuBar* const menuBarPtr)
 {
-    wxMenuBar *menuBar;
+    wxMenuBar* menuBar;
     // cppcheck-suppress uninitvar
     framePtr->SetMenuBar(menuBar);
     framePtr->SetMenuBar(menuBarPtr);
 }
 
-void uninitvar_wxMenuBarAppend(wxMenuBar * const menuBarPtr, wxMenu * const menuPtr, const wxString &title)
+void uninitvar_wxMenuBarAppend(wxMenuBar* const menuBarPtr, wxMenu* const menuPtr, const wxString& title)
 {
-    wxMenu *menu;
+    wxMenu* menu;
     // cppcheck-suppress uninitvar
     menuBarPtr->Append(menu, title);
     menuBarPtr->Append(menuPtr, title);
 }
 
-void deprecatedFunctions_wxDataViewCustomRenderer(wxDataViewCustomRenderer &dataViewCustomRenderer, wxPoint cursor, wxRect cell, wxDataViewModel *model, const wxDataViewItem &item, unsigned int col)
+void deprecatedFunctions_wxDataViewCustomRenderer(wxDataViewCustomRenderer& dataViewCustomRenderer,
+                                                  wxPoint cursor,
+                                                  wxRect cell,
+                                                  wxDataViewModel* model,
+                                                  const wxDataViewItem& item,
+                                                  unsigned int col)
 {
     // cppcheck-suppress ActivateCalled
     dataViewCustomRenderer.Activate(cell, model, item, col);
@@ -308,19 +315,19 @@ void deprecatedFunctions_wxDataViewCustomRenderer(wxDataViewCustomRenderer &data
     dataViewCustomRenderer.LeftClick(cursor, cell, model, item, col);
 }
 
-void deprecatedFunctions(wxApp &a,
-                         const wxString &s,
-                         wxArtProvider *artProvider,
-                         wxCalendarCtrl &calenderCtrl,
-                         wxComboCtrl &comboCtrl,
-                         wxChar * path)
+void deprecatedFunctions(wxApp& a,
+                         const wxString& s,
+                         wxArtProvider* artProvider,
+                         wxCalendarCtrl& calenderCtrl,
+                         wxComboCtrl& comboCtrl,
+                         wxChar* path)
 {
 #ifdef __WXOSX__
     // cppcheck-suppress MacOpenFileCalled
     a.MacOpenFile(s);
 #endif
 
-#if wxCHECK_VERSION(3, 1, 0)  // wxWidets-3.1.0 or higher:
+#if wxCHECK_VERSION(3, 1, 0) // wxWidets-3.1.0 or higher:
     // Some functions are not available anymore in newer versions
 
     // @todo cppcheck-suppress ShowPopupCalled
@@ -343,7 +350,7 @@ void deprecatedFunctions(wxApp &a,
     // cppcheck-suppress SetTextIndentCalled
     comboCtrl.SetTextIndent(0);
 
-#if wxUSE_DEBUG_CONTEXT==1
+#if wxUSE_DEBUG_CONTEXT == 1
     // cppcheck-suppress GetLevelCalled
     // cppcheck-suppress ignoredReturnValue
     wxDebugContext::GetLevel();
@@ -397,8 +404,8 @@ wxString::iterator wxString_test3()
     wxString wxString1;
     wxString wxString2;
     // cppcheck-suppress mismatchingContainers
-    for (wxString::iterator it = wxString1.begin(); it != wxString2.end(); ++it)
-    {}
+    for (wxString::iterator it = wxString1.begin(); it != wxString2.end(); ++it) {
+    }
 
     wxString::iterator it = wxString1.begin();
     // cppcheck-suppress returnDanglingLifetime

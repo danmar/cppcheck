@@ -23,7 +23,7 @@
 #include <cstdlib>
 #include <iostream>
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     // MS Visual C++ memory leak debug tracing
 #if defined(_MSC_VER) && defined(_DEBUG)
@@ -33,7 +33,8 @@ int main(int argc, char *argv[])
 #ifdef NDEBUG
     try {
 #endif
-        Preprocessor::macroChar = '$'; // While macroChar is char(1) per default outside test suite, we require it to be a human-readable character here.
+        Preprocessor::macroChar = '$'; // While macroChar is char(1) per default outside test suite, we require it to be
+                                       // a human-readable character here.
 
         options args(argc, argv);
 

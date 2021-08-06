@@ -40,10 +40,8 @@
 #include "path.h"
 #include "codeeditorstyle.h"
 
-ResultsView::ResultsView(QWidget * parent) :
-    QWidget(parent),
-    mShowNoErrorsMessage(true),
-    mStatistics(new CheckStatistics(this))
+ResultsView::ResultsView(QWidget* parent)
+    : QWidget(parent), mShowNoErrorsMessage(true), mStatistics(new CheckStatistics(this))
 {
     mUI.setupUi(this);
 
@@ -76,7 +74,7 @@ ResultsView::ResultsView(QWidget * parent) :
     mUI.mListMissingContracts->setSortingEnabled(true);
 }
 
-void ResultsView::initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler)
+void ResultsView::initialize(QSettings* settings, ApplicationList* list, ThreadHandler* checkThreadHandler)
 {
     mUI.mProgress->setMinimum(0);
     mUI.mProgress->setVisible(false);
@@ -93,26 +91,26 @@ void ResultsView::initialize(QSettings *settings, ApplicationList *list, ThreadH
 
 ResultsView::~ResultsView()
 {
-    //dtor
+    // dtor
 }
 
-void ResultsView::setAddedFunctionContracts(const QStringList &addedContracts)
+void ResultsView::setAddedFunctionContracts(const QStringList& addedContracts)
 {
     mUI.mListAddedContracts->clear();
     mUI.mListAddedContracts->addItems(addedContracts);
-    for (const QString& f: addedContracts) {
+    for (const QString& f : addedContracts) {
         auto res = mUI.mListMissingContracts->findItems(f, Qt::MatchExactly);
         if (!res.empty())
             delete res.front();
     }
 }
 
-void ResultsView::setAddedVariableContracts(const QStringList &added)
+void ResultsView::setAddedVariableContracts(const QStringList& added)
 {
     mUI.mListAddedVariables->clear();
     mUI.mListAddedVariables->addItems(added);
-    for (const QString& var: added) {
-        for (auto *item: mUI.mListMissingVariables->findItems(var, Qt::MatchExactly))
+    for (const QString& var : added) {
+        for (auto* item : mUI.mListMissingVariables->findItems(var, Qt::MatchExactly))
             delete item;
         mVariableContracts.insert(var);
     }
@@ -128,21 +126,15 @@ void ResultsView::clear(bool results)
 
     mStatistics->clear();
 
-    //Clear the progressbar
+    // Clear the progressbar
     mUI.mProgress->setMaximum(PROGRESS_MAX);
     mUI.mProgress->setValue(0);
     mUI.mProgress->setFormat("%p%");
 }
 
-void ResultsView::clear(const QString &filename)
-{
-    mUI.mTree->clear(filename);
-}
+void ResultsView::clear(const QString& filename) { mUI.mTree->clear(filename); }
 
-void ResultsView::clearRecheckFile(const QString &filename)
-{
-    mUI.mTree->clearRecheckFile(filename);
-}
+void ResultsView::clearRecheckFile(const QString& filename) { mUI.mTree->clearRecheckFile(filename); }
 
 void ResultsView::clearContracts()
 {
@@ -166,7 +158,7 @@ void ResultsView::progress(int value, const QString& description)
     mUI.mProgress->setFormat(QString("%p% (%1)").arg(description));
 }
 
-void ResultsView::error(const ErrorItem &item)
+void ResultsView::error(const ErrorItem& item)
 {
     if (mUI.mTree->addErrorItem(item)) {
         emit gotResults();
@@ -174,18 +166,15 @@ void ResultsView::error(const ErrorItem &item)
     }
 }
 
-void ResultsView::filterResults(const QString& filter)
-{
-    mUI.mTree->filterResults(filter);
-}
+void ResultsView::filterResults(const QString& filter) { mUI.mTree->filterResults(filter); }
 
-void ResultsView::saveStatistics(const QString &filename) const
+void ResultsView::saveStatistics(const QString& filename) const
 {
     QFile f(filename);
     if (!f.open(QIODevice::Text | QIODevice::Append))
         return;
     QTextStream ts(&f);
-    ts <<  '[' << QDate::currentDate().toString("dd.MM.yyyy") << "]\n";
+    ts << '[' << QDate::currentDate().toString("dd.MM.yyyy") << "]\n";
     ts << QDateTime::currentMSecsSinceEpoch() << '\n';
     foreach (QString tool, mStatistics->getTools()) {
         ts << tool << "-error:" << mStatistics->getCount(tool, ShowTypes::ShowErrors) << '\n';
@@ -196,14 +185,11 @@ void ResultsView::saveStatistics(const QString &filename) const
     }
 }
 
-void ResultsView::updateFromOldReport(const QString &filename) const
-{
-    mUI.mTree->updateFromOldReport(filename);
-}
+void ResultsView::updateFromOldReport(const QString& filename) const { mUI.mTree->updateFromOldReport(filename); }
 
-void ResultsView::save(const QString &filename, Report::Type type) const
+void ResultsView::save(const QString& filename, Report::Type type) const
 {
-    Report *report = nullptr;
+    Report* report = nullptr;
 
     switch (type) {
     case Report::CSV:
@@ -282,21 +268,15 @@ void ResultsView::updateSettings(bool showFullPath,
     mShowNoErrorsMessage = showNoErrorsMessage;
 }
 
-void ResultsView::updateStyleSetting(QSettings *settings)
+void ResultsView::updateStyleSetting(QSettings* settings)
 {
     CodeEditorStyle theStyle(CodeEditorStyle::loadSettings(settings));
     mUI.mCode->setStyle(theStyle);
 }
 
-void ResultsView::setCheckDirectory(const QString &dir)
-{
-    mUI.mTree->setCheckDirectory(dir);
-}
+void ResultsView::setCheckDirectory(const QString& dir) { mUI.mTree->setCheckDirectory(dir); }
 
-QString ResultsView::getCheckDirectory()
-{
-    return mUI.mTree->getCheckDirectory();
-}
+QString ResultsView::getCheckDirectory() { return mUI.mTree->getCheckDirectory(); }
 
 void ResultsView::checkingStarted(int count)
 {
@@ -315,43 +295,29 @@ void ResultsView::checkingFinished()
     // call should be redundant but it "unhides" the wrongly hidden items.
     mUI.mTree->refreshTree();
 
-    //Should we inform user of non visible/not found errors?
+    // Should we inform user of non visible/not found errors?
     if (mShowNoErrorsMessage) {
-        //Tell user that we found no errors
+        // Tell user that we found no errors
         if (!hasResults()) {
-            QMessageBox msg(QMessageBox::Information,
-                            tr("Cppcheck"),
-                            tr("No errors found."),
-                            QMessageBox::Ok,
-                            this);
+            QMessageBox msg(QMessageBox::Information, tr("Cppcheck"), tr("No errors found."), QMessageBox::Ok, this);
 
             msg.exec();
-        } //If we have errors but they aren't visible, tell user about it
+        } // If we have errors but they aren't visible, tell user about it
         else if (!mUI.mTree->hasVisibleResults()) {
-            QString text = tr("Errors were found, but they are configured to be hidden.\n"\
+            QString text = tr("Errors were found, but they are configured to be hidden.\n"
                               "To toggle what kind of errors are shown, open view menu.");
-            QMessageBox msg(QMessageBox::Information,
-                            tr("Cppcheck"),
-                            text,
-                            QMessageBox::Ok,
-                            this);
+            QMessageBox msg(QMessageBox::Information, tr("Cppcheck"), text, QMessageBox::Ok, this);
 
             msg.exec();
         }
     }
 }
 
-bool ResultsView::hasVisibleResults() const
-{
-    return mUI.mTree->hasVisibleResults();
-}
+bool ResultsView::hasVisibleResults() const { return mUI.mTree->hasVisibleResults(); }
 
-bool ResultsView::hasResults() const
-{
-    return mUI.mTree->hasResults();
-}
+bool ResultsView::hasResults() const { return mUI.mTree->hasResults(); }
 
-void ResultsView::saveSettings(QSettings *settings)
+void ResultsView::saveSettings(QSettings* settings)
 {
     mUI.mTree->saveSettings();
     QByteArray state = mUI.mVerticalSplitter->saveState();
@@ -365,12 +331,9 @@ void ResultsView::translate()
     mUI.mTree->translate();
 }
 
-void ResultsView::disableProgressbar()
-{
-    mUI.mProgress->setEnabled(false);
-}
+void ResultsView::disableProgressbar() { mUI.mProgress->setEnabled(false); }
 
-void ResultsView::readErrorsXml(const QString &filename)
+void ResultsView::readErrorsXml(const QString& filename)
 {
     const int version = XmlReport::determineVersion(filename);
     if (version == 0) {
@@ -414,10 +377,10 @@ void ResultsView::readErrorsXml(const QString &filename)
     mUI.mTree->setCheckDirectory(dir);
 }
 
-void ResultsView::updateDetails(const QModelIndex &index)
+void ResultsView::updateDetails(const QModelIndex& index)
 {
-    QStandardItemModel *model = qobject_cast<QStandardItemModel*>(mUI.mTree->model());
-    QStandardItem *item = model->itemFromIndex(index);
+    QStandardItemModel* model = qobject_cast<QStandardItemModel*>(mUI.mTree->model());
+    QStandardItem* item = model->itemFromIndex(index);
 
     if (!item) {
         mUI.mCode->clear();
@@ -479,19 +442,13 @@ void ResultsView::updateDetails(const QModelIndex &index)
     mUI.mCode->setFileName(filepath);
 }
 
-void ResultsView::log(const QString &str)
-{
-    mUI.mListLog->addItem(str);
-}
+void ResultsView::log(const QString& str) { mUI.mListLog->addItem(str); }
 
-void ResultsView::debugError(const ErrorItem &item)
-{
-    mUI.mListLog->addItem(item.toString());
-}
+void ResultsView::debugError(const ErrorItem& item) { mUI.mListLog->addItem(item.toString()); }
 
 void ResultsView::bughuntingReportLine(const QString& line)
 {
-    for (const QString& s: line.split("\n")) {
+    for (const QString& s : line.split("\n")) {
         if (s.startsWith("[intvar] ")) {
             const QString varname = s.mid(9);
             if (!mVariableContracts.contains(varname)) {
@@ -508,16 +465,13 @@ void ResultsView::bughuntingReportLine(const QString& line)
     }
 }
 
-void ResultsView::logClear()
-{
-    mUI.mListLog->clear();
-}
+void ResultsView::logClear() { mUI.mListLog->clear(); }
 
 void ResultsView::logCopyEntry()
 {
-    const QListWidgetItem * item = mUI.mListLog->currentItem();
+    const QListWidgetItem* item = mUI.mListLog->currentItem();
     if (nullptr != item) {
-        QClipboard *clipboard = QApplication::clipboard();
+        QClipboard* clipboard = QApplication::clipboard();
         clipboard->setText(item->text());
     }
 }
@@ -525,37 +479,31 @@ void ResultsView::logCopyEntry()
 void ResultsView::logCopyComplete()
 {
     QString logText;
-    for (int i=0; i < mUI.mListLog->count(); ++i) {
-        const QListWidgetItem * item = mUI.mListLog->item(i);
+    for (int i = 0; i < mUI.mListLog->count(); ++i) {
+        const QListWidgetItem* item = mUI.mListLog->item(i);
         if (nullptr != item) {
             logText += item->text();
         }
     }
-    QClipboard *clipboard = QApplication::clipboard();
+    QClipboard* clipboard = QApplication::clipboard();
     clipboard->setText(logText);
 }
 
-void ResultsView::contractDoubleClicked(QListWidgetItem* item)
-{
-    emit editFunctionContract(item->text());
-}
+void ResultsView::contractDoubleClicked(QListWidgetItem* item) { emit editFunctionContract(item->text()); }
 
-void ResultsView::variableDoubleClicked(QListWidgetItem* item)
-{
-    emit editVariableContract(item->text());
-}
+void ResultsView::variableDoubleClicked(QListWidgetItem* item) { emit editVariableContract(item->text()); }
 
-void ResultsView::editVariablesFilter(const QString &text)
+void ResultsView::editVariablesFilter(const QString& text)
 {
-    for (auto *item: mUI.mListAddedVariables->findItems(".*", Qt::MatchRegExp)) {
+    for (auto* item : mUI.mListAddedVariables->findItems(".*", Qt::MatchRegExp)) {
         QString varname = item->text().mid(0, item->text().indexOf(" "));
         item->setHidden(!varname.contains(text));
     }
-    for (auto *item: mUI.mListMissingVariables->findItems(".*", Qt::MatchRegExp))
+    for (auto* item : mUI.mListMissingVariables->findItems(".*", Qt::MatchRegExp))
         item->setHidden(!item->text().contains(text));
 }
 
-void ResultsView::on_mListLog_customContextMenuRequested(const QPoint &pos)
+void ResultsView::on_mListLog_customContextMenuRequested(const QPoint& pos)
 {
     if (mUI.mListLog->count() <= 0)
         return;
@@ -570,13 +518,13 @@ void ResultsView::on_mListLog_customContextMenuRequested(const QPoint &pos)
     contextMenu.exec(globalPos);
 }
 
-bool ResultsView::eventFilter(QObject *target, QEvent *event)
+bool ResultsView::eventFilter(QObject* target, QEvent* event)
 {
     if (event->type() == QEvent::KeyPress) {
         if (target == mUI.mListAddedVariables) {
-            QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
             if (keyEvent->key() == Qt::Key_Delete) {
-                for (auto *i: mUI.mListAddedVariables->selectedItems()) {
+                for (auto* i : mUI.mListAddedVariables->selectedItems()) {
                     emit deleteVariableContract(i->text().mid(0, i->text().indexOf(" ")));
                     delete i;
                 }
@@ -585,9 +533,9 @@ bool ResultsView::eventFilter(QObject *target, QEvent *event)
         }
 
         if (target == mUI.mListAddedContracts) {
-            QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
             if (keyEvent->key() == Qt::Key_Delete) {
-                for (auto *i: mUI.mListAddedContracts->selectedItems()) {
+                for (auto* i : mUI.mListAddedContracts->selectedItems()) {
                     emit deleteFunctionContract(i->text());
                     delete i;
                 }

@@ -8,7 +8,7 @@
 std::ostream& operator<<(std::ostream& os, const Color& /*c*/)
 {
 #else
-std::ostream& operator<<(std::ostream & os, const Color& c)
+std::ostream& operator<<(std::ostream& os, const Color& c)
 {
     static const bool use_color = isatty(STDOUT_FILENO);
     if (use_color)
@@ -23,4 +23,3 @@ std::string toString(const Color& c)
     ss << c;
     return ss.str();
 }
-

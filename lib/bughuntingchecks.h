@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
 #ifndef bughuntingchecksH
 #define bughuntingchecksH
@@ -25,7 +24,7 @@
 #include "exprengine.h"
 #include <vector>
 
-void addBughuntingChecks(std::vector<ExprEngine::Callback> *callbacks);
+void addBughuntingChecks(std::vector<ExprEngine::Callback>* callbacks);
 
 //---------------------------------------------------------------------------
 #endif // bughuntingchecksH

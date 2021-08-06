@@ -22,8 +22,7 @@
 #include <stack>
 #include <cctype>
 
-
-int caseInsensitiveStringCompare(const std::string &lhs, const std::string &rhs)
+int caseInsensitiveStringCompare(const std::string& lhs, const std::string& rhs)
 {
     if (lhs.size() != rhs.size())
         return (lhs.size() < rhs.size()) ? -1 : 1;
@@ -53,7 +52,7 @@ bool matchglob(const std::string& pattern, const std::string& name)
 {
     const char* p = pattern.c_str();
     const char* n = name.c_str();
-    std::stack<std::pair<const char*, const char*> > backtrack;
+    std::stack<std::pair<const char*, const char*>> backtrack;
 
     for (;;) {
         bool matching = true;

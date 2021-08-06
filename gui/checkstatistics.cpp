@@ -20,13 +20,9 @@
 
 #include <QDebug>
 
-CheckStatistics::CheckStatistics(QObject *parent)
-    : QObject(parent)
-{
-    clear();
-}
+CheckStatistics::CheckStatistics(QObject* parent) : QObject(parent) { clear(); }
 
-static void addItem(QMap<QString,unsigned> &m, const QString &key)
+static void addItem(QMap<QString, unsigned>& m, const QString& key)
 {
     if (m.contains(key))
         m[key]++;
@@ -34,7 +30,7 @@ static void addItem(QMap<QString,unsigned> &m, const QString &key)
         m[key] = 0;
 }
 
-void CheckStatistics::addItem(const QString &tool, ShowTypes::ShowType type)
+void CheckStatistics::addItem(const QString& tool, ShowTypes::ShowType type)
 {
     const QString lower = tool.toLower();
     switch (type) {
@@ -73,22 +69,22 @@ void CheckStatistics::clear()
     mError.clear();
 }
 
-unsigned CheckStatistics::getCount(const QString &tool, ShowTypes::ShowType type) const
+unsigned CheckStatistics::getCount(const QString& tool, ShowTypes::ShowType type) const
 {
     const QString lower = tool.toLower();
     switch (type) {
     case ShowTypes::ShowStyle:
-        return mStyle.value(lower,0);
+        return mStyle.value(lower, 0);
     case ShowTypes::ShowWarnings:
-        return mWarning.value(lower,0);
+        return mWarning.value(lower, 0);
     case ShowTypes::ShowPerformance:
-        return mPerformance.value(lower,0);
+        return mPerformance.value(lower, 0);
     case ShowTypes::ShowPortability:
-        return mPortability.value(lower,0);
+        return mPortability.value(lower, 0);
     case ShowTypes::ShowErrors:
-        return mError.value(lower,0);
+        return mError.value(lower, 0);
     case ShowTypes::ShowInformation:
-        return mInformation.value(lower,0);
+        return mInformation.value(lower, 0);
     case ShowTypes::ShowNone:
     default:
         qDebug() << "Unknown error type - returning zero statistics.";
@@ -99,10 +95,15 @@ unsigned CheckStatistics::getCount(const QString &tool, ShowTypes::ShowType type
 QStringList CheckStatistics::getTools() const
 {
     QSet<QString> ret;
-    foreach (QString tool, mStyle.keys()) ret.insert(tool);
-    foreach (QString tool, mWarning.keys()) ret.insert(tool);
-    foreach (QString tool, mPerformance.keys()) ret.insert(tool);
-    foreach (QString tool, mPortability.keys()) ret.insert(tool);
-    foreach (QString tool, mError.keys()) ret.insert(tool);
+    foreach (QString tool, mStyle.keys())
+        ret.insert(tool);
+    foreach (QString tool, mWarning.keys())
+        ret.insert(tool);
+    foreach (QString tool, mPerformance.keys())
+        ret.insert(tool);
+    foreach (QString tool, mPortability.keys())
+        ret.insert(tool);
+    foreach (QString tool, mError.keys())
+        ret.insert(tool);
     return QStringList(ret.toList());
 }

@@ -16,23 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "checkother.h"
 #include "platform.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
-
 class TestCharVar : public TestFixture {
 public:
-    TestCharVar() : TestFixture("TestCharVar") {
-    }
+    TestCharVar() : TestFixture("TestCharVar") {}
 
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
         settings.platform(Settings::Unspecified);
         settings.severity.enable(Severity::warning);
         settings.severity.enable(Severity::portability);
@@ -42,7 +40,8 @@ private:
         TEST_CASE(bitop);
     }
 
-    void check(const char code[]) {
+    void check(const char code[])
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -56,7 +55,8 @@ private:
         checkOther.checkCharVariable();
     }
 
-    void array_index_1() {
+    void array_index_1()
+    {
         check("int buf[256];\n"
               "void foo()\n"
               "{\n"
@@ -158,7 +158,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void array_index_2() {
+    void array_index_2()
+    {
         // #3282 - False positive
         check("void foo(char i);\n"
               "void bar(int i) {\n"
@@ -168,12 +169,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void bitop() {
+    void bitop()
+    {
         check("void foo(int *result) {\n"
               "    signed char ch = -1;\n"
               "    *result = a | ch;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) When using 'char' variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (warning) When using 'char' variables in bit operations, sign extension can generate unexpected results.\n",
+            errout.str());
 
         check("void foo(int *result) {\n"
               "    unsigned char ch = -1;\n"
@@ -192,7 +196,9 @@ private:
               "    signed char ch = -1;\n"
               "    *result = 0x03 | ch;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) When using 'char' variables in bit operations, sign extension can generate unexpected results.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (warning) When using 'char' variables in bit operations, sign extension can generate unexpected results.\n",
+            errout.str());
 
         check("void foo(int *result) {\n"
               "    signed char ch = -1;\n"

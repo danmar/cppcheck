@@ -2,8 +2,9 @@
 
 // Simple while loop
 
-void f() {
-    char* buf = (char*) malloc(9);
+void f()
+{
+    char* buf = (char*)malloc(9);
     int i = 0;
     while (i < 12) {
         buf[i] = 's';
@@ -11,7 +12,8 @@ void f() {
     }
 }
 
-int main() {
+int main()
+{
     f();
     return 0;
 }

@@ -24,15 +24,9 @@
 #include <QMap>
 #include <QString>
 
-ShowTypes::ShowTypes()
-{
-    load();
-}
+ShowTypes::ShowTypes() { load(); }
 
-ShowTypes::~ShowTypes()
-{
-    save();
-}
+ShowTypes::~ShowTypes() { save(); }
 
 ShowTypes::ShowType ShowTypes::SeverityToShowType(Severity::SeverityType severity)
 {
@@ -83,7 +77,7 @@ Severity::SeverityType ShowTypes::ShowTypeToSeverity(ShowTypes::ShowType type)
     }
 }
 
-ShowTypes::ShowType ShowTypes::VariantToShowType(const QVariant &data)
+ShowTypes::ShowType ShowTypes::VariantToShowType(const QVariant& data)
 {
     const int value = data.toInt();
     if (value < ShowTypes::ShowStyle || value > ShowTypes::ShowErrors) {
@@ -114,17 +108,11 @@ void ShowTypes::save() const
     settings.setValue(SETTINGS_SHOW_INFORMATION, mVisible[ShowInformation]);
 }
 
-bool ShowTypes::isShown(ShowTypes::ShowType category) const
-{
-    return mVisible[category];
-}
+bool ShowTypes::isShown(ShowTypes::ShowType category) const { return mVisible[category]; }
 
 bool ShowTypes::isShown(Severity::SeverityType severity) const
 {
     return isShown(ShowTypes::SeverityToShowType(severity));
 }
 
-void ShowTypes::show(ShowTypes::ShowType category, bool showing)
-{
-    mVisible[category] = showing;
-}
+void ShowTypes::show(ShowTypes::ShowType category, bool showing) { mVisible[category] = showing; }

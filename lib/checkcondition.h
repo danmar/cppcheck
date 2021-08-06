@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
 #ifndef checkconditionH
 #define checkconditionH
@@ -47,18 +46,18 @@ class ValueType;
 class CPPCHECKLIB CheckCondition : public Check {
 public:
     /** This constructor is used when registering the CheckAssignIf */
-    CheckCondition() : Check(myName()) {
-    }
+    CheckCondition() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
-    CheckCondition(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+    CheckCondition(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE
+    {
         CheckCondition checkCondition(tokenizer, settings, errorLogger);
         checkCondition.multiCondition();
-        checkCondition.clarifyCondition();   // not simplified because ifAssign
+        checkCondition.clarifyCondition(); // not simplified because ifAssign
         checkCondition.multiCondition2();
         checkCondition.checkIncorrectLogicOperator();
         checkCondition.checkInvalidTestForOverflow();
@@ -78,8 +77,8 @@ public:
     void assignIf();
 
     /** parse scopes recursively */
-    bool assignIfParseScope(const Token * const assignTok,
-                            const Token * const startTok,
+    bool assignIfParseScope(const Token* const assignTok,
+                            const Token* const startTok,
                             const nonneg int varid,
                             const bool islocal,
                             const char bitop,
@@ -130,48 +129,56 @@ public:
 private:
     // The conditions that have been diagnosed
     std::set<const Token*> mCondDiags;
-    bool diag(const Token* tok, bool insert=true);
-    bool isAliased(const std::set<int> &vars) const;
-    bool isOverlappingCond(const Token * const cond1, const Token * const cond2, bool pure) const;
-    void assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result);
-    void mismatchingBitAndError(const Token *tok1, const MathLib::bigint num1, const Token *tok2, const MathLib::bigint num2);
-    void badBitmaskCheckError(const Token *tok);
-    void comparisonError(const Token *tok,
-                         const std::string &bitop,
+    bool diag(const Token* tok, bool insert = true);
+    bool isAliased(const std::set<int>& vars) const;
+    bool isOverlappingCond(const Token* const cond1, const Token* const cond2, bool pure) const;
+    void assignIfError(const Token* tok1, const Token* tok2, const std::string& condition, bool result);
+    void mismatchingBitAndError(const Token* tok1,
+                                const MathLib::bigint num1,
+                                const Token* tok2,
+                                const MathLib::bigint num2);
+    void badBitmaskCheckError(const Token* tok);
+    void comparisonError(const Token* tok,
+                         const std::string& bitop,
                          MathLib::bigint value1,
-                         const std::string &op,
+                         const std::string& op,
                          MathLib::bigint value2,
                          bool result);
-    void duplicateConditionError(const Token *tok1, const Token *tok2, ErrorPath errorPath);
-    void overlappingElseIfConditionError(const Token *tok, nonneg int line1);
-    void oppositeElseIfConditionError(const Token *ifCond, const Token *elseIfCond, ErrorPath errorPath);
+    void duplicateConditionError(const Token* tok1, const Token* tok2, ErrorPath errorPath);
+    void overlappingElseIfConditionError(const Token* tok, nonneg int line1);
+    void oppositeElseIfConditionError(const Token* ifCond, const Token* elseIfCond, ErrorPath errorPath);
 
-    void oppositeInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath);
+    void oppositeInnerConditionError(const Token* tok1, const Token* tok2, ErrorPath errorPath);
 
-    void identicalInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath);
+    void identicalInnerConditionError(const Token* tok1, const Token* tok2, ErrorPath errorPath);
 
-    void identicalConditionAfterEarlyExitError(const Token *cond1, const Token *cond2, ErrorPath errorPath);
+    void identicalConditionAfterEarlyExitError(const Token* cond1, const Token* cond2, ErrorPath errorPath);
 
-    void incorrectLogicOperatorError(const Token *tok, const std::string &condition, bool always, bool inconclusive, ErrorPath errors);
-    void redundantConditionError(const Token *tok, const std::string &text, bool inconclusive);
+    void incorrectLogicOperatorError(const Token* tok,
+                                     const std::string& condition,
+                                     bool always,
+                                     bool inconclusive,
+                                     ErrorPath errors);
+    void redundantConditionError(const Token* tok, const std::string& text, bool inconclusive);
 
     void moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal);
 
-    void clarifyConditionError(const Token *tok, bool assign, bool boolop);
+    void clarifyConditionError(const Token* tok, bool assign, bool boolop);
 
-    void alwaysTrueFalseError(const Token *tok, const ValueFlow::Value *value);
+    void alwaysTrueFalseError(const Token* tok, const ValueFlow::Value* value);
 
-    void invalidTestForOverflow(const Token* tok, const ValueType *valueType, const std::string &replace);
-    void pointerAdditionResultNotNullError(const Token *tok, const Token *calc);
+    void invalidTestForOverflow(const Token* tok, const ValueType* valueType, const std::string& replace);
+    void pointerAdditionResultNotNullError(const Token* tok, const Token* calc);
 
-    void duplicateConditionalAssignError(const Token *condTok, const Token* assignTok);
+    void duplicateConditionalAssignError(const Token* condTok, const Token* assignTok);
 
-    void assignmentInCondition(const Token *eq);
+    void assignmentInCondition(const Token* eq);
 
     void checkCompareValueOutOfTypeRange();
-    void compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, long long value);
+    void compareValueOutOfTypeRangeError(const Token* comparison, const std::string& type, long long value);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE
+    {
         CheckCondition c(nullptr, settings, errorLogger);
 
         ErrorPath errorPath;
@@ -197,11 +204,10 @@ private:
         c.compareValueOutOfTypeRangeError(nullptr, "unsigned char", 256);
     }
 
-    static std::string myName() {
-        return "Condition";
-    }
+    static std::string myName() { return "Condition"; }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const OVERRIDE
+    {
         return "Match conditions with assignments and other conditions:\n"
                "- Mismatching assignment and comparison => comparison is always true/false\n"
                "- Mismatching lhs and rhs in comparison => comparison is always true/false\n"

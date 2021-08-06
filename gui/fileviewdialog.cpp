@@ -23,31 +23,23 @@
 #include <QMessageBox>
 #include <QTextEdit>
 
-FileViewDialog::FileViewDialog(const QString &file,
-                               const QString &title,
-                               QWidget *parent)
-    : QDialog(parent)
+FileViewDialog::FileViewDialog(const QString& file, const QString& title, QWidget* parent) : QDialog(parent)
 {
     mUI.setupUi(this);
-
 
     setWindowTitle(title);
     connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
     loadTextFile(file, mUI.mText);
 }
 
-void FileViewDialog::loadTextFile(const QString &filename, QTextEdit *edit)
+void FileViewDialog::loadTextFile(const QString& filename, QTextEdit* edit)
 {
     QFile file(filename);
     if (!file.exists()) {
         QString msg(tr("Could not find the file: %1"));
         msg = msg.arg(filename);
 
-        QMessageBox msgbox(QMessageBox::Critical,
-                           tr("Cppcheck"),
-                           msg,
-                           QMessageBox::Ok,
-                           this);
+        QMessageBox msgbox(QMessageBox::Critical, tr("Cppcheck"), msg, QMessageBox::Ok, this);
         msgbox.exec();
         return;
     }
@@ -57,11 +49,7 @@ void FileViewDialog::loadTextFile(const QString &filename, QTextEdit *edit)
         QString msg(tr("Could not read the file: %1"));
         msg = msg.arg(filename);
 
-        QMessageBox msgbox(QMessageBox::Critical,
-                           tr("Cppcheck"),
-                           msg,
-                           QMessageBox::Ok,
-                           this);
+        QMessageBox msgbox(QMessageBox::Critical, tr("Cppcheck"), msg, QMessageBox::Ok, this);
         msgbox.exec();
         return;
     }

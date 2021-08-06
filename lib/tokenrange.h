@@ -23,7 +23,7 @@
 
 #include "config.h"
 
-template<typename T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
+template <typename T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
 class TokenRangeBase {
     T* mFront;
     T* mBack;
@@ -41,27 +41,18 @@ public:
         T* mt;
         TokenIterator() : mt(nullptr) {}
         explicit TokenIterator(T* t) : mt(t) {}
-        TokenIterator& operator++() {
+        TokenIterator& operator++()
+        {
             mt = mt->next();
             return *this;
         }
-        bool operator==(const TokenIterator& b) const {
-            return mt == b.mt;
-        }
-        bool operator!=(const TokenIterator& b) const {
-            return mt != b.mt;
-        }
-        T* operator*() const {
-            return mt;
-        }
+        bool operator==(const TokenIterator& b) const { return mt == b.mt; }
+        bool operator!=(const TokenIterator& b) const { return mt != b.mt; }
+        T* operator*() const { return mt; }
     };
 
-    TokenIterator begin() const {
-        return TokenIterator(mFront);
-    }
-    TokenIterator end() const {
-        return TokenIterator(mBack);
-    }
+    TokenIterator begin() const { return TokenIterator(mFront); }
+    TokenIterator end() const { return TokenIterator(mBack); }
 };
 
 class TokenRange : public TokenRangeBase<Token> {

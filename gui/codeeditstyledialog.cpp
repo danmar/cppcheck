@@ -23,97 +23,75 @@
 #include <QFormLayout>
 #include <QDialogButtonBox>
 
-const QString StyleEditDialog::mSampleDocument(
-    "/*****\n"
-    "* Multiline Comment\n"
-    "*****/\n"
-    "#include <QApplication>\n"
-    "#include <iostream>\n"
-    "\n"
-    "class fwdClass;\n"
-    "\n"
-    "int main(int argc, char *argv[])\n"
-    "{\n"
-    "    QApplication a(argc, argv);\n"
-    "    int nLife = 42;\n"
-    "    w.show();\n"
-    "    // single line comment\n"
-    "    // line below is highlighted\n"
-    "    fwdClass( nLife );\n"
-    "    return a.exec();\n"
-    "}\n"
-    "\n"
-    "void class fwdClass( double dValue ) {\n"
-    "    std::cout << \"Ipsum Lorem: \"\n"
-    "              << nValue\n"
-    "              << std::endl;\n"
-    "}\n");
+const QString StyleEditDialog::mSampleDocument("/*****\n"
+                                               "* Multiline Comment\n"
+                                               "*****/\n"
+                                               "#include <QApplication>\n"
+                                               "#include <iostream>\n"
+                                               "\n"
+                                               "class fwdClass;\n"
+                                               "\n"
+                                               "int main(int argc, char *argv[])\n"
+                                               "{\n"
+                                               "    QApplication a(argc, argv);\n"
+                                               "    int nLife = 42;\n"
+                                               "    w.show();\n"
+                                               "    // single line comment\n"
+                                               "    // line below is highlighted\n"
+                                               "    fwdClass( nLife );\n"
+                                               "    return a.exec();\n"
+                                               "}\n"
+                                               "\n"
+                                               "void class fwdClass( double dValue ) {\n"
+                                               "    std::cout << \"Ipsum Lorem: \"\n"
+                                               "              << nValue\n"
+                                               "              << std::endl;\n"
+                                               "}\n");
 
-const QStringList StyleEditDialog::mErrSymbolsList = (
-            QStringList(QStringList()
-                        << "nLife"
-                        << "dValue"
-                        << "nValue"));
+const QStringList StyleEditDialog::mErrSymbolsList = (QStringList(QStringList() << "nLife"
+                                                                                << "dValue"
+                                                                                << "nValue"));
 const int StyleEditDialog::mErrLineNum = 16;
 
-StyleEditDialog::StyleEditDialog(const CodeEditorStyle& newStyle,
-                                 QWidget *parent /*= nullptr*/) :
-    QDialog(parent),
-    mStyleIncoming(newStyle),
-    mStyleOutgoing(newStyle)
+StyleEditDialog::StyleEditDialog(const CodeEditorStyle& newStyle, QWidget* parent /*= nullptr*/)
+    : QDialog(parent), mStyleIncoming(newStyle), mStyleOutgoing(newStyle)
 {
-    QVBoxLayout *vboxMain = new QVBoxLayout(this);
-    QHBoxLayout *hboxEdit = new QHBoxLayout();
+    QVBoxLayout* vboxMain = new QVBoxLayout(this);
+    QHBoxLayout* hboxEdit = new QHBoxLayout();
     // Color/Weight controls
-    QFormLayout *flEditControls = new QFormLayout();
+    QFormLayout* flEditControls = new QFormLayout();
     mBtnWidgetColorFG = new SelectColorButton(this);
-    flEditControls->addRow(QObject::tr("Editor Foreground Color"),
-                           mBtnWidgetColorFG);
+    flEditControls->addRow(QObject::tr("Editor Foreground Color"), mBtnWidgetColorFG);
     mBtnWidgetColorBG = new SelectColorButton(this);
-    flEditControls->addRow(QObject::tr("Editor Background Color"),
-                           mBtnWidgetColorBG);
+    flEditControls->addRow(QObject::tr("Editor Background Color"), mBtnWidgetColorBG);
     mBtnHighlightBG = new SelectColorButton(this);
-    flEditControls->addRow(QObject::tr("Highlight Background Color"),
-                           mBtnHighlightBG);
+    flEditControls->addRow(QObject::tr("Highlight Background Color"), mBtnHighlightBG);
     mBtnLineNumFG = new SelectColorButton(this);
-    flEditControls->addRow(QObject::tr("Line Number Foreground Color"),
-                           mBtnLineNumFG);
+    flEditControls->addRow(QObject::tr("Line Number Foreground Color"), mBtnLineNumFG);
     mBtnLineNumBG = new SelectColorButton(this);
-    flEditControls->addRow(QObject::tr("Line Number Background Color"),
-                           mBtnLineNumBG);
+    flEditControls->addRow(QObject::tr("Line Number Background Color"), mBtnLineNumBG);
     mBtnKeywordFG = new SelectColorButton(this);
-    flEditControls->addRow(QObject::tr("Keyword Foreground Color"),
-                           mBtnKeywordFG);
+    flEditControls->addRow(QObject::tr("Keyword Foreground Color"), mBtnKeywordFG);
     mCBKeywordWeight = new SelectFontWeightCombo(this);
-    flEditControls->addRow(QObject::tr("Keyword Font Weight"),
-                           mCBKeywordWeight);
+    flEditControls->addRow(QObject::tr("Keyword Font Weight"), mCBKeywordWeight);
     mBtnClassFG = new SelectColorButton(this);
-    flEditControls->addRow(QObject::tr("Class Foreground Color"),
-                           mBtnClassFG);
+    flEditControls->addRow(QObject::tr("Class Foreground Color"), mBtnClassFG);
     mCBClassWeight = new SelectFontWeightCombo(this);
-    flEditControls->addRow(QObject::tr("Class Font Weight"),
-                           mCBClassWeight);
+    flEditControls->addRow(QObject::tr("Class Font Weight"), mCBClassWeight);
     mBtnQuoteFG = new SelectColorButton(this);
-    flEditControls->addRow(QObject::tr("Quote Foreground Color"),
-                           mBtnQuoteFG);
+    flEditControls->addRow(QObject::tr("Quote Foreground Color"), mBtnQuoteFG);
     mCBQuoteWeight = new SelectFontWeightCombo(this);
-    flEditControls->addRow(QObject::tr("Quote Font Weight"),
-                           mCBQuoteWeight);
+    flEditControls->addRow(QObject::tr("Quote Font Weight"), mCBQuoteWeight);
     mBtnCommentFG = new SelectColorButton(this);
-    flEditControls->addRow(QObject::tr("Comment Foreground Color"),
-                           mBtnCommentFG);
+    flEditControls->addRow(QObject::tr("Comment Foreground Color"), mBtnCommentFG);
     mCBCommentWeight = new SelectFontWeightCombo(this);
-    flEditControls->addRow(QObject::tr("Comment Font Weight"),
-                           mCBCommentWeight);
+    flEditControls->addRow(QObject::tr("Comment Font Weight"), mCBCommentWeight);
     mBtnSymbolFG = new SelectColorButton(this);
-    flEditControls->addRow(QObject::tr("Symbol Foreground Color"),
-                           mBtnSymbolFG);
+    flEditControls->addRow(QObject::tr("Symbol Foreground Color"), mBtnSymbolFG);
     mBtnSymbolBG = new SelectColorButton(this);
-    flEditControls->addRow(QObject::tr("Symbol Background Color"),
-                           mBtnSymbolBG);
+    flEditControls->addRow(QObject::tr("Symbol Background Color"), mBtnSymbolBG);
     mCBSymbolWeight = new SelectFontWeightCombo(this);
-    flEditControls->addRow(QObject::tr("Symbol Font Weight"),
-                           mCBSymbolWeight);
+    flEditControls->addRow(QObject::tr("Symbol Font Weight"), mCBSymbolWeight);
     hboxEdit->addLayout(flEditControls);
     // CodeEditor to display Style
     mSampleEditor = new CodeEditor(this);
@@ -127,11 +105,9 @@ StyleEditDialog::StyleEditDialog(const CodeEditorStyle& newStyle,
     vboxMain->addLayout(hboxEdit);
 
     // Default Controls
-    QHBoxLayout *hboxDefaultControls = new QHBoxLayout();
-    mBtnDefaultLight = new QPushButton(QObject::tr("Set to Default Light"),
-                                       this);
-    mBtnDefaultDark  = new QPushButton(QObject::tr("Set to Default Dark"),
-                                       this);
+    QHBoxLayout* hboxDefaultControls = new QHBoxLayout();
+    mBtnDefaultLight = new QPushButton(QObject::tr("Set to Default Light"), this);
+    mBtnDefaultDark = new QPushButton(QObject::tr("Set to Default Dark"), this);
     hboxDefaultControls->addStretch(1);
     hboxDefaultControls->addWidget(mBtnDefaultLight);
     hboxDefaultControls->addWidget(mBtnDefaultDark);
@@ -139,10 +115,8 @@ StyleEditDialog::StyleEditDialog(const CodeEditorStyle& newStyle,
     vboxMain->addLayout(hboxDefaultControls);
     vboxMain->addStretch(2);
     // dialog controls
-    QDialogButtonBox *dBtnBox = new QDialogButtonBox(
-        QDialogButtonBox::Cancel |
-        QDialogButtonBox::Ok |
-        QDialogButtonBox::Reset);
+    QDialogButtonBox* dBtnBox =
+        new QDialogButtonBox(QDialogButtonBox::Cancel | QDialogButtonBox::Ok | QDialogButtonBox::Reset);
     vboxMain->addStretch(1);
     vboxMain->addWidget(dBtnBox);
 
@@ -152,44 +126,40 @@ StyleEditDialog::StyleEditDialog(const CodeEditorStyle& newStyle,
 
     connect(dBtnBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(dBtnBox, SIGNAL(rejected()), this, SLOT(reject()));
-    connect(dBtnBox->button(QDialogButtonBox::Reset), SIGNAL(clicked()),
-            this, SLOT(resetStyle()));
-    connect(mBtnDefaultLight, SIGNAL(clicked()),
-            this, SLOT(setStyleDefaultLight()));
-    connect(mBtnDefaultDark, SIGNAL(clicked()),
-            this, SLOT(setStyleDefaultDark()));
-    connect(mBtnWidgetColorFG, SIGNAL(colorChanged(const QColor&)),
-            this, SLOT(colorChangedWidgetFG(const QColor&)));
-    connect(mBtnWidgetColorBG, SIGNAL(colorChanged(const QColor&)),
-            this, SLOT(colorChangedWidgetBG(const QColor&)));
-    connect(mBtnHighlightBG, SIGNAL(colorChanged(const QColor&)),
-            this, SLOT(colorChangedHighlightBG(const QColor&)));
-    connect(mBtnLineNumFG, SIGNAL(colorChanged(const QColor&)),
-            this, SLOT(colorChangedLineNumFG(const QColor&)));
-    connect(mBtnLineNumBG, SIGNAL(colorChanged(const QColor&)),
-            this, SLOT(colorChangedLineNumBG(const QColor&)));
-    connect(mBtnKeywordFG, SIGNAL(colorChanged(const QColor&)),
-            this, SLOT(colorChangedKeywordFG(const QColor&)));
-    connect(mCBKeywordWeight, SIGNAL(weightChanged(const QFont::Weight&)),
-            this, SLOT(weightChangedKeyword(const QFont::Weight&)));
-    connect(mBtnClassFG, SIGNAL(colorChanged(const QColor&)),
-            this, SLOT(colorChangedClassFG(const QColor&)));
-    connect(mCBClassWeight, SIGNAL(weightChanged(const QFont::Weight&)),
-            this, SLOT(weightChangedClass(const QFont::Weight&)));
-    connect(mBtnQuoteFG, SIGNAL(colorChanged(const QColor&)),
-            this, SLOT(colorChangedQuoteFG(const QColor&)));
-    connect(mCBQuoteWeight, SIGNAL(weightChanged(const QFont::Weight&)),
-            this, SLOT(weightChangedQuote(const QFont::Weight&)));
-    connect(mBtnCommentFG, SIGNAL(colorChanged(const QColor&)),
-            this, SLOT(colorChangedCommentFG(const QColor&)));
-    connect(mCBCommentWeight, SIGNAL(weightChanged(const QFont::Weight&)),
-            this, SLOT(weightChangedComment(const QFont::Weight&)));
-    connect(mBtnSymbolFG, SIGNAL(colorChanged(const QColor&)),
-            this, SLOT(colorChangedSymbolFG(const QColor&)));
-    connect(mBtnSymbolBG, SIGNAL(colorChanged(const QColor&)),
-            this, SLOT(colorChangedSymbolBG(const QColor&)));
-    connect(mCBSymbolWeight, SIGNAL(weightChanged(const QFont::Weight&)),
-            this, SLOT(weightChangedSymbol(const QFont::Weight&)));
+    connect(dBtnBox->button(QDialogButtonBox::Reset), SIGNAL(clicked()), this, SLOT(resetStyle()));
+    connect(mBtnDefaultLight, SIGNAL(clicked()), this, SLOT(setStyleDefaultLight()));
+    connect(mBtnDefaultDark, SIGNAL(clicked()), this, SLOT(setStyleDefaultDark()));
+    connect(mBtnWidgetColorFG, SIGNAL(colorChanged(const QColor&)), this, SLOT(colorChangedWidgetFG(const QColor&)));
+    connect(mBtnWidgetColorBG, SIGNAL(colorChanged(const QColor&)), this, SLOT(colorChangedWidgetBG(const QColor&)));
+    connect(mBtnHighlightBG, SIGNAL(colorChanged(const QColor&)), this, SLOT(colorChangedHighlightBG(const QColor&)));
+    connect(mBtnLineNumFG, SIGNAL(colorChanged(const QColor&)), this, SLOT(colorChangedLineNumFG(const QColor&)));
+    connect(mBtnLineNumBG, SIGNAL(colorChanged(const QColor&)), this, SLOT(colorChangedLineNumBG(const QColor&)));
+    connect(mBtnKeywordFG, SIGNAL(colorChanged(const QColor&)), this, SLOT(colorChangedKeywordFG(const QColor&)));
+    connect(mCBKeywordWeight,
+            SIGNAL(weightChanged(const QFont::Weight&)),
+            this,
+            SLOT(weightChangedKeyword(const QFont::Weight&)));
+    connect(mBtnClassFG, SIGNAL(colorChanged(const QColor&)), this, SLOT(colorChangedClassFG(const QColor&)));
+    connect(mCBClassWeight,
+            SIGNAL(weightChanged(const QFont::Weight&)),
+            this,
+            SLOT(weightChangedClass(const QFont::Weight&)));
+    connect(mBtnQuoteFG, SIGNAL(colorChanged(const QColor&)), this, SLOT(colorChangedQuoteFG(const QColor&)));
+    connect(mCBQuoteWeight,
+            SIGNAL(weightChanged(const QFont::Weight&)),
+            this,
+            SLOT(weightChangedQuote(const QFont::Weight&)));
+    connect(mBtnCommentFG, SIGNAL(colorChanged(const QColor&)), this, SLOT(colorChangedCommentFG(const QColor&)));
+    connect(mCBCommentWeight,
+            SIGNAL(weightChanged(const QFont::Weight&)),
+            this,
+            SLOT(weightChangedComment(const QFont::Weight&)));
+    connect(mBtnSymbolFG, SIGNAL(colorChanged(const QColor&)), this, SLOT(colorChangedSymbolFG(const QColor&)));
+    connect(mBtnSymbolBG, SIGNAL(colorChanged(const QColor&)), this, SLOT(colorChangedSymbolBG(const QColor&)));
+    connect(mCBSymbolWeight,
+            SIGNAL(weightChanged(const QFont::Weight&)),
+            this,
+            SLOT(weightChangedSymbol(const QFont::Weight&)));
 }
 
 void StyleEditDialog::updateControls()
@@ -220,10 +190,7 @@ void StyleEditDialog::updateStyle()
     mSampleEditor->setStyle(mStyleOutgoing);
 }
 
-CodeEditorStyle StyleEditDialog::getStyle()
-{
-    return mStyleOutgoing;
-}
+CodeEditorStyle StyleEditDialog::getStyle() { return mStyleOutgoing; }
 
 void StyleEditDialog::resetStyle()
 {

@@ -29,8 +29,8 @@ class ErrorItem;
 /// @{
 
 /**
-* @brief A base class for reports.
-*/
+ * @brief A base class for reports.
+ */
 class Report : public QObject {
 public:
     enum Type {
@@ -39,59 +39,57 @@ public:
         CSV,
     };
 
-    explicit Report(const QString &filename);
+    explicit Report(const QString& filename);
     virtual ~Report();
 
     /**
-    * @brief Create the report (file).
-    * @return true if succeeded, false if file could not be created.
-    */
+     * @brief Create the report (file).
+     * @return true if succeeded, false if file could not be created.
+     */
     virtual bool create();
 
     /**
-    * @brief Open the existing report (file).
-    * @return true if succeeded, false if file could not be created.
-    */
+     * @brief Open the existing report (file).
+     * @return true if succeeded, false if file could not be created.
+     */
     virtual bool open();
 
     /**
-    * @brief Close the report (file).
-    */
+     * @brief Close the report (file).
+     */
     void close();
 
     /**
-    * @brief Write report header.
-    */
+     * @brief Write report header.
+     */
     virtual void writeHeader() = 0;
 
     /**
-    * @brief Write report footer.
-    */
+     * @brief Write report footer.
+     */
     virtual void writeFooter() = 0;
 
     /**
-    * @brief Write error to report.
-    * @param error Error data.
-    */
-    virtual void writeError(const ErrorItem &error) = 0;
+     * @brief Write error to report.
+     * @param error Error data.
+     */
+    virtual void writeError(const ErrorItem& error) = 0;
 
 protected:
-
     /**
-    * @brief Get the file object where the report is written to.
-    */
+     * @brief Get the file object where the report is written to.
+     */
     QFile* getFile();
 
 private:
-
     /**
-    * @brief Filename of the report.
-    */
+     * @brief Filename of the report.
+     */
     QString mFilename;
 
     /**
-    * @brief Fileobject for the report file.
-    */
+     * @brief Fileobject for the report file.
+     */
     QFile mFile;
 };
 /// @}

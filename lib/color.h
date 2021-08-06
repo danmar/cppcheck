@@ -25,18 +25,18 @@
 #include <string>
 
 enum class Color {
-    Reset      = 0,
-    Bold       = 1,
-    Dim        = 2,
-    FgRed      = 31,
-    FgGreen    = 32,
-    FgBlue     = 34,
-    FgMagenta  = 35,
-    FgDefault  = 39,
-    BgRed      = 41,
-    BgGreen    = 42,
-    BgBlue     = 44,
-    BgDefault  = 49
+    Reset = 0,
+    Bold = 1,
+    Dim = 2,
+    FgRed = 31,
+    FgGreen = 32,
+    FgBlue = 34,
+    FgMagenta = 35,
+    FgDefault = 39,
+    BgRed = 41,
+    BgGreen = 42,
+    BgBlue = 44,
+    BgDefault = 49
 };
 CPPCHECKLIB std::ostream& operator<<(std::ostream& os, const Color& c);
 

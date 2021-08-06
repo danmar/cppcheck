@@ -2,14 +2,14 @@
 // Test library configuration for opencv2.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=cairo --enable=information --error-exitcode=1 --inline-suppr --suppress=missingIncludeSystem test/cfg/opencv2.cpp
+// $ cppcheck --check-library --library=cairo --enable=information --error-exitcode=1 --inline-suppr
+// --suppress=missingIncludeSystem test/cfg/opencv2.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
-
 
 void validCode(char* argStr)
 {
@@ -27,7 +27,7 @@ void validCode(char* argStr)
     cvStr += " World";
     std::cout << cvStr;
 
-    char * pBuf = (char *)cv::fastMalloc(20);
+    char* pBuf = (char*)cv::fastMalloc(20);
     cv::fastFree(pBuf);
 }
 
@@ -39,7 +39,7 @@ void ignoredReturnValue()
 
 void memleak()
 {
-    char * pBuf = (char *)cv::fastMalloc(1000);
+    char* pBuf = (char*)cv::fastMalloc(1000);
     std::cout << pBuf;
     // cppcheck-suppress memleak
 }

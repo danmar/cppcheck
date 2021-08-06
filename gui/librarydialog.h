@@ -26,17 +26,17 @@
 class QListWidgetItem;
 
 namespace Ui {
-    class LibraryDialog;
+class LibraryDialog;
 }
 
 class LibraryDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit LibraryDialog(QWidget *parent = nullptr);
-    LibraryDialog(const LibraryDialog &) = delete;
+    explicit LibraryDialog(QWidget* parent = nullptr);
+    LibraryDialog(const LibraryDialog&) = delete;
     ~LibraryDialog();
-    LibraryDialog &operator=(const LibraryDialog &) = delete;
+    LibraryDialog& operator=(const LibraryDialog&) = delete;
 
 private slots:
     void openCfg();
@@ -51,14 +51,14 @@ private slots:
     void sortFunctions(bool);
 
 private:
-    Ui::LibraryDialog *mUi;
+    Ui::LibraryDialog* mUi;
     CppcheckLibraryData mData;
     QString mFileName;
     bool mIgnoreChanges;
 
-    static QString getArgText(const CppcheckLibraryData::Function::Arg &arg);
-    CppcheckLibraryData::Function *currentFunction();
-    void updateArguments(const CppcheckLibraryData::Function &function);
+    static QString getArgText(const CppcheckLibraryData::Function::Arg& arg);
+    CppcheckLibraryData::Function* currentFunction();
+    void updateArguments(const CppcheckLibraryData::Function& function);
 };
 
 #endif // LIBRARYDIALOG_H

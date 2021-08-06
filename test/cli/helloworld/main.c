@@ -1,6 +1,7 @@
 #include <stdio.h>
 
-int main(void) {
+int main(void)
+{
     (void)printf("Hello world!\n");
     x = 3 / 0; // ERROR
     return 0;

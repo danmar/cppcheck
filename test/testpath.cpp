@@ -24,12 +24,11 @@
 
 class TestPath : public TestFixture {
 public:
-    TestPath() : TestFixture("TestPath") {
-    }
+    TestPath() : TestFixture("TestPath") {}
 
 private:
-
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
         TEST_CASE(removeQuotationMarks);
         TEST_CASE(acceptFile);
         TEST_CASE(getCurrentPath);
@@ -40,7 +39,8 @@ private:
         TEST_CASE(get_path_from_filename);
     }
 
-    void removeQuotationMarks() const {
+    void removeQuotationMarks() const
+    {
         // Path::removeQuotationMarks()
         ASSERT_EQUALS("index.cpp", Path::removeQuotationMarks("index.cpp"));
         ASSERT_EQUALS("index.cpp", Path::removeQuotationMarks("\"index.cpp"));
@@ -52,27 +52,27 @@ private:
         ASSERT_EQUALS("the/path to/index.cpp", Path::removeQuotationMarks("\"the/path to/index.cpp\""));
     }
 
-    void acceptFile() const {
+    void acceptFile() const
+    {
         ASSERT(Path::acceptFile("index.cpp"));
         ASSERT(Path::acceptFile("index.invalid.cpp"));
         ASSERT(Path::acceptFile("index.invalid.Cpp"));
         ASSERT(Path::acceptFile("index.invalid.C"));
         ASSERT(Path::acceptFile("index.invalid.C++"));
-        ASSERT(Path::acceptFile("index.")==false);
-        ASSERT(Path::acceptFile("index")==false);
-        ASSERT(Path::acceptFile("")==false);
-        ASSERT(Path::acceptFile("C")==false);
+        ASSERT(Path::acceptFile("index.") == false);
+        ASSERT(Path::acceptFile("index") == false);
+        ASSERT(Path::acceptFile("") == false);
+        ASSERT(Path::acceptFile("C") == false);
 
         // don't accept any headers
         ASSERT_EQUALS(false, Path::acceptFile("index.h"));
         ASSERT_EQUALS(false, Path::acceptFile("index.hpp"));
     }
 
-    void getCurrentPath() const {
-        ASSERT_EQUALS(true, Path::isAbsolute(Path::getCurrentPath()));
-    }
+    void getCurrentPath() const { ASSERT_EQUALS(true, Path::isAbsolute(Path::getCurrentPath())); }
 
-    void isAbsolute() const {
+    void isAbsolute() const
+    {
 #ifdef _WIN32
         ASSERT_EQUALS(true, Path::isAbsolute("C:\\foo\\bar"));
         ASSERT_EQUALS(true, Path::isAbsolute("C:/foo/bar"));
@@ -92,13 +92,12 @@ private:
 #endif
     }
 
-    void getRelative() const {
-        const std::vector<std::string> basePaths = {
-            "", // Don't crash with empty paths
-            "C:/foo",
-            "C:/bar/",
-            "C:/test.cpp"
-        };
+    void getRelative() const
+    {
+        const std::vector<std::string> basePaths = {"", // Don't crash with empty paths
+                                                    "C:/foo",
+                                                    "C:/bar/",
+                                                    "C:/test.cpp"};
 
         ASSERT_EQUALS("x.c", Path::getRelativePath("C:/foo/x.c", basePaths));
         ASSERT_EQUALS("y.c", Path::getRelativePath("C:/bar/y.c", basePaths));
@@ -107,10 +106,11 @@ private:
         ASSERT_EQUALS("C:/foobar/test.cpp", Path::getRelativePath("C:/foobar/test.cpp", basePaths));
     }
 
-    void is_c() const {
-        ASSERT(Path::isC("index.cpp")==false);
-        ASSERT(Path::isC("")==false);
-        ASSERT(Path::isC("c")==false);
+    void is_c() const
+    {
+        ASSERT(Path::isC("index.cpp") == false);
+        ASSERT(Path::isC("") == false);
+        ASSERT(Path::isC("c") == false);
         ASSERT(Path::isC("index.c"));
         ASSERT(Path::isC("C:\\foo\\index.c"));
 
@@ -122,8 +122,9 @@ private:
 #endif
     }
 
-    void is_cpp() const {
-        ASSERT(Path::isCPP("index.c")==false);
+    void is_cpp() const
+    {
+        ASSERT(Path::isCPP("index.c") == false);
 
         // In unix .C is considered C++
 #ifdef _WIN32
@@ -136,7 +137,8 @@ private:
         ASSERT(Path::isCPP("C:\\foo\\index.Cpp"));
     }
 
-    void get_path_from_filename() const {
+    void get_path_from_filename() const
+    {
         ASSERT_EQUALS("", Path::getPathFromFilename("index.h"));
         ASSERT_EQUALS("/tmp/", Path::getPathFromFilename("/tmp/index.h"));
         ASSERT_EQUALS("a/b/c/", Path::getPathFromFilename("a/b/c/index.h"));

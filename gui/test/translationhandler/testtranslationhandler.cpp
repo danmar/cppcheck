@@ -23,7 +23,7 @@
 void TestTranslationHandler::construct()
 {
     TranslationHandler handler;
-    QCOMPARE(handler.getNames().size(), 13);  // 12 translations + english
+    QCOMPARE(handler.getNames().size(), 13); // 12 translations + english
     QCOMPARE(handler.getCurrentLanguage(), QString("en"));
 }
 

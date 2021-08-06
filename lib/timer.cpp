@@ -32,12 +32,12 @@
 */
 
 namespace {
-    using dataElementType = std::pair<std::string, struct TimerResultsData>;
-    bool more_second_sec(const dataElementType& lhs, const dataElementType& rhs)
-    {
-        return lhs.second.seconds() > rhs.second.seconds();
-    }
+using dataElementType = std::pair<std::string, struct TimerResultsData>;
+bool more_second_sec(const dataElementType& lhs, const dataElementType& rhs)
+{
+    return lhs.second.seconds() > rhs.second.seconds();
 }
+} // namespace
 
 void TimerResults::showResults(SHOWTIME_MODES mode) const
 {
@@ -51,12 +51,13 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
     std::sort(data.begin(), data.end(), more_second_sec);
 
     size_t ordinal = 1; // maybe it would be nice to have an ordinal in output later!
-    for (std::vector<dataElementType>::const_iterator iter=data.begin() ; iter!=data.end(); ++iter) {
+    for (std::vector<dataElementType>::const_iterator iter = data.begin(); iter != data.end(); ++iter) {
         const double sec = iter->second.seconds();
         const double secAverage = sec / (double)(iter->second.mNumberOfResults);
         overallData.mClocks += iter->second.mClocks;
-        if ((mode != SHOWTIME_MODES::SHOWTIME_TOP5) || (ordinal<=5)) {
-            std::cout << iter->first << ": " << sec << "s (avg. " << secAverage << "s - " << iter->second.mNumberOfResults  << " result(s))" << std::endl;
+        if ((mode != SHOWTIME_MODES::SHOWTIME_TOP5) || (ordinal <= 5)) {
+            std::cout << iter->first << ": " << sec << "s (avg. " << secAverage << "s - "
+                      << iter->second.mNumberOfResults << " result(s))" << std::endl;
         }
         ++ordinal;
     }
@@ -72,20 +73,13 @@ void TimerResults::addResults(const std::string& str, std::clock_t clocks)
 }
 
 Timer::Timer(const std::string& str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults)
-    : mStr(str)
-    , mTimerResults(timerResults)
-    , mStart(0)
-    , mShowTimeMode(showtimeMode)
-    , mStopped(false)
+    : mStr(str), mTimerResults(timerResults), mStart(0), mShowTimeMode(showtimeMode), mStopped(false)
 {
     if (showtimeMode != SHOWTIME_MODES::SHOWTIME_NONE)
         mStart = std::clock();
 }
 
-Timer::~Timer()
-{
-    stop();
-}
+Timer::~Timer() { stop(); }
 
 void Timer::stop()
 {

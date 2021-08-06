@@ -41,7 +41,7 @@ public:
 private:
     options();
     options(const options& non_copy);
-    const options& operator =(const options& non_assign);
+    const options& operator=(const options& non_assign);
 
 private:
     std::set<std::string> mWhichTests;

@@ -25,109 +25,103 @@
 /// @addtogroup GUI
 /// @{
 
-
 /**
-* @brief List of applications user has specified to open errors with.
-*/
+ * @brief List of applications user has specified to open errors with.
+ */
 class ApplicationList : public QObject {
     Q_OBJECT
 public:
-
-    explicit ApplicationList(QObject *parent = nullptr);
+    explicit ApplicationList(QObject* parent = nullptr);
     virtual ~ApplicationList();
 
     /**
-    * @brief Load all applications
-    *
-    * @return true if loading succeeded, false if there is problem with
-    *  application list. Most probably because of older version settings need
-    *  to be upgraded.
-    */
+     * @brief Load all applications
+     *
+     * @return true if loading succeeded, false if there is problem with
+     *  application list. Most probably because of older version settings need
+     *  to be upgraded.
+     */
     bool loadSettings();
 
     /**
-    * @brief Save all applications
-    */
+     * @brief Save all applications
+     */
     void saveSettings() const;
 
     /**
-    * @brief Get the amount of applications in the list
-    * @return The count of applications
-    */
+     * @brief Get the amount of applications in the list
+     * @return The count of applications
+     */
     int getApplicationCount() const;
 
     /**
-    * @brief Get specific application's name
-    *
-    * @param index Index of the application whose name to get
-    * @return Name of the application
-    */
+     * @brief Get specific application's name
+     *
+     * @param index Index of the application whose name to get
+     * @return Name of the application
+     */
     const Application& getApplication(const int index) const;
     Application& getApplication(const int index);
 
     /**
-    * @brief Return the default application.
-    * @return Index of the default application.
-    */
-    int getDefaultApplication() const {
-        return mDefaultApplicationIndex;
-    }
+     * @brief Return the default application.
+     * @return Index of the default application.
+     */
+    int getDefaultApplication() const { return mDefaultApplicationIndex; }
 
     /**
-    * @brief Add a new application
-    *
-    * @param app Application to add.
-    */
-    void addApplication(const Application &app);
+     * @brief Add a new application
+     *
+     * @param app Application to add.
+     */
+    void addApplication(const Application& app);
 
     /**
-    * @brief Remove an application from the list
-    *
-    * @param index Index of the application to remove.
-    */
+     * @brief Remove an application from the list
+     *
+     * @param index Index of the application to remove.
+     */
     void removeApplication(const int index);
 
     /**
-    * @brief Set application as default application.
-    * @param index Index of the application to make the default one
-    */
+     * @brief Set application as default application.
+     * @param index Index of the application to make the default one
+     */
     void setDefault(const int index);
 
     /**
-    * @brief Remove all applications from this list and copy all applications from
-    * list given as a parameter.
-    * @param list Copying source
-    */
-    void copy(const ApplicationList *list);
+     * @brief Remove all applications from this list and copy all applications from
+     * list given as a parameter.
+     * @param list Copying source
+     */
+    void copy(const ApplicationList* list);
 
 protected:
-
     /**
-    * @brief Clear the list
-    *
-    */
+     * @brief Clear the list
+     *
+     */
     void clear();
 
     /**
-    * @brief Find editor used by default in Windows.
-    * Check if Notepad++ is installed and use it. If not, use Notepad.
-    */
+     * @brief Find editor used by default in Windows.
+     * Check if Notepad++ is installed and use it. If not, use Notepad.
+     */
     bool findDefaultWindowsEditor();
 
 private:
-
     bool checkAndAddApplication(const QString& appPath, const QString& name, const QString& parameters);
 
     /**
-    * @brief List of applications
-    *
-    */
+     * @brief List of applications
+     *
+     */
     QList<Application> mApplications;
 
     /**
-    * @brief Index of the default application.
-    *
-    */
+     * @brief Index of the default application.
+     *
+     */
     int mDefaultApplicationIndex;
 };
 /// @}

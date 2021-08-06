@@ -16,29 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "checkboost.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
-
 class TestBoost : public TestFixture {
 public:
-    TestBoost() : TestFixture("TestBoost") {
-    }
+    TestBoost() : TestFixture("TestBoost") {}
 
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
         settings.severity.enable(Severity::style);
         settings.severity.enable(Severity::performance);
 
         TEST_CASE(BoostForeachContainerModification);
     }
 
-    void check(const char code[]) {
+    void check(const char code[])
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -52,14 +51,17 @@ private:
         checkBoost.runChecks(&tokenizer, &settings, this);
     }
 
-    void BoostForeachContainerModification() {
+    void BoostForeachContainerModification()
+    {
         check("void f() {\n"
               "    vector<int> data;\n"
               "    BOOST_FOREACH(int i, data) {\n"
               "        data.push_back(123);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (error) BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside.\n",
+            errout.str());
 
         check("void f() {\n"
               "    set<int> data;\n"
@@ -67,7 +69,9 @@ private:
               "        data.insert(123);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (error) BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside.\n",
+            errout.str());
 
         check("void f() {\n"
               "    set<int> data;\n"
@@ -75,7 +79,9 @@ private:
               "        data.erase(123);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (error) BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside.\n",
+            errout.str());
 
         // Check single line usage
         check("void f() {\n"
@@ -83,7 +89,9 @@ private:
               "    BOOST_FOREACH(const int &i, data)\n"
               "        data.clear();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (error) BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside.\n",
+            errout.str());
 
         // Container returned as result of a function -> Be quiet
         check("void f() {\n"

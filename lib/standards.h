@@ -26,17 +26,16 @@
 /// @addtogroup Core
 /// @{
 
-
 /**
  * @brief This is just a container for standards settings.
  * This struct contains all possible standards that cppcheck recognize.
  */
 struct Standards {
     /** C code C89/C99/C11 standard */
-    enum cstd_t { C89, C99, C11, CLatest=C11 } c;
+    enum cstd_t { C89, C99, C11, CLatest = C11 } c;
 
     /** C++ code standard */
-    enum cppstd_t { CPP03, CPP11, CPP14, CPP17, CPP20, CPPLatest=CPP20 } cpp;
+    enum cppstd_t { CPP03, CPP11, CPP14, CPP17, CPP20, CPPLatest = CPP20 } cpp;
 
     /** --std value given on command line */
     std::string stdValue;
@@ -44,7 +43,8 @@ struct Standards {
     /** This constructor clear all the variables **/
     Standards() : c(C11), cpp(CPPLatest) {}
 
-    bool setC(const std::string& str) {
+    bool setC(const std::string& str)
+    {
         stdValue = str;
         if (str == "c89" || str == "C89") {
             c = C89;
@@ -60,7 +60,8 @@ struct Standards {
         }
         return false;
     }
-    const std::string getC() const {
+    const std::string getC() const
+    {
         switch (c) {
         case C89:
             return "c89";
@@ -71,7 +72,8 @@ struct Standards {
         }
         return "";
     }
-    bool setCPP(const std::string& str) {
+    bool setCPP(const std::string& str)
+    {
         stdValue = str;
         if (str == "c++03" || str == "C++03") {
             cpp = CPP03;
@@ -95,7 +97,8 @@ struct Standards {
         }
         return false;
     }
-    std::string getCPP() const {
+    std::string getCPP() const
+    {
         switch (cpp) {
         case CPP03:
             return "c++03";

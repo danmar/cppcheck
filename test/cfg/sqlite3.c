@@ -2,7 +2,8 @@
 // Test library configuration for sqlite3.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=sqlite3 --enable=information --error-exitcode=1 --inline-suppr --suppress=missingIncludeSystem test/cfg/sqlite3.c
+// $ cppcheck --check-library --library=sqlite3 --enable=information --error-exitcode=1 --inline-suppr
+// --suppress=missingIncludeSystem test/cfg/sqlite3.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -12,7 +13,7 @@
 
 void validCode()
 {
-    sqlite3 * db;
+    sqlite3* db;
 
     int rc = sqlite3_open("/db", &db);
     if (rc != SQLITE_OK) {
@@ -23,7 +24,7 @@ void validCode()
     }
 
     {
-        char * buf = sqlite3_malloc(10);
+        char* buf = sqlite3_malloc(10);
         printf("size: %ull\n", sqlite3_msize(buf));
         sqlite3_free(buf);
     }
@@ -31,7 +32,7 @@ void validCode()
 
 void memleak_sqlite3_malloc()
 {
-    char * buf = sqlite3_malloc(10);
+    char* buf = sqlite3_malloc(10);
     if (buf) {
         buf[0] = 0;
     }
@@ -40,13 +41,13 @@ void memleak_sqlite3_malloc()
 
 void resourceLeak_sqlite3_open()
 {
-    sqlite3 * db;
+    sqlite3* db;
 
     sqlite3_open("/db", &db);
     // TODO: cppcheck-suppress resourceLeak
 }
 
-void ignoredReturnValue(char * buf)
+void ignoredReturnValue(char* buf)
 {
     // cppcheck-suppress leakReturnValNotUsed
     sqlite3_malloc(10);

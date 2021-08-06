@@ -22,13 +22,13 @@
 
 #include <tinyxml2.h>
 
-
 class TestPlatform : public TestFixture {
 public:
-    TestPlatform() : TestFixture("TestPlatform") { }
+    TestPlatform() : TestFixture("TestPlatform") {}
 
 private:
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
         TEST_CASE(empty);
         TEST_CASE(valid_config_native_1);
         TEST_CASE(valid_config_native_2);
@@ -40,13 +40,15 @@ private:
         // TEST_CASE(empty_elements); // TODO: Trac issue #8409
     }
 
-    static bool readPlatform(cppcheck::Platform& platform, const char* xmldata) {
+    static bool readPlatform(cppcheck::Platform& platform, const char* xmldata)
+    {
         tinyxml2::XMLDocument doc;
         doc.Parse(xmldata);
         return platform.loadFromXmlDocument(&doc);
     }
 
-    void empty() const {
+    void empty() const
+    {
         // An empty platform file does not change values, only the type.
         const char xmldata[] = "<?xml version=\"1.0\"?>\n<platform/>";
         cppcheck::Platform platform;
@@ -63,7 +65,8 @@ private:
         ASSERT_EQUALS(8, platform.sizeof_long_long);
     }
 
-    void valid_config_native_1() {
+    void valid_config_native_1()
+    {
         // Verify if native Win32A platform is loaded correctly
         cppcheck::Platform platform;
         ASSERT(platform.platform(cppcheck::Platform::Win32A));
@@ -82,7 +85,8 @@ private:
         ASSERT_EQUALS(64, platform.long_long_bit);
     }
 
-    void valid_config_native_2() {
+    void valid_config_native_2()
+    {
         // Verify if native Unix64 platform is loaded correctly
         cppcheck::Platform platform;
         ASSERT(platform.platform(cppcheck::Platform::Unix64));
@@ -96,7 +100,8 @@ private:
         ASSERT_EQUALS(64, platform.long_bit);
     }
 
-    void valid_config_file_1() {
+    void valid_config_file_1()
+    {
         // Valid platform configuration with all possible values specified.
         // Similar to the avr8 platform file.
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
@@ -140,7 +145,8 @@ private:
         ASSERT_EQUALS(64, platform.long_long_bit);
     }
 
-    void valid_config_file_2() {
+    void valid_config_file_2()
+    {
         // Valid platform configuration with all possible values specified and
         // char_bit > 8.
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
@@ -184,7 +190,8 @@ private:
         ASSERT_EQUALS(100, platform.long_long_bit);
     }
 
-    void valid_config_file_3() {
+    void valid_config_file_3()
+    {
         // Valid platform configuration without any usable information.
         // Similar like an empty file.
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
@@ -219,7 +226,8 @@ private:
         ASSERT_EQUALS(8, platform.sizeof_long_long);
     }
 
-    void valid_config_file_4() {
+    void valid_config_file_4()
+    {
         // Valid platform configuration with all possible values specified and
         // set to 0.
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
@@ -263,7 +271,8 @@ private:
         ASSERT_EQUALS(0, platform.long_long_bit);
     }
 
-    void invalid_config_file_1() {
+    void invalid_config_file_1()
+    {
         // Invalid XML file: mismatching elements "boolt" vs "bool".
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<platform>\n"

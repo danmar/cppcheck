@@ -111,7 +111,7 @@ void TestCppcheckLibraryData::podtypeValid()
     // Verify no data got lost or modified
     QCOMPARE(libraryData.podtypes.size(), fileLibraryData.podtypes.size());
     QCOMPARE(libraryData.podtypes.size(), 2);
-    for (int i=0; i < libraryData.podtypes.size(); i++) {
+    for (int i = 0; i < libraryData.podtypes.size(); i++) {
         QCOMPARE(libraryData.podtypes[i].name, fileLibraryData.podtypes[i].name);
         QCOMPARE(libraryData.podtypes[i].stdtype, fileLibraryData.podtypes[i].stdtype);
         QCOMPARE(libraryData.podtypes[i].sign, fileLibraryData.podtypes[i].sign);
@@ -159,7 +159,7 @@ void TestCppcheckLibraryData::typechecksValid()
     // Verify no data got lost or modified
     QCOMPARE(libraryData.typeChecks.size(), fileLibraryData.typeChecks.size());
     QCOMPARE(libraryData.typeChecks.size(), 3);
-    for (int idx=0; idx < libraryData.typeChecks.size(); idx++) {
+    for (int idx = 0; idx < libraryData.typeChecks.size(); idx++) {
         CppcheckLibraryData::TypeChecks lhs = libraryData.typeChecks[idx];
         CppcheckLibraryData::TypeChecks rhs = fileLibraryData.typeChecks[idx];
         QCOMPARE(lhs.size(), rhs.size());
@@ -221,8 +221,7 @@ void TestCppcheckLibraryData::platformTypeValid()
     QCOMPARE(libraryData.platformTypes[1].name, "types");
     QCOMPARE(libraryData.platformTypes[1].value, "all");
     QCOMPARE(libraryData.platformTypes[1].types.size(), 5);
-    QCOMPARE(libraryData.platformTypes[1].types,
-             QStringList({"unsigned", "long", "pointer", "const_ptr", "ptr_ptr"}));
+    QCOMPARE(libraryData.platformTypes[1].types, QStringList({"unsigned", "long", "pointer", "const_ptr", "ptr_ptr"}));
     QCOMPARE(libraryData.platformTypes[1].platforms.isEmpty(), true);
 
     QCOMPARE(libraryData.platformTypes[2].name, "types and platform");
@@ -245,7 +244,7 @@ void TestCppcheckLibraryData::platformTypeValid()
     // Verify no data got lost or modified
     QCOMPARE(libraryData.platformTypes.size(), fileLibraryData.platformTypes.size());
     QCOMPARE(libraryData.platformTypes.size(), 3);
-    for (int idx=0; idx < libraryData.platformTypes.size(); idx++) {
+    for (int idx = 0; idx < libraryData.platformTypes.size(); idx++) {
         CppcheckLibraryData::PlatformType lhs = libraryData.platformTypes[idx];
         CppcheckLibraryData::PlatformType rhs = fileLibraryData.platformTypes[idx];
         QCOMPARE(lhs.name, rhs.name);
@@ -333,7 +332,7 @@ void TestCppcheckLibraryData::memoryResourceValid()
     QCOMPARE(libraryData.memoryresource.size(), fileLibraryData.memoryresource.size());
     QCOMPARE(libraryData.memoryresource.size(), 2);
 
-    for (int idx=0; idx < libraryData.memoryresource.size(); idx++) {
+    for (int idx = 0; idx < libraryData.memoryresource.size(); idx++) {
         CppcheckLibraryData::MemoryResource lhs = libraryData.memoryresource[idx];
         CppcheckLibraryData::MemoryResource rhs = fileLibraryData.memoryresource[idx];
 
@@ -342,7 +341,7 @@ void TestCppcheckLibraryData::memoryResourceValid()
         QCOMPARE(lhs.dealloc.size(), rhs.dealloc.size());
         QCOMPARE(lhs.use, rhs.use);
 
-        for (int num=0; num < lhs.alloc.size(); num++) {
+        for (int num = 0; num < lhs.alloc.size(); num++) {
             QCOMPARE(lhs.alloc[num].name, rhs.alloc[num].name);
             QCOMPARE(lhs.alloc[num].bufferSize, rhs.alloc[num].bufferSize);
             QCOMPARE(lhs.alloc[num].isRealloc, rhs.alloc[num].isRealloc);
@@ -350,7 +349,7 @@ void TestCppcheckLibraryData::memoryResourceValid()
             QCOMPARE(lhs.alloc[num].arg, rhs.alloc[num].arg);
             QCOMPARE(lhs.alloc[num].reallocArg, rhs.alloc[num].reallocArg);
         }
-        for (int num=0; num < lhs.dealloc.size(); num++) {
+        for (int num = 0; num < lhs.dealloc.size(); num++) {
             QCOMPARE(lhs.dealloc[num].name, rhs.dealloc[num].name);
             QCOMPARE(lhs.dealloc[num].arg, rhs.dealloc[num].arg);
         }
@@ -386,7 +385,7 @@ void TestCppcheckLibraryData::defineValid()
     // Verify no data got lost or modified
     QCOMPARE(libraryData.defines.size(), fileLibraryData.defines.size());
     QCOMPARE(libraryData.defines.size(), 2);
-    for (int idx=0; idx < libraryData.defines.size(); idx++) {
+    for (int idx = 0; idx < libraryData.defines.size(); idx++) {
         QCOMPARE(libraryData.defines[idx].name, fileLibraryData.defines[idx].name);
         QCOMPARE(libraryData.defines[idx].value, fileLibraryData.defines[idx].value);
     }
@@ -453,12 +452,12 @@ void TestCppcheckLibraryData::reflectionValid()
     // Verify no data got lost or modified
     QCOMPARE(libraryData.reflections.size(), fileLibraryData.reflections.size());
     QCOMPARE(libraryData.reflections.size(), 2);
-    for (int idx=0; idx < libraryData.reflections.size(); idx++) {
+    for (int idx = 0; idx < libraryData.reflections.size(); idx++) {
         CppcheckLibraryData::Reflection lhs = libraryData.reflections[idx];
         CppcheckLibraryData::Reflection rhs = fileLibraryData.reflections[idx];
 
         QCOMPARE(lhs.calls.size(), rhs.calls.size());
-        for (int num=0; num < lhs.calls.size(); num++) {
+        for (int num = 0; num < lhs.calls.size(); num++) {
             QCOMPARE(lhs.calls[num].arg, rhs.calls[num].arg);
             QCOMPARE(lhs.calls[num].name, rhs.calls[num].name);
         }
@@ -495,7 +494,8 @@ void TestCppcheckLibraryData::markupValid()
 
     QCOMPARE(libraryData.markups[0].codeBlocks.size(), 2);
     QCOMPARE(libraryData.markups[0].codeBlocks[0].blocks.size(), 5);
-    QCOMPARE(libraryData.markups[0].codeBlocks[0].blocks, QStringList({"onClicked", "onFinished", "onTriggered", "onPressed", "onTouch"}));
+    QCOMPARE(libraryData.markups[0].codeBlocks[0].blocks,
+             QStringList({"onClicked", "onFinished", "onTriggered", "onPressed", "onTouch"}));
     QCOMPARE(libraryData.markups[0].codeBlocks[0].offset, 3);
     QCOMPARE(libraryData.markups[0].codeBlocks[0].start, "{");
     QCOMPARE(libraryData.markups[0].codeBlocks[0].end, "}");
@@ -517,7 +517,7 @@ void TestCppcheckLibraryData::markupValid()
 
     // Verify no data got lost or modified
     QCOMPARE(libraryData.markups.size(), fileLibraryData.markups.size());
-    for (int idx=0; idx < libraryData.markups.size(); idx++) {
+    for (int idx = 0; idx < libraryData.markups.size(); idx++) {
         CppcheckLibraryData::Markup lhs = libraryData.markups[idx];
         CppcheckLibraryData::Markup rhs = fileLibraryData.markups[idx];
 
@@ -526,12 +526,12 @@ void TestCppcheckLibraryData::markupValid()
         QCOMPARE(lhs.afterCode, rhs.afterCode);
         QCOMPARE(lhs.keywords, rhs.keywords);
         QCOMPARE(lhs.importer, rhs.importer);
-        for (int num=0; num < lhs.exporter.size(); num++) {
+        for (int num = 0; num < lhs.exporter.size(); num++) {
             QCOMPARE(lhs.exporter[num].prefix, rhs.exporter[num].prefix);
             QCOMPARE(lhs.exporter[num].suffixList, rhs.exporter[num].suffixList);
             QCOMPARE(lhs.exporter[num].prefixList, rhs.exporter[num].prefixList);
         }
-        for (int num=0; num < lhs.codeBlocks.size(); num++) {
+        for (int num = 0; num < lhs.codeBlocks.size(); num++) {
             QCOMPARE(lhs.codeBlocks[num].blocks, rhs.codeBlocks[num].blocks);
             QCOMPARE(lhs.codeBlocks[num].offset, rhs.codeBlocks[num].offset);
             QCOMPARE(lhs.codeBlocks[num].start, rhs.codeBlocks[num].start);
@@ -540,7 +540,7 @@ void TestCppcheckLibraryData::markupValid()
     }
 }
 
-void TestCppcheckLibraryData::loadCfgFile(QString filename, CppcheckLibraryData &data, QString &result, bool removeFile)
+void TestCppcheckLibraryData::loadCfgFile(QString filename, CppcheckLibraryData& data, QString& result, bool removeFile)
 {
     QFile file(filename);
     QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
@@ -551,7 +551,7 @@ void TestCppcheckLibraryData::loadCfgFile(QString filename, CppcheckLibraryData 
     }
 }
 
-void TestCppcheckLibraryData::saveCfgFile(QString filename, CppcheckLibraryData &data)
+void TestCppcheckLibraryData::saveCfgFile(QString filename, CppcheckLibraryData& data)
 {
     QFile file(filename);
     QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));

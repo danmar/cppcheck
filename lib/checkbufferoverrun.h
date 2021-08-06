@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
 #ifndef checkbufferoverrunH
 #define checkbufferoverrunH
@@ -36,7 +35,7 @@
 #include <vector>
 
 namespace tinyxml2 {
-    class XMLElement;
+class XMLElement;
 }
 
 class ErrorLogger;
@@ -58,17 +57,16 @@ class Tokenizer;
  */
 class CPPCHECKLIB CheckBufferOverrun : public Check {
 public:
-
     /** This constructor is used when registering the CheckClass */
-    CheckBufferOverrun() : Check(myName()) {
-    }
+    CheckBufferOverrun() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
-    CheckBufferOverrun(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+    CheckBufferOverrun(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE
+    {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
         checkBufferOverrun.arrayIndex();
         checkBufferOverrun.pointerArithmetic();
@@ -78,44 +76,53 @@ public:
         checkBufferOverrun.objectIndex();
     }
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE
+    {
         CheckBufferOverrun c(nullptr, settings, errorLogger);
-        c.arrayIndexError(nullptr, std::vector<Dimension>(), std::vector<const ValueFlow::Value *>());
+        c.arrayIndexError(nullptr, std::vector<Dimension>(), std::vector<const ValueFlow::Value*>());
         c.pointerArithmeticError(nullptr, nullptr, nullptr);
-        c.negativeIndexError(nullptr, std::vector<Dimension>(), std::vector<const ValueFlow::Value *>());
+        c.negativeIndexError(nullptr, std::vector<Dimension>(), std::vector<const ValueFlow::Value*>());
         c.arrayIndexThenCheckError(nullptr, "i");
         c.bufferOverflowError(nullptr, nullptr, Certainty::normal);
         c.objectIndexError(nullptr, nullptr, true);
     }
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const OVERRIDE;
+    Check::FileInfo* getFileInfo(const Tokenizer* tokenizer, const Settings* settings) const OVERRIDE;
 
     /** @brief Analyse all file infos for all TU */
-    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) OVERRIDE;
+    bool analyseWholeProgram(const CTU::FileInfo* ctu,
+                             const std::list<Check::FileInfo*>& fileInfo,
+                             const Settings& settings,
+                             ErrorLogger& errorLogger) OVERRIDE;
 
 private:
-
     void arrayIndex();
-    void arrayIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<const ValueFlow::Value *> &indexes);
-    void negativeIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<const ValueFlow::Value *> &indexes);
+    void arrayIndexError(const Token* tok,
+                         const std::vector<Dimension>& dimensions,
+                         const std::vector<const ValueFlow::Value*>& indexes);
+    void negativeIndexError(const Token* tok,
+                            const std::vector<Dimension>& dimensions,
+                            const std::vector<const ValueFlow::Value*>& indexes);
 
     void pointerArithmetic();
-    void pointerArithmeticError(const Token *tok, const Token *indexToken, const ValueFlow::Value *indexValue);
+    void pointerArithmeticError(const Token* tok, const Token* indexToken, const ValueFlow::Value* indexValue);
 
     void bufferOverflow();
-    void bufferOverflowError(const Token *tok, const ValueFlow::Value *value, const Certainty::CertaintyLevel& certainty);
+    void bufferOverflowError(const Token* tok,
+                             const ValueFlow::Value* value,
+                             const Certainty::CertaintyLevel& certainty);
 
     void arrayIndexThenCheck();
-    void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);
+    void arrayIndexThenCheckError(const Token* tok, const std::string& indexName);
 
     void stringNotZeroTerminated();
-    void terminateStrncpyError(const Token *tok, const std::string &varname);
+    void terminateStrncpyError(const Token* tok, const std::string& varname);
 
     void objectIndex();
-    void objectIndexError(const Token *tok, const ValueFlow::Value *v, bool known);
+    void objectIndexError(const Token* tok, const ValueFlow::Value* v, bool known);
 
-    ValueFlow::Value getBufferSize(const Token *bufTok) const;
+    ValueFlow::Value getBufferSize(const Token* bufTok) const;
 
     // CTU
 
@@ -132,19 +139,20 @@ private:
         std::string toString() const OVERRIDE;
     };
 
-    static bool isCtuUnsafeBufferUsage(const Check *check, const Token *argtok, MathLib::bigint *offset, int type);
-    static bool isCtuUnsafeArrayIndex(const Check *check, const Token *argtok, MathLib::bigint *offset);
-    static bool isCtuUnsafePointerArith(const Check *check, const Token *argtok, MathLib::bigint *offset);
+    static bool isCtuUnsafeBufferUsage(const Check* check, const Token* argtok, MathLib::bigint* offset, int type);
+    static bool isCtuUnsafeArrayIndex(const Check* check, const Token* argtok, MathLib::bigint* offset);
+    static bool isCtuUnsafePointerArith(const Check* check, const Token* argtok, MathLib::bigint* offset);
 
-    Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const OVERRIDE;
-    static bool analyseWholeProgram1(const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage, int type, ErrorLogger &errorLogger);
+    Check::FileInfo* loadFileInfoFromXml(const tinyxml2::XMLElement* xmlElement) const OVERRIDE;
+    static bool analyseWholeProgram1(const std::map<std::string, std::list<const CTU::FileInfo::CallBase*>>& callsMap,
+                                     const CTU::FileInfo::UnsafeUsage& unsafeUsage,
+                                     int type,
+                                     ErrorLogger& errorLogger);
 
+    static std::string myName() { return "Bounds checking"; }
 
-    static std::string myName() {
-        return "Bounds checking";
-    }
-
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const OVERRIDE
+    {
         return "Out of bounds checking:\n"
                "- Array index out of bounds\n"
                "- Pointer arithmetic overflow\n"

@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
 #ifndef checksizeofH
 #define checksizeofH
@@ -35,22 +34,21 @@ class Tokenizer;
 /// @addtogroup Checks
 /// @{
 
-
 /** @brief checks on usage of sizeof() operator */
 
 class CPPCHECKLIB CheckSizeof : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckSizeof() : Check(myName()) {
-    }
+    CheckSizeof() : Check(myName()) {}
 
     /** @brief This constructor is used when running checks. */
     CheckSizeof(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE
+    {
         CheckSizeof checkSizeof(tokenizer, settings, errorLogger);
 
         // Checks
@@ -96,14 +94,15 @@ private:
     void multiplySizeofError(const Token* tok);
     void divideSizeofError(const Token* tok);
     void sizeofForArrayParameterError(const Token* tok);
-    void sizeofForPointerError(const Token* tok, const std::string &varname);
-    void divideBySizeofError(const Token* tok, const std::string &memfunc);
+    void sizeofForPointerError(const Token* tok, const std::string& varname);
+    void divideBySizeofError(const Token* tok, const std::string& memfunc);
     void sizeofForNumericParameterError(const Token* tok);
-    void sizeofVoidError(const Token *tok);
-    void sizeofDereferencedVoidPointerError(const Token *tok, const std::string &varname);
-    void arithOperationsOnVoidPointerError(const Token* tok, const std::string &varname, const std::string &vartype);
+    void sizeofVoidError(const Token* tok);
+    void sizeofDereferencedVoidPointerError(const Token* tok, const std::string& varname);
+    void arithOperationsOnVoidPointerError(const Token* tok, const std::string& varname, const std::string& vartype);
 
-    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE
+    {
         CheckSizeof c(nullptr, settings, errorLogger);
 
         c.sizeofForArrayParameterError(nullptr);
@@ -120,11 +119,10 @@ private:
         c.arithOperationsOnVoidPointerError(nullptr, "varname", "vartype");
     }
 
-    static std::string myName() {
-        return "Sizeof";
-    }
+    static std::string myName() { return "Sizeof"; }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const OVERRIDE
+    {
         return "sizeof() usage checks\n"
                "- sizeof for array given as function argument\n"
                "- sizeof for numeric given as function argument\n"

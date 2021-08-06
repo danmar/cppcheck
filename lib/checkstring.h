@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
 #ifndef checkstringH
 #define checkstringH
@@ -35,22 +34,21 @@ class Tokenizer;
 /// @addtogroup Checks
 /// @{
 
-
 /** @brief Detect misusage of C-style strings and related standard functions */
 
 class CPPCHECKLIB CheckString : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckString() : Check(myName()) {
-    }
+    CheckString() : Check(myName()) {}
 
     /** @brief This constructor is used when running checks. */
-    CheckString(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+    CheckString(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE
+    {
         CheckString checkString(tokenizer, settings, errorLogger);
 
         // Checks
@@ -85,18 +83,19 @@ public:
     void sprintfOverlappingData();
 
 private:
-    void stringLiteralWriteError(const Token *tok, const Token *strValue);
-    void sprintfOverlappingDataError(const Token *funcTok, const Token *tok, const std::string &varname);
-    void strPlusCharError(const Token *tok);
-    void incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string);
-    void incorrectStringBooleanError(const Token *tok, const std::string& string);
-    void alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2);
-    void alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2);
+    void stringLiteralWriteError(const Token* tok, const Token* strValue);
+    void sprintfOverlappingDataError(const Token* funcTok, const Token* tok, const std::string& varname);
+    void strPlusCharError(const Token* tok);
+    void incorrectStringCompareError(const Token* tok, const std::string& func, const std::string& string);
+    void incorrectStringBooleanError(const Token* tok, const std::string& string);
+    void alwaysTrueFalseStringCompareError(const Token* tok, const std::string& str1, const std::string& str2);
+    void alwaysTrueStringVariableCompareError(const Token* tok, const std::string& str1, const std::string& str2);
     void suspiciousStringCompareError(const Token* tok, const std::string& var, bool isLong);
     void suspiciousStringCompareError_char(const Token* tok, const std::string& var);
-    void overlappingStrcmpError(const Token* eq0, const Token *ne0);
+    void overlappingStrcmpError(const Token* eq0, const Token* ne0);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE
+    {
         CheckString c(nullptr, settings, errorLogger);
 
         c.stringLiteralWriteError(nullptr, nullptr);
@@ -112,11 +111,10 @@ private:
         c.overlappingStrcmpError(nullptr, nullptr);
     }
 
-    static std::string myName() {
-        return "String";
-    }
+    static std::string myName() { return "String"; }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const OVERRIDE
+    {
         return "Detect misusage of C-style strings:\n"
                "- overlapping buffers passed to sprintf as source and destination\n"
                "- incorrect length arguments for 'substr' and 'strncmp'\n"

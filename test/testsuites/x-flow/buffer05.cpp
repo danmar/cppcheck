@@ -3,12 +3,14 @@
 
 // Copy string
 
-void f() {
-    char* buf = (char*) malloc(9);
+void f()
+{
+    char* buf = (char*)malloc(9);
     strcpy(buf, "Too big to fit");
 }
 
-int main() {
+int main()
+{
     f();
     return 0;
 }

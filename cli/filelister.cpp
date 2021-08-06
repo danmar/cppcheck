@@ -47,7 +47,7 @@ static BOOL myIsDirectory(const std::string& path)
 #ifdef __BORLANDC__
     return (GetFileAttributes(path.c_str()) & FILE_ATTRIBUTE_DIRECTORY);
 #else
-// See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
+    // See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
     return PathIsDirectoryA(path.c_str());
 #endif
 }
@@ -71,12 +71,19 @@ static BOOL myFileExists(const std::string& path)
     return result;
 }
 
-std::string FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
+std::string FileLister::recursiveAddFiles(std::map<std::string, std::size_t>& files,
+                                          const std::string& path,
+                                          const std::set<std::string>& extra,
+                                          const PathMatch& ignored)
 {
     return addFiles(files, path, extra, true, ignored);
 }
 
-std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
+std::string FileLister::addFiles(std::map<std::string, std::size_t>& files,
+                                 const std::string& path,
+                                 const std::set<std::string>& extra,
+                                 bool recursive,
+                                 const PathMatch& ignored)
 {
     const std::string cleanedPath = Path::toNativeSeparators(path);
 
@@ -122,7 +129,7 @@ std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, cons
             continue;
 
         const char* ansiFfd = ffd.cFileName;
-        if (std::strchr(ansiFfd,'?')) {
+        if (std::strchr(ansiFfd, '?')) {
             ansiFfd = ffd.cAlternateFileName;
         }
 
@@ -156,16 +163,9 @@ std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, cons
     return "";
 }
 
-bool FileLister::isDirectory(const std::string &path)
-{
-    return (myIsDirectory(path) != FALSE);
-}
+bool FileLister::isDirectory(const std::string& path) { return (myIsDirectory(path) != FALSE); }
 
-bool FileLister::fileExists(const std::string &path)
-{
-    return (myFileExists(path) != FALSE);
-}
-
+bool FileLister::fileExists(const std::string& path) { return (myFileExists(path) != FALSE); }
 
 #else
 
@@ -187,22 +187,20 @@ bool FileLister::fileExists(const std::string &path)
 #endif
 #endif
 
-
-static std::string addFiles2(std::map<std::string, std::size_t> &files,
-                             const std::string &path,
-                             const std::set<std::string> &extra,
+static std::string addFiles2(std::map<std::string, std::size_t>& files,
+                             const std::string& path,
+                             const std::set<std::string>& extra,
                              bool recursive,
-                             const PathMatch& ignored
-                            )
+                             const PathMatch& ignored)
 {
     struct stat file_stat;
     if (stat(path.c_str(), &file_stat) != -1) {
         if ((file_stat.st_mode & S_IFMT) == S_IFDIR) {
-            DIR * dir = opendir(path.c_str());
+            DIR* dir = opendir(path.c_str());
             if (!dir)
                 return "";
 
-            dirent * dir_result;
+            dirent* dir_result;
             // make sure we reserve enough space for the readdir_r() buffer;
             // according to POSIX:
             //   The storage pointed to by entry shall be large enough for a
@@ -219,18 +217,18 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
             } dir_result_buffer;
             UNUSED(dir_result_buffer.buf); // do not trigger cppcheck itself on the "unused buf"
             std::string new_path;
-            new_path.reserve(path.length() + 100);// prealloc some memory to avoid constant new/deletes in loop
+            new_path.reserve(path.length() + 100); // prealloc some memory to avoid constant new/deletes in loop
 
             while ((readdir_r(dir, &dir_result_buffer.entry, &dir_result) == 0) && (dir_result != nullptr)) {
 
-                if ((std::strcmp(dir_result->d_name, ".") == 0) ||
-                    (std::strcmp(dir_result->d_name, "..") == 0))
+                if ((std::strcmp(dir_result->d_name, ".") == 0) || (std::strcmp(dir_result->d_name, "..") == 0))
                     continue;
 
                 new_path = path + '/' + dir_result->d_name;
 
 #if defined(_DIRENT_HAVE_D_TYPE) || defined(_BSD_SOURCE)
-                bool path_is_directory = (dir_result->d_type == DT_DIR || (dir_result->d_type == DT_UNKNOWN && FileLister::isDirectory(new_path)));
+                bool path_is_directory = (dir_result->d_type == DT_DIR ||
+                                          (dir_result->d_type == DT_UNKNOWN && FileLister::isDirectory(new_path)));
 #else
                 bool path_is_directory = FileLister::isDirectory(new_path);
 #endif
@@ -256,12 +254,19 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
     return "";
 }
 
-std::string FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
+std::string FileLister::recursiveAddFiles(std::map<std::string, std::size_t>& files,
+                                          const std::string& path,
+                                          const std::set<std::string>& extra,
+                                          const PathMatch& ignored)
 {
     return addFiles(files, path, extra, true, ignored);
 }
 
-std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
+std::string FileLister::addFiles(std::map<std::string, std::size_t>& files,
+                                 const std::string& path,
+                                 const std::set<std::string>& extra,
+                                 bool recursive,
+                                 const PathMatch& ignored)
 {
     if (!path.empty()) {
         std::string corrected_path = path;
@@ -274,13 +279,13 @@ std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, cons
     return "";
 }
 
-bool FileLister::isDirectory(const std::string &path)
+bool FileLister::isDirectory(const std::string& path)
 {
     struct stat file_stat;
     return (stat(path.c_str(), &file_stat) != -1 && (file_stat.st_mode & S_IFMT) == S_IFDIR);
 }
 
-bool FileLister::fileExists(const std::string &path)
+bool FileLister::fileExists(const std::string& path)
 {
     struct stat file_stat;
     return (stat(path.c_str(), &file_stat) != -1 && (file_stat.st_mode & S_IFMT) == S_IFREG);

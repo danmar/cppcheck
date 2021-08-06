@@ -30,14 +30,13 @@
 
 struct InternalError;
 
-
 class TestTokenRange : public TestFixture {
 public:
-    TestTokenRange() : TestFixture("TestTokenRange") {
-    }
+    TestTokenRange() : TestFixture("TestTokenRange") {}
 
 private:
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
         TEST_CASE(enumerationToEnd);
         TEST_CASE(untilHelperToEnd);
         TEST_CASE(untilHelperPartWay);
@@ -46,16 +45,16 @@ private:
         TEST_CASE(exampleAlgorithms);
     }
 
-    std::string testTokenRange(ConstTokenRange range, const Token* start, const Token* end) const {
-        auto tokenToString = [](const Token* t) {
-            return t ? t->str() : "<null>";
-        };
+    std::string testTokenRange(ConstTokenRange range, const Token* start, const Token* end) const
+    {
+        auto tokenToString = [](const Token* t) { return t ? t->str() : "<null>"; };
         int index = 0;
         const Token* expected = start;
         for (const Token* t : range) {
             if (expected != t) {
                 std::ostringstream message;
-                message << "Failed to match token " << tokenToString(expected) << " at position " << index << ". Got " << tokenToString(t) << " instead";
+                message << "Failed to match token " << tokenToString(expected) << " at position " << index << ". Got "
+                        << tokenToString(t) << " instead";
                 return message.str();
             }
             index++;
@@ -63,27 +62,31 @@ private:
         }
         if (expected != end) {
             std::ostringstream message;
-            message << "Failed to terminate on " << tokenToString(end) << ". Instead terminated on " << tokenToString(expected) << " at position " << index << ".";
+            message << "Failed to terminate on " << tokenToString(end) << ". Instead terminated on "
+                    << tokenToString(expected) << " at position " << index << ".";
             return message.str();
         }
         return "";
     }
 
-    void enumerationToEnd() const {
+    void enumerationToEnd() const
+    {
         std::istringstream istr("void a(){} void main(){ if(true){a();} }");
         TokenList tokenList(nullptr);
         tokenList.createTokens(istr, "test.cpp");
-        ASSERT_EQUALS("", testTokenRange(ConstTokenRange{ tokenList.front(), nullptr }, tokenList.front(), nullptr));
+        ASSERT_EQUALS("", testTokenRange(ConstTokenRange{tokenList.front(), nullptr}, tokenList.front(), nullptr));
     }
 
-    void untilHelperToEnd() const {
+    void untilHelperToEnd() const
+    {
         std::istringstream istr("void a(){} void main(){ if(true){a();} }");
         TokenList tokenList(nullptr);
         tokenList.createTokens(istr, "test.cpp");
         ASSERT_EQUALS("", testTokenRange(tokenList.front()->until(nullptr), tokenList.front(), nullptr));
     }
 
-    void untilHelperPartWay() const {
+    void untilHelperPartWay() const
+    {
         std::istringstream istr("void a(){} void main(){ if(true){a();} }");
         TokenList tokenList(nullptr);
         tokenList.createTokens(istr, "test.cpp");
@@ -92,48 +95,45 @@ private:
         ASSERT_EQUALS("", testTokenRange(start->until(end), start, end));
     }
 
-    void partialEnumeration() const {
+    void partialEnumeration() const
+    {
         std::istringstream istr("void a(){} void main(){ if(true){a();} }");
         TokenList tokenList(nullptr);
         tokenList.createTokens(istr, "test.cpp");
         const Token* start = tokenList.front()->tokAt(4);
         const Token* end = tokenList.front()->tokAt(10);
-        ASSERT_EQUALS("", testTokenRange(ConstTokenRange{ start, end }, start, end));
+        ASSERT_EQUALS("", testTokenRange(ConstTokenRange{start, end}, start, end));
     }
 
-    void scopeExample() const {
+    void scopeExample() const
+    {
         Settings settings;
-        Tokenizer tokenizer{ &settings, nullptr };
+        Tokenizer tokenizer{&settings, nullptr};
         std::istringstream sample("void a(){} void main(){ if(true){a();} }");
         tokenizer.tokenize(sample, "test.cpp");
 
         const SymbolDatabase* sd = tokenizer.getSymbolDatabase();
-        const Scope& scope = *std::next(sd->scopeList.begin(), 3); //The scope of the if block
+        const Scope& scope = *std::next(sd->scopeList.begin(), 3); // The scope of the if block
 
         std::ostringstream contents;
-        for (const Token* t : ConstTokenRange{ scope.bodyStart->next(), scope.bodyEnd }) {
+        for (const Token* t : ConstTokenRange{scope.bodyStart->next(), scope.bodyEnd}) {
             contents << t->str();
         }
         ASSERT_EQUALS("a();", contents.str());
     }
 
-    void exampleAlgorithms() const {
+    void exampleAlgorithms() const
+    {
         std::istringstream istr("void a(){} void main(){ if(true){a();} }");
         TokenList tokenList(nullptr);
         tokenList.createTokens(istr, "test.cpp");
-        ConstTokenRange range{ tokenList.front(), nullptr };
-        ASSERT_EQUALS(true, std::all_of(range.begin(), range.end(), [](const Token*) {
-            return true;
-        }));
-        ASSERT_EQUALS(true, std::any_of(range.begin(), range.end(), [](const Token* t) {
-            return t->str() == "true";
-        }));
+        ConstTokenRange range{tokenList.front(), nullptr};
+        ASSERT_EQUALS(true, std::all_of(range.begin(), range.end(), [](const Token*) { return true; }));
+        ASSERT_EQUALS(true, std::any_of(range.begin(), range.end(), [](const Token* t) { return t->str() == "true"; }));
         ASSERT_EQUALS("true", (*std::find_if(range.begin(), range.end(), [](const Token* t) {
-            return t->str() == "true";
-        }))->str());
-        ASSERT_EQUALS(3, std::count_if(range.begin(), range.end(), [](const Token* t) {
-            return t->str() == "{";
-        }));
+                                  return t->str() == "true";
+                              }))->str());
+        ASSERT_EQUALS(3, std::count_if(range.begin(), range.end(), [](const Token* t) { return t->str() == "{"; }));
     }
 };
 

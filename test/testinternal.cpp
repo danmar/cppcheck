@@ -22,16 +22,15 @@
 #include "checkinternal.h"
 #include "testsuite.h"
 
-
 class TestInternal : public TestFixture {
 public:
-    TestInternal() : TestFixture("TestInternal") {
-    }
+    TestInternal() : TestFixture("TestInternal") {}
 
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
         settings.addEnabled("internal");
 
         TEST_CASE(simplePatternInTokenMatch);
@@ -47,7 +46,8 @@ private:
         TEST_CASE(checkRedundantTokCheck);
     }
 
-    void check(const char code[]) {
+    void check(const char code[])
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -61,7 +61,8 @@ private:
         checkInternal.runChecks(&tokenizer, &settings, this);
     }
 
-    void simplePatternInTokenMatch() {
+    void simplePatternInTokenMatch()
+    {
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::Match(tok, \";\");\n"
@@ -78,33 +79,40 @@ private:
               "    const Token *tok;\n"
               "    Token::Match(tok, \"%or%\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Found simple pattern inside Token::Match() call: \"%or%\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found simple pattern inside Token::Match() call: \"%or%\"\n",
+                      errout.str());
 
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::findmatch(tok, \";\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Found simple pattern inside Token::findmatch() call: \";\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found simple pattern inside Token::findmatch() call: \";\"\n",
+                      errout.str());
     }
 
-    void complexPatternInTokenSimpleMatch() {
+    void complexPatternInTokenSimpleMatch()
+    {
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::simpleMatch(tok, \"%type%\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Found complex pattern inside Token::simpleMatch() call: \"%type%\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found complex pattern inside Token::simpleMatch() call: \"%type%\"\n",
+                      errout.str());
 
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::findsimplematch(tok, \"%type%\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Found complex pattern inside Token::findsimplematch() call: \"%type%\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found complex pattern inside Token::findsimplematch() call: \"%type%\"\n",
+                      errout.str());
 
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::findsimplematch(tok, \"} !!else\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Found complex pattern inside Token::findsimplematch() call: \"} !!else\"\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (error) Found complex pattern inside Token::findsimplematch() call: \"} !!else\"\n",
+            errout.str());
 
         check("void f() {\n"
               "    const Token *tok;\n"
@@ -119,7 +127,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplePatternSquareBrackets() {
+    void simplePatternSquareBrackets()
+    {
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::simpleMatch(tok, \"[\");\n"
@@ -136,7 +145,8 @@ private:
               "    const Token *tok;\n"
               "    Token::simpleMatch(tok, \"[]\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Found complex pattern inside Token::simpleMatch() call: \"[]\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found complex pattern inside Token::simpleMatch() call: \"[]\"\n",
+                      errout.str());
 
         check("void f() {\n"
               "    const Token *tok;\n"
@@ -148,16 +158,19 @@ private:
               "    const Token *tok;\n"
               "    Token::simpleMatch(tok, \"] [ [abc]\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Found complex pattern inside Token::simpleMatch() call: \"] [ [abc]\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found complex pattern inside Token::simpleMatch() call: \"] [ [abc]\"\n",
+                      errout.str());
 
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::simpleMatch(tok, \"[.,;]\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Found complex pattern inside Token::simpleMatch() call: \"[.,;]\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found complex pattern inside Token::simpleMatch() call: \"[.,;]\"\n",
+                      errout.str());
     }
 
-    void simplePatternAlternatives() {
+    void simplePatternAlternatives()
+    {
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::simpleMatch(tok, \"||\");\n"
@@ -174,7 +187,8 @@ private:
               "    const Token *tok;\n"
               "    Token::simpleMatch(tok, \"a|b\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Found complex pattern inside Token::simpleMatch() call: \"a|b\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found complex pattern inside Token::simpleMatch() call: \"a|b\"\n",
+                      errout.str());
 
         check("void f() {\n"
               "    const Token *tok;\n"
@@ -189,7 +203,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void missingPercentCharacter() {
+    void missingPercentCharacter()
+    {
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::Match(tok, \"%type%\");\n"
@@ -207,14 +222,17 @@ private:
               "    const Token *tok;\n"
               "    Token::Match(tok, \"%type\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Missing percent end character in Token::Match() pattern: \"%type\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Missing percent end character in Token::Match() pattern: \"%type\"\n",
+                      errout.str());
 
         // Missing % in the middle of a pattern
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::Match(tok, \"foo %type bar\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Missing percent end character in Token::Match() pattern: \"foo %type bar\"\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (error) Missing percent end character in Token::Match() pattern: \"foo %type bar\"\n",
+            errout.str());
 
         // Bei quiet on single %
         check("void f() {\n"
@@ -227,16 +245,19 @@ private:
               "    const Token *tok;\n"
               "    Token::Match(tok, \"foo % %type % bar\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Missing percent end character in Token::Match() pattern: \"foo % %type % bar\"\n"
-                      "[test.cpp:3]: (error) Unknown pattern used: \"%type %\"\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (error) Missing percent end character in Token::Match() pattern: \"foo % %type % bar\"\n"
+            "[test.cpp:3]: (error) Unknown pattern used: \"%type %\"\n",
+            errout.str());
 
         // Find missing % also in 'alternatives' pattern
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::Match(tok, \"foo|%type|bar\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Missing percent end character in Token::Match() pattern: \"foo|%type|bar\"\n"
-                      , errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (error) Missing percent end character in Token::Match() pattern: \"foo|%type|bar\"\n",
+            errout.str());
 
         // Make sure we don't take %or% for a broken %oror%
         check("void f() {\n"
@@ -246,7 +267,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void unknownPattern() {
+    void unknownPattern()
+    {
         check("void f() {\n"
               "    Token::Match(tok, \"%typ%\");\n"
               "}");
@@ -259,21 +281,28 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void redundantNextPrevious() {
+    void redundantNextPrevious()
+    {
         check("void f() {\n"
               "    return tok->next()->previous();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::next()' followed by 'Token::previous()' can be simplified.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Call to 'Token::next()' followed by 'Token::previous()' can be simplified.\n",
+            errout.str());
 
         check("void f() {\n"
               "    return tok->tokAt(5)->previous();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::tokAt()' followed by 'Token::previous()' can be simplified.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Call to 'Token::tokAt()' followed by 'Token::previous()' can be simplified.\n",
+            errout.str());
 
         check("void f() {\n"
               "    return tok->previous()->linkAt(5);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::previous()' followed by 'Token::linkAt()' can be simplified.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Call to 'Token::previous()' followed by 'Token::linkAt()' can be simplified.\n",
+            errout.str());
 
         check("void f() {\n"
               "    tok->next()->previous(foo);\n"
@@ -293,12 +322,15 @@ private:
         check("void f() {\n"
               "    return tok->tokAt(foo+bar)->tokAt();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::tokAt()' followed by 'Token::tokAt()' can be simplified.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Call to 'Token::tokAt()' followed by 'Token::tokAt()' can be simplified.\n",
+            errout.str());
 
         check("void f() {\n"
               "    return tok->tokAt(foo+bar)->link();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::tokAt()' followed by 'Token::link()' can be simplified.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::tokAt()' followed by 'Token::link()' can be simplified.\n",
+                      errout.str());
 
         check("void f() {\n"
               "    tok->tokAt(foo+bar)->link(foo);\n"
@@ -308,16 +340,19 @@ private:
         check("void f() {\n"
               "    return tok->next()->next()->str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::next()' followed by 'Token::str()' can be simplified.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::next()' followed by 'Token::str()' can be simplified.\n",
+                      errout.str());
 
         check("void f() {\n"
               "    return tok->previous()->next()->str();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Call to 'Token::previous()' followed by 'Token::next()' can be simplified.\n", errout.str());
-
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Call to 'Token::previous()' followed by 'Token::next()' can be simplified.\n",
+            errout.str());
     }
 
-    void internalError() {
+    void internalError()
+    {
         // Make sure cppcheck does not raise an internal error of Token::Match ( Ticket #3727 )
         check("class DELPHICLASS X;\n"
               "class Y {\n"
@@ -333,16 +368,21 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void orInComplexPattern() {
+    void orInComplexPattern()
+    {
         check("void f() {\n"
               "    Token::Match(tok, \"||\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Token::Match() pattern \"||\" contains \"||\" or \"|\". Replace it by \"%oror%\" or \"%or%\".\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (error) Token::Match() pattern \"||\" contains \"||\" or \"|\". Replace it by \"%oror%\" or \"%or%\".\n",
+            errout.str());
 
         check("void f() {\n"
               "    Token::Match(tok, \"|\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Token::Match() pattern \"|\" contains \"||\" or \"|\". Replace it by \"%oror%\" or \"%or%\".\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (error) Token::Match() pattern \"|\" contains \"||\" or \"|\". Replace it by \"%oror%\" or \"%or%\".\n",
+            errout.str());
 
         check("void f() {\n"
               "    Token::Match(tok, \"[|+-]\");\n"
@@ -352,12 +392,16 @@ private:
         check("void f() {\n"
               "    Token::Match(tok, \"foo | bar\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Token::Match() pattern \"foo | bar\" contains \"||\" or \"|\". Replace it by \"%oror%\" or \"%or%\".\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (error) Token::Match() pattern \"foo | bar\" contains \"||\" or \"|\". Replace it by \"%oror%\" or \"%or%\".\n",
+            errout.str());
 
         check("void f() {\n"
               "    Token::Match(tok, \"foo |\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Token::Match() pattern \"foo |\" contains \"||\" or \"|\". Replace it by \"%oror%\" or \"%or%\".\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (error) Token::Match() pattern \"foo |\" contains \"||\" or \"|\". Replace it by \"%oror%\" or \"%or%\".\n",
+            errout.str());
 
         check("void f() {\n"
               "    Token::Match(tok, \"bar foo|\");\n"
@@ -365,89 +409,110 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void extraWhitespace() {
+    void extraWhitespace()
+    {
         // whitespace at the end
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::Match(tok, \"%str% \");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Found extra whitespace inside Token::Match() call: \"%str% \"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found extra whitespace inside Token::Match() call: \"%str% \"\n",
+                      errout.str());
 
         // whitespace at the begin
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::Match(tok, \" %str%\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Found extra whitespace inside Token::Match() call: \" %str%\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found extra whitespace inside Token::Match() call: \" %str%\"\n",
+                      errout.str());
 
         // two whitespaces or more
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::Match(tok, \"%str%  bar\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Found extra whitespace inside Token::Match() call: \"%str%  bar\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found extra whitespace inside Token::Match() call: \"%str%  bar\"\n",
+                      errout.str());
 
         // test simpleMatch
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::simpleMatch(tok, \"foobar \");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Found extra whitespace inside Token::simpleMatch() call: \"foobar \"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found extra whitespace inside Token::simpleMatch() call: \"foobar \"\n",
+                      errout.str());
 
         // test findmatch
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::findmatch(tok, \"%str% \");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Found extra whitespace inside Token::findmatch() call: \"%str% \"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found extra whitespace inside Token::findmatch() call: \"%str% \"\n",
+                      errout.str());
 
         // test findsimplematch
         check("void f() {\n"
               "    const Token *tok;\n"
               "    Token::findsimplematch(tok, \"foobar \");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Found extra whitespace inside Token::findsimplematch() call: \"foobar \"\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (warning) Found extra whitespace inside Token::findsimplematch() call: \"foobar \"\n",
+            errout.str());
     }
 
-    void checkRedundantTokCheck() {
+    void checkRedundantTokCheck()
+    {
         // findsimplematch
         check("void f() {\n"
               "    const Token *tok;\n"
               "    if(tok && Token::findsimplematch(tok, \"foobar\")) {};\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n",
+            errout.str());
 
         // findmatch
         check("void f() {\n"
               "    const Token *tok;\n"
               "    if(tok && Token::findmatch(tok, \"%str% foobar\")) {};\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n",
+            errout.str());
 
         // Match
         check("void f() {\n"
               "    const Token *tok;\n"
               "    if(tok && Token::Match(tok, \"5str% foobar\")) {};\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n",
+            errout.str());
 
         check("void f() {\n"
               "    const Token *tok;\n"
               "    if(a && tok && Token::Match(tok, \"5str% foobar\")) {};\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n",
+            errout.str());
 
         check("void f() {\n"
               "    const Token *tok;\n"
               "    if(a && b && tok && Token::Match(tok, \"5str% foobar\")) {};\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n",
+            errout.str());
 
         check("void f() {\n"
               "    const Token *tok;\n"
               "    if(a && b && c && tok && Token::Match(tok, \"5str% foobar\")) {};\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n",
+            errout.str());
 
         check("void f() {\n"
               "    const Token *tok;\n"
@@ -460,14 +525,18 @@ private:
               "    const Token *tok;\n"
               "    if(tok && Token::simpleMatch(tok, \"foobar\")) {};\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n",
+            errout.str());
 
         // Match
         check("void f() {\n"
               "    const Token *tok;\n"
               "    if(tok->previous() && Token::Match(tok->previous(), \"5str% foobar\")) {};\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok->previous()\", match-function already checks if it is null.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Unnecessary check of \"tok->previous()\", match-function already checks if it is null.\n",
+            errout.str());
 
         // don't report:
         // tok->previous() vs tok
@@ -496,13 +565,17 @@ private:
               "    const Token *tok;\n"
               "    if(!tok || !Token::simpleMatch(tok, \"foobar\")) {};\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n",
+            errout.str());
 
         check("void f() {\n"
               "    const Token *tok;\n"
               "    if(a || !tok || !Token::simpleMatch(tok, \"foobar\")) {};\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n",
+            errout.str());
 
         // if tok || !Token::simpleMatch...
         check("void f() {\n"
@@ -519,11 +592,14 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // something more complex
-        check("void f() {\n"
-              "    const Token *tok;\n"
-              "    if(!tok->previous()->previous() || !Token::simpleMatch(tok->previous()->previous(), \"foobar\")) {};\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok->previous()->previous()\", match-function already checks if it is null.\n", errout.str());
+        check(
+            "void f() {\n"
+            "    const Token *tok;\n"
+            "    if(!tok->previous()->previous() || !Token::simpleMatch(tok->previous()->previous(), \"foobar\")) {};\n"
+            "}");
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Unnecessary check of \"tok->previous()->previous()\", match-function already checks if it is null.\n",
+            errout.str());
     }
 };
 

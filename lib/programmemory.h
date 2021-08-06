@@ -29,25 +29,29 @@ struct ProgramMemory {
     bool getTokValue(nonneg int exprid, const Token** result) const;
     bool hasValue(nonneg int exprid);
 
-    void swap(ProgramMemory &pm);
+    void swap(ProgramMemory& pm);
 
     void clear();
 
     bool empty() const;
 
-    void replace(const ProgramMemory &pm);
+    void replace(const ProgramMemory& pm);
 
-    void insert(const ProgramMemory &pm);
+    void insert(const ProgramMemory& pm);
 };
 
-void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings, bool then);
+void programMemoryParseCondition(ProgramMemory& pm,
+                                 const Token* tok,
+                                 const Token* endTok,
+                                 const Settings* settings,
+                                 bool then);
 
 struct ProgramMemoryState {
     ProgramMemory state;
     std::map<nonneg int, const Token*> origins;
 
-    void insert(const ProgramMemory &pm, const Token* origin = nullptr);
-    void replace(const ProgramMemory &pm, const Token* origin = nullptr);
+    void insert(const ProgramMemory& pm, const Token* origin = nullptr);
+    void replace(const ProgramMemory& pm, const Token* origin = nullptr);
 
     void addState(const Token* tok, const ProgramMemory::Map& vars);
 
@@ -72,23 +76,20 @@ void execute(const Token* expr,
  * \param condition   top ast token in condition
  * \param programMemory   program memory
  */
-bool conditionIsFalse(const Token *condition, const ProgramMemory &programMemory);
+bool conditionIsFalse(const Token* condition, const ProgramMemory& programMemory);
 
 /**
  * Is condition always true when variable has given value?
  * \param condition   top ast token in condition
  * \param programMemory   program memory
  */
-bool conditionIsTrue(const Token *condition, const ProgramMemory &programMemory);
+bool conditionIsTrue(const Token* condition, const ProgramMemory& programMemory);
 
 /**
  * Get program memory by looking backwards from given token.
  */
 ProgramMemory getProgramMemory(const Token* tok, nonneg int exprid, const ValueFlow::Value& value);
 
-ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars);
+ProgramMemory getProgramMemory(const Token* tok, const ProgramMemory::Map& vars);
 
 #endif
-
-
-

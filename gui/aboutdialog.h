@@ -29,15 +29,13 @@ class QWidget;
 /// @{
 
 /**
-* @brief About dialog
-*
-*/
+ * @brief About dialog
+ *
+ */
 class AboutDialog : public QDialog {
     Q_OBJECT
 public:
-    AboutDialog(const QString &version,
-                const QString &extraVersion,
-                QWidget *parent = nullptr);
+    AboutDialog(const QString& version, const QString& extraVersion, QWidget* parent = nullptr);
 
 private:
     Ui::About mUI;

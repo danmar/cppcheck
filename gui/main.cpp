@@ -33,12 +33,11 @@
 #include "erroritem.h"
 #include "translationhandler.h"
 
-
 static void ShowUsage();
 static void ShowVersion();
-static bool CheckArgs(const QStringList &args);
+static bool CheckArgs(const QStringList& args);
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
@@ -87,7 +86,7 @@ int main(int argc, char *argv[])
 
 // Check only arguments needing action before GUI is shown.
 // Rest of the arguments are handled in MainWindow::HandleCLIParams()
-static bool CheckArgs(const QStringList &args)
+static bool CheckArgs(const QStringList& args)
 {
     if (args.contains("-h") || args.contains("--help")) {
         ShowUsage();
@@ -103,24 +102,23 @@ static bool CheckArgs(const QStringList &args)
 static void ShowUsage()
 {
     QString helpMessage = MainWindow::tr(
-                              "Cppcheck GUI.\n\n"
-                              "Syntax:\n"
-                              "    cppcheck-gui [OPTIONS] [files or paths]\n\n"
-                              "Options:\n"
-                              "    -h, --help              Print this help\n"
-                              "    -p <file>               Open given project file and start checking it\n"
-                              "    -l <file>               Open given results xml file\n"
-                              "    -d <directory>          Specify the directory that was checked to generate the results xml specified with -l\n"
-                              "    -v, --version           Show program version\n"
-                              "    --data-dir=<directory>  This option is for installation scripts so they can configure the directory where\n"
-                              "                            datafiles are located (translations, cfg). The GUI is not started when this option\n"
-                              "                            is used.");
+        "Cppcheck GUI.\n\n"
+        "Syntax:\n"
+        "    cppcheck-gui [OPTIONS] [files or paths]\n\n"
+        "Options:\n"
+        "    -h, --help              Print this help\n"
+        "    -p <file>               Open given project file and start checking it\n"
+        "    -l <file>               Open given results xml file\n"
+        "    -d <directory>          Specify the directory that was checked to generate the results xml specified with -l\n"
+        "    -v, --version           Show program version\n"
+        "    --data-dir=<directory>  This option is for installation scripts so they can configure the directory where\n"
+        "                            datafiles are located (translations, cfg). The GUI is not started when this option\n"
+        "                            is used.");
 #if defined(_WIN32)
     QMessageBox msgBox(QMessageBox::Information,
                        MainWindow::tr("Cppcheck GUI - Command line parameters"),
                        helpMessage,
-                       QMessageBox::Ok
-                      );
+                       QMessageBox::Ok);
     (void)msgBox.exec();
 #else
     std::cout << helpMessage.toStdString() << std::endl;
@@ -130,13 +128,13 @@ static void ShowUsage()
 static void ShowVersion()
 {
 #if defined(_WIN32)
-    AboutDialog *dlg = new AboutDialog(CppCheck::version(), CppCheck::extraVersion(), 0);
+    AboutDialog* dlg = new AboutDialog(CppCheck::version(), CppCheck::extraVersion(), 0);
     dlg->exec();
     delete dlg;
 #else
     std::string versionMessage("Cppcheck ");
     versionMessage += CppCheck::version();
-    const char * extraVersion = CppCheck::extraVersion();
+    const char* extraVersion = CppCheck::extraVersion();
     if (*extraVersion != 0)
         versionMessage += std::string(" (") + extraVersion + ")";
 

@@ -19,7 +19,7 @@
 #include <QtTest/QtTest>
 #include "cppchecklibrarydata.h"
 
-class TestCppcheckLibraryData: public QObject {
+class TestCppcheckLibraryData : public QObject {
     Q_OBJECT
 
 private slots:
@@ -40,8 +40,8 @@ private slots:
     void markupValid();
 
 private:
-    void loadCfgFile(QString filename, CppcheckLibraryData &data, QString &result, bool removeFile = false);
-    void saveCfgFile(QString filename, CppcheckLibraryData &data);
+    void loadCfgFile(QString filename, CppcheckLibraryData& data, QString& result, bool removeFile = false);
+    void saveCfgFile(QString filename, CppcheckLibraryData& data);
 
     CppcheckLibraryData libraryData;
     CppcheckLibraryData fileLibraryData;

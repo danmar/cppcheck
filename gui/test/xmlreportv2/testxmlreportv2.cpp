@@ -29,7 +29,7 @@ void TestXmlReportV2::readXml()
     QList<ErrorItem> errors = report.read();
     QCOMPARE(errors.size(), 6);
 
-    const ErrorItem &item = errors[0];
+    const ErrorItem& item = errors[0];
     QCOMPARE(item.errorPath.size(), 1);
     QCOMPARE(item.errorPath[0].file, QString("test.cxx"));
     QCOMPARE(item.errorPath[0].line, (unsigned int)11);
@@ -38,7 +38,7 @@ void TestXmlReportV2::readXml()
     QCOMPARE(item.summary, QString("Variable 'a' is assigned a value that is never used"));
     QCOMPARE(item.message, QString("Variable 'a' is assigned a value that is never used"));
 
-    const ErrorItem &item2 = errors[3];
+    const ErrorItem& item2 = errors[3];
     QCOMPARE(item2.errorPath.size(), 2);
     QCOMPARE(item2.errorPath[0].file, QString("test.cxx"));
     QCOMPARE(item2.errorPath[0].line, (unsigned int)16);

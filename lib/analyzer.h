@@ -46,69 +46,45 @@ struct Analyzer {
             SymbolicMatch = (1 << 7),
         };
 
-        void set(unsigned int f, bool state = true) {
-            mFlag = state ? mFlag | f : mFlag & ~f;
-        }
+        void set(unsigned int f, bool state = true) { mFlag = state ? mFlag | f : mFlag & ~f; }
 
-        bool get(unsigned int f) const {
-            return ((mFlag & f) != 0);
-        }
+        bool get(unsigned int f) const { return ((mFlag & f) != 0); }
 
-        bool isRead() const {
-            return get(Read);
-        }
+        bool isRead() const { return get(Read); }
 
-        bool isWrite() const {
-            return get(Write);
-        }
+        bool isWrite() const { return get(Write); }
 
-        bool isInvalid() const {
-            return get(Invalid);
-        }
+        bool isInvalid() const { return get(Invalid); }
 
-        bool isInconclusive() const {
-            return get(Inconclusive);
-        }
+        bool isInconclusive() const { return get(Inconclusive); }
 
-        bool isNone() const {
-            return mFlag == None;
-        }
+        bool isNone() const { return mFlag == None; }
 
-        bool isModified() const {
-            return isWrite() || isInvalid();
-        }
+        bool isModified() const { return isWrite() || isInvalid(); }
 
-        bool isIdempotent() const {
-            return get(Idempotent);
-        }
+        bool isIdempotent() const { return get(Idempotent); }
 
-        bool isIncremental() const {
-            return get(Incremental);
-        }
+        bool isIncremental() const { return get(Incremental); }
 
         bool isSymbolicMatch() const { return get(SymbolicMatch); }
 
-        bool matches() const {
-            return get(Match);
-        }
+        bool matches() const { return get(Match); }
 
-        Action& operator|=(Action a) {
+        Action& operator|=(Action a)
+        {
             set(a.mFlag);
             return *this;
         }
 
-        friend Action operator|(Action a, Action b) {
+        friend Action operator|(Action a, Action b)
+        {
             a |= b;
             return a;
         }
 
-        friend bool operator==(Action a, Action b) {
-            return a.mFlag == b.mFlag;
-        }
+        friend bool operator==(Action a, Action b) { return a.mFlag == b.mFlag; }
 
-        friend bool operator!=(Action a, Action b) {
-            return a.mFlag != b.mFlag;
-        }
+        friend bool operator!=(Action a, Action b) { return a.mFlag != b.mFlag; }
 
     private:
         unsigned int mFlag;
@@ -123,7 +99,8 @@ struct Analyzer {
         Action action;
         Terminate terminate;
 
-        void update(Result rhs) {
+        void update(Result rhs)
+        {
             if (terminate == Terminate::None)
                 terminate = rhs.terminate;
             action |= rhs.action;
@@ -149,14 +126,16 @@ struct Analyzer {
     virtual void update(Token* tok, Action a, Direction d) = 0;
     /// Try to evaluate the value of a token(most likely a condition)
     virtual std::vector<int> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const = 0;
-    std::vector<int> evaluate(const Token* tok, const Token* ctx = nullptr) const {
+    std::vector<int> evaluate(const Token* tok, const Token* ctx = nullptr) const
+    {
         return evaluate(Evaluate::Integral, tok, ctx);
     }
     /// Lower any values to possible
     virtual bool lowerToPossible() = 0;
     /// Lower any values to inconclusive
     virtual bool lowerToInconclusive() = 0;
-    /// If the analysis is unsure whether to update a scope, this will return true if the analysis should bifurcate the scope
+    /// If the analysis is unsure whether to update a scope, this will return true if the analysis should bifurcate the
+    /// scope
     virtual bool updateScope(const Token* endBlock, bool modified) const = 0;
     /// Called when a scope will be forked
     virtual void forkScope(const Token* /*endBlock*/) {}

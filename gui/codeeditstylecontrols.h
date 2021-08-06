@@ -47,7 +47,6 @@ private:
     QColor mColor;
 };
 
-
 class SelectFontWeightCombo : public QComboBox {
     Q_OBJECT
 public:
@@ -68,5 +67,4 @@ private:
     QFont::Weight mWeight;
 };
 
-#endif  //CODEEDITORSTYLECONTROLS_H
-
+#endif // CODEEDITORSTYLECONTROLS_H

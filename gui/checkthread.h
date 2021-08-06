@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef CHECKTHREAD_H
 #define CHECKTHREAD_H
 
@@ -31,48 +30,40 @@ class ThreadResult;
 /// @{
 
 /**
-* @brief Thread to run cppcheck
-*
-*/
+ * @brief Thread to run cppcheck
+ *
+ */
 class CheckThread : public QThread {
     Q_OBJECT
 public:
-    explicit CheckThread(ThreadResult &result);
+    explicit CheckThread(ThreadResult& result);
     virtual ~CheckThread();
 
     /**
-    * @brief Set settings for cppcheck
-    *
-    * @param settings settings for cppcheck
-    */
-    void check(const Settings &settings);
+     * @brief Set settings for cppcheck
+     *
+     * @param settings settings for cppcheck
+     */
+    void check(const Settings& settings);
 
     /**
-    * @brief Run whole program analysis
-    * @param files    All files
-    */
-    void analyseWholeProgram(const QStringList &files);
+     * @brief Run whole program analysis
+     * @param files    All files
+     */
+    void analyseWholeProgram(const QStringList& files);
 
-    void setAddonsAndTools(const QStringList &addonsAndTools) {
-        mAddonsAndTools = addonsAndTools;
-    }
+    void setAddonsAndTools(const QStringList& addonsAndTools) { mAddonsAndTools = addonsAndTools; }
 
-    void setDataDir(const QString &dataDir) {
-        mDataDir = dataDir;
-    }
+    void setDataDir(const QString& dataDir) { mDataDir = dataDir; }
 
-    void setClangIncludePaths(const QStringList &s) {
-        mClangIncludePaths = s;
-    }
+    void setClangIncludePaths(const QStringList& s) { mClangIncludePaths = s; }
 
-    void setSuppressions(const QList<Suppressions::Suppression> &s) {
-        mSuppressions = s;
-    }
+    void setSuppressions(const QList<Suppressions::Suppression>& s) { mSuppressions = s; }
 
     /**
-    * @brief method that is run in a thread
-    *
-    */
+     * @brief method that is run in a thread
+     *
+     */
     void run();
 
     void stop();
@@ -92,45 +83,45 @@ public:
 signals:
 
     /**
-    * @brief cpp checking is done
-    *
-    */
+     * @brief cpp checking is done
+     *
+     */
     void done();
 
-    void fileChecked(const QString &file);
-protected:
+    void fileChecked(const QString& file);
 
+protected:
     /**
-    * @brief States for the check thread.
-    * Whole purpose of these states is to allow stopping of the checking. When
-    * stopping we say for the thread (Stopping) that stop when current check
-    * has been completed. Thread must be stopped cleanly, just terminating thread
-    * likely causes unpredictable side-effects.
-    */
+     * @brief States for the check thread.
+     * Whole purpose of these states is to allow stopping of the checking. When
+     * stopping we say for the thread (Stopping) that stop when current check
+     * has been completed. Thread must be stopped cleanly, just terminating thread
+     * likely causes unpredictable side-effects.
+     */
     enum State {
-        Running, /**< The thread is checking. */
+        Running,  /**< The thread is checking. */
         Stopping, /**< The thread will stop after current work. */
-        Stopped, /**< The thread has been stopped. */
-        Ready, /**< The thread is ready. */
+        Stopped,  /**< The thread has been stopped. */
+        Ready,    /**< The thread is ready. */
     };
 
     /**
-    * @brief Thread's current execution state.
-    */
+     * @brief Thread's current execution state.
+     */
     State mState;
 
-    ThreadResult &mResult;
+    ThreadResult& mResult;
     /**
-    * @brief Cppcheck itself
-    */
+     * @brief Cppcheck itself
+     */
     CppCheck mCppcheck;
 
 private:
-    void runAddonsAndTools(const ImportProject::FileSettings *fileSettings, const QString &fileName);
+    void runAddonsAndTools(const ImportProject::FileSettings* fileSettings, const QString& fileName);
 
-    void parseClangErrors(const QString &tool, const QString &file0, QString err);
+    void parseClangErrors(const QString& tool, const QString& file0, QString err);
 
-    bool isSuppressed(const Suppressions::ErrorMessage &errorMessage) const;
+    bool isSuppressed(const Suppressions::ErrorMessage& errorMessage) const;
 
     QStringList mFiles;
     bool mAnalyseWholeProgram;

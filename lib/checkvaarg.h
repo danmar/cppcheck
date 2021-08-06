@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
 #ifndef checkvaargtH
 #define checkvaargtH
@@ -41,14 +40,14 @@ class Tokenizer;
 
 class CPPCHECKLIB CheckVaarg : public Check {
 public:
-    CheckVaarg() : Check(myName()) {
-    }
+    CheckVaarg() : Check(myName()) {}
 
-    CheckVaarg(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+    CheckVaarg(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE
+    {
         CheckVaarg check(tokenizer, settings, errorLogger);
         check.va_start_argument();
         check.va_list_usage();
@@ -58,13 +57,16 @@ public:
     void va_list_usage();
 
 private:
-    void wrongParameterTo_va_start_error(const Token *tok, const std::string& paramIsName, const std::string& paramShouldName);
-    void referenceAs_va_start_error(const Token *tok, const std::string& paramName);
-    void va_end_missingError(const Token *tok, const std::string& varname);
-    void va_list_usedBeforeStartedError(const Token *tok, const std::string& varname);
-    void va_start_subsequentCallsError(const Token *tok, const std::string& varname);
+    void wrongParameterTo_va_start_error(const Token* tok,
+                                         const std::string& paramIsName,
+                                         const std::string& paramShouldName);
+    void referenceAs_va_start_error(const Token* tok, const std::string& paramName);
+    void va_end_missingError(const Token* tok, const std::string& varname);
+    void va_list_usedBeforeStartedError(const Token* tok, const std::string& varname);
+    void va_start_subsequentCallsError(const Token* tok, const std::string& varname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE
+    {
         CheckVaarg c(nullptr, settings, errorLogger);
         c.wrongParameterTo_va_start_error(nullptr, "arg1", "arg2");
         c.referenceAs_va_start_error(nullptr, "arg1");
@@ -73,11 +75,10 @@ private:
         c.va_start_subsequentCallsError(nullptr, "vl");
     }
 
-    static std::string myName() {
-        return "Vaarg";
-    }
+    static std::string myName() { return "Vaarg"; }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const OVERRIDE
+    {
         return "Check for misusage of variable argument lists:\n"
                "- Wrong parameter passed to va_start()\n"
                "- Reference passed to va_start()\n"

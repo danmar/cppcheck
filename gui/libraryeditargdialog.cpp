@@ -1,10 +1,8 @@
 #include "libraryeditargdialog.h"
 #include "ui_libraryeditargdialog.h"
 
-LibraryEditArgDialog::LibraryEditArgDialog(QWidget *parent, const CppcheckLibraryData::Function::Arg &arg) :
-    QDialog(parent),
-    mUi(new Ui::LibraryEditArgDialog),
-    mMinSizes(arg.minsizes)
+LibraryEditArgDialog::LibraryEditArgDialog(QWidget* parent, const CppcheckLibraryData::Function::Arg& arg)
+    : QDialog(parent), mUi(new Ui::LibraryEditArgDialog), mMinSizes(arg.minsizes)
 {
     mUi->setupUi(this);
     mUi->notbool->setChecked(arg.notbool);
@@ -22,7 +20,11 @@ LibraryEditArgDialog::LibraryEditArgDialog(QWidget *parent, const CppcheckLibrar
     mUi->minsize2arg2->setEnabled(arg.minsizes.count() >= 2 && arg.minsizes[1].type == "mul");
 
     QStringList items;
-    items << "None" << "argvalue" << "mul" << "sizeof" << "strlen";
+    items << "None"
+          << "argvalue"
+          << "mul"
+          << "sizeof"
+          << "strlen";
 
     mUi->minsize1type->clear();
     mUi->minsize1type->addItems(items);
@@ -55,23 +57,20 @@ LibraryEditArgDialog::LibraryEditArgDialog(QWidget *parent, const CppcheckLibrar
     }
 }
 
-LibraryEditArgDialog::~LibraryEditArgDialog()
-{
-    delete mUi;
-}
+LibraryEditArgDialog::~LibraryEditArgDialog() { delete mUi; }
 
 CppcheckLibraryData::Function::Arg LibraryEditArgDialog::getArg() const
 {
     CppcheckLibraryData::Function::Arg ret;
-    ret.notbool   = mUi->notbool->isChecked();
-    ret.notnull   = mUi->notnull->isChecked();
+    ret.notbool = mUi->notbool->isChecked();
+    ret.notnull = mUi->notnull->isChecked();
     ret.notuninit = mUi->notuninit->isChecked();
-    ret.strz      = mUi->strz->isChecked();
+    ret.strz = mUi->strz->isChecked();
     ret.formatstr = mUi->formatstr->isChecked();
     if (mUi->minsize1type->currentIndex() != 0) {
         CppcheckLibraryData::Function::Arg::MinSize minsize1;
         minsize1.type = mUi->minsize1type->currentText();
-        minsize1.arg  = QString::number(mUi->minsize1arg->value());
+        minsize1.arg = QString::number(mUi->minsize1arg->value());
         if (minsize1.type == "mul")
             minsize1.arg2 = QString::number(mUi->minsize1arg2->value());
         ret.minsizes.append(minsize1);
@@ -79,13 +78,13 @@ CppcheckLibraryData::Function::Arg LibraryEditArgDialog::getArg() const
         if (mUi->minsize2type->currentIndex() != 0) {
             CppcheckLibraryData::Function::Arg::MinSize minsize2;
             minsize2.type = mUi->minsize2type->currentText();
-            minsize2.arg  = QString::number(mUi->minsize2arg->value());
+            minsize2.arg = QString::number(mUi->minsize2arg->value());
             if (minsize2.type == "mul")
                 minsize2.arg2 = QString::number(mUi->minsize2arg2->value());
             ret.minsizes.append(minsize2);
         }
     }
-    ret.valid     = mUi->valid->text();
+    ret.valid = mUi->valid->text();
     return ret;
 }
 

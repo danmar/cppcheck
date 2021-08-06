@@ -24,52 +24,47 @@
 
 namespace MatchCompiler {
 
-    template <unsigned int n>
-    class ConstString {
-    public:
-        typedef const char(&StringRef)[n];
-        explicit ConstString(StringRef s)
-            :_s(s) {
-        }
+template <unsigned int n>
+class ConstString {
+public:
+    typedef const char (&StringRef)[n];
+    explicit ConstString(StringRef s) : _s(s) {}
 
-        operator StringRef() const {
-            return _s;
-        }
+    operator StringRef() const { return _s; }
 
-    private:
-        StringRef _s;
-    };
+private:
+    StringRef _s;
+};
 
-    template <unsigned int n>
-    inline bool equalN(const char s1[], const char s2[])
-    {
-        return (*s1 == *s2) && equalN<n-1>(s1+1, s2+1);
-    }
-
-    template <>
-    inline bool equalN<0>(const char [], const char [])
-    {
-        return true;
-    }
-
-    template <unsigned int n>
-    inline bool operator==(const std::string & s1, ConstString<n> const & s2)
-    {
-        return equalN<n>(s1.c_str(), s2);
-    }
-
-    template <unsigned int n>
-    inline bool operator!=(const std::string & s1, ConstString<n> const & s2)
-    {
-        return !operator==(s1,s2);
-    }
-
-    template <unsigned int n>
-    inline ConstString<n> makeConstString(const char(&s)[n])
-    {
-        return ConstString<n>(s);
-    }
+template <unsigned int n>
+inline bool equalN(const char s1[], const char s2[])
+{
+    return (*s1 == *s2) && equalN<n - 1>(s1 + 1, s2 + 1);
 }
 
-#endif // matchcompilerH
+template <>
+inline bool equalN<0>(const char[], const char[])
+{
+    return true;
+}
 
+template <unsigned int n>
+inline bool operator==(const std::string& s1, ConstString<n> const& s2)
+{
+    return equalN<n>(s1.c_str(), s2);
+}
+
+template <unsigned int n>
+inline bool operator!=(const std::string& s1, ConstString<n> const& s2)
+{
+    return !operator==(s1, s2);
+}
+
+template <unsigned int n>
+inline ConstString<n> makeConstString(const char (&s)[n])
+{
+    return ConstString<n>(s);
+}
+} // namespace MatchCompiler
+
+#endif // matchcompilerH

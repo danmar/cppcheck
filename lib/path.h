@@ -30,7 +30,6 @@
 /// @addtogroup Core
 /// @{
 
-
 /**
  * @brief Path handling routines.
  * Internally cppcheck wants to store paths with / separator which is also
@@ -47,10 +46,10 @@ public:
     static std::string toNativeSeparators(std::string path);
 
     /**
-      * Convert path to use internal path separators.
-      * @param path Path string to convert.
-      * @return converted path.
-      */
+     * Convert path to use internal path separators.
+     * @param path Path string to convert.
+     * @return converted path.
+     */
     static std::string fromNativeSeparators(std::string path);
 
     /**
@@ -65,7 +64,7 @@ public:
      * @param filename filename to lookup, must have / -separators.
      * @return path part of the filename
      */
-    static std::string getPathFromFilename(const std::string &filename);
+    static std::string getPathFromFilename(const std::string& filename);
 
     /**
      * @brief Compare filenames to see if they are the same.
@@ -74,7 +73,7 @@ public:
      * @param fname2 other filename
      * @return true if the filenames match on the current platform
      */
-    static bool sameFileName(const std::string &fname1, const std::string &fname2);
+    static bool sameFileName(const std::string& fname1, const std::string& fname2);
 
     /**
      * @brief Remove quotation marks (") from the path.
@@ -84,18 +83,18 @@ public:
     static std::string removeQuotationMarks(std::string path);
 
     /**
-      * @brief Get an extension of the filename.
-      * @param path Path containing filename.
-      * @return Filename extension (containing the dot, e.g. ".h" or ".CPP").
-      */
-    static std::string getFilenameExtension(const std::string &path);
+     * @brief Get an extension of the filename.
+     * @param path Path containing filename.
+     * @return Filename extension (containing the dot, e.g. ".h" or ".CPP").
+     */
+    static std::string getFilenameExtension(const std::string& path);
 
     /**
-      * @brief Get an extension of the filename in lower case.
-      * @param path Path containing filename.
-      * @return Filename extension (containing the dot, e.g. ".h").
-      */
-    static std::string getFilenameExtensionInLowerCase(const std::string &path);
+     * @brief Get an extension of the filename in lower case.
+     * @param path Path containing filename.
+     * @return Filename extension (containing the dot, e.g. ".h").
+     */
+    static std::string getFilenameExtensionInLowerCase(const std::string& path);
 
     /**
      * @brief Returns the absolute path of current working directory
@@ -111,18 +110,18 @@ public:
     static bool isAbsolute(const std::string& path);
 
     /**
-      * @brief Create a relative path from an absolute one, if absolute path is inside the basePaths.
-      * @param absolutePath Path to be made relative.
-      * @param basePaths Paths to which it may be made relative.
-      * @return relative path, if possible. Otherwise absolutePath is returned unchanged
-      */
+     * @brief Create a relative path from an absolute one, if absolute path is inside the basePaths.
+     * @param absolutePath Path to be made relative.
+     * @param basePaths Paths to which it may be made relative.
+     * @return relative path, if possible. Otherwise absolutePath is returned unchanged
+     */
     static std::string getRelativePath(const std::string& absolutePath, const std::vector<std::string>& basePaths);
 
     /**
-      * @brief Get an absolute file path from a relative one.
-      * @param filePath File path to be made absolute.
-      * @return absolute path, if possible. Otherwise an empty path is returned
-      */
+     * @brief Get an absolute file path from a relative one.
+     * @param filePath File path to be made absolute.
+     * @return absolute path, if possible. Otherwise an empty path is returned
+     */
     static std::string getAbsoluteFilePath(const std::string& filePath);
 
     /**
@@ -131,7 +130,8 @@ public:
      * @param filename filename to check. path info is optional
      * @return true if the file extension indicates it should be checked
      */
-    static bool acceptFile(const std::string &filename) {
+    static bool acceptFile(const std::string& filename)
+    {
         const std::set<std::string> extra;
         return acceptFile(filename, extra);
     }
@@ -143,42 +143,42 @@ public:
      * @param extra    extra file extensions
      * @return true if the file extension indicates it should be checked
      */
-    static bool acceptFile(const std::string &path, const std::set<std::string> &extra);
+    static bool acceptFile(const std::string& path, const std::set<std::string>& extra);
 
     /**
      * @brief Identify language based on file extension.
      * @param path filename to check. path info is optional
      * @return true if extension is meant for C files
      */
-    static bool isC(const std::string &path);
+    static bool isC(const std::string& path);
 
     /**
      * @brief Identify language based on file extension.
      * @param path filename to check. path info is optional
      * @return true if extension is meant for C++ files
      */
-    static bool isCPP(const std::string &path);
+    static bool isCPP(const std::string& path);
 
     /**
      * @brief Is filename a header based on file extension
      * @param path filename to check. path info is optional
      * @return true if filename extension is meant for headers
      */
-    static bool isHeader(const std::string &path);
+    static bool isHeader(const std::string& path);
 
     /**
      * @brief Get filename without a directory path part.
      * @param file filename to be stripped. path info is optional
      * @return filename without directory path part.
      */
-    static std::string stripDirectoryPart(const std::string &file);
+    static std::string stripDirectoryPart(const std::string& file);
 
     /**
-      * @brief Checks if a File exists
-      * @param file Path to be checked if it is a File
-      * @return true if given path is a File
-      */
-    static bool fileExists(const std::string &file);
+     * @brief Checks if a File exists
+     * @param file Path to be checked if it is a File
+     * @return true if given path is a File
+     */
+    static bool fileExists(const std::string& file);
 };
 
 /// @}

@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
 #ifndef checkstlH
 #define checkstlH
@@ -37,25 +36,23 @@ class Token;
 class Variable;
 class ErrorLogger;
 
-
 /// @addtogroup Checks
 /// @{
-
 
 /** @brief %Check STL usage (invalidation of iterators, mismatching containers, etc) */
 class CPPCHECKLIB CheckStl : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckStl() : Check(myName()) {
-    }
+    CheckStl() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
     CheckStl(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {}
 
     /** run checks, the token list is not simplified */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE
+    {
         if (!tokenizer->isCPP()) {
             return;
         }
@@ -195,8 +192,8 @@ public:
     void checkMutexes();
 
 private:
-    bool isContainerSize(const Token *containerToken, const Token *expr) const;
-    bool isContainerSizeGE(const Token * containerToken, const Token *expr) const;
+    bool isContainerSize(const Token* containerToken, const Token* expr) const;
+    bool isContainerSizeGE(const Token* containerToken, const Token* expr) const;
 
     void missingComparisonError(const Token* incrementToken1, const Token* incrementToken2);
     void string_c_strThrowError(const Token* tok);
@@ -204,25 +201,32 @@ private:
     void string_c_strReturn(const Token* tok);
     void string_c_strParam(const Token* tok, nonneg int number);
 
-    void outOfBoundsError(const Token *tok, const std::string &containerName, const ValueFlow::Value *containerSize, const std::string &index, const ValueFlow::Value *indexValue);
-    void outOfBoundsIndexExpressionError(const Token *tok, const Token *index);
+    void outOfBoundsError(const Token* tok,
+                          const std::string& containerName,
+                          const ValueFlow::Value* containerSize,
+                          const std::string& index,
+                          const ValueFlow::Value* indexValue);
+    void outOfBoundsIndexExpressionError(const Token* tok, const Token* index);
     void stlOutOfBoundsError(const Token* tok, const std::string& num, const std::string& var, bool at);
     void negativeIndexError(const Token* tok, const ValueFlow::Value& index);
     void invalidIteratorError(const Token* tok, const std::string& iteratorName);
     void iteratorsError(const Token* tok, const std::string& containerName1, const std::string& containerName2);
-    void iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName1, const std::string& containerName2);
+    void iteratorsError(const Token* tok,
+                        const Token* containerTok,
+                        const std::string& containerName1,
+                        const std::string& containerName2);
     void iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName);
     void mismatchingContainerIteratorError(const Token* tok, const Token* iterTok);
     void mismatchingContainersError(const Token* tok1, const Token* tok2);
-    void mismatchingContainerExpressionError(const Token *tok1, const Token *tok2);
-    void sameIteratorExpressionError(const Token *tok);
+    void mismatchingContainerExpressionError(const Token* tok1, const Token* tok2);
+    void sameIteratorExpressionError(const Token* tok);
     void stlBoundariesError(const Token* tok);
     void if_findError(const Token* tok, bool str);
-    void checkFindInsertError(const Token *tok);
+    void checkFindInsertError(const Token* tok);
     void sizeError(const Token* tok);
     void redundantIfRemoveError(const Token* tok);
-    void invalidContainerLoopError(const Token *tok, const Token * loopTok);
-    void invalidContainerError(const Token *tok, const Token * contTok, const ValueFlow::Value *val, ErrorPath errorPath);
+    void invalidContainerLoopError(const Token* tok, const Token* loopTok);
+    void invalidContainerError(const Token* tok, const Token* contTok, const ValueFlow::Value* val, ErrorPath errorPath);
     void invalidContainerReferenceError(const Token* tok, const Token* contTok, ErrorPath errorPath);
 
     void uselessCallsReturnValueError(const Token* tok, const std::string& varname, const std::string& function);
@@ -232,18 +236,19 @@ private:
     void uselessCallsRemoveError(const Token* tok, const std::string& function);
 
     void dereferenceInvalidIteratorError(const Token* deref, const std::string& iterName);
-    void dereferenceInvalidIteratorError(const Token* tok, const ValueFlow::Value *value, bool inconclusive);
+    void dereferenceInvalidIteratorError(const Token* tok, const ValueFlow::Value* value, bool inconclusive);
 
-    void readingEmptyStlContainerError(const Token* tok, const ValueFlow::Value *value=nullptr);
+    void readingEmptyStlContainerError(const Token* tok, const ValueFlow::Value* value = nullptr);
 
-    void useStlAlgorithmError(const Token *tok, const std::string &algoName);
+    void useStlAlgorithmError(const Token* tok, const std::string& algoName);
 
-    void knownEmptyContainerError(const Token *tok, const std::string& algo);
+    void knownEmptyContainerError(const Token* tok, const std::string& algo);
 
-    void globalLockGuardError(const Token *tok);
-    void localMutexError(const Token *tok);
+    void globalLockGuardError(const Token* tok);
+    void localMutexError(const Token* tok);
 
-    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE
+    {
         ErrorPath errorPath;
         CheckStl c(nullptr, settings, errorLogger);
         c.outOfBoundsError(nullptr, "container", nullptr, "x", nullptr);
@@ -284,11 +289,10 @@ private:
         c.localMutexError(nullptr);
     }
 
-    static std::string myName() {
-        return "STL usage";
-    }
+    static std::string myName() { return "STL usage"; }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const OVERRIDE
+    {
         return "Check for invalid usage of STL:\n"
                "- out of bounds errors\n"
                "- misuse of iterators when iterating through a container\n"

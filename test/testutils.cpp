@@ -24,16 +24,17 @@ const Settings givenACodeSampleToTokenize::settings;
 
 class TestUtils : public TestFixture {
 public:
-    TestUtils() : TestFixture("TestUtils") {
-    }
+    TestUtils() : TestFixture("TestUtils") {}
 
 private:
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
         TEST_CASE(isValidGlobPattern);
         TEST_CASE(matchglob);
     }
 
-    void isValidGlobPattern() {
+    void isValidGlobPattern()
+    {
         ASSERT_EQUALS(true, ::isValidGlobPattern("*"));
         ASSERT_EQUALS(true, ::isValidGlobPattern("*x"));
         ASSERT_EQUALS(true, ::isValidGlobPattern("x*"));
@@ -53,7 +54,8 @@ private:
         ASSERT_EQUALS(false, ::isValidGlobPattern("x??"));
     }
 
-    void matchglob() {
+    void matchglob()
+    {
         ASSERT_EQUALS(true, ::matchglob("*", "xyz"));
         ASSERT_EQUALS(true, ::matchglob("x*", "xyz"));
         ASSERT_EQUALS(true, ::matchglob("*z", "xyz"));

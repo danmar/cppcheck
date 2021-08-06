@@ -26,20 +26,14 @@
 #include "checkthread.h"
 #include "resultsview.h"
 
-ThreadHandler::ThreadHandler(QObject *parent) :
-    QObject(parent),
-    mScanDuration(0),
-    mRunningThreadCount(0),
-    mAnalyseWholeProgram(false)
+ThreadHandler::ThreadHandler(QObject* parent)
+    : QObject(parent), mScanDuration(0), mRunningThreadCount(0), mAnalyseWholeProgram(false)
 
 {
     setThreadCount(1);
 }
 
-ThreadHandler::~ThreadHandler()
-{
-    removeThreads();
-}
+ThreadHandler::~ThreadHandler() { removeThreads(); }
 
 void ThreadHandler::clearFiles()
 {
@@ -50,13 +44,13 @@ void ThreadHandler::clearFiles()
     mSuppressions.clear();
 }
 
-void ThreadHandler::setFiles(const QStringList &files)
+void ThreadHandler::setFiles(const QStringList& files)
 {
     mResults.setFiles(files);
     mLastFiles = files;
 }
 
-void ThreadHandler::setProject(const ImportProject &prj)
+void ThreadHandler::setProject(const ImportProject& prj)
 {
     mResults.setProject(prj);
     mLastFiles.clear();
@@ -76,7 +70,7 @@ void ThreadHandler::setCheckFiles(const QStringList& files)
     }
 }
 
-void ThreadHandler::check(const Settings &settings)
+void ThreadHandler::check(const Settings& settings)
 {
     if (mResults.getFileCount() == 0 || mRunningThreadCount > 0 || settings.jobs == 0) {
         qDebug() << "Can't start checking if there's no files to check or if check is in progress.";
@@ -108,40 +102,30 @@ void ThreadHandler::check(const Settings &settings)
     mTime.start();
 }
 
-bool ThreadHandler::isChecking() const
-{
-    return mRunningThreadCount > 0;
-}
+bool ThreadHandler::isChecking() const { return mRunningThreadCount > 0; }
 
 void ThreadHandler::setThreadCount(const int count)
 {
-    if (mRunningThreadCount > 0 ||
-        count == mThreads.size() ||
-        count <= 0) {
+    if (mRunningThreadCount > 0 || count == mThreads.size() || count <= 0) {
         return;
     }
 
-    //Remove unused old threads
+    // Remove unused old threads
     removeThreads();
-    //Create new threads
+    // Create new threads
     for (int i = mThreads.size(); i < count; i++) {
         mThreads << new CheckThread(mResults);
-        connect(mThreads.last(), &CheckThread::done,
-                this, &ThreadHandler::threadDone);
-        connect(mThreads.last(), &CheckThread::fileChecked,
-                &mResults, &ThreadResult::fileChecked);
+        connect(mThreads.last(), &CheckThread::done, this, &ThreadHandler::threadDone);
+        connect(mThreads.last(), &CheckThread::fileChecked, &mResults, &ThreadResult::fileChecked);
     }
 }
-
 
 void ThreadHandler::removeThreads()
 {
     for (CheckThread* thread : mThreads) {
         thread->terminate();
-        disconnect(thread, &CheckThread::done,
-                   this, &ThreadHandler::threadDone);
-        disconnect(thread, &CheckThread::fileChecked,
-                   &mResults, &ThreadResult::fileChecked);
+        disconnect(thread, &CheckThread::done, this, &ThreadHandler::threadDone);
+        disconnect(thread, &CheckThread::fileChecked, &mResults, &ThreadResult::fileChecked);
         delete thread;
     }
 
@@ -180,48 +164,34 @@ void ThreadHandler::stop()
     }
 }
 
-void ThreadHandler::initialize(ResultsView *view)
+void ThreadHandler::initialize(ResultsView* view)
 {
-    connect(&mResults, &ThreadResult::progress,
-            view, &ResultsView::progress);
+    connect(&mResults, &ThreadResult::progress, view, &ResultsView::progress);
 
-    connect(&mResults, &ThreadResult::error,
-            view, &ResultsView::error);
+    connect(&mResults, &ThreadResult::error, view, &ResultsView::error);
 
-    connect(&mResults, &ThreadResult::log,
-            this, &ThreadHandler::log);
+    connect(&mResults, &ThreadResult::log, this, &ThreadHandler::log);
 
-    connect(&mResults, &ThreadResult::debugError,
-            this, &ThreadHandler::debugError);
+    connect(&mResults, &ThreadResult::debugError, this, &ThreadHandler::debugError);
 
-    connect(&mResults, &ThreadResult::bughuntingReportLine,
-            this, &ThreadHandler::bughuntingReportLine);
+    connect(&mResults, &ThreadResult::bughuntingReportLine, this, &ThreadHandler::bughuntingReportLine);
 }
 
-void ThreadHandler::loadSettings(const QSettings &settings)
+void ThreadHandler::loadSettings(const QSettings& settings)
 {
     setThreadCount(settings.value(SETTINGS_CHECK_THREADS, 1).toInt());
 }
 
-void ThreadHandler::saveSettings(QSettings &settings) const
+void ThreadHandler::saveSettings(QSettings& settings) const
 {
     settings.setValue(SETTINGS_CHECK_THREADS, mThreads.size());
 }
 
-bool ThreadHandler::hasPreviousFiles() const
-{
-    return !mLastFiles.isEmpty();
-}
+bool ThreadHandler::hasPreviousFiles() const { return !mLastFiles.isEmpty(); }
 
-int ThreadHandler::getPreviousFilesCount() const
-{
-    return mLastFiles.size();
-}
+int ThreadHandler::getPreviousFilesCount() const { return mLastFiles.size(); }
 
-int ThreadHandler::getPreviousScanDuration() const
-{
-    return mScanDuration;
-}
+int ThreadHandler::getPreviousScanDuration() const { return mScanDuration; }
 
 QStringList ThreadHandler::getReCheckFiles(bool all) const
 {
@@ -239,7 +209,9 @@ QStringList ThreadHandler::getReCheckFiles(bool all) const
     return files;
 }
 
-bool ThreadHandler::needsReCheck(const QString &filename, std::set<QString> &modified, std::set<QString> &unmodified) const
+bool ThreadHandler::needsReCheck(const QString& filename,
+                                 std::set<QString>& modified,
+                                 std::set<QString>& unmodified) const
 {
     if (modified.find(filename) != modified.end())
         return true;
@@ -263,10 +235,10 @@ bool ThreadHandler::needsReCheck(const QString &filename, std::set<QString> &mod
     while (!in.atEnd()) {
         QString line = in.readLine();
         if (line.startsWith("#include \"")) {
-            line.remove(0,10);
+            line.remove(0, 10);
             int i = line.indexOf("\"");
             if (i > 0) {
-                line.remove(i,line.length());
+                line.remove(i, line.length());
                 line = QFileInfo(filename).absolutePath() + "/" + line;
                 if (needsReCheck(line, modified, unmodified)) {
                     modified.insert(line);
@@ -279,12 +251,6 @@ bool ThreadHandler::needsReCheck(const QString &filename, std::set<QString> &mod
     return false;
 }
 
-QDateTime ThreadHandler::getCheckStartTime() const
-{
-    return mCheckStartTime;
-}
+QDateTime ThreadHandler::getCheckStartTime() const { return mCheckStartTime; }
 
-void ThreadHandler::setCheckStartTime(QDateTime checkStartTime)
-{
-    mCheckStartTime = std::move(checkStartTime);
-}
+void ThreadHandler::setCheckStartTime(QDateTime checkStartTime) { mCheckStartTime = std::move(checkStartTime); }

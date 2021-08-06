@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
 #ifndef checkfunctionsH
 #define checkfunctionsH
@@ -37,9 +36,8 @@ class Tokenizer;
 class ErrorLogger;
 
 namespace ValueFlow {
-    class Value;
-}  // namespace ValueFlow
-
+class Value;
+} // namespace ValueFlow
 
 /// @addtogroup Checks
 /// @{
@@ -51,20 +49,20 @@ namespace ValueFlow {
 class CPPCHECKLIB CheckFunctions : public Check {
 public:
     /** This constructor is used when registering the CheckFunctions */
-    CheckFunctions() : Check(myName()) {
-    }
+    CheckFunctions() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
-    CheckFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+    CheckFunctions(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE
+    {
         CheckFunctions checkFunctions(tokenizer, settings, errorLogger);
 
         checkFunctions.checkIgnoredReturnValue();
-        checkFunctions.checkMissingReturn();  // Missing "return" in exit path
+        checkFunctions.checkMissingReturn(); // Missing "return" in exit path
 
         // --check-library : functions with nonmatching configuration
         checkFunctions.checkLibraryMatchFunctions();
@@ -81,13 +79,13 @@ public:
     void checkProhibitedFunctions();
 
     /**
-    * @brief Invalid function usage (invalid input value / overlapping data)
-    *
-    * %Check that given function parameters are valid according to the standard
-    * - wrong radix given for strtol/strtoul
-    * - overlapping data when using sprintf/snprintf
-    * - wrong input value according to library
-    */
+     * @brief Invalid function usage (invalid input value / overlapping data)
+     *
+     * %Check that given function parameters are valid according to the standard
+     * - wrong radix given for strtol/strtoul
+     * - overlapping data when using sprintf/snprintf
+     * - wrong input value according to library
+     */
     void invalidFunctionUsage();
 
     /** @brief %Check for ignored return values. */
@@ -112,44 +110,50 @@ private:
     /** @brief %Check for missing "return" */
     void checkMissingReturn();
 
-    void invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const ValueFlow::Value *invalidValue, const std::string &validstr);
-    void invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr);
-    void invalidFunctionArgStrError(const Token *tok, const std::string &functionName, nonneg int argnr);
+    void invalidFunctionArgError(const Token* tok,
+                                 const std::string& functionName,
+                                 int argnr,
+                                 const ValueFlow::Value* invalidValue,
+                                 const std::string& validstr);
+    void invalidFunctionArgBoolError(const Token* tok, const std::string& functionName, int argnr);
+    void invalidFunctionArgStrError(const Token* tok, const std::string& functionName, nonneg int argnr);
     void ignoredReturnValueError(const Token* tok, const std::string& function);
     void ignoredReturnErrorCode(const Token* tok, const std::string& function);
-    void mathfunctionCallWarning(const Token *tok, const nonneg int numParam = 1);
-    void mathfunctionCallWarning(const Token *tok, const std::string& oldexp, const std::string& newexp);
-    void memsetZeroBytesError(const Token *tok);
-    void memsetFloatError(const Token *tok, const std::string &var_value);
-    void memsetValueOutOfRangeError(const Token *tok, const std::string &value);
-    void missingReturnError(const Token *tok, Certainty::CertaintyLevel certainty=Certainty::normal);
-    void copyElisionError(const Token *tok);
+    void mathfunctionCallWarning(const Token* tok, const nonneg int numParam = 1);
+    void mathfunctionCallWarning(const Token* tok, const std::string& oldexp, const std::string& newexp);
+    void memsetZeroBytesError(const Token* tok);
+    void memsetFloatError(const Token* tok, const std::string& var_value);
+    void memsetValueOutOfRangeError(const Token* tok, const std::string& value);
+    void missingReturnError(const Token* tok, Certainty::CertaintyLevel certainty = Certainty::normal);
+    void copyElisionError(const Token* tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE
+    {
         CheckFunctions c(nullptr, settings, errorLogger);
 
-        for (std::map<std::string, Library::WarnInfo>::const_iterator i = settings->library.functionwarn.cbegin(); i != settings->library.functionwarn.cend(); ++i) {
-            c.reportError(nullptr, Severity::style, i->first+"Called", i->second.message);
+        for (std::map<std::string, Library::WarnInfo>::const_iterator i = settings->library.functionwarn.cbegin();
+             i != settings->library.functionwarn.cend();
+             ++i) {
+            c.reportError(nullptr, Severity::style, i->first + "Called", i->second.message);
         }
 
-        c.invalidFunctionArgError(nullptr, "func_name", 1, nullptr,"1:4");
+        c.invalidFunctionArgError(nullptr, "func_name", 1, nullptr, "1:4");
         c.invalidFunctionArgBoolError(nullptr, "func_name", 1);
         c.invalidFunctionArgStrError(nullptr, "func_name", 1);
         c.ignoredReturnValueError(nullptr, "malloc");
         c.mathfunctionCallWarning(nullptr);
         c.mathfunctionCallWarning(nullptr, "1 - erf(x)", "erfc(x)");
         c.memsetZeroBytesError(nullptr);
-        c.memsetFloatError(nullptr,  "varname");
-        c.memsetValueOutOfRangeError(nullptr,  "varname");
+        c.memsetFloatError(nullptr, "varname");
+        c.memsetValueOutOfRangeError(nullptr, "varname");
         c.missingReturnError(nullptr);
         c.copyElisionError(nullptr);
     }
 
-    static std::string myName() {
-        return "Check function usage";
-    }
+    static std::string myName() { return "Check function usage"; }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const OVERRIDE
+    {
         return "Check function usage:\n"
                "- missing 'return' in non-void function\n"
                "- return value of certain functions not used\n"

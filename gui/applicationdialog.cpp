@@ -26,12 +26,8 @@
 #include "application.h"
 #include "common.h"
 
-
-ApplicationDialog::ApplicationDialog(const QString &title,
-                                     Application &app,
-                                     QWidget *parent) :
-    QDialog(parent),
-    mApplication(app)
+ApplicationDialog::ApplicationDialog(const QString& title, Application& app, QWidget* parent)
+    : QDialog(parent), mApplication(app)
 {
     mUI.setupUi(this);
 
@@ -45,10 +41,9 @@ ApplicationDialog::ApplicationDialog(const QString &title,
     adjustSize();
 }
 
-
 ApplicationDialog::~ApplicationDialog()
 {
-    //dtor
+    // dtor
 }
 
 void ApplicationDialog::browse()
@@ -59,10 +54,8 @@ void ApplicationDialog::browse()
     // so it does not make sense to show everything.
     filter += tr("Executable files (*.exe);;All files(*.*)");
 #endif // Q_OS_WIN
-    QString selectedFile = QFileDialog::getOpenFileName(this,
-                           tr("Select viewer application"),
-                           getPath(SETTINGS_LAST_APP_PATH),
-                           filter);
+    QString selectedFile =
+        QFileDialog::getOpenFileName(this, tr("Select viewer application"), getPath(SETTINGS_LAST_APP_PATH), filter);
 
     if (!selectedFile.isEmpty()) {
         setPath(SETTINGS_LAST_APP_PATH, selectedFile);

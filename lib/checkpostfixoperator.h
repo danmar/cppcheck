@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
 #ifndef checkpostfixoperatorH
 #define checkpostfixoperatorH
@@ -42,15 +41,15 @@ class Token;
 class CPPCHECKLIB CheckPostfixOperator : public Check {
 public:
     /** This constructor is used when registering the CheckPostfixOperator */
-    CheckPostfixOperator() : Check(myName()) {
-    }
+    CheckPostfixOperator() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
-    CheckPostfixOperator(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+    CheckPostfixOperator(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE
+    {
         if (tokenizer->isC())
             return;
 
@@ -63,18 +62,18 @@ public:
 
 private:
     /** Report Error */
-    void postfixOperatorError(const Token *tok);
+    void postfixOperatorError(const Token* tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE
+    {
         CheckPostfixOperator c(nullptr, settings, errorLogger);
         c.postfixOperatorError(nullptr);
     }
 
-    static std::string myName() {
-        return "Using postfix operators";
-    }
+    static std::string myName() { return "Using postfix operators"; }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const OVERRIDE
+    {
         return "Warn if using postfix operators ++ or -- rather than prefix operator\n";
     }
 };

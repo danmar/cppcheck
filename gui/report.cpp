@@ -18,16 +18,9 @@
 
 #include "report.h"
 
-Report::Report(const QString &filename) :
-    QObject(),
-    mFilename(filename)
-{
-}
+Report::Report(const QString& filename) : QObject(), mFilename(filename) {}
 
-Report::~Report()
-{
-    close();
-}
+Report::~Report() { close(); }
 
 bool Report::create()
 {
@@ -55,7 +48,4 @@ void Report::close()
         mFile.close();
 }
 
-QFile* Report::getFile()
-{
-    return &mFile;
-}
+QFile* Report::getFile() { return &mFile; }

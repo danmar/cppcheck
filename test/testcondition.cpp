@@ -30,14 +30,14 @@
 
 class TestCondition : public TestFixture {
 public:
-    TestCondition() : TestFixture("TestCondition") {
-    }
+    TestCondition() : TestFixture("TestCondition") {}
 
 private:
     Settings settings0;
     Settings settings1;
 
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
         // known platform..
         settings0.platform(cppcheck::Platform::PlatformType::Native);
         settings1.platform(cppcheck::Platform::PlatformType::Native);
@@ -49,21 +49,21 @@ private:
         settings0.severity.enable(Severity::warning);
 
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
-        "<def>\n"
-        "  <function name=\"bar\"> <pure/> </function>\n"
-        "</def>";
+                           "<def>\n"
+                           "  <function name=\"bar\"> <pure/> </function>\n"
+                           "</def>";
         tinyxml2::XMLDocument xmldoc;
         xmldoc.Parse(cfg, sizeof(cfg));
         settings1.severity.enable(Severity::style);
         settings1.severity.enable(Severity::warning);
         settings1.library.load(xmldoc);
 
-        TEST_CASE(assignAndCompare);   // assignment and comparison don't match
-        TEST_CASE(mismatchingBitAnd);  // overlapping bitmasks
-        TEST_CASE(comparison);         // CheckCondition::comparison test cases
-        TEST_CASE(multicompare);       // mismatching comparisons
-        TEST_CASE(overlappingElseIfCondition);  // overlapping conditions in if and else-if
-        TEST_CASE(oppositeElseIfCondition); // opposite conditions in if and else-if
+        TEST_CASE(assignAndCompare);           // assignment and comparison don't match
+        TEST_CASE(mismatchingBitAnd);          // overlapping bitmasks
+        TEST_CASE(comparison);                 // CheckCondition::comparison test cases
+        TEST_CASE(multicompare);               // mismatching comparisons
+        TEST_CASE(overlappingElseIfCondition); // overlapping conditions in if and else-if
+        TEST_CASE(oppositeElseIfCondition);    // opposite conditions in if and else-if
 
         TEST_CASE(checkBadBitmaskCheck);
 
@@ -106,12 +106,12 @@ private:
         TEST_CASE(identicalConditionAfterEarlyExit);
         TEST_CASE(innerConditionModified);
 
-        TEST_CASE(clarifyCondition1);     // if (a = b() < 0)
-        TEST_CASE(clarifyCondition2);     // if (a & b == c)
-        TEST_CASE(clarifyCondition3);     // if (! a & b)
-        TEST_CASE(clarifyCondition4);     // ticket #3110
-        TEST_CASE(clarifyCondition5);     // #3609 CWinTraits<WS_CHILD|WS_VISIBLE>..
-        TEST_CASE(clarifyCondition6);     // #3818
+        TEST_CASE(clarifyCondition1); // if (a = b() < 0)
+        TEST_CASE(clarifyCondition2); // if (a & b == c)
+        TEST_CASE(clarifyCondition3); // if (! a & b)
+        TEST_CASE(clarifyCondition4); // ticket #3110
+        TEST_CASE(clarifyCondition5); // #3609 CWinTraits<WS_CHILD|WS_VISIBLE>..
+        TEST_CASE(clarifyCondition6); // #3818
         TEST_CASE(clarifyCondition7);
         TEST_CASE(clarifyCondition8);
 
@@ -129,11 +129,12 @@ private:
 
         TEST_CASE(checkAssignmentInCondition);
         TEST_CASE(compareOutOfTypeRange);
-        TEST_CASE(knownConditionCast); // #9976
+        TEST_CASE(knownConditionCast);          // #9976
         TEST_CASE(knownConditionIncrementLoop); // #9808
     }
 
-    void check(const char code[], Settings *settings, const char* filename = "test.cpp") {
+    void check(const char code[], Settings* settings, const char* filename = "test.cpp")
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -161,33 +162,41 @@ private:
         checkCondition.runChecks(&tokenizer, settings, this);
     }
 
-    void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
+    void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false)
+    {
         settings0.certainty.setEnabled(Certainty::inconclusive, inconclusive);
         check(code, &settings0, filename);
     }
 
-    void assignAndCompare() {
+    void assignAndCompare()
+    {
         // &
         check("void foo(int x)\n"
               "{\n"
               "    int y = x & 4;\n"
               "    if (y == 3);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Mismatching assignment and comparison, comparison 'y==3' is always false.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4]: (style) Mismatching assignment and comparison, comparison 'y==3' is always false.\n",
+            errout.str());
 
         check("void foo(int x)\n"
               "{\n"
               "    int y = x & 4;\n"
               "    if (y != 3);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Mismatching assignment and comparison, comparison 'y!=3' is always true.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4]: (style) Mismatching assignment and comparison, comparison 'y!=3' is always true.\n",
+            errout.str());
 
         // |
         check("void foo(int x) {\n"
               "    int y = x | 0x14;\n"
               "    if (y == 0x710);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==0x710' is always false.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==0x710' is always false.\n",
+            errout.str());
 
         check("void foo(int x) {\n"
               "    int y = x | 0x14;\n"
@@ -200,26 +209,34 @@ private:
               "    int y = (x+1) | 1;\n"
               "    if (y == 2);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==2' is always false.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==2' is always false.\n",
+            errout.str());
 
         check("void foo() {\n"
               "    int y = 1 | x();\n"
               "    if (y == 2);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==2' is always false.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==2' is always false.\n",
+            errout.str());
 
         // multiple conditions
         check("void foo(int x) {\n"
               "    int y = x & 4;\n"
               "    if ((y == 3) && (z == 1));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==3' is always false.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==3' is always false.\n",
+            errout.str());
 
         check("void foo(int x) {\n"
               "    int y = x & 4;\n"
               "    if ((x==123) || ((y == 3) && (z == 1)));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==3' is always false.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==3' is always false.\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "    int y = x & 7;\n"
@@ -233,14 +250,18 @@ private:
               "    if (z) y=0;\n"
               "    else { if (y==8); }\n" // always false
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Mismatching assignment and comparison, comparison 'y==8' is always false.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:4]: (style) Mismatching assignment and comparison, comparison 'y==8' is always false.\n",
+            errout.str());
 
         // while
         check("void f(int x) {\n"
               "    int y = x & 7;\n"
               "    while (y==8);\n" // local variable => always false
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==8' is always false.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) Mismatching assignment and comparison, comparison 'y==8' is always false.\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "    extern int y; y = x & 7;\n"
@@ -285,7 +306,9 @@ private:
               "    do_something();\n"
               "    if (y==8);\n" // local variable => always false
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Mismatching assignment and comparison, comparison 'y==8' is always false.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:4]: (style) Mismatching assignment and comparison, comparison 'y==8' is always false.\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "    int y = x & 7;\n"
@@ -300,7 +323,9 @@ private:
               "    do_something(y);\n"
               "    if (y==8);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Mismatching assignment and comparison, comparison 'y==8' is always false.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:5]: (style) Mismatching assignment and comparison, comparison 'y==8' is always false.\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "    extern int y; y = x & 7;\n"
@@ -326,7 +351,7 @@ private:
 
         // bailout: no variable info
         check("void foo(int x) {\n"
-              "    y = 2 | x;\n"  // y not declared => no error
+              "    y = 2 | x;\n" // y not declared => no error
               "    if(y == 1) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -341,7 +366,7 @@ private:
         // bailout: pass variable to function
         check("void foo(int x) {\n"
               "    int y = 2 | x;\n"
-              "    bar(&y);\n"  // pass variable to function => no error
+              "    bar(&y);\n" // pass variable to function => no error
               "    if (y==1) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -370,7 +395,9 @@ private:
               "    if (x != 5) {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Mismatching assignment and comparison, comparison 'x!=5' is always true.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:4]: (style) Mismatching assignment and comparison, comparison 'x!=5' is always true.\n",
+            errout.str());
 
         check("void f(int a) {\n" // #6662
               "  int x = a & 1;\n"
@@ -405,21 +432,25 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-
     }
 
-    void mismatchingBitAnd() {
+    void mismatchingBitAnd()
+    {
         check("void f(int a) {\n"
               "    int b = a & 0xf0;\n"
               "    b &= 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Mismatching bitmasks. Result is always 0 (X = Y & 0xf0; Z = X & 0x1; => Z=0).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) Mismatching bitmasks. Result is always 0 (X = Y & 0xf0; Z = X & 0x1; => Z=0).\n",
+            errout.str());
 
         check("void f(int a) {\n"
               "    int b = a & 0xf0;\n"
               "    int c = b & 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Mismatching bitmasks. Result is always 0 (X = Y & 0xf0; Z = X & 0x1; => Z=0).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) Mismatching bitmasks. Result is always 0 (X = Y & 0xf0; Z = X & 0x1; => Z=0).\n",
+            errout.str());
 
         check("void f(int a) {\n"
               "    int b = a;"
@@ -431,80 +462,86 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparison() {
+    void comparison()
+    {
         // CheckCondition::comparison test cases
         // '=='
         check("void f(int a) {\n assert( (a & 0x07) == 8U );\n}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) == 0x8' is always false.\n",errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) == 0x8' is always false.\n", errout.str());
         check("void f(int a) {\n assert( (a & b & 4 & c ) == 3 );\n}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x4) == 0x3' is always false.\n", errout.str());
         check("void f(int a) {\n assert( (a | 0x07) == 8U );\n}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x7) == 0x8' is always false.\n",errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x7) == 0x8' is always false.\n", errout.str());
         check("void f(int a) {\n assert( (a & 0x07) == 7U );\n}");
         ASSERT_EQUALS("", errout.str());
         check("void f(int a) {\n assert( (a | 0x01) == -15 );\n}");
         ASSERT_EQUALS("", errout.str());
         // '!='
         check("void f(int a) {\n assert( (a & 0x07) != 8U );\n}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) != 0x8' is always true.\n",errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) != 0x8' is always true.\n", errout.str());
         check("void f(int a) {\n assert( (a | 0x07) != 8U );\n}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x7) != 0x8' is always true.\n",errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x7) != 0x8' is always true.\n", errout.str());
         check("void f(int a) {\n assert( (a & 0x07) != 7U );\n}");
         ASSERT_EQUALS("", errout.str());
         check("void f(int a) {\n assert( (a | 0x07) != 7U );\n}");
         ASSERT_EQUALS("", errout.str());
         // '>='
         check("void f(int a) {\n assert( (a & 0x07) >= 8U );\n}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) >= 0x8' is always false.\n",errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) >= 0x8' is always false.\n", errout.str());
         check("void f(unsigned int a) {\n assert( (a | 0x7) >= 7U );\n}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x7) >= 0x7' is always true.\n",errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x7) >= 0x7' is always true.\n", errout.str());
         check("void f(int a) {\n assert( (a & 0x07) >= 7U );\n}");
-        ASSERT_EQUALS("",errout.str());
+        ASSERT_EQUALS("", errout.str());
         check("void f(int a) {\n assert( (a | 0x07) >= 8U );\n}");
-        ASSERT_EQUALS("",errout.str()); //correct for negative 'a'
+        ASSERT_EQUALS("", errout.str()); // correct for negative 'a'
         // '>'
         check("void f(int a) {\n assert( (a & 0x07) > 7U );\n}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) > 0x7' is always false.\n",errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) > 0x7' is always false.\n", errout.str());
         check("void f(unsigned int a) {\n assert( (a | 0x7) > 6U );\n}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x7) > 0x6' is always true.\n",errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x7) > 0x6' is always true.\n", errout.str());
         check("void f(int a) {\n assert( (a & 0x07) > 6U );\n}");
-        ASSERT_EQUALS("",errout.str());
+        ASSERT_EQUALS("", errout.str());
         check("void f(int a) {\n assert( (a | 0x07) > 7U );\n}");
-        ASSERT_EQUALS("",errout.str()); //correct for negative 'a'
+        ASSERT_EQUALS("", errout.str()); // correct for negative 'a'
         // '<='
         check("void f(int a) {\n assert( (a & 0x07) <= 7U );\n}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) <= 0x7' is always true.\n",errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) <= 0x7' is always true.\n", errout.str());
         check("void f(unsigned int a) {\n assert( (a | 0x08) <= 7U );\n}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x8) <= 0x7' is always false.\n",errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x8) <= 0x7' is always false.\n", errout.str());
         check("void f(int a) {\n assert( (a & 0x07) <= 6U );\n}");
-        ASSERT_EQUALS("",errout.str());
+        ASSERT_EQUALS("", errout.str());
         check("void f(int a) {\n assert( (a | 0x08) <= 7U );\n}");
-        ASSERT_EQUALS("",errout.str()); //correct for negative 'a'
+        ASSERT_EQUALS("", errout.str()); // correct for negative 'a'
         // '<'
         check("void f(int a) {\n assert( (a & 0x07) < 8U );\n}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) < 0x8' is always true.\n",errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X & 0x7) < 0x8' is always true.\n", errout.str());
         check("void f(unsigned int a) {\n assert( (a | 0x07) < 7U );\n}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x7) < 0x7' is always false.\n",errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Expression '(X | 0x7) < 0x7' is always false.\n", errout.str());
         check("void f(int a) {\n assert( (a & 0x07) < 3U );\n}");
-        ASSERT_EQUALS("",errout.str());
+        ASSERT_EQUALS("", errout.str());
         check("void f(int a) {\n assert( (a | 0x07) < 7U );\n}");
-        ASSERT_EQUALS("",errout.str()); //correct for negative 'a'
+        ASSERT_EQUALS("", errout.str()); // correct for negative 'a'
     }
 
-    void multicompare() {
+    void multicompare()
+    {
         check("void foo(int x)\n"
               "{\n"
               "    if (x & 7);\n"
               "    else { if (x == 1); }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 3.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 3.\n",
+            errout.str());
 
         check("void foo(int x)\n"
               "{\n"
               "    if (x & 7);\n"
               "    else { if (x & 1); }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 3.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 3.\n",
+            errout.str());
 
         check("extern int bar() __attribute__((pure));\n"
               "void foo(int x)\n"
@@ -512,7 +549,9 @@ private:
               "    if ( bar() >1 && b) {}\n"
               "    else if (bar() >1 && b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Expression is always false because 'else if' condition matches previous condition at line 4.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5]: (style) Expression is always false because 'else if' condition matches previous condition at line 4.\n",
+            errout.str());
 
         checkPureFunction("extern int bar();\n"
                           "void foo(int x)\n"
@@ -520,17 +559,22 @@ private:
                           "    if ( bar() >1 && b) {}\n"
                           "    else if (bar() >1 && b) {}\n"
                           "}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Expression is always false because 'else if' condition matches previous condition at line 4.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5]: (style) Expression is always false because 'else if' condition matches previous condition at line 4.\n",
+            errout.str());
 
         // 7284
         check("void foo() {\n"
               "    if (a) {}\n"
               "    else if (!!a) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n",
+            errout.str());
     }
 
-    void checkPureFunction(const char code[]) {
+    void checkPureFunction(const char code[])
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -543,32 +587,41 @@ private:
         checkCondition.runChecks(&tokenizer, &settings1, this);
     }
 
-    void overlappingElseIfCondition() {
+    void overlappingElseIfCondition()
+    {
         check("void f(int a, int &b) {\n"
               "    if (a) { b = 1; }\n"
               "    else { if (a) { b = 2; } }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n",
+            errout.str());
 
         check("void f(int a, int &b) {\n"
               "    if (a) { b = 1; }\n"
               "    else { if (a) { b = 2; } }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n",
+            errout.str());
 
         check("void f(int a, int &b) {\n"
               "    if (a == 1) { b = 1; }\n"
               "    else { if (a == 2) { b = 2; }\n"
               "    else { if (a == 1) { b = 3; } } }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n",
+            errout.str());
 
         check("void f(int a, int &b) {\n"
               "    if (a == 1) { b = 1; }\n"
               "    else { if (a == 2) { b = 2; }\n"
               "    else { if (a == 2) { b = 3; } } }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 3.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style) Expression is always false because 'else if' condition matches previous condition at line 3.\n",
+            errout.str());
 
         check("void f(int a, int &b) {\n"
               "    if (a++) { b = 1; }\n"
@@ -594,7 +647,9 @@ private:
                   "    if (c.dostuff() == 3) {}\n"
                   "    else { if (c.dostuff() == 3) {} }\n"
                   "}");
-            ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+            ASSERT_EQUALS(
+                "[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n",
+                errout.str());
         }
 
         check("void f(int a, int &b) {\n"
@@ -648,7 +703,9 @@ private:
               "  if (x & 15) {}\n"
               "  else if (x == 40) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "  if (x == sizeof(double)) {}\n"
@@ -666,37 +723,49 @@ private:
               "  if (x & 0xF8) {}\n"
               "  else if (x & 0x08) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n",
+            errout.str());
 
         check("void f(bool a, bool b) {\n"
               "   if(a && b){}\n"
               "   else if( !!b && !!a){}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n",
+            errout.str());
 
         check("void f(bool a, bool b) {\n"
               "   if(a && b){}\n"
               "   else if( !!b && a){}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n",
+            errout.str());
 
         check("void f(bool a, bool b) {\n"
               "   if(a && b){}\n"
               "   else if( b && !!a){}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n",
+            errout.str());
 
         check("void f(bool a, bool b) {\n"
               "   if(a && b){}\n"
               "   else if( b && !(!a)){}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n",
+            errout.str());
 
         check("void f(bool a, bool b) {\n"
               "   if(a && b){}\n"
               "   else if( !!b && !(!a)){}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n",
+            errout.str());
 
         check("void f(bool a, bool b) {\n"
               "   if(a && b){}\n"
@@ -729,40 +798,50 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void oppositeElseIfCondition() {
+    void oppositeElseIfCondition()
+    {
         setMultiline();
 
         check("void f(int x) {\n"
               "    if (x) {}\n"
               "    else if (!x) {}\n"
               "}");
-        ASSERT_EQUALS("test.cpp:3:style:Expression is always true because 'else if' condition is opposite to previous condition at line 2.\n"
-                      "test.cpp:2:note:first condition\n"
-                      "test.cpp:3:note:else if condition is opposite to first condition\n", errout.str());
+        ASSERT_EQUALS(
+            "test.cpp:3:style:Expression is always true because 'else if' condition is opposite to previous condition at line 2.\n"
+            "test.cpp:2:note:first condition\n"
+            "test.cpp:3:note:else if condition is opposite to first condition\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "    int y = x;\n"
               "    if (x) {}\n"
               "    else if (!y) {}\n"
               "}");
-        ASSERT_EQUALS("test.cpp:4:style:Expression is always true because 'else if' condition is opposite to previous condition at line 3.\n"
-                      "test.cpp:2:note:'y' is assigned value 'x' here.\n"
-                      "test.cpp:3:note:first condition\n"
-                      "test.cpp:4:note:else if condition is opposite to first condition\n", errout.str());
+        ASSERT_EQUALS(
+            "test.cpp:4:style:Expression is always true because 'else if' condition is opposite to previous condition at line 3.\n"
+            "test.cpp:2:note:'y' is assigned value 'x' here.\n"
+            "test.cpp:3:note:first condition\n"
+            "test.cpp:4:note:else if condition is opposite to first condition\n",
+            errout.str());
     }
 
-    void checkBadBitmaskCheck() {
+    void checkBadBitmaskCheck()
+    {
         check("bool f(int x) {\n"
               "    bool b = x | 0x02;\n"
               "    return b;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n",
+            errout.str());
 
         check("bool f(int x) {\n"
               "    bool b = 0x02 | x;\n"
               "    return b;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n",
+            errout.str());
 
         check("int f(int x) {\n"
               "    int b = x | 0x02;\n"
@@ -780,7 +859,9 @@ private:
               "    if(x | 0x02)\n"
               "        return b;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n",
+            errout.str());
 
         check("bool f(int x) {\n"
               "    int y = 0x1;\n"
@@ -793,12 +874,16 @@ private:
         check("bool f(int x) {\n"
               "    foo(a && (x | 0x02));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n",
+            errout.str());
 
         check("int f(int x) {\n"
               "    return (x | 0x02) ? 0 : 5;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n",
+            errout.str());
 
         check("int f(int x) {\n"
               "    return x ? (x | 0x02) : 5;\n"
@@ -808,7 +893,9 @@ private:
         check("bool f(int x) {\n"
               "    return x | 0x02;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n",
+            errout.str());
 
         check("bool f(int x) {\n"
               "  if (x) {\n"
@@ -816,19 +903,25 @@ private:
               "  }\n"
               "  return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n",
+            errout.str());
 
         check("const bool f(int x) {\n"
               "    return x | 0x02;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n",
+            errout.str());
 
         check("struct F {\n"
               "  static const bool f(int x) {\n"
               "      return x | 0x02;\n"
               "  }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n",
+            errout.str());
 
         check("struct F {\n"
               "  typedef bool b_t;\n"
@@ -836,7 +929,9 @@ private:
               "F::b_t f(int x) {\n"
               "  return x | 0x02;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5]: (warning) Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?\n",
+            errout.str());
 
         check("int f(int x) {\n"
               "    return x | 0x02;\n"
@@ -860,34 +955,39 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-    void incorrectLogicOperator1() {
+    void incorrectLogicOperator1()
+    {
         check("void f(int x) {\n"
               "    if ((x != 1) || (x != 3))\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x != 1 || x != 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x != 1 || x != 3.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (1 != x || 3 != x)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x != 1 || x != 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x != 1 || x != 3.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "  if (x<0 && !x) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 0 && !x.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 0 && !x.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "  if (x==0 && x) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 0 && x.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 0 && x.\n",
+                      errout.str());
 
         check("void f(int x) {\n" // ast..
               "    if (y == 1 && x == 1 && x == 7) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 1 && x == 7.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 1 && x == 7.\n",
+                      errout.str());
 
         check("void f(int x, int y) {\n"
               "    if (x != 1 || y != 1)\n"
@@ -904,8 +1004,7 @@ private:
         check("void f(int x, int y) {\n"
               "    if ((x != 1) || (x != 3) && (y == 1))\n"
               "        a++;\n"
-              "}"
-             );
+              "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x!=3' is always true\n", errout.str());
 
         check("void f(int x) {\n"
@@ -938,12 +1037,12 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-
         check("void f(int x) {\n"
               "    if ((x != 5) || (x != 6))\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x != 5 || x != 6.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x != 5 || x != 6.\n",
+                      errout.str());
 
         check("void f(unsigned int a, unsigned int b, unsigned int c) {\n"
               "    if((a != b) || (c != b) || (c != a))\n"
@@ -955,7 +1054,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void incorrectLogicOperator2() {
+    void incorrectLogicOperator2()
+    {
         check("void f(float x) {\n"
               "    if ((x == 1) && (x == 1.0))\n"
               "        a++;\n"
@@ -972,13 +1072,15 @@ private:
               "    if (x == 1 && x == 3)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 1 && x == 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 1 && x == 3.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (x == 1.0 && x == 3.0)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("", errout.str()); // float comparisons with == and != are not checked right now - such comparison is a bad idea
+        ASSERT_EQUALS("", errout.str()); // float comparisons with == and != are not checked right now - such comparison
+                                         // is a bad idea
 
         check("void f(float x) {\n"
               "    if (x == 1 && x == 1.0)\n"
@@ -995,19 +1097,22 @@ private:
               "    if (x < 1 && x > 1)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 1.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (x < 1.0 && x > 1.0)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1.0 && x > 1.0.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1.0 && x > 1.0.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (x < 1 && x > 1.0)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 1.0.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 1.0.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (x >= 1.0 && x <= 1.001)\n"
@@ -1019,19 +1124,22 @@ private:
               "    if (x < 1 && x > 3)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n",
+                      errout.str());
 
         check("void f(float x) {\n"
               "    if (x < 1.0 && x > 3.0)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1.0 && x > 3.0.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1.0 && x > 3.0.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (1 > x && 3 < x)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (x < 3 && x > 1)\n"
@@ -1043,25 +1151,29 @@ private:
               "    if (x > 3 || x < 10)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x > 3 || x < 10.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x > 3 || x < 10.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (x >= 3 || x <= 10)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x >= 3 || x <= 10.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x >= 3 || x <= 10.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (x >= 3 || x < 10)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x >= 3 || x < 10.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x >= 3 || x < 10.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 3 || x <= 10)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x > 3 || x <= 10.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x > 3 || x <= 10.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 3 || x < 3)\n"
@@ -1072,60 +1184,70 @@ private:
         check("void f(int x) {\n"
               "    if (x >= 3 || x <= 3)\n"
               "        a++;\n"
-              "}"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x >= 3 || x <= 3.\n", errout.str());
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x >= 3 || x <= 3.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (x >= 3 || x < 3)\n"
               "        a++;\n"
-              "}"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x >= 3 || x < 3.\n", errout.str());
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x >= 3 || x < 3.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 3 || x <= 3)\n"
               "        a++;\n"
-              "}"
-             );
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x > 3 || x <= 3.\n", errout.str());
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x > 3 || x <= 3.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "   if((x==3) && (x!=4))\n"
               "        a++;\n"
               "}");
 
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x == 3', the comparison 'x != 4' is always true.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Redundant condition: If 'x == 3', the comparison 'x != 4' is always true.\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "    if ((x!=4) && (x==3))\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x == 3', the comparison 'x != 4' is always true.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Redundant condition: If 'x == 3', the comparison 'x != 4' is always true.\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "    if ((x==3) || (x!=4))\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x == 3', the comparison 'x != 4' is always true.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Redundant condition: If 'x == 3', the comparison 'x != 4' is always true.\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "    if ((x!=4) || (x==3))\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x == 3', the comparison 'x != 4' is always true.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Redundant condition: If 'x == 3', the comparison 'x != 4' is always true.\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "    if ((x==3) && (x!=3))\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 3 && x != 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == 3 && x != 3.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if ((x==6) || (x!=6))\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x == 6 || x != 6.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x == 6 || x != 6.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 10 || x < 3)\n"
@@ -1137,13 +1259,16 @@ private:
               "    if (x > 5 && x == 1)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 5 && x == 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 5 && x == 1.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 5 && x == 6)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x == 6', the comparison 'x > 5' is always true.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Redundant condition: If 'x == 6', the comparison 'x > 5' is always true.\n",
+            errout.str());
 
         // #3419
         check("void f() {\n"
@@ -1174,7 +1299,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void incorrectLogicOperator3() {
+    void incorrectLogicOperator3()
+    {
         check("void f(int x, bool& b) {\n"
               "    b = x > 5 && x == 1;\n"
               "    c = x < 1 && x == 3;\n"
@@ -1184,10 +1310,12 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 5 && x == 1.\n"
                       "[test.cpp:3]: (warning) Logical conjunction always evaluates to false: x < 1 && x == 3.\n"
                       "[test.cpp:4]: (warning) Logical conjunction always evaluates to false: x >= 5 && x == 1.\n"
-                      "[test.cpp:5]: (warning) Logical conjunction always evaluates to false: x <= 1 && x == 3.\n", errout.str());
+                      "[test.cpp:5]: (warning) Logical conjunction always evaluates to false: x <= 1 && x == 3.\n",
+                      errout.str());
     }
 
-    void incorrectLogicOperator4() {
+    void incorrectLogicOperator4()
+    {
         check("#define ZERO 0\n"
               "void f(int x) {\n"
               "  if (x && x != ZERO) {}\n"
@@ -1195,50 +1323,69 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void incorrectLogicOperator5() { // complex expressions
+    void incorrectLogicOperator5()
+    { // complex expressions
         check("void f(int x) {\n"
               "  if (x+3 > 2 || x+3 < 10) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: EXPR > 2 || EXPR < 10.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: EXPR > 2 || EXPR < 10.\n",
+                      errout.str());
     }
 
-    void incorrectLogicOperator6() { // char literals
+    void incorrectLogicOperator6()
+    { // char literals
         check("void f(char x) {\n"
               "  if (x == '1' || x == '2') {}\n"
-              "}", "test.cpp", true);
+              "}",
+              "test.cpp",
+              true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(char x) {\n"
               "  if (x == '1' && x == '2') {}\n"
-              "}", "test.cpp", true);
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == '1' && x == '2'.\n", errout.str());
+              "}",
+              "test.cpp",
+              true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == '1' && x == '2'.\n",
+                      errout.str());
 
         check("int f(char c) {\n"
               "  return (c >= 'a' && c <= 'z');\n"
-              "}", "test.cpp", true);
+              "}",
+              "test.cpp",
+              true);
         ASSERT_EQUALS("", errout.str());
 
         check("int f(char c) {\n"
               "  return (c <= 'a' && c >= 'z');\n"
-              "}", "test.cpp", true);
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Logical conjunction always evaluates to false: c <= 'a' && c >= 'z'.\n", errout.str());
+              "}",
+              "test.cpp",
+              true);
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning, inconclusive) Logical conjunction always evaluates to false: c <= 'a' && c >= 'z'.\n",
+            errout.str());
 
         check("int f(char c) {\n"
               "  return (c <= 'a' && c >= 'z');\n"
-              "}", "test.cpp", false);
+              "}",
+              "test.cpp",
+              false);
         ASSERT_EQUALS("", errout.str());
     }
 
-    void incorrectLogicOperator7() { // opposite expressions
+    void incorrectLogicOperator7()
+    { // opposite expressions
         check("void f(int i) {\n"
               "  if (i || !i) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: i || !(i).\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: i || !(i).\n",
+                      errout.str());
 
         check("void f(int a, int b) {\n"
               "  if (a>b || a<=b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: a > b || a <= b.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: a > b || a <= b.\n",
+                      errout.str());
 
         check("void f(int a, int b) {\n"
               "  if (a>b || a<b) {}\n"
@@ -1263,14 +1410,18 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void incorrectLogicOperator8() { // opposite expressions
+    void incorrectLogicOperator8()
+    { // opposite expressions
         check("void f(int i) {\n"
               "  if (!(i!=10) && !(i!=20)) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: !(i != 10) && !(i != 20).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Logical conjunction always evaluates to false: !(i != 10) && !(i != 20).\n",
+            errout.str());
     }
 
-    void incorrectLogicOperator9() { //  #6069 "False positive incorrectLogicOperator due to dynamic_cast"
+    void incorrectLogicOperator9()
+    { //  #6069 "False positive incorrectLogicOperator due to dynamic_cast"
         check("class MyType;\n"
               "class OtherType;\n"
               "void foo (OtherType* obj) {\n"
@@ -1279,30 +1430,38 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void incorrectLogicOperator10() { //  #7794 - enum
+    void incorrectLogicOperator10()
+    { //  #7794 - enum
         check("typedef enum { A, B } Type_t;\n"
               "void f(Type_t t) {\n"
               "    if ((t == A) && (t == B))\n"
               "    {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Logical conjunction always evaluates to false: t == 0 && t == 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Logical conjunction always evaluates to false: t == 0 && t == 1.\n",
+                      errout.str());
     }
 
-    void incorrectLogicOperator11() {
+    void incorrectLogicOperator11()
+    {
         check("void foo(int i, const int n) { if ( i < n && i == n ) {} }");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i < n && i == n.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i < n && i == n.\n",
+                      errout.str());
 
         check("void foo(int i, const int n) { if ( i > n && i == n ) {} }");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i > n && i == n.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i > n && i == n.\n",
+                      errout.str());
 
         check("void foo(int i, const int n) { if ( i == n && i > n ) {} }");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i == n && i > n.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i == n && i > n.\n",
+                      errout.str());
 
         check("void foo(int i, const int n) { if ( i == n && i < n ) {} }");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i == n && i < n.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Logical conjunction always evaluates to false: i == n && i < n.\n",
+                      errout.str());
     }
 
-    void incorrectLogicOperator12() { // #8696
+    void incorrectLogicOperator12()
+    { // #8696
         check("struct A {\n"
               "    void f() const;\n"
               "};\n"
@@ -1313,7 +1472,9 @@ private:
               "  if (a > x && a < y)\n"
               "    return;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6] -> [test.cpp:8]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5] -> [test.cpp:6] -> [test.cpp:8]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n",
+            errout.str());
 
         check("struct A {\n"
               "    void f();\n"
@@ -1343,25 +1504,33 @@ private:
               "  if (a > x && a < y)\n"
               "    return;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n",
+            errout.str());
     }
 
-    void incorrectLogicOperator13() {
+    void incorrectLogicOperator13()
+    {
         // 8780
         check("void f(const int &v) {\n"
               "    const int x=v;\n"
               "    if ((v == 1) && (x == 2)) {;}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Logical conjunction always evaluates to false: v == 1 && x == 2.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (warning) Logical conjunction always evaluates to false: v == 1 && x == 2.\n",
+            errout.str());
 
         check("void f2(const int *v) {\n"
               "    const int *x=v;\n"
               "    if ((*v == 1) && (*x == 2)) {;}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Logical conjunction always evaluates to false: *(v) == 1 && *(x) == 2.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (warning) Logical conjunction always evaluates to false: *(v) == 1 && *(x) == 2.\n",
+            errout.str());
     }
 
-    void incorrectLogicOperator14() {
+    void incorrectLogicOperator14()
+    {
         check("static const std ::string h;\n"
               "class i {\n"
               "public:\n"
@@ -1568,7 +1737,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void incorrectLogicOperator15() {
+    void incorrectLogicOperator15()
+    {
         // 10022
         check("struct PipeRoute {\n"
               "    std::deque<int> points;\n"
@@ -1591,19 +1761,23 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void incorrectLogicOperator16() { // #10070
+    void incorrectLogicOperator16()
+    { // #10070
         check("void foo(void* p) {\n"
               "    if (!p || p == -1) { }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void secondAlwaysTrueFalseWhenFirstTrueError() {
+    void secondAlwaysTrueFalseWhenFirstTrueError()
+    {
         check("void f(int x) {\n"
               "    if (x > 5 && x != 1)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x > 5', the comparison 'x != 1' is always true.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Redundant condition: If 'x > 5', the comparison 'x != 1' is always true.\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 5 && x != 6)\n"
@@ -1615,7 +1789,9 @@ private:
               "    if ((x > 5) && (x != 1))\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x > 5', the comparison 'x != 1' is always true.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Redundant condition: If 'x > 5', the comparison 'x != 1' is always true.\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "    if ((x > 5) && (x != 6))\n"
@@ -1629,10 +1805,12 @@ private:
               "    d = x >= 3 || x == 4;\n"
               "    e = x <= 5 || x == 4;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x == 4', the comparison 'x > 3' is always true.\n"
-                      "[test.cpp:3]: (style) Redundant condition: If 'x == 4', the comparison 'x < 5' is always true.\n"
-                      "[test.cpp:4]: (style) Redundant condition: If 'x == 4', the comparison 'x >= 3' is always true.\n"
-                      "[test.cpp:5]: (style) Redundant condition: If 'x == 4', the comparison 'x <= 5' is always true.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Redundant condition: If 'x == 4', the comparison 'x > 3' is always true.\n"
+            "[test.cpp:3]: (style) Redundant condition: If 'x == 4', the comparison 'x < 5' is always true.\n"
+            "[test.cpp:4]: (style) Redundant condition: If 'x == 4', the comparison 'x >= 3' is always true.\n"
+            "[test.cpp:5]: (style) Redundant condition: If 'x == 4', the comparison 'x <= 5' is always true.\n",
+            errout.str());
 
         check("void f(int x, bool& b) {\n"
               "    b = x > 5 || x != 1;\n"
@@ -1640,10 +1818,12 @@ private:
               "    d = x >= 5 || x != 1;\n"
               "    e = x <= 1 || x != 3;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x > 5', the comparison 'x != 1' is always true.\n"
-                      "[test.cpp:3]: (style) Redundant condition: If 'x < 1', the comparison 'x != 3' is always true.\n"
-                      "[test.cpp:4]: (style) Redundant condition: If 'x >= 5', the comparison 'x != 1' is always true.\n"
-                      "[test.cpp:5]: (style) Redundant condition: If 'x <= 1', the comparison 'x != 3' is always true.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Redundant condition: If 'x > 5', the comparison 'x != 1' is always true.\n"
+            "[test.cpp:3]: (style) Redundant condition: If 'x < 1', the comparison 'x != 3' is always true.\n"
+            "[test.cpp:4]: (style) Redundant condition: If 'x >= 5', the comparison 'x != 1' is always true.\n"
+            "[test.cpp:5]: (style) Redundant condition: If 'x <= 1', the comparison 'x != 3' is always true.\n",
+            errout.str());
 
         check("void f(int x, bool& b) {\n"
               "    b = x > 6 && x > 5;\n"
@@ -1654,60 +1834,71 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x > 6', the comparison 'x > 5' is always true.\n"
                       "[test.cpp:3]: (style) Redundant condition: If 'x > 6', the comparison 'x > 5' is always true.\n"
                       "[test.cpp:4]: (style) Redundant condition: If 'x < 5', the comparison 'x < 6' is always true.\n"
-                      "[test.cpp:5]: (style) Redundant condition: If 'x < 5', the comparison 'x < 6' is always true.\n", errout.str());
+                      "[test.cpp:5]: (style) Redundant condition: If 'x < 5', the comparison 'x < 6' is always true.\n",
+                      errout.str());
     }
 
-    void incorrectLogicOp_condSwapping() {
+    void incorrectLogicOp_condSwapping()
+    {
         check("void f(int x) {\n"
               "    if (x < 1 && x > 3)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (1 > x && x > 3)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (x < 1 && 3 < x)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (1 > x && 3 < x)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x < 1 && x > 3.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 3 && x < 1)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 3 && x < 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 3 && x < 1.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (3 < x && x < 1)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 3 && x < 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 3 && x < 1.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 3 && 1 > x)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 3 && x < 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 3 && x < 1.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (3 < x && 1 > x)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 3 && x < 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x > 3 && x < 1.\n",
+                      errout.str());
     }
 
-    void modulo() {
+    void modulo()
+    {
         check("bool f(bool& b1, bool& b2, bool& b3) {\n"
               "    b1 = a % 5 == 4;\n"
               "    b2 = a % c == 100000;\n"
@@ -1753,27 +1944,34 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void oppositeInnerCondition() {
+    void oppositeInnerCondition()
+    {
         check("void foo(int a, int b) {\n"
               "    if(a==b)\n"
               "        if(a!=b)\n"
               "            cout << a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("bool foo(int a, int b) {\n"
               "    if(a==b)\n"
               "        return a!=b;\n"
               "    return false;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'return' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'return' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void foo(int a, int b) {\n"
               "    if(a==b)\n"
               "        if(b!=a)\n"
               "            cout << a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void foo(int a) {\n"
               "    if(a >= 50) {\n"
@@ -1783,7 +1981,9 @@ private:
               "            cout << 100;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         // #4186
         check("void foo(int a) {\n"
@@ -1857,7 +2057,9 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void foo(const int &i);\n"
               "void bar(int i) {\n"
@@ -1867,7 +2069,9 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void foo(int i);\n"
               "void bar() {\n"
@@ -1878,7 +2082,9 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:6]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("class C { void f(int &i) const; };\n" // #7028 - variable is changed by const method
               "void foo(C c, int i) {\n"
@@ -1896,13 +2102,14 @@ private:
               "   int rc = __generic_file_aio_write();\n"
               "   if (rc > 0){\n"
               "       err = generic_write_sync(file, iocb->ki_pos - rc, rc);\n"
-              "       if(rc < 0) {\n"  // <- condition is always false
+              "       if(rc < 0) {\n" // <- condition is always false
               "           err = rc;\n"
               "       }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:7]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
-
+        ASSERT_EQUALS(
+            "[test.cpp:5] -> [test.cpp:7]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         // #5874 - array
         check("void testOppositeConditions2() {\n"
@@ -1929,12 +2136,14 @@ private:
               "       if(!b) {}\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void foo(unsigned u) {\n"
               "  if (u != 0) {\n"
               "    for (int i=0; i<32; i++) {\n"
-              "      if (u == 0) {}\n"  // <- don't warn
+              "      if (u == 0) {}\n" // <- don't warn
               "      u = x;\n"
               "    }\n"
               "  }\n"
@@ -1947,7 +2156,9 @@ private:
               "    if (i==5) {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         // #8938
         check("void Delete(SS_CELLCOORD upperleft) {\n"
@@ -1972,7 +2183,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void oppositeInnerConditionPointers() {
+    void oppositeInnerConditionPointers()
+    {
         check("void f(struct ABC *abc) {\n"
               "   struct AB *ab = abc->ab;\n"
               "   if (ab->a == 123){\n"
@@ -2007,7 +2219,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void oppositeInnerConditionClass() {
+    void oppositeInnerConditionClass()
+    {
         // #6095 - calling member function that might change the state
         check("void f() {\n"
               "  const Fred fred;\n" // <- fred is const, warn
@@ -2016,7 +2229,9 @@ private:
               "    if (!fred.isValid()) {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:5]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("class Fred { public: bool isValid() const; void dostuff() const; };\n"
               "void f() {\n"
@@ -2026,7 +2241,9 @@ private:
               "    if (!fred.isValid()) {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:6]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void f() {\n"
               "  Fred fred;\n"
@@ -2056,7 +2273,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void oppositeInnerConditionUndeclaredVariable() {
+    void oppositeInnerConditionUndeclaredVariable()
+    {
         // #5731 - fp when undeclared variable is used
         check("void f() {\n"
               "   if (x == -1){\n"
@@ -2113,7 +2331,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void oppositeInnerConditionAlias() {
+    void oppositeInnerConditionAlias()
+    {
         check("void f() {\n"
               "  struct S s;\n"
               "  bool hasFailed = false;\n"
@@ -2127,7 +2346,8 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (style) Condition '!hasFailed' is always true\n", errout.str());
     }
 
-    void oppositeInnerCondition2() {
+    void oppositeInnerCondition2()
+    {
         // first comparison: <
         check("void f(int x) {\n"
               "\n"
@@ -2135,8 +2355,9 @@ private:
               "    if (x==5) {}\n" // <- Warning
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
-                      errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
         check("void f(int x) {\n"
               "\n"
               "  if (x<4) {\n"
@@ -2150,16 +2371,18 @@ private:
               "    if (x>5) {}\n" // <- Warning
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
-                      errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
         check("void f(int x) {\n"
               "\n"
               "  if (x<4) {\n"
               "    if (x>=5) {}\n" // <- Warning
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
-                      errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
         check("void f(int x) {\n"
               "\n"
               "  if (x<4) {\n"
@@ -2268,8 +2491,9 @@ private:
               "    if (x==4) {}\n" // <- Warning
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
-                      errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
         check("void f(int x) {\n"
               "\n"
               "  if (x>5) {\n"
@@ -2290,58 +2514,85 @@ private:
               "    if (x<4) {}\n" // <- Warning
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
-                      errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
         check("void f(int x) {\n"
               "\n"
               "  if (x>5) {\n"
               "    if (x<=4) {}\n" // <- Warning
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
-                      errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "  if (x < 4) {\n"
               "    if (10 < x) {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
     }
 
-    void oppositeInnerCondition3() {
+    void oppositeInnerCondition3()
+    {
         check("void f3(char c) { if(c=='x') if(c=='y') {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void f4(char *p) { if(*p=='x') if(*p=='y') {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void f5(const char * const p) { if(*p=='x') if(*p=='y') {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void f5(const char * const p) { if('x'==*p) if('y'==*p) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void f6(char * const p) { if(*p=='x') if(*p=='y') {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void f7(const char * p) { if(*p=='x') if(*p=='y') {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void f8(int i) { if(i==4) if(i==2) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void f9(int *p) { if (*p==4) if(*p==2) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void f10(int * const p) { if (*p==4) if(*p==2) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void f11(const int *p) { if (*p==4) if(*p==2) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void f12(const int * const p) { if (*p==4) if(*p==2) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("struct foo {\n"
               "    int a;\n"
@@ -2361,45 +2612,66 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int x) { if (x == 1) if (x != 1) {} }");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
     }
 
-    void oppositeInnerConditionAnd() {
+    void oppositeInnerConditionAnd()
+    {
         check("void f(int x) {\n"
               "  if (a>3 && x > 100) {\n"
               "    if (x < 10) {}\n"
               "  }"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void f(bool x, const int a, const int b) {\n"
               "        if(x && a < b)\n"
               "            if( x && a > b){}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
     }
 
-    void oppositeInnerConditionEmpty() {
+    void oppositeInnerConditionEmpty()
+    {
         check("void f1(const std::string &s) { if(s.size() > 42) if(s.empty()) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void f1(const std::string &s) { if(s.size() > 0) if(s.empty()) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
-        check("void f1(const std::string &s) { if(s.size() < 0) if(s.empty()) {}} "); // <- CheckOther reports: checking if unsigned expression is less than zero
+        check("void f1(const std::string &s) { if(s.size() < 0) if(s.empty()) {}} "); // <- CheckOther reports: checking
+                                                                                      // if unsigned expression is less
+                                                                                      // than zero
         ASSERT_EQUALS("", errout.str());
 
         check("void f1(const std::string &s) { if(s.empty()) if(s.size() > 42) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("template<class T> void f1(const T &s) { if(s.size() > 42) if(s.empty()) {}}");
-        ASSERT_EQUALS("", errout.str()); //We don't know the type of T so we don't know the relationship between size() and empty(). e.g. s might be a 50 tonne truck with nothing in it.
+        ASSERT_EQUALS("", errout.str()); // We don't know the type of T so we don't know the relationship between size()
+                                         // and empty(). e.g. s might be a 50 tonne truck with nothing in it.
 
         check("void f2(const std::wstring &s) { if(s.empty()) if(s.size() > 42) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void f1(QString s) { if(s.isEmpty()) if(s.length() > 42) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+            errout.str());
 
         check("void f1(const std::string &s, bool b) { if(s.empty() || ((s.size() == 1) && b)) {}}");
         ASSERT_EQUALS("", errout.str());
@@ -2422,7 +2694,10 @@ private:
         check("void f1(const std::string &s) { if(s.size() < 2) if(s.empty()) {}}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f1(const std::string &s) { if(s.size() >= 0) if(s.empty()) {}} "); // CheckOther says: Unsigned expression 's.size()' can't be negative so it is unnecessary to test it. [unsignedPositive]
+        check("void f1(const std::string &s) { if(s.size() >= 0) if(s.empty()) {}} "); // CheckOther says: Unsigned
+                                                                                       // expression 's.size()' can't be
+                                                                                       // negative so it is unnecessary
+                                                                                       // to test it. [unsignedPositive]
         ASSERT_EQUALS("", errout.str());
 
         // TODO: These are identical condition since size cannot be negative
@@ -2434,7 +2709,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void oppositeInnerConditionFollowVar() {
+    void oppositeInnerConditionFollowVar()
+    {
         check("struct X {\n"
               "    void f() {\n"
               "        const int flag = get();\n"
@@ -2477,12 +2753,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void identicalInnerCondition() {
+    void identicalInnerCondition()
+    {
         check("void f1(int a, int b) { if(a==b) if(a==b) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Identical inner 'if' condition is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Identical inner 'if' condition is always true.\n",
+                      errout.str());
 
         check("void f2(int a, int b) { if(a!=b) if(a!=b) {}}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Identical inner 'if' condition is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Identical inner 'if' condition is always true.\n",
+                      errout.str());
 
         // #6645 false negative: condition is always false
         check("void f(bool a, bool b) {\n"
@@ -2491,13 +2770,15 @@ private:
               "     else  {}\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical inner 'if' condition is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical inner 'if' condition is always true.\n",
+                      errout.str());
 
         check("bool f(int a, int b) {\n"
               "    if(a == b) { return a == b; }\n"
               "    return false;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Identical inner 'return' condition is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Identical inner 'return' condition is always true.\n",
+                      errout.str());
 
         check("bool f(bool a) {\n"
               "    if(a) { return a; }\n"
@@ -2537,51 +2818,65 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void identicalConditionAfterEarlyExit() {
+    void identicalConditionAfterEarlyExit()
+    {
         check("void f(int x) {\n"
               "  if (x > 100) { return; }\n"
               "  if (x > 100) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition 'x>100', second condition is always false\n",
+            errout.str());
 
         check("bool f(int x) {\n"
               "  if (x > 100) { return false; }\n"
               "  return x > 100;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition and return expression 'x>100', return value is always false\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition and return expression 'x>100', return value is always false\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "  if (x > 100) { return; }\n"
               "  if (x > 100 || y > 100) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition 'x>100', second condition is always false\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "  if (x > 100) { return; }\n"
               "  if (x > 100 && y > 100) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition 'x>100', second condition is always false\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "  if (x > 100) { return; }\n"
               "  if (abc) {}\n"
               "  if (x > 100) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition 'x>100', second condition is always false\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "  if (x > 100) { return; }\n"
               "  while (abc) { y = x; }\n"
               "  if (x > 100) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition 'x>100', second condition is always false\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition 'x>100', second condition is always false\n",
+            errout.str());
 
-        check("void f(int x) {\n"  // #8217 - crash for incomplete code
+        check("void f(int x) {\n" // #8217 - crash for incomplete code
               "  if (x > 100) { return; }\n"
               "  X(do);\n"
               "  if (x > 100) {}\n"
               "}");
-        // TODO: we should probably throw unknownMacro InternalError. Complain that the macro X must be defined. We can't check the code well without the definition.
+        // TODO: we should probably throw unknownMacro InternalError. Complain that the macro X must be defined. We
+        // can't check the code well without the definition.
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x>100' is always false\n", errout.str());
 
         check("void f(const int *i) {\n"
@@ -2589,7 +2884,9 @@ private:
               "  if (!num1tok) { *num1 = *num2; }\n"
               "  if (!i) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition '!i', second condition is always false\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:4]: (warning) Identical condition '!i', second condition is always false\n",
+            errout.str());
 
         check("void C::f(Tree &coreTree) {\n" // daca
               "  if(!coreTree.build())\n"
@@ -2606,7 +2903,9 @@ private:
               "  coreTree.dostuff();\n"
               "  if(!coreTree.build()) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) Identical condition '!coreTree.build()', second condition is always false\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:6]: (warning) Identical condition '!coreTree.build()', second condition is always false\n",
+            errout.str());
 
         check("void f(int x) {\n" // daca: labplot
               "  switch(type) {\n"
@@ -2670,7 +2969,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void innerConditionModified() {
+    void innerConditionModified()
+    {
         check("void f(int x, int y) {\n"
               "  if (x == 0) {\n"
               "    x += y;\n"
@@ -2697,11 +2997,14 @@ private:
     }
 
     // clarify conditions with = and comparison
-    void clarifyCondition1() {
+    void clarifyCondition1()
+    {
         check("void f() {\n"
               "    if (x = b() < 0) {}\n" // don't simplify and verify this code
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (assignment + comparison); Clarify expression with parentheses.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Suspicious condition (assignment + comparison); Clarify expression with parentheses.\n",
+            errout.str());
 
         check("void f(int i) {\n"
               "    for (i = 0; i < 10; i++) {}\n"
@@ -2722,25 +3025,29 @@ private:
               "    int y = rand(), z = rand();\n"
               "    if (y || (!y && z));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition: !y. 'y || (!y && z)' is equivalent to 'y || z'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition: !y. 'y || (!y && z)' is equivalent to 'y || z'\n",
+                      errout.str());
 
         check("void f() {\n"
               "    int y = rand(), z = rand();\n"
               "    if (y || !y && z);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition: !y. 'y || (!y && z)' is equivalent to 'y || z'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition: !y. 'y || (!y && z)' is equivalent to 'y || z'\n",
+                      errout.str());
 
         check("void f() {\n"
               "    if (!a || a && b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: a. '!a || (a && b)' is equivalent to '!a || b'\n", errout.str());
-
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: a. '!a || (a && b)' is equivalent to '!a || b'\n",
+                      errout.str());
 
         check("void f(const Token *tok) {\n"
               "    if (!tok->next()->function() ||\n"
               "        (tok->next()->function() && tok->next()->function()->isConstructor()));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: tok->next()->function(). '!A || (A && B)' is equivalent to '!A || B'\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Redundant condition: tok->next()->function(). '!A || (A && B)' is equivalent to '!A || B'\n",
+            errout.str());
 
         check("void f() {\n"
               "    if (!tok->next()->function() ||\n"
@@ -2758,7 +3065,9 @@ private:
               "    if (!tok->next(1)->function(1) ||\n"
               "        (tok->next(1)->function(1) && tok->next(1)->function(1)->isConstructor()));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: tok->next(1)->function(1). '!A || (A && B)' is equivalent to '!A || B'\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Redundant condition: tok->next(1)->function(1). '!A || (A && B)' is equivalent to '!A || B'\n",
+            errout.str());
 
         check("void f() {\n"
               "    if (!tok->next()->function(1) ||\n"
@@ -2770,7 +3079,9 @@ private:
               "   int y = rand(), z = rand();\n"
               "   if (y==0 || y!=0 && z);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition: y!=0. 'y==0 || (y!=0 && z)' is equivalent to 'y==0 || z'\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Redundant condition: y!=0. 'y==0 || (y!=0 && z)' is equivalent to 'y==0 || z'\n",
+            errout.str());
 
         check("void f() {\n"
               "  if (x>0 || (x<0 && y)) {}\n"
@@ -2781,47 +3092,60 @@ private:
         check("void f() {\n"
               "  if (!dead || (dead && (*it).ticks > 0)) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: dead. '!dead || (dead && (*it).ticks>0)' is equivalent to '!dead || (*it).ticks>0'\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Redundant condition: dead. '!dead || (dead && (*it).ticks>0)' is equivalent to '!dead || (*it).ticks>0'\n",
+            errout.str());
 
         check("void f() {\n"
               "  if (!x || (x && (2>(y-1)))) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: x. '!x || (x && 2>(y-1))' is equivalent to '!x || 2>(y-1)'\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Redundant condition: x. '!x || (x && 2>(y-1))' is equivalent to '!x || 2>(y-1)'\n",
+            errout.str());
 
         check("void f(bool a, bool b) {\n"
               "    if (a || (a && b)) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: a. 'a || (a && b)' is equivalent to 'a'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: a. 'a || (a && b)' is equivalent to 'a'\n",
+                      errout.str());
 
         check("void f(bool a, bool b) {\n"
               "    if (a && (a || b)) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: a. 'a && (a || b)' is equivalent to 'a'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: a. 'a && (a || b)' is equivalent to 'a'\n",
+                      errout.str());
     }
 
     // clarify conditions with bitwise operator and comparison
-    void clarifyCondition2() {
+    void clarifyCondition2()
+    {
         check("void f() {\n"
               "    if (x & 3 == 2) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (bitwise operator + comparison); Clarify expression with parentheses.\n"
-                      "[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n"
-                      "[test.cpp:2]: (style) Condition 'x&3==2' is always false\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Suspicious condition (bitwise operator + comparison); Clarify expression with parentheses.\n"
+            "[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n"
+            "[test.cpp:2]: (style) Condition 'x&3==2' is always false\n",
+            errout.str());
 
         check("void f() {\n"
               "    if (a & fred1.x == fred2.y) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious condition (bitwise operator + comparison); Clarify expression with parentheses.\n"
-                      "[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n"
-                      , errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Suspicious condition (bitwise operator + comparison); Clarify expression with parentheses.\n"
+            "[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n",
+            errout.str());
     }
 
     // clarify condition that uses ! operator and then bitwise operator
-    void clarifyCondition3() {
+    void clarifyCondition3()
+    {
         check("void f(int w) {\n"
               "    if(!w & 0x8000) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n",
+            errout.str());
 
         check("void f(int w) {\n"
               "    if((!w) & 0x8000) {}\n"
@@ -2831,12 +3155,16 @@ private:
         check("void f() {\n"
               "    if (x == foo() & 2) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n",
+            errout.str());
 
         check("void f() {\n"
               "    if (2 & x == foo()) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n",
+            errout.str());
 
         check("void f() {\n"
               "    if (2 & (x == foo())) {}\n"
@@ -2849,8 +3177,10 @@ private:
         check("void f() { A<x &> a; }");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() { a(x<y|z,0); }", "test.c");  // filename is c => there are never templates
-        ASSERT_EQUALS("[test.c:1]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n", errout.str());
+        check("void f() { a(x<y|z,0); }", "test.c"); // filename is c => there are never templates
+        ASSERT_EQUALS(
+            "[test.c:1]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n",
+            errout.str());
 
         check("class A<B&,C>;", "test.cpp");
         ASSERT_EQUALS("", errout.str());
@@ -2867,7 +3197,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void clarifyCondition4() { // ticket #3110
+    void clarifyCondition4()
+    { // ticket #3110
         check("typedef double SomeType;\n"
               "typedef std::pair<std::string,SomeType> PairType;\n"
               "struct S\n"
@@ -2882,13 +3213,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void clarifyCondition5() { // ticket #3609 (using | in template instantiation)
+    void clarifyCondition5()
+    { // ticket #3609 (using | in template instantiation)
         check("template<bool B> struct CWinTraits;\n"
               "CWinTraits<WS_CHILD|WS_VISIBLE>::GetWndStyle(0);");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void clarifyCondition6() {
+    void clarifyCondition6()
+    {
         check("template<class Y>\n"
               "SharedPtr& operator=( SharedPtr<Y> const & r ) {\n"
               "    px = r.px;\n"
@@ -2897,16 +3230,19 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void clarifyCondition7() {
+    void clarifyCondition7()
+    {
         // Ensure that binary and unary &, and & in declarations are distinguished properly
         check("void f(bool error) {\n"
-              "    bool & withoutSideEffects=found.first->second;\n" // Declaring a reference to a boolean; & is no operator at all
+              "    bool & withoutSideEffects=found.first->second;\n" // Declaring a reference to a boolean; & is no
+                                                                     // operator at all
               "    execute(secondExpression, &programMemory, &result, &error);\n" // Unary &
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void clarifyCondition8() {
+    void clarifyCondition8()
+    {
         // don't warn when boolean result comes from function call, array index, etc
         // the operator precedence is not unknown then
         check("bool a();\n"
@@ -2933,7 +3269,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testBug5895() {
+    void testBug5895()
+    {
         check("void png_parse(uint64_t init, int buf_size) {\n"
               "    if (init == 0x89504e470d0a1a0a || init == 0x8a4d4e470d0a1a0a)\n"
               "        ;\n"
@@ -2941,7 +3278,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testBug5309() {
+    void testBug5309()
+    {
         check("extern uint64_t value;\n"
               "void foo() {\n"
               "    if( ( value >= 0x7ff0000000000001ULL )\n"
@@ -2950,7 +3288,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void alwaysTrue() {
+    void alwaysTrue()
+    {
 
         check("void f(const struct S *s) {\n" //#8196
               "  int x1 = s->x;\n"
@@ -2959,7 +3298,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (style) Condition 'x2==10' is always true\n", errout.str());
 
-        check("void f ()\n"// #8220
+        check("void f ()\n" // #8220
               "{\n"
               "    int a;\n"
               "    int b = 0;\n"
@@ -2993,7 +3332,8 @@ private:
               "  A(x++ == 1);\n"
               "  A(x++ == 2);\n"
               "}");
-        TODO_ASSERT_EQUALS("function argument is always true? however is code really weird/suspicious?", "", errout.str());
+        TODO_ASSERT_EQUALS(
+            "function argument is always true? however is code really weird/suspicious?", "", errout.str());
 
         check("bool foo(int bar) {\n"
               "  bool ret = false;\n"
@@ -3102,7 +3442,9 @@ private:
               "  if (x != sizeof(char)) {}\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'sizeof(char)!=x' is always true\n"
-                           "[test.cpp:4]: (style) Condition 'x!=sizeof(char)' is always true\n", "", errout.str());
+                           "[test.cpp:4]: (style) Condition 'x!=sizeof(char)' is always true\n",
+                           "",
+                           errout.str());
 
         // Don't warn in assertions. Condition is often 'always true' by intention.
         // If platform,defines,etc cause an 'always false' assertion then that is not very dangerous neither
@@ -3119,7 +3461,6 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-
 
         // #7783  FP knownConditionTrueFalse on assert(0 && "message")
         check("void foo(int x) {\n"
@@ -3318,7 +3659,9 @@ private:
               "    if (handle) return 1;\n"
               "    else return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition 'handle!=0', second condition is always false\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition 'handle!=0', second condition is always false\n",
+            errout.str());
 
         check("void f(void* x, void* y) {\n"
               "    if (x == nullptr && y == nullptr)\n"
@@ -3785,7 +4128,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void alwaysTrueInfer() {
+    void alwaysTrueInfer()
+    {
         check("void f(int x) {\n"
               "    if (x > 5) {\n"
               "        x++;\n"
@@ -3923,7 +4267,8 @@ private:
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition '-128>x' is always false\n", errout.str());
     }
 
-    void alwaysTrueContainer() {
+    void alwaysTrueContainer()
+    {
         // #9329
         check("void c1(std::vector<double>&);\n"
               "void c2(std::vector<double>&);\n"
@@ -3961,7 +4306,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void multiConditionAlwaysTrue() {
+    void multiConditionAlwaysTrue()
+    {
         check("void f() {\n"
               "  int val = 0;\n"
               "  if (val < 0) continue;\n"
@@ -3992,7 +4338,8 @@ private:
               "  else if (foo) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'activate' is always false\n"
-                      "[test.cpp:5]: (style) Condition 'foo' is always false\n", errout.str());
+                      "[test.cpp:5]: (style) Condition 'foo' is always false\n",
+                      errout.str());
 
         // #6904
         check("void f() {\n"
@@ -4011,20 +4358,23 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void duplicateCondition() {
+    void duplicateCondition()
+    {
         check("void f(bool x) {\n"
               "    if(x) {}\n"
               "    if(x) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The if condition is the same as the previous if condition\n",
-                      errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) The if condition is the same as the previous if condition\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "    if(x == 1) {}\n"
               "    if(x == 1) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The if condition is the same as the previous if condition\n",
-                      errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) The if condition is the same as the previous if condition\n",
+            errout.str());
 
         check("void f(int x) {\n"
               "    if(x == 1) {}\n"
@@ -4140,8 +4490,9 @@ private:
               "        }\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (style) The if condition is the same as the previous if condition\n",
-                      errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:9]: (style) The if condition is the same as the previous if condition\n",
+            errout.str());
 
         check("void f(bool a, bool b) {\n"
               "    auto g = [&] { b = !a; };\n"
@@ -4190,36 +4541,47 @@ private:
               "}");
     }
 
-    void checkInvalidTestForOverflow() {
+    void checkInvalidTestForOverflow()
+    {
         check("void f(char *p, unsigned int x) {\n"
               "    assert((p + x) < p);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow '(p+x)<p'; pointer overflow is undefined behavior. Some mainstream compilers remove such overflow tests when optimising the code and assume it's always false.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Invalid test for overflow '(p+x)<p'; pointer overflow is undefined behavior. Some mainstream compilers remove such overflow tests when optimising the code and assume it's always false.\n",
+            errout.str());
 
         check("void f(char *p, unsigned int x) {\n"
               "    assert((p + x) >= p);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow '(p+x)>=p'; pointer overflow is undefined behavior. Some mainstream compilers remove such overflow tests when optimising the code and assume it's always true.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Invalid test for overflow '(p+x)>=p'; pointer overflow is undefined behavior. Some mainstream compilers remove such overflow tests when optimising the code and assume it's always true.\n",
+            errout.str());
 
         check("void f(char *p, unsigned int x) {\n"
               "    assert(p > (p + x));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow 'p>(p+x)'; pointer overflow is undefined behavior. Some mainstream compilers remove such overflow tests when optimising the code and assume it's always false.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Invalid test for overflow 'p>(p+x)'; pointer overflow is undefined behavior. Some mainstream compilers remove such overflow tests when optimising the code and assume it's always false.\n",
+            errout.str());
 
         check("void f(char *p, unsigned int x) {\n"
               "    assert(p <= (p + x));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Invalid test for overflow 'p<=(p+x)'; pointer overflow is undefined behavior. Some mainstream compilers remove such overflow tests when optimising the code and assume it's always true.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Invalid test for overflow 'p<=(p+x)'; pointer overflow is undefined behavior. Some mainstream compilers remove such overflow tests when optimising the code and assume it's always true.\n",
+            errout.str());
 
         check("void f(signed int x) {\n" // unsigned overflow => don't warn
               "    assert(x + 100U < x);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
-
         // x + c < x
 
-#define MSG(EXPR, RESULT)   "[test.cpp:1]: (warning) Invalid test for overflow '" EXPR "'; signed integer overflow is undefined behavior. Some mainstream compilers remove such overflow tests when optimising the code and assume it's always " RESULT ".\n"
+#define MSG(EXPR, RESULT)                                                                                                                                            \
+    "[test.cpp:1]: (warning) Invalid test for overflow '" EXPR                                                                                                       \
+    "'; signed integer overflow is undefined behavior. Some mainstream compilers remove such overflow tests when optimising the code and assume it's always " RESULT \
+    ".\n"
 
         check("int f(int x) { return x + 10 > x; }");
         ASSERT_EQUALS(MSG("x+10>x", "true"), errout.str());
@@ -4247,7 +4609,10 @@ private:
 
         // x + y < x
 #undef MSG
-#define MSG(EXPR, RESULT)   "[test.cpp:1]: (warning) Invalid test for overflow '" EXPR "'; signed integer overflow is undefined behavior. Some mainstream compilers removes handling of overflows when optimising the code and change the code to '" RESULT "'.\n"
+#define MSG(EXPR, RESULT)                                                                                                                                                \
+    "[test.cpp:1]: (warning) Invalid test for overflow '" EXPR                                                                                                           \
+    "'; signed integer overflow is undefined behavior. Some mainstream compilers removes handling of overflows when optimising the code and change the code to '" RESULT \
+    "'.\n"
 
         check("int f(int x, int y) { return x + y < x; }");
         ASSERT_EQUALS(MSG("x+y<x", "y<0"), errout.str());
@@ -4275,7 +4640,8 @@ private:
         ASSERT_EQUALS(MSG("x-y>=x", "y<=0"), errout.str());
     }
 
-    void checkConditionIsAlwaysTrueOrFalseInsideIfWhile() {
+    void checkConditionIsAlwaysTrueOrFalseInsideIfWhile()
+    {
         check("void f() {\n"
               "    enum states {A,B,C};\n"
               "    const unsigned g_flags = B|C;\n"
@@ -4302,7 +4668,8 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'a+1' is always true\n", errout.str());
     }
 
-    void alwaysTrueFalseInLogicalOperators() {
+    void alwaysTrueFalseInLogicalOperators()
+    {
         check("bool f();\n"
               "void foo() { bool x = true; if(x||f()) {}}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'x' is always true\n", errout.str());
@@ -4338,14 +4705,18 @@ private:
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 's[0]=='2'' is always false\n", errout.str());
     }
 
-    void pointerAdditionResultNotNull() {
+    void pointerAdditionResultNotNull()
+    {
         check("void f(char *ptr) {\n"
               "  if (ptr + 1 != 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison is wrong. Result of 'ptr+1' can't be 0 unless there is pointer overflow, and pointer overflow is undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Comparison is wrong. Result of 'ptr+1' can't be 0 unless there is pointer overflow, and pointer overflow is undefined behaviour.\n",
+            errout.str());
     }
 
-    void duplicateConditionalAssign() {
+    void duplicateConditionalAssign()
+    {
         setMultiline();
 
         check("void f(int& x, int y) {\n"
@@ -4354,7 +4725,8 @@ private:
               "}");
         ASSERT_EQUALS("test.cpp:3:style:Assignment 'x=y' is redundant with condition 'x==y'.\n"
                       "test.cpp:2:note:Condition 'x==y'\n"
-                      "test.cpp:3:note:Assignment 'x=y' is redundant\n", errout.str());
+                      "test.cpp:3:note:Assignment 'x=y' is redundant\n",
+                      errout.str());
 
         check("void f(int& x, int y) {\n"
               "    if (x != y)\n"
@@ -4362,7 +4734,8 @@ private:
               "}");
         ASSERT_EQUALS("test.cpp:2:style:The statement 'if (x!=y) x=y' is logically equivalent to 'x=y'.\n"
                       "test.cpp:3:note:Assignment 'x=y'\n"
-                      "test.cpp:2:note:Condition 'x!=y' is redundant\n", errout.str());
+                      "test.cpp:2:note:Condition 'x!=y' is redundant\n",
+                      errout.str());
 
         check("void f(int& x, int y) {\n"
               "    if (x == y)\n"
@@ -4372,7 +4745,8 @@ private:
               "}");
         ASSERT_EQUALS("test.cpp:3:style:Assignment 'x=y' is redundant with condition 'x==y'.\n"
                       "test.cpp:2:note:Condition 'x==y'\n"
-                      "test.cpp:3:note:Assignment 'x=y' is redundant\n", errout.str());
+                      "test.cpp:3:note:Assignment 'x=y' is redundant\n",
+                      errout.str());
 
         check("void f(int& x, int y) {\n"
               "    if (x != y)\n"
@@ -4398,11 +4772,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkAssignmentInCondition() {
+    void checkAssignmentInCondition()
+    {
         check("void f(std::string s) {\n"
               "    if (s=\"123\"){}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious assignment in condition. Condition 's=\"123\"' is always true.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Suspicious assignment in condition. Condition 's=\"123\"' is always true.\n",
+            errout.str());
 
         check("void f(std::string *p) {\n"
               "    if (p=foo()){}\n"
@@ -4410,35 +4787,43 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void compareOutOfTypeRange() {
+    void compareOutOfTypeRange()
+    {
         Settings settingsUnix64;
         settingsUnix64.severity.enable(Severity::style);
         settingsUnix64.platform(cppcheck::Platform::PlatformType::Unix64);
 
         check("void f(unsigned char c) {\n"
               "  if (c == 256) {}\n"
-              "}", &settingsUnix64);
-        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always true/false.\n", errout.str());
+              "}",
+              &settingsUnix64);
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always true/false.\n",
+            errout.str());
 
         check("void f(unsigned char c) {\n"
               "  if (c == 255) {}\n"
-              "}", &settingsUnix64);
+              "}",
+              &settingsUnix64);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(bool b) {\n"
               "  if (b == true) {}\n"
-              "}", &settingsUnix64);
+              "}",
+              &settingsUnix64);
         ASSERT_EQUALS("", errout.str());
     }
 
-    void knownConditionCast() { // #9976
+    void knownConditionCast()
+    { // #9976
         check("void f(int i) {\n"
               "    if (i < 0 || (unsigned)i > 5) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void knownConditionIncrementLoop() { // #9808
+    void knownConditionIncrementLoop()
+    { // #9808
         check("void f() {\n"
               "    int a = 0;\n"
               "    while (++a < 5) {}\n"

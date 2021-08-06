@@ -26,8 +26,7 @@
 
 class TestThreadExecutor : public TestFixture {
 public:
-    TestThreadExecutor() : TestFixture("TestThreadExecutor") {
-    }
+    TestThreadExecutor() : TestFixture("TestThreadExecutor") {}
 
 private:
     Settings settings;
@@ -36,7 +35,8 @@ private:
      * Execute check using n jobs for y files which are have
      * identical data, given within data.
      */
-    void check(unsigned int jobs, int files, int result, const std::string &data) {
+    void check(unsigned int jobs, int files, int result, const std::string& data)
+    {
         errout.str("");
         output.str("");
         if (!ThreadExecutor::isEnabled()) {
@@ -59,7 +59,8 @@ private:
         ASSERT_EQUALS(result, executor.check());
     }
 
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(deadlock_with_many_errors);
@@ -71,7 +72,8 @@ private:
         TEST_CASE(one_error_several_files);
     }
 
-    void deadlock_with_many_errors() {
+    void deadlock_with_many_errors()
+    {
         std::ostringstream oss;
         oss << "int main()\n"
             << "{\n";
@@ -83,8 +85,11 @@ private:
         check(2, 3, 3, oss.str());
     }
 
-    void many_threads() {
-        check(16, 100, 100,
+    void many_threads()
+    {
+        check(16,
+              100,
+              100,
               "int main()\n"
               "{\n"
               "  char *a = malloc(10);\n"
@@ -92,32 +97,44 @@ private:
               "}");
     }
 
-    void no_errors_more_files() {
-        check(2, 3, 0,
+    void no_errors_more_files()
+    {
+        check(2,
+              3,
+              0,
               "int main()\n"
               "{\n"
               "  return 0;\n"
               "}");
     }
 
-    void no_errors_less_files() {
-        check(2, 1, 0,
+    void no_errors_less_files()
+    {
+        check(2,
+              1,
+              0,
               "int main()\n"
               "{\n"
               "  return 0;\n"
               "}");
     }
 
-    void no_errors_equal_amount_files() {
-        check(2, 2, 0,
+    void no_errors_equal_amount_files()
+    {
+        check(2,
+              2,
+              0,
               "int main()\n"
               "{\n"
               "  return 0;\n"
               "}");
     }
 
-    void one_error_less_files() {
-        check(2, 1, 1,
+    void one_error_less_files()
+    {
+        check(2,
+              1,
+              1,
               "int main()\n"
               "{\n"
               "  {char *a = malloc(10);}\n"
@@ -125,8 +142,11 @@ private:
               "}");
     }
 
-    void one_error_several_files() {
-        check(2, 20, 20,
+    void one_error_several_files()
+    {
+        check(2,
+              20,
+              20,
               "int main()\n"
               "{\n"
               "  {char *a = malloc(10);}\n"

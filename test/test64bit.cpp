@@ -16,22 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "check64bit.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
-
 class Test64BitPortability : public TestFixture {
 public:
-    Test64BitPortability() : TestFixture("Test64BitPortability") {
-    }
+    Test64BitPortability() : TestFixture("Test64BitPortability") {}
 
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
         settings.severity.enable(Severity::portability);
 
         TEST_CASE(novardecl);
@@ -42,7 +40,8 @@ private:
         TEST_CASE(returnIssues);
     }
 
-    void check(const char code[]) {
+    void check(const char code[])
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -57,7 +56,8 @@ private:
         check64BitPortability.pointerassignment();
     }
 
-    void novardecl() {
+    void novardecl()
+    {
         // if the variable declarations can't be seen then skip the warning
         check("void foo()\n"
               "{\n"
@@ -66,7 +66,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void functionpar() {
+    void functionpar()
+    {
         check("int foo(int *p)\n"
               "{\n"
               "    int a = p;\n"
@@ -86,7 +87,9 @@ private:
               "    int *a = p;\n"
               "    return a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (portability) Returning an address value in a function with integer return type is not portable.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (portability) Returning an address value in a function with integer return type is not portable.\n",
+            errout.str());
 
         check("void foo(int x)\n"
               "{\n"
@@ -133,7 +136,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structmember() {
+    void structmember()
+    {
         check("struct Foo { int *p; };\n"
               "void f(struct Foo *foo) {\n"
               "    int i = foo->p;\n"
@@ -141,7 +145,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning a pointer to an integer is not portable.\n", errout.str());
     }
 
-    void ptrcompare() {
+    void ptrcompare()
+    {
         // Ticket #2892
         check("void foo(int *p) {\n"
               "    int a = (p != NULL);\n"
@@ -149,7 +154,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void ptrarithmetic() {
+    void ptrarithmetic()
+    {
         // #3073
         check("void foo(int *p) {\n"
               "    int x = 10;\n"
@@ -176,11 +182,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnIssues() {
+    void returnIssues()
+    {
         check("void* foo(int i) {\n"
               "    return i;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (portability) Returning an integer in a function with pointer return type is not portable.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (portability) Returning an integer in a function with pointer return type is not portable.\n",
+            errout.str());
 
         check("void* foo(int* i) {\n"
               "    return i;\n"
@@ -207,12 +216,16 @@ private:
         check("int foo(char* c) {\n"
               "    return c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (portability) Returning an address value in a function with integer return type is not portable.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (portability) Returning an address value in a function with integer return type is not portable.\n",
+            errout.str());
 
         check("int foo(char* c) {\n"
               "    return 1+c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (portability) Returning an address value in a function with integer return type is not portable.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (portability) Returning an address value in a function with integer return type is not portable.\n",
+            errout.str());
 
         check("std::string foo(char* c) {\n"
               "    return c;\n"

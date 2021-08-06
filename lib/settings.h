@@ -38,48 +38,38 @@
 #include <unordered_map>
 
 namespace ValueFlow {
-    class Value;
+class Value;
 }
 
 /// @addtogroup Core
 /// @{
 
-template<typename T>
+template <typename T>
 class SimpleEnableGroup {
     uint32_t mFlags = 0;
+
 public:
-    uint32_t intValue() const {
-        return mFlags;
-    }
-    void clear() {
-        mFlags = 0;
-    }
-    void fill() {
-        mFlags = 0xFFFFFFFF;
-    }
-    void setEnabledAll(bool enabled) {
+    uint32_t intValue() const { return mFlags; }
+    void clear() { mFlags = 0; }
+    void fill() { mFlags = 0xFFFFFFFF; }
+    void setEnabledAll(bool enabled)
+    {
         if (enabled)
             fill();
         else
             clear();
     }
-    bool isEnabled(T flag) const {
-        return (mFlags & (1U << (uint32_t)flag)) != 0;
-    }
-    void enable(T flag) {
-        mFlags |= (1U << (uint32_t)flag);
-    }
-    void disable(T flag) {
-        mFlags &= ~(1U << (uint32_t)flag);
-    }
-    void setEnabled(T flag, bool enabled) {
+    bool isEnabled(T flag) const { return (mFlags & (1U << (uint32_t)flag)) != 0; }
+    void enable(T flag) { mFlags |= (1U << (uint32_t)flag); }
+    void disable(T flag) { mFlags &= ~(1U << (uint32_t)flag); }
+    void setEnabled(T flag, bool enabled)
+    {
         if (enabled)
             enable(flag);
         else
             disable(flag);
     }
 };
-
 
 /**
  * @brief This is just a container for general settings so that we don't need
@@ -88,7 +78,6 @@ public:
  */
 class CPPCHECKLIB Settings : public cppcheck::Platform {
 private:
-
     /** @brief terminate checking */
     static std::atomic<bool> mTerminated;
 
@@ -174,9 +163,7 @@ public:
     bool dump;
     std::string dumpFile;
 
-    enum Language {
-        None, C, CPP
-    };
+    enum Language { None, C, CPP };
 
     /** @brief Name of the language that is enforced. Empty per default. */
     Language enforcedLang;
@@ -217,8 +204,8 @@ public:
     unsigned int jobs;
 
     /** @brief Collect unmatched suppressions in one run.
-      * This delays the reporting until all files are checked.
-      * It is needed by checks that analyse the whole code base. */
+     * This delays the reporting until all files are checked.
+     * It is needed by checks that analyse the whole code base. */
     bool jointSuppressionReport;
 
     /** @brief --library= */
@@ -270,9 +257,12 @@ public:
     class CPPCHECKLIB Rule {
     public:
         Rule()
-            : tokenlist("simple")         // use simple tokenlist
-            , id("rule")                  // default id
-            , severity(Severity::style) { // default severity
+            : tokenlist("simple") // use simple tokenlist
+              ,
+              id("rule") // default id
+              ,
+              severity(Severity::style)
+        { // default severity
         }
 
         std::string tokenlist;
@@ -298,9 +288,7 @@ public:
         static const char XmlInternalFunctions[];
         static const char XmlExternalVariables[];
 
-        void clear() {
-            classes = externalFunctions = internalFunctions = externalVariables = false;
-        }
+        void clear() { classes = externalFunctions = internalFunctions = externalVariables = false; }
 
         /**
          * Public interface of classes
@@ -372,9 +360,11 @@ public:
      * @brief return true if a included file is to be excluded in Preprocessor::getConfigs
      * @return true for the file to be excluded.
      */
-    bool configurationExcluded(const std::string &file) const {
-        for (const std::string & configExcludePath : configExcludePaths) {
-            if (file.length()>=configExcludePath.length() && file.compare(0,configExcludePath.length(),configExcludePath)==0) {
+    bool configurationExcluded(const std::string& file) const
+    {
+        for (const std::string& configExcludePath : configExcludePaths) {
+            if (file.length() >= configExcludePath.length() &&
+                file.compare(0, configExcludePath.length(), configExcludePath) == 0) {
                 return true;
             }
         }
@@ -387,28 +377,22 @@ public:
      * or empty string to enable all. e.g. "style,possibleError"
      * @return error message. empty upon success
      */
-    std::string addEnabled(const std::string &str);
+    std::string addEnabled(const std::string& str);
 
     /**
-    * @brief Returns true if given value can be shown
-    * @return true if the value can be shown
-    */
-    bool isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck=false) const;
+     * @brief Returns true if given value can be shown
+     * @return true if the value can be shown
+     */
+    bool isEnabled(const ValueFlow::Value* value, bool inconclusiveCheck = false) const;
 
     /** Is posix library specified? */
-    bool posix() const {
-        return std::find(libraries.begin(), libraries.end(), "posix") != libraries.end();
-    }
+    bool posix() const { return std::find(libraries.begin(), libraries.end(), "posix") != libraries.end(); }
 
     /** @brief Request termination of checking */
-    static void terminate(bool t = true) {
-        Settings::mTerminated = t;
-    }
+    static void terminate(bool t = true) { Settings::mTerminated = t; }
 
     /** @brief termination requested? */
-    static bool terminated() {
-        return Settings::mTerminated;
-    }
+    static bool terminated() { return Settings::mTerminated; }
 
     std::set<std::string> summaryReturn;
 

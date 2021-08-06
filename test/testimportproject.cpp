@@ -30,15 +30,13 @@ public:
     using ImportProject::importCppcheckGuiProject;
 };
 
-
 class TestImportProject : public TestFixture {
 public:
-    TestImportProject() : TestFixture("TestImportProject") {
-    }
+    TestImportProject() : TestFixture("TestImportProject") {}
 
 private:
-
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
         TEST_CASE(setDefines);
         TEST_CASE(setIncludePaths1);
         TEST_CASE(setIncludePaths2);
@@ -57,7 +55,8 @@ private:
         TEST_CASE(ignorePaths);
     }
 
-    void setDefines() const {
+    void setDefines() const
+    {
         ImportProject::FileSettings fs;
 
         fs.setDefines("A");
@@ -73,7 +72,8 @@ private:
         ASSERT_EQUALS("A=1;B=1", fs.defines);
     }
 
-    void setIncludePaths1() const {
+    void setIncludePaths1() const
+    {
         ImportProject::FileSettings fs;
         std::list<std::string> in(1, "../include");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
@@ -82,7 +82,8 @@ private:
         ASSERT_EQUALS("abc/include/", fs.includePaths.front());
     }
 
-    void setIncludePaths2() const {
+    void setIncludePaths2() const
+    {
         ImportProject::FileSettings fs;
         std::list<std::string> in(1, "$(SolutionDir)other");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
@@ -92,7 +93,8 @@ private:
         ASSERT_EQUALS("c:/abc/other/", fs.includePaths.front());
     }
 
-    void setIncludePaths3() const { // macro names are case insensitive
+    void setIncludePaths3() const
+    { // macro names are case insensitive
         ImportProject::FileSettings fs;
         std::list<std::string> in(1, "$(SOLUTIONDIR)other");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
@@ -102,7 +104,8 @@ private:
         ASSERT_EQUALS("c:/abc/other/", fs.includePaths.front());
     }
 
-    void importCompileCommands1() const {
+    void importCompileCommands1() const
+    {
         const char json[] = R"([{
                                    "directory": "/tmp",
                                    "command": "gcc -DTEST1 -DTEST2=2 -o /tmp/src.o -c /tmp/src.c",
@@ -115,7 +118,8 @@ private:
         ASSERT_EQUALS("TEST1=1;TEST2=2", importer.fileSettings.begin()->defines);
     }
 
-    void importCompileCommands2() const {
+    void importCompileCommands2() const
+    {
         // Absolute file path
 #ifdef _WIN32
         const char json[] = R"([{
@@ -142,7 +146,8 @@ private:
 #endif
     }
 
-    void importCompileCommands3() const {
+    void importCompileCommands3() const
+    {
         const char json[] = R"([{
                                     "directory": "/tmp/",
                                     "command": "gcc -c src.c",
@@ -155,7 +160,8 @@ private:
         ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.begin()->filename);
     }
 
-    void importCompileCommands4() const {
+    void importCompileCommands4() const
+    {
         const char json[] = R"([{
                                     "directory": "/tmp/",
                                     "command": "gcc -c src.mm",
@@ -167,7 +173,8 @@ private:
         ASSERT_EQUALS(0, importer.fileSettings.size());
     }
 
-    void importCompileCommands5() const {
+    void importCompileCommands5() const
+    {
         const char json[] =
             R"([{
                 "directory": "C:/Users/dan/git/build-test-cppcheck-Desktop_Qt_5_15_0_MSVC2019_64bit-Debug",
@@ -186,7 +193,8 @@ private:
         ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/src/", importer.fileSettings.begin()->includePaths.front());
     }
 
-    void importCompileCommands6() const {
+    void importCompileCommands6() const
+    {
         const char json[] =
             R"([{
                 "directory": "C:/Users/dan/git/build-test-cppcheck-Desktop_Qt_5_15_0_MSVC2019_64bit-Debug",
@@ -202,11 +210,12 @@ private:
         TestImporter importer;
         importer.importCompileCommands(istr);
         ASSERT_EQUALS(2, importer.fileSettings.size());
-        ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/second src/", importer.fileSettings.begin()->includePaths.front());
+        ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/second src/",
+                      importer.fileSettings.begin()->includePaths.front());
     }
 
-
-    void importCompileCommands7() const {
+    void importCompileCommands7() const
+    {
         // cmake -DFILESDIR="/some/path" ..
         const char json[] =
             R"([{
@@ -221,10 +230,12 @@ private:
         ASSERT_EQUALS("FILESDIR=\"/some/path\"", importer.fileSettings.begin()->defines);
         ASSERT_EQUALS(1, importer.fileSettings.begin()->includePaths.size());
         ASSERT_EQUALS("/home/danielm/cppcheck 2/b/lib/", importer.fileSettings.begin()->includePaths.front());
-        // TODO ASSERT_EQUALS("/home/danielm/cppcheck 2/externals/", importer.fileSettings.begin()->includePaths.back());
+        // TODO ASSERT_EQUALS("/home/danielm/cppcheck 2/externals/",
+        // importer.fileSettings.begin()->includePaths.back());
     }
 
-    void importCompileCommands8() const {
+    void importCompileCommands8() const
+    {
         // cmake -DFILESDIR="C:\Program Files\Cppcheck" -G"NMake Makefiles" ..
         const char json[] =
             R"([{
@@ -242,7 +253,8 @@ private:
         ASSERT_EQUALS("C:/Users/danielm/cppcheck/lib/", importer.fileSettings.begin()->includePaths.back());
     }
 
-    void importCompileCommandsArgumentsSection() const {
+    void importCompileCommandsArgumentsSection() const
+    {
         const char json[] = "[ { \"directory\": \"/tmp/\","
                             "\"arguments\": [\"gcc\", \"-c\", \"src.c\"],"
                             "\"file\": \"src.c\" } ]";
@@ -253,7 +265,8 @@ private:
         ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.begin()->filename);
     }
 
-    void importCompileCommandsNoCommandSection() const {
+    void importCompileCommandsNoCommandSection() const
+    {
         const char json[] = "[ { \"directory\": \"/tmp/\","
                             "\"file\": \"src.mm\" } ]";
         std::istringstream istr(json);
@@ -262,7 +275,8 @@ private:
         ASSERT_EQUALS(0, importer.fileSettings.size());
     }
 
-    void importCppcheckGuiProject() const {
+    void importCppcheckGuiProject() const
+    {
         const char xml[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                            "<project version=\"1\">\n"
                            "    <root name=\".\"/>\n"
@@ -288,7 +302,8 @@ private:
         ASSERT_EQUALS("lib/", s.includePaths.front());
     }
 
-    void ignorePaths() {
+    void ignorePaths()
+    {
         ImportProject::FileSettings fs1, fs2;
         fs1.filename = "foo/bar";
         fs2.filename = "qwe/rty";
@@ -302,7 +317,7 @@ private:
         ASSERT_EQUALS(1, project.fileSettings.size());
         ASSERT_EQUALS("qwe/rty", project.fileSettings.front().filename);
 
-        project.ignorePaths({ "*e/r*" });
+        project.ignorePaths({"*e/r*"});
         ASSERT_EQUALS(0, project.fileSettings.size());
     }
 };

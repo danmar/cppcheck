@@ -24,14 +24,15 @@
 extern std::ostringstream errout;
 extern std::ostringstream output;
 /**
-  * @brief Utility class for capturing cout and cerr to ostringstream buffers
-  * for later use. Uses RAII to stop redirection when the object goes out of
-  * scope.
-  */
+ * @brief Utility class for capturing cout and cerr to ostringstream buffers
+ * for later use. Uses RAII to stop redirection when the object goes out of
+ * scope.
+ */
 class RedirectOutputError {
 public:
     /** Set up redirection, flushing anything in the pipes. */
-    RedirectOutputError() {
+    RedirectOutputError()
+    {
         // flush all old output
         std::cout.flush();
         std::cerr.flush();
@@ -44,7 +45,8 @@ public:
     }
 
     /** Revert cout and cerr behaviour */
-    ~RedirectOutputError() {
+    ~RedirectOutputError()
+    {
         std::cout.rdbuf(_oldCout); // restore cout's original streambuf
         std::cerr.rdbuf(_oldCerr); // restore cerrs's original streambuf
 
@@ -53,35 +55,30 @@ public:
     }
 
     /** Return what would be printed to cout. See also clearOutput() */
-    std::string getOutput() const {
-        return _out.str();
-    }
+    std::string getOutput() const { return _out.str(); }
 
     /** Normally called after getOutput() to prevent same text to be returned
     twice. */
-    void clearOutput() {
-        _out.str("");
-    }
+    void clearOutput() { _out.str(""); }
 
     /** Return what would be printed to cerr. See also clearErrout() */
-    std::string getErrout() const {
-        return _err.str();
-    }
+    std::string getErrout() const { return _err.str(); }
 
     /** Normally called after getErrout() to prevent same text to be returned
     twice. */
-    void clearErrout() {
-        _err.str("");
-    }
+    void clearErrout() { _err.str(""); }
 
 private:
     std::ostringstream _out;
     std::ostringstream _err;
-    std::streambuf *_oldCout;
-    std::streambuf *_oldCerr;
+    std::streambuf* _oldCout;
+    std::streambuf* _oldCerr;
 };
 
-#define REDIRECT RedirectOutputError redir; do {} while(false)
+#define REDIRECT                                                                                                       \
+    RedirectOutputError redir;                                                                                         \
+    do {                                                                                                               \
+    } while (false)
 #define GET_REDIRECT_OUTPUT redir.getOutput()
 #define CLEAR_REDIRECT_OUTPUT redir.clearOutput()
 #define GET_REDIRECT_ERROUT redir.getErrout()

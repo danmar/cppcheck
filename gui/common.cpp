@@ -16,15 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "common.h"
 #include <QCoreApplication>
 #include <QSettings>
 #include <QFileInfo>
 #include <QDir>
 
-
-QString getPath(const QString &type)
+QString getPath(const QString& type)
 {
     QSettings settings;
     QString path = settings.value(type, QString()).toString();
@@ -38,19 +36,19 @@ QString getPath(const QString &type)
     return path;
 }
 
-void setPath(const QString &type, const QString &value)
+void setPath(const QString& type, const QString& value)
 {
     QSettings settings;
     settings.setValue(type, value);
 }
 
-QString toFilterString(const QMap<QString,QString>& filters, bool addAllSupported, bool addAll)
+QString toFilterString(const QMap<QString, QString>& filters, bool addAllSupported, bool addAll)
 {
     QStringList entries;
 
     if (addAllSupported) {
         entries << QCoreApplication::translate("toFilterString", "All supported files (%1)")
-                .arg(QStringList(filters.values()).join(" "));
+                       .arg(QStringList(filters.values()).join(" "));
     }
 
     if (addAll) {
@@ -60,7 +58,7 @@ QString toFilterString(const QMap<QString,QString>& filters, bool addAllSupporte
     // We're using the description of the filters as the map keys, the file
     // name patterns are our values. The generated filter string list will
     // thus be sorted alphabetically over the descriptions.
-    for (const auto& k: filters.keys()) {
+    for (const auto& k : filters.keys()) {
         entries << QString("%1 (%2)").arg(k).arg(filters.value(k));
     }
 

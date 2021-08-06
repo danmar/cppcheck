@@ -19,40 +19,32 @@
 #include "erroritem.h"
 #include "common.h"
 
-QErrorPathItem::QErrorPathItem(const ErrorMessage::FileLocation &loc)
-    : file(QString::fromStdString(loc.getfile(false)))
-    , line(loc.line)
-    , column(loc.column)
-    , info(QString::fromStdString(loc.getinfo()))
-{
-}
+QErrorPathItem::QErrorPathItem(const ErrorMessage::FileLocation& loc)
+    : file(QString::fromStdString(loc.getfile(false))),
+      line(loc.line),
+      column(loc.column),
+      info(QString::fromStdString(loc.getinfo()))
+{}
 
-bool operator==(const QErrorPathItem &i1, const QErrorPathItem &i2)
+bool operator==(const QErrorPathItem& i1, const QErrorPathItem& i2)
 {
     return i1.file == i2.file && i1.column == i2.column && i1.line == i2.line && i1.info == i2.info;
 }
 
-ErrorItem::ErrorItem()
-    : severity(Severity::none)
-    , incomplete(false)
-    , inconclusive(false)
-    , cwe(-1)
-    , hash(0)
-{
-}
+ErrorItem::ErrorItem() : severity(Severity::none), incomplete(false), inconclusive(false), cwe(-1), hash(0) {}
 
-ErrorItem::ErrorItem(const ErrorMessage &errmsg)
-    : file0(QString::fromStdString(errmsg.file0))
-    , function(QString::fromStdString(errmsg.function))
-    , errorId(QString::fromStdString(errmsg.id))
-    , severity(errmsg.severity)
-    , incomplete(errmsg.incomplete)
-    , inconclusive(errmsg.certainty == Certainty::inconclusive)
-    , summary(QString::fromStdString(errmsg.shortMessage()))
-    , message(QString::fromStdString(errmsg.verboseMessage()))
-    , cwe(errmsg.cwe.id)
-    , hash(errmsg.hash)
-    , symbolNames(QString::fromStdString(errmsg.symbolNames()))
+ErrorItem::ErrorItem(const ErrorMessage& errmsg)
+    : file0(QString::fromStdString(errmsg.file0)),
+      function(QString::fromStdString(errmsg.function)),
+      errorId(QString::fromStdString(errmsg.id)),
+      severity(errmsg.severity),
+      incomplete(errmsg.incomplete),
+      inconclusive(errmsg.certainty == Certainty::inconclusive),
+      summary(QString::fromStdString(errmsg.shortMessage())),
+      message(QString::fromStdString(errmsg.verboseMessage())),
+      cwe(errmsg.cwe.id),
+      hash(errmsg.hash),
+      symbolNames(QString::fromStdString(errmsg.symbolNames()))
 {
     for (std::list<ErrorMessage::FileLocation>::const_iterator loc = errmsg.callStack.begin();
          loc != errmsg.callStack.end();
@@ -77,7 +69,7 @@ QString ErrorItem::toString() const
     QString str = errorPath.back().file + " - " + errorId + " - ";
     if (inconclusive)
         str += "inconclusive ";
-    str += GuiSeverity::toString(severity) +"\n";
+    str += GuiSeverity::toString(severity) + "\n";
     str += summary + "\n";
     str += message + "\n";
     for (const QErrorPathItem& i : errorPath) {
@@ -86,16 +78,13 @@ QString ErrorItem::toString() const
     return str;
 }
 
-bool ErrorItem::sameCID(const ErrorItem &errorItem1, const ErrorItem &errorItem2)
+bool ErrorItem::sameCID(const ErrorItem& errorItem1, const ErrorItem& errorItem2)
 {
     if (errorItem1.hash || errorItem2.hash)
         return errorItem1.hash == errorItem2.hash;
 
     // fallback
-    return errorItem1.errorId == errorItem2.errorId &&
-           errorItem1.errorPath == errorItem2.errorPath &&
-           errorItem1.file0 == errorItem2.file0 &&
-           errorItem1.message == errorItem2.message &&
-           errorItem1.inconclusive == errorItem2.inconclusive &&
-           errorItem1.severity == errorItem2.severity;
+    return errorItem1.errorId == errorItem2.errorId && errorItem1.errorPath == errorItem2.errorPath &&
+           errorItem1.file0 == errorItem2.file0 && errorItem1.message == errorItem2.message &&
+           errorItem1.inconclusive == errorItem2.inconclusive && errorItem1.severity == errorItem2.severity;
 }

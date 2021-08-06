@@ -31,11 +31,11 @@
 //---------------------------------------------------------------------------
 
 // CWE ids used
-static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
+static const struct CWE CWE398(398U); // Indicator of Poor Code Quality
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    CheckAssert instance;
+CheckAssert instance;
 }
 
 void CheckAssert::assertWithSideEffects()
@@ -47,7 +47,7 @@ void CheckAssert::assertWithSideEffects()
         if (!Token::simpleMatch(tok, "assert ("))
             continue;
 
-        const Token *endTok = tok->next()->link();
+        const Token* endTok = tok->next()->link();
         for (const Token* tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
             if (Token::simpleMatch(tmp, "sizeof ("))
                 tmp = tmp->linkAt(1);
@@ -63,9 +63,10 @@ void CheckAssert::assertWithSideEffects()
                 continue;
             }
             const Scope* scope = f->functionScope;
-            if (!scope) continue;
+            if (!scope)
+                continue;
 
-            for (const Token *tok2 = scope->bodyStart; tok2 != scope->bodyEnd; tok2 = tok2->next()) {
+            for (const Token* tok2 = scope->bodyStart; tok2 != scope->bodyEnd; tok2 = tok2->next()) {
                 if (!tok2->isAssignmentOp() && tok2->tokType() != Token::eIncDecOp)
                     continue;
 
@@ -76,14 +77,16 @@ void CheckAssert::assertWithSideEffects()
                     continue; // Pointers need to be dereferenced, otherwise there is no error
 
                 bool noReturnInScope = true;
-                for (const Token *rt = scope->bodyStart; rt != scope->bodyEnd; rt = rt->next()) {
-                    if (rt->str() != "return") continue; // find all return statements
+                for (const Token* rt = scope->bodyStart; rt != scope->bodyEnd; rt = rt->next()) {
+                    if (rt->str() != "return")
+                        continue; // find all return statements
                     if (inSameScope(rt, tok2)) {
                         noReturnInScope = false;
                         break;
                     }
                 }
-                if (noReturnInScope) continue;
+                if (noReturnInScope)
+                    continue;
 
                 sideEffectInAssertError(tmp, f->name());
                 break;
@@ -94,33 +97,40 @@ void CheckAssert::assertWithSideEffects()
 }
 //---------------------------------------------------------------------------
 
-
-void CheckAssert::sideEffectInAssertError(const Token *tok, const std::string& functionName)
+void CheckAssert::sideEffectInAssertError(const Token* tok, const std::string& functionName)
 {
-    reportError(tok, Severity::warning,
+    reportError(tok,
+                Severity::warning,
                 "assertWithSideEffect",
-                "$symbol:" + functionName + "\n"
-                "Assert statement calls a function which may have desired side effects: '$symbol'.\n"
-                "Non-pure function: '$symbol' is called inside assert statement. "
-                "Assert statements are removed from release builds so the code inside "
-                "assert statement is not executed. If the code is needed also in release "
-                "builds, this is a bug.", CWE398, Certainty::normal);
+                "$symbol:" + functionName +
+                    "\n"
+                    "Assert statement calls a function which may have desired side effects: '$symbol'.\n"
+                    "Non-pure function: '$symbol' is called inside assert statement. "
+                    "Assert statements are removed from release builds so the code inside "
+                    "assert statement is not executed. If the code is needed also in release "
+                    "builds, this is a bug.",
+                CWE398,
+                Certainty::normal);
 }
 
-void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& varname)
+void CheckAssert::assignmentInAssertError(const Token* tok, const std::string& varname)
 {
-    reportError(tok, Severity::warning,
+    reportError(tok,
+                Severity::warning,
                 "assignmentInAssert",
-                "$symbol:" + varname + "\n"
-                "Assert statement modifies '$symbol'.\n"
-                "Variable '$symbol' is modified inside assert statement. "
-                "Assert statements are removed from release builds so the code inside "
-                "assert statement is not executed. If the code is needed also in release "
-                "builds, this is a bug.", CWE398, Certainty::normal);
+                "$symbol:" + varname +
+                    "\n"
+                    "Assert statement modifies '$symbol'.\n"
+                    "Variable '$symbol' is modified inside assert statement. "
+                    "Assert statements are removed from release builds so the code inside "
+                    "assert statement is not executed. If the code is needed also in release "
+                    "builds, this is a bug.",
+                CWE398,
+                Certainty::normal);
 }
 
 // checks if side effects happen on the variable prior to tmp
-void CheckAssert::checkVariableAssignment(const Token* assignTok, const Scope *assertionScope)
+void CheckAssert::checkVariableAssignment(const Token* assignTok, const Scope* assertionScope)
 {
     if (!assignTok->isAssignmentOp() && assignTok->tokType() != Token::eIncDecOp)
         return;
@@ -131,7 +141,7 @@ void CheckAssert::checkVariableAssignment(const Token* assignTok, const Scope *a
 
     // Variable declared in inner scope in assert => don't warn
     if (assertionScope != var->scope()) {
-        const Scope *s = var->scope();
+        const Scope* s = var->scope();
         while (s && s != assertionScope)
             s = s->nestedIn;
         if (s == assertionScope)

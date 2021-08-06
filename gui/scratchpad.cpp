@@ -19,19 +19,14 @@
 #include "scratchpad.h"
 #include "mainwindow.h"
 
-ScratchPad::ScratchPad(MainWindow& mainWindow)
-    : QDialog(&mainWindow)
-    , mMainWindow(mainWindow)
+ScratchPad::ScratchPad(MainWindow& mainWindow) : QDialog(&mainWindow), mMainWindow(mainWindow)
 {
     mUI.setupUi(this);
 
     connect(mUI.mCheckButton, &QPushButton::clicked, this, &ScratchPad::checkButtonClicked);
 }
 
-void ScratchPad::translate()
-{
-    mUI.retranslateUi(this);
-}
+void ScratchPad::translate() { mUI.retranslateUi(this); }
 
 void ScratchPad::checkButtonClicked()
 {

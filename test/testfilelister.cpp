@@ -25,14 +25,13 @@
 #include <string>
 #include <vector>
 
-class TestFileLister: public TestFixture {
+class TestFileLister : public TestFixture {
 public:
-    TestFileLister()
-        :TestFixture("TestFileLister") {
-    }
+    TestFileLister() : TestFixture("TestFileLister") {}
 
 private:
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
         // bail out if the tests are not executed from the base folder
         {
             std::ifstream fin("test/testfilelister.cpp");
@@ -45,12 +44,14 @@ private:
         TEST_CASE(fileExists);
     }
 
-    void isDirectory() const {
+    void isDirectory() const
+    {
         ASSERT_EQUALS(false, FileLister::isDirectory("readme.txt"));
         ASSERT_EQUALS(true, FileLister::isDirectory("lib"));
     }
 
-    void recursiveAddFiles() const {
+    void recursiveAddFiles() const
+    {
         // Recursively add add files..
         std::map<std::string, std::size_t> files;
         std::vector<std::string> masks;
@@ -60,7 +61,7 @@ private:
 
         // In case there are leading "./"..
         for (std::map<std::string, std::size_t>::iterator i = files.begin(); i != files.end();) {
-            if (i->first.compare(0,2,"./") == 0) {
+            if (i->first.compare(0, 2, "./") == 0) {
                 files[i->first.substr(2)] = i->second;
                 files.erase(i++);
             } else
@@ -77,7 +78,8 @@ private:
         ASSERT(files.find("lib/tokenize.h") == files.end());
     }
 
-    void fileExists() const {
+    void fileExists() const
+    {
         ASSERT_EQUALS(false, FileLister::fileExists("lib"));
         ASSERT_EQUALS(true, FileLister::fileExists("readme.txt"));
     }

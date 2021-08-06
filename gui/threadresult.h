@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef THREADRESULT_H
 #define THREADRESULT_H
 
@@ -33,9 +32,9 @@ class ErrorItem;
 /// @{
 
 /**
-* @brief Threads use this class to obtain new files to process and to publish results
-*
-*/
+ * @brief Threads use this class to obtain new files to process and to publish results
+ *
+ */
 class ThreadResult : public QObject, public ErrorLogger {
     Q_OBJECT
 public:
@@ -43,117 +42,116 @@ public:
     virtual ~ThreadResult();
 
     /**
-    * @brief Get next unprocessed file
-    * @return File path
-    */
+     * @brief Get next unprocessed file
+     * @return File path
+     */
     QString getNextFile();
 
     ImportProject::FileSettings getNextFileSettings();
 
     /**
-    * @brief Set list of files to check
-    * @param files List of files to check
-    */
-    void setFiles(const QStringList &files);
+     * @brief Set list of files to check
+     * @param files List of files to check
+     */
+    void setFiles(const QStringList& files);
 
-    void setProject(const ImportProject &prj);
+    void setProject(const ImportProject& prj);
 
     /**
-    * @brief Clear files to check
-    *
-    */
+     * @brief Clear files to check
+     *
+     */
     void clearFiles();
 
     /**
-    * @brief Get the number of files to check
-    *
-    */
+     * @brief Get the number of files to check
+     *
+     */
     int getFileCount() const;
 
     /**
-    * ErrorLogger methods
-    */
-    void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
-    void reportErr(const ErrorMessage &msg) override;
-    void bughuntingReport(const std::string &str) override;
+     * ErrorLogger methods
+     */
+    void reportOut(const std::string& outmsg, Color c = Color::Reset) override;
+    void reportErr(const ErrorMessage& msg) override;
+    void bughuntingReport(const std::string& str) override;
 
 public slots:
 
     /**
-    * @brief Slot threads use to signal this class that a specific file is checked
-    * @param file File that is checked
-    */
-    void fileChecked(const QString &file);
+     * @brief Slot threads use to signal this class that a specific file is checked
+     * @param file File that is checked
+     */
+    void fileChecked(const QString& file);
 signals:
     /**
-    * @brief Progress signal
-    * @param value Current progress
-    * @param description Description of the current stage
-    */
+     * @brief Progress signal
+     * @param value Current progress
+     * @param description Description of the current stage
+     */
     void progress(int value, const QString& description);
 
     /**
-    * @brief Signal of a new error
-    *
-    * @param item Error data
-    */
-    void error(const ErrorItem &item);
+     * @brief Signal of a new error
+     *
+     * @param item Error data
+     */
+    void error(const ErrorItem& item);
 
     /**
-    * @brief Signal of a new log message
-    *
-    * @param logline Log line
-    */
-    void log(const QString &logline);
+     * @brief Signal of a new log message
+     *
+     * @param logline Log line
+     */
+    void log(const QString& logline);
 
     /**
-    * @brief Signal of a debug error
-    *
-    * @param item Error data
-    */
-    void debugError(const ErrorItem &item);
+     * @brief Signal of a debug error
+     *
+     * @param item Error data
+     */
+    void debugError(const ErrorItem& item);
 
     /** @brief bug hunting report */
     void bughuntingReportLine(QString line);
 
 protected:
-
     /**
-    * @brief Mutex
-    *
-    */
+     * @brief Mutex
+     *
+     */
     mutable QMutex mutex;
 
     /**
-    * @brief List of files to check
-    *
-    */
+     * @brief List of files to check
+     *
+     */
     QStringList mFiles;
 
     std::list<ImportProject::FileSettings> mFileSettings;
 
     /**
-    * @brief Max progress
-    *
-    */
+     * @brief Max progress
+     *
+     */
     quint64 mMaxProgress;
 
     /**
-    * @brief Current progress
-    *
-    */
+     * @brief Current progress
+     *
+     */
     quint64 mProgress;
 
     /**
-    * @brief Current number of files checked
-    *
-    */
+     * @brief Current number of files checked
+     *
+     */
     unsigned long mFilesChecked;
 
     /**
-    * @brief Total number of files
-    *
-    */
+     * @brief Total number of files
+     *
+     */
     unsigned long mTotalFiles;
 };
 /// @}

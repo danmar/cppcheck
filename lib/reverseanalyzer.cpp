@@ -17,19 +17,17 @@ struct ReverseTraversal {
     ValuePtr<Analyzer> analyzer;
     const Settings* settings;
 
-    std::pair<bool, bool> evalCond(const Token* tok) {
+    std::pair<bool, bool> evalCond(const Token* tok)
+    {
         std::vector<int> result = analyzer->evaluate(tok);
         // TODO: We should convert to bool
-        bool checkThen = std::any_of(result.begin(), result.end(), [](int x) {
-            return x == 1;
-        });
-        bool checkElse = std::any_of(result.begin(), result.end(), [](int x) {
-            return x == 0;
-        });
+        bool checkThen = std::any_of(result.begin(), result.end(), [](int x) { return x == 1; });
+        bool checkElse = std::any_of(result.begin(), result.end(), [](int x) { return x == 0; });
         return std::make_pair(checkThen, checkElse);
     }
 
-    bool update(Token* tok) {
+    bool update(Token* tok)
+    {
         Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Reverse);
         if (!action.isNone())
             analyzer->update(tok, action, Analyzer::Direction::Reverse);
@@ -40,7 +38,8 @@ struct ReverseTraversal {
         return true;
     }
 
-    bool updateRecursive(Token* start) {
+    bool updateRecursive(Token* start)
+    {
         bool continueB = true;
         visitAstNodes(start, [&](Token* tok) {
             const Token* parent = tok->astParent();
@@ -57,7 +56,8 @@ struct ReverseTraversal {
         return continueB;
     }
 
-    Analyzer::Action analyzeRecursive(const Token* start) {
+    Analyzer::Action analyzeRecursive(const Token* start)
+    {
         Analyzer::Action result = Analyzer::Action::None;
         visitAstNodes(start, [&](const Token* tok) {
             result |= analyzer->analyze(tok, Analyzer::Direction::Reverse);
@@ -68,7 +68,8 @@ struct ReverseTraversal {
         return result;
     }
 
-    Analyzer::Action analyzeRange(const Token* start, const Token* end) {
+    Analyzer::Action analyzeRange(const Token* start, const Token* end)
+    {
         Analyzer::Action result = Analyzer::Action::None;
         for (const Token* tok = start; tok && tok != end; tok = tok->next()) {
             Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Reverse);
@@ -79,7 +80,8 @@ struct ReverseTraversal {
         return result;
     }
 
-    Token* isDeadCode(Token* tok, const Token* end = nullptr) {
+    Token* isDeadCode(Token* tok, const Token* end = nullptr)
+    {
         int opSide = 0;
         for (; tok && tok->astParent(); tok = tok->astParent()) {
             if (tok == end)
@@ -117,7 +119,8 @@ struct ReverseTraversal {
         return nullptr;
     }
 
-    void traverse(Token* start, const Token* end = nullptr) {
+    void traverse(Token* start, const Token* end = nullptr)
+    {
         if (start == end)
             return;
         std::size_t i = start->index();
@@ -126,7 +129,7 @@ struct ReverseTraversal {
                 throw InternalError(tok, "Cyclic reverse analysis.");
             i = tok->index();
             if (tok == start || (tok->str() == "{" && (tok->scope()->type == Scope::ScopeType::eFunction ||
-                                 tok->scope()->type == Scope::ScopeType::eLambda))) {
+                                                       tok->scope()->type == Scope::ScopeType::eLambda))) {
                 break;
             }
             if (Token::Match(tok, "return|break|continue"))
@@ -268,7 +271,8 @@ struct ReverseTraversal {
         }
     }
 
-    static Token* assignExpr(Token* tok) {
+    static Token* assignExpr(Token* tok)
+    {
         while (tok->astParent() && (astIsRHS(tok) || !tok->astParent()->isBinaryOp())) {
             if (tok->astParent()->isAssignmentOp())
                 return tok->astParent();
@@ -277,7 +281,8 @@ struct ReverseTraversal {
         return nullptr;
     }
 
-    static Token* isUnevaluated(Token* tok) {
+    static Token* isUnevaluated(Token* tok)
+    {
         if (Token::Match(tok, ")|>") && tok->link()) {
             Token* start = tok->link();
             if (Token::Match(start->previous(), "sizeof|decltype ("))

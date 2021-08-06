@@ -29,7 +29,7 @@
 
 static std::string builddir(std::string filename)
 {
-    if (filename.compare(0,4,"lib/") == 0)
+    if (filename.compare(0, 4, "lib/") == 0)
         filename = "$(libcppdir)" + filename.substr(3);
     return filename;
 }
@@ -40,10 +40,10 @@ static std::string objfile(std::string cppfile)
     return builddir(cppfile + ".o");
 }
 
-static std::string objfiles(const std::vector<std::string> &files)
+static std::string objfiles(const std::vector<std::string>& files)
 {
     std::string allObjfiles;
-    for (const std::string &file : files) {
+    for (const std::string& file : files) {
         if (file != files.front())
             allObjfiles += std::string(14, ' ');
         allObjfiles += objfile(file);
@@ -53,19 +53,20 @@ static std::string objfiles(const std::vector<std::string> &files)
     return allObjfiles;
 }
 
-static void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
+static void getDeps(const std::string& filename, std::vector<std::string>& depfiles)
 {
     if (filename == "externals/z3_version.h")
         return;
 
-    static const std::vector<std::string> externalfolders{"externals", "externals/picojson", "externals/simplecpp", "externals/tinyxml2" };
+    static const std::vector<std::string> externalfolders{
+        "externals", "externals/picojson", "externals/simplecpp", "externals/tinyxml2"};
 
     // Is the dependency already included?
     if (std::find(depfiles.begin(), depfiles.end(), filename) != depfiles.end())
         return;
 
     std::ifstream f(filename.c_str());
-    if (! f.is_open()) {
+    if (!f.is_open()) {
         /*
          * Recursively search for includes in other directories.
          * Files are searched according to the following priority:
@@ -78,7 +79,7 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
         else if (filename.compare(0, 6, "tools/") == 0)
             getDeps("cli" + filename.substr(filename.find('/')), depfiles);
         else if (filename.compare(0, 4, "lib/") == 0) {
-            for (const std::string & external : externalfolders)
+            for (const std::string& external : externalfolders)
                 getDeps(external + filename.substr(filename.find('/')), depfiles);
         }
         return;
@@ -106,29 +107,30 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
         std::string::size_type pos2 = line.find(rightBracket, pos1);
         std::string hfile = path + line.substr(pos1, pos2 - pos1);
 
-        if (hfile.find("/../") != std::string::npos)    // TODO: Ugly fix
+        if (hfile.find("/../") != std::string::npos) // TODO: Ugly fix
             hfile.erase(0, 4 + hfile.find("/../"));
         getDeps(hfile, depfiles);
     }
 }
 
-static void compilefiles(std::ostream &fout, const std::vector<std::string> &files, const std::string &args)
+static void compilefiles(std::ostream& fout, const std::vector<std::string>& files, const std::string& args)
 {
-    for (const std::string &file : files) {
-        bool external(file.compare(0,10,"externals/") == 0);
+    for (const std::string& file : files) {
+        bool external(file.compare(0, 10, "externals/") == 0);
         fout << objfile(file) << ": " << file;
         std::vector<std::string> depfiles;
         getDeps(file, depfiles);
         std::sort(depfiles.begin(), depfiles.end());
-        for (const std::string &depfile : depfiles)
+        for (const std::string& depfile : depfiles)
             fout << " " << depfile;
-        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS)" << (external?" -w":"") << " $(UNDEF_STRICT_ANSI) -c -o " << objfile(file) << " " << builddir(file) << "\n\n";
+        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS)" << (external ? " -w" : "")
+             << " $(UNDEF_STRICT_ANSI) -c -o " << objfile(file) << " " << builddir(file) << "\n\n";
     }
 }
 
-static std::string getCppFiles(std::vector<std::string> &files, const std::string &path, bool recursive)
+static std::string getCppFiles(std::vector<std::string>& files, const std::string& path, bool recursive)
 {
-    std::map<std::string,size_t> filemap;
+    std::map<std::string, size_t> filemap;
     const std::set<std::string> extra;
     const std::vector<std::string> masks;
     const PathMatch matcher(masks);
@@ -144,8 +146,7 @@ static std::string getCppFiles(std::vector<std::string> &files, const std::strin
     return "";
 }
 
-
-static void makeConditionalVariable(std::ostream &os, const std::string &variable, const std::string &defaultValue)
+static void makeConditionalVariable(std::ostream& os, const std::string& variable, const std::string& defaultValue)
 {
     os << "ifndef " << variable << '\n'
        << "    " << variable << '=' << defaultValue << '\n'
@@ -153,7 +154,7 @@ static void makeConditionalVariable(std::ostream &os, const std::string &variabl
        << "\n";
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     const bool release(argc >= 2 && std::string(argv[1]) == "--release");
 
@@ -207,17 +208,17 @@ int main(int argc, char **argv)
             fout1 << "include($$PWD/../externals/externals.pri)\n";
             fout1 << "INCLUDEPATH += $$PWD\n";
             fout1 << "HEADERS += ";
-            for (const std::string &libfile : libfiles) {
+            for (const std::string& libfile : libfiles) {
                 std::string fname(libfile.substr(4));
                 if (fname.find(".cpp") == std::string::npos)
-                    continue;   // shouldn't happen
+                    continue; // shouldn't happen
                 fname.erase(fname.find(".cpp"));
                 fout1 << "$${PWD}/" << fname << ".h";
                 if (libfile != libfiles.back())
                     fout1 << " \\\n" << std::string(11, ' ');
             }
             fout1 << "\n\nSOURCES += ";
-            for (const std::string &libfile : libfiles) {
+            for (const std::string& libfile : libfiles) {
                 fout1 << "$${PWD}/" << libfile.substr(4);
                 if (libfile != libfiles.back())
                     fout1 << " \\\n" << std::string(11, ' ');
@@ -229,9 +230,7 @@ int main(int argc, char **argv)
     static const char makefile[] = "Makefile";
     std::ofstream fout(makefile, std::ios_base::trunc);
     if (!fout.is_open()) {
-        std::cerr << "An error occurred while trying to open "
-                  << makefile
-                  << ".\n";
+        std::cerr << "An error occurred while trying to open " << makefile << ".\n";
         return EXIT_FAILURE;
     }
 
@@ -346,29 +345,32 @@ int main(int argc, char **argv)
         // -Wlogical-op       : doesn't work on older GCC
         // -Wsign-conversion  : too many warnings
         // -Wunreachable-code : some GCC versions report lots of warnings
-        makeConditionalVariable(fout, "CXXFLAGS",
+        makeConditionalVariable(fout,
+                                "CXXFLAGS",
                                 "-pedantic "
                                 "-Wall "
                                 "-Wextra "
                                 "-Wcast-qual "
-//                                "-Wconversion "  // danmar: gives fp. for instance: unsigned int sizeof_pointer = sizeof(void *);
+                                //                                "-Wconversion "  // danmar: gives fp. for instance:
+                                //                                unsigned int sizeof_pointer = sizeof(void *);
                                 "-Wno-deprecated-declarations "
                                 "-Wfloat-equal "
-//                                "-Wlogical-op "
+                                //                                "-Wlogical-op "
                                 "-Wmissing-declarations "
                                 "-Wmissing-format-attribute "
                                 "-Wno-long-long "
-//                                "-Woverloaded-virtual "  // danmar: we get fp when overloading analyseWholeProgram()
+                                //                                "-Woverloaded-virtual "  // danmar: we get fp when
+                                //                                overloading analyseWholeProgram()
                                 "-Wpacked "
                                 "-Wredundant-decls "
                                 "-Wundef "
                                 "-Wno-shadow "
-//                                "-Wsign-conversion "
-//                                "-Wsign-promo "
+                                //                                "-Wsign-conversion "
+                                //                                "-Wsign-promo "
                                 "-Wno-missing-field-initializers "
                                 "-Wno-missing-braces "
-//                                "-Wunreachable-code "
-                                "-Wno-sign-compare "  // danmar: I don't like this warning, it's very rarely a bug
+                                //                                "-Wunreachable-code "
+                                "-Wno-sign-compare " // danmar: I don't like this warning, it's very rarely a bug
                                 "-Wno-multichar "
                                 "$(CPPCHK_GLIBCXX_DEBUG) "
                                 "-g");
@@ -405,9 +407,13 @@ int main(int argc, char **argv)
          << "endif\n\n";
 
     makeConditionalVariable(fout, "PREFIX", "/usr");
-    makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -isystem externals -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2");
+    makeConditionalVariable(
+        fout,
+        "INCLUDE_FOR_LIB",
+        "-Ilib -isystem externals -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2");
     makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -isystem externals/simplecpp -isystem externals/tinyxml2");
-    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Icli -isystem externals/simplecpp -isystem externals/tinyxml2");
+    makeConditionalVariable(
+        fout, "INCLUDE_FOR_TEST", "-Ilib -Icli -isystem externals/simplecpp -isystem externals/tinyxml2");
 
     fout << "BIN=$(DESTDIR)$(PREFIX)/bin\n\n";
     fout << "# For 'make man': sudo apt-get install xsltproc docbook-xsl docbook-xml on Linux\n";
@@ -426,7 +432,8 @@ int main(int argc, char **argv)
     fout << "cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "all:\tcppcheck testrunner\n\n";
-    fout << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o\n";
+    fout
+        << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
@@ -434,14 +441,16 @@ int main(int argc, char **argv)
     fout << "\t./testrunner -q\n\n";
     fout << "checkcfg:\tcppcheck validateCFG\n";
     fout << "\t./test/cfg/runtests.sh\n\n";
-    fout << "dmake:\ttools/dmake.o cli/filelister.o $(libcppdir)/pathmatch.o $(libcppdir)/path.o $(libcppdir)/utils.o externals/simplecpp/simplecpp.o\n";
+    fout
+        << "dmake:\ttools/dmake.o cli/filelister.o $(libcppdir)/pathmatch.o $(libcppdir)/path.o $(libcppdir)/utils.o externals/simplecpp/simplecpp.o\n";
     fout << "\t$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)\n\n";
     fout << "run-dmake: dmake\n";
     fout << "\t./dmake\n\n";
     fout << "generate_cfg_tests: tools/generate_cfg_tests.o $(EXTOBJ)\n";
     fout << "\tg++ -isystem externals/tinyxml2 -o generate_cfg_tests tools/generate_cfg_tests.o $(EXTOBJ)\n";
     fout << "clean:\n";
-    fout << "\trm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1\n\n";
+    fout
+        << "\trm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";
     fout << "man/cppcheck.1:\t$(MAN_SOURCE)\n\n";
     fout << "\t$(XP) $(DB2MAN) $(MAN_SOURCE)\n\n";

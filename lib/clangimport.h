@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
 #ifndef clangimportH
 #define clangimportH
@@ -27,7 +26,7 @@
 class Tokenizer;
 
 namespace clangimport {
-    void parseClangAstDump(Tokenizer *tokenizer, std::istream &f);
+void parseClangAstDump(Tokenizer* tokenizer, std::istream& f);
 }
 
 #endif

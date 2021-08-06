@@ -43,7 +43,7 @@ public:
      * @param settings Settings instance that will be modified according to
      * options user has given.
      */
-    explicit CmdLineParser(Settings *settings);
+    explicit CmdLineParser(Settings* settings);
 
     /**
      * Parse given command line.
@@ -54,47 +54,34 @@ public:
     /**
      * Return if user wanted to see program version.
      */
-    bool getShowVersion() const {
-        return mShowVersion;
-    }
+    bool getShowVersion() const { return mShowVersion; }
 
     /**
      * Return if user wanted to see list of error messages.
      */
-    bool getShowErrorMessages() const {
-        return mShowErrorMessages;
-    }
+    bool getShowErrorMessages() const { return mShowErrorMessages; }
 
     /**
      * Return the path names user gave to command line.
      */
-    const std::vector<std::string>& getPathNames() const {
-        return mPathNames;
-    }
+    const std::vector<std::string>& getPathNames() const { return mPathNames; }
 
     /**
      * Return if help is shown to user.
      */
-    bool getShowHelp() const {
-        return mShowHelp;
-    }
+    bool getShowHelp() const { return mShowHelp; }
 
     /**
      * Return if we should exit after printing version, help etc.
      */
-    bool exitAfterPrinting() const {
-        return mExitAfterPrint;
-    }
+    bool exitAfterPrinting() const { return mExitAfterPrint; }
 
     /**
      * Return a list of paths user wants to ignore.
      */
-    const std::vector<std::string>& getIgnoredPaths() const {
-        return mIgnoredPaths;
-    }
+    const std::vector<std::string>& getIgnoredPaths() const { return mIgnoredPaths; }
 
 protected:
-
     /**
      * Print help text to the console.
      */
@@ -103,13 +90,13 @@ protected:
     /**
      * Print message (to console?).
      */
-    static void printMessage(const std::string &message);
+    static void printMessage(const std::string& message);
     static void printMessage(const char* message);
 
 private:
     std::vector<std::string> mPathNames;
     std::vector<std::string> mIgnoredPaths;
-    Settings *mSettings;
+    Settings* mSettings;
     bool mShowHelp;
     bool mShowVersion;
     bool mShowErrorMessages;

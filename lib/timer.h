@@ -26,16 +26,11 @@
 #include <map>
 #include <string>
 
-enum class SHOWTIME_MODES {
-    SHOWTIME_NONE = 0,
-    SHOWTIME_FILE,
-    SHOWTIME_SUMMARY,
-    SHOWTIME_TOP5
-};
+enum class SHOWTIME_MODES { SHOWTIME_NONE = 0, SHOWTIME_FILE, SHOWTIME_SUMMARY, SHOWTIME_TOP5 };
 
 class CPPCHECKLIB TimerResultsIntf {
 public:
-    virtual ~TimerResultsIntf() { }
+    virtual ~TimerResultsIntf() {}
 
     virtual void addResults(const std::string& str, std::clock_t clocks) = 0;
 };
@@ -44,12 +39,10 @@ struct TimerResultsData {
     std::clock_t mClocks;
     long mNumberOfResults;
 
-    TimerResultsData()
-        : mClocks(0)
-        , mNumberOfResults(0) {
-    }
+    TimerResultsData() : mClocks(0), mNumberOfResults(0) {}
 
-    double seconds() const {
+    double seconds() const
+    {
         const double ret = (double)((unsigned long)mClocks) / (double)CLOCKS_PER_SEC;
         return ret;
     }
@@ -57,8 +50,7 @@ struct TimerResultsData {
 
 class CPPCHECKLIB TimerResults : public TimerResultsIntf {
 public:
-    TimerResults() {
-    }
+    TimerResults() {}
 
     void showResults(SHOWTIME_MODES mode) const;
     void addResults(const std::string& str, std::clock_t clocks) OVERRIDE;
@@ -74,7 +66,7 @@ public:
     void stop();
 
 private:
-    Timer(const Timer& other); // disallow copying
+    Timer(const Timer& other);      // disallow copying
     Timer& operator=(const Timer&); // disallow assignments
 
     const std::string mStr;

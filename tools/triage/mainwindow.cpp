@@ -18,12 +18,12 @@ const QString DACA2_PACKAGES(QDir::homePath() + "/daca2-packages");
 
 const int MAX_ERRORS = 100;
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    mVersionRe("^(master|main|your|head|[12].[0-9][0-9]?) (.*)"),
-    hFiles{"*.hpp", "*.h", "*.hxx", "*.hh", "*.tpp", "*.txx"},
-    srcFiles{"*.cpp", "*.cxx", "*.cc", "*.c++", "*.C", "*.c", "*.cl"}
+MainWindow::MainWindow(QWidget* parent)
+    : QMainWindow(parent),
+      ui(new Ui::MainWindow),
+      mVersionRe("^(master|main|your|head|[12].[0-9][0-9]?) (.*)"),
+      hFiles{"*.hpp", "*.h", "*.hxx", "*.hh", "*.tpp", "*.txx"},
+      srcFiles{"*.cpp", "*.cxx", "*.cc", "*.c++", "*.C", "*.c", "*.cl"}
 {
     ui->setupUi(this);
     std::srand(static_cast<unsigned int>(std::time(Q_NULLPTR)));
@@ -36,8 +36,8 @@ MainWindow::MainWindow(QWidget *parent) :
     mFSmodel.setReadOnly(true);
     mFSmodel.setFilter(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
     ui->directoryTree->setModel(&mFSmodel);
-    QHeaderView * header =  ui->directoryTree->header();
-    for (int i = 1; i < header->length(); ++i)  // hide all except [0]
+    QHeaderView* header = ui->directoryTree->header();
+    for (int i = 1; i < header->length(); ++i) // hide all except [0]
         header->hideSection(i);
     ui->directoryTree->setRootIndex(mFSmodel.index(WORK_FOLDER));
 
@@ -45,15 +45,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->srcFilesFilter->setToolTip(srcFiles.join(','));
 }
 
-MainWindow::~MainWindow()
-{
-    delete ui;
-}
+MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::loadFile()
 {
     ui->statusBar->clearMessage();
-    const QString fileName = QFileDialog::getOpenFileName(this, tr("daca results file"), WORK_FOLDER, tr("Text files (*.txt *.log);;All (*.*)"));
+    const QString fileName = QFileDialog::getOpenFileName(
+        this, tr("daca results file"), WORK_FOLDER, tr("Text files (*.txt *.log);;All (*.*)"));
     if (fileName.isEmpty())
         return;
     QFile file(fileName);
@@ -70,7 +68,7 @@ void MainWindow::loadFromClipboard()
     load(textStream);
 }
 
-void MainWindow::load(QTextStream &textStream)
+void MainWindow::load(QTextStream& textStream)
 {
     QString url;
     QString errorMessage;
@@ -112,16 +110,13 @@ void MainWindow::load(QTextStream &textStream)
     filter("");
 }
 
-void MainWindow::refreshResults()
-{
-    filter(ui->version->currentText());
-}
+void MainWindow::refreshResults() { filter(ui->version->currentText()); }
 
 void MainWindow::filter(QString filter)
 {
     QStringList allErrors;
 
-    for (const QString &errorItem : mAllErrors) {
+    for (const QString& errorItem : mAllErrors) {
         if (filter.isEmpty()) {
             allErrors << errorItem;
             continue;
@@ -151,7 +146,7 @@ void MainWindow::filter(QString filter)
     }
 }
 
-bool MainWindow::runProcess(const QString &programName, const QStringList &arguments)
+bool MainWindow::runProcess(const QString& programName, const QStringList& arguments)
 {
     QProgressDialog dialog("Running external process: " + programName, "Kill", 0 /*min*/, 1 /*max*/, this);
     dialog.setWindowModality(Qt::WindowModal);
@@ -160,7 +155,7 @@ bool MainWindow::runProcess(const QString &programName, const QStringList &argum
 
     QProcess process;
     process.setWorkingDirectory(WORK_FOLDER);
-    process.start(programName, arguments);  // async action
+    process.start(programName, arguments); // async action
 
     bool success = false;
     bool state = (QProcess::Running == process.state() || QProcess::Starting == process.state());
@@ -195,12 +190,9 @@ bool MainWindow::runProcess(const QString &programName, const QStringList &argum
     return success;
 }
 
-bool MainWindow::wget(const QString &url)
-{
-    return runProcess("wget", QStringList{url});
-}
+bool MainWindow::wget(const QString& url) { return runProcess("wget", QStringList{url}); }
 
-bool MainWindow::unpackArchive(const QString &archiveName)
+bool MainWindow::unpackArchive(const QString& archiveName)
 {
     // Unpack archive
     QStringList args;
@@ -225,7 +217,7 @@ bool MainWindow::unpackArchive(const QString &archiveName)
     return runProcess("tar", args);
 }
 
-void MainWindow::showResult(QListWidgetItem *item)
+void MainWindow::showResult(QListWidgetItem* item)
 {
     ui->statusBar->clearMessage();
     if (!item->text().startsWith("ftp://"))
@@ -239,17 +231,18 @@ void MainWindow::showResult(QListWidgetItem *item)
         msg = mVersionRe.cap(2);
     const QString archiveName = url.mid(url.lastIndexOf("/") + 1);
     const int pos1 = msg.indexOf(":");
-    const int pos2 = msg.indexOf(":", pos1+1);
+    const int pos2 = msg.indexOf(":", pos1 + 1);
     const QString fileName = WORK_FOLDER + '/' + msg.left(msg.indexOf(":"));
-    const int lineNumber = msg.midRef(pos1+1, pos2-pos1-1).toInt();
+    const int lineNumber = msg.midRef(pos1 + 1, pos2 - pos1 - 1).toInt();
 
     if (!QFileInfo::exists(fileName)) {
-        const QString daca2archiveFile {DACA2_PACKAGES + '/' + archiveName.mid(0,archiveName.indexOf(".tar.")) + ".tar.xz"};
+        const QString daca2archiveFile{DACA2_PACKAGES + '/' + archiveName.mid(0, archiveName.indexOf(".tar.")) +
+                                       ".tar.xz"};
         if (QFileInfo::exists(daca2archiveFile)) {
             if (!unpackArchive(daca2archiveFile))
                 return;
         } else {
-            const QString archiveFullPath {WORK_FOLDER + '/' + archiveName};
+            const QString archiveFullPath{WORK_FOLDER + '/' + archiveName};
             if (!QFileInfo::exists(archiveFullPath)) {
                 // Download archive
                 if (!wget(url))
@@ -262,14 +255,13 @@ void MainWindow::showResult(QListWidgetItem *item)
     showSrcFile(fileName, url, lineNumber);
 }
 
-void MainWindow::showSrcFile(const QString &fileName, const QString &url, const int lineNumber)
+void MainWindow::showSrcFile(const QString& fileName, const QString& url, const int lineNumber)
 {
     // Open file
     ui->code->setFocus();
     QFile f(fileName);
     if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        const QString errorMsg =
-            QString("Opening file %1 failed: %2").arg(f.fileName(), f.errorString());
+        const QString errorMsg = QString("Opening file %1 failed: %2").arg(f.fileName(), f.errorString());
         ui->statusBar->showMessage(errorMsg);
     } else {
         QTextStream textStream(&f);
@@ -302,9 +294,10 @@ void MainWindow::findInFilesClicked()
         filter.append(srcFiles);
 
     QMimeDatabase mimeDatabase;
-    QDirIterator it(WORK_FOLDER, filter, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+    QDirIterator it(
+        WORK_FOLDER, filter, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
 
-    const auto common_path_len = WORK_FOLDER.length() + 1;  // let's remove common part of path improve UI
+    const auto common_path_len = WORK_FOLDER.length() + 1; // let's remove common part of path improve UI
 
     while (it.hasNext()) {
         const QString fileName = it.next();

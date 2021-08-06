@@ -1,7 +1,8 @@
 // Test library configuration for cppunit.cfg
 //
 // Usage:
-// $ cppcheck --check-library --enable=information --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/cppunit.cpp
+// $ cppcheck --check-library --enable=information --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr
+// test/cfg/cppunit.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -47,7 +48,4 @@ void cppunit_assertion_assert()
     CPPUNIT_ASSERT_ASSERTION_PASS_MESSAGE("goodbye", true);
 }
 
-void cppunit_assert_fail()
-{
-    CPPUNIT_FAIL("This fails");
-}
+void cppunit_assert_fail() { CPPUNIT_FAIL("This fails"); }

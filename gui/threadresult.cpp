@@ -25,25 +25,22 @@
 
 ThreadResult::ThreadResult() : QObject(), ErrorLogger(), mMaxProgress(0), mProgress(0), mFilesChecked(0), mTotalFiles(0)
 {
-    //ctor
+    // ctor
 }
 
 ThreadResult::~ThreadResult()
 {
-    //dtor
+    // dtor
 }
 
-void ThreadResult::reportOut(const std::string &outmsg, Color)
-{
-    emit log(QString::fromStdString(outmsg));
-}
+void ThreadResult::reportOut(const std::string& outmsg, Color) { emit log(QString::fromStdString(outmsg)); }
 
-void ThreadResult::fileChecked(const QString &file)
+void ThreadResult::fileChecked(const QString& file)
 {
     QMutexLocker locker(&mutex);
 
     mProgress += QFile(file).size();
-    mFilesChecked ++;
+    mFilesChecked++;
 
     if (mMaxProgress > 0) {
         const int value = static_cast<int>(PROGRESS_MAX * mProgress / mMaxProgress);
@@ -53,7 +50,7 @@ void ThreadResult::fileChecked(const QString &file)
     }
 }
 
-void ThreadResult::reportErr(const ErrorMessage &msg)
+void ThreadResult::reportErr(const ErrorMessage& msg)
 {
     QMutexLocker locker(&mutex);
     const ErrorItem item(msg);
@@ -84,7 +81,7 @@ ImportProject::FileSettings ThreadResult::getNextFileSettings()
     return fs;
 }
 
-void ThreadResult::setFiles(const QStringList &files)
+void ThreadResult::setFiles(const QStringList& files)
 {
     QMutexLocker locker(&mutex);
     mFiles = files;
@@ -101,7 +98,7 @@ void ThreadResult::setFiles(const QStringList &files)
     mMaxProgress = sizeOfFiles;
 }
 
-void ThreadResult::setProject(const ImportProject &prj)
+void ThreadResult::setProject(const ImportProject& prj)
 {
     QMutexLocker locker(&mutex);
     mFiles.clear();
@@ -134,7 +131,7 @@ int ThreadResult::getFileCount() const
     return mFiles.size() + mFileSettings.size();
 }
 
-void ThreadResult::bughuntingReport(const std::string &str)
+void ThreadResult::bughuntingReport(const std::string& str)
 {
     if (str.empty())
         return;

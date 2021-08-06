@@ -28,12 +28,12 @@
 #include "cppcheck.h"
 #include "common.h"
 
-static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output)
+static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string* output)
 {
     output->clear();
 
     QStringList args2;
-    for (std::string arg: args)
+    for (std::string arg : args)
         args2 << QString::fromStdString(arg);
 
     QProcess process;
@@ -47,36 +47,32 @@ static bool executeCommand(std::string exe, std::vector<std::string> args, std::
     } else
         *output = process.readAllStandardOutput().toStdString();
 
-    if (redirect.compare(0,3,"2> ") == 0) {
+    if (redirect.compare(0, 3, "2> ") == 0) {
         std::ofstream fout(redirect.substr(3));
         fout << process.readAllStandardError().toStdString();
     }
     return process.exitCode() == 0;
 }
 
-
-CheckThread::CheckThread(ThreadResult &result) :
-    mState(Ready),
-    mResult(result),
-    mCppcheck(result, true, executeCommand),
-    mAnalyseWholeProgram(false)
+CheckThread::CheckThread(ThreadResult& result)
+    : mState(Ready), mResult(result), mCppcheck(result, true, executeCommand), mAnalyseWholeProgram(false)
 {
-    //ctor
+    // ctor
 }
 
 CheckThread::~CheckThread()
 {
-    //dtor
+    // dtor
 }
 
-void CheckThread::check(const Settings &settings)
+void CheckThread::check(const Settings& settings)
 {
     mFiles.clear();
     mCppcheck.settings() = settings;
     start();
 }
 
-void CheckThread::analyseWholeProgram(const QStringList &files)
+void CheckThread::analyseWholeProgram(const QStringList& files)
 {
     mFiles = files;
     mAnalyseWholeProgram = true;
@@ -90,9 +86,9 @@ void CheckThread::run()
     if (!mFiles.isEmpty() || mAnalyseWholeProgram) {
         mAnalyseWholeProgram = false;
         qDebug() << "Whole program analysis";
-        const std::string &buildDir = mCppcheck.settings().buildDir;
+        const std::string& buildDir = mCppcheck.settings().buildDir;
         if (!buildDir.empty()) {
-            std::map<std::string,std::size_t> files2;
+            std::map<std::string, std::size_t> files2;
             for (const QString& file : mFiles)
                 files2[file.toStdString()] = 0;
             mCppcheck.analyseWholeProgram(buildDir, files2);
@@ -133,20 +129,24 @@ void CheckThread::run()
     emit done();
 }
 
-void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSettings, const QString &fileName)
+void CheckThread::runAddonsAndTools(const ImportProject::FileSettings* fileSettings, const QString& fileName)
 {
     foreach (const QString addon, mAddonsAndTools) {
         if (addon == CLANG_ANALYZER || addon == CLANG_TIDY) {
             if (!fileSettings)
                 continue;
 
-            if (!fileSettings->cfg.empty() && fileSettings->cfg.compare(0,5,"Debug") != 0)
+            if (!fileSettings->cfg.empty() && fileSettings->cfg.compare(0, 5, "Debug") != 0)
                 continue;
 
             QStringList args;
-            for (std::list<std::string>::const_iterator incIt = fileSettings->includePaths.begin(); incIt != fileSettings->includePaths.end(); ++incIt)
+            for (std::list<std::string>::const_iterator incIt = fileSettings->includePaths.begin();
+                 incIt != fileSettings->includePaths.end();
+                 ++incIt)
                 args << ("-I" + QString::fromStdString(*incIt));
-            for (std::list<std::string>::const_iterator i = fileSettings->systemIncludePaths.begin(); i != fileSettings->systemIncludePaths.end(); ++i)
+            for (std::list<std::string>::const_iterator i = fileSettings->systemIncludePaths.begin();
+                 i != fileSettings->systemIncludePaths.end();
+                 ++i)
                 args << "-isystem" << QString::fromStdString(*i);
             foreach (QString def, QString::fromStdString(fileSettings->defines).split(";")) {
                 args << ("-D" + def);
@@ -178,7 +178,8 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 }
             }
 
-            args << "-U__STDC__" << "-fno-ms-compatibility";
+            args << "-U__STDC__"
+                 << "-fno-ms-compatibility";
 #endif
 
             if (!fileSettings->standard.empty())
@@ -205,17 +206,18 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
 
             QString analyzerInfoFile;
 
-            const std::string &buildDir = mCppcheck.settings().buildDir;
+            const std::string& buildDir = mCppcheck.settings().buildDir;
             if (!buildDir.empty()) {
-                analyzerInfoFile = QString::fromStdString(AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileSettings->filename, fileSettings->cfg));
+                analyzerInfoFile = QString::fromStdString(
+                    AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileSettings->filename, fileSettings->cfg));
 
                 QStringList args2(args);
-                args2.insert(0,"-E");
+                args2.insert(0, "-E");
                 args2 << fileName;
                 QProcess process;
-                process.start(clangCmd(),args2);
+                process.start(clangCmd(), args2);
                 process.waitForFinished();
-                const QByteArray &ba = process.readAllStandardOutput();
+                const QByteArray& ba = process.readAllStandardOutput();
                 const quint16 chksum = qChecksum(ba.data(), ba.length());
 
                 QFile f1(analyzerInfoFile + '.' + addon + "-E");
@@ -248,11 +250,11 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 args << fileName;
                 */
                 // Using clang-tidy
-                args.insert(0,"-checks=-*,clang-analyzer-*");
+                args.insert(0, "-checks=-*,clang-analyzer-*");
                 args.insert(1, fileName);
                 args.insert(2, "--");
             } else {
-                args.insert(0,"-checks=*,-clang-analyzer-*,-llvm*");
+                args.insert(0, "-checks=*,-clang-analyzer-*,-llvm*");
                 args.insert(1, fileName);
                 args.insert(2, "--");
             }
@@ -279,7 +281,7 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
 
             QProcess process;
             process.start(clangTidyCmd(), args);
-            process.waitForFinished(600*1000);
+            process.waitForFinished(600 * 1000);
             const QString errout(process.readAllStandardOutput() + "\n\n\n" + process.readAllStandardError());
             if (!analyzerInfoFile.isEmpty()) {
                 QFile f(analyzerInfoFile + '.' + addon + "-results");
@@ -300,7 +302,7 @@ void CheckThread::stop()
     Settings::terminate();
 }
 
-void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QString err)
+void CheckThread::parseClangErrors(const QString& tool, const QString& file0, QString err)
 {
     QList<ErrorItem> errorItems;
     ErrorItem errorItem;
@@ -313,8 +315,8 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         if (line.startsWith("Assertion failed:")) {
             ErrorItem e;
             e.errorPath.append(QErrorPathItem());
-            e.errorPath.last().file   = file0;
-            e.errorPath.last().line   = 1;
+            e.errorPath.last().file = file0;
+            e.errorPath.last().line = 1;
             e.errorPath.last().column = 1;
             e.errorId = tool + "-internal-error";
             e.file0 = file0;
@@ -341,7 +343,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         else if (r1.cap(4) == "error" || r1.cap(4) == "fatal error")
             errorItem.severity = Severity::SeverityType::error;
 
-        QString message,id;
+        QString message, id;
         if (r2.exactMatch(r1.cap(5))) {
             message = r2.cap(1);
             const QString id1(r2.cap(2));
@@ -373,7 +375,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
     }
     errorItems.append(errorItem);
 
-    foreach (const ErrorItem &e, errorItems) {
+    foreach (const ErrorItem& e, errorItems) {
         if (e.errorPath.isEmpty())
             continue;
         Suppressions::ErrorMessage errorMessage;
@@ -386,8 +388,9 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
             continue;
 
         std::list<ErrorMessage::FileLocation> callstack;
-        foreach (const QErrorPathItem &path, e.errorPath) {
-            callstack.push_back(ErrorMessage::FileLocation(path.file.toStdString(), path.info.toStdString(), path.line, path.column));
+        foreach (const QErrorPathItem& path, e.errorPath) {
+            callstack.push_back(
+                ErrorMessage::FileLocation(path.file.toStdString(), path.info.toStdString(), path.line, path.column));
         }
         const std::string f0 = file0.toStdString();
         const std::string msg = e.message.toStdString();
@@ -397,9 +400,9 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
     }
 }
 
-bool CheckThread::isSuppressed(const Suppressions::ErrorMessage &errorMessage) const
+bool CheckThread::isSuppressed(const Suppressions::ErrorMessage& errorMessage) const
 {
-    foreach (const Suppressions::Suppression &suppression, mSuppressions) {
+    foreach (const Suppressions::Suppression& suppression, mSuppressions) {
         if (suppression.isSuppressed(errorMessage))
             return true;
     }
@@ -408,7 +411,7 @@ bool CheckThread::isSuppressed(const Suppressions::ErrorMessage &errorMessage) c
 
 QString CheckThread::clangCmd()
 {
-    QString path = QSettings().value(SETTINGS_CLANG_PATH,QString()).toString();
+    QString path = QSettings().value(SETTINGS_CLANG_PATH, QString()).toString();
     if (!path.isEmpty())
         path += '/';
     path += "clang";
@@ -433,7 +436,7 @@ QString CheckThread::clangCmd()
 
 QString CheckThread::clangTidyCmd()
 {
-    QString path = QSettings().value(SETTINGS_CLANG_PATH,QString()).toString();
+    QString path = QSettings().value(SETTINGS_CLANG_PATH, QString()).toString();
     if (!path.isEmpty())
         path += '/';
     path += "clang-tidy";

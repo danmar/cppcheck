@@ -2,7 +2,8 @@
 // Test library configuration for qt.cfg
 //
 // Usage:
-// $ cppcheck --check-library --enable=information --inconclusive --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr --library=qt test/cfg/qt.cpp
+// $ cppcheck --check-library --enable=information --inconclusive --error-exitcode=1 --suppress=missingIncludeSystem
+// --inline-suppr --library=qt test/cfg/qt.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -19,7 +20,6 @@
 #include <cstdio>
 #include <QCoreApplication>
 #include <QLoggingCategory>
-
 
 void QString1(QString s)
 {
@@ -41,8 +41,8 @@ QString::iterator QString3()
     QString qstring1;
     QString qstring2;
     // cppcheck-suppress mismatchingContainers
-    for (QString::iterator it = qstring1.begin(); it != qstring2.end(); ++it)
-    {}
+    for (QString::iterator it = qstring1.begin(); it != qstring2.end(); ++it) {
+    }
 
     QString::iterator it = qstring1.begin();
     // cppcheck-suppress returnDanglingLifetime
@@ -92,7 +92,8 @@ void QList1(QList<int> intListArg)
     (void)qstringList2[1];
 
     QList<QString> qstringList3;
-    qstringList3 << "one" << "two";
+    qstringList3 << "one"
+                 << "two";
     (void)qstringList3[1];
     // FIXME: The following should have a containerOutOfBounds suppression #9242
     (void)qstringList3[3];
@@ -126,8 +127,8 @@ QList<int>::iterator QList3()
     QList<int> qlist1;
     QList<int> qlist2;
     // cppcheck-suppress mismatchingContainers
-    for (QList<int>::iterator it = qlist1.begin(); it != qlist2.end(); ++it)
-    {}
+    for (QList<int>::iterator it = qlist1.begin(); it != qlist2.end(); ++it) {
+    }
 
     QList<int>::iterator it = qlist1.begin();
     // cppcheck-suppress returnDanglingLifetime
@@ -142,7 +143,8 @@ void QLinkedList1()
     qstringLinkedList2.clear();
 
     QLinkedList<QString> qstringLinkedList3;
-    qstringLinkedList3 << "one" << "two";
+    qstringLinkedList3 << "one"
+                       << "two";
     // cppcheck-suppress ignoredReturnValue
     qstringLinkedList3.startsWith("one");
     // cppcheck-suppress ignoredReturnValue
@@ -162,8 +164,8 @@ QLinkedList<int>::iterator QLinkedList3()
     QLinkedList<int> intQLinkedList1;
     QLinkedList<int> intQLinkedList2;
     // cppcheck-suppress mismatchingContainers
-    for (QLinkedList<int>::iterator it = intQLinkedList1.begin(); it != intQLinkedList2.end(); ++it)
-    {}
+    for (QLinkedList<int>::iterator it = intQLinkedList1.begin(); it != intQLinkedList2.end(); ++it) {
+    }
 
     QLinkedList<int>::iterator it = intQLinkedList1.begin();
     // cppcheck-suppress returnDanglingLifetime
@@ -193,7 +195,8 @@ void QStringList1(QStringList stringlistArg)
     (void)qstringlist2[1];
 
     QStringList qstringlist3;
-    qstringlist3 << "one" << "two";
+    qstringlist3 << "one"
+                 << "two";
     (void)qstringlist3[1];
     // FIXME: The following should have a containerOutOfBounds suppression #9242
     (void)qstringlist3[3];
@@ -218,8 +221,8 @@ QStringList::iterator QStringList2()
     QStringList qstringlist1;
     QStringList qstringlist2;
     // cppcheck-suppress mismatchingContainers
-    for (QStringList::iterator it = qstringlist1.begin(); it != qstringlist2.end(); ++it)
-    {}
+    for (QStringList::iterator it = qstringlist1.begin(); it != qstringlist2.end(); ++it) {
+    }
 
     QStringList::iterator it = qstringlist1.begin();
     // cppcheck-suppress returnDanglingLifetime
@@ -246,7 +249,8 @@ void QVector1(QVector<int> intVectorArg)
     (void)qstringVector2[1];
 
     QVector<QString> qstringVector3;
-    qstringVector3 << "one" << "two";
+    qstringVector3 << "one"
+                   << "two";
     (void)qstringVector3[1];
     // FIXME: The following should have a containerOutOfBounds suppression #9242
     (void)qstringVector3[3];
@@ -271,8 +275,8 @@ QVector<int>::iterator QVector2()
     QVector<int> qvector1;
     QVector<int> qvector2;
     // cppcheck-suppress mismatchingContainers
-    for (QVector<int>::iterator it = qvector1.begin(); it != qvector2.end(); ++it)
-    {}
+    for (QVector<int>::iterator it = qvector1.begin(); it != qvector2.end(); ++it) {
+    }
 
     QVector<int>::iterator it = qvector1.begin();
     // cppcheck-suppress returnDanglingLifetime
@@ -298,7 +302,8 @@ void QStack1(QStack<int> intStackArg)
     (void)qstringStack1[1];
 
     QStack<QString> qstringStack2;
-    qstringStack2 << "one" << "two";
+    qstringStack2 << "one"
+                  << "two";
     (void)qstringStack2[1];
     // FIXME: The following should have a containerOutOfBounds suppression #9242
     (void)qstringStack2[3];
@@ -323,8 +328,8 @@ QStack<int>::iterator QStack2()
     QStack<int> qstack1;
     QStack<int> qstack2;
     // cppcheck-suppress mismatchingContainers
-    for (QStack<int>::iterator it = qstack1.begin(); it != qstack2.end(); ++it)
-    {}
+    for (QStack<int>::iterator it = qstack1.begin(); it != qstack2.end(); ++it) {
+    }
 
     QStack<int>::iterator it = qstack1.begin();
     // cppcheck-suppress returnDanglingLifetime
@@ -341,12 +346,12 @@ void QStack3()
 }
 
 // Verify that Qt macros do not result in syntax errors, false positives or other issues.
-class MacroTest1: public QObject {
+class MacroTest1 : public QObject {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "com.foo.bar" FILE "test.json")
 
 public:
-    explicit MacroTest1(QObject *parent = 0);
+    explicit MacroTest1(QObject* parent = 0);
     ~MacroTest1();
 };
 
@@ -371,7 +376,7 @@ void MacroTest2_test()
 #endif
 }
 
-void validCode(int * pIntPtr, QString & qstrArg)
+void validCode(int* pIntPtr, QString& qstrArg)
 {
     if (QFile::exists("test")) {
     }
@@ -381,15 +386,15 @@ void validCode(int * pIntPtr, QString & qstrArg)
     }
 
     if (pIntPtr && *pIntPtr == 1) {
-        forever {
-        }
+        forever {}
     } else if (pIntPtr && *pIntPtr == 2) {
-        Q_FOREVER {
-        }
+        Q_FOREVER {}
     }
 
-    if (Q_LIKELY(pIntPtr)) {}
-    if (Q_UNLIKELY(!pIntPtr)) {}
+    if (Q_LIKELY(pIntPtr)) {
+    }
+    if (Q_UNLIKELY(!pIntPtr)) {
+    }
 
     printf(QT_TR_NOOP("Hi"));
 
@@ -402,12 +407,14 @@ void validCode(int * pIntPtr, QString & qstrArg)
     if (qstr1.length() == 1) {
     } else {
         qstr1.chop(1);
-        if (qstr1.length() == 1) {}
+        if (qstr1.length() == 1) {
+        }
     }
     if (qstr1.length() == 1) {
     } else {
         qstr1.remove(1);
-        if (qstr1.length() == 1) {}
+        if (qstr1.length() == 1) {
+        }
     }
 }
 
@@ -420,9 +427,9 @@ void ignoredReturnValue()
     file1.exists();
 }
 
-void nullPointer(int * pIntPtr)
+void nullPointer(int* pIntPtr)
 {
-    int * pNullPtr = Q_NULLPTR;
+    int* pNullPtr = Q_NULLPTR;
     // cppcheck-suppress nullPointer
     *pNullPtr = 1;
 

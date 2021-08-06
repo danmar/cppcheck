@@ -5,19 +5,15 @@
 #include "errorlogger.h"
 #include "suppressions.h"
 
-NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
-    QDialog(parent),
-    mUI(new Ui::NewSuppressionDialog)
+NewSuppressionDialog::NewSuppressionDialog(QWidget* parent) : QDialog(parent), mUI(new Ui::NewSuppressionDialog)
 {
     mUI->setupUi(this);
 
     class QErrorLogger : public ErrorLogger {
     public:
-        void reportOut(const std::string &/*outmsg*/, Color) override {}
-        void reportErr(const ErrorMessage &msg) override {
-            errorIds << QString::fromStdString(msg.id);
-        }
-        void bughuntingReport(const std::string &/*str*/) override {}
+        void reportOut(const std::string& /*outmsg*/, Color) override {}
+        void reportErr(const ErrorMessage& msg) override { errorIds << QString::fromStdString(msg.id); }
+        void bughuntingReport(const std::string& /*str*/) override {}
         QStringList errorIds;
     };
 
@@ -31,10 +27,7 @@ NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
     mUI->mComboErrorId->setCurrentText("");
 }
 
-NewSuppressionDialog::~NewSuppressionDialog()
-{
-    delete mUI;
-}
+NewSuppressionDialog::~NewSuppressionDialog() { delete mUI; }
 
 Suppressions::Suppression NewSuppressionDialog::getSuppression() const
 {
@@ -49,7 +42,7 @@ Suppressions::Suppression NewSuppressionDialog::getSuppression() const
     return ret;
 }
 
-void NewSuppressionDialog::setSuppression(const Suppressions::Suppression &suppression)
+void NewSuppressionDialog::setSuppression(const Suppressions::Suppression& suppression)
 {
     setWindowTitle(tr("Edit suppression"));
     mUI->mComboErrorId->setCurrentText(QString::fromStdString(suppression.errorId));

@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "config.h"
 #include "platform.h"
 #include "settings.h"
@@ -26,19 +25,17 @@
 
 struct InternalError;
 
-
 class TestSimplifyUsing : public TestFixture {
 public:
-    TestSimplifyUsing() : TestFixture("TestSimplifyUsing") {
-    }
-
+    TestSimplifyUsing() : TestFixture("TestSimplifyUsing") {}
 
 private:
     Settings settings0;
     Settings settings1;
     Settings settings2;
 
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
         settings0.severity.enable(Severity::style);
         settings2.severity.enable(Severity::style);
 
@@ -93,7 +90,11 @@ private:
         TEST_CASE(simplifyUsing10335);
     }
 
-    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
+    std::string tok(const char code[],
+                    bool simplify = true,
+                    Settings::PlatformType type = Settings::Native,
+                    bool debugwarnings = true)
+    {
         errout.str("");
 
         settings0.certainty.enable(Certainty::inconclusive);
@@ -107,7 +108,8 @@ private:
         return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
 
-    void simplifyUsing1() {
+    void simplifyUsing1()
+    {
         const char code[] = "class A\n"
                             "{\n"
                             "public:\n"
@@ -122,23 +124,23 @@ private:
                             " A::duplicate c = 0;\n"
                             "}";
 
-        const char expected[] =
-            "class A "
-            "{ "
-            "public: "
-            ""
-            "void foo ( ) { } "
-            "} ; "
-            "int main ( ) "
-            "{ "
-            "A a ; "
-            "a . foo ( ) ; "
-            "wchar_t c ; c = 0 ; "
-            "}";
+        const char expected[] = "class A "
+                                "{ "
+                                "public: "
+                                ""
+                                "void foo ( ) { } "
+                                "} ; "
+                                "int main ( ) "
+                                "{ "
+                                "A a ; "
+                                "a . foo ( ) ; "
+                                "wchar_t c ; c = 0 ; "
+                                "}";
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyUsing2() {
+    void simplifyUsing2()
+    {
         const char code[] = "class A;\n"
                             "using duplicate = A;\n"
                             "class A\n"
@@ -148,18 +150,18 @@ private:
                             "duplicate foo() { wchar_t b; return b; }\n"
                             "};";
 
-        const char expected[] =
-            "class A ; "
-            "class A "
-            "{ "
-            "public: "
-            ""
-            "wchar_t foo ( ) { wchar_t b ; return b ; } "
-            "} ;";
+        const char expected[] = "class A ; "
+                                "class A "
+                                "{ "
+                                "public: "
+                                ""
+                                "wchar_t foo ( ) { wchar_t b ; return b ; } "
+                                "} ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void simplifyUsing3() {
+    void simplifyUsing3()
+    {
         const char code[] = "class A {};\n"
                             "using duplicate = A;\n"
                             "wchar_t foo()\n"
@@ -173,22 +175,22 @@ private:
                             "duplicate b;\n"
                             "}";
 
-        const char expected[] =
-            "class A { } ; "
-            "wchar_t foo ( ) "
-            "{ "
-            ""
-            "wchar_t b ; "
-            "return b ; "
-            "} "
-            "int main ( ) "
-            "{ "
-            "A b ; "
-            "}";
+        const char expected[] = "class A { } ; "
+                                "wchar_t foo ( ) "
+                                "{ "
+                                ""
+                                "wchar_t b ; "
+                                "return b ; "
+                                "} "
+                                "int main ( ) "
+                                "{ "
+                                "A b ; "
+                                "}";
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void simplifyUsing4() {
+    void simplifyUsing4()
+    {
         const char code[] = "using s32 = int;\n"
                             "using u32 = unsigned int;\n"
                             "void f()\n"
@@ -198,57 +200,56 @@ private:
                             "    return uvar / ivar;\n"
                             "}";
 
-        const char expected[] =
-            "void f ( ) "
-            "{ "
-            "int ivar ; ivar = -2 ; "
-            "unsigned int uvar ; uvar = 2 ; "
-            "return uvar / ivar ; "
-            "}";
+        const char expected[] = "void f ( ) "
+                                "{ "
+                                "int ivar ; ivar = -2 ; "
+                                "unsigned int uvar ; uvar = 2 ; "
+                                "return uvar / ivar ; "
+                                "}";
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyUsing5() {
-        const char code[] =
-            "using YY_BUFFER_STATE = struct yy_buffer_state *;\n"
-            "void f()\n"
-            "{\n"
-            "    YY_BUFFER_STATE state;\n"
-            "}";
+    void simplifyUsing5()
+    {
+        const char code[] = "using YY_BUFFER_STATE = struct yy_buffer_state *;\n"
+                            "void f()\n"
+                            "{\n"
+                            "    YY_BUFFER_STATE state;\n"
+                            "}";
 
-        const char expected[] =
-            "void f ( ) "
-            "{ "
-            "struct yy_buffer_state * state ; "
-            "}";
-
-        ASSERT_EQUALS(expected, tok(code, false));
-    }
-
-    void simplifyUsing6() {
-        const char code[] =
-            "namespace VL {\n"
-            "    using float_t = float;\n"
-            "    inline VL::float_t fast_atan2(VL::float_t y, VL::float_t x){}\n"
-            "}";
-
-        const char expected[] =
-            "namespace VL { "
-            ""
-            "float fast_atan2 ( float y , float x ) { } "
-            "}";
+        const char expected[] = "void f ( ) "
+                                "{ "
+                                "struct yy_buffer_state * state ; "
+                                "}";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyUsing7() {
+    void simplifyUsing6()
+    {
+        const char code[] = "namespace VL {\n"
+                            "    using float_t = float;\n"
+                            "    inline VL::float_t fast_atan2(VL::float_t y, VL::float_t x){}\n"
+                            "}";
+
+        const char expected[] = "namespace VL { "
+                                ""
+                                "float fast_atan2 ( float y , float x ) { } "
+                                "}";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyUsing7()
+    {
         const char code[] = "using abc = int; "
                             "Fred :: abc f ;";
         const char expected[] = "Fred :: abc f ;";
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyUsing8() {
+    void simplifyUsing8()
+    {
         const char code[] = "using INT = int;\n"
                             "using UINT = unsigned int;\n"
                             "using PINT = int *;\n"
@@ -266,20 +267,20 @@ private:
                             "RCINT trci;\n"
                             "RCUINT trcui;";
 
-        const char expected[] =
-            "int ti ; "
-            "unsigned int tui ; "
-            "int * tpi ; "
-            "unsigned int * tpui ; "
-            "int & tri ; "
-            "unsigned int & trui ; "
-            "const int & trci ; "
-            "const unsigned int & trcui ;";
+        const char expected[] = "int ti ; "
+                                "unsigned int tui ; "
+                                "int * tpi ; "
+                                "unsigned int * tpui ; "
+                                "int & tri ; "
+                                "unsigned int & trui ; "
+                                "const int & trci ; "
+                                "const unsigned int & trcui ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyUsing9() {
+    void simplifyUsing9()
+    {
         const char code[] = "using S = struct s;\n"
                             "using PS = S *;\n"
                             "using T = struct t { int a; };\n"
@@ -295,22 +296,22 @@ private:
                             "V v;\n"
                             "W w;";
 
-        const char expected[] =
-            "struct t { int a ; } ; "
-            "struct U { int a ; } ; "
-            "struct Unnamed0 { int a ; } ; "
-            "struct s s ; "
-            "struct s * ps ; "
-            "struct t t ; "
-            "struct t * tp ; "
-            "struct U u ; "
-            "struct U * v ; "
-            "struct Unnamed0 * w ;";
+        const char expected[] = "struct t { int a ; } ; "
+                                "struct U { int a ; } ; "
+                                "struct Unnamed0 { int a ; } ; "
+                                "struct s s ; "
+                                "struct s * ps ; "
+                                "struct t t ; "
+                                "struct t * tp ; "
+                                "struct U u ; "
+                                "struct U * v ; "
+                                "struct Unnamed0 * w ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyUsing10() {
+    void simplifyUsing10()
+    {
         const char code[] = "using S = union s;\n"
                             "using PS = S *;\n"
                             "using T = union t { int a; float b ; };\n"
@@ -326,22 +327,22 @@ private:
                             "V v;\n"
                             "W w;";
 
-        const char expected[] =
-            "union t { int a ; float b ; } ; "
-            "union U { int a ; float b ; } ; "
-            "union Unnamed0 { int a ; float b ; } ; "
-            "union s s ; "
-            "union s * ps ; "
-            "union t t ; "
-            "union t * tp ; "
-            "union U u ; "
-            "union U * v ; "
-            "union Unnamed0 * w ;";
+        const char expected[] = "union t { int a ; float b ; } ; "
+                                "union U { int a ; float b ; } ; "
+                                "union Unnamed0 { int a ; float b ; } ; "
+                                "union s s ; "
+                                "union s * ps ; "
+                                "union t t ; "
+                                "union t * tp ; "
+                                "union U u ; "
+                                "union U * v ; "
+                                "union Unnamed0 * w ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyUsing11() {
+    void simplifyUsing11()
+    {
         const char code[] = "using abc = enum { a = 0 , b = 1 , c = 2 };\n"
                             "using XYZ = enum xyz { x = 0 , y = 1 , z = 2 };\n"
                             "abc e1;\n"
@@ -355,7 +356,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyUsing12() {
+    void simplifyUsing12()
+    {
         const char code[] = "using V1 = vector<int>;\n"
                             "using V2 = std::vector<int>;\n"
                             "using V3 = std::vector<std::vector<int> >;\n"
@@ -373,7 +375,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyUsing13() {
+    void simplifyUsing13()
+    {
         const char code[] = "using Func = std::pair<int(*)(void*), void*>;\n"
                             "using CallQueue = std::vector<Func>;\n"
                             "int main() {\n"
@@ -388,7 +391,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyUsing14() {
+    void simplifyUsing14()
+    {
         const char code[] = "template <typename F, unsigned int N> struct E"
                             "{"
                             "    using v = E<F,(N>0)?(N-1):0>;"
@@ -401,11 +405,13 @@ private:
                             "    FP_M(val);"
                             "};";
 
-        TODO_ASSERT_THROW(tok(code, true, Settings::Native, false), InternalError); // TODO: Do not throw AST validation exception
-        //ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_THROW(tok(code, true, Settings::Native, false), InternalError); // TODO: Do not throw AST validation
+                                                                                    // exception
+        // ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyUsing15() {
+    void simplifyUsing15()
+    {
         {
             const char code[] = "using frame = char [10];\n"
                                 "frame f;";
@@ -425,7 +431,8 @@ private:
         }
     }
 
-    void simplifyUsing16() {
+    void simplifyUsing16()
+    {
         const char code[] = "using MOT8 = char;\n"
                             "using CHFOO = MOT8 [4096];\n"
                             "using STRFOO = struct {\n"
@@ -442,7 +449,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyUsing17() {
+    void simplifyUsing17()
+    {
         const char code[] = "class C1 {};\n"
                             "using S1 = class S1 {};\n"
                             "using S2 = class S2 : public C1 {};\n"
@@ -466,12 +474,14 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyUsing18() {
+    void simplifyUsing18()
+    {
         const char code[] = "{ { { using a = a; using a; } } }";
         tok(code, false); // don't crash
     }
 
-    void simplifyUsing19() {
+    void simplifyUsing19()
+    {
         const char code[] = "namespace a {\n"
                             "using b = int;\n"
                             "void foo::c() { }\n"
@@ -483,57 +493,61 @@ private:
         tok(code, false); // don't hang
     }
 
-    void simplifyUsing20() {
-        const char code[] = "namespace a {\n"
-                            "namespace b {\n"
-                            "namespace c {\n"
-                            "namespace d {\n"
-                            "namespace e {\n"
-                            "namespace f {\n"
-                            "namespace g {\n"
-                            "using Changeset = ::IAdaptionCallback::Changeset;\n"
-                            "using EProperty = searches::EProperty;\n"
-                            "using ChangesetValueType = Changeset::value_type;\n"
-                            "namespace {\n"
-                            "   template <class T>\n"
-                            "   auto modify(std::shared_ptr<T>& p) -> boost::optional<decltype(p->modify())> {\n"
-                            "      return nullptr;\n"
-                            "   }\n"
-                            "   template <class T>\n"
-                            "   std::list<T> getValidElements() {\n"
-                            "      return nullptr;\n"
-                            "   }\n"
-                            "}\n"
-                            "std::shared_ptr<ResourceConfiguration>\n"
-                            "foo::getConfiguration() {\n"
-                            "   return nullptr;\n"
-                            "}\n"
-                            "void\n"
-                            "foo::doRegister(const Input & Input) {\n"
-                            "   UNUSED( Input );\n"
-                            "}\n"
-                            "foo::MicroServiceReturnValue\n"
-                            "foo::post(SearchesPtr element, const Changeset& changeset)\n"
-                            "{\n"
-                            "   using EProperty = ab::ep;\n"
-                            "   static std::map<EProperty, std::pair<ElementPropertyHandler, CheckComponentState>> updateHandlers =\n"
-                            "   {\n"
-                            "      {EProperty::Needle, {&RSISearchesResource::updateNeedle,         &RSISearchesResource::isSearcherReady}},\n"
-                            "      {EProperty::SortBy, {&RSISearchesResource::updateResultsSorting, &RSISearchesResource::isSearcherReady}}\n"
-                            "   };\n"
-                            "   return nullptr;\n"
-                            "}\n"
-                            "}}}}}}}";
+    void simplifyUsing20()
+    {
+        const char code[] =
+            "namespace a {\n"
+            "namespace b {\n"
+            "namespace c {\n"
+            "namespace d {\n"
+            "namespace e {\n"
+            "namespace f {\n"
+            "namespace g {\n"
+            "using Changeset = ::IAdaptionCallback::Changeset;\n"
+            "using EProperty = searches::EProperty;\n"
+            "using ChangesetValueType = Changeset::value_type;\n"
+            "namespace {\n"
+            "   template <class T>\n"
+            "   auto modify(std::shared_ptr<T>& p) -> boost::optional<decltype(p->modify())> {\n"
+            "      return nullptr;\n"
+            "   }\n"
+            "   template <class T>\n"
+            "   std::list<T> getValidElements() {\n"
+            "      return nullptr;\n"
+            "   }\n"
+            "}\n"
+            "std::shared_ptr<ResourceConfiguration>\n"
+            "foo::getConfiguration() {\n"
+            "   return nullptr;\n"
+            "}\n"
+            "void\n"
+            "foo::doRegister(const Input & Input) {\n"
+            "   UNUSED( Input );\n"
+            "}\n"
+            "foo::MicroServiceReturnValue\n"
+            "foo::post(SearchesPtr element, const Changeset& changeset)\n"
+            "{\n"
+            "   using EProperty = ab::ep;\n"
+            "   static std::map<EProperty, std::pair<ElementPropertyHandler, CheckComponentState>> updateHandlers =\n"
+            "   {\n"
+            "      {EProperty::Needle, {&RSISearchesResource::updateNeedle,         &RSISearchesResource::isSearcherReady}},\n"
+            "      {EProperty::SortBy, {&RSISearchesResource::updateResultsSorting, &RSISearchesResource::isSearcherReady}}\n"
+            "   };\n"
+            "   return nullptr;\n"
+            "}\n"
+            "}}}}}}}";
         tok(code, false); // don't hang
     }
 
-    void simplifyUsing21() {
+    void simplifyUsing21()
+    {
         const char code[] = "using a = b;\n"
                             "enum {}";
         tok(code, false); // don't crash
     }
 
-    void simplifyUsing22() {
+    void simplifyUsing22()
+    {
         const char code[] = "namespace aa { namespace bb { namespace cc { namespace dd { namespace ee {\n"
                             "class fff {\n"
                             "public:\n"
@@ -558,7 +572,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false)); // don't hang
     }
 
-    void simplifyUsing23() {
+    void simplifyUsing23()
+    {
         const char code[] = "class cmcch {\n"
                             "public:\n"
                             "   cmcch(icmsp const& icm, Rtnf&& rtnf = {});\n"
@@ -588,14 +603,16 @@ private:
         ASSERT_EQUALS(expected, tok(code, false)); // don't hang
     }
 
-    void simplifyUsing24() {
+    void simplifyUsing24()
+    {
         const char code[] = "using value_type = const ValueFlow::Value;\n"
                             "value_type vt;";
         const char expected[] = "const ValueFlow :: Value vt ;";
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyUsing25() {
+    void simplifyUsing25()
+    {
         const char code[] = "struct UnusualType {\n"
                             "  using T = vtkm::Id;\n"
                             "  T X;\n"
@@ -613,7 +630,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyUsing8970() {
+    void simplifyUsing8970()
+    {
         const char code[] = "using V = std::vector<int>;\n"
                             "struct A {\n"
                             "    V p;\n"
@@ -626,7 +644,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyUsing8971() {
+    void simplifyUsing8971()
+    {
         const char code[] = "class A {\n"
                             "public:\n"
                             "    using V = std::vector<double>;\n"
@@ -650,7 +669,8 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyUsing8976() {
+    void simplifyUsing8976()
+    {
         const char code[] = "using mystring = std::string;";
 
         const char exp[] = ";";
@@ -658,7 +678,8 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
-    void simplifyUsing9040() {
+    void simplifyUsing9040()
+    {
         const char code[] = "using BOOL = unsigned; int i;";
 
         const char exp[] = "int i ;";
@@ -670,7 +691,8 @@ private:
         ASSERT_EQUALS(exp, tok(code, true, Settings::Win64));
     }
 
-    void simplifyUsing9042() {
+    void simplifyUsing9042()
+    {
         const char code[] = "template <class T>\n"
                             "class c {\n"
                             "    int i = 0;\n"
@@ -690,7 +712,8 @@ private:
         ASSERT_EQUALS(exp, tok(code, true, Settings::Win64));
     }
 
-    void simplifyUsing9191() {
+    void simplifyUsing9191()
+    {
         const char code[] = "namespace NS1 {\n"
                             "  namespace NS2 {\n"
                             "    using _LONG = signed long long;\n"
@@ -717,7 +740,8 @@ private:
         ASSERT_EQUALS(exp, tok(code, false));
     }
 
-    void simplifyUsing9381() {
+    void simplifyUsing9381()
+    {
         const char code[] = "namespace ns {\n"
                             "    class Result;\n"
                             "    using UniqueResultPtr = std::unique_ptr<Result>;\n"
@@ -741,7 +765,8 @@ private:
         ASSERT_EQUALS(exp, tok(code, false));
     }
 
-    void simplifyUsing9385() {
+    void simplifyUsing9385()
+    {
         {
             const char code[] = "class A {\n"
                                 "public:\n"
@@ -792,7 +817,8 @@ private:
         }
     }
 
-    void simplifyUsing9388() {
+    void simplifyUsing9388()
+    {
         const char code[] = "class A {\n"
                             "public:\n"
                             "    using Type = int;\n"
@@ -809,7 +835,8 @@ private:
         ASSERT_EQUALS(exp, tok(code, false));
     }
 
-    void simplifyUsing9518() {
+    void simplifyUsing9518()
+    {
         const char code[] = "namespace a {\n"
                             "using a = enum {};\n"
                             "}";
@@ -819,7 +846,8 @@ private:
         ASSERT_EQUALS(exp, tok(code, false));
     }
 
-    void simplifyUsing9757() {
+    void simplifyUsing9757()
+    {
         const char code[] = "enum class Type_t { Nil = 0 };\n"
                             "template<Type_t type> class MappedType { };\n"
                             "template<> class MappedType<Type_t::Nil> { using type = void; };\n"
@@ -835,7 +863,8 @@ private:
         ASSERT_EQUALS(exp, tok(code, false));
     }
 
-    void simplifyUsing10008() {
+    void simplifyUsing10008()
+    {
         const char code[] = "namespace ns {\n"
                             "    using ArrayType = std::vector<int>;\n"
                             "}\n"
@@ -850,7 +879,8 @@ private:
         ASSERT_EQUALS(exp, tok(code, false));
     }
 
-    void simplifyUsing10054() { // debug: Executable scope 'x' with unknown function.
+    void simplifyUsing10054()
+    { // debug: Executable scope 'x' with unknown function.
         {
             // original example: using "namespace external::ns1;" but redundant qualification
             const char code[] = "namespace external {\n"
@@ -868,21 +898,21 @@ private:
                                 "namespace ns {\n"
                                 "    void A::f(external::ns1::V) {}\n"
                                 "}";
-            const char exp[]  = "namespace external { "
-                                "namespace ns1 { "
-                                "struct B<1> ; "
-                                "} "
-                                "} "
-                                "namespace ns { "
-                                "struct A { "
-                                "void f ( external :: ns1 :: B<1> ) ; "
-                                "} ; "
-                                "} "
-                                "using namespace external :: ns1 ; "
-                                "namespace ns { "
-                                "void A :: f ( external :: ns1 :: B<1> ) { } "
-                                "} "
-                                "struct external :: ns1 :: B<1> { } ;";
+            const char exp[] = "namespace external { "
+                               "namespace ns1 { "
+                               "struct B<1> ; "
+                               "} "
+                               "} "
+                               "namespace ns { "
+                               "struct A { "
+                               "void f ( external :: ns1 :: B<1> ) ; "
+                               "} ; "
+                               "} "
+                               "using namespace external :: ns1 ; "
+                               "namespace ns { "
+                               "void A :: f ( external :: ns1 :: B<1> ) { } "
+                               "} "
+                               "struct external :: ns1 :: B<1> { } ;";
             ASSERT_EQUALS(exp, tok(code, true));
             ASSERT_EQUALS("", errout.str());
         }
@@ -902,20 +932,20 @@ private:
                                 "namespace ns {\n"
                                 "    void A::f(external::ns1::V) {}\n"
                                 "}";
-            const char exp[]  = "namespace external { "
-                                "namespace ns1 { "
-                                "struct B<1> ; "
-                                "} "
-                                "} "
-                                "namespace ns { "
-                                "struct A { "
-                                "void f ( external :: ns1 :: B<1> ) ; "
-                                "} ; "
-                                "} "
-                                "namespace ns { "
-                                "void A :: f ( external :: ns1 :: B<1> ) { } "
-                                "} "
-                                "struct external :: ns1 :: B<1> { } ;";
+            const char exp[] = "namespace external { "
+                               "namespace ns1 { "
+                               "struct B<1> ; "
+                               "} "
+                               "} "
+                               "namespace ns { "
+                               "struct A { "
+                               "void f ( external :: ns1 :: B<1> ) ; "
+                               "} ; "
+                               "} "
+                               "namespace ns { "
+                               "void A :: f ( external :: ns1 :: B<1> ) { } "
+                               "} "
+                               "struct external :: ns1 :: B<1> { } ;";
             ASSERT_EQUALS(exp, tok(code, true));
             ASSERT_EQUALS("", errout.str());
         }
@@ -936,21 +966,21 @@ private:
                                 "namespace ns {\n"
                                 "    void A::f(V) {}\n"
                                 "}";
-            const char exp[]  = "namespace external { "
-                                "namespace ns1 { "
-                                "struct B<1> ; "
-                                "} "
-                                "} "
-                                "namespace ns { "
-                                "struct A { "
-                                "void f ( external :: ns1 :: B<1> ) ; "
-                                "} ; "
-                                "} "
-                                "using namespace external :: ns1 ; "
-                                "namespace ns { "
-                                "void A :: f ( external :: ns1 :: B<1> ) { } "
-                                "} "
-                                "struct external :: ns1 :: B<1> { } ;";
+            const char exp[] = "namespace external { "
+                               "namespace ns1 { "
+                               "struct B<1> ; "
+                               "} "
+                               "} "
+                               "namespace ns { "
+                               "struct A { "
+                               "void f ( external :: ns1 :: B<1> ) ; "
+                               "} ; "
+                               "} "
+                               "using namespace external :: ns1 ; "
+                               "namespace ns { "
+                               "void A :: f ( external :: ns1 :: B<1> ) { } "
+                               "} "
+                               "struct external :: ns1 :: B<1> { } ;";
             ASSERT_EQUALS(exp, tok(code, true));
             ASSERT_EQUALS("", errout.str());
         }
@@ -971,21 +1001,21 @@ private:
                                 "namespace ns {\n"
                                 "    void A::f(V) {}\n"
                                 "}";
-            const char exp[]  = "namespace external { "
-                                "namespace ns1 { "
-                                "struct B<1> ; "
-                                "} "
-                                "} "
-                                "using namespace external :: ns1 ; "
-                                "namespace ns { "
-                                "struct A { "
-                                "void f ( external :: ns1 :: B<1> ) ; "
-                                "} ; "
-                                "} "
-                                "namespace ns { "
-                                "void A :: f ( external :: ns1 :: B<1> ) { } "
-                                "} "
-                                "struct external :: ns1 :: B<1> { } ;";
+            const char exp[] = "namespace external { "
+                               "namespace ns1 { "
+                               "struct B<1> ; "
+                               "} "
+                               "} "
+                               "using namespace external :: ns1 ; "
+                               "namespace ns { "
+                               "struct A { "
+                               "void f ( external :: ns1 :: B<1> ) ; "
+                               "} ; "
+                               "} "
+                               "namespace ns { "
+                               "void A :: f ( external :: ns1 :: B<1> ) { } "
+                               "} "
+                               "struct external :: ns1 :: B<1> { } ;";
             ASSERT_EQUALS(exp, tok(code, true));
             ASSERT_EQUALS("", errout.str());
         }
@@ -1004,18 +1034,18 @@ private:
                                 "namespace ns {\n"
                                 "    void A::f(external::ns1::V) {}\n"
                                 "}";
-            const char exp[]  = "namespace external { "
-                                "struct B<1> ; "
-                                "} "
-                                "namespace ns { "
-                                "struct A { "
-                                "void f ( external :: B<1> ) ; "
-                                "} ; "
-                                "} "
-                                "namespace ns { "
-                                "void A :: f ( external :: B<1> ) { } "
-                                "} "
-                                "struct external :: B<1> { } ;";
+            const char exp[] = "namespace external { "
+                               "struct B<1> ; "
+                               "} "
+                               "namespace ns { "
+                               "struct A { "
+                               "void f ( external :: B<1> ) ; "
+                               "} ; "
+                               "} "
+                               "namespace ns { "
+                               "void A :: f ( external :: B<1> ) { } "
+                               "} "
+                               "struct external :: B<1> { } ;";
             ASSERT_EQUALS(exp, tok(code, true));
             ASSERT_EQUALS("", errout.str());
         }
@@ -1034,22 +1064,23 @@ private:
                                 "namespace ns {\n"
                                 "    void A::f(external::ns1::V) {}\n"
                                 "}";
-            const char exp[]  = "struct B<1> ; "
-                                "namespace ns { "
-                                "struct A { "
-                                "void f ( B<1> ) ; "
-                                "} ; "
-                                "} "
-                                "namespace ns { "
-                                "void A :: f ( B<1> ) { } "
-                                "} "
-                                "struct B<1> { } ;";
+            const char exp[] = "struct B<1> ; "
+                               "namespace ns { "
+                               "struct A { "
+                               "void f ( B<1> ) ; "
+                               "} ; "
+                               "} "
+                               "namespace ns { "
+                               "void A :: f ( B<1> ) { } "
+                               "} "
+                               "struct B<1> { } ;";
             ASSERT_EQUALS(exp, tok(code, true));
             ASSERT_EQUALS("", errout.str());
         }
     }
 
-    void simplifyUsing10136() {
+    void simplifyUsing10136()
+    {
         {
             const char code[] = "class B {\n"
                                 "public:\n"
@@ -1061,15 +1092,15 @@ private:
                                 "    void f(const V&) const override;\n"
                                 "};\n"
                                 "void A::f(const std::vector<char>&) const { }";
-            const char exp[]  = "class B { "
-                                "public: "
-                                "virtual void f ( const std :: vector < char > & ) const = 0 ; "
-                                "} ; "
-                                "class A : public B { "
-                                "public: "
-                                "void f ( const std :: vector < char > & ) const override ; "
-                                "} ; "
-                                "void A :: f ( const std :: vector < char > & ) const { }";
+            const char exp[] = "class B { "
+                               "public: "
+                               "virtual void f ( const std :: vector < char > & ) const = 0 ; "
+                               "} ; "
+                               "class A : public B { "
+                               "public: "
+                               "void f ( const std :: vector < char > & ) const override ; "
+                               "} ; "
+                               "void A :: f ( const std :: vector < char > & ) const { }";
             ASSERT_EQUALS(exp, tok(code, true));
             ASSERT_EQUALS("", errout.str());
         }
@@ -1102,33 +1133,33 @@ private:
                                 "    a.f(v);\n"
                                 "    c.f(v);\n"
                                 "}";
-            const char exp[]  = "namespace NS1 { "
-                                "class B { "
-                                "public: "
-                                "virtual void f ( const std :: vector < char > & ) const = 0 ; "
-                                "} ; "
-                                "} "
-                                "namespace NS2 { "
-                                "class A : public NS1 :: B { "
-                                "public: "
-                                "void f ( const std :: vector < char > & ) const override ; "
-                                "} ; "
-                                "namespace NS3 { "
-                                "class C : public A { "
-                                "public: "
-                                "void f ( const std :: vector < char > & ) const override ; "
-                                "} ; "
-                                "void C :: f ( const std :: vector < char > & ) const { } "
-                                "} "
-                                "void A :: f ( const std :: vector < char > & ) const { } "
-                                "} "
-                                "void foo ( ) { "
-                                "NS2 :: A a ; "
-                                "NS2 :: NS3 :: C c ; "
-                                "std :: vector < char > v ; "
-                                "a . f ( v ) ; "
-                                "c . f ( v ) ; "
-                                "}";
+            const char exp[] = "namespace NS1 { "
+                               "class B { "
+                               "public: "
+                               "virtual void f ( const std :: vector < char > & ) const = 0 ; "
+                               "} ; "
+                               "} "
+                               "namespace NS2 { "
+                               "class A : public NS1 :: B { "
+                               "public: "
+                               "void f ( const std :: vector < char > & ) const override ; "
+                               "} ; "
+                               "namespace NS3 { "
+                               "class C : public A { "
+                               "public: "
+                               "void f ( const std :: vector < char > & ) const override ; "
+                               "} ; "
+                               "void C :: f ( const std :: vector < char > & ) const { } "
+                               "} "
+                               "void A :: f ( const std :: vector < char > & ) const { } "
+                               "} "
+                               "void foo ( ) { "
+                               "NS2 :: A a ; "
+                               "NS2 :: NS3 :: C c ; "
+                               "std :: vector < char > v ; "
+                               "a . f ( v ) ; "
+                               "c . f ( v ) ; "
+                               "}";
             ASSERT_EQUALS(exp, tok(code, true));
             ASSERT_EQUALS("", errout.str());
         }
@@ -1161,7 +1192,8 @@ private:
         }
     }
 
-    void simplifyUsing10171() {
+    void simplifyUsing10171()
+    {
         const char code[] = "namespace ns {\n"
                             "    class A {\n"
                             "    public:\n"
@@ -1193,7 +1225,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyUsing10172() {
+    void simplifyUsing10172()
+    {
         {
             const char code[] = "namespace ns {\n"
                                 "    class A {\n"
@@ -1258,7 +1291,8 @@ private:
         }
     }
 
-    void simplifyUsing10173() {
+    void simplifyUsing10173()
+    {
         {
             const char code[] = "std::ostream & operator<<(std::ostream &s, const Pr<st> p) {\n"
                                 "    return s;\n"
@@ -1270,15 +1304,15 @@ private:
                                 "void bar() {\n"
                                 "   Pr<st> p;\n"
                                 "}";
-            const char exp[]  = "std :: ostream & operator<< ( std :: ostream & s , const Pr < st > p ) { "
-                                "return s ; "
-                                "} "
-                                "void foo ( ) { "
-                                "d :: Pr < st > p ; "
-                                "} "
-                                "void bar ( ) { "
-                                "Pr < st > p ; "
-                                "}";
+            const char exp[] = "std :: ostream & operator<< ( std :: ostream & s , const Pr < st > p ) { "
+                               "return s ; "
+                               "} "
+                               "void foo ( ) { "
+                               "d :: Pr < st > p ; "
+                               "} "
+                               "void bar ( ) { "
+                               "Pr < st > p ; "
+                               "}";
             ASSERT_EQUALS(exp, tok(code, true));
             ASSERT_EQUALS("", errout.str());
         }
@@ -1294,22 +1328,23 @@ private:
                                 "   using NS1 = v1::l;\n"
                                 "}\n"
                                 "}";
-            const char exp[]  = "namespace defsa { "
-                                "void xxx :: foo ( ) { "
-                                "} "
-                                "void xxx :: bar ( ) { "
-                                "} "
-                                "void xxx :: foobar ( ) { "
-                                "} "
-                                "}";
+            const char exp[] = "namespace defsa { "
+                               "void xxx :: foo ( ) { "
+                               "} "
+                               "void xxx :: bar ( ) { "
+                               "} "
+                               "void xxx :: foobar ( ) { "
+                               "} "
+                               "}";
             ASSERT_EQUALS(exp, tok(code, true));
         }
     }
 
-    void simplifyUsing10335() {
+    void simplifyUsing10335()
+    {
         const char code[] = "using uint8_t = unsigned char;\n"
                             "enum E : uint8_t { E0 };";
-        const char exp[]  = "enum E : unsigned char { E0 } ;";
+        const char exp[] = "enum E : unsigned char { E0 } ;";
         ASSERT_EQUALS(exp, tok(code, false));
     }
 };

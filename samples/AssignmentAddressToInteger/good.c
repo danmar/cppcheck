@@ -1,7 +1,4 @@
-int* foo(int *p)
-{
-    return p + 4;
-}
+int* foo(int* p) { return p + 4; }
 
 int main()
 {

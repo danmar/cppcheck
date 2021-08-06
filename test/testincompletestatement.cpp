@@ -27,13 +27,13 @@
 
 class TestIncompleteStatement : public TestFixture {
 public:
-    TestIncompleteStatement() : TestFixture("TestIncompleteStatement") {
-    }
+    TestIncompleteStatement() : TestFixture("TestIncompleteStatement") {}
 
 private:
     Settings settings;
 
-    void check(const char code[], bool inconclusive = false) {
+    void check(const char code[], bool inconclusive = false)
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -59,7 +59,8 @@ private:
         checkOther.checkIncompleteStatement();
     }
 
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
         settings.severity.enable(Severity::warning);
 
         TEST_CASE(test1);
@@ -74,26 +75,27 @@ private:
         TEST_CASE(intarray);
         TEST_CASE(structarraynull);
         TEST_CASE(structarray);
-        TEST_CASE(conditionalcall);     // ; 0==x ? X() : Y();
-        TEST_CASE(structinit);          // #2462 : ABC abc{1,2,3};
+        TEST_CASE(conditionalcall); // ; 0==x ? X() : Y();
+        TEST_CASE(structinit);      // #2462 : ABC abc{1,2,3};
         TEST_CASE(returnstruct);
-        TEST_CASE(cast);                // #3009 : (struct Foo *)123.a = 1;
-        TEST_CASE(increment);           // #3251 : FP for increment
-        TEST_CASE(cpp11init);           // #5493 : int i{1};
-        TEST_CASE(cpp11init2);          // #8449
-        TEST_CASE(cpp11init3);          // #8995
-        TEST_CASE(block);               // ({ do_something(); 0; })
+        TEST_CASE(cast);       // #3009 : (struct Foo *)123.a = 1;
+        TEST_CASE(increment);  // #3251 : FP for increment
+        TEST_CASE(cpp11init);  // #5493 : int i{1};
+        TEST_CASE(cpp11init2); // #8449
+        TEST_CASE(cpp11init3); // #8995
+        TEST_CASE(block);      // ({ do_something(); 0; })
         TEST_CASE(mapindex);
         TEST_CASE(commaoperator1);
         TEST_CASE(commaoperator2);
         TEST_CASE(redundantstmts);
         TEST_CASE(vardecl);
-        TEST_CASE(archive);             // ar & x
+        TEST_CASE(archive); // ar & x
         TEST_CASE(ast);
-        TEST_CASE(oror);                // dostuff() || x=32;
+        TEST_CASE(oror); // dostuff() || x=32;
     }
 
-    void test1() {
+    void test1()
+    {
         check("void foo()\n"
               "{\n"
               "    const char def[] =\n"
@@ -103,16 +105,19 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void test2() {
+    void test2()
+    {
         check("void foo()\n"
               "{\n"
               "    \"abc\";\n"
               "}");
 
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found a statement that begins with string constant.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found a statement that begins with string constant.\n",
+                      errout.str());
     }
 
-    void test3() {
+    void test3()
+    {
         check("void foo()\n"
               "{\n"
               "    const char *str[] = { \"abc\" };\n"
@@ -121,7 +126,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void test4() {
+    void test4()
+    {
         check("void foo()\n"
               "{\n"
               "const char *a =\n"
@@ -135,16 +141,19 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void test5() {
+    void test5()
+    {
         check("void foo()\n"
               "{\n"
               "    50;\n"
               "}");
 
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found a statement that begins with numeric constant.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found a statement that begins with numeric constant.\n",
+                      errout.str());
     }
 
-    void test6() {
+    void test6()
+    {
         // don't crash
         check("void f() {\n"
               "  1 == (two + three);\n"
@@ -153,7 +162,8 @@ private:
               "}");
     }
 
-    void test7() { // #9335
+    void test7()
+    { // #9335
         check("namespace { std::string S = \"\"; }\n"
               "\n"
               "class C {\n"
@@ -169,7 +179,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void test_numeric() {
+    void test_numeric()
+    {
         check("struct P {\n"
               "    double a;\n"
               "    double b;\n"
@@ -184,7 +195,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void void0() { // #6327
+    void void0()
+    { // #6327
         check("void f() { (void*)0; }");
         ASSERT_EQUALS("", errout.str());
 
@@ -193,12 +205,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void intarray() {
+    void intarray()
+    {
         check("int arr[] = { 100/2, 1*100 };");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structarraynull() {
+    void structarraynull()
+    {
         check("struct st arr[] = {\n"
               "    { 100/2, 1*100 }\n"
               "    { 90, 70 }\n"
@@ -206,7 +220,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structarray() {
+    void structarray()
+    {
         check("struct st arr[] = {\n"
               "    { 100/2, 1*100 }\n"
               "    { 90, 70 }\n"
@@ -214,14 +229,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void conditionalcall() {
+    void conditionalcall()
+    {
         check("void f() {\n"
               "    0==x ? X() : Y();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structinit() {
+    void structinit()
+    {
         // #2462 - C++11 struct initialization
         check("void f() {\n"
               "    ABC abc{1,2,3};\n"
@@ -253,7 +270,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnstruct() {
+    void returnstruct()
+    {
         check("struct s foo() {\n"
               "    return (struct s){0,0};\n"
               "}");
@@ -274,14 +292,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void cast() {
+    void cast()
+    {
         check("void f() {\n"
               "    ((struct foo *)(0x1234))->xy = 1;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void increment() {
+    void increment()
+    {
         check("void f() {\n"
               "    int x = 1;\n"
               "    x++, x++;\n"
@@ -289,21 +309,24 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void cpp11init() {
+    void cpp11init()
+    {
         check("void f() {\n"
               "    int x{1};\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void cpp11init2() {
+    void cpp11init2()
+    {
         check("x<string> handlers{\n"
               "  { \"mode2\", []() { return 2; } },\n"
               "};");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void cpp11init3() {
+    void cpp11init3()
+    {
         check("struct A { void operator()(int); };\n"
               "void f() {\n"
               "A{}(0);\n"
@@ -317,7 +340,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void block() {
+    void block()
+    {
         check("void f() {\n"
               "    ({ do_something(); 0; });\n"
               "}");
@@ -330,7 +354,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void mapindex() {
+    void mapindex()
+    {
         check("void f() {\n"
               "  map[{\"1\",\"2\"}]=0;\n"
               "}");
@@ -338,7 +363,8 @@ private:
     }
 
     // #8827
-    void commaoperator1() {
+    void commaoperator1()
+    {
         check("void foo(int,const char*,int);\n"
               "void f(int value) {\n"
               "    foo(42,\"test\",42),(value&42);\n"
@@ -346,7 +372,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (warning) Found suspicious operator ','\n", errout.str());
     }
 
-    void commaoperator2() {
+    void commaoperator2()
+    {
         check("void f() {\n"
               "    for(unsigned int a=0, b; a<10; a++ ) {}\n"
               "}\n");
@@ -354,7 +381,8 @@ private:
     }
 
     // #8451
-    void redundantstmts() {
+    void redundantstmts()
+    {
         check("void f1(int x) {\n"
               "    1;\n"
               "    (1);\n"
@@ -364,21 +392,23 @@ private:
               "    (!x);\n"
               "    (unsigned int)!x;\n"
               "    ~x;\n"
-              "}\n", true);
+              "}\n",
+              true);
         ASSERT_EQUALS("[test.cpp:2]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
                       "[test.cpp:3]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
                       "[test.cpp:4]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
                       "[test.cpp:5]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
                       "[test.cpp:6]: (warning, inconclusive) Found suspicious operator '!'\n"
                       "[test.cpp:7]: (warning, inconclusive) Found suspicious operator '!'\n"
-                      "[test.cpp:9]: (warning, inconclusive) Found suspicious operator '~'\n", errout.str());
+                      "[test.cpp:9]: (warning, inconclusive) Found suspicious operator '~'\n",
+                      errout.str());
 
         check("void f1(int x) { x; }", true);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Unused variable value 'x'\n", errout.str());
-
     }
 
-    void vardecl() {
+    void vardecl()
+    {
         // #8984
         check("void f() { a::b *c = d(); }", true);
         ASSERT_EQUALS("", errout.str());
@@ -408,27 +438,33 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void archive() {
+    void archive()
+    {
         check("void f(Archive &ar) {\n"
               "  ar & x;\n"
-              "}", true);
+              "}",
+              true);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int ar) {\n"
               "  ar & x;\n"
-              "}", true);
+              "}",
+              true);
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '&'\n", errout.str());
     }
 
-    void ast() {
+    void ast()
+    {
         check("struct c { void a() const { for (int x=0; x;); } };", true);
         ASSERT_EQUALS("", errout.str());
     }
 
-    void oror() {
+    void oror()
+    {
         check("void foo() {\n"
               "    params_given (params, \"overrides\") || (overrides = \"1\");\n"
-              "}", true);
+              "}",
+              true);
         ASSERT_EQUALS("", errout.str());
     }
 };

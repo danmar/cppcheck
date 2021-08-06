@@ -4,11 +4,8 @@
 #include <QPainter>
 #include "codeeditorstyle.h"
 
-
-Highlighter::Highlighter(QTextDocument *parent,
-                         CodeEditorStyle *widgetStyle) :
-    QSyntaxHighlighter(parent),
-    mWidgetStyle(widgetStyle)
+Highlighter::Highlighter(QTextDocument* parent, CodeEditorStyle* widgetStyle)
+    : QSyntaxHighlighter(parent), mWidgetStyle(widgetStyle)
 {
     HighlightingRule rule;
 
@@ -93,7 +90,7 @@ Highlighter::Highlighter(QTextDocument *parent,
                     << "volatile"
                     << "wchar_­t"
                     << "while";
-    foreach (const QString &pattern, keywordPatterns) {
+    foreach (const QString& pattern, keywordPatterns) {
         rule.pattern = QRegularExpression("\\b" + pattern + "\\b");
         rule.format = mKeywordFormat;
         rule.ruleRole = RuleRole::Keyword;
@@ -134,10 +131,10 @@ Highlighter::Highlighter(QTextDocument *parent,
     mCommentEndExpression = QRegularExpression("\\*/");
 }
 
-void Highlighter::setSymbols(const QStringList &symbols)
+void Highlighter::setSymbols(const QStringList& symbols)
 {
     mHighlightingRulesWithSymbols = mHighlightingRules;
-    foreach (const QString &sym, symbols) {
+    foreach (const QString& sym, symbols) {
         HighlightingRule rule;
         rule.pattern = QRegularExpression("\\b" + sym + "\\b");
         rule.format = mSymbolFormat;
@@ -146,7 +143,7 @@ void Highlighter::setSymbols(const QStringList &symbols)
     }
 }
 
-void Highlighter::setStyle(const CodeEditorStyle &newStyle)
+void Highlighter::setStyle(const CodeEditorStyle& newStyle)
 {
     mKeywordFormat.setForeground(newStyle.keywordColor);
     mKeywordFormat.setFontWeight(newStyle.keywordWeight);
@@ -170,9 +167,9 @@ void Highlighter::setStyle(const CodeEditorStyle &newStyle)
     }
 }
 
-void Highlighter::highlightBlock(const QString &text)
+void Highlighter::highlightBlock(const QString& text)
 {
-    foreach (const HighlightingRule &rule, mHighlightingRulesWithSymbols) {
+    foreach (const HighlightingRule& rule, mHighlightingRulesWithSymbols) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
         while (matchIterator.hasNext()) {
             QRegularExpressionMatch match = matchIterator.next();
@@ -194,15 +191,14 @@ void Highlighter::highlightBlock(const QString &text)
             setCurrentBlockState(1);
             commentLength = text.length() - startIndex;
         } else {
-            commentLength = endIndex - startIndex
-                            + match.capturedLength();
+            commentLength = endIndex - startIndex + match.capturedLength();
         }
         setFormat(startIndex, commentLength, mMultiLineCommentFormat);
         startIndex = text.indexOf(mCommentStartExpression, startIndex + commentLength);
     }
 }
 
-void Highlighter::applyFormat(HighlightingRule &rule)
+void Highlighter::applyFormat(HighlightingRule& rule)
 {
     switch (rule.ruleRole) {
     case RuleRole::Keyword:
@@ -223,9 +219,7 @@ void Highlighter::applyFormat(HighlightingRule &rule)
     }
 }
 
-CodeEditor::CodeEditor(QWidget *parent) :
-    QPlainTextEdit(parent),
-    mWidgetStyle(new CodeEditorStyle(defaultStyleLight))
+CodeEditor::CodeEditor(QWidget* parent) : QPlainTextEdit(parent), mWidgetStyle(new CodeEditorStyle(defaultStyleLight))
 {
     mLineNumberArea = new LineNumberArea(this);
     mHighlighter = new Highlighter(document(), mWidgetStyle);
@@ -240,11 +234,11 @@ CodeEditor::CodeEditor(QWidget *parent) :
     setObjectName("CodeEditor");
     setStyleSheet(generateStyleString());
 
-    QShortcut *copyText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C),this);
-    QShortcut *allText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A),this);
+    QShortcut* copyText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
+    QShortcut* allText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A), this);
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
-    connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
+    connect(this, SIGNAL(updateRequest(QRect, int)), this, SLOT(updateLineNumberArea(QRect, int)));
     connect(copyText, SIGNAL(activated()), this, SLOT(copy()));
     connect(allText, SIGNAL(activated()), this, SLOT(selectAll()));
 
@@ -257,7 +251,7 @@ CodeEditor::~CodeEditor()
     delete mWidgetStyle;
 }
 
-static int getPos(const QString &fileData, int lineNumber)
+static int getPos(const QString& fileData, int lineNumber)
 {
     if (lineNumber <= 1)
         return 0;
@@ -281,7 +275,7 @@ void CodeEditor::setStyle(const CodeEditorStyle& newStyle)
     highlightErrorLine();
 }
 
-void CodeEditor::setError(const QString &code, int errorLine, const QStringList &symbols)
+void CodeEditor::setError(const QString& code, int errorLine, const QStringList& symbols)
 {
     mHighlighter->setSymbols(symbols);
 
@@ -296,7 +290,7 @@ void CodeEditor::setError(const QString &code, int errorLine, const QStringList 
     highlightErrorLine();
 }
 
-void CodeEditor::setError(int errorLine, const QStringList &symbols)
+void CodeEditor::setError(int errorLine, const QStringList& symbols)
 {
     mHighlighter->setSymbols(symbols);
 
@@ -327,7 +321,7 @@ void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
 }
 
-void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
+void CodeEditor::updateLineNumberArea(const QRect& rect, int dy)
 {
     if (dy)
         mLineNumberArea->scroll(0, dy);
@@ -338,7 +332,7 @@ void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
         updateLineNumberAreaWidth(0);
 }
 
-void CodeEditor::resizeEvent(QResizeEvent *event)
+void CodeEditor::resizeEvent(QResizeEvent* event)
 {
     QPlainTextEdit::resizeEvent(event);
     QRect cr = contentsRect();
@@ -365,27 +359,26 @@ void CodeEditor::highlightErrorLine()
     setExtraSelections(extraSelections);
 }
 
-void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
+void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent* event)
 {
     QPainter painter(mLineNumberArea);
     painter.fillRect(event->rect(), mWidgetStyle->lineNumBGColor);
 
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
-    int top = (int) blockBoundingGeometry(block).translated(contentOffset()).top();
-    int bottom = top + (int) blockBoundingRect(block).height();
+    int top = (int)blockBoundingGeometry(block).translated(contentOffset()).top();
+    int bottom = top + (int)blockBoundingRect(block).height();
 
     while (block.isValid() && top <= event->rect().bottom()) {
         if (block.isVisible() && bottom >= event->rect().top()) {
             QString number = QString::number(blockNumber + 1);
             painter.setPen(mWidgetStyle->lineNumFGColor);
-            painter.drawText(0, top, mLineNumberArea->width(), fontMetrics().height(),
-                             Qt::AlignRight, number);
+            painter.drawText(0, top, mLineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
         }
 
         block = block.next();
         top = bottom;
-        bottom = top + (int) blockBoundingRect(block).height();
+        bottom = top + (int)blockBoundingRect(block).height();
         ++blockNumber;
     }
 }
@@ -393,15 +386,13 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 QString CodeEditor::generateStyleString()
 {
     QString bgcolor = QString("background:rgb(%1,%2,%3);")
-                      .arg(mWidgetStyle->widgetBGColor.red())
-                      .arg(mWidgetStyle->widgetBGColor.green())
-                      .arg(mWidgetStyle->widgetBGColor.blue());
+                          .arg(mWidgetStyle->widgetBGColor.red())
+                          .arg(mWidgetStyle->widgetBGColor.green())
+                          .arg(mWidgetStyle->widgetBGColor.blue());
     QString fgcolor = QString("color:rgb(%1,%2,%3);")
-                      .arg(mWidgetStyle->widgetFGColor.red())
-                      .arg(mWidgetStyle->widgetFGColor.green())
-                      .arg(mWidgetStyle->widgetFGColor.blue());
-    QString style = QString("%1 %2")
-                    .arg(bgcolor)
-                    .arg(fgcolor);
+                          .arg(mWidgetStyle->widgetFGColor.red())
+                          .arg(mWidgetStyle->widgetFGColor.green())
+                          .arg(mWidgetStyle->widgetFGColor.blue());
+    QString style = QString("%1 %2").arg(bgcolor).arg(fgcolor);
     return style;
 }

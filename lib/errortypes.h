@@ -32,9 +32,9 @@ class Token;
 
 /** @brief Simple container to be thrown when internal error is detected. */
 struct InternalError {
-    enum Type {AST, SYNTAX, UNKNOWN_MACRO, INTERNAL, LIMIT, INSTANTIATION};
-    InternalError(const Token *tok, const std::string &errorMsg, Type type = INTERNAL);
-    const Token *token;
+    enum Type { AST, SYNTAX, UNKNOWN_MACRO, INTERNAL, LIMIT, INSTANTIATION };
+    InternalError(const Token* tok, const std::string& errorMsg, Type type = INTERNAL);
+    const Token* token;
     std::string errorMessage;
     Type type;
     std::string id;
@@ -42,16 +42,12 @@ struct InternalError {
 
 class CPPCHECKLIB Certainty {
 public:
-    enum CertaintyLevel {
-        normal, inconclusive, safe, experimental
-    };
+    enum CertaintyLevel { normal, inconclusive, safe, experimental };
 };
 
 class CPPCHECKLIB Checks {
 public:
-    enum CheckList {
-        unusedFunction, missingInclude, internalCheck
-    };
+    enum CheckList { unusedFunction, missingInclude, internalCheck };
 };
 
 /** @brief enum class for severity. Used when reporting errors. */
@@ -113,7 +109,7 @@ public:
     };
 
     static std::string toString(SeverityType severity);
-    static SeverityType fromString(const std::string &severity);
+    static SeverityType fromString(const std::string& severity);
 };
 
 struct CWE {
@@ -121,7 +117,7 @@ struct CWE {
     unsigned short id;
 };
 
-typedef std::pair<const Token *, std::string> ErrorPathItem;
+typedef std::pair<const Token*, std::string> ErrorPathItem;
 typedef std::list<ErrorPathItem> ErrorPath;
 
 /// @}

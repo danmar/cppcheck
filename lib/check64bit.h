@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
 #ifndef check64bitH
 #define check64bitH
@@ -32,7 +31,6 @@ class Settings;
 class Token;
 class Tokenizer;
 
-
 /// @addtogroup Checks
 /// @{
 
@@ -43,16 +41,16 @@ class Tokenizer;
 class CPPCHECKLIB Check64BitPortability : public Check {
 public:
     /** This constructor is used when registering the Check64BitPortability */
-    Check64BitPortability() : Check(myName()) {
-    }
+    Check64BitPortability() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
-    Check64BitPortability(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+    Check64BitPortability(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE
+    {
         Check64BitPortability check64BitPortability(tokenizer, settings, errorLogger);
         check64BitPortability.pointerassignment();
     }
@@ -61,13 +59,13 @@ public:
     void pointerassignment();
 
 private:
+    void assignmentAddressToIntegerError(const Token* tok);
+    void assignmentIntegerToAddressError(const Token* tok);
+    void returnIntegerError(const Token* tok);
+    void returnPointerError(const Token* tok);
 
-    void assignmentAddressToIntegerError(const Token *tok);
-    void assignmentIntegerToAddressError(const Token *tok);
-    void returnIntegerError(const Token *tok);
-    void returnPointerError(const Token *tok);
-
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE
+    {
         Check64BitPortability c(nullptr, settings, errorLogger);
         c.assignmentAddressToIntegerError(nullptr);
         c.assignmentIntegerToAddressError(nullptr);
@@ -75,11 +73,10 @@ private:
         c.returnPointerError(nullptr);
     }
 
-    static std::string myName() {
-        return "64-bit portability";
-    }
+    static std::string myName() { return "64-bit portability"; }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const OVERRIDE
+    {
         return "Check if there is 64-bit portability issues:\n"
                "- assign address to/from int/long\n"
                "- casting address from/to integer when returning from function\n";

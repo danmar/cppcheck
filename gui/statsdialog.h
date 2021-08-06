@@ -32,49 +32,49 @@ class CheckStatistics;
 /// @{
 
 /**
-* @brief A dialog that shows project and scan statistics.
-*
-*/
+ * @brief A dialog that shows project and scan statistics.
+ *
+ */
 class StatsDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit StatsDialog(QWidget *parent = nullptr);
+    explicit StatsDialog(QWidget* parent = nullptr);
 
     /**
-    * @brief Sets the project to extract statistics from
-    */
-    void setProject(const ProjectFile *projectFile);
+     * @brief Sets the project to extract statistics from
+     */
+    void setProject(const ProjectFile* projectFile);
 
     /**
-    * @brief Sets the string to display beside "Path Selected:"
-    */
+     * @brief Sets the string to display beside "Path Selected:"
+     */
     void setPathSelected(const QString& path);
 
     /**
-    * @brief Sets the number to display beside "Number of Files Scanned:"
-    */
+     * @brief Sets the number to display beside "Number of Files Scanned:"
+     */
     void setNumberOfFilesScanned(int num);
 
     /**
-    * @brief Sets the number of seconds to display beside "Scan Duration:"
-    */
+     * @brief Sets the number of seconds to display beside "Scan Duration:"
+     */
     void setScanDuration(double seconds);
 
     /**
-    * @brief Sets the numbers of different error/warnings found."
-    */
-    void setStatistics(const CheckStatistics *stats);
+     * @brief Sets the numbers of different error/warnings found."
+     */
+    void setStatistics(const CheckStatistics* stats);
 
 private slots:
     void copyToClipboard();
     void pdfExport();
 #ifdef HAVE_QCHART
-    QChartView *createChart(const QString &statsFile, const QString &tool);
-    QLineSeries *numberOfReports(const QString &fileName, const QString &severity) const;
+    QChartView* createChart(const QString& statsFile, const QString& tool);
+    QLineSeries* numberOfReports(const QString& fileName, const QString& severity) const;
 #endif
 private:
     Ui::StatsDialog mUI;
-    const CheckStatistics *mStatistics;
+    const CheckStatistics* mStatistics;
 };
 
 /// @}

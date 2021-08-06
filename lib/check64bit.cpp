@@ -27,16 +27,15 @@
 #include "token.h"
 #include "tokenize.h"
 
-
 //---------------------------------------------------------------------------
 
 // CWE ids used
-static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
-static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
+static const struct CWE CWE398(398U); // Indicator of Poor Code Quality
+static const struct CWE CWE758(758U); // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 
 // Register this check class (by creating a static instance of it)
 namespace {
-    Check64BitPortability instance;
+Check64BitPortability instance;
 }
 
 void Check64BitPortability::pointerassignment()
@@ -44,10 +43,10 @@ void Check64BitPortability::pointerassignment()
     if (!mSettings->severity.isEnabled(Severity::portability))
         return;
 
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Check return values
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         if (scope->function == nullptr || !scope->function->hasBody()) // We only look for functions with a body
             continue;
 
@@ -62,7 +61,8 @@ void Check64BitPortability::pointerassignment()
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             // skip nested functions
             if (tok->str() == "{") {
-                if (tok->scope()->type == Scope::ScopeType::eFunction || tok->scope()->type == Scope::ScopeType::eLambda)
+                if (tok->scope()->type == Scope::ScopeType::eFunction ||
+                    tok->scope()->type == Scope::ScopeType::eLambda)
                     tok = tok->link();
             }
 
@@ -72,7 +72,7 @@ void Check64BitPortability::pointerassignment()
             if (!tok->astOperand1() || tok->astOperand1()->isNumber())
                 continue;
 
-            const ValueType * const returnType = tok->astOperand1()->valueType();
+            const ValueType* const returnType = tok->astOperand1()->valueType();
             if (!returnType)
                 continue;
 
@@ -85,76 +85,86 @@ void Check64BitPortability::pointerassignment()
     }
 
     // Check assignments
-    for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
+    for (const Scope* scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->str() != "=")
                 continue;
 
-            const ValueType *lhstype = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
-            const ValueType *rhstype = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
+            const ValueType* lhstype = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
+            const ValueType* rhstype = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
             if (!lhstype || !rhstype)
                 continue;
 
             // Assign integer to pointer..
-            if (lhstype->pointer >= 1U &&
-                !tok->astOperand2()->isNumber() &&
-                rhstype->pointer == 0U &&
-                rhstype->originalTypeName.empty() &&
-                rhstype->type == ValueType::Type::INT)
+            if (lhstype->pointer >= 1U && !tok->astOperand2()->isNumber() && rhstype->pointer == 0U &&
+                rhstype->originalTypeName.empty() && rhstype->type == ValueType::Type::INT)
                 assignmentIntegerToAddressError(tok);
 
             // Assign pointer to integer..
-            if (rhstype->pointer >= 1U &&
-                lhstype->pointer == 0U &&
-                lhstype->originalTypeName.empty() &&
-                lhstype->isIntegral() &&
-                lhstype->type >= ValueType::Type::CHAR &&
+            if (rhstype->pointer >= 1U && lhstype->pointer == 0U && lhstype->originalTypeName.empty() &&
+                lhstype->isIntegral() && lhstype->type >= ValueType::Type::CHAR &&
                 lhstype->type <= ValueType::Type::INT)
                 assignmentAddressToIntegerError(tok);
         }
     }
 }
 
-void Check64BitPortability::assignmentAddressToIntegerError(const Token *tok)
+void Check64BitPortability::assignmentAddressToIntegerError(const Token* tok)
 {
-    reportError(tok, Severity::portability,
-                "AssignmentAddressToInteger",
-                "Assigning a pointer to an integer is not portable.\n"
-                "Assigning a pointer to an integer (int/long/etc) is not portable across different platforms and "
-                "compilers. For example in 32-bit Windows and linux they are same width, but in 64-bit Windows and linux "
-                "they are of different width. In worst case you end up assigning 64-bit address to 32-bit integer. The safe "
-                "way is to store addresses only in pointer types (or typedefs like uintptr_t).", CWE758, Certainty::normal);
+    reportError(
+        tok,
+        Severity::portability,
+        "AssignmentAddressToInteger",
+        "Assigning a pointer to an integer is not portable.\n"
+        "Assigning a pointer to an integer (int/long/etc) is not portable across different platforms and "
+        "compilers. For example in 32-bit Windows and linux they are same width, but in 64-bit Windows and linux "
+        "they are of different width. In worst case you end up assigning 64-bit address to 32-bit integer. The safe "
+        "way is to store addresses only in pointer types (or typedefs like uintptr_t).",
+        CWE758,
+        Certainty::normal);
 }
 
-void Check64BitPortability::assignmentIntegerToAddressError(const Token *tok)
+void Check64BitPortability::assignmentIntegerToAddressError(const Token* tok)
 {
-    reportError(tok, Severity::portability,
-                "AssignmentIntegerToAddress",
-                "Assigning an integer to a pointer is not portable.\n"
-                "Assigning an integer (int/long/etc) to a pointer is not portable across different platforms and "
-                "compilers. For example in 32-bit Windows and linux they are same width, but in 64-bit Windows and linux "
-                "they are of different width. In worst case you end up assigning 64-bit integer to 32-bit pointer. The safe "
-                "way is to store addresses only in pointer types (or typedefs like uintptr_t).", CWE758, Certainty::normal);
+    reportError(
+        tok,
+        Severity::portability,
+        "AssignmentIntegerToAddress",
+        "Assigning an integer to a pointer is not portable.\n"
+        "Assigning an integer (int/long/etc) to a pointer is not portable across different platforms and "
+        "compilers. For example in 32-bit Windows and linux they are same width, but in 64-bit Windows and linux "
+        "they are of different width. In worst case you end up assigning 64-bit integer to 32-bit pointer. The safe "
+        "way is to store addresses only in pointer types (or typedefs like uintptr_t).",
+        CWE758,
+        Certainty::normal);
 }
 
-void Check64BitPortability::returnPointerError(const Token *tok)
+void Check64BitPortability::returnPointerError(const Token* tok)
 {
-    reportError(tok, Severity::portability,
-                "CastAddressToIntegerAtReturn",
-                "Returning an address value in a function with integer return type is not portable.\n"
-                "Returning an address value in a function with integer (int/long/etc) return type is not portable across "
-                "different platforms and compilers. For example in 32-bit Windows and Linux they are same width, but in "
-                "64-bit Windows and Linux they are of different width. In worst case you end up casting 64-bit address down "
-                "to 32-bit integer. The safe way is to always return an integer.", CWE758, Certainty::normal);
+    reportError(
+        tok,
+        Severity::portability,
+        "CastAddressToIntegerAtReturn",
+        "Returning an address value in a function with integer return type is not portable.\n"
+        "Returning an address value in a function with integer (int/long/etc) return type is not portable across "
+        "different platforms and compilers. For example in 32-bit Windows and Linux they are same width, but in "
+        "64-bit Windows and Linux they are of different width. In worst case you end up casting 64-bit address down "
+        "to 32-bit integer. The safe way is to always return an integer.",
+        CWE758,
+        Certainty::normal);
 }
 
-void Check64BitPortability::returnIntegerError(const Token *tok)
+void Check64BitPortability::returnIntegerError(const Token* tok)
 {
-    reportError(tok, Severity::portability,
-                "CastIntegerToAddressAtReturn",
-                "Returning an integer in a function with pointer return type is not portable.\n"
-                "Returning an integer (int/long/etc) in a function with pointer return type is not portable across different "
-                "platforms and compilers. For example in 32-bit Windows and Linux they are same width, but in 64-bit Windows "
-                "and Linux they are of different width. In worst case you end up casting 64-bit integer down to 32-bit pointer. "
-                "The safe way is to always return a pointer.", CWE758, Certainty::normal);
+    reportError(
+        tok,
+        Severity::portability,
+        "CastIntegerToAddressAtReturn",
+        "Returning an integer in a function with pointer return type is not portable.\n"
+        "Returning an integer (int/long/etc) in a function with pointer return type is not portable across different "
+        "platforms and compilers. For example in 32-bit Windows and Linux they are same width, but in 64-bit Windows "
+        "and Linux they are of different width. In worst case you end up casting 64-bit integer down to 32-bit pointer. "
+        "The safe way is to always return a pointer.",
+        CWE758,
+        Certainty::normal);
 }

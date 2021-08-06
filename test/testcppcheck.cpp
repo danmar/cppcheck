@@ -26,35 +26,32 @@
 #include <list>
 #include <string>
 
-
 class TestCppcheck : public TestFixture {
 public:
-    TestCppcheck() : TestFixture("TestCppcheck") {
-    }
+    TestCppcheck() : TestFixture("TestCppcheck") {}
 
 private:
-
     class ErrorLogger2 : public ErrorLogger {
     public:
         std::list<std::string> id;
 
-        void reportOut(const std::string & /*outmsg*/, Color = Color::Reset) OVERRIDE {}
-        void bughuntingReport(const std::string & /*str*/) OVERRIDE {}
+        void reportOut(const std::string& /*outmsg*/, Color = Color::Reset) OVERRIDE {}
+        void bughuntingReport(const std::string& /*str*/) OVERRIDE {}
 
-        void reportErr(const ErrorMessage &msg) OVERRIDE {
-            id.push_back(msg.id);
-        }
+        void reportErr(const ErrorMessage& msg) OVERRIDE { id.push_back(msg.id); }
     };
 
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
         TEST_CASE(instancesSorted);
         TEST_CASE(classInfoFormat);
         TEST_CASE(getErrorMessages);
     }
 
-    void instancesSorted() const {
-        for (std::list<Check *>::const_iterator i = Check::instances().begin(); i != Check::instances().end(); ++i) {
-            std::list<Check *>::const_iterator j = i;
+    void instancesSorted() const
+    {
+        for (std::list<Check*>::const_iterator i = Check::instances().begin(); i != Check::instances().end(); ++i) {
+            std::list<Check*>::const_iterator j = i;
             ++j;
             if (j != Check::instances().end()) {
                 ASSERT_EQUALS(true, (*i)->name() < (*j)->name());
@@ -62,19 +59,21 @@ private:
         }
     }
 
-    void classInfoFormat() const {
-        for (std::list<Check *>::const_iterator i = Check::instances().begin(); i != Check::instances().end(); ++i) {
+    void classInfoFormat() const
+    {
+        for (std::list<Check*>::const_iterator i = Check::instances().begin(); i != Check::instances().end(); ++i) {
             const std::string info = (*i)->classInfo();
             if (!info.empty()) {
-                ASSERT('\n' != info[0]);         // No \n in the beginning
-                ASSERT('\n' == info.back());     // \n at end
+                ASSERT('\n' != info[0]);     // No \n in the beginning
+                ASSERT('\n' == info.back()); // \n at end
                 if (info.size() > 1)
-                    ASSERT('\n' != info[info.length()-2]); // Only one \n at end
+                    ASSERT('\n' != info[info.length() - 2]); // Only one \n at end
             }
         }
     }
 
-    void getErrorMessages() const {
+    void getErrorMessages() const
+    {
         ErrorLogger2 errorLogger;
         CppCheck cppCheck(errorLogger, true, nullptr);
         cppCheck.getErrorMessages();
@@ -82,9 +81,7 @@ private:
 
         // Check if there are duplicate error ids in errorLogger.id
         std::string duplicate;
-        for (std::list<std::string>::iterator it = errorLogger.id.begin();
-             it != errorLogger.id.end();
-             ++it) {
+        for (std::list<std::string>::iterator it = errorLogger.id.begin(); it != errorLogger.id.end(); ++it) {
             if (std::find(errorLogger.id.begin(), it, *it) != it) {
                 duplicate = "Duplicate ID: " + *it;
                 break;
@@ -95,7 +92,7 @@ private:
         // Check for error ids from this class.
         bool foundPurgedConfiguration = false;
         bool foundTooManyConfigs = false;
-        for (const std::string & it : errorLogger.id) {
+        for (const std::string& it : errorLogger.id) {
             if (it == "purgedConfiguration")
                 foundPurgedConfiguration = true;
             else if (it == "toomanyconfigs")

@@ -27,17 +27,12 @@
 
 #include <cstdlib>
 
-ApplicationList::ApplicationList(QObject *parent) :
-    QObject(parent),
-    mDefaultApplicationIndex(-1)
+ApplicationList::ApplicationList(QObject* parent) : QObject(parent), mDefaultApplicationIndex(-1)
 {
-    //ctor
+    // ctor
 }
 
-ApplicationList::~ApplicationList()
-{
-    clear();
-}
+ApplicationList::~ApplicationList() { clear(); }
 
 bool ApplicationList::loadSettings()
 {
@@ -67,8 +62,8 @@ bool ApplicationList::loadSettings()
             addApplication(app);
             defapp = 0;
         }
-        checkAndAddApplication("/usr/bin/geany","geany","+(line) (file)");
-        checkAndAddApplication("/usr/bin/qtcreator","Qt Creator","-client (file):(line)");
+        checkAndAddApplication("/usr/bin/geany", "geany", "+(line) (file)");
+        checkAndAddApplication("/usr/bin/qtcreator", "Qt Creator", "-client (file):(line)");
         // use as default for kde environments
         if (QFileInfo("/usr/bin/kate").isExecutable()) {
             Application app;
@@ -120,10 +115,7 @@ void ApplicationList::saveSettings() const
     settings.setValue(SETTINGS_APPLICATION_DEFAULT, mDefaultApplicationIndex);
 }
 
-int ApplicationList::getApplicationCount() const
-{
-    return mApplications.size();
-}
+int ApplicationList::getApplicationCount() const { return mApplications.size(); }
 
 Application& ApplicationList::getApplication(const int index)
 {
@@ -145,7 +137,7 @@ const Application& ApplicationList::getApplication(const int index) const
     return dummy;
 }
 
-void ApplicationList::addApplication(const Application &app)
+void ApplicationList::addApplication(const Application& app)
 {
     if (app.getName().isEmpty() || app.getPath().isEmpty()) {
         return;
@@ -153,10 +145,7 @@ void ApplicationList::addApplication(const Application &app)
     mApplications << app;
 }
 
-void ApplicationList::removeApplication(const int index)
-{
-    mApplications.removeAt(index);
-}
+void ApplicationList::removeApplication(const int index) { mApplications.removeAt(index); }
 
 void ApplicationList::setDefault(const int index)
 {
@@ -165,7 +154,7 @@ void ApplicationList::setDefault(const int index)
     }
 }
 
-void ApplicationList::copy(const ApplicationList *list)
+void ApplicationList::copy(const ApplicationList* list)
 {
     if (!list) {
         return;
@@ -201,7 +190,8 @@ bool ApplicationList::checkAndAddApplication(const QString& appPath, const QStri
 bool ApplicationList::findDefaultWindowsEditor()
 {
     bool foundOne = false;
-#ifdef WIN64 // As long as we do support 32-bit XP, we cannot be sure that the environment variable "ProgramFiles(x86)" exists
+#ifdef WIN64 // As long as we do support 32-bit XP, we cannot be sure that the environment variable "ProgramFiles(x86)"
+             // exists
     const QString appPathx86(getenv("ProgramFiles(x86)"));
 #else
     const QString appPathx86(getenv("ProgramFiles"));

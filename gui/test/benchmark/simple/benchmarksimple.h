@@ -20,7 +20,7 @@
 #include <QObject>
 #include "errorlogger.h"
 
-class BenchmarkSimple: public QObject, public ErrorLogger {
+class BenchmarkSimple : public QObject, public ErrorLogger {
     Q_OBJECT
 
 private slots:
@@ -31,8 +31,6 @@ private slots:
 private:
     // Empty implementations of ErrorLogger methods.
     // We don't care about the output in the benchmark tests.
-    void reportOut(const std::string & outmsg) override {
-    }
-    void reportErr(const ErrorMessage &msg) override {
-    }
+    void reportOut(const std::string& outmsg) override {}
+    void reportErr(const ErrorMessage& msg) override {}
 };

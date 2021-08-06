@@ -2,7 +2,8 @@
 // Test library configuration for libcurl.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=libcurl --enable=information --error-exitcode=1 --inline-suppr --suppress=missingIncludeSystem test/cfg/libcurl.c
+// $ cppcheck --check-library --library=libcurl --enable=information --error-exitcode=1 --inline-suppr
+// --suppress=missingIncludeSystem test/cfg/libcurl.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -12,7 +13,7 @@
 
 void validCode()
 {
-    CURL *curl = curl_easy_init();
+    CURL* curl = curl_easy_init();
     if (curl) {
         CURLcode res;
         curl_easy_setopt(curl, CURLOPT_URL, "http://example.com");
@@ -23,7 +24,7 @@ void validCode()
             long response_code;
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
             printf("%ld", response_code);
-            char * pStr = curl_easy_escape(curl, "a", 1);
+            char* pStr = curl_easy_escape(curl, "a", 1);
             if (pStr)
                 printf("%s", pStr);
             curl_free(pStr);
@@ -33,7 +34,7 @@ void validCode()
     }
 }
 
-void ignoredReturnValue(CURL * handle)
+void ignoredReturnValue(CURL* handle)
 {
     // cppcheck-suppress ignoredReturnValue
     curl_easy_strerror(1);
@@ -41,29 +42,29 @@ void ignoredReturnValue(CURL * handle)
 
 void resourceLeak_curl_easy_init()
 {
-    CURL *curl = curl_easy_init();
+    CURL* curl = curl_easy_init();
     printf("%p", curl);
     // cppcheck-suppress resourceLeak
 }
 
-void resourceLeak_curl_easy_duphandle(CURL * handle)
+void resourceLeak_curl_easy_duphandle(CURL* handle)
 {
-    CURL *curl = curl_easy_duphandle(handle);
+    CURL* curl = curl_easy_duphandle(handle);
     printf("%p", curl);
     // cppcheck-suppress resourceLeak
 }
 
-void memleak_curl_easy_escape(CURL * handle)
+void memleak_curl_easy_escape(CURL* handle)
 {
-    char * pStr = curl_easy_escape(handle, "a", 1);
+    char* pStr = curl_easy_escape(handle, "a", 1);
     if (pStr)
         printf("%s", pStr);
     // cppcheck-suppress memleak
 }
 
-void nullPointer(CURL * handle)
+void nullPointer(CURL* handle)
 {
-    char * buf[10] = {0};
+    char* buf[10] = {0};
     size_t len;
 
     curl_easy_recv(handle, buf, 10, &len);
@@ -74,10 +75,10 @@ void nullPointer(CURL * handle)
     curl_easy_send(handle, buf, 10, NULL);
 }
 
-void uninitvar(CURL * handle)
+void uninitvar(CURL* handle)
 {
-    char * bufInit[10] = {0};
-    char * bufUninit;
+    char* bufInit[10] = {0};
+    char* bufUninit;
     size_t len;
 
     curl_easy_send(handle, bufInit, 10, &len);

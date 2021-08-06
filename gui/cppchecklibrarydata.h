@@ -40,7 +40,7 @@ public:
         QString itEndPattern;
 
         bool access_arrayLike;
-        int  size_templateParameter;
+        int size_templateParameter;
 
         struct {
             QString templateParameter;
@@ -63,9 +63,7 @@ public:
     };
 
     struct Function {
-        Function() : noreturn(Unknown), gccPure(false), gccConst(false),
-            leakignore(false), useretval(false) {
-        }
+        Function() : noreturn(Unknown), gccPure(false), gccConst(false), leakignore(false), useretval(false) {}
 
         QString comments;
         QString name;
@@ -79,18 +77,14 @@ public:
             QString type;
             QString value;
             int container;
-            bool empty() const {
-                return type.isNull() && value.isNull() && container < 0;
-            }
+            bool empty() const { return type.isNull() && value.isNull() && container < 0; }
         } returnValue;
         struct {
             QString scan;
             QString secure;
         } formatstr;
         struct Arg {
-            Arg() : nr(0), notbool(false), notnull(false), notuninit(false),
-                formatstr(false), strz(false) {
-            }
+            Arg() : nr(0), notbool(false), notnull(false), notuninit(false), formatstr(false), strz(false) {}
 
             QString name;
             unsigned int nr;
@@ -124,11 +118,9 @@ public:
             QString alternatives;
             QString msg;
 
-            bool isEmpty() const {
-                return cstd.isEmpty() &&
-                       severity.isEmpty() &&
-                       reason.isEmpty() &&
-                       alternatives.isEmpty() &&
+            bool isEmpty() const
+            {
+                return cstd.isEmpty() && severity.isEmpty() && reason.isEmpty() && alternatives.isEmpty() &&
                        msg.isEmpty();
             }
         } warn;
@@ -137,11 +129,11 @@ public:
     struct MemoryResource {
         QString type; // "memory" or "resource"
         struct Alloc {
-            Alloc() :
-                isRealloc(false),
-                init(false),
-                arg(-1),        // -1: Has no optional "arg" attribute
-                reallocArg(-1)  // -1: Has no optional "realloc-arg" attribute
+            Alloc()
+                : isRealloc(false),
+                  init(false),
+                  arg(-1),       // -1: Has no optional "arg" attribute
+                  reallocArg(-1) // -1: Has no optional "realloc-arg" attribute
             {}
 
             bool isRealloc;
@@ -152,8 +144,7 @@ public:
             QString name;
         };
         struct Dealloc {
-            Dealloc() :
-                arg(-1)        // -1: Has no optional "arg" attribute
+            Dealloc() : arg(-1) // -1: Has no optional "arg" attribute
             {}
 
             int arg;
@@ -175,16 +166,15 @@ public:
     struct PlatformType {
         QString name;
         QString value;
-        QStringList types;      // Keeps element names w/o attribute (e.g. unsigned)
-        QStringList platforms;  // Keeps "type" attribute of each "platform" element
+        QStringList types;     // Keeps element names w/o attribute (e.g. unsigned)
+        QStringList platforms; // Keeps "type" attribute of each "platform" element
     };
 
     using TypeChecks = QList<QPair<QString, QString>>;
 
     struct Reflection {
         struct Call {
-            Call() :
-                arg {-1}    // -1: Mandatory "arg" attribute not available
+            Call() : arg{-1} // -1: Mandatory "arg" attribute not available
             {}
 
             int arg;
@@ -196,9 +186,7 @@ public:
 
     struct Markup {
         struct CodeBlocks {
-            CodeBlocks() :
-                offset {-1}
-            {}
+            CodeBlocks() : offset{-1} {}
 
             QStringList blocks;
             int offset;
@@ -221,7 +209,8 @@ public:
         QList<Exporter> exporter;
     };
 
-    void clear() {
+    void clear()
+    {
         containers.clear();
         defines.clear();
         undefines.clear();
@@ -235,7 +224,8 @@ public:
         markups.clear();
     }
 
-    void swap(CppcheckLibraryData &other) {
+    void swap(CppcheckLibraryData& other)
+    {
         containers.swap(other.containers);
         defines.swap(other.defines);
         undefines.swap(other.undefines);
@@ -249,7 +239,7 @@ public:
         markups.swap(other.markups);
     }
 
-    QString open(QIODevice &file);
+    QString open(QIODevice& file);
     QString toString() const;
 
     QList<struct Container> containers;

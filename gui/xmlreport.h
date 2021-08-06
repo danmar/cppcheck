@@ -28,13 +28,12 @@ class ErrorItem;
 /// @addtogroup GUI
 /// @{
 
-
 /**
-* @brief Base class for XML report classes.
-*/
+ * @brief Base class for XML report classes.
+ */
 class XmlReport : public Report {
 public:
-    explicit XmlReport(const QString &filename);
+    explicit XmlReport(const QString& filename);
 
     /**
      * @brief Read contents of the report file.
@@ -46,21 +45,21 @@ public:
      * @param message Message to quote.
      * @return quoted message.
      */
-    static QString quoteMessage(const QString &message);
+    static QString quoteMessage(const QString& message);
 
     /**
      * @brief Unquote the message.
      * @param message Message to quote.
      * @return quoted message.
      */
-    static QString unquoteMessage(const QString &message);
+    static QString unquoteMessage(const QString& message);
 
     /**
      * @brief Get the XML report format version from the file.
      * @param filename Filename of the report file.
      * @return XML report format version or 0 if error happened.
      */
-    static int determineVersion(const QString &filename);
+    static int determineVersion(const QString& filename);
 };
 /// @}
 

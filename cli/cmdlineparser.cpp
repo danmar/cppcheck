@@ -47,7 +47,7 @@
 static void addFilesToList(const std::string& fileList, std::vector<std::string>& pathNames)
 {
     // To keep things initially simple, if the file can't be opened, just be silent and move on.
-    std::istream *files;
+    std::istream* files;
     std::ifstream infile;
     if (fileList == "-") { // read from stdin
         files = &std::cin;
@@ -96,24 +96,13 @@ static bool addPathsToSet(const std::string& fileName, std::set<std::string>* se
     return true;
 }
 
-CmdLineParser::CmdLineParser(Settings *settings)
-    : mSettings(settings)
-    , mShowHelp(false)
-    , mShowVersion(false)
-    , mShowErrorMessages(false)
-    , mExitAfterPrint(false)
-{
-}
+CmdLineParser::CmdLineParser(Settings* settings)
+    : mSettings(settings), mShowHelp(false), mShowVersion(false), mShowErrorMessages(false), mExitAfterPrint(false)
+{}
 
-void CmdLineParser::printMessage(const std::string &message)
-{
-    std::cout << message << std::endl;
-}
+void CmdLineParser::printMessage(const std::string& message) { std::cout << message << std::endl; }
 
-void CmdLineParser::printMessage(const char* message)
-{
-    std::cout << message << std::endl;
-}
+void CmdLineParser::printMessage(const char* message) { std::cout << message << std::endl; }
 
 bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 {
@@ -182,7 +171,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 path = Path::fromNativeSeparators(path);
 
                 // If path doesn't end with / or \, add it
-                if (!endsWith(path,'/'))
+                if (!endsWith(path, '/'))
                     path += '/';
 
                 mSettings->includePaths.emplace_back(path);
@@ -211,10 +200,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             else if (std::strncmp(argv[i], "--addon=", 8) == 0)
-                mSettings->addons.emplace_back(argv[i]+8);
+                mSettings->addons.emplace_back(argv[i] + 8);
 
-            else if (std::strncmp(argv[i],"--addon-python=", 15) == 0)
-                mSettings->addonPython.assign(argv[i]+15);
+            else if (std::strncmp(argv[i], "--addon-python=", 15) == 0)
+                mSettings->addonPython.assign(argv[i] + 15);
 
             else if (std::strcmp(argv[i], "--bug-hunting") == 0)
                 mSettings->bugHunting = true;
@@ -241,7 +230,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
             }
 
-            else if (std::strncmp(argv[i], "--config-exclude=",17) ==0) {
+            else if (std::strncmp(argv[i], "--config-exclude=", 17) == 0) {
                 mSettings->configExcludePaths.insert(Path::fromNativeSeparators(argv[i] + 17));
             }
 
@@ -261,8 +250,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             // Show --debug output after the first simplifications
-            else if (std::strcmp(argv[i], "--debug") == 0 ||
-                     std::strcmp(argv[i], "--debug-normal") == 0)
+            else if (std::strcmp(argv[i], "--debug") == 0 || std::strcmp(argv[i], "--debug-normal") == 0)
                 mSettings->debugnormal = true;
 
             // show bug hunting debug output
@@ -285,12 +273,11 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--doc") == 0) {
                 std::ostringstream doc;
                 // Get documentation..
-                for (const Check * it : Check::instances()) {
+                for (const Check* it : Check::instances()) {
                     const std::string& name(it->name());
                     const std::string info(it->classInfo());
                     if (!name.empty() && !info.empty())
-                        doc << "## " << name << " ##\n"
-                            << info << "\n";
+                        doc << "## " << name << " ##\n" << info << "\n";
                 }
 
                 std::cout << doc.str();
@@ -325,7 +312,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // --error-exitcode=1
             else if (std::strncmp(argv[i], "--error-exitcode=", 17) == 0) {
-                const std::string temp = argv[i]+17;
+                const std::string temp = argv[i] + 17;
                 std::istringstream iss(temp);
                 if (!(iss >> mSettings->exitCode)) {
                     mSettings->exitCode = 0;
@@ -341,7 +328,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--exception-handling=", 21) == 0) {
                 mSettings->exceptionHandling = true;
                 const std::string exceptionOutfilename = &(argv[i][21]);
-                CppCheckExecutor::setExceptionOutput((exceptionOutfilename=="stderr") ? stderr : stdout);
+                CppCheckExecutor::setExceptionOutput((exceptionOutfilename == "stderr") ? stderr : stdout);
             }
 
             // Filter errors
@@ -453,7 +440,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
                 // "-j3"
                 else
-                    numberString = argv[i]+2;
+                    numberString = argv[i] + 2;
 
                 std::istringstream iss(numberString);
                 if (!(iss >> mSettings->jobs)) {
@@ -485,7 +472,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
                 // "-l3"
                 else
-                    numberString = argv[i]+2;
+                    numberString = argv[i] + 2;
 
                 std::istringstream iss(numberString);
                 if (!(iss >> mSettings->loadAverage)) {
@@ -498,7 +485,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--language=", 11) == 0 || std::strcmp(argv[i], "-x") == 0) {
                 std::string str;
                 if (argv[i][2]) {
-                    str = argv[i]+11;
+                    str = argv[i] + 11;
                 } else {
                     i++;
                     if (i >= argc || argv[i][0] == '-') {
@@ -527,7 +514,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--max-configs=", 14) == 0) {
                 mSettings->force = false;
 
-                std::istringstream iss(14+argv[i]);
+                std::istringstream iss(14 + argv[i]);
                 if (!(iss >> mSettings->maxConfigs)) {
                     printMessage("cppcheck: argument to '--max-configs=' is not a number.");
                     return false;
@@ -551,7 +538,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // Specify platform
             else if (std::strncmp(argv[i], "--platform=", 11) == 0) {
-                const std::string platform(11+argv[i]);
+                const std::string platform(11 + argv[i]);
 
                 if (platform == "win32A")
                     mSettings->platform(Settings::Win32A);
@@ -581,7 +568,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->plistOutput = Path::simplifyPath(Path::fromNativeSeparators(argv[i] + 15));
                 if (mSettings->plistOutput.empty())
                     mSettings->plistOutput = "./";
-                else if (!endsWith(mSettings->plistOutput,'/'))
+                else if (!endsWith(mSettings->plistOutput, '/'))
                     mSettings->plistOutput += '/';
 
                 const std::string plistOutput = Path::toNativeSeparators(mSettings->plistOutput);
@@ -597,15 +584,15 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // --project
             else if (std::strncmp(argv[i], "--project=", 10) == 0) {
                 mSettings->checkAllConfigurations = false; // Can be overridden with --max-configs or --force
-                const std::string projectFile = argv[i]+10;
+                const std::string projectFile = argv[i] + 10;
                 ImportProject::Type projType = mSettings->project.import(projectFile, mSettings);
                 mSettings->project.projectType = projType;
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
                     mPathNames = mSettings->project.guiProject.pathNames;
-                    for (const std::string &lib : mSettings->project.guiProject.libraries)
+                    for (const std::string& lib : mSettings->project.guiProject.libraries)
                         mSettings->libraries.emplace_back(lib);
 
-                    for (const std::string &ignorePath : mSettings->project.guiProject.excludedPaths)
+                    for (const std::string& ignorePath : mSettings->project.guiProject.excludedPaths)
                         mIgnoredPaths.emplace_back(ignorePath);
 
                     const std::string platform(mSettings->project.guiProject.platform);
@@ -624,7 +611,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         mSettings->platform(Settings::Native);
                     else if (platform == "unspecified" || platform == "Unspecified" || platform == "")
                         ;
-                    else if (!mSettings->loadPlatformFile(projectFile.c_str(), platform) && !mSettings->loadPlatformFile(argv[0], platform)) {
+                    else if (!mSettings->loadPlatformFile(projectFile.c_str(), platform) &&
+                             !mSettings->loadPlatformFile(argv[0], platform)) {
                         std::string message("cppcheck: error: unrecognized platform: \"");
                         message += platform;
                         message += "\".";
@@ -640,7 +628,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         mSettings->project.selectOneVsConfig(mSettings->platformType);
                     if (!CppCheckExecutor::tryLoadLibrary(mSettings->library, argv[0], "windows.cfg")) {
                         // This shouldn't happen normally.
-                        printMessage("cppcheck: Failed to load 'windows.cfg'. Your Cppcheck installation is broken. Please re-install.");
+                        printMessage(
+                            "cppcheck: Failed to load 'windows.cfg'. Your Cppcheck installation is broken. Please re-install.");
                         return false;
                     }
                 }
@@ -657,7 +646,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // --project-configuration
             else if (std::strncmp(argv[i], "--project-configuration=", 24) == 0) {
                 mVSConfig = argv[i] + 24;
-                if (!mVSConfig.empty() && (mSettings->project.projectType == ImportProject::Type::VS_SLN || mSettings->project.projectType == ImportProject::Type::VS_VCXPROJ))
+                if (!mVSConfig.empty() && (mSettings->project.projectType == ImportProject::Type::VS_SLN ||
+                                           mSettings->project.projectType == ImportProject::Type::VS_VCXPROJ))
                     mSettings->project.ignoreOtherConfigs(mVSConfig);
             }
 
@@ -670,8 +660,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->relativePaths = true;
             else if (std::strncmp(argv[i], "-rp=", 4) == 0 || std::strncmp(argv[i], "--relative-paths=", 17) == 0) {
                 mSettings->relativePaths = true;
-                if (argv[i][argv[i][3]=='='?4:17] != 0) {
-                    std::string paths = argv[i]+(argv[i][3]=='='?4:17);
+                if (argv[i][argv[i][3] == '=' ? 4 : 17] != 0) {
+                    std::string paths = argv[i] + (argv[i][3] == '=' ? 4 : 17);
                     for (;;) {
                         const std::string::size_type pos = paths.find(';');
                         if (pos == std::string::npos) {
@@ -703,31 +693,31 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // Rule file
             else if (std::strncmp(argv[i], "--rule-file=", 12) == 0) {
                 tinyxml2::XMLDocument doc;
-                if (doc.LoadFile(12+argv[i]) == tinyxml2::XML_SUCCESS) {
-                    tinyxml2::XMLElement *node = doc.FirstChildElement();
+                if (doc.LoadFile(12 + argv[i]) == tinyxml2::XML_SUCCESS) {
+                    tinyxml2::XMLElement* node = doc.FirstChildElement();
                     for (; node && strcmp(node->Value(), "rule") == 0; node = node->NextSiblingElement()) {
                         Settings::Rule rule;
 
-                        tinyxml2::XMLElement *tokenlist = node->FirstChildElement("tokenlist");
+                        tinyxml2::XMLElement* tokenlist = node->FirstChildElement("tokenlist");
                         if (tokenlist)
                             rule.tokenlist = tokenlist->GetText();
 
-                        tinyxml2::XMLElement *pattern = node->FirstChildElement("pattern");
+                        tinyxml2::XMLElement* pattern = node->FirstChildElement("pattern");
                         if (pattern) {
                             rule.pattern = pattern->GetText();
                         }
 
-                        tinyxml2::XMLElement *message = node->FirstChildElement("message");
+                        tinyxml2::XMLElement* message = node->FirstChildElement("message");
                         if (message) {
-                            tinyxml2::XMLElement *severity = message->FirstChildElement("severity");
+                            tinyxml2::XMLElement* severity = message->FirstChildElement("severity");
                             if (severity)
                                 rule.severity = Severity::fromString(severity->GetText());
 
-                            tinyxml2::XMLElement *id = message->FirstChildElement("id");
+                            tinyxml2::XMLElement* id = message->FirstChildElement("id");
                             if (id)
                                 rule.id = id->GetText();
 
-                            tinyxml2::XMLElement *summary = message->FirstChildElement("summary");
+                            tinyxml2::XMLElement* summary = message->FirstChildElement("summary");
                             if (summary)
                                 rule.summary = summary->GetText() ? summary->GetText() : "";
                         }
@@ -736,7 +726,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                             mSettings->rules.emplace_back(rule);
                     }
                 } else {
-                    printMessage("cppcheck: error: unable to load rule-file: " + std::string(12+argv[i]));
+                    printMessage("cppcheck: error: unable to load rule-file: " + std::string(12 + argv[i]));
                     return false;
                 }
             }
@@ -754,7 +744,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 else if (showtimeMode.empty())
                     mSettings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
                 else {
-                    printMessage("cppcheck: error: unrecognized showtime mode: \"" + showtimeMode + "\". Supported modes: file, summary, top5.");
+                    printMessage("cppcheck: error: unrecognized showtime mode: \"" + showtimeMode +
+                                 "\". Supported modes: file, summary, top5.");
                     return false;
                 }
             }
@@ -781,7 +772,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             else if (std::strncmp(argv[i], "--suppress=", 11) == 0) {
-                const std::string suppression = argv[i]+11;
+                const std::string suppression = argv[i] + 11;
                 const std::string errmsg(mSettings->nomsg.addSuppressionLine(suppression));
                 if (!errmsg.empty()) {
                     printMessage(errmsg);
@@ -791,7 +782,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // Filter errors
             else if (std::strncmp(argv[i], "--suppressions-list=", 20) == 0) {
-                std::string filename = argv[i]+20;
+                std::string filename = argv[i] + 20;
                 std::ifstream f(filename);
                 if (!f.is_open()) {
                     std::string message("cppcheck: Couldn't open the file: \"");
@@ -817,7 +808,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             else if (std::strncmp(argv[i], "--suppress-xml=", 15) == 0) {
-                const char * filename = argv[i] + 15;
+                const char* filename = argv[i] + 15;
                 const std::string errmsg(mSettings->nomsg.parseXmlFile(filename));
                 if (!errmsg.empty()) {
                     printMessage(errmsg);
@@ -826,12 +817,11 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             // Output formatter
-            else if (std::strcmp(argv[i], "--template") == 0 ||
-                     std::strncmp(argv[i], "--template=", 11) == 0) {
+            else if (std::strcmp(argv[i], "--template") == 0 || std::strncmp(argv[i], "--template=", 11) == 0) {
                 // "--template format"
                 if (argv[i][10] == '=')
                     mSettings->templateFormat = argv[i] + 11;
-                else if ((i+1) < argc && argv[i+1][0] != '-') {
+                else if ((i + 1) < argc && argv[i + 1][0] != '-') {
                     ++i;
                     mSettings->templateFormat = argv[i];
                 } else {
@@ -840,11 +830,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
 
                 if (mSettings->templateFormat == "gcc") {
-                    mSettings->templateFormat = "{bold}{file}:{line}:{column}: {magenta}warning:{default} {message} [{id}]{reset}\\n{code}";
+                    mSettings->templateFormat =
+                        "{bold}{file}:{line}:{column}: {magenta}warning:{default} {message} [{id}]{reset}\\n{code}";
                     mSettings->templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
                 } else if (mSettings->templateFormat == "daca2") {
                     mSettings->daca = true;
-                    mSettings->templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
+                    mSettings->templateFormat =
+                        "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
                     mSettings->templateLocation = "{file}:{line}:{column}: note: {info}";
                 } else if (mSettings->templateFormat == "vs")
                     mSettings->templateFormat = "{file}({line}): {severity}: {message}";
@@ -853,7 +845,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 else if (mSettings->templateFormat == "cppcheck1")
                     mSettings->templateFormat = "{callstack}: ({severity}{inconclusive:, inconclusive}) {message}";
                 else if (mSettings->templateFormat == "selfcheck") {
-                    mSettings->templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\\n{code}";
+                    mSettings->templateFormat =
+                        "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\\n{code}";
                     mSettings->templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
                     mSettings->daca = true;
                 }
@@ -864,7 +857,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 // "--template-location format"
                 if (argv[i][19] == '=')
                     mSettings->templateLocation = argv[i] + 20;
-                else if ((i+1) < argc && argv[i+1][0] != '-') {
+                else if ((i + 1) < argc && argv[i + 1][0] != '-') {
                     ++i;
                     mSettings->templateLocation = argv[i];
                 } else {
@@ -888,7 +881,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // Define the XML file version (and enable XML output)
             else if (std::strncmp(argv[i], "--xml-version=", 14) == 0) {
-                const std::string numberString(argv[i]+14);
+                const std::string numberString(argv[i] + 14);
 
                 std::istringstream iss(numberString);
                 if (!(iss >> mSettings->xml_version)) {
@@ -922,7 +915,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
     // Default template format..
     if (mSettings->templateFormat.empty()) {
-        mSettings->templateFormat = "{bold}{file}:{line}:{column}: {red}{inconclusive:{magenta}}{severity}:{inconclusive: inconclusive:}{default} {message} [{id}]{reset}\\n{code}";
+        mSettings->templateFormat =
+            "{bold}{file}:{line}:{column}: {red}{inconclusive:{magenta}}{severity}:{inconclusive: inconclusive:}{default} {message} [{id}]{reset}\\n{code}";
         if (mSettings->templateLocation.empty())
             mSettings->templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
     }
@@ -968,306 +962,308 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 void CmdLineParser::printHelp()
 {
     std::cout << "Cppcheck - A tool for static C/C++ code analysis\n"
-              "\n"
-              "Syntax:\n"
-              "    cppcheck [OPTIONS] [files or paths]\n"
-              "\n"
-              "If a directory is given instead of a filename, *.cpp, *.cxx, *.cc, *.c++, *.c,\n"
-              "*.tpp, and *.txx files are checked recursively from the given directory.\n\n"
-              "Options:\n"
-              "    --addon=<addon>\n"
-              "                         Execute addon. i.e. --addon=cert. If options must be\n"
-              "                         provided a json configuration is needed.\n"
-              "    --addon-python=<python interpreter>\n"
-              "                         You can specify the python interpreter either in the\n"
-              "                         addon json files or through this command line option.\n"
-              "                         If not present, Cppcheck will try \"python3\" first and\n"
-              "                         then \"python\".\n"
-              "    --bug-hunting\n"
-              "                         Enable noisy and soundy analysis. The normal Cppcheck\n"
-              "                         analysis is turned off.\n"
-              "    --cppcheck-build-dir=<dir>\n"
-              "                         Cppcheck work folder. Advantages:\n"
-              "                          * whole program analysis\n"
-              "                          * faster analysis; Cppcheck will reuse the results if\n"
-              "                            the hash for a file is unchanged.\n"
-              "                          * some useful debug information, i.e. commands used to\n"
-              "                            execute clang/clang-tidy/addons.\n"
-              "    --check-config       Check cppcheck configuration. The normal code\n"
-              "                         analysis is disabled by this flag.\n"
-              "    --check-library      Show information messages when library files have\n"
-              "                         incomplete info.\n"
-              "    --clang=<path>       Experimental: Use Clang parser instead of the builtin Cppcheck\n"
-              "                         parser. Takes the executable as optional parameter and\n"
-              "                         defaults to `clang`. Cppcheck will run the given Clang\n"
-              "                         executable, import the Clang AST and convert it into\n"
-              "                         Cppcheck data. After that the normal Cppcheck analysis is\n"
-              "                         used. You must have the executable in PATH if no path is\n"
-              "                         given.\n"
-              "    --config-exclude=<dir>\n"
-              "                         Path (prefix) to be excluded from configuration\n"
-              "                         checking. Preprocessor configurations defined in\n"
-              "                         headers (but not sources) matching the prefix will not\n"
-              "                         be considered for evaluation.\n"
-              "    --config-excludes-file=<file>\n"
-              "                         A file that contains a list of config-excludes\n"
-              "    --dump               Dump xml data for each translation unit. The dump\n"
-              "                         files have the extension .dump and contain ast,\n"
-              "                         tokenlist, symboldatabase, valueflow.\n"
-              "    -D<ID>               Define preprocessor symbol. Unless --max-configs or\n"
-              "                         --force is used, Cppcheck will only check the given\n"
-              "                         configuration when -D is used.\n"
-              "                         Example: '-DDEBUG=1 -D__cplusplus'.\n"
-              "    -E                   Print preprocessor output on stdout and don't do any\n"
-              "                         further processing.\n"
-              "    --enable=<id>        Enable additional checks. The available ids are:\n"
-              "                          * all\n"
-              "                                  Enable all checks. It is recommended to only\n"
-              "                                  use --enable=all when the whole program is\n"
-              "                                  scanned, because this enables unusedFunction.\n"
-              "                          * warning\n"
-              "                                  Enable warning messages\n"
-              "                          * style\n"
-              "                                  Enable all coding style checks. All messages\n"
-              "                                  with the severities 'style', 'performance' and\n"
-              "                                  'portability' are enabled.\n"
-              "                          * performance\n"
-              "                                  Enable performance messages\n"
-              "                          * portability\n"
-              "                                  Enable portability messages\n"
-              "                          * information\n"
-              "                                  Enable information messages\n"
-              "                          * unusedFunction\n"
-              "                                  Check for unused functions. It is recommend\n"
-              "                                  to only enable this when the whole program is\n"
-              "                                  scanned.\n"
-              "                          * missingInclude\n"
-              "                                  Warn if there are missing includes. For\n"
-              "                                  detailed information, use '--check-config'.\n"
-              "                         Several ids can be given if you separate them with\n"
-              "                         commas. See also --std\n"
-              "    --error-exitcode=<n> If errors are found, integer [n] is returned instead of\n"
-              "                         the default '0'. '" << EXIT_FAILURE << "' is returned\n"
-              "                         if arguments are not valid or if no input files are\n"
-              "                         provided. Note that your operating system can modify\n"
-              "                         this value, e.g. '256' can become '0'.\n"
-              "    --errorlist          Print a list of all the error messages in XML format.\n"
-              "    --exitcode-suppressions=<file>\n"
-              "                         Used when certain messages should be displayed but\n"
-              "                         should not cause a non-zero exitcode.\n"
-              "    --file-filter=<str>  Analyze only those files matching the given filter str\n"
-              "                         Example: --file-filter=*bar.cpp analyzes only files\n"
-              "                                  that end with bar.cpp.\n"
-              "    --file-list=<file>   Specify the files to check in a text file. Add one\n"
-              "                         filename per line. When file is '-,' the file list will\n"
-              "                         be read from standard input.\n"
-              "    -f, --force          Force checking of all configurations in files. If used\n"
-              "                         together with '--max-configs=', the last option is the\n"
-              "                         one that is effective.\n"
-              "    -h, --help           Print this help.\n"
-              "    -I <dir>             Give path to search for include files. Give several -I\n"
-              "                         parameters to give several paths. First given path is\n"
-              "                         searched for contained header files first. If paths are\n"
-              "                         relative to source files, this is not needed.\n"
-              "    --includes-file=<file>\n"
-              "                         Specify directory paths to search for included header\n"
-              "                         files in a text file. Add one include path per line.\n"
-              "                         First given path is searched for contained header\n"
-              "                         files first. If paths are relative to source files,\n"
-              "                         this is not needed.\n"
-              "    --include=<file>\n"
-              "                         Force inclusion of a file before the checked file.\n"
-              "    -i <dir or file>     Give a source file or source file directory to exclude\n"
-              "                         from the check. This applies only to source files so\n"
-              "                         header files included by source files are not matched.\n"
-              "                         Directory name is matched to all parts of the path.\n"
-              "    --inconclusive       Allow that Cppcheck reports even though the analysis is\n"
-              "                         inconclusive.\n"
-              "                         There are false positives with this option. Each result\n"
-              "                         must be carefully investigated before you know if it is\n"
-              "                         good or bad.\n"
-              "    --inline-suppr       Enable inline suppressions. Use them by placing one or\n"
-              "                         more comments, like: '// cppcheck-suppress warningId'\n"
-              "                         on the lines before the warning to suppress.\n"
-              "    -j <jobs>            Start <jobs> threads to do the checking simultaneously.\n"
+                 "\n"
+                 "Syntax:\n"
+                 "    cppcheck [OPTIONS] [files or paths]\n"
+                 "\n"
+                 "If a directory is given instead of a filename, *.cpp, *.cxx, *.cc, *.c++, *.c,\n"
+                 "*.tpp, and *.txx files are checked recursively from the given directory.\n\n"
+                 "Options:\n"
+                 "    --addon=<addon>\n"
+                 "                         Execute addon. i.e. --addon=cert. If options must be\n"
+                 "                         provided a json configuration is needed.\n"
+                 "    --addon-python=<python interpreter>\n"
+                 "                         You can specify the python interpreter either in the\n"
+                 "                         addon json files or through this command line option.\n"
+                 "                         If not present, Cppcheck will try \"python3\" first and\n"
+                 "                         then \"python\".\n"
+                 "    --bug-hunting\n"
+                 "                         Enable noisy and soundy analysis. The normal Cppcheck\n"
+                 "                         analysis is turned off.\n"
+                 "    --cppcheck-build-dir=<dir>\n"
+                 "                         Cppcheck work folder. Advantages:\n"
+                 "                          * whole program analysis\n"
+                 "                          * faster analysis; Cppcheck will reuse the results if\n"
+                 "                            the hash for a file is unchanged.\n"
+                 "                          * some useful debug information, i.e. commands used to\n"
+                 "                            execute clang/clang-tidy/addons.\n"
+                 "    --check-config       Check cppcheck configuration. The normal code\n"
+                 "                         analysis is disabled by this flag.\n"
+                 "    --check-library      Show information messages when library files have\n"
+                 "                         incomplete info.\n"
+                 "    --clang=<path>       Experimental: Use Clang parser instead of the builtin Cppcheck\n"
+                 "                         parser. Takes the executable as optional parameter and\n"
+                 "                         defaults to `clang`. Cppcheck will run the given Clang\n"
+                 "                         executable, import the Clang AST and convert it into\n"
+                 "                         Cppcheck data. After that the normal Cppcheck analysis is\n"
+                 "                         used. You must have the executable in PATH if no path is\n"
+                 "                         given.\n"
+                 "    --config-exclude=<dir>\n"
+                 "                         Path (prefix) to be excluded from configuration\n"
+                 "                         checking. Preprocessor configurations defined in\n"
+                 "                         headers (but not sources) matching the prefix will not\n"
+                 "                         be considered for evaluation.\n"
+                 "    --config-excludes-file=<file>\n"
+                 "                         A file that contains a list of config-excludes\n"
+                 "    --dump               Dump xml data for each translation unit. The dump\n"
+                 "                         files have the extension .dump and contain ast,\n"
+                 "                         tokenlist, symboldatabase, valueflow.\n"
+                 "    -D<ID>               Define preprocessor symbol. Unless --max-configs or\n"
+                 "                         --force is used, Cppcheck will only check the given\n"
+                 "                         configuration when -D is used.\n"
+                 "                         Example: '-DDEBUG=1 -D__cplusplus'.\n"
+                 "    -E                   Print preprocessor output on stdout and don't do any\n"
+                 "                         further processing.\n"
+                 "    --enable=<id>        Enable additional checks. The available ids are:\n"
+                 "                          * all\n"
+                 "                                  Enable all checks. It is recommended to only\n"
+                 "                                  use --enable=all when the whole program is\n"
+                 "                                  scanned, because this enables unusedFunction.\n"
+                 "                          * warning\n"
+                 "                                  Enable warning messages\n"
+                 "                          * style\n"
+                 "                                  Enable all coding style checks. All messages\n"
+                 "                                  with the severities 'style', 'performance' and\n"
+                 "                                  'portability' are enabled.\n"
+                 "                          * performance\n"
+                 "                                  Enable performance messages\n"
+                 "                          * portability\n"
+                 "                                  Enable portability messages\n"
+                 "                          * information\n"
+                 "                                  Enable information messages\n"
+                 "                          * unusedFunction\n"
+                 "                                  Check for unused functions. It is recommend\n"
+                 "                                  to only enable this when the whole program is\n"
+                 "                                  scanned.\n"
+                 "                          * missingInclude\n"
+                 "                                  Warn if there are missing includes. For\n"
+                 "                                  detailed information, use '--check-config'.\n"
+                 "                         Several ids can be given if you separate them with\n"
+                 "                         commas. See also --std\n"
+                 "    --error-exitcode=<n> If errors are found, integer [n] is returned instead of\n"
+                 "                         the default '0'. '"
+              << EXIT_FAILURE
+              << "' is returned\n"
+                 "                         if arguments are not valid or if no input files are\n"
+                 "                         provided. Note that your operating system can modify\n"
+                 "                         this value, e.g. '256' can become '0'.\n"
+                 "    --errorlist          Print a list of all the error messages in XML format.\n"
+                 "    --exitcode-suppressions=<file>\n"
+                 "                         Used when certain messages should be displayed but\n"
+                 "                         should not cause a non-zero exitcode.\n"
+                 "    --file-filter=<str>  Analyze only those files matching the given filter str\n"
+                 "                         Example: --file-filter=*bar.cpp analyzes only files\n"
+                 "                                  that end with bar.cpp.\n"
+                 "    --file-list=<file>   Specify the files to check in a text file. Add one\n"
+                 "                         filename per line. When file is '-,' the file list will\n"
+                 "                         be read from standard input.\n"
+                 "    -f, --force          Force checking of all configurations in files. If used\n"
+                 "                         together with '--max-configs=', the last option is the\n"
+                 "                         one that is effective.\n"
+                 "    -h, --help           Print this help.\n"
+                 "    -I <dir>             Give path to search for include files. Give several -I\n"
+                 "                         parameters to give several paths. First given path is\n"
+                 "                         searched for contained header files first. If paths are\n"
+                 "                         relative to source files, this is not needed.\n"
+                 "    --includes-file=<file>\n"
+                 "                         Specify directory paths to search for included header\n"
+                 "                         files in a text file. Add one include path per line.\n"
+                 "                         First given path is searched for contained header\n"
+                 "                         files first. If paths are relative to source files,\n"
+                 "                         this is not needed.\n"
+                 "    --include=<file>\n"
+                 "                         Force inclusion of a file before the checked file.\n"
+                 "    -i <dir or file>     Give a source file or source file directory to exclude\n"
+                 "                         from the check. This applies only to source files so\n"
+                 "                         header files included by source files are not matched.\n"
+                 "                         Directory name is matched to all parts of the path.\n"
+                 "    --inconclusive       Allow that Cppcheck reports even though the analysis is\n"
+                 "                         inconclusive.\n"
+                 "                         There are false positives with this option. Each result\n"
+                 "                         must be carefully investigated before you know if it is\n"
+                 "                         good or bad.\n"
+                 "    --inline-suppr       Enable inline suppressions. Use them by placing one or\n"
+                 "                         more comments, like: '// cppcheck-suppress warningId'\n"
+                 "                         on the lines before the warning to suppress.\n"
+                 "    -j <jobs>            Start <jobs> threads to do the checking simultaneously.\n"
 #ifdef THREADING_MODEL_FORK
-              "    -l <load>            Specifies that no new threads should be started if\n"
-              "                         there are other threads running and the load average is\n"
-              "                         at least <load>.\n"
+                 "    -l <load>            Specifies that no new threads should be started if\n"
+                 "                         there are other threads running and the load average is\n"
+                 "                         at least <load>.\n"
 #endif
-              "    --language=<language>, -x <language>\n"
-              "                         Forces cppcheck to check all files as the given\n"
-              "                         language. Valid values are: c, c++\n"
-              "    --library=<cfg>      Load file <cfg> that contains information about types\n"
-              "                         and functions. With such information Cppcheck\n"
-              "                         understands your code better and therefore you\n"
-              "                         get better results. The std.cfg file that is\n"
-              "                         distributed with Cppcheck is loaded automatically.\n"
-              "                         For more information about library files, read the\n"
-              "                         manual.\n"
-              "    --max-ctu-depth=N    Max depth in whole program analysis. The default value\n"
-              "                         is 2. A larger value will mean more errors can be found\n"
-              "                         but also means the analysis will be slower.\n"
-              "    --output-file=<file> Write results to file, rather than standard error.\n"
-              "    --project=<file>     Run Cppcheck on project. The <file> can be a Visual\n"
-              "                         Studio Solution (*.sln), Visual Studio Project\n"
-              "                         (*.vcxproj), compile database (compile_commands.json),\n"
-              "                         or Borland C++ Builder 6 (*.bpr). The files to analyse,\n"
-              "                         include paths, defines, platform and undefines in\n"
-              "                         the specified file will be used.\n"
-              "    --project-configuration=<config>\n"
-              "                         If used together with a Visual Studio Solution (*.sln)\n"
-              "                         or Visual Studio Project (*.vcxproj) you can limit\n"
-              "                         the configuration cppcheck should check.\n"
-              "                         For example: '--project-configuration=Release|Win32'\n"
-              "    --max-configs=<limit>\n"
-              "                         Maximum number of configurations to check in a file\n"
-              "                         before skipping it. Default is '12'. If used together\n"
-              "                         with '--force', the last option is the one that is\n"
-              "                         effective.\n"
-              "    --platform=<type>, --platform=<file>\n"
-              "                         Specifies platform specific types and sizes. The\n"
-              "                         available builtin platforms are:\n"
-              "                          * unix32\n"
-              "                                 32 bit unix variant\n"
-              "                          * unix64\n"
-              "                                 64 bit unix variant\n"
-              "                          * win32A\n"
-              "                                 32 bit Windows ASCII character encoding\n"
-              "                          * win32W\n"
-              "                                 32 bit Windows UNICODE character encoding\n"
-              "                          * win64\n"
-              "                                 64 bit Windows\n"
-              "                          * avr8\n"
-              "                                 8 bit AVR microcontrollers\n"
-              "                          * elbrus-e1cp\n"
-              "                                 Elbrus e1c+ architecture\n"
-              "                          * pic8\n"
-              "                                 8 bit PIC microcontrollers\n"
-              "                                 Baseline and mid-range architectures\n"
-              "                          * pic8-enhanced\n"
-              "                                 8 bit PIC microcontrollers\n"
-              "                                 Enhanced mid-range and high end (PIC18) architectures\n"
-              "                          * pic16\n"
-              "                                 16 bit PIC microcontrollers\n"
-              "                          * mips32\n"
-              "                                 32 bit MIPS microcontrollers\n"
-              "                          * native\n"
-              "                                 Type sizes of host system are assumed, but no\n"
-              "                                 further assumptions.\n"
-              "                          * unspecified\n"
-              "                                 Unknown type sizes\n"
-              "    --plist-output=<path>\n"
-              "                         Generate Clang-plist output files in folder.\n"
-              "    -q, --quiet          Do not show progress reports.\n"
-              "    -rp=<paths>, --relative-paths=<paths>\n"
-              "                         Use relative paths in output. When given, <paths> are\n"
-              "                         used as base. You can separate multiple paths by ';'.\n"
-              "                         Otherwise path where source files are searched is used.\n"
-              "                         We use string comparison to create relative paths, so\n"
-              "                         using e.g. ~ for home folder does not work. It is\n"
-              "                         currently only possible to apply the base paths to\n"
-              "                         files that are on a lower level in the directory tree.\n"
-              "    --report-progress    Report progress messages while checking a file.\n"
+                 "    --language=<language>, -x <language>\n"
+                 "                         Forces cppcheck to check all files as the given\n"
+                 "                         language. Valid values are: c, c++\n"
+                 "    --library=<cfg>      Load file <cfg> that contains information about types\n"
+                 "                         and functions. With such information Cppcheck\n"
+                 "                         understands your code better and therefore you\n"
+                 "                         get better results. The std.cfg file that is\n"
+                 "                         distributed with Cppcheck is loaded automatically.\n"
+                 "                         For more information about library files, read the\n"
+                 "                         manual.\n"
+                 "    --max-ctu-depth=N    Max depth in whole program analysis. The default value\n"
+                 "                         is 2. A larger value will mean more errors can be found\n"
+                 "                         but also means the analysis will be slower.\n"
+                 "    --output-file=<file> Write results to file, rather than standard error.\n"
+                 "    --project=<file>     Run Cppcheck on project. The <file> can be a Visual\n"
+                 "                         Studio Solution (*.sln), Visual Studio Project\n"
+                 "                         (*.vcxproj), compile database (compile_commands.json),\n"
+                 "                         or Borland C++ Builder 6 (*.bpr). The files to analyse,\n"
+                 "                         include paths, defines, platform and undefines in\n"
+                 "                         the specified file will be used.\n"
+                 "    --project-configuration=<config>\n"
+                 "                         If used together with a Visual Studio Solution (*.sln)\n"
+                 "                         or Visual Studio Project (*.vcxproj) you can limit\n"
+                 "                         the configuration cppcheck should check.\n"
+                 "                         For example: '--project-configuration=Release|Win32'\n"
+                 "    --max-configs=<limit>\n"
+                 "                         Maximum number of configurations to check in a file\n"
+                 "                         before skipping it. Default is '12'. If used together\n"
+                 "                         with '--force', the last option is the one that is\n"
+                 "                         effective.\n"
+                 "    --platform=<type>, --platform=<file>\n"
+                 "                         Specifies platform specific types and sizes. The\n"
+                 "                         available builtin platforms are:\n"
+                 "                          * unix32\n"
+                 "                                 32 bit unix variant\n"
+                 "                          * unix64\n"
+                 "                                 64 bit unix variant\n"
+                 "                          * win32A\n"
+                 "                                 32 bit Windows ASCII character encoding\n"
+                 "                          * win32W\n"
+                 "                                 32 bit Windows UNICODE character encoding\n"
+                 "                          * win64\n"
+                 "                                 64 bit Windows\n"
+                 "                          * avr8\n"
+                 "                                 8 bit AVR microcontrollers\n"
+                 "                          * elbrus-e1cp\n"
+                 "                                 Elbrus e1c+ architecture\n"
+                 "                          * pic8\n"
+                 "                                 8 bit PIC microcontrollers\n"
+                 "                                 Baseline and mid-range architectures\n"
+                 "                          * pic8-enhanced\n"
+                 "                                 8 bit PIC microcontrollers\n"
+                 "                                 Enhanced mid-range and high end (PIC18) architectures\n"
+                 "                          * pic16\n"
+                 "                                 16 bit PIC microcontrollers\n"
+                 "                          * mips32\n"
+                 "                                 32 bit MIPS microcontrollers\n"
+                 "                          * native\n"
+                 "                                 Type sizes of host system are assumed, but no\n"
+                 "                                 further assumptions.\n"
+                 "                          * unspecified\n"
+                 "                                 Unknown type sizes\n"
+                 "    --plist-output=<path>\n"
+                 "                         Generate Clang-plist output files in folder.\n"
+                 "    -q, --quiet          Do not show progress reports.\n"
+                 "    -rp=<paths>, --relative-paths=<paths>\n"
+                 "                         Use relative paths in output. When given, <paths> are\n"
+                 "                         used as base. You can separate multiple paths by ';'.\n"
+                 "                         Otherwise path where source files are searched is used.\n"
+                 "                         We use string comparison to create relative paths, so\n"
+                 "                         using e.g. ~ for home folder does not work. It is\n"
+                 "                         currently only possible to apply the base paths to\n"
+                 "                         files that are on a lower level in the directory tree.\n"
+                 "    --report-progress    Report progress messages while checking a file.\n"
 #ifdef HAVE_RULES
-              "    --rule=<rule>        Match regular expression.\n"
-              "    --rule-file=<file>   Use given rule file. For more information, see:\n"
-              "                         http://sourceforge.net/projects/cppcheck/files/Articles/\n"
+                 "    --rule=<rule>        Match regular expression.\n"
+                 "    --rule-file=<file>   Use given rule file. For more information, see:\n"
+                 "                         http://sourceforge.net/projects/cppcheck/files/Articles/\n"
 #endif
-              "    --std=<id>           Set standard.\n"
-              "                         The available options are:\n"
-              "                          * c89\n"
-              "                                 C code is C89 compatible\n"
-              "                          * c99\n"
-              "                                 C code is C99 compatible\n"
-              "                          * c11\n"
-              "                                 C code is C11 compatible (default)\n"
-              "                          * c++03\n"
-              "                                 C++ code is C++03 compatible\n"
-              "                          * c++11\n"
-              "                                 C++ code is C++11 compatible\n"
-              "                          * c++14\n"
-              "                                 C++ code is C++14 compatible\n"
-              "                          * c++17\n"
-              "                                 C++ code is C++17 compatible\n"
-              "                          * c++20\n"
-              "                                 C++ code is C++20 compatible (default)\n"
-              "    --suppress=<spec>    Suppress warnings that match <spec>. The format of\n"
-              "                         <spec> is:\n"
-              "                         [error id]:[filename]:[line]\n"
-              "                         The [filename] and [line] are optional. If [error id]\n"
-              "                         is a wildcard '*', all error ids match.\n"
-              "    --suppressions-list=<file>\n"
-              "                         Suppress warnings listed in the file. Each suppression\n"
-              "                         is in the same format as <spec> above.\n"
-              "    --suppress-xml=<file>\n"
-              "                         Suppress warnings listed in a xml file. XML file should\n"
-              "                         follow the manual.pdf format specified in section.\n"
-              "                         `6.4 XML suppressions` .\n"
-              "    --template='<text>'  Format the error messages. Available fields:\n"
-              "                           {file}              file name\n"
-              "                           {line}              line number\n"
-              "                           {column}            column number\n"
-              "                           {callstack}         show a callstack. Example:\n"
-              "                                                 [file.c:1] -> [file.c:100]\n"
-              "                           {inconclusive:text} if warning is inconclusive, text\n"
-              "                                               is written\n"
-              "                           {severity}          severity\n"
-              "                           {message}           warning message\n"
-              "                           {id}                warning id\n"
-              "                           {cwe}               CWE id (Common Weakness Enumeration)\n"
-              "                           {code}              show the real code\n"
-              "                           \\t                 insert tab\n"
-              "                           \\n                 insert newline\n"
-              "                           \\r                 insert carriage return\n"
-              "                         Example formats:\n"
-              "                         '{file}:{line},{severity},{id},{message}' or\n"
-              "                         '{file}({line}):({severity}) {message}' or\n"
-              "                         '{callstack} {message}'\n"
-              "                         Pre-defined templates: gcc (default), cppcheck1 (old default), vs, edit.\n"
-              // Note: template daca2 also exists, but is for internal use (cppcheck scripts).
-              "    --template-location='<text>'\n"
-              "                         Format error message location. If this is not provided\n"
-              "                         then no extra location info is shown.\n"
-              "                         Available fields:\n"
-              "                           {file}      file name\n"
-              "                           {line}      line number\n"
-              "                           {column}    column number\n"
-              "                           {info}      location info\n"
-              "                           {code}      show the real code\n"
-              "                           \\t         insert tab\n"
-              "                           \\n         insert newline\n"
-              "                           \\r         insert carriage return\n"
-              "                         Example format (gcc-like):\n"
-              "                         '{file}:{line}:{column}: note: {info}\\n{code}'\n"
-              "    -U<ID>               Undefine preprocessor symbol. Use -U to explicitly\n"
-              "                         hide certain #ifdef <ID> code paths from checking.\n"
-              "                         Example: '-UDEBUG'\n"
-              "    -v, --verbose        Output more detailed error information.\n"
-              "    --version            Print out version number.\n"
-              "    --xml                Write results in xml format to error stream (stderr).\n"
-              "\n"
-              "Example usage:\n"
-              "  # Recursively check the current folder. Print the progress on the screen and\n"
-              "  # write errors to a file:\n"
-              "  cppcheck . 2> err.txt\n"
-              "\n"
-              "  # Recursively check ../myproject/ and don't print progress:\n"
-              "  cppcheck --quiet ../myproject/\n"
-              "\n"
-              "  # Check test.cpp, enable all checks:\n"
-              "  cppcheck --enable=all --inconclusive --library=posix test.cpp\n"
-              "\n"
-              "  # Check f.cpp and search include files from inc1/ and inc2/:\n"
-              "  cppcheck -I inc1/ -I inc2/ f.cpp\n"
-              "\n"
-              "For more information:\n"
-              "    http://cppcheck.net/manual.pdf\n"
-              "\n"
-              "Many thanks to the 3rd party libraries we use:\n"
-              " * tinyxml2 -- loading project/library/ctu files.\n"
-              " * picojson -- loading compile database.\n"
-              " * pcre -- rules.\n"
-              " * qt -- used in GUI\n"
-              " * z3 -- theorem prover from Microsoft Research used in bug hunting.\n";
+                 "    --std=<id>           Set standard.\n"
+                 "                         The available options are:\n"
+                 "                          * c89\n"
+                 "                                 C code is C89 compatible\n"
+                 "                          * c99\n"
+                 "                                 C code is C99 compatible\n"
+                 "                          * c11\n"
+                 "                                 C code is C11 compatible (default)\n"
+                 "                          * c++03\n"
+                 "                                 C++ code is C++03 compatible\n"
+                 "                          * c++11\n"
+                 "                                 C++ code is C++11 compatible\n"
+                 "                          * c++14\n"
+                 "                                 C++ code is C++14 compatible\n"
+                 "                          * c++17\n"
+                 "                                 C++ code is C++17 compatible\n"
+                 "                          * c++20\n"
+                 "                                 C++ code is C++20 compatible (default)\n"
+                 "    --suppress=<spec>    Suppress warnings that match <spec>. The format of\n"
+                 "                         <spec> is:\n"
+                 "                         [error id]:[filename]:[line]\n"
+                 "                         The [filename] and [line] are optional. If [error id]\n"
+                 "                         is a wildcard '*', all error ids match.\n"
+                 "    --suppressions-list=<file>\n"
+                 "                         Suppress warnings listed in the file. Each suppression\n"
+                 "                         is in the same format as <spec> above.\n"
+                 "    --suppress-xml=<file>\n"
+                 "                         Suppress warnings listed in a xml file. XML file should\n"
+                 "                         follow the manual.pdf format specified in section.\n"
+                 "                         `6.4 XML suppressions` .\n"
+                 "    --template='<text>'  Format the error messages. Available fields:\n"
+                 "                           {file}              file name\n"
+                 "                           {line}              line number\n"
+                 "                           {column}            column number\n"
+                 "                           {callstack}         show a callstack. Example:\n"
+                 "                                                 [file.c:1] -> [file.c:100]\n"
+                 "                           {inconclusive:text} if warning is inconclusive, text\n"
+                 "                                               is written\n"
+                 "                           {severity}          severity\n"
+                 "                           {message}           warning message\n"
+                 "                           {id}                warning id\n"
+                 "                           {cwe}               CWE id (Common Weakness Enumeration)\n"
+                 "                           {code}              show the real code\n"
+                 "                           \\t                 insert tab\n"
+                 "                           \\n                 insert newline\n"
+                 "                           \\r                 insert carriage return\n"
+                 "                         Example formats:\n"
+                 "                         '{file}:{line},{severity},{id},{message}' or\n"
+                 "                         '{file}({line}):({severity}) {message}' or\n"
+                 "                         '{callstack} {message}'\n"
+                 "                         Pre-defined templates: gcc (default), cppcheck1 (old default), vs, edit.\n"
+                 // Note: template daca2 also exists, but is for internal use (cppcheck scripts).
+                 "    --template-location='<text>'\n"
+                 "                         Format error message location. If this is not provided\n"
+                 "                         then no extra location info is shown.\n"
+                 "                         Available fields:\n"
+                 "                           {file}      file name\n"
+                 "                           {line}      line number\n"
+                 "                           {column}    column number\n"
+                 "                           {info}      location info\n"
+                 "                           {code}      show the real code\n"
+                 "                           \\t         insert tab\n"
+                 "                           \\n         insert newline\n"
+                 "                           \\r         insert carriage return\n"
+                 "                         Example format (gcc-like):\n"
+                 "                         '{file}:{line}:{column}: note: {info}\\n{code}'\n"
+                 "    -U<ID>               Undefine preprocessor symbol. Use -U to explicitly\n"
+                 "                         hide certain #ifdef <ID> code paths from checking.\n"
+                 "                         Example: '-UDEBUG'\n"
+                 "    -v, --verbose        Output more detailed error information.\n"
+                 "    --version            Print out version number.\n"
+                 "    --xml                Write results in xml format to error stream (stderr).\n"
+                 "\n"
+                 "Example usage:\n"
+                 "  # Recursively check the current folder. Print the progress on the screen and\n"
+                 "  # write errors to a file:\n"
+                 "  cppcheck . 2> err.txt\n"
+                 "\n"
+                 "  # Recursively check ../myproject/ and don't print progress:\n"
+                 "  cppcheck --quiet ../myproject/\n"
+                 "\n"
+                 "  # Check test.cpp, enable all checks:\n"
+                 "  cppcheck --enable=all --inconclusive --library=posix test.cpp\n"
+                 "\n"
+                 "  # Check f.cpp and search include files from inc1/ and inc2/:\n"
+                 "  cppcheck -I inc1/ -I inc2/ f.cpp\n"
+                 "\n"
+                 "For more information:\n"
+                 "    http://cppcheck.net/manual.pdf\n"
+                 "\n"
+                 "Many thanks to the 3rd party libraries we use:\n"
+                 " * tinyxml2 -- loading project/library/ctu files.\n"
+                 " * picojson -- loading compile database.\n"
+                 " * pcre -- rules.\n"
+                 " * qt -- used in GUI\n"
+                 " * z3 -- theorem prover from Microsoft Research used in bug hunting.\n";
 }

@@ -4,14 +4,14 @@
 #include <QDialog>
 
 namespace Ui {
-    class VariableContractsDialog;
+class VariableContractsDialog;
 }
 
 class VariableContractsDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit VariableContractsDialog(QWidget *parent, QString var);
+    explicit VariableContractsDialog(QWidget* parent, QString var);
     ~VariableContractsDialog();
 
     QString getVarname() const;
@@ -19,7 +19,7 @@ public:
     QString getMax() const;
 
 private:
-    Ui::VariableContractsDialog *mUI;
+    Ui::VariableContractsDialog* mUI;
     QString mVarName;
 };
 

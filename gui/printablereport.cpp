@@ -21,19 +21,11 @@
 #include "erroritem.h"
 #include <QDir>
 
-PrintableReport::PrintableReport() :
-    Report(QString())
-{
-}
+PrintableReport::PrintableReport() : Report(QString()) {}
 
-PrintableReport::~PrintableReport()
-{
-}
+PrintableReport::~PrintableReport() {}
 
-bool PrintableReport::create()
-{
-    return true;
-}
+bool PrintableReport::create() { return true; }
 
 void PrintableReport::writeHeader()
 {
@@ -45,7 +37,7 @@ void PrintableReport::writeFooter()
     // No footer for printable report
 }
 
-void PrintableReport::writeError(const ErrorItem &error)
+void PrintableReport::writeError(const ErrorItem& error)
 {
     const QString file = QDir::toNativeSeparators(error.errorPath.back().file);
     QString line = QString("%1,%2,").arg(file).arg(error.errorPath.back().line);
@@ -55,8 +47,4 @@ void PrintableReport::writeError(const ErrorItem &error)
     mFormattedReport += "\n";
 }
 
-QString PrintableReport::getFormattedReportText() const
-{
-    return mFormattedReport;
-}
-
+QString PrintableReport::getFormattedReportText() const { return mFormattedReport; }

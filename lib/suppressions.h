@@ -34,29 +34,28 @@
 /** @brief class for handling suppressions */
 class CPPCHECKLIB Suppressions {
 public:
-
     struct CPPCHECKLIB ErrorMessage {
         std::size_t hash;
         std::string errorId;
-        void setFileName(const std::string &s);
-        const std::string &getFileName() const {
-            return mFileName;
-        }
+        void setFileName(const std::string& s);
+        const std::string& getFileName() const { return mFileName; }
         int lineNumber;
         Certainty::CertaintyLevel certainty;
         std::string symbolNames;
+
     private:
         std::string mFileName;
     };
 
     struct CPPCHECKLIB Suppression {
         Suppression() : lineNumber(NO_LINE), hash(0), thisAndNextLine(false), matched(false) {}
-        Suppression(const Suppression &other) {
-            *this = other;
-        }
-        Suppression(const std::string &id, const std::string &file, int line=NO_LINE) : errorId(id), fileName(file), lineNumber(line), hash(0), thisAndNextLine(false), matched(false) {}
+        Suppression(const Suppression& other) { *this = other; }
+        Suppression(const std::string& id, const std::string& file, int line = NO_LINE)
+            : errorId(id), fileName(file), lineNumber(line), hash(0), thisAndNextLine(false), matched(false)
+        {}
 
-        Suppression & operator=(const Suppression &other) {
+        Suppression& operator=(const Suppression& other)
+        {
             errorId = other.errorId;
             fileName = other.fileName;
             lineNumber = other.lineNumber;
@@ -67,7 +66,8 @@ public:
             return *this;
         }
 
-        bool operator<(const Suppression &other) const {
+        bool operator<(const Suppression& other) const
+        {
             if (errorId != other.errorId)
                 return errorId < other.errorId;
             if (lineNumber < other.lineNumber)
@@ -89,25 +89,20 @@ public:
          * @param errorMessage output parameter for error message (wrong suppression attribute)
          * @return true if it is a inline comment.
          */
-        bool parseComment(std::string comment, std::string *errorMessage);
+        bool parseComment(std::string comment, std::string* errorMessage);
 
-        bool isSuppressed(const ErrorMessage &errmsg) const;
+        bool isSuppressed(const ErrorMessage& errmsg) const;
 
-        bool isMatch(const ErrorMessage &errmsg);
+        bool isMatch(const ErrorMessage& errmsg);
 
         std::string getText() const;
 
-        bool isLocal() const {
-            return !fileName.empty() && fileName.find_first_of("?*") == std::string::npos;
-        }
+        bool isLocal() const { return !fileName.empty() && fileName.find_first_of("?*") == std::string::npos; }
 
-        bool isSameParameters(const Suppression &other) const {
-            return errorId == other.errorId &&
-                   fileName == other.fileName &&
-                   lineNumber == other.lineNumber &&
-                   symbolName == other.symbolName &&
-                   hash == other.hash &&
-                   thisAndNextLine == other.thisAndNextLine;
+        bool isSameParameters(const Suppression& other) const
+        {
+            return errorId == other.errorId && fileName == other.fileName && lineNumber == other.lineNumber &&
+                   symbolName == other.symbolName && hash == other.hash && thisAndNextLine == other.thisAndNextLine;
         }
 
         std::string errorId;
@@ -126,14 +121,14 @@ public:
      * @param istr Open file stream where errors can be read.
      * @return error message. empty upon success
      */
-    std::string parseFile(std::istream &istr);
+    std::string parseFile(std::istream& istr);
 
     /**
      * @brief Don't show errors listed in the file.
      * @param filename file name
      * @return error message. empty upon success
      */
-    std::string parseXmlFile(const char *filename);
+    std::string parseXmlFile(const char* filename);
 
     /**
      * Parse multi inline suppression in comment
@@ -141,14 +136,14 @@ public:
      * @param errorMessage output parameter for error message (wrong suppression attribute)
      * @return empty vector if something wrong.
      */
-    static std::vector<Suppression> parseMultiSuppressComment(const std::string &comment, std::string *errorMessage);
+    static std::vector<Suppression> parseMultiSuppressComment(const std::string& comment, std::string* errorMessage);
 
     /**
      * @brief Don't show the given error.
      * @param line Description of error to suppress (in id:file:line format).
      * @return error message. empty upon success
      */
-    std::string addSuppressionLine(const std::string &line);
+    std::string addSuppressionLine(const std::string& line);
 
     /**
      * @brief Don't show this error. File and/or line are optional. In which case
@@ -156,40 +151,41 @@ public:
      * @param suppression suppression details
      * @return error message. empty upon success
      */
-    std::string addSuppression(const Suppression &suppression);
+    std::string addSuppression(const Suppression& suppression);
 
     /**
      * @brief Combine list of suppressions into the current suppressions.
      * @param suppressions list of suppression details
      * @return error message. empty upon success
      */
-    std::string addSuppressions(const std::list<Suppression> &suppressions);
+    std::string addSuppressions(const std::list<Suppression>& suppressions);
 
     /**
      * @brief Returns true if this message should not be shown to the user.
      * @param errmsg error message
      * @return true if this error is suppressed.
      */
-    bool isSuppressed(const ErrorMessage &errmsg);
+    bool isSuppressed(const ErrorMessage& errmsg);
 
     /**
      * @brief Returns true if this message should not be shown to the user, only uses local suppressions.
      * @param errmsg error message
      * @return true if this error is suppressed.
      */
-    bool isSuppressedLocal(const ErrorMessage &errmsg);
+    bool isSuppressedLocal(const ErrorMessage& errmsg);
 
     /**
      * @brief Create an xml dump of suppressions
      * @param out stream to write XML to
-    */
-    void dump(std::ostream &out) const;
+     */
+    void dump(std::ostream& out) const;
 
     /**
      * @brief Returns list of unmatched local (per-file) suppressions.
      * @return list of unmatched suppressions
      */
-    std::list<Suppression> getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const;
+    std::list<Suppression> getUnmatchedLocalSuppressions(const std::string& file,
+                                                         const bool unusedFunctionChecking) const;
 
     /**
      * @brief Returns list of unmatched global (glob pattern) suppressions.

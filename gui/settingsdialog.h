@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef SETTINGSDIALOG_H
 #define SETTINGSDIALOG_H
 
@@ -33,101 +32,97 @@ class CodeEditorStyle;
 /// @{
 
 /**
-* @brief Settings dialog
-*
-*/
+ * @brief Settings dialog
+ *
+ */
 class SettingsDialog : public QDialog {
     Q_OBJECT
 public:
-    SettingsDialog(ApplicationList *list,
-                   TranslationHandler *translator,
-                   QWidget *parent = nullptr);
-    SettingsDialog(const SettingsDialog &) = delete;
+    SettingsDialog(ApplicationList* list, TranslationHandler* translator, QWidget* parent = nullptr);
+    SettingsDialog(const SettingsDialog&) = delete;
     virtual ~SettingsDialog();
-    SettingsDialog &operator=(const SettingsDialog &) = delete;
+    SettingsDialog& operator=(const SettingsDialog&) = delete;
 
     /**
-    * @brief Save all values to QSettings
-    *
-    */
+     * @brief Save all values to QSettings
+     *
+     */
     void saveSettingValues() const;
 
     /**
-    * @brief Get checkbox value for mShowFullPath
-    *
-    * @return should full path of errors be shown in the tree
-    */
+     * @brief Get checkbox value for mShowFullPath
+     *
+     * @return should full path of errors be shown in the tree
+     */
     bool showFullPath() const;
 
     /**
-    * @brief Get checkbox value for mSaveFullPath
-    *
-    * @return should full path of files be saved when creating a report
-    */
+     * @brief Get checkbox value for mSaveFullPath
+     *
+     * @return should full path of files be saved when creating a report
+     */
     bool saveFullPath() const;
 
-
     /**
-    * @brief Get checkbox value for mNoErrorsMessage
-    *
-    * @return Should "no errors message" be hidden
-    */
+     * @brief Get checkbox value for mNoErrorsMessage
+     *
+     * @return Should "no errors message" be hidden
+     */
     bool showNoErrorsMessage() const;
 
     /**
-    * @brief Get checkbox value for mShowIdColumn
-    *
-    * @return Should error id column be displayed
-    */
+     * @brief Get checkbox value for mShowIdColumn
+     *
+     * @return Should error id column be displayed
+     */
     bool showErrorId() const;
 
-
     /**
-    * @brief Get checkbox value for mEnableInconclusive
-    *
-    * @return Should inconclusive column be displayed
-    */
+     * @brief Get checkbox value for mEnableInconclusive
+     *
+     * @return Should inconclusive column be displayed
+     */
     bool showInconclusive() const;
 
     /**
-    * @brief Get checkbox value for mSaveAllErrors
-    *
-    * @return should all errors be saved to report
-    */
+     * @brief Get checkbox value for mSaveAllErrors
+     *
+     * @return should all errors be saved to report
+     */
     bool saveAllErrors() const;
 
 protected slots:
     /**
-    * @brief Slot for clicking OK.
-    *
-    */
+     * @brief Slot for clicking OK.
+     *
+     */
     void ok();
 
     /** @brief Slot for validating input value in @c editPythonPath */
     void validateEditPythonPath();
 
     /**
-    * @brief Slot for adding a new application to the list
-    *
-    */
+     * @brief Slot for adding a new application to the list
+     *
+     */
     void addApplication();
 
     /**
-    * @brief Slot for deleting an application from the list
-    *
-    */
+     * @brief Slot for deleting an application from the list
+     *
+     */
     void removeApplication();
 
     /**
-    * @brief Slot for modifying an application in the list
-    *
-    */
+     * @brief Slot for modifying an application in the list
+     *
+     */
     void editApplication();
 
     /**
-    * @brief Slot for making the selected application as the default (first)
-    *
-    */
+     * @brief Slot for making the selected application as the default (first)
+     *
+     */
     void defaultApplication();
 
     /** @brief Slot for browsing for the python binary */
@@ -153,22 +148,22 @@ protected slots:
 
 protected:
     /**
-    * @brief Clear all applications from the list and re insert them from mTempApplications
-    *
-    */
+     * @brief Clear all applications from the list and re insert them from mTempApplications
+     *
+     */
     void populateApplicationList();
 
     /**
-    * @brief Load saved values
-    * Loads dialog size and column widths.
-    *
-    */
+     * @brief Load saved values
+     * Loads dialog size and column widths.
+     *
+     */
     void loadSettings();
 
     /**
-    * @brief Save settings
-    * Save dialog size and column widths.
-    */
+     * @brief Save settings
+     * Save dialog size and column widths.
+     */
     void saveSettings() const;
 
     /**
@@ -178,58 +173,59 @@ protected:
      * @param box checkbox to save
      * @param name name for QSettings to store the value
      */
-    static void saveCheckboxValue(QSettings *settings, QCheckBox *box, const QString &name);
+    static void saveCheckboxValue(QSettings* settings, QCheckBox* box, const QString& name);
 
     /**
-    * @brief Convert bool to Qt::CheckState
-    *
-    * @param yes value to convert
-    * @return value converted to Qt::CheckState
-    */
+     * @brief Convert bool to Qt::CheckState
+     *
+     * @param yes value to convert
+     * @return value converted to Qt::CheckState
+     */
     static Qt::CheckState boolToCheckState(bool yes);
 
     /**
-    * @brief Converts Qt::CheckState to bool
-    *
-    * @param state Qt::CheckState to convert
-    * @return converted value
-    */
+     * @brief Converts Qt::CheckState to bool
+     *
+     * @param state Qt::CheckState to convert
+     * @return converted value
+     */
     static bool checkStateToBool(Qt::CheckState state);
 
     /**
-    * @brief Populate the translations list.
-    */
+     * @brief Populate the translations list.
+     */
     void initTranslationsList();
 
     /**
      * @brief Current Code Editor Style
      */
-    CodeEditorStyle *mCurrentStyle;
+    CodeEditorStyle* mCurrentStyle;
 
     /**
-    * @brief List of applications user has specified
-    *
-    */
-    ApplicationList *mApplications;
+     * @brief List of applications user has specified
+     *
+     */
+    ApplicationList* mApplications;
 
     /**
-    * @brief Temporary list of applications
-    * This will be copied to actual list of applications (mApplications)
-    * when user clicks ok.
-    */
-    ApplicationList *mTempApplications;
+     * @brief Temporary list of applications
+     * This will be copied to actual list of applications (mApplications)
+     * when user clicks ok.
+     */
+    ApplicationList* mTempApplications;
 
     /**
-    * @brief List of translations.
-    *
-    */
-    TranslationHandler *mTranslator;
+     * @brief List of translations.
+     *
+     */
+    TranslationHandler* mTranslator;
 
     /**
-    * @brief Dialog from UI designer
-    *
-    */
+     * @brief Dialog from UI designer
+     *
+     */
     Ui::Settings mUI;
+
 private:
     void manageStyleControls();
 

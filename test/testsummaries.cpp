@@ -16,27 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "summaries.h"
 #include "testsuite.h"
 
 #include "settings.h"
 #include "tokenize.h"
 
-
 class TestSummaries : public TestFixture {
 public:
     TestSummaries() : TestFixture("TestSummaries") {}
 
 private:
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
 
         TEST_CASE(createSummaries1);
         TEST_CASE(createSummariesGlobal);
         TEST_CASE(createSummariesNoreturn);
     }
 
-    std::string createSummaries(const char code[], const char filename[] = "test.cpp") {
+    std::string createSummaries(const char code[], const char filename[] = "test.cpp")
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -48,15 +48,12 @@ private:
         return Summaries::create(&tokenizer, "");
     }
 
-    void createSummaries1() {
-        ASSERT_EQUALS("foo\n", createSummaries("void foo() {}"));
-    }
+    void createSummaries1() { ASSERT_EQUALS("foo\n", createSummaries("void foo() {}")); }
 
-    void createSummariesGlobal() {
-        ASSERT_EQUALS("foo global:[x]\n", createSummaries("int x; void foo() { x=0; }"));
-    }
+    void createSummariesGlobal() { ASSERT_EQUALS("foo global:[x]\n", createSummaries("int x; void foo() { x=0; }")); }
 
-    void createSummariesNoreturn() {
+    void createSummariesNoreturn()
+    {
         ASSERT_EQUALS("foo call:[bar] noreturn:[bar]\n", createSummaries("void foo() { bar(); }"));
     }
 };

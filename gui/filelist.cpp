@@ -24,11 +24,17 @@
 QStringList FileList::getDefaultFilters()
 {
     QStringList extensions;
-    extensions << "*.cpp" << "*.cxx" << "*.cc" << "*.c" << "*.c++" << "*.txx" << "*.tpp";
+    extensions << "*.cpp"
+               << "*.cxx"
+               << "*.cc"
+               << "*.c"
+               << "*.c++"
+               << "*.txx"
+               << "*.tpp";
     return extensions;
 }
 
-bool FileList::filterMatches(const QFileInfo &inf)
+bool FileList::filterMatches(const QFileInfo& inf)
 {
     if (inf.isFile()) {
         const QStringList filters = FileList::getDefaultFilters();
@@ -40,14 +46,14 @@ bool FileList::filterMatches(const QFileInfo &inf)
     return false;
 }
 
-void FileList::addFile(const QString &filepath)
+void FileList::addFile(const QString& filepath)
 {
     QFileInfo inf(filepath);
     if (filterMatches(inf))
         mFileList << inf;
 }
 
-void FileList::addDirectory(const QString &directory, bool recursive)
+void FileList::addDirectory(const QString& directory, bool recursive)
 {
     QDir dir(directory);
     dir.setSorting(QDir::Name);
@@ -74,7 +80,7 @@ void FileList::addDirectory(const QString &directory, bool recursive)
     }
 }
 
-void FileList::addPathList(const QStringList &paths)
+void FileList::addPathList(const QStringList& paths)
 {
     QString path;
     foreach (path, paths) {
@@ -100,15 +106,12 @@ QStringList FileList::getFileList() const
     }
 }
 
-void FileList::addExcludeList(const QStringList &paths)
-{
-    mExcludedPaths = paths;
-}
+void FileList::addExcludeList(const QStringList& paths) { mExcludedPaths = paths; }
 
-static std::vector<std::string> toStdStringList(const QStringList &stringList)
+static std::vector<std::string> toStdStringList(const QStringList& stringList)
 {
     std::vector<std::string> ret;
-    foreach (const QString &s, stringList) {
+    foreach (const QString& s, stringList) {
         ret.push_back(s.toStdString());
     }
     return ret;

@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
 #ifndef checkunusedfunctionsH
 #define checkunusedfunctionsH
@@ -42,15 +41,15 @@ class Tokenizer;
 class CPPCHECKLIB CheckUnusedFunctions : public Check {
 public:
     /** @brief This constructor is used when registering the CheckUnusedFunctions */
-    CheckUnusedFunctions() : Check(myName()) {
-    }
+    CheckUnusedFunctions() : Check(myName()) {}
 
     /** @brief This constructor is used when running checks. */
-    CheckUnusedFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+    CheckUnusedFunctions(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger)
+    {}
 
-    static void clear() {
+    static void clear()
+    {
         instance.mFunctions.clear();
         instance.mFunctionCalls.clear();
     }
@@ -58,63 +57,63 @@ public:
     // Parse current tokens and determine..
     // * Check what functions are used
     // * What functions are declared
-    void parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings);
+    void parseTokens(const Tokenizer& tokenizer, const char FileName[], const Settings* settings);
 
     // Return true if an error is reported.
-    bool check(ErrorLogger * const errorLogger, const Settings& settings);
+    bool check(ErrorLogger* const errorLogger, const Settings& settings);
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const OVERRIDE;
+    Check::FileInfo* getFileInfo(const Tokenizer* tokenizer, const Settings* settings) const OVERRIDE;
 
     /** @brief Analyse all file infos for all TU */
-    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) OVERRIDE;
+    bool analyseWholeProgram(const CTU::FileInfo* ctu,
+                             const std::list<Check::FileInfo*>& fileInfo,
+                             const Settings& settings,
+                             ErrorLogger& errorLogger) OVERRIDE;
 
     static CheckUnusedFunctions instance;
 
     std::string analyzerInfo() const;
 
     /** @brief Combine and analyze all analyzerInfos for all TUs */
-    static void analyseWholeProgram(ErrorLogger * const errorLogger, const std::string &buildDir);
+    static void analyseWholeProgram(ErrorLogger* const errorLogger, const std::string& buildDir);
 
 private:
-
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings * /*settings*/) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* /*settings*/) const OVERRIDE
+    {
         CheckUnusedFunctions::unusedFunctionError(errorLogger, emptyString, 0, "funcName");
     }
 
-    void runChecks(const Tokenizer * /*tokenizer*/, const Settings * /*settings*/, ErrorLogger * /*errorLogger*/) OVERRIDE {}
+    void runChecks(const Tokenizer* /*tokenizer*/, const Settings* /*settings*/, ErrorLogger* /*errorLogger*/) OVERRIDE
+    {}
 
     /**
      * Dummy implementation, just to provide error for --errorlist
      */
-    static void unusedFunctionError(ErrorLogger * const errorLogger,
-                                    const std::string &filename, unsigned int lineNumber,
-                                    const std::string &funcname);
+    static void unusedFunctionError(ErrorLogger* const errorLogger,
+                                    const std::string& filename,
+                                    unsigned int lineNumber,
+                                    const std::string& funcname);
 
-    static std::string myName() {
-        return "Unused functions";
-    }
+    static std::string myName() { return "Unused functions"; }
 
-    std::string classInfo() const OVERRIDE {
-        return "Check for functions that are never called\n";
-    }
+    std::string classInfo() const OVERRIDE { return "Check for functions that are never called\n"; }
 
     class CPPCHECKLIB FunctionUsage {
     public:
-        FunctionUsage() : lineNumber(0), usedSameFile(false), usedOtherFile(false) {
-        }
+        FunctionUsage() : lineNumber(0), usedSameFile(false), usedOtherFile(false) {}
 
         std::string filename;
         unsigned int lineNumber;
-        bool   usedSameFile;
-        bool   usedOtherFile;
+        bool usedSameFile;
+        bool usedOtherFile;
     };
 
     std::map<std::string, FunctionUsage> mFunctions;
 
     class CPPCHECKLIB FunctionDecl {
     public:
-        explicit FunctionDecl(const Function *f);
+        explicit FunctionDecl(const Function* f);
         std::string functionName;
         unsigned int lineNumber;
     };

@@ -51,9 +51,9 @@ public:
     /**
      * @brief Constructor.
      */
-    CppCheck(ErrorLogger &errorLogger,
+    CppCheck(ErrorLogger& errorLogger,
              bool useGlobalSuppressions,
-             std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand);
+             std::function<bool(std::string, std::vector<std::string>, std::string, std::string*)> executeCommand);
 
     /**
      * @brief Destructor.
@@ -67,40 +67,40 @@ public:
      */
 
     /**
-      * @brief Check the file.
-      * This function checks one given file for errors.
-      * @param path Path to the file to check.
-      * @return amount of errors found or 0 if none were found.
-      * @note You must set settings before calling this function (by calling
-      *  settings()).
-      */
-    unsigned int check(const std::string &path);
-    unsigned int check(const ImportProject::FileSettings &fs);
+     * @brief Check the file.
+     * This function checks one given file for errors.
+     * @param path Path to the file to check.
+     * @return amount of errors found or 0 if none were found.
+     * @note You must set settings before calling this function (by calling
+     *  settings()).
+     */
+    unsigned int check(const std::string& path);
+    unsigned int check(const ImportProject::FileSettings& fs);
 
     /**
-      * @brief Check the file.
-      * This function checks one "virtual" file. The file is not read from
-      * the disk but the content is given in @p content. In errors the @p path
-      * is used as a filename.
-      * @param path Path to the file to check.
-      * @param content File content as a string.
-      * @return amount of errors found or 0 if none were found.
-      * @note You must set settings before calling this function (by calling
-      *  settings()).
-      */
-    unsigned int check(const std::string &path, const std::string &content);
+     * @brief Check the file.
+     * This function checks one "virtual" file. The file is not read from
+     * the disk but the content is given in @p content. In errors the @p path
+     * is used as a filename.
+     * @param path Path to the file to check.
+     * @param content File content as a string.
+     * @return amount of errors found or 0 if none were found.
+     * @note You must set settings before calling this function (by calling
+     *  settings()).
+     */
+    unsigned int check(const std::string& path, const std::string& content);
 
     /**
      * @brief Get reference to current settings.
      * @return a reference to current settings
      */
-    Settings &settings();
+    Settings& settings();
 
     /**
      * @brief Returns current version number as a string.
      * @return version, e.g. "1.38"
      */
-    static const char * version();
+    static const char* version();
 
     /**
      * @brief Returns extra version info as a string.
@@ -108,9 +108,12 @@ public:
      * time/date etc.
      * @return extra version info, e.g. "04d42151" (Git commit id).
      */
-    static const char * extraVersion();
+    static const char* extraVersion();
 
-    virtual void reportStatus(unsigned int fileindex, unsigned int filecount, std::size_t sizedone, std::size_t sizetotal);
+    virtual void reportStatus(unsigned int fileindex,
+                              unsigned int filecount,
+                              std::size_t sizedone,
+                              std::size_t sizetotal);
 
     /**
      * @brief Call all "getErrorMessages" in all registered Check classes.
@@ -118,12 +121,10 @@ public:
      */
     void getErrorMessages();
 
-    void tooManyConfigsError(const std::string &file, const int numberOfConfigurations);
-    void purgedConfigurationMessage(const std::string &file, const std::string& configuration);
+    void tooManyConfigsError(const std::string& file, const int numberOfConfigurations);
+    void purgedConfigurationMessage(const std::string& file, const std::string& configuration);
 
-    void dontSimplify() {
-        mSimplify = false;
-    }
+    void dontSimplify() { mSimplify = false; }
 
     /** Analyse whole program, run this after all TUs has been scanned.
      * This is deprecated and the plan is to remove this when
@@ -133,10 +134,10 @@ public:
     bool analyseWholeProgram();
 
     /** Analyze all files using clang-tidy */
-    void analyseClangTidy(const ImportProject::FileSettings &fileSettings);
+    void analyseClangTidy(const ImportProject::FileSettings& fileSettings);
 
     /** analyse whole program use .analyzeinfo files */
-    void analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files);
+    void analyseWholeProgram(const std::string& buildDir, const std::map<std::string, std::size_t>& files);
 
     /** Check if the user wants to check for unused functions
      * and if it's possible at all */
@@ -144,10 +145,10 @@ public:
 
 private:
     /** Are there "simple" rules */
-    bool hasRule(const std::string &tokenlist) const;
+    bool hasRule(const std::string& tokenlist) const;
 
     /** @brief There has been an internal error => Report information message */
-    void internalError(const std::string &filename, const std::string &msg);
+    void internalError(const std::string& filename, const std::string& msg);
 
     /**
      * @brief Check a file using stream
@@ -156,37 +157,37 @@ private:
      * @param fileStream stream the file content can be read from
      * @return number of errors found
      */
-    unsigned int checkFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream);
+    unsigned int checkFile(const std::string& filename, const std::string& cfgname, std::istream& fileStream);
 
     /**
      * @brief Check raw tokens
      * @param tokenizer tokenizer instance
      */
-    void checkRawTokens(const Tokenizer &tokenizer);
+    void checkRawTokens(const Tokenizer& tokenizer);
 
     /**
      * @brief Check normal tokens
      * @param tokenizer tokenizer instance
      */
-    void checkNormalTokens(const Tokenizer &tokenizer);
+    void checkNormalTokens(const Tokenizer& tokenizer);
 
     /**
      * Execute addons
      */
     void executeAddons(const std::vector<std::string>& files);
-    void executeAddons(const std::string &dumpFile);
+    void executeAddons(const std::string& dumpFile);
 
     /**
      * Execute addons
      */
-    void executeAddonsWholeProgram(const std::map<std::string, std::size_t> &files);
+    void executeAddonsWholeProgram(const std::map<std::string, std::size_t>& files);
 
     /**
      * @brief Execute rules, if any
      * @param tokenlist token list to use (normal / simple)
      * @param tokenizer tokenizer
      */
-    void executeRules(const std::string &tokenlist, const Tokenizer &tokenizer);
+    void executeRules(const std::string& tokenlist, const Tokenizer& tokenizer);
 
     /**
      * @brief Errors and warnings are directed here.
@@ -195,28 +196,28 @@ private:
      * "[filepath:line number] Message", e.g.
      * "[main.cpp:4] Uninitialized member variable"
      */
-    void reportErr(const ErrorMessage &msg) OVERRIDE;
+    void reportErr(const ErrorMessage& msg) OVERRIDE;
 
     /**
      * @brief Information about progress is directed here.
      *
      * @param outmsg Message to show, e.g. "Checking main.cpp..."
      */
-    void reportOut(const std::string &outmsg, Color c = Color::Reset) OVERRIDE;
+    void reportOut(const std::string& outmsg, Color c = Color::Reset) OVERRIDE;
 
-    void bughuntingReport(const std::string &str) OVERRIDE;
+    void bughuntingReport(const std::string& str) OVERRIDE;
 
     std::list<std::string> mErrorList;
     Settings mSettings;
 
-    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) OVERRIDE;
+    void reportProgress(const std::string& filename, const char stage[], const std::size_t value) OVERRIDE;
 
     /**
      * Output information messages.
      */
-    void reportInfo(const ErrorMessage &msg) OVERRIDE;
+    void reportInfo(const ErrorMessage& msg) OVERRIDE;
 
-    ErrorLogger &mErrorLogger;
+    ErrorLogger& mErrorLogger;
 
     /** @brief Current preprocessor configuration */
     std::string mCurrentConfig;
@@ -239,7 +240,7 @@ private:
     AnalyzerInformation mAnalyzerInformation;
 
     /** Callback for executing a shell command (exe, args, output) */
-    std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> mExecuteCommand;
+    std::function<bool(std::string, std::vector<std::string>, std::string, std::string*)> mExecuteCommand;
 };
 
 /// @}

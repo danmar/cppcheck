@@ -18,13 +18,9 @@
 
 #include "platforms.h"
 
-Platforms::Platforms(QObject *parent)
-    : QObject(parent)
-{
-    init();
-}
+Platforms::Platforms(QObject* parent) : QObject(parent) { init(); }
 
-void Platforms::add(const QString &title, Settings::PlatformType platform)
+void Platforms::add(const QString& title, Settings::PlatformType platform)
 {
     Platform plat;
     plat.mTitle = title;
@@ -42,10 +38,7 @@ void Platforms::init()
     add(tr("Windows 64-bit"), Settings::Win64);
 }
 
-int Platforms::getCount() const
-{
-    return mPlatforms.count();
-}
+int Platforms::getCount() const { return mPlatforms.count(); }
 
 Platform& Platforms::get(Settings::PlatformType platform)
 {

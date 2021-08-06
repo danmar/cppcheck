@@ -26,45 +26,43 @@
 /// @addtogroup GUI
 /// @{
 
-
 /**
-* @brief Text file report.
-* This report mimics the output of the command line cppcheck.
-*/
+ * @brief Text file report.
+ * This report mimics the output of the command line cppcheck.
+ */
 class TxtReport : public Report {
     Q_OBJECT
 
 public:
-    explicit TxtReport(const QString &filename);
+    explicit TxtReport(const QString& filename);
     virtual ~TxtReport();
 
     /**
-    * @brief Create the report (file).
-    * @return true if succeeded, false if file could not be created.
-    */
+     * @brief Create the report (file).
+     * @return true if succeeded, false if file could not be created.
+     */
     virtual bool create() override;
 
     /**
-    * @brief Write report header.
-    */
+     * @brief Write report header.
+     */
     virtual void writeHeader() override;
 
     /**
-    * @brief Write report footer.
-    */
+     * @brief Write report footer.
+     */
     virtual void writeFooter() override;
 
     /**
-    * @brief Write error to report.
-    * @param error Error data.
-    */
-    virtual void writeError(const ErrorItem &error) override;
+     * @brief Write error to report.
+     * @param error Error data.
+     */
+    virtual void writeError(const ErrorItem& error) override;
 
 private:
-
     /**
-    * @brief Text stream writer for writing the report in text format.
-    */
+     * @brief Text stream writer for writing the report in text format.
+     */
     QTextStream mTxtWriter;
 };
 /// @}

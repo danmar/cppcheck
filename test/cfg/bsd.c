@@ -1,7 +1,8 @@
 // Test library configuration for bsd.cfg
 //
 // Usage:
-// $ cppcheck --library=bsd --check-library --enable=information --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/bsd.c
+// $ cppcheck --library=bsd --check-library --enable=information --error-exitcode=1 --suppress=missingIncludeSystem
+// --inline-suppr test/cfg/bsd.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -33,7 +34,7 @@ void uninitvar_timercmp(struct timeval t)
 
 void nullPointer_timercmp(struct timeval t)
 {
-    struct timeval *p=0;
+    struct timeval* p = 0;
     // cppcheck-suppress nullPointer
     (void)timercmp(&t, p, <);
     // cppcheck-suppress nullPointer
@@ -43,22 +44,22 @@ void nullPointer_timercmp(struct timeval t)
 }
 
 // size_t strlcat(char *dst, const char *src, size_t size);
-void uninitvar_strlcat(char *Ct, const char *S, size_t N)
+void uninitvar_strlcat(char* Ct, const char* S, size_t N)
 {
-    char *ct;
-    char *s;
+    char* ct;
+    char* s;
     size_t n1, n2;
     // cppcheck-suppress uninitvar
-    (void)strlcat(ct,s,n1);
+    (void)strlcat(ct, s, n1);
     // cppcheck-suppress uninitvar
-    (void)strlcat(ct,S,N);
+    (void)strlcat(ct, S, N);
     // cppcheck-suppress uninitvar
-    (void)strlcat(Ct,s,N);
+    (void)strlcat(Ct, s, N);
     // cppcheck-suppress uninitvar
-    (void)strlcat(Ct,S,n2);
+    (void)strlcat(Ct, S, n2);
 
     // no warning is expected for
-    (void)strlcat(Ct,S,N);
+    (void)strlcat(Ct, S, N);
 }
 
 void bufferAccessOutOfBounds(void)
@@ -81,9 +82,9 @@ void ignoredReturnValue(void)
 void invalidFunctionArg()
 {
     // cppcheck-suppress invalidFunctionArg
-    (void) arc4random_uniform(1);
+    (void)arc4random_uniform(1);
     // valid
-    (void) arc4random_uniform(2);
+    (void)arc4random_uniform(2);
 }
 
 void nullPointer(void)
@@ -97,5 +98,5 @@ void uninitvar(void)
     uint32_t uint32Uninit;
 
     // cppcheck-suppress uninitvar
-    (void) arc4random_uniform(uint32Uninit);
+    (void)arc4random_uniform(uint32Uninit);
 }

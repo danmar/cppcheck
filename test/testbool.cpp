@@ -16,27 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "checkbool.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
-
 class TestBool : public TestFixture {
 public:
-    TestBool() : TestFixture("TestBool") {
-    }
+    TestBool() : TestFixture("TestBool") {}
 
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() OVERRIDE
+    {
         settings.severity.enable(Severity::style);
         settings.severity.enable(Severity::warning);
         settings.certainty.enable(Certainty::inconclusive);
 
-        TEST_CASE(bitwiseOnBoolean);      // if (bool & bool)
+        TEST_CASE(bitwiseOnBoolean); // if (bool & bool)
         TEST_CASE(incrementBoolean);
         TEST_CASE(assignBoolToPointer);
         TEST_CASE(assignBoolToFloat);
@@ -76,7 +74,8 @@ private:
         TEST_CASE(returnNonBoolClass);
     }
 
-    void check(const char code[], bool experimental = false, const char filename[] = "test.cpp") {
+    void check(const char code[], bool experimental = false, const char filename[] = "test.cpp")
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -92,8 +91,8 @@ private:
         checkBool.runChecks(&tokenizer, &settings, this);
     }
 
-
-    void assignBoolToPointer() {
+    void assignBoolToPointer()
+    {
         check("void foo(bool *p) {\n"
               "    p = false;\n"
               "}");
@@ -152,7 +151,9 @@ private:
               "  const int *rmat = n < 4 ? " /* OK */
               "                       ctx->q_intra_matrix :"
               "                       ctx->q_chroma_intra_matrix;\n"
-              "}", /*experimental=*/false, "test.c");
+              "}",
+              /*experimental=*/false,
+              "test.c");
         ASSERT_EQUALS("[test.c:3]: (error) Boolean value assigned to pointer.\n", errout.str());
 
         // ticket #6588 (c++ mode)
@@ -171,7 +172,9 @@ private:
               "  char* m1 = compare(a, b) < 0\n"
               "      ? (compare(b, c) < 0 ? b : (compare(a, c) < 0 ? c : a))\n"
               "      : (compare(a, c) < 0 ? a : (compare(b, c) < 0 ? c : b));\n"
-              "}", /*experimental=*/false, "test.c");
+              "}",
+              /*experimental=*/false,
+              "test.c");
         ASSERT_EQUALS("", errout.str());
 
         // #7381
@@ -182,7 +185,8 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (error) Boolean value assigned to pointer.\n", errout.str());
     }
 
-    void assignBoolToFloat() {
+    void assignBoolToFloat()
+    {
         check("void foo1() {\n"
               "    double d = false;\n"
               "}");
@@ -223,12 +227,14 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (style) Boolean value assigned to floating point variable.\n", errout.str());
     }
 
-    void comparisonOfBoolExpressionWithInt1() {
+    void comparisonOfBoolExpressionWithInt1()
+    {
         check("void f(int x) {\n"
               "    if ((x && 0x0f)==6)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if ((x && 0x0f)==0)\n"
@@ -240,7 +246,8 @@ private:
               "    if ((x || 0x0f)==6)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if ((x || 0x0f)==0)\n"
@@ -260,31 +267,33 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-
         check("void f(int x) {\n"
               "    if ((5 && x)==3)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if ((5 && x)==3 || (8 && x)==9)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if ((5 && x)!=3)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
-
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if ((5 && x) > 3)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if ((5 && x) > 0)\n"
@@ -295,8 +304,7 @@ private:
         check("void f(int x) {\n"
               "    if ((5 && x) < 0)\n"
               "        a++;\n"
-              "}"
-             );
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
 
         check("void f(int x) {\n"
@@ -308,10 +316,8 @@ private:
         check("void f(int x) {\n"
               "    if ((5 && x) > 1)\n"
               "        a++;\n"
-              "}"
-             );
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
-
 
         check("void f(int x) {\n"
               "    if (0 < (5 && x))\n"
@@ -322,8 +328,7 @@ private:
         check("void f(int x) {\n"
               "    if (0 > (5 && x))\n"
               "        a++;\n"
-              "}"
-             );
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
 
         check("void f(int x) {\n"
@@ -335,57 +340,72 @@ private:
         check("void f(int x) {\n"
               "    if (1 < (5 && x))\n"
               "        a++;\n"
-              "}"
-             );
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
 
         check("void f(bool x ) {\n"
               "  if ( x > false )\n"
               "      a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n",
+            errout.str());
 
         check("void f(bool x ) {\n"
               "  if ( false < x )\n"
               "      a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n",
+            errout.str());
 
         check("void f(bool x ) {\n"
               "  if ( x < false )\n"
               "      a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n",
+            errout.str());
 
         check("void f(bool x ) {\n"
               "  if ( false > x )\n"
               "      a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n",
+            errout.str());
 
         check("void f(bool x ) {\n"
               "  if ( x >= false )\n"
               "      a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n",
+            errout.str());
 
         check("void f(bool x ) {\n"
               "  if ( false >= x )\n"
               "      a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n",
+            errout.str());
 
         check("void f(bool x ) {\n"
               "  if ( x <= false )\n"
               "      a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n",
+            errout.str());
 
         check("void f(bool x ) {\n"
               "  if ( false <= x )\n"
               "      a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n",
+            errout.str());
 
         check("typedef int (*func)(bool invert);\n"
               "void x(int, func f);\n"
@@ -395,29 +415,32 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("int f() { return !a+b<c; }"); // #5072
-        ASSERT_EQUALS("",errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("int f() { return (!a+b<c); }");
-        ASSERT_EQUALS("",errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("int f() { return (a+(b<5)<=c); }");
-        ASSERT_EQUALS("",errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolExpressionWithInt2() {
+    void comparisonOfBoolExpressionWithInt2()
+    {
         check("void f(int x) {\n"
               "    if (!x == 10) {\n"
               "        printf(\"x not equal to 10\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (!x != 10) {\n"
               "        printf(\"x not equal to 10\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (x != 10) {\n"
@@ -431,14 +454,16 @@ private:
               "        printf(\"x not equal to 10\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",
+                      errout.str());
 
         check("void f(int x) {\n"
               "    if (10 != !x) {\n"
               "        printf(\"x not equal to 10\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",
+                      errout.str());
 
         check("void f(int x, int y) {\n"
               "    if (y != !x) {\n"
@@ -472,31 +497,34 @@ private:
         TODO_ASSERT_EQUALS("error", "", errout.str());
 
         check("void f() { if (!!a+!!b+!!c>1){} }");
-        ASSERT_EQUALS("",errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f(int a, int b, int c) { if (a != !b || c) {} }");
-        ASSERT_EQUALS("",errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f(int a, int b, int c) { if (1 < !!a + !!b + !!c) {} }");
-        ASSERT_EQUALS("",errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f(int a, int b, int c) { if (1 < !(a+b)) {} }");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Comparison of a boolean expression with an integer.\n",errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
     }
 
-    void comparisonOfBoolExpressionWithInt3() {
+    void comparisonOfBoolExpressionWithInt3()
+    {
         check("int f(int x) {\n"
               "    return t<0>() && x;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolExpressionWithInt4() {
+    void comparisonOfBoolExpressionWithInt4()
+    {
         // #5016
         check("void f() {\n"
               "  for(int i = 4; i > -1 < 5 ; --i) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",
+                      errout.str());
 
         check("void f(int a, int b, int c) {\n"
               "  return (a > b) < c;\n"
@@ -537,10 +565,12 @@ private:
         check("int f() {\n"
               "  return (a < b) != 42U;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",
+                      errout.str());
     }
 
-    void checkComparisonOfFuncReturningBool1() {
+    void checkComparisonOfFuncReturningBool1()
+    {
         check("void f(){\n"
               "     int temp = 4;\n"
               "     if(compare1(temp) > compare2(temp)){\n"
@@ -561,10 +591,13 @@ private:
               "     else\n"
               "         return true;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n",
+            errout.str());
     }
 
-    void checkComparisonOfFuncReturningBool2() {
+    void checkComparisonOfFuncReturningBool2()
+    {
         check("void leftOfComparison(){\n"
               " int temp = 4;\n"
               " bool a = true;\n"
@@ -586,11 +619,14 @@ private:
               "    else\n"
               "     return false;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n"
-                      "[test.cpp:11]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n"
+            "[test.cpp:11]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n",
+            errout.str());
     }
 
-    void checkComparisonOfFuncReturningBool3() {
+    void checkComparisonOfFuncReturningBool3()
+    {
         check("void f(){\n"
               " int temp = 4;\n"
               " if(compare(temp) > temp){\n"
@@ -598,11 +634,14 @@ private:
               "   }\n"
               "}\n"
               "bool compare(int temp);");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n"
-                      "[test.cpp:3]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n"
+            "[test.cpp:3]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n",
+            errout.str());
     }
 
-    void checkComparisonOfFuncReturningBool4() {
+    void checkComparisonOfFuncReturningBool4()
+    {
         check("void f(){\n"
               "   int temp = 4;\n"
               " bool b = compare2(6);\n"
@@ -624,10 +663,13 @@ private:
               " else\n"
               "     return false;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n",
+            errout.str());
     }
 
-    void checkComparisonOfFuncReturningBool5() {
+    void checkComparisonOfFuncReturningBool5()
+    {
         check("void f(){\n"
               "     int temp = 4;\n"
               "     if(compare1(temp) > !compare2(temp)){\n"
@@ -648,10 +690,13 @@ private:
               "     else\n"
               "         return true;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n",
+            errout.str());
     }
 
-    void checkComparisonOfFuncReturningBool6() {
+    void checkComparisonOfFuncReturningBool6()
+    {
         check("int compare1(int temp);\n"
               "namespace Foo {\n"
               "    bool compare1(int temp);\n"
@@ -686,7 +731,9 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:6]: (style) Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n",
+            errout.str());
 
         check("int compare1(int temp);\n"
               "namespace Foo {\n"
@@ -710,7 +757,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkComparisonOfFuncReturningBoolIntegrationTest1() { // #7798
+    void checkComparisonOfFuncReturningBoolIntegrationTest1()
+    { // #7798
         check("bool eval(double *) { return false; }\n"
               "double eval(char *) { return 1.0; }\n"
               "int main(int argc, char *argv[])\n"
@@ -722,7 +770,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkComparisonOfBoolWithBool() {
+    void checkComparisonOfBoolWithBool()
+    {
         const char code[] = "void f(){\n"
                             "    int temp = 4;\n"
                             "    bool b = compare2(6);\n"
@@ -746,70 +795,95 @@ private:
                             "        return false;\n"
                             "}\n";
         check(code, true);
-        ASSERT_EQUALS("[test.cpp:5]: (style) Comparison of a variable having boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5]: (style) Comparison of a variable having boolean value using relational (<, >, <= or >=) operator.\n",
+            errout.str());
         check(code, false);
         ASSERT_EQUALS("", errout.str());
     }
 
-    void bitwiseOnBoolean() { // 3062
+    void bitwiseOnBoolean()
+    { // 3062
         check("void f(_Bool a, _Bool b) {\n"
               "    if(a & b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '&&'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '&&'?\n",
+            errout.str());
 
         check("void f(_Bool a, _Bool b) {\n"
               "    if(a | b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '||'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '||'?\n",
+            errout.str());
 
         check("void f(bool a, bool b) {\n"
               "    if(a & !b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '&&'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '&&'?\n",
+            errout.str());
 
         check("void f(bool a, bool b) {\n"
               "    if(a | !b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '||'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '||'?\n",
+            errout.str());
 
         check("bool a, b;\n"
               "void f() {\n"
               "    if(a & b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '&&'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '&&'?\n",
+            errout.str());
 
         check("bool a, b;\n"
               "void f() {\n"
               "    if(a & !b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '&&'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '&&'?\n",
+            errout.str());
 
         check("bool a, b;\n"
               "void f() {\n"
               "    if(a | b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '||'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '||'?\n",
+            errout.str());
 
         check("bool a, b;\n"
               "void f() {\n"
               "    if(a | !b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '||'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '||'?\n",
+            errout.str());
 
         check("void f(bool a, int b) {\n"
               "    if(a & b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '&&'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '&&'?\n",
+            errout.str());
 
         check("void f(int a, bool b) {\n"
               "    if(a & b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean expression 'b' is used in bitwise operation. Did you mean '&&'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style, inconclusive) Boolean expression 'b' is used in bitwise operation. Did you mean '&&'?\n",
+            errout.str());
 
         check("void f(int a, int b) {\n"
               "    if((a > 0) & (b < 0)) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean expression 'a>0' is used in bitwise operation. Did you mean '&&'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style, inconclusive) Boolean expression 'a>0' is used in bitwise operation. Did you mean '&&'?\n",
+            errout.str());
 
         check("void f(int a, int b) {\n"
               "    if(a & b) {}\n"
@@ -827,25 +901,34 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void incrementBoolean() {
+    void incrementBoolean()
+    {
         check("bool bValue = true;\n"
               "void f() { bValue++; }");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n",
+            errout.str());
 
         check("void f(bool test){\n"
               "    test++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n",
+            errout.str());
 
         check("void f(bool* test){\n"
               "    (*test)++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n",
+            errout.str());
 
         check("void f(bool* test){\n"
               "    test[0]++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style) Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n",
+            errout.str());
 
         check("void f(int test){\n"
               "    test++;\n"
@@ -853,20 +936,23 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolWithInt1() {
+    void comparisonOfBoolWithInt1()
+    {
         check("void f(bool x) {\n"
               "    if (x < 10) {\n"
               "        printf(\"foo\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",
+                      errout.str());
 
         check("void f(bool x) {\n"
               "    if (10 >= x) {\n"
               "        printf(\"foo\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",
+                      errout.str());
 
         check("void f(bool x) {\n"
               "    if (x != 0) {\n"
@@ -875,7 +961,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f(bool x) {\n"  // #3356
+        check("void f(bool x) {\n" // #3356
               "    if (x == 1) {\n"
               "    }\n"
               "}");
@@ -886,14 +972,16 @@ private:
               "        printf(\"foo\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",
+                      errout.str());
 
         check("void f(bool x) {\n"
               "    if (x == 10) {\n"
               "        printf(\"foo\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",
+                      errout.str());
 
         check("void f(bool x) {\n"
               "    if (x == 0) {\n"
@@ -906,7 +994,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolWithInt2() {
+    void comparisonOfBoolWithInt2()
+    {
         check("void f(bool x, int y) {\n"
               "    if (x == y) {\n"
               "        printf(\"foo\");\n"
@@ -936,13 +1025,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolWithInt3() {
+    void comparisonOfBoolWithInt3()
+    {
         check("void f(int y) {\n"
               "    if (y > false) {\n"
               "        printf(\"foo\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).\n",
+            errout.str());
 
         check("void f(int y) {\n"
               "    if (true == y) {\n"
@@ -963,17 +1055,20 @@ private:
               "        printf(\"foo\");\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer other than 0 or 1.\n",
+                      errout.str());
     }
 
-    void comparisonOfBoolWithInt4() {
+    void comparisonOfBoolWithInt4()
+    {
         check("void f(int x) {\n"
               "    if (!x == 1) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolWithInt5() {
+    void comparisonOfBoolWithInt5()
+    {
         check("void SetVisible(int index, bool visible) {\n"
               "    bool (SciTEBase::*ischarforsel)(char ch);\n"
               "    if (visible != GetVisible(index)) { }\n"
@@ -981,21 +1076,24 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolWithInt6() { // #4224 - integer is casted to bool
+    void comparisonOfBoolWithInt6()
+    { // #4224 - integer is casted to bool
         check("void SetVisible(bool b, int i) {\n"
               "    if (b == (bool)i) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolWithInt7() { // #4846 - (!x==true)
+    void comparisonOfBoolWithInt7()
+    { // #4846 - (!x==true)
         check("void f(int x) {\n"
               "    if (!x == true) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
-    void comparisonOfBoolWithInt8() { // #9165
+    void comparisonOfBoolWithInt8()
+    { // #9165
         check("bool Fun();\n"
               "void Test(bool expectedResult) {\n"
               "    auto res = Fun();\n"
@@ -1037,7 +1135,8 @@ private:
         TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
-    void comparisonOfBoolWithInt9() { // #9304
+    void comparisonOfBoolWithInt9()
+    { // #9304
         check("bool f(int a, bool b)\n"
               "{\n"
               "    if ((a == 0 ? false : true) != b) {\n"
@@ -1048,40 +1147,53 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-    void pointerArithBool1() { // #5126
+    void pointerArithBool1()
+    { // #5126
         check("void f(char *p) {\n"
               "    if (p+1){}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n",
+            errout.str());
 
         check("void f(char *p) {\n"
               "    do {} while (p+1);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n",
+            errout.str());
 
         check("void f(char *p) {\n"
               "    while (p-1) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n",
+            errout.str());
 
         check("void f(char *p) {\n"
               "    for (int i = 0; p+1; i++) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n",
+            errout.str());
 
         check("void f(char *p) {\n"
               "    if (p && p+1){}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n",
+            errout.str());
 
         check("void f(char *p) {\n"
               "    if (p+2 || p) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (error) Converting pointer arithmetic result to bool. The bool is always true unless there is undefined behaviour.\n",
+            errout.str());
     }
 
-    void returnNonBool() {
+    void returnNonBool()
+    {
         check("bool f(void) {\n"
               "    return 0;\n"
               "}");
@@ -1146,7 +1258,8 @@ private:
               "    return 4;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Non-boolean value returned from function returning bool\n"
-                      "[test.cpp:4]: (style) Non-boolean value returned from function returning bool\n", errout.str());
+                      "[test.cpp:4]: (style) Non-boolean value returned from function returning bool\n",
+                      errout.str());
 
         check("bool f(void) {\n"
               "    return;\n"
@@ -1154,7 +1267,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnNonBoolLambda() {
+    void returnNonBoolLambda()
+    {
         check("bool f(void) {\n"
               "    auto x = [](void) { return -1; };\n"
               "    return false;\n"
@@ -1180,7 +1294,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Non-boolean value returned from function returning bool\n", errout.str());
     }
 
-    void returnNonBoolLogicalOp() {
+    void returnNonBoolLogicalOp()
+    {
         check("bool f(int x) {\n"
               "    return x & 0x4;\n"
               "}");
@@ -1197,7 +1312,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnNonBoolClass() {
+    void returnNonBoolClass()
+    {
         check("class X {\n"
               "    public:\n"
               "        bool f() { return -1;}\n"
@@ -1230,7 +1346,8 @@ private:
               "    return -1;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (style) Non-boolean value returned from function returning bool\n"
-                      "[test.cpp:4]: (style) Non-boolean value returned from function returning bool\n", errout.str());
+                      "[test.cpp:4]: (style) Non-boolean value returned from function returning bool\n",
+                      errout.str());
     }
 };
 
