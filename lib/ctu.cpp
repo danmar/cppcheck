@@ -79,9 +79,9 @@ std::string CTU::FileInfo::CallBase::toBaseXmlString() const
 {
     std::ostringstream out;
     out << " " << ATTR_CALL_ID << "=\"" << callId << "\""
-        << " " << ATTR_CALL_FUNCNAME << "=\"" << callFunctionName << "\""
+        << " " << ATTR_CALL_FUNCNAME << "=\"" << ErrorLogger::toxml(callFunctionName) << "\""
         << " " << ATTR_CALL_ARGNR << "=\"" << callArgNr << "\""
-        << " " << ATTR_LOC_FILENAME << "=\"" << location.fileName << "\""
+        << " " << ATTR_LOC_FILENAME << "=\"" << ErrorLogger::toxml(location.fileName) << "\""
         << " " << ATTR_LOC_LINENR << "=\"" << location.lineNumber << "\""
         << " " << ATTR_LOC_COLUMN << "=\"" << location.column << "\"";
     return out.str();
