@@ -4322,7 +4322,7 @@ private:
               "  }\n"
               "  return name;\n"
               "}\n");
-      ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void bufferNotZeroTerminated() {

@@ -1187,7 +1187,7 @@ private:
         ASSERT_EQUALS("2,x is assigned 'y' here.\n"
                       "5,Assuming that condition 'y==32' is not redundant\n"
                       "4,Compound assignment '+=', assigned value is 20\n"
-                      "2,Assignment 'x=y', assigned value is 20\n",
+                      "2,x is assigned 'y' here.\n",
                       getErrorPathForX(code, 3U));
 
         code = "void f1(int x) {\n"
@@ -1206,10 +1206,7 @@ private:
                "  for (x = a; x < 50; x++) {}\n"
                "  b = x;\n"
                "}\n";
-        ASSERT_EQUALS("3,x is assigned 'a' here.\n"
-                      "3,x is incremented', new value is symbolic=a+1\n"
-                      "3,x is incremented', new value is symbolic=a+2\n"
-                      "3,After for loop, x has value 50\n",
+        ASSERT_EQUALS("3,After for loop, x has value 50\n",
                       getErrorPathForX(code, 4U));
     }
 
@@ -6021,6 +6018,17 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
+
+        code = "int f(int i) {\n"
+               "  for(int j = i;;j++) {\n"
+               "    int x = j;\n"
+               "    return x;\n"
+               "  }\n"
+               "  return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, "i", 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, "i", 1));
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, "j", 0));
     }
 };
 

@@ -116,6 +116,7 @@ private:
         TEST_CASE(clarifyCondition8);
 
         TEST_CASE(alwaysTrue);
+        TEST_CASE(alwaysTrueSymbolic);
         TEST_CASE(alwaysTrueInfer);
         TEST_CASE(multiConditionAlwaysTrue);
         TEST_CASE(duplicateCondition);
@@ -2951,6 +2952,13 @@ private:
 
     void alwaysTrue() {
 
+        check("void f(const struct S *s) {\n" //#8196
+              "  int x1 = s->x;\n"
+              "  int x2 = s->x;\n"
+              "  if (x1 == 10 && x2 == 10) {}\n" // <<
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (style) Condition 'x2==10' is always true\n", errout.str());
+
         check("void f ()\n"// #8220
               "{\n"
               "    int a;\n"
@@ -3755,6 +3763,26 @@ private:
               "    return a || ! b || ! a;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition '!a' is always true\n", errout.str());
+    }
+
+    void alwaysTrueSymbolic()
+    {
+        check("void f(const uint32_t x) {\n"
+              "    uint32_t y[1];\n"
+              "    y[0]=x;\n"
+              "    if(x > 0 || y[0] < 42){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (style) Condition 'y[0]<42' is always true\n", errout.str());
+
+        check("struct a {\n"
+              "  a *b() const;\n"
+              "} c;\n"
+              "void d() {\n"
+              "  a *e = nullptr;\n"
+              "  e = c.b();\n"
+              "  if (e) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
