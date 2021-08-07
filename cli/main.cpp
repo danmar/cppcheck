@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
     GetModuleFileNameA(nullptr, exename, sizeof(exename)/sizeof(exename[0])-1);
     argv[0] = exename;
 #endif
-
+// *INDENT-OFF*
 #ifdef NDEBUG
     try {
 #endif
@@ -104,6 +104,7 @@ catch (const InternalError& e) {
 }
 return EXIT_FAILURE;
 #endif
+// *INDENT-ON*
 }
 
 
