@@ -44,7 +44,7 @@ public:
     }
 
     class OurPreprocessor : public Preprocessor {
-public:
+    public:
 
         static std::string expandMacros(const char code[], ErrorLogger *errorLogger = nullptr) {
             std::istringstream istr(code);

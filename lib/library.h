@@ -57,7 +57,7 @@ public:
     enum class ErrorCode { OK, FILE_NOT_FOUND, BAD_XML, UNKNOWN_ELEMENT, MISSING_ATTRIBUTE, BAD_ATTRIBUTE_VALUE, UNSUPPORTED_FORMAT, DUPLICATE_PLATFORM_TYPE, PLATFORM_TYPE_REDEFINED };
 
     class Error {
-public:
+    public:
         Error() : errorcode(ErrorCode::OK) {}
         explicit Error(ErrorCode e) : errorcode(e) {}
         template<typename T>
@@ -203,7 +203,7 @@ public:
     bool isScopeNoReturn(const Token *end, std::string *unknownFunc) const;
 
     class Container {
-public:
+    public:
         Container() :
             type_templateArgNo(-1),
             size_templateArgNo(-1),
@@ -257,7 +257,7 @@ public:
     const Container* detectContainer(const Token* typeStart, bool iterator = false) const;
 
     class ArgumentChecks {
-public:
+    public:
         ArgumentChecks() :
             notbool(false),
             notnull(false),
@@ -279,7 +279,7 @@ public:
         std::string valid;
 
         class IteratorInfo {
-public:
+        public:
             IteratorInfo() : container(0), it(false), first(false), last(false) {}
 
             int container;
@@ -290,7 +290,7 @@ public:
         IteratorInfo iteratorInfo;
 
         class MinSize {
-public:
+        public:
             enum class Type { NONE, STRLEN, ARGVALUE, SIZEOF, MUL, VALUE };
             MinSize(Type t, int a) : type(t), arg(a), arg2(0), value(0) {}
             Type type;
@@ -515,7 +515,7 @@ private:
     Error loadFunction(const tinyxml2::XMLElement * const node, const std::string &name, std::set<std::string> &unknown_elements);
 
     class ExportedFunctions {
-public:
+    public:
         void addPrefix(const std::string& prefix) {
             mPrefixes.insert(prefix);
         }
@@ -529,12 +529,12 @@ public:
             return (mSuffixes.find(suffix) != mSuffixes.end());
         }
 
-private:
+    private:
         std::set<std::string> mPrefixes;
         std::set<std::string> mSuffixes;
     };
     class CodeBlock {
-public:
+    public:
         CodeBlock() : mOffset(0) {}
 
         void setStart(const char* s) {
@@ -562,7 +562,7 @@ public:
             return mBlocks.find(blockName) != mBlocks.end();
         }
 
-private:
+    private:
         std::string mStart;
         std::string mEnd;
         int mOffset;

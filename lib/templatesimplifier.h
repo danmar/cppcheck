@@ -132,7 +132,7 @@ public:
             mFlags = state ? mFlags | flag : mFlags & ~flag;
         }
 
-public:
+    public:
         /**
          * Constructor used for instantiations.
          * \param token template instantiation name token "name<...>"

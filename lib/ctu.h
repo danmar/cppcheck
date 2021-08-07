@@ -37,7 +37,7 @@ class Function;
 /** @brief Whole program analysis (ctu=Cross Translation Unit) */
 namespace CTU {
     class CPPCHECKLIB FileInfo : public Check::FileInfo {
-public:
+    public:
         enum class InvalidValueType { null, uninit, bufferOverflow };
 
         std::string toString() const OVERRIDE;
@@ -63,7 +63,7 @@ public:
         };
 
         class CallBase {
-public:
+        public:
             CallBase() = default;
             CallBase(const std::string &callId, int callArgNr, const std::string &callFunctionName, const Location &loc)
                 : callId(callId), callArgNr(callArgNr), callFunctionName(callFunctionName), location(loc)
@@ -74,13 +74,13 @@ public:
             int callArgNr;
             std::string callFunctionName;
             Location location;
-protected:
+        protected:
             std::string toBaseXmlString() const;
             bool loadBaseFromXml(const tinyxml2::XMLElement *xmlElement);
         };
 
         class FunctionCall : public CallBase {
-public:
+        public:
             std::string callArgumentExpression;
             MathLib::bigint callArgValue;
             ValueFlow::Value::ValueType callValueType;
@@ -92,7 +92,7 @@ public:
         };
 
         class NestedCall : public CallBase {
-public:
+        public:
             NestedCall() = default;
 
             NestedCall(const std::string &myId, nonneg int myArgNr, const std::string &callId, nonneg int callArgnr, const std::string &callFunctionName, const Location &location)

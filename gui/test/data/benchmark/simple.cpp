@@ -1039,7 +1039,7 @@ public:
 
     /** Store information about variable usage */
     class VariableUsage {
-public:
+    public:
         VariableUsage(const Token *name = 0,
                       VariableType type = standard,
                       ScopeInfo *scope = NULL,

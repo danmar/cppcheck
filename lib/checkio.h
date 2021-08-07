@@ -73,7 +73,7 @@ public:
 
 private:
     class ArgumentInfo {
-public:
+    public:
         ArgumentInfo(const Token *arg, const Settings *settings, bool _isCPP);
         ~ArgumentInfo();
 
@@ -93,7 +93,7 @@ public:
         bool address;
         bool isCPP;
 
-private:
+    private:
         ArgumentInfo(const ArgumentInfo &); // not implemented
         ArgumentInfo operator = (const ArgumentInfo &); // not implemented
     };

@@ -77,7 +77,7 @@ namespace ValueFlow {
         }
     };
     class CPPCHECKLIB Value {
-public:
+    public:
         typedef std::pair<const Token *, std::string> ErrorPathItem;
         typedef std::list<ErrorPathItem> ErrorPath;
 

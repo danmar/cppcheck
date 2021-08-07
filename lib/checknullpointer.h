@@ -98,7 +98,7 @@ public:
 
     /* data for multifile checking */
     class MyFileInfo : public Check::FileInfo {
-public:
+    public:
         /** function arguments that are dereferenced without checking if they are null */
         std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
 

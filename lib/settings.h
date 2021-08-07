@@ -268,7 +268,7 @@ public:
 
     /** Rule */
     class CPPCHECKLIB Rule {
-public:
+    public:
         Rule()
             : tokenlist("simple")         // use simple tokenlist
               , id("rule")                // default id
@@ -289,7 +289,7 @@ public:
 
     /** Do not only check how interface is used. Also check that interface is safe. */
     class CPPCHECKLIB SafeChecks {
-public:
+    public:
         SafeChecks() : classes(false), externalFunctions(false), internalFunctions(false), externalVariables(false) {}
 
         static const char XmlRootName[];

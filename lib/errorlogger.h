@@ -65,7 +65,7 @@ public:
      * it is by default converted to native separators.
      */
     class CPPCHECKLIB FileLocation {
-public:
+    public:
         FileLocation()
             : fileIndex(0), line(0), column(0) {}
 
@@ -114,7 +114,7 @@ public:
             mInfo = i;
         }
 
-private:
+    private:
         std::string mOrigFileName;
         std::string mFileName;
         std::string mInfo;

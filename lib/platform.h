@@ -40,7 +40,7 @@ namespace cppcheck {
      * @brief Platform settings
      */
     class CPPCHECKLIB Platform {
-private:
+    private:
         static long long min_value(int bit) {
             if (bit >= 64)
                 return LLONG_MIN;
@@ -52,7 +52,7 @@ private:
                 return (~0ULL) >> 1;
             return (1LL << (bit-1)) - 1LL;
         }
-public:
+    public:
         Platform();
         virtual ~Platform() {}
 

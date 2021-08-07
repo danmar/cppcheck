@@ -289,7 +289,7 @@ namespace clangimport {
         std::set<Token *> mNotScope;
 
         std::map<const Scope *, AccessControl> scopeAccessControl;
-private:
+    private:
         void notFound(const std::string &addr) {
             auto it = mNotFound.find(addr);
             if (it != mNotFound.end()) {
@@ -308,7 +308,7 @@ private:
     using AstNodePtr = std::shared_ptr<AstNode>;
 
     class AstNode {
-public:
+    public:
         AstNode(const std::string &nodeType, const std::string &ext, Data *data)
             : nodeType(nodeType), mExtTokens(splitString(ext)), mData(data)
         {}
@@ -340,7 +340,7 @@ public:
             }
             return children[c];
         }
-private:
+    private:
         Token *createTokens(TokenList *tokenList);
         Token *addtoken(TokenList *tokenList, const std::string &str, bool valueType=true);
         const ::Type *addTypeTokens(TokenList *tokenList, const std::string &str, const Scope *scope = nullptr);

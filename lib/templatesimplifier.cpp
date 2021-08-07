@@ -60,32 +60,32 @@ static Token *skipRequires(Token *tok)
 
 namespace {
     class FindToken {
-public:
+    public:
         explicit FindToken(const Token *token) : mToken(token) {}
         bool operator()(const TemplateSimplifier::TokenAndName &tokenAndName) const {
             return tokenAndName.token() == mToken;
         }
-private:
+    private:
         const Token * const mToken;
     };
 
     class FindName {
-public:
+    public:
         explicit FindName(const std::string &name) : mName(name) {}
         bool operator()(const TemplateSimplifier::TokenAndName &tokenAndName) const {
             return tokenAndName.name() == mName;
         }
-private:
+    private:
         const std::string mName;
     };
 
     class FindFullName {
-public:
+    public:
         explicit FindFullName(const std::string &fullName) : mFullName(fullName) {}
         bool operator()(const TemplateSimplifier::TokenAndName &tokenAndName) const {
             return tokenAndName.fullName() == mFullName;
         }
-private:
+    private:
         const std::string mFullName;
     };
 }

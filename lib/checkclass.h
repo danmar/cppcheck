@@ -146,7 +146,7 @@ public:
 
     /* multifile checking; one definition rule violations */
     class MyFileInfo : public Check::FileInfo {
-public:
+    public:
         struct NameLoc {
             std::string className;
             std::string fileName;

@@ -98,7 +98,7 @@ private:
     }
 
     class CPPCHECKLIB FunctionUsage {
-public:
+    public:
         FunctionUsage() : lineNumber(0), usedSameFile(false), usedOtherFile(false) {}
 
         std::string filename;
@@ -110,7 +110,7 @@ public:
     std::map<std::string, FunctionUsage> mFunctions;
 
     class CPPCHECKLIB FunctionDecl {
-public:
+    public:
         explicit FunctionDecl(const Function *f);
         std::string functionName;
         unsigned int lineNumber;

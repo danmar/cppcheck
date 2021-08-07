@@ -34,7 +34,7 @@ public:
 private:
 
     class ErrorLogger2 : public ErrorLogger {
-public:
+    public:
         std::list<std::string> id;
 
         void reportOut(const std::string & /*outmsg*/, Color = Color::Reset) OVERRIDE {}

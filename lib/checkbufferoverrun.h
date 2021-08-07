@@ -119,7 +119,7 @@ private:
 
     /** data for multifile checking */
     class MyFileInfo : public Check::FileInfo {
-public:
+    public:
         /** unsafe array index usage */
         std::list<CTU::FileInfo::UnsafeUsage> unsafeArrayIndex;
 

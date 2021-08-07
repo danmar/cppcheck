@@ -257,7 +257,7 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, 
 
 namespace {
     class TrackExecution {
-public:
+    public:
         TrackExecution() : mDataIndexCounter(0), mAbortLine(-1) {}
 
         int getNewDataIndex() {
@@ -344,7 +344,7 @@ public:
             mMap[tok].push_back(std::to_string(thenIndex) + ": Split. Then:" + std::to_string(thenIndex) + " Else:" + std::to_string(elseIndex));
         }
 
-private:
+    private:
         const char *getStatus(int linenr) const {
             if (mErrors.find(linenr) != mErrors.end())
                 return "ERROR";
@@ -363,7 +363,7 @@ private:
     };
 
     class Data : public ExprEngine::DataBase {
-public:
+    public:
         Data(int *symbolValueIndex, ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings, const std::string &currentFunction, const std::vector<ExprEngine::Callback> &callbacks, TrackExecution *trackExecution)
             : DataBase(currentFunction, settings)
               , symbolValueIndex(symbolValueIndex)
@@ -741,7 +741,7 @@ public:
             thenData.mTrackExecution->ifSplit(tok, thenData.mDataIndex, elseData.mDataIndex);
         }
 
-private:
+    private:
         TrackExecution * const mTrackExecution;
         const int mDataIndex;
 
@@ -1112,7 +1112,7 @@ public:
     using AssertionList = std::vector<z3::expr>;
 
     class BailoutValueException : public ExprEngineException {
-public:
+    public:
         BailoutValueException() : ExprEngineException(nullptr, "Incomplete analysis") {}
     };
 

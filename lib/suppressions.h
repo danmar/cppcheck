@@ -45,7 +45,7 @@ public:
         int lineNumber;
         Certainty::CertaintyLevel certainty;
         std::string symbolNames;
-private:
+    private:
         std::string mFileName;
     };
 

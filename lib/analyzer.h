@@ -112,7 +112,7 @@ struct Analyzer {
             return a.mFlag != b.mFlag;
         }
 
-private:
+    private:
         unsigned int mFlag;
     };
 

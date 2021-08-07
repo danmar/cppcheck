@@ -371,7 +371,7 @@ public:
 
     /** Do not only check how interface is used. Also check that interface is safe. */
     class SafeChecks : public Settings::SafeChecks {
-public:
+    public:
         SafeChecks() : Settings::SafeChecks() {}
 
         void loadFromXml(QXmlStreamReader &xmlReader);

@@ -75,7 +75,7 @@ public:
     } needInitialization;
 
     class BaseInfo {
-public:
+    public:
         BaseInfo() :
             type(nullptr), nameTok(nullptr), access(AccessControl::Public), isVirtual(false) {}
 

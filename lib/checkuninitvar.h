@@ -94,7 +94,7 @@ public:
 
     /* data for multifile checking */
     class MyFileInfo : public Check::FileInfo {
-public:
+    public:
         /** function arguments that data are unconditionally read */
         std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
 

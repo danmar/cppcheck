@@ -26,7 +26,7 @@ namespace MatchCompiler {
 
     template<unsigned int n>
     class ConstString {
-public:
+    public:
         typedef const char(&StringRef)[n];
         explicit ConstString(StringRef s)
             : _s(s) {}
@@ -35,7 +35,7 @@ public:
             return _s;
         }
 
-private:
+    private:
         StringRef _s;
     };
 

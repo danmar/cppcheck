@@ -95,7 +95,7 @@ public:
 
     /** Base class used for whole-program analysis */
     class CPPCHECKLIB FileInfo {
-public:
+    public:
         FileInfo() {}
         virtual ~FileInfo() {}
         virtual std::string toString() const {

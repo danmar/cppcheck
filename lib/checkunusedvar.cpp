@@ -102,7 +102,7 @@ public:
 
     /** Store information about variable usage */
     class VariableUsage {
-public:
+    public:
         explicit VariableUsage(const Variable *var = nullptr,
                                VariableType type = standard,
                                bool read = false,

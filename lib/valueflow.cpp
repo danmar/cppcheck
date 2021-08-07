@@ -1827,7 +1827,7 @@ class SelectValueFromVarIdMapRange {
             return a.mIt != b.mIt;
         }
 
-private:
+    private:
         M::const_iterator mIt;
     };
 

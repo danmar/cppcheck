@@ -59,11 +59,11 @@ class CPPCHECKLIB Tokenizer {
 
     /** Class used in Tokenizer::setVarIdPass1 */
     class VariableMap {
-private:
+    private:
         std::map<std::string, int> mVariableId;
         std::stack<std::list<std::pair<std::string,int>>> mScopeInfo;
         mutable nonneg int mVarId;
-public:
+    public:
         VariableMap();
         void enterScope();
         bool leaveScope();
