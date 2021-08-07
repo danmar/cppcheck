@@ -28,8 +28,7 @@
 
 class TestStl : public TestFixture {
 public:
-    TestStl() : TestFixture("TestStl") {
-    }
+    TestStl() : TestFixture("TestStl") {}
 
 private:
     Settings settings;
@@ -2634,7 +2633,7 @@ private:
     }
 
     template<size_t n, typename T>
-    static size_t getArraylength(const T(&)[n]) {
+    static size_t getArraylength(const T (&)[n]) {
         return n;
     }
 
@@ -3070,10 +3069,10 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         code =  "void f()\n"
-                "{\n"
-                "    std::list<int> x;\n"
-                "    if (x.size() >= 1) {}\n"
-                "}";
+               "{\n"
+               "    std::list<int> x;\n"
+               "    if (x.size() >= 1) {}\n"
+               "}";
         check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
         check(code);
@@ -3137,10 +3136,10 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         code ="void f()\n"
-              "{\n"
-              "    std::list<int> x;\n"
-              "    fun(!x.size());\n"
-              "}";
+               "{\n"
+               "    std::list<int> x;\n"
+               "    fun(!x.size());\n"
+               "}";
         check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
         check(code);

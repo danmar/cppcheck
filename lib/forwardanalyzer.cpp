@@ -83,7 +83,7 @@ struct ForwardTraversal {
         return evalCond(tok, ctx).second;
     }
 
-    template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
+    template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
     Progress traverseTok(T* tok, std::function<Progress(T*)> f, bool traverseUnknown, T** out = nullptr) {
         if (Token::Match(tok, "asm|goto|continue|setjmp|longjmp"))
             return Break();
@@ -118,7 +118,7 @@ struct ForwardTraversal {
         return Progress::Continue;
     }
 
-    template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
+    template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
     Progress traverseRecursive(T* tok, std::function<Progress(T*)> f, bool traverseUnknown, unsigned int recursion=0) {
         if (!tok)
             return Progress::Continue;
@@ -143,7 +143,7 @@ struct ForwardTraversal {
         return Progress::Continue;
     }
 
-    template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
+    template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
     Progress traverseConditional(T* tok, F f, bool traverseUnknown) {
         if (Token::Match(tok, "?|&&|%oror%") && tok->astOperand1() && tok->astOperand2()) {
             T* condTok = tok->astOperand1();
@@ -205,7 +205,7 @@ struct ForwardTraversal {
         return traverseRecursive(tok, f, false);
     }
 
-    template <class T>
+    template<class T>
     T* findRange(T* start, const Token* end, std::function<bool(Analyzer::Action)> pred) {
         for (T* tok = start; tok && tok != end; tok = tok->next()) {
             Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Forward);
@@ -350,7 +350,7 @@ struct ForwardTraversal {
         changed |= isExpressionChanged(condTok, endBlock->link(), endBlock, settings, true);
         // Check for mutation in the condition
         changed |= nullptr !=
-        findAstNode(condTok, [&](const Token* tok) {
+                   findAstNode(condTok, [&](const Token* tok) {
             return isVariableChanged(tok, 0, settings, true);
         });
         if (!changed)

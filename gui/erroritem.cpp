@@ -24,8 +24,7 @@ QErrorPathItem::QErrorPathItem(const ErrorMessage::FileLocation &loc)
     , line(loc.line)
     , column(loc.column)
     , info(QString::fromStdString(loc.getinfo()))
-{
-}
+{}
 
 bool operator==(const QErrorPathItem &i1, const QErrorPathItem &i2)
 {
@@ -38,8 +37,7 @@ ErrorItem::ErrorItem()
     , inconclusive(false)
     , cwe(-1)
     , hash(0)
-{
-}
+{}
 
 ErrorItem::ErrorItem(const ErrorMessage &errmsg)
     : file0(QString::fromStdString(errmsg.file0))

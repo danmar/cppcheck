@@ -306,7 +306,7 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<nonneg i
     else if (tok->str() == "!") {
         bool t=false,f=false;
         conditionAlwaysTrueOrFalse(tok->astOperand1(), variableValue, &t, &f);
-        if (t||f) {
+        if (t || f) {
             *alwaysTrue = !t;
             *alwaysFalse = !f;
         }
@@ -562,7 +562,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
             const Token *errorToken = nullptr;
             visitAstNodes(tok->next(),
-            [&](const Token *child) {
+                          [&](const Token *child) {
                 if (child->isUnaryOp("&"))
                     return ChildrenToVisit::none;
                 if (child->str() == "," || child->str() == "{" || child->isConstOp())
@@ -910,7 +910,7 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
         // for loop; skip loop body if there is third expression
         if (Token::simpleMatch(tok, ") {") &&
             Token::simpleMatch(tok->link()->previous(), "for (") &&
-            Token::simpleMatch(tok->link()->astOperand2(), ";")  &&
+            Token::simpleMatch(tok->link()->astOperand2(), ";") &&
             Token::simpleMatch(tok->link()->astOperand2()->astOperand2(), ";")) {
             tok = tok->linkAt(1);
         }

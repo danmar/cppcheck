@@ -182,7 +182,7 @@ public:
     /**
      * @brief Create an xml dump of suppressions
      * @param out stream to write XML to
-    */
+     */
     void dump(std::ostream &out) const;
 
     /**

@@ -108,13 +108,11 @@ public:
 class CPPCHECKLIB CheckLeakAutoVar : public Check {
 public:
     /** This constructor is used when registering the CheckLeakAutoVar */
-    CheckLeakAutoVar() : Check(myName()) {
-    }
+    CheckLeakAutoVar() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
     CheckLeakAutoVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+        : Check(myName(), tokenizer, settings, errorLogger) {}
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckLeakAutoVar checkLeakAutoVar(tokenizer, settings, errorLogger);
@@ -133,10 +131,10 @@ private:
                     nonneg int recursiveCount);
 
     /** Check token inside expression.
-    * @param tok token inside expression.
-    * @param varInfo Variable info
-    * @return next token to process (if no other checks needed for this token). NULL if other checks could be performed.
-    */
+     * @param tok token inside expression.
+     * @param varInfo Variable info
+     * @return next token to process (if no other checks needed for this token). NULL if other checks could be performed.
+     */
     const Token * checkTokenInsideExpression(const Token * const tok, VarInfo *varInfo);
 
     /** parse function call */

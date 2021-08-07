@@ -361,7 +361,7 @@ std::string MathLib::normalizeCharacterLiteral(const std::string& iLiteral)
 {
     std::string normalizedLiteral;
     const std::string::size_type iLiteralLen = iLiteral.size();
-    for (std::string::size_type idx = 0; idx < iLiteralLen ; ++idx) {
+    for (std::string::size_type idx = 0; idx < iLiteralLen; ++idx) {
         if (iLiteral[idx] != '\\') {
             normalizedLiteral.push_back(iLiteral[idx]);
             continue;
@@ -533,7 +533,7 @@ static double myStod(const std::string& str, std::string::const_iterator from, s
     int distance;
     if (std::string::npos == decimalsep) {
         distance = to - it;
-    } else  if (decimalsep > (to - str.begin()))
+    } else if (decimalsep > (to - str.begin()))
         return 0.; // error handling??
     else
         distance = int(decimalsep)-(from - str.begin());
@@ -1130,7 +1130,7 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
     }
 
     if (first == second)
-        return "0.0" ;
+        return "0.0";
 
     double d1 = toDoubleNumber(first);
     double d2 = toDoubleNumber(second);

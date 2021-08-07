@@ -99,14 +99,14 @@ public:
      */
     static void setExceptionOutput(FILE* exceptionOutput);
     /**
-    * @return file name to be used for output from exception handler. Has to be either "stdout" or "stderr".
-    */
+     * @return file name to be used for output from exception handler. Has to be either "stdout" or "stderr".
+     */
     static FILE* getExceptionOutput();
 
     /**
-    * Tries to load a library and prints warning/error messages
-    * @return false, if an error occurred (except unknown XML elements)
-    */
+     * Tries to load a library and prints warning/error messages
+     * @return false, if an error occurred (except unknown XML elements)
+     */
     static bool tryLoadLibrary(Library& destination, const char* basepath, const char* filename);
 
     /**
@@ -152,17 +152,17 @@ private:
     int check_wrapper(CppCheck& cppcheck, int argc, const char* const argv[]);
 
     /**
-    * Starts the checking.
-    *
-    * @param cppcheck cppcheck instance
-    * @param argc from main()
-    * @param argv from main()
-    * @return EXIT_FAILURE if arguments are invalid or no input files
-    *         were found.
-    *         If errors are found and --error-exitcode is used,
-    *         given value is returned instead of default 0.
-    *         If no errors are found, 0 is returned.
-    */
+     * Starts the checking.
+     *
+     * @param cppcheck cppcheck instance
+     * @param argc from main()
+     * @param argv from main()
+     * @return EXIT_FAILURE if arguments are invalid or no input files
+     *         were found.
+     *         If errors are found and --error-exitcode is used,
+     *         given value is returned instead of default 0.
+     *         If no errors are found, 0 is returned.
+     */
     int check_internal(CppCheck& cppcheck, int argc, const char* const argv[]);
 
     /**

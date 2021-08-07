@@ -52,11 +52,9 @@ namespace {
     // in order to store information about the scope
     struct VarIdScopeInfo {
         VarIdScopeInfo()
-            :isExecutable(false), isStructInit(false), isEnum(false), startVarid(0) {
-        }
+            : isExecutable(false), isStructInit(false), isEnum(false), startVarid(0) {}
         VarIdScopeInfo(bool isExecutable, bool isStructInit, bool isEnum, nonneg int startVarid)
-            :isExecutable(isExecutable), isStructInit(isStructInit), isEnum(isEnum), startVarid(startVarid) {
-        }
+            : isExecutable(isExecutable), isStructInit(isStructInit), isEnum(isEnum), startVarid(startVarid) {}
 
         const bool isExecutable;
         const bool isStructInit;
@@ -161,8 +159,7 @@ Tokenizer::Tokenizer() :
     , mMaxTime(std::time(0) + MAXTIME)
 #endif
     , mPreprocessor(nullptr)
-{
-}
+{}
 
 Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
     list(settings),
@@ -410,7 +407,7 @@ Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
 
 namespace {
     struct Space {
-        Space() : bodyEnd(nullptr), bodyEnd2(nullptr), isNamespace(false) { }
+        Space() : bodyEnd(nullptr), bodyEnd2(nullptr), isNamespace(false) {}
         std::string className;
         const Token * bodyEnd;  // for body contains typedef define
         const Token * bodyEnd2; // for body contains typedef using
@@ -2225,7 +2222,7 @@ bool Tokenizer::simplifyUsing()
     ScopeInfo3 scopeInfo;
     ScopeInfo3 *currentScope = &scopeInfo;
     struct Using {
-        Using(Token *start, Token *end) : startTok(start), endTok(end) { }
+        Using(Token *start, Token *end) : startTok(start), endTok(end) {}
         Token *startTok;
         Token *endTok;
     };
@@ -3533,7 +3530,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
 
 
 void Tokenizer::setVarIdStructMembers(Token **tok1,
-                                      std::map<int, std::map<std::string, int> >& structMembers,
+                                      std::map<int, std::map<std::string, int>>& structMembers,
                                       nonneg int *varId) const
 {
     Token *tok = *tok1;
@@ -3599,9 +3596,9 @@ void Tokenizer::setVarIdStructMembers(Token **tok1,
 
 
 void Tokenizer::setVarIdClassDeclaration(const Token * const startToken,
-        const VariableMap &variableMap,
-        const nonneg int scopeStartVarId,
-        std::map<int, std::map<std::string,int> >& structMembers)
+                                         const VariableMap &variableMap,
+                                         const nonneg int scopeStartVarId,
+                                         std::map<int, std::map<std::string,int>>& structMembers)
 {
     // end of scope
     const Token * const endToken = startToken->link();
@@ -3680,7 +3677,7 @@ void Tokenizer::setVarIdClassFunction(const std::string &classname,
                                       Token * const startToken,
                                       const Token * const endToken,
                                       const std::map<std::string, int> &varlist,
-                                      std::map<int, std::map<std::string, int> >& structMembers,
+                                      std::map<int, std::map<std::string, int>>& structMembers,
                                       nonneg int *varId_)
 {
     for (Token *tok2 = startToken; tok2 && tok2 != endToken; tok2 = tok2->next()) {
@@ -3724,7 +3721,7 @@ void Tokenizer::setVarId()
 static const std::unordered_set<std::string> notstart_c = { NOTSTART_C };
 static const std::unordered_set<std::string> notstart_cpp = { NOTSTART_C,
                                                               "delete", "friend", "new", "throw", "using", "virtual", "explicit", "const_cast", "dynamic_cast", "reinterpret_cast", "static_cast", "template"
-                                                            };
+};
 
 void Tokenizer::setVarIdPass1()
 {
@@ -3732,7 +3729,7 @@ void Tokenizer::setVarIdPass1()
     const std::unordered_set<std::string>& notstart = (isC()) ? notstart_c : notstart_cpp;
 
     VariableMap variableMap;
-    std::map<int, std::map<std::string, int> > structMembers;
+    std::map<int, std::map<std::string, int>> structMembers;
 
     std::stack<VarIdScopeInfo> scopeStack;
 
@@ -3753,7 +3750,7 @@ void Tokenizer::setVarIdPass1()
                 if (!variableMap.leaveScope())
                     cppcheckError(tok);
             } else if (tok->str() == "{") {
-                scopeStack.push(VarIdScopeInfo(true, scopeStack.top().isStructInit || tok->strAt(-1) == "=", /*isEnum=*/false, *variableMap.getVarId()));
+                scopeStack.push(VarIdScopeInfo(true, scopeStack.top().isStructInit || tok->strAt(-1) == "=", /*isEnum=*/ false, *variableMap.getVarId()));
 
                 // check if this '{' is a start of an "if" body
                 const Token * ifToken = tok->previous();
@@ -4041,7 +4038,7 @@ void Tokenizer::setVarIdPass1()
                     continue;
             }
 
-            if (!scopeStack.top().isEnum || !(Token::Match(tok->previous(), "{|,")  && Token::Match(tok->next(), ",|=|}"))) {
+            if (!scopeStack.top().isEnum || !(Token::Match(tok->previous(), "{|,") && Token::Match(tok->next(), ",|=|}"))) {
                 const std::map<std::string, int>::const_iterator it = variableMap.find(tok->str());
                 if (it != variableMap.end()) {
                     tok->varId(it->second);
@@ -4161,7 +4158,7 @@ static Token * matchMemberFunctionName(const Member &func, const std::list<Scope
 
 void Tokenizer::setVarIdPass2()
 {
-    std::map<int, std::map<std::string, int> > structMembers;
+    std::map<int, std::map<std::string, int>> structMembers;
 
     // Member functions and variables in this source
     std::list<Member> allMemberFunctions;
@@ -4223,7 +4220,7 @@ void Tokenizer::setVarIdPass2()
     std::list<ScopeInfo2> scopeInfo;
 
     // class members..
-    std::map<std::string, std::map<std::string, int> > varsByClass;
+    std::map<std::string, std::map<std::string, int>> varsByClass;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         while (tok->str() == "}" && !scopeInfo.empty() && tok == scopeInfo.back().bodyEnd)
             scopeInfo.pop_back();
@@ -5741,7 +5738,7 @@ void Tokenizer::removeMacrosInGlobalScope()
                             Token::eraseTokens(tok, tok2);
                             tok->str(typeName);
                         }
-            */
+             */
             // remove unknown macros before foo::foo(
             if (Token::Match(tok2, "%type% :: %type%")) {
                 const Token *tok3 = tok2;
@@ -6639,7 +6636,7 @@ bool Tokenizer::simplifyConditions()
                     cmp.clear();
             }
 
-            if (! cmp.empty()) {
+            if (!cmp.empty()) {
                 tok = tok->next();
                 tok->deleteNext(2);
 
@@ -7616,7 +7613,7 @@ void Tokenizer::simplifyIfAndWhileAssign()
         tok2->insertToken(tok->next()->str());
         tok2->next()->varId(tok->next()->varId());
 
-        while (! braces.empty()) {
+        while (!braces.empty()) {
             tok2->insertToken("(");
             Token::createMutualLinks(tok2->next(), braces.top());
             braces.pop();
@@ -9112,7 +9109,7 @@ void Tokenizer::simplifyOffsetPointerReference()
 void Tokenizer::simplifyNestedStrcat()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (! Token::Match(tok, "[;{}] strcat ( strcat (")) {
+        if (!Token::Match(tok, "[;{}] strcat ( strcat (")) {
             continue;
         }
 
@@ -9467,7 +9464,7 @@ void Tokenizer::eraseDeadCode(Token *begin, const Token *end)
             } else {
                 tok = const_cast<Token *>(tok2);
             }
-        }  else if (Token::Match(tok, "[{};] default : ;")) {
+        } else if (Token::Match(tok, "[{};] default : ;")) {
             if (indentlevel == 1)
                 break;      //it seems like the function was called inside a case-default block.
             if (indentlevel == indentcase)
@@ -10202,15 +10199,15 @@ void Tokenizer::findGarbageCode() const
     const bool isCPP11 = isCPP() && mSettings->standards.cpp >= Standards::CPP11;
 
     static const std::unordered_set<std::string> nonConsecutiveKeywords{ "break",
-        "continue",
-        "for",
-        "goto",
-        "if",
-        "return",
-        "switch",
-        "throw",
-        "typedef",
-        "while" };
+                                                                         "continue",
+                                                                         "for",
+                                                                         "goto",
+                                                                         "if",
+                                                                         "return",
+                                                                         "switch",
+                                                                         "throw",
+                                                                         "typedef",
+                                                                         "while" };
 
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         // initialization: = {
@@ -10299,15 +10296,15 @@ void Tokenizer::findGarbageCode() const
 
     // Keywords in global scope
     static const std::unordered_set<std::string> nonGlobalKeywords{"break",
-        "continue",
-        "for",
-        "goto",
-        "if",
-        "return",
-        "switch",
-        "while",
-        "try",
-        "catch"};
+                                                                   "continue",
+                                                                   "for",
+                                                                   "goto",
+                                                                   "if",
+                                                                   "return",
+                                                                   "switch",
+                                                                   "while",
+                                                                   "try",
+                                                                   "catch"};
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (tok->str() == "{")
             tok = tok->link();
@@ -10327,7 +10324,7 @@ void Tokenizer::findGarbageCode() const
             if (!tok)
                 syntaxError(switchToken);
             // Look for the end of the switch statement, i.e. the first semi-colon or '}'
-            for (; tok ; tok = tok->next()) {
+            for (; tok; tok = tok->next()) {
                 if (tok->str() == "{") {
                     tok = tok->link();
                 }
@@ -10347,7 +10344,7 @@ void Tokenizer::findGarbageCode() const
         }
     }
 
-    for (const Token *tok = tokens(); tok ; tok = tok->next()) {
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (!Token::simpleMatch(tok, "for (")) // find for loops
             continue;
         // count number of semicolons

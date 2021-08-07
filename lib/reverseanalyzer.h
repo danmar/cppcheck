@@ -22,7 +22,7 @@
 struct Analyzer;
 class Settings;
 class Token;
-template <class T>
+template<class T>
 class ValuePtr;
 
 void valueFlowGenericReverse(Token* start, const ValuePtr<Analyzer>& a, const Settings* settings);

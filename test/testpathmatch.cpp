@@ -30,8 +30,7 @@ public:
         , emptyMatcher(std::vector<std::string>())
         , srcMatcher(std::vector<std::string>(1, "src/"))
         , fooCppMatcher(std::vector<std::string>(1, "foo.cpp"))
-        , srcFooCppMatcher(std::vector<std::string>(1, "src/foo.cpp")) {
-    }
+        , srcFooCppMatcher(std::vector<std::string>(1, "src/foo.cpp")) {}
 
 private:
     const PathMatch emptyMatcher;

@@ -21,8 +21,8 @@
 
 // C++11 override
 #if defined(_MSC_VER) || (defined(__GNUC__) && (__GNUC__ >= 5)) \
-  || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
-  || defined(__CPPCHECK__)
+    || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
+    || defined(__CPPCHECK__)
 #  define OVERRIDE override
 #  define FINAL final
 #else
@@ -32,8 +32,8 @@
 
 // C++11 noexcept
 #if (defined(__GNUC__) && (__GNUC__ >= 5)) \
-  || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
-  || defined(__CPPCHECK__)
+    || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
+    || defined(__CPPCHECK__)
 #  define NOEXCEPT noexcept
 #else
 #  define NOEXCEPT
@@ -41,8 +41,8 @@
 
 // C++11 noreturn
 #if (defined(__GNUC__) && (__GNUC__ >= 5)) \
-  || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
-  || defined(__CPPCHECK__)
+    || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
+    || defined(__CPPCHECK__)
 #  define NORETURN [[noreturn]]
 #else
 #  define NORETURN

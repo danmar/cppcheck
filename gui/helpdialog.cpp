@@ -82,7 +82,7 @@ HelpDialog::HelpDialog(QWidget *parent) :
             SLOT(setSource(QUrl)));
 
     connect(mHelpEngine->indexWidget(),
-            SIGNAL(linkActivated(QUrl, QString)),
+            SIGNAL(linkActivated(QUrl,QString)),
             mUi->textBrowser,
             SLOT(setSource(QUrl)));
 }

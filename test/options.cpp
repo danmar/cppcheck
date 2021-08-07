@@ -17,7 +17,7 @@
 #include "options.h"
 
 options::options(int argc, const char* const argv[])
-    :mWhichTests(argv + 1, argv + argc)
+    : mWhichTests(argv + 1, argv + argc)
     ,mQuiet(mWhichTests.count("-q") != 0)
     ,mHelp(mWhichTests.count("-h") != 0 || mWhichTests.count("--help"))
     ,mExe(argv[0])

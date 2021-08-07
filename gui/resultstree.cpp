@@ -98,8 +98,7 @@ ResultsTree::ResultsTree(QWidget * parent) :
 }
 
 ResultsTree::~ResultsTree()
-{
-}
+{}
 
 void ResultsTree::keyPressEvent(QKeyEvent *event)
 {
@@ -198,10 +197,10 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     //file item as a parent
     QStandardItem* fileItem = ensureFileItem(loc.file, item.file0, hide);
     QStandardItem* stditem = addBacktraceFiles(fileItem,
-                             line,
-                             hide,
-                             severityToIcon(line.severity),
-                             false);
+                                               line,
+                                               hide,
+                                               severityToIcon(line.severity),
+                                               false);
 
     if (!stditem)
         return false;
@@ -269,10 +268,10 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
 }
 
 QStandardItem *ResultsTree::addBacktraceFiles(QStandardItem *parent,
-        const ErrorLine &item,
-        const bool hide,
-        const QString &icon,
-        bool childOfMessage)
+                                              const ErrorLine &item,
+                                              const bool hide,
+                                              const QString &icon,
+                                              bool childOfMessage)
 {
     if (!parent) {
         return nullptr;
@@ -864,8 +863,8 @@ QString ResultsTree::askFileDir(const QString &file)
     msgbox.exec();
 
     QString dir = QFileDialog::getExistingDirectory(this, title,
-                  getPath(SETTINGS_LAST_SOURCE_PATH),
-                  QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+                                                    getPath(SETTINGS_LAST_SOURCE_PATH),
+                                                    QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 
     if (dir.isEmpty())
         return QString();

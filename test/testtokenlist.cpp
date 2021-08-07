@@ -25,8 +25,7 @@
 
 class TestTokenList : public TestFixture {
 public:
-    TestTokenList() : TestFixture("TestTokenList") {
-    }
+    TestTokenList() : TestFixture("TestTokenList") {}
 
 private:
     Settings settings;
