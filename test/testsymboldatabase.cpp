@@ -63,9 +63,9 @@ class TestSymbolDatabase : public TestFixture {
 public:
     TestSymbolDatabase()
         : TestFixture("TestSymbolDatabase")
-          ,nullScope(nullptr, nullptr, nullptr)
-          ,vartok(nullptr)
-          ,typetok(nullptr) {}
+        ,nullScope(nullptr, nullptr, nullptr)
+        ,vartok(nullptr)
+        ,typetok(nullptr) {}
 
 private:
     const Scope nullScope;

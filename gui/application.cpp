@@ -21,6 +21,6 @@
 Application::Application(const QString &name, const QString &path,
                          const QString &params)
     : mName(name)
-      , mPath(path)
-      , mParameters(params)
+    , mPath(path)
+    , mParameters(params)
 {}

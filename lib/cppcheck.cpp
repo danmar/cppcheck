@@ -323,12 +323,12 @@ CppCheck::CppCheck(ErrorLogger &errorLogger,
                    bool useGlobalSuppressions,
                    std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand)
     : mErrorLogger(errorLogger)
-      , mExitCode(0)
-      , mSuppressInternalErrorFound(false)
-      , mUseGlobalSuppressions(useGlobalSuppressions)
-      , mTooManyConfigs(false)
-      , mSimplify(true)
-      , mExecuteCommand(executeCommand)
+    , mExitCode(0)
+    , mSuppressInternalErrorFound(false)
+    , mUseGlobalSuppressions(useGlobalSuppressions)
+    , mTooManyConfigs(false)
+    , mSimplify(true)
+    , mExecuteCommand(executeCommand)
 {}
 
 CppCheck::~CppCheck()

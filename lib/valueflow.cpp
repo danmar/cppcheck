@@ -3227,12 +3227,12 @@ struct LifetimeStore {
                   ValueFlow::Value::LifetimeKind type = ValueFlow::Value::LifetimeKind::Object,
                   bool inconclusive = false)
         : argtok(argtok),
-          message(message),
-          type(type),
-          errorPath(),
-          inconclusive(inconclusive),
-          forward(true),
-          mContext(nullptr)
+        message(message),
+        type(type),
+        errorPath(),
+        inconclusive(inconclusive),
+        forward(true),
+        mContext(nullptr)
     {}
 
     template<class F>
@@ -7057,23 +7057,23 @@ static void valueFlowUnknownFunctionReturn(TokenList *tokenlist, const Settings 
 
 ValueFlow::Value::Value(const Token* c, long long val)
     : valueType(ValueType::INT),
-      bound(Bound::Point),
-      intvalue(val),
-      tokvalue(nullptr),
-      floatValue(0.0),
-      moveKind(MoveKind::NonMovedVariable),
-      varvalue(val),
-      condition(c),
-      varId(0),
-      safe(false),
-      conditional(false),
-      defaultArg(false),
-      indirect(0),
-      path(0),
-      wideintvalue(0),
-      lifetimeKind(LifetimeKind::Object),
-      lifetimeScope(LifetimeScope::Local),
-      valueKind(ValueKind::Possible)
+    bound(Bound::Point),
+    intvalue(val),
+    tokvalue(nullptr),
+    floatValue(0.0),
+    moveKind(MoveKind::NonMovedVariable),
+    varvalue(val),
+    condition(c),
+    varId(0),
+    safe(false),
+    conditional(false),
+    defaultArg(false),
+    indirect(0),
+    path(0),
+    wideintvalue(0),
+    lifetimeKind(LifetimeKind::Object),
+    lifetimeScope(LifetimeScope::Local),
+    valueKind(ValueKind::Possible)
 {
     errorPath.emplace_back(c, "Assuming that condition '" + c->expressionString() + "' is not redundant");
 }

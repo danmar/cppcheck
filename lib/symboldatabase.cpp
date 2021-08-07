@@ -1832,14 +1832,14 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
                    const Token *typeEnd, nonneg int index_, AccessControl access_,
                    const Type *type_, const Scope *scope_)
     : mNameToken(name_),
-      mTypeStartToken(typeStart),
-      mTypeEndToken(typeEnd),
-      mIndex(index_),
-      mAccess(access_),
-      mFlags(0),
-      mType(type_),
-      mScope(scope_),
-      mValueType(nullptr)
+    mTypeStartToken(typeStart),
+    mTypeEndToken(typeEnd),
+    mIndex(index_),
+    mAccess(access_),
+    mFlags(0),
+    mType(type_),
+    mScope(scope_),
+    mValueType(nullptr)
 {
     if (!mTypeStartToken && mTypeEndToken) {
         mTypeStartToken = mTypeEndToken;
@@ -2118,21 +2118,21 @@ Function::Function(const Tokenizer *mTokenizer,
                    const Token *tokDef,
                    const Token *tokArgDef)
     : tokenDef(tokDef),
-      argDef(tokArgDef),
-      token(nullptr),
-      arg(nullptr),
-      retDef(nullptr),
-      retType(nullptr),
-      functionScope(nullptr),
-      nestedIn(scope),
-      initArgCount(0),
-      type(eFunction),
-      access(AccessControl::Public),
-      noexceptArg(nullptr),
-      throwArg(nullptr),
-      templateDef(nullptr),
-      functionPointerUsage(nullptr),
-      mFlags(0)
+    argDef(tokArgDef),
+    token(nullptr),
+    arg(nullptr),
+    retDef(nullptr),
+    retType(nullptr),
+    functionScope(nullptr),
+    nestedIn(scope),
+    initArgCount(0),
+    type(eFunction),
+    access(AccessControl::Public),
+    noexceptArg(nullptr),
+    throwArg(nullptr),
+    templateDef(nullptr),
+    functionPointerUsage(nullptr),
+    mFlags(0)
 {
     // operator function
     if (::isOperator(tokenDef)) {
@@ -2238,21 +2238,21 @@ Function::Function(const Tokenizer *mTokenizer,
 
 Function::Function(const Token *tokenDef, const std::string &clangType)
     : tokenDef(tokenDef),
-      argDef(nullptr),
-      token(nullptr),
-      arg(nullptr),
-      retDef(nullptr),
-      retType(nullptr),
-      functionScope(nullptr),
-      nestedIn(nullptr),
-      initArgCount(0),
-      type(eFunction),
-      access(AccessControl::Public),
-      noexceptArg(nullptr),
-      throwArg(nullptr),
-      templateDef(nullptr),
-      functionPointerUsage(nullptr),
-      mFlags(0)
+    argDef(nullptr),
+    token(nullptr),
+    arg(nullptr),
+    retDef(nullptr),
+    retType(nullptr),
+    functionScope(nullptr),
+    nestedIn(nullptr),
+    initArgCount(0),
+    type(eFunction),
+    access(AccessControl::Public),
+    noexceptArg(nullptr),
+    throwArg(nullptr),
+    templateDef(nullptr),
+    functionPointerUsage(nullptr),
+    mFlags(0)
 {
     // operator function
     if (::isOperator(tokenDef)) {

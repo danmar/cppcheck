@@ -69,7 +69,7 @@ QStringList ProjectFileDialog::getProjectConfigs(const QString &fileName)
 
 ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     : QDialog(parent)
-      , mProjectFile(projectFile)
+    , mProjectFile(projectFile)
 {
     mUI.setupUi(this);
 

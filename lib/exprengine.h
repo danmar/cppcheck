@@ -74,7 +74,7 @@ namespace ExprEngine {
     public:
         explicit DataBase(const std::string &currentFunction, const Settings *settings)
             : currentFunction(currentFunction)
-              , settings(settings) {}
+            , settings(settings) {}
         virtual std::string getNewSymbolName() = 0;
         const std::string currentFunction;
         const Settings * const settings;
@@ -141,9 +141,9 @@ namespace ExprEngine {
     public:
         IntRange(const std::string &name, int128_t minValue, int128_t maxValue)
             : Value(name, ValueType::IntRange)
-              , minValue(minValue)
-              , maxValue(maxValue)
-              , loopScope(nullptr) {}
+            , minValue(minValue)
+            , maxValue(maxValue)
+            , loopScope(nullptr) {}
         std::string getRange() const OVERRIDE {
             if (minValue == maxValue)
                 return str(minValue);
@@ -162,8 +162,8 @@ namespace ExprEngine {
     public:
         FloatRange(const std::string &name, long double minValue, long double maxValue)
             : Value(name, ValueType::FloatRange)
-              , minValue(minValue)
-              , maxValue(maxValue) {}
+            , minValue(minValue)
+            , maxValue(maxValue) {}
 
         std::string getRange() const OVERRIDE {
             return std::to_string(minValue) + ":" + std::to_string(maxValue);
@@ -260,7 +260,7 @@ namespace ExprEngine {
     public:
         AddressOfValue(const std::string &name, int varId)
             : Value(name, ValueType::AddressOfValue)
-              , varId(varId)
+            , varId(varId)
         {}
 
         std::string getRange() const OVERRIDE {
@@ -274,9 +274,9 @@ namespace ExprEngine {
     public:
         BinOpResult(const std::string &binop, ValuePtr op1, ValuePtr op2)
             : Value(getName(binop, op1, op2), ValueType::BinOpResult)
-              , binop(binop)
-              , op1(op1)
-              , op2(op2) {}
+            , binop(binop)
+            , op1(op1)
+            , op2(op2) {}
 
         bool isEqual(const DataBase *dataBase, int value) const OVERRIDE;
         bool isGreaterThan(const DataBase *dataBase, int value) const OVERRIDE;
@@ -300,9 +300,9 @@ namespace ExprEngine {
     public:
         IntegerTruncation(const std::string &name, ValuePtr inputValue, int bits, char sign)
             : Value(name, ValueType::IntegerTruncation)
-              , inputValue(inputValue)
-              , bits(bits)
-              , sign(sign) {}
+            , inputValue(inputValue)
+            , bits(bits)
+            , sign(sign) {}
 
         std::string getSymbolicExpression() const OVERRIDE;
 
@@ -315,7 +315,7 @@ namespace ExprEngine {
     public:
         explicit FunctionCallArgumentValues(const std::vector<ExprEngine::ValuePtr> &argValues)
             : Value("argValues", ValueType::FunctionCallArgumentValues)
-              , argValues(argValues)
+            , argValues(argValues)
         {}
 
         const std::vector<ExprEngine::ValuePtr> argValues;

@@ -34,7 +34,7 @@ class TestCmdlineParser : public TestFixture {
 public:
     TestCmdlineParser()
         : TestFixture("TestCmdlineParser")
-          , defParser(&settings) {}
+        , defParser(&settings) {}
 
 private:
     Settings settings;

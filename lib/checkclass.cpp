@@ -105,7 +105,7 @@ static bool isVclTypeInit(const Type *type)
 
 CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     : Check(myName(), tokenizer, settings, errorLogger),
-      mSymbolDatabase(tokenizer?tokenizer->getSymbolDatabase():nullptr)
+    mSymbolDatabase(tokenizer?tokenizer->getSymbolDatabase():nullptr)
 {}
 
 //---------------------------------------------------------------------------

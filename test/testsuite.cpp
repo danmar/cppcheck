@@ -76,9 +76,9 @@ std::set<std::string> TestFixture::missingLibs;
 
 TestFixture::TestFixture(const char * const _name)
     : mVerbose(false),
-      exename(),
-      quiet_tests(false),
-      classname(_name)
+    exename(),
+    quiet_tests(false),
+    classname(_name)
 {
     TestRegistry::theInstance().addTest(this);
 }

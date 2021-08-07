@@ -64,7 +64,7 @@ public:
 
     struct Function {
         Function() : noreturn(Unknown), gccPure(false), gccConst(false),
-                     leakignore(false), useretval(false) {}
+            leakignore(false), useretval(false) {}
 
         QString comments;
         QString name;
@@ -88,7 +88,7 @@ public:
         } formatstr;
         struct Arg {
             Arg() : nr(0), notbool(false), notnull(false), notuninit(false),
-                    formatstr(false), strz(false) {}
+                formatstr(false), strz(false) {}
 
             QString name;
             unsigned int nr;

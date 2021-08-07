@@ -263,7 +263,7 @@ bool TemplateSimplifier::TokenAndName::isAliasToken(const Token *tok) const
 
 TemplateSimplifier::TemplateSimplifier(Tokenizer *tokenizer)
     : mTokenizer(tokenizer), mTokenList(tokenizer->list), mSettings(tokenizer->mSettings),
-      mErrorLogger(tokenizer->mErrorLogger), mChanged(false)
+    mErrorLogger(tokenizer->mErrorLogger), mChanged(false)
 {}
 
 TemplateSimplifier::~TemplateSimplifier()

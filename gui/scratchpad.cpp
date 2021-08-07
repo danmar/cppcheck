@@ -21,7 +21,7 @@
 
 ScratchPad::ScratchPad(MainWindow& mainWindow)
     : QDialog(&mainWindow)
-      , mMainWindow(mainWindow)
+    , mMainWindow(mainWindow)
 {
     mUI.setupUi(this);
 

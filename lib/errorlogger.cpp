@@ -179,9 +179,9 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
 
 ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     : incomplete(false),
-      severity(Severity::none),
-      cwe(0U),
-      certainty(Certainty::normal)
+    severity(Severity::none),
+    cwe(0U),
+    certainty(Certainty::normal)
 {
     const char * const unknown = "<UNKNOWN>";
 

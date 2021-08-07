@@ -451,11 +451,11 @@ public:
     struct PlatformType {
         PlatformType()
             : mSigned(false)
-              , mUnsigned(false)
-              , mLong(false)
-              , mPointer(false)
-              , mPtrPtr(false)
-              , mConstPtr(false) {}
+            , mUnsigned(false)
+            , mLong(false)
+            , mPointer(false)
+            , mPtrPtr(false)
+            , mConstPtr(false) {}
         bool operator == (const PlatformType & type) const {
             return (mSigned == type.mSigned &&
                     mUnsigned == type.mUnsigned &&

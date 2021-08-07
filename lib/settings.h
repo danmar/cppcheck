@@ -271,8 +271,8 @@ public:
     public:
         Rule()
             : tokenlist("simple")         // use simple tokenlist
-              , id("rule")                // default id
-              , severity(Severity::style) { // default severity
+            , id("rule")                  // default id
+            , severity(Severity::style) { // default severity
         }
 
         std::string tokenlist;

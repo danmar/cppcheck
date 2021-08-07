@@ -97,8 +97,8 @@ namespace CTU {
 
             NestedCall(const std::string &myId, nonneg int myArgNr, const std::string &callId, nonneg int callArgnr, const std::string &callFunctionName, const Location &location)
                 : CallBase(callId, callArgnr, callFunctionName, location),
-                  myId(myId),
-                  myArgNr(myArgNr) {}
+                myId(myId),
+                myArgNr(myArgNr) {}
 
             NestedCall(const Tokenizer *tokenizer, const Function *myFunction, const Token *callToken);
 

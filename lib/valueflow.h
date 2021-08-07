@@ -83,23 +83,23 @@ namespace ValueFlow {
 
         explicit Value(long long val = 0)
             : valueType(ValueType::INT),
-              bound(Bound::Point),
-              intvalue(val),
-              tokvalue(nullptr),
-              floatValue(0.0),
-              moveKind(MoveKind::NonMovedVariable),
-              varvalue(val),
-              condition(nullptr),
-              varId(0U),
-              safe(false),
-              conditional(false),
-              defaultArg(false),
-              indirect(0),
-              path(0),
-              wideintvalue(val),
-              lifetimeKind(LifetimeKind::Object),
-              lifetimeScope(LifetimeScope::Local),
-              valueKind(ValueKind::Possible)
+            bound(Bound::Point),
+            intvalue(val),
+            tokvalue(nullptr),
+            floatValue(0.0),
+            moveKind(MoveKind::NonMovedVariable),
+            varvalue(val),
+            condition(nullptr),
+            varId(0U),
+            safe(false),
+            conditional(false),
+            defaultArg(false),
+            indirect(0),
+            path(0),
+            wideintvalue(val),
+            lifetimeKind(LifetimeKind::Object),
+            lifetimeScope(LifetimeScope::Local),
+            valueKind(ValueKind::Possible)
         {}
         Value(const Token *c, long long val);
 

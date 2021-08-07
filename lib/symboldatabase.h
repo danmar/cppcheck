@@ -224,14 +224,14 @@ public:
              nonneg int index_, AccessControl access_, const Type *type_,
              const Scope *scope_, const Settings* settings)
         : mNameToken(name_),
-          mTypeStartToken(start_),
-          mTypeEndToken(end_),
-          mIndex(index_),
-          mAccess(access_),
-          mFlags(0),
-          mType(type_),
-          mScope(scope_),
-          mValueType(nullptr) {
+        mTypeStartToken(start_),
+        mTypeEndToken(end_),
+        mIndex(index_),
+        mAccess(access_),
+        mFlags(0),
+        mType(type_),
+        mScope(scope_),
+        mValueType(nullptr) {
         evaluate(settings);
     }
 
@@ -1225,56 +1225,56 @@ public:
 
     ValueType()
         : sign(UNKNOWN_SIGN),
-          type(UNKNOWN_TYPE),
-          bits(0),
-          pointer(0U),
-          constness(0U),
-          typeScope(nullptr),
-          smartPointerType(nullptr),
-          smartPointerTypeToken(nullptr),
-          smartPointer(nullptr),
-          container(nullptr),
-          containerTypeToken(nullptr)
+        type(UNKNOWN_TYPE),
+        bits(0),
+        pointer(0U),
+        constness(0U),
+        typeScope(nullptr),
+        smartPointerType(nullptr),
+        smartPointerTypeToken(nullptr),
+        smartPointer(nullptr),
+        container(nullptr),
+        containerTypeToken(nullptr)
     {}
     ValueType(enum Sign s, enum Type t, nonneg int p)
         : sign(s),
-          type(t),
-          bits(0),
-          pointer(p),
-          constness(0U),
-          typeScope(nullptr),
-          smartPointerType(nullptr),
-          smartPointerTypeToken(nullptr),
-          smartPointer(nullptr),
-          container(nullptr),
-          containerTypeToken(nullptr)
+        type(t),
+        bits(0),
+        pointer(p),
+        constness(0U),
+        typeScope(nullptr),
+        smartPointerType(nullptr),
+        smartPointerTypeToken(nullptr),
+        smartPointer(nullptr),
+        container(nullptr),
+        containerTypeToken(nullptr)
     {}
     ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c)
         : sign(s),
-          type(t),
-          bits(0),
-          pointer(p),
-          constness(c),
-          typeScope(nullptr),
-          smartPointerType(nullptr),
-          smartPointerTypeToken(nullptr),
-          smartPointer(nullptr),
-          container(nullptr),
-          containerTypeToken(nullptr)
+        type(t),
+        bits(0),
+        pointer(p),
+        constness(c),
+        typeScope(nullptr),
+        smartPointerType(nullptr),
+        smartPointerTypeToken(nullptr),
+        smartPointer(nullptr),
+        container(nullptr),
+        containerTypeToken(nullptr)
     {}
     ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c, const std::string& otn)
         : sign(s),
-          type(t),
-          bits(0),
-          pointer(p),
-          constness(c),
-          typeScope(nullptr),
-          smartPointerType(nullptr),
-          smartPointerTypeToken(nullptr),
-          smartPointer(nullptr),
-          container(nullptr),
-          containerTypeToken(nullptr),
-          originalTypeName(otn)
+        type(t),
+        bits(0),
+        pointer(p),
+        constness(c),
+        typeScope(nullptr),
+        smartPointerType(nullptr),
+        smartPointerTypeToken(nullptr),
+        smartPointer(nullptr),
+        container(nullptr),
+        containerTypeToken(nullptr),
+        originalTypeName(otn)
     {}
 
     static ValueType parseDecl(const Token *type, const Settings *settings);

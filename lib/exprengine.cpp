@@ -366,27 +366,27 @@ namespace {
     public:
         Data(int *symbolValueIndex, ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings, const std::string &currentFunction, const std::vector<ExprEngine::Callback> &callbacks, TrackExecution *trackExecution)
             : DataBase(currentFunction, settings)
-              , symbolValueIndex(symbolValueIndex)
-              , errorLogger(errorLogger)
-              , tokenizer(tokenizer)
-              , callbacks(callbacks)
-              , recursion(0)
-              , startTime(std::time(nullptr))
-              , mTrackExecution(trackExecution)
-              , mDataIndex(trackExecution->getNewDataIndex()) {}
+            , symbolValueIndex(symbolValueIndex)
+            , errorLogger(errorLogger)
+            , tokenizer(tokenizer)
+            , callbacks(callbacks)
+            , recursion(0)
+            , startTime(std::time(nullptr))
+            , mTrackExecution(trackExecution)
+            , mDataIndex(trackExecution->getNewDataIndex()) {}
 
         Data(const Data &old)
             : DataBase(old.currentFunction, old.settings)
-              , memory(old.memory)
-              , symbolValueIndex(old.symbolValueIndex)
-              , errorLogger(old.errorLogger)
-              , tokenizer(old.tokenizer)
-              , callbacks(old.callbacks)
-              , constraints(old.constraints)
-              , recursion(old.recursion)
-              , startTime(old.startTime)
-              , mTrackExecution(old.mTrackExecution)
-              , mDataIndex(mTrackExecution->getNewDataIndex()) {
+            , memory(old.memory)
+            , symbolValueIndex(old.symbolValueIndex)
+            , errorLogger(old.errorLogger)
+            , tokenizer(old.tokenizer)
+            , callbacks(old.callbacks)
+            , constraints(old.constraints)
+            , recursion(old.recursion)
+            , startTime(old.startTime)
+            , mTrackExecution(old.mTrackExecution)
+            , mDataIndex(mTrackExecution->getNewDataIndex()) {
             for (auto &it: memory) {
                 if (!it.second)
                     continue;
@@ -876,7 +876,7 @@ static int128_t truncateInt(int128_t value, int bits, char sign)
 
 ExprEngine::ArrayValue::ArrayValue(const std::string &name, ExprEngine::ValuePtr size, ExprEngine::ValuePtr value, bool pointer, bool nullPointer, bool uninitPointer)
     : Value(name, ExprEngine::ValueType::ArrayValue)
-      , pointer(pointer), nullPointer(nullPointer), uninitPointer(uninitPointer)
+    , pointer(pointer), nullPointer(nullPointer), uninitPointer(uninitPointer)
 {
     this->size.push_back(size);
     assign(ExprEngine::ValuePtr(), value);
@@ -884,7 +884,7 @@ ExprEngine::ArrayValue::ArrayValue(const std::string &name, ExprEngine::ValuePtr
 
 ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
     : Value(data->getNewSymbolName(), ExprEngine::ValueType::ArrayValue)
-      , pointer(var->isPointer()), nullPointer(var->isPointer()), uninitPointer(var->isPointer())
+    , pointer(var->isPointer()), nullPointer(var->isPointer()), uninitPointer(var->isPointer())
 {
     if (var) {
         for (const auto &dim : var->dimensions()) {
@@ -914,8 +914,8 @@ ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
 
 ExprEngine::ArrayValue::ArrayValue(const std::string &name, const ExprEngine::ArrayValue &arrayValue)
     : Value(name, ExprEngine::ValueType::ArrayValue)
-      , pointer(arrayValue.pointer), nullPointer(arrayValue.nullPointer), uninitPointer(arrayValue.uninitPointer)
-      , data(arrayValue.data), size(arrayValue.size)
+    , pointer(arrayValue.pointer), nullPointer(arrayValue.nullPointer), uninitPointer(arrayValue.uninitPointer)
+    , data(arrayValue.data), size(arrayValue.size)
 {}
 
 

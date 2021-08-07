@@ -39,7 +39,7 @@ class TestPreprocessor : public TestFixture {
 public:
     TestPreprocessor()
         : TestFixture("TestPreprocessor")
-          , preprocessor0(settings0, this) {
+        , preprocessor0(settings0, this) {
         settings0.severity.enable(Severity::information);
     }
 
