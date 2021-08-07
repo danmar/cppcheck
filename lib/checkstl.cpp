@@ -1013,7 +1013,7 @@ void CheckStl::invalidContainer()
                 const ValueFlow::Value* v = nullptr;
                 ErrorPath errorPath;
                 PathAnalysis::Info info =
-                PathAnalysis{endToken, library} .forwardFind([&](const PathAnalysis::Info& info) {
+                    PathAnalysis{endToken, library}.forwardFind([&](const PathAnalysis::Info& info) {
                     if (!info.tok->variable())
                         return false;
                     if (info.tok->varId() == 0)
@@ -1177,7 +1177,7 @@ void CheckStl::stlOutOfBounds()
         std::vector<const Token *> conds;
 
         visitAstNodes(condition,
-        [&](const Token *cond) {
+                      [&](const Token *cond) {
             if (Token::Match(cond, "%oror%|&&"))
                 return ChildrenToVisit::op1_and_op2;
             if (cond->isComparisonOp())

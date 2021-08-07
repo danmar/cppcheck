@@ -38,8 +38,7 @@
 
 class TestValueFlow : public TestFixture {
 public:
-    TestValueFlow() : TestFixture("TestValueFlow") {
-    }
+    TestValueFlow() : TestFixture("TestValueFlow") {}
 
 private:
     Settings settings;
@@ -47,10 +46,10 @@ private:
     void run() OVERRIDE {
         // strcpy, abort cfg
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
-        "<def>\n"
-        "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
-        "  <function name=\"abort\"> <noreturn>true</noreturn> </function>\n" // abort is a noreturn function
-        "</def>";
+                           "<def>\n"
+                           "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
+                           "  <function name=\"abort\"> <noreturn>true</noreturn> </function>\n" // abort is a noreturn function
+                           "</def>";
         settings.library.loadxmldata(cfg, sizeof(cfg));
         LOAD_LIB_2(settings.library, "std.cfg");
 
@@ -970,14 +969,14 @@ private:
         ASSERT_EQUALS(4, values.back().intvalue);
 
 #define CHECK3(A, B, C)                          \
-        do {                                     \
+    do {                                     \
         code = "void f() {\n"                    \
                "    x = sizeof(" A ");\n"        \
                "}";                              \
         values = tokenValues(code,"( " C " )");  \
         ASSERT_EQUALS(1U, values.size());        \
-        ASSERT_EQUALS(B, values.back().intvalue);\
-        } while(false)
+        ASSERT_EQUALS(B, values.back().intvalue); \
+    } while (false)
 #define CHECK(A, B) CHECK3(A, B, A)
 
         // standard types
@@ -1017,7 +1016,7 @@ private:
         ASSERT_EQUALS(10, values.back().intvalue);
 
 #define CHECK(A, B, C, D)                         \
-        do {                                      \
+    do {                                      \
         code = "enum " A " E " B " { E0, E1 };\n" \
                "void f() {\n"                     \
                "    x = sizeof(" C ");\n"         \
@@ -1025,7 +1024,7 @@ private:
         values = tokenValues(code,"( " C " )");   \
         ASSERT_EQUALS(1U, values.size());         \
         ASSERT_EQUALS(D, values.back().intvalue); \
-        } while(false)
+    } while (false)
 
         // enums
         CHECK("", "", "E", settings.sizeof_int);
@@ -1092,7 +1091,7 @@ private:
 #undef CHECK
 
 #define CHECK(A, B)                                   \
-        do {                                          \
+    do {                                          \
         code = "enum E " A " { E0, E1 };\n"           \
                "void f() {\n"                         \
                "    E arrE[] = { E0, E1 };\n"         \
@@ -1100,8 +1099,8 @@ private:
                "}";                                   \
         values = tokenValues(code,"( arrE )");        \
         ASSERT_EQUALS(1U, values.size());             \
-        ASSERT_EQUALS(B * 2U, values.back().intvalue);\
-        } while(false)
+        ASSERT_EQUALS(B * 2U, values.back().intvalue); \
+    } while (false)
 
         // enum array
         CHECK("", settings.sizeof_int);
@@ -1127,7 +1126,7 @@ private:
 #undef CHECK
 
 #define CHECK(A, B)                                   \
-        do {                                          \
+    do {                                          \
         code = "enum class E " A " { E0, E1 };\n"     \
                "void f() {\n"                         \
                "    E arrE[] = { E::E0, E::E1 };\n"   \
@@ -1135,8 +1134,8 @@ private:
                "}";                                   \
         values = tokenValues(code,"( arrE )");        \
         ASSERT_EQUALS(1U, values.size());             \
-        ASSERT_EQUALS(B * 2U, values.back().intvalue);\
-        } while(false)
+        ASSERT_EQUALS(B * 2U, values.back().intvalue); \
+    } while (false)
 
         // enum array
         CHECK("", settings.sizeof_int);
@@ -2444,20 +2443,20 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
 
         code = "void f(int x) {\n"
-               "    if (x != 123) { throw ""; }\n"
+               "    if (x != 123) { throw " "; }\n"
                "    a = x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 123));
 
         code = "void f(int x) {\n"
                "    if (x != 123) { }\n"
-               "    else { throw ""; }\n"
+               "    else { throw " "; }\n"
                "    a = x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
         code = "void f(int x) {\n"
                "    if (x == 123) { }\n"
-               "    else { throw ""; }\n"
+               "    else { throw " "; }\n"
                "    a = x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
@@ -4714,8 +4713,8 @@ private:
     }
 
     static std::string isPossibleContainerSizeValue(std::list<ValueFlow::Value> values,
-            MathLib::bigint i,
-            bool unique = true) {
+                                                    MathLib::bigint i,
+                                                    bool unique = true) {
         values.remove_if(std::mem_fn(&ValueFlow::Value::isSymbolicValue));
         if (!unique)
             values.remove_if(&isNotPossible);
@@ -4731,8 +4730,8 @@ private:
     }
 
     static std::string isImpossibleContainerSizeValue(std::list<ValueFlow::Value> values,
-            MathLib::bigint i,
-            bool unique = true) {
+                                                      MathLib::bigint i,
+                                                      bool unique = true) {
         values.remove_if(std::mem_fn(&ValueFlow::Value::isSymbolicValue));
         if (!unique)
             values.remove_if(&isNotImpossible);
@@ -4748,8 +4747,8 @@ private:
     }
 
     static std::string isInconclusiveContainerSizeValue(std::list<ValueFlow::Value> values,
-            MathLib::bigint i,
-            bool unique = true) {
+                                                        MathLib::bigint i,
+                                                        bool unique = true) {
         values.remove_if(std::mem_fn(&ValueFlow::Value::isSymbolicValue));
         if (!unique)
             values.remove_if(&isNotInconclusive);
@@ -5828,7 +5827,7 @@ private:
                           "  }\n"
                           "\n"
                           "  return 0;\n"
-                          "}" ;
+                          "}";
 
         ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
     }

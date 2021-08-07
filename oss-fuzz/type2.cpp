@@ -109,9 +109,9 @@ static std::string functionStart()
 }
 
 static std::string generateExpression2_conditionalCode(const std::string &indent,
-        const uint8_t *data,
-        size_t dataSize,
-        uint8_t numberOfGlobalConstants)
+                                                       const uint8_t *data,
+                                                       size_t dataSize,
+                                                       uint8_t numberOfGlobalConstants)
 {
     std::ostringstream code;
 
@@ -168,18 +168,18 @@ std::string generateCode2(const uint8_t *data, size_t dataSize)
     // create global constants
     constexpr uint8_t numberOfGlobalConstants = 0;
     /*
-      const int numberOfGlobalConstants = getValue(data, dataSize, 5);
-      for (int nr = 1; nr <= numberOfGlobalConstants; nr++) {
+       const int numberOfGlobalConstants = getValue(data, dataSize, 5);
+       for (int nr = 1; nr <= numberOfGlobalConstants; nr++) {
         const char *types[4] = {"char", "int", "long long", "float"};
         code << "const " << types[getValue(data, dataSize, 4)] << " globalconstant" << nr << " = " << generateExpression2_Expr(data, dataSize, nr - 1) << ";\n";
-      }
-    */
+       }
+     */
 
     code << "int var1 = 1;\n"
-         "int var2 = 0;\n"
-         "int var3 = 1;\n"
-         "int var4 = 0;\n"
-         "int var5 = -1;\n\n";
+        "int var2 = 0;\n"
+        "int var3 = 1;\n"
+        "int var4 = 0;\n"
+        "int var5 = -1;\n\n";
 
     code << generateExpression2_conditionalCode("", data, dataSize, numberOfGlobalConstants);
 

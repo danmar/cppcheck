@@ -101,7 +101,7 @@ void CheckSizeof::sizeofForArrayParameterError(const Token *tok)
                 "     }\n"
                 "returns 4 (in 32-bit systems) or 8 (in 64-bit systems) instead of 100 (the "
                 "size of the array in bytes).", CWE467, Certainty::normal
-               );
+                );
 }
 
 void CheckSizeof::checkSizeofForPointerSize()

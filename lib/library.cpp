@@ -57,8 +57,7 @@ static void gettokenlistfromvalid(const std::string& valid, TokenList& tokenList
 }
 
 Library::Library() : bugHunting(false), mAllocId(0)
-{
-}
+{}
 
 Library::Error Library::load(const char exename[], const char path[])
 {
@@ -1228,7 +1227,7 @@ bool Library::isCompliantValidationExpression(const char* p)
             range = true;
             has_dot = false;
             has_E = false;
-        } else if ((*p == '-')|| (*p == '+'))
+        } else if ((*p == '-') || (*p == '+'))
             error |= (!std::isdigit(*(p + 1)));
         else if (*p == ',') {
             range = false;
@@ -1387,7 +1386,7 @@ bool Library::isUse(const std::string& functionName) const
 }
 bool Library::isLeakIgnore(const std::string& functionName) const
 {
-    const  std::unordered_map<std::string, Function>::const_iterator it = functions.find(functionName);
+    const std::unordered_map<std::string, Function>::const_iterator it = functions.find(functionName);
     if (it != functions.cend())
         return it->second.leakignore;
     return false;
@@ -1496,14 +1495,14 @@ const std::string& Library::blockend(const std::string &file) const
 
 bool Library::iskeyword(const std::string &file, const std::string &keyword) const
 {
-    const std::map<std::string, std::set<std::string> >::const_iterator it =
+    const std::map<std::string, std::set<std::string>>::const_iterator it =
         mKeywords.find(Path::getFilenameExtensionInLowerCase(file));
     return (it != mKeywords.end() && it->second.count(keyword));
 }
 
 bool Library::isimporter(const std::string& file, const std::string &importer) const
 {
-    const std::map<std::string, std::set<std::string> >::const_iterator it =
+    const std::map<std::string, std::set<std::string>>::const_iterator it =
         mImporters.find(Path::getFilenameExtensionInLowerCase(file));
     return (it != mImporters.end() && it->second.count(importer) > 0);
 }

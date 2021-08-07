@@ -34,8 +34,7 @@
 
 class TestNullPointer : public TestFixture {
 public:
-    TestNullPointer() : TestFixture("TestNullPointer") {
-    }
+    TestNullPointer() : TestFixture("TestNullPointer") {}
 
 private:
     Settings settings;
@@ -1500,7 +1499,7 @@ private:
 
     void nullpointer34() {
         check("void g() {\n"
-              "    throw "";\n"
+              "    throw " ";\n"
               "}\n"
               "bool f(int * x) {\n"
               "    if (x) *x += 1;\n"

@@ -39,8 +39,8 @@ struct Platform {
 };
 
 /**
-  * @brief List of checked platforms.
-  */
+ * @brief List of checked platforms.
+ */
 class Platforms : public QObject {
     Q_OBJECT
 

@@ -33,24 +33,25 @@ int main(int argc, char *argv[])
 #ifdef NDEBUG
     try {
 #endif
-        Preprocessor::macroChar = '$'; // While macroChar is char(1) per default outside test suite, we require it to be a human-readable character here.
+    Preprocessor::macroChar = '$';     // While macroChar is char(1) per default outside test suite, we require it to be a human-readable character here.
 
-        options args(argc, argv);
+    options args(argc, argv);
 
-        if (args.help()) {
-            TestFixture::printHelp();
-            return EXIT_SUCCESS;
-        }
-        const std::size_t failedTestsCount = TestFixture::runTests(args);
-        return (failedTestsCount == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
-#ifdef NDEBUG
-    } catch (const InternalError& e) {
-        std::cout << e.errorMessage << std::endl;
-    } catch (const std::exception& error) {
-        std::cout << error.what() << std::endl;
-    } catch (...) {
-        std::cout << "Unknown exception" << std::endl;
+    if (args.help()) {
+        TestFixture::printHelp();
+        return EXIT_SUCCESS;
     }
-    return EXIT_FAILURE;
+    const std::size_t failedTestsCount = TestFixture::runTests(args);
+    return (failedTestsCount == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+#ifdef NDEBUG
+}
+catch (const InternalError& e) {
+    std::cout << e.errorMessage << std::endl;
+} catch (const std::exception& error) {
+    std::cout << error.what() << std::endl;
+} catch (...) {
+    std::cout << "Unknown exception" << std::endl;
+}
+return EXIT_FAILURE;
 #endif
 }

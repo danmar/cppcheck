@@ -25,8 +25,7 @@
 
 class TestString : public TestFixture {
 public:
-    TestString() : TestFixture("TestString") {
-    }
+    TestString() : TestFixture("TestString") {}
 
 private:
     Settings settings;

@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
 
 // Warn about deprecated compilers
 #ifdef __clang__
-#   if ( __clang_major__ < 2 || ( __clang_major__  == 2 && __clang_minor__ < 9))
+#   if (__clang_major__ < 2 || (__clang_major__  == 2 && __clang_minor__ < 9))
 #       warning "Using Clang 2.8 or earlier. Support for this version has been removed."
 #   endif
 #elif defined(__GNUC__)

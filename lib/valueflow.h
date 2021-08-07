@@ -44,34 +44,34 @@ class Variable;
 
 namespace ValueFlow {
     struct increment {
-        template <class T>
+        template<class T>
         void operator()(T& x) const {
             x++;
         }
     };
     struct decrement {
-        template <class T>
+        template<class T>
         void operator()(T& x) const {
             x--;
         }
     };
 
     struct less {
-        template <class T, class U>
+        template<class T, class U>
         bool operator()(const T& x, const U& y) const {
             return x < y;
         }
     };
 
     struct adjacent {
-        template <class T, class U>
+        template<class T, class U>
         bool operator()(const T& x, const U& y) const {
             return std::abs(x - y) == 1;
         }
     };
 
     struct equalVisitor {
-        template <class T, class U>
+        template<class T, class U>
         void operator()(bool& result, T x, U y) const {
             result = !(x > y || x < y);
         }
@@ -83,23 +83,23 @@ namespace ValueFlow {
 
         explicit Value(long long val = 0)
             : valueType(ValueType::INT),
-              bound(Bound::Point),
-              intvalue(val),
-              tokvalue(nullptr),
-              floatValue(0.0),
-              moveKind(MoveKind::NonMovedVariable),
-              varvalue(val),
-              condition(nullptr),
-              varId(0U),
-              safe(false),
-              conditional(false),
-              defaultArg(false),
-              indirect(0),
-              path(0),
-              wideintvalue(val),
-              lifetimeKind(LifetimeKind::Object),
-              lifetimeScope(LifetimeScope::Local),
-              valueKind(ValueKind::Possible)
+            bound(Bound::Point),
+            intvalue(val),
+            tokvalue(nullptr),
+            floatValue(0.0),
+            moveKind(MoveKind::NonMovedVariable),
+            varvalue(val),
+            condition(nullptr),
+            varId(0U),
+            safe(false),
+            conditional(false),
+            defaultArg(false),
+            indirect(0),
+            path(0),
+            wideintvalue(val),
+            lifetimeKind(LifetimeKind::Object),
+            lifetimeScope(LifetimeScope::Local),
+            valueKind(ValueKind::Possible)
         {}
         Value(const Token *c, long long val);
 
@@ -146,7 +146,7 @@ namespace ValueFlow {
             return true;
         }
 
-        template <class T, class F>
+        template<class T, class F>
         static void visitValue(T& self, F f) {
             switch (self.valueType) {
             case ValueType::INT:
@@ -172,19 +172,19 @@ namespace ValueFlow {
 
         struct compareVisitor {
             struct innerVisitor {
-                template <class Compare, class T, class U>
+                template<class Compare, class T, class U>
                 void operator()(bool& result, Compare compare, T x, U y) const {
                     result = compare(x, y);
                 }
             };
-            template <class Compare, class T>
+            template<class Compare, class T>
             void operator()(bool& result, const Value& rhs, Compare compare, T x) const {
                 visitValue(rhs,
                            std::bind(innerVisitor{}, std::ref(result), std::move(compare), x, std::placeholders::_1));
             }
         };
 
-        template <class Compare>
+        template<class Compare>
         bool compareValue(const Value& rhs, Compare compare) const {
             assert((!this->isSymbolicValue() && !rhs.isSymbolicValue()) ||
                    (this->valueType == rhs.valueType && this->tokvalue == rhs.tokvalue));
@@ -212,7 +212,7 @@ namespace ValueFlow {
             return !(*this == rhs);
         }
 
-        template <class T, REQUIRES("T must be an arithmetic type", std::is_arithmetic<T>)>
+        template<class T, REQUIRES("T must be an arithmetic type", std::is_arithmetic<T> )>
         bool equalTo(const T& x) const {
             bool result = false;
             visitValue(*this, std::bind(equalVisitor{}, std::ref(result), x, std::placeholders::_1));
@@ -475,8 +475,8 @@ ValueFlow::Value inferCondition(std::string op, MathLib::bigint val, const Token
 ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val);
 
 std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
-        bool escape = false,
-        ValueFlow::Value::ErrorPath errorPath = ValueFlow::Value::ErrorPath{});
+                                             bool escape = false,
+                                             ValueFlow::Value::ErrorPath errorPath = ValueFlow::Value::ErrorPath{});
 
 bool hasLifetimeToken(const Token* tok, const Token* lifetime);
 

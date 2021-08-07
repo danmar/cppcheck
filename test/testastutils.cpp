@@ -28,8 +28,7 @@
 
 class TestAstUtils : public TestFixture {
 public:
-    TestAstUtils() : TestFixture("TestAstUtils") {
-    }
+    TestAstUtils() : TestFixture("TestAstUtils") {}
 
 private:
 

@@ -30,9 +30,9 @@ SelectColorButton::SelectColorButton(QWidget* parent) :
 void SelectColorButton::updateColor()
 {
     QString btnColorStyle = QString(
-                                "background-color:rgb(%1,%2,%3);"
-                                "border-style:outset;"
-                                "border-width: 1px;")
+        "background-color:rgb(%1,%2,%3);"
+        "border-style:outset;"
+        "border-width: 1px;")
                             .arg(mColor.red())
                             .arg(mColor.green())
                             .arg(mColor.blue());

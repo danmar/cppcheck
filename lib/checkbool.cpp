@@ -69,7 +69,7 @@ void CheckBool::incrementBooleanError(const Token *tok)
         "Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n"
         "The operand of a postfix increment operator may be of type bool but it is deprecated by C++ Standard (Annex D-1) and the operand is always set to true. You should assign it the value 'true' instead.",
         CWE398, Certainty::normal
-    );
+        );
 }
 
 //---------------------------------------------------------------------------

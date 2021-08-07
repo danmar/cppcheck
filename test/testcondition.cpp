@@ -30,8 +30,7 @@
 
 class TestCondition : public TestFixture {
 public:
-    TestCondition() : TestFixture("TestCondition") {
-    }
+    TestCondition() : TestFixture("TestCondition") {}
 
 private:
     Settings settings0;
@@ -49,9 +48,9 @@ private:
         settings0.severity.enable(Severity::warning);
 
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
-        "<def>\n"
-        "  <function name=\"bar\"> <pure/> </function>\n"
-        "</def>";
+                           "<def>\n"
+                           "  <function name=\"bar\"> <pure/> </function>\n"
+                           "</def>";
         tinyxml2::XMLDocument xmldoc;
         xmldoc.Parse(cfg, sizeof(cfg));
         settings1.severity.enable(Severity::style);
@@ -905,7 +904,7 @@ private:
               "    if ((x != 1) || (x != 3) && (y == 1))\n"
               "        a++;\n"
               "}"
-             );
+              );
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x!=3' is always true\n", errout.str());
 
         check("void f(int x) {\n"
@@ -1073,21 +1072,21 @@ private:
               "    if (x >= 3 || x <= 3)\n"
               "        a++;\n"
               "}"
-             );
+              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x >= 3 || x <= 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x >= 3 || x < 3)\n"
               "        a++;\n"
               "}"
-             );
+              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x >= 3 || x < 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 3 || x <= 3)\n"
               "        a++;\n"
               "}"
-             );
+              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x > 3 || x <= 3.\n", errout.str());
 
         check("void f(int x) {\n"

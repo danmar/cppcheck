@@ -59,7 +59,7 @@ struct ProgramMemoryState {
 };
 
 using PMEvaluateFunction =
-    std::function<bool(const Token* expr, ProgramMemory* const programMemory, MathLib::bigint* result)>;
+    std::function<bool (const Token* expr, ProgramMemory* const programMemory, MathLib::bigint* result)>;
 
 void execute(const Token* expr,
              ProgramMemory* const programMemory,

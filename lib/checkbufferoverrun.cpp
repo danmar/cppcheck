@@ -191,7 +191,7 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings *set
         *dimensions = array->variable()->dimensions();
         if (dimensions->size() >= 1 && ((*dimensions)[0].num <= 1 || !(*dimensions)[0].tok)) {
             visitAstNodes(arrayToken,
-            [&](const Token *child) {
+                          [&](const Token *child) {
                 if (child->originalName() == "->") {
                     *mightBeLarger = true;
                     return ChildrenToVisit::none;
@@ -954,14 +954,14 @@ void CheckBufferOverrun::objectIndex()
                     std::copy_if(idx->values().begin(),
                                  idx->values().end(),
                                  std::back_inserter(idxValues),
-                    [&](const ValueFlow::Value& vidx) {
+                                 [&](const ValueFlow::Value& vidx) {
                         if (!vidx.isIntValue())
                             return false;
                         return vidx.path == v.path || vidx.path == 0;
                     });
                     if (idxValues.empty() ||
-                    std::any_of(idxValues.begin(), idxValues.end(), [&](const ValueFlow::Value& vidx) {
-                    if (vidx.isImpossible())
+                        std::any_of(idxValues.begin(), idxValues.end(), [&](const ValueFlow::Value& vidx) {
+                        if (vidx.isImpossible())
                             return (vidx.intvalue == 0);
                         else
                             return (vidx.intvalue != 0);
