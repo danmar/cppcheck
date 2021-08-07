@@ -88,22 +88,22 @@ int main(int argc, char* argv[])
     GetModuleFileNameA(nullptr, exename, sizeof(exename)/sizeof(exename[0])-1);
     argv[0] = exename;
 #endif
-
+// *INDENT-OFF*
 #ifdef NDEBUG
     try {
 #endif
-    return exec.check(argc, argv);
+        return exec.check(argc, argv);
 #ifdef NDEBUG
-}
-catch (const InternalError& e) {
-    std::cout << e.errorMessage << std::endl;
-} catch (const std::exception& error) {
-    std::cout << error.what() << std::endl;
-} catch (...) {
-    std::cout << "Unknown exception" << std::endl;
-}
-return EXIT_FAILURE;
+    } catch (const InternalError& e) {
+        std::cout << e.errorMessage << std::endl;
+    } catch (const std::exception& error) {
+        std::cout << error.what() << std::endl;
+    } catch (...) {
+        std::cout << "Unknown exception" << std::endl;
+    }
+    return EXIT_FAILURE;
 #endif
+// *INDENT-ON*
 }
 
 
