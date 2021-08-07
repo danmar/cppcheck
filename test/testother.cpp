@@ -33,8 +33,7 @@
 
 class TestOther : public TestFixture {
 public:
-    TestOther() : TestFixture("TestOther") {
-    }
+    TestOther() : TestFixture("TestOther") {}
 
 private:
     Settings _settings;
@@ -2168,7 +2167,7 @@ private:
             "    x.dostuff();\n"
             "    const U& y = dynamic_cast<U const &>(x)\n"
             "}"
-        );
+            );
         ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
@@ -4860,7 +4859,7 @@ private:
               false, // runSimpleChecks
               false, // verbose
               nullptr   // settings
-             );
+              );
         ASSERT_EQUALS("", errout.str());
 
         // make sure there are not "same expression" fp when there are different ({}) expressions
@@ -9289,15 +9288,15 @@ private:
     }
 
     void knownArgumentTernaryOperator() { // #10374
-      check("void f(bool a, bool b) {\n"
-            "    const T* P = nullptr; \n"
-            "    long N = 0; \n"
-            "    const bool c = foo(); \n"
-            "    bar(P, N); \n"
-            "    if (c ? a : b)\n"
-            "      baz(P, N); \n"
-            "}");
-      ASSERT_EQUALS("", errout.str());
+        check("void f(bool a, bool b) {\n"
+              "    const T* P = nullptr; \n"
+              "    long N = 0; \n"
+              "    const bool c = foo(); \n"
+              "    bar(P, N); \n"
+              "    if (c ? a : b)\n"
+              "      baz(P, N); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkComparePointers() {

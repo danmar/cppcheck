@@ -115,8 +115,7 @@ public:
             _read(read),
             _write(write),
             _modified(modified),
-            _allocateMemory(allocateMemory) {
-        }
+            _allocateMemory(allocateMemory) {}
 
         /** variable is used.. set both read+write */
         void use() {
@@ -1479,7 +1478,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
     // a type that has no side effects (no constructors and no members with constructors)
     /** @todo false negative: check constructors for side effects */
     const std::pair<std::map<const Type *,bool>::iterator,bool> found=mIsRecordTypeWithoutSideEffectsMap.insert(
-                std::pair<const Type *,bool>(type,false)); //Initialize with side effects for possible recursions
+        std::pair<const Type *,bool>(type,false));         //Initialize with side effects for possible recursions
     bool & withoutSideEffects = found.first->second;
     if (!found.second)
         return withoutSideEffects;
@@ -1521,7 +1520,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
                     }
                     const Function* initValueFunc = valueToken->function();
                     if (initValueFunc && !isFunctionWithoutSideEffects(*initValueFunc, valueToken,
-                    std::list<const Function*> {})) {
+                                                                       std::list<const Function*> {})) {
                         return withoutSideEffects = false;
                     }
                 }
@@ -1575,7 +1574,7 @@ bool CheckUnusedVar::isEmptyType(const Type* type)
     // a type that has no variables and no constructor
 
     const std::pair<std::map<const Type *,bool>::iterator,bool> found=mIsEmptyTypeMap.insert(
-                std::pair<const Type *,bool>(type,false));
+        std::pair<const Type *,bool>(type,false));
     bool & emptyType=found.first->second;
     if (!found.second)
         return emptyType;
@@ -1597,7 +1596,7 @@ bool CheckUnusedVar::isEmptyType(const Type* type)
 }
 
 bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const Token* functionUsageToken,
-        std::list<const Function*> checkedFuncs)
+                                                  std::list<const Function*> checkedFuncs)
 {
     // no body to analyze
     if (!func.hasBody()) {

@@ -65,7 +65,7 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
         return;
 
     std::ifstream f(filename.c_str());
-    if (! f.is_open()) {
+    if (!f.is_open()) {
         /*
          * Recursively search for includes in other directories.
          * Files are searched according to the following priority:

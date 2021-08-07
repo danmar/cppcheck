@@ -1832,14 +1832,14 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
                    const Token *typeEnd, nonneg int index_, AccessControl access_,
                    const Type *type_, const Scope *scope_)
     : mNameToken(name_),
-      mTypeStartToken(typeStart),
-      mTypeEndToken(typeEnd),
-      mIndex(index_),
-      mAccess(access_),
-      mFlags(0),
-      mType(type_),
-      mScope(scope_),
-      mValueType(nullptr)
+    mTypeStartToken(typeStart),
+    mTypeEndToken(typeEnd),
+    mIndex(index_),
+    mAccess(access_),
+    mFlags(0),
+    mType(type_),
+    mScope(scope_),
+    mValueType(nullptr)
 {
     if (!mTypeStartToken && mTypeEndToken) {
         mTypeStartToken = mTypeEndToken;
@@ -2118,21 +2118,21 @@ Function::Function(const Tokenizer *mTokenizer,
                    const Token *tokDef,
                    const Token *tokArgDef)
     : tokenDef(tokDef),
-      argDef(tokArgDef),
-      token(nullptr),
-      arg(nullptr),
-      retDef(nullptr),
-      retType(nullptr),
-      functionScope(nullptr),
-      nestedIn(scope),
-      initArgCount(0),
-      type(eFunction),
-      access(AccessControl::Public),
-      noexceptArg(nullptr),
-      throwArg(nullptr),
-      templateDef(nullptr),
-      functionPointerUsage(nullptr),
-      mFlags(0)
+    argDef(tokArgDef),
+    token(nullptr),
+    arg(nullptr),
+    retDef(nullptr),
+    retType(nullptr),
+    functionScope(nullptr),
+    nestedIn(scope),
+    initArgCount(0),
+    type(eFunction),
+    access(AccessControl::Public),
+    noexceptArg(nullptr),
+    throwArg(nullptr),
+    templateDef(nullptr),
+    functionPointerUsage(nullptr),
+    mFlags(0)
 {
     // operator function
     if (::isOperator(tokenDef)) {
@@ -2238,21 +2238,21 @@ Function::Function(const Tokenizer *mTokenizer,
 
 Function::Function(const Token *tokenDef, const std::string &clangType)
     : tokenDef(tokenDef),
-      argDef(nullptr),
-      token(nullptr),
-      arg(nullptr),
-      retDef(nullptr),
-      retType(nullptr),
-      functionScope(nullptr),
-      nestedIn(nullptr),
-      initArgCount(0),
-      type(eFunction),
-      access(AccessControl::Public),
-      noexceptArg(nullptr),
-      throwArg(nullptr),
-      templateDef(nullptr),
-      functionPointerUsage(nullptr),
-      mFlags(0)
+    argDef(nullptr),
+    token(nullptr),
+    arg(nullptr),
+    retDef(nullptr),
+    retType(nullptr),
+    functionScope(nullptr),
+    nestedIn(nullptr),
+    initArgCount(0),
+    type(eFunction),
+    access(AccessControl::Public),
+    noexceptArg(nullptr),
+    throwArg(nullptr),
+    templateDef(nullptr),
+    functionPointerUsage(nullptr),
+    mFlags(0)
 {
     // operator function
     if (::isOperator(tokenDef)) {
@@ -3633,9 +3633,9 @@ void SymbolDatabase::printOut(const char *title) const
         }
         std::cout << std::endl;
         std::cout << "    needInitialization: " << (type->needInitialization == Type::NeedInitialization::Unknown ? "Unknown" :
-                  type->needInitialization == Type::NeedInitialization::True ? "True" :
-                  type->needInitialization == Type::NeedInitialization::False ? "False" :
-                  "Invalid") << std::endl;
+                                                    type->needInitialization == Type::NeedInitialization::True ? "True" :
+                                                    type->needInitialization == Type::NeedInitialization::False ? "False" :
+                                                    "Invalid") << std::endl;
 
         std::cout << "    derivedFrom[" << type->derivedFrom.size() << "] = (";
         std::size_t count = type->derivedFrom.size();
@@ -4047,7 +4047,7 @@ const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType
             // avoid endless recursion, see #5289 Crash: Stack overflow in isImplicitlyVirtual_rec when checking SVN and
             // #5590 with a loop within the class hierarchy.
             const Function *func = getOverriddenFunctionRecursive(derivedFromType, foundAllBaseClasses);
-            if (func)  {
+            if (func) {
                 return func;
             }
         }
@@ -4083,8 +4083,7 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
     function(nullptr),
     enumType(nullptr),
     enumClass(false)
-{
-}
+{}
 
 Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_) :
     check(check_),
@@ -4386,7 +4385,7 @@ const Variable *Scope::getVariable(const std::string &varname) const
 
 static const Token* skipPointers(const Token* tok)
 {
-    while (Token::Match(tok, "*|&|&&")  || (Token::Match(tok, "( [*&]") && Token::Match(tok->link()->next(), "(|["))) {
+    while (Token::Match(tok, "*|&|&&") || (Token::Match(tok, "( [*&]") && Token::Match(tok->link()->next(), "(|["))) {
         tok = tok->next();
         if (tok->strAt(-1) == "(" && Token::Match(tok, "%type% ::"))
             tok = tok->tokAt(2);
@@ -4628,7 +4627,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
             const std::vector<Type::BaseInfo> & derivedFrom = scope->definedType->derivedFrom;
             for (const Type::BaseInfo & i : derivedFrom) {
                 const Type *derivedFromType = i.type;
-                if (derivedFromType && derivedFromType ->classScope) {
+                if (derivedFromType && derivedFromType->classScope) {
                     enumerator = derivedFromType->classScope->findEnumerator(tokStr);
 
                     if (enumerator)
@@ -5598,7 +5597,7 @@ Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *n
 
 namespace {
 
-#define C_KEYWORDS\
+#define C_KEYWORDS \
     "_Alignas", "_Alignof", "_Atomic", "_Bool", "_Complex", "_Generic", "_Imaginary", "_Noreturn", \
     "_Static_assert", "_Thread_local", "auto", "break", "case", "char", "const", "continue", "default", \
     "do", "double", "else", "enum", "extern", "float", "for", "goto", "if", "inline", "int", "long", \

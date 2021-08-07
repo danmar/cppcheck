@@ -29,8 +29,7 @@
 
 class TestExprEngine : public TestFixture {
 public:
-    TestExprEngine() : TestFixture("TestExprEngine") {
-    }
+    TestExprEngine() : TestFixture("TestExprEngine") {}
 
 private:
     void run() OVERRIDE {

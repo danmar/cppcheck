@@ -334,8 +334,8 @@ static void removeModifiedVars(ProgramMemory& pm, const Token* tok, const Token*
 }
 
 static ProgramMemory getInitialProgramState(const Token* tok,
-        const Token* origin,
-        const ProgramMemory::Map& vars = ProgramMemory::Map {})
+                                            const Token* origin,
+                                            const ProgramMemory::Map& vars = ProgramMemory::Map {})
 {
     ProgramMemory pm;
     if (origin) {
@@ -654,8 +654,8 @@ void execute(const Token* expr,
             *result = result1 / result2;
         else if (expr->str() == "%")
             *result = result1 % result2;
-        else if (expr->str() == "<<")  {
-            if (result2 < 0 || result1 < 0 || result2 >= MathLib::bigint_bits)  { // don't perform UB
+        else if (expr->str() == "<<") {
+            if (result2 < 0 || result1 < 0 || result2 >= MathLib::bigint_bits) {  // don't perform UB
                 *error= true;
             } else {
                 *result = result1 << result2;

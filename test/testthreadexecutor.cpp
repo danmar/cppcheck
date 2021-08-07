@@ -26,8 +26,7 @@
 
 class TestThreadExecutor : public TestFixture {
 public:
-    TestThreadExecutor() : TestFixture("TestThreadExecutor") {
-    }
+    TestThreadExecutor() : TestFixture("TestThreadExecutor") {}
 
 private:
     Settings settings;

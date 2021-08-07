@@ -241,12 +241,12 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
 
             if (addon == CLANG_ANALYZER) {
                 /*
-                // Using clang
-                args.insert(0,"--analyze");
-                args.insert(1, "-Xanalyzer");
-                args.insert(2, "-analyzer-output=text");
-                args << fileName;
-                */
+                   // Using clang
+                   args.insert(0,"--analyze");
+                   args.insert(1, "-Xanalyzer");
+                   args.insert(2, "-analyzer-output=text");
+                   args << fileName;
+                 */
                 // Using clang-tidy
                 args.insert(0,"-checks=-*,clang-analyzer-*");
                 args.insert(1, fileName);

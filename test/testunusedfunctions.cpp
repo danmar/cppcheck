@@ -26,8 +26,7 @@
 
 class TestUnusedFunctions : public TestFixture {
 public:
-    TestUnusedFunctions() : TestFixture("TestUnusedFunctions") {
-    }
+    TestUnusedFunctions() : TestFixture("TestUnusedFunctions") {}
 
 private:
     Settings settings;

@@ -257,12 +257,12 @@ static bool isLocalVarNoAutoDealloc(const Token *varTok, const bool isCpp)
 }
 
 /** checks if nameToken is a name of a function in a function call:
-*     func(arg)
-* or
-*     func<temp1_arg>(arg)
-* @param nameToken Function name token
-* @return opening parenthesis token or NULL if not a function call
-*/
+ *     func(arg)
+ * or
+ *     func<temp1_arg>(arg)
+ * @param nameToken Function name token
+ * @return opening parenthesis token or NULL if not a function call
+ */
 
 static const Token * isFunctionCall(const Token * nameToken)
 {

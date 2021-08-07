@@ -21,8 +21,7 @@
 Report::Report(const QString &filename) :
     QObject(),
     mFilename(filename)
-{
-}
+{}
 
 Report::~Report()
 {

@@ -55,7 +55,7 @@ using std::memset;
 
 ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
     : mFiles(files), mSettings(settings), mErrorLogger(errorLogger), mFileCount(0)
-      // Not initialized mFileSync, mErrorSync, mReportSync
+    // Not initialized mFileSync, mErrorSync, mReportSync
 {
 #if defined(THREADING_MODEL_FORK)
     mWpipe = 0;
@@ -81,7 +81,7 @@ ThreadExecutor::~ThreadExecutor()
 
 void ThreadExecutor::addFileContent(const std::string &path, const std::string &content)
 {
-    mFileContents[ path ] = content;
+    mFileContents[path] = content;
 }
 
 int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
@@ -139,11 +139,11 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
         unsigned int fileResult = 0;
         iss >> fileResult;
         result += fileResult;
-        delete [] buf;
+        delete[] buf;
         return -1;
     }
 
-    delete [] buf;
+    delete[] buf;
     return 1;
 }
 
@@ -224,7 +224,7 @@ unsigned int ThreadExecutor::check()
                     resultOfCheck = fileChecker.check(*iFileSettings);
                 } else if (!mFileContents.empty() && mFileContents.find(iFile->first) != mFileContents.end()) {
                     // File content was given as a string
-                    resultOfCheck = fileChecker.check(iFile->first, mFileContents[ iFile->first ]);
+                    resultOfCheck = fileChecker.check(iFile->first, mFileContents[iFile->first]);
                 } else {
                     // Read file from a file
                     resultOfCheck = fileChecker.check(iFile->first);
@@ -327,18 +327,18 @@ unsigned int ThreadExecutor::check()
 void ThreadExecutor::writeToPipe(PipeSignal type, const std::string &data)
 {
     unsigned int len = static_cast<unsigned int>(data.length() + 1);
-    char *out = new char[ len + 1 + sizeof(len)];
+    char *out = new char[len + 1 + sizeof(len)];
     out[0] = static_cast<char>(type);
     std::memcpy(&(out[1]), &len, sizeof(len));
     std::memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
     if (write(mWpipe, out, len + 1 + sizeof(len)) <= 0) {
-        delete [] out;
+        delete[] out;
         out = nullptr;
         std::cerr << "#### ThreadExecutor::writeToPipe, Failed to write to pipe" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
-    delete [] out;
+    delete[] out;
 }
 
 void ThreadExecutor::reportOut(const std::string &outmsg, Color c)
@@ -523,7 +523,7 @@ void ThreadExecutor::reportInfo(const ErrorMessage &msg)
     report(msg, MessageType::REPORT_INFO);
 }
 
-void ThreadExecutor::bughuntingReport(const std::string  &/*str*/)
+void ThreadExecutor::bughuntingReport(const std::string  & /*str*/)
 {
     // TODO
 }
@@ -562,32 +562,23 @@ void ThreadExecutor::report(const ErrorMessage &msg, MessageType msgType)
 
 #else
 
-void ThreadExecutor::addFileContent(const std::string &/*path*/, const std::string &/*content*/)
-{
-
-}
+void ThreadExecutor::addFileContent(const std::string & /*path*/, const std::string & /*content*/)
+{}
 
 unsigned int ThreadExecutor::check()
 {
     return 0;
 }
 
-void ThreadExecutor::reportOut(const std::string &/*outmsg*/, Color)
-{
+void ThreadExecutor::reportOut(const std::string & /*outmsg*/, Color)
+{}
+void ThreadExecutor::reportErr(const ErrorMessage & /*msg*/)
+{}
 
-}
-void ThreadExecutor::reportErr(const ErrorMessage &/*msg*/)
-{
+void ThreadExecutor::reportInfo(const ErrorMessage & /*msg*/)
+{}
 
-}
-
-void ThreadExecutor::reportInfo(const ErrorMessage &/*msg*/)
-{
-
-}
-
-void ThreadExecutor::bughuntingReport(const std::string &/*str*/)
-{
-}
+void ThreadExecutor::bughuntingReport(const std::string & /*str*/)
+{}
 
 #endif

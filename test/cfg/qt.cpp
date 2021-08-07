@@ -341,7 +341,7 @@ void QStack3()
 }
 
 // Verify that Qt macros do not result in syntax errors, false positives or other issues.
-class MacroTest1: public QObject {
+class MacroTest1 : public QObject {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "com.foo.bar" FILE "test.json")
 
@@ -373,8 +373,7 @@ void MacroTest2_test()
 
 void validCode(int * pIntPtr, QString & qstrArg)
 {
-    if (QFile::exists("test")) {
-    }
+    if (QFile::exists("test")) {}
 
     if (pIntPtr != Q_NULLPTR) {
         *pIntPtr = 5;
@@ -384,8 +383,7 @@ void validCode(int * pIntPtr, QString & qstrArg)
         forever {
         }
     } else if (pIntPtr && *pIntPtr == 2) {
-        Q_FOREVER {
-        }
+        Q_FOREVER {}
     }
 
     if (Q_LIKELY(pIntPtr)) {}
@@ -399,13 +397,11 @@ void validCode(int * pIntPtr, QString & qstrArg)
 
     //#9650
     QString qstr1(qstrArg);
-    if (qstr1.length() == 1) {
-    } else {
+    if (qstr1.length() == 1) {} else {
         qstr1.chop(1);
         if (qstr1.length() == 1) {}
     }
-    if (qstr1.length() == 1) {
-    } else {
+    if (qstr1.length() == 1) {} else {
         qstr1.remove(1);
         if (qstr1.length() == 1) {}
     }

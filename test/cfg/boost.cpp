@@ -15,16 +15,13 @@
 
 
 BOOST_FORCEINLINE void boost_forceinline_test()
-{
-}
+{}
 
 BOOST_NOINLINE void boost_noinline_test()
-{
-}
+{}
 
 BOOST_NORETURN void boost_noreturn_test()
-{
-}
+{}
 
 void print_hello()
 {
@@ -33,10 +30,8 @@ void print_hello()
 
 void valid_code(boost::function<void(void)> &pf_print_hello)
 {
-    if (BOOST_LIKELY(1)) {
-    }
-    if (BOOST_UNLIKELY(0)) {
-    }
+    if (BOOST_LIKELY(1)) {}
+    if (BOOST_UNLIKELY(0)) {}
 
     int int1 = 5;
     boost::endian::endian_reverse_inplace(int1);

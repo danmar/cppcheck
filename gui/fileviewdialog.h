@@ -31,11 +31,11 @@ class QTextEdit;
 
 
 /**
-* @brief File view -dialog.
-* This dialog shows text files. It is used for showing the license file and
-* the authors list.
-*
-*/
+ * @brief File view -dialog.
+ * This dialog shows text files. It is used for showing the license file and
+ * the authors list.
+ *
+ */
 class FileViewDialog : public QDialog {
     Q_OBJECT
 public:
@@ -47,11 +47,11 @@ public:
 protected:
 
     /**
-    * @brief Load text file contents to edit control.
-    *
-    * @param filename File to load.
-    * @param edit Control where to load the file contents.
-    */
+     * @brief Load text file contents to edit control.
+     *
+     * @param filename File to load.
+     * @param edit Control where to load the file contents.
+     */
     void loadTextFile(const QString &filename, QTextEdit *edit);
 
     Ui::Fileview mUI;

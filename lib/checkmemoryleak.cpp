@@ -82,11 +82,11 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         tok2 = tok2->link();
         tok2 = tok2 ? tok2->next() : nullptr;
     }
-    if (! tok2)
+    if (!tok2)
         return No;
     if (tok2->str() == "::")
         tok2 = tok2->next();
-    if (! tok2->isName())
+    if (!tok2->isName())
         return No;
 
     if (!Token::Match(tok2, "%name% ::|. %type%")) {
@@ -169,7 +169,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok
         tok2 = tok2->link();
         tok2 = tok2 ? tok2->next() : nullptr;
     }
-    if (! tok2)
+    if (!tok2)
         return No;
 
     if (!Token::Match(tok2, "%name% ("))
@@ -275,7 +275,7 @@ void CheckMemoryLeak::memoryLeak(const Token *tok, const std::string &varname, A
 {
     if (alloctype == CheckMemoryLeak::File ||
         alloctype == CheckMemoryLeak::Pipe ||
-        alloctype == CheckMemoryLeak::Fd   ||
+        alloctype == CheckMemoryLeak::Fd ||
         alloctype == CheckMemoryLeak::OtherRes)
         resourceLeakError(tok, varname);
     else
@@ -681,7 +681,7 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
                     if (memberDealloc != CheckMemoryLeak::No && memberDealloc != dealloc)
                         dealloc = CheckMemoryLeak::Many;
 
-                    if (dealloc != CheckMemoryLeak::Many && memberAlloc != CheckMemoryLeak::No &&  memberAlloc != Many && memberAlloc != dealloc) {
+                    if (dealloc != CheckMemoryLeak::Many && memberAlloc != CheckMemoryLeak::No && memberAlloc != Many && memberAlloc != dealloc) {
                         std::list<const Token *> callstack;
                         callstack.push_back(tok);
                         mismatchAllocDealloc(callstack, classname + "::" + varname);

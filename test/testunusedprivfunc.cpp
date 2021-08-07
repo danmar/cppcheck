@@ -28,8 +28,7 @@
 
 class TestUnusedPrivateFunction : public TestFixture {
 public:
-    TestUnusedPrivateFunction() : TestFixture("TestUnusedPrivateFunction") {
-    }
+    TestUnusedPrivateFunction() : TestFixture("TestUnusedPrivateFunction") {}
 
 private:
     Settings settings;
@@ -663,7 +662,7 @@ private:
               "{"
               "    MountOperation aExample(10);"
               "}"
-             );
+              );
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -690,7 +689,7 @@ private:
               "{"
               "    MountOperation aExample(10);"
               "}"
-             );
+              );
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -717,7 +716,7 @@ private:
               "{"
               "    MountOperation aExample(10);"
               "}"
-             );
+              );
         ASSERT_EQUALS("", errout.str());
     }
 

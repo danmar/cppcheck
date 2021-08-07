@@ -32,8 +32,7 @@ struct InternalError;
 
 class TestSimplifyTemplate : public TestFixture {
 public:
-    TestSimplifyTemplate() : TestFixture("TestSimplifyTemplate") {
-    }
+    TestSimplifyTemplate() : TestFixture("TestSimplifyTemplate") {}
 
 private:
     Settings settings;
@@ -1395,9 +1394,9 @@ private:
     void template57() { // #7891
         const char code[] = "template<class T> struct Test { Test(T); };\n"
                             "Test<unsigned long> test( 0 );";
-        const char exp [] = "struct Test<unsignedlong> ; "
-                            "Test<unsignedlong> test ( 0 ) ; "
-                            "struct Test<unsignedlong> { Test<unsignedlong> ( unsigned long ) ; } ;";
+        const char exp[] = "struct Test<unsignedlong> ; "
+                           "Test<unsignedlong> test ( 0 ) ; "
+                           "struct Test<unsignedlong> { Test<unsignedlong> ( unsigned long ) ; } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -1531,25 +1530,25 @@ private:
                             "    t_func<1>();\n"
                             "}\n"
                             "};";
-        const char exp [] = "bool foo<int> ( ) ; "
-                            "struct A { "
-                            "void t_func<0> ( ) ; "
-                            "void t_func<1> ( ) ; "
-                            "void t_caller ( ) "
-                            "{ "
-                            "t_func<0> ( ) ; "
-                            "t_func<1> ( ) ; "
-                            "} "
-                            "} ; "
-                            "void A :: t_func<0> ( ) "
-                            "{ "
-                            "if ( 0 != 0 || foo<int> ( ) ) { ; } "
-                            "} "
-                            "void A :: t_func<1> ( ) "
-                            "{ "
-                            "if ( 1 != 0 || foo<int> ( ) ) { ; } "
-                            "} "
-                            "bool foo<int> ( ) { return true ; }";
+        const char exp[] = "bool foo<int> ( ) ; "
+                           "struct A { "
+                           "void t_func<0> ( ) ; "
+                           "void t_func<1> ( ) ; "
+                           "void t_caller ( ) "
+                           "{ "
+                           "t_func<0> ( ) ; "
+                           "t_func<1> ( ) ; "
+                           "} "
+                           "} ; "
+                           "void A :: t_func<0> ( ) "
+                           "{ "
+                           "if ( 0 != 0 || foo<int> ( ) ) { ; } "
+                           "} "
+                           "void A :: t_func<1> ( ) "
+                           "{ "
+                           "if ( 1 != 0 || foo<int> ( ) ) { ; } "
+                           "} "
+                           "bool foo<int> ( ) { return true ; }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -1569,17 +1568,17 @@ private:
                             "  AssociationDAGlobalGraphObserver<string,unsigned int> grObs;\n"
                             " return 1;\n"
                             "}";
-        const char exp [] = "namespace bpp "
-                            "{ "
-                            "class AssociationDAGraphImplObserver<string,unsignedint,DAGlobalGraph> ; "
-                            "} "
-                            "using namespace bpp ; "
-                            "int main ( ) { "
-                            "bpp :: AssociationDAGraphImplObserver<string,unsignedint,DAGlobalGraph> grObs ; "
-                            "return 1 ; "
-                            "} class bpp :: AssociationDAGraphImplObserver<string,unsignedint,DAGlobalGraph> : "
-                            "public AssociationGraphImplObserver < std :: string , unsigned int , DAGlobalGraph > "
-                            "{ } ;";
+        const char exp[] = "namespace bpp "
+                           "{ "
+                           "class AssociationDAGraphImplObserver<string,unsignedint,DAGlobalGraph> ; "
+                           "} "
+                           "using namespace bpp ; "
+                           "int main ( ) { "
+                           "bpp :: AssociationDAGraphImplObserver<string,unsignedint,DAGlobalGraph> grObs ; "
+                           "return 1 ; "
+                           "} class bpp :: AssociationDAGraphImplObserver<string,unsignedint,DAGlobalGraph> : "
+                           "public AssociationGraphImplObserver < std :: string , unsigned int , DAGlobalGraph > "
+                           "{ } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -1589,12 +1588,12 @@ private:
                             "};\n"
                             "template <class T> const int ** Fred<T>::foo() { return nullptr; }\n"
                             "Fred<int> fred;";
-        const char exp [] = "struct Fred<int> ; "
-                            "Fred<int> fred ; "
-                            "struct Fred<int> { "
-                            "const int * * foo ( ) ; "
-                            "} ; "
-                            "const int * * Fred<int> :: foo ( ) { return nullptr ; }";
+        const char exp[] = "struct Fred<int> ; "
+                           "Fred<int> fred ; "
+                           "struct Fred<int> { "
+                           "const int * * foo ( ) ; "
+                           "} ; "
+                           "const int * * Fred<int> :: foo ( ) { return nullptr ; }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -1637,12 +1636,12 @@ private:
                             "    T value;\n"
                             "};\n"
                             "Fred<int> fred;";
-        const char exp [] = "union Fred<int> ; "
-                            "Fred<int> fred ; "
-                            "union Fred<int> { "
-                            "char dummy [ sizeof ( int ) ] ; "
-                            "int value ; "
-                            "} ;";
+        const char exp[] = "union Fred<int> ; "
+                           "Fred<int> fred ; "
+                           "union Fred<int> { "
+                           "char dummy [ sizeof ( int ) ] ; "
+                           "int value ; "
+                           "} ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -1652,12 +1651,12 @@ private:
                             "    template <class T> T lookup() { return test; }\n"
                             "    int Fun() { return lookup<int>(); }\n"
                             "};";
-        const char exp [] = "class Test { "
-                            "int test ; "
-                            "int lookup<int> ( ) ; "
-                            "int Fun ( ) { return lookup<int> ( ) ; } "
-                            "} ; "
-                            "int Test :: lookup<int> ( ) { return test ; }";
+        const char exp[] = "class Test { "
+                           "int test ; "
+                           "int lookup<int> ( ) ; "
+                           "int Fun ( ) { return lookup<int> ( ) ; } "
+                           "} ; "
+                           "int Test :: lookup<int> ( ) { return test ; }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -1670,22 +1669,22 @@ private:
                             "class Bar : private Bar<void, void> {\n"
                             "   void foo() { }\n"
                             "};";
-        const char exp [] = "template < typename T , typename V , int KeySize = 0 > class Bar ; "
-                            "class Bar<void,void> ; "
-                            "class Bar<void,void> { "
-                            "} ; "
-                            "template < typename K , typename V , int KeySize = 0 > "
-                            "class Bar : private Bar<void,void> { "
-                            "void foo ( ) { } "
-                            "} ;";
-        const char act [] = "template < typename T , typename V , int KeySize = 0 > class Bar ; "
-                            "class Bar<void,void> { "
-                            "} ; "
-                            "class Bar<void,void> ; "
-                            "template < typename K , typename V , int KeySize = 0 > "
-                            "class Bar : private Bar<void,void> { "
-                            "void foo ( ) { } "
-                            "} ;";
+        const char exp[] = "template < typename T , typename V , int KeySize = 0 > class Bar ; "
+                           "class Bar<void,void> ; "
+                           "class Bar<void,void> { "
+                           "} ; "
+                           "template < typename K , typename V , int KeySize = 0 > "
+                           "class Bar : private Bar<void,void> { "
+                           "void foo ( ) { } "
+                           "} ;";
+        const char act[] = "template < typename T , typename V , int KeySize = 0 > class Bar ; "
+                           "class Bar<void,void> { "
+                           "} ; "
+                           "class Bar<void,void> ; "
+                           "template < typename K , typename V , int KeySize = 0 > "
+                           "class Bar : private Bar<void,void> { "
+                           "void foo ( ) { } "
+                           "} ;";
         TODO_ASSERT_EQUALS(exp, act, tok(code));
     }
 
@@ -1702,11 +1701,11 @@ private:
                             "}\n"
                             "\n"
                             "Reference< class XPropertyList > dostuff();";
-        const char exp [] = "int f1 ( int * pInterface , int x ) { return 0 ; } "
-                            "class Reference<XPropertyList> ; "
-                            "Reference<XPropertyList> dostuff ( ) ; "
-                            "class Reference<XPropertyList> { template < class XPropertyList > int i ( ) ; int * pInterface ; } ; "
-                            "int Reference<XPropertyList> :: i ( ) { return f1 ( pInterface , XPropertyList :: static_type ( ) ) ; }";
+        const char exp[] = "int f1 ( int * pInterface , int x ) { return 0 ; } "
+                           "class Reference<XPropertyList> ; "
+                           "Reference<XPropertyList> dostuff ( ) ; "
+                           "class Reference<XPropertyList> { template < class XPropertyList > int i ( ) ; int * pInterface ; } ; "
+                           "int Reference<XPropertyList> :: i ( ) { return f1 ( pInterface , XPropertyList :: static_type ( ) ) ; }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -1715,10 +1714,10 @@ private:
                             "const Tokenizer<Node, Path> *tokenizer() const;\n"
                             "template <typename N, typename P>\n"
                             "Tokenizer<N, P>::Tokenizer() { }";
-        const char exp [] = "template < typename N , typename P > class Tokenizer ; "
-                            "const Tokenizer < Node , Path > * tokenizer ( ) const ; "
-                            "template < typename N , typename P > "
-                            "Tokenizer < N , P > :: Tokenizer ( ) { }";
+        const char exp[] = "template < typename N , typename P > class Tokenizer ; "
+                           "const Tokenizer < Node , Path > * tokenizer ( ) const ; "
+                           "template < typename N , typename P > "
+                           "Tokenizer < N , P > :: Tokenizer ( ) { }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -2328,35 +2327,35 @@ private:
 
     void template97() {
         const char code[] ="namespace NS1 {\n"
-                           "    namespace NS2 {\n"
-                           "        namespace NS3 {\n"
-                           "            namespace NS4 {\n"
-                           "                template<class T>\n"
-                           "                class Fred {\n"
-                           "                    T * t;\n"
-                           "                public:\n"
-                           "                    Fred<T>() : t(nullptr) {}\n"
-                           "                };\n"
-                           "            }\n"
-                           "            using namespace NS4;\n"
-                           "            Fred<bool> fred_bool;\n"
-                           "            NS4::Fred<char> fred_char;\n"
-                           "        }\n"
-                           "        using namespace NS3;\n"
-                           "        NS4::Fred<short> fred_short;\n"
-                           "        using namespace NS3::NS4;\n"
-                           "        Fred<int> fred_int;\n"
-                           "        NS3::NS4::Fred<long> fred_long;\n"
-                           "        NS2::NS3::NS4::Fred<float> fred_float;\n"
-                           "        NS1::NS2::NS3::NS4::Fred<double> fred_double;\n"
-                           "    }\n"
-                           "    using namespace NS2;\n"
-                           "    NS3::NS4::Fred<float> fred_float1;\n"
-                           "    NS2::NS3::NS4::Fred<double> fred_double1;\n"
-                           "}\n"
-                           "using namespace NS1::NS2::NS3::NS4;\n"
-                           "Fred<bool> fred_bool1;\n"
-                           "NS1::NS2::NS3::NS4::Fred<int> fred_int1;";
+                            "    namespace NS2 {\n"
+                            "        namespace NS3 {\n"
+                            "            namespace NS4 {\n"
+                            "                template<class T>\n"
+                            "                class Fred {\n"
+                            "                    T * t;\n"
+                            "                public:\n"
+                            "                    Fred<T>() : t(nullptr) {}\n"
+                            "                };\n"
+                            "            }\n"
+                            "            using namespace NS4;\n"
+                            "            Fred<bool> fred_bool;\n"
+                            "            NS4::Fred<char> fred_char;\n"
+                            "        }\n"
+                            "        using namespace NS3;\n"
+                            "        NS4::Fred<short> fred_short;\n"
+                            "        using namespace NS3::NS4;\n"
+                            "        Fred<int> fred_int;\n"
+                            "        NS3::NS4::Fred<long> fred_long;\n"
+                            "        NS2::NS3::NS4::Fred<float> fred_float;\n"
+                            "        NS1::NS2::NS3::NS4::Fred<double> fred_double;\n"
+                            "    }\n"
+                            "    using namespace NS2;\n"
+                            "    NS3::NS4::Fred<float> fred_float1;\n"
+                            "    NS2::NS3::NS4::Fred<double> fred_double1;\n"
+                            "}\n"
+                            "using namespace NS1::NS2::NS3::NS4;\n"
+                            "Fred<bool> fred_bool1;\n"
+                            "NS1::NS2::NS3::NS4::Fred<int> fred_int1;";
         const char exp[] = "namespace NS1 { "
                            "namespace NS2 { "
                            "namespace NS3 { "
@@ -2836,10 +2835,10 @@ private:
                                 "template <bool> struct e;\n"
                                 "template <typename a> using f = typename e<c<d<a>>::g>::h;";
             const char exp[] =  "template < typename a , a > struct b { } ; "
-                                "template < typename > struct c ; "
-                                "template < typename > struct d : b < bool , std :: is_polymorphic < int > { } > { } ; "
-                                "template < bool > struct e ; "
-                                "template < typename a > using f = typename e < c < d < a > > :: g > :: h ;";
+                               "template < typename > struct c ; "
+                               "template < typename > struct d : b < bool , std :: is_polymorphic < int > { } > { } ; "
+                               "template < bool > struct e ; "
+                               "template < typename a > using f = typename e < c < d < a > > :: g > :: h ;";
             ASSERT_EQUALS(exp, tok(code));
         }
         {
@@ -2848,9 +2847,9 @@ private:
                                 "template <typename a> struct d : b<bool, std::is_empty<a>{}> {};\n"
                                 "template <typename a> using e = typename c<std::is_final<a>{}, d<a>>::f;\n";
             const char exp[] =  "template < typename a , a > struct b ; "
-                                "template < bool , typename > struct c ; "
-                                "template < typename a > struct d : b < bool , std :: is_empty < a > { } > { } ; "
-                                "template < typename a > using e = typename c < std :: is_final < a > { } , d < a > > :: f ;";
+                               "template < bool , typename > struct c ; "
+                               "template < typename a > struct d : b < bool , std :: is_empty < a > { } > { } ; "
+                               "template < typename a > using e = typename c < std :: is_final < a > { } , d < a > > :: f ;";
             ASSERT_EQUALS(exp, tok(code));
         }
     }
@@ -4581,10 +4580,10 @@ private:
             const char code[] = "template<class T, class U> class DefaultMemory {}; "
                                 "template<class Key, class Val, class Mem=DefaultMemory<Key,Val> > class thv_table_c  {}; "
                                 "thv_table_c<void *,void *> id_table_m;";
-            const char exp [] = "template < class T , class U > class DefaultMemory { } ; "
-                                "class thv_table_c<void*,void*,DefaultMemory<void*,void*>> ; "
-                                "thv_table_c<void*,void*,DefaultMemory<void*,void*>> id_table_m ; "
-                                "class thv_table_c<void*,void*,DefaultMemory<void*,void*>> { } ;";
+            const char exp[] = "template < class T , class U > class DefaultMemory { } ; "
+                               "class thv_table_c<void*,void*,DefaultMemory<void*,void*>> ; "
+                               "thv_table_c<void*,void*,DefaultMemory<void*,void*>> id_table_m ; "
+                               "class thv_table_c<void*,void*,DefaultMemory<void*,void*>> { } ;";
             ASSERT_EQUALS(exp, tok(code));
         }
         {
@@ -5228,7 +5227,7 @@ private:
         tokenizer.splitTemplateRightAngleBrackets(false);
 
         const Token *_tok = tokenizer.tokens();
-        for (unsigned i = 0 ; i < offset ; ++i)
+        for (unsigned i = 0; i < offset; ++i)
             _tok = _tok->next();
         return tokenizer.mTemplateSimplifier->getTemplateNamePosition(_tok);
     }
@@ -5298,7 +5297,7 @@ private:
         tokenizer.splitTemplateRightAngleBrackets(false);
 
         const Token *_tok = tokenizer.tokens();
-        for (unsigned i = 0 ; i < offset ; ++i)
+        for (unsigned i = 0; i < offset; ++i)
             _tok = _tok->next();
 
         const Token *tok1 = TemplateSimplifier::findTemplateDeclarationEnd(_tok);
