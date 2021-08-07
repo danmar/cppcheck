@@ -495,7 +495,7 @@ if __name__ == '__main__':
                         newError['msg'] = location['info']
                         newError['severity'] = 'information'
                         del newError['verbose']
-                        
+
                     errors.append(newError)
 
         lines = []
@@ -610,7 +610,11 @@ if __name__ == '__main__':
         output_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
 
         output_file.write('\n       <table>')
-        output_file.write(f'\n       <tr><th>Line</th>><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th><th></th>{"<th>Author</th><th></th><th>Author mail</th><th></th><th>Date (DD/MM/YYYY)</th></tr>" if add_author_information else ""}')
+        if add_author_information:
+            output_file.write('\n       <tr><th>Line</th><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th><th></th><th>Author</th><th></th><th>Author mail</th><th></th><th>Date (DD/MM/YYYY)</th></tr>')
+        else:
+            output_file.write('\n       <tr><th>Line</th><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th></tr>')
+
         for filename, data in sorted(files.items()):
             if filename in decode_errors:  # don't print a link but a note
                 output_file.write("\n       <tr><td colspan=\"5\">%s</td></tr>" % filename)
@@ -627,10 +631,7 @@ if __name__ == '__main__':
 
                 for error in sorted(data['errors'], key=lambda k: k['line']):
                     if add_author_information:
-                        result = get_results(error['line'], source_dir, error['file'], blame_options)
-                        error['author'] = get_author(result)
-                        error['author_mail'] = get_author_mail(result)
-                        error['time'] = get_time(result)
+                        git_blame_dict = git_blame(error['line'], source_dir, error['file'], blame_options)
                     error_class = ''
                     try:
                         if error['inconclusive'] == 'true':
@@ -650,15 +651,22 @@ if __name__ == '__main__':
 
                     if error['id'] == 'missingInclude':
                         output_file.write(
-                            f'\n         <tr class={error["id"]}><td></td><td>{error["id"]}</td><td></td><td>{error["severity"]}</td><td>{html_escape(error["msg"])}</td><td></td>{f"""<td>{error["author"]}</td><td></td><td>{error["author_mail"]}</td><td></td><td>{error["time"]}</td>""" if add_author_information else ""}</tr>')
+                            '\n         <tr class="%s"><td></td><td>%s</td><td></td><td>%s</td><td>%s</td>%s</tr>' %
+                            (error["id"], error["id"], error["severity"], html_escape(error["msg"]),
+                             ('<td></td><td>' + git_blame_dict['author'] + '</td><td></td><td>' + git_blame_dict['author_mail'] + '</td><td></td><td>' + git_blame_dict['date'] + '</td>') if add_author_information else ""))
 
                     elif (error['id'] == 'unmatchedSuppression') and filename.endswith('*'):
                         output_file.write(
-                            f'\n         <tr class={error["id"]}><td></td><td>{error["id"]}</td><td></td><td>{error["severity"]}</td><td {error_class}>{html_escape(error["msg"])}</td><td></td>{f"""<td>{error["author"]}</td><td></td><td>{error["author_mail"]}</td><td></td><td>{error["time"]}</td>""" if add_author_information else ""}</tr>')
+                            '\n         <tr class=%s><td></td><td>%s</td><td></td><td>%s</td><td %s>%s</td><td></td>%s</tr>' %
+                            (error["id"], error["id"], error["severity"], error_class, html_escape(error["msg"]),
+                             ('<td></td><td>' + git_blame_dict['author'] + '</td><td></td><td>' + git_blame_dict['author_mail'] + '</td><td></td><td>' + git_blame_dict['date'] + '</td>') if add_author_information else ""))
 
                     else:
                         output_file.write(
-                            f'\n       <tr class={error["id"]}><td><a href="{data["htmlfile"]}#line-{int(error["line"])}">{int(error["line"])}</a></td><td>{error["id"]}</td><td>{cwe_url}</td><td>{error["severity"]}</td><td {error_class}>{html_escape(error["msg"])}</td><td></td>{f"""<td>{error["author"]}</td><td></td><td>{error["author_mail"]}</td><td></td><td>{error["time"]}</td>""" if add_author_information else ""}</tr>')
+                            '\n       <tr class="%s"><td><a href="%s#line-%d">%d</a></td><td>%s</td><td>%s</td><td>%s</td><td %s>%s</td>%s</tr>' %
+                            (error['id'], data['htmlfile'], error['line'], error['line'],
+                             error['id'], cwe_url, error['severity'], error_class,
+                             html_escape(error['msg']), ('<td></td><td>' + git_blame_dict['author'] + '</td><td></td><td>' + git_blame_dict['author_mail'] + '</td><td></td><td>' + git_blame_dict['date'] + '</td>') if add_author_information else ""))
 
         output_file.write('\n       </table>')
         output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)

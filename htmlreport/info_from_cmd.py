@@ -4,56 +4,49 @@ import datetime
 import locale
 
 
-def get_results(line, path, file, blame_options):
+def git_blame(line, path, file, blame_options):
+    git_blame_dict = {
+        'author': 'Unknown',
+        'author_mail': '---',
+        'date': '---'
+    }
     head, tail = os.path.split(file)
     if head != "":
         path = head
+
     try:
         os.chdir(path)
     except:
-        return ""
+        return git_blame_dict
+
     try:
-        result = subprocess.check_output(f'git blame -L {str(line)}{" -w" if "-w" in blame_options else ""}{" -M" if "-M" in blame_options else ""} --porcelain -- {file}')
+        result = subprocess.check_output('git blame -L %d%s%s --porcelain -- %s' % (line, " -w" if "-w" in blame_options else "", " -M" if "-M" in blame_options else "", file))
         result = result.decode(locale.getpreferredencoding())
     except:
-        return ""
+        return git_blame_dict
 
-    return result
+    if result.startswith('fatal'):
+        return git_blame_dict
 
+    author = result[result.find('author') + 6:result.find('author-mail') - 1]
+    author_mail = result[result.find('author-mail') + 11:result.find('author-time') - 1]
+    commit_time = result[result.find('author-time') + 11:result.find('author-tz') - 1]
 
-def get_author(text):
-    author = text[text.find('author') + 7:text.find('author-mail')-1]
-    if text.startswith('fatal') or author == '':        # if error occurs from cmd starting with fatal sets the author to 'unknown'
-        author = 'Unknown'
-    disallowed_characters = '\<>'
+    disallowed_characters = '\ <>'
 
     for character in disallowed_characters:
         author = author.replace(character, "")
 
-    return author
-
-
-def get_author_mail(text):
-    author_mail = text[text.find('author-mail') + 13:text.find('author-time')-2]
-    if text.startswith('fatal') or author_mail == '':   # if error occurs from cmd starting with fatal sets the author mail to '---'
-        author_mail = '---'
-
-    disallowed_characters = '\<>'
-
     for character in disallowed_characters:
         author_mail = author_mail.replace(character, "")
 
-    return author_mail
+    datetime_object = datetime.date.fromtimestamp(int(commit_time))
+    year = datetime_object.strftime("%Y")
+    month = datetime_object.strftime("%m")
+    day = datetime_object.strftime("%d")
 
+    git_blame_dict['author'] = author
+    git_blame_dict['author_mail'] = author_mail
+    git_blame_dict['date'] = '%s/%s/%s' % (day, month, year)
 
-def get_time(text):
-    if text.startswith('fatal') or text == '':      # if error occurs from cmd starting with fatal sets the time to '---'
-        DD_MM_YYYY = '---'
-    else:
-        commit_time = text[text.find('author-time') + 12:text.find('author-tz') - 1]
-        datetime_object = datetime.date.fromtimestamp(int(commit_time))
-        year = datetime_object.strftime("%Y")
-        month = datetime_object.strftime("%m")
-        day = datetime_object.strftime("%d")
-        DD_MM_YYYY = f'{day}/{month}/{year}'
-    return DD_MM_YYYY
+    return git_blame_dict
