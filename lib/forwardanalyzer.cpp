@@ -7,6 +7,7 @@
 #include "valueptr.h"
 
 #include <algorithm>
+#include <cstdio>
 #include <functional>
 #include <tuple>
 #include <utility>

@@ -102,6 +102,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <functional>
 #include <iterator>
@@ -380,7 +381,7 @@ static bool isZero(T x)
 }
 
 template <class R, class T>
-static R calculate(const std::string& s, const T& x, const T& y)
+static R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
 {
     auto wrap = [](T z) {
         return R{z};
@@ -393,11 +394,19 @@ static R calculate(const std::string& s, const T& x, const T& y)
     case '*':
         return wrap(x * y);
     case '/':
-        return isZero(y) ? R{} :
-               wrap(x / y);
+        if (isZero(y)) {
+            if (error)
+                *error = true;
+            return R{};
+        }
+        return wrap(x / y);
     case '%':
-        return isZero(y) ? R{} :
-               wrap(MathLib::bigint(x) % MathLib::bigint(y));
+        if (isZero(y)) {
+            if (error)
+                *error = true;
+            return R{};
+        }
+        return wrap(MathLib::bigint(x) % MathLib::bigint(y));
     case '&':
         return wrap(MathLib::bigint(x) & MathLib::bigint(y));
     case '|':
@@ -409,11 +418,19 @@ static R calculate(const std::string& s, const T& x, const T& y)
     case '<':
         return wrap(x < y);
     case '<<':
-        return (y >= sizeof(MathLib::bigint) * 8) ? R{} :
-               wrap(MathLib::bigint(x) << MathLib::bigint(y));
+        if (y >= sizeof(MathLib::bigint) * 8) {
+            if (error)
+                *error = true;
+            return R{};
+        }
+        return wrap(MathLib::bigint(x) << MathLib::bigint(y));
     case '>>':
-        return (y >= sizeof(MathLib::bigint) * 8) ? R{} :
-               wrap(MathLib::bigint(x) >> MathLib::bigint(y));
+        if (y >= sizeof(MathLib::bigint) * 8) {
+            if (error)
+                *error = true;
+            return R{};
+        }
+        return wrap(MathLib::bigint(x) >> MathLib::bigint(y));
     case '&&':
         return wrap(!isZero(x) && !isZero(y));
     case '||':
@@ -431,9 +448,9 @@ static R calculate(const std::string& s, const T& x, const T& y)
 }
 
 template <class T>
-static T calculate(const std::string& s, const T& x, const T& y)
+static T calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
 {
-    return calculate<T, T>(s, x, y);
+    return calculate<T, T>(s, x, y, error);
 }
 
 /** Set token value for cast */
@@ -1724,51 +1741,28 @@ static const std::string& invertAssign(const std::string& assign)
 
 static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign, const ValueFlow::Value &rhsValue)
 {
-    if (lhsValue.isIntValue()) {
-        if (assign == "=")
-            lhsValue.intvalue = rhsValue.intvalue;
-        else if (assign == "+=")
-            lhsValue.intvalue += rhsValue.intvalue;
-        else if (assign == "-=")
-            lhsValue.intvalue -= rhsValue.intvalue;
-        else if (assign == "*=")
-            lhsValue.intvalue *= rhsValue.intvalue;
-        else if (assign == "/=") {
-            if (rhsValue.intvalue == 0)
-                return false;
-            lhsValue.intvalue /= rhsValue.intvalue;
-        } else if (assign == "%=") {
-            if (rhsValue.intvalue == 0)
-                return false;
-            lhsValue.intvalue %= rhsValue.intvalue;
-        } else if (assign == "&=")
-            lhsValue.intvalue &= rhsValue.intvalue;
-        else if (assign == "|=")
-            lhsValue.intvalue |= rhsValue.intvalue;
-        else if (assign == "^=")
-            lhsValue.intvalue ^= rhsValue.intvalue;
-        else if (assign == "<<=") {
-            if (rhsValue.intvalue < 0)
-                return false;
-            lhsValue.intvalue <<= rhsValue.intvalue;
-        } else if (assign == ">>=") {
-            if (rhsValue.intvalue < 0)
-                return false;
-            lhsValue.intvalue >>= rhsValue.intvalue;
-        } else
+    if (lhsValue.isSymbolicValue() && rhsValue.isIntValue()) {
+        bool error = false;
+        if (assign != "+=" && assign != "-=")
             return false;
-    } else if (lhsValue.isFloatValue()) {
+        lhsValue.intvalue = calculate(assign.substr(0, 1), lhsValue.intvalue, rhsValue.intvalue, &error);
+        if (error)
+            return false;
+    } else if (lhsValue.isIntValue() && rhsValue.isIntValue()) {
+        bool error = false;
         if (assign == "=")
             lhsValue.intvalue = rhsValue.intvalue;
-        else if (assign == "+=")
-            lhsValue.floatValue += rhsValue.intvalue;
-        else if (assign == "-=")
-            lhsValue.floatValue -= rhsValue.intvalue;
-        else if (assign == "*=")
-            lhsValue.floatValue *= rhsValue.intvalue;
-        else if (assign == "/=")
-            lhsValue.floatValue /= rhsValue.intvalue;
-        else
+        else 
+            lhsValue.intvalue = calculate(assign.substr(0, 1), lhsValue.intvalue, rhsValue.intvalue, &error);
+        if (error)
+            return false;
+    } else if (lhsValue.isFloatValue() && rhsValue.isFloatValue()) {
+        bool error = false;
+        if (assign == "=")
+            lhsValue.floatValue = rhsValue.floatValue;
+        else 
+            lhsValue.floatValue = calculate(assign.substr(0, 1), lhsValue.floatValue, rhsValue.floatValue, &error);
+        if (error)
             return false;
     } else {
         return false;
@@ -2046,8 +2040,10 @@ struct ValueFlowAnalyzer : Analyzer {
             // If the operator is invertible
             if (d == Direction::Reverse && (parent->str() == "&=" || parent->str() == "|=" || parent->str() == "%="))
                 return Action::None;
+            if (value->isSymbolicValue() && parent->str() != "+=" && parent->str() != "-=")
+                return Action::None;
             const Token* rhs = parent->astOperand2();
-            const ValueFlow::Value* rhsValue = getKnownValue(rhs, ValueFlow::Value::ValueType::INT);
+            const ValueFlow::Value* rhsValue = getKnownValue(rhs, value->isFloatValue() ? ValueFlow::Value::ValueType::FLOAT : ValueFlow::Value::ValueType::INT);
             Action a;
             if (!rhsValue)
                 a = Action::Invalid;
@@ -2083,7 +2079,6 @@ struct ValueFlowAnalyzer : Analyzer {
         if (!tok->astParent())
             return;
         if (tok->astParent()->isAssignmentOp()) {
-            // TODO: Check result
             if (evalAssignment(*value,
                                getAssign(tok->astParent(), d),
                                *getKnownValue(tok->astParent()->astOperand2(), ValueFlow::Value::ValueType::INT))) {
@@ -2093,6 +2088,7 @@ struct ValueFlowAnalyzer : Analyzer {
                     value->errorPath.clear();
                 value->errorPath.emplace_back(tok, info);
             } else {
+                assert(false && "Writable value cannot be evaluated");
                 // TODO: Don't set to zero
                 value->intvalue = 0;
             }
