@@ -35,7 +35,7 @@ private:
      * Execute check using n jobs for y files which are have
      * identical data, given within data.
      */
-    void check(unsigned int jobs, int files, int result, const std::string &data) {
+    void check(unsigned int jobs, int files, int result, const std::string& data) {
         errout.str("");
         output.str("");
         if (!ThreadExecutor::isEnabled()) {

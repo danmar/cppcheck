@@ -13,7 +13,7 @@ void global_array() {
     TestData[garr[3]] = 0; // BUG
 }
 
-int *gp;
+int* gp;
 void global_pointer() {
     *gp = 1000;
     TestData[*gp] = 0; // BUG
@@ -34,14 +34,14 @@ void local_array() {
 
 void local_alias_1() {
     int x;
-    int *p = &x;
+    int* p = &x;
     *p = 1000;
     TestData[*p] = 0; // BUG
 }
 
 void local_alias_2() {
     int x;
-    int *p = &x;
+    int* p = &x;
     x = 1000;
     TestData[*p] = 0; // BUG
 }
@@ -57,12 +57,12 @@ void struct_member_init() {
     TestData[abc.a] = 0; // BUG
 }
 
-void struct_member_assign(struct ABC *abc) {
+void struct_member_assign(struct ABC* abc) {
     abc->a = 1000;
     TestData[abc->a] = 0; // BUG
 }
 
-void struct_arraymember(struct ABC *abc) {
+void struct_arraymember(struct ABC* abc) {
     abc->b[3] = 1000;
     TestData[abc->b[3]] = 0; // BUG
 }

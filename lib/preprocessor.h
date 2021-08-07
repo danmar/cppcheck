@@ -56,7 +56,7 @@ public:
     std::string str;
 
     /** record a directive (possibly filtering src) */
-    Directive(const std::string &_file, const int _linenr, const std::string &_str);
+    Directive(const std::string& _file, const int _linenr, const std::string& _str);
 };
 
 /// @addtogroup Core
@@ -82,33 +82,33 @@ public:
     /** character that is inserted in expanded macros */
     static char macroChar;
 
-    explicit Preprocessor(Settings& settings, ErrorLogger *errorLogger = nullptr);
+    explicit Preprocessor(Settings& settings, ErrorLogger* errorLogger = nullptr);
     virtual ~Preprocessor();
 
     static std::atomic<bool> missingIncludeFlag;
     static std::atomic<bool> missingSystemIncludeFlag;
 
-    void inlineSuppressions(const simplecpp::TokenList &tokens);
+    void inlineSuppressions(const simplecpp::TokenList& tokens);
 
-    void setDirectives(const simplecpp::TokenList &tokens);
-    void setDirectives(const std::list<Directive> &directives) {
+    void setDirectives(const simplecpp::TokenList& tokens);
+    void setDirectives(const std::list<Directive>& directives) {
         mDirectives = directives;
     }
 
     /** list of all directives met while preprocessing file */
-    const std::list<Directive> &getDirectives() const {
+    const std::list<Directive>& getDirectives() const {
         return mDirectives;
     }
 
-    std::set<std::string> getConfigs(const simplecpp::TokenList &tokens) const;
+    std::set<std::string> getConfigs(const simplecpp::TokenList& tokens) const;
 
-    void handleErrors(const simplecpp::OutputList &outputList, bool throwError);
+    void handleErrors(const simplecpp::OutputList& outputList, bool throwError);
 
-    bool loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files);
+    bool loadFiles(const simplecpp::TokenList& rawtokens, std::vector<std::string>& files);
 
     void removeComments();
 
-    void setPlatformInfo(simplecpp::TokenList *tokens) const;
+    void setPlatformInfo(simplecpp::TokenList* tokens) const;
 
     /**
      * Extract the code for each configuration
@@ -121,7 +121,7 @@ public:
      * Note that if path from given filename is also extracted and that is used as
      * a last include path if include file was not found from earlier paths.
      */
-    void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename, const std::list<std::string> &includePaths = std::list<std::string>());
+    void preprocess(std::istream& istr, std::map<std::string, std::string>& result, const std::string& filename, const std::list<std::string>& includePaths = std::list<std::string>());
 
     /**
      * Extract the code for each configuration. Use this with getcode() to get the
@@ -140,11 +140,11 @@ public:
      * Note that if path from given filename is also extracted and that is used as
      * a last include path if include file was not found from earlier paths.
      */
-    void preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths);
+    void preprocess(std::istream& srcCodeStream, std::string& processedFile, std::list<std::string>& resultConfigurations, const std::string& filename, const std::list<std::string>& includePaths);
 
-    simplecpp::TokenList preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool throwError = false);
+    simplecpp::TokenList preprocess(const simplecpp::TokenList& tokens1, const std::string& cfg, std::vector<std::string>& files, bool throwError = false);
 
-    std::string getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, const bool writeLocations);
+    std::string getcode(const simplecpp::TokenList& tokens1, const std::string& cfg, std::vector<std::string>& files, const bool writeLocations);
 
     /**
      * Get preprocessed code for a given configuration
@@ -152,13 +152,13 @@ public:
      * @param cfg configuration to read out
      * @param filename name of source file
      */
-    std::string getcode(const std::string &filedata, const std::string &cfg, const std::string &filename);
+    std::string getcode(const std::string& filedata, const std::string& cfg, const std::string& filename);
 
     /**
      * preprocess all whitespaces
      * @param processedFile The data to be processed
      */
-    static void preprocessWhitespaces(std::string &processedFile);
+    static void preprocessWhitespaces(std::string& processedFile);
 
     /**
      * make sure empty configuration macros are not used in code. the given code must be a single configuration
@@ -166,8 +166,8 @@ public:
      * @param macroUsageList macro usage list
      * @return true => configuration is valid
      */
-    bool validateCfg(const std::string &cfg, const std::list<simplecpp::MacroUsage> &macroUsageList);
-    void validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro);
+    bool validateCfg(const std::string& cfg, const std::list<simplecpp::MacroUsage>& macroUsageList);
+    void validateCfgError(const std::string& file, const unsigned int line, const std::string& cfg, const std::string& macro);
 
     /**
      * Calculate CRC32 checksum. Using toolinfo, tokens1, filedata.
@@ -176,13 +176,13 @@ public:
      * @param toolinfo   Arbitrary extra toolinfo
      * @return CRC32 checksum
      */
-    unsigned int calculateChecksum(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const;
+    unsigned int calculateChecksum(const simplecpp::TokenList& tokens1, const std::string& toolinfo) const;
 
-    void simplifyPragmaAsm(simplecpp::TokenList *tokenList);
+    void simplifyPragmaAsm(simplecpp::TokenList* tokenList);
 
 private:
 
-    static void simplifyPragmaAsmPrivate(simplecpp::TokenList *tokenList);
+    static void simplifyPragmaAsmPrivate(simplecpp::TokenList* tokenList);
 
     /**
      * Remove space that has new line character on left or right side of it.
@@ -190,35 +190,35 @@ private:
      * @param str The string to be converted
      * @return The string where space characters have been removed.
      */
-    static std::string removeSpaceNearNL(const std::string &str);
+    static std::string removeSpaceNearNL(const std::string& str);
 
 public:
 
 
-    static void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings);
+    static void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings);
 
-    void setFile0(const std::string &f) {
+    void setFile0(const std::string& f) {
         mFile0 = f;
     }
 
     /**
      * dump all directives present in source file
      */
-    void dump(std::ostream &out) const;
+    void dump(std::ostream& out) const;
 
-    void reportOutput(const simplecpp::OutputList &outputList, bool showerror);
+    void reportOutput(const simplecpp::OutputList& outputList, bool showerror);
 
 private:
-    void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);
-    void error(const std::string &filename, unsigned int linenr, const std::string &msg);
+    void missingInclude(const std::string& filename, unsigned int linenr, const std::string& header, HeaderTypes headerType);
+    void error(const std::string& filename, unsigned int linenr, const std::string& msg);
 
     Settings& mSettings;
-    ErrorLogger *mErrorLogger;
+    ErrorLogger* mErrorLogger;
 
     /** list of all directives met while preprocessing file */
     std::list<Directive> mDirectives;
 
-    std::map<std::string, simplecpp::TokenList *> mTokenLists;
+    std::map<std::string, simplecpp::TokenList*> mTokenLists;
 
     /** filename for cpp/c file - useful when reporting errors */
     std::string mFile0;

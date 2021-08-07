@@ -31,12 +31,12 @@
 #include "importproject.h"
 
 /** Return paths from QListWidget */
-static QStringList getPaths(const QListWidget *list)
+static QStringList getPaths(const QListWidget* list)
 {
     const int count = list->count();
     QStringList paths;
     for (int i = 0; i < count; i++) {
-        QListWidgetItem *item = list->item(i);
+        QListWidgetItem* item = list->item(i);
         paths << QDir::fromNativeSeparators(item->text());
     }
     return paths;
@@ -54,7 +54,7 @@ static const cppcheck::Platform::PlatformType builtinPlatforms[] = {
 
 static const int numberOfBuiltinPlatforms = sizeof(builtinPlatforms) / sizeof(builtinPlatforms[0]);
 
-QStringList ProjectFileDialog::getProjectConfigs(const QString &fileName)
+QStringList ProjectFileDialog::getProjectConfigs(const QString& fileName)
 {
     if (!fileName.endsWith(".sln") && !fileName.endsWith(".vcxproj"))
         return QStringList();
@@ -62,12 +62,12 @@ QStringList ProjectFileDialog::getProjectConfigs(const QString &fileName)
     ImportProject importer;
     Settings projSettings;
     importer.import(fileName.toStdString(), &projSettings);
-    for (const std::string &cfg : importer.getVSConfigs())
+    for (const std::string& cfg : importer.getVSConfigs())
         ret << QString::fromStdString(cfg);
     return ret;
 }
 
-ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
+ProjectFileDialog::ProjectFileDialog(ProjectFile* projectFile, QWidget* parent)
     : QDialog(parent)
     , mProjectFile(projectFile)
 {
@@ -146,7 +146,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     }
     libs.sort();
     mUI.mLibraries->clear();
-    for (const QString &lib : libs) {
+    for (const QString& lib : libs) {
         QListWidgetItem* item = new QListWidgetItem(lib, mUI.mLibraries);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable); // set checkable flag
         item->setCheckState(Qt::Unchecked); // AND initialize check state
@@ -227,7 +227,7 @@ void ProjectFileDialog::saveSettings() const
     settings.setValue(SETTINGS_PROJECT_DIALOG_HEIGHT, size().height());
 }
 
-static void updateAddonCheckBox(QCheckBox *cb, const ProjectFile *projectFile, const QString &dataDir, const QString &addon)
+static void updateAddonCheckBox(QCheckBox* cb, const ProjectFile* projectFile, const QString& dataDir, const QString& addon)
 {
     if (projectFile)
         cb->setChecked(projectFile->getAddons().contains(addon));
@@ -241,14 +241,14 @@ void ProjectFileDialog::checkAllVSConfigs()
 {
     if (mUI.mChkAllVsConfigs->isChecked()) {
         for (int row = 0; row < mUI.mListVsConfigs->count(); ++row) {
-            QListWidgetItem *item = mUI.mListVsConfigs->item(row);
+            QListWidgetItem* item = mUI.mListVsConfigs->item(row);
             item->setCheckState(Qt::Checked);
         }
     }
     mUI.mListVsConfigs->setEnabled(!mUI.mChkAllVsConfigs->isChecked());
 }
 
-void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
+void ProjectFileDialog::loadFromProjectFile(const ProjectFile* projectFile)
 {
     setRootPath(projectFile->getRootPath());
     setBuildDir(projectFile->getBuildDir());
@@ -260,7 +260,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI.mChkAllVsConfigs->setChecked(projectFile->getAnalyzeAllVsConfigs());
     setProjectConfigurations(getProjectConfigs(mUI.mEditImportProject->text()));
     for (int row = 0; row < mUI.mListVsConfigs->count(); ++row) {
-        QListWidgetItem *item = mUI.mListVsConfigs->item(row);
+        QListWidgetItem* item = mUI.mListVsConfigs->item(row);
         if (projectFile->getAnalyzeAllVsConfigs() || projectFile->getVsConfigurations().contains(item->text()))
             item->setCheckState(Qt::Checked);
         else
@@ -331,7 +331,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     updateAddonCheckBox(mUI.mAddonCert, projectFile, dataDir, "cert");
     updateAddonCheckBox(mUI.mAddonMisra, projectFile, dataDir, "misra");
 
-    const QString &misraFile = settings.value(SETTINGS_MISRA_FILE, QString()).toString();
+    const QString& misraFile = settings.value(SETTINGS_MISRA_FILE, QString()).toString();
     mUI.mEditMisraFile->setText(misraFile);
     if (!mUI.mAddonMisra->isEnabled()) {
         mUI.mEditMisraFile->setEnabled(false);
@@ -351,7 +351,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     updatePathsAndDefines();
 }
 
-void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
+void ProjectFileDialog::saveToProjectFile(ProjectFile* projectFile) const
 {
     projectFile->setRootPath(getRootPath());
     projectFile->setBuildDir(getBuildDir());
@@ -420,7 +420,7 @@ void ProjectFileDialog::ok()
     accept();
 }
 
-QString ProjectFileDialog::getExistingDirectory(const QString &caption, bool trailingSlash)
+QString ProjectFileDialog::getExistingDirectory(const QString& caption, bool trailingSlash)
 {
     const QFileInfo inf(mProjectFile->getFilename());
     const QString rootpath = inf.absolutePath();
@@ -454,7 +454,7 @@ void ProjectFileDialog::browseBuildDir()
 
 void ProjectFileDialog::updatePathsAndDefines()
 {
-    const QString &fileName = mUI.mEditImportProject->text();
+    const QString& fileName = mUI.mEditImportProject->text();
     bool importProject = !fileName.isEmpty();
     bool hasConfigs = fileName.endsWith(".sln") || fileName.endsWith(".vcxproj");
     mUI.mBtnClearImportProject->setEnabled(importProject);
@@ -485,7 +485,7 @@ void ProjectFileDialog::clearImportProject()
 void ProjectFileDialog::browseImportProject()
 {
     const QFileInfo inf(mProjectFile->getFilename());
-    const QDir &dir = inf.absoluteDir();
+    const QDir& dir = inf.absoluteDir();
     QMap<QString,QString> filters;
     filters[tr("Visual Studio")] = "*.sln *.vcxproj";
     filters[tr("Compile database")] = "compile_commands.json";
@@ -498,7 +498,7 @@ void ProjectFileDialog::browseImportProject()
         updatePathsAndDefines();
         setProjectConfigurations(getProjectConfigs(fileName));
         for (int row = 0; row < mUI.mListVsConfigs->count(); ++row) {
-            QListWidgetItem *item = mUI.mListVsConfigs->item(row);
+            QListWidgetItem* item = mUI.mListVsConfigs->item(row);
             item->setCheckState(Qt::Checked);
         }
     }
@@ -508,18 +508,18 @@ QStringList ProjectFileDialog::getProjectConfigurations() const
 {
     QStringList configs;
     for (int row = 0; row < mUI.mListVsConfigs->count(); ++row) {
-        QListWidgetItem *item = mUI.mListVsConfigs->item(row);
+        QListWidgetItem* item = mUI.mListVsConfigs->item(row);
         if (item->checkState() == Qt::Checked)
             configs << item->text();
     }
     return configs;
 }
 
-void ProjectFileDialog::setProjectConfigurations(const QStringList &configs)
+void ProjectFileDialog::setProjectConfigurations(const QStringList& configs)
 {
     mUI.mListVsConfigs->clear();
     mUI.mListVsConfigs->setEnabled(!configs.isEmpty() && !mUI.mChkAllVsConfigs->isChecked());
-    foreach (const QString &cfg, configs) {
+    foreach (const QString& cfg, configs) {
         QListWidgetItem* item = new QListWidgetItem(cfg, mUI.mListVsConfigs);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable); // set checkable flag
         item->setCheckState(Qt::Unchecked);
@@ -531,35 +531,35 @@ QString ProjectFileDialog::getImportProject() const
     return mUI.mEditImportProject->text();
 }
 
-void ProjectFileDialog::addIncludeDir(const QString &dir)
+void ProjectFileDialog::addIncludeDir(const QString& dir)
 {
     if (dir.isNull() || dir.isEmpty())
         return;
 
     const QString newdir = QDir::toNativeSeparators(dir);
-    QListWidgetItem *item = new QListWidgetItem(newdir);
+    QListWidgetItem* item = new QListWidgetItem(newdir);
     item->setFlags(item->flags() | Qt::ItemIsEditable);
     mUI.mListIncludeDirs->addItem(item);
 }
 
-void ProjectFileDialog::addCheckPath(const QString &path)
+void ProjectFileDialog::addCheckPath(const QString& path)
 {
     if (path.isNull() || path.isEmpty())
         return;
 
     const QString newpath = QDir::toNativeSeparators(path);
-    QListWidgetItem *item = new QListWidgetItem(newpath);
+    QListWidgetItem* item = new QListWidgetItem(newpath);
     item->setFlags(item->flags() | Qt::ItemIsEditable);
     mUI.mListCheckPaths->addItem(item);
 }
 
-void ProjectFileDialog::addExcludePath(const QString &path)
+void ProjectFileDialog::addExcludePath(const QString& path)
 {
     if (path.isNull() || path.isEmpty())
         return;
 
     const QString newpath = QDir::toNativeSeparators(path);
-    QListWidgetItem *item = new QListWidgetItem(newpath);
+    QListWidgetItem* item = new QListWidgetItem(newpath);
     item->setFlags(item->flags() | Qt::ItemIsEditable);
     mUI.mListExcludedPaths->addItem(item);
 }
@@ -609,68 +609,68 @@ QStringList ProjectFileDialog::getLibraries() const
 {
     QStringList libraries;
     for (int row = 0; row < mUI.mLibraries->count(); ++row) {
-        QListWidgetItem *item = mUI.mLibraries->item(row);
+        QListWidgetItem* item = mUI.mLibraries->item(row);
         if (item->checkState() == Qt::Checked)
             libraries << item->text();
     }
     return libraries;
 }
 
-void ProjectFileDialog::setRootPath(const QString &root)
+void ProjectFileDialog::setRootPath(const QString& root)
 {
     mUI.mEditProjectRoot->setText(QDir::toNativeSeparators(root));
 }
 
-void ProjectFileDialog::setBuildDir(const QString &buildDir)
+void ProjectFileDialog::setBuildDir(const QString& buildDir)
 {
     mUI.mEditBuildDir->setText(buildDir);
 }
 
-void ProjectFileDialog::setImportProject(const QString &importProject)
+void ProjectFileDialog::setImportProject(const QString& importProject)
 {
     mUI.mEditImportProject->setText(importProject);
 }
 
-void ProjectFileDialog::setIncludepaths(const QStringList &includes)
+void ProjectFileDialog::setIncludepaths(const QStringList& includes)
 {
     foreach (QString dir, includes) {
         addIncludeDir(dir);
     }
 }
 
-void ProjectFileDialog::setDefines(const QStringList &defines)
+void ProjectFileDialog::setDefines(const QStringList& defines)
 {
     mUI.mEditDefines->setText(defines.join(";"));
 }
 
-void ProjectFileDialog::setUndefines(const QStringList &undefines)
+void ProjectFileDialog::setUndefines(const QStringList& undefines)
 {
     mUI.mEditUndefines->setText(undefines.join(";"));
 }
 
-void ProjectFileDialog::setCheckPaths(const QStringList &paths)
+void ProjectFileDialog::setCheckPaths(const QStringList& paths)
 {
     foreach (QString path, paths) {
         addCheckPath(path);
     }
 }
 
-void ProjectFileDialog::setExcludedPaths(const QStringList &paths)
+void ProjectFileDialog::setExcludedPaths(const QStringList& paths)
 {
     foreach (QString path, paths) {
         addExcludePath(path);
     }
 }
 
-void ProjectFileDialog::setLibraries(const QStringList &libraries)
+void ProjectFileDialog::setLibraries(const QStringList& libraries)
 {
     for (int row = 0; row < mUI.mLibraries->count(); ++row) {
-        QListWidgetItem *item = mUI.mLibraries->item(row);
+        QListWidgetItem* item = mUI.mLibraries->item(row);
         item->setCheckState(libraries.contains(item->text()) ? Qt::Checked : Qt::Unchecked);
     }
 }
 
-void ProjectFileDialog::addSingleSuppression(const Suppressions::Suppression &suppression)
+void ProjectFileDialog::addSingleSuppression(const Suppressions::Suppression& suppression)
 {
     QString suppression_name;
     static char sep = QDir::separator().toLatin1();
@@ -702,12 +702,12 @@ void ProjectFileDialog::addSingleSuppression(const Suppressions::Suppression &su
     mUI.mListSuppressions->addItem(suppression_name);
 }
 
-void ProjectFileDialog::setSuppressions(const QList<Suppressions::Suppression> &suppressions)
+void ProjectFileDialog::setSuppressions(const QList<Suppressions::Suppression>& suppressions)
 {
     mUI.mListSuppressions->clear();
     QList<Suppressions::Suppression> new_suppressions = suppressions;
     mSuppressions.clear();
-    foreach (const Suppressions::Suppression &suppression, new_suppressions) {
+    foreach (const Suppressions::Suppression& suppression, new_suppressions) {
         addSingleSuppression(suppression);
     }
     mUI.mListSuppressions->sortItems();
@@ -722,14 +722,14 @@ void ProjectFileDialog::addCheckPath()
 
 void ProjectFileDialog::editCheckPath()
 {
-    QListWidgetItem *item = mUI.mListCheckPaths->currentItem();
+    QListWidgetItem* item = mUI.mListCheckPaths->currentItem();
     mUI.mListCheckPaths->editItem(item);
 }
 
 void ProjectFileDialog::removeCheckPath()
 {
     const int row = mUI.mListCheckPaths->currentRow();
-    QListWidgetItem *item = mUI.mListCheckPaths->takeItem(row);
+    QListWidgetItem* item = mUI.mListCheckPaths->takeItem(row);
     delete item;
 }
 
@@ -743,13 +743,13 @@ void ProjectFileDialog::addIncludeDir()
 void ProjectFileDialog::removeIncludeDir()
 {
     const int row = mUI.mListIncludeDirs->currentRow();
-    QListWidgetItem *item = mUI.mListIncludeDirs->takeItem(row);
+    QListWidgetItem* item = mUI.mListIncludeDirs->takeItem(row);
     delete item;
 }
 
 void ProjectFileDialog::editIncludeDir()
 {
-    QListWidgetItem *item = mUI.mListIncludeDirs->currentItem();
+    QListWidgetItem* item = mUI.mListIncludeDirs->currentItem();
     mUI.mListIncludeDirs->editItem(item);
 }
 
@@ -761,7 +761,7 @@ void ProjectFileDialog::addExcludePath()
 void ProjectFileDialog::addExcludeFile()
 {
     const QFileInfo inf(mProjectFile->getFilename());
-    const QDir &dir = inf.absoluteDir();
+    const QDir& dir = inf.absoluteDir();
     QMap<QString,QString> filters;
     filters[tr("Source files")] = "*.c *.cpp";
     filters[tr("All files")] = "*.*";
@@ -770,21 +770,21 @@ void ProjectFileDialog::addExcludeFile()
 
 void ProjectFileDialog::editExcludePath()
 {
-    QListWidgetItem *item = mUI.mListExcludedPaths->currentItem();
+    QListWidgetItem* item = mUI.mListExcludedPaths->currentItem();
     mUI.mListExcludedPaths->editItem(item);
 }
 
 void ProjectFileDialog::removeExcludePath()
 {
     const int row = mUI.mListExcludedPaths->currentRow();
-    QListWidgetItem *item = mUI.mListExcludedPaths->takeItem(row);
+    QListWidgetItem* item = mUI.mListExcludedPaths->takeItem(row);
     delete item;
 }
 
 void ProjectFileDialog::moveIncludePathUp()
 {
     int row = mUI.mListIncludeDirs->currentRow();
-    QListWidgetItem *item = mUI.mListIncludeDirs->takeItem(row);
+    QListWidgetItem* item = mUI.mListIncludeDirs->takeItem(row);
     row = row > 0 ? row - 1 : 0;
     mUI.mListIncludeDirs->insertItem(row, item);
     mUI.mListIncludeDirs->setCurrentItem(item);
@@ -793,7 +793,7 @@ void ProjectFileDialog::moveIncludePathUp()
 void ProjectFileDialog::moveIncludePathDown()
 {
     int row = mUI.mListIncludeDirs->currentRow();
-    QListWidgetItem *item = mUI.mListIncludeDirs->takeItem(row);
+    QListWidgetItem* item = mUI.mListIncludeDirs->takeItem(row);
     const int count = mUI.mListIncludeDirs->count();
     row = row < count ? row + 1 : count;
     mUI.mListIncludeDirs->insertItem(row, item);
@@ -811,7 +811,7 @@ void ProjectFileDialog::addSuppression()
 void ProjectFileDialog::removeSuppression()
 {
     const int row = mUI.mListSuppressions->currentRow();
-    QListWidgetItem *item = mUI.mListSuppressions->takeItem(row);
+    QListWidgetItem* item = mUI.mListSuppressions->takeItem(row);
     if (!item)
         return;
 
@@ -821,10 +821,10 @@ void ProjectFileDialog::removeSuppression()
     delete item;
 }
 
-void ProjectFileDialog::editSuppression(const QModelIndex &)
+void ProjectFileDialog::editSuppression(const QModelIndex&)
 {
     const int row = mUI.mListSuppressions->currentRow();
-    QListWidgetItem *item = mUI.mListSuppressions->item(row);
+    QListWidgetItem* item = mUI.mListSuppressions->item(row);
     int suppressionIndex = getSuppressionIndex(item->text());
     if (suppressionIndex >= 0) { // TODO what if suppression is not found?
         NewSuppressionDialog dlg;
@@ -836,7 +836,7 @@ void ProjectFileDialog::editSuppression(const QModelIndex &)
     }
 }
 
-int ProjectFileDialog::getSuppressionIndex(const QString &shortText) const
+int ProjectFileDialog::getSuppressionIndex(const QString& shortText) const
 {
     const std::string s = shortText.toStdString();
     for (int i = 0; i < mSuppressions.size(); ++i) {

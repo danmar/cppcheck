@@ -259,7 +259,7 @@ private:
         TEST_CASE(constVariableArrayMember); // #10371
     }
 
-    void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
+    void check(const char code[], const char* filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
@@ -288,11 +288,11 @@ private:
         (void)runSimpleChecks; // TODO Remove this
     }
 
-    void check(const char code[], Settings *s) {
+    void check(const char code[], Settings* s) {
         check(code,"test.cpp",false,true,true,false,s);
     }
 
-    void checkP(const char code[], const char *filename = "test.cpp") {
+    void checkP(const char code[], const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 

@@ -10,7 +10,7 @@ static QString formatFunctionName(QString f)
     return f;
 }
 
-FunctionContractDialog::FunctionContractDialog(QWidget *parent, const QString &name, const QString &expects) :
+FunctionContractDialog::FunctionContractDialog(QWidget* parent, const QString& name, const QString& expects) :
     QDialog(parent),
     mUi(new Ui::FunctionContractDialog)
 {

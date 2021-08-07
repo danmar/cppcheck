@@ -25,11 +25,11 @@
 static const char ResultElementName[] = "results";
 static const char VersionAttribute[] = "version";
 
-XmlReport::XmlReport(const QString &filename) :
+XmlReport::XmlReport(const QString& filename) :
     Report(filename)
 {}
 
-QString XmlReport::quoteMessage(const QString &message)
+QString XmlReport::quoteMessage(const QString& message)
 {
     QString quotedMessage(message);
     quotedMessage.replace("&", "&amp;");
@@ -40,7 +40,7 @@ QString XmlReport::quoteMessage(const QString &message)
     return quotedMessage;
 }
 
-QString XmlReport::unquoteMessage(const QString &message)
+QString XmlReport::unquoteMessage(const QString& message)
 {
     QString quotedMessage(message);
     quotedMessage.replace("&amp;", "&");
@@ -51,7 +51,7 @@ QString XmlReport::unquoteMessage(const QString &message)
     return quotedMessage;
 }
 
-int XmlReport::determineVersion(const QString &filename)
+int XmlReport::determineVersion(const QString& filename)
 {
     QFile file;
     file.setFileName(filename);

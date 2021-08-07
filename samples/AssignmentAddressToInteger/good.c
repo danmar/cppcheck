@@ -1,4 +1,4 @@
-int* foo(int *p)
+int* foo(int* p)
 {
     return p + 4;
 }

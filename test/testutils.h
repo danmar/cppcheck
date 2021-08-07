@@ -49,18 +49,18 @@ public:
 
 class SimpleSuppressor : public ErrorLogger {
 public:
-    SimpleSuppressor(Settings &settings, ErrorLogger *next)
+    SimpleSuppressor(Settings& settings, ErrorLogger* next)
         : settings(settings), next(next) {}
-    void reportOut(const std::string &outmsg, Color = Color::Reset) OVERRIDE {
+    void reportOut(const std::string& outmsg, Color = Color::Reset) OVERRIDE {
         next->reportOut(outmsg);
     }
-    void reportErr(const ErrorMessage &msg) OVERRIDE {
+    void reportErr(const ErrorMessage& msg) OVERRIDE {
         if (!msg.callStack.empty() && !settings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage()))
             next->reportErr(msg);
     }
 private:
-    Settings &settings;
-    ErrorLogger *next;
+    Settings& settings;
+    ErrorLogger* next;
 };
 
 #endif // TestUtilsH

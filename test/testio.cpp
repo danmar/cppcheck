@@ -792,7 +792,7 @@ private:
 #define TEST_PRINTF_ERR_AKA(format, requiredType, actualType, akaType) \
     "[test.cpp:1]: (portability) " format " in format string (no. 1) requires '" requiredType "' but the argument type is '" actualType " {aka " akaType "}'.\n"
 
-    void testFormatStrNoWarn(const char *filename, unsigned int linenr, const char* code) {
+    void testFormatStrNoWarn(const char* filename, unsigned int linenr, const char* code) {
         check(code, true, false, Settings::Unix32, true);
         assertEquals(filename, linenr, emptyString, errout.str());
         check(code, true, false, Settings::Unix64, true);
@@ -803,7 +803,7 @@ private:
         assertEquals(filename, linenr, emptyString, errout.str());
     }
 
-    void testFormatStrWarn(const char *filename, unsigned int linenr,
+    void testFormatStrWarn(const char* filename, unsigned int linenr,
                            const char* code, const char* testScanfErrString) {
         check(code, true, false, Settings::Unix32, true);
         assertEquals(filename, linenr, testScanfErrString, errout.str());
@@ -815,7 +815,7 @@ private:
         assertEquals(filename, linenr, testScanfErrString, errout.str());
     }
 
-    void testFormatStrWarnAka(const char *filename, unsigned int linenr,
+    void testFormatStrWarnAka(const char* filename, unsigned int linenr,
                               const char* code, const char* testScanfErrAkaString, const char* testScanfErrAkaWin64String) {
         check(code, true, true, Settings::Unix32, true);
         assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
@@ -827,7 +827,7 @@ private:
         assertEquals(filename, linenr, testScanfErrAkaWin64String, errout.str());
     }
 
-    void testFormatStrWarnAkaWin64(const char *filename, unsigned int linenr,
+    void testFormatStrWarnAkaWin64(const char* filename, unsigned int linenr,
                                    const char* code, const char* testScanfErrAkaWin64String) {
         check(code, true, true, Settings::Unix32, true);
         assertEquals(filename, linenr, emptyString, errout.str());
@@ -839,7 +839,7 @@ private:
         assertEquals(filename, linenr, testScanfErrAkaWin64String, errout.str());
     }
 
-    void testFormatStrWarnAkaWin32(const char *filename, unsigned int linenr,
+    void testFormatStrWarnAkaWin32(const char* filename, unsigned int linenr,
                                    const char* code, const char* testScanfErrAkaString) {
         check(code, true, true, Settings::Unix32, true);
         assertEquals(filename, linenr, testScanfErrAkaString, errout.str());
@@ -2070,14 +2070,14 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         {
-            const char * code = "void g() {\n" // #5348
-                                "    size_t s1;\n"
-                                "    ptrdiff_t s2;\n"
-                                "    ssize_t s3;\n"
-                                "    scanf(\"%zd\", &s1);\n"
-                                "    scanf(\"%zd\", &s2);\n"
-                                "    scanf(\"%zd\", &s3);\n"
-                                "}\n";
+            const char* code = "void g() {\n"  // #5348
+                               "    size_t s1;\n"
+                               "    ptrdiff_t s2;\n"
+                               "    ssize_t s3;\n"
+                               "    scanf(\"%zd\", &s1);\n"
+                               "    scanf(\"%zd\", &s2);\n"
+                               "    scanf(\"%zd\", &s3);\n"
+                               "}\n";
             const char* result("[test.cpp:5]: (portability) %zd in format string (no. 1) requires 'ssize_t *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
                                "[test.cpp:6]: (portability) %zd in format string (no. 1) requires 'ssize_t *' but the argument type is 'ptrdiff_t * {aka signed long *}'.\n");
             const char* result_win64("[test.cpp:5]: (portability) %zd in format string (no. 1) requires 'ssize_t *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"

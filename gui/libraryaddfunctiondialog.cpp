@@ -3,13 +3,13 @@
 
 #include <QRegExp>
 
-LibraryAddFunctionDialog::LibraryAddFunctionDialog(QWidget *parent) :
+LibraryAddFunctionDialog::LibraryAddFunctionDialog(QWidget* parent) :
     QDialog(parent),
     mUi(new Ui::LibraryAddFunctionDialog)
 {
     mUi->setupUi(this);
     QRegExp rx(NAMES);
-    QValidator *validator = new QRegExpValidator(rx, this);
+    QValidator* validator = new QRegExpValidator(rx, this);
     mUi->functionName->setValidator(validator);
 }
 

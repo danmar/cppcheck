@@ -53,7 +53,7 @@ bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
         sizeof_long_double = sizeof(long double);
         sizeof_wchar_t = sizeof(wchar_t);
         sizeof_size_t = sizeof(std::size_t);
-        sizeof_pointer = sizeof(void *);
+        sizeof_pointer = sizeof(void*);
         if (type == Unspecified) {
             defaultSign = '\0';
         } else {
@@ -154,7 +154,7 @@ bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
     return false;
 }
 
-bool cppcheck::Platform::loadPlatformFile(const char exename[], const std::string &filename)
+bool cppcheck::Platform::loadPlatformFile(const char exename[], const std::string& filename)
 {
     // open file..
     tinyxml2::XMLDocument doc;
@@ -175,7 +175,7 @@ bool cppcheck::Platform::loadPlatformFile(const char exename[], const std::strin
         filenames.push_back(filesdir + ("platforms/" + filename + ".xml"));
 #endif
         bool success = false;
-        for (const std::string & f : filenames) {
+        for (const std::string& f : filenames) {
             if (doc.LoadFile(f.c_str()) == tinyxml2::XML_SUCCESS) {
                 success = true;
                 break;
@@ -188,20 +188,20 @@ bool cppcheck::Platform::loadPlatformFile(const char exename[], const std::strin
     return loadFromXmlDocument(&doc);
 }
 
-bool cppcheck::Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
+bool cppcheck::Platform::loadFromXmlDocument(const tinyxml2::XMLDocument* doc)
 {
-    const tinyxml2::XMLElement * const rootnode = doc->FirstChildElement();
+    const tinyxml2::XMLElement* const rootnode = doc->FirstChildElement();
 
     if (!rootnode || std::strcmp(rootnode->Name(), "platform") != 0)
         return false;
 
-    for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
+    for (const tinyxml2::XMLElement* node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         if (std::strcmp(node->Name(), "default-sign") == 0)
             defaultSign = *node->GetText();
         else if (std::strcmp(node->Name(), "char_bit") == 0)
             char_bit = std::atoi(node->GetText());
         else if (std::strcmp(node->Name(), "sizeof") == 0) {
-            for (const tinyxml2::XMLElement *sz = node->FirstChildElement(); sz; sz = sz->NextSiblingElement()) {
+            for (const tinyxml2::XMLElement* sz = node->FirstChildElement(); sz; sz = sz->NextSiblingElement()) {
                 if (std::strcmp(sz->Name(), "short") == 0)
                     sizeof_short = std::atoi(sz->GetText());
                 else if (std::strcmp(sz->Name(), "bool") == 0)

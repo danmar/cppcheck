@@ -8,12 +8,12 @@
 #include <QHelpIndexWidget>
 #include <QMessageBox>
 
-void HelpBrowser::setHelpEngine(QHelpEngine *helpEngine)
+void HelpBrowser::setHelpEngine(QHelpEngine* helpEngine)
 {
     mHelpEngine = helpEngine;
 }
 
-QVariant HelpBrowser::loadResource(int type, const QUrl &name)
+QVariant HelpBrowser::loadResource(int type, const QUrl& name)
 {
     if (name.scheme() == "qthelp") {
         QString url(name.toString());
@@ -46,7 +46,7 @@ static QString getHelpFile()
     return QString();
 }
 
-HelpDialog::HelpDialog(QWidget *parent) :
+HelpDialog::HelpDialog(QWidget* parent) :
     QDialog(parent),
     mUi(new Ui::HelpDialog)
 {

@@ -5,7 +5,7 @@
 #include "errorlogger.h"
 #include "suppressions.h"
 
-NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
+NewSuppressionDialog::NewSuppressionDialog(QWidget* parent) :
     QDialog(parent),
     mUI(new Ui::NewSuppressionDialog)
 {
@@ -13,11 +13,11 @@ NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
 
     class QErrorLogger : public ErrorLogger {
     public:
-        void reportOut(const std::string & /*outmsg*/, Color) override {}
-        void reportErr(const ErrorMessage &msg) override {
+        void reportOut(const std::string& /*outmsg*/, Color) override {}
+        void reportErr(const ErrorMessage& msg) override {
             errorIds << QString::fromStdString(msg.id);
         }
-        void bughuntingReport(const std::string & /*str*/) override {}
+        void bughuntingReport(const std::string& /*str*/) override {}
         QStringList errorIds;
     };
 
@@ -49,7 +49,7 @@ Suppressions::Suppression NewSuppressionDialog::getSuppression() const
     return ret;
 }
 
-void NewSuppressionDialog::setSuppression(const Suppressions::Suppression &suppression)
+void NewSuppressionDialog::setSuppression(const Suppressions::Suppression& suppression)
 {
     setWindowTitle(tr("Edit suppression"));
     mUI->mComboErrorId->setCurrentText(QString::fromStdString(suppression.errorId));

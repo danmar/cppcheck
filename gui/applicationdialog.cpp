@@ -27,9 +27,9 @@
 #include "common.h"
 
 
-ApplicationDialog::ApplicationDialog(const QString &title,
-                                     Application &app,
-                                     QWidget *parent) :
+ApplicationDialog::ApplicationDialog(const QString& title,
+                                     Application& app,
+                                     QWidget* parent) :
     QDialog(parent),
     mApplication(app)
 {

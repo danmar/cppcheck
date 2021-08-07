@@ -26,7 +26,7 @@
 #include "checkthread.h"
 #include "resultsview.h"
 
-ThreadHandler::ThreadHandler(QObject *parent) :
+ThreadHandler::ThreadHandler(QObject* parent) :
     QObject(parent),
     mScanDuration(0),
     mRunningThreadCount(0),
@@ -50,13 +50,13 @@ void ThreadHandler::clearFiles()
     mSuppressions.clear();
 }
 
-void ThreadHandler::setFiles(const QStringList &files)
+void ThreadHandler::setFiles(const QStringList& files)
 {
     mResults.setFiles(files);
     mLastFiles = files;
 }
 
-void ThreadHandler::setProject(const ImportProject &prj)
+void ThreadHandler::setProject(const ImportProject& prj)
 {
     mResults.setProject(prj);
     mLastFiles.clear();
@@ -76,7 +76,7 @@ void ThreadHandler::setCheckFiles(const QStringList& files)
     }
 }
 
-void ThreadHandler::check(const Settings &settings)
+void ThreadHandler::check(const Settings& settings)
 {
     if (mResults.getFileCount() == 0 || mRunningThreadCount > 0 || settings.jobs == 0) {
         qDebug() << "Can't start checking if there's no files to check or if check is in progress.";
@@ -180,7 +180,7 @@ void ThreadHandler::stop()
     }
 }
 
-void ThreadHandler::initialize(ResultsView *view)
+void ThreadHandler::initialize(ResultsView* view)
 {
     connect(&mResults, &ThreadResult::progress,
             view, &ResultsView::progress);
@@ -198,12 +198,12 @@ void ThreadHandler::initialize(ResultsView *view)
             this, &ThreadHandler::bughuntingReportLine);
 }
 
-void ThreadHandler::loadSettings(const QSettings &settings)
+void ThreadHandler::loadSettings(const QSettings& settings)
 {
     setThreadCount(settings.value(SETTINGS_CHECK_THREADS, 1).toInt());
 }
 
-void ThreadHandler::saveSettings(QSettings &settings) const
+void ThreadHandler::saveSettings(QSettings& settings) const
 {
     settings.setValue(SETTINGS_CHECK_THREADS, mThreads.size());
 }
@@ -239,7 +239,7 @@ QStringList ThreadHandler::getReCheckFiles(bool all) const
     return files;
 }
 
-bool ThreadHandler::needsReCheck(const QString &filename, std::set<QString> &modified, std::set<QString> &unmodified) const
+bool ThreadHandler::needsReCheck(const QString& filename, std::set<QString>& modified, std::set<QString>& unmodified) const
 {
     if (modified.find(filename) != modified.end())
         return true;

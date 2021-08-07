@@ -25,12 +25,12 @@ int local1() {
     return x;
 }
 
-int pointer1(int *p) {
+int pointer1(int* p) {
     // cppcheck-suppress verificationUninit
     return *p;
 }
 
-int pointer2(char *p) {
+int pointer2(char* p) {
     // cppcheck-suppress verificationUninitArg
     return strlen(p);
 }

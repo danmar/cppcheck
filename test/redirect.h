@@ -77,8 +77,8 @@ public:
 private:
     std::ostringstream _out;
     std::ostringstream _err;
-    std::streambuf *_oldCout;
-    std::streambuf *_oldCerr;
+    std::streambuf* _oldCout;
+    std::streambuf* _oldCerr;
 };
 
 #define REDIRECT RedirectOutputError redir; do {} while (false)

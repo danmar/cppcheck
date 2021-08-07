@@ -114,7 +114,7 @@ public:
      * @param data QVariant (that contains an int) to be converted
      * @return data converted to ShowTypes
      */
-    static ShowTypes::ShowType VariantToShowType(const QVariant &data);
+    static ShowTypes::ShowType VariantToShowType(const QVariant& data);
 
     bool mVisible[ShowNone];
 };

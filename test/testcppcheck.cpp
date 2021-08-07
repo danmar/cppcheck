@@ -37,10 +37,10 @@ private:
     public:
         std::list<std::string> id;
 
-        void reportOut(const std::string & /*outmsg*/, Color = Color::Reset) OVERRIDE {}
-        void bughuntingReport(const std::string & /*str*/) OVERRIDE {}
+        void reportOut(const std::string& /*outmsg*/, Color = Color::Reset) OVERRIDE {}
+        void bughuntingReport(const std::string& /*str*/) OVERRIDE {}
 
-        void reportErr(const ErrorMessage &msg) OVERRIDE {
+        void reportErr(const ErrorMessage& msg) OVERRIDE {
             id.push_back(msg.id);
         }
     };
@@ -52,8 +52,8 @@ private:
     }
 
     void instancesSorted() const {
-        for (std::list<Check *>::const_iterator i = Check::instances().begin(); i != Check::instances().end(); ++i) {
-            std::list<Check *>::const_iterator j = i;
+        for (std::list<Check*>::const_iterator i = Check::instances().begin(); i != Check::instances().end(); ++i) {
+            std::list<Check*>::const_iterator j = i;
             ++j;
             if (j != Check::instances().end()) {
                 ASSERT_EQUALS(true, (*i)->name() < (*j)->name());
@@ -62,7 +62,7 @@ private:
     }
 
     void classInfoFormat() const {
-        for (std::list<Check *>::const_iterator i = Check::instances().begin(); i != Check::instances().end(); ++i) {
+        for (std::list<Check*>::const_iterator i = Check::instances().begin(); i != Check::instances().end(); ++i) {
             const std::string info = (*i)->classInfo();
             if (!info.empty()) {
                 ASSERT('\n' != info[0]);         // No \n in the beginning
@@ -94,7 +94,7 @@ private:
         // Check for error ids from this class.
         bool foundPurgedConfiguration = false;
         bool foundTooManyConfigs = false;
-        for (const std::string & it : errorLogger.id) {
+        for (const std::string& it : errorLogger.id) {
             if (it == "purgedConfiguration")
                 foundPurgedConfiguration = true;
             else if (it == "toomanyconfigs")

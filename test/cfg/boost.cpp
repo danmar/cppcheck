@@ -28,7 +28,7 @@ void print_hello()
     printf("hello");
 }
 
-void valid_code(boost::function<void(void)> &pf_print_hello)
+void valid_code(boost::function<void(void)>& pf_print_hello)
 {
     if (BOOST_LIKELY(1)) {}
     if (BOOST_UNLIKELY(0)) {}
@@ -39,7 +39,7 @@ void valid_code(boost::function<void(void)> &pf_print_hello)
     pf_print_hello = boost::bind(print_hello);
 }
 
-void ignoredReturnValue(char * buf)
+void ignoredReturnValue(char* buf)
 {
     // cppcheck-suppress ignoredReturnValue
     boost::math::round(1.5);
@@ -63,14 +63,14 @@ void uninitvar()
     (void)boost::math::round(intUninit2);
 }
 
-void throwexception(int * buf)
+void throwexception(int* buf)
 {
     if (!buf)
         boost::throw_exception(std::bad_alloc());
     *buf = 0;
 }
 
-void throwexception2(int * buf)
+void throwexception2(int* buf)
 {
     if (!buf)
         BOOST_THROW_EXCEPTION(std::bad_alloc());

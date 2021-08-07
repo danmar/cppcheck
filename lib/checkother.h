@@ -53,11 +53,11 @@ public:
     CheckOther() : Check(myName()) {}
 
     /** @brief This constructor is used when running checks. */
-    CheckOther(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    CheckOther(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         // Checks
@@ -105,10 +105,10 @@ public:
     }
 
     /** Is expression a comparison that checks if a nonzero (unsigned/pointer) expression is less than zero? */
-    static bool comparisonNonZeroExpressionLessThanZero(const Token *tok, const ValueFlow::Value **zeroValue, const Token **nonZeroExpr);
+    static bool comparisonNonZeroExpressionLessThanZero(const Token* tok, const ValueFlow::Value** zeroValue, const Token** nonZeroExpr);
 
     /** Is expression a comparison that checks if a nonzero (unsigned/pointer) expression is positive? */
-    static bool testIfNonZeroExpressionIsPositive(const Token *tok, const ValueFlow::Value **zeroValue, const Token **nonZeroExpr);
+    static bool testIfNonZeroExpressionIsPositive(const Token* tok, const ValueFlow::Value** zeroValue, const Token** nonZeroExpr);
 
 
     /** @brief Clarify calculation for ".. a * b ? .." */
@@ -125,7 +125,7 @@ public:
 
     /** @brief %Check scope of variables */
     void checkVariableScope();
-    static bool checkInnerScope(const Token *tok, const Variable* var, bool& used);
+    static bool checkInnerScope(const Token* tok, const Variable* var, bool& used);
 
     /** @brief %Check for comma separated statements in return */
     void checkCommaSeparatedReturn();
@@ -177,7 +177,7 @@ public:
 
     /** @brief %Check for free() operations on invalid memory locations */
     void checkInvalidFree();
-    void invalidFreeError(const Token *tok, const std::string &allocation, bool inconclusive);
+    void invalidFreeError(const Token* tok, const std::string& allocation, bool inconclusive);
 
     /** @brief %Check for code creating redundant copies */
     void checkRedundantCopy();
@@ -228,68 +228,68 @@ public:
     void checkModuloOfOne();
 
     void checkOverlappingWrite();
-    void overlappingWriteUnion(const Token *tok);
-    void overlappingWriteFunction(const Token *tok);
+    void overlappingWriteUnion(const Token* tok);
+    void overlappingWriteFunction(const Token* tok);
 
 private:
     // Error messages..
-    void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result);
-    void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);
-    void checkPipeParameterSizeError(const Token *tok, const std::string &strVarName, const std::string &strDim);
-    void clarifyCalculationError(const Token *tok, const std::string &op);
+    void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string& functionName, const std::string& varName, const bool result);
+    void checkCastIntToCharAndBackError(const Token* tok, const std::string& strFunctionName);
+    void checkPipeParameterSizeError(const Token* tok, const std::string& strVarName, const std::string& strDim);
+    void clarifyCalculationError(const Token* tok, const std::string& op);
     void clarifyStatementError(const Token* tok);
-    void cstyleCastError(const Token *tok);
+    void cstyleCastError(const Token* tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive, bool toIsInt);
-    void passedByValueError(const Token *tok, const std::string &parname, bool inconclusive);
-    void constVariableError(const Variable *var, const Function *function);
-    void constStatementError(const Token *tok, const std::string &type, bool inconclusive);
-    void signedCharArrayIndexError(const Token *tok);
-    void unknownSignCharArrayIndexError(const Token *tok);
-    void charBitOpError(const Token *tok);
-    void variableScopeError(const Token *tok, const std::string &varname);
-    void zerodivError(const Token *tok, const ValueFlow::Value *value);
-    void nanInArithmeticExpressionError(const Token *tok);
-    void redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive);
-    void redundantInitializationError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive);
-    void redundantAssignmentInSwitchError(const Token *tok1, const Token *tok2, const std::string &var);
-    void redundantCopyError(const Token *tok1, const Token* tok2, const std::string& var);
-    void redundantCopyInSwitchError(const Token *tok1, const Token* tok2, const std::string &var);
-    void redundantBitwiseOperationInSwitchError(const Token *tok, const std::string &varname);
+    void passedByValueError(const Token* tok, const std::string& parname, bool inconclusive);
+    void constVariableError(const Variable* var, const Function* function);
+    void constStatementError(const Token* tok, const std::string& type, bool inconclusive);
+    void signedCharArrayIndexError(const Token* tok);
+    void unknownSignCharArrayIndexError(const Token* tok);
+    void charBitOpError(const Token* tok);
+    void variableScopeError(const Token* tok, const std::string& varname);
+    void zerodivError(const Token* tok, const ValueFlow::Value* value);
+    void nanInArithmeticExpressionError(const Token* tok);
+    void redundantAssignmentError(const Token* tok1, const Token* tok2, const std::string& var, bool inconclusive);
+    void redundantInitializationError(const Token* tok1, const Token* tok2, const std::string& var, bool inconclusive);
+    void redundantAssignmentInSwitchError(const Token* tok1, const Token* tok2, const std::string& var);
+    void redundantCopyError(const Token* tok1, const Token* tok2, const std::string& var);
+    void redundantCopyInSwitchError(const Token* tok1, const Token* tok2, const std::string& var);
+    void redundantBitwiseOperationInSwitchError(const Token* tok, const std::string& varname);
     void suspiciousCaseInSwitchError(const Token* tok, const std::string& operatorString);
-    void selfAssignmentError(const Token *tok, const std::string &varname);
-    void misusedScopeObjectError(const Token *tok, const std::string &varname);
-    void duplicateBranchError(const Token *tok1, const Token *tok2, ErrorPath errors);
-    void duplicateAssignExpressionError(const Token *tok1, const Token *tok2, bool inconclusive);
-    void oppositeExpressionError(const Token *opTok, ErrorPath errors);
-    void duplicateExpressionError(const Token *tok1, const Token *tok2, const Token *opTok, ErrorPath errors);
-    void duplicateValueTernaryError(const Token *tok);
-    void duplicateExpressionTernaryError(const Token *tok, ErrorPath errors);
-    void duplicateBreakError(const Token *tok, bool inconclusive);
+    void selfAssignmentError(const Token* tok, const std::string& varname);
+    void misusedScopeObjectError(const Token* tok, const std::string& varname);
+    void duplicateBranchError(const Token* tok1, const Token* tok2, ErrorPath errors);
+    void duplicateAssignExpressionError(const Token* tok1, const Token* tok2, bool inconclusive);
+    void oppositeExpressionError(const Token* opTok, ErrorPath errors);
+    void duplicateExpressionError(const Token* tok1, const Token* tok2, const Token* opTok, ErrorPath errors);
+    void duplicateValueTernaryError(const Token* tok);
+    void duplicateExpressionTernaryError(const Token* tok, ErrorPath errors);
+    void duplicateBreakError(const Token* tok, bool inconclusive);
     void unreachableCodeError(const Token* tok, bool inconclusive);
-    void unsignedLessThanZeroError(const Token *tok, const ValueFlow::Value *v, const std::string &varname);
-    void pointerLessThanZeroError(const Token *tok, const ValueFlow::Value *v);
-    void unsignedPositiveError(const Token *tok, const ValueFlow::Value *v, const std::string &varname);
-    void pointerPositiveError(const Token *tok, const ValueFlow::Value *v);
-    void suspiciousSemicolonError(const Token *tok);
-    void negativeBitwiseShiftError(const Token *tok, int op);
-    void redundantCopyError(const Token *tok, const std::string &varname);
+    void unsignedLessThanZeroError(const Token* tok, const ValueFlow::Value* v, const std::string& varname);
+    void pointerLessThanZeroError(const Token* tok, const ValueFlow::Value* v);
+    void unsignedPositiveError(const Token* tok, const ValueFlow::Value* v, const std::string& varname);
+    void pointerPositiveError(const Token* tok, const ValueFlow::Value* v);
+    void suspiciousSemicolonError(const Token* tok);
+    void negativeBitwiseShiftError(const Token* tok, int op);
+    void redundantCopyError(const Token* tok, const std::string& varname);
     void incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean);
-    void varFuncNullUBError(const Token *tok);
-    void commaSeparatedReturnError(const Token *tok);
+    void varFuncNullUBError(const Token* tok);
+    void commaSeparatedReturnError(const Token* tok);
     void redundantPointerOpError(const Token* tok, const std::string& varname, bool inconclusive);
     void raceAfterInterlockedDecrementError(const Token* tok);
     void unusedLabelError(const Token* tok, bool inSwitch, bool hasIfdef);
     void unknownEvaluationOrder(const Token* tok);
-    static bool isMovedParameterAllowedForInconclusiveFunction(const Token * tok);
-    void accessMovedError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive);
-    void funcArgNamesDifferent(const std::string & functionName, nonneg int index, const Token* declaration, const Token* definition);
-    void funcArgOrderDifferent(const std::string & functionName, const Token * declaration, const Token * definition, const std::vector<const Token*> & declarations, const std::vector<const Token*> & definitions);
-    void shadowError(const Token *var, const Token *shadowed, std::string type);
-    void knownArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value, const std::string &varexpr, bool isVariableExpressionHidden);
-    void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
-    void checkModuloOfOneError(const Token *tok);
+    static bool isMovedParameterAllowedForInconclusiveFunction(const Token* tok);
+    void accessMovedError(const Token* tok, const std::string& varname, const ValueFlow::Value* value, bool inconclusive);
+    void funcArgNamesDifferent(const std::string& functionName, nonneg int index, const Token* declaration, const Token* definition);
+    void funcArgOrderDifferent(const std::string& functionName, const Token* declaration, const Token* definition, const std::vector<const Token*>& declarations, const std::vector<const Token*>& definitions);
+    void shadowError(const Token* var, const Token* shadowed, std::string type);
+    void knownArgumentError(const Token* tok, const Token* ftok, const ValueFlow::Value* value, const std::string& varexpr, bool isVariableExpressionHidden);
+    void comparePointersError(const Token* tok, const ValueFlow::Value* v1, const ValueFlow::Value* v2);
+    void checkModuloOfOneError(const Token* tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
         CheckOther c(nullptr, settings, errorLogger);
 
         ErrorPath errorPath;
@@ -361,7 +361,7 @@ private:
         c.redundantAssignmentError(nullptr, nullptr, "var", false);
         c.redundantInitializationError(nullptr, nullptr, "var", false);
 
-        const std::vector<const Token *> nullvec;
+        const std::vector<const Token*> nullvec;
         c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);
         c.checkModuloOfOneError(nullptr);
     }

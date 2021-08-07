@@ -70,7 +70,7 @@ Settings::Settings()
     certainty.setEnabled(Certainty::normal, true);
 }
 
-std::string Settings::addEnabled(const std::string &str)
+std::string Settings::addEnabled(const std::string& str)
 {
     // Enable parameters may be comma separated...
     if (str.find(',') != std::string::npos) {
@@ -125,7 +125,7 @@ std::string Settings::addEnabled(const std::string &str)
     return std::string();
 }
 
-bool Settings::isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck) const
+bool Settings::isEnabled(const ValueFlow::Value* value, bool inconclusiveCheck) const
 {
     if (!severity.isEnabled(Severity::warning) && (value->condition || value->defaultArg))
         return false;

@@ -47,7 +47,7 @@ static const QString MsgAttribute = "msg";
 static const QString VersionAttribute = "version";
 static const QString VerboseAttribute = "verbose";
 
-XmlReportV2::XmlReportV2(const QString &filename) :
+XmlReportV2::XmlReportV2(const QString& filename) :
     XmlReport(filename),
     mXmlReader(nullptr),
     mXmlWriter(nullptr)
@@ -96,7 +96,7 @@ void XmlReportV2::writeFooter()
     mXmlWriter->writeEndDocument();
 }
 
-void XmlReportV2::writeError(const ErrorItem &error)
+void XmlReportV2::writeError(const ErrorItem& error)
 {
     /*
        Error example from the core program in xml
@@ -188,7 +188,7 @@ QList<ErrorItem> XmlReportV2::read()
     return errors;
 }
 
-ErrorItem XmlReportV2::readError(QXmlStreamReader *reader)
+ErrorItem XmlReportV2::readError(QXmlStreamReader* reader)
 {
     /*
        Error example from the core program in xml

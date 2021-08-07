@@ -39,7 +39,7 @@ public:
         return QString::fromStdString(Severity::toString(severity));
     }
 
-    static Severity::SeverityType fromString(const QString &severity) {
+    static Severity::SeverityType fromString(const QString& severity) {
         return Severity::fromString(severity.toStdString());
     }
 };
@@ -50,14 +50,14 @@ public:
 class QErrorPathItem {
 public:
     QErrorPathItem() : line(0), column(-1) {}
-    explicit QErrorPathItem(const ErrorMessage::FileLocation &loc);
+    explicit QErrorPathItem(const ErrorMessage::FileLocation& loc);
     QString file;
     int line;
     int column;
     QString info;
 };
 
-bool operator==(const QErrorPathItem &i1, const QErrorPathItem &i2);
+bool operator==(const QErrorPathItem& i1, const QErrorPathItem& i2);
 
 /**
  * @brief A class containing error data for one error.
@@ -70,7 +70,7 @@ bool operator==(const QErrorPathItem &i1, const QErrorPathItem &i2);
 class ErrorItem {
 public:
     ErrorItem();
-    explicit ErrorItem(const ErrorMessage &errmsg);
+    explicit ErrorItem(const ErrorMessage& errmsg);
 
     /**
      * @brief Convert error item to string.
@@ -99,7 +99,7 @@ public:
     /**
      * Compare "CID"
      */
-    static bool sameCID(const ErrorItem &errorItem1, const ErrorItem &errorItem2);
+    static bool sameCID(const ErrorItem& errorItem1, const ErrorItem& errorItem2);
 };
 
 Q_DECLARE_METATYPE(ErrorItem)

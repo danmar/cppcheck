@@ -46,7 +46,7 @@ public:
     class OurPreprocessor : public Preprocessor {
     public:
 
-        static std::string expandMacros(const char code[], ErrorLogger *errorLogger = nullptr) {
+        static std::string expandMacros(const char code[], ErrorLogger* errorLogger = nullptr) {
             std::istringstream istr(code);
             simplecpp::OutputList outputList;
             std::vector<std::string> files;
@@ -260,17 +260,17 @@ private:
         preprocessor0.simplifyPragmaAsm(&tokens);
         const std::set<std::string> configs(preprocessor0.getConfigs(tokens));
         preprocessor0.setDirectives(tokens);
-        for (const std::string & config : configs) {
+        for (const std::string& config : configs) {
             try {
-                const std::string &cfgcode = preprocessor0.getcode(tokens, config, files, std::string(code).find("#file") != std::string::npos);
+                const std::string& cfgcode = preprocessor0.getcode(tokens, config, files, std::string(code).find("#file") != std::string::npos);
                 actual[config] = cfgcode;
-            } catch (const simplecpp::Output &) {
+            } catch (const simplecpp::Output&) {
                 actual[config] = "";
             } catch (...) {}
         }
     }
 
-    std::string getConfigsStr(const char filedata[], const char *arg = nullptr) {
+    std::string getConfigsStr(const char filedata[], const char* arg = nullptr) {
         Settings settings;
         if (arg && std::strncmp(arg,"-D",2)==0)
             settings.userDefines = arg + 2;
@@ -283,7 +283,7 @@ private:
         tokens.removeComments();
         const std::set<std::string> configs = preprocessor.getConfigs(tokens);
         std::string ret;
-        for (const std::string & config : configs)
+        for (const std::string& config : configs)
             ret += config + '\n';
         return ret;
     }
@@ -773,7 +773,7 @@ private:
     }
 
     void if_macro_eq_macro() {
-        const char *code = "#define A B\n"
+        const char* code = "#define A B\n"
                            "#define B 1\n"
                            "#define C 1\n"
                            "#if A == C\n"

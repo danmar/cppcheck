@@ -69,14 +69,14 @@ public:
         FileLocation()
             : fileIndex(0), line(0), column(0) {}
 
-        FileLocation(const std::string &file, int line, unsigned int column)
+        FileLocation(const std::string& file, int line, unsigned int column)
             : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file) {}
 
-        FileLocation(const std::string &file, const std::string &info, int line, unsigned int column)
+        FileLocation(const std::string& file, const std::string& info, int line, unsigned int column)
             : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file), mInfo(info) {}
 
         FileLocation(const Token* tok, const TokenList* tokenList);
-        FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList);
+        FileLocation(const Token* tok, const std::string& info, const TokenList* tokenList);
 
         /**
          * Return the filename.
@@ -96,7 +96,7 @@ public:
          * Set the filename.
          * @param file Filename to set.
          */
-        void setfile(const std::string &file);
+        void setfile(const std::string& file);
 
         /**
          * @return the location as a string. Format: [file:line]
@@ -110,7 +110,7 @@ public:
         std::string getinfo() const {
             return mInfo;
         }
-        void setinfo(const std::string &i) {
+        void setinfo(const std::string& i) {
             mInfo = i;
         }
 
@@ -120,17 +120,17 @@ public:
         std::string mInfo;
     };
 
-    ErrorMessage(const std::list<FileLocation> &callStack,
+    ErrorMessage(const std::list<FileLocation>& callStack,
                  const std::string& file1,
                  Severity::SeverityType severity,
-                 const std::string &msg,
-                 const std::string &id, Certainty::CertaintyLevel certainty);
-    ErrorMessage(const std::list<FileLocation> &callStack,
+                 const std::string& msg,
+                 const std::string& id, Certainty::CertaintyLevel certainty);
+    ErrorMessage(const std::list<FileLocation>& callStack,
                  const std::string& file1,
                  Severity::SeverityType severity,
-                 const std::string &msg,
-                 const std::string &id,
-                 const CWE &cwe,
+                 const std::string& msg,
+                 const std::string& id,
+                 const CWE& cwe,
                  Certainty::CertaintyLevel certainty);
     ErrorMessage(const std::list<const Token*>& callstack,
                  const TokenList* list,
@@ -143,19 +143,19 @@ public:
                  Severity::SeverityType severity,
                  const std::string& id,
                  const std::string& msg,
-                 const CWE &cwe,
+                 const CWE& cwe,
                  Certainty::CertaintyLevel certainty,
                  bool bugHunting);
-    ErrorMessage(const ErrorPath &errorPath,
-                 const TokenList *tokenList,
+    ErrorMessage(const ErrorPath& errorPath,
+                 const TokenList* tokenList,
                  Severity::SeverityType severity,
                  const char id[],
-                 const std::string &msg,
-                 const CWE &cwe,
+                 const std::string& msg,
+                 const CWE& cwe,
                  Certainty::CertaintyLevel certainty,
                  bool bugHunting);
     ErrorMessage();
-    explicit ErrorMessage(const tinyxml2::XMLElement * const errmsg);
+    explicit ErrorMessage(const tinyxml2::XMLElement* const errmsg);
 
     /**
      * Format the error message in XML format
@@ -175,11 +175,11 @@ public:
      * @return formatted string
      */
     std::string toString(bool verbose,
-                         const std::string &templateFormat = emptyString,
-                         const std::string &templateLocation = emptyString) const;
+                         const std::string& templateFormat = emptyString,
+                         const std::string& templateLocation = emptyString) const;
 
     std::string serialize() const;
-    bool deserialize(const std::string &data);
+    bool deserialize(const std::string& data);
 
     std::list<FileLocation> callStack;
     std::string id;
@@ -199,20 +199,20 @@ public:
     std::size_t hash;
 
     /** set short and verbose messages */
-    void setmsg(const std::string &msg);
+    void setmsg(const std::string& msg);
 
     /** Short message (single line short message) */
-    const std::string &shortMessage() const {
+    const std::string& shortMessage() const {
         return mShortMessage;
     }
 
     /** Verbose message (may be the same as the short message) */
-    const std::string &verboseMessage() const {
+    const std::string& verboseMessage() const {
         return mVerboseMessage;
     }
 
     /** Symbol names */
-    const std::string &symbolNames() const {
+    const std::string& symbolNames() const {
         return mSymbolNames;
     }
 
@@ -253,7 +253,7 @@ public:
      *
      * @param outmsg Message to show e.g. "Checking main.cpp..."
      */
-    virtual void reportOut(const std::string &outmsg, Color c = Color::Reset) = 0;
+    virtual void reportOut(const std::string& outmsg, Color c = Color::Reset) = 0;
 
     /**
      * Information about found errors and warnings is directed
@@ -261,7 +261,7 @@ public:
      *
      * @param msg Location and other information about the found error.
      */
-    virtual void reportErr(const ErrorMessage &msg) = 0;
+    virtual void reportErr(const ErrorMessage& msg) = 0;
 
     /**
      * Report progress to client
@@ -269,7 +269,7 @@ public:
      * @param stage for example preprocess / tokenize / simplify / check
      * @param value progress value (0-100)
      */
-    virtual void reportProgress(const std::string &filename, const char stage[], const std::size_t value) {
+    virtual void reportProgress(const std::string& filename, const char stage[], const std::size_t value) {
         (void)filename;
         (void)stage;
         (void)value;
@@ -279,31 +279,31 @@ public:
      * Output information messages.
      * @param msg Location and other information about the found error.
      */
-    virtual void reportInfo(const ErrorMessage &msg) {
+    virtual void reportInfo(const ErrorMessage& msg) {
         reportErr(msg);
     }
 
-    virtual void bughuntingReport(const std::string &str) = 0;
+    virtual void bughuntingReport(const std::string& str) = 0;
 
     /**
      * Report unmatched suppressions
      * @param unmatched list of unmatched suppressions (from Settings::Suppressions::getUnmatched(Local|Global)Suppressions)
      * @return true is returned if errors are reported
      */
-    bool reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched);
+    bool reportUnmatchedSuppressions(const std::list<Suppressions::Suppression>& unmatched);
 
-    static std::string callStackToString(const std::list<ErrorMessage::FileLocation> &callStack);
+    static std::string callStackToString(const std::list<ErrorMessage::FileLocation>& callStack);
 
     /**
      * Convert XML-sensitive characters into XML entities
      * @param str The input string containing XML-sensitive characters
      * @return The output string containing XML entities
      */
-    static std::string toxml(const std::string &str);
+    static std::string toxml(const std::string& str);
 
-    static std::string plistHeader(const std::string &version, const std::vector<std::string> &files);
-    static std::string plistData(const ErrorMessage &msg);
-    static const char *plistFooter() {
+    static std::string plistHeader(const std::string& version, const std::vector<std::string>& files);
+    static std::string plistData(const ErrorMessage& msg);
+    static const char* plistFooter() {
         return " </array>\r\n"
                "</dict>\r\n"
                "</plist>";
@@ -311,7 +311,7 @@ public:
 };
 
 /** Replace substring. Example replaceStr("1,NR,3", "NR", "2") => "1,2,3" */
-std::string replaceStr(std::string s, const std::string &from, const std::string &to);
+std::string replaceStr(std::string s, const std::string& from, const std::string& to);
 
 /// @}
 //---------------------------------------------------------------------------

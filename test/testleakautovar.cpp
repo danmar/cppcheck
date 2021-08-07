@@ -217,7 +217,7 @@ private:
         c.runChecks(&tokenizer, &settings, this);
     }
 
-    void check(const char code[], Settings & settings_) {
+    void check(const char code[], Settings& settings_) {
         // Clear the error buffer..
         errout.str("");
 
@@ -2117,10 +2117,10 @@ private:
     }
 
     void configuration3() {
-        const char * code = "void f() {\n"
-                            "    char *p = malloc(10);\n"
-                            "    if (set_data(p)) { }\n"
-                            "}";
+        const char* code = "void f() {\n"
+                           "    char *p = malloc(10);\n"
+                           "    if (set_data(p)) { }\n"
+                           "}";
         check(code);
         ASSERT_EQUALS("[test.c:4]: (information) --check-library: Function set_data() should have <use>/<leak-ignore> configuration\n", errout.str());
         check(code, true);

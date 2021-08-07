@@ -33,7 +33,7 @@
  */
 class CheckStatistics : public QObject {
 public:
-    explicit CheckStatistics(QObject *parent = nullptr);
+    explicit CheckStatistics(QObject* parent = nullptr);
 
     /**
      * @brief Add new checked item to statistics.
@@ -41,7 +41,7 @@ public:
      * @param tool Tool.
      * @param type Type of the item to add.
      */
-    void addItem(const QString &tool, ShowTypes::ShowType type);
+    void addItem(const QString& tool, ShowTypes::ShowType type);
 
     /**
      * @brief Clear the statistics.
@@ -56,7 +56,7 @@ public:
      * @param type Type for which the statistics are returned.
      * @return Number of items of given type.
      */
-    unsigned getCount(const QString &tool, ShowTypes::ShowType type) const;
+    unsigned getCount(const QString& tool, ShowTypes::ShowType type) const;
 
     /** Get tools with results */
     QStringList getTools() const;

@@ -41,20 +41,20 @@ public:
      * @brief Add filename to the list.
      * @param filepath Full path to the file.
      */
-    void addFile(const QString &filepath);
+    void addFile(const QString& filepath);
 
     /**
      * @brief Add files in the directory to the list.
      * @param directory Full pathname to directory to add.
      * @param recursive If true also files in subdirectories are added.
      */
-    void addDirectory(const QString &directory, bool recursive = false);
+    void addDirectory(const QString& directory, bool recursive = false);
 
     /**
      * @brief Add list of filenames and directories to the list.
      * @param paths List of paths to add.
      */
-    void addPathList(const QStringList &paths);
+    void addPathList(const QStringList& paths);
 
     /**
      * @brief Return list of filenames (to check).
@@ -66,7 +66,7 @@ public:
      * @brief Add list of paths to exclusion list.
      * @param paths Paths to exclude.
      */
-    void addExcludeList(const QStringList &paths);
+    void addExcludeList(const QStringList& paths);
 
     /**
      * @brief Return list of default filename extensions included.
@@ -80,7 +80,7 @@ protected:
      * @brief Test if filename matches the filename extensions filtering.
      * @return true if filename matches filtering.
      */
-    static bool filterMatches(const QFileInfo &inf);
+    static bool filterMatches(const QFileInfo& inf);
 
     /**
      * @brief Get filtered list of paths.

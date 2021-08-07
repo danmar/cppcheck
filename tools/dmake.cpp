@@ -40,10 +40,10 @@ static std::string objfile(std::string cppfile)
     return builddir(cppfile + ".o");
 }
 
-static std::string objfiles(const std::vector<std::string> &files)
+static std::string objfiles(const std::vector<std::string>& files)
 {
     std::string allObjfiles;
-    for (const std::string &file : files) {
+    for (const std::string& file : files) {
         if (file != files.front())
             allObjfiles += std::string(14, ' ');
         allObjfiles += objfile(file);
@@ -53,7 +53,7 @@ static std::string objfiles(const std::vector<std::string> &files)
     return allObjfiles;
 }
 
-static void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
+static void getDeps(const std::string& filename, std::vector<std::string>& depfiles)
 {
     if (filename == "externals/z3_version.h")
         return;
@@ -78,7 +78,7 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
         else if (filename.compare(0, 6, "tools/") == 0)
             getDeps("cli" + filename.substr(filename.find('/')), depfiles);
         else if (filename.compare(0, 4, "lib/") == 0) {
-            for (const std::string & external : externalfolders)
+            for (const std::string& external : externalfolders)
                 getDeps(external + filename.substr(filename.find('/')), depfiles);
         }
         return;
@@ -112,21 +112,21 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
     }
 }
 
-static void compilefiles(std::ostream &fout, const std::vector<std::string> &files, const std::string &args)
+static void compilefiles(std::ostream& fout, const std::vector<std::string>& files, const std::string& args)
 {
-    for (const std::string &file : files) {
+    for (const std::string& file : files) {
         bool external(file.compare(0,10,"externals/") == 0);
         fout << objfile(file) << ": " << file;
         std::vector<std::string> depfiles;
         getDeps(file, depfiles);
         std::sort(depfiles.begin(), depfiles.end());
-        for (const std::string &depfile : depfiles)
+        for (const std::string& depfile : depfiles)
             fout << " " << depfile;
         fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS)" << (external?" -w":"") << " $(UNDEF_STRICT_ANSI) -c -o " << objfile(file) << " " << builddir(file) << "\n\n";
     }
 }
 
-static std::string getCppFiles(std::vector<std::string> &files, const std::string &path, bool recursive)
+static std::string getCppFiles(std::vector<std::string>& files, const std::string& path, bool recursive)
 {
     std::map<std::string,size_t> filemap;
     const std::set<std::string> extra;
@@ -145,7 +145,7 @@ static std::string getCppFiles(std::vector<std::string> &files, const std::strin
 }
 
 
-static void makeConditionalVariable(std::ostream &os, const std::string &variable, const std::string &defaultValue)
+static void makeConditionalVariable(std::ostream& os, const std::string& variable, const std::string& defaultValue)
 {
     os << "ifndef " << variable << '\n'
        << "    " << variable << '=' << defaultValue << '\n'
@@ -153,7 +153,7 @@ static void makeConditionalVariable(std::ostream &os, const std::string &variabl
        << "\n";
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     const bool release(argc >= 2 && std::string(argv[1]) == "--release");
 
@@ -207,7 +207,7 @@ int main(int argc, char **argv)
             fout1 << "include($$PWD/../externals/externals.pri)\n";
             fout1 << "INCLUDEPATH += $$PWD\n";
             fout1 << "HEADERS += ";
-            for (const std::string &libfile : libfiles) {
+            for (const std::string& libfile : libfiles) {
                 std::string fname(libfile.substr(4));
                 if (fname.find(".cpp") == std::string::npos)
                     continue;   // shouldn't happen
@@ -217,7 +217,7 @@ int main(int argc, char **argv)
                     fout1 << " \\\n" << std::string(11, ' ');
             }
             fout1 << "\n\nSOURCES += ";
-            for (const std::string &libfile : libfiles) {
+            for (const std::string& libfile : libfiles) {
                 fout1 << "$${PWD}/" << libfile.substr(4);
                 if (libfile != libfiles.back())
                     fout1 << " \\\n" << std::string(11, ' ');

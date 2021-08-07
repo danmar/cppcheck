@@ -33,7 +33,7 @@ void uninitvar_timercmp(struct timeval t)
 
 void nullPointer_timercmp(struct timeval t)
 {
-    struct timeval *p=0;
+    struct timeval* p=0;
     // cppcheck-suppress nullPointer
     (void)timercmp(&t, p, <);
     // cppcheck-suppress nullPointer
@@ -43,10 +43,10 @@ void nullPointer_timercmp(struct timeval t)
 }
 
 // size_t strlcat(char *dst, const char *src, size_t size);
-void uninitvar_strlcat(char *Ct, const char *S, size_t N)
+void uninitvar_strlcat(char* Ct, const char* S, size_t N)
 {
-    char *ct;
-    char *s;
+    char* ct;
+    char* s;
     size_t n1, n2;
     // cppcheck-suppress uninitvar
     (void)strlcat(ct,s,n1);

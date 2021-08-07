@@ -46,7 +46,7 @@ class CPPCHECKLIB TemplateSimplifier {
     friend class TestSimplifyTemplate;
 
 public:
-    explicit TemplateSimplifier(Tokenizer *tokenizer);
+    explicit TemplateSimplifier(Tokenizer* tokenizer);
     ~TemplateSimplifier();
 
     /**
@@ -59,18 +59,18 @@ public:
      * \param tok start token that must point at "<"
      * \return number of parameters (invalid parameters => 0)
      */
-    static unsigned int templateParameters(const Token *tok);
+    static unsigned int templateParameters(const Token* tok);
 
     /**
      * Token and its full scopename
      */
     class TokenAndName {
-        Token *mToken;
+        Token* mToken;
         std::string mScope;
         std::string mName;
         std::string mFullName;
-        const Token *mNameToken;
-        const Token *mParamEnd;
+        const Token* mNameToken;
+        const Token* mParamEnd;
         unsigned int mFlags;
 
         enum {
@@ -138,7 +138,7 @@ public:
          * \param token template instantiation name token "name<...>"
          * \param scope full qualification of template(scope)
          */
-        TokenAndName(Token *token, const std::string &scope);
+        TokenAndName(Token* token, const std::string& scope);
         /**
          * Constructor used for declarations.
          * \param token template declaration token "template < ... >"
@@ -146,37 +146,37 @@ public:
          * \param nameToken template name token "template < ... > class name"
          * \param paramEnd template parameter end token ">"
          */
-        TokenAndName(Token *token, const std::string &scope, const Token *nameToken, const Token *paramEnd);
+        TokenAndName(Token* token, const std::string& scope, const Token* nameToken, const Token* paramEnd);
         TokenAndName(const TokenAndName& other);
         ~TokenAndName();
 
-        bool operator == (const TokenAndName & rhs) const {
+        bool operator == (const TokenAndName& rhs) const {
             return mToken == rhs.mToken && mScope == rhs.mScope && mName == rhs.mName && mFullName == rhs.mFullName &&
                    mNameToken == rhs.mNameToken && mParamEnd == rhs.mParamEnd && mFlags == rhs.mFlags;
         }
 
-        Token * token() const {
+        Token* token() const {
             return mToken;
         }
-        void token(Token * token) {
+        void token(Token* token) {
             mToken = token;
         }
-        const std::string & scope() const {
+        const std::string& scope() const {
             return mScope;
         }
-        const std::string & name() const {
+        const std::string& name() const {
             return mName;
         }
-        const std::string & fullName() const {
+        const std::string& fullName() const {
             return mFullName;
         }
-        const Token * nameToken() const {
+        const Token* nameToken() const {
             return mNameToken;
         }
-        const Token * paramEnd() const {
+        const Token* paramEnd() const {
             return mParamEnd;
         }
-        void paramEnd(const Token *end) {
+        void paramEnd(const Token* end) {
             mParamEnd = end;
         }
 
@@ -214,7 +214,7 @@ public:
          *                            ^
          * @return alias start token
          */
-        const Token * aliasStartToken() const;
+        const Token* aliasStartToken() const;
 
         /**
          * Get alias end token.
@@ -222,7 +222,7 @@ public:
          *                                       ^
          * @return alias end token
          */
-        const Token * aliasEndToken() const;
+        const Token* aliasEndToken() const;
 
         /**
          * Is token an alias token?
@@ -231,7 +231,7 @@ public:
          * @param tok token to check
          * @return true if alias token, false if not
          */
-        bool isAliasToken(const Token *tok) const;
+        bool isAliasToken(const Token* tok) const;
 
         /**
          * Is declaration the same family (class, function or variable).
@@ -239,7 +239,7 @@ public:
          * @param decl declaration to compare to
          * @return true if same family, false if different family
          */
-        bool isSameFamily(const TemplateSimplifier::TokenAndName &decl) const {
+        bool isSameFamily(const TemplateSimplifier::TokenAndName& decl) const {
             // Make sure a family flag is set and matches.
             // This works because at most only one flag will be set.
             return ((mFlags & fFamilyMask) & (decl.mFlags & fFamilyMask)) != 0;
@@ -251,8 +251,8 @@ public:
      * @param tok start token of declaration "template" or token after "template < ... >"
      * @return last token of declaration or nullptr if syntax error
      */
-    static Token *findTemplateDeclarationEnd(Token *tok);
-    static const Token *findTemplateDeclarationEnd(const Token *tok);
+    static Token* findTemplateDeclarationEnd(Token* tok);
+    static const Token* findTemplateDeclarationEnd(const Token* tok);
 
     /**
      * Match template declaration/instantiation
@@ -262,7 +262,7 @@ public:
      * @param patternAfter pattern that must match the tokens after the ">"
      * @return match => true
      */
-    static bool instantiateMatch(const Token *instance, const std::size_t numberOfArguments, bool variadic, const char patternAfter[]);
+    static bool instantiateMatch(const Token* instance, const std::size_t numberOfArguments, bool variadic, const char patternAfter[]);
 
     /**
      * Match template declaration/instantiation
@@ -270,7 +270,7 @@ public:
      * @return -1 to bail out or positive integer to identity the position
      * of the template name.
      */
-    int getTemplateNamePosition(const Token *tok);
+    int getTemplateNamePosition(const Token* tok);
 
     /**
      * Get class template name position
@@ -278,7 +278,7 @@ public:
      * @param namepos return offset to name
      * @return true if name found, false if not
      * */
-    static bool getTemplateNamePositionTemplateClass(const Token *tok, int &namepos);
+    static bool getTemplateNamePositionTemplateClass(const Token* tok, int& namepos);
 
     /**
      * Get function template name position
@@ -286,7 +286,7 @@ public:
      * @param namepos return offset to name
      * @return true if name found, false if not
      * */
-    static bool getTemplateNamePositionTemplateFunction(const Token *tok, int &namepos);
+    static bool getTemplateNamePositionTemplateFunction(const Token* tok, int& namepos);
 
     /**
      * Get variable template name position
@@ -294,7 +294,7 @@ public:
      * @param namepos return offset to name
      * @return true if name found, false if not
      * */
-    static bool getTemplateNamePositionTemplateVariable(const Token *tok, int &namepos);
+    static bool getTemplateNamePositionTemplateVariable(const Token* tok, int& namepos);
 
     /**
      * Simplify templates
@@ -303,7 +303,7 @@ public:
      */
     void simplifyTemplates(
         const std::time_t maxtime,
-        bool &codeWithTemplates);
+        bool& codeWithTemplates);
 
     /**
      * Simplify constant calculations such as "1+2" => "3"
@@ -311,7 +311,7 @@ public:
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */
-    static bool simplifyNumericCalculations(Token *tok, bool isTemplate = true);
+    static bool simplifyNumericCalculations(Token* tok, bool isTemplate = true);
 
     /**
      * Simplify constant calculations such as "1+2" => "3".
@@ -319,13 +319,13 @@ public:
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */
-    bool simplifyCalculations(Token* frontToken = nullptr, Token *backToken = nullptr, bool isTemplate = true);
+    bool simplifyCalculations(Token* frontToken = nullptr, Token* backToken = nullptr, bool isTemplate = true);
 
     /** Simplify template instantiation arguments.
      * @param start first token of arguments
      * @param end token following last argument token
      */
-    void simplifyTemplateArgs(Token *start, Token *end);
+    void simplifyTemplateArgs(Token* start, Token* end);
 
 private:
     /**
@@ -338,7 +338,7 @@ private:
      * @param token first token of instantiation
      * @param scope scope of instantiation
      */
-    void addInstantiation(Token *token, const std::string &scope);
+    void addInstantiation(Token* token, const std::string& scope);
 
     /**
      * Get template instantiations
@@ -360,7 +360,7 @@ private:
      * simplify template instantiations (use default argument values)
      * @param declaration template declaration or forward declaration
      */
-    void useDefaultArgumentValues(TokenAndName &declaration);
+    void useDefaultArgumentValues(TokenAndName& declaration);
 
     /**
      * Try to locate a matching declaration for each user defined
@@ -389,17 +389,17 @@ private:
      * @return true if the template was instantiated
      */
     bool simplifyTemplateInstantiations(
-        const TokenAndName &templateDeclaration,
-        const std::list<const Token *> &specializations,
+        const TokenAndName& templateDeclaration,
+        const std::list<const Token*>& specializations,
         const std::time_t maxtime,
-        std::set<std::string> &expandedtemplates);
+        std::set<std::string>& expandedtemplates);
 
     /**
      * Simplify templates : add namespace to template name
      * @param templateDeclaration template declaration
      * @param tok place to insert namespace
      */
-    void addNamespace(const TokenAndName &templateDeclaration, const Token *tok);
+    void addNamespace(const TokenAndName& templateDeclaration, const Token* tok);
 
     /**
      * Simplify templates : check if namespace already present
@@ -407,7 +407,7 @@ private:
      * @param tok place to start looking for namespace
      * @return true if namespace already present
      */
-    static bool alreadyHasNamespace(const TokenAndName &templateDeclaration, const Token *tok);
+    static bool alreadyHasNamespace(const TokenAndName& templateDeclaration, const Token* tok);
 
     /**
      * Expand a template. Create "expanded" class/function at end of tokenlist.
@@ -418,10 +418,10 @@ private:
      * @param copy                              copy or expand in place
      */
     void expandTemplate(
-        const TokenAndName &templateDeclaration,
-        const TokenAndName &templateInstantiation,
-        const std::vector<const Token *> &typeParametersInDeclaration,
-        const std::string &newName,
+        const TokenAndName& templateDeclaration,
+        const TokenAndName& templateInstantiation,
+        const std::vector<const Token*>& typeParametersInDeclaration,
+        const std::string& newName,
         bool copy);
 
     /**
@@ -430,9 +430,9 @@ private:
      * @param typeStringsUsedInTemplateInstantiation template parameters. list of token strings.
      * @param newName The new type name
      */
-    void replaceTemplateUsage(const TokenAndName &instantiation,
-                              const std::list<std::string> &typeStringsUsedInTemplateInstantiation,
-                              const std::string &newName);
+    void replaceTemplateUsage(const TokenAndName& instantiation,
+                              const std::list<std::string>& typeStringsUsedInTemplateInstantiation,
+                              const std::string& newName);
 
     /**
      * @brief TemplateParametersInDeclaration
@@ -442,35 +442,35 @@ private:
      *                                                         ^ [0]       ^ [1]
      */
     static void getTemplateParametersInDeclaration(
-        const Token * tok,
-        std::vector<const Token *> & typeParametersInDeclaration);
+        const Token* tok,
+        std::vector<const Token*>& typeParametersInDeclaration);
 
     /**
      * Remove a specific "template < ..." template class/function
      */
-    static bool removeTemplate(Token *tok);
+    static bool removeTemplate(Token* tok);
 
     /** Syntax error */
-    NORETURN static void syntaxError(const Token *tok);
+    NORETURN static void syntaxError(const Token* tok);
 
     static bool matchSpecialization(
-        const Token *templateDeclarationNameToken,
-        const Token *templateInstantiationNameToken,
-        const std::list<const Token *> & specializations);
+        const Token* templateDeclarationNameToken,
+        const Token* templateInstantiationNameToken,
+        const std::list<const Token*>& specializations);
 
     /*
      * Same as Token::eraseTokens() but tries to fix up lists with pointers to the deleted tokens.
      * @param begin Tokens after this will be erased.
      * @param end Tokens before this will be erased.
      */
-    static void eraseTokens(Token *begin, const Token *end);
+    static void eraseTokens(Token* begin, const Token* end);
 
     /**
      * Delete specified token without invalidating pointer to following token.
      * tok will be invalidated.
      * @param tok token to delete
      */
-    static void deleteToken(Token *tok);
+    static void deleteToken(Token* tok);
 
     /**
      * Get the new token name.
@@ -479,25 +479,25 @@ private:
      * @return new token name
      */
     std::string getNewName(
-        Token *tok2,
-        std::list<std::string> &typeStringsUsedInTemplateInstantiation);
+        Token* tok2,
+        std::list<std::string>& typeStringsUsedInTemplateInstantiation);
 
     void printOut(
-        const TokenAndName &tokenAndName,
-        const std::string &indent = "    ") const;
-    void printOut(const std::string &text = "") const;
+        const TokenAndName& tokenAndName,
+        const std::string& indent = "    ") const;
+    void printOut(const std::string& text = "") const;
 
-    Tokenizer *mTokenizer;
-    TokenList &mTokenList;
-    const Settings *mSettings;
-    ErrorLogger *mErrorLogger;
+    Tokenizer* mTokenizer;
+    TokenList& mTokenList;
+    const Settings* mSettings;
+    ErrorLogger* mErrorLogger;
     bool mChanged;
 
     std::list<TokenAndName> mTemplateDeclarations;
     std::list<TokenAndName> mTemplateForwardDeclarations;
-    std::map<Token *, Token *> mTemplateForwardDeclarationsMap;
-    std::map<Token *, Token *> mTemplateSpecializationMap;
-    std::map<Token *, Token *> mTemplatePartialSpecializationMap;
+    std::map<Token*, Token*> mTemplateForwardDeclarationsMap;
+    std::map<Token*, Token*> mTemplateSpecializationMap;
+    std::map<Token*, Token*> mTemplatePartialSpecializationMap;
     std::list<TokenAndName> mTemplateInstantiations;
     std::list<TokenAndName> mInstantiatedTemplates;
     std::list<TokenAndName> mMemberFunctionsToDelete;

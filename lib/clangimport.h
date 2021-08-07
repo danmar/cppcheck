@@ -27,7 +27,7 @@
 class Tokenizer;
 
 namespace clangimport {
-    void parseClangAstDump(Tokenizer *tokenizer, std::istream &f);
+    void parseClangAstDump(Tokenizer* tokenizer, std::istream& f);
 }
 
 #endif

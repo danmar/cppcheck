@@ -112,11 +112,11 @@ private:
     }
 
     void nextprevious() const {
-        Token *token = new Token();
+        Token* token = new Token();
         token->str("1");
         token->insertToken("2");
         token->next()->insertToken("3");
-        Token *last = token->tokAt(2);
+        Token* last = token->tokAt(2);
         ASSERT_EQUALS(token->str(), "1");
         ASSERT_EQUALS(token->next()->str(), "2");
         // cppcheck-suppress redundantNextPrevious - this is intentional
@@ -132,7 +132,7 @@ private:
         TokenList::deleteTokens(token);
     }
 
-    bool Match(const std::string &code, const std::string &pattern, unsigned int varid=0) {
+    bool Match(const std::string& code, const std::string& pattern, unsigned int varid=0) {
         static const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(";" + code + ";");
@@ -502,7 +502,7 @@ private:
 
     void deleteLast() const {
         TokensFrontBack listEnds{ nullptr };
-        Token ** const tokensBack = &(listEnds.back);
+        Token** const tokensBack = &(listEnds.back);
         Token tok(&listEnds);
         tok.insertToken("aba");
         ASSERT_EQUALS(true, *tokensBack == tok.next());
@@ -512,7 +512,7 @@ private:
 
     void deleteFirst() const {
         TokensFrontBack listEnds{ nullptr };
-        Token ** const tokensFront = &(listEnds.front);
+        Token** const tokensFront = &(listEnds.front);
         Token tok(&listEnds);
 
         tok.insertToken("aba");
@@ -748,7 +748,7 @@ private:
         ASSERT_EQUALS(true, Token::Match(logicalAnd.tokens(), "; %oror%|&&"));
     }
 
-    static void append_vector(std::vector<std::string> &dest, const std::vector<std::string> &src) {
+    static void append_vector(std::vector<std::string>& dest, const std::vector<std::string>& src) {
         dest.insert(dest.end(), src.begin(), src.end());
     }
 
@@ -1068,7 +1068,7 @@ private:
     void canFindMatchingBracketsInnerPair() const {
         givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
 
-        const Token * const t = var.tokens()->tokAt(7)->findClosingBracket();
+        const Token* const t = var.tokens()->tokAt(7)->findClosingBracket();
         ASSERT_EQUALS(">", t->str());
         ASSERT(var.tokens()->tokAt(9) == t);
     }
@@ -1108,11 +1108,11 @@ private:
 
     void expressionString() {
         givenACodeSampleToTokenize var1("void f() { *((unsigned long long *)x) = 0; }");
-        const Token *const tok1 = Token::findsimplematch(var1.tokens(), "*");
+        const Token* const tok1 = Token::findsimplematch(var1.tokens(), "*");
         ASSERT_EQUALS("*((unsigned long long*)x)", tok1->expressionString());
 
         givenACodeSampleToTokenize var2("typedef unsigned long long u64; void f() { *((u64 *)x) = 0; }");
-        const Token *const tok2 = Token::findsimplematch(var2.tokens(), "*");
+        const Token* const tok2 = Token::findsimplematch(var2.tokens(), "*");
         ASSERT_EQUALS("*((unsigned long long*)x)", tok2->expressionString());
 
         givenACodeSampleToTokenize data3("void f() { return (t){1,2}; }");

@@ -47,7 +47,7 @@
 static void addFilesToList(const std::string& fileList, std::vector<std::string>& pathNames)
 {
     // To keep things initially simple, if the file can't be opened, just be silent and move on.
-    std::istream *files;
+    std::istream* files;
     std::ifstream infile;
     if (fileList == "-") { // read from stdin
         files = &std::cin;
@@ -96,7 +96,7 @@ static bool addPathsToSet(const std::string& fileName, std::set<std::string>* se
     return true;
 }
 
-CmdLineParser::CmdLineParser(Settings *settings)
+CmdLineParser::CmdLineParser(Settings* settings)
     : mSettings(settings)
     , mShowHelp(false)
     , mShowVersion(false)
@@ -104,7 +104,7 @@ CmdLineParser::CmdLineParser(Settings *settings)
     , mExitAfterPrint(false)
 {}
 
-void CmdLineParser::printMessage(const std::string &message)
+void CmdLineParser::printMessage(const std::string& message)
 {
     std::cout << message << std::endl;
 }
@@ -284,7 +284,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--doc") == 0) {
                 std::ostringstream doc;
                 // Get documentation..
-                for (const Check * it : Check::instances()) {
+                for (const Check* it : Check::instances()) {
                     const std::string& name(it->name());
                     const std::string info(it->classInfo());
                     if (!name.empty() && !info.empty())
@@ -601,10 +601,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->project.projectType = projType;
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
                     mPathNames = mSettings->project.guiProject.pathNames;
-                    for (const std::string &lib : mSettings->project.guiProject.libraries)
+                    for (const std::string& lib : mSettings->project.guiProject.libraries)
                         mSettings->libraries.emplace_back(lib);
 
-                    for (const std::string &ignorePath : mSettings->project.guiProject.excludedPaths)
+                    for (const std::string& ignorePath : mSettings->project.guiProject.excludedPaths)
                         mIgnoredPaths.emplace_back(ignorePath);
 
                     const std::string platform(mSettings->project.guiProject.platform);
@@ -703,30 +703,30 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--rule-file=", 12) == 0) {
                 tinyxml2::XMLDocument doc;
                 if (doc.LoadFile(12+argv[i]) == tinyxml2::XML_SUCCESS) {
-                    tinyxml2::XMLElement *node = doc.FirstChildElement();
+                    tinyxml2::XMLElement* node = doc.FirstChildElement();
                     for (; node && strcmp(node->Value(), "rule") == 0; node = node->NextSiblingElement()) {
                         Settings::Rule rule;
 
-                        tinyxml2::XMLElement *tokenlist = node->FirstChildElement("tokenlist");
+                        tinyxml2::XMLElement* tokenlist = node->FirstChildElement("tokenlist");
                         if (tokenlist)
                             rule.tokenlist = tokenlist->GetText();
 
-                        tinyxml2::XMLElement *pattern = node->FirstChildElement("pattern");
+                        tinyxml2::XMLElement* pattern = node->FirstChildElement("pattern");
                         if (pattern) {
                             rule.pattern = pattern->GetText();
                         }
 
-                        tinyxml2::XMLElement *message = node->FirstChildElement("message");
+                        tinyxml2::XMLElement* message = node->FirstChildElement("message");
                         if (message) {
-                            tinyxml2::XMLElement *severity = message->FirstChildElement("severity");
+                            tinyxml2::XMLElement* severity = message->FirstChildElement("severity");
                             if (severity)
                                 rule.severity = Severity::fromString(severity->GetText());
 
-                            tinyxml2::XMLElement *id = message->FirstChildElement("id");
+                            tinyxml2::XMLElement* id = message->FirstChildElement("id");
                             if (id)
                                 rule.id = id->GetText();
 
-                            tinyxml2::XMLElement *summary = message->FirstChildElement("summary");
+                            tinyxml2::XMLElement* summary = message->FirstChildElement("summary");
                             if (summary)
                                 rule.summary = summary->GetText() ? summary->GetText() : "";
                         }
@@ -816,7 +816,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             else if (std::strncmp(argv[i], "--suppress-xml=", 15) == 0) {
-                const char * filename = argv[i] + 15;
+                const char* filename = argv[i] + 15;
                 const std::string errmsg(mSettings->nomsg.parseXmlFile(filename));
                 if (!errmsg.empty()) {
                     printMessage(errmsg);

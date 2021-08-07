@@ -19,14 +19,14 @@ void validCode()
         arr[i] = i * i;
     }
 
-    char * pChars = (char *) omp_target_alloc(4, 1);
+    char* pChars = (char*) omp_target_alloc(4, 1);
     printf("pChars: %p", pChars);
     omp_target_free(pChars, 1);
 }
 
 void memleak_omp_target_alloc()
 {
-    char * pChars = (char *) omp_target_alloc(2, 0);
+    char* pChars = (char*) omp_target_alloc(2, 0);
     printf("pChars: %p", pChars);
     // cppcheck-suppress memleak
 }

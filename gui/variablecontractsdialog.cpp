@@ -3,7 +3,7 @@
 
 #include <QRegExpValidator>
 
-VariableContractsDialog::VariableContractsDialog(QWidget *parent, QString var) :
+VariableContractsDialog::VariableContractsDialog(QWidget* parent, QString var) :
     QDialog(parent),
     mUI(new Ui::VariableContractsDialog)
 {

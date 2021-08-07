@@ -2402,7 +2402,7 @@ private:
 
 
     void sizeof_array() {
-        const char *code;
+        const char* code;
 
         code = "void foo()\n"
                "{\n"
@@ -3126,14 +3126,14 @@ private:
     }
 
     void ifAssignWithCast() {
-        const char *code =  "void foo()\n"
+        const char* code =  "void foo()\n"
                            "{\n"
                            "FILE *f;\n"
                            "if( (f = fopen(\"foo\", \"r\")) == ((FILE*)NULL) )\n"
                            "return(-1);\n"
                            "fclose(f);\n"
                            "}\n";
-        const char *expected = "void foo ( ) "
+        const char* expected = "void foo ( ) "
                                "{ "
                                "FILE * f ; "
                                "f = fopen ( \"foo\" , \"r\" ) ; "
@@ -4446,7 +4446,7 @@ private:
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr("{ x ; return a not_eq x; }");
         tokenizer.tokenize(istr, "test.c");
-        Token *x_token = tokenizer.list.front()->tokAt(5);
+        Token* x_token = tokenizer.list.front()->tokAt(5);
         ASSERT_EQUALS(false, tokenizer.duplicateDefinition(&x_token));
     }
 

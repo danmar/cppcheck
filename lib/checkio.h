@@ -46,11 +46,11 @@ public:
     CheckIO() : Check(myName()) {}
 
     /** @brief This constructor is used when running checks. */
-    CheckIO(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    CheckIO(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks on the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE {
         CheckIO checkIO(tokenizer, settings, errorLogger);
 
         checkIO.checkWrongPrintfScanfArguments();
@@ -74,48 +74,48 @@ public:
 private:
     class ArgumentInfo {
     public:
-        ArgumentInfo(const Token *arg, const Settings *settings, bool _isCPP);
+        ArgumentInfo(const Token* arg, const Settings* settings, bool _isCPP);
         ~ArgumentInfo();
 
         bool isArrayOrPointer() const;
         bool isComplexType() const;
         bool isKnownType() const;
         bool isStdVectorOrString();
-        bool isStdContainer(const Token *tok);
-        bool isLibraryType(const Settings *settings) const;
+        bool isStdContainer(const Token* tok);
+        bool isLibraryType(const Settings* settings) const;
 
-        const Variable *variableInfo;
-        const Token *typeToken;
-        const Function *functionInfo;
-        Token *tempToken;
+        const Variable* variableInfo;
+        const Token* typeToken;
+        const Function* functionInfo;
+        Token* tempToken;
         bool element;
         bool _template;
         bool address;
         bool isCPP;
 
     private:
-        ArgumentInfo(const ArgumentInfo &); // not implemented
-        ArgumentInfo operator = (const ArgumentInfo &); // not implemented
+        ArgumentInfo(const ArgumentInfo&);  // not implemented
+        ArgumentInfo operator = (const ArgumentInfo&);  // not implemented
     };
 
-    void checkFormatString(const Token * const tok,
-                           const Token * const formatStringTok,
-                           const Token *       argListTok,
+    void checkFormatString(const Token* const tok,
+                           const Token* const formatStringTok,
+                           const Token*       argListTok,
                            const bool scan,
                            const bool scanf_s);
 
     // Reporting errors..
     void coutCerrMisusageError(const Token* tok, const std::string& streamName);
-    void fflushOnInputStreamError(const Token *tok, const std::string &varname);
-    void ioWithoutPositioningError(const Token *tok);
-    void readWriteOnlyFileError(const Token *tok);
-    void writeReadOnlyFileError(const Token *tok);
-    void useClosedFileError(const Token *tok);
-    void seekOnAppendedFileError(const Token *tok);
-    void incompatibleFileOpenError(const Token *tok, const std::string &filename);
-    void invalidScanfError(const Token *tok);
+    void fflushOnInputStreamError(const Token* tok, const std::string& varname);
+    void ioWithoutPositioningError(const Token* tok);
+    void readWriteOnlyFileError(const Token* tok);
+    void writeReadOnlyFileError(const Token* tok);
+    void useClosedFileError(const Token* tok);
+    void seekOnAppendedFileError(const Token* tok);
+    void incompatibleFileOpenError(const Token* tok, const std::string& filename);
+    void invalidScanfError(const Token* tok);
     void wrongPrintfScanfArgumentsError(const Token* tok,
-                                        const std::string &functionName,
+                                        const std::string& functionName,
                                         nonneg int numFormat,
                                         nonneg int numFunction);
     void wrongPrintfScanfPosixParameterPositionError(const Token* tok, const std::string& functionName,
@@ -130,11 +130,11 @@ private:
     void invalidPrintfArgTypeError_sint(const Token* tok, nonneg int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidPrintfArgTypeError_float(const Token* tok, nonneg int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidLengthModifierError(const Token* tok, nonneg int numFormat, const std::string& modifier);
-    void invalidScanfFormatWidthError(const Token* tok, nonneg int numFormat, int width, const Variable *var, char c);
-    static void argumentType(std::ostream & os, const ArgumentInfo * argInfo);
-    static Severity::SeverityType getSeverity(const ArgumentInfo *argInfo);
+    void invalidScanfFormatWidthError(const Token* tok, nonneg int numFormat, int width, const Variable* var, char c);
+    static void argumentType(std::ostream& os, const ArgumentInfo* argInfo);
+    static Severity::SeverityType getSeverity(const ArgumentInfo* argInfo);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
         CheckIO c(nullptr, settings, errorLogger);
 
         c.coutCerrMisusageError(nullptr,  "cout");

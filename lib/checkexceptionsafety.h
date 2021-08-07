@@ -57,10 +57,10 @@ public:
     CheckExceptionSafety() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
-    CheckExceptionSafety(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    CheckExceptionSafety(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE {
         if (tokenizer->isC())
             return;
 
@@ -97,18 +97,18 @@ public:
 
 private:
     /** Don't throw exceptions in destructors */
-    void destructorsError(const Token * const tok, const std::string &className);
-    void deallocThrowError(const Token * const tok, const std::string &varname);
-    void rethrowCopyError(const Token * const tok, const std::string &varname);
-    void catchExceptionByValueError(const Token *tok);
-    void noexceptThrowError(const Token * const tok);
+    void destructorsError(const Token* const tok, const std::string& className);
+    void deallocThrowError(const Token* const tok, const std::string& varname);
+    void rethrowCopyError(const Token* const tok, const std::string& varname);
+    void catchExceptionByValueError(const Token* tok);
+    void noexceptThrowError(const Token* const tok);
     /** Missing exception specification */
-    void unhandledExceptionSpecificationError(const Token * const tok1, const Token * const tok2, const std::string & funcname);
+    void unhandledExceptionSpecificationError(const Token* const tok1, const Token* const tok2, const std::string& funcname);
     /** Rethrow without currently handled exception */
-    void rethrowNoCurrentExceptionError(const Token *tok);
+    void rethrowNoCurrentExceptionError(const Token* tok);
 
     /** Generate all possible errors (for --errorlist) */
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
         CheckExceptionSafety c(nullptr, settings, errorLogger);
         c.destructorsError(nullptr, "Class");
         c.deallocThrowError(nullptr, "p");

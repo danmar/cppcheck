@@ -17,8 +17,8 @@ struct PathAnalysis {
     PathAnalysis(const Token* start, const Library& library)
         : start(start), library(&library)
     {}
-    const Token * start;
-    const Library * library;
+    const Token* start;
+    const Library* library;
 
     struct Info {
         const Token* tok;
@@ -44,9 +44,9 @@ private:
     Progress forwardRecursive(const Token* tok, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const;
     Progress forwardRange(const Token* startToken, const Token* endToken, Info info, const std::function<Progress(const Info&)>& f) const;
 
-    static const Scope* findOuterScope(const Scope * scope);
+    static const Scope* findOuterScope(const Scope* scope);
 
-    static std::pair<bool, bool> checkCond(const Token * tok, bool& known);
+    static std::pair<bool, bool> checkCond(const Token* tok, bool& known);
 };
 
 /**
@@ -56,7 +56,7 @@ private:
  * @param dest The path destination
  * @param errorPath Adds the path traversal to the errorPath
  */
-bool reaches(const Token * start, const Token * dest, const Library& library, ErrorPath* errorPath);
+bool reaches(const Token* start, const Token* dest, const Library& library, ErrorPath* errorPath);
 
 #endif
 

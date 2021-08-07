@@ -48,7 +48,7 @@ public:
          */
         int type;
         int reallocedFromType = -1;
-        const Token * allocTok;
+        const Token* allocTok;
         AllocInfo(int type_ = 0, AllocStatus status_ = NOALLOC, const Token* allocTok_ = nullptr) : status(status_), type(type_), allocTok(allocTok_) {}
 
         bool managed() const {
@@ -74,7 +74,7 @@ public:
         referenced.erase(varid);
     }
 
-    void swap(VarInfo &other) {
+    void swap(VarInfo& other) {
         alloctype.swap(other.alloctype);
         possibleUsage.swap(other.possibleUsage);
         conditionalAlloc.swap(other.conditionalAlloc);
@@ -92,7 +92,7 @@ public:
     }
 
     /** set possible usage for all variables */
-    void possibleUsageAll(const std::string &functionName);
+    void possibleUsageAll(const std::string& functionName);
 
     void print();
 };
@@ -111,10 +111,10 @@ public:
     CheckLeakAutoVar() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
-    CheckLeakAutoVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    CheckLeakAutoVar(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE {
         CheckLeakAutoVar checkLeakAutoVar(tokenizer, settings, errorLogger);
         checkLeakAutoVar.check();
     }
@@ -125,8 +125,8 @@ private:
     void check();
 
     /** check for leaks in a function scope */
-    void checkScope(const Token * const startToken,
-                    VarInfo *varInfo,
+    void checkScope(const Token* const startToken,
+                    VarInfo* varInfo,
                     std::set<int> notzero,
                     nonneg int recursiveCount);
 
@@ -135,33 +135,33 @@ private:
      * @param varInfo Variable info
      * @return next token to process (if no other checks needed for this token). NULL if other checks could be performed.
      */
-    const Token * checkTokenInsideExpression(const Token * const tok, VarInfo *varInfo);
+    const Token* checkTokenInsideExpression(const Token* const tok, VarInfo* varInfo);
 
     /** parse function call */
-    void functionCall(const Token *tokName, const Token *tokOpeningPar, VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af);
+    void functionCall(const Token* tokName, const Token* tokOpeningPar, VarInfo* varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af);
 
     /** parse changes in allocation status */
-    void changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Token* tok, const Token* arg);
+    void changeAllocStatus(VarInfo* varInfo, const VarInfo::AllocInfo& allocation, const Token* tok, const Token* arg);
 
     /** update allocation status if reallocation function */
-    void changeAllocStatusIfRealloc(std::map<int, VarInfo::AllocInfo> &alloctype, const Token *fTok, const Token *retTok);
+    void changeAllocStatusIfRealloc(std::map<int, VarInfo::AllocInfo>& alloctype, const Token* fTok, const Token* retTok);
 
     /** return. either "return" or end of variable scope is seen */
-    void ret(const Token *tok, VarInfo &varInfo, const bool isEndOfScope = false);
+    void ret(const Token* tok, VarInfo& varInfo, const bool isEndOfScope = false);
 
     /** if variable is allocated then there is a leak */
-    void leakIfAllocated(const Token *vartok, const VarInfo &varInfo);
+    void leakIfAllocated(const Token* vartok, const VarInfo& varInfo);
 
-    void leakError(const Token* tok, const std::string &varname, int type);
-    void mismatchError(const Token* deallocTok, const Token* allocTok, const std::string &varname);
-    void deallocUseError(const Token *tok, const std::string &varname);
-    void deallocReturnError(const Token *tok, const Token *deallocTok, const std::string &varname);
-    void doubleFreeError(const Token *tok, const Token *prevFreeTok, const std::string &varname, int type);
+    void leakError(const Token* tok, const std::string& varname, int type);
+    void mismatchError(const Token* deallocTok, const Token* allocTok, const std::string& varname);
+    void deallocUseError(const Token* tok, const std::string& varname);
+    void deallocReturnError(const Token* tok, const Token* deallocTok, const std::string& varname);
+    void doubleFreeError(const Token* tok, const Token* prevFreeTok, const std::string& varname, int type);
 
     /** message: user configuration is needed to complete analysis */
-    void configurationInfo(const Token* tok, const std::string &functionName);
+    void configurationInfo(const Token* tok, const std::string& functionName);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
         CheckLeakAutoVar c(nullptr, settings, errorLogger);
         c.deallocReturnError(nullptr, nullptr, "p");
         c.configurationInfo(nullptr, "f");  // user configuration is needed to complete analysis

@@ -46,11 +46,11 @@ public:
     Check64BitPortability() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
-    Check64BitPortability(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    Check64BitPortability(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE {
         Check64BitPortability check64BitPortability(tokenizer, settings, errorLogger);
         check64BitPortability.pointerassignment();
     }
@@ -60,12 +60,12 @@ public:
 
 private:
 
-    void assignmentAddressToIntegerError(const Token *tok);
-    void assignmentIntegerToAddressError(const Token *tok);
-    void returnIntegerError(const Token *tok);
-    void returnPointerError(const Token *tok);
+    void assignmentAddressToIntegerError(const Token* tok);
+    void assignmentIntegerToAddressError(const Token* tok);
+    void returnIntegerError(const Token* tok);
+    void returnPointerError(const Token* tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
         Check64BitPortability c(nullptr, settings, errorLogger);
         c.assignmentAddressToIntegerError(nullptr);
         c.assignmentIntegerToAddressError(nullptr);

@@ -132,7 +132,7 @@ private:
         TEST_CASE(knownConditionIncrementLoop); // #9808
     }
 
-    void check(const char code[], Settings *settings, const char* filename = "test.cpp") {
+    void check(const char code[], Settings* settings, const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 

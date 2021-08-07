@@ -145,7 +145,7 @@ private:
         TEST_CASE(valueFlowSymbolic);
     }
 
-    static bool isNotTokValue(const ValueFlow::Value &val) {
+    static bool isNotTokValue(const ValueFlow::Value& val) {
         return !val.isTokValue();
     }
 
@@ -179,7 +179,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+        for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 for (const ValueFlow::Value& val:tok->values()) {
                     if (val.isSymbolicValue())
@@ -219,7 +219,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+        for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 for (const ValueFlow::Value& val:tok->values()) {
                     if (val.isSymbolicValue())
@@ -239,7 +239,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+        for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 for (const ValueFlow::Value& val:tok->values()) {
                     if (val.isSymbolicValue())
@@ -259,9 +259,9 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+        for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                for (const ValueFlow::Value &v : tok->values()) {
+                for (const ValueFlow::Value& v : tok->values()) {
                     if (v.isIntValue() && !v.isImpossible() && v.intvalue == value)
                         return true;
                 }
@@ -277,9 +277,9 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+        for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                for (const ValueFlow::Value &v : tok->values()) {
+                for (const ValueFlow::Value& v : tok->values()) {
                     if (v.isFloatValue() && !v.isImpossible() && v.floatValue >= value - diff &&
                         v.floatValue <= value + diff)
                         return true;
@@ -296,15 +296,15 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+        for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() != "x" || tok->linenr() != linenr)
                 continue;
 
             std::ostringstream ostr;
-            for (const ValueFlow::Value &v : tok->values()) {
-                for (const ValueFlow::Value::ErrorPathItem &ep : v.errorPath) {
-                    const Token *eptok = ep.first;
-                    const std::string &msg = ep.second;
+            for (const ValueFlow::Value& v : tok->values()) {
+                for (const ValueFlow::Value::ErrorPathItem& ep : v.errorPath) {
+                    const Token* eptok = ep.first;
+                    const std::string& msg = ep.second;
                     ostr << eptok->linenr() << ',' << msg << '\n';
                 }
             }
@@ -320,9 +320,9 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+        for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                for (const ValueFlow::Value &v : tok->values()) {
+                for (const ValueFlow::Value& v : tok->values()) {
                     if (v.valueType == type && Token::simpleMatch(v.tokvalue, value, strlen(value)))
                         return true;
                 }
@@ -338,9 +338,9 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+        for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                for (const ValueFlow::Value &v : tok->values()) {
+                for (const ValueFlow::Value& v : tok->values()) {
                     if (v.valueType == type && v.intvalue == value)
                         return true;
                 }
@@ -356,9 +356,9 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+        for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                for (const ValueFlow::Value &v : tok->values()) {
+                for (const ValueFlow::Value& v : tok->values()) {
                     if (v.isMovedValue() && v.moveKind == moveKind)
                         return true;
                 }
@@ -374,9 +374,9 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+        for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                for (const ValueFlow::Value &v : tok->values()) {
+                for (const ValueFlow::Value& v : tok->values()) {
                     if (v.isIntValue() && v.intvalue == value && v.condition)
                         return true;
                 }
@@ -406,16 +406,16 @@ private:
         settings.debugwarnings = false;
     }
 
-    std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[], const Settings *s = nullptr) {
+    std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[], const Settings* s = nullptr) {
         Tokenizer tokenizer(s ? s : &settings, this);
         std::istringstream istr(code);
         errout.str("");
         tokenizer.tokenize(istr, "test.cpp");
-        const Token *tok = Token::findmatch(tokenizer.tokens(), tokstr);
+        const Token* tok = Token::findmatch(tokenizer.tokens(), tokstr);
         return tok ? tok->values() : std::list<ValueFlow::Value>();
     }
 
-    std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[], ValueFlow::Value::ValueType vt, const Settings *s = nullptr) {
+    std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[], ValueFlow::Value::ValueType vt, const Settings* s = nullptr) {
         std::list<ValueFlow::Value> values = tokenValues(code, tokstr, s);
         values.remove_if([&](const ValueFlow::Value& v) {
             return v.valueType != vt;
@@ -423,13 +423,13 @@ private:
         return values;
     }
 
-    std::vector<std::string> lifetimeValues(const char code[], const char tokstr[], const Settings *s = nullptr) {
+    std::vector<std::string> lifetimeValues(const char code[], const char tokstr[], const Settings* s = nullptr) {
         std::vector<std::string> result;
         Tokenizer tokenizer(s ? s : &settings, this);
         std::istringstream istr(code);
         errout.str("");
         tokenizer.tokenize(istr, "test.cpp");
-        const Token *tok = Token::findmatch(tokenizer.tokens(), tokstr);
+        const Token* tok = Token::findmatch(tokenizer.tokens(), tokstr);
         if (!tok)
             return result;
         for (const ValueFlow::Value& value:tok->values()) {
@@ -469,7 +469,7 @@ private:
     }
 
     void valueFlowString() {
-        const char *code;
+        const char* code;
 
         // valueFlowAfterAssign
         code  = "const char * f() {\n"
@@ -489,7 +489,7 @@ private:
     }
 
     void valueFlowPointerAlias() {
-        const char *code;
+        const char* code;
         std::list<ValueFlow::Value> values;
 
         code  = "const char * f() {\n"
@@ -522,7 +522,7 @@ private:
     }
 
     void valueFlowLifetime() {
-        const char *code;
+        const char* code;
         std::vector<std::string> lifetimes;
 
         LOAD_LIB_2(settings.library, "std.cfg");
@@ -566,7 +566,7 @@ private:
     }
 
     void valueFlowArrayElement() {
-        const char *code;
+        const char* code;
 
         code  = "void f() {\n"
                 "    const int x[] = {43,23,12};\n"
@@ -607,7 +607,7 @@ private:
     }
 
     void valueFlowMove() {
-        const char *code;
+        const char* code;
 
         code = "void f() {\n"
                "   X x;\n"
@@ -704,7 +704,7 @@ private:
     }
 
     void valueFlowCalculations() {
-        const char *code;
+        const char* code;
 
         // Different operators
         ASSERT_EQUALS(5, valueOfTok("3 +  (a ? b : 2);", "+").intvalue);
@@ -942,7 +942,7 @@ private:
     }
 
     void valueFlowSizeof() {
-        const char *code;
+        const char* code;
         std::list<ValueFlow::Value> values;
 
         // array size
@@ -1168,7 +1168,7 @@ private:
     }
 
     void valueFlowErrorPath() {
-        const char *code;
+        const char* code;
 
         code = "void f() {\n"
                "  int x = 53;\n"
@@ -1210,7 +1210,7 @@ private:
     }
 
     void valueFlowBeforeCondition() {
-        const char *code;
+        const char* code;
 
         code = "void f(int x) {\n"
                "    int a = x;\n"
@@ -1268,7 +1268,7 @@ private:
     }
 
     void valueFlowBeforeConditionAssignIncDec() {  // assignment / increment
-        const char *code;
+        const char* code;
 
         code = "void f(int x) {\n"
                "   x = 2 + x;\n"
@@ -1335,7 +1335,7 @@ private:
     }
 
     void valueFlowBeforeConditionAndAndOrOrGuard() { // guarding by &&
-        const char *code;
+        const char* code;
 
         code = "void f(int x) {\n"
                "    if (!x || \n"  // <- x can be 0
@@ -1361,7 +1361,7 @@ private:
     }
 
     void valueFlowBeforeConditionFunctionCall() { // function calls
-        const char *code;
+        const char* code;
 
         code = "void f(int x) {\n"
                "  a = x;\n"
@@ -1388,7 +1388,7 @@ private:
     }
 
     void valueFlowBeforeConditionLoop() { // while, for, do-while
-        const char *code;
+        const char* code;
 
         code = "void f(int x) {\n" // loop condition, x is not assigned inside loop => use condition
                "  a = x;\n"  // x can be 37
@@ -1441,7 +1441,7 @@ private:
     }
 
     void valueFlowBeforeConditionTernaryOp() { // bailout: ?:
-        const char *code;
+        const char* code;
 
         bailout("void f(int x) {\n"
                 "    y = ((x<0) ? x : ((x==2)?3:4));\n"
@@ -1477,7 +1477,7 @@ private:
     }
 
     void valueFlowBeforeConditionSizeof() { // skip sizeof
-        const char *code;
+        const char* code;
 
         code = "void f(int *x) {\n"
                "    sizeof(x[0]);\n"
@@ -1493,7 +1493,7 @@ private:
     }
 
     void valueFlowBeforeConditionIfElse() { // bailout: if/else/etc
-        const char *code;
+        const char* code;
 
         code = "void f(X * x) {\n"
                "  a = x;\n"
@@ -1531,7 +1531,7 @@ private:
     }
 
     void valueFlowBeforeConditionGlobalVariables() {
-        const char *code;
+        const char* code;
 
         // handle global variables
         code = "int x;\n"
@@ -1642,7 +1642,7 @@ private:
     }
 
     void valueFlowAfterAssign() {
-        const char *code;
+        const char* code;
 
         code = "void f() {\n"
                "    int x = 123;\n"
@@ -2350,7 +2350,7 @@ private:
     }
 
     void valueFlowAfterCondition() {
-        const char *code;
+        const char* code;
         // in if
         code = "void f(int x) {\n"
                "    if (x == 123) {\n"
@@ -2946,7 +2946,7 @@ private:
     }
 
     void valueFlowAfterConditionSeveralNot() {
-        const char *code;
+        const char* code;
 
         code = "int f(int x, int y) {\n"
                "    if (x!=0) {}\n"
@@ -2977,7 +2977,7 @@ private:
     }
 
     void valueFlowForwardCompoundAssign() {
-        const char *code;
+        const char* code;
 
         code = "void f() {\n"
                "    int x = 123;\n"
@@ -3019,7 +3019,7 @@ private:
     }
 
     void valueFlowForwardCorrelatedVariables() {
-        const char *code;
+        const char* code;
 
         code = "void f(int x = 0) {\n"
                "  bool zero(x==0);\n"
@@ -3031,7 +3031,7 @@ private:
     }
 
     void valueFlowForwardModifiedVariables() {
-        const char *code;
+        const char* code;
 
         code = "void f(bool b) {\n"
                "  int x = 0;\n"
@@ -3052,7 +3052,7 @@ private:
     }
 
     void valueFlowForwardFunction() {
-        const char *code;
+        const char* code;
 
         code = "class C {\n"
                "public:\n"
@@ -3087,7 +3087,7 @@ private:
     }
 
     void valueFlowForwardTernary() {
-        const char *code;
+        const char* code;
 
         code = "int f() {\n"
                "  int x=5;\n"
@@ -3113,7 +3113,7 @@ private:
     }
 
     void valueFlowForwardLambda() {
-        const char *code;
+        const char* code;
 
         code = "void f() {\n"
                "  int x=1;\n"
@@ -3133,7 +3133,7 @@ private:
     }
 
     void valueFlowForwardTryCatch() {
-        const char *code;
+        const char* code;
 
         code = "void g1();\n"
                "void g2();\n"
@@ -3167,7 +3167,7 @@ private:
     }
 
     void valueFlowBitAnd() {
-        const char *code;
+        const char* code;
 
         code = "int f(int a) {\n"
                "  int x = a & 0x80;\n"
@@ -3192,7 +3192,7 @@ private:
     }
 
     void valueFlowForwardInconclusiveImpossible() {
-        const char *code;
+        const char* code;
 
         code = "void foo() {\n"
                "    bool valid = f1();\n"
@@ -3205,7 +3205,7 @@ private:
     }
 
     void valueFlowRightShift() {
-        const char *code;
+        const char* code;
         /* Set some temporary fixed values to simplify testing */
         const Settings settingsTmp = settings;
         settings.int_bit = 32;
@@ -3288,7 +3288,7 @@ private:
     }
 
     void valueFlowFwdAnalysis() {
-        const char *code;
+        const char* code;
         std::list<ValueFlow::Value> values;
 
         code = "void f() {\n"
@@ -3377,7 +3377,7 @@ private:
     }
 
     void valueFlowSwitchVariable() {
-        const char *code;
+        const char* code;
         code = "void f(int x) {\n"
                "    a = x - 1;\n"  // <- x can be 14
                "    switch (x) {\n"
@@ -3399,7 +3399,7 @@ private:
     }
 
     void valueFlowForLoop() {
-        const char *code;
+        const char* code;
         ValueFlow::Value value;
 
         code = "void f() {\n"
@@ -3686,7 +3686,7 @@ private:
     }
 
     void valueFlowSubFunction() {
-        const char *code;
+        const char* code;
 
         code = "int f(int size) {\n"
                "    int x = 0;\n"
@@ -3745,7 +3745,7 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 4U, -1));
     }
     void valueFlowFunctionReturn() {
-        const char *code;
+        const char* code;
 
         code = "int f1(int x) {\n"
                "  return x+1;\n"
@@ -3813,7 +3813,7 @@ private:
     }
 
     void valueFlowFunctionDefaultParameter() {
-        const char *code;
+        const char* code;
 
         code = "class continuous_src_time {\n"
                "    continuous_src_time(std::complex<double> f, double st = 0.0, double et = infinity) {}\n"
@@ -3822,7 +3822,7 @@ private:
     }
 
     bool isNotKnownValues(const char code[], const char str[]) {
-        for (const ValueFlow::Value &v : tokenValues(code, str)) {
+        for (const ValueFlow::Value& v : tokenValues(code, str)) {
             if (v.isKnown())
                 return false;
         }
@@ -3830,7 +3830,7 @@ private:
     }
 
     void knownValue() {
-        const char *code;
+        const char* code;
         ValueFlow::Value value;
 
         ASSERT(valueOfTok("x = 1;", "1").isKnown());
@@ -4112,12 +4112,12 @@ private:
     }
 
     void valueFlowSizeofForwardDeclaredEnum() {
-        const char *code = "enum E; sz=sizeof(E);";
+        const char* code = "enum E; sz=sizeof(E);";
         valueOfTok(code, "="); // Don't crash (#7775)
     }
 
     void valueFlowGlobalVar() {
-        const char *code;
+        const char* code;
 
         code = "int x;\n"
                "void f() {\n"
@@ -4166,7 +4166,7 @@ private:
     }
 
     void valueFlowGlobalStaticVar() {
-        const char *code;
+        const char* code;
 
         code = "static int x = 321;\n"
                "void f() {\n"
@@ -4779,7 +4779,7 @@ private:
     }
 
     void valueFlowContainerSize() {
-        const char *code;
+        const char* code;
 
         LOAD_LIB_2(settings.library, "std.cfg");
 
@@ -5403,7 +5403,7 @@ private:
     }
 
     void valueFlowDynamicBufferSize() {
-        const char *code;
+        const char* code;
 
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "posix.cfg");
@@ -5443,7 +5443,7 @@ private:
     }
 
     void valueFlowSafeFunctionParameterValues() {
-        const char *code;
+        const char* code;
         std::list<ValueFlow::Value> values;
         Settings s;
         LOAD_LIB_2(s.library, "std.cfg");
@@ -5495,7 +5495,7 @@ private:
 
 
     void valueFlowUnknownFunctionReturn() {
-        const char *code;
+        const char* code;
         std::list<ValueFlow::Value> values;
         Settings s;
         LOAD_LIB_2(s.library, "std.cfg");
@@ -5819,7 +5819,7 @@ private:
     }
 
     void valueFlowUnknownMixedOperators() {
-        const char *code= "int f(int a, int b, bool x) {\n"
+        const char* code= "int f(int a, int b, bool x) {\n"
                           "  if (a == 1 && (!(b == 2 && x))) {\n"
                           "  } else {\n"
                           "    if (x) {\n"
@@ -5833,7 +5833,7 @@ private:
     }
 
     void valueFlowIdempotent() {
-        const char *code;
+        const char* code;
 
         code = "void f(bool a, bool b) {\n"
                "    bool x = true;\n"
@@ -5869,7 +5869,7 @@ private:
     }
 
     void valueFlowUnsigned() {
-        const char *code;
+        const char* code;
 
         code = "auto f(uint32_t i) {\n"
                "    auto x = i;\n"
@@ -5920,7 +5920,7 @@ private:
     }
 
     void valueFlowMod() {
-        const char *code;
+        const char* code;
 
         code = "auto f(int i) {\n"
                "    auto x = i % 2;\n"

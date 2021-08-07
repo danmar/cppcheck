@@ -35,7 +35,7 @@ class QAction;
 struct Platform {
     QString mTitle;  /**< Text visible in the GUI. */
     Settings::PlatformType mType; /**< Type in the core. */
-    QAction *mActMainWindow; /**< Pointer to main window action item. */
+    QAction* mActMainWindow; /**< Pointer to main window action item. */
 };
 
 /**
@@ -45,8 +45,8 @@ class Platforms : public QObject {
     Q_OBJECT
 
 public:
-    explicit Platforms(QObject *parent = nullptr);
-    void add(const QString &title, Settings::PlatformType platform);
+    explicit Platforms(QObject* parent = nullptr);
+    void add(const QString& title, Settings::PlatformType platform);
     int getCount() const;
     void init();
     Platform& get(Settings::PlatformType platform);

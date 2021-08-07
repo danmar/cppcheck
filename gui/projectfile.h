@@ -44,8 +44,8 @@ class ProjectFile : public QObject {
     Q_OBJECT
 
 public:
-    explicit ProjectFile(QObject *parent = nullptr);
-    explicit ProjectFile(const QString &filename, QObject *parent = nullptr);
+    explicit ProjectFile(QObject* parent = nullptr);
+    explicit ProjectFile(const QString& filename, QObject* parent = nullptr);
     ~ProjectFile() {
         if (this == mActiveProject) mActiveProject = nullptr;
     }
@@ -61,7 +61,7 @@ public:
      * @brief Read the project file.
      * @param filename Filename (can be also given to constructor).
      */
-    bool read(const QString &filename = QString());
+    bool read(const QString& filename = QString());
 
     /**
      * @brief Get project root path.
@@ -184,7 +184,7 @@ public:
      * @param filesDir Data files folder set by --data-dir
      * @param addon addon i.e. "misra" to lookup
      */
-    static QString getAddonFilePath(QString filesDir, const QString &addon);
+    static QString getAddonFilePath(QString filesDir, const QString& addon);
 
     /**
      * @brief Get list of addons and tools.
@@ -260,15 +260,15 @@ public:
      * @brief Set project root path.
      * @param rootpath new project root path.
      */
-    void setRootPath(const QString &rootpath) {
+    void setRootPath(const QString& rootpath) {
         mRootPath = rootpath;
     }
 
-    void setBuildDir(const QString &buildDir) {
+    void setBuildDir(const QString& buildDir) {
         mBuildDir = buildDir;
     }
 
-    void setImportProject(const QString &importProject) {
+    void setImportProject(const QString& importProject) {
         mImportProject = importProject;
     }
 
@@ -280,37 +280,37 @@ public:
      * @brief Set list of includes.
      * @param includes List of defines.
      */
-    void setIncludes(const QStringList &includes);
+    void setIncludes(const QStringList& includes);
 
     /**
      * @brief Set list of defines.
      * @param defines List of defines.
      */
-    void setDefines(const QStringList &defines);
+    void setDefines(const QStringList& defines);
 
     /**
      * @brief Set list of undefines.
      * @param undefines List of undefines.
      */
-    void setUndefines(const QStringList &undefines);
+    void setUndefines(const QStringList& undefines);
 
     /**
      * @brief Set list of paths to check.
      * @param paths List of paths.
      */
-    void setCheckPaths(const QStringList &paths);
+    void setCheckPaths(const QStringList& paths);
 
     /**
      * @brief Set list of paths to exclude from the check.
      * @param paths List of paths.
      */
-    void setExcludedPaths(const QStringList &paths);
+    void setExcludedPaths(const QStringList& paths);
 
     /**
      * @brief Set list of libraries.
      * @param libraries List of libraries.
      */
-    void setLibraries(const QStringList &libraries);
+    void setLibraries(const QStringList& libraries);
 
     /** Set contract for a function */
     void setFunctionContract(QString function, QString expects);
@@ -319,33 +319,33 @@ public:
      * @brief Set platform.
      * @param platform platform.
      */
-    void setPlatform(const QString &platform);
+    void setPlatform(const QString& platform);
 
     /**
      * @brief Set list of suppressions.
      * @param suppressions List of suppressions.
      */
-    void setSuppressions(const QList<Suppressions::Suppression> &suppressions);
+    void setSuppressions(const QList<Suppressions::Suppression>& suppressions);
 
     /** Add suppression */
-    void addSuppression(const Suppressions::Suppression &suppression);
+    void addSuppression(const Suppressions::Suppression& suppression);
 
     /**
      * @brief Set list of addons.
      * @param addons List of addons.
      */
-    void setAddons(const QStringList &addons);
+    void setAddons(const QStringList& addons);
 
     /** @brief Set list of Visual Studio configurations to be checked
      *  @param vsConfigs List of configurations
      */
-    void setVSConfigurations(const QStringList &vsConfigs);
+    void setVSConfigurations(const QStringList& vsConfigs);
 
     /**
      * @brief Set tags.
      * @param tags tag list
      */
-    void setTags(const QStringList &tags) {
+    void setTags(const QStringList& tags) {
         mTags = tags;
     }
 
@@ -359,13 +359,13 @@ public:
      * @brief Write project file (to disk).
      * @param filename Filename to use.
      */
-    bool write(const QString &filename = QString());
+    bool write(const QString& filename = QString());
 
     /**
      * @brief Set filename for the project file.
      * @param filename Filename to use.
      */
-    void setFilename(const QString &filename) {
+    void setFilename(const QString& filename) {
         mFilename = filename;
     }
 
@@ -374,8 +374,8 @@ public:
     public:
         SafeChecks() : Settings::SafeChecks() {}
 
-        void loadFromXml(QXmlStreamReader &xmlReader);
-        void saveToXml(QXmlStreamWriter &xmlWriter) const;
+        void loadFromXml(QXmlStreamReader& xmlReader);
+        void saveToXml(QXmlStreamWriter& xmlWriter) const;
     };
 
     SafeChecks safeChecks;
@@ -384,7 +384,7 @@ public:
     QStringList getCheckUnknownFunctionReturn() const {
         return mCheckUnknownFunctionReturn;
     }
-    void setCheckUnknownFunctionReturn(const QStringList &s) {
+    void setCheckUnknownFunctionReturn(const QStringList& s) {
         mCheckUnknownFunctionReturn = s;
     }
 
@@ -399,79 +399,79 @@ protected:
      * @brief Read optional root path from XML.
      * @param reader XML stream reader.
      */
-    void readRootPath(QXmlStreamReader &reader);
+    void readRootPath(QXmlStreamReader& reader);
 
-    void readBuildDir(QXmlStreamReader &reader);
+    void readBuildDir(QXmlStreamReader& reader);
 
     /**
      * @brief Read importproject from XML.
      * @param reader XML stream reader.
      */
-    void readImportProject(QXmlStreamReader &reader);
+    void readImportProject(QXmlStreamReader& reader);
 
-    bool readBool(QXmlStreamReader &reader);
+    bool readBool(QXmlStreamReader& reader);
 
-    int readInt(QXmlStreamReader &reader, int defaultValue);
+    int readInt(QXmlStreamReader& reader, int defaultValue);
 
     /**
      * @brief Read list of include directories from XML.
      * @param reader XML stream reader.
      */
-    void readIncludeDirs(QXmlStreamReader &reader);
+    void readIncludeDirs(QXmlStreamReader& reader);
 
     /**
      * @brief Read list of defines from XML.
      * @param reader XML stream reader.
      */
-    void readDefines(QXmlStreamReader &reader);
+    void readDefines(QXmlStreamReader& reader);
 
     /**
      * @brief Read list paths to check.
      * @param reader XML stream reader.
      */
-    void readCheckPaths(QXmlStreamReader &reader);
+    void readCheckPaths(QXmlStreamReader& reader);
 
     /**
      * @brief Read lists of excluded paths.
      * @param reader XML stream reader.
      */
-    void readExcludes(QXmlStreamReader &reader);
+    void readExcludes(QXmlStreamReader& reader);
 
     /**
      * @brief Read function contracts.
      * @param reader XML stream reader.
      */
-    void readFunctionContracts(QXmlStreamReader &reader);
+    void readFunctionContracts(QXmlStreamReader& reader);
 
     /**
      * @brief Read variable constraints.
      * @param reader XML stream reader.
      */
-    void readVariableContracts(QXmlStreamReader &reader);
+    void readVariableContracts(QXmlStreamReader& reader);
 
     /**
      * @brief Read lists of Visual Studio configurations
      * @param reader XML stream reader.
      */
-    void readVsConfigurations(QXmlStreamReader &reader);
+    void readVsConfigurations(QXmlStreamReader& reader);
 
     /**
      * @brief Read platform text.
      * @param reader XML stream reader.
      */
-    void readPlatform(QXmlStreamReader &reader);
+    void readPlatform(QXmlStreamReader& reader);
 
     /**
      * @brief Read suppressions.
      * @param reader XML stream reader.
      */
-    void readSuppressions(QXmlStreamReader &reader);
+    void readSuppressions(QXmlStreamReader& reader);
 
     /**
      * @brief Read tag warnings, what warnings are tagged with a specific tag
      * @param reader XML stream reader.
      */
-    void readTagWarnings(QXmlStreamReader &reader, const QString &tag);
+    void readTagWarnings(QXmlStreamReader& reader, const QString& tag);
 
     /**
      * @brief Read string list
@@ -479,7 +479,7 @@ protected:
      * @param reader       XML stream reader
      * @param elementname  elementname for each string
      */
-    void readStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[]);
+    void readStringList(QStringList& stringlist, QXmlStreamReader& reader, const char elementname[]);
 
     /**
      * @brief Write string list
@@ -488,7 +488,7 @@ protected:
      * @param startelementname name of start element
      * @param stringelementname name of each string element
      */
-    static void writeStringList(QXmlStreamWriter &xmlWriter, const QStringList &stringlist, const char startelementname[], const char stringelementname[]);
+    static void writeStringList(QXmlStreamWriter& xmlWriter, const QStringList& stringlist, const char startelementname[], const char stringelementname[]);
 
 private:
 
@@ -497,7 +497,7 @@ private:
     /**
      * @brief Convert paths
      */
-    static QStringList fromNativeSeparators(const QStringList &paths);
+    static QStringList fromNativeSeparators(const QStringList& paths);
 
     /**
      * @brief Filename (+path) of the project file.
@@ -607,7 +607,7 @@ private:
 
     QStringList mCheckUnknownFunctionReturn;
 
-    static ProjectFile *mActiveProject;
+    static ProjectFile* mActiveProject;
 };
 /// @}
 #endif  // PROJECT_FILE_H

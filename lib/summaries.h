@@ -29,8 +29,8 @@
 class Tokenizer;
 
 namespace Summaries {
-    CPPCHECKLIB std::string create(const Tokenizer *tokenizer, const std::string &cfg);
-    CPPCHECKLIB void loadReturn(const std::string &buildDir, std::set<std::string> &summaryReturn);
+    CPPCHECKLIB std::string create(const Tokenizer* tokenizer, const std::string& cfg);
+    CPPCHECKLIB void loadReturn(const std::string& buildDir, std::set<std::string>& summaryReturn);
 }
 
 //---------------------------------------------------------------------------

@@ -13,14 +13,14 @@
 
 
 
-std::string Summaries::create(const Tokenizer *tokenizer, const std::string &cfg)
+std::string Summaries::create(const Tokenizer* tokenizer, const std::string& cfg)
 {
-    const SymbolDatabase *symbolDatabase = tokenizer->getSymbolDatabase();
-    const Settings *settings = tokenizer->getSettings();
+    const SymbolDatabase* symbolDatabase = tokenizer->getSymbolDatabase();
+    const Settings* settings = tokenizer->getSettings();
 
     std::ostringstream ostr;
-    for (const Scope *scope : symbolDatabase->functionScopes) {
-        const Function *f = scope->function;
+    for (const Scope* scope : symbolDatabase->functionScopes) {
+        const Function* f = scope->function;
         if (!f)
             continue;
 
@@ -39,9 +39,9 @@ std::string Summaries::create(const Tokenizer *tokenizer, const std::string &cfg
         }
 
         // Write summary for function
-        auto join = [](const std::set<std::string> &data) -> std::string {
+        auto join = [](const std::set<std::string>& data) -> std::string {
             std::string ret;
-            const char *sep = "";
+            const char* sep = "";
             for (std::string d: data)
             {
                 ret += sep + d;
@@ -76,7 +76,7 @@ std::string Summaries::create(const Tokenizer *tokenizer, const std::string &cfg
 
 
 
-static std::vector<std::string> getSummaryFiles(const std::string &filename)
+static std::vector<std::string> getSummaryFiles(const std::string& filename)
 {
     std::vector<std::string> ret;
     std::ifstream fin(filename);
@@ -95,7 +95,7 @@ static std::vector<std::string> getSummaryFiles(const std::string &filename)
     return ret;
 }
 
-static std::vector<std::string> getSummaryData(const std::string &line, const std::string &data)
+static std::vector<std::string> getSummaryData(const std::string& line, const std::string& data)
 {
     std::vector<std::string> ret;
     const std::string::size_type start = line.find(" " + data + ":[");
@@ -116,14 +116,14 @@ static std::vector<std::string> getSummaryData(const std::string &line, const st
 }
 
 static void removeFunctionCalls(const std::string& calledFunction,
-                                std::map<std::string, std::vector<std::string>> &functionCalledBy,
-                                std::map<std::string, std::vector<std::string>> &functionCalls,
-                                std::vector<std::string> &add)
+                                std::map<std::string, std::vector<std::string>>& functionCalledBy,
+                                std::map<std::string, std::vector<std::string>>& functionCalls,
+                                std::vector<std::string>& add)
 {
     std::vector<std::string> calledBy = functionCalledBy[calledFunction];
     functionCalledBy.erase(calledFunction);
-    for (const std::string &c: calledBy) {
-        std::vector<std::string> &calls = functionCalls[c];
+    for (const std::string& c: calledBy) {
+        std::vector<std::string>& calls = functionCalls[c];
         calls.erase(std::remove(calls.begin(), calls.end(), calledFunction), calls.end());
         if (calls.empty()) {
             add.push_back(calledFunction);
@@ -132,7 +132,7 @@ static void removeFunctionCalls(const std::string& calledFunction,
     }
 }
 
-void Summaries::loadReturn(const std::string &buildDir, std::set<std::string> &summaryReturn)
+void Summaries::loadReturn(const std::string& buildDir, std::set<std::string>& summaryReturn)
 {
     if (buildDir.empty())
         return;
@@ -143,7 +143,7 @@ void Summaries::loadReturn(const std::string &buildDir, std::set<std::string> &s
 
     // extract "functionNoreturn" and "functionCalledBy" from summaries
     std::vector<std::string> summaryFiles = getSummaryFiles(buildDir + "/files.txt");
-    for (const std::string &filename: summaryFiles) {
+    for (const std::string& filename: summaryFiles) {
         std::ifstream fin(buildDir + '/' + filename);
         if (!fin.is_open())
             continue;
@@ -158,7 +158,7 @@ void Summaries::loadReturn(const std::string &buildDir, std::set<std::string> &s
             if (call.empty())
                 return1.push_back(functionName);
             else {
-                for (const std::string &c: call) {
+                for (const std::string& c: call) {
                     functionCalledBy[c].push_back(functionName);
                 }
             }
@@ -167,7 +167,7 @@ void Summaries::loadReturn(const std::string &buildDir, std::set<std::string> &s
     summaryReturn.insert(return1.cbegin(), return1.cend());
 
     // recursively set "summaryNoreturn"
-    for (const std::string &f: return1) {
+    for (const std::string& f: return1) {
         std::vector<std::string> return2;
         removeFunctionCalls(f, functionCalledBy, functionCalls, return2);
         summaryReturn.insert(return2.cbegin(), return2.cend());

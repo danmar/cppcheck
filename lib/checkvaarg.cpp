@@ -76,13 +76,13 @@ void CheckVaarg::va_start_argument()
     }
 }
 
-void CheckVaarg::wrongParameterTo_va_start_error(const Token *tok, const std::string& paramIsName, const std::string& paramShouldName)
+void CheckVaarg::wrongParameterTo_va_start_error(const Token* tok, const std::string& paramIsName, const std::string& paramShouldName)
 {
     reportError(tok, Severity::warning,
                 "va_start_wrongParameter", "'" + paramIsName + "' given to va_start() is not last named argument of the function. Did you intend to pass '" + paramShouldName + "'?", CWE688, Certainty::normal);
 }
 
-void CheckVaarg::referenceAs_va_start_error(const Token *tok, const std::string& paramName)
+void CheckVaarg::referenceAs_va_start_error(const Token* tok, const std::string& paramName)
 {
     reportError(tok, Severity::error,
                 "va_start_referencePassed", "Using reference '" + paramName + "' as parameter for va_start() results in undefined behaviour.", CWE758, Certainty::normal);
@@ -155,19 +155,19 @@ void CheckVaarg::va_list_usage()
     }
 }
 
-void CheckVaarg::va_end_missingError(const Token *tok, const std::string& varname)
+void CheckVaarg::va_end_missingError(const Token* tok, const std::string& varname)
 {
     reportError(tok, Severity::error,
                 "va_end_missing", "va_list '" + varname + "' was opened but not closed by va_end().", CWE664, Certainty::normal);
 }
 
-void CheckVaarg::va_list_usedBeforeStartedError(const Token *tok, const std::string& varname)
+void CheckVaarg::va_list_usedBeforeStartedError(const Token* tok, const std::string& varname)
 {
     reportError(tok, Severity::error,
                 "va_list_usedBeforeStarted", "va_list '" + varname + "' used before va_start() was called.", CWE664, Certainty::normal);
 }
 
-void CheckVaarg::va_start_subsequentCallsError(const Token *tok, const std::string& varname)
+void CheckVaarg::va_start_subsequentCallsError(const Token* tok, const std::string& varname)
 {
     reportError(tok, Severity::error,
                 "va_start_subsequentCalls", "va_start() or va_copy() called subsequently on '" + varname + "' without va_end() in between.", CWE664, Certainty::normal);

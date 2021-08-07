@@ -43,7 +43,7 @@ public:
      * @param settings Settings instance that will be modified according to
      * options user has given.
      */
-    explicit CmdLineParser(Settings *settings);
+    explicit CmdLineParser(Settings* settings);
 
     /**
      * Parse given command line.
@@ -103,13 +103,13 @@ protected:
     /**
      * Print message (to console?).
      */
-    static void printMessage(const std::string &message);
+    static void printMessage(const std::string& message);
     static void printMessage(const char* message);
 
 private:
     std::vector<std::string> mPathNames;
     std::vector<std::string> mIgnoredPaths;
-    Settings *mSettings;
+    Settings* mSettings;
     bool mShowHelp;
     bool mShowVersion;
     bool mShowErrorMessages;

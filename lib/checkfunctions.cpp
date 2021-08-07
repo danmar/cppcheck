@@ -53,8 +53,8 @@ void CheckFunctions::checkProhibitedFunctions()
 {
     const bool checkAlloca = mSettings->severity.isEnabled(Severity::warning) && ((mSettings->standards.c >= Standards::C99 && mTokenizer->isC()) || mSettings->standards.cpp >= Standards::CPP11);
 
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope *scope : symbolDatabase->functionScopes) {
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%name% (") && tok->varId() == 0)
                 continue;
@@ -97,17 +97,17 @@ void CheckFunctions::checkProhibitedFunctions()
 void CheckFunctions::invalidFunctionUsage()
 {
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope *scope : symbolDatabase->functionScopes) {
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "%name% ( !!)"))
                 continue;
-            const Token * const functionToken = tok;
-            const std::vector<const Token *> arguments = getArguments(tok);
+            const Token* const functionToken = tok;
+            const std::vector<const Token*> arguments = getArguments(tok);
             for (int argnr = 1; argnr <= arguments.size(); ++argnr) {
-                const Token * const argtok = arguments[argnr-1];
+                const Token* const argtok = arguments[argnr-1];
 
                 // check <valid>...</valid>
-                const ValueFlow::Value *invalidValue = argtok->getInvalidValue(functionToken,argnr,mSettings);
+                const ValueFlow::Value* invalidValue = argtok->getInvalidValue(functionToken,argnr,mSettings);
                 if (invalidValue) {
                     invalidFunctionArgError(argtok, functionToken->next()->astOperand1()->expressionString(), argnr, invalidValue, mSettings->library.validarg(functionToken, argnr));
                 }
@@ -126,8 +126,8 @@ void CheckFunctions::invalidFunctionUsage()
 
                 if (mSettings->library.isargstrz(functionToken, argnr)) {
                     if (Token::Match(argtok, "& %var% !![") && argtok->next() && argtok->next()->valueType()) {
-                        const ValueType * valueType = argtok->next()->valueType();
-                        const Variable * variable = argtok->next()->variable();
+                        const ValueType* valueType = argtok->next()->valueType();
+                        const Variable* variable = argtok->next()->variable();
                         if (valueType->type == ValueType::Type::CHAR && !variable->isArray() && !variable->isGlobal() &&
                             (!argtok->next()->hasKnownValue() || argtok->next()->getValue(0) == nullptr)) {
                             invalidFunctionArgStrError(argtok, functionToken->str(), argnr);
@@ -139,7 +139,7 @@ void CheckFunctions::invalidFunctionUsage()
     }
 }
 
-void CheckFunctions::invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const ValueFlow::Value *invalidValue, const std::string &validstr)
+void CheckFunctions::invalidFunctionArgError(const Token* tok, const std::string& functionName, int argnr, const ValueFlow::Value* invalidValue, const std::string& validstr)
 {
     std::ostringstream errmsg;
     errmsg << "$symbol:" << functionName << '\n';
@@ -168,7 +168,7 @@ void CheckFunctions::invalidFunctionArgError(const Token *tok, const std::string
                     Certainty::normal);
 }
 
-void CheckFunctions::invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr)
+void CheckFunctions::invalidFunctionArgBoolError(const Token* tok, const std::string& functionName, int argnr)
 {
     std::ostringstream errmsg;
     errmsg << "$symbol:" << functionName << '\n';
@@ -176,7 +176,7 @@ void CheckFunctions::invalidFunctionArgBoolError(const Token *tok, const std::st
     reportError(tok, Severity::error, "invalidFunctionArgBool", errmsg.str(), CWE628, Certainty::normal);
 }
 
-void CheckFunctions::invalidFunctionArgStrError(const Token *tok, const std::string &functionName, nonneg int argnr)
+void CheckFunctions::invalidFunctionArgStrError(const Token* tok, const std::string& functionName, nonneg int argnr)
 {
     std::ostringstream errmsg;
     errmsg << "$symbol:" << functionName << '\n';
@@ -192,8 +192,8 @@ void CheckFunctions::checkIgnoredReturnValue()
     if (!mSettings->severity.isEnabled(Severity::warning) && !mSettings->severity.isEnabled(Severity::style))
         return;
 
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope *scope : symbolDatabase->functionScopes) {
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             // skip c++11 initialization, ({...})
             if (Token::Match(tok, "%var%|(|,|return {"))
@@ -204,7 +204,7 @@ void CheckFunctions::checkIgnoredReturnValue()
             if (tok->varId() || !Token::Match(tok, "%name% (") || tok->isKeyword())
                 continue;
 
-            const Token *parent = tok->next()->astParent();
+            const Token* parent = tok->next()->astParent();
             while (Token::Match(parent, "%cop%")) {
                 if (Token::Match(parent, "<<|>>") && !parent->astParent())
                     break;
@@ -248,14 +248,14 @@ void CheckFunctions::ignoredReturnErrorCode(const Token* tok, const std::string&
 //---------------------------------------------------------------------------
 // Check for ignored return values.
 //---------------------------------------------------------------------------
-static const Token *checkMissingReturnScope(const Token *tok, const Library &library);
+static const Token* checkMissingReturnScope(const Token* tok, const Library& library);
 
 void CheckFunctions::checkMissingReturn()
 {
     const bool inconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope *scope : symbolDatabase->functionScopes) {
-        const Function *function = scope->function;
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
+        const Function* function = scope->function;
         if (!function || !function->hasBody())
             continue;
         if (function->name() == "main" && !(mSettings->standards.c < Standards::C99 && mTokenizer->isC()))
@@ -266,15 +266,15 @@ void CheckFunctions::checkMissingReturn()
             continue;
         if (Function::returnsVoid(function, true))
             continue;
-        const Token *errorToken = checkMissingReturnScope(scope->bodyEnd, mSettings->library);
+        const Token* errorToken = checkMissingReturnScope(scope->bodyEnd, mSettings->library);
         if (errorToken) {
             missingReturnError(errorToken);
             continue;
         }
         if (inconclusive && Token::simpleMatch(scope->bodyEnd->tokAt(-2), ") ; }")) {
-            const Token *ftok = scope->bodyEnd->linkAt(-2)->previous();
+            const Token* ftok = scope->bodyEnd->linkAt(-2)->previous();
             if (mSettings->library.isNotLibraryFunction(ftok)) {
-                const Token *tok = ftok;
+                const Token* tok = ftok;
                 while (Token::Match(tok->tokAt(-2), "%name% :: %name%"))
                     tok = tok->tokAt(-2);
                 if (Token::Match(tok->previous(), "[;{}] %name% (|::") && !tok->isKeyword())
@@ -284,11 +284,11 @@ void CheckFunctions::checkMissingReturn()
     }
 }
 
-static bool isForwardJump(const Token *gotoToken)
+static bool isForwardJump(const Token* gotoToken)
 {
     if (!Token::Match(gotoToken, "goto %name% ;"))
         return false;
-    for (const Token *prev = gotoToken; gotoToken; gotoToken = gotoToken->previous()) {
+    for (const Token* prev = gotoToken; gotoToken; gotoToken = gotoToken->previous()) {
         if (Token::Match(prev, "%name% :") && prev->str() == gotoToken->next()->str())
             return true;
         if (prev->str() == "{" && prev->scope()->type == Scope::eFunction)
@@ -297,14 +297,14 @@ static bool isForwardJump(const Token *gotoToken)
     return false;
 }
 
-static const Token *checkMissingReturnScope(const Token *tok, const Library &library)
+static const Token* checkMissingReturnScope(const Token* tok, const Library& library)
 {
-    const Token *lastStatement = nullptr;
+    const Token* lastStatement = nullptr;
     while ((tok = tok->previous()) != nullptr) {
         if (tok->str() == "{")
             return lastStatement ? lastStatement : tok->next();
         if (tok->str() == "}") {
-            for (const Token *prev = tok->link()->previous(); prev && prev->scope() == tok->scope() && !Token::Match(prev, "[;{}]"); prev = prev->previous()) {
+            for (const Token* prev = tok->link()->previous(); prev && prev->scope() == tok->scope() && !Token::Match(prev, "[;{}]"); prev = prev->previous()) {
                 if (prev->isKeyword() && Token::Match(prev, "return|throw"))
                     return nullptr;
                 if (prev->str() == "goto" && !isForwardJump(prev))
@@ -314,7 +314,7 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
                 // find reachable break / !default
                 bool hasDefault = false;
                 bool reachable = false;
-                for (const Token *switchToken = tok->link(); switchToken != tok; switchToken = switchToken->next()) {
+                for (const Token* switchToken = tok->link(); switchToken != tok; switchToken = switchToken->next()) {
                     if (reachable && Token::simpleMatch(switchToken, "break ;"))
                         return switchToken;
                     if (switchToken->isKeyword() && Token::Match(switchToken, "return|throw"))
@@ -331,12 +331,12 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
                 if (!hasDefault)
                     return tok->link();
             } else if (tok->scope()->type == Scope::ScopeType::eIf) {
-                const Token *condition = tok->scope()->classDef->next()->astOperand2();
+                const Token* condition = tok->scope()->classDef->next()->astOperand2();
                 if (condition && condition->hasKnownIntValue() && condition->getKnownIntValue() == 1)
                     return checkMissingReturnScope(tok, library);
                 return tok;
             } else if (tok->scope()->type == Scope::ScopeType::eElse) {
-                const Token *errorToken = checkMissingReturnScope(tok, library);
+                const Token* errorToken = checkMissingReturnScope(tok, library);
                 if (errorToken)
                     return errorToken;
                 tok = tok->link();
@@ -352,7 +352,7 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
         if (tok->str() == "goto" && !isForwardJump(tok))
             return nullptr;
         if (Token::Match(tok, "%name% (") && !library.isnotnoreturn(tok)) {
-            const Token *start = tok;
+            const Token* start = tok;
             while (Token::Match(start->tokAt(-2), "%name% :: %name%"))
                 start = start->tokAt(-2);
             if (Token::Match(start->previous(), "[;{}] %name% ::|("))
@@ -379,8 +379,8 @@ void CheckFunctions::checkMathFunctions()
     const bool styleC99 = mSettings->severity.isEnabled(Severity::style) && mSettings->standards.c != Standards::C89 && mSettings->standards.cpp != Standards::CPP03;
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
 
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope *scope : symbolDatabase->functionScopes) {
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->varId())
                 continue;
@@ -430,7 +430,7 @@ void CheckFunctions::checkMathFunctions()
     }
 }
 
-void CheckFunctions::mathfunctionCallWarning(const Token *tok, const nonneg int numParam)
+void CheckFunctions::mathfunctionCallWarning(const Token* tok, const nonneg int numParam)
 {
     if (tok) {
         if (numParam == 1)
@@ -441,7 +441,7 @@ void CheckFunctions::mathfunctionCallWarning(const Token *tok, const nonneg int 
         reportError(tok, Severity::warning, "wrongmathcall", "Passing value '#' to #() leads to implementation-defined result.", CWE758, Certainty::normal);
 }
 
-void CheckFunctions::mathfunctionCallWarning(const Token *tok, const std::string& oldexp, const std::string& newexp)
+void CheckFunctions::mathfunctionCallWarning(const Token* tok, const std::string& oldexp, const std::string& newexp)
 {
     reportError(tok, Severity::style, "unpreciseMathCall", "Expression '" + oldexp + "' can be replaced by '" + newexp + "' to avoid loss of precision.", CWE758, Certainty::normal);
 }
@@ -461,11 +461,11 @@ void CheckFunctions::memsetZeroBytes()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope *scope : symbolDatabase->functionScopes) {
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "memset|wmemset (") && (numberOfArguments(tok)==3)) {
-                const std::vector<const Token *> &arguments = getArguments(tok);
+                const std::vector<const Token*>& arguments = getArguments(tok);
                 if (WRONG_DATA(arguments.size() != 3U, tok))
                     continue;
                 const Token* lastParamTok = arguments[2];
@@ -476,7 +476,7 @@ void CheckFunctions::memsetZeroBytes()
     }
 }
 
-void CheckFunctions::memsetZeroBytesError(const Token *tok)
+void CheckFunctions::memsetZeroBytesError(const Token* tok)
 {
     const std::string summary("memset() called to fill 0 bytes.");
     const std::string verbose(summary + " The second and third arguments might be inverted."
@@ -500,18 +500,18 @@ void CheckFunctions::memsetInvalid2ndParam()
     if (!printWarning && !printPortability)
         return;
 
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope *scope : symbolDatabase->functionScopes) {
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok && (tok != scope->bodyEnd); tok = tok->next()) {
             if (!Token::simpleMatch(tok, "memset ("))
                 continue;
 
-            const std::vector<const Token *> args = getArguments(tok);
+            const std::vector<const Token*> args = getArguments(tok);
             if (args.size() != 3)
                 continue;
 
             // Second parameter is zero literal, i.e. 0.0f
-            const Token * const secondParamTok = args[1];
+            const Token* const secondParamTok = args[1];
             if (Token::Match(secondParamTok, "%num% ,") && MathLib::isNullValue(secondParamTok->str()))
                 continue;
 
@@ -531,7 +531,7 @@ void CheckFunctions::memsetInvalid2ndParam()
     }
 }
 
-void CheckFunctions::memsetFloatError(const Token *tok, const std::string &var_value)
+void CheckFunctions::memsetFloatError(const Token* tok, const std::string& var_value)
 {
     const std::string message("The 2nd memset() argument '" + var_value +
                               "' is a float, its representation is implementation defined.");
@@ -540,7 +540,7 @@ void CheckFunctions::memsetFloatError(const Token *tok, const std::string &var_v
     reportError(tok, Severity::portability, "memsetFloat", message + "\n" + verbose, CWE688, Certainty::normal);
 }
 
-void CheckFunctions::memsetValueOutOfRangeError(const Token *tok, const std::string &value)
+void CheckFunctions::memsetValueOutOfRangeError(const Token* tok, const std::string& value)
 {
     const std::string message("The 2nd memset() argument '" + value + "' doesn't fit into an 'unsigned char'.");
     const std::string verbose(message + " The 2nd parameter is passed as an 'int', but the function fills the block of memory using the 'unsigned char' conversion of this value.");
@@ -557,7 +557,7 @@ void CheckFunctions::checkLibraryMatchFunctions()
         return;
 
     bool insideNew = false;
-    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+    for (const Token* tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (!tok->scope() || !tok->scope()->isExecutable())
             continue;
 
@@ -583,7 +583,7 @@ void CheckFunctions::checkLibraryMatchFunctions()
         if (!mSettings->library.isNotLibraryFunction(tok))
             continue;
 
-        const std::string &functionName = mSettings->library.getFunctionName(tok);
+        const std::string& functionName = mSettings->library.getFunctionName(tok);
         if (functionName.empty() || mSettings->library.functions.find(functionName) != mSettings->library.functions.end())
             continue;
 
@@ -605,8 +605,8 @@ void CheckFunctions::returnLocalStdMove()
     if (!mSettings->severity.isEnabled(Severity::performance))
         return;
 
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope *scope : symbolDatabase->functionScopes) {
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         // Expect return by-value
         if (Function::returnsReference(scope->function, true))
             continue;
@@ -625,7 +625,7 @@ void CheckFunctions::returnLocalStdMove()
     }
 }
 
-void CheckFunctions::copyElisionError(const Token *tok)
+void CheckFunctions::copyElisionError(const Token* tok)
 {
     reportError(tok,
                 Severity::performance,

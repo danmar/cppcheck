@@ -43,14 +43,14 @@ class ResultsView : public QWidget {
     Q_OBJECT
 public:
 
-    explicit ResultsView(QWidget * parent = nullptr);
-    void initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
-    ResultsView(const ResultsView &) = delete;
+    explicit ResultsView(QWidget* parent = nullptr);
+    void initialize(QSettings* settings, ApplicationList* list, ThreadHandler* checkThreadHandler);
+    ResultsView(const ResultsView&) = delete;
     virtual ~ResultsView();
-    ResultsView &operator=(const ResultsView &) = delete;
+    ResultsView& operator=(const ResultsView&) = delete;
 
-    void setAddedFunctionContracts(const QStringList &addedContracts);
-    void setAddedVariableContracts(const QStringList &added);
+    void setAddedFunctionContracts(const QStringList& addedContracts);
+    void setAddedVariableContracts(const QStringList& added);
 
     /**
      * @brief Clear results and statistics and reset progressinfo.
@@ -61,12 +61,12 @@ public:
     /**
      * @brief Remove a file from the results.
      */
-    void clear(const QString &filename);
+    void clear(const QString& filename);
 
     /**
      * @brief Remove a recheck file from the results.
      */
-    void clearRecheckFile(const QString &filename);
+    void clearRecheckFile(const QString& filename);
 
     /** Clear the contracts */
     void clearContracts();
@@ -76,7 +76,7 @@ public:
      *
      * @param filename Filename to save statistics to
      */
-    void saveStatistics(const QString &filename) const;
+    void saveStatistics(const QString& filename) const;
 
     /**
      * @brief Save results to a file
@@ -84,12 +84,12 @@ public:
      * @param filename Filename to save results to
      * @param type Type of the report.
      */
-    void save(const QString &filename, Report::Type type) const;
+    void save(const QString& filename, Report::Type type) const;
 
     /**
      * @brief Update results from old report (tag, sinceDate)
      */
-    void updateFromOldReport(const QString &filename) const;
+    void updateFromOldReport(const QString& filename) const;
 
     /**
      * @brief Update tree settings
@@ -116,7 +116,7 @@ public:
      *
      * @param settings Pointer to QSettings Object
      */
-    void updateStyleSetting(QSettings *settings);
+    void updateStyleSetting(QSettings* settings);
 
     /**
      * @brief Set the directory we are checking
@@ -124,7 +124,7 @@ public:
      * This is used to split error file path to relative if necessary
      * @param dir Directory we are checking
      */
-    void setCheckDirectory(const QString &dir);
+    void setCheckDirectory(const QString& dir);
 
     /**
      * @brief Get the directory we are checking
@@ -166,7 +166,7 @@ public:
      *
      * @param settings program settings.
      */
-    void saveSettings(QSettings *settings);
+    void saveSettings(QSettings* settings);
 
     /**
      * @brief Translate this view
@@ -181,13 +181,13 @@ public:
      * @param filename Report file to read.
      *
      */
-    void readErrorsXml(const QString &filename);
+    void readErrorsXml(const QString& filename);
 
     /**
      * @brief Return checking statistics.
      * @return Pointer to checking statistics.
      */
-    CheckStatistics *getStatistics() const {
+    CheckStatistics* getStatistics() const {
         return mStatistics;
     }
 
@@ -195,7 +195,7 @@ public:
      * @brief Return Showtypes.
      * @return Pointer to Showtypes.
      */
-    ShowTypes * getShowTypes() const {
+    ShowTypes* getShowTypes() const {
         return &mUI.mTree->mShowSeverities;
     }
 
@@ -294,7 +294,7 @@ public slots:
      *
      * @param item Error data
      */
-    void error(const ErrorItem &item);
+    void error(const ErrorItem& item);
 
     /**
      * @brief Filters the results in the result list.
@@ -306,7 +306,7 @@ public slots:
      *
      * @param index Position of new selected item.
      */
-    void updateDetails(const QModelIndex &index);
+    void updateDetails(const QModelIndex& index);
 
     /**
      * @brief Slot opening a print dialog to print the current report
@@ -327,12 +327,12 @@ public slots:
     /**
      * \brief Log message
      */
-    void log(const QString &str);
+    void log(const QString& str);
 
     /**
      * \brief debug message
      */
-    void debugError(const ErrorItem &item);
+    void debugError(const ErrorItem& item);
 
     /**
      * \brief bughunting report line
@@ -360,7 +360,7 @@ public slots:
     /** \brief Variable was double clicked => edit it */
     void variableDoubleClicked(QListWidgetItem* item);
 
-    void editVariablesFilter(const QString &text);
+    void editVariablesFilter(const QString& text);
 
 protected:
     /**
@@ -370,15 +370,15 @@ protected:
 
     Ui::ResultsView mUI;
 
-    CheckStatistics *mStatistics;
+    CheckStatistics* mStatistics;
 
-    bool eventFilter(QObject *target, QEvent *event);
+    bool eventFilter(QObject* target, QEvent* event);
 private slots:
     /**
      * @brief Custom context menu for Analysis Log
      * @param pos Mouse click position
      */
-    void on_mListLog_customContextMenuRequested(const QPoint &pos);
+    void on_mListLog_customContextMenuRequested(const QPoint& pos);
 private:
     QSet<QString> mFunctionContracts;
     QSet<QString> mVariableContracts;

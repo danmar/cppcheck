@@ -62,7 +62,7 @@ struct TranslationInfo {
 class TranslationHandler : QObject {
     Q_OBJECT
 public:
-    explicit TranslationHandler(QObject *parent = nullptr);
+    explicit TranslationHandler(QObject* parent = nullptr);
     virtual ~TranslationHandler();
 
     /**
@@ -87,7 +87,7 @@ public:
      * @return true if succeeds, false otherwise.
      *
      */
-    bool setLanguage(const QString &code);
+    bool setLanguage(const QString& code);
 
     /**
      * @brief Get currently selected translation.
@@ -114,7 +114,7 @@ protected:
      * @param filename Filename of the translation.
      *
      */
-    void addTranslation(const char *name, const char *filename);
+    void addTranslation(const char* name, const char* filename);
 
     /**
      * @brief Find language in the list and return its index.
@@ -122,7 +122,7 @@ protected:
      * @return Index at list, or -1 if not found.
      *
      */
-    int getLanguageIndexByCode(const QString &code) const;
+    int getLanguageIndexByCode(const QString& code) const;
 
 private:
 
@@ -142,7 +142,7 @@ private:
      * @brief Translator class instance.
      *
      */
-    QTranslator *mTranslator;
+    QTranslator* mTranslator;
 };
 
 /// @}

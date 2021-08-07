@@ -54,11 +54,11 @@ public:
     CheckFunctions() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
-    CheckFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    CheckFunctions(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE {
         CheckFunctions checkFunctions(tokenizer, settings, errorLogger);
 
         checkFunctions.checkIgnoredReturnValue();
@@ -110,20 +110,20 @@ private:
     /** @brief %Check for missing "return" */
     void checkMissingReturn();
 
-    void invalidFunctionArgError(const Token *tok, const std::string &functionName, int argnr, const ValueFlow::Value *invalidValue, const std::string &validstr);
-    void invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr);
-    void invalidFunctionArgStrError(const Token *tok, const std::string &functionName, nonneg int argnr);
+    void invalidFunctionArgError(const Token* tok, const std::string& functionName, int argnr, const ValueFlow::Value* invalidValue, const std::string& validstr);
+    void invalidFunctionArgBoolError(const Token* tok, const std::string& functionName, int argnr);
+    void invalidFunctionArgStrError(const Token* tok, const std::string& functionName, nonneg int argnr);
     void ignoredReturnValueError(const Token* tok, const std::string& function);
     void ignoredReturnErrorCode(const Token* tok, const std::string& function);
-    void mathfunctionCallWarning(const Token *tok, const nonneg int numParam = 1);
-    void mathfunctionCallWarning(const Token *tok, const std::string& oldexp, const std::string& newexp);
-    void memsetZeroBytesError(const Token *tok);
-    void memsetFloatError(const Token *tok, const std::string &var_value);
-    void memsetValueOutOfRangeError(const Token *tok, const std::string &value);
-    void missingReturnError(const Token *tok, Certainty::CertaintyLevel certainty=Certainty::normal);
-    void copyElisionError(const Token *tok);
+    void mathfunctionCallWarning(const Token* tok, const nonneg int numParam = 1);
+    void mathfunctionCallWarning(const Token* tok, const std::string& oldexp, const std::string& newexp);
+    void memsetZeroBytesError(const Token* tok);
+    void memsetFloatError(const Token* tok, const std::string& var_value);
+    void memsetValueOutOfRangeError(const Token* tok, const std::string& value);
+    void missingReturnError(const Token* tok, Certainty::CertaintyLevel certainty=Certainty::normal);
+    void copyElisionError(const Token* tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
         CheckFunctions c(nullptr, settings, errorLogger);
 
         for (std::map<std::string, Library::WarnInfo>::const_iterator i = settings->library.functionwarn.cbegin(); i != settings->library.functionwarn.cend(); ++i) {

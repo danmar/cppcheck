@@ -48,16 +48,16 @@ class Settings;
  */
 class ThreadExecutor : public ErrorLogger {
 public:
-    ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
-    ThreadExecutor(const ThreadExecutor &) = delete;
+    ThreadExecutor(const std::map<std::string, std::size_t>& files, Settings& settings, ErrorLogger& errorLogger);
+    ThreadExecutor(const ThreadExecutor&) = delete;
     ~ThreadExecutor() OVERRIDE;
-    void operator=(const ThreadExecutor &) = delete;
+    void operator=(const ThreadExecutor&) = delete;
     unsigned int check();
 
-    void reportOut(const std::string &outmsg, Color c) OVERRIDE;
-    void reportErr(const ErrorMessage &msg) OVERRIDE;
-    void reportInfo(const ErrorMessage &msg) OVERRIDE;
-    void bughuntingReport(const std::string &str) OVERRIDE;
+    void reportOut(const std::string& outmsg, Color c) OVERRIDE;
+    void reportErr(const ErrorMessage& msg) OVERRIDE;
+    void reportInfo(const ErrorMessage& msg) OVERRIDE;
+    void bughuntingReport(const std::string& str) OVERRIDE;
 
     /**
      * @brief Add content to a file, to be used in unit testing.
@@ -66,12 +66,12 @@ public:
      * @param content If the file would be a real file, this should be
      * the content of the file.
      */
-    void addFileContent(const std::string &path, const std::string &content);
+    void addFileContent(const std::string& path, const std::string& content);
 
 private:
-    const std::map<std::string, std::size_t> &mFiles;
-    Settings &mSettings;
-    ErrorLogger &mErrorLogger;
+    const std::map<std::string, std::size_t>& mFiles;
+    Settings& mSettings;
+    ErrorLogger& mErrorLogger;
     unsigned int mFileCount;
 
 #if defined(THREADING_MODEL_FORK)
@@ -87,8 +87,8 @@ private:
      *         0 if there is nothing in the pipe to be read
      *         1 if we did read something
      */
-    int handleRead(int rpipe, unsigned int &result);
-    void writeToPipe(PipeSignal type, const std::string &data);
+    int handleRead(int rpipe, unsigned int& result);
+    void writeToPipe(PipeSignal type, const std::string& data);
     /**
      * Write end of status pipe, different for each child.
      * Not used in master process.
@@ -107,7 +107,7 @@ private:
      * @brief Reports internal errors related to child processes
      * @param msg The error message
      */
-    void reportInternalChildErr(const std::string &childname, const std::string &msg);
+    void reportInternalChildErr(const std::string& childname, const std::string& msg);
 
 public:
     /**
@@ -136,7 +136,7 @@ private:
 
     CRITICAL_SECTION mReportSync;
 
-    void report(const ErrorMessage &msg, MessageType msgType);
+    void report(const ErrorMessage& msg, MessageType msgType);
 
     static unsigned __stdcall threadProc(void*);
 

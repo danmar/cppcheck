@@ -22,7 +22,7 @@
 #include "erroritem.h"
 #include "report.h"
 
-CsvReport::CsvReport(const QString &filename) :
+CsvReport::CsvReport(const QString& filename) :
     Report(filename)
 {}
 
@@ -49,7 +49,7 @@ void CsvReport::writeFooter()
     // No footer for CSV report
 }
 
-void CsvReport::writeError(const ErrorItem &error)
+void CsvReport::writeError(const ErrorItem& error)
 {
     /*
        Error as CSV line

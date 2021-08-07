@@ -31,6 +31,6 @@ private slots:
 private:
     // Empty implementations of ErrorLogger methods.
     // We don't care about the output in the benchmark tests.
-    void reportOut(const std::string & outmsg) override {}
-    void reportErr(const ErrorMessage &msg) override {}
+    void reportOut(const std::string& outmsg) override {}
+    void reportErr(const ErrorMessage& msg) override {}
 };

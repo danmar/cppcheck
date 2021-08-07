@@ -48,22 +48,22 @@ int globalVar2() {
     return 100000 / globalvar;
 }
 
-int pointer1(int *p) {
+int pointer1(int* p) {
     // cppcheck-suppress verificationDivByZero
     return 100000 / *p;
 }
 
-int pointer2(int *p) {
+int pointer2(int* p) {
     // cppcheck-suppress verificationDivByZero
     return 100000 / p[32];
 }
 
-int stdmap(std::map<int,int> &data) {
+int stdmap(std::map<int,int>& data) {
     // cppcheck-suppress verificationDivByZero
     return 100000 / data[43];
 }
 
-int struct1(struct S *s) {
+int struct1(struct S* s) {
     // cppcheck-suppress verificationDivByZero
     return 100000 / s->x;
 }

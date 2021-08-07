@@ -89,7 +89,7 @@ CppCheckExecutor::~CppCheckExecutor()
     delete mBugHuntingReport;
 }
 
-bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[])
+bool CppCheckExecutor::parseFromArgs(CppCheck* cppcheck, int argc, const char* const argv[])
 {
     Settings& settings = cppcheck->settings();
     CmdLineParser parser(&settings);
@@ -97,7 +97,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
     if (success) {
         if (parser.getShowVersion() && !parser.getShowErrorMessages()) {
-            const char * const extraVersion = CppCheck::extraVersion();
+            const char* const extraVersion = CppCheck::extraVersion();
             if (*extraVersion != 0)
                 std::cout << "Cppcheck " << CppCheck::version() << " ("
                           << extraVersion << ')' << std::endl;
@@ -140,7 +140,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     // Output a warning for the user if he tries to exclude headers
     bool warn = false;
     const std::vector<std::string>& ignored = parser.getIgnoredPaths();
-    for (const std::string &i : ignored) {
+    for (const std::string& i : ignored) {
         if (Path::isHeader(i)) {
             warn = true;
             break;
@@ -163,7 +163,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         // filter only for the selected filenames from all project files
         std::list<ImportProject::FileSettings> newList;
 
-        for (const ImportProject::FileSettings &fsetting : settings.project.fileSettings) {
+        for (const ImportProject::FileSettings& fsetting : settings.project.fileSettings) {
             if (matchglob(mSettings->fileFilter, fsetting.filename)) {
                 newList.emplace_back(fsetting);
             }
@@ -177,7 +177,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     } else if (!pathnames.empty()) {
         // Execute recursiveAddFiles() to each given file parameter
         const PathMatch matcher(ignored, caseSensitive);
-        for (const std::string &pathname : pathnames) {
+        for (const std::string& pathname : pathnames) {
             std::string err = FileLister::recursiveAddFiles(mFiles, Path::toNativeSeparators(pathname), mSettings->library.markupExtensions(), matcher);
             if (!err.empty()) {
                 std::cout << "cppcheck: " << err << std::endl;
@@ -239,7 +239,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     return ret;
 }
 
-void CppCheckExecutor::setSettings(const Settings &settings)
+void CppCheckExecutor::setSettings(const Settings& settings)
 {
     mSettings = &settings;
 }
@@ -268,7 +268,7 @@ static void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool l
 // 32 vs. 64bit
 #define ADDRESSDISPLAYLENGTH ((sizeof(long)==8)?12:8)
     const int fd = fileno(output);
-    void *callstackArray[32]= {nullptr}; // the less resources the better...
+    void* callstackArray[32]= {nullptr}; // the less resources the better...
     const int currentdepth = backtrace(callstackArray, (int)getArrayLength(callstackArray));
     const int offset=2; // some entries on top are within our own exception handling code or libc
     if (maxdepth<0)
@@ -279,21 +279,21 @@ static void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool l
         fputs("Callstack (symbols only):\n", output);
         backtrace_symbols_fd(callstackArray+offset, maxdepth, fd);
     } else {
-        char **symbolStringList = backtrace_symbols(callstackArray, currentdepth);
+        char** symbolStringList = backtrace_symbols(callstackArray, currentdepth);
         if (symbolStringList) {
             fputs("Callstack:\n", output);
             char demangle_buffer[2048]= {0};
             for (int i = offset; i < maxdepth; ++i) {
-                const char * const symbolString = symbolStringList[i];
-                char * realnameString = nullptr;
-                const char * const firstBracketName     = strchr(symbolString, '(');
-                const char * const firstBracketAddress  = strchr(symbolString, '[');
-                const char * const secondBracketAddress = strchr(firstBracketAddress, ']');
-                const char * const beginAddress         = firstBracketAddress+3;
+                const char* const symbolString = symbolStringList[i];
+                char* realnameString = nullptr;
+                const char* const firstBracketName     = strchr(symbolString, '(');
+                const char* const firstBracketAddress  = strchr(symbolString, '[');
+                const char* const secondBracketAddress = strchr(firstBracketAddress, ']');
+                const char* const beginAddress         = firstBracketAddress+3;
                 const int addressLen = int(secondBracketAddress-beginAddress);
                 const int padLen     = int(ADDRESSDISPLAYLENGTH-addressLen);
                 if (demangling && firstBracketName) {
-                    const char * const plus = strchr(firstBracketName, '+');
+                    const char* const plus = strchr(firstBracketName, '+');
                     if (plus && (plus>(firstBracketName+1))) {
                         char input_buffer[1024]= {0};
                         strncpy(input_buffer, firstBracketName+1, plus-firstBracketName-1);
@@ -387,7 +387,7 @@ static const Signalmap_t listofsignals = {
  * but when ending up here something went terribly wrong anyway.
  * And all which is left is just printing some information and terminate.
  */
-static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
+static void CppcheckSignalHandler(int signo, siginfo_t* info, void* context)
 {
     int type = -1;
     pid_t killid;
@@ -403,7 +403,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
 #endif
 
     const Signalmap_t::const_iterator it=listofsignals.find(signo);
-    const char * const signame = (it==listofsignals.end()) ? "unknown" : it->second.c_str();
+    const char* const signame = (it==listofsignals.end()) ? "unknown" : it->second.c_str();
     bool printCallstack=true; // try to print a callstack?
     bool lowMem=false; // was low-memory condition detected? Be careful then! Avoid allocating much more memory then.
     bool unexpectedSignal=true; // unexpected indicates program failure
@@ -586,19 +586,19 @@ namespace {
     struct IMAGEHLP_SYMBOL64_EXT : public IMAGEHLP_SYMBOL64 {
         TCHAR nameExt[maxnamelength]; // actually no need to worry about character encoding here
     };
-    typedef BOOL (WINAPI *fpStackWalk64)(DWORD, HANDLE, HANDLE, LPSTACKFRAME64, PVOID, PREAD_PROCESS_MEMORY_ROUTINE64, PFUNCTION_TABLE_ACCESS_ROUTINE64, PGET_MODULE_BASE_ROUTINE64, PTRANSLATE_ADDRESS_ROUTINE64);
+    typedef BOOL (WINAPI* fpStackWalk64)(DWORD, HANDLE, HANDLE, LPSTACKFRAME64, PVOID, PREAD_PROCESS_MEMORY_ROUTINE64, PFUNCTION_TABLE_ACCESS_ROUTINE64, PGET_MODULE_BASE_ROUTINE64, PTRANSLATE_ADDRESS_ROUTINE64);
     fpStackWalk64 pStackWalk64;
-    typedef DWORD64 (WINAPI *fpSymGetModuleBase64)(HANDLE, DWORD64);
+    typedef DWORD64 (WINAPI* fpSymGetModuleBase64)(HANDLE, DWORD64);
     fpSymGetModuleBase64 pSymGetModuleBase64;
-    typedef BOOL (WINAPI *fpSymGetSymFromAddr64)(HANDLE, DWORD64, PDWORD64, PIMAGEHLP_SYMBOL64);
+    typedef BOOL (WINAPI* fpSymGetSymFromAddr64)(HANDLE, DWORD64, PDWORD64, PIMAGEHLP_SYMBOL64);
     fpSymGetSymFromAddr64 pSymGetSymFromAddr64;
-    typedef BOOL (WINAPI *fpSymGetLineFromAddr64)(HANDLE, DWORD64, PDWORD, PIMAGEHLP_LINE64);
+    typedef BOOL (WINAPI* fpSymGetLineFromAddr64)(HANDLE, DWORD64, PDWORD, PIMAGEHLP_LINE64);
     fpSymGetLineFromAddr64 pSymGetLineFromAddr64;
-    typedef DWORD (WINAPI *fpUnDecorateSymbolName)(const TCHAR*, PTSTR, DWORD, DWORD);
+    typedef DWORD (WINAPI* fpUnDecorateSymbolName)(const TCHAR*, PTSTR, DWORD, DWORD);
     fpUnDecorateSymbolName pUnDecorateSymbolName;
-    typedef PVOID (WINAPI *fpSymFunctionTableAccess64)(HANDLE, DWORD64);
+    typedef PVOID (WINAPI* fpSymFunctionTableAccess64)(HANDLE, DWORD64);
     fpSymFunctionTableAccess64 pSymFunctionTableAccess64;
-    typedef BOOL (WINAPI *fpSymInitialize)(HANDLE, PCSTR, BOOL);
+    typedef BOOL (WINAPI* fpSymInitialize)(HANDLE, PCSTR, BOOL);
     fpSymInitialize pSymInitialize;
 
     HMODULE hLibDbgHelp;
@@ -681,7 +681,7 @@ namespace {
             fprintf(outputFile,
                     "%lu. 0x%08I64X in ",
                     frame, (ULONG64)stack.AddrPC.Offset);
-            fputs((const char *)undname, outputFile);
+            fputs((const char*)undname, outputFile);
             fputc('\n', outputFile);
             if (0==stack.AddrReturn.Offset || beyond_main>2) // StackWalk64() sometimes doesn't reach any end...
                 break;
@@ -721,7 +721,7 @@ namespace {
      */
     int filterException(int code, PEXCEPTION_POINTERS ex)
     {
-        FILE *outputFile = stdout;
+        FILE* outputFile = stdout;
         fputs("Internal error: ", outputFile);
         switch (ex->ExceptionRecord->ExceptionCode) {
         case EXCEPTION_ACCESS_VIOLATION:
@@ -812,7 +812,7 @@ namespace {
 int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* const argv[])
 {
 #ifdef USE_WINDOWS_SEH
-    FILE *outputFile = stdout;
+    FILE* outputFile = stdout;
     __try {
         return check_internal(cppcheck, argc, argv);
     } __except (filterException(GetExceptionCode(), GetExceptionInformation())) {
@@ -823,7 +823,7 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* co
 #elif defined(USE_UNIX_SIGNAL_HANDLING)
     // determine stack vs. heap
     char stackVariable;
-    char *heapVariable=(char*)malloc(1);
+    char* heapVariable=(char*)malloc(1);
     bStackBelowHeap = &stackVariable < heapVariable;
     free(heapVariable);
 
@@ -857,7 +857,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     mSettings = &settings;
     const bool std = tryLoadLibrary(settings.library, argv[0], "std.cfg");
 
-    for (const std::string &lib : settings.libraries) {
+    for (const std::string& lib : settings.libraries) {
         if (!tryLoadLibrary(settings.library, argv[0], lib.c_str())) {
             const std::string msg("Failed to load the library " + lib);
             const std::list<ErrorMessage::FileLocation> callstack;
@@ -938,7 +938,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         } else {
             // filesettings
             // check all files of the project
-            for (const ImportProject::FileSettings &fs : settings.project.fileSettings) {
+            for (const ImportProject::FileSettings& fs : settings.project.fileSettings) {
                 returnValue += cppcheck.check(fs);
                 ++c;
                 if (!settings.quiet)
@@ -1019,7 +1019,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
 
 #ifdef _WIN32
 // fix trac ticket #439 'Cppcheck reports wrong filename for filenames containing 8-bit ASCII'
-static inline std::string ansiToOEM(const std::string &msg, bool doConvert)
+static inline std::string ansiToOEM(const std::string& msg, bool doConvert)
 {
     if (doConvert) {
         const unsigned msglength = msg.length();
@@ -1030,7 +1030,7 @@ static inline std::string ansiToOEM(const std::string &msg, bool doConvert)
         // ansi code page characters to wide characters
         MultiByteToWideChar(CP_ACP, 0, msg.data(), msglength, wcContainer.data(), msglength);
         // wide characters to oem codepage characters
-        WideCharToMultiByte(CP_OEMCP, 0, wcContainer.data(), msglength, const_cast<char *>(result.data()), msglength, nullptr, nullptr);
+        WideCharToMultiByte(CP_OEMCP, 0, wcContainer.data(), msglength, const_cast<char*>(result.data()), msglength, nullptr, nullptr);
 
         return result; // hope for return value optimization
     }
@@ -1041,7 +1041,7 @@ static inline std::string ansiToOEM(const std::string &msg, bool doConvert)
 #define ansiToOEM(msg, doConvert) (msg)
 #endif
 
-void CppCheckExecutor::reportErr(const std::string &errmsg)
+void CppCheckExecutor::reportErr(const std::string& errmsg)
 {
     if (mErrorOutput)
         *mErrorOutput << errmsg << std::endl;
@@ -1050,12 +1050,12 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
     }
 }
 
-void CppCheckExecutor::reportOut(const std::string &outmsg, Color c)
+void CppCheckExecutor::reportOut(const std::string& outmsg, Color c)
 {
     std::cout << c << ansiToOEM(outmsg, true) << Color::Reset << std::endl;
 }
 
-void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
+void CppCheckExecutor::reportProgress(const std::string& filename, const char stage[], const std::size_t value)
 {
     (void)filename;
 
@@ -1078,7 +1078,7 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
     }
 }
 
-void CppCheckExecutor::reportInfo(const ErrorMessage &msg)
+void CppCheckExecutor::reportInfo(const ErrorMessage& msg)
 {
     reportErr(msg);
 }
@@ -1095,7 +1095,7 @@ void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount
     }
 }
 
-void CppCheckExecutor::reportErr(const ErrorMessage &msg)
+void CppCheckExecutor::reportErr(const ErrorMessage& msg)
 {
     if (mShowAllErrors) {
         reportOut(msg.toXML());
@@ -1112,7 +1112,7 @@ void CppCheckExecutor::reportErr(const ErrorMessage &msg)
         reportErr(msg.toString(mSettings->verbose, mSettings->templateFormat, mSettings->templateLocation));
 }
 
-void CppCheckExecutor::bughuntingReport(const std::string &str)
+void CppCheckExecutor::bughuntingReport(const std::string& str)
 {
     if (!mSettings || str.empty())
         return;
@@ -1179,12 +1179,12 @@ bool CppCheckExecutor::tryLoadLibrary(Library& destination, const char* basepath
  * Execute a shell command and read the output from it. Returns true if command terminated successfully.
  */
 // cppcheck-suppress passedByValue - "exe" copy needed in _WIN32 code
-bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> args, const std::string &redirect, std::string *output_)
+bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> args, const std::string& redirect, std::string* output_)
 {
     output_->clear();
 
     std::string joinedArgs;
-    for (const std::string &arg : args) {
+    for (const std::string& arg : args) {
         if (!joinedArgs.empty())
             joinedArgs += " ";
         if (arg.find(" ") != std::string::npos)
@@ -1198,10 +1198,10 @@ bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> 
     if (exe.find(" ") != std::string::npos)
         exe = "\"" + exe + "\"";
     const std::string cmd = exe + " " + joinedArgs + " " + redirect;
-    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
+    std::unique_ptr<FILE, decltype(& _pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
 #else
     const std::string cmd = exe + " " + joinedArgs + " " + redirect;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+    std::unique_ptr<FILE, decltype(& pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
 #endif
     if (!pipe)
         return false;

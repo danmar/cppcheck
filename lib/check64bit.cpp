@@ -44,10 +44,10 @@ void Check64BitPortability::pointerassignment()
     if (!mSettings->severity.isEnabled(Severity::portability))
         return;
 
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Check return values
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         if (scope->function == nullptr || !scope->function->hasBody()) // We only look for functions with a body
             continue;
 
@@ -72,7 +72,7 @@ void Check64BitPortability::pointerassignment()
             if (!tok->astOperand1() || tok->astOperand1()->isNumber())
                 continue;
 
-            const ValueType * const returnType = tok->astOperand1()->valueType();
+            const ValueType* const returnType = tok->astOperand1()->valueType();
             if (!returnType)
                 continue;
 
@@ -85,13 +85,13 @@ void Check64BitPortability::pointerassignment()
     }
 
     // Check assignments
-    for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
+    for (const Scope* scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->str() != "=")
                 continue;
 
-            const ValueType *lhstype = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
-            const ValueType *rhstype = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
+            const ValueType* lhstype = tok->astOperand1() ? tok->astOperand1()->valueType() : nullptr;
+            const ValueType* rhstype = tok->astOperand2() ? tok->astOperand2()->valueType() : nullptr;
             if (!lhstype || !rhstype)
                 continue;
 
@@ -115,7 +115,7 @@ void Check64BitPortability::pointerassignment()
     }
 }
 
-void Check64BitPortability::assignmentAddressToIntegerError(const Token *tok)
+void Check64BitPortability::assignmentAddressToIntegerError(const Token* tok)
 {
     reportError(tok, Severity::portability,
                 "AssignmentAddressToInteger",
@@ -126,7 +126,7 @@ void Check64BitPortability::assignmentAddressToIntegerError(const Token *tok)
                 "way is to store addresses only in pointer types (or typedefs like uintptr_t).", CWE758, Certainty::normal);
 }
 
-void Check64BitPortability::assignmentIntegerToAddressError(const Token *tok)
+void Check64BitPortability::assignmentIntegerToAddressError(const Token* tok)
 {
     reportError(tok, Severity::portability,
                 "AssignmentIntegerToAddress",
@@ -137,7 +137,7 @@ void Check64BitPortability::assignmentIntegerToAddressError(const Token *tok)
                 "way is to store addresses only in pointer types (or typedefs like uintptr_t).", CWE758, Certainty::normal);
 }
 
-void Check64BitPortability::returnPointerError(const Token *tok)
+void Check64BitPortability::returnPointerError(const Token* tok)
 {
     reportError(tok, Severity::portability,
                 "CastAddressToIntegerAtReturn",
@@ -148,7 +148,7 @@ void Check64BitPortability::returnPointerError(const Token *tok)
                 "to 32-bit integer. The safe way is to always return an integer.", CWE758, Certainty::normal);
 }
 
-void Check64BitPortability::returnIntegerError(const Token *tok)
+void Check64BitPortability::returnIntegerError(const Token* tok)
 {
     reportError(tok, Severity::portability,
                 "CastIntegerToAddressAtReturn",

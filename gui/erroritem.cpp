@@ -19,14 +19,14 @@
 #include "erroritem.h"
 #include "common.h"
 
-QErrorPathItem::QErrorPathItem(const ErrorMessage::FileLocation &loc)
+QErrorPathItem::QErrorPathItem(const ErrorMessage::FileLocation& loc)
     : file(QString::fromStdString(loc.getfile(false)))
     , line(loc.line)
     , column(loc.column)
     , info(QString::fromStdString(loc.getinfo()))
 {}
 
-bool operator==(const QErrorPathItem &i1, const QErrorPathItem &i2)
+bool operator==(const QErrorPathItem& i1, const QErrorPathItem& i2)
 {
     return i1.file == i2.file && i1.column == i2.column && i1.line == i2.line && i1.info == i2.info;
 }
@@ -39,7 +39,7 @@ ErrorItem::ErrorItem()
     , hash(0)
 {}
 
-ErrorItem::ErrorItem(const ErrorMessage &errmsg)
+ErrorItem::ErrorItem(const ErrorMessage& errmsg)
     : file0(QString::fromStdString(errmsg.file0))
     , function(QString::fromStdString(errmsg.function))
     , errorId(QString::fromStdString(errmsg.id))
@@ -84,7 +84,7 @@ QString ErrorItem::toString() const
     return str;
 }
 
-bool ErrorItem::sameCID(const ErrorItem &errorItem1, const ErrorItem &errorItem2)
+bool ErrorItem::sameCID(const ErrorItem& errorItem1, const ErrorItem& errorItem2)
 {
     if (errorItem1.hash || errorItem2.hash)
         return errorItem1.hash == errorItem2.hash;

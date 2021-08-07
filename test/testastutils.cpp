@@ -49,7 +49,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        const Token * const tokEnd = ::findLambdaEndToken(tokenizer.tokens());
+        const Token* const tokEnd = ::findLambdaEndToken(tokenizer.tokens());
         return tokEnd && tokEnd->next() == nullptr;
     }
 
@@ -82,7 +82,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        const Token * const tokStart = ::findLambdaStartToken(tokenizer.list.back());
+        const Token* const tokStart = ::findLambdaStartToken(tokenizer.list.back());
         return tokStart && tokStart == tokenizer.list.front();
     }
 
@@ -135,7 +135,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        const Token * const tok = (offset < 0)
+        const Token* const tok = (offset < 0)
                                   ? tokenizer.list.back()->tokAt(1+offset)
                                   : tokenizer.tokens()->tokAt(offset);
         return ::isReturnScope(tok);
@@ -167,8 +167,8 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokens1("");
-        const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), tokStr1, strlen(tokStr1));
-        const Token * const tok2 = Token::findsimplematch(tok1->next(), tokStr2, strlen(tokStr2));
+        const Token* const tok1 = Token::findsimplematch(tokenizer.tokens(), tokStr1, strlen(tokStr1));
+        const Token* const tok2 = Token::findsimplematch(tok1->next(), tokStr2, strlen(tokStr2));
         return ::isSameExpression(false, false, tok1, tok2, library, false, true, nullptr);
     }
 
@@ -204,8 +204,8 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
-        const Token * const tok2 = Token::findsimplematch(tokenizer.tokens(), endPattern, strlen(endPattern));
+        const Token* const tok1 = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
+        const Token* const tok2 = Token::findsimplematch(tokenizer.tokens(), endPattern, strlen(endPattern));
         return ::isVariableChanged(tok1,tok2,1,false,&settings,true);
     }
 
@@ -221,17 +221,17 @@ private:
                                               "}\n", "= a", "}"));
     }
 
-    bool isVariableChangedByFunctionCall(const char code[], const char pattern[], bool *inconclusive) {
+    bool isVariableChangedByFunctionCall(const char code[], const char pattern[], bool* inconclusive) {
         Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        const Token * const argtok = Token::findmatch(tokenizer.tokens(), pattern);
+        const Token* const argtok = Token::findmatch(tokenizer.tokens(), pattern);
         return ::isVariableChangedByFunctionCall(argtok, 0, &settings, inconclusive);
     }
 
     void isVariableChangedByFunctionCall() {
-        const char *code;
+        const char* code;
         bool inconclusive;
 
         // #8271 - template method
@@ -248,7 +248,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        const Token * tok = Token::findsimplematch(tokenizer.tokens(), parentPattern, strlen(parentPattern));
+        const Token* tok = Token::findsimplematch(tokenizer.tokens(), parentPattern, strlen(parentPattern));
         return Token::simpleMatch(::nextAfterAstRightmostLeaf(tok), rightPattern, strlen(rightPattern));
     }
 
@@ -274,7 +274,7 @@ private:
         std::istringstream istr(code);
         if (!tokenizer.tokenize(istr, "test.cpp"))
             return Result::Fail;
-        const Token * const argtok = Token::findmatch(tokenizer.tokens(), pattern);
+        const Token* const argtok = Token::findmatch(tokenizer.tokens(), pattern);
         if (!argtok)
             return Result::Fail;
         return ::isUsedAsBool(argtok) ? Result::True : Result::False;

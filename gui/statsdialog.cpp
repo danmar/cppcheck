@@ -33,7 +33,7 @@
 
 static const QString CPPCHECK("cppcheck");
 
-StatsDialog::StatsDialog(QWidget *parent)
+StatsDialog::StatsDialog(QWidget* parent)
     : QDialog(parent),
     mStatistics(nullptr)
 {
@@ -66,7 +66,7 @@ void StatsDialog::setProject(const ProjectFile* projectFile)
         }
         mUI.mLblHistoryFile->setText(tr("File: ") + (statsFile.isEmpty() ? tr("No cppcheck build dir") : statsFile));
         if (!statsFile.isEmpty()) {
-            QChartView *chartView;
+            QChartView* chartView;
             chartView = createChart(statsFile, "cppcheck");
             mUI.mTabHistory->layout()->addWidget(chartView);
             if (projectFile->getClangAnalyzer()) {
@@ -169,7 +169,7 @@ void StatsDialog::pdfExport()
 
 void StatsDialog::copyToClipboard()
 {
-    QClipboard *clipboard = QApplication::clipboard();
+    QClipboard* clipboard = QApplication::clipboard();
     if (!clipboard)
         return;
 
@@ -316,13 +316,13 @@ void StatsDialog::copyToClipboard()
 
     const QString htmlSummary = htmlSettings + htmlPrevious + htmlStatistics;
 
-    QMimeData *mimeData = new QMimeData();
+    QMimeData* mimeData = new QMimeData();
     mimeData->setText(textSummary);
     mimeData->setHtml(htmlSummary);
     clipboard->setMimeData(mimeData);
 }
 
-void StatsDialog::setStatistics(const CheckStatistics *stats)
+void StatsDialog::setStatistics(const CheckStatistics* stats)
 {
     mStatistics = stats;
     mUI.mLblErrors->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowErrors)));
@@ -334,16 +334,16 @@ void StatsDialog::setStatistics(const CheckStatistics *stats)
 }
 
 #ifdef HAVE_QCHART
-QChartView *StatsDialog::createChart(const QString &statsFile, const QString &tool)
+QChartView* StatsDialog::createChart(const QString& statsFile, const QString& tool)
 {
-    QChart *chart = new QChart;
+    QChart* chart = new QChart;
     chart->addSeries(numberOfReports(statsFile, tool + "-error"));
     chart->addSeries(numberOfReports(statsFile, tool + "-warning"));
     chart->addSeries(numberOfReports(statsFile, tool + "-style"));
     chart->addSeries(numberOfReports(statsFile, tool + "-performance"));
     chart->addSeries(numberOfReports(statsFile, tool + "-portability"));
 
-    QDateTimeAxis *axisX = new QDateTimeAxis;
+    QDateTimeAxis* axisX = new QDateTimeAxis;
     axisX->setTitleText("Date");
     chart->addAxis(axisX, Qt::AlignBottom);
 
@@ -351,7 +351,7 @@ QChartView *StatsDialog::createChart(const QString &statsFile, const QString &to
         s->attachAxis(axisX);
     }
 
-    QValueAxis *axisY = new QValueAxis;
+    QValueAxis* axisY = new QValueAxis;
     axisY->setLabelFormat("%i");
     axisY->setTitleText("Count");
     chart->addAxis(axisY, Qt::AlignLeft);
@@ -359,7 +359,7 @@ QChartView *StatsDialog::createChart(const QString &statsFile, const QString &to
     qreal maxY = 0;
     foreach (QAbstractSeries *s, chart->series()) {
         s->attachAxis(axisY);
-        if (QLineSeries *ls = dynamic_cast<QLineSeries*>(s)) {
+        if (QLineSeries* ls = dynamic_cast<QLineSeries*>(s)) {
             foreach (QPointF p, ls->points()) {
                 if (p.y() > maxY)
                     maxY = p.y();
@@ -371,14 +371,14 @@ QChartView *StatsDialog::createChart(const QString &statsFile, const QString &to
     //chart->createDefaultAxes();
     chart->setTitle(tool);
 
-    QChartView *chartView = new QChartView(chart);
+    QChartView* chartView = new QChartView(chart);
     chartView->setRenderHint(QPainter::Antialiasing);
     return chartView;
 }
 
-QLineSeries *StatsDialog::numberOfReports(const QString &fileName, const QString &severity) const
+QLineSeries* StatsDialog::numberOfReports(const QString& fileName, const QString& severity) const
 {
-    QLineSeries *series = new QLineSeries();
+    QLineSeries* series = new QLineSeries();
     series->setName(severity);
     QFile f(fileName);
     if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {

@@ -4,9 +4,9 @@
 
 #include "type2.h"
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-    const char *filename = argc==2 ? argv[1] : nullptr;
+    const char* filename = argc==2 ? argv[1] : nullptr;
 
     if (!filename) {
         std::cout << "Invalid args, no filename\n";
@@ -22,7 +22,7 @@ int main(int argc, char **argv)
     std::string str((std::istreambuf_iterator<char>(f)),
                     std::istreambuf_iterator<char>());
 
-    std::cout << generateCode2(reinterpret_cast<const uint8_t *>(str.data()), str.size()) << std::endl;
+    std::cout << generateCode2(reinterpret_cast<const uint8_t*>(str.data()), str.size()) << std::endl;
 
     return 0;
 }

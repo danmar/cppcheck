@@ -44,7 +44,7 @@ class ImportProject;
 class ThreadHandler : public QObject {
     Q_OBJECT
 public:
-    explicit ThreadHandler(QObject *parent = nullptr);
+    explicit ThreadHandler(QObject* parent = nullptr);
     virtual ~ThreadHandler();
 
     /**
@@ -58,33 +58,33 @@ public:
      *
      * @param view View to show error results
      */
-    void initialize(ResultsView *view);
+    void initialize(ResultsView* view);
 
     /**
      * @brief Load settings
      * @param settings QSettings to load settings from
      */
-    void loadSettings(const QSettings &settings);
+    void loadSettings(const QSettings& settings);
 
     /**
      * @brief Save settings
      * @param settings QSettings to save settings to
      */
-    void saveSettings(QSettings &settings) const;
+    void saveSettings(QSettings& settings) const;
 
-    void setAddonsAndTools(const QStringList &addonsAndTools) {
+    void setAddonsAndTools(const QStringList& addonsAndTools) {
         mAddonsAndTools = addonsAndTools;
     }
 
-    void setSuppressions(const QList<Suppressions::Suppression> &s) {
+    void setSuppressions(const QList<Suppressions::Suppression>& s) {
         mSuppressions = s;
     }
 
-    void setClangIncludePaths(const QStringList &s) {
+    void setClangIncludePaths(const QStringList& s) {
         mClangIncludePaths = s;
     }
 
-    void setDataDir(const QString &dataDir) {
+    void setDataDir(const QString& dataDir) {
         mDataDir = dataDir;
     }
 
@@ -99,21 +99,21 @@ public:
      *
      * @param files files to check
      */
-    void setFiles(const QStringList &files);
+    void setFiles(const QStringList& files);
 
     /**
      * @brief Set project to check
      *
      * @param prj project to check
      */
-    void setProject(const ImportProject &prj);
+    void setProject(const ImportProject& prj);
 
     /**
      * @brief Start the threads to check the files
      *
      * @param settings Settings for checking
      */
-    void check(const Settings &settings);
+    void check(const Settings& settings);
 
     /**
      * @brief Set files to check
@@ -184,9 +184,9 @@ signals:
      */
     void done();
 
-    void log(const QString &msg);
+    void log(const QString& msg);
 
-    void debugError(const ErrorItem &item);
+    void debugError(const ErrorItem& item);
 
     void bughuntingReportLine(QString line);
 
@@ -246,7 +246,7 @@ protected:
      * @brief List of threads currently in use
      *
      */
-    QList<CheckThread *> mThreads;
+    QList<CheckThread*> mThreads;
 
     /**
      * @brief The amount of threads currently running
@@ -267,7 +267,7 @@ private:
      * @brief Check if a file needs to be rechecked. Recursively checks
      * included headers. Used by GetReCheckFiles()
      */
-    bool needsReCheck(const QString &filename, std::set<QString> &modified, std::set<QString> &unmodified) const;
+    bool needsReCheck(const QString& filename, std::set<QString>& modified, std::set<QString>& unmodified) const;
 };
 /// @}
 #endif // THREADHANDLER_H

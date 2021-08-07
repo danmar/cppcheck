@@ -5,7 +5,7 @@
 #include "valueflow.h"
 #include <algorithm>
 
-const Scope* PathAnalysis::findOuterScope(const Scope * scope)
+const Scope* PathAnalysis::findOuterScope(const Scope* scope)
 {
     if (!scope)
         return nullptr;
@@ -24,7 +24,7 @@ static const Token* assignExpr(const Token* tok)
     return nullptr;
 }
 
-std::pair<bool, bool> PathAnalysis::checkCond(const Token * tok, bool& known)
+std::pair<bool, bool> PathAnalysis::checkCond(const Token* tok, bool& known)
 {
     if (tok->hasKnownIntValue()) {
         known = true;
@@ -61,7 +61,7 @@ PathAnalysis::Progress PathAnalysis::forwardRecursive(const Token* tok, Info inf
 
 PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const Token* endToken, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const
 {
-    for (const Token *tok = startToken; tok && tok != endToken; tok = tok->next()) {
+    for (const Token* tok = startToken; tok && tok != endToken; tok = tok->next()) {
         if (Token::Match(tok, "asm|goto|break|continue"))
             return Progress::Break;
         else if (Token::Match(tok, "return|throw")) {
@@ -77,8 +77,8 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
             if (!tok)
                 return Progress::Break;
         } else if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), ") {") && Token::Match(tok->link()->linkAt(-1)->previous(), "if|while|for (")) {
-            const Token * blockStart = tok->link()->linkAt(-1)->previous();
-            const Token * condTok = getCondTok(blockStart);
+            const Token* blockStart = tok->link()->linkAt(-1)->previous();
+            const Token* condTok = getCondTok(blockStart);
             if (!condTok)
                 continue;
             info.errorPath.emplace_back(condTok, "Assuming condition is true.");
@@ -101,9 +101,9 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
                 tok = tok->linkAt(2);
             }
         } else if (Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
-            const Token * endCond = tok->next()->link();
-            const Token * endBlock = endCond->next()->link();
-            const Token * condTok = getCondTok(tok);
+            const Token* endCond = tok->next()->link();
+            const Token* endBlock = endCond->next()->link();
+            const Token* condTok = getCondTok(tok);
             if (!condTok)
                 continue;
             // Traverse condition
@@ -151,15 +151,15 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
 
 void PathAnalysis::forward(const std::function<Progress(const Info&)>& f) const
 {
-    const Scope * endScope = findOuterScope(start->scope());
+    const Scope* endScope = findOuterScope(start->scope());
     if (!endScope)
         return;
-    const Token * endToken = endScope->bodyEnd;
+    const Token* endToken = endScope->bodyEnd;
     Info info{start, ErrorPath{}, true};
     forwardRange(start, endToken, info, f);
 }
 
-bool reaches(const Token * start, const Token * dest, const Library& library, ErrorPath* errorPath)
+bool reaches(const Token* start, const Token* dest, const Library& library, ErrorPath* errorPath)
 {
     PathAnalysis::Info info = PathAnalysis{start, library}.forwardFind([&](const PathAnalysis::Info& i) {
         return (i.tok == dest);

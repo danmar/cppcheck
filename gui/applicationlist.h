@@ -33,7 +33,7 @@ class ApplicationList : public QObject {
     Q_OBJECT
 public:
 
-    explicit ApplicationList(QObject *parent = nullptr);
+    explicit ApplicationList(QObject* parent = nullptr);
     virtual ~ApplicationList();
 
     /**
@@ -78,7 +78,7 @@ public:
      *
      * @param app Application to add.
      */
-    void addApplication(const Application &app);
+    void addApplication(const Application& app);
 
     /**
      * @brief Remove an application from the list
@@ -98,7 +98,7 @@ public:
      * list given as a parameter.
      * @param list Copying source
      */
-    void copy(const ApplicationList *list);
+    void copy(const ApplicationList* list);
 
 protected:
 

@@ -503,7 +503,7 @@ struct ForwardTraversal {
                 if (!tok)
                     return Break();
             } else if (tok->str() ==  "break") {
-                const Token *scopeEndToken = findNextTokenFromBreak(tok);
+                const Token* scopeEndToken = findNextTokenFromBreak(tok);
                 if (!scopeEndToken)
                     return Break();
                 tok = skipTo(tok, scopeEndToken, end);

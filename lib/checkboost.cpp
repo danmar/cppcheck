@@ -30,18 +30,18 @@ static const CWE CWE664(664);
 
 void CheckBoost::checkBoostForeachModification()
 {
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart->next(); tok && tok != scope->bodyEnd; tok = tok->next()) {
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart->next(); tok && tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "BOOST_FOREACH ("))
                 continue;
 
-            const Token *containerTok = tok->next()->link()->previous();
+            const Token* containerTok = tok->next()->link()->previous();
             if (!Token::Match(containerTok, "%var% ) {"))
                 continue;
 
-            const Token *tok2 = containerTok->tokAt(2);
-            const Token *end = tok2->link();
+            const Token* tok2 = containerTok->tokAt(2);
+            const Token* end = tok2->link();
             for (; tok2 != end; tok2 = tok2->next()) {
                 if (Token::Match(tok2, "%varid% . insert|erase|push_back|push_front|pop_front|pop_back|clear|swap|resize|assign|merge|remove|remove_if|reverse|sort|splice|unique|pop|push", containerTok->varId())) {
                     const Token* nextStatement = Token::findsimplematch(tok2->linkAt(3), ";", end);
@@ -54,7 +54,7 @@ void CheckBoost::checkBoostForeachModification()
     }
 }
 
-void CheckBoost::boostForeachError(const Token *tok)
+void CheckBoost::boostForeachError(const Token* tok)
 {
     reportError(tok, Severity::error, "boostForeachError",
                 "BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside.", CWE664, Certainty::normal

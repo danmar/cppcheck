@@ -51,9 +51,9 @@ protected:
     virtual void run() = 0;
 
     bool prepareTest(const char testname[]);
-    std::string getLocationStr(const char * const filename, const unsigned int linenr) const;
+    std::string getLocationStr(const char* const filename, const unsigned int linenr) const;
 
-    bool assert_(const char * const filename, const unsigned int linenr, const bool condition) const;
+    bool assert_(const char* const filename, const unsigned int linenr, const bool condition) const;
 
     template<typename T, typename U>
     bool assertEquals(const char* const filename, const unsigned int linenr, const T& expected, const U& actual, const std::string& msg = emptyString) const {
@@ -72,25 +72,25 @@ protected:
     //Writes the appropriate failure message to errmsg and increments fails_counter
     void assertEqualsFailed(const char* const filename, const unsigned int linenr, const std::string& expected, const std::string& actual, const std::string& msg) const;
 
-    bool assertEquals(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
-    void assertEqualsWithoutLineNumbers(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
-    bool assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg = emptyString) const;
-    bool assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const char actual[], const std::string &msg = emptyString) const;
-    bool assertEquals(const char * const filename, const unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg = emptyString) const;
-    bool assertEquals(const char * const filename, const unsigned int linenr, const long long expected, const long long actual, const std::string &msg = emptyString) const;
-    void assertEqualsDouble(const char * const filename, const unsigned int linenr, const double expected, const double actual, const double tolerance, const std::string &msg = emptyString) const;
+    bool assertEquals(const char* const filename, const unsigned int linenr, const std::string& expected, const std::string& actual, const std::string& msg = emptyString) const;
+    void assertEqualsWithoutLineNumbers(const char* const filename, const unsigned int linenr, const std::string& expected, const std::string& actual, const std::string& msg = emptyString) const;
+    bool assertEquals(const char* const filename, const unsigned int linenr, const char expected[], const std::string& actual, const std::string& msg = emptyString) const;
+    bool assertEquals(const char* const filename, const unsigned int linenr, const char expected[], const char actual[], const std::string& msg = emptyString) const;
+    bool assertEquals(const char* const filename, const unsigned int linenr, const std::string& expected, const char actual[], const std::string& msg = emptyString) const;
+    bool assertEquals(const char* const filename, const unsigned int linenr, const long long expected, const long long actual, const std::string& msg = emptyString) const;
+    void assertEqualsDouble(const char* const filename, const unsigned int linenr, const double expected, const double actual, const double tolerance, const std::string& msg = emptyString) const;
 
-    void todoAssertEquals(const char * const filename, const unsigned int linenr, const std::string &wanted,
-                          const std::string &current, const std::string &actual) const;
-    void todoAssertEquals(const char * const filename, const unsigned int linenr, const char wanted[],
-                          const char current[], const std::string &actual) const;
-    void todoAssertEquals(const char * const filename, const unsigned int linenr, const long long wanted,
+    void todoAssertEquals(const char* const filename, const unsigned int linenr, const std::string& wanted,
+                          const std::string& current, const std::string& actual) const;
+    void todoAssertEquals(const char* const filename, const unsigned int linenr, const char wanted[],
+                          const char current[], const std::string& actual) const;
+    void todoAssertEquals(const char* const filename, const unsigned int linenr, const long long wanted,
                           const long long current, const long long actual) const;
-    void assertThrow(const char * const filename, const unsigned int linenr) const;
-    void assertThrowFail(const char * const filename, const unsigned int linenr) const;
-    void assertNoThrowFail(const char * const filename, const unsigned int linenr) const;
-    void complainMissingLib(const char * const libname) const;
-    std::string deleteLineNumber(const std::string &message) const;
+    void assertThrow(const char* const filename, const unsigned int linenr) const;
+    void assertThrowFail(const char* const filename, const unsigned int linenr) const;
+    void assertNoThrowFail(const char* const filename, const unsigned int linenr) const;
+    void complainMissingLib(const char* const libname) const;
+    std::string deleteLineNumber(const std::string& message) const;
 
     void setVerbose(bool v) {
         mVerbose = v;
@@ -103,14 +103,14 @@ protected:
 
     void processOptions(const options& args);
 public:
-    void bughuntingReport(const std::string & /*str*/) OVERRIDE {}
-    void reportOut(const std::string &outmsg, Color c = Color::Reset) OVERRIDE;
-    void reportErr(const ErrorMessage &msg) OVERRIDE;
-    void run(const std::string &str);
+    void bughuntingReport(const std::string& /*str*/) OVERRIDE {}
+    void reportOut(const std::string& outmsg, Color c = Color::Reset) OVERRIDE;
+    void reportErr(const ErrorMessage& msg) OVERRIDE;
+    void run(const std::string& str);
     static void printHelp();
     const std::string classname;
 
-    explicit TestFixture(const char * const _name);
+    explicit TestFixture(const char* const _name);
     ~TestFixture() OVERRIDE {}
 
     static std::size_t runTests(const options& args);
@@ -127,7 +127,7 @@ extern std::ostringstream output;
 #define ASSERT_EQUALS_DOUBLE( EXPECTED, ACTUAL, TOLERANCE )  assertEqualsDouble(__FILE__, __LINE__, EXPECTED, ACTUAL, TOLERANCE)
 #define ASSERT_EQUALS_MSG( EXPECTED, ACTUAL, MSG )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL, MSG)
 #define ASSERT_THROW( CMD, EXCEPTION ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&) {} catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
-#define ASSERT_THROW_EQUALS( CMD, EXCEPTION, EXPECTED ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&e) { assertEquals(__FILE__, __LINE__, EXPECTED, e.errorMessage); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
+#define ASSERT_THROW_EQUALS( CMD, EXCEPTION, EXPECTED ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION& e) { assertEquals(__FILE__, __LINE__, EXPECTED, e.errorMessage); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
 #define ASSERT_NO_THROW( CMD ) do { try { CMD; } catch (...) { assertNoThrowFail(__FILE__, __LINE__); } } while (false)
 #define TODO_ASSERT_THROW( CMD, EXCEPTION ) do { try { CMD; } catch (const EXCEPTION&) {} catch (...) { assertThrow(__FILE__, __LINE__); } } while (false)
 #define TODO_ASSERT( CONDITION ) do { const bool condition=(CONDITION); todoAssertEquals(__FILE__, __LINE__, true, false, condition); } while (false)

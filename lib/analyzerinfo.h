@@ -50,14 +50,14 @@ class CPPCHECKLIB AnalyzerInformation {
 public:
     ~AnalyzerInformation();
 
-    static void writeFilesTxt(const std::string &buildDir, const std::list<std::string> &sourcefiles, const std::string &userDefines, const std::list<ImportProject::FileSettings> &fileSettings);
+    static void writeFilesTxt(const std::string& buildDir, const std::list<std::string>& sourcefiles, const std::string& userDefines, const std::list<ImportProject::FileSettings>& fileSettings);
 
     /** Close current TU.analyzerinfo file */
     void close();
-    bool analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, unsigned long long checksum, std::list<ErrorMessage> *errors);
-    void reportErr(const ErrorMessage &msg, bool verbose);
-    void setFileInfo(const std::string &check, const std::string &fileInfo);
-    static std::string getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg);
+    bool analyzeFile(const std::string& buildDir, const std::string& sourcefile, const std::string& cfg, unsigned long long checksum, std::list<ErrorMessage>* errors);
+    void reportErr(const ErrorMessage& msg, bool verbose);
+    void setFileInfo(const std::string& check, const std::string& fileInfo);
+    static std::string getAnalyzerInfoFile(const std::string& buildDir, const std::string& sourcefile, const std::string& cfg);
 private:
     std::ofstream mOutputStream;
     std::string mAnalyzerInfoFile;

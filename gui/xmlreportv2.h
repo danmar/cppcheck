@@ -36,7 +36,7 @@ class QXmlStreamWriter;
  */
 class XmlReportV2 : public XmlReport {
 public:
-    explicit XmlReportV2(const QString &filename);
+    explicit XmlReportV2(const QString& filename);
     virtual ~XmlReportV2();
 
     /**
@@ -64,7 +64,7 @@ public:
      * @brief Write error to report.
      * @param error Error data.
      */
-    virtual void writeError(const ErrorItem &error) override;
+    virtual void writeError(const ErrorItem& error) override;
 
     /**
      * @brief Read contents of the report file.
@@ -76,18 +76,18 @@ protected:
      * @brief Read and parse error item from XML stream.
      * @param reader XML stream reader to use.
      */
-    ErrorItem readError(QXmlStreamReader *reader);
+    ErrorItem readError(QXmlStreamReader* reader);
 
 private:
     /**
      * @brief XML stream reader for reading the report in XML format.
      */
-    QXmlStreamReader *mXmlReader;
+    QXmlStreamReader* mXmlReader;
 
     /**
      * @brief XML stream writer for writing the report in XML format.
      */
-    QXmlStreamWriter *mXmlWriter;
+    QXmlStreamWriter* mXmlWriter;
 };
 /// @}
 #endif // XML_REPORTV2_H

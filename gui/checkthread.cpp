@@ -28,7 +28,7 @@
 #include "cppcheck.h"
 #include "common.h"
 
-static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output)
+static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string* output)
 {
     output->clear();
 
@@ -55,7 +55,7 @@ static bool executeCommand(std::string exe, std::vector<std::string> args, std::
 }
 
 
-CheckThread::CheckThread(ThreadResult &result) :
+CheckThread::CheckThread(ThreadResult& result) :
     mState(Ready),
     mResult(result),
     mCppcheck(result, true, executeCommand),
@@ -69,14 +69,14 @@ CheckThread::~CheckThread()
     //dtor
 }
 
-void CheckThread::check(const Settings &settings)
+void CheckThread::check(const Settings& settings)
 {
     mFiles.clear();
     mCppcheck.settings() = settings;
     start();
 }
 
-void CheckThread::analyseWholeProgram(const QStringList &files)
+void CheckThread::analyseWholeProgram(const QStringList& files)
 {
     mFiles = files;
     mAnalyseWholeProgram = true;
@@ -90,7 +90,7 @@ void CheckThread::run()
     if (!mFiles.isEmpty() || mAnalyseWholeProgram) {
         mAnalyseWholeProgram = false;
         qDebug() << "Whole program analysis";
-        const std::string &buildDir = mCppcheck.settings().buildDir;
+        const std::string& buildDir = mCppcheck.settings().buildDir;
         if (!buildDir.empty()) {
             std::map<std::string,std::size_t> files2;
             for (const QString& file : mFiles)
@@ -133,7 +133,7 @@ void CheckThread::run()
     emit done();
 }
 
-void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSettings, const QString &fileName)
+void CheckThread::runAddonsAndTools(const ImportProject::FileSettings* fileSettings, const QString& fileName)
 {
     foreach (const QString addon, mAddonsAndTools) {
         if (addon == CLANG_ANALYZER || addon == CLANG_TIDY) {
@@ -205,7 +205,7 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
 
             QString analyzerInfoFile;
 
-            const std::string &buildDir = mCppcheck.settings().buildDir;
+            const std::string& buildDir = mCppcheck.settings().buildDir;
             if (!buildDir.empty()) {
                 analyzerInfoFile = QString::fromStdString(AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileSettings->filename, fileSettings->cfg));
 
@@ -215,7 +215,7 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 QProcess process;
                 process.start(clangCmd(),args2);
                 process.waitForFinished();
-                const QByteArray &ba = process.readAllStandardOutput();
+                const QByteArray& ba = process.readAllStandardOutput();
                 const quint16 chksum = qChecksum(ba.data(), ba.length());
 
                 QFile f1(analyzerInfoFile + '.' + addon + "-E");
@@ -300,7 +300,7 @@ void CheckThread::stop()
     Settings::terminate();
 }
 
-void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QString err)
+void CheckThread::parseClangErrors(const QString& tool, const QString& file0, QString err)
 {
     QList<ErrorItem> errorItems;
     ErrorItem errorItem;
@@ -373,7 +373,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
     }
     errorItems.append(errorItem);
 
-    foreach (const ErrorItem &e, errorItems) {
+    foreach (const ErrorItem& e, errorItems) {
         if (e.errorPath.isEmpty())
             continue;
         Suppressions::ErrorMessage errorMessage;
@@ -386,7 +386,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
             continue;
 
         std::list<ErrorMessage::FileLocation> callstack;
-        foreach (const QErrorPathItem &path, e.errorPath) {
+        foreach (const QErrorPathItem& path, e.errorPath) {
             callstack.push_back(ErrorMessage::FileLocation(path.file.toStdString(), path.info.toStdString(), path.line, path.column));
         }
         const std::string f0 = file0.toStdString();
@@ -397,9 +397,9 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
     }
 }
 
-bool CheckThread::isSuppressed(const Suppressions::ErrorMessage &errorMessage) const
+bool CheckThread::isSuppressed(const Suppressions::ErrorMessage& errorMessage) const
 {
-    foreach (const Suppressions::Suppression &suppression, mSuppressions) {
+    foreach (const Suppressions::Suppression& suppression, mSuppressions) {
         if (suppression.isSuppressed(errorMessage))
             return true;
     }

@@ -1,7 +1,7 @@
 #include "libraryeditargdialog.h"
 #include "ui_libraryeditargdialog.h"
 
-LibraryEditArgDialog::LibraryEditArgDialog(QWidget *parent, const CppcheckLibraryData::Function::Arg &arg) :
+LibraryEditArgDialog::LibraryEditArgDialog(QWidget* parent, const CppcheckLibraryData::Function::Arg& arg) :
     QDialog(parent),
     mUi(new Ui::LibraryEditArgDialog),
     mMinSizes(arg.minsizes)

@@ -78,7 +78,7 @@ namespace ValueFlow {
     };
     class CPPCHECKLIB Value {
     public:
-        typedef std::pair<const Token *, std::string> ErrorPathItem;
+        typedef std::pair<const Token*, std::string> ErrorPathItem;
         typedef std::list<ErrorPathItem> ErrorPath;
 
         explicit Value(long long val = 0)
@@ -101,7 +101,7 @@ namespace ValueFlow {
             lifetimeScope(LifetimeScope::Local),
             valueKind(ValueKind::Possible)
         {}
-        Value(const Token *c, long long val);
+        Value(const Token* c, long long val);
 
         bool equalValue(const ValueFlow::Value& rhs) const {
             if (valueType != rhs.valueType)
@@ -193,7 +193,7 @@ namespace ValueFlow {
             return result;
         }
 
-        bool operator==(const Value &rhs) const {
+        bool operator==(const Value& rhs) const {
             if (!equalValue(rhs))
                 return false;
 
@@ -206,7 +206,7 @@ namespace ValueFlow {
                    valueKind == rhs.valueKind;
         }
 
-        bool operator!=(const Value &rhs) const {
+        bool operator!=(const Value& rhs) const {
             return !(*this == rhs);
         }
 
@@ -313,7 +313,7 @@ namespace ValueFlow {
         long long intvalue;
 
         /** token value - the token that has the value. this is used for pointer aliases, strings, etc. */
-        const Token *tokvalue;
+        const Token* tokvalue;
 
         /** float value */
         double floatValue;
@@ -325,7 +325,7 @@ namespace ValueFlow {
         long long varvalue;
 
         /** Condition that this value depends on */
-        const Token *condition;
+        const Token* condition;
 
         ErrorPath errorPath;
 
@@ -423,14 +423,14 @@ namespace ValueFlow {
     };
 
     /// Constant folding of expression. This can be used before the full ValueFlow has been executed (ValueFlow::setValues).
-    const ValueFlow::Value * valueFlowConstantFoldAST(Token *expr, const Settings *settings);
+    const ValueFlow::Value* valueFlowConstantFoldAST(Token* expr, const Settings* settings);
 
     /// Perform valueflow analysis.
-    void setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings);
+    void setValues(TokenList* tokenlist, SymbolDatabase* symboldatabase, ErrorLogger* errorLogger, const Settings* settings);
 
-    std::string eitherTheConditionIsRedundant(const Token *condition);
+    std::string eitherTheConditionIsRedundant(const Token* condition);
 
-    size_t getSizeOf(const ValueType &vt, const Settings *settings);
+    size_t getSizeOf(const ValueType& vt, const Settings* settings);
 
     const ValueFlow::Value* findValue(const std::list<ValueFlow::Value>& values,
                                       const Settings* settings,
@@ -466,8 +466,8 @@ struct LifetimeToken {
     }
 };
 
-const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value, const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate);
-const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value);
+const Token* parseCompareInt(const Token* tok, ValueFlow::Value& true_value, ValueFlow::Value& false_value, const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate);
+const Token* parseCompareInt(const Token* tok, ValueFlow::Value& true_value, ValueFlow::Value& false_value);
 
 ValueFlow::Value inferCondition(std::string op, MathLib::bigint val, const Token* varTok);
 ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val);
@@ -482,14 +482,14 @@ const Variable* getLifetimeVariable(const Token* tok, ValueFlow::Value::ErrorPat
 
 const Variable* getLifetimeVariable(const Token* tok);
 
-bool isLifetimeBorrowed(const Token *tok, const Settings *settings);
+bool isLifetimeBorrowed(const Token* tok, const Settings* settings);
 
-std::string lifetimeType(const Token *tok, const ValueFlow::Value *val);
+std::string lifetimeType(const Token* tok, const ValueFlow::Value* val);
 
-std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ValueFlow::Value::ErrorPath &errorPath);
+std::string lifetimeMessage(const Token* tok, const ValueFlow::Value* val, ValueFlow::Value::ErrorPath& errorPath);
 
-CPPCHECKLIB ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive = false);
+CPPCHECKLIB ValueFlow::Value getLifetimeObjValue(const Token* tok, bool inconclusive = false);
 
-CPPCHECKLIB std::vector<ValueFlow::Value> getLifetimeObjValues(const Token *tok, bool inconclusive = false, bool subfunction = false);
+CPPCHECKLIB std::vector<ValueFlow::Value> getLifetimeObjValues(const Token* tok, bool inconclusive = false, bool subfunction = false);
 
 #endif // valueflowH

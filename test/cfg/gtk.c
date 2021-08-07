@@ -12,7 +12,7 @@
 #include <glib.h>
 
 
-void validCode(int argInt, GHashTableIter * hash_table_iter, GHashTable * hash_table)
+void validCode(int argInt, GHashTableIter* hash_table_iter, GHashTable* hash_table)
 {
     g_assert_cmpint(4 + 1, >=, 5);
     g_assert_cmpstr("test", ==, "test");
@@ -43,15 +43,15 @@ void validCode(int argInt, GHashTableIter * hash_table_iter, GHashTable * hash_t
     g_print("%d", 1);
     g_printerr("err");
 
-    GString * pGStr1 = g_string_new("test");
+    GString* pGStr1 = g_string_new("test");
     g_string_append(pGStr1, "a");
     g_string_free(pGStr1, TRUE);
 
-    gchar * pGchar1 = g_strconcat("a", "b", NULL);
+    gchar* pGchar1 = g_strconcat("a", "b", NULL);
     printf("%s", pGchar1);
     g_free(pGchar1);
 
-    GError * pGerror = g_error_new(1, -2, "a %d", 1);
+    GError* pGerror = g_error_new(1, -2, "a %d", 1);
     g_error_free(pGerror);
 
     static gsize init_val = 0;
@@ -248,7 +248,7 @@ void g_print_test()
 void g_alloca_test()
 {
     // cppcheck-suppress allocaCalled
-    char * pBuf1 = g_alloca(5);
+    char* pBuf1 = g_alloca(5);
     pBuf1[0] = '\0';
 }
 
@@ -258,14 +258,14 @@ void g_new_test()
         int b;
     };
     // valid
-    struct a * pNew1 = g_new(struct a, 5);
+    struct a* pNew1 = g_new(struct a, 5);
     printf("%p", pNew1);
     g_free(pNew1);
 
     // cppcheck-suppress leakReturnValNotUsed
     g_new(struct a, 1);
 
-    struct a * pNew2 = g_new(struct a, 2);
+    struct a* pNew2 = g_new(struct a, 2);
     printf("%p", pNew2);
     // cppcheck-suppress memleak
 }
@@ -276,7 +276,7 @@ void g_new_if_test()
         int b;
     };
 
-    struct a * pNew3;
+    struct a* pNew3;
     if (pNew3 = g_new(struct a, 6)) {
         printf("%p", pNew3);
     }
@@ -289,14 +289,14 @@ void g_new0_test()
         int b;
     };
     // valid
-    struct a * pNew1 = g_new0(struct a, 5);
+    struct a* pNew1 = g_new0(struct a, 5);
     printf("%p", pNew1);
     g_free(pNew1);
 
     // cppcheck-suppress leakReturnValNotUsed
     g_new0(struct a, 1);
 
-    struct a * pNew2 = g_new0(struct a, 2);
+    struct a* pNew2 = g_new0(struct a, 2);
     printf("%p", pNew2);
     // cppcheck-suppress memleak
 }
@@ -307,14 +307,14 @@ void g_try_new_test()
         int b;
     };
     // valid
-    struct a * pNew1 = g_try_new(struct a, 5);
+    struct a* pNew1 = g_try_new(struct a, 5);
     printf("%p", pNew1);
     g_free(pNew1);
 
     // cppcheck-suppress leakReturnValNotUsed
     g_try_new(struct a, 1);
 
-    struct a * pNew2 = g_try_new(struct a, 2);
+    struct a* pNew2 = g_try_new(struct a, 2);
     printf("%p", pNew2);
     // cppcheck-suppress memleak
 }
@@ -324,14 +324,14 @@ void g_try_new0_test()
         int b;
     };
     // valid
-    struct a * pNew1 = g_try_new0(struct a, 5);
+    struct a* pNew1 = g_try_new0(struct a, 5);
     printf("%p", pNew1);
     g_free(pNew1);
 
     // cppcheck-suppress leakReturnValNotUsed
     g_try_new0(struct a, 1);
 
-    struct a * pNew2 = g_try_new0(struct a, 2);
+    struct a* pNew2 = g_try_new0(struct a, 2);
     printf("%p", pNew2);
     // cppcheck-suppress memleak
 }
@@ -344,7 +344,7 @@ void g_renew_test()
     // cppcheck-suppress leakReturnValNotUsed
     g_renew(struct a, NULL, 1);
 
-    struct a * pNew = g_new(struct a, 1);
+    struct a* pNew = g_new(struct a, 1);
     pNew = g_renew(struct a, pNew, 2); // No memleakOnRealloc since g_renew aborts if it fails
     printf("%p", pNew);
 
@@ -359,7 +359,7 @@ void g_try_renew_test()
     // cppcheck-suppress leakReturnValNotUsed
     g_try_renew(struct a, NULL, 1);
 
-    struct a * pNew = g_try_new(struct a, 1);
+    struct a* pNew = g_try_new(struct a, 1);
     // cppcheck-suppress memleakOnRealloc
     pNew = g_try_renew(struct a, pNew, 2);
     printf("%p", pNew);
@@ -370,7 +370,7 @@ void g_try_renew_test()
 void g_error_new_test()
 {
     // valid
-    GError * pNew1 = g_error_new(1, -2, "a %d", 1);
+    GError* pNew1 = g_error_new(1, -2, "a %d", 1);
     printf("%p", pNew1);
     g_error_free(pNew1);
 
@@ -378,7 +378,7 @@ void g_error_new_test()
     // cppcheck-suppress leakReturnValNotUsed
     g_error_new(1, -2, "a %d", 1);
 
-    GError * pNew2 = g_error_new(1, -2, "a %d", 1);
+    GError* pNew2 = g_error_new(1, -2, "a %d", 1);
     printf("%p", pNew2);
     // cppcheck-suppress memleak
 }
@@ -397,14 +397,14 @@ void g_once_init_enter_leave_test()
     // cppcheck-suppress ignoredReturnValue
     g_once_init_enter(&init_val2);
 
-    gsize * init_val3 = NULL;
+    gsize* init_val3 = NULL;
     // cppcheck-suppress nullPointer
     if (g_once_init_enter(init_val3)) {
         // cppcheck-suppress nullPointer
         g_once_init_leave(init_val3, 1);
     }
 
-    gsize * init_val4;
+    gsize* init_val4;
     // cppcheck-suppress uninitvar
     if (g_once_init_enter(init_val4)) {
         // cppcheck-suppress uninitvar
@@ -412,15 +412,15 @@ void g_once_init_enter_leave_test()
     }
 }
 
-void g_strchug_g_strchomp_test(gchar * str1)
+void g_strchug_g_strchomp_test(gchar* str1)
 {
     g_strchug(str1);
     g_strchomp(str1);
     g_strchug(g_strchomp(str1));
-    gchar * str2;
+    gchar* str2;
     // cppcheck-suppress uninitvar
     g_strchug(str2);
-    gchar * str3;
+    gchar* str3;
     // cppcheck-suppress uninitvar
     g_strchomp(str3);
 }

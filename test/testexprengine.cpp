@@ -175,17 +175,17 @@ private:
         return ret;
     }
 
-    std::string expr(const char code[], const std::string &binop) {
+    std::string expr(const char code[], const std::string& binop) {
         Settings settings;
         settings.platform(cppcheck::Platform::Unix64);
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         std::string ret;
-        ExprEngine::Callback f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
+        ExprEngine::Callback f = [&](const Token* tok, const ExprEngine::Value& value, ExprEngine::DataBase* dataBase) {
             if (tok->str() != binop)
                 return;
-            const auto *b = dynamic_cast<const ExprEngine::BinOpResult *>(&value);
+            const auto* b = dynamic_cast<const ExprEngine::BinOpResult*>(&value);
             if (!b)
                 return;
             ret += TestExprEngine::cleanupExpr(b->getExpr(dataBase));
@@ -197,7 +197,7 @@ private:
         return ret;
     }
 
-    std::string functionCallContractExpr(const char code[], const Settings &s) {
+    std::string functionCallContractExpr(const char code[], const Settings& s) {
         Settings settings;
         settings.bugHunting = true;
         settings.debugBugHunting = true;
@@ -217,7 +217,7 @@ private:
         return TestExprEngine::cleanupExpr(ret.substr(pos1, pos2+1-pos1));
     }
 
-    std::string getRange(const char code[], const std::string &str, int linenr = 0) {
+    std::string getRange(const char code[], const std::string& str, int linenr = 0) {
         Settings settings;
         settings.platform(cppcheck::Platform::Unix64);
         settings.library.smartPointers["std::shared_ptr"];
@@ -225,7 +225,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
         std::string ret;
-        ExprEngine::Callback f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
+        ExprEngine::Callback f = [&](const Token* tok, const ExprEngine::Value& value, ExprEngine::DataBase* dataBase) {
             (void)dataBase;
             if ((linenr == 0 || linenr == tok->linenr()) && tok->expressionString() == str) {
                 if (!ret.empty())
@@ -240,7 +240,7 @@ private:
         return ret;
     }
 
-    std::string trackExecution(const char code[], Settings *settings = nullptr) {
+    std::string trackExecution(const char code[], Settings* settings = nullptr) {
         Settings s;
         if (!settings)
             settings = &s;

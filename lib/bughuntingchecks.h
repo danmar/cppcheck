@@ -25,7 +25,7 @@
 #include "exprengine.h"
 #include <vector>
 
-void addBughuntingChecks(std::vector<ExprEngine::Callback> *callbacks);
+void addBughuntingChecks(std::vector<ExprEngine::Callback>* callbacks);
 
 //---------------------------------------------------------------------------
 #endif // bughuntingchecksH

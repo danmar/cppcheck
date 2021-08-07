@@ -39,10 +39,10 @@ public:
     CheckInternal() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
-    CheckInternal(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    CheckInternal(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE {
         if (!settings->checks.isEnabled(Checks::internalCheck))
             return;
 
@@ -82,17 +82,17 @@ public:
     /** @brief Try to avoid some new functions that are not fully supported in Linux */
     void checkStlUsage();
 private:
-    void multiComparePatternError(const Token *tok, const std::string &pattern, const std::string &funcname);
-    void simplePatternError(const Token *tok, const std::string &pattern, const std::string &funcname);
-    void complexPatternError(const Token *tok, const std::string &pattern, const std::string &funcname);
-    void missingPercentCharacterError(const Token *tok, const std::string &pattern, const std::string &funcname);
+    void multiComparePatternError(const Token* tok, const std::string& pattern, const std::string& funcname);
+    void simplePatternError(const Token* tok, const std::string& pattern, const std::string& funcname);
+    void complexPatternError(const Token* tok, const std::string& pattern, const std::string& funcname);
+    void missingPercentCharacterError(const Token* tok, const std::string& pattern, const std::string& funcname);
     void unknownPatternError(const Token* tok, const std::string& pattern);
     void redundantNextPreviousError(const Token* tok, const std::string& func1, const std::string& func2);
-    void orInComplexPattern(const Token *tok, const std::string &pattern, const std::string &funcname);
-    void extraWhitespaceError(const Token *tok, const std::string &pattern, const std::string &funcname);
-    void checkRedundantTokCheckError(const Token *tok);
+    void orInComplexPattern(const Token* tok, const std::string& pattern, const std::string& funcname);
+    void extraWhitespaceError(const Token* tok, const std::string& pattern, const std::string& funcname);
+    void checkRedundantTokCheckError(const Token* tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
         CheckInternal c(nullptr, settings, errorLogger);
         c.multiComparePatternError(nullptr, ";|%type%", "Match");
         c.simplePatternError(nullptr, "class {", "Match");

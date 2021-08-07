@@ -27,7 +27,7 @@ namespace MatchCompiler {
     template<unsigned int n>
     class ConstString {
     public:
-        typedef const char(&StringRef)[n];
+        typedef const char(& StringRef)[n];
         explicit ConstString(StringRef s)
             : _s(s) {}
 
@@ -52,19 +52,19 @@ namespace MatchCompiler {
     }
 
     template<unsigned int n>
-    inline bool operator==(const std::string & s1, ConstString<n> const & s2)
+    inline bool operator==(const std::string& s1, ConstString<n> const& s2)
     {
         return equalN<n>(s1.c_str(), s2);
     }
 
     template<unsigned int n>
-    inline bool operator!=(const std::string & s1, ConstString<n> const & s2)
+    inline bool operator!=(const std::string& s1, ConstString<n> const& s2)
     {
         return !operator==(s1,s2);
     }
 
     template<unsigned int n>
-    inline ConstString<n> makeConstString(const char (&s)[n])
+    inline ConstString<n> makeConstString(const char (& s)[n])
     {
         return ConstString<n>(s);
     }

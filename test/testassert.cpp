@@ -30,7 +30,7 @@ public:
 private:
     Settings settings;
 
-    void check(const char code[], const char *filename = "test.cpp") {
+    void check(const char code[], const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 

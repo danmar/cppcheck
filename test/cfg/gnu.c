@@ -40,7 +40,7 @@ void uninitvar_timercmp(struct timeval t)
 
 void nullPointer_timercmp(struct timeval t)
 {
-    struct timeval *p=0;
+    struct timeval* p=0;
     // cppcheck-suppress nullPointer
     (void)timercmp(&t, p, <);
     // cppcheck-suppress nullPointer
@@ -50,85 +50,85 @@ void nullPointer_timercmp(struct timeval t)
 }
 
 // Declaration necessary because there is no specific / portable header.
-extern void *xcalloc(size_t nmemb, size_t size);
-extern void *xmalloc(size_t size);
-extern void *xrealloc(void *block, size_t newsize);
-extern void xfree(void *ptr);
+extern void* xcalloc(size_t nmemb, size_t size);
+extern void* xmalloc(size_t size);
+extern void* xrealloc(void* block, size_t newsize);
+extern void xfree(void* ptr);
 
-void resourceLeak_mkostemps(char *template, int suffixlen, int flags)
+void resourceLeak_mkostemps(char* template, int suffixlen, int flags)
 {
     // cppcheck-suppress unreadVariable
     int fp = mkostemps(template, suffixlen, flags);
     // cppcheck-suppress resourceLeak
 }
 
-void no_resourceLeak_mkostemps_01(char *template, int suffixlen, int flags)
+void no_resourceLeak_mkostemps_01(char* template, int suffixlen, int flags)
 {
     int fp = mkostemps(template, suffixlen, flags);
     close(fp);
 }
 
-int no_resourceLeak_mkostemps_02(char *template, int suffixlen, int flags)
+int no_resourceLeak_mkostemps_02(char* template, int suffixlen, int flags)
 {
     return mkostemps(template, suffixlen, flags);
 }
 
-void resourceLeak_mkstemps(char *template, int suffixlen)
+void resourceLeak_mkstemps(char* template, int suffixlen)
 {
     // cppcheck-suppress unreadVariable
     int fp = mkstemps(template, suffixlen);
     // cppcheck-suppress resourceLeak
 }
 
-void no_resourceLeak_mkstemps_01(char *template, int suffixlen)
+void no_resourceLeak_mkstemps_01(char* template, int suffixlen)
 {
     int fp = mkstemps(template, suffixlen);
     close(fp);
 }
 
-int no_resourceLeak_mkstemps_02(char *template, int suffixlen)
+int no_resourceLeak_mkstemps_02(char* template, int suffixlen)
 {
     return mkstemps(template, suffixlen);
 }
 
-void resourceLeak_mkostemp(char *template, int flags)
+void resourceLeak_mkostemp(char* template, int flags)
 {
     // cppcheck-suppress unreadVariable
     int fp = mkostemp(template, flags);
     // cppcheck-suppress resourceLeak
 }
 
-void no_resourceLeak_mkostemp_01(char *template, int flags)
+void no_resourceLeak_mkostemp_01(char* template, int flags)
 {
     int fp = mkostemp(template, flags);
     close(fp);
 }
 
-int no_resourceLeak_mkostemp_02(char *template, int flags)
+int no_resourceLeak_mkostemp_02(char* template, int flags)
 {
     return mkostemp(template, flags);
 }
 
-void valid_code(int argInt1, va_list valist_arg, int * parg)
+void valid_code(int argInt1, va_list valist_arg, int* parg)
 {
-    char *p;
+    char* p;
 
     if (__builtin_expect(argInt1, 0)) {}
     if (__builtin_expect_with_probability(argInt1 + 1, 2, 0.5)) {}
     if (__glibc_unlikely(argInt1 != 0)) {}
     if (__glibc_likely(parg != NULL)) {}
-    void *ax1 = __builtin_assume_aligned(parg, 16);
+    void* ax1 = __builtin_assume_aligned(parg, 16);
     printf("%p", ax1);
-    void *ax2 = __builtin_assume_aligned(parg, 32, 8);
+    void* ax2 = __builtin_assume_aligned(parg, 32, 8);
     printf("%p", ax2);
 
-    p = (char *)malloc(10);
+    p = (char*)malloc(10);
     free(p);
-    p = (char *)malloc(5);
+    p = (char*)malloc(5);
     xfree(p);
-    p = (char *)xmalloc(10);
+    p = (char*)xmalloc(10);
     free(p);
-    p = (char *)xmalloc(5);
+    p = (char*)xmalloc(5);
     xfree(p);
 
     // cppcheck-suppress allocaCalled
@@ -140,7 +140,7 @@ void valid_code(int argInt1, va_list valist_arg, int * parg)
 
     if (__builtin_types_compatible_p(int, char)) {}
 
-    char * pStr = NULL;
+    char* pStr = NULL;
     if (vasprintf(&pStr, "%d %d", valist_arg) != -1) {
         free(pStr);
     }
@@ -150,7 +150,7 @@ void valid_code(int argInt1, va_list valist_arg, int * parg)
 
     if (__alignof__(int) == 4) {}
 
-    void * p_mmap = mmap(NULL, 1, PROT_NONE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+    void* p_mmap = mmap(NULL, 1, PROT_NONE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
     printf("%p", p_mmap);
     munmap(p_mmap, 1);
 
@@ -177,12 +177,12 @@ void valid_code(int argInt1, va_list valist_arg, int * parg)
 
 void ignoreleak(void)
 {
-    char *p = (char *)malloc(10);
+    char* p = (char*)malloc(10);
     __builtin_memset(&(p[0]), 0, 10);
     // cppcheck-suppress memleak
 }
 
-void memleak_asprintf(char **ptr, const char *fmt, const int arg)
+void memleak_asprintf(char** ptr, const char* fmt, const int arg)
 {
     // No warning is expected for
     if (-1 != asprintf(ptr,fmt,arg)) {
@@ -195,21 +195,21 @@ void memleak_asprintf(char **ptr, const char *fmt, const int arg)
 
 void memleak_xmalloc()
 {
-    char *p = (char*)xmalloc(10);
+    char* p = (char*)xmalloc(10);
     p[9] = 0;
     // cppcheck-suppress memleak
 }
 
 void memleak_mmap()
 {
-    void * p_mmap = mmap(NULL, 1, PROT_NONE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+    void* p_mmap = mmap(NULL, 1, PROT_NONE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
     printf("%p", p_mmap);
     // cppcheck-suppress memleak
 }
 
 void uninitvar__builtin_memset(void)
 {
-    void *s;
+    void* s;
     int c;
     size_t n;
     // cppcheck-suppress uninitvar
@@ -231,13 +231,13 @@ void bufferAccessOutOfBounds()
     // cppcheck-suppress bufferAccessOutOfBounds
     sethostname(buf, 4);
 
-    char * pAlloc1 = xcalloc(2, 4);
+    char* pAlloc1 = xcalloc(2, 4);
     memset(pAlloc1, 0, 8);
     // cppcheck-suppress bufferAccessOutOfBounds
     memset(pAlloc1, 0, 9);
     free(pAlloc1);
 
-    char * pAlloc2 = xmalloc(4);
+    char* pAlloc2 = xmalloc(4);
     memset(pAlloc2, 0, 4);
     // cppcheck-suppress bufferAccessOutOfBounds
     memset(pAlloc2, 0, 5);
@@ -271,7 +271,7 @@ void leakReturnValNotUsed()
 }
 
 #ifndef __CYGWIN__
-int nullPointer_epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
+int nullPointer_epoll_ctl(int epfd, int op, int fd, struct epoll_event* event)
 {
     // no warning is expected
     (void)epoll_ctl(epfd, op, fd, event);

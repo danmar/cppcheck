@@ -27,7 +27,7 @@
 
 #include <cstdlib>
 
-ApplicationList::ApplicationList(QObject *parent) :
+ApplicationList::ApplicationList(QObject* parent) :
     QObject(parent),
     mDefaultApplicationIndex(-1)
 {
@@ -145,7 +145,7 @@ const Application& ApplicationList::getApplication(const int index) const
     return dummy;
 }
 
-void ApplicationList::addApplication(const Application &app)
+void ApplicationList::addApplication(const Application& app)
 {
     if (app.getName().isEmpty() || app.getPath().isEmpty()) {
         return;
@@ -165,7 +165,7 @@ void ApplicationList::setDefault(const int index)
     }
 }
 
-void ApplicationList::copy(const ApplicationList *list)
+void ApplicationList::copy(const ApplicationList* list)
 {
     if (!list) {
         return;

@@ -1,4 +1,4 @@
-void foo(int **a)
+void foo(int** a)
 {
     int b = 1;
     *a = &b;
@@ -6,7 +6,7 @@ void foo(int **a)
 
 int main()
 {
-    int *c;
+    int* c;
     foo(&c);
     return 0;
 }

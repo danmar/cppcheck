@@ -192,7 +192,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 
     for (int i = 0; i < mPlatforms.getCount(); i++) {
         Platform platform = mPlatforms.mPlatforms[i];
-        QAction *action = new QAction(this);
+        QAction* action = new QAction(this);
         platform.mActMainWindow = action;
         mPlatforms.mPlatforms[i] = platform;
         action->setText(platform.mTitle);
@@ -225,7 +225,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 #else
     const Settings::PlatformType defaultPlatform = Settings::Unspecified;
 #endif
-    Platform &platform = mPlatforms.get((Settings::PlatformType)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
+    Platform& platform = mPlatforms.get((Settings::PlatformType)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
     platform.mActMainWindow->setChecked(true);
 }
 
@@ -235,7 +235,7 @@ MainWindow::~MainWindow()
     delete mScratchPad;
 }
 
-void MainWindow::handleCLIParams(const QStringList &params)
+void MainWindow::handleCLIParams(const QStringList& params)
 {
     int index;
     if (params.contains("-p")) {
@@ -276,7 +276,7 @@ void MainWindow::loadSettings()
                mSettings->value(SETTINGS_WINDOW_HEIGHT, 600).toInt());
     }
 
-    ShowTypes *types = mUI.mResults->getShowTypes();
+    ShowTypes* types = mUI.mResults->getShowTypes();
     mUI.mActionShowStyle->setChecked(types->isShown(ShowTypes::ShowStyle));
     mUI.mActionShowErrors->setChecked(types->isShown(ShowTypes::ShowErrors));
     mUI.mActionShowWarnings->setChecked(types->isShown(ShowTypes::ShowWarnings));
@@ -411,7 +411,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
     mIsLogfileLoaded = false;
     if (mProjectFile) {
         std::vector<std::string> v;
-        foreach (const QString &i, mProjectFile->getExcludedPaths()) {
+        foreach (const QString& i, mProjectFile->getExcludedPaths()) {
             v.push_back(i.toStdString());
         }
         p.ignorePaths(v);
@@ -461,7 +461,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
     mThread->check(checkSettings);
 }
 
-void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrary, const bool checkConfiguration)
+void MainWindow::doAnalyzeFiles(const QStringList& files, const bool checkLibrary, const bool checkConfiguration)
 {
     if (files.isEmpty()) {
         return;
@@ -730,7 +730,7 @@ void MainWindow::analyzeDirectory()
     }
 }
 
-void MainWindow::addIncludeDirs(const QStringList &includeDirs, Settings &result)
+void MainWindow::addIncludeDirs(const QStringList& includeDirs, Settings& result)
 {
     QString dir;
     foreach (dir, includeDirs) {
@@ -747,7 +747,7 @@ void MainWindow::addIncludeDirs(const QStringList &includeDirs, Settings &result
     }
 }
 
-Library::Error MainWindow::loadLibrary(Library *library, const QString &filename)
+Library::Error MainWindow::loadLibrary(Library* library, const QString& filename)
 {
     Library::Error ret;
 
@@ -795,7 +795,7 @@ Library::Error MainWindow::loadLibrary(Library *library, const QString &filename
     return ret;
 }
 
-bool MainWindow::tryLoadLibrary(Library *library, const QString& filename)
+bool MainWindow::tryLoadLibrary(Library* library, const QString& filename)
 {
     const Library::Error error = loadLibrary(library, filename);
     if (error.errorcode != Library::ErrorCode::OK) {
@@ -893,7 +893,7 @@ Settings MainWindow::getCppcheckSettings()
             tryLoadLibrary(&result.library, filename);
         }
 
-        foreach (const Suppressions::Suppression &suppression, mProjectFile->getSuppressions()) {
+        foreach (const Suppressions::Suppression& suppression, mProjectFile->getSuppressions()) {
             result.nomsg.addSuppression(suppression);
         }
 
@@ -905,7 +905,7 @@ Settings MainWindow::getCppcheckSettings()
         if (!mProjectFile->getImportProject().isEmpty())
             result.checkAllConfigurations = false;
 
-        const QString &buildDir = mProjectFile->getBuildDir();
+        const QString& buildDir = mProjectFile->getBuildDir();
         if (!buildDir.isEmpty()) {
             if (QDir(buildDir).isAbsolute()) {
                 result.buildDir = buildDir.toStdString();
@@ -1220,7 +1220,7 @@ void MainWindow::openResults()
     }
 }
 
-void MainWindow::loadResults(const QString &selectedFile)
+void MainWindow::loadResults(const QString& selectedFile)
 {
     if (selectedFile.isEmpty())
         return;
@@ -1235,7 +1235,7 @@ void MainWindow::loadResults(const QString &selectedFile)
     formatAndSetTitle(selectedFile);
 }
 
-void MainWindow::loadResults(const QString &selectedFile, const QString &sourceDirectory)
+void MainWindow::loadResults(const QString& selectedFile, const QString& sourceDirectory)
 {
     loadResults(selectedFile);
     mUI.mResults->setCheckDirectory(sourceDirectory);
@@ -1306,7 +1306,7 @@ void MainWindow::uncheckAll()
     toggleAllChecked(false);
 }
 
-void MainWindow::closeEvent(QCloseEvent *event)
+void MainWindow::closeEvent(QCloseEvent* event)
 {
     // Check that we aren't checking files
     if (!mThread->isChecking()) {
@@ -1353,25 +1353,25 @@ void MainWindow::toggleAllChecked(bool checked)
 
 void MainWindow::about()
 {
-    AboutDialog *dlg = new AboutDialog(CppCheck::version(), CppCheck::extraVersion(), this);
+    AboutDialog* dlg = new AboutDialog(CppCheck::version(), CppCheck::extraVersion(), this);
     dlg->exec();
 }
 
 void MainWindow::showLicense()
 {
-    FileViewDialog *dlg = new FileViewDialog(":COPYING", tr("License"), this);
+    FileViewDialog* dlg = new FileViewDialog(":COPYING", tr("License"), this);
     dlg->resize(570, 400);
     dlg->exec();
 }
 
 void MainWindow::showAuthors()
 {
-    FileViewDialog *dlg = new FileViewDialog(":AUTHORS", tr("Authors"), this);
+    FileViewDialog* dlg = new FileViewDialog(":AUTHORS", tr("Authors"), this);
     dlg->resize(350, 400);
     dlg->exec();
 }
 
-void MainWindow::performSelectedFilesCheck(const QStringList &selectedFilesList)
+void MainWindow::performSelectedFilesCheck(const QStringList& selectedFilesList)
 {
     reAnalyzeSelected(selectedFilesList);
 }
@@ -1433,7 +1433,7 @@ void MainWindow::toggleFilterToolBar()
     mLineEditFilter->clear(); // Clearing the filter also disables filtering
 }
 
-void MainWindow::formatAndSetTitle(const QString &text)
+void MainWindow::formatAndSetTitle(const QString& text)
 {
     QString nameWithVersion = QString("Cppcheck %1").arg(CppCheck::version());
 
@@ -1450,7 +1450,7 @@ void MainWindow::formatAndSetTitle(const QString &text)
     setWindowTitle(title);
 }
 
-void MainWindow::setLanguage(const QString &code)
+void MainWindow::setLanguage(const QString& code)
 {
     const QString currentLang = mTranslation->getCurrentLanguage();
     if (currentLang == code)
@@ -1479,7 +1479,7 @@ void MainWindow::stopAnalysis()
 {
     mThread->stop();
     mUI.mResults->disableProgressbar();
-    const QString &lastResults = getLastResults();
+    const QString& lastResults = getLastResults();
     if (!lastResults.isEmpty()) {
         mUI.mResults->updateFromOldReport(lastResults);
     }
@@ -1492,7 +1492,7 @@ void MainWindow::openHelpContents()
 
 void MainWindow::openOnlineHelp()
 {
-    HelpDialog *helpDialog = new HelpDialog;
+    HelpDialog* helpDialog = new HelpDialog;
     helpDialog->showMaximized();
 }
 
@@ -1524,7 +1524,7 @@ void MainWindow::showScratchpad()
         mScratchPad->activateWindow();
 }
 
-void MainWindow::loadProjectFile(const QString &filePath)
+void MainWindow::loadProjectFile(const QString& filePath)
 {
     QFileInfo inf(filePath);
     const QString filename = inf.fileName();
@@ -1553,7 +1553,7 @@ QString MainWindow::getLastResults() const
 
 bool MainWindow::loadLastResults()
 {
-    const QString &lastResults = getLastResults();
+    const QString& lastResults = getLastResults();
     if (lastResults.isEmpty())
         return false;
     if (!QFileInfo(lastResults).exists())
@@ -1565,7 +1565,7 @@ bool MainWindow::loadLastResults()
     return true;
 }
 
-void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool checkLibrary, const bool checkConfiguration)
+void MainWindow::analyzeProject(const ProjectFile* projectFile, const bool checkLibrary, const bool checkConfiguration)
 {
     Settings::terminate(false);
 
@@ -1620,7 +1620,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
         }
         try {
             p.import(prjfile.toStdString());
-        } catch (InternalError &e) {
+        } catch (InternalError& e) {
             QMessageBox msg(QMessageBox::Critical,
                             tr("Cppcheck"),
                             tr("Failed to import '%1', analysis is stopped").arg(prjfile),
@@ -1756,7 +1756,7 @@ void MainWindow::enableProjectOpenActions(bool enable)
 
 void MainWindow::openRecentProject()
 {
-    QAction *action = qobject_cast<QAction *>(sender());
+    QAction* action = qobject_cast<QAction*>(sender());
     if (!action)
         return;
     const QString project = action->data().toString();
@@ -1822,7 +1822,7 @@ void MainWindow::updateMRUMenuItems()
         mRecentProjectActs[numRecentProjects] = mUI.mMenuFile->insertSeparator(mUI.mActionProjectMRU);
 }
 
-void MainWindow::addProjectMRU(const QString &project)
+void MainWindow::addProjectMRU(const QString& project)
 {
     QStringList files = mSettings->value(SETTINGS_MRU_PROJECTS).toStringList();
     files.removeAll(project);
@@ -1834,7 +1834,7 @@ void MainWindow::addProjectMRU(const QString &project)
     updateMRUMenuItems();
 }
 
-void MainWindow::removeProjectMRU(const QString &project)
+void MainWindow::removeProjectMRU(const QString& project)
 {
     QStringList files = mSettings->value(SETTINGS_MRU_PROJECTS).toStringList();
     files.removeAll(project);
@@ -1845,7 +1845,7 @@ void MainWindow::removeProjectMRU(const QString &project)
 
 void MainWindow::selectPlatform()
 {
-    QAction *action = qobject_cast<QAction *>(sender());
+    QAction* action = qobject_cast<QAction*>(sender());
     if (action) {
         const Settings::PlatformType platform = (Settings::PlatformType) action->data().toInt();
         mSettings->setValue(SETTINGS_CHECKED_PLATFORM, platform);

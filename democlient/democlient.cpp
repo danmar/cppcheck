@@ -7,7 +7,7 @@
 #include "cppcheck.h"
 #include "version.h"
 
-static void unencode(const char *src, char *dest)
+static void unencode(const char* src, char* dest)
 {
     for (; *src; src++, dest++) {
         if (*src == '+')
@@ -24,7 +24,7 @@ static void unencode(const char *src, char *dest)
     *dest = '\0';
 }
 
-static FILE *logfile = nullptr;
+static FILE* logfile = nullptr;
 
 class CppcheckExecutor : public ErrorLogger {
 private:
@@ -46,8 +46,8 @@ public:
 
     void bughuntingReport(const std::string&) override {}
 
-    void reportOut(const std::string &outmsg) override {}
-    void reportErr(const ErrorMessage &msg) override {
+    void reportOut(const std::string& outmsg) override {}
+    void reportErr(const ErrorMessage& msg) override {
         const std::string s = msg.toString(true);
 
         std::cout << s << std::endl;
@@ -74,11 +74,11 @@ int main()
 
     char data[4096] = {0};
 
-    const char *query_string = std::getenv("QUERY_STRING");
+    const char* query_string = std::getenv("QUERY_STRING");
     if (query_string)
         std::strncpy(data, query_string, sizeof(data)-2);
 
-    const char *lenstr = std::getenv("CONTENT_LENGTH");
+    const char* lenstr = std::getenv("CONTENT_LENGTH");
     if (lenstr) {
         int len = std::min(1 + std::atoi(lenstr), (int)(sizeof(data) - 2));
         std::fgets(data, len, stdin);
@@ -89,7 +89,7 @@ int main()
         return EXIT_SUCCESS;
     }
 
-    const char *pdata = data;
+    const char* pdata = data;
     if (std::strncmp(pdata, "code=", 5)==0)
         pdata += 5;
 

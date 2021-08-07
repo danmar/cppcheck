@@ -82,7 +82,7 @@ CodeEditorStyle CodeEditorStyle::getSystemTheme()
     return theStyle;
 }
 
-CodeEditorStyle CodeEditorStyle::loadSettings(QSettings *settings)
+CodeEditorStyle CodeEditorStyle::loadSettings(QSettings* settings)
 {
     CodeEditorStyle theStyle(CodeEditorStyle::getSystemTheme());
     if (!settings)
@@ -160,7 +160,7 @@ CodeEditorStyle CodeEditorStyle::loadSettings(QSettings *settings)
     return theStyle;
 }
 
-void CodeEditorStyle::saveSettings(QSettings *settings,
+void CodeEditorStyle::saveSettings(QSettings* settings,
                                    const CodeEditorStyle& theStyle)
 {
     if (!settings)

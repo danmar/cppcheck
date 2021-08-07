@@ -61,9 +61,9 @@ void CheckIO::checkCoutCerrMisusage()
     if (mTokenizer->isC())
         return;
 
-    const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "std :: cout|cerr !!.") && tok->next()->astParent() && tok->next()->astParent()->astOperand1() == tok->next()) {
                 const Token* tok2 = tok->next();
                 while (tok2->astParent() && tok2->astParent()->str() == "<<") {
@@ -139,9 +139,9 @@ void CheckIO::checkFileUsage()
         }
     }
 
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         int indent = 0;
-        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->str() == "{")
                 indent++;
             else if (tok->str() == "}") {
@@ -276,7 +276,7 @@ void CheckIO::checkFileUsage()
                 case Filepointer::Operation::OPEN:
                     if (fileNameTok) {
                         for (std::map<int, Filepointer>::const_iterator it = filepointers.cbegin(); it != filepointers.cend(); ++it) {
-                            const Filepointer &fptr = it->second;
+                            const Filepointer& fptr = it->second;
                             if (fptr.filename == fileNameTok->str() && (fptr.mode == OpenMode::RW_MODE || fptr.mode == OpenMode::WRITE_MODE))
                                 incompatibleFileOpenError(tok, fileNameTok->str());
                         }
@@ -348,43 +348,43 @@ void CheckIO::checkFileUsage()
     }
 }
 
-void CheckIO::fflushOnInputStreamError(const Token *tok, const std::string &varname)
+void CheckIO::fflushOnInputStreamError(const Token* tok, const std::string& varname)
 {
     reportError(tok, Severity::portability,
                 "fflushOnInputStream", "fflush() called on input stream '" + varname + "' may result in undefined behaviour on non-linux systems.", CWE398, Certainty::normal);
 }
 
-void CheckIO::ioWithoutPositioningError(const Token *tok)
+void CheckIO::ioWithoutPositioningError(const Token* tok)
 {
     reportError(tok, Severity::error,
                 "IOWithoutPositioning", "Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.", CWE664, Certainty::normal);
 }
 
-void CheckIO::readWriteOnlyFileError(const Token *tok)
+void CheckIO::readWriteOnlyFileError(const Token* tok)
 {
     reportError(tok, Severity::error,
                 "readWriteOnlyFile", "Read operation on a file that was opened only for writing.", CWE664, Certainty::normal);
 }
 
-void CheckIO::writeReadOnlyFileError(const Token *tok)
+void CheckIO::writeReadOnlyFileError(const Token* tok)
 {
     reportError(tok, Severity::error,
                 "writeReadOnlyFile", "Write operation on a file that was opened only for reading.", CWE664, Certainty::normal);
 }
 
-void CheckIO::useClosedFileError(const Token *tok)
+void CheckIO::useClosedFileError(const Token* tok)
 {
     reportError(tok, Severity::error,
                 "useClosedFile", "Used file that is not opened.", CWE910, Certainty::normal);
 }
 
-void CheckIO::seekOnAppendedFileError(const Token *tok)
+void CheckIO::seekOnAppendedFileError(const Token* tok)
 {
     reportError(tok, Severity::warning,
                 "seekOnAppendedFile", "Repositioning operation performed on a file opened in append mode has no effect.", CWE398, Certainty::normal);
 }
 
-void CheckIO::incompatibleFileOpenError(const Token *tok, const std::string &filename)
+void CheckIO::incompatibleFileOpenError(const Token* tok, const std::string& filename)
 {
     reportError(tok, Severity::warning,
                 "incompatibleFileOpen", "The file '" + filename + "' is opened for read and write access at the same time on different streams", CWE664, Certainty::normal);
@@ -399,10 +399,10 @@ void CheckIO::invalidScanf()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
-    const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            const Token *formatToken = nullptr;
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+            const Token* formatToken = nullptr;
             if (Token::Match(tok, "scanf|vscanf ( %str% ,"))
                 formatToken = tok->tokAt(2);
             else if (Token::Match(tok, "sscanf|vsscanf|fscanf|vfscanf (")) {
@@ -417,7 +417,7 @@ void CheckIO::invalidScanf()
             bool format = false;
 
             // scan the string backwards, so we do not need to keep states
-            const std::string &formatstr(formatToken->str());
+            const std::string& formatstr(formatToken->str());
             for (std::size_t i = 1; i < formatstr.length(); i++) {
                 if (formatstr[i] == '%')
                     format = !format;
@@ -439,7 +439,7 @@ void CheckIO::invalidScanf()
     }
 }
 
-void CheckIO::invalidScanfError(const Token *tok)
+void CheckIO::invalidScanfError(const Token* tok)
 {
     const std::string fname = (tok ? tok->str() : std::string("scanf"));
     reportError(tok, Severity::warning,
@@ -471,8 +471,8 @@ void CheckIO::invalidScanfError(const Token *tok)
 //    printf("", 1); // Too much arguments
 //---------------------------------------------------------------------------
 
-static bool findFormat(nonneg int arg, const Token *firstArg,
-                       const Token **formatStringTok, const Token **formatArgTok)
+static bool findFormat(nonneg int arg, const Token* firstArg,
+                       const Token** formatStringTok, const Token** formatArgTok)
 {
     const Token* argTok = firstArg;
 
@@ -512,11 +512,11 @@ static inline bool typesMatch(const std::string& iToTest, const std::string& iTy
 
 void CheckIO::checkWrongPrintfScanfArguments()
 {
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     const bool isWindows = mSettings->isWindowsPlatform();
 
-    for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+    for (const Scope* scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->isName()) continue;
 
             const Token* argListTok = nullptr; // Points to first va_list argument
@@ -580,15 +580,15 @@ void CheckIO::checkWrongPrintfScanfArguments()
     }
 }
 
-void CheckIO::checkFormatString(const Token * const tok,
-                                const Token * const formatStringTok,
-                                const Token *       argListTok,
+void CheckIO::checkFormatString(const Token* const tok,
+                                const Token* const formatStringTok,
+                                const Token*       argListTok,
                                 const bool scan,
                                 const bool scanf_s)
 {
     const bool isWindows = mSettings->isWindowsPlatform();
     const bool printWarning = mSettings->severity.isEnabled(Severity::warning);
-    const std::string &formatString = formatStringTok->str();
+    const std::string& formatString = formatStringTok->str();
 
     // Count format string parameters..
     int numFormat = 0;
@@ -1326,7 +1326,7 @@ void CheckIO::checkFormatString(const Token * const tok,
 // We currently only support string literals, variables, and functions.
 /// @todo add non-string literals, and generic expressions
 
-CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings, bool _isCPP)
+CheckIO::ArgumentInfo::ArgumentInfo(const Token* arg, const Settings* settings, bool _isCPP)
     : variableInfo(nullptr)
     , typeToken(nullptr)
     , functionInfo(nullptr)
@@ -1342,12 +1342,12 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
     // Use AST type info
     // TODO: This is a bailout so that old code is used in simple cases. Remove the old code and always use the AST type.
     if (!Token::Match(arg, "%str% ,|)") && !(Token::Match(arg,"%var%") && arg->variable() && arg->variable()->isArray())) {
-        const Token *top = arg;
+        const Token* top = arg;
         while (top->str() == "(" && !top->isCast())
             top = top->next();
         while (top->astParent() && top->astParent()->str() != "," && top->astParent() != arg->previous())
             top = top->astParent();
-        const ValueType *valuetype = top->argumentType();
+        const ValueType* valuetype = top->argumentType();
         if (valuetype && valuetype->type >= ValueType::Type::BOOL) {
             typeToken = tempToken = new Token();
             if (valuetype->pointer && valuetype->constness & 1) {
@@ -1416,14 +1416,14 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
             arg = arg->tokAt(2);
         if (!arg || !(arg->tokType() == Token::eVariable || arg->tokType() == Token::eFunction))
             return;
-        const Token *varTok = nullptr;
-        const Token *tok1 = arg->next();
+        const Token* varTok = nullptr;
+        const Token* tok1 = arg->next();
         for (; tok1; tok1 = tok1->next()) {
             if (tok1->str() == "," || tok1->str() == ")") {
                 if (tok1->previous()->str() == "]") {
                     varTok = tok1->linkAt(-1)->previous();
                     if (varTok->str() == ")" && varTok->link()->previous()->tokType() == Token::eFunction) {
-                        const Function * function = varTok->link()->previous()->function();
+                        const Function* function = varTok->link()->previous()->function();
                         if (function && function->retType && function->retType->isEnumType()) {
                             if (function->retType->classScope->enumType)
                                 typeToken = function->retType->classScope->enumType;
@@ -1444,7 +1444,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
                         return;
                     }
                 } else if (tok1->previous()->str() == ")" && tok1->linkAt(-1)->previous()->tokType() == Token::eFunction) {
-                    const Function * function = tok1->linkAt(-1)->previous()->function();
+                    const Function* function = tok1->linkAt(-1)->previous()->function();
                     if (function && function->retType && function->retType->isEnumType()) {
                         if (function->retType->classScope->enumType)
                             typeToken = function->retType->classScope->enumType;
@@ -1585,7 +1585,7 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
         return true;
     } else if (variableInfo->type() && !variableInfo->type()->derivedFrom.empty()) {
         const std::vector<Type::BaseInfo>& derivedFrom = variableInfo->type()->derivedFrom;
-        for (const Type::BaseInfo & i : derivedFrom) {
+        for (const Type::BaseInfo& i : derivedFrom) {
             const Token* nameTok = i.nameTok;
             if (Token::Match(nameTok, "std :: vector|array <")) {
                 typeToken = nameTok->tokAt(4);
@@ -1604,9 +1604,9 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
             }
         }
     } else if (variableInfo->type()) {
-        const Scope * classScope = variableInfo->type()->classScope;
+        const Scope* classScope = variableInfo->type()->classScope;
         if (classScope) {
-            for (const Function &func : classScope->functionList) {
+            for (const Function& func : classScope->functionList) {
                 if (func.name() == "operator[]") {
                     if (Token::Match(func.retDef, "%type% &")) {
                         typeToken = func.retDef;
@@ -1628,7 +1628,7 @@ static const std::set<std::string> stl_container = {
     "unordered_map", "unordered_multimap", "unordered_multiset", "unordered_set", "vector"
 };
 
-bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
+bool CheckIO::ArgumentInfo::isStdContainer(const Token* tok)
 {
     if (!isCPP)
         return false;
@@ -1641,7 +1641,7 @@ bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
             typeToken = variable->typeStartToken();
             return true;
         } else if (variable->type() && !variable->type()->derivedFrom.empty()) {
-            for (const Type::BaseInfo &baseInfo : variable->type()->derivedFrom) {
+            for (const Type::BaseInfo& baseInfo : variable->type()->derivedFrom) {
                 const Token* nameTok = baseInfo.nameTok;
                 if (Token::Match(nameTok, "std :: vector|array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset <")) {
                     typeToken = nameTok->tokAt(4);
@@ -1664,7 +1664,7 @@ bool CheckIO::ArgumentInfo::isArrayOrPointer() const
     else if (variableInfo && !_template) {
         return variableInfo->isArrayOrPointer();
     } else {
-        const Token *tok = typeToken;
+        const Token* tok = typeToken;
         while (Token::Match(tok, "const|struct"))
             tok = tok->next();
         if (tok && tok->strAt(1) == "*")
@@ -1695,13 +1695,13 @@ bool CheckIO::ArgumentInfo::isKnownType() const
     return typeToken->isStandardType() || Token::Match(typeToken, "std :: string|wstring");
 }
 
-bool CheckIO::ArgumentInfo::isLibraryType(const Settings *settings) const
+bool CheckIO::ArgumentInfo::isLibraryType(const Settings* settings) const
 {
     return typeToken && typeToken->isStandardType() && settings->library.podtype(typeToken->str());
 }
 
 void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
-                                             const std::string &functionName,
+                                             const std::string& functionName,
                                              nonneg int numFormat,
                                              nonneg int numFunction)
 {
@@ -1931,16 +1931,16 @@ void CheckIO::invalidPrintfArgTypeError_float(const Token* tok, nonneg int numFo
     reportError(tok, severity, "invalidPrintfArgType_float", errmsg.str(), CWE686, Certainty::normal);
 }
 
-Severity::SeverityType CheckIO::getSeverity(const CheckIO::ArgumentInfo *argInfo)
+Severity::SeverityType CheckIO::getSeverity(const CheckIO::ArgumentInfo* argInfo)
 {
     return (argInfo && argInfo->typeToken && !argInfo->typeToken->originalName().empty()) ? Severity::portability : Severity::warning;
 }
 
-void CheckIO::argumentType(std::ostream& os, const ArgumentInfo * argInfo)
+void CheckIO::argumentType(std::ostream& os, const ArgumentInfo* argInfo)
 {
     if (argInfo) {
         os << "\'";
-        const Token *type = argInfo->typeToken;
+        const Token* type = argInfo->typeToken;
         if (type->tokType() == Token::eString) {
             if (type->isLong())
                 os << "const wchar_t *";
@@ -1995,7 +1995,7 @@ void CheckIO::invalidLengthModifierError(const Token* tok, nonneg int numFormat,
     reportError(tok, Severity::warning, "invalidLengthModifierError", errmsg.str(), CWE704, Certainty::normal);
 }
 
-void CheckIO::invalidScanfFormatWidthError(const Token* tok, nonneg int numFormat, int width, const Variable *var, char c)
+void CheckIO::invalidScanfFormatWidthError(const Token* tok, nonneg int numFormat, int width, const Variable* var, char c)
 {
     MathLib::bigint arrlen = 0;
     std::string varname;

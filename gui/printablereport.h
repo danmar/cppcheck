@@ -54,7 +54,7 @@ public:
      * @brief Write error to report.
      * @param error Error data.
      */
-    virtual void writeError(const ErrorItem &error) override;
+    virtual void writeError(const ErrorItem& error) override;
 
     /**
      * @brief Returns the formatted report.

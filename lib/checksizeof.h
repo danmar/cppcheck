@@ -94,12 +94,12 @@ private:
     void multiplySizeofError(const Token* tok);
     void divideSizeofError(const Token* tok);
     void sizeofForArrayParameterError(const Token* tok);
-    void sizeofForPointerError(const Token* tok, const std::string &varname);
-    void divideBySizeofError(const Token* tok, const std::string &memfunc);
+    void sizeofForPointerError(const Token* tok, const std::string& varname);
+    void divideBySizeofError(const Token* tok, const std::string& memfunc);
     void sizeofForNumericParameterError(const Token* tok);
-    void sizeofVoidError(const Token *tok);
-    void sizeofDereferencedVoidPointerError(const Token *tok, const std::string &varname);
-    void arithOperationsOnVoidPointerError(const Token* tok, const std::string &varname, const std::string &vartype);
+    void sizeofVoidError(const Token* tok);
+    void sizeofDereferencedVoidPointerError(const Token* tok, const std::string& varname);
+    void arithOperationsOnVoidPointerError(const Token* tok, const std::string& varname, const std::string& vartype);
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
         CheckSizeof c(nullptr, settings, errorLogger);

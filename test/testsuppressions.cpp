@@ -78,13 +78,13 @@ private:
         ASSERT_EQUALS("", suppressions.parseFile(s2));
     }
 
-    Suppressions::ErrorMessage errorMessage(const std::string &errorId) const {
+    Suppressions::ErrorMessage errorMessage(const std::string& errorId) const {
         Suppressions::ErrorMessage ret;
         ret.errorId = errorId;
         return ret;
     }
 
-    Suppressions::ErrorMessage errorMessage(const std::string &errorId, const std::string &file, int line) const {
+    Suppressions::ErrorMessage errorMessage(const std::string& errorId, const std::string& file, int line) const {
         Suppressions::ErrorMessage ret;
         ret.errorId = errorId;
         ret.setFileName(file);
@@ -151,7 +151,7 @@ private:
         ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "x/../a.c", 123)));
     }
 
-    void reportSuppressions(const Settings &settings, const std::map<std::string, std::string> &files) {
+    void reportSuppressions(const Settings& settings, const std::map<std::string, std::string>& files) {
         // make it verbose that this check is disabled
         const bool unusedFunctionCheck = false;
 
@@ -165,7 +165,7 @@ private:
     }
 
     // Check the suppression
-    unsigned int checkSuppression(const char code[], const std::string &suppression = emptyString) {
+    unsigned int checkSuppression(const char code[], const std::string& suppression = emptyString) {
         std::map<std::string, std::string> files;
         files["test.cpp"] = code;
 
@@ -173,7 +173,7 @@ private:
     }
 
     // Check the suppression for multiple files
-    unsigned int checkSuppression(std::map<std::string, std::string> &files, const std::string &suppression = emptyString) {
+    unsigned int checkSuppression(std::map<std::string, std::string>& files, const std::string& suppression = emptyString) {
         // Clear the error log
         errout.str("");
 
@@ -202,7 +202,7 @@ private:
         return exitCode;
     }
 
-    unsigned int checkSuppressionThreads(const char code[], const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionThreads(const char code[], const std::string& suppression = emptyString) {
         errout.str("");
         output.str("");
 
@@ -231,7 +231,7 @@ private:
         return exitCode;
     }
 
-    void runChecks(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) {
+    void runChecks(unsigned int (TestSuppressions::* check)(const char[], const std::string&)) {
         // check to make sure the appropriate error is present
         (this->*check)("void f() {\n"
                        "    int a;\n"

@@ -45,16 +45,16 @@ class TestRegistry {
     TestSet _tests;
 public:
 
-    static TestRegistry &theInstance() {
+    static TestRegistry& theInstance() {
         static TestRegistry testreg;
         return testreg;
     }
 
-    void addTest(TestFixture *t) {
+    void addTest(TestFixture* t) {
         _tests.insert(t);
     }
 
-    const TestSet &tests() const {
+    const TestSet& tests() const {
         return _tests;
     }
 };
@@ -74,7 +74,7 @@ std::size_t TestFixture::todos_counter = 0;
 std::size_t TestFixture::succeeded_todos_counter = 0;
 std::set<std::string> TestFixture::missingLibs;
 
-TestFixture::TestFixture(const char * const _name)
+TestFixture::TestFixture(const char* const _name)
     : mVerbose(false),
     exename(),
     quiet_tests(false),
@@ -106,12 +106,12 @@ bool TestFixture::prepareTest(const char testname[])
     return false;
 }
 
-std::string TestFixture::getLocationStr(const char * const filename, const unsigned int linenr) const
+std::string TestFixture::getLocationStr(const char* const filename, const unsigned int linenr) const
 {
     return std::string(filename) + ':' + std::to_string(linenr) + '(' + classname + "::" + mTestname + ')';
 }
 
-static std::string writestr(const std::string &str, bool gccStyle = false)
+static std::string writestr(const std::string& str, bool gccStyle = false)
 {
     std::ostringstream ostr;
     if (gccStyle)
@@ -137,7 +137,7 @@ static std::string writestr(const std::string &str, bool gccStyle = false)
     return ostr.str();
 }
 
-bool TestFixture::assert_(const char * const filename, const unsigned int linenr, const bool condition) const
+bool TestFixture::assert_(const char* const filename, const unsigned int linenr, const bool condition) const
 {
     if (!condition) {
         ++fails_counter;
@@ -159,7 +159,7 @@ void TestFixture::assertEqualsFailed(const char* const filename, const unsigned 
     errmsg << "_____" << std::endl;
 }
 
-bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
+bool TestFixture::assertEquals(const char* const filename, const unsigned int linenr, const std::string& expected, const std::string& actual, const std::string& msg) const
 {
     if (expected != actual) {
         assertEqualsFailed(filename, linenr, expected, actual, msg);
@@ -167,7 +167,7 @@ bool TestFixture::assertEquals(const char * const filename, const unsigned int l
     return expected == actual;
 }
 
-std::string TestFixture::deleteLineNumber(const std::string &message) const
+std::string TestFixture::deleteLineNumber(const std::string& message) const
 {
     std::string result(message);
     // delete line number in "...:NUMBER:..."
@@ -191,25 +191,25 @@ std::string TestFixture::deleteLineNumber(const std::string &message) const
     return result;
 }
 
-void TestFixture::assertEqualsWithoutLineNumbers(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
+void TestFixture::assertEqualsWithoutLineNumbers(const char* const filename, const unsigned int linenr, const std::string& expected, const std::string& actual, const std::string& msg) const
 {
     assertEquals(filename, linenr, deleteLineNumber(expected), deleteLineNumber(actual), msg);
 }
 
-bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg) const
+bool TestFixture::assertEquals(const char* const filename, const unsigned int linenr, const char expected[], const std::string& actual, const std::string& msg) const
 {
     return assertEquals(filename, linenr, std::string(expected), actual, msg);
 }
-bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const char actual[], const std::string &msg) const
+bool TestFixture::assertEquals(const char* const filename, const unsigned int linenr, const char expected[], const char actual[], const std::string& msg) const
 {
     return assertEquals(filename, linenr, std::string(expected), std::string(actual), msg);
 }
-bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg) const
+bool TestFixture::assertEquals(const char* const filename, const unsigned int linenr, const std::string& expected, const char actual[], const std::string& msg) const
 {
     return assertEquals(filename, linenr, expected, std::string(actual), msg);
 }
 
-bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const long long expected, const long long actual, const std::string &msg) const
+bool TestFixture::assertEquals(const char* const filename, const unsigned int linenr, const long long expected, const long long actual, const std::string& msg) const
 {
     if (expected != actual) {
         std::ostringstream ostr1;
@@ -221,7 +221,7 @@ bool TestFixture::assertEquals(const char * const filename, const unsigned int l
     return expected == actual;
 }
 
-void TestFixture::assertEqualsDouble(const char * const filename, const unsigned int linenr, const double expected, const double actual, const double tolerance, const std::string &msg) const
+void TestFixture::assertEqualsDouble(const char* const filename, const unsigned int linenr, const double expected, const double actual, const double tolerance, const std::string& msg) const
 {
     if (expected < (actual - tolerance) || expected > (actual + tolerance)) {
         std::ostringstream ostr1;
@@ -232,10 +232,10 @@ void TestFixture::assertEqualsDouble(const char * const filename, const unsigned
     }
 }
 
-void TestFixture::todoAssertEquals(const char * const filename, const unsigned int linenr,
-                                   const std::string &wanted,
-                                   const std::string &current,
-                                   const std::string &actual) const
+void TestFixture::todoAssertEquals(const char* const filename, const unsigned int linenr,
+                                   const std::string& wanted,
+                                   const std::string& current,
+                                   const std::string& actual) const
 {
     if (wanted == actual) {
         errmsg << getLocationStr(filename, linenr) << ": Assertion succeeded unexpectedly. "
@@ -257,7 +257,7 @@ void TestFixture::todoAssertEquals(const char* const filename, const unsigned in
 }
 
 
-void TestFixture::todoAssertEquals(const char * const filename, const unsigned int linenr, const long long wanted, const long long current, const long long actual) const
+void TestFixture::todoAssertEquals(const char* const filename, const unsigned int linenr, const long long wanted, const long long current, const long long actual) const
 {
     std::ostringstream wantedStr, currentStr, actualStr;
     wantedStr << wanted;
@@ -266,7 +266,7 @@ void TestFixture::todoAssertEquals(const char * const filename, const unsigned i
     todoAssertEquals(filename, linenr, wantedStr.str(), currentStr.str(), actualStr.str());
 }
 
-void TestFixture::assertThrow(const char * const filename, const unsigned int linenr) const
+void TestFixture::assertThrow(const char* const filename, const unsigned int linenr) const
 {
     ++fails_counter;
     errmsg << getLocationStr(filename, linenr) << ": Assertion succeeded. "
@@ -274,7 +274,7 @@ void TestFixture::assertThrow(const char * const filename, const unsigned int li
 
 }
 
-void TestFixture::assertThrowFail(const char * const filename, const unsigned int linenr) const
+void TestFixture::assertThrowFail(const char* const filename, const unsigned int linenr) const
 {
     ++fails_counter;
     errmsg << getLocationStr(filename, linenr) << ": Assertion failed. "
@@ -282,7 +282,7 @@ void TestFixture::assertThrowFail(const char * const filename, const unsigned in
 
 }
 
-void TestFixture::assertNoThrowFail(const char * const filename, const unsigned int linenr) const
+void TestFixture::assertNoThrowFail(const char* const filename, const unsigned int linenr) const
 {
     ++fails_counter;
     errmsg << getLocationStr(filename, linenr) << ": Assertion failed. "
@@ -290,7 +290,7 @@ void TestFixture::assertNoThrowFail(const char * const filename, const unsigned 
 
 }
 
-void TestFixture::complainMissingLib(const char * const libname) const
+void TestFixture::complainMissingLib(const char* const libname) const
 {
     missingLibs.insert(libname);
 }
@@ -315,7 +315,7 @@ void TestFixture::printHelp()
         "    -h, --help           Print this help.\n";
 }
 
-void TestFixture::run(const std::string &str)
+void TestFixture::run(const std::string& str)
 {
     testToRun = str;
     if (quiet_tests) {
@@ -344,7 +344,7 @@ std::size_t TestFixture::runTests(const options& args)
             classname.erase(classname.find("::"));
         }
 
-        for (TestFixture * test : TestRegistry::theInstance().tests()) {
+        for (TestFixture* test : TestRegistry::theInstance().tests()) {
             if (classname.empty() || test->classname == classname) {
                 test->processOptions(args);
                 test->run(testname);
@@ -365,7 +365,7 @@ std::size_t TestFixture::runTests(const options& args)
 
     if (!missingLibs.empty()) {
         std::cerr << "Missing libraries: ";
-        for (const std::string & missingLib : missingLibs)
+        for (const std::string& missingLib : missingLibs)
             std::cerr << missingLib << "  ";
         std::cerr << std::endl << std::endl;
     }
@@ -373,12 +373,12 @@ std::size_t TestFixture::runTests(const options& args)
     return fails_counter;
 }
 
-void TestFixture::reportOut(const std::string & outmsg, Color)
+void TestFixture::reportOut(const std::string& outmsg, Color)
 {
     output << outmsg << std::endl;
 }
 
-void TestFixture::reportErr(const ErrorMessage &msg)
+void TestFixture::reportErr(const ErrorMessage& msg)
 {
     const std::string errormessage(msg.toString(mVerbose, mTemplateFormat, mTemplateLocation));
     if (errout.str().find(errormessage) == std::string::npos)

@@ -346,7 +346,7 @@ class MacroTest1 : public QObject {
     Q_PLUGIN_METADATA(IID "com.foo.bar" FILE "test.json")
 
 public:
-    explicit MacroTest1(QObject *parent = 0);
+    explicit MacroTest1(QObject* parent = 0);
     ~MacroTest1();
 };
 
@@ -371,7 +371,7 @@ void MacroTest2_test()
 #endif
 }
 
-void validCode(int * pIntPtr, QString & qstrArg)
+void validCode(int* pIntPtr, QString& qstrArg)
 {
     if (QFile::exists("test")) {}
 
@@ -416,9 +416,9 @@ void ignoredReturnValue()
     file1.exists();
 }
 
-void nullPointer(int * pIntPtr)
+void nullPointer(int* pIntPtr)
 {
-    int * pNullPtr = Q_NULLPTR;
+    int* pNullPtr = Q_NULLPTR;
     // cppcheck-suppress nullPointer
     *pNullPtr = 1;
 

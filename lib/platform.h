@@ -123,10 +123,10 @@ namespace cppcheck {
          * @param filename platform filename
          * @return returns true if file was loaded successfully
          */
-        bool loadPlatformFile(const char exename[], const std::string &filename);
+        bool loadPlatformFile(const char exename[], const std::string& filename);
 
         /** load platform from xml document, primarily for testing */
-        bool loadFromXmlDocument(const tinyxml2::XMLDocument *doc);
+        bool loadFromXmlDocument(const tinyxml2::XMLDocument* doc);
 
         /**
          * @brief Returns true if platform type is Windows
@@ -138,11 +138,11 @@ namespace cppcheck {
                    platformType == Win64;
         }
 
-        const char *platformString() const {
+        const char* platformString() const {
             return platformString(platformType);
         }
 
-        static const char *platformString(PlatformType pt) {
+        static const char* platformString(PlatformType pt) {
             switch (pt) {
             case Unspecified:
                 return "Unspecified";

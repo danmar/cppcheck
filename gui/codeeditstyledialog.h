@@ -31,7 +31,7 @@ class StyleEditDialog : public QDialog {
     Q_OBJECT
 public:
     explicit StyleEditDialog(const CodeEditorStyle& newStyle,
-                             QWidget *parent = nullptr);
+                             QWidget* parent = nullptr);
     virtual ~StyleEditDialog() {}
 
     CodeEditorStyle getStyle();
@@ -65,27 +65,27 @@ private:
     CodeEditorStyle mStyleIncoming;
     CodeEditorStyle mStyleOutgoing;
 
-    CodeEditor              *mSampleEditor;
+    CodeEditor* mSampleEditor;
 
-    SelectColorButton       *mBtnWidgetColorFG;
-    SelectColorButton       *mBtnWidgetColorBG;
-    SelectColorButton       *mBtnHighlightBG;
-    SelectColorButton       *mBtnLineNumFG;
-    SelectColorButton       *mBtnLineNumBG;
-    SelectColorButton       *mBtnKeywordFG;
-    SelectFontWeightCombo   *mCBKeywordWeight;
-    SelectColorButton       *mBtnClassFG;
-    SelectFontWeightCombo   *mCBClassWeight;
-    SelectColorButton       *mBtnQuoteFG;
-    SelectFontWeightCombo   *mCBQuoteWeight;
-    SelectColorButton       *mBtnCommentFG;
-    SelectFontWeightCombo   *mCBCommentWeight;
-    SelectColorButton       *mBtnSymbolFG;
-    SelectColorButton       *mBtnSymbolBG;
-    SelectFontWeightCombo   *mCBSymbolWeight;
+    SelectColorButton* mBtnWidgetColorFG;
+    SelectColorButton* mBtnWidgetColorBG;
+    SelectColorButton* mBtnHighlightBG;
+    SelectColorButton* mBtnLineNumFG;
+    SelectColorButton* mBtnLineNumBG;
+    SelectColorButton* mBtnKeywordFG;
+    SelectFontWeightCombo* mCBKeywordWeight;
+    SelectColorButton* mBtnClassFG;
+    SelectFontWeightCombo* mCBClassWeight;
+    SelectColorButton* mBtnQuoteFG;
+    SelectFontWeightCombo* mCBQuoteWeight;
+    SelectColorButton* mBtnCommentFG;
+    SelectFontWeightCombo* mCBCommentWeight;
+    SelectColorButton* mBtnSymbolFG;
+    SelectColorButton* mBtnSymbolBG;
+    SelectFontWeightCombo* mCBSymbolWeight;
 
-    QPushButton             *mBtnDefaultLight;
-    QPushButton             *mBtnDefaultDark;
+    QPushButton* mBtnDefaultLight;
+    QPushButton* mBtnDefaultDark;
 
     static const QString mSampleDocument;
     static const QStringList mErrSymbolsList;

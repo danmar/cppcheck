@@ -540,7 +540,7 @@ void TestCppcheckLibraryData::markupValid()
     }
 }
 
-void TestCppcheckLibraryData::loadCfgFile(QString filename, CppcheckLibraryData &data, QString &result, bool removeFile)
+void TestCppcheckLibraryData::loadCfgFile(QString filename, CppcheckLibraryData& data, QString& result, bool removeFile)
 {
     QFile file(filename);
     QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
@@ -551,7 +551,7 @@ void TestCppcheckLibraryData::loadCfgFile(QString filename, CppcheckLibraryData 
     }
 }
 
-void TestCppcheckLibraryData::saveCfgFile(QString filename, CppcheckLibraryData &data)
+void TestCppcheckLibraryData::saveCfgFile(QString filename, CppcheckLibraryData& data)
 {
     QFile file(filename);
     QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));

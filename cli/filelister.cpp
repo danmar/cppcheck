@@ -71,12 +71,12 @@ static BOOL myFileExists(const std::string& path)
     return result;
 }
 
-std::string FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
+std::string FileLister::recursiveAddFiles(std::map<std::string, std::size_t>& files, const std::string& path, const std::set<std::string>& extra, const PathMatch& ignored)
 {
     return addFiles(files, path, extra, true, ignored);
 }
 
-std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
+std::string FileLister::addFiles(std::map<std::string, std::size_t>& files, const std::string& path, const std::set<std::string>& extra, bool recursive, const PathMatch& ignored)
 {
     const std::string cleanedPath = Path::toNativeSeparators(path);
 
@@ -156,12 +156,12 @@ std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, cons
     return "";
 }
 
-bool FileLister::isDirectory(const std::string &path)
+bool FileLister::isDirectory(const std::string& path)
 {
     return (myIsDirectory(path) != FALSE);
 }
 
-bool FileLister::fileExists(const std::string &path)
+bool FileLister::fileExists(const std::string& path)
 {
     return (myFileExists(path) != FALSE);
 }
@@ -188,9 +188,9 @@ bool FileLister::fileExists(const std::string &path)
 #endif
 
 
-static std::string addFiles2(std::map<std::string, std::size_t> &files,
-                             const std::string &path,
-                             const std::set<std::string> &extra,
+static std::string addFiles2(std::map<std::string, std::size_t>& files,
+                             const std::string& path,
+                             const std::set<std::string>& extra,
                              bool recursive,
                              const PathMatch& ignored
                              )
@@ -198,11 +198,11 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
     struct stat file_stat;
     if (stat(path.c_str(), &file_stat) != -1) {
         if ((file_stat.st_mode & S_IFMT) == S_IFDIR) {
-            DIR * dir = opendir(path.c_str());
+            DIR* dir = opendir(path.c_str());
             if (!dir)
                 return "";
 
-            dirent * dir_result;
+            dirent* dir_result;
             // make sure we reserve enough space for the readdir_r() buffer;
             // according to POSIX:
             //   The storage pointed to by entry shall be large enough for a
@@ -256,12 +256,12 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
     return "";
 }
 
-std::string FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
+std::string FileLister::recursiveAddFiles(std::map<std::string, std::size_t>& files, const std::string& path, const std::set<std::string>& extra, const PathMatch& ignored)
 {
     return addFiles(files, path, extra, true, ignored);
 }
 
-std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
+std::string FileLister::addFiles(std::map<std::string, std::size_t>& files, const std::string& path, const std::set<std::string>& extra, bool recursive, const PathMatch& ignored)
 {
     if (!path.empty()) {
         std::string corrected_path = path;
@@ -274,13 +274,13 @@ std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, cons
     return "";
 }
 
-bool FileLister::isDirectory(const std::string &path)
+bool FileLister::isDirectory(const std::string& path)
 {
     struct stat file_stat;
     return (stat(path.c_str(), &file_stat) != -1 && (file_stat.st_mode & S_IFMT) == S_IFDIR);
 }
 
-bool FileLister::fileExists(const std::string &path)
+bool FileLister::fileExists(const std::string& path)
 {
     struct stat file_stat;
     return (stat(path.c_str(), &file_stat) != -1 && (file_stat.st_mode & S_IFMT) == S_IFREG);

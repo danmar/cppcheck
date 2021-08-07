@@ -33,8 +33,8 @@ class Token;
 /** @brief Simple container to be thrown when internal error is detected. */
 struct InternalError {
     enum Type {AST, SYNTAX, UNKNOWN_MACRO, INTERNAL, LIMIT, INSTANTIATION};
-    InternalError(const Token *tok, const std::string &errorMsg, Type type = INTERNAL);
-    const Token *token;
+    InternalError(const Token* tok, const std::string& errorMsg, Type type = INTERNAL);
+    const Token* token;
     std::string errorMessage;
     Type type;
     std::string id;
@@ -113,7 +113,7 @@ public:
     };
 
     static std::string toString(SeverityType severity);
-    static SeverityType fromString(const std::string &severity);
+    static SeverityType fromString(const std::string& severity);
 };
 
 struct CWE {
@@ -121,7 +121,7 @@ struct CWE {
     unsigned short id;
 };
 
-typedef std::pair<const Token *, std::string> ErrorPathItem;
+typedef std::pair<const Token*, std::string> ErrorPathItem;
 typedef std::list<ErrorPathItem> ErrorPath;
 
 /// @}

@@ -222,7 +222,7 @@ private:
         TEST_CASE(globalData);
     }
 
-    void checkStructMemberUsage(const char code[], const std::list<Directive> *directives=nullptr) {
+    void checkStructMemberUsage(const char code[], const std::list<Directive>* directives=nullptr) {
         // Clear the error buffer..
         errout.str("");
 
@@ -4521,7 +4521,7 @@ private:
 
     void localvarOp() {
         const char op[] = "+-*/%&|^";
-        for (const char *p = op; *p; ++p) {
+        for (const char* p = op; *p; ++p) {
             std::string code("int main()\n"
                              "{\n"
                              "    int tmp = 10;\n"

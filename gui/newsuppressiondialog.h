@@ -12,10 +12,10 @@ class NewSuppressionDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit NewSuppressionDialog(QWidget *parent = nullptr);
-    NewSuppressionDialog(const NewSuppressionDialog &) = delete;
+    explicit NewSuppressionDialog(QWidget* parent = nullptr);
+    NewSuppressionDialog(const NewSuppressionDialog&) = delete;
     ~NewSuppressionDialog();
-    NewSuppressionDialog &operator=(const NewSuppressionDialog &) = delete;
+    NewSuppressionDialog& operator=(const NewSuppressionDialog&) = delete;
 
     /**
      * @brief Translate the user input in the GUI into a suppression
@@ -28,10 +28,10 @@ public:
      * Cppcheck suppression
      * @param suppression Cppcheck suppression
      */
-    void setSuppression(const Suppressions::Suppression &suppression);
+    void setSuppression(const Suppressions::Suppression& suppression);
 
 private:
-    Ui::NewSuppressionDialog *mUI;
+    Ui::NewSuppressionDialog* mUI;
 };
 
 #endif // NEWSUPPRESSIONDIALOG_H

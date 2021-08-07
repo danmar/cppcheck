@@ -6,12 +6,12 @@
 #include <vector>
 #include "tinyxml2.h"
 
-static void testfunction(const tinyxml2::XMLElement *node, const std::string &functionName);
+static void testfunction(const tinyxml2::XMLElement* node, const std::string& functionName);
 
-static std::vector<std::string> splitString(const char *str, char delim)
+static std::vector<std::string> splitString(const char* str, char delim)
 {
     std::vector<std::string> ret;
-    while (const char *p = std::strchr(str,delim)) {
+    while (const char* p = std::strchr(str,delim)) {
         ret.push_back(std::string(str, p-str));
         str = p + 1;
     }
@@ -28,14 +28,14 @@ static std::string replaceCharInString(std::string s, char from, char to)
     return s;
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     if (argc != 2 || !std::strstr(argv[1], ".cfg")) {
         std::cerr << "no cfg file\n";
         return 1;
     }
 
-    const char *cfgfile = argv[1];
+    const char* cfgfile = argv[1];
 
     tinyxml2::XMLDocument doc;
     if (tinyxml2::XML_SUCCESS != doc.LoadFile(cfgfile)) {
@@ -58,14 +58,14 @@ int main(int argc, char **argv)
     std::cout << "// => 'unmatched suppression' warnings are false negatives." << std::endl;
     std::cout << "//" << std::endl << std::endl;
 
-    const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
+    const tinyxml2::XMLElement* const rootnode = doc.FirstChildElement();
 
-    for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
+    for (const tinyxml2::XMLElement* node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         const std::string nodename = node->Name();
         if (nodename == "memory" || nodename == "resource") {
             //testalloc(node);
         } else if (nodename == "function") {
-            for (const std::string &name : splitString(node->Attribute("name"), ','))
+            for (const std::string& name : splitString(node->Attribute("name"), ','))
                 testfunction(node, name);
         }
     }
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
     return 0;
 }
 
-static std::string functionCall(const std::string &functionName, bool useretval, int argNr, int numberOfArgs, const char badArg[])
+static std::string functionCall(const std::string& functionName, bool useretval, int argNr, int numberOfArgs, const char badArg[])
 {
     std::ostringstream ostr;
     if (useretval)
@@ -91,7 +91,7 @@ static std::string functionCall(const std::string &functionName, bool useretval,
     return ostr.str();
 }
 
-static std::string testFunctionArg(const std::string &functionName, bool useretval, const char type[], int argNr, int numberOfArgs, const char code[], const char suppress[], const char badArg[])
+static std::string testFunctionArg(const std::string& functionName, bool useretval, const char type[], int argNr, int numberOfArgs, const char code[], const char suppress[], const char badArg[])
 {
     std::ostringstream ostr;
     ostr << "void test__" << replaceCharInString(functionName,':','_') << "__arg" << argNr << "__" << type << "() {" << std::endl;
@@ -103,13 +103,13 @@ static std::string testFunctionArg(const std::string &functionName, bool useretv
     return ostr.str();
 }
 
-static void testfunction(const tinyxml2::XMLElement *node, const std::string &functionName)
+static void testfunction(const tinyxml2::XMLElement* node, const std::string& functionName)
 {
     // How many args does this function take?
     int numberOfArgs = 0;
-    for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
+    for (const tinyxml2::XMLElement* child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
         if (std::strcmp(child->Name(), "arg") == 0) {
-            const char *nr = child->Attribute("nr");
+            const char* nr = child->Attribute("nr");
             if (nr && std::isdigit(*nr) && std::atoi(nr) > numberOfArgs)
                 numberOfArgs = std::atoi(nr);
         }
@@ -120,7 +120,7 @@ static void testfunction(const tinyxml2::XMLElement *node, const std::string &fu
     bool pure = false;
     //bool constant = false;
     bool leakignore = false;
-    for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
+    for (const tinyxml2::XMLElement* child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
         if (std::strcmp(child->Name(), "noreturn") == 0)
             noreturn = true;
         else if (std::strcmp(child->Name(), "use-retval") == 0)
@@ -167,10 +167,10 @@ static void testfunction(const tinyxml2::XMLElement *node, const std::string &fu
 
     // Generate tests for args
     for (int argNr = 1; argNr <= numberOfArgs; ++argNr) {
-        for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
+        for (const tinyxml2::XMLElement* child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
             if (std::strcmp(child->Name(), "arg") != 0)
                 continue;
-            const char *nrAttr = child->Attribute("nr");
+            const char* nrAttr = child->Attribute("nr");
             if (!nrAttr || std::atoi(nrAttr) != argNr)
                 continue;
 
@@ -178,7 +178,7 @@ static void testfunction(const tinyxml2::XMLElement *node, const std::string &fu
             bool notuninit = false;
             bool notnull = false;
 
-            for (const tinyxml2::XMLElement *argCheck = child->FirstChildElement(); argCheck; argCheck = argCheck->NextSiblingElement()) {
+            for (const tinyxml2::XMLElement* argCheck = child->FirstChildElement(); argCheck; argCheck = argCheck->NextSiblingElement()) {
                 if (std::strcmp(argCheck->Name(), "not-bool") == 0)
                     notbool = true;
                 else if (std::strcmp(argCheck->Name(), "not-null") == 0)
@@ -196,7 +196,7 @@ static void testfunction(const tinyxml2::XMLElement *node, const std::string &fu
             }
 
             if (notuninit) {
-                const char *code = notnull ? "int x[10];" : "int x;";
+                const char* code = notnull ? "int x[10];" : "int x;";
                 std::cout << testFunctionArg(functionName, useretval, "notuninit", argNr, numberOfArgs, code, "uninitvar", "x") << std::endl << std::endl;
             }
         }

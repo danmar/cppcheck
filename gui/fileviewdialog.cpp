@@ -23,9 +23,9 @@
 #include <QMessageBox>
 #include <QTextEdit>
 
-FileViewDialog::FileViewDialog(const QString &file,
-                               const QString &title,
-                               QWidget *parent)
+FileViewDialog::FileViewDialog(const QString& file,
+                               const QString& title,
+                               QWidget* parent)
     : QDialog(parent)
 {
     mUI.setupUi(this);
@@ -36,7 +36,7 @@ FileViewDialog::FileViewDialog(const QString &file,
     loadTextFile(file, mUI.mText);
 }
 
-void FileViewDialog::loadTextFile(const QString &filename, QTextEdit *edit)
+void FileViewDialog::loadTextFile(const QString& filename, QTextEdit* edit)
 {
     QFile file(filename);
     if (!file.exists()) {

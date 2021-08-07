@@ -20,13 +20,13 @@
 
 #include <QDebug>
 
-CheckStatistics::CheckStatistics(QObject *parent)
+CheckStatistics::CheckStatistics(QObject* parent)
     : QObject(parent)
 {
     clear();
 }
 
-static void addItem(QMap<QString,unsigned> &m, const QString &key)
+static void addItem(QMap<QString,unsigned>& m, const QString& key)
 {
     if (m.contains(key))
         m[key]++;
@@ -34,7 +34,7 @@ static void addItem(QMap<QString,unsigned> &m, const QString &key)
         m[key] = 0;
 }
 
-void CheckStatistics::addItem(const QString &tool, ShowTypes::ShowType type)
+void CheckStatistics::addItem(const QString& tool, ShowTypes::ShowType type)
 {
     const QString lower = tool.toLower();
     switch (type) {
@@ -73,7 +73,7 @@ void CheckStatistics::clear()
     mError.clear();
 }
 
-unsigned CheckStatistics::getCount(const QString &tool, ShowTypes::ShowType type) const
+unsigned CheckStatistics::getCount(const QString& tool, ShowTypes::ShowType type) const
 {
     const QString lower = tool.toLower();
     switch (type) {

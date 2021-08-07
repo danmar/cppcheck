@@ -233,7 +233,7 @@ public:
         markups.clear();
     }
 
-    void swap(CppcheckLibraryData &other) {
+    void swap(CppcheckLibraryData& other) {
         containers.swap(other.containers);
         defines.swap(other.defines);
         undefines.swap(other.undefines);
@@ -247,7 +247,7 @@ public:
         markups.swap(other.markups);
     }
 
-    QString open(QIODevice &file);
+    QString open(QIODevice& file);
     QString toString() const;
 
     QList<struct Container> containers;

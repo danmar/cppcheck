@@ -21,7 +21,7 @@
 #include <QDialogButtonBox>
 #include <QLabel>
 
-AboutDialog::AboutDialog(const QString &version, const QString &extraVersion, QWidget *parent)
+AboutDialog::AboutDialog(const QString& version, const QString& extraVersion, QWidget* parent)
     : QDialog(parent)
 {
     mUI.setupUi(this);

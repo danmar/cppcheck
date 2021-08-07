@@ -18,7 +18,7 @@ const QString DACA2_PACKAGES(QDir::homePath() + "/daca2-packages");
 
 const int MAX_ERRORS = 100;
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     mVersionRe("^(master|main|your|head|[12].[0-9][0-9]?) (.*)"),
@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
     mFSmodel.setReadOnly(true);
     mFSmodel.setFilter(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
     ui->directoryTree->setModel(&mFSmodel);
-    QHeaderView * header =  ui->directoryTree->header();
+    QHeaderView* header =  ui->directoryTree->header();
     for (int i = 1; i < header->length(); ++i)  // hide all except [0]
         header->hideSection(i);
     ui->directoryTree->setRootIndex(mFSmodel.index(WORK_FOLDER));
@@ -70,7 +70,7 @@ void MainWindow::loadFromClipboard()
     load(textStream);
 }
 
-void MainWindow::load(QTextStream &textStream)
+void MainWindow::load(QTextStream& textStream)
 {
     QString url;
     QString errorMessage;
@@ -121,7 +121,7 @@ void MainWindow::filter(QString filter)
 {
     QStringList allErrors;
 
-    for (const QString &errorItem : mAllErrors) {
+    for (const QString& errorItem : mAllErrors) {
         if (filter.isEmpty()) {
             allErrors << errorItem;
             continue;
@@ -151,7 +151,7 @@ void MainWindow::filter(QString filter)
     }
 }
 
-bool MainWindow::runProcess(const QString &programName, const QStringList &arguments)
+bool MainWindow::runProcess(const QString& programName, const QStringList& arguments)
 {
     QProgressDialog dialog("Running external process: " + programName, "Kill", 0 /*min*/, 1 /*max*/, this);
     dialog.setWindowModality(Qt::WindowModal);
@@ -195,12 +195,12 @@ bool MainWindow::runProcess(const QString &programName, const QStringList &argum
     return success;
 }
 
-bool MainWindow::wget(const QString &url)
+bool MainWindow::wget(const QString& url)
 {
     return runProcess("wget", QStringList{url});
 }
 
-bool MainWindow::unpackArchive(const QString &archiveName)
+bool MainWindow::unpackArchive(const QString& archiveName)
 {
     // Unpack archive
     QStringList args;
@@ -225,7 +225,7 @@ bool MainWindow::unpackArchive(const QString &archiveName)
     return runProcess("tar", args);
 }
 
-void MainWindow::showResult(QListWidgetItem *item)
+void MainWindow::showResult(QListWidgetItem* item)
 {
     ui->statusBar->clearMessage();
     if (!item->text().startsWith("ftp://"))
@@ -262,7 +262,7 @@ void MainWindow::showResult(QListWidgetItem *item)
     showSrcFile(fileName, url, lineNumber);
 }
 
-void MainWindow::showSrcFile(const QString &fileName, const QString &url, const int lineNumber)
+void MainWindow::showSrcFile(const QString& fileName, const QString& url, const int lineNumber)
 {
     // Open file
     ui->code->setFocus();

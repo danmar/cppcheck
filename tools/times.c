@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-static void revncpy(char *dst, const char *src, size_t len)
+static void revncpy(char* dst, const char* src, size_t len)
 {
     int n = 0;
     while (n++<len && *src && *src!=' ' && *src!='\r' && *src!='\n')
@@ -11,7 +11,7 @@ static void revncpy(char *dst, const char *src, size_t len)
 
 int main()
 {
-    FILE *f = fopen("times.log", "rt");
+    FILE* f = fopen("times.log", "rt");
     if (!f)
         return 1;
 

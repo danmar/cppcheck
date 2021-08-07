@@ -47,7 +47,7 @@ void CheckAssert::assertWithSideEffects()
         if (!Token::simpleMatch(tok, "assert ("))
             continue;
 
-        const Token *endTok = tok->next()->link();
+        const Token* endTok = tok->next()->link();
         for (const Token* tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
             if (Token::simpleMatch(tmp, "sizeof ("))
                 tmp = tmp->linkAt(1);
@@ -65,7 +65,7 @@ void CheckAssert::assertWithSideEffects()
             const Scope* scope = f->functionScope;
             if (!scope) continue;
 
-            for (const Token *tok2 = scope->bodyStart; tok2 != scope->bodyEnd; tok2 = tok2->next()) {
+            for (const Token* tok2 = scope->bodyStart; tok2 != scope->bodyEnd; tok2 = tok2->next()) {
                 if (!tok2->isAssignmentOp() && tok2->tokType() != Token::eIncDecOp)
                     continue;
 
@@ -76,7 +76,7 @@ void CheckAssert::assertWithSideEffects()
                     continue; // Pointers need to be dereferenced, otherwise there is no error
 
                 bool noReturnInScope = true;
-                for (const Token *rt = scope->bodyStart; rt != scope->bodyEnd; rt = rt->next()) {
+                for (const Token* rt = scope->bodyStart; rt != scope->bodyEnd; rt = rt->next()) {
                     if (rt->str() != "return") continue; // find all return statements
                     if (inSameScope(rt, tok2)) {
                         noReturnInScope = false;
@@ -95,7 +95,7 @@ void CheckAssert::assertWithSideEffects()
 //---------------------------------------------------------------------------
 
 
-void CheckAssert::sideEffectInAssertError(const Token *tok, const std::string& functionName)
+void CheckAssert::sideEffectInAssertError(const Token* tok, const std::string& functionName)
 {
     reportError(tok, Severity::warning,
                 "assertWithSideEffect",
@@ -107,7 +107,7 @@ void CheckAssert::sideEffectInAssertError(const Token *tok, const std::string& f
                 "builds, this is a bug.", CWE398, Certainty::normal);
 }
 
-void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& varname)
+void CheckAssert::assignmentInAssertError(const Token* tok, const std::string& varname)
 {
     reportError(tok, Severity::warning,
                 "assignmentInAssert",
@@ -120,7 +120,7 @@ void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& v
 }
 
 // checks if side effects happen on the variable prior to tmp
-void CheckAssert::checkVariableAssignment(const Token* assignTok, const Scope *assertionScope)
+void CheckAssert::checkVariableAssignment(const Token* assignTok, const Scope* assertionScope)
 {
     if (!assignTok->isAssignmentOp() && assignTok->tokType() != Token::eIncDecOp)
         return;
@@ -131,7 +131,7 @@ void CheckAssert::checkVariableAssignment(const Token* assignTok, const Scope *a
 
     // Variable declared in inner scope in assert => don't warn
     if (assertionScope != var->scope()) {
-        const Scope *s = var->scope();
+        const Scope* s = var->scope();
         while (s && s != assertionScope)
             s = s->nestedIn;
         if (s == assertionScope)

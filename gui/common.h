@@ -111,7 +111,7 @@
  * @param type Type of path to obtain
  * @return Best path for provided type
  */
-QString getPath(const QString &type);
+QString getPath(const QString& type);
 
 /**
  * @brief Stores last used path of specified type
@@ -119,7 +119,7 @@ QString getPath(const QString &type);
  * @param type Type of the path to store
  * @param value Path to store
  */
-void setPath(const QString &type, const QString &value);
+void setPath(const QString& type, const QString& value);
 
 /**
  * @brief Creates a string suitable for passing as the filter argument to

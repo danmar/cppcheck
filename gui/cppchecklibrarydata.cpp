@@ -29,12 +29,12 @@ const unsigned int CppcheckLibraryData::Function::Arg::VARIADIC = ~1U;
 CppcheckLibraryData::CppcheckLibraryData()
 {}
 
-static std::string unhandledElement(const QXmlStreamReader &xmlReader)
+static std::string unhandledElement(const QXmlStreamReader& xmlReader)
 {
     throw std::runtime_error(QObject::tr("line %1: Unhandled element %2").arg(xmlReader.lineNumber()).arg(xmlReader.name().toString()).toStdString());
 }
 
-static std::string mandatoryAttibuteMissing(const QXmlStreamReader &xmlReader, QString attributeName)
+static std::string mandatoryAttibuteMissing(const QXmlStreamReader& xmlReader, QString attributeName)
 {
     throw std::runtime_error(QObject::tr("line %1: Mandatory attribute '%2' missing in '%3'")
                              .arg(xmlReader.lineNumber())
@@ -42,7 +42,7 @@ static std::string mandatoryAttibuteMissing(const QXmlStreamReader &xmlReader, Q
                              .arg(xmlReader.name().toString()).toStdString());
 }
 
-static CppcheckLibraryData::Container loadContainer(QXmlStreamReader &xmlReader)
+static CppcheckLibraryData::Container loadContainer(QXmlStreamReader& xmlReader)
 {
     CppcheckLibraryData::Container container;
     container.id            = xmlReader.attributes().value("id").toString();
@@ -92,7 +92,7 @@ static CppcheckLibraryData::Container loadContainer(QXmlStreamReader &xmlReader)
     return container;
 }
 
-static CppcheckLibraryData::Define loadDefine(const QXmlStreamReader &xmlReader)
+static CppcheckLibraryData::Define loadDefine(const QXmlStreamReader& xmlReader)
 {
     CppcheckLibraryData::Define define;
     define.name = xmlReader.attributes().value("name").toString();
@@ -100,17 +100,17 @@ static CppcheckLibraryData::Define loadDefine(const QXmlStreamReader &xmlReader)
     return define;
 }
 
-static QString loadUndefine(const QXmlStreamReader &xmlReader)
+static QString loadUndefine(const QXmlStreamReader& xmlReader)
 {
     return xmlReader.attributes().value("name").toString();
 }
 
-static QString loadSmartPointer(const QXmlStreamReader &xmlReader)
+static QString loadSmartPointer(const QXmlStreamReader& xmlReader)
 {
     return xmlReader.attributes().value("class-name").toString();
 }
 
-static CppcheckLibraryData::TypeChecks loadTypeChecks(QXmlStreamReader &xmlReader)
+static CppcheckLibraryData::TypeChecks loadTypeChecks(QXmlStreamReader& xmlReader)
 {
     CppcheckLibraryData::TypeChecks typeChecks;
     QXmlStreamReader::TokenType type;
@@ -127,7 +127,7 @@ static CppcheckLibraryData::TypeChecks loadTypeChecks(QXmlStreamReader &xmlReade
     return typeChecks;
 }
 
-static CppcheckLibraryData::Function::Arg loadFunctionArg(QXmlStreamReader &xmlReader)
+static CppcheckLibraryData::Function::Arg loadFunctionArg(QXmlStreamReader& xmlReader)
 {
     CppcheckLibraryData::Function::Arg arg;
     QString argnr = xmlReader.attributes().value("nr").toString();
@@ -173,7 +173,7 @@ static CppcheckLibraryData::Function::Arg loadFunctionArg(QXmlStreamReader &xmlR
     return arg;
 }
 
-static CppcheckLibraryData::Function loadFunction(QXmlStreamReader &xmlReader, const QString &comments)
+static CppcheckLibraryData::Function loadFunction(QXmlStreamReader& xmlReader, const QString& comments)
 {
     CppcheckLibraryData::Function function;
     function.comments = comments;
@@ -217,7 +217,7 @@ static CppcheckLibraryData::Function loadFunction(QXmlStreamReader &xmlReader, c
     return function;
 }
 
-static CppcheckLibraryData::MemoryResource loadMemoryResource(QXmlStreamReader &xmlReader)
+static CppcheckLibraryData::MemoryResource loadMemoryResource(QXmlStreamReader& xmlReader)
 {
     CppcheckLibraryData::MemoryResource memoryresource;
     memoryresource.type = xmlReader.name().toString();
@@ -257,7 +257,7 @@ static CppcheckLibraryData::MemoryResource loadMemoryResource(QXmlStreamReader &
     return memoryresource;
 }
 
-static CppcheckLibraryData::PodType loadPodType(const QXmlStreamReader &xmlReader)
+static CppcheckLibraryData::PodType loadPodType(const QXmlStreamReader& xmlReader)
 {
     CppcheckLibraryData::PodType podtype;
     podtype.name = xmlReader.attributes().value("name").toString();
@@ -270,7 +270,7 @@ static CppcheckLibraryData::PodType loadPodType(const QXmlStreamReader &xmlReade
     return podtype;
 }
 
-static CppcheckLibraryData::PlatformType loadPlatformType(QXmlStreamReader &xmlReader)
+static CppcheckLibraryData::PlatformType loadPlatformType(QXmlStreamReader& xmlReader)
 {
     CppcheckLibraryData::PlatformType platformType;
     platformType.name = xmlReader.attributes().value("name").toString();
@@ -293,7 +293,7 @@ static CppcheckLibraryData::PlatformType loadPlatformType(QXmlStreamReader &xmlR
     return platformType;
 }
 
-static CppcheckLibraryData::Reflection loadReflection(QXmlStreamReader &xmlReader)
+static CppcheckLibraryData::Reflection loadReflection(QXmlStreamReader& xmlReader)
 {
     CppcheckLibraryData::Reflection reflection;
 
@@ -320,7 +320,7 @@ static CppcheckLibraryData::Reflection loadReflection(QXmlStreamReader &xmlReade
     return reflection;
 }
 
-static CppcheckLibraryData::Markup loadMarkup(QXmlStreamReader &xmlReader)
+static CppcheckLibraryData::Markup loadMarkup(QXmlStreamReader& xmlReader)
 {
     CppcheckLibraryData::Markup markup;
 
@@ -412,7 +412,7 @@ static CppcheckLibraryData::Markup loadMarkup(QXmlStreamReader &xmlReader)
     return markup;
 }
 
-QString CppcheckLibraryData::open(QIODevice &file)
+QString CppcheckLibraryData::open(QIODevice& file)
 {
     clear();
     QString comments;
@@ -454,7 +454,7 @@ QString CppcheckLibraryData::open(QIODevice &file)
                     markups.append(loadMarkup(xmlReader));
                 else
                     unhandledElement(xmlReader);
-            } catch (std::runtime_error &e) {
+            } catch (std::runtime_error& e) {
                 return e.what();
             }
             comments.clear();
@@ -470,7 +470,7 @@ QString CppcheckLibraryData::open(QIODevice &file)
     }
 }
 
-static void writeContainerFunctions(QXmlStreamWriter &xmlWriter, const QString &name, int extra, const QList<struct CppcheckLibraryData::Container::Function> &functions)
+static void writeContainerFunctions(QXmlStreamWriter& xmlWriter, const QString& name, int extra, const QList<struct CppcheckLibraryData::Container::Function>& functions)
 {
     if (functions.isEmpty() && extra < 0)
         return;
@@ -481,7 +481,7 @@ static void writeContainerFunctions(QXmlStreamWriter &xmlWriter, const QString &
         else if (name == "size")
             xmlWriter.writeAttribute("templateParameter", QString::number(extra));
     }
-    foreach (const CppcheckLibraryData::Container::Function &function, functions) {
+    foreach (const CppcheckLibraryData::Container::Function& function, functions) {
         xmlWriter.writeStartElement("function");
         xmlWriter.writeAttribute("name", function.name);
         if (!function.action.isEmpty())
@@ -493,7 +493,7 @@ static void writeContainerFunctions(QXmlStreamWriter &xmlWriter, const QString &
     xmlWriter.writeEndElement();
 }
 
-static void writeContainer(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::Container &container)
+static void writeContainer(QXmlStreamWriter& xmlWriter, const CppcheckLibraryData::Container& container)
 {
     xmlWriter.writeStartElement("container");
     xmlWriter.writeAttribute("id", container.id);
@@ -522,14 +522,14 @@ static void writeContainer(QXmlStreamWriter &xmlWriter, const CppcheckLibraryDat
     xmlWriter.writeEndElement();
 }
 
-static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::Function &function)
+static void writeFunction(QXmlStreamWriter& xmlWriter, const CppcheckLibraryData::Function& function)
 {
     QString comments = function.comments;
     while (comments.startsWith("\n"))
         comments = comments.mid(1);
     while (comments.endsWith("\n"))
         comments.chop(1);
-    foreach (const QString &comment, comments.split('\n')) {
+    foreach (const QString& comment, comments.split('\n')) {
         if (comment.length() >= 1)
             xmlWriter.writeComment(comment);
     }
@@ -558,7 +558,7 @@ static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData
     if (function.leakignore)
         xmlWriter.writeEmptyElement("leak-ignore");
     // Argument info..
-    foreach (const CppcheckLibraryData::Function::Arg &arg, function.args) {
+    foreach (const CppcheckLibraryData::Function::Arg& arg, function.args) {
         if (arg.formatstr) {
             xmlWriter.writeStartElement("formatstr");
             if (!function.formatstr.scan.isNull())
@@ -591,7 +591,7 @@ static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData
         if (!arg.valid.isEmpty())
             xmlWriter.writeTextElement("valid",arg.valid);
 
-        foreach (const CppcheckLibraryData::Function::Arg::MinSize &minsize, arg.minsizes) {
+        foreach (const CppcheckLibraryData::Function::Arg::MinSize& minsize, arg.minsizes) {
             xmlWriter.writeStartElement("minsize");
             xmlWriter.writeAttribute("type", minsize.type);
             xmlWriter.writeAttribute("arg", minsize.arg);
@@ -636,10 +636,10 @@ static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData
     xmlWriter.writeEndElement();
 }
 
-static void writeMemoryResource(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::MemoryResource &mr)
+static void writeMemoryResource(QXmlStreamWriter& xmlWriter, const CppcheckLibraryData::MemoryResource& mr)
 {
     xmlWriter.writeStartElement(mr.type);
-    foreach (const CppcheckLibraryData::MemoryResource::Alloc &alloc, mr.alloc) {
+    foreach (const CppcheckLibraryData::MemoryResource::Alloc& alloc, mr.alloc) {
         if (alloc.isRealloc) {
             xmlWriter.writeStartElement("realloc");
         } else {
@@ -659,7 +659,7 @@ static void writeMemoryResource(QXmlStreamWriter &xmlWriter, const CppcheckLibra
         xmlWriter.writeEndElement();
     }
 
-    foreach (const CppcheckLibraryData::MemoryResource::Dealloc &dealloc, mr.dealloc) {
+    foreach (const CppcheckLibraryData::MemoryResource::Dealloc& dealloc, mr.dealloc) {
         xmlWriter.writeStartElement("dealloc");
         if (dealloc.arg != -1) {
             xmlWriter.writeAttribute("arg", QString("%1").arg(dealloc.arg));
@@ -668,13 +668,13 @@ static void writeMemoryResource(QXmlStreamWriter &xmlWriter, const CppcheckLibra
         xmlWriter.writeEndElement();
     }
 
-    foreach (const QString &use, mr.use) {
+    foreach (const QString& use, mr.use) {
         xmlWriter.writeTextElement("use", use);
     }
     xmlWriter.writeEndElement();
 }
 
-static void writeTypeChecks(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::TypeChecks &typeChecks)
+static void writeTypeChecks(QXmlStreamWriter& xmlWriter, const CppcheckLibraryData::TypeChecks& typeChecks)
 {
     QPair<QString, QString> check;
     xmlWriter.writeStartElement("type-checks");
@@ -692,7 +692,7 @@ static void writeTypeChecks(QXmlStreamWriter &xmlWriter, const CppcheckLibraryDa
     xmlWriter.writeEndElement();
 }
 
-static void writePlatformType(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::PlatformType &pt)
+static void writePlatformType(QXmlStreamWriter& xmlWriter, const CppcheckLibraryData::PlatformType& pt)
 {
     xmlWriter.writeStartElement("platformtype");
     xmlWriter.writeAttribute("name", pt.name);
@@ -711,10 +711,10 @@ static void writePlatformType(QXmlStreamWriter &xmlWriter, const CppcheckLibrary
     xmlWriter.writeEndElement();
 }
 
-static void writeReflection(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::Reflection &refl)
+static void writeReflection(QXmlStreamWriter& xmlWriter, const CppcheckLibraryData::Reflection& refl)
 {
     xmlWriter.writeStartElement("reflection");
-    foreach (const CppcheckLibraryData::Reflection::Call &call, refl.calls) {
+    foreach (const CppcheckLibraryData::Reflection::Call& call, refl.calls) {
         xmlWriter.writeStartElement("call");
         xmlWriter.writeAttribute("arg", QString("%1").arg(call.arg));
         xmlWriter.writeCharacters(call.name);
@@ -723,7 +723,7 @@ static void writeReflection(QXmlStreamWriter &xmlWriter, const CppcheckLibraryDa
     xmlWriter.writeEndElement();
 }
 
-static void writeMarkup(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::Markup &mup)
+static void writeMarkup(QXmlStreamWriter& xmlWriter, const CppcheckLibraryData::Markup& mup)
 {
     xmlWriter.writeStartElement("markup");
     xmlWriter.writeAttribute("ext", mup.ext);
@@ -731,7 +731,7 @@ static void writeMarkup(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::
     xmlWriter.writeAttribute("reporterrors", QVariant(mup.reportErrors).toString());
     if (!mup.keywords.isEmpty()) {
         xmlWriter.writeStartElement("keywords");
-        foreach (const QString &keyword, mup.keywords) {
+        foreach (const QString& keyword, mup.keywords) {
             xmlWriter.writeStartElement("keyword");
             xmlWriter.writeAttribute("name", keyword);
             xmlWriter.writeEndElement();
@@ -740,7 +740,7 @@ static void writeMarkup(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::
     }
     if (!mup.importer.isEmpty()) {
         xmlWriter.writeStartElement("imported");
-        foreach (const QString &import, mup.importer) {
+        foreach (const QString& import, mup.importer) {
             xmlWriter.writeStartElement("importer");
             xmlWriter.writeCharacters(import);
             xmlWriter.writeEndElement();
@@ -752,12 +752,12 @@ static void writeMarkup(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::
         foreach (const CppcheckLibraryData::Markup::Exporter exporter, mup.exporter) {
             xmlWriter.writeStartElement("exporter");
             xmlWriter.writeAttribute("prefix", exporter.prefix);
-            foreach (const QString &prefix, exporter.prefixList) {
+            foreach (const QString& prefix, exporter.prefixList) {
                 xmlWriter.writeStartElement("prefix");
                 xmlWriter.writeCharacters(prefix);
                 xmlWriter.writeEndElement();
             }
-            foreach (const QString &suffix, exporter.suffixList) {
+            foreach (const QString& suffix, exporter.suffixList) {
                 xmlWriter.writeStartElement("suffix");
                 xmlWriter.writeCharacters(suffix);
                 xmlWriter.writeEndElement();
@@ -769,7 +769,7 @@ static void writeMarkup(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::
     if (!mup.codeBlocks.isEmpty()) {
         foreach (const CppcheckLibraryData::Markup::CodeBlocks codeblock, mup.codeBlocks) {
             xmlWriter.writeStartElement("codeblocks");
-            foreach (const QString &block, codeblock.blocks) {
+            foreach (const QString& block, codeblock.blocks) {
                 xmlWriter.writeStartElement("block");
                 xmlWriter.writeAttribute("name", block);
                 xmlWriter.writeEndElement();
@@ -795,32 +795,32 @@ QString CppcheckLibraryData::toString() const
     xmlWriter.writeStartElement("def");
     xmlWriter.writeAttribute("format","2");
 
-    foreach (const Define &define, defines) {
+    foreach (const Define& define, defines) {
         xmlWriter.writeStartElement("define");
         xmlWriter.writeAttribute("name", define.name);
         xmlWriter.writeAttribute("value", define.value);
         xmlWriter.writeEndElement();
     }
 
-    foreach (const QString &undef, undefines) {
+    foreach (const QString& undef, undefines) {
         xmlWriter.writeStartElement("undefine");
         xmlWriter.writeAttribute("name", undef);
         xmlWriter.writeEndElement();
     }
 
-    foreach (const Function &function, functions) {
+    foreach (const Function& function, functions) {
         writeFunction(xmlWriter, function);
     }
 
-    foreach (const MemoryResource &mr, memoryresource) {
+    foreach (const MemoryResource& mr, memoryresource) {
         writeMemoryResource(xmlWriter, mr);
     }
 
-    foreach (const Container &container, containers) {
+    foreach (const Container& container, containers) {
         writeContainer(xmlWriter, container);
     }
 
-    foreach (const PodType &podtype, podtypes) {
+    foreach (const PodType& podtype, podtypes) {
         xmlWriter.writeStartElement("podtype");
         xmlWriter.writeAttribute("name", podtype.name);
         if (!podtype.stdtype.isEmpty())
@@ -836,21 +836,21 @@ QString CppcheckLibraryData::toString() const
         writeTypeChecks(xmlWriter, check);
     }
 
-    foreach (const QString &smartPtr, smartPointers) {
+    foreach (const QString& smartPtr, smartPointers) {
         xmlWriter.writeStartElement("smart-pointer");
         xmlWriter.writeAttribute("class-name", smartPtr);
         xmlWriter.writeEndElement();
     }
 
-    foreach (const PlatformType &pt, platformTypes) {
+    foreach (const PlatformType& pt, platformTypes) {
         writePlatformType(xmlWriter, pt);
     }
 
-    foreach (const Reflection &refl, reflections) {
+    foreach (const Reflection& refl, reflections) {
         writeReflection(xmlWriter, refl);
     }
 
-    foreach (const Markup &mup, markups) {
+    foreach (const Markup& mup, markups) {
         writeMarkup(xmlWriter, mup);
     }
 

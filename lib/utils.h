@@ -41,17 +41,17 @@ struct SelectMapValues {
     }
 };
 
-inline bool endsWith(const std::string &str, char c)
+inline bool endsWith(const std::string& str, char c)
 {
     return str[str.size()-1U] == c;
 }
 
-inline bool endsWith(const std::string &str, const char end[], std::size_t endlen)
+inline bool endsWith(const std::string& str, const char end[], std::size_t endlen)
 {
     return (str.size() >= endlen) && (str.compare(str.size()-endlen, endlen, end)==0);
 }
 
-inline static bool isPrefixStringCharLiteral(const std::string &str, char q, const std::string& p)
+inline static bool isPrefixStringCharLiteral(const std::string& str, char q, const std::string& p)
 {
     if (!endsWith(str, q))
         return false;
@@ -60,47 +60,47 @@ inline static bool isPrefixStringCharLiteral(const std::string &str, char q, con
     return false;
 }
 
-inline static bool isStringCharLiteral(const std::string &str, char q)
+inline static bool isStringCharLiteral(const std::string& str, char q)
 {
     static const std::vector<std::string> suffixes{"", "u8", "u", "U", "L"};
-    for (const std::string & p: suffixes) {
+    for (const std::string& p: suffixes) {
         if (isPrefixStringCharLiteral(str, q, p))
             return true;
     }
     return false;
 }
 
-inline static bool isStringLiteral(const std::string &str)
+inline static bool isStringLiteral(const std::string& str)
 {
     return isStringCharLiteral(str, '"');
 }
 
-inline static bool isCharLiteral(const std::string &str)
+inline static bool isCharLiteral(const std::string& str)
 {
     return isStringCharLiteral(str, '\'');
 }
 
-inline static std::string getStringCharLiteral(const std::string &str, char q)
+inline static std::string getStringCharLiteral(const std::string& str, char q)
 {
     const std::size_t quotePos = str.find(q);
     return str.substr(quotePos + 1U, str.size() - quotePos - 2U);
 }
 
-inline static std::string getStringLiteral(const std::string &str)
+inline static std::string getStringLiteral(const std::string& str)
 {
     if (isStringLiteral(str))
         return getStringCharLiteral(str, '"');
     return "";
 }
 
-inline static std::string getCharLiteral(const std::string &str)
+inline static std::string getCharLiteral(const std::string& str)
 {
     if (isCharLiteral(str))
         return getStringCharLiteral(str, '\'');
     return "";
 }
 
-inline static const char *getOrdinalText(int i)
+inline static const char* getOrdinalText(int i)
 {
     if (i == 1)
         return "st";

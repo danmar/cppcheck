@@ -23,7 +23,7 @@
 #include <cstdlib>
 #include <iostream>
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     // MS Visual C++ memory leak debug tracing
 #if defined(_MSC_VER) && defined(_DEBUG)

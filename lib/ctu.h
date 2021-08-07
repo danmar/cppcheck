@@ -44,8 +44,8 @@ namespace CTU {
 
         struct Location {
             Location() = default;
-            Location(const Tokenizer *tokenizer, const Token *tok);
-            Location(const std::string &fileName, nonneg int lineNumber, nonneg int column) : fileName(fileName), lineNumber(lineNumber), column(column) {}
+            Location(const Tokenizer* tokenizer, const Token* tok);
+            Location(const std::string& fileName, nonneg int lineNumber, nonneg int column) : fileName(fileName), lineNumber(lineNumber), column(column) {}
             std::string fileName;
             nonneg int lineNumber;
             nonneg int column;
@@ -53,7 +53,7 @@ namespace CTU {
 
         struct UnsafeUsage {
             UnsafeUsage() = default;
-            UnsafeUsage(const std::string &myId, nonneg int myArgNr, const std::string &myArgumentName, const Location &location, MathLib::bigint value) : myId(myId), myArgNr(myArgNr), myArgumentName(myArgumentName), location(location), value(value) {}
+            UnsafeUsage(const std::string& myId, nonneg int myArgNr, const std::string& myArgumentName, const Location& location, MathLib::bigint value) : myId(myId), myArgNr(myArgNr), myArgumentName(myArgumentName), location(location), value(value) {}
             std::string myId;
             nonneg int myArgNr;
             std::string myArgumentName;
@@ -65,10 +65,10 @@ namespace CTU {
         class CallBase {
         public:
             CallBase() = default;
-            CallBase(const std::string &callId, int callArgNr, const std::string &callFunctionName, const Location &loc)
+            CallBase(const std::string& callId, int callArgNr, const std::string& callFunctionName, const Location& loc)
                 : callId(callId), callArgNr(callArgNr), callFunctionName(callFunctionName), location(loc)
             {}
-            CallBase(const Tokenizer *tokenizer, const Token *callToken);
+            CallBase(const Tokenizer* tokenizer, const Token* callToken);
             virtual ~CallBase() {}
             std::string callId;
             int callArgNr;
@@ -76,7 +76,7 @@ namespace CTU {
             Location location;
         protected:
             std::string toBaseXmlString() const;
-            bool loadBaseFromXml(const tinyxml2::XMLElement *xmlElement);
+            bool loadBaseFromXml(const tinyxml2::XMLElement* xmlElement);
         };
 
         class FunctionCall : public CallBase {
@@ -88,22 +88,22 @@ namespace CTU {
             bool warning;
 
             std::string toXmlString() const;
-            bool loadFromXml(const tinyxml2::XMLElement *xmlElement);
+            bool loadFromXml(const tinyxml2::XMLElement* xmlElement);
         };
 
         class NestedCall : public CallBase {
         public:
             NestedCall() = default;
 
-            NestedCall(const std::string &myId, nonneg int myArgNr, const std::string &callId, nonneg int callArgnr, const std::string &callFunctionName, const Location &location)
+            NestedCall(const std::string& myId, nonneg int myArgNr, const std::string& callId, nonneg int callArgnr, const std::string& callFunctionName, const Location& location)
                 : CallBase(callId, callArgnr, callFunctionName, location),
                 myId(myId),
                 myArgNr(myArgNr) {}
 
-            NestedCall(const Tokenizer *tokenizer, const Function *myFunction, const Token *callToken);
+            NestedCall(const Tokenizer* tokenizer, const Function* myFunction, const Token* callToken);
 
             std::string toXmlString() const;
-            bool loadFromXml(const tinyxml2::XMLElement *xmlElement);
+            bool loadFromXml(const tinyxml2::XMLElement* xmlElement);
 
             std::string myId;
             nonneg int myArgNr;
@@ -112,29 +112,29 @@ namespace CTU {
         std::list<FunctionCall> functionCalls;
         std::list<NestedCall> nestedCalls;
 
-        void loadFromXml(const tinyxml2::XMLElement *xmlElement);
-        std::map<std::string, std::list<const CallBase *>> getCallsMap() const;
+        void loadFromXml(const tinyxml2::XMLElement* xmlElement);
+        std::map<std::string, std::list<const CallBase*>> getCallsMap() const;
 
         static std::list<ErrorMessage::FileLocation> getErrorPath(InvalidValueType invalidValue,
-                                                                  const UnsafeUsage &unsafeUsage,
-                                                                  const std::map<std::string, std::list<const CallBase *>> &callsMap,
+                                                                  const UnsafeUsage& unsafeUsage,
+                                                                  const std::map<std::string, std::list<const CallBase*>>& callsMap,
                                                                   const char info[],
-                                                                  const FunctionCall ** const functionCallPtr,
+                                                                  const FunctionCall** const functionCallPtr,
                                                                   bool warning);
     };
 
     extern int maxCtuDepth;
 
-    CPPCHECKLIB std::string toString(const std::list<FileInfo::UnsafeUsage> &unsafeUsage);
+    CPPCHECKLIB std::string toString(const std::list<FileInfo::UnsafeUsage>& unsafeUsage);
 
-    CPPCHECKLIB std::string getFunctionId(const Tokenizer *tokenizer, const Function *function);
+    CPPCHECKLIB std::string getFunctionId(const Tokenizer* tokenizer, const Function* function);
 
     /** @brief Parse current TU and extract file info */
-    CPPCHECKLIB FileInfo *getFileInfo(const Tokenizer *tokenizer);
+    CPPCHECKLIB FileInfo* getFileInfo(const Tokenizer* tokenizer);
 
-    CPPCHECKLIB std::list<FileInfo::UnsafeUsage> getUnsafeUsage(const Tokenizer *tokenizer, const Settings *settings, const Check *check, bool (*isUnsafeUsage)(const Check *check, const Token *argtok, MathLib::bigint *value));
+    CPPCHECKLIB std::list<FileInfo::UnsafeUsage> getUnsafeUsage(const Tokenizer* tokenizer, const Settings* settings, const Check* check, bool (* isUnsafeUsage)(const Check* check, const Token* argtok, MathLib::bigint* value));
 
-    CPPCHECKLIB std::list<FileInfo::UnsafeUsage> loadUnsafeUsageListFromXml(const tinyxml2::XMLElement *xmlElement);
+    CPPCHECKLIB std::list<FileInfo::UnsafeUsage> loadUnsafeUsageListFromXml(const tinyxml2::XMLElement* xmlElement);
 }
 
 /// @}

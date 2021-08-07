@@ -36,7 +36,7 @@
 
 namespace cppcheck {
     struct stricmp {
-        bool operator()(const std::string &lhs, const std::string &rhs) const {
+        bool operator()(const std::string& lhs, const std::string& rhs) const {
             return caseInsensitiveStringCompare(lhs,rhs) < 0;
         }
     };
@@ -78,7 +78,7 @@ public:
 
         void parseCommand(std::string command);
         void setDefines(std::string defs);
-        void setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
+        void setIncludePaths(const std::string& basepath, const std::list<std::string>& in, std::map<std::string, std::string, cppcheck::stricmp>& variables);
     };
     std::list<FileSettings> fileSettings;
     Type projectType;
@@ -100,20 +100,20 @@ public:
         std::string platform;
     } guiProject;
 
-    void ignorePaths(const std::vector<std::string> &ipaths);
-    void ignoreOtherConfigs(const std::string &cfg);
+    void ignorePaths(const std::vector<std::string>& ipaths);
+    void ignoreOtherConfigs(const std::string& cfg);
     void ignoreOtherPlatforms(cppcheck::Platform::PlatformType platformType);
 
-    Type import(const std::string &filename, Settings *settings=nullptr);
+    Type import(const std::string& filename, Settings* settings=nullptr);
 protected:
-    void importCompileCommands(std::istream &istr);
-    bool importCppcheckGuiProject(std::istream &istr, Settings *settings);
+    void importCompileCommands(std::istream& istr);
+    bool importCppcheckGuiProject(std::istream& istr, Settings* settings);
 private:
-    void importSln(std::istream &istr, const std::string &path, const std::string &fileFilter);
-    void importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::string &fileFilter);
-    void importBcb6Prj(const std::string &projectFilename);
+    void importSln(std::istream& istr, const std::string& path, const std::string& fileFilter);
+    void importVcxproj(const std::string& filename, std::map<std::string, std::string, cppcheck::stricmp>& variables, const std::string& additionalIncludeDirectories, const std::string& fileFilter);
+    void importBcb6Prj(const std::string& projectFilename);
 
-    void setRelativePaths(const std::string &filename);
+    void setRelativePaths(const std::string& filename);
 
     std::string mPath;
     std::set<std::string> mAllVSConfigs;

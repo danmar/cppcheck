@@ -48,7 +48,7 @@ static const struct CWE CWE561(561U);   // Dead Code
 // FUNCTION USAGE - Check for unused functions etc
 //---------------------------------------------------------------------------
 
-void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings)
+void CheckUnusedFunctions::parseTokens(const Tokenizer& tokenizer, const char FileName[], const Settings* settings)
 {
     const bool doMarkup = settings->library.markupFile(FileName);
     const SymbolDatabase* symbolDatabase = tokenizer.getSymbolDatabase();
@@ -69,7 +69,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 
         mFunctionDecl.emplace_back(func);
 
-        FunctionUsage &usage = mFunctions[func->name()];
+        FunctionUsage& usage = mFunctions[func->name()];
 
         if (!usage.lineNumber)
             usage.lineNumber = func->token->linenr();
@@ -86,8 +86,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
     }
 
     // Function usage..
-    const Token *lambdaEndToken = nullptr;
-    for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+    const Token* lambdaEndToken = nullptr;
+    for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
 
         if (tok == lambdaEndToken)
             lambdaEndToken = nullptr;
@@ -96,7 +96,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 
         // parsing of library code to find called functions
         if (settings->library.isexecutableblock(FileName, tok->str())) {
-            const Token * markupVarToken = tok->tokAt(settings->library.blockstartoffset(FileName));
+            const Token* markupVarToken = tok->tokAt(settings->library.blockstartoffset(FileName));
             // not found
             if (!markupVarToken)
                 continue;
@@ -116,7 +116,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                     if (mFunctions.find(markupVarToken->str()) != mFunctions.end())
                         mFunctions[markupVarToken->str()].usedOtherFile = true;
                     else if (markupVarToken->next()->str() == "(") {
-                        FunctionUsage &func = mFunctions[markupVarToken->str()];
+                        FunctionUsage& func = mFunctions[markupVarToken->str()];
                         func.filename = tokenizer.list.getSourceFilePath();
                         if (func.filename.empty() || func.filename == "+")
                             func.usedOtherFile = true;
@@ -130,7 +130,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 
         if (!doMarkup // only check source files
             && settings->library.isexporter(tok->str()) && tok->next() != nullptr) {
-            const Token * propToken = tok->next();
+            const Token* propToken = tok->next();
             while (propToken && propToken->str() != ")") {
                 if (settings->library.isexportedprefix(tok->str(), propToken->str())) {
                     const Token* nextPropToken = propToken->next();
@@ -153,7 +153,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         }
 
         if (doMarkup && settings->library.isimporter(FileName, tok->str()) && tok->next()) {
-            const Token * propToken = tok->next();
+            const Token* propToken = tok->next();
             if (propToken->next()) {
                 propToken = propToken->next();
                 while (propToken && propToken->str() != ")") {
@@ -171,7 +171,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         if (settings->library.isreflection(tok->str())) {
             const int argIndex = settings->library.reflectionArgument(tok->str());
             if (argIndex >= 0) {
-                const Token * funcToken = tok->next();
+                const Token* funcToken = tok->next();
                 int index = 0;
                 std::string value;
                 while (funcToken) {
@@ -191,7 +191,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             }
         }
 
-        const Token *funcname = nullptr;
+        const Token* funcname = nullptr;
 
         if ((lambdaEndToken || tok->scope()->isExecutable()) && Token::Match(tok, "%name% (")) {
             funcname = tok;
@@ -215,7 +215,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 
         // funcname ( => Assert that the end parentheses isn't followed by {
         if (Token::Match(funcname, "%name% (|<")) {
-            const Token *ftok = funcname->next();
+            const Token* ftok = funcname->next();
             if (ftok->str() == "<")
                 ftok = ftok->link();
             if (Token::Match(ftok->linkAt(1), ") const|throw|{"))
@@ -223,7 +223,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         }
 
         if (funcname) {
-            FunctionUsage &func = mFunctions[funcname->str()];
+            FunctionUsage& func = mFunctions[funcname->str()];
             const std::string& called_from_file = tokenizer.list.getSourceFilePath();
 
             if (func.filename.empty() || func.filename == "+" || func.filename != called_from_file)
@@ -237,7 +237,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 }
 
 
-static bool isOperatorFunction(const std::string & funcName)
+static bool isOperatorFunction(const std::string& funcName)
 {
     /* Operator functions are invalid function names for C, so no need to check
      * this in here. As result the returned error function might be incorrect.
@@ -286,11 +286,11 @@ static bool isOperatorFunction(const std::string & funcName)
 
 
 
-bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings& settings)
+bool CheckUnusedFunctions::check(ErrorLogger* const errorLogger, const Settings& settings)
 {
     bool errors = false;
     for (std::map<std::string, FunctionUsage>::const_iterator it = mFunctions.begin(); it != mFunctions.end(); ++it) {
-        const FunctionUsage &func = it->second;
+        const FunctionUsage& func = it->second;
         if (func.usedOtherFile || func.filename.empty())
             continue;
         if (it->first == "main" ||
@@ -318,9 +318,9 @@ bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings
     return errors;
 }
 
-void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
-                                               const std::string &filename, unsigned int lineNumber,
-                                               const std::string &funcname)
+void CheckUnusedFunctions::unusedFunctionError(ErrorLogger* const errorLogger,
+                                               const std::string& filename, unsigned int lineNumber,
+                                               const std::string& funcname)
 {
     std::list<ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
@@ -337,7 +337,7 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
         reportError(errmsg);
 }
 
-Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
+Check::FileInfo* CheckUnusedFunctions::getFileInfo(const Tokenizer* tokenizer, const Settings* settings) const
 {
     if (!settings->checks.isEnabled(Checks::unusedFunction))
         return nullptr;
@@ -346,26 +346,26 @@ Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, c
     return nullptr;
 }
 
-bool CheckUnusedFunctions::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
+bool CheckUnusedFunctions::analyseWholeProgram(const CTU::FileInfo* ctu, const std::list<Check::FileInfo*>& fileInfo, const Settings& settings, ErrorLogger& errorLogger)
 {
     (void)ctu;
     (void)fileInfo;
     return check(&errorLogger, settings);
 }
 
-CheckUnusedFunctions::FunctionDecl::FunctionDecl(const Function *f)
+CheckUnusedFunctions::FunctionDecl::FunctionDecl(const Function* f)
     : functionName(f->name()), lineNumber(f->token->linenr())
 {}
 
 std::string CheckUnusedFunctions::analyzerInfo() const
 {
     std::ostringstream ret;
-    for (const FunctionDecl &functionDecl : mFunctionDecl) {
+    for (const FunctionDecl& functionDecl : mFunctionDecl) {
         ret << "    <functiondecl"
             << " functionName=\"" << ErrorLogger::toxml(functionDecl.functionName) << '\"'
             << " lineNumber=\"" << functionDecl.lineNumber << "\"/>\n";
     }
-    for (const std::string &fc : mFunctionCalls) {
+    for (const std::string& fc : mFunctionCalls) {
         ret << "    <functioncall functionName=\"" << ErrorLogger::toxml(fc) << "\"/>\n";
     }
     return ret.str();
@@ -374,13 +374,13 @@ std::string CheckUnusedFunctions::analyzerInfo() const
 namespace {
     struct Location {
         Location() : lineNumber(0) {}
-        Location(const std::string &f, const int l) : fileName(f), lineNumber(l) {}
+        Location(const std::string& f, const int l) : fileName(f), lineNumber(l) {}
         std::string fileName;
         int lineNumber;
     };
 }
 
-void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, const std::string &buildDir)
+void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger* const errorLogger, const std::string& buildDir)
 {
     std::map<std::string, Location> decls;
     std::set<std::string> calls;
@@ -403,17 +403,17 @@ void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, 
         if (error != tinyxml2::XML_SUCCESS)
             continue;
 
-        const tinyxml2::XMLElement * const rootNode = doc.FirstChildElement();
+        const tinyxml2::XMLElement* const rootNode = doc.FirstChildElement();
         if (rootNode == nullptr)
             continue;
 
-        for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
+        for (const tinyxml2::XMLElement* e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
             if (std::strcmp(e->Name(), "FileInfo") != 0)
                 continue;
-            const char *checkattr = e->Attribute("check");
+            const char* checkattr = e->Attribute("check");
             if (checkattr == nullptr || std::strcmp(checkattr,"CheckUnusedFunctions") != 0)
                 continue;
-            for (const tinyxml2::XMLElement *e2 = e->FirstChildElement(); e2; e2 = e2->NextSiblingElement()) {
+            for (const tinyxml2::XMLElement* e2 = e->FirstChildElement(); e2; e2 = e2->NextSiblingElement()) {
                 const char* functionName = e2->Attribute("functionName");
                 if (functionName == nullptr)
                     continue;
@@ -430,14 +430,14 @@ void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, 
     }
 
     for (std::map<std::string, Location>::const_iterator decl = decls.begin(); decl != decls.end(); ++decl) {
-        const std::string &functionName = decl->first;
+        const std::string& functionName = decl->first;
 
         if (functionName == "main" || functionName == "WinMain" || functionName == "_tmain" ||
             functionName == "if")
             continue;
 
         if (calls.find(functionName) == calls.end() && !isOperatorFunction(functionName)) {
-            const Location &loc = decl->second;
+            const Location& loc = decl->second;
             unusedFunctionError(errorLogger, loc.fileName, loc.lineNumber, functionName);
         }
     }

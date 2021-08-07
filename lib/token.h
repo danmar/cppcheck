@@ -50,15 +50,15 @@ class ConstTokenRange;
  * @brief This struct stores pointers to the front and back tokens of the list this token is in.
  */
 struct TokensFrontBack {
-    Token *front;
-    Token *back;
+    Token* front;
+    Token* back;
     const TokenList* list;
 };
 
 struct ScopeInfo2 {
-    ScopeInfo2(const std::string &name_, const Token *bodyEnd_, const std::set<std::string> &usingNamespaces_ = std::set<std::string>()) : name(name_), bodyEnd(bodyEnd_), usingNamespaces(usingNamespaces_) {}
+    ScopeInfo2(const std::string& name_, const Token* bodyEnd_, const std::set<std::string>& usingNamespaces_ = std::set<std::string>()) : name(name_), bodyEnd(bodyEnd_), usingNamespaces(usingNamespaces_) {}
     std::string name;
-    const Token * const bodyEnd;
+    const Token* const bodyEnd;
     std::set<std::string> usingNamespaces;
 };
 
@@ -70,17 +70,17 @@ struct TokenImpl {
     nonneg int mExprId;
 
     // AST..
-    Token *mAstOperand1;
-    Token *mAstOperand2;
-    Token *mAstParent;
+    Token* mAstOperand1;
+    Token* mAstOperand2;
+    Token* mAstParent;
 
     // symbol database information
-    const Scope *mScope;
+    const Scope* mScope;
     union {
-        const Function *mFunction;
-        const Variable *mVariable;
+        const Function* mFunction;
+        const Variable* mVariable;
         const ::Type* mType;
-        const Enumerator *mEnumerator;
+        const Enumerator* mEnumerator;
     };
 
     /**
@@ -98,7 +98,7 @@ struct TokenImpl {
     std::string* mOriginalName;
 
     // ValueType
-    ValueType *mValueType;
+    ValueType* mValueType;
 
     // ValueFlow
     std::list<ValueFlow::Value>* mValues;
@@ -114,9 +114,9 @@ struct TokenImpl {
     struct CppcheckAttributes {
         enum Type {LOW,HIGH} type;
         MathLib::bigint value;
-        struct CppcheckAttributes *next;
+        struct CppcheckAttributes* next;
     };
-    struct CppcheckAttributes *mCppcheckAttributes;
+    struct CppcheckAttributes* mCppcheckAttributes;
 
     // For memoization, to speed up parsing of huge arrays #8897
     enum class Cpp11init {UNKNOWN, CPP11INIT, NOINIT} mCpp11init;
@@ -125,7 +125,7 @@ struct TokenImpl {
     unsigned char mBits;
 
     void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
-    bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint *value) const;
+    bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint* value) const;
 
     TokenImpl()
         : mVarId(0)
@@ -171,8 +171,8 @@ private:
     TokensFrontBack* mTokensFrontBack;
 
     // Not implemented..
-    Token(const Token &);
-    Token operator=(const Token &);
+    Token(const Token&);
+    Token operator=(const Token&);
 
 public:
     enum Type {
@@ -186,10 +186,10 @@ public:
         eNone
     };
 
-    explicit Token(TokensFrontBack *tokensFrontBack = nullptr);
+    explicit Token(TokensFrontBack* tokensFrontBack = nullptr);
     ~Token();
 
-    ConstTokenRange until(const Token * t) const;
+    ConstTokenRange until(const Token* t) const;
 
     template<typename T>
     void str(T&& s) {
@@ -205,7 +205,7 @@ public:
      */
     void concatStr(std::string const& b);
 
-    const std::string &str() const {
+    const std::string& str() const {
         return mStr;
     }
 
@@ -229,25 +229,25 @@ public:
      * For example index 1 would return next token, and 2
      * would return next from that one.
      */
-    const Token *tokAt(int index) const;
-    Token *tokAt(int index) {
-        return const_cast<Token *>(const_cast<const Token *>(this)->tokAt(index));
+    const Token* tokAt(int index) const;
+    Token* tokAt(int index) {
+        return const_cast<Token*>(const_cast<const Token*>(this)->tokAt(index));
     }
 
     /**
      * @return the link to the token in given index, related to this token.
      * For example index 1 would return the link to next token.
      */
-    const Token *linkAt(int index) const;
-    Token *linkAt(int index) {
-        return const_cast<Token *>(const_cast<const Token *>(this)->linkAt(index));
+    const Token* linkAt(int index) const;
+    Token* linkAt(int index) {
+        return const_cast<Token*>(const_cast<const Token*>(this)->linkAt(index));
     }
 
     /**
      * @return String of the token in given index, related to this token.
      * If that token does not exist, an empty string is being returned.
      */
-    const std::string &strAt(int index) const;
+    const std::string& strAt(int index) const;
 
     /**
      * Match given token (or list of tokens) to a pattern list.
@@ -269,11 +269,11 @@ public:
      *         false if given token does not match with given pattern
      */
     template<size_t count>
-    static bool simpleMatch(const Token *tok, const char (&pattern)[count]) {
+    static bool simpleMatch(const Token* tok, const char (& pattern)[count]) {
         return simpleMatch(tok, pattern, count-1);
     }
 
-    static bool simpleMatch(const Token *tok, const char pattern[], size_t pattern_len);
+    static bool simpleMatch(const Token* tok, const char pattern[], size_t pattern_len);
 
     /**
      * Match given token (or list of tokens) to a pattern list.
@@ -318,7 +318,7 @@ public:
      * @return true if given token matches with given pattern
      *         false if given token does not match with given pattern
      */
-    static bool Match(const Token *tok, const char pattern[], nonneg int varid = 0);
+    static bool Match(const Token* tok, const char pattern[], nonneg int varid = 0);
 
     /**
      * @return length of C-string.
@@ -327,7 +327,7 @@ public:
      *
      * @param tok token with C-string
      **/
-    static nonneg int getStrLength(const Token *tok);
+    static nonneg int getStrLength(const Token* tok);
 
     /**
      * @return array length of C-string.
@@ -336,7 +336,7 @@ public:
      *
      * @param tok token with C-string
      **/
-    static nonneg int getStrArraySize(const Token *tok);
+    static nonneg int getStrArraySize(const Token* tok);
 
     /**
      * @return sizeof of C-string.
@@ -346,7 +346,7 @@ public:
      * @param tok token with C-string
      * @param settings Settings
      **/
-    static nonneg int getStrSize(const Token *tok, const Settings *const settings);
+    static nonneg int getStrSize(const Token* tok, const Settings* const settings);
 
     /**
      * @return char of C-string at index (possible escaped "\\n")
@@ -356,15 +356,15 @@ public:
      * @param tok token with C-string
      * @param index position of character
      **/
-    static std::string getCharAt(const Token *tok, MathLib::bigint index);
+    static std::string getCharAt(const Token* tok, MathLib::bigint index);
 
-    const ValueType *valueType() const {
+    const ValueType* valueType() const {
         return mImpl->mValueType;
     }
-    void setValueType(ValueType *vt);
+    void setValueType(ValueType* vt);
 
-    const ValueType *argumentType() const {
-        const Token *top = this;
+    const ValueType* argumentType() const {
+        const Token* top = this;
         while (top && !Token::Match(top->astParent(), ",|("))
             top = top->astParent();
         return top ? top->mImpl->mValueType : nullptr;
@@ -437,7 +437,7 @@ public:
     bool isBinaryOp() const {
         return astOperand1() != nullptr && astOperand2() != nullptr;
     }
-    bool isUnaryOp(const std::string &s) const {
+    bool isUnaryOp(const std::string& s) const {
         return s == mStr && astOperand1() != nullptr && astOperand2() == nullptr;
     }
     bool isUnaryPreOp() const;
@@ -559,7 +559,7 @@ public:
     void setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value) {
         mImpl->setCppcheckAttribute(type, value);
     }
-    bool getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint *value) const {
+    bool getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint* value) const {
         return mImpl->getCppcheckAttribute(type, value);
     }
     bool hasCppcheckAttributes() const {
@@ -708,40 +708,40 @@ public:
     }
 
     template<size_t count>
-    static const Token *findsimplematch(const Token * const startTok, const char (&pattern)[count]) {
+    static const Token* findsimplematch(const Token* const startTok, const char (& pattern)[count]) {
         return findsimplematch(startTok, pattern, count-1);
     }
-    static const Token *findsimplematch(const Token * const startTok, const char pattern[], size_t pattern_len);
+    static const Token* findsimplematch(const Token* const startTok, const char pattern[], size_t pattern_len);
 
     template<size_t count>
-    static const Token *findsimplematch(const Token * const startTok, const char (&pattern)[count], const Token * const end) {
+    static const Token* findsimplematch(const Token* const startTok, const char (& pattern)[count], const Token* const end) {
         return findsimplematch(startTok, pattern, count-1, end);
     }
-    static const Token *findsimplematch(const Token * const startTok, const char pattern[], size_t pattern_len, const Token * const end);
+    static const Token* findsimplematch(const Token* const startTok, const char pattern[], size_t pattern_len, const Token* const end);
 
-    static const Token *findmatch(const Token * const startTok, const char pattern[], const nonneg int varId = 0);
-    static const Token *findmatch(const Token * const startTok, const char pattern[], const Token * const end, const nonneg int varId = 0);
+    static const Token* findmatch(const Token* const startTok, const char pattern[], const nonneg int varId = 0);
+    static const Token* findmatch(const Token* const startTok, const char pattern[], const Token* const end, const nonneg int varId = 0);
 
     template<size_t count>
-    static Token *findsimplematch(Token * const startTok, const char (&pattern)[count]) {
+    static Token* findsimplematch(Token* const startTok, const char (& pattern)[count]) {
         return findsimplematch(startTok, pattern, count-1);
     }
-    static Token *findsimplematch(Token * const startTok, const char pattern[], size_t pattern_len) {
-        return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern, pattern_len));
+    static Token* findsimplematch(Token* const startTok, const char pattern[], size_t pattern_len) {
+        return const_cast<Token*>(findsimplematch(const_cast<const Token*>(startTok), pattern, pattern_len));
     }
     template<size_t count>
-    static Token *findsimplematch(Token * const startTok, const char (&pattern)[count], const Token * const end) {
+    static Token* findsimplematch(Token* const startTok, const char (& pattern)[count], const Token* const end) {
         return findsimplematch(startTok, pattern, count-1, end);
     }
-    static Token *findsimplematch(Token * const startTok, const char pattern[], size_t pattern_len, const Token * const end) {
-        return const_cast<Token *>(findsimplematch(const_cast<const Token *>(startTok), pattern, pattern_len, end));
+    static Token* findsimplematch(Token* const startTok, const char pattern[], size_t pattern_len, const Token* const end) {
+        return const_cast<Token*>(findsimplematch(const_cast<const Token*>(startTok), pattern, pattern_len, end));
     }
 
-    static Token *findmatch(Token * const startTok, const char pattern[], const nonneg int varId = 0) {
-        return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, varId));
+    static Token* findmatch(Token* const startTok, const char pattern[], const nonneg int varId = 0) {
+        return const_cast<Token*>(findmatch(const_cast<const Token*>(startTok), pattern, varId));
     }
-    static Token *findmatch(Token * const startTok, const char pattern[], const Token * const end, const nonneg int varId = 0) {
-        return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, end, varId));
+    static Token* findmatch(Token* const startTok, const char pattern[], const Token* const end, const nonneg int varId = 0) {
+        return const_cast<Token*>(findmatch(const_cast<const Token*>(startTok), pattern, end, varId));
     }
 
     /**
@@ -758,7 +758,7 @@ public:
      *         0 if needle was empty string
      *        -1 if needle was not found
      */
-    static int multiCompare(const Token *tok, const char *haystack, nonneg int varid);
+    static int multiCompare(const Token* tok, const char* haystack, nonneg int varid);
 
     nonneg int fileIndex() const {
         return mImpl->mFileIndex;
@@ -781,7 +781,7 @@ public:
         mImpl->mColumn = c;
     }
 
-    Token *next() const {
+    Token* next() const {
         return mNext;
     }
 
@@ -793,7 +793,7 @@ public:
      * @param begin Tokens after this will be erased.
      * @param end Tokens before this will be erased.
      */
-    static void eraseTokens(Token *begin, const Token *end);
+    static void eraseTokens(Token* begin, const Token* end);
 
     /**
      * Insert new token after this token. This function will handle
@@ -803,9 +803,9 @@ public:
      * @param prepend Insert the new token before this token when it's not
      * the first one on the tokens list.
      */
-    void insertToken(const std::string &tokenStr, const std::string &originalNameStr=emptyString, bool prepend=false);
+    void insertToken(const std::string& tokenStr, const std::string& originalNameStr=emptyString, bool prepend=false);
 
-    Token *previous() const {
+    Token* previous() const {
         return mPrevious;
     }
 
@@ -838,7 +838,7 @@ public:
      * @param title Title for the printout or use default parameter or 0
      * for no title.
      */
-    void printOut(const char *title = nullptr) const;
+    void printOut(const char* title = nullptr) const;
 
     /**
      * For debugging purposes, prints token and all tokens
@@ -848,7 +848,7 @@ public:
      * @param fileNames Prints out file name instead of file index.
      * File index should match the index of the string in this vector.
      */
-    void printOut(const char *title, const std::vector<std::string> &fileNames) const;
+    void printOut(const char* title, const std::vector<std::string>& fileNames) const;
 
     /**
      * print out tokens
@@ -862,7 +862,7 @@ public:
      * @param start This will be in the place of replaceThis
      * @param end This is also in the place of replaceThis
      */
-    static void replace(Token *replaceThis, Token *start, Token *end);
+    static void replace(Token* replaceThis, Token* start, Token* end);
 
     struct stringifyOptions {
         bool varid = false;
@@ -943,7 +943,7 @@ public:
      * @param linkToToken The token where this token should link
      * to.
      */
-    void link(Token *linkToToken) {
+    void link(Token* linkToToken) {
         mLink = linkToToken;
         if (mStr == "<" || mStr == ">")
             update_property_info();
@@ -958,7 +958,7 @@ public:
      *
      * @return The token where this token links to.
      */
-    Token *link() const {
+    Token* link() const {
         return mLink;
     }
 
@@ -966,14 +966,14 @@ public:
      * Associate this token with given scope
      * @param s Scope to be associated
      */
-    void scope(const Scope *s) {
+    void scope(const Scope* s) {
         mImpl->mScope = s;
     }
 
     /**
      * @return a pointer to the scope containing this token.
      */
-    const Scope *scope() const {
+    const Scope* scope() const {
         return mImpl->mScope;
     }
 
@@ -981,12 +981,12 @@ public:
      * Associate this token with given function
      * @param f Function to be associated
      */
-    void function(const Function *f);
+    void function(const Function* f);
 
     /**
      * @return a pointer to the Function associated with this token.
      */
-    const Function *function() const {
+    const Function* function() const {
         return mTokType == eFunction || mTokType == eLambda ? mImpl->mFunction : nullptr;
     }
 
@@ -994,7 +994,7 @@ public:
      * Associate this token with given variable
      * @param v Variable to be associated
      */
-    void variable(const Variable *v) {
+    void variable(const Variable* v) {
         mImpl->mVariable = v;
         if (v || mImpl->mVarId)
             tokType(eVariable);
@@ -1005,7 +1005,7 @@ public:
     /**
      * @return a pointer to the variable associated with this token.
      */
-    const Variable *variable() const {
+    const Variable* variable() const {
         return mTokType == eVariable ? mImpl->mVariable : nullptr;
     }
 
@@ -1013,25 +1013,25 @@ public:
      * Associate this token with given type
      * @param t Type to be associated
      */
-    void type(const ::Type *t);
+    void type(const ::Type* t);
 
     /**
      * @return a pointer to the type associated with this token.
      */
-    const ::Type *type() const {
+    const ::Type* type() const {
         return mTokType == eType ? mImpl->mType : nullptr;
     }
 
     static const ::Type* typeOf(const Token* tok, const Token** typeTok = nullptr);
 
-    static std::pair<const Token*, const Token*> typeDecl(const Token * tok);
+    static std::pair<const Token*, const Token*> typeDecl(const Token* tok);
 
     static std::string typeStr(const Token* tok);
 
     /**
      * @return a pointer to the Enumerator associated with this token.
      */
-    const Enumerator *enumerator() const {
+    const Enumerator* enumerator() const {
         return mTokType == eEnumerator ? mImpl->mEnumerator : nullptr;
     }
 
@@ -1039,7 +1039,7 @@ public:
      * Associate this token with given enumerator
      * @param e Enumerator to be associated
      */
-    void enumerator(const Enumerator *e) {
+    void enumerator(const Enumerator* e) {
         mImpl->mEnumerator = e;
         if (e)
             tokType(eEnumerator);
@@ -1050,7 +1050,7 @@ public:
     /**
      * Links two elements against each other.
      **/
-    static void createMutualLinks(Token *begin, Token *end);
+    static void createMutualLinks(Token* begin, Token* end);
 
     /**
      * This can be called only for tokens that are strings, else
@@ -1067,7 +1067,7 @@ public:
      * @param srcEnd The last token to be moved
      * @param newLocation srcStart will be placed after this token.
      */
-    static void move(Token *srcStart, Token *srcEnd, Token *newLocation);
+    static void move(Token* srcStart, Token* srcEnd, Token* newLocation);
 
     /** Get progressValue (0 - 100) */
     nonneg int progressValue() const {
@@ -1075,7 +1075,7 @@ public:
     }
 
     /** Calculate progress values for all tokens */
-    static void assignProgressValues(Token *tok);
+    static void assignProgressValues(Token* tok);
 
     /**
      * @return the first token of the next argument. Does only work on argument
@@ -1112,7 +1112,7 @@ public:
     /**
      * @return the original name.
      */
-    const std::string & originalName() const {
+    const std::string& originalName() const {
         return mImpl->mOriginalName ? *mImpl->mOriginalName : emptyString;
     }
 
@@ -1148,22 +1148,22 @@ public:
 
     const ValueFlow::Value* getMovedValue() const;
 
-    const ValueFlow::Value * getValueLE(const MathLib::bigint val, const Settings *settings) const;
-    const ValueFlow::Value * getValueGE(const MathLib::bigint val, const Settings *settings) const;
+    const ValueFlow::Value* getValueLE(const MathLib::bigint val, const Settings* settings) const;
+    const ValueFlow::Value* getValueGE(const MathLib::bigint val, const Settings* settings) const;
 
-    const ValueFlow::Value * getInvalidValue(const Token *ftok, nonneg int argnr, const Settings *settings) const;
+    const ValueFlow::Value* getInvalidValue(const Token* ftok, nonneg int argnr, const Settings* settings) const;
 
     const ValueFlow::Value* getContainerSizeValue(const MathLib::bigint val) const;
 
-    const Token *getValueTokenMaxStrLength() const;
-    const Token *getValueTokenMinStrSize(const Settings *settings) const;
+    const Token* getValueTokenMaxStrLength() const;
+    const Token* getValueTokenMinStrSize(const Settings* settings) const;
 
-    const Token *getValueTokenDeadPointer() const;
+    const Token* getValueTokenDeadPointer() const;
 
     /** Add token value. Return true if value is added. */
-    bool addValue(const ValueFlow::Value &value);
+    bool addValue(const ValueFlow::Value& value);
 
-    void removeValues(std::function<bool(const ValueFlow::Value &)> pred) {
+    void removeValues(std::function<bool(const ValueFlow::Value&)> pred) {
         if (mImpl->mValues)
             mImpl->mValues->remove_if(pred);
     }
@@ -1176,35 +1176,35 @@ public:
 
 private:
 
-    void next(Token *nextToken) {
+    void next(Token* nextToken) {
         mNext = nextToken;
     }
-    void previous(Token *previousToken) {
+    void previous(Token* previousToken) {
         mPrevious = previousToken;
     }
 
     /** used by deleteThis() to take data from token to delete */
-    void takeData(Token *fromToken);
+    void takeData(Token* fromToken);
 
     /**
      * Works almost like strcmp() except returns only true or false and
      * if str has empty space &apos; &apos; character, that character is handled
      * as if it were &apos;\\0&apos;
      */
-    static bool firstWordEquals(const char *str, const char *word);
+    static bool firstWordEquals(const char* str, const char* word);
 
     /**
      * Works almost like strchr() except
      * if str has empty space &apos; &apos; character, that character is handled
      * as if it were &apos;\\0&apos;
      */
-    static const char *chrInFirstWord(const char *str, char c);
+    static const char* chrInFirstWord(const char* str, char c);
 
     std::string mStr;
 
-    Token *mNext;
-    Token *mPrevious;
-    Token *mLink;
+    Token* mNext;
+    Token* mPrevious;
+    Token* mLink;
 
     enum : uint64_t {
         fIsUnsigned             = (1 << 0),
@@ -1246,7 +1246,7 @@ private:
 
     uint64_t mFlags;
 
-    TokenImpl *mImpl;
+    TokenImpl* mImpl;
 
     /**
      * Get specified flag state.
@@ -1280,29 +1280,29 @@ private:
     void astStringVerboseRecursive(std::string& ret, const nonneg int indent1 = 0, const nonneg int indent2 = 0) const;
 
 public:
-    void astOperand1(Token *tok);
-    void astOperand2(Token *tok);
+    void astOperand1(Token* tok);
+    void astOperand2(Token* tok);
     void astParent(Token* tok);
 
-    Token * astOperand1() {
+    Token* astOperand1() {
         return mImpl->mAstOperand1;
     }
-    const Token * astOperand1() const {
+    const Token* astOperand1() const {
         return mImpl->mAstOperand1;
     }
-    Token * astOperand2() {
+    Token* astOperand2() {
         return mImpl->mAstOperand2;
     }
-    const Token * astOperand2() const {
+    const Token* astOperand2() const {
         return mImpl->mAstOperand2;
     }
-    Token * astParent() {
+    Token* astParent() {
         return mImpl->mAstParent;
     }
-    const Token * astParent() const {
+    const Token* astParent() const {
         return mImpl->mAstParent;
     }
-    Token * astSibling() {
+    Token* astSibling() {
         if (!astParent())
             return nullptr;
         if (this == astParent()->astOperand1())
@@ -1312,7 +1312,7 @@ public:
         return nullptr;
 
     }
-    const Token * astSibling() const {
+    const Token* astSibling() const {
         if (!astParent())
             return nullptr;
         if (this == astParent()->astOperand1())
@@ -1322,21 +1322,21 @@ public:
         return nullptr;
 
     }
-    Token *astTop() {
-        Token *ret = this;
+    Token* astTop() {
+        Token* ret = this;
         while (ret->mImpl->mAstParent)
             ret = ret->mImpl->mAstParent;
         return ret;
     }
 
-    const Token *astTop() const {
-        const Token *ret = this;
+    const Token* astTop() const {
+        const Token* ret = this;
         while (ret->mImpl->mAstParent)
             ret = ret->mImpl->mAstParent;
         return ret;
     }
 
-    std::pair<const Token *, const Token *> findExpressionStartEndTokens() const;
+    std::pair<const Token*, const Token*> findExpressionStartEndTokens() const;
 
     /**
      * Is current token a calculation? Only true for operands.
@@ -1356,7 +1356,7 @@ public:
         mImpl->mValues = nullptr;
     }
 
-    std::string astString(const char *sep = "") const {
+    std::string astString(const char* sep = "") const {
         std::string ret;
         if (mImpl->mAstOperand1)
             ret = mImpl->mAstOperand1->astString(sep);
@@ -1371,9 +1371,9 @@ public:
 
     std::string expressionString() const;
 
-    void printAst(bool verbose, bool xml, const std::vector<std::string> &fileNames, std::ostream &out) const;
+    void printAst(bool verbose, bool xml, const std::vector<std::string>& fileNames, std::ostream& out) const;
 
-    void printValueFlow(bool xml, std::ostream &out) const;
+    void printValueFlow(bool xml, std::ostream& out) const;
 
     void scopeInfo(std::shared_ptr<ScopeInfo2> newScopeInfo);
     std::shared_ptr<ScopeInfo2> scopeInfo() const;

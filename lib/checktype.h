@@ -43,11 +43,11 @@ public:
     CheckType() : Check(myName()) {}
 
     /** @brief This constructor is used when running checks. */
-    CheckType(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    CheckType(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE {
         // These are not "simplified" because casts can't be ignored
         CheckType checkType(tokenizer, settings, errorLogger);
         checkType.checkTooBigBitwiseShift();
@@ -71,20 +71,20 @@ public:
 
     /** @brief %Check for float to integer overflow */
     void checkFloatToIntegerOverflow();
-    void checkFloatToIntegerOverflow(const Token *tok, const ValueType *vtint, const ValueType *vtfloat, const std::list<ValueFlow::Value> *floatValues);
+    void checkFloatToIntegerOverflow(const Token* tok, const ValueType* vtint, const ValueType* vtfloat, const std::list<ValueFlow::Value>* floatValues);
 
 private:
 
     // Error messages..
-    void tooBigBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);
-    void tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);
-    void integerOverflowError(const Token *tok, const ValueFlow::Value &value);
-    void signConversionError(const Token *tok, const ValueFlow::Value *negativeValue, const bool constvalue);
-    void longCastAssignError(const Token *tok);
-    void longCastReturnError(const Token *tok);
-    void floatToIntegerOverflowError(const Token *tok, const ValueFlow::Value &value);
+    void tooBigBitwiseShiftError(const Token* tok, int lhsbits, const ValueFlow::Value& rhsbits);
+    void tooBigSignedBitwiseShiftError(const Token* tok, int lhsbits, const ValueFlow::Value& rhsbits);
+    void integerOverflowError(const Token* tok, const ValueFlow::Value& value);
+    void signConversionError(const Token* tok, const ValueFlow::Value* negativeValue, const bool constvalue);
+    void longCastAssignError(const Token* tok);
+    void longCastReturnError(const Token* tok);
+    void floatToIntegerOverflowError(const Token* tok, const ValueFlow::Value& value);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
         CheckType c(nullptr, settings, errorLogger);
         c.tooBigBitwiseShiftError(nullptr, 32, ValueFlow::Value(64));
         c.tooBigSignedBitwiseShiftError(nullptr, 31, ValueFlow::Value(31));

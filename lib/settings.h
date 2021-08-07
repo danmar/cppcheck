@@ -372,8 +372,8 @@ public:
      * @brief return true if a included file is to be excluded in Preprocessor::getConfigs
      * @return true for the file to be excluded.
      */
-    bool configurationExcluded(const std::string &file) const {
-        for (const std::string & configExcludePath : configExcludePaths) {
+    bool configurationExcluded(const std::string& file) const {
+        for (const std::string& configExcludePath : configExcludePaths) {
             if (file.length()>=configExcludePath.length() && file.compare(0,configExcludePath.length(),configExcludePath)==0) {
                 return true;
             }
@@ -387,13 +387,13 @@ public:
      * or empty string to enable all. e.g. "style,possibleError"
      * @return error message. empty upon success
      */
-    std::string addEnabled(const std::string &str);
+    std::string addEnabled(const std::string& str);
 
     /**
      * @brief Returns true if given value can be shown
      * @return true if the value can be shown
      */
-    bool isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck=false) const;
+    bool isEnabled(const ValueFlow::Value* value, bool inconclusiveCheck=false) const;
 
     /** Is posix library specified? */
     bool posix() const {

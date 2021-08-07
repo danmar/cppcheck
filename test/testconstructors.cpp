@@ -46,7 +46,7 @@ private:
         checkClass.constructors();
     }
 
-    void check(const char code[], const Settings &s) {
+    void check(const char code[], const Settings& s) {
         // Clear the error buffer..
         errout.str("");
 

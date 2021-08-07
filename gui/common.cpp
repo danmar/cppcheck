@@ -24,7 +24,7 @@
 #include <QDir>
 
 
-QString getPath(const QString &type)
+QString getPath(const QString& type)
 {
     QSettings settings;
     QString path = settings.value(type, QString()).toString();
@@ -38,7 +38,7 @@ QString getPath(const QString &type)
     return path;
 }
 
-void setPath(const QString &type, const QString &value)
+void setPath(const QString& type, const QString& value)
 {
     QSettings settings;
     settings.setValue(type, value);

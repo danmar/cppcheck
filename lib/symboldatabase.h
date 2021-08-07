@@ -59,7 +59,7 @@ enum class AccessControl { Public, Protected, Private, Global, Namespace, Argume
 struct Dimension {
     Dimension() : tok(nullptr), num(0), known(true) {}
 
-    const Token *tok;    ///< size token
+    const Token* tok;    ///< size token
     MathLib::bigint num; ///< (assumed) dimension length when size is a number, 0 if not known
     bool known;          ///< Known size
 };
@@ -102,8 +102,8 @@ public:
     std::vector<BaseInfo> derivedFrom;
     std::vector<FriendInfo> friendList;
 
-    const Token * typeStart;
-    const Token * typeEnd;
+    const Token* typeStart;
+    const Token* typeEnd;
     MathLib::bigint sizeOf;
 
     Type(const Token* classDef_ = nullptr, const Scope* classScope_ = nullptr, const Scope* enclosingScope_ = nullptr) :
@@ -139,7 +139,7 @@ public:
         return classDef && classDef->str() == "using";
     }
 
-    const Token *initBaseInfo(const Token *tok, const Token *tok1);
+    const Token* initBaseInfo(const Token* tok, const Token* tok1);
 
     const Function* getFunction(const std::string& funcName) const;
 
@@ -157,17 +157,17 @@ public:
      */
     bool findDependency(const Type* ancestor) const;
 
-    bool isDerivedFrom(const std::string & ancestor) const;
+    bool isDerivedFrom(const std::string& ancestor) const;
 };
 
 class CPPCHECKLIB Enumerator {
 public:
-    explicit Enumerator(const Scope * scope_) : scope(scope_), name(nullptr), value(0), start(nullptr), end(nullptr), value_known(false) {}
-    const Scope * scope;
-    const Token * name;
+    explicit Enumerator(const Scope* scope_) : scope(scope_), name(nullptr), value(0), start(nullptr), end(nullptr), value_known(false) {}
+    const Scope* scope;
+    const Token* name;
     MathLib::bigint value;
-    const Token * start;
-    const Token * end;
+    const Token* start;
+    const Token* end;
     bool value_known;
 };
 
@@ -220,9 +220,9 @@ class CPPCHECKLIB Variable {
     bool arrayDimensions(const Settings* settings);
 
 public:
-    Variable(const Token *name_, const Token *start_, const Token *end_,
-             nonneg int index_, AccessControl access_, const Type *type_,
-             const Scope *scope_, const Settings* settings)
+    Variable(const Token* name_, const Token* start_, const Token* end_,
+             nonneg int index_, AccessControl access_, const Type* type_,
+             const Scope* scope_, const Settings* settings)
         : mNameToken(name_),
         mTypeStartToken(start_),
         mTypeEndToken(end_),
@@ -235,23 +235,23 @@ public:
         evaluate(settings);
     }
 
-    Variable(const Token *name_, const std::string &clangType, const Token *typeStart,
-             const Token *typeEnd, nonneg int index_, AccessControl access_,
-             const Type *type_, const Scope *scope_);
+    Variable(const Token* name_, const std::string& clangType, const Token* typeStart,
+             const Token* typeEnd, nonneg int index_, AccessControl access_,
+             const Type* type_, const Scope* scope_);
 
-    Variable(const Variable &var, const Scope *scope);
+    Variable(const Variable& var, const Scope* scope);
 
-    Variable(const Variable &var);
+    Variable(const Variable& var);
 
     ~Variable();
 
-    Variable &operator=(const Variable &var);
+    Variable& operator=(const Variable& var);
 
     /**
      * Get name token.
      * @return name token
      */
-    const Token *nameToken() const {
+    const Token* nameToken() const {
         return mNameToken;
     }
 
@@ -263,7 +263,7 @@ public:
      * type start token ^
      * @return type start token
      */
-    const Token *typeStartToken() const {
+    const Token* typeStartToken() const {
         return mTypeStartToken;
     }
 
@@ -275,7 +275,7 @@ public:
      *       type end token ^
      * @return type end token
      */
-    const Token *typeEndToken() const {
+    const Token* typeEndToken() const {
         return mTypeEndToken;
     }
 
@@ -286,13 +286,13 @@ public:
      *   end token ^
      * @return variable declaration end token
      */
-    const Token *declEndToken() const;
+    const Token* declEndToken() const;
 
     /**
      * Get name string.
      * @return name string
      */
-    const std::string &name() const {
+    const std::string& name() const {
         // name may not exist for function arguments
         if (mNameToken)
             return mNameToken->str();
@@ -512,7 +512,7 @@ public:
      * Get Type pointer of known type.
      * @return pointer to type if known, NULL if not known
      */
-    const Type *type() const {
+    const Type* type() const {
         return mType;
     }
 
@@ -520,7 +520,7 @@ public:
      * Get Scope pointer of known type.
      * @return pointer to type scope if known, NULL if not known
      */
-    const Scope *typeScope() const {
+    const Scope* typeScope() const {
         return mType ? mType->classScope : nullptr;
     }
 
@@ -528,7 +528,7 @@ public:
      * Get Scope pointer of enclosing scope.
      * @return pointer to enclosing scope
      */
-    const Scope *scope() const {
+    const Scope* scope() const {
         return mScope;
     }
 
@@ -536,7 +536,7 @@ public:
      * Get array dimensions.
      * @return array dimensions vector
      */
-    const std::vector<Dimension> &dimensions() const {
+    const std::vector<Dimension>& dimensions() const {
         return mDimensions;
     }
 
@@ -584,7 +584,7 @@ public:
         return getFlag(fIsSmartPointer);
     }
 
-    const Type *smartPointerType() const;
+    const Type* smartPointerType() const;
 
     /**
      * Checks if the variable is of any of the STL types passed as arguments ('std::')
@@ -634,11 +634,11 @@ public:
         return getFlag(fIsMaybeUnused);
     }
 
-    const ValueType *valueType() const {
+    const ValueType* valueType() const {
         return mValueType;
     }
 
-    void setValueType(const ValueType &valueType);
+    void setValueType(const ValueType& valueType);
 
     AccessControl accessControl() const {
         return mAccess;
@@ -654,18 +654,18 @@ private:
      * Set Type pointer to known type.
      * @param t type
      */
-    void type(const Type * t) {
+    void type(const Type* t) {
         mType = t;
     }
 
     /** @brief variable name token */
-    const Token *mNameToken;
+    const Token* mNameToken;
 
     /** @brief variable type start token */
-    const Token *mTypeStartToken;
+    const Token* mTypeStartToken;
 
     /** @brief variable type end token */
-    const Token *mTypeEndToken;
+    const Token* mTypeEndToken;
 
     /** @brief order declared */
     nonneg int mIndex;
@@ -677,12 +677,12 @@ private:
     unsigned int mFlags;
 
     /** @brief pointer to user defined type info (for known types) */
-    const Type *mType;
+    const Type* mType;
 
     /** @brief pointer to scope this variable is in */
-    const Scope *mScope;
+    const Scope* mScope;
 
-    ValueType *mValueType;
+    ValueType* mValueType;
 
     /** @brief array dimensions */
     std::vector<Dimension> mDimensions;
@@ -745,10 +745,10 @@ class CPPCHECKLIB Function {
 public:
     enum Type { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction, eLambda };
 
-    Function(const Tokenizer *mTokenizer, const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef);
-    Function(const Token *tokenDef, const std::string &clangType);
+    Function(const Tokenizer* mTokenizer, const Token* tok, const Scope* scope, const Token* tokDef, const Token* tokArgDef);
+    Function(const Token* tokenDef, const std::string& clangType);
 
-    const std::string &name() const {
+    const std::string& name() const {
         return tokenDef->str();
     }
 
@@ -764,7 +764,7 @@ public:
     nonneg int initializedArgCount() const {
         return initArgCount;
     }
-    void addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope);
+    void addArguments(const SymbolDatabase* symbolDatabase, const Scope* scope);
 
     /** @brief check if this function is virtual in the base classes */
     bool isImplicitlyVirtual(bool defaultVal = false) const;
@@ -772,7 +772,7 @@ public:
     std::vector<const Function*> getOverloadedFunctions() const;
 
     /** @brief get function in base class that is overridden */
-    const Function *getOverriddenFunction(bool *foundAllBaseClasses = nullptr) const;
+    const Function* getOverriddenFunction(bool* foundAllBaseClasses = nullptr) const;
 
     bool isLambda() const {
         return type==eLambda;
@@ -895,26 +895,26 @@ public:
     void isConstexpr(bool state) {
         setFlag(fIsConstexpr, state);
     }
-    bool isSafe(const Settings *settings) const;
+    bool isSafe(const Settings* settings) const;
 
-    const Token *tokenDef;            ///< function name token in class definition
-    const Token *argDef;              ///< function argument start '(' in class definition
-    const Token *token;               ///< function name token in implementation
-    const Token *arg;                 ///< function argument start '('
-    const Token *retDef;              ///< function return type token
-    const ::Type *retType;            ///< function return type
-    const Scope *functionScope;       ///< scope of function body
+    const Token* tokenDef;            ///< function name token in class definition
+    const Token* argDef;              ///< function argument start '(' in class definition
+    const Token* token;               ///< function name token in implementation
+    const Token* arg;                 ///< function argument start '('
+    const Token* retDef;              ///< function return type token
+    const ::Type* retType;            ///< function return type
+    const Scope* functionScope;       ///< scope of function body
     const Scope* nestedIn;            ///< Scope the function is declared in
     std::list<Variable> argumentList; ///< argument list
     nonneg int initArgCount;        ///< number of args with default values
     Type type;                        ///< constructor, destructor, ...
     AccessControl access;             ///< public/protected/private
-    const Token *noexceptArg;         ///< noexcept token
-    const Token *throwArg;            ///< throw token
-    const Token *templateDef;         ///< points to 'template <' before function
-    const Token *functionPointerUsage; ///< function pointer usage
+    const Token* noexceptArg;         ///< noexcept token
+    const Token* throwArg;            ///< throw token
+    const Token* templateDef;         ///< points to 'template <' before function
+    const Token* functionPointerUsage; ///< function pointer usage
 
-    bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length) const;
+    bool argsMatch(const Scope* scope, const Token* first, const Token* second, const std::string& path, nonneg int path_length) const;
 
     static bool returnsConst(const Function* function, bool unknown = false);
 
@@ -936,11 +936,11 @@ public:
      * @return token to ":" if the function is a constructor
      * and it contains member initialization otherwise a nullptr is returned
      */
-    const Token * constructorMemberInitialization() const;
+    const Token* constructorMemberInitialization() const;
 
 private:
     /** Recursively determine if this function overrides a virtual function in a base class */
-    const Function * getOverriddenFunctionRecursive(const ::Type* baseType, bool *foundAllBaseClasses) const;
+    const Function* getOverriddenFunctionRecursive(const ::Type* baseType, bool* foundAllBaseClasses) const;
 
     unsigned int mFlags;
 
@@ -1004,7 +1004,7 @@ private:
     void isInlineKeyword(bool state) {
         setFlag(fIsInlineKeyword, state);
     }
-    const Token *setFlags(const Token *tok1, const Scope *scope);
+    const Token* setFlags(const Token* tok1, const Scope* scope);
 };
 
 class CPPCHECKLIB Scope {
@@ -1013,25 +1013,25 @@ class CPPCHECKLIB Scope {
 
 public:
     struct UsingInfo {
-        const Token *start;
-        const Scope *scope;
+        const Token* start;
+        const Scope* scope;
     };
 
     enum ScopeType { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch, eLambda, eEnum };
 
-    Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_);
-    Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_);
+    Scope(const SymbolDatabase* check_, const Token* classDef_, const Scope* nestedIn_);
+    Scope(const SymbolDatabase* check_, const Token* classDef_, const Scope* nestedIn_, ScopeType type_, const Token* start_);
 
-    const SymbolDatabase *check;
+    const SymbolDatabase* check;
     std::string className;
-    const Token *classDef;   ///< class/struct/union/namespace token
-    const Token *bodyStart;  ///< '{' token
-    const Token *bodyEnd;    ///< '}' token
+    const Token* classDef;   ///< class/struct/union/namespace token
+    const Token* bodyStart;  ///< '{' token
+    const Token* bodyEnd;    ///< '}' token
     std::list<Function> functionList;
-    std::multimap<std::string, const Function *> functionMap;
+    std::multimap<std::string, const Function*> functionMap;
     std::list<Variable> varlist;
-    const Scope *nestedIn;
-    std::list<Scope *> nestedList;
+    const Scope* nestedIn;
+    std::list<Scope*> nestedList;
     nonneg int numConstructors;
     nonneg int numCopyOrMoveConstructors;
     std::list<UsingInfo> usingList;
@@ -1040,11 +1040,11 @@ public:
     std::map<std::string, Type*> definedTypesMap;
 
     // function specific fields
-    const Scope *functionOf; ///< scope this function belongs to
-    Function *function; ///< function info for this function
+    const Scope* functionOf; ///< scope this function belongs to
+    Function* function; ///< function info for this function
 
     // enum specific fields
-    const Token * enumType;
+    const Token* enumType;
     bool enumClass;
 
     std::vector<Enumerator> enumeratorList;
@@ -1054,20 +1054,20 @@ public:
         return className.size() > 9 && className.compare(0,9,"Anonymous") == 0 && std::isdigit(className[9]);
     }
 
-    const Enumerator * findEnumerator(const std::string & name) const {
-        for (const Enumerator & i : enumeratorList) {
+    const Enumerator* findEnumerator(const std::string& name) const {
+        for (const Enumerator& i : enumeratorList) {
             if (i.name->str() == name)
                 return &i;
         }
         return nullptr;
     }
 
-    bool isNestedIn(const Scope * outer) const {
+    bool isNestedIn(const Scope* outer) const {
         if (!outer)
             return false;
         if (outer == this)
             return true;
-        const Scope * parent = nestedIn;
+        const Scope* parent = nestedIn;
         while (outer != parent && parent)
             parent = parent->nestedIn;
         if (parent && parent == outer)
@@ -1118,43 +1118,43 @@ public:
      * @param requireConst if const refers to a const variable only const methods should be matched
      * @return pointer to function if found or NULL if not found
      */
-    const Function *findFunction(const Token *tok, bool requireConst=false) const;
+    const Function* findFunction(const Token* tok, bool requireConst=false) const;
 
     /**
      * @brief find if name is in nested list
      * @param name name of nested scope
      */
-    Scope *findInNestedList(const std::string & name);
+    Scope* findInNestedList(const std::string& name);
 
-    const Scope *findRecordInNestedList(const std::string & name) const;
-    Scope *findRecordInNestedList(const std::string & name) {
-        return const_cast<Scope *>(const_cast<const Scope *>(this)->findRecordInNestedList(name));
+    const Scope* findRecordInNestedList(const std::string& name) const;
+    Scope* findRecordInNestedList(const std::string& name) {
+        return const_cast<Scope*>(const_cast<const Scope*>(this)->findRecordInNestedList(name));
     }
 
     const Type* findType(const std::string& name) const;
     Type* findType(const std::string& name) {
-        return const_cast<Type*>(const_cast<const Scope *>(this)->findType(name));
+        return const_cast<Type*>(const_cast<const Scope*>(this)->findType(name));
     }
 
     /**
      * @brief find if name is in nested list
      * @param name name of nested scope
      */
-    Scope *findInNestedListRecursive(const std::string & name);
+    Scope* findInNestedListRecursive(const std::string& name);
 
-    void addVariable(const Token *token_, const Token *start_,
-                     const Token *end_, AccessControl access_, const Type *type_,
-                     const Scope *scope_, const Settings* settings);
+    void addVariable(const Token* token_, const Token* start_,
+                     const Token* end_, AccessControl access_, const Type* type_,
+                     const Scope* scope_, const Settings* settings);
 
     /** @brief initialize varlist */
     void getVariableList(const Settings* settings);
 
-    const Function *getDestructor() const;
+    const Function* getDestructor() const;
 
-    void addFunction(const Function & func) {
+    void addFunction(const Function& func) {
         functionList.push_back(func);
 
-        const Function * back = &functionList.back();
+        const Function* back = &functionList.back();
 
         functionMap.insert(make_pair(back->tokenDef->str(), back));
     }
@@ -1170,18 +1170,18 @@ public:
      * @param settings Settings
      * @return pointer to last token
      */
-    const Token *checkVariable(const Token *tok, AccessControl varaccess, const Settings* settings);
+    const Token* checkVariable(const Token* tok, AccessControl varaccess, const Settings* settings);
 
     /**
      * @brief get variable from name
      * @param varname name of variable
      * @return pointer to variable
      */
-    const Variable *getVariable(const std::string &varname) const;
+    const Variable* getVariable(const std::string& varname) const;
 
-    const Token * addEnum(const Token * tok, bool isCpp);
+    const Token* addEnum(const Token* tok, bool isCpp);
 
-    const Scope *findRecordInBase(const std::string &name) const;
+    const Scope* findRecordInBase(const std::string& name) const;
 
 private:
     /**
@@ -1193,7 +1193,7 @@ private:
      */
     bool isVariableDeclaration(const Token* const tok, const Token*& vartok, const Token*& typetok) const;
 
-    void findFunctionInBase(const std::string & name, nonneg int args, std::vector<const Function *> & matches) const;
+    void findFunctionInBase(const std::string& name, nonneg int args, std::vector<const Function*>& matches) const;
 };
 
 enum class Reference {
@@ -1277,33 +1277,33 @@ public:
         originalTypeName(otn)
     {}
 
-    static ValueType parseDecl(const Token *type, const Settings *settings);
+    static ValueType parseDecl(const Token* type, const Settings* settings);
 
-    static Type typeFromString(const std::string &typestr, bool longType);
+    static Type typeFromString(const std::string& typestr, bool longType);
 
     enum class MatchResult { UNKNOWN, SAME, FALLBACK1, FALLBACK2, NOMATCH };
-    static MatchResult matchParameter(const ValueType *call, const ValueType *func);
-    static MatchResult matchParameter(const ValueType *call, const Variable *callVar, const Variable *funcVar);
+    static MatchResult matchParameter(const ValueType* call, const ValueType* func);
+    static MatchResult matchParameter(const ValueType* call, const Variable* callVar, const Variable* funcVar);
 
     bool isPrimitive() const {
         return (type >= ValueType::Type::BOOL);
     }
 
     bool isIntegral() const {
-        return (type >= ValueType::Type::BOOL && type <= ValueType::Type::UNKNOWN_INT);
+        return (type >= ValueType::Type::BOOL&& type <= ValueType::Type::UNKNOWN_INT);
     }
 
     bool isFloat() const {
         return (type >= ValueType::Type::FLOAT && type <= ValueType::Type::LONGDOUBLE);
     }
 
-    bool fromLibraryType(const std::string &typestr, const Settings *settings);
+    bool fromLibraryType(const std::string& typestr, const Settings* settings);
 
     bool isEnum() const {
         return typeScope && typeScope->type == Scope::eEnum;
     }
 
-    MathLib::bigint typeSize(const cppcheck::Platform &platform, bool p=false) const;
+    MathLib::bigint typeSize(const cppcheck::Platform& platform, bool p=false) const;
 
     std::string str() const;
     std::string dump() const;
@@ -1313,17 +1313,17 @@ public:
 class CPPCHECKLIB SymbolDatabase {
     friend class TestSymbolDatabase;
 public:
-    SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
+    SymbolDatabase(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger);
     ~SymbolDatabase();
 
     /** @brief Information about all namespaces/classes/structrues */
     std::list<Scope> scopeList;
 
     /** @brief Fast access to function scopes */
-    std::vector<const Scope *> functionScopes;
+    std::vector<const Scope*> functionScopes;
 
     /** @brief Fast access to class and struct scopes */
-    std::vector<const Scope *> classAndStructScopes;
+    std::vector<const Scope*> classAndStructScopes;
 
     /** @brief Fast access to types */
     std::list<Type> typeList;
@@ -1334,47 +1334,47 @@ public:
      * @param typeTok token containing variable type
      * @return pointer to type if found or NULL if not found
      */
-    const Type *findVariableType(const Scope *start, const Token *typeTok) const;
+    const Type* findVariableType(const Scope* start, const Token* typeTok) const;
 
     /**
      * @brief find a function
      * @param tok token of function call
      * @return pointer to function if found or NULL if not found
      */
-    const Function *findFunction(const Token *tok) const;
+    const Function* findFunction(const Token* tok) const;
 
-    const Scope *findScopeByName(const std::string& name) const;
+    const Scope* findScopeByName(const std::string& name) const;
 
-    const Type* findType(const Token *startTok, const Scope *startScope) const;
-    Type* findType(const Token *startTok, Scope *startScope) const {
-        return const_cast<Type*>(this->findType(startTok, const_cast<const Scope *>(startScope)));
+    const Type* findType(const Token* startTok, const Scope* startScope) const;
+    Type* findType(const Token* startTok, Scope* startScope) const {
+        return const_cast<Type*>(this->findType(startTok, const_cast<const Scope*>(startScope)));
     }
 
-    const Scope *findScope(const Token *tok, const Scope *startScope) const;
-    Scope *findScope(const Token *tok, Scope *startScope) const {
-        return const_cast<Scope *>(this->findScope(tok, const_cast<const Scope *>(startScope)));
+    const Scope* findScope(const Token* tok, const Scope* startScope) const;
+    Scope* findScope(const Token* tok, Scope* startScope) const {
+        return const_cast<Scope*>(this->findScope(tok, const_cast<const Scope*>(startScope)));
     }
 
     bool isVarId(nonneg int varid) const {
         return varid < mVariableList.size();
     }
 
-    const Variable *getVariableFromVarId(nonneg int varId) const {
+    const Variable* getVariableFromVarId(nonneg int varId) const {
         return mVariableList.at(varId);
     }
 
-    const std::vector<const Variable *> & variableList() const {
+    const std::vector<const Variable*>& variableList() const {
         return mVariableList;
     }
 
     /**
      * @brief output a debug message
      */
-    void debugMessage(const Token *tok, const std::string &type, const std::string &msg) const;
+    void debugMessage(const Token* tok, const std::string& type, const std::string& msg) const;
 
-    void printOut(const char * title = nullptr) const;
-    void printVariable(const Variable *var, const char *indent) const;
-    void printXml(std::ostream &out) const;
+    void printOut(const char* title = nullptr) const;
+    void printVariable(const Variable* var, const char* indent) const;
+    void printXml(std::ostream& out) const;
 
     bool isCPP() const;
 
@@ -1390,19 +1390,19 @@ public:
     void validateVariables() const;
 
     /** Set valuetype in provided tokenlist */
-    void setValueTypeInTokenList(bool reportDebugWarnings, Token *tokens=nullptr);
+    void setValueTypeInTokenList(bool reportDebugWarnings, Token* tokens=nullptr);
 
     /**
      * Calculates sizeof value for given type.
      * @param type Token which will contain e.g. "int", "*", or string.
      * @return sizeof for given type, or 0 if it can't be calculated.
      */
-    nonneg int sizeOfType(const Token *type) const;
+    nonneg int sizeOfType(const Token* type) const;
 
     /** Set array dimensions when valueflow analysis is completed */
     void setArrayDimensionsUsingValueFlow();
 
-    void clangSetVariables(const std::vector<const Variable *> &variableList);
+    void clangSetVariables(const std::vector<const Variable*>& variableList);
     void createSymbolDatabaseExprIds();
 
 private:
@@ -1428,36 +1428,36 @@ private:
     void createSymbolDatabaseEscapeFunctions();
     void createSymbolDatabaseIncompleteVars();
 
-    void addClassFunction(Scope **scope, const Token **tok, const Token *argStart);
-    Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);
-    Function *addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
-    void addNewFunction(Scope **scope, const Token **tok);
-    bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart, const Token** declEnd) const;
-    const Type *findTypeInNested(const Token *startTok, const Scope *startScope) const;
-    const Scope *findNamespace(const Token * tok, const Scope * scope) const;
-    Function *findFunctionInScope(const Token *func, const Scope *ns, const std::string & path, nonneg int path_length);
-    const Type *findVariableTypeInBase(const Scope *scope, const Token *typeTok) const;
+    void addClassFunction(Scope** scope, const Token** tok, const Token* argStart);
+    Function* addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token* argStart, const Token* funcStart);
+    Function* addGlobalFunction(Scope*& scope, const Token*& tok, const Token* argStart, const Token* funcStart);
+    void addNewFunction(Scope** scope, const Token** tok);
+    bool isFunction(const Token* tok, const Scope* outerScope, const Token** funcStart, const Token** argStart, const Token** declEnd) const;
+    const Type* findTypeInNested(const Token* startTok, const Scope* startScope) const;
+    const Scope* findNamespace(const Token* tok, const Scope* scope) const;
+    Function* findFunctionInScope(const Token* func, const Scope* ns, const std::string& path, nonneg int path_length);
+    const Type* findVariableTypeInBase(const Scope* scope, const Token* typeTok) const;
 
     typedef std::map<unsigned int, unsigned int> MemberIdMap;
     typedef std::map<unsigned int, MemberIdMap> VarIdMap;
 
-    void fixVarId(VarIdMap & varIds, const Token * vartok, Token * membertok, const Variable * membervar);
+    void fixVarId(VarIdMap& varIds, const Token* vartok, Token* membertok, const Variable* membervar);
 
     /** Whether iName is a keyword as defined in http://en.cppreference.com/w/c/keyword and http://en.cppreference.com/w/cpp/keyword*/
     bool isReservedName(const std::string& iName) const;
 
-    const Enumerator * findEnumerator(const Token * tok) const;
+    const Enumerator* findEnumerator(const Token* tok) const;
 
-    void setValueType(Token *tok, const ValueType &valuetype);
-    void setValueType(Token *tok, const Variable &var);
-    void setValueType(Token *tok, const Enumerator &enumerator);
+    void setValueType(Token* tok, const ValueType& valuetype);
+    void setValueType(Token* tok, const Variable& var);
+    void setValueType(Token* tok, const Enumerator& enumerator);
 
-    const Tokenizer *mTokenizer;
-    const Settings *mSettings;
-    ErrorLogger *mErrorLogger;
+    const Tokenizer* mTokenizer;
+    const Settings* mSettings;
+    ErrorLogger* mErrorLogger;
 
     /** variable symbol table */
-    std::vector<const Variable *> mVariableList;
+    std::vector<const Variable*> mVariableList;
 
     /** list for missing types */
     std::list<Type> mBlankTypes;

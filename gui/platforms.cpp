@@ -18,13 +18,13 @@
 
 #include "platforms.h"
 
-Platforms::Platforms(QObject *parent)
+Platforms::Platforms(QObject* parent)
     : QObject(parent)
 {
     init();
 }
 
-void Platforms::add(const QString &title, Settings::PlatformType platform)
+void Platforms::add(const QString& title, Settings::PlatformType platform)
 {
     Platform plat;
     plat.mTitle = title;

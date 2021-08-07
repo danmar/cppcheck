@@ -2749,7 +2749,7 @@ private:
         checkNoMemset(code,settings);
     }
 
-    void checkNoMemset(const char code[], const Settings &settings) {
+    void checkNoMemset(const char code[], const Settings& settings) {
         // Clear the error log
         errout.str("");
 
@@ -3371,7 +3371,7 @@ private:
                       "[test.cpp:3]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n", errout.str());
     }
 
-    void checkConst(const char code[], Settings *s = nullptr, bool inconclusive = true) {
+    void checkConst(const char code[], Settings* s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
@@ -6901,7 +6901,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkVirtualFunctionCall(const char code[], Settings *s = nullptr, bool inconclusive = true) {
+    void checkVirtualFunctionCall(const char code[], Settings* s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
@@ -7423,7 +7423,7 @@ private:
     }
 
 
-    void ctu(const std::vector<std::string> &code) {
+    void ctu(const std::vector<std::string>& code) {
         Settings settings;
         CheckClass check;
 
@@ -7475,7 +7475,7 @@ private:
         // Check..
         CheckClass checkClass(&tokenizer, &settings1, this);
 
-        Check::FileInfo * fileInfo = checkClass.getFileInfo(&tokenizer, &settings1);
+        Check::FileInfo* fileInfo = checkClass.getFileInfo(&tokenizer, &settings1);
 
         delete fileInfo;
     }

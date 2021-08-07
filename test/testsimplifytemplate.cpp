@@ -5165,9 +5165,9 @@ private:
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
 
-        for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next()) {
+        for (const Token* tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next()) {
             if (tok1->str() == "var1")
-                (const_cast<Token *>(tok1))->varId(1);
+                (const_cast<Token*>(tok1))->varId(1);
         }
 
         return TemplateSimplifier::templateParameters(tokenizer.tokens()->next());
@@ -5226,7 +5226,7 @@ private:
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
 
-        const Token *_tok = tokenizer.tokens();
+        const Token* _tok = tokenizer.tokens();
         for (unsigned i = 0; i < offset; ++i)
             _tok = _tok->next();
         return tokenizer.mTemplateSimplifier->getTemplateNamePosition(_tok);
@@ -5296,11 +5296,11 @@ private:
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
 
-        const Token *_tok = tokenizer.tokens();
+        const Token* _tok = tokenizer.tokens();
         for (unsigned i = 0; i < offset; ++i)
             _tok = _tok->next();
 
-        const Token *tok1 = TemplateSimplifier::findTemplateDeclarationEnd(_tok);
+        const Token* tok1 = TemplateSimplifier::findTemplateDeclarationEnd(_tok);
 
         return (tok1 == Token::findsimplematch(tokenizer.list.front(), pattern, strlen(pattern)));
     }
@@ -5317,7 +5317,7 @@ private:
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateParametersInDeclaration
-    bool getTemplateParametersInDeclarationHelper(const char code[], const std::vector<std::string> & params) {
+    bool getTemplateParametersInDeclarationHelper(const char code[], const std::vector<std::string>& params) {
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
@@ -5325,7 +5325,7 @@ private:
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
 
-        std::vector<const Token *> typeParametersInDeclaration;
+        std::vector<const Token*> typeParametersInDeclaration;
         TemplateSimplifier::getTemplateParametersInDeclaration(tokenizer.tokens()->tokAt(2), typeParametersInDeclaration);
 
         if (params.size() != typeParametersInDeclaration.size())

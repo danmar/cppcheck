@@ -44,11 +44,11 @@ class CPPCHECKLIB CheckAssert : public Check {
 public:
     CheckAssert() : Check(myName()) {}
 
-    CheckAssert(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    CheckAssert(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** run checks, the token list is not simplified */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE {
         CheckAssert checkAssert(tokenizer, settings, errorLogger);
         checkAssert.assertWithSideEffects();
     }
@@ -56,14 +56,14 @@ public:
     void assertWithSideEffects();
 
 protected:
-    void checkVariableAssignment(const Token* assignTok, const Scope *assertionScope);
+    void checkVariableAssignment(const Token* assignTok, const Scope* assertionScope);
     static bool inSameScope(const Token* returnTok, const Token* assignTok);
 
 private:
-    void sideEffectInAssertError(const Token *tok, const std::string& functionName);
-    void assignmentInAssertError(const Token *tok, const std::string &varname);
+    void sideEffectInAssertError(const Token* tok, const std::string& functionName);
+    void assignmentInAssertError(const Token* tok, const std::string& varname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
         CheckAssert c(nullptr, settings, errorLogger);
         c.sideEffectInAssertError(nullptr, "function");
         c.assignmentInAssertError(nullptr, "var");

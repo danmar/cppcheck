@@ -43,10 +43,10 @@ class CPPCHECKLIB CheckVaarg : public Check {
 public:
     CheckVaarg() : Check(myName()) {}
 
-    CheckVaarg(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    CheckVaarg(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE {
         CheckVaarg check(tokenizer, settings, errorLogger);
         check.va_start_argument();
         check.va_list_usage();
@@ -56,13 +56,13 @@ public:
     void va_list_usage();
 
 private:
-    void wrongParameterTo_va_start_error(const Token *tok, const std::string& paramIsName, const std::string& paramShouldName);
-    void referenceAs_va_start_error(const Token *tok, const std::string& paramName);
-    void va_end_missingError(const Token *tok, const std::string& varname);
-    void va_list_usedBeforeStartedError(const Token *tok, const std::string& varname);
-    void va_start_subsequentCallsError(const Token *tok, const std::string& varname);
+    void wrongParameterTo_va_start_error(const Token* tok, const std::string& paramIsName, const std::string& paramShouldName);
+    void referenceAs_va_start_error(const Token* tok, const std::string& paramName);
+    void va_end_missingError(const Token* tok, const std::string& varname);
+    void va_list_usedBeforeStartedError(const Token* tok, const std::string& varname);
+    void va_start_subsequentCallsError(const Token* tok, const std::string& varname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
         CheckVaarg c(nullptr, settings, errorLogger);
         c.wrongParameterTo_va_start_error(nullptr, "arg1", "arg2");
         c.referenceAs_va_start_error(nullptr, "arg1");

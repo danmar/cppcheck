@@ -54,9 +54,9 @@ public:
      * @brief Set list of files to check
      * @param files List of files to check
      */
-    void setFiles(const QStringList &files);
+    void setFiles(const QStringList& files);
 
-    void setProject(const ImportProject &prj);
+    void setProject(const ImportProject& prj);
 
     /**
      * @brief Clear files to check
@@ -73,9 +73,9 @@ public:
     /**
      * ErrorLogger methods
      */
-    void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
-    void reportErr(const ErrorMessage &msg) override;
-    void bughuntingReport(const std::string &str) override;
+    void reportOut(const std::string& outmsg, Color c = Color::Reset) override;
+    void reportErr(const ErrorMessage& msg) override;
+    void bughuntingReport(const std::string& str) override;
 
 public slots:
 
@@ -83,7 +83,7 @@ public slots:
      * @brief Slot threads use to signal this class that a specific file is checked
      * @param file File that is checked
      */
-    void fileChecked(const QString &file);
+    void fileChecked(const QString& file);
 signals:
     /**
      * @brief Progress signal
@@ -97,21 +97,21 @@ signals:
      *
      * @param item Error data
      */
-    void error(const ErrorItem &item);
+    void error(const ErrorItem& item);
 
     /**
      * @brief Signal of a new log message
      *
      * @param logline Log line
      */
-    void log(const QString &logline);
+    void log(const QString& logline);
 
     /**
      * @brief Signal of a debug error
      *
      * @param item Error data
      */
-    void debugError(const ErrorItem &item);
+    void debugError(const ErrorItem& item);
 
     /** @brief bug hunting report */
     void bughuntingReportLine(QString line);

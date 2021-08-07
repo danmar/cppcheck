@@ -50,8 +50,8 @@ void CheckBool::checkIncrementBoolean()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (astIsBool(tok) && tok->astParent() && tok->astParent()->str() == "++") {
                 incrementBooleanError(tok);
@@ -60,7 +60,7 @@ void CheckBool::checkIncrementBoolean()
     }
 }
 
-void CheckBool::incrementBooleanError(const Token *tok)
+void CheckBool::incrementBooleanError(const Token* tok)
 {
     reportError(
         tok,
@@ -86,8 +86,8 @@ void CheckBool::checkBitwiseOnBoolean()
     if (!mSettings->certainty.isEnabled(Certainty::inconclusive))
         return;
 
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->isBinaryOp() && (tok->str() == "&" || tok->str() == "|")) {
                 if (astIsBool(tok->astOperand1()) || astIsBool(tok->astOperand2())) {
@@ -101,7 +101,7 @@ void CheckBool::checkBitwiseOnBoolean()
     }
 }
 
-void CheckBool::bitwiseOnBooleanError(const Token *tok, const std::string &expression, const std::string &op)
+void CheckBool::bitwiseOnBooleanError(const Token* tok, const std::string& expression, const std::string& op)
 {
     reportError(tok, Severity::style, "bitwiseOnBoolean",
                 "Boolean expression '" + expression + "' is used in bitwise operation. Did you mean '" + op + "'?",
@@ -119,7 +119,7 @@ void CheckBool::checkComparisonOfBoolWithInt()
         return;
 
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->isComparisonOp() || !tok->isBinaryOp())
                 continue;
@@ -138,7 +138,7 @@ void CheckBool::checkComparisonOfBoolWithInt()
     }
 }
 
-void CheckBool::comparisonOfBoolWithInvalidComparator(const Token *tok, const std::string &expression)
+void CheckBool::comparisonOfBoolWithInvalidComparator(const Token* tok, const std::string& expression)
 {
     reportError(tok, Severity::warning, "comparisonOfBoolWithInvalidComparator",
                 "Comparison of a boolean value using relational operator (<, >, <= or >=).\n"
@@ -170,17 +170,17 @@ void CheckBool::checkComparisonOfFuncReturningBool()
     if (!mTokenizer->isCPP())
         return;
 
-    const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->isComparisonOp() || tok->str() == "==" || tok->str() == "!=")
                 continue;
-            const Token *firstToken = tok->previous();
+            const Token* firstToken = tok->previous();
             if (tok->strAt(-1) == ")") {
                 firstToken = firstToken->link()->previous();
             }
-            const Token *secondToken = tok->next();
+            const Token* secondToken = tok->next();
             while (secondToken->str() == "!") {
                 secondToken = secondToken->next();
             }
@@ -197,7 +197,7 @@ void CheckBool::checkComparisonOfFuncReturningBool()
     }
 }
 
-void CheckBool::comparisonOfFuncReturningBoolError(const Token *tok, const std::string &expression)
+void CheckBool::comparisonOfFuncReturningBoolError(const Token* tok, const std::string& expression)
 {
     reportError(tok, Severity::style, "comparisonOfFuncReturningBoolError",
                 "Comparison of a function returning boolean value using relational (<, >, <= or >=) operator.\n"
@@ -206,7 +206,7 @@ void CheckBool::comparisonOfFuncReturningBoolError(const Token *tok, const std::
                 " operator could cause unexpected results.", CWE398, Certainty::normal);
 }
 
-void CheckBool::comparisonOfTwoFuncsReturningBoolError(const Token *tok, const std::string &expression1, const std::string &expression2)
+void CheckBool::comparisonOfTwoFuncsReturningBoolError(const Token* tok, const std::string& expression1, const std::string& expression2)
 {
     reportError(tok, Severity::style, "comparisonOfTwoFuncsReturningBoolError",
                 "Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n"
@@ -234,13 +234,13 @@ void CheckBool::checkComparisonOfBoolWithBool()
 
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->isComparisonOp() || tok->str() == "==" || tok->str() == "!=")
                 continue;
             bool firstTokenBool = false;
 
-            const Token *firstToken = tok->previous();
+            const Token* firstToken = tok->previous();
             if (firstToken->varId()) {
                 if (isBool(firstToken->variable())) {
                     firstTokenBool = true;
@@ -250,7 +250,7 @@ void CheckBool::checkComparisonOfBoolWithBool()
                 continue;
 
             bool secondTokenBool = false;
-            const Token *secondToken = tok->next();
+            const Token* secondToken = tok->next();
             if (secondToken->varId()) {
                 if (isBool(secondToken->variable())) {
                     secondTokenBool = true;
@@ -263,7 +263,7 @@ void CheckBool::checkComparisonOfBoolWithBool()
     }
 }
 
-void CheckBool::comparisonOfBoolWithBoolError(const Token *tok, const std::string &expression)
+void CheckBool::comparisonOfBoolWithBoolError(const Token* tok, const std::string& expression)
 {
     reportError(tok, Severity::style, "comparisonOfBoolWithBoolError",
                 "Comparison of a variable having boolean value using relational (<, >, <= or >=) operator.\n"
@@ -275,8 +275,8 @@ void CheckBool::comparisonOfBoolWithBoolError(const Token *tok, const std::strin
 //-----------------------------------------------------------------------------
 void CheckBool::checkAssignBoolToPointer()
 {
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->str() == "=" && astIsPointer(tok->astOperand1()) && astIsBool(tok->astOperand2())) {
                 assignBoolToPointerError(tok);
@@ -285,7 +285,7 @@ void CheckBool::checkAssignBoolToPointer()
     }
 }
 
-void CheckBool::assignBoolToPointerError(const Token *tok)
+void CheckBool::assignBoolToPointerError(const Token* tok)
 {
     reportError(tok, Severity::error, "assignBoolToPointer",
                 "Boolean value assigned to pointer.", CWE587, Certainty::normal);
@@ -300,7 +300,7 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
 
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
 
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->isComparisonOp())
                 continue;
@@ -331,13 +331,13 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
             if (astIsBool(numTok))
                 continue;
 
-            const ValueFlow::Value *minval = numTok->getValueLE(0, mSettings);
+            const ValueFlow::Value* minval = numTok->getValueLE(0, mSettings);
             if (minval && minval->intvalue == 0 &&
                 (numInRhs ? Token::Match(tok, ">|==|!=")
                  : Token::Match(tok, "<|==|!=")))
                 minval = nullptr;
 
-            const ValueFlow::Value *maxval = numTok->getValueGE(1, mSettings);
+            const ValueFlow::Value* maxval = numTok->getValueGE(1, mSettings);
             if (maxval && maxval->intvalue == 1 &&
                 (numInRhs ? Token::Match(tok, "<|==|!=")
                  : Token::Match(tok, ">|==|!=")))
@@ -351,7 +351,7 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
     }
 }
 
-void CheckBool::comparisonOfBoolExpressionWithIntError(const Token *tok, bool not0or1)
+void CheckBool::comparisonOfBoolExpressionWithIntError(const Token* tok, bool not0or1)
 {
     if (not0or1)
         reportError(tok, Severity::warning, "compareBoolExpressionWithInt",
@@ -366,7 +366,7 @@ void CheckBool::pointerArithBool()
 {
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
 
-    for (const Scope &scope : symbolDatabase->scopeList) {
+    for (const Scope& scope : symbolDatabase->scopeList) {
         if (scope.type != Scope::eIf && !scope.isLoopScope())
             continue;
         const Token* tok = scope.classDef->next()->astOperand2();
@@ -383,7 +383,7 @@ void CheckBool::pointerArithBool()
     }
 }
 
-void CheckBool::pointerArithBoolCond(const Token *tok)
+void CheckBool::pointerArithBoolCond(const Token* tok)
 {
     if (!tok)
         return;
@@ -403,7 +403,7 @@ void CheckBool::pointerArithBoolCond(const Token *tok)
         pointerArithBoolError(tok);
 }
 
-void CheckBool::pointerArithBoolError(const Token *tok)
+void CheckBool::pointerArithBoolError(const Token* tok)
 {
     reportError(tok,
                 Severity::error,
@@ -418,8 +418,8 @@ void CheckBool::checkAssignBoolToFloat()
         return;
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->str() == "=" && astIsFloat(tok->astOperand1(), false) && astIsBool(tok->astOperand2())) {
                 assignBoolToFloatError(tok);
@@ -428,7 +428,7 @@ void CheckBool::checkAssignBoolToFloat()
     }
 }
 
-void CheckBool::assignBoolToFloatError(const Token *tok)
+void CheckBool::assignBoolToFloatError(const Token* tok)
 {
     reportError(tok, Severity::style, "assignBoolToFloat",
                 "Boolean value assigned to floating point variable.", CWE704, Certainty::normal);
@@ -439,9 +439,9 @@ void CheckBool::returnValueOfFunctionReturningBool()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
-    const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         if (!(scope->function && Token::Match(scope->function->retDef, "bool|_Bool")))
             continue;
 
@@ -460,7 +460,7 @@ void CheckBool::returnValueOfFunctionReturningBool()
     }
 }
 
-void CheckBool::returnValueBoolError(const Token *tok)
+void CheckBool::returnValueBoolError(const Token* tok)
 {
     reportError(tok, Severity::style, "returnNonBoolInBooleanFunction", "Non-boolean value returned from function returning bool");
 }

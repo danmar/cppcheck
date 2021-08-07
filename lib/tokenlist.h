@@ -42,11 +42,11 @@ public:
     explicit TokenList(const Settings* settings);
     ~TokenList();
 
-    void setSettings(const Settings *settings) {
+    void setSettings(const Settings* settings) {
         mSettings = settings;
     }
 
-    const Settings *getSettings() const {
+    const Settings* getSettings() const {
         return mSettings;
     }
 
@@ -67,16 +67,16 @@ public:
      * Delete all tokens in given token list
      * @param tok token list to delete
      */
-    static void deleteTokens(Token *tok);
+    static void deleteTokens(Token* tok);
 
     void addtoken(std::string str, const nonneg int lineno, const nonneg int column, const nonneg int fileno, bool split = false);
-    void addtoken(std::string str, const Token *locationTok);
+    void addtoken(std::string str, const Token* locationTok);
 
-    void addtoken(const Token *tok, const nonneg int lineno, const nonneg int column, const nonneg int fileno);
-    void addtoken(const Token *tok, const Token *locationTok);
-    void addtoken(const Token *tok);
+    void addtoken(const Token* tok, const nonneg int lineno, const nonneg int column, const nonneg int fileno);
+    void addtoken(const Token* tok, const Token* locationTok);
+    void addtoken(const Token* tok);
 
-    static void insertTokens(Token *dest, const Token *src, nonneg int n);
+    static void insertTokens(Token* dest, const Token* src, nonneg int n);
 
     /**
      * Copy tokens.
@@ -86,7 +86,7 @@ public:
      * @param one_line true=>copy all tokens to the same line as dest. false=>copy all tokens to dest while keeping the 'line breaks'
      * @return new location of last token copied
      */
-    static Token *copyTokens(Token *dest, const Token *first, const Token *last, bool one_line = true);
+    static Token* copyTokens(Token* dest, const Token* first, const Token* last, bool one_line = true);
 
     /**
      * Create tokens from code.
@@ -97,7 +97,7 @@ public:
      * @param code input stream for code
      * @param file0 source file name
      */
-    bool createTokens(std::istream &code, const std::string& file0 = emptyString);
+    bool createTokens(std::istream& code, const std::string& file0 = emptyString);
 
     void createTokens(simplecpp::TokenList&& tokenList);
 
@@ -105,21 +105,21 @@ public:
     void deallocateTokens();
 
     /** append file name if seen the first time; return its index in any case */
-    int appendFileIfNew(const std::string &fileName);
+    int appendFileIfNew(const std::string& fileName);
 
     /** get first token of list */
-    const Token *front() const {
+    const Token* front() const {
         return mTokensFrontBack.front;
     }
-    Token *front() {
+    Token* front() {
         return mTokensFrontBack.front;
     }
 
     /** get last token of list */
-    const Token *back() const {
+    const Token* back() const {
         return mTokensFrontBack.back;
     }
-    Token *back() {
+    Token* back() {
         return mTokensFrontBack.back;
     }
 
@@ -132,21 +132,21 @@ public:
         return mFiles;
     }
 
-    std::string getOrigFile(const Token *tok) const;
+    std::string getOrigFile(const Token* tok) const;
 
     /**
      * get filename for given token
      * @param tok The given token
      * @return filename for the given token
      */
-    const std::string& file(const Token *tok) const;
+    const std::string& file(const Token* tok) const;
 
     /**
      * Get file:line for a given token
      * @param tok given token
      * @return location for given token
      */
-    std::string fileLine(const Token *tok) const;
+    std::string fileLine(const Token* tok) const;
 
     /**
      * Calculates a 64-bit checksum of the token list used to compare
@@ -188,15 +188,15 @@ public:
 
     void clangSetOrigFiles();
 
-    bool isKeyword(const std::string &str) const;
+    bool isKeyword(const std::string& str) const;
 
 private:
 
     /** Disable copy constructor, no implementation */
-    TokenList(const TokenList &);
+    TokenList(const TokenList&);
 
     /** Disable assignment operator, no implementation */
-    TokenList &operator=(const TokenList &);
+    TokenList& operator=(const TokenList&);
 
     void determineCppC();
 

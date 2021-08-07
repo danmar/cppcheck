@@ -43,7 +43,7 @@ static bool isAcceptedErrorIdChar(char c)
     }
 }
 
-std::string Suppressions::parseFile(std::istream &istr)
+std::string Suppressions::parseFile(std::istream& istr)
 {
     // Change '\r' to '\n' in the istr
     std::string filedata;
@@ -74,7 +74,7 @@ std::string Suppressions::parseFile(std::istream &istr)
 }
 
 
-std::string Suppressions::parseXmlFile(const char *filename)
+std::string Suppressions::parseXmlFile(const char* filename)
 {
     tinyxml2::XMLDocument doc;
     const tinyxml2::XMLError error = doc.LoadFile(filename);
@@ -83,14 +83,14 @@ std::string Suppressions::parseXmlFile(const char *filename)
     if (error != tinyxml2::XML_SUCCESS)
         return "Failed to parse XML file";
 
-    const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
-    for (const tinyxml2::XMLElement * e = rootnode->FirstChildElement(); e; e = e->NextSiblingElement()) {
+    const tinyxml2::XMLElement* const rootnode = doc.FirstChildElement();
+    for (const tinyxml2::XMLElement* e = rootnode->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (std::strcmp(e->Name(), "suppress") != 0)
             return "Invalid suppression xml file format, expected <suppress> element but got a \"" + std::string(e->Name()) + '\"';
 
         Suppression s;
-        for (const tinyxml2::XMLElement * e2 = e->FirstChildElement(); e2; e2 = e2->NextSiblingElement()) {
-            const char *text = e2->GetText() ? e2->GetText() : "";
+        for (const tinyxml2::XMLElement* e2 = e->FirstChildElement(); e2; e2 = e2->NextSiblingElement()) {
+            const char* text = e2->GetText() ? e2->GetText() : "";
             if (std::strcmp(e2->Name(), "id") == 0)
                 s.errorId = text;
             else if (std::strcmp(e2->Name(), "fileName") == 0)
@@ -113,7 +113,7 @@ std::string Suppressions::parseXmlFile(const char *filename)
     return "";
 }
 
-std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(const std::string &comment, std::string *errorMessage)
+std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(const std::string& comment, std::string* errorMessage)
 {
     std::vector<Suppression> suppressions;
 
@@ -168,7 +168,7 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(c
     return suppressions;
 }
 
-std::string Suppressions::addSuppressionLine(const std::string &line)
+std::string Suppressions::addSuppressionLine(const std::string& line)
 {
     std::istringstream lineStream;
     Suppressions::Suppression suppression;
@@ -216,7 +216,7 @@ std::string Suppressions::addSuppressionLine(const std::string &line)
     return addSuppression(suppression);
 }
 
-std::string Suppressions::addSuppression(const Suppressions::Suppression &suppression)
+std::string Suppressions::addSuppression(const Suppressions::Suppression& suppression)
 {
     // Check if suppression is already in list
     auto foundSuppression = std::find_if(mSuppressions.begin(), mSuppressions.end(),
@@ -253,9 +253,9 @@ std::string Suppressions::addSuppression(const Suppressions::Suppression &suppre
     return "";
 }
 
-std::string Suppressions::addSuppressions(const std::list<Suppression> &suppressions)
+std::string Suppressions::addSuppressions(const std::list<Suppression>& suppressions)
 {
-    for (const auto &newSuppression : suppressions) {
+    for (const auto& newSuppression : suppressions) {
         auto errmsg = addSuppression(newSuppression);
         if (errmsg != "")
             return errmsg;
@@ -263,12 +263,12 @@ std::string Suppressions::addSuppressions(const std::list<Suppression> &suppress
     return "";
 }
 
-void Suppressions::ErrorMessage::setFileName(const std::string &s)
+void Suppressions::ErrorMessage::setFileName(const std::string& s)
 {
     mFileName = Path::simplifyPath(s);
 }
 
-bool Suppressions::Suppression::parseComment(std::string comment, std::string *errorMessage)
+bool Suppressions::Suppression::parseComment(std::string comment, std::string* errorMessage)
 {
     if (comment.size() < 2)
         return false;
@@ -304,7 +304,7 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::string *e
     return true;
 }
 
-bool Suppressions::Suppression::isSuppressed(const Suppressions::ErrorMessage &errmsg) const
+bool Suppressions::Suppression::isSuppressed(const Suppressions::ErrorMessage& errmsg) const
 {
     if (hash > 0 && hash != errmsg.hash)
         return false;
@@ -335,7 +335,7 @@ bool Suppressions::Suppression::isSuppressed(const Suppressions::ErrorMessage &e
     return true;
 }
 
-bool Suppressions::Suppression::isMatch(const Suppressions::ErrorMessage &errmsg)
+bool Suppressions::Suppression::isMatch(const Suppressions::ErrorMessage& errmsg)
 {
     if (!isSuppressed(errmsg))
         return false;
@@ -361,10 +361,10 @@ std::string Suppressions::Suppression::getText() const
     return ret;
 }
 
-bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg)
+bool Suppressions::isSuppressed(const Suppressions::ErrorMessage& errmsg)
 {
     const bool unmatchedSuppression(errmsg.errorId == "unmatchedSuppression");
-    for (Suppression &s : mSuppressions) {
+    for (Suppression& s : mSuppressions) {
         if (unmatchedSuppression && s.errorId != errmsg.errorId)
             continue;
         if (s.isMatch(errmsg))
@@ -373,10 +373,10 @@ bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg)
     return false;
 }
 
-bool Suppressions::isSuppressedLocal(const Suppressions::ErrorMessage &errmsg)
+bool Suppressions::isSuppressedLocal(const Suppressions::ErrorMessage& errmsg)
 {
     const bool unmatchedSuppression(errmsg.errorId == "unmatchedSuppression");
-    for (Suppression &s : mSuppressions) {
+    for (Suppression& s : mSuppressions) {
         if (!s.isLocal())
             continue;
         if (unmatchedSuppression && s.errorId != errmsg.errorId)
@@ -387,10 +387,10 @@ bool Suppressions::isSuppressedLocal(const Suppressions::ErrorMessage &errmsg)
     return false;
 }
 
-void Suppressions::dump(std::ostream & out) const
+void Suppressions::dump(std::ostream& out) const
 {
     out << "  <suppressions>" << std::endl;
-    for (const Suppression &suppression : mSuppressions) {
+    for (const Suppression& suppression : mSuppressions) {
         out << "    <suppression";
         out << " errorId=\"" << ErrorLogger::toxml(suppression.errorId) << '"';
         if (!suppression.fileName.empty())
@@ -406,11 +406,11 @@ void Suppressions::dump(std::ostream & out) const
     out << "  </suppressions>" << std::endl;
 }
 
-std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions(const std::string &file, const bool unusedFunctionChecking) const
+std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions(const std::string& file, const bool unusedFunctionChecking) const
 {
     std::string tmpFile = Path::simplifyPath(file);
     std::list<Suppression> result;
-    for (const Suppression &s : mSuppressions) {
+    for (const Suppression& s : mSuppressions) {
         if (s.matched)
             continue;
         if (s.hash > 0)
@@ -427,7 +427,7 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions
 std::list<Suppressions::Suppression> Suppressions::getUnmatchedGlobalSuppressions(const bool unusedFunctionChecking) const
 {
     std::list<Suppression> result;
-    for (const Suppression &s : mSuppressions) {
+    for (const Suppression& s : mSuppressions) {
         if (s.matched)
             continue;
         if (s.hash > 0)

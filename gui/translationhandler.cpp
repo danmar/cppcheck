@@ -46,7 +46,7 @@ static void unused()
 #endif
 }
 
-TranslationHandler::TranslationHandler(QObject *parent) :
+TranslationHandler::TranslationHandler(QObject* parent) :
     QObject(parent),
     mCurrentLanguage("en"),
     mTranslator(nullptr)
@@ -80,7 +80,7 @@ const QStringList TranslationHandler::getNames() const
     return names;
 }
 
-bool TranslationHandler::setLanguage(const QString &code)
+bool TranslationHandler::setLanguage(const QString& code)
 {
     bool failure = false;
     QString error;
@@ -181,7 +181,7 @@ QString TranslationHandler::suggestLanguage() const
     return language;
 }
 
-void TranslationHandler::addTranslation(const char *name, const char *filename)
+void TranslationHandler::addTranslation(const char* name, const char* filename)
 {
     TranslationInfo info;
     info.mName = name;
@@ -191,7 +191,7 @@ void TranslationHandler::addTranslation(const char *name, const char *filename)
     mTranslations.append(info);
 }
 
-int TranslationHandler::getLanguageIndexByCode(const QString &code) const
+int TranslationHandler::getLanguageIndexByCode(const QString& code) const
 {
     int index = -1;
     for (int i = 0; i < mTranslations.size(); i++) {

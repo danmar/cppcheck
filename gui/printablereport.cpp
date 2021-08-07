@@ -43,7 +43,7 @@ void PrintableReport::writeFooter()
     // No footer for printable report
 }
 
-void PrintableReport::writeError(const ErrorItem &error)
+void PrintableReport::writeError(const ErrorItem& error)
 {
     const QString file = QDir::toNativeSeparators(error.errorPath.back().file);
     QString line = QString("%1,%2,").arg(file).arg(error.errorPath.back().line);

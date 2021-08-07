@@ -45,11 +45,11 @@ void CheckPostfixOperator::postfixOperator()
     if (!mSettings->severity.isEnabled(Severity::performance))
         return;
 
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
 
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            const Variable *var = tok->variable();
+            const Variable* var = tok->variable();
             if (!var || !Token::Match(tok, "%var% ++|--"))
                 continue;
 
@@ -72,7 +72,7 @@ void CheckPostfixOperator::postfixOperator()
 //---------------------------------------------------------------------------
 
 
-void CheckPostfixOperator::postfixOperatorError(const Token *tok)
+void CheckPostfixOperator::postfixOperatorError(const Token* tok)
 {
     reportError(tok, Severity::performance, "postfixOperator",
                 "Prefer prefix ++/-- operators for non-primitive types.\n"

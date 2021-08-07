@@ -258,7 +258,7 @@ private:
         TEST_CASE(nonGarbageCode1); // #8346
     }
 
-    std::string checkCode(const std::string &code, bool cpp = true) {
+    std::string checkCode(const std::string& code, bool cpp = true) {
         // double the tests - run each example as C as well as C++
         const char* const filename = cpp ? "test.cpp" : "test.c";
         const char* const alternatefilename = cpp ? "test.c" : "test.cpp";
@@ -271,7 +271,7 @@ private:
         return checkCodeInternal(code, filename);
     }
 
-    std::string checkCodeInternal(const std::string &code, const char* filename) {
+    std::string checkCodeInternal(const std::string& code, const char* filename) {
         errout.str("");
 
         // tokenize..
@@ -280,7 +280,7 @@ private:
         tokenizer.tokenize(istr, filename);
 
         // call all "runChecks" in all registered Check classes
-        for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+        for (std::list<Check*>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
             (*it)->runChecks(&tokenizer, &settings, this);
         }
 

@@ -480,11 +480,11 @@ private:
         tokenList.front()->next()->astOperand1(tokenList.front());
 
         // arg1: type=strlen arg2
-        const std::vector<Library::ArgumentChecks::MinSize> *minsizes = library.argminsizes(tokenList.front(),1);
+        const std::vector<Library::ArgumentChecks::MinSize>* minsizes = library.argminsizes(tokenList.front(),1);
         ASSERT_EQUALS(true, minsizes != nullptr);
         ASSERT_EQUALS(1U, minsizes ? minsizes->size() : 1U);
         if (minsizes && minsizes->size() == 1U) {
-            const Library::ArgumentChecks::MinSize &m = minsizes->front();
+            const Library::ArgumentChecks::MinSize& m = minsizes->front();
             ASSERT_EQUALS(true, Library::ArgumentChecks::MinSize::Type::STRLEN == m.type);
             ASSERT_EQUALS(2, m.arg);
         }
@@ -494,7 +494,7 @@ private:
         ASSERT_EQUALS(true, minsizes != nullptr);
         ASSERT_EQUALS(1U, minsizes ? minsizes->size() : 1U);
         if (minsizes && minsizes->size() == 1U) {
-            const Library::ArgumentChecks::MinSize &m = minsizes->front();
+            const Library::ArgumentChecks::MinSize& m = minsizes->front();
             ASSERT_EQUALS(true, Library::ArgumentChecks::MinSize::Type::ARGVALUE == m.type);
             ASSERT_EQUALS(3, m.arg);
         }
@@ -504,7 +504,7 @@ private:
         ASSERT_EQUALS(true, minsizes != nullptr);
         ASSERT_EQUALS(1U, minsizes ? minsizes->size() : 1U);
         if (minsizes && minsizes->size() == 1U) {
-            const Library::ArgumentChecks::MinSize &m = minsizes->front();
+            const Library::ArgumentChecks::MinSize& m = minsizes->front();
             ASSERT(Library::ArgumentChecks::MinSize::Type::VALUE == m.type);
             ASSERT_EQUALS(500, m.value);
         }
@@ -720,7 +720,7 @@ private:
             ASSERT_EQUALS(true, Library::ErrorCode::OK == (readLibrary(library, xmldata)).errorcode);
             // s8
             {
-                const struct Library::PodType * const type = library.podtype("s8");
+                const struct Library::PodType* const type = library.podtype("s8");
                 ASSERT_EQUALS(true, type != nullptr);
                 if (type) {
                     ASSERT_EQUALS(1U, type->size);
@@ -729,7 +729,7 @@ private:
             }
             // u8
             {
-                const struct Library::PodType * const type = library.podtype("u8");
+                const struct Library::PodType* const type = library.podtype("u8");
                 ASSERT_EQUALS(true, type != nullptr);
                 if (type) {
                     ASSERT_EQUALS(1U, type->size);
@@ -738,7 +738,7 @@ private:
             }
             // u16
             {
-                const struct Library::PodType * const type = library.podtype("u16");
+                const struct Library::PodType* const type = library.podtype("u16");
                 ASSERT_EQUALS(true, type != nullptr);
                 if (type) {
                     ASSERT_EQUALS(2U, type->size);
@@ -747,7 +747,7 @@ private:
             }
             // s16
             {
-                const struct Library::PodType * const type = library.podtype("s16");
+                const struct Library::PodType* const type = library.podtype("s16");
                 ASSERT_EQUALS(true, type != nullptr);
                 if (type) {
                     ASSERT_EQUALS(2U, type->size);
@@ -756,7 +756,7 @@ private:
             }
             // robustness test: provide cfg without PodType
             {
-                const struct Library::PodType * const type = library.podtype("nonExistingPodType");
+                const struct Library::PodType* const type = library.podtype("nonExistingPodType");
                 ASSERT_EQUALS(true, type == nullptr);
             }
         }

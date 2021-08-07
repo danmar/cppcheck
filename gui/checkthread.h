@@ -37,7 +37,7 @@ class ThreadResult;
 class CheckThread : public QThread {
     Q_OBJECT
 public:
-    explicit CheckThread(ThreadResult &result);
+    explicit CheckThread(ThreadResult& result);
     virtual ~CheckThread();
 
     /**
@@ -45,27 +45,27 @@ public:
      *
      * @param settings settings for cppcheck
      */
-    void check(const Settings &settings);
+    void check(const Settings& settings);
 
     /**
      * @brief Run whole program analysis
      * @param files    All files
      */
-    void analyseWholeProgram(const QStringList &files);
+    void analyseWholeProgram(const QStringList& files);
 
-    void setAddonsAndTools(const QStringList &addonsAndTools) {
+    void setAddonsAndTools(const QStringList& addonsAndTools) {
         mAddonsAndTools = addonsAndTools;
     }
 
-    void setDataDir(const QString &dataDir) {
+    void setDataDir(const QString& dataDir) {
         mDataDir = dataDir;
     }
 
-    void setClangIncludePaths(const QStringList &s) {
+    void setClangIncludePaths(const QStringList& s) {
         mClangIncludePaths = s;
     }
 
-    void setSuppressions(const QList<Suppressions::Suppression> &s) {
+    void setSuppressions(const QList<Suppressions::Suppression>& s) {
         mSuppressions = s;
     }
 
@@ -97,7 +97,7 @@ signals:
      */
     void done();
 
-    void fileChecked(const QString &file);
+    void fileChecked(const QString& file);
 protected:
 
     /**
@@ -119,18 +119,18 @@ protected:
      */
     State mState;
 
-    ThreadResult &mResult;
+    ThreadResult& mResult;
     /**
      * @brief Cppcheck itself
      */
     CppCheck mCppcheck;
 
 private:
-    void runAddonsAndTools(const ImportProject::FileSettings *fileSettings, const QString &fileName);
+    void runAddonsAndTools(const ImportProject::FileSettings* fileSettings, const QString& fileName);
 
-    void parseClangErrors(const QString &tool, const QString &file0, QString err);
+    void parseClangErrors(const QString& tool, const QString& file0, QString err);
 
-    bool isSuppressed(const Suppressions::ErrorMessage &errorMessage) const;
+    bool isSuppressed(const Suppressions::ErrorMessage& errorMessage) const;
 
     QStringList mFiles;
     bool mAnalyseWholeProgram;

@@ -3467,7 +3467,7 @@ private:
         Tokenizer tokenizer(&settings1,this);
         std::istringstream code("void f() { int a,b,c; x(a,b,c); }");
         tokenizer.tokenize(code,"test.c");
-        const Token *xtok = Token::findsimplematch(tokenizer.tokens(), "x");
+        const Token* xtok = Token::findsimplematch(tokenizer.tokens(), "x");
 
         // nothing bad..
         {
@@ -3477,7 +3477,7 @@ private:
             library.functions["x"].argumentChecks[2] = arg;
             library.functions["x"].argumentChecks[3] = arg;
 
-            std::list<const Token *> null;
+            std::list<const Token*> null;
             CheckNullPointer::parseFunctionCall(*xtok, null, &library);
             ASSERT_EQUALS(0U, null.size());
         }
@@ -3491,7 +3491,7 @@ private:
             library.functions["x"].argumentChecks[3] = arg;
             library.functions["x"].argumentChecks[1].notnull = true;
 
-            std::list<const Token *> null;
+            std::list<const Token*> null;
             CheckNullPointer::parseFunctionCall(*xtok, null, &library);
             ASSERT_EQUALS(1U, null.size());
             ASSERT_EQUALS("a", null.front()->str());
@@ -3797,7 +3797,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        CTU::FileInfo *ctu = CTU::getFileInfo(&tokenizer);
+        CTU::FileInfo* ctu = CTU::getFileInfo(&tokenizer);
 
         // Check code..
         std::list<Check::FileInfo*> fileInfo;

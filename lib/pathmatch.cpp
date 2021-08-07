@@ -25,7 +25,7 @@
 #include <cctype>
 #include <cstddef>
 
-PathMatch::PathMatch(const std::vector<std::string> &excludedPaths, bool caseSensitive)
+PathMatch::PathMatch(const std::vector<std::string>& excludedPaths, bool caseSensitive)
     : mExcludedPaths(excludedPaths), mCaseSensitive(caseSensitive)
 {
     if (!mCaseSensitive)
@@ -34,7 +34,7 @@ PathMatch::PathMatch(const std::vector<std::string> &excludedPaths, bool caseSen
     mWorkingDirectory.push_back(Path::getCurrentPath());
 }
 
-bool PathMatch::match(const std::string &path) const
+bool PathMatch::match(const std::string& path) const
 {
     if (path.empty())
         return false;
@@ -78,7 +78,7 @@ bool PathMatch::match(const std::string &path) const
     return false;
 }
 
-std::string PathMatch::removeFilename(const std::string &path)
+std::string PathMatch::removeFilename(const std::string& path)
 {
     const std::size_t ind = path.find_last_of('/');
     return path.substr(0, ind + 1);

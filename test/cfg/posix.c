@@ -29,7 +29,7 @@
 #include <wchar.h>
 #include <string.h>
 
-char * overlappingWriteFunction_stpcpy(char *src, char *dest)
+char* overlappingWriteFunction_stpcpy(char* src, char* dest)
 {
     // No warning shall be shown:
     (void) stpcpy(dest, src);
@@ -37,7 +37,7 @@ char * overlappingWriteFunction_stpcpy(char *src, char *dest)
     return stpcpy(src, src);
 }
 
-void overlappingWriteFunction_bcopy(char *buf, const size_t count)
+void overlappingWriteFunction_bcopy(char* buf, const size_t count)
 {
     // No warning shall be shown:
     // cppcheck-suppress bcopyCalled
@@ -49,7 +49,7 @@ void overlappingWriteFunction_bcopy(char *buf, const size_t count)
     bcopy(&buf[0], &buf[3], 4U);
 }
 
-void overlappingWriteFunction_memccpy(unsigned char *src, unsigned char *dest, int c, size_t count)
+void overlappingWriteFunction_memccpy(unsigned char* src, unsigned char* dest, int c, size_t count)
 {
     // No warning shall be shown:
     (void)memccpy(dest, src, c, count);
@@ -60,7 +60,7 @@ void overlappingWriteFunction_memccpy(unsigned char *src, unsigned char *dest, i
     (void)memccpy(dest, dest+3, c, 4);
 }
 
-void overlappingWriteFunction_stpncpy(char *src, char *dest, ssize_t n)
+void overlappingWriteFunction_stpncpy(char* src, char* dest, ssize_t n)
 {
     // No warning shall be shown:
     (void) stpncpy(dest, src, n);
@@ -68,7 +68,7 @@ void overlappingWriteFunction_stpncpy(char *src, char *dest, ssize_t n)
     (void)stpncpy(src, src+3, 4);
 }
 
-wchar_t* overlappingWriteFunction_wcpncpy(wchar_t *src, wchar_t *dest, ssize_t n)
+wchar_t* overlappingWriteFunction_wcpncpy(wchar_t* src, wchar_t* dest, ssize_t n)
 {
     // No warning shall be shown:
     (void) wcpncpy(dest, src, n);
@@ -76,7 +76,7 @@ wchar_t* overlappingWriteFunction_wcpncpy(wchar_t *src, wchar_t *dest, ssize_t n
     return wcpncpy(src, src+3, 4);
 }
 
-void overlappingWriteFunction_swab(char *src, char *dest, ssize_t n)
+void overlappingWriteFunction_swab(char* src, char* dest, ssize_t n)
 {
     // No warning shall be shown:
     swab(dest, src, n);
@@ -92,29 +92,29 @@ bool invalidFunctionArgBool_isascii(bool b, int c)
     return isascii(c != 0);
 }
 
-void uninitvar_putenv(char * envstr)
+void uninitvar_putenv(char* envstr)
 {
     // No warning is expected
     (void)putenv(envstr);
 
-    char * p;
+    char* p;
     // cppcheck-suppress uninitvar
     (void)putenv(p);
 }
 
-void nullPointer_putenv(char * envstr)
+void nullPointer_putenv(char* envstr)
 {
     // No warning is expected
     (void)putenv(envstr);
 
-    char * p=NULL;
+    char* p=NULL;
     // cppcheck-suppress nullPointer
     (void)putenv(p);
 }
 
 void memleak_scandir(void)
 {
-    struct dirent **namelist;
+    struct dirent** namelist;
     int n = scandir(".", &namelist, NULL, alphasort);
     if (n == -1) {
         return;
@@ -133,7 +133,7 @@ void memleak_scandir(void)
 
 void no_memleak_scandir(void)
 {
-    struct dirent **namelist;
+    struct dirent** namelist;
     int n = scandir(".", &namelist, NULL, alphasort);
     if (n == -1) {
         return;
@@ -146,8 +146,8 @@ void no_memleak_scandir(void)
 
 void validCode(va_list valist_arg1, va_list valist_arg2)
 {
-    void *ptr;
-    if (posix_memalign(&ptr, sizeof(void *), sizeof(void *)) == 0)
+    void* ptr;
+    if (posix_memalign(&ptr, sizeof(void*), sizeof(void*)) == 0)
         free(ptr);
     syslog(LOG_ERR, "err %u", 0U);
     syslog(LOG_WARNING, "warn %d %d", 5, 1);
@@ -195,7 +195,7 @@ void bufferAccessOutOfBounds(int fd)
     gethostname(a, 6);
 }
 
-void nullPointer(char *p, int fd, pthread_mutex_t mutex)
+void nullPointer(char* p, int fd, pthread_mutex_t mutex)
 {
     // cppcheck-suppress ignoredReturnValue
     isatty(0);
@@ -247,7 +247,7 @@ void nullPointer(char *p, int fd, pthread_mutex_t mutex)
 void memleak_getaddrinfo()
 {
     //TODO: nothing to report yet, see http://sourceforge.net/p/cppcheck/discussion/general/thread/d9737d5d/
-    struct addrinfo * res=NULL;
+    struct addrinfo* res=NULL;
     getaddrinfo("node", NULL, NULL, &res);
     freeaddrinfo(res);
 }
@@ -256,13 +256,13 @@ void memleak_mmap(int fd)
 {
     // cppcheck-suppress unusedAllocatedMemory
     // cppcheck-suppress unreadVariable
-    void *addr = mmap(NULL, 255, PROT_NONE, MAP_PRIVATE, fd, 0);
+    void* addr = mmap(NULL, 255, PROT_NONE, MAP_PRIVATE, fd, 0);
     // cppcheck-suppress memleak
 }
 
-void * memleak_mmap2() // #8327
+void* memleak_mmap2()  // #8327
 {
-    void * data = mmap(NULL, 10, PROT_READ, MAP_PRIVATE, 1, 0);
+    void* data = mmap(NULL, 10, PROT_READ, MAP_PRIVATE, 1, 0);
     if (data != MAP_FAILED)
         return data;
     return NULL;
@@ -271,24 +271,24 @@ void * memleak_mmap2() // #8327
 void resourceLeak_fdopen(int fd)
 {
     // cppcheck-suppress unreadVariable
-    FILE *f = fdopen(fd, "r");
+    FILE* f = fdopen(fd, "r");
     // cppcheck-suppress resourceLeak
 }
 
-void resourceLeak_mkstemp(char *template)
+void resourceLeak_mkstemp(char* template)
 {
     // cppcheck-suppress unreadVariable
     int fp = mkstemp(template);
     // cppcheck-suppress resourceLeak
 }
 
-void no_resourceLeak_mkstemp_01(char *template)
+void no_resourceLeak_mkstemp_01(char* template)
 {
     int fp = mkstemp(template);
     close(fp);
 }
 
-int no_resourceLeak_mkstemp_02(char *template)
+int no_resourceLeak_mkstemp_02(char* template)
 {
     return mkstemp(template);
 }
@@ -330,9 +330,9 @@ void resourceLeak_open2(void)
 
 void noleak(int x, int y, int z)
 {
-    DIR *p1 = fdopendir(x);
+    DIR* p1 = fdopendir(x);
     closedir(p1);
-    DIR *p2 = opendir("abc");
+    DIR* p2 = opendir("abc");
     closedir(p2);
     int s = socket(AF_INET,SOCK_STREAM,0);
     close(s);
@@ -351,7 +351,7 @@ void noleak(int x, int y, int z)
 
 // unused return value
 
-void ignoredReturnValue(void *addr, int fd)
+void ignoredReturnValue(void* addr, int fd)
 {
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
@@ -395,7 +395,7 @@ void uninitvar(int fd)
     char buf[2];
     int decimal, sign;
     double d;
-    void *p;
+    void* p;
     pthread_mutex_t mutex, mutex1, mutex2, mutex3;
     // cppcheck-suppress uninitvar
     write(x1,"ab",2);
@@ -409,7 +409,7 @@ void uninitvar(int fd)
 
     /* int regcomp(regex_t *restrict preg, const char *restrict pattern, int cflags); */
     regex_t reg;
-    const char * pattern;
+    const char* pattern;
     int cflags1, cflags2;
     // cppcheck-suppress uninitvar
     regcomp(&reg, pattern, cflags1);
@@ -421,13 +421,13 @@ void uninitvar(int fd)
     // cppcheck-suppress uninitvar
     // cppcheck-suppress unreadVariable
     // cppcheck-suppress ecvtCalled
-    char *buffer = ecvt(d, 11, &decimal, &sign);
+    char* buffer = ecvt(d, 11, &decimal, &sign);
 #endif
     // cppcheck-suppress gcvtCalled
     gcvt(3.141, 2, buf);
 
-    char *filename;
-    struct utimbuf *times;
+    char* filename;
+    struct utimbuf* times;
     // cppcheck-suppress uninitvar
     // cppcheck-suppress utimeCalled
     utime(filename, times);
@@ -445,7 +445,7 @@ void uninitvar(int fd)
     // cppcheck-suppress uninitvar
     fdopen(x4, "rw");
 
-    char *strtok_arg1;
+    char* strtok_arg1;
     // cppcheck-suppress strtokCalled
     // cppcheck-suppress uninitvar
     strtok(strtok_arg1, ";");
@@ -465,7 +465,7 @@ void uninitvar(int fd)
 
 void uninitvar_getcwd(void)
 {
-    char *buf;
+    char* buf;
     size_t size;
     // cppcheck-suppress uninitvar
     (void)getcwd(buf,size);
@@ -525,10 +525,10 @@ void dl(const char* libname, const char* func)
     // cppcheck-suppress resourceLeak
 }
 
-void asctime_r_test(struct tm * tm, char * bufSizeUnknown)
+void asctime_r_test(struct tm* tm, char* bufSizeUnknown)
 {
     struct tm tm_uninit_data;
-    struct tm * tm_uninit_pointer;
+    struct tm* tm_uninit_pointer;
     char bufSize5[5];
     char bufSize25[25];
     char bufSize26[26];
@@ -556,10 +556,10 @@ void asctime_r_test(struct tm * tm, char * bufSizeUnknown)
     asctime_r(tm, bufSizeUnknown);
 }
 
-void ctime_r_test(time_t * timep, char * bufSizeUnknown)
+void ctime_r_test(time_t* timep, char* bufSizeUnknown)
 {
     time_t time_t_uninit_data;
-    time_t * time_t_uninit_pointer;
+    time_t* time_t_uninit_pointer;
     char bufSize5[5];
     char bufSize25[25];
     char bufSize26[26];

@@ -27,7 +27,7 @@ void validCode(char* argStr)
     cvStr += " World";
     std::cout << cvStr;
 
-    char * pBuf = (char *)cv::fastMalloc(20);
+    char* pBuf = (char*)cv::fastMalloc(20);
     cv::fastFree(pBuf);
 }
 
@@ -39,7 +39,7 @@ void ignoredReturnValue()
 
 void memleak()
 {
-    char * pBuf = (char *)cv::fastMalloc(1000);
+    char* pBuf = (char*)cv::fastMalloc(1000);
     std::cout << pBuf;
     // cppcheck-suppress memleak
 }

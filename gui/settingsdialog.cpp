@@ -31,9 +31,9 @@
 #include "codeeditstyledialog.h"
 #include "common.h"
 
-SettingsDialog::SettingsDialog(ApplicationList *list,
-                               TranslationHandler *translator,
-                               QWidget *parent) :
+SettingsDialog::SettingsDialog(ApplicationList* list,
+                               TranslationHandler* translator,
+                               QWidget* parent) :
     QDialog(parent),
     mApplications(list),
     mTempApplications(new ApplicationList(this)),
@@ -117,7 +117,7 @@ void SettingsDialog::initTranslationsList()
     const QString current = mTranslator->getCurrentLanguage();
     QList<TranslationInfo> translations = mTranslator->getTranslations();
     foreach (TranslationInfo translation, translations) {
-        QListWidgetItem *item = new QListWidgetItem;
+        QListWidgetItem* item = new QListWidgetItem;
         item->setText(translation.mName);
         item->setData(mLangCodeRole, QVariant(translation.mCode));
         mUI.mListLanguages->addItem(item);
@@ -184,7 +184,7 @@ void SettingsDialog::saveSettingValues() const
     settings.setValue(SETTINGS_VS_INCLUDE_PATHS, mUI.mEditVsIncludePaths->text());
 #endif
 
-    const QListWidgetItem *currentLang = mUI.mListLanguages->currentItem();
+    const QListWidgetItem* currentLang = mUI.mListLanguages->currentItem();
     if (currentLang) {
         const QString langcode = currentLang->data(mLangCodeRole).toString();
         settings.setValue(SETTINGS_LANGUAGE, langcode);
@@ -192,8 +192,8 @@ void SettingsDialog::saveSettingValues() const
     CodeEditorStyle::saveSettings(&settings, *mCurrentStyle);
 }
 
-void SettingsDialog::saveCheckboxValue(QSettings *settings, QCheckBox *box,
-                                       const QString &name)
+void SettingsDialog::saveCheckboxValue(QSettings* settings, QCheckBox* box,
+                                       const QString& name)
 {
     settings->setValue(name, checkStateToBool(box->checkState()));
 }
@@ -233,7 +233,7 @@ void SettingsDialog::addApplication()
 
 void SettingsDialog::removeApplication()
 {
-    QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
+    QList<QListWidgetItem*> selected = mUI.mListWidget->selectedItems();
     foreach (QListWidgetItem *item, selected) {
         const int removeIndex = mUI.mListWidget->row(item);
         const int currentDefault = mTempApplications->getDefaultApplication();
@@ -251,8 +251,8 @@ void SettingsDialog::removeApplication()
 
 void SettingsDialog::editApplication()
 {
-    QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
-    QListWidgetItem *item = nullptr;
+    QList<QListWidgetItem*> selected = mUI.mListWidget->selectedItems();
+    QListWidgetItem* item = nullptr;
     foreach (item, selected) {
         int row = mUI.mListWidget->row(item);
         Application& app = mTempApplications->getApplication(row);
@@ -269,7 +269,7 @@ void SettingsDialog::editApplication()
 
 void SettingsDialog::defaultApplication()
 {
-    QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
+    QList<QListWidgetItem*> selected = mUI.mListWidget->selectedItems();
     if (!selected.isEmpty()) {
         int index = mUI.mListWidget->row(selected[0]);
         mTempApplications->setDefault(index);

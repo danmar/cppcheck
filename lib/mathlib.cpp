@@ -43,7 +43,7 @@
 
 const int MathLib::bigint_bits = 64;
 
-MathLib::value::value(const std::string &s) :
+MathLib::value::value(const std::string& s) :
     mIntValue(0), mDoubleValue(0), mIsUnsigned(false)
 {
     if (MathLib::isFloat(s)) {
@@ -112,7 +112,7 @@ std::string MathLib::value::str() const
     return ostr.str();
 }
 
-void MathLib::value::promote(const MathLib::value &v)
+void MathLib::value::promote(const MathLib::value& v)
 {
     if (isInt() && v.isInt()) {
         if (mType < v.mType) {
@@ -129,7 +129,7 @@ void MathLib::value::promote(const MathLib::value &v)
 }
 
 
-MathLib::value MathLib::value::calc(char op, const MathLib::value &v1, const MathLib::value &v2)
+MathLib::value MathLib::value::calc(char op, const MathLib::value& v1, const MathLib::value& v2)
 {
     value temp(v1);
     temp.promote(v2);
@@ -230,7 +230,7 @@ MathLib::value MathLib::value::calc(char op, const MathLib::value &v1, const Mat
 }
 
 
-int MathLib::value::compare(const MathLib::value &v) const
+int MathLib::value::compare(const MathLib::value& v) const
 {
     value temp(*this);
     temp.promote(v);
@@ -268,7 +268,7 @@ MathLib::value MathLib::value::add(int v) const
     return temp;
 }
 
-MathLib::value MathLib::value::shiftLeft(const MathLib::value &v) const
+MathLib::value MathLib::value::shiftLeft(const MathLib::value& v) const
 {
     if (!isInt() || !v.isInt())
         throw InternalError(nullptr, "Shift operand is not integer");
@@ -280,7 +280,7 @@ MathLib::value MathLib::value::shiftLeft(const MathLib::value &v) const
     return ret;
 }
 
-MathLib::value MathLib::value::shiftRight(const MathLib::value &v) const
+MathLib::value MathLib::value::shiftRight(const MathLib::value& v) const
 {
     if (!isInt() || !v.isInt())
         throw InternalError(nullptr, "Shift operand is not integer");
@@ -293,7 +293,7 @@ MathLib::value MathLib::value::shiftRight(const MathLib::value &v) const
 }
 
 
-MathLib::biguint MathLib::toULongNumber(const std::string & str)
+MathLib::biguint MathLib::toULongNumber(const std::string& str)
 {
     // hexadecimal numbers:
     if (isIntHex(str)) {
@@ -456,7 +456,7 @@ std::string MathLib::normalizeCharacterLiteral(const std::string& iLiteral)
     return normalizedLiteral;
 }
 
-MathLib::bigint MathLib::toLongNumber(const std::string & str)
+MathLib::bigint MathLib::toLongNumber(const std::string& str)
 {
     // hexadecimal numbers:
     if (isIntHex(str)) {
@@ -566,7 +566,7 @@ static double floatHexToDoubleNumber(const std::string& str)
     return factor1 * factor2;
 }
 
-double MathLib::toDoubleNumber(const std::string &str)
+double MathLib::toDoubleNumber(const std::string& str)
 {
     if (isCharLiteral(str)) {
         try {
@@ -607,12 +607,12 @@ template<> std::string MathLib::toString<double>(double value)
     return result.str();
 }
 
-bool MathLib::isFloat(const std::string &str)
+bool MathLib::isFloat(const std::string& str)
 {
     return isDecimalFloat(str) || isFloatHex(str);
 }
 
-bool MathLib::isDecimalFloat(const std::string &str)
+bool MathLib::isDecimalFloat(const std::string& str)
 {
     if (str.empty())
         return false;
@@ -699,14 +699,14 @@ bool MathLib::isDecimalFloat(const std::string &str)
     return (state==State::BASE_DIGITS2 || state==State::MANTISSA_DIGITS || state==State::TRAILING_DECIMAL || state==State::SUFFIX_F || state==State::SUFFIX_L);
 }
 
-bool MathLib::isNegative(const std::string &str)
+bool MathLib::isNegative(const std::string& str)
 {
     if (str.empty())
         return false;
     return (str[0] == '-');
 }
 
-bool MathLib::isPositive(const std::string &str)
+bool MathLib::isPositive(const std::string& str)
 {
     if (str.empty())
         return false;
@@ -1020,7 +1020,7 @@ bool MathLib::isBin(const std::string& str)
     return state == Status::DIGIT;
 }
 
-bool MathLib::isDec(const std::string & str)
+bool MathLib::isDec(const std::string& str)
 {
     enum class Status {
         START, DIGIT
@@ -1049,7 +1049,7 @@ bool MathLib::isDec(const std::string & str)
     return state == Status::DIGIT;
 }
 
-bool MathLib::isInt(const std::string & str)
+bool MathLib::isInt(const std::string& str)
 {
     return isDec(str) || isIntHex(str) || isOct(str) || isBin(str);
 }
@@ -1080,7 +1080,7 @@ std::string MathLib::getSuffix(const std::string& value)
     else return "";
 }
 
-static std::string intsuffix(const std::string & first, const std::string & second)
+static std::string intsuffix(const std::string& first, const std::string& second)
 {
     const std::string suffix1 = MathLib::getSuffix(first);
     const std::string suffix2 = MathLib::getSuffix(second);
@@ -1098,7 +1098,7 @@ static std::string intsuffix(const std::string & first, const std::string & seco
     return suffix1.empty() ? suffix2 : suffix1;
 }
 
-std::string MathLib::add(const std::string & first, const std::string & second)
+std::string MathLib::add(const std::string& first, const std::string& second)
 {
 #ifdef TEST_MATHLIB_VALUE
     return (value(first) + value(second)).str();
@@ -1120,7 +1120,7 @@ std::string MathLib::add(const std::string & first, const std::string & second)
 #endif
 }
 
-std::string MathLib::subtract(const std::string &first, const std::string &second)
+std::string MathLib::subtract(const std::string& first, const std::string& second)
 {
 #ifdef TEST_MATHLIB_VALUE
     return (value(first) - value(second)).str();
@@ -1145,7 +1145,7 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
 #endif
 }
 
-std::string MathLib::incdec(const std::string & var, const std::string & op)
+std::string MathLib::incdec(const std::string& var, const std::string& op)
 {
 #ifdef TEST_MATHLIB_VALUE
     if (op == "++")
@@ -1162,7 +1162,7 @@ std::string MathLib::incdec(const std::string & var, const std::string & op)
     throw InternalError(nullptr, std::string("Unexpected operation '") + op + "' in MathLib::incdec(). Please report this to Cppcheck developers.");
 }
 
-std::string MathLib::divide(const std::string &first, const std::string &second)
+std::string MathLib::divide(const std::string& first, const std::string& second)
 {
 #ifdef TEST_MATHLIB_VALUE
     return (value(first) / value(second)).str();
@@ -1184,7 +1184,7 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
 #endif
 }
 
-std::string MathLib::multiply(const std::string &first, const std::string &second)
+std::string MathLib::multiply(const std::string& first, const std::string& second)
 {
 #ifdef TEST_MATHLIB_VALUE
     return (value(first) * value(second)).str();
@@ -1196,7 +1196,7 @@ std::string MathLib::multiply(const std::string &first, const std::string &secon
 #endif
 }
 
-std::string MathLib::mod(const std::string &first, const std::string &second)
+std::string MathLib::mod(const std::string& first, const std::string& second)
 {
 #ifdef TEST_MATHLIB_VALUE
     return (value(first) % value(second)).str();
@@ -1211,7 +1211,7 @@ std::string MathLib::mod(const std::string &first, const std::string &second)
 #endif
 }
 
-std::string MathLib::calculate(const std::string &first, const std::string &second, char action)
+std::string MathLib::calculate(const std::string& first, const std::string& second, char action)
 {
     switch (action) {
     case '+':
@@ -1243,58 +1243,58 @@ std::string MathLib::calculate(const std::string &first, const std::string &seco
     }
 }
 
-std::string MathLib::sin(const std::string &tok)
+std::string MathLib::sin(const std::string& tok)
 {
     return toString(std::sin(toDoubleNumber(tok)));
 }
 
 
-std::string MathLib::cos(const std::string &tok)
+std::string MathLib::cos(const std::string& tok)
 {
     return toString(std::cos(toDoubleNumber(tok)));
 }
 
-std::string MathLib::tan(const std::string &tok)
+std::string MathLib::tan(const std::string& tok)
 {
     return toString(std::tan(toDoubleNumber(tok)));
 }
 
 
-std::string MathLib::abs(const std::string &tok)
+std::string MathLib::abs(const std::string& tok)
 {
     if (isNegative(tok))
         return tok.substr(1, tok.length() - 1);
     return tok;
 }
 
-bool MathLib::isEqual(const std::string &first, const std::string &second)
+bool MathLib::isEqual(const std::string& first, const std::string& second)
 {
     // this conversion is needed for formatting
     // e.g. if first=0.1 and second=1.0E-1, the direct comparison of the strings would fail
     return toString(toDoubleNumber(first)) == toString(toDoubleNumber(second));
 }
 
-bool MathLib::isNotEqual(const std::string &first, const std::string &second)
+bool MathLib::isNotEqual(const std::string& first, const std::string& second)
 {
     return !isEqual(first, second);
 }
 
-bool MathLib::isGreater(const std::string &first, const std::string &second)
+bool MathLib::isGreater(const std::string& first, const std::string& second)
 {
     return toDoubleNumber(first) > toDoubleNumber(second);
 }
 
-bool MathLib::isGreaterEqual(const std::string &first, const std::string &second)
+bool MathLib::isGreaterEqual(const std::string& first, const std::string& second)
 {
     return toDoubleNumber(first) >= toDoubleNumber(second);
 }
 
-bool MathLib::isLess(const std::string &first, const std::string &second)
+bool MathLib::isLess(const std::string& first, const std::string& second)
 {
     return toDoubleNumber(first) < toDoubleNumber(second);
 }
 
-bool MathLib::isLessEqual(const std::string &first, const std::string &second)
+bool MathLib::isLessEqual(const std::string& first, const std::string& second)
 {
     return toDoubleNumber(first) <= toDoubleNumber(second);
 }
@@ -1308,7 +1308,7 @@ bool MathLib::isLessEqual(const std::string &first, const std::string &second)
  * \param[in] str The string to check. In case the string is empty, the function returns false.
  * \return Return true in case the string represents a numerical null value.
  **/
-bool MathLib::isNullValue(const std::string &str)
+bool MathLib::isNullValue(const std::string& str)
 {
     if (str.empty() || (!std::isdigit(static_cast<unsigned char>(str[0])) && (str[0] != '.' && str[0] != '-' && str[0] != '+')))
         return false; // Has to be a number
@@ -1371,52 +1371,52 @@ bool MathLib::isDigitSeparator(const std::string& iCode, std::string::size_type 
     }
 }
 
-MathLib::value operator+(const MathLib::value &v1, const MathLib::value &v2)
+MathLib::value operator+(const MathLib::value& v1, const MathLib::value& v2)
 {
     return MathLib::value::calc('+',v1,v2);
 }
 
-MathLib::value operator-(const MathLib::value &v1, const MathLib::value &v2)
+MathLib::value operator-(const MathLib::value& v1, const MathLib::value& v2)
 {
     return MathLib::value::calc('-',v1,v2);
 }
 
-MathLib::value operator*(const MathLib::value &v1, const MathLib::value &v2)
+MathLib::value operator*(const MathLib::value& v1, const MathLib::value& v2)
 {
     return MathLib::value::calc('*',v1,v2);
 }
 
-MathLib::value operator/(const MathLib::value &v1, const MathLib::value &v2)
+MathLib::value operator/(const MathLib::value& v1, const MathLib::value& v2)
 {
     return MathLib::value::calc('/',v1,v2);
 }
 
-MathLib::value operator%(const MathLib::value &v1, const MathLib::value &v2)
+MathLib::value operator%(const MathLib::value& v1, const MathLib::value& v2)
 {
     return MathLib::value::calc('%',v1,v2);
 }
 
-MathLib::value operator&(const MathLib::value &v1, const MathLib::value &v2)
+MathLib::value operator&(const MathLib::value& v1, const MathLib::value& v2)
 {
     return MathLib::value::calc('&',v1,v2);
 }
 
-MathLib::value operator|(const MathLib::value &v1, const MathLib::value &v2)
+MathLib::value operator|(const MathLib::value& v1, const MathLib::value& v2)
 {
     return MathLib::value::calc('|',v1,v2);
 }
 
-MathLib::value operator^(const MathLib::value &v1, const MathLib::value &v2)
+MathLib::value operator^(const MathLib::value& v1, const MathLib::value& v2)
 {
     return MathLib::value::calc('^',v1,v2);
 }
 
-MathLib::value operator<<(const MathLib::value &v1, const MathLib::value &v2)
+MathLib::value operator<<(const MathLib::value& v1, const MathLib::value& v2)
 {
     return v1.shiftLeft(v2);
 }
 
-MathLib::value operator>>(const MathLib::value &v1, const MathLib::value &v2)
+MathLib::value operator>>(const MathLib::value& v1, const MathLib::value& v2)
 {
     return v1.shiftRight(v2);
 }

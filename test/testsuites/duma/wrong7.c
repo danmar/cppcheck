@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 int main() {
-    int *p;
+    int* p;
 
     p = (int*) malloc( sizeof(int) * 10 );
     printf("Now writing before our allocated array\n");

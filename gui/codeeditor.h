@@ -13,15 +13,15 @@ class Highlighter : public QSyntaxHighlighter {
     Q_OBJECT
 
 public:
-    explicit Highlighter(QTextDocument *parent,
-                         CodeEditorStyle *widgetStyle);
+    explicit Highlighter(QTextDocument* parent,
+                         CodeEditorStyle* widgetStyle);
 
-    void setSymbols(const QStringList &symbols);
+    void setSymbols(const QStringList& symbols);
 
-    void setStyle(const CodeEditorStyle &newStyle);
+    void setStyle(const CodeEditorStyle& newStyle);
 
 protected:
-    void highlightBlock(const QString &text) override;
+    void highlightBlock(const QString& text) override;
 
 private:
     enum RuleRole {
@@ -37,7 +37,7 @@ private:
         RuleRole ruleRole;
     };
 
-    void applyFormat(HighlightingRule &rule);
+    void applyFormat(HighlightingRule& rule);
 
     QVector<HighlightingRule> mHighlightingRules;
     QVector<HighlightingRule> mHighlightingRulesWithSymbols;
@@ -52,19 +52,19 @@ private:
     QTextCharFormat mQuotationFormat;
     QTextCharFormat mSymbolFormat;
 
-    CodeEditorStyle *mWidgetStyle;
+    CodeEditorStyle* mWidgetStyle;
 };
 
 class CodeEditor : public QPlainTextEdit {
     Q_OBJECT
 
 public:
-    explicit CodeEditor(QWidget *parent);
-    CodeEditor(const CodeEditor &) = delete;
-    CodeEditor &operator=(const CodeEditor &) = delete;
+    explicit CodeEditor(QWidget* parent);
+    CodeEditor(const CodeEditor&) = delete;
+    CodeEditor& operator=(const CodeEditor&) = delete;
     ~CodeEditor();
 
-    void lineNumberAreaPaintEvent(QPaintEvent *event);
+    void lineNumberAreaPaintEvent(QPaintEvent* event);
     int lineNumberAreaWidth();
     void setStyle(const CodeEditorStyle& newStyle);
 
@@ -74,16 +74,16 @@ public:
      * \param errorLine    line number
      * \param symbols      the related symbols, these are marked
      */
-    void setError(const QString &code, int errorLine, const QStringList &symbols);
+    void setError(const QString& code, int errorLine, const QStringList& symbols);
 
     /**
      * Goto another error in existing source file
      * \param errorLine    line number
      * \param symbols      the related symbols, these are marked
      */
-    void setError(int errorLine, const QStringList &symbols);
+    void setError(int errorLine, const QStringList& symbols);
 
-    void setFileName(const QString &fileName) {
+    void setFileName(const QString& fileName) {
         mFileName = fileName;
     }
 
@@ -97,20 +97,20 @@ public:
     }
 
 protected:
-    void resizeEvent(QResizeEvent *event) override;
+    void resizeEvent(QResizeEvent* event) override;
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightErrorLine();
-    void updateLineNumberArea(const QRect &, int);
+    void updateLineNumberArea(const QRect&, int);
 
 private:
     QString generateStyleString();
 
 private:
-    QWidget *mLineNumberArea;
-    Highlighter *mHighlighter;
-    CodeEditorStyle *mWidgetStyle;
+    QWidget* mLineNumberArea;
+    Highlighter* mHighlighter;
+    CodeEditorStyle* mWidgetStyle;
     int mErrorPosition;
     QString mFileName;
 };
@@ -118,7 +118,7 @@ private:
 
 class LineNumberArea : public QWidget {
 public:
-    explicit LineNumberArea(CodeEditor *editor) : QWidget(editor) {
+    explicit LineNumberArea(CodeEditor* editor) : QWidget(editor) {
         mCodeEditor = editor;
     }
 
@@ -127,12 +127,12 @@ public:
     }
 
 protected:
-    void paintEvent(QPaintEvent *event) override {
+    void paintEvent(QPaintEvent* event) override {
         mCodeEditor->lineNumberAreaPaintEvent(event);
     }
 
 private:
-    CodeEditor *mCodeEditor;
+    CodeEditor* mCodeEditor;
 };
 
 #endif // CODEEDITOR_H

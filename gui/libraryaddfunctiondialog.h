@@ -15,16 +15,16 @@ class LibraryAddFunctionDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit LibraryAddFunctionDialog(QWidget *parent = nullptr);
-    LibraryAddFunctionDialog(const LibraryAddFunctionDialog &) = delete;
+    explicit LibraryAddFunctionDialog(QWidget* parent = nullptr);
+    LibraryAddFunctionDialog(const LibraryAddFunctionDialog&) = delete;
     ~LibraryAddFunctionDialog();
-    LibraryAddFunctionDialog &operator=(const LibraryAddFunctionDialog &) = delete;
+    LibraryAddFunctionDialog& operator=(const LibraryAddFunctionDialog&) = delete;
 
     QString functionName() const;
     int     numberOfArguments() const;
 
 private:
-    Ui::LibraryAddFunctionDialog *mUi;
+    Ui::LibraryAddFunctionDialog* mUi;
 };
 
 #endif // LIBRARYADDFUNCTIONDIALOG_H

@@ -45,9 +45,9 @@ public:
      * @param app Application definition.
      * @param parent Parent widget.
      */
-    ApplicationDialog(const QString &title,
-                      Application &app,
-                      QWidget *parent = nullptr);
+    ApplicationDialog(const QString& title,
+                      Application& app,
+                      QWidget* parent = nullptr);
     virtual ~ApplicationDialog();
 
 protected slots:

@@ -53,12 +53,12 @@ static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, o
 //---------------------------------------------------------------------------
 void CheckString::stringLiteralWrite()
 {
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->variable() || !tok->variable()->isPointer())
                 continue;
-            const Token *str = tok->getValueTokenMinStrSize(mSettings);
+            const Token* str = tok->getValueTokenMinStrSize(mSettings);
             if (!str)
                 continue;
             if (Token::Match(tok, "%var% [") && Token::simpleMatch(tok->linkAt(1), "] ="))
@@ -69,9 +69,9 @@ void CheckString::stringLiteralWrite()
     }
 }
 
-void CheckString::stringLiteralWriteError(const Token *tok, const Token *strValue)
+void CheckString::stringLiteralWriteError(const Token* tok, const Token* strValue)
 {
-    std::list<const Token *> callstack;
+    std::list<const Token*> callstack;
     callstack.push_back(tok);
     if (strValue)
         callstack.push_back(strValue);
@@ -101,32 +101,32 @@ void CheckString::checkAlwaysTrueOrFalseStringCompare()
     for (const Token* tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->isName() && tok->strAt(1) == "(" && Token::Match(tok, "memcmp|strncmp|strcmp|stricmp|strverscmp|bcmp|strcmpi|strcasecmp|strncasecmp|strncasecmp_l|strcasecmp_l|wcsncasecmp|wcscasecmp|wmemcmp|wcscmp|wcscasecmp_l|wcsncasecmp_l|wcsncmp|_mbscmp|_memicmp|_memicmp_l|_stricmp|_wcsicmp|_mbsicmp|_stricmp_l|_wcsicmp_l|_mbsicmp_l")) {
             if (Token::Match(tok->tokAt(2), "%str% , %str% ,|)")) {
-                const std::string &str1 = tok->strAt(2);
-                const std::string &str2 = tok->strAt(4);
+                const std::string& str1 = tok->strAt(2);
+                const std::string& str2 = tok->strAt(4);
                 if (!tok->isExpandedMacro() && !tok->tokAt(2)->isExpandedMacro() && !tok->tokAt(4)->isExpandedMacro())
                     alwaysTrueFalseStringCompareError(tok, str1, str2);
                 tok = tok->tokAt(5);
             } else if (Token::Match(tok->tokAt(2), "%name% , %name% ,|)")) {
-                const std::string &str1 = tok->strAt(2);
-                const std::string &str2 = tok->strAt(4);
+                const std::string& str1 = tok->strAt(2);
+                const std::string& str2 = tok->strAt(4);
                 if (str1 == str2)
                     alwaysTrueStringVariableCompareError(tok, str1, str2);
                 tok = tok->tokAt(5);
             } else if (Token::Match(tok->tokAt(2), "%name% . c_str ( ) , %name% . c_str ( ) ,|)")) {
-                const std::string &str1 = tok->strAt(2);
-                const std::string &str2 = tok->strAt(8);
+                const std::string& str1 = tok->strAt(2);
+                const std::string& str2 = tok->strAt(8);
                 if (str1 == str2)
                     alwaysTrueStringVariableCompareError(tok, str1, str2);
                 tok = tok->tokAt(13);
             }
         } else if (tok->isName() && Token::Match(tok, "QString :: compare ( %str% , %str% )")) {
-            const std::string &str1 = tok->strAt(4);
-            const std::string &str2 = tok->strAt(6);
+            const std::string& str1 = tok->strAt(4);
+            const std::string& str2 = tok->strAt(6);
             alwaysTrueFalseStringCompareError(tok, str1, str2);
             tok = tok->tokAt(7);
         } else if (Token::Match(tok, "!!+ %str% ==|!= %str% !!+")) {
-            const std::string &str1 = tok->strAt(1);
-            const std::string &str2 = tok->strAt(3);
+            const std::string& str1 = tok->strAt(1);
+            const std::string& str2 = tok->strAt(3);
             alwaysTrueFalseStringCompareError(tok, str1, str2);
             tok = tok->tokAt(5);
         }
@@ -135,7 +135,7 @@ void CheckString::checkAlwaysTrueOrFalseStringCompare()
     }
 }
 
-void CheckString::alwaysTrueFalseStringCompareError(const Token *tok, const std::string& str1, const std::string& str2)
+void CheckString::alwaysTrueFalseStringCompareError(const Token* tok, const std::string& str1, const std::string& str2)
 {
     const std::size_t stringLen = 10;
     const std::string string1 = (str1.size() < stringLen) ? str1 : (str1.substr(0, stringLen-2) + "..");
@@ -147,7 +147,7 @@ void CheckString::alwaysTrueFalseStringCompareError(const Token *tok, const std:
                 "Therefore the comparison is unnecessary and looks suspicious.", (str1==str2)?CWE571:CWE570, Certainty::normal);
 }
 
-void CheckString::alwaysTrueStringVariableCompareError(const Token *tok, const std::string& str1, const std::string& str2)
+void CheckString::alwaysTrueStringVariableCompareError(const Token* tok, const std::string& str1, const std::string& str2)
 {
     reportError(tok, Severity::warning, "stringCompare",
                 "Comparison of identical string variables.\n"
@@ -166,7 +166,7 @@ void CheckString::checkSuspiciousStringCompare()
         return;
 
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->isComparisonOp())
                 continue;
@@ -223,7 +223,7 @@ static bool isChar(const Variable* var)
 void CheckString::strPlusChar()
 {
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->str() == "+") {
                 if (tok->astOperand1() && (tok->astOperand1()->tokType() == Token::eString)) { // string literal...
@@ -235,7 +235,7 @@ void CheckString::strPlusChar()
     }
 }
 
-void CheckString::strPlusCharError(const Token *tok)
+void CheckString::strPlusCharError(const Token* tok)
 {
     std::string charType = "char";
     if (tok && tok->astOperand2() && tok->astOperand2()->variable())
@@ -254,8 +254,8 @@ void CheckString::checkIncorrectStringCompare()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             // skip "assert(str && ..)" and "assert(.. && str)"
             if ((endsWith(tok->str(), "assert", 6) || endsWith(tok->str(), "ASSERT", 6)) &&
@@ -297,12 +297,12 @@ void CheckString::checkIncorrectStringCompare()
     }
 }
 
-void CheckString::incorrectStringCompareError(const Token *tok, const std::string& func, const std::string &string)
+void CheckString::incorrectStringCompareError(const Token* tok, const std::string& func, const std::string& string)
 {
     reportError(tok, Severity::warning, "incorrectStringCompare", "$symbol:" + func + "\nString literal " + string + " doesn't match length argument for $symbol().", CWE570, Certainty::normal);
 }
 
-void CheckString::incorrectStringBooleanError(const Token *tok, const std::string& string)
+void CheckString::incorrectStringBooleanError(const Token* tok, const std::string& string)
 {
     const bool charLiteral = isCharLiteral(string);
     const std::string literalType = charLiteral ? "char" : "string";
@@ -322,14 +322,14 @@ void CheckString::overlappingStrcmp()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->str() != "||")
                 continue;
-            std::list<const Token *> equals0;
-            std::list<const Token *> notEquals0;
-            visitAstNodes(tok, [&](const Token * t) {
+            std::list<const Token*> equals0;
+            std::list<const Token*> notEquals0;
+            visitAstNodes(tok, [&](const Token* t) {
                 if (!t)
                     return ChildrenToVisit::none;
                 if (t->str() == "||") {
@@ -356,14 +356,14 @@ void CheckString::overlappingStrcmp()
                 return ChildrenToVisit::none;
             });
 
-            for (const Token *eq0 : equals0) {
-                for (const Token * ne0 : notEquals0) {
+            for (const Token* eq0 : equals0) {
+                for (const Token* ne0 : notEquals0) {
                     if (!Token::Match(eq0->previous(), "strcmp|wcscmp ("))
                         continue;
                     if (!Token::Match(ne0->previous(), "strcmp|wcscmp ("))
                         continue;
-                    const std::vector<const Token *> args1 = getArguments(eq0->previous());
-                    const std::vector<const Token *> args2 = getArguments(ne0->previous());
+                    const std::vector<const Token*> args1 = getArguments(eq0->previous());
+                    const std::vector<const Token*> args2 = getArguments(ne0->previous());
                     if (args1.size() != 2 || args2.size() != 2)
                         continue;
                     if (args1[1]->isLiteral() &&
@@ -377,7 +377,7 @@ void CheckString::overlappingStrcmp()
     }
 }
 
-void CheckString::overlappingStrcmpError(const Token *eq0, const Token *ne0)
+void CheckString::overlappingStrcmpError(const Token* eq0, const Token* ne0)
 {
     std::string eq0Expr(eq0 ? eq0->expressionString() : std::string("strcmp(x,\"abc\")"));
     if (eq0 && eq0->astParent()->str() == "!")
@@ -397,19 +397,19 @@ void CheckString::overlappingStrcmpError(const Token *eq0, const Token *ne0)
 void CheckString::sprintfOverlappingData()
 {
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "sprintf|snprintf|swprintf ("))
                 continue;
 
-            const std::vector<const Token *> args = getArguments(tok);
+            const std::vector<const Token*> args = getArguments(tok);
 
             const int formatString = Token::simpleMatch(tok, "sprintf") ? 1 : 2;
             for (unsigned int argnr = formatString + 1; argnr < args.size(); ++argnr) {
-                const Token *dest = args[0];
+                const Token* dest = args[0];
                 while (dest->isCast())
                     dest = dest->astOperand2() ? dest->astOperand2() : dest->astOperand1();
-                const Token *arg = args[argnr];
+                const Token* arg = args[argnr];
                 if (!arg->valueType() || arg->valueType()->pointer != 1)
                     continue;
                 while (arg->isCast())
@@ -430,7 +430,7 @@ void CheckString::sprintfOverlappingData()
     }
 }
 
-void CheckString::sprintfOverlappingDataError(const Token *funcTok, const Token *tok, const std::string &varname)
+void CheckString::sprintfOverlappingDataError(const Token* funcTok, const Token* tok, const std::string& varname)
 {
     const std::string func = funcTok ? funcTok->str() : "s[n]printf";
 

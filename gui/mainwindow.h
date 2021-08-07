@@ -53,9 +53,9 @@ public:
     enum { MaxRecentProjects = 5 };
 
     MainWindow(TranslationHandler* th, QSettings* settings);
-    MainWindow(const MainWindow &) = delete;
+    MainWindow(const MainWindow&) = delete;
     virtual ~MainWindow();
-    MainWindow &operator=(const MainWindow &) = delete;
+    MainWindow& operator=(const MainWindow&) = delete;
 
     /**
      * List of checked platforms.
@@ -94,7 +94,7 @@ public slots:
      * @brief Slot to reanalyze selected files
      * @param selectedFilesList list of selected files
      */
-    void performSelectedFilesCheck(const QStringList &selectedFilesList);
+    void performSelectedFilesCheck(const QStringList& selectedFilesList);
 
     /** @brief Slot to reanalyze modified files */
     void reAnalyzeModified();
@@ -259,16 +259,16 @@ private:
      * @param checkLibrary Flag to indicate if the library should be checked.
      * @param checkConfiguration Flag to indicate if the configuration should be checked.
      */
-    void analyzeProject(const ProjectFile *projectFile, const bool checkLibrary = false, const bool checkConfiguration = false);
+    void analyzeProject(const ProjectFile* projectFile, const bool checkLibrary = false, const bool checkConfiguration = false);
 
     /**
      * @brief Set current language
      * @param code Language code of the language to set (e.g. "en").
      */
-    void setLanguage(const QString &code);
+    void setLanguage(const QString& code);
 
     /** @brief Event coming when application is about to close. */
-    virtual void closeEvent(QCloseEvent *event);
+    virtual void closeEvent(QCloseEvent* event);
 
     /**
      * @brief Helper function to toggle all show error menu items
@@ -307,7 +307,7 @@ private:
      * @param checkLibrary Flag to indicate if library should be checked
      * @param checkConfiguration Flag to indicate if the configuration should be checked.
      */
-    void doAnalyzeFiles(const QStringList &files, const bool checkLibrary = false, const bool checkConfiguration = false);
+    void doAnalyzeFiles(const QStringList& files, const bool checkLibrary = false, const bool checkConfiguration = false);
 
     /**
      * @brief Get our default cppcheck settings and read project file.
@@ -326,7 +326,7 @@ private:
      * @brief Format main window title.
      * @param text Text added to end of the title.
      */
-    void formatAndSetTitle(const QString &text = QString());
+    void formatAndSetTitle(const QString& text = QString());
 
     /** @brief Show help contents */
     void openOnlineHelp();
@@ -351,26 +351,26 @@ private:
      * @param includeDirs List of include directories to add.
      * @param result Settings class where include directories are added.
      */
-    void addIncludeDirs(const QStringList &includeDirs, Settings &result);
+    void addIncludeDirs(const QStringList& includeDirs, Settings& result);
 
     /**
      * @brief Handle command line parameters given to GUI.
      * @param params List of string given to command line.
      */
-    void handleCLIParams(const QStringList &params);
+    void handleCLIParams(const QStringList& params);
 
     /**
      * @brief Load XML file to the GUI.
      * @param selectedFile Filename (inc. path) of XML file to load.
      */
-    void loadResults(const QString &selectedFile);
+    void loadResults(const QString& selectedFile);
 
     /**
      * @brief Load XML file to the GUI.
      * @param selectedFile Filename (inc. path) of XML file to load.
      * @param sourceDirectory Path to the directory that the results were generated for.
      */
-    void loadResults(const QString &selectedFile, const QString &sourceDirectory);
+    void loadResults(const QString& selectedFile, const QString& sourceDirectory);
 
     /**
      * @brief Load last project results to the GUI.
@@ -382,7 +382,7 @@ private:
      * @brief Load project file to the GUI.
      * @param filePath Filename (inc. path) of project file to load.
      */
-    void loadProjectFile(const QString &filePath);
+    void loadProjectFile(const QString& filePath);
 
     /**
      * @brief Load library file
@@ -390,7 +390,7 @@ private:
      * @param filename filename (no path)
      * @return error code
      */
-    Library::Error loadLibrary(Library *library, const QString &filename);
+    Library::Error loadLibrary(Library* library, const QString& filename);
 
     /**
      * @brief Tries to load library file, prints message on error
@@ -398,7 +398,7 @@ private:
      * @param filename filename (no path)
      * @return True if no error
      */
-    bool tryLoadLibrary(Library *library, const QString& filename);
+    bool tryLoadLibrary(Library* library, const QString& filename);
 
     /**
      * @brief Update project MRU items in File-menu.
@@ -409,25 +409,25 @@ private:
      * @brief Add project file (path) to the MRU list.
      * @param project Full path to the project file to add.
      */
-    void addProjectMRU(const QString &project);
+    void addProjectMRU(const QString& project);
 
     /**
      * @brief Remove project file (path) from the MRU list.
      * @param project Full path of the project file to remove.
      */
-    void removeProjectMRU(const QString &project);
+    void removeProjectMRU(const QString& project);
 
     /** @brief Program settings */
-    QSettings *mSettings;
+    QSettings* mSettings;
 
     /** @brief Thread to analyze files */
-    ThreadHandler *mThread;
+    ThreadHandler* mThread;
 
     /** @brief List of user defined applications to open errors with */
-    ApplicationList *mApplications;
+    ApplicationList* mApplications;
 
     /** @brief Class to handle translation changes */
-    TranslationHandler *mTranslation;
+    TranslationHandler* mTranslation;
 
     /** @brief Class holding all UI components */
     Ui::MainWindow mUI;
@@ -439,7 +439,7 @@ private:
     ScratchPad* mScratchPad;
 
     /** @brief Project (file). */
-    ProjectFile *mProjectFile;
+    ProjectFile* mProjectFile;
 
     /** @brief Filter field in the Filter toolbar. */
     QLineEdit* mLineEditFilter;
@@ -448,13 +448,13 @@ private:
     QTimer* mFilterTimer;
 
     /** @brief GUI actions for selecting the analyzed platform. */
-    QActionGroup *mPlatformActions;
+    QActionGroup* mPlatformActions;
 
     /** @brief GUI actions for selecting the coding standard. */
-    QActionGroup *mCStandardActions, *mCppStandardActions;
+    QActionGroup* mCStandardActions, * mCppStandardActions;
 
     /** @brief GUI actions for selecting language. */
-    QActionGroup *mSelectLanguageActions;
+    QActionGroup* mSelectLanguageActions;
 
     /**
      * @brief Are we exiting the cppcheck?
@@ -470,7 +470,7 @@ private:
      * @brief Project MRU menu actions.
      * List of MRU menu actions. Needs also to store the separator.
      */
-    QAction *mRecentProjectActs[MaxRecentProjects + 1];
+    QAction* mRecentProjectActs[MaxRecentProjects + 1];
 };
 /// @}
 #endif // MAINWINDOW_H

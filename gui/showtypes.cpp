@@ -83,7 +83,7 @@ Severity::SeverityType ShowTypes::ShowTypeToSeverity(ShowTypes::ShowType type)
     }
 }
 
-ShowTypes::ShowType ShowTypes::VariantToShowType(const QVariant &data)
+ShowTypes::ShowType ShowTypes::VariantToShowType(const QVariant& data)
 {
     const int value = data.toInt();
     if (value < ShowTypes::ShowStyle || value > ShowTypes::ShowErrors) {

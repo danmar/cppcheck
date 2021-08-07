@@ -35,7 +35,7 @@ class TxtReport : public Report {
     Q_OBJECT
 
 public:
-    explicit TxtReport(const QString &filename);
+    explicit TxtReport(const QString& filename);
     virtual ~TxtReport();
 
     /**
@@ -58,7 +58,7 @@ public:
      * @brief Write error to report.
      * @param error Error data.
      */
-    virtual void writeError(const ErrorItem &error) override;
+    virtual void writeError(const ErrorItem& error) override;
 
 private:
 

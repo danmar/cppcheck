@@ -72,28 +72,28 @@ namespace ExprEngine {
 
     class DataBase {
     public:
-        explicit DataBase(const std::string &currentFunction, const Settings *settings)
+        explicit DataBase(const std::string& currentFunction, const Settings* settings)
             : currentFunction(currentFunction)
             , settings(settings) {}
         virtual std::string getNewSymbolName() = 0;
         const std::string currentFunction;
-        const Settings * const settings;
+        const Settings* const settings;
         virtual bool isC() const = 0;
         virtual bool isCPP() const = 0;
-        virtual void reportError(const Token *tok,
+        virtual void reportError(const Token* tok,
                                  Severity::SeverityType severity,
                                  const char id[],
-                                 const std::string &text,
+                                 const std::string& text,
                                  CWE cwe,
                                  bool inconclusive,
                                  bool incomplete=false,
-                                 const std::string &functionName = std::string()) = 0;
+                                 const std::string& functionName = std::string()) = 0;
         ErrorPath errorPath;
     };
 
     class Value {
     public:
-        Value(const std::string &name, const ValueType type) : name(name), type(type) {}
+        Value(const std::string& name, const ValueType type) : name(name), type(type) {}
         virtual ~Value() {}
         virtual std::string getRange() const {
             return name;
@@ -101,17 +101,17 @@ namespace ExprEngine {
         virtual std::string getSymbolicExpression() const {
             return name;
         }
-        virtual bool isEqual(const DataBase *dataBase, int value) const {
+        virtual bool isEqual(const DataBase* dataBase, int value) const {
             (void)dataBase;
             (void)value;
             return false;
         }
-        virtual bool isGreaterThan(const DataBase *dataBase, int value) const {
+        virtual bool isGreaterThan(const DataBase* dataBase, int value) const {
             (void)dataBase;
             (void)value;
             return false;
         }
-        virtual bool isLessThan(const DataBase *dataBase, int value) const {
+        virtual bool isLessThan(const DataBase* dataBase, int value) const {
             (void)dataBase;
             (void)value;
             return false;
@@ -127,7 +127,7 @@ namespace ExprEngine {
     class UninitValue : public Value {
     public:
         UninitValue() : Value("?", ValueType::UninitValue) {}
-        bool isEqual(const DataBase *dataBase, int value) const OVERRIDE {
+        bool isEqual(const DataBase* dataBase, int value) const OVERRIDE {
             (void)dataBase;
             (void)value;
             return true;
@@ -139,7 +139,7 @@ namespace ExprEngine {
 
     class IntRange : public Value {
     public:
-        IntRange(const std::string &name, int128_t minValue, int128_t maxValue)
+        IntRange(const std::string& name, int128_t minValue, int128_t maxValue)
             : Value(name, ValueType::IntRange)
             , minValue(minValue)
             , maxValue(maxValue)
@@ -149,18 +149,18 @@ namespace ExprEngine {
                 return str(minValue);
             return str(minValue) + ":" + str(maxValue);
         }
-        bool isEqual(const DataBase *dataBase, int value) const OVERRIDE;
-        bool isGreaterThan(const DataBase *dataBase, int value) const OVERRIDE;
-        bool isLessThan(const DataBase *dataBase, int value) const OVERRIDE;
+        bool isEqual(const DataBase* dataBase, int value) const OVERRIDE;
+        bool isGreaterThan(const DataBase* dataBase, int value) const OVERRIDE;
+        bool isLessThan(const DataBase* dataBase, int value) const OVERRIDE;
 
         int128_t minValue;
         int128_t maxValue;
-        const Scope *loopScope;
+        const Scope* loopScope;
     };
 
     class FloatRange : public Value {
     public:
-        FloatRange(const std::string &name, long double minValue, long double maxValue)
+        FloatRange(const std::string& name, long double minValue, long double maxValue)
             : Value(name, ValueType::FloatRange)
             , minValue(minValue)
             , maxValue(maxValue) {}
@@ -169,9 +169,9 @@ namespace ExprEngine {
             return std::to_string(minValue) + ":" + std::to_string(maxValue);
         }
 
-        bool isEqual(const DataBase *dataBase, int value) const OVERRIDE;
-        bool isGreaterThan(const DataBase *dataBase, int value) const OVERRIDE;
-        bool isLessThan(const DataBase *dataBase, int value) const OVERRIDE;
+        bool isEqual(const DataBase* dataBase, int value) const OVERRIDE;
+        bool isGreaterThan(const DataBase* dataBase, int value) const OVERRIDE;
+        bool isLessThan(const DataBase* dataBase, int value) const OVERRIDE;
 
         long double minValue;
         long double maxValue;
@@ -181,7 +181,7 @@ namespace ExprEngine {
     public:
         typedef std::vector<std::pair<ValuePtr,ValuePtr>> Vector;
 
-        ConditionalValue(const std::string &name, const Vector &values) : Value(name, ValueType::ConditionalValue), values(values) {}
+        ConditionalValue(const std::string& name, const Vector& values) : Value(name, ValueType::ConditionalValue), values(values) {}
 
         std::string getSymbolicExpression() const OVERRIDE;
 
@@ -193,9 +193,9 @@ namespace ExprEngine {
     public:
         enum { MAXSIZE = 0x7fffffff };
 
-        ArrayValue(const std::string &name, ValuePtr size, ValuePtr value, bool pointer, bool nullPointer, bool uninitPointer);
-        ArrayValue(DataBase *data, const Variable *var);
-        ArrayValue(const std::string &name, const ArrayValue &arrayValue);
+        ArrayValue(const std::string& name, ValuePtr size, ValuePtr value, bool pointer, bool nullPointer, bool uninitPointer);
+        ArrayValue(DataBase* data, const Variable* var);
+        ArrayValue(const std::string& name, const ArrayValue& arrayValue);
 
         std::string getRange() const OVERRIDE;
         std::string getSymbolicExpression() const OVERRIDE;
@@ -218,7 +218,7 @@ namespace ExprEngine {
 
     class StringLiteralValue : public Value {
     public:
-        StringLiteralValue(const std::string &name, const std::string &s) : Value(name, ValueType::StringLiteralValue), string(s) {}
+        StringLiteralValue(const std::string& name, const std::string& s) : Value(name, ValueType::StringLiteralValue), string(s) {}
 
         std::string getRange() const OVERRIDE {
             return "\"" + string + "\"";
@@ -232,7 +232,7 @@ namespace ExprEngine {
 
     class StructValue : public Value {
     public:
-        explicit StructValue(const std::string &name) : Value(name, ValueType::StructValue) {}
+        explicit StructValue(const std::string& name) : Value(name, ValueType::StructValue) {}
 
         std::string getSymbolicExpression() const OVERRIDE;
 
@@ -240,7 +240,7 @@ namespace ExprEngine {
             return getSymbolicExpression();
         }
 
-        ValuePtr getValueOfMember(const std::string &n) const {
+        ValuePtr getValueOfMember(const std::string& n) const {
             auto it = member.find(n);
             return (it == member.end()) ? ValuePtr() : it->second;
         }
@@ -258,7 +258,7 @@ namespace ExprEngine {
 
     class AddressOfValue : public Value {
     public:
-        AddressOfValue(const std::string &name, int varId)
+        AddressOfValue(const std::string& name, int varId)
             : Value(name, ValueType::AddressOfValue)
             , varId(varId)
         {}
@@ -272,18 +272,18 @@ namespace ExprEngine {
 
     class BinOpResult : public Value {
     public:
-        BinOpResult(const std::string &binop, ValuePtr op1, ValuePtr op2)
+        BinOpResult(const std::string& binop, ValuePtr op1, ValuePtr op2)
             : Value(getName(binop, op1, op2), ValueType::BinOpResult)
             , binop(binop)
             , op1(op1)
             , op2(op2) {}
 
-        bool isEqual(const DataBase *dataBase, int value) const OVERRIDE;
-        bool isGreaterThan(const DataBase *dataBase, int value) const OVERRIDE;
-        virtual bool isLessThan(const DataBase *dataBase, int value) const OVERRIDE;
-        bool isTrue(const DataBase *dataBase) const;
+        bool isEqual(const DataBase* dataBase, int value) const OVERRIDE;
+        bool isGreaterThan(const DataBase* dataBase, int value) const OVERRIDE;
+        virtual bool isLessThan(const DataBase* dataBase, int value) const OVERRIDE;
+        bool isTrue(const DataBase* dataBase) const;
 
-        std::string getExpr(DataBase *dataBase) const;
+        std::string getExpr(DataBase* dataBase) const;
 
         std::string binop;
         ValuePtr op1;
@@ -298,7 +298,7 @@ namespace ExprEngine {
 
     class IntegerTruncation : public Value {
     public:
-        IntegerTruncation(const std::string &name, ValuePtr inputValue, int bits, char sign)
+        IntegerTruncation(const std::string& name, ValuePtr inputValue, int bits, char sign)
             : Value(name, ValueType::IntegerTruncation)
             , inputValue(inputValue)
             , bits(bits)
@@ -313,7 +313,7 @@ namespace ExprEngine {
 
     class FunctionCallArgumentValues : public Value {
     public:
-        explicit FunctionCallArgumentValues(const std::vector<ExprEngine::ValuePtr> &argValues)
+        explicit FunctionCallArgumentValues(const std::vector<ExprEngine::ValuePtr>& argValues)
             : Value("argValues", ValueType::FunctionCallArgumentValues)
             , argValues(argValues)
         {}
@@ -324,7 +324,7 @@ namespace ExprEngine {
     class BailoutValue : public Value {
     public:
         BailoutValue() : Value("bailout", ValueType::BailoutValue) {}
-        bool isEqual(const DataBase * /*dataBase*/, int /*value*/) const OVERRIDE {
+        bool isEqual(const DataBase* /*dataBase*/, int /*value*/) const OVERRIDE {
             return true;
         }
         bool isUninit() const OVERRIDE {
@@ -332,13 +332,13 @@ namespace ExprEngine {
         }
     };
 
-    typedef std::function<void (const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> Callback;
+    typedef std::function<void (const Token*, const ExprEngine::Value&, ExprEngine::DataBase*)> Callback;
 
     /** Execute all functions */
-    void CPPCHECKLIB executeAllFunctions(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks, std::ostream &report);
-    void executeFunction(const Scope *functionScope, ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks, std::ostream &report);
+    void CPPCHECKLIB executeAllFunctions(ErrorLogger* errorLogger, const Tokenizer* tokenizer, const Settings* settings, const std::vector<Callback>& callbacks, std::ostream& report);
+    void executeFunction(const Scope* functionScope, ErrorLogger* errorLogger, const Tokenizer* tokenizer, const Settings* settings, const std::vector<Callback>& callbacks, std::ostream& report);
 
-    void runChecks(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings);
+    void runChecks(ErrorLogger* errorLogger, const Tokenizer* tokenizer, const Settings* settings);
 
     void dump(ExprEngine::ValuePtr val);
 }

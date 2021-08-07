@@ -14,7 +14,7 @@
 #include <memory.h>
 #include <mbstring.h>
 
-unsigned char * overlappingWriteFunction__mbscat(unsigned char *src, unsigned char *dest)
+unsigned char* overlappingWriteFunction__mbscat(unsigned char* src, unsigned char* dest)
 {
     // No warning shall be shown:
     (void)_mbscat(dest, src);
@@ -22,7 +22,7 @@ unsigned char * overlappingWriteFunction__mbscat(unsigned char *src, unsigned ch
     return _mbscat(src, src);
 }
 
-unsigned char * overlappingWriteFunction__memccpy(unsigned char *src, unsigned char *dest, int c, size_t count)
+unsigned char* overlappingWriteFunction__memccpy(unsigned char* src, unsigned char* dest, int c, size_t count)
 {
     // No warning shall be shown:
     (void)_memccpy(dest, src, c, count);
@@ -33,7 +33,7 @@ unsigned char * overlappingWriteFunction__memccpy(unsigned char *src, unsigned c
     return _memccpy(dest, dest+3, c, 4);
 }
 
-unsigned char * overlappingWriteFunction__mbscpy(unsigned char *src, unsigned char *dest)
+unsigned char* overlappingWriteFunction__mbscpy(unsigned char* src, unsigned char* dest)
 {
     // No warning shall be shown:
     (void)_mbscpy(dest, src);
@@ -41,7 +41,7 @@ unsigned char * overlappingWriteFunction__mbscpy(unsigned char *src, unsigned ch
     return _mbscpy(src, src);
 }
 
-void overlappingWriteFunction__swab(char *src, char *dest, int n)
+void overlappingWriteFunction__swab(char* src, char* dest, int n)
 {
     // No warning shall be shown:
     _swab(dest, src, n);
@@ -49,7 +49,7 @@ void overlappingWriteFunction__swab(char *src, char *dest, int n)
     _swab(src, src+3, 4);
 }
 
-SYSTEM_INFO uninitvar_GetSystemInfo(char * envstr)
+SYSTEM_INFO uninitvar_GetSystemInfo(char* envstr)
 {
     // No warning is expected
     SYSTEM_INFO SystemInfo;
@@ -57,27 +57,27 @@ SYSTEM_INFO uninitvar_GetSystemInfo(char * envstr)
     return SystemInfo;
 }
 
-void uninitvar__putenv(char * envstr)
+void uninitvar__putenv(char* envstr)
 {
     // No warning is expected
     (void)_putenv(envstr);
 
-    char * p;
+    char* p;
     // cppcheck-suppress uninitvar
     (void)_putenv(p);
 }
 
-void nullPointer__putenv(char * envstr)
+void nullPointer__putenv(char* envstr)
 {
     // No warning is expected
     (void)_putenv(envstr);
 
-    char * p=NULL;
+    char* p=NULL;
     // cppcheck-suppress nullPointer
     (void)_putenv(p);
 }
 
-void invalidFunctionArg__getcwd(char * buffer)
+void invalidFunctionArg__getcwd(char* buffer)
 {
     // Passing NULL as the buffer forces getcwd to allocate
     // memory for the path, which allows the code to support file paths
@@ -88,22 +88,22 @@ void invalidFunctionArg__getcwd(char * buffer)
     free(buffer);
 }
 
-void nullPointer__get_timezone(long *sec)
+void nullPointer__get_timezone(long* sec)
 {
     // No warning is expected
     (void)_get_timezone(sec);
 
-    long *pSec = NULL;
+    long* pSec = NULL;
     // cppcheck-suppress nullPointer
     (void)_get_timezone(pSec);
 }
 
-void nullPointer__get_daylight(int *h)
+void nullPointer__get_daylight(int* h)
 {
     // No warning is expected
     (void)_get_daylight(h);
 
-    int *pHours = NULL;
+    int* pHours = NULL;
     // cppcheck-suppress nullPointer
     (void)_get_daylight(pHours);
 }
@@ -176,10 +176,10 @@ void validCode()
         CloseHandle(event);
     }
 
-    void *pMem1 = _malloca(1);
+    void* pMem1 = _malloca(1);
     _freea(pMem1);
     // Memory from _alloca must not be freed
-    void *pMem2 = _alloca(10);
+    void* pMem2 = _alloca(10);
     memset(pMem2, 0, 10);
 
     SYSTEMTIME st;
@@ -273,7 +273,7 @@ void validCode()
     __noop(1, "test", NULL);
     __nop();
 
-    void * pAlloc1 = _aligned_malloc(100, 2);
+    void* pAlloc1 = _aligned_malloc(100, 2);
     _aligned_free(pAlloc1);
 
     ::PostMessage(nullptr, WM_QUIT, 0, 0);
@@ -340,7 +340,7 @@ void bufferAccessOutOfBounds()
     // cppcheck-suppress bufferAccessOutOfBounds
     FillMemory(byteBuf, sizeof(byteBuf)+1, 0x01);
 
-    char * pAlloc1 = _malloca(32);
+    char* pAlloc1 = _malloca(32);
     memset(pAlloc1, 0, 32);
     // cppcheck-suppress bufferAccessOutOfBounds
     memset(pAlloc1, 0, 33);
@@ -349,7 +349,7 @@ void bufferAccessOutOfBounds()
 
 void mismatchAllocDealloc()
 {
-    char * pChar = _aligned_malloc(100, 2);
+    char* pChar = _aligned_malloc(100, 2);
     // cppcheck-suppress mismatchAllocDealloc
     free(pChar);
 
@@ -382,7 +382,7 @@ void nullPointer()
     // cppcheck-suppress nullPointer
     FARPROC pAddr = GetProcAddress(NULL, "name");
     (void)pAddr;
-    HMODULE * phModule = NULL;
+    HMODULE* phModule = NULL;
     // cppcheck-suppress nullPointer
     GetModuleHandleEx(0, NULL, phModule);
 
@@ -397,7 +397,7 @@ void nullPointer()
     // cppcheck-suppress nullPointer
     SetEvent(hEvent);
 
-    char *str = NULL;
+    char* str = NULL;
     // cppcheck-suppress strlwrCalled
     // cppcheck-suppress nullPointer
     strlwr(str);
@@ -420,7 +420,7 @@ void nullPointer()
     SOCKET socketInit = {0};
     sockaddr sockaddrUninit;
     int intInit = 0;
-    int *pIntNull = NULL;
+    int* pIntNull = NULL;
     char charArray[] = "test";
     // cppcheck-suppress nullPointer
     WSAStartup(1, NULL);
@@ -440,7 +440,7 @@ void memleak_malloca()
 {
     // cppcheck-suppress unusedAllocatedMemory
     // cppcheck-suppress unreadVariable
-    void *pMem = _malloca(10);
+    void* pMem = _malloca(10);
     // cppcheck-suppress memleak
 }
 
@@ -526,7 +526,7 @@ void resourceLeak_LoadLibrary()
 {
     HINSTANCE hInstLib;
     hInstLib = ::LoadLibrary(L"My.dll");
-    typedef BOOL (WINAPI *fpFunc)();
+    typedef BOOL (WINAPI* fpFunc)();
     // cppcheck-suppress unreadVariable
     fpFunc pFunc = GetProcAddress(hInstLib, "name");
     // cppcheck-suppress resourceLeak
@@ -659,7 +659,7 @@ void invalidFunctionArg()
     FreeLibrary(hInstLib);
 
     // cppcheck-suppress invalidFunctionArg
-    void *pMem = _malloca(-1);
+    void* pMem = _malloca(-1);
     _freea(pMem);
     // FIXME cppcheck-suppress unreadVariable
     // cppcheck-suppress invalidFunctionArg
@@ -715,7 +715,7 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     GetUserName(NULL, &dwordUninit);
 
-    FILE *pFileUninit;
+    FILE* pFileUninit;
     // cppcheck-suppress uninitvar
     // cppcheck-suppress ignoredReturnValue
     _fileno(pFileUninit);
@@ -897,10 +897,10 @@ HANDLE test_CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes,
 }
 
 // unsigned char *_mbscat(unsigned char *strDestination, const unsigned char *strSource);
-unsigned char * uninitvar_mbscat(unsigned char *strDestination, const unsigned char *strSource)
+unsigned char* uninitvar_mbscat(unsigned char* strDestination, const unsigned char* strSource)
 {
-    unsigned char *uninit_deststr;
-    unsigned char *uninit_srcstr;
+    unsigned char* uninit_deststr;
+    unsigned char* uninit_srcstr;
     // cppcheck-suppress uninitvar
     (void)_mbscat(uninit_deststr,uninit_srcstr);
     // cppcheck-suppress uninitvar
@@ -911,7 +911,7 @@ unsigned char * uninitvar_mbscat(unsigned char *strDestination, const unsigned c
 }
 
 // unsigned char *_mbscat(unsigned char *strDestination, const unsigned char *strSource);
-unsigned char * nullPointer_mbscat(unsigned char *strDestination, const unsigned char *strSource)
+unsigned char* nullPointer_mbscat(unsigned char* strDestination, const unsigned char* strSource)
 {
     // cppcheck-suppress nullPointer
     (void)_mbscat(0,strSource);
@@ -923,11 +923,11 @@ unsigned char * nullPointer_mbscat(unsigned char *strDestination, const unsigned
 }
 
 // errno_t _mbscat_s(unsigned char *strDestination, size_t numberOfElements, const unsigned char *strSource );
-error_t uninitvar_mbscat_s(unsigned char *strDestination, size_t numberOfElements, const unsigned char *strSource)
+error_t uninitvar_mbscat_s(unsigned char* strDestination, size_t numberOfElements, const unsigned char* strSource)
 {
-    unsigned char *uninit_strDestination;
+    unsigned char* uninit_strDestination;
     size_t uninit_numberOfElements;
-    unsigned char *uninit_strSource;
+    unsigned char* uninit_strSource;
 
     // cppcheck-suppress uninitvar
     (void)_mbscat_s(uninit_strDestination, numberOfElements, strSource);
@@ -941,7 +941,7 @@ error_t uninitvar_mbscat_s(unsigned char *strDestination, size_t numberOfElement
 }
 
 // errno_t _mbscat_s(unsigned char *strDestination, size_t numberOfElements, const unsigned char *strSource );
-error_t nullPointer_mbscat_s(unsigned char *strDestination, size_t numberOfElements, const unsigned char *strSource)
+error_t nullPointer_mbscat_s(unsigned char* strDestination, size_t numberOfElements, const unsigned char* strSource)
 {
     // cppcheck-suppress nullPointer
     (void)_mbscat_s(0, numberOfElements, strSource);
@@ -953,10 +953,10 @@ error_t nullPointer_mbscat_s(unsigned char *strDestination, size_t numberOfEleme
 }
 
 // errno_t _strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale);
-error_t uninitvar__strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale)
+error_t uninitvar__strncpy_s_l(char* strDest, size_t numberOfElements, const char* strSource, size_t count, _locale_t locale)
 {
     size_t uninit_numberOfElements;
-    const char *uninit_strSource;
+    const char* uninit_strSource;
     size_t uninit_count;
     _locale_t uninit_locale;
 
@@ -974,7 +974,7 @@ error_t uninitvar__strncpy_s_l(char *strDest, size_t numberOfElements, const cha
 }
 
 // errno_t _strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale);
-error_t nullPointer__strncpy_s_l(char *strDest, size_t numberOfElements, const char *strSource, size_t count, _locale_t locale)
+error_t nullPointer__strncpy_s_l(char* strDest, size_t numberOfElements, const char* strSource, size_t count, _locale_t locale)
 {
     // cppcheck-suppress nullPointer
     (void)_strncpy_s_l(0, numberOfElements, strSource, count, locale);

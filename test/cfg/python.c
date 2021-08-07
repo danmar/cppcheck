@@ -11,9 +11,9 @@
 #include <Python.h> // should be the first include
 #include <stdio.h>
 
-void validCode(PyObject * pPyObjArg)
+void validCode(PyObject* pPyObjArg)
 {
-    PyObject * pPyObjNULL = NULL;
+    PyObject* pPyObjNULL = NULL;
     Py_Initialize();
     Py_INCREF(pPyObjArg);
     Py_DECREF(pPyObjArg);
@@ -25,9 +25,9 @@ void validCode(PyObject * pPyObjArg)
     Py_CLEAR(pPyObjNULL);
     (void)PyErr_NewException("text", NULL, NULL);
 
-    char * pBuf1 = PyMem_Malloc(5);
+    char* pBuf1 = PyMem_Malloc(5);
     PyMem_Free(pBuf1);
-    int * pIntBuf1 = PyMem_New(int, 10);
+    int* pIntBuf1 = PyMem_New(int, 10);
     PyMem_Free(pIntBuf1);
 }
 
@@ -41,7 +41,7 @@ void nullPointer()
 
 void PyMem_Malloc_memleak()
 {
-    char * pBuf1 = PyMem_Malloc(1);
+    char* pBuf1 = PyMem_Malloc(1);
     printf("%p", pBuf1);
     // cppcheck-suppress memleak
 }
@@ -49,14 +49,14 @@ void PyMem_Malloc_memleak()
 void PyMem_Malloc_mismatchAllocDealloc()
 {
     // cppcheck-suppress unusedAllocatedMemory
-    char * pBuf1 = PyMem_Malloc(10);
+    char* pBuf1 = PyMem_Malloc(10);
     // cppcheck-suppress mismatchAllocDealloc
     free(pBuf1);
 }
 
 void PyMem_New_memleak()
 {
-    char * pBuf1 = PyMem_New(char, 5);
+    char* pBuf1 = PyMem_New(char, 5);
     printf("%p", pBuf1);
     // cppcheck-suppress memleak
 }

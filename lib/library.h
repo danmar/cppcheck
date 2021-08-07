@@ -67,7 +67,7 @@ public:
     };
 
     Error load(const char exename[], const char path[]);
-    Error load(const tinyxml2::XMLDocument &doc);
+    Error load(const tinyxml2::XMLDocument& doc);
 
     /** this is primarily meant for unit tests. it only returns true/false */
     bool loadxmldata(const char xmldata[], std::size_t len);
@@ -84,22 +84,22 @@ public:
     };
 
     /** get allocation info for function */
-    const AllocFunc* getAllocFuncInfo(const Token *tok) const;
+    const AllocFunc* getAllocFuncInfo(const Token* tok) const;
 
     /** get deallocation info for function */
-    const AllocFunc* getDeallocFuncInfo(const Token *tok) const;
+    const AllocFunc* getDeallocFuncInfo(const Token* tok) const;
 
     /** get reallocation info for function */
-    const AllocFunc* getReallocFuncInfo(const Token *tok) const;
+    const AllocFunc* getReallocFuncInfo(const Token* tok) const;
 
     /** get allocation id for function */
-    int getAllocId(const Token *tok, int arg) const;
+    int getAllocId(const Token* tok, int arg) const;
 
     /** get deallocation id for function */
-    int getDeallocId(const Token *tok, int arg) const;
+    int getDeallocId(const Token* tok, int arg) const;
 
     /** get reallocation id for function */
-    int getReallocId(const Token *tok, int arg) const;
+    int getReallocId(const Token* tok, int arg) const;
 
     /** get allocation info for function by name (deprecated, use other alloc) */
     const AllocFunc* getAllocFuncInfo(const char name[]) const {
@@ -124,17 +124,17 @@ public:
     }
 
     /** set allocation id for function */
-    void setalloc(const std::string &functionname, int id, int arg) {
+    void setalloc(const std::string& functionname, int id, int arg) {
         mAlloc[functionname].groupId = id;
         mAlloc[functionname].arg = arg;
     }
 
-    void setdealloc(const std::string &functionname, int id, int arg) {
+    void setdealloc(const std::string& functionname, int id, int arg) {
         mDealloc[functionname].groupId = id;
         mDealloc[functionname].arg = arg;
     }
 
-    void setrealloc(const std::string &functionname, int id, int arg, int reallocArg = 1) {
+    void setrealloc(const std::string& functionname, int id, int arg, int reallocArg = 1) {
         mRealloc[functionname].groupId = id;
         mRealloc[functionname].arg = arg;
         mRealloc[functionname].reallocArg = reallocArg;
@@ -174,7 +174,7 @@ public:
         int sizeArg;
         int strlenArg;
     };
-    const NonOverlappingData* getNonOverlappingData(const Token *ftok) const;
+    const NonOverlappingData* getNonOverlappingData(const Token* ftok) const;
 
     struct WarnInfo {
         std::string message;
@@ -186,21 +186,21 @@ public:
     const WarnInfo* getWarnInfo(const Token* ftok) const;
 
     // returns true if ftok is not a library function
-    bool isNotLibraryFunction(const Token *ftok) const;
-    bool matchArguments(const Token *ftok, const std::string &functionName) const;
+    bool isNotLibraryFunction(const Token* ftok) const;
+    bool matchArguments(const Token* ftok, const std::string& functionName) const;
 
     enum class UseRetValType { NONE, DEFAULT, ERROR_CODE };
     UseRetValType getUseRetValType(const Token* ftok) const;
 
-    const std::string& returnValue(const Token *ftok) const;
-    const std::string& returnValueType(const Token *ftok) const;
-    int returnValueContainer(const Token *ftok) const;
-    std::vector<MathLib::bigint> unknownReturnValues(const Token *ftok) const;
+    const std::string& returnValue(const Token* ftok) const;
+    const std::string& returnValueType(const Token* ftok) const;
+    int returnValueContainer(const Token* ftok) const;
+    std::vector<MathLib::bigint> unknownReturnValues(const Token* ftok) const;
 
-    bool isnoreturn(const Token *ftok) const;
-    bool isnotnoreturn(const Token *ftok) const;
+    bool isnoreturn(const Token* ftok) const;
+    bool isnotnoreturn(const Token* ftok) const;
 
-    bool isScopeNoReturn(const Token *end, std::string *unknownFunc) const;
+    bool isScopeNoReturn(const Token* end, std::string* unknownFunc) const;
 
     class Container {
     public:
@@ -323,36 +323,36 @@ public:
         Function() : use(false), leakignore(false), isconst(false), ispure(false), useretval(UseRetValType::NONE), ignore(false), formatstr(false), formatstr_scan(false), formatstr_secure(false) {}
     };
 
-    const Function *getFunction(const Token *ftok) const;
+    const Function* getFunction(const Token* ftok) const;
     std::unordered_map<std::string, Function> functions;
     bool isUse(const std::string& functionName) const;
     bool isLeakIgnore(const std::string& functionName) const;
     bool isFunctionConst(const std::string& functionName, bool pure) const;
-    bool isFunctionConst(const Token *ftok) const;
+    bool isFunctionConst(const Token* ftok) const;
 
-    bool isboolargbad(const Token *ftok, int argnr) const {
-        const ArgumentChecks *arg = getarg(ftok, argnr);
+    bool isboolargbad(const Token* ftok, int argnr) const {
+        const ArgumentChecks* arg = getarg(ftok, argnr);
         return arg && arg->notbool;
     }
 
-    bool isnullargbad(const Token *ftok, int argnr) const;
-    bool isuninitargbad(const Token *ftok, int argnr, int indirect = 0, bool *hasIndirect=nullptr) const;
+    bool isnullargbad(const Token* ftok, int argnr) const;
+    bool isuninitargbad(const Token* ftok, int argnr, int indirect = 0, bool* hasIndirect=nullptr) const;
 
-    bool isargformatstr(const Token *ftok, int argnr) const {
-        const ArgumentChecks *arg = getarg(ftok, argnr);
+    bool isargformatstr(const Token* ftok, int argnr) const {
+        const ArgumentChecks* arg = getarg(ftok, argnr);
         return arg && arg->formatstr;
     }
 
-    bool isargstrz(const Token *ftok, int argnr) const {
-        const ArgumentChecks *arg = getarg(ftok, argnr);
+    bool isargstrz(const Token* ftok, int argnr) const {
+        const ArgumentChecks* arg = getarg(ftok, argnr);
         return arg && arg->strz;
     }
 
-    bool isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint argvalue) const;
-    bool isFloatArgValid(const Token *ftok, int argnr, double argvalue) const;
+    bool isIntArgValid(const Token* ftok, int argnr, const MathLib::bigint argvalue) const;
+    bool isFloatArgValid(const Token* ftok, int argnr, double argvalue) const;
 
-    const std::string& validarg(const Token *ftok, int argnr) const {
-        const ArgumentChecks *arg = getarg(ftok, argnr);
+    const std::string& validarg(const Token* ftok, int argnr) const {
+        const ArgumentChecks* arg = getarg(ftok, argnr);
         return arg ? arg->valid : emptyString;
     }
 
@@ -364,64 +364,64 @@ public:
             return MathLib::isInt(op1);
         }
     };
-    static std::vector<InvalidArgValue> getInvalidArgValues(const std::string &validExpr);
+    static std::vector<InvalidArgValue> getInvalidArgValues(const std::string& validExpr);
 
-    const ArgumentChecks::IteratorInfo *getArgIteratorInfo(const Token *ftok, int argnr) const {
-        const ArgumentChecks *arg = getarg(ftok, argnr);
+    const ArgumentChecks::IteratorInfo* getArgIteratorInfo(const Token* ftok, int argnr) const {
+        const ArgumentChecks* arg = getarg(ftok, argnr);
         return arg && arg->iteratorInfo.it ? &arg->iteratorInfo : nullptr;
     }
 
-    bool hasminsize(const Token *ftok) const;
+    bool hasminsize(const Token* ftok) const;
 
-    const std::vector<ArgumentChecks::MinSize> *argminsizes(const Token *ftok, int argnr) const {
-        const ArgumentChecks *arg = getarg(ftok, argnr);
+    const std::vector<ArgumentChecks::MinSize>* argminsizes(const Token* ftok, int argnr) const {
+        const ArgumentChecks* arg = getarg(ftok, argnr);
         return arg ? &arg->minsizes : nullptr;
     }
 
     ArgumentChecks::Direction getArgDirection(const Token* ftok, int argnr) const;
 
-    bool markupFile(const std::string &path) const;
+    bool markupFile(const std::string& path) const;
 
-    bool processMarkupAfterCode(const std::string &path) const;
+    bool processMarkupAfterCode(const std::string& path) const;
 
-    const std::set<std::string> &markupExtensions() const {
+    const std::set<std::string>& markupExtensions() const {
         return mMarkupExtensions;
     }
 
-    bool reportErrors(const std::string &path) const;
+    bool reportErrors(const std::string& path) const;
 
-    bool ignorefunction(const std::string &functionName) const;
+    bool ignorefunction(const std::string& functionName) const;
 
-    bool isexecutableblock(const std::string &file, const std::string &token) const;
+    bool isexecutableblock(const std::string& file, const std::string& token) const;
 
-    int blockstartoffset(const std::string &file) const;
+    int blockstartoffset(const std::string& file) const;
 
-    const std::string& blockstart(const std::string &file) const;
-    const std::string& blockend(const std::string &file) const;
+    const std::string& blockstart(const std::string& file) const;
+    const std::string& blockend(const std::string& file) const;
 
-    bool iskeyword(const std::string &file, const std::string &keyword) const;
+    bool iskeyword(const std::string& file, const std::string& keyword) const;
 
-    bool isexporter(const std::string &prefix) const {
+    bool isexporter(const std::string& prefix) const {
         return mExporters.find(prefix) != mExporters.end();
     }
 
-    bool isexportedprefix(const std::string &prefix, const std::string &token) const {
+    bool isexportedprefix(const std::string& prefix, const std::string& token) const {
         const std::map<std::string, ExportedFunctions>::const_iterator it = mExporters.find(prefix);
         return (it != mExporters.end() && it->second.isPrefix(token));
     }
 
-    bool isexportedsuffix(const std::string &prefix, const std::string &token) const {
+    bool isexportedsuffix(const std::string& prefix, const std::string& token) const {
         const std::map<std::string, ExportedFunctions>::const_iterator it = mExporters.find(prefix);
         return (it != mExporters.end() && it->second.isSuffix(token));
     }
 
-    bool isimporter(const std::string& file, const std::string &importer) const;
+    bool isimporter(const std::string& file, const std::string& importer) const;
 
-    bool isreflection(const std::string &token) const {
+    bool isreflection(const std::string& token) const {
         return mReflection.find(token) != mReflection.end();
     }
 
-    int reflectionArgument(const std::string &token) const {
+    int reflectionArgument(const std::string& token) const {
         const std::map<std::string, int>::const_iterator it = mReflection.find(token);
         if (it != mReflection.end())
             return it->second;
@@ -435,7 +435,7 @@ public:
     };
 
     std::map<std::string, SmartPointer> smartPointers;
-    bool isSmartPointer(const Token *tok) const;
+    bool isSmartPointer(const Token* tok) const;
     const SmartPointer* detectSmartPointer(const Token* tok) const;
 
     struct PodType {
@@ -443,7 +443,7 @@ public:
         char sign;
         enum class Type { NO, BOOL, CHAR, SHORT, INT, LONG, LONGLONG } stdtype;
     };
-    const struct PodType *podtype(const std::string &name) const {
+    const struct PodType* podtype(const std::string& name) const {
         const std::unordered_map<std::string, struct PodType>::const_iterator it = mPodTypes.find(name);
         return (it != mPodTypes.end()) ? &(it->second) : nullptr;
     }
@@ -456,7 +456,7 @@ public:
             , mPointer(false)
             , mPtrPtr(false)
             , mConstPtr(false) {}
-        bool operator == (const PlatformType & type) const {
+        bool operator == (const PlatformType& type) const {
             return (mSigned == type.mSigned &&
                     mUnsigned == type.mUnsigned &&
                     mLong == type.mLong &&
@@ -465,7 +465,7 @@ public:
                     mConstPtr == type.mConstPtr &&
                     mType == type.mType);
         }
-        bool operator != (const PlatformType & type) const {
+        bool operator != (const PlatformType& type) const {
             return !(*this == type);
         }
         std::string mType;
@@ -478,17 +478,17 @@ public:
     };
 
     struct Platform {
-        const PlatformType *platform_type(const std::string &name) const {
+        const PlatformType* platform_type(const std::string& name) const {
             const std::map<std::string, struct PlatformType>::const_iterator it = mPlatformTypes.find(name);
             return (it != mPlatformTypes.end()) ? &(it->second) : nullptr;
         }
         std::map<std::string, PlatformType> mPlatformTypes;
     };
 
-    const PlatformType *platform_type(const std::string &name, const std::string & platform) const {
+    const PlatformType* platform_type(const std::string& name, const std::string& platform) const {
         const std::map<std::string, Platform>::const_iterator it = mPlatforms.find(platform);
         if (it != mPlatforms.end()) {
-            const PlatformType * const type = it->second.platform_type(name);
+            const PlatformType* const type = it->second.platform_type(name);
             if (type)
                 return type;
         }
@@ -500,19 +500,19 @@ public:
     /**
      * Get function name for function call
      */
-    std::string getFunctionName(const Token *ftok) const;
+    std::string getFunctionName(const Token* ftok) const;
 
-    static bool isContainerYield(const Token * const cond, Library::Container::Yield y, const std::string& fallback="");
+    static bool isContainerYield(const Token* const cond, Library::Container::Yield y, const std::string& fallback="");
 
     /** Suppress/check a type */
     enum class TypeCheck { def, check, suppress };
-    TypeCheck getTypeCheck(const std::string &check, const std::string &typeName) const;
+    TypeCheck getTypeCheck(const std::string& check, const std::string& typeName) const;
 
     bool bugHunting;
 
 private:
     // load a <function> xml node
-    Error loadFunction(const tinyxml2::XMLElement * const node, const std::string &name, std::set<std::string> &unknown_elements);
+    Error loadFunction(const tinyxml2::XMLElement* const node, const std::string& name, std::set<std::string>& unknown_elements);
 
     class ExportedFunctions {
     public:
@@ -593,17 +593,17 @@ private:
     std::map<std::pair<std::string,std::string>, TypeCheck> mTypeChecks;
     std::unordered_map<std::string, NonOverlappingData> mNonOverlappingData;
 
-    const ArgumentChecks * getarg(const Token *ftok, int argnr) const;
+    const ArgumentChecks* getarg(const Token* ftok, int argnr) const;
 
-    std::string getFunctionName(const Token *ftok, bool *error) const;
+    std::string getFunctionName(const Token* ftok, bool* error) const;
 
-    static const AllocFunc* getAllocDealloc(const std::map<std::string, AllocFunc> &data, const std::string &name) {
+    static const AllocFunc* getAllocDealloc(const std::map<std::string, AllocFunc>& data, const std::string& name) {
         const std::map<std::string, AllocFunc>::const_iterator it = data.find(name);
         return (it == data.end()) ? nullptr : &it->second;
     }
 };
 
-CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok);
+CPPCHECKLIB const Library::Container* getLibraryContainer(const Token* tok);
 
 /// @}
 //---------------------------------------------------------------------------

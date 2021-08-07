@@ -10,7 +10,7 @@
 #include <lua.h>
 #include <stdio.h>
 
-void validCode(lua_State *L)
+void validCode(lua_State* L)
 {
     int a = lua_gettop(L);
     printf("%d", a);
@@ -18,7 +18,7 @@ void validCode(lua_State *L)
     lua_pop(L, 1);
 }
 
-void ignoredReturnValue(lua_State *L)
+void ignoredReturnValue(lua_State* L)
 {
     // cppcheck-suppress ignoredReturnValue
     lua_tonumber(L, 1);

@@ -190,7 +190,7 @@ private:
         checkStl.runChecks(&tokenizer, &settings, this);
     }
 
-    void check(const std::string &code, const bool inconclusive=false) {
+    void check(const std::string& code, const bool inconclusive=false) {
         check(code.c_str(), inconclusive);
     }
 

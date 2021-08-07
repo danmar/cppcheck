@@ -498,7 +498,7 @@ private:
             return "";
     }
 
-    std::string tokenizeAndStringify(const char code[], const Settings &settings, const char filename[] = "test.cpp") {
+    std::string tokenizeAndStringify(const char code[], const Settings& settings, const char filename[] = "test.cpp") {
         errout.str("");
 
         // tokenize..
@@ -712,16 +712,16 @@ private:
     // #5884 - Avoid left shift of negative integer value.
     void tokenize32() {
         // Do not simplify negative integer left shifts.
-        const char * code = "void f ( ) { int max_x ; max_x = -10000 << 16 ; }";
+        const char* code = "void f ( ) { int max_x ; max_x = -10000 << 16 ; }";
         ASSERT_EQUALS(code, tokenizeAndStringify(code));
     }
 
     // #5780 Various crashes on valid template code in Tokenizer::setVarId()
     void tokenize33() {
-        const char * code = "template<typename T, typename A = Alloc<T>> struct vector {};\n"
-                            "void z() {\n"
-                            "    vector<int> VI;\n"
-                            "}\n";
+        const char* code = "template<typename T, typename A = Alloc<T>> struct vector {};\n"
+                           "void z() {\n"
+                           "    vector<int> VI;\n"
+                           "}\n";
         tokenizeAndStringify(code);
     }
 
@@ -2807,7 +2807,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
             // A body {}
             ASSERT_EQUALS(true, tok->linkAt(2) == tok->tokAt(9));
             ASSERT_EQUALS(true, tok->linkAt(9) == tok->tokAt(2));
@@ -2832,7 +2832,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
             // a[10]
             ASSERT_EQUALS(true, tok->linkAt(7) == tok->tokAt(9));
             ASSERT_EQUALS(true, tok->linkAt(9) == tok->tokAt(7));
@@ -2856,7 +2856,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
             // foo(
             ASSERT_EQUALS(true, tok->linkAt(6) == tok->tokAt(10));
             ASSERT_EQUALS(true, tok->linkAt(10) == tok->tokAt(6));
@@ -2876,7 +2876,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
             // template<
             ASSERT_EQUALS(true, tok->tokAt(6) == tok->linkAt(4));
             ASSERT_EQUALS(true, tok->tokAt(4) == tok->linkAt(6));
@@ -2904,7 +2904,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
 
             // static_cast<
             ASSERT_EQUALS(true, tok->tokAt(9) == tok->linkAt(7));
@@ -2921,7 +2921,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
 
             // nvwa<(x > y)>
             ASSERT_EQUALS(true, tok->tokAt(12) == tok->linkAt(6));
@@ -2937,7 +2937,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
 
             // B<..>
             ASSERT_EQUALS(true, tok->tokAt(5) == tok->linkAt(7));
@@ -2953,7 +2953,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
 
             ASSERT_EQUALS(true, tok->tokAt(1) == tok->linkAt(18));
             ASSERT_EQUALS(true, tok->tokAt(3) == tok->linkAt(17));
@@ -2970,7 +2970,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
 
             ASSERT_EQUALS(true, tok->tokAt(2) == tok->linkAt(4));
             ASSERT_EQUALS(true, tok->tokAt(4) == tok->linkAt(2));
@@ -2986,7 +2986,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
 
             ASSERT_EQUALS(true, tok->tokAt(3) == tok->linkAt(9));
             ASSERT_EQUALS(true, tok->linkAt(3) == tok->tokAt(9));
@@ -3001,7 +3001,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
 
             ASSERT_EQUALS(true, tok->linkAt(3) == nullptr);
         }
@@ -3013,7 +3013,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
 
             ASSERT_EQUALS(true, tok->linkAt(4) == nullptr);
         }
@@ -3025,7 +3025,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
 
             ASSERT_EQUALS(true, tok->linkAt(1) == tok->tokAt(5));
         }
@@ -3037,7 +3037,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
 
             ASSERT_EQUALS(true, tok->linkAt(3) == nullptr);
         }
@@ -3049,7 +3049,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
             ASSERT_EQUALS(true, tok->linkAt(1) == tok->tokAt(7));
         }
 
@@ -3060,7 +3060,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
             ASSERT_EQUALS(true, tok->linkAt(1) == tok->tokAt(7));
         }
 
@@ -3070,7 +3070,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
             ASSERT_EQUALS(true, tok->linkAt(1) == tok->tokAt(7));
             ASSERT_EQUALS(true, tok->tokAt(1) == tok->linkAt(7));
         }
@@ -3081,7 +3081,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
             ASSERT_EQUALS(true, tok->linkAt(4) == tok->tokAt(8));
             ASSERT_EQUALS(true, tok->tokAt(4) == tok->linkAt(8));
         }
@@ -3092,7 +3092,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
             ASSERT_EQUALS(true, tok->linkAt(1) == tok->tokAt(4));
             ASSERT_EQUALS(true, tok->tokAt(1) == tok->linkAt(4));
         }
@@ -3104,7 +3104,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = tokenizer.tokens();
+            const Token* tok = tokenizer.tokens();
 
             ASSERT_EQUALS(true, tok->linkAt(1) == tok->tokAt(4)); // <class R>
             ASSERT_EQUALS(true, tok->linkAt(7) == tok->tokAt(14)); // <R(&)()>
@@ -3124,7 +3124,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok = Token::findsimplematch(tokenizer.tokens(), "<");
+            const Token* tok = Token::findsimplematch(tokenizer.tokens(), "<");
             ASSERT_EQUALS(true, tok->link() == tok->tokAt(4));
             ASSERT_EQUALS(true, tok->linkAt(4) == tok);
         }
@@ -3138,8 +3138,8 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), "struct")->tokAt(2);
-            const Token *tok2 = Token::findsimplematch(tokenizer.tokens(), "{")->previous();
+            const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "struct")->tokAt(2);
+            const Token* tok2 = Token::findsimplematch(tokenizer.tokens(), "{")->previous();
             ASSERT_EQUALS(true, tok1->link() == tok2);
             ASSERT_EQUALS(true, tok2->link() == tok1);
         }
@@ -3151,8 +3151,8 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), "< Y");
-            const Token *tok2 = Token::findsimplematch(tok1, "> copy");
+            const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< Y");
+            const Token* tok2 = Token::findsimplematch(tok1, "> copy");
             ASSERT_EQUALS(true, tok1->link() == tok2);
             ASSERT_EQUALS(true, tok2->link() == tok1);
         }
@@ -3164,8 +3164,8 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok1 = tokenizer.tokens()->next();
-            const Token *tok2 = tok1->tokAt(2);
+            const Token* tok1 = tokenizer.tokens()->next();
+            const Token* tok2 = tok1->tokAt(2);
             ASSERT_EQUALS(true, tok1->link() == tok2);
             ASSERT_EQUALS(true, tok2->link() == tok1);
         }
@@ -3177,8 +3177,8 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), "<");
-            const Token *tok2 = tok1->tokAt(2);
+            const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "<");
+            const Token* tok2 = tok1->tokAt(2);
             ASSERT_EQUALS(true, tok1->link() == tok2);
             ASSERT_EQUALS(true, tok2->link() == tok1);
         }
@@ -3190,7 +3190,7 @@ private:
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            const Token *A = Token::findsimplematch(tokenizer.tokens(), "A <");
+            const Token* A = Token::findsimplematch(tokenizer.tokens(), "A <");
             ASSERT_EQUALS(true, A->next()->link() == A->tokAt(3));
         }
         {
@@ -3538,11 +3538,11 @@ private:
         // Expected result..
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
 
-        const Token * func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
-        const Token * func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
-        const Token * func3 = Token::findsimplematch(tokenizer.tokens(), "func3");
-        const Token * func4 = Token::findsimplematch(tokenizer.tokens(), "func4");
-        const Token * func5 = Token::findsimplematch(tokenizer.tokens(), "func5");
+        const Token* func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
+        const Token* func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
+        const Token* func3 = Token::findsimplematch(tokenizer.tokens(), "func3");
+        const Token* func4 = Token::findsimplematch(tokenizer.tokens(), "func4");
+        const Token* func5 = Token::findsimplematch(tokenizer.tokens(), "func5");
 
         ASSERT(func1 && func1->isAttributePure() && func1->isAttributeNothrow() && func1->isAttributeConst());
         ASSERT(func2 && func2->isAttributePure() && func2->isAttributeNothrow() && func2->isAttributeConst());
@@ -3563,7 +3563,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
 
-        const Token * VAS_Fail = Token::findsimplematch(tokenizer.tokens(), "VAS_Fail");
+        const Token* VAS_Fail = Token::findsimplematch(tokenizer.tokens(), "VAS_Fail");
         ASSERT(VAS_Fail && VAS_Fail->isAttributeNoreturn());
     }
 
@@ -3585,11 +3585,11 @@ private:
         // Expected result..
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
 
-        const Token * func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
-        const Token * func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
-        const Token * func3 = Token::findsimplematch(tokenizer.tokens(), "func3");
-        const Token * func4 = Token::findsimplematch(tokenizer.tokens(), "func4");
-        const Token * func5 = Token::findsimplematch(tokenizer.tokens(), "func5");
+        const Token* func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
+        const Token* func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
+        const Token* func3 = Token::findsimplematch(tokenizer.tokens(), "func3");
+        const Token* func4 = Token::findsimplematch(tokenizer.tokens(), "func4");
+        const Token* func5 = Token::findsimplematch(tokenizer.tokens(), "func5");
 
         ASSERT(func1 && func1->isAttributePure() && func1->isAttributeNothrow() && func1->isAttributeConst());
         ASSERT(func2 && func2->isAttributePure() && func2->isAttributeNothrow() && func2->isAttributeConst());
@@ -3620,14 +3620,14 @@ private:
         // Expected result..
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
 
-        const Token * func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
-        const Token * func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
-        const Token * func3 = Token::findsimplematch(tokenizer.tokens(), "func3");
-        const Token * func4 = Token::findsimplematch(tokenizer.tokens(), "func4");
-        const Token * func5 = Token::findsimplematch(tokenizer.tokens(), "func5");
-        const Token * func6 = Token::findsimplematch(tokenizer.tokens(), "func6");
-        const Token * func7 = Token::findsimplematch(tokenizer.tokens(), "func7");
-        const Token * func8 = Token::findsimplematch(tokenizer.tokens(), "func8");
+        const Token* func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
+        const Token* func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
+        const Token* func3 = Token::findsimplematch(tokenizer.tokens(), "func3");
+        const Token* func4 = Token::findsimplematch(tokenizer.tokens(), "func4");
+        const Token* func5 = Token::findsimplematch(tokenizer.tokens(), "func5");
+        const Token* func6 = Token::findsimplematch(tokenizer.tokens(), "func6");
+        const Token* func7 = Token::findsimplematch(tokenizer.tokens(), "func7");
+        const Token* func8 = Token::findsimplematch(tokenizer.tokens(), "func8");
 
         ASSERT(func1 && func1->isAttributePure() && func1->isAttributeNothrow() && func1->isAttributeConst());
         ASSERT(func2 && func2->isAttributePure() && func2->isAttributeNothrow() && func2->isAttributeConst());
@@ -3661,14 +3661,14 @@ private:
         // Expected result..
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
 
-        const Token * func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
-        const Token * func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
-        const Token * func3 = Token::findsimplematch(tokenizer.tokens(), "func3");
-        const Token * func4 = Token::findsimplematch(tokenizer.tokens(), "func4");
-        const Token * func5 = Token::findsimplematch(tokenizer.tokens(), "func5");
-        const Token * func6 = Token::findsimplematch(tokenizer.tokens(), "func6");
-        const Token * func7 = Token::findsimplematch(tokenizer.tokens(), "func7");
-        const Token * func8 = Token::findsimplematch(tokenizer.tokens(), "func8");
+        const Token* func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
+        const Token* func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
+        const Token* func3 = Token::findsimplematch(tokenizer.tokens(), "func3");
+        const Token* func4 = Token::findsimplematch(tokenizer.tokens(), "func4");
+        const Token* func5 = Token::findsimplematch(tokenizer.tokens(), "func5");
+        const Token* func6 = Token::findsimplematch(tokenizer.tokens(), "func6");
+        const Token* func7 = Token::findsimplematch(tokenizer.tokens(), "func7");
+        const Token* func8 = Token::findsimplematch(tokenizer.tokens(), "func8");
 
         ASSERT(func1 && func1->isAttributePure() && func1->isAttributeNothrow() && func1->isAttributeConst());
         ASSERT(func2 && func2->isAttributePure() && func2->isAttributeNothrow() && func2->isAttributeConst());
@@ -3704,21 +3704,21 @@ private:
 
     void cpp03template1() {
         {
-            const char *code = "template<typename> struct extent {};";
+            const char* code = "template<typename> struct extent {};";
             ASSERT_EQUALS("template < typename > struct extent { } ;", tokenizeAndStringify(code));
         }
         {
-            const char *code = "template<typename> struct extent;";
+            const char* code = "template<typename> struct extent;";
             ASSERT_EQUALS("template < typename > struct extent ;", tokenizeAndStringify(code));
         }
         {
-            const char *code = "template<typename, unsigned = 0> struct extent;";
+            const char* code = "template<typename, unsigned = 0> struct extent;";
             ASSERT_EQUALS("template < typename , unsigned int = 0 > struct extent ;", tokenizeAndStringify(code));
         }
     }
 
     void cpp0xtemplate1() {
-        const char *code = "template <class T>\n"
+        const char* code = "template <class T>\n"
                            "void fn2 (T t = []{return 1;}())\n"
                            "{}\n"
                            "int main()\n"
@@ -3737,13 +3737,13 @@ private:
 
     void cpp0xtemplate2() {
         // tokenize ">>" into "> >"
-        const char *code = "list<list<int>> ints;\n";
+        const char* code = "list<list<int>> ints;\n";
         ASSERT_EQUALS("list < list < int > > ints ;", tokenizeAndStringify(code));
     }
 
     void cpp0xtemplate3() {
         // #2549
-        const char *code = "template<class T, T t = (T)0>\n"
+        const char* code = "template<class T, T t = (T)0>\n"
                            "struct S\n"
                            "{};\n"
                            "S<int> s;\n";
@@ -3785,27 +3785,27 @@ private:
 
     void cpp0xtemplate5() { // #9154
         {
-            const char *code = "struct s<x<u...>>;";
+            const char* code = "struct s<x<u...>>;";
             ASSERT_EQUALS("struct s < x < u ... > > ;",
                           tokenizeAndStringify(code));
         }
         {
-            const char *code = "template <class f> using c = e<i<q<f,r>,b...>>;";
+            const char* code = "template <class f> using c = e<i<q<f,r>,b...>>;";
             ASSERT_EQUALS("template < class f > using c = e < i < q < f , r > , b ... > > ;",
                           tokenizeAndStringify(code));
         }
         {
-            const char *code = "struct s<x<u...>> { };";
+            const char* code = "struct s<x<u...>> { };";
             ASSERT_EQUALS("struct s < x < u ... > > { } ;",
                           tokenizeAndStringify(code));
         }
         {
-            const char *code = "struct q : s<x<u...>> { };";
+            const char* code = "struct q : s<x<u...>> { };";
             ASSERT_EQUALS("struct q : s < x < u ... > > { } ;",
                           tokenizeAndStringify(code));
         }
         {
-            const char *code = "struct q : private s<x<u...>> { };";
+            const char* code = "struct q : private s<x<u...>> { };";
             ASSERT_EQUALS("struct q : private s < x < u ... > > { } ;",
                           tokenizeAndStringify(code));
         }
@@ -4302,12 +4302,12 @@ private:
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        const Token *x = Token::findsimplematch(tokenizer.tokens(), "x");
+        const Token* x = Token::findsimplematch(tokenizer.tokens(), "x");
         ASSERT_EQUALS(1, x->bits());
     }
 
     void simplifyNamespaceStd() {
-        const char *code, *expected;
+        const char* code, * expected;
 
         code = "map<foo, bar> m;"; // namespace std is not used
         ASSERT_EQUALS("map < foo , bar > m ;", tokenizeAndStringify(code));
@@ -5681,7 +5681,7 @@ private:
         tokenList.list.front()->assignIndexes();
 
         // set varid..
-        for (Token *tok = tokenList.list.front(); tok; tok = tok->next()) {
+        for (Token* tok = tokenList.list.front(); tok; tok = tok->next()) {
             if (tok->str() == "var")
                 tok->varId(1);
         }
@@ -5693,7 +5693,7 @@ private:
         tokenList.list.validateAst();
 
         // Basic AST validation
-        for (const Token *tok = tokenList.list.front(); tok; tok = tok->next()) {
+        for (const Token* tok = tokenList.list.front(); tok; tok = tok->next()) {
             if (tok->astOperand2() && !tok->astOperand1() && tok->str() != ";" && tok->str() != ":")
                 return "Op2 but no Op1 for token: " + tok->str();
         }
@@ -5703,8 +5703,8 @@ private:
             return tokenList.list.front()->astTop()->astStringZ3();
 
         std::string ret;
-        std::set<const Token *> astTop;
-        for (const Token *tok = tokenList.list.front(); tok; tok = tok->next()) {
+        std::set<const Token*> astTop;
+        for (const Token* tok = tokenList.list.front(); tok; tok = tok->next()) {
             if (tok->astOperand1() && astTop.find(tok->astTop()) == astTop.end()) {
                 astTop.insert(tok->astTop());
                 if (!ret.empty())
@@ -6869,7 +6869,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+        for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             ASSERT_EQUALS(tok->str() == "(", tok->isCast());
         }
     }

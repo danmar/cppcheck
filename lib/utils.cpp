@@ -23,7 +23,7 @@
 #include <cctype>
 
 
-int caseInsensitiveStringCompare(const std::string &lhs, const std::string &rhs)
+int caseInsensitiveStringCompare(const std::string& lhs, const std::string& rhs)
 {
     if (lhs.size() != rhs.size())
         return (lhs.size() < rhs.size()) ? -1 : 1;

@@ -16,14 +16,14 @@ public:
         cppcheck.settings().certainty.setEnabled(Certainty::inconclusive, true);
     }
 
-    void run(const std::string &code) {
+    void run(const std::string& code) {
         cppcheck.check("test.cpp", code);
     }
 
-    void reportOut(const std::string &outmsg, Color) OVERRIDE {
+    void reportOut(const std::string& outmsg, Color) OVERRIDE {
         (void)outmsg;
     }
-    void reportErr(const ErrorMessage &msg) OVERRIDE {
+    void reportErr(const ErrorMessage& msg) OVERRIDE {
         (void)msg;
     }
     void reportProgress(const std::string& filename,
@@ -33,13 +33,13 @@ public:
         (void)stage;
         (void)value;
     }
-    void bughuntingReport(const std::string &str) OVERRIDE {
+    void bughuntingReport(const std::string& str) OVERRIDE {
         (void)str;
     }
 };
 
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize)
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t dataSize)
 {
     if (dataSize < 10000) {
         const std::string code = generateCode2(data, dataSize);

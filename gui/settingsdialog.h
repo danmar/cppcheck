@@ -39,12 +39,12 @@ class CodeEditorStyle;
 class SettingsDialog : public QDialog {
     Q_OBJECT
 public:
-    SettingsDialog(ApplicationList *list,
-                   TranslationHandler *translator,
-                   QWidget *parent = nullptr);
-    SettingsDialog(const SettingsDialog &) = delete;
+    SettingsDialog(ApplicationList* list,
+                   TranslationHandler* translator,
+                   QWidget* parent = nullptr);
+    SettingsDialog(const SettingsDialog&) = delete;
     virtual ~SettingsDialog();
-    SettingsDialog &operator=(const SettingsDialog &) = delete;
+    SettingsDialog& operator=(const SettingsDialog&) = delete;
 
     /**
      * @brief Save all values to QSettings
@@ -178,7 +178,7 @@ protected:
      * @param box checkbox to save
      * @param name name for QSettings to store the value
      */
-    static void saveCheckboxValue(QSettings *settings, QCheckBox *box, const QString &name);
+    static void saveCheckboxValue(QSettings* settings, QCheckBox* box, const QString& name);
 
     /**
      * @brief Convert bool to Qt::CheckState
@@ -204,26 +204,26 @@ protected:
     /**
      * @brief Current Code Editor Style
      */
-    CodeEditorStyle *mCurrentStyle;
+    CodeEditorStyle* mCurrentStyle;
 
     /**
      * @brief List of applications user has specified
      *
      */
-    ApplicationList *mApplications;
+    ApplicationList* mApplications;
 
     /**
      * @brief Temporary list of applications
      * This will be copied to actual list of applications (mApplications)
      * when user clicks ok.
      */
-    ApplicationList *mTempApplications;
+    ApplicationList* mTempApplications;
 
     /**
      * @brief List of translations.
      *
      */
-    TranslationHandler *mTranslator;
+    TranslationHandler* mTranslator;
 
     /**
      * @brief Dialog from UI designer

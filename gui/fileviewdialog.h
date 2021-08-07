@@ -39,9 +39,9 @@ class QTextEdit;
 class FileViewDialog : public QDialog {
     Q_OBJECT
 public:
-    FileViewDialog(const QString &file,
-                   const QString &title,
-                   QWidget *parent = nullptr);
+    FileViewDialog(const QString& file,
+                   const QString& title,
+                   QWidget* parent = nullptr);
 
 
 protected:
@@ -52,7 +52,7 @@ protected:
      * @param filename File to load.
      * @param edit Control where to load the file contents.
      */
-    void loadTextFile(const QString &filename, QTextEdit *edit);
+    void loadTextFile(const QString& filename, QTextEdit* edit);
 
     Ui::Fileview mUI;
 };
