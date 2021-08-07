@@ -217,8 +217,8 @@ public:
     unsigned int jobs;
 
     /** @brief Collect unmatched suppressions in one run.
-      * This delays the reporting until all files are checked.
-      * It is needed by checks that analyse the whole code base. */
+     * This delays the reporting until all files are checked.
+     * It is needed by checks that analyse the whole code base. */
     bool jointSuppressionReport;
 
     /** @brief --library= */
@@ -268,11 +268,11 @@ public:
 
     /** Rule */
     class CPPCHECKLIB Rule {
-    public:
+public:
         Rule()
             : tokenlist("simple")         // use simple tokenlist
-            , id("rule")                  // default id
-            , severity(Severity::style) { // default severity
+              , id("rule")                // default id
+              , severity(Severity::style) { // default severity
         }
 
         std::string tokenlist;
@@ -289,7 +289,7 @@ public:
 
     /** Do not only check how interface is used. Also check that interface is safe. */
     class CPPCHECKLIB SafeChecks {
-    public:
+public:
         SafeChecks() : classes(false), externalFunctions(false), internalFunctions(false), externalVariables(false) {}
 
         static const char XmlRootName[];
@@ -390,9 +390,9 @@ public:
     std::string addEnabled(const std::string &str);
 
     /**
-    * @brief Returns true if given value can be shown
-    * @return true if the value can be shown
-    */
+     * @brief Returns true if given value can be shown
+     * @return true if the value can be shown
+     */
     bool isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck=false) const;
 
     /** Is posix library specified? */

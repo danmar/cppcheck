@@ -17,10 +17,10 @@
 #include "options.h"
 
 options::options(int argc, const char* const argv[])
-    :mWhichTests(argv + 1, argv + argc)
-    ,mQuiet(mWhichTests.count("-q") != 0)
-    ,mHelp(mWhichTests.count("-h") != 0 || mWhichTests.count("--help"))
-    ,mExe(argv[0])
+    : mWhichTests(argv + 1, argv + argc)
+      ,mQuiet(mWhichTests.count("-q") != 0)
+      ,mHelp(mWhichTests.count("-h") != 0 || mWhichTests.count("--help"))
+      ,mExe(argv[0])
 {
     for (std::set<std::string>::const_iterator it = mWhichTests.begin(); it != mWhichTests.end();) {
         if (!(*it).empty() && (((*it)[0] == '-') || ((*it).find("::") != std::string::npos && mWhichTests.count((*it).substr(0, (*it).find("::"))))))

@@ -44,8 +44,7 @@ class Token;
 class CPPCHECKLIB CheckClass : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckClass() : Check(myName()), mSymbolDatabase(nullptr) {
-    }
+    CheckClass() : Check(myName()), mSymbolDatabase(nullptr) {}
 
     /** @brief This constructor is used when running checks. */
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
@@ -147,7 +146,7 @@ public:
 
     /* multifile checking; one definition rule violations */
     class MyFileInfo : public Check::FileInfo {
-    public:
+public:
         struct NameLoc {
             std::string className;
             std::string fileName;
@@ -310,7 +309,7 @@ private:
     // constructors helper function
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
     struct Usage {
-        explicit Usage(const Variable *var) : var(var), assign(false), init(false) { }
+        explicit Usage(const Variable *var) : var(var), assign(false), init(false) {}
 
         /** Variable that this usage is for */
         const Variable *var;
@@ -374,7 +373,7 @@ private:
      */
     const std::list<const Token *> & getVirtualFunctionCalls(
         const Function & function,
-        std::map<const Function *, std::list<const Token *> > & virtualFunctionCallsMap);
+        std::map<const Function *, std::list<const Token *>> & virtualFunctionCallsMap);
 
     /**
      * @brief looks for the first virtual function call stack
@@ -383,7 +382,7 @@ private:
      * @param[in,out] pureFuncStack list to append the stack
      */
     void getFirstVirtualFunctionCallStack(
-        std::map<const Function *, std::list<const Token *> > & virtualFunctionCallsMap,
+        std::map<const Function *, std::list<const Token *>> & virtualFunctionCallsMap,
         const Token *callToken,
         std::list<const Token *> & pureFuncStack);
 

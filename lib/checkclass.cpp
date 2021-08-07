@@ -106,9 +106,7 @@ static bool isVclTypeInit(const Type *type)
 CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     : Check(myName(), tokenizer, settings, errorLogger),
       mSymbolDatabase(tokenizer?tokenizer->getSymbolDatabase():nullptr)
-{
-
-}
+{}
 
 //---------------------------------------------------------------------------
 // ClassCheck: Check that all class constructors are ok.
@@ -458,23 +456,23 @@ void CheckClass::copyconstructors()
                 copyConstructorShallowCopyError(cv, cv->str());
             // throw error if count mismatch
             /* FIXME: This doesn't work. See #4154
-            for (std::map<int, const Token*>::const_iterator i = allocatedVars.begin(); i != allocatedVars.end(); ++i) {
+               for (std::map<int, const Token*>::const_iterator i = allocatedVars.begin(); i != allocatedVars.end(); ++i) {
                 copyConstructorMallocError(copyCtor, i->second, i->second->str());
-            }
-            */
+               }
+             */
         }
     }
 }
 
 /* This doesn't work. See #4154
-void CheckClass::copyConstructorMallocError(const Token *cctor, const Token *alloc, const std::string& varname)
-{
+   void CheckClass::copyConstructorMallocError(const Token *cctor, const Token *alloc, const std::string& varname)
+   {
     std::list<const Token*> callstack;
     callstack.push_back(cctor);
     callstack.push_back(alloc);
     reportError(callstack, Severity::warning, "copyCtorNoAllocation", "Copy constructor does not allocate memory for member '" + varname + "' although memory has been allocated in other constructors.");
-}
-*/
+   }
+ */
 
 void CheckClass::copyConstructorShallowCopyError(const Token *tok, const std::string& varname)
 {
@@ -1034,7 +1032,7 @@ void CheckClass::initializationListUsage()
             // Access local var member in rhs => do not warn
             bool localmember = false;
             visitAstNodes(tok->next()->astOperand2(),
-            [&](const Token *rhs) {
+                          [&](const Token *rhs) {
                 if (rhs->str() == "." && rhs->astOperand1() && rhs->astOperand1()->variable() && rhs->astOperand1()->variable()->isLocal())
                     localmember = true;
                 return ChildrenToVisit::op1_and_op2;
@@ -1044,7 +1042,7 @@ void CheckClass::initializationListUsage()
 
             bool allowed = true;
             visitAstNodes(tok->next()->astOperand2(),
-            [&](const Token *tok2) {
+                          [&](const Token *tok2) {
                 const Variable* var2 = tok2->variable();
                 if (var2) {
                     if (var2->scope() == owner && tok2->strAt(-1)!=".") { // Is there a dependency between two member variables?
@@ -1111,7 +1109,7 @@ static bool checkFunctionUsage(const Function *privfunc, const Scope* scope)
     }
 
     const std::map<std::string, Type*>::const_iterator end = scope->definedTypesMap.end();
-    for (std::map<std::string, Type*>::const_iterator iter = scope->definedTypesMap.begin(); iter != end; ++ iter) {
+    for (std::map<std::string, Type*>::const_iterator iter = scope->definedTypesMap.begin(); iter != end; ++iter) {
         const Type *type = (*iter).second;
         if (type->enclosingScope == scope && checkFunctionUsage(privfunc, type->classScope))
             return true;
@@ -1643,7 +1641,7 @@ CheckClass::Bool CheckClass::isInverted(const Token *tok, const Token *rhs)
         if (Token::simpleMatch(itr, "!=") && (isTrueKeyword(itr->astOperand1()) || isTrueKeyword(itr->astOperand2()))) {
             res = !res;
         } else if (Token::simpleMatch(itr, "!=") && ((Token::simpleMatch(itr->astOperand1(), "this") && Token::simpleMatch(itr->astOperand2(), "&") && Token::simpleMatch(itr->astOperand2()->next(), rhs->str().c_str(), rhs->str().size()))
-                   || (Token::simpleMatch(itr->astOperand2(), "this") && Token::simpleMatch(itr->astOperand1(), "&") && Token::simpleMatch(itr->astOperand1()->next(), rhs->str().c_str(), rhs->str().size())))) {
+                                                     || (Token::simpleMatch(itr->astOperand2(), "this") && Token::simpleMatch(itr->astOperand1(), "&") && Token::simpleMatch(itr->astOperand1()->next(), rhs->str().c_str(), rhs->str().size())))) {
             res = !res;
         } else if (Token::simpleMatch(itr, "!=") && (isFalseKeyword(itr->astOperand1()) || isFalseKeyword(itr->astOperand2()))) {
             //Do nothing
@@ -1654,7 +1652,7 @@ CheckClass::Bool CheckClass::isInverted(const Token *tok, const Token *rhs)
         } else if (Token::simpleMatch(itr, "==") && (isTrueKeyword(itr->astOperand1()) || isTrueKeyword(itr->astOperand2()))) {
             //Do nothing
         } else if (Token::simpleMatch(itr, "==") && ((Token::simpleMatch(itr->astOperand1(), "this") && Token::simpleMatch(itr->astOperand2(), "&") && Token::simpleMatch(itr->astOperand2()->next(), rhs->str().c_str(), rhs->str().size()))
-                   || (Token::simpleMatch(itr->astOperand2(), "this") && Token::simpleMatch(itr->astOperand1(), "&") && Token::simpleMatch(itr->astOperand1()->next(), rhs->str().c_str(), rhs->str().size())))) {
+                                                     || (Token::simpleMatch(itr->astOperand2(), "this") && Token::simpleMatch(itr->astOperand1(), "&") && Token::simpleMatch(itr->astOperand1()->next(), rhs->str().c_str(), rhs->str().size())))) {
             //Do nothing
         } else {
             return Bool::BAILOUT;
@@ -1692,7 +1690,7 @@ bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs, const Tok
 
         bool ret = false;
         visitAstNodes(tok->next()->astOperand2(),
-        [&](const Token *tok2) {
+                      [&](const Token *tok2) {
             if (!Token::Match(tok2, "==|!="))
                 return ChildrenToVisit::op1_and_op2;
             if (Token::simpleMatch(tok2->astOperand1(), "this"))
@@ -2296,7 +2294,7 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
 namespace { // avoid one-definition-rule violation
     struct VarInfo {
         VarInfo(const Variable *_var, const Token *_tok)
-            : var(_var), tok(_tok) { }
+            : var(_var), tok(_tok) {}
 
         const Variable *var;
         const Token *tok;
@@ -2406,9 +2404,9 @@ void CheckClass::selfInitializationError(const Token* tok, const std::string& va
 
 void CheckClass::checkVirtualFunctionCallInConstructor()
 {
-    if (! mSettings->severity.isEnabled(Severity::warning))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
-    std::map<const Function *, std::list<const Token *> > virtualFunctionCallsMap;
+    std::map<const Function *, std::list<const Token *>> virtualFunctionCallsMap;
     for (const Scope *scope : mSymbolDatabase->functionScopes) {
         if (scope->function == nullptr || !scope->function->hasBody() ||
             !(scope->function->isConstructor() ||
@@ -2432,9 +2430,9 @@ void CheckClass::checkVirtualFunctionCallInConstructor()
 }
 
 const std::list<const Token *> & CheckClass::getVirtualFunctionCalls(const Function & function,
-        std::map<const Function *, std::list<const Token *> > & virtualFunctionCallsMap)
+                                                                     std::map<const Function *, std::list<const Token *>> & virtualFunctionCallsMap)
 {
-    const std::map<const Function *, std::list<const Token *> >::const_iterator found = virtualFunctionCallsMap.find(&function);
+    const std::map<const Function *, std::list<const Token *>>::const_iterator found = virtualFunctionCallsMap.find(&function);
     if (found != virtualFunctionCallsMap.end())
         return found->second;
 
@@ -2489,7 +2487,7 @@ const std::list<const Token *> & CheckClass::getVirtualFunctionCalls(const Funct
 }
 
 void CheckClass::getFirstVirtualFunctionCallStack(
-    std::map<const Function *, std::list<const Token *> > & virtualFunctionCallsMap,
+    std::map<const Function *, std::list<const Token *>> & virtualFunctionCallsMap,
     const Token * callToken,
     std::list<const Token *> & pureFuncStack)
 {
@@ -2498,7 +2496,7 @@ void CheckClass::getFirstVirtualFunctionCallStack(
         pureFuncStack.push_back(callFunction->tokenDef);
         return;
     }
-    std::map<const Function *, std::list<const Token *> >::const_iterator found = virtualFunctionCallsMap.find(callFunction);
+    std::map<const Function *, std::list<const Token *>>::const_iterator found = virtualFunctionCallsMap.find(callFunction);
     if (found == virtualFunctionCallsMap.end() || found->second.empty()) {
         pureFuncStack.clear();
         return;
@@ -2604,8 +2602,8 @@ void CheckClass::checkDuplInheritedMembersRecursive(const Type* typeCurrent, con
 }
 
 void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
-        const std::string &derivedName, const std::string &baseName,
-        const std::string &variableName, bool derivedIsStruct, bool baseIsStruct)
+                                           const std::string &derivedName, const std::string &baseName,
+                                           const std::string &variableName, bool derivedIsStruct, bool baseIsStruct)
 {
     ErrorPath errorPath;
     errorPath.emplace_back(tok2, "Parent variable '" + baseName + "::" + variableName + "'");
@@ -2878,7 +2876,7 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
         // the full definition must be compared
         bool fullDefinition = std::all_of(classScope->functionList.begin(),
                                           classScope->functionList.end(),
-        [](const Function& f) {
+                                          [](const Function& f) {
             return f.hasBody();
         });
         if (!fullDefinition)

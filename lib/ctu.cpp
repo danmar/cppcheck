@@ -53,10 +53,9 @@ std::string CTU::getFunctionId(const Tokenizer *tokenizer, const Function *funct
 
 CTU::FileInfo::Location::Location(const Tokenizer *tokenizer, const Token *tok)
     : fileName(tokenizer->list.file(tok))
-    , lineNumber(tok->linenr())
-    , column(tok->column())
-{
-}
+      , lineNumber(tok->linenr())
+      , column(tok->column())
+{}
 
 std::string CTU::FileInfo::toString() const
 {
@@ -148,18 +147,16 @@ std::string CTU::toString(const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsa
 
 CTU::FileInfo::CallBase::CallBase(const Tokenizer *tokenizer, const Token *callToken)
     : callId(getFunctionId(tokenizer, callToken->function()))
-    , callArgNr(0)
-    , callFunctionName(callToken->next()->astOperand1()->expressionString())
-    , location(CTU::FileInfo::Location(tokenizer, callToken))
-{
-}
+      , callArgNr(0)
+      , callFunctionName(callToken->next()->astOperand1()->expressionString())
+      , location(CTU::FileInfo::Location(tokenizer, callToken))
+{}
 
 CTU::FileInfo::NestedCall::NestedCall(const Tokenizer *tokenizer, const Function *myFunction, const Token *callToken)
     : CallBase(tokenizer, callToken)
-    , myId(getFunctionId(tokenizer, myFunction))
-    , myArgNr(0)
-{
-}
+      , myId(getFunctionId(tokenizer, myFunction))
+      , myArgNr(0)
+{}
 
 static std::string readAttrString(const tinyxml2::XMLElement *e, const char *attr, bool *error)
 {
@@ -529,11 +526,11 @@ static bool findPath(const std::string &callId,
 }
 
 std::list<ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(InvalidValueType invalidValue,
-        const CTU::FileInfo::UnsafeUsage &unsafeUsage,
-        const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap,
-        const char info[],
-        const FunctionCall * * const functionCallPtr,
-        bool warning)
+                                                                  const CTU::FileInfo::UnsafeUsage &unsafeUsage,
+                                                                  const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap,
+                                                                  const char info[],
+                                                                  const FunctionCall ** const functionCallPtr,
+                                                                  bool warning)
 {
     std::list<ErrorMessage::FileLocation> locationList;
 

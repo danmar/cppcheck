@@ -39,12 +39,12 @@ class TestPreprocessor : public TestFixture {
 public:
     TestPreprocessor()
         : TestFixture("TestPreprocessor")
-        , preprocessor0(settings0, this) {
+          , preprocessor0(settings0, this) {
         settings0.severity.enable(Severity::information);
     }
 
     class OurPreprocessor : public Preprocessor {
-    public:
+public:
 
         static std::string expandMacros(const char code[], ErrorLogger *errorLogger = nullptr) {
             std::istringstream istr(code);
@@ -266,8 +266,7 @@ private:
                 actual[config] = cfgcode;
             } catch (const simplecpp::Output &) {
                 actual[config] = "";
-            } catch (...) {
-            }
+            } catch (...) {}
         }
     }
 
@@ -1286,7 +1285,7 @@ private:
 
             // invalid code ASSERT_EQUALS("\nprintf ( \"hello\" ) ;", actual);
         }
-    */
+     */
     void va_args_3() const {
         const char filedata[] = "#define FRED(...) { fred(__VA_ARGS__); }\n"
                                 "FRED(123)\n";

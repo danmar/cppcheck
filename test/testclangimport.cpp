@@ -21,11 +21,10 @@
 #include "testsuite.h"
 
 
-class TestClangImport: public TestFixture {
+class TestClangImport : public TestFixture {
 public:
     TestClangImport()
-        :TestFixture("TestClangImport") {
-    }
+        : TestFixture("TestClangImport") {}
 
 
 private:

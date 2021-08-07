@@ -1,20 +1,20 @@
 /*
-* Cppcheck - A tool for static C/C++ code analysis
-* Copyright (C) 2007-2020 Cppcheck team.
-*
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ * Cppcheck - A tool for static C/C++ code analysis
+ * Copyright (C) 2007-2020 Cppcheck team.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 //---------------------------------------------------------------------------
 #ifndef platformH
@@ -37,10 +37,10 @@ namespace tinyxml2 {
 namespace cppcheck {
 
     /**
-    * @brief Platform settings
-    */
+     * @brief Platform settings
+     */
     class CPPCHECKLIB Platform {
-    private:
+private:
         static long long min_value(int bit) {
             if (bit >= 64)
                 return LLONG_MIN;
@@ -52,7 +52,7 @@ namespace cppcheck {
                 return (~0ULL) >> 1;
             return (1LL << (bit-1)) - 1LL;
         }
-    public:
+public:
         Platform();
         virtual ~Platform() {}
 
@@ -129,9 +129,9 @@ namespace cppcheck {
         bool loadFromXmlDocument(const tinyxml2::XMLDocument *doc);
 
         /**
-        * @brief Returns true if platform type is Windows
-        * @return true if Windows platform type.
-        */
+         * @brief Returns true if platform type is Windows
+         * @return true if Windows platform type.
+         */
         bool isWindowsPlatform() const {
             return platformType == Win32A ||
                    platformType == Win32W ||

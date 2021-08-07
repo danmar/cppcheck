@@ -62,8 +62,8 @@ public slots:
     void weightChangedSymbol(const QFont::Weight& newWeight);
 
 private:
-    CodeEditorStyle         mStyleIncoming;
-    CodeEditorStyle         mStyleOutgoing;
+    CodeEditorStyle mStyleIncoming;
+    CodeEditorStyle mStyleOutgoing;
 
     CodeEditor              *mSampleEditor;
 
@@ -87,9 +87,9 @@ private:
     QPushButton             *mBtnDefaultLight;
     QPushButton             *mBtnDefaultDark;
 
-    static const QString     mSampleDocument;
+    static const QString mSampleDocument;
     static const QStringList mErrSymbolsList;
-    static const int         mErrLineNum;
+    static const int mErrLineNum;
 };
 
 #endif  //CODEEDITSTYLEDIALOG_H

@@ -19,7 +19,7 @@
 #include <QtTest/QtTest>
 #include "cppchecklibrarydata.h"
 
-class TestCppcheckLibraryData: public QObject {
+class TestCppcheckLibraryData : public QObject {
     Q_OBJECT
 
 private slots:

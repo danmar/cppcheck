@@ -30,21 +30,21 @@ class Application;
 /// @{
 
 /**
-* @brief Dialog to edit a startable application.
-* User can open errors with user specified applications. This is a dialog
-* to modify/add an application to open errors with.
-*
-*/
+ * @brief Dialog to edit a startable application.
+ * User can open errors with user specified applications. This is a dialog
+ * to modify/add an application to open errors with.
+ *
+ */
 class ApplicationDialog : public QDialog {
     Q_OBJECT
 
 public:
     /**
-    * @brief Constructor.
-    * @param title Title for the dialog.
-    * @param app Application definition.
-    * @param parent Parent widget.
-    */
+     * @brief Constructor.
+     * @param title Title for the dialog.
+     * @param app Application definition.
+     * @param parent Parent widget.
+     */
     ApplicationDialog(const QString &title,
                       Application &app,
                       QWidget *parent = nullptr);
@@ -55,24 +55,24 @@ protected slots:
     void ok();
 
     /**
-    * @brief Slot to browse for an application
-    *
-    */
+     * @brief Slot to browse for an application
+     *
+     */
     void browse();
 
 protected:
 
     /**
-    * @brief UI from the Qt designer
-    *
-    */
+     * @brief UI from the Qt designer
+     *
+     */
     Ui::ApplicationDialog mUI;
 
 private:
 
     /**
-    * @brief Underlying Application
-    */
+     * @brief Underlying Application
+     */
     Application& mApplication;
 };
 /// @}

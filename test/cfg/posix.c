@@ -345,7 +345,7 @@ void noleak(int x, int y, int z)
         int fd = open("path", O_RDONLY);
         FILE *f = fdopen(fd, "rt");
         fclose(f);
-    */
+     */
 }
 
 

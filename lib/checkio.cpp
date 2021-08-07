@@ -108,8 +108,7 @@ struct Filepointer {
     AppendMode append_mode;
     std::string filename;
     explicit Filepointer(OpenMode mode_ = OpenMode::UNKNOWN_OM)
-        : mode(mode_), mode_indent(0), lastOperation(Operation::NONE), op_indent(0), append_mode(AppendMode::UNKNOWN_AM) {
-    }
+        : mode(mode_), mode_indent(0), lastOperation(Operation::NONE), op_indent(0), append_mode(AppendMode::UNKNOWN_AM) {}
 };
 
 namespace {
@@ -494,7 +493,7 @@ static bool findFormat(nonneg int arg, const Token *firstArg,
         *formatArgTok = argTok->nextArgument();
         if (!argTok->values().empty()) {
             std::list<ValueFlow::Value>::const_iterator value = std::find_if(
-                        argTok->values().begin(), argTok->values().end(), std::mem_fn(&ValueFlow::Value::isTokValue));
+                argTok->values().begin(), argTok->values().end(), std::mem_fn(&ValueFlow::Value::isTokValue));
             if (value != argTok->values().end() && value->isTokValue() && value->tokvalue &&
                 value->tokvalue->tokType() == Token::eString) {
                 *formatStringTok = value->tokvalue;
@@ -1214,7 +1213,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 break;
                             case 'p':
                                 if (argInfo.typeToken->tokType() == Token::eString)
-                                    ;// string literals are passed as pointers to literal start, okay
+                                    ; // string literals are passed as pointers to literal start, okay
                                 else if (argInfo.isKnownType() && !argInfo.isArrayOrPointer())
                                     invalidPrintfArgTypeError_p(tok, numFormat, &argInfo);
                                 done = true;
@@ -1329,13 +1328,13 @@ void CheckIO::checkFormatString(const Token * const tok,
 
 CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings, bool _isCPP)
     : variableInfo(nullptr)
-    , typeToken(nullptr)
-    , functionInfo(nullptr)
-    , tempToken(nullptr)
-    , element(false)
-    , _template(false)
-    , address(false)
-    , isCPP(_isCPP)
+      , typeToken(nullptr)
+      , functionInfo(nullptr)
+      , tempToken(nullptr)
+      , element(false)
+      , _template(false)
+      , address(false)
+      , isCPP(_isCPP)
 {
     if (!arg)
         return;
@@ -1702,9 +1701,9 @@ bool CheckIO::ArgumentInfo::isLibraryType(const Settings *settings) const
 }
 
 void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
-        const std::string &functionName,
-        nonneg int numFormat,
-        nonneg int numFunction)
+                                             const std::string &functionName,
+                                             nonneg int numFormat,
+                                             nonneg int numFunction)
 {
     const Severity::SeverityType severity = numFormat > numFunction ? Severity::error : Severity::warning;
     if (severity != Severity::error && !mSettings->severity.isEnabled(Severity::warning))
@@ -1724,7 +1723,7 @@ void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
 }
 
 void CheckIO::wrongPrintfScanfPosixParameterPositionError(const Token* tok, const std::string& functionName,
-        nonneg int index, nonneg int numFunction)
+                                                          nonneg int index, nonneg int numFunction)
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;

@@ -132,7 +132,7 @@ public:
             mFlags = state ? mFlags | flag : mFlags & ~flag;
         }
 
-    public:
+public:
         /**
          * Constructor used for instantiations.
          * \param token template instantiation name token "name<...>"
@@ -170,7 +170,7 @@ public:
         const std::string & fullName() const {
             return mFullName;
         }
-        const Token * nameToken() const  {
+        const Token * nameToken() const {
             return mNameToken;
         }
         const Token * paramEnd() const {

@@ -25,8 +25,7 @@
 
 class TestExceptionSafety : public TestFixture {
 public:
-    TestExceptionSafety() : TestFixture("TestExceptionSafety") {
-    }
+    TestExceptionSafety() : TestFixture("TestExceptionSafety") {}
 
 private:
     Settings settings;

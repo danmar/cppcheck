@@ -12,12 +12,12 @@ NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
     mUI->setupUi(this);
 
     class QErrorLogger : public ErrorLogger {
-    public:
-        void reportOut(const std::string &/*outmsg*/, Color) override {}
+public:
+        void reportOut(const std::string & /*outmsg*/, Color) override {}
         void reportErr(const ErrorMessage &msg) override {
             errorIds << QString::fromStdString(msg.id);
         }
-        void bughuntingReport(const std::string &/*str*/) override {}
+        void bughuntingReport(const std::string & /*str*/) override {}
         QStringList errorIds;
     };
 

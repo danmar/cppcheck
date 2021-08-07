@@ -25,7 +25,7 @@
 
 class TestPlatform : public TestFixture {
 public:
-    TestPlatform() : TestFixture("TestPlatform") { }
+    TestPlatform() : TestFixture("TestPlatform") {}
 
 private:
     void run() OVERRIDE {

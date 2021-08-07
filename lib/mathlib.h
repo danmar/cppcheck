@@ -37,7 +37,7 @@ class CPPCHECKLIB MathLib {
 public:
     /** @brief value class */
     class value {
-    private:
+private:
         long long mIntValue;
         double mDoubleValue;
         enum class Type { INT, LONG, LONGLONG, FLOAT } mType;
@@ -45,7 +45,7 @@ public:
 
         void promote(const value &v);
 
-    public:
+public:
         explicit value(const std::string &s);
         std::string str() const;
         bool isInt() const {

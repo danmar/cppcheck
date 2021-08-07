@@ -69,8 +69,7 @@ static std::size_t calculateWarningHash(const TokenList *tokenList, const std::s
 
 ErrorMessage::ErrorMessage()
     : incomplete(false), severity(Severity::none), cwe(0U), certainty(Certainty::normal), hash(0)
-{
-}
+{}
 
 ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, Certainty::CertaintyLevel certainty) :
     callStack(callStack), // locations for this error message
@@ -660,13 +659,11 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorMessage::FileLoc
 
 ErrorMessage::FileLocation::FileLocation(const Token* tok, const TokenList* tokenList)
     : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok))
-{
-}
+{}
 
 ErrorMessage::FileLocation::FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList)
     : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok)), mInfo(info)
-{
-}
+{}
 
 std::string ErrorMessage::FileLocation::getfile(bool convert) const
 {
@@ -749,9 +746,9 @@ std::string ErrorLogger::plistHeader(const std::string &version, const std::vect
          << " <array>\r\n";
     for (const std::string & file : files)
         ostr << "  <string>" << ErrorLogger::toxml(file) << "</string>\r\n";
-    ostr       << " </array>\r\n"
-               << " <key>diagnostics</key>\r\n"
-               << " <array>\r\n";
+    ostr << " </array>\r\n"
+         << " <key>diagnostics</key>\r\n"
+         << " <array>\r\n";
     return ostr.str();
 }
 

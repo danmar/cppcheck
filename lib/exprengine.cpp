@@ -257,7 +257,7 @@ static ExprEngine::ValuePtr getValueRangeFromValueType(const std::string &name, 
 
 namespace {
     class TrackExecution {
-    public:
+public:
         TrackExecution() : mDataIndexCounter(0), mAbortLine(-1) {}
 
         int getNewDataIndex() {
@@ -344,7 +344,7 @@ namespace {
             mMap[tok].push_back(std::to_string(thenIndex) + ": Split. Then:" + std::to_string(thenIndex) + " Else:" + std::to_string(elseIndex));
         }
 
-    private:
+private:
         const char *getStatus(int linenr) const {
             if (mErrors.find(linenr) != mErrors.end())
                 return "ERROR";
@@ -363,30 +363,30 @@ namespace {
     };
 
     class Data : public ExprEngine::DataBase {
-    public:
+public:
         Data(int *symbolValueIndex, ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings, const std::string &currentFunction, const std::vector<ExprEngine::Callback> &callbacks, TrackExecution *trackExecution)
             : DataBase(currentFunction, settings)
-            , symbolValueIndex(symbolValueIndex)
-            , errorLogger(errorLogger)
-            , tokenizer(tokenizer)
-            , callbacks(callbacks)
-            , recursion(0)
-            , startTime(std::time(nullptr))
-            , mTrackExecution(trackExecution)
-            , mDataIndex(trackExecution->getNewDataIndex()) {}
+              , symbolValueIndex(symbolValueIndex)
+              , errorLogger(errorLogger)
+              , tokenizer(tokenizer)
+              , callbacks(callbacks)
+              , recursion(0)
+              , startTime(std::time(nullptr))
+              , mTrackExecution(trackExecution)
+              , mDataIndex(trackExecution->getNewDataIndex()) {}
 
         Data(const Data &old)
             : DataBase(old.currentFunction, old.settings)
-            , memory(old.memory)
-            , symbolValueIndex(old.symbolValueIndex)
-            , errorLogger(old.errorLogger)
-            , tokenizer(old.tokenizer)
-            , callbacks(old.callbacks)
-            , constraints(old.constraints)
-            , recursion(old.recursion)
-            , startTime(old.startTime)
-            , mTrackExecution(old.mTrackExecution)
-            , mDataIndex(mTrackExecution->getNewDataIndex()) {
+              , memory(old.memory)
+              , symbolValueIndex(old.symbolValueIndex)
+              , errorLogger(old.errorLogger)
+              , tokenizer(old.tokenizer)
+              , callbacks(old.callbacks)
+              , constraints(old.constraints)
+              , recursion(old.recursion)
+              , startTime(old.startTime)
+              , mTrackExecution(old.mTrackExecution)
+              , mDataIndex(mTrackExecution->getNewDataIndex()) {
             for (auto &it: memory) {
                 if (!it.second)
                     continue;
@@ -412,7 +412,7 @@ namespace {
             return tokenizer->isCPP();
         }
 
-        ExprEngine::ValuePtr executeContract(const Function *function, ExprEngine::ValuePtr(*executeExpression)(const Token*, Data&)) {
+        ExprEngine::ValuePtr executeContract(const Function *function, ExprEngine::ValuePtr (*executeExpression)(const Token*, Data&)) {
             const auto it = settings->functionContracts.find(function->fullName());
             if (it == settings->functionContracts.end())
                 return ExprEngine::ValuePtr();
@@ -434,7 +434,7 @@ namespace {
             return executeExpression(tokenList.front()->astTop(), *this);
         }
 
-        void contractConstraints(const Function *function, ExprEngine::ValuePtr(*executeExpression)(const Token*, Data&)) {
+        void contractConstraints(const Function *function, ExprEngine::ValuePtr (*executeExpression)(const Token*, Data&)) {
             auto value = executeContract(function, executeExpression);
             if (value)
                 constraints.push_back(value);
@@ -741,7 +741,7 @@ namespace {
             thenData.mTrackExecution->ifSplit(tok, thenData.mDataIndex, elseData.mDataIndex);
         }
 
-    private:
+private:
         TrackExecution * const mTrackExecution;
         const int mDataIndex;
 
@@ -876,7 +876,7 @@ static int128_t truncateInt(int128_t value, int bits, char sign)
 
 ExprEngine::ArrayValue::ArrayValue(const std::string &name, ExprEngine::ValuePtr size, ExprEngine::ValuePtr value, bool pointer, bool nullPointer, bool uninitPointer)
     : Value(name, ExprEngine::ValueType::ArrayValue)
-    , pointer(pointer), nullPointer(nullPointer), uninitPointer(uninitPointer)
+      , pointer(pointer), nullPointer(nullPointer), uninitPointer(uninitPointer)
 {
     this->size.push_back(size);
     assign(ExprEngine::ValuePtr(), value);
@@ -884,7 +884,7 @@ ExprEngine::ArrayValue::ArrayValue(const std::string &name, ExprEngine::ValuePtr
 
 ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
     : Value(data->getNewSymbolName(), ExprEngine::ValueType::ArrayValue)
-    , pointer(var->isPointer()), nullPointer(var->isPointer()), uninitPointer(var->isPointer())
+      , pointer(var->isPointer()), nullPointer(var->isPointer()), uninitPointer(var->isPointer())
 {
     if (var) {
         for (const auto &dim : var->dimensions()) {
@@ -914,10 +914,9 @@ ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
 
 ExprEngine::ArrayValue::ArrayValue(const std::string &name, const ExprEngine::ArrayValue &arrayValue)
     : Value(name, ExprEngine::ValueType::ArrayValue)
-    , pointer(arrayValue.pointer), nullPointer(arrayValue.nullPointer), uninitPointer(arrayValue.uninitPointer)
-    , data(arrayValue.data), size(arrayValue.size)
-{
-}
+      , pointer(arrayValue.pointer), nullPointer(arrayValue.nullPointer), uninitPointer(arrayValue.uninitPointer)
+      , data(arrayValue.data), size(arrayValue.size)
+{}
 
 
 std::string ExprEngine::ArrayValue::getRange() const
@@ -1112,8 +1111,8 @@ public:
     using ValueExpr = std::map<std::string, z3::expr>;
     using AssertionList = std::vector<z3::expr>;
 
-    class BailoutValueException: public ExprEngineException {
-    public:
+    class BailoutValueException : public ExprEngineException {
+public:
         BailoutValueException() : ExprEngineException(nullptr, "Incomplete analysis") {}
     };
 
@@ -1130,8 +1129,7 @@ public:
         for (auto constraint : data->constraints) {
             try {
                 solver.add(getConstraintExpr(constraint));
-            } catch (const BailoutValueException &) {
-            }
+            } catch (const BailoutValueException &) {}
         }
     }
 

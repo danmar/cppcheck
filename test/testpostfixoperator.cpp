@@ -25,8 +25,7 @@
 
 class TestPostfixOperator : public TestFixture {
 public:
-    TestPostfixOperator() : TestFixture("TestPostfixOperator") {
-    }
+    TestPostfixOperator() : TestFixture("TestPostfixOperator") {}
 
 private:
     Settings settings;

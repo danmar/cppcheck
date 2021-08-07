@@ -55,8 +55,8 @@ namespace tinyxml2 {
 /// @{
 
 /**
-     * Wrapper for error messages, provided by reportErr()
-     */
+ * Wrapper for error messages, provided by reportErr()
+ */
 class CPPCHECKLIB ErrorMessage {
 public:
     /**
@@ -65,18 +65,15 @@ public:
      * it is by default converted to native separators.
      */
     class CPPCHECKLIB FileLocation {
-    public:
+public:
         FileLocation()
-            : fileIndex(0), line(0), column(0) {
-        }
+            : fileIndex(0), line(0), column(0) {}
 
         FileLocation(const std::string &file, int line, unsigned int column)
-            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file) {
-        }
+            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file) {}
 
         FileLocation(const std::string &file, const std::string &info, int line, unsigned int column)
-            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file), mInfo(info) {
-        }
+            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file), mInfo(info) {}
 
         FileLocation(const Token* tok, const TokenList* tokenList);
         FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList);
@@ -117,7 +114,7 @@ public:
             mInfo = i;
         }
 
-    private:
+private:
         std::string mOrigFileName;
         std::string mFileName;
         std::string mInfo;
@@ -175,7 +172,7 @@ public:
      * or template to be used. E.g. "{file}:{line},{severity},{id},{message}"
      * @param templateLocation Format Empty string to use default output format
      * or template to be used. E.g. "{file}:{line},{info}"
-    * @return formatted string
+     * @return formatted string
      */
     std::string toString(bool verbose,
                          const std::string &templateFormat = emptyString,
@@ -242,7 +239,7 @@ class CPPCHECKLIB ErrorLogger {
 protected:
     std::ofstream plistFile;
 public:
-    ErrorLogger() { }
+    ErrorLogger() {}
     virtual ~ErrorLogger() {
         if (plistFile.is_open()) {
             plistFile << ErrorLogger::plistFooter();

@@ -27,8 +27,7 @@
 
 class TestSizeof : public TestFixture {
 public:
-    TestSizeof() : TestFixture("TestSizeof") {
-    }
+    TestSizeof() : TestFixture("TestSizeof") {}
 
 private:
     Settings settings;

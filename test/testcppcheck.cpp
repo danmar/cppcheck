@@ -29,13 +29,12 @@
 
 class TestCppcheck : public TestFixture {
 public:
-    TestCppcheck() : TestFixture("TestCppcheck") {
-    }
+    TestCppcheck() : TestFixture("TestCppcheck") {}
 
 private:
 
     class ErrorLogger2 : public ErrorLogger {
-    public:
+public:
         std::list<std::string> id;
 
         void reportOut(const std::string & /*outmsg*/, Color = Color::Reset) OVERRIDE {}

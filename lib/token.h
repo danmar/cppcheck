@@ -129,25 +129,25 @@ struct TokenImpl {
 
     TokenImpl()
         : mVarId(0)
-        , mFileIndex(0)
-        , mLineNumber(0)
-        , mColumn(0)
-        , mExprId(0)
-        , mAstOperand1(nullptr)
-        , mAstOperand2(nullptr)
-        , mAstParent(nullptr)
-        , mScope(nullptr)
-        , mFunction(nullptr) // Initialize whole union
-        , mProgressValue(0)
-        , mIndex(0)
-        , mOriginalName(nullptr)
-        , mValueType(nullptr)
-        , mValues(nullptr)
-        , mTemplateSimplifierPointers(nullptr)
-        , mScopeInfo(nullptr)
-        , mCppcheckAttributes(nullptr)
-        , mCpp11init(Cpp11init::UNKNOWN)
-        , mBits(0)
+          , mFileIndex(0)
+          , mLineNumber(0)
+          , mColumn(0)
+          , mExprId(0)
+          , mAstOperand1(nullptr)
+          , mAstOperand2(nullptr)
+          , mAstParent(nullptr)
+          , mScope(nullptr)
+          , mFunction(nullptr) // Initialize whole union
+          , mProgressValue(0)
+          , mIndex(0)
+          , mOriginalName(nullptr)
+          , mValueType(nullptr)
+          , mValues(nullptr)
+          , mTemplateSimplifierPointers(nullptr)
+          , mScopeInfo(nullptr)
+          , mCppcheckAttributes(nullptr)
+          , mCpp11init(Cpp11init::UNKNOWN)
+          , mBits(0)
     {}
 
     ~TokenImpl();
@@ -215,8 +215,8 @@ public:
     void deleteNext(nonneg int count = 1);
 
     /**
-    * Unlink and delete the previous 'count' tokens.
-    */
+     * Unlink and delete the previous 'count' tokens.
+     */
     void deletePrevious(nonneg int count = 1);
 
     /**
@@ -1010,14 +1010,14 @@ public:
     }
 
     /**
-    * Associate this token with given type
-    * @param t Type to be associated
-    */
+     * Associate this token with given type
+     * @param t Type to be associated
+     */
     void type(const ::Type *t);
 
     /**
-    * @return a pointer to the type associated with this token.
-    */
+     * @return a pointer to the type associated with this token.
+     */
     const ::Type *type() const {
         return mTokType == eType ? mImpl->mType : nullptr;
     }
@@ -1029,8 +1029,8 @@ public:
     static std::string typeStr(const Token* tok);
 
     /**
-    * @return a pointer to the Enumerator associated with this token.
-    */
+     * @return a pointer to the Enumerator associated with this token.
+     */
     const Enumerator *enumerator() const {
         return mTokType == eEnumerator ? mImpl->mEnumerator : nullptr;
     }
@@ -1092,10 +1092,10 @@ public:
     Token* nextArgumentBeforeCreateLinks2() const;
 
     /**
-    * @return the first token of the next template argument. Does only work on template argument
-    * lists. Requires that Tokenizer::createLinks2() has been called before.
-    * Returns 0, if there is no next argument.
-    */
+     * @return the first token of the next template argument. Does only work on template argument
+     * lists. Requires that Tokenizer::createLinks2() has been called before.
+     * Returns 0, if there is no next argument.
+     */
     Token* nextTemplateArgument() const;
 
     /**

@@ -50,10 +50,10 @@ const QString StyleEditDialog::mSampleDocument(
     "}\n");
 
 const QStringList StyleEditDialog::mErrSymbolsList = (
-            QStringList(QStringList()
-                        << "nLife"
-                        << "dValue"
-                        << "nValue"));
+    QStringList(QStringList()
+                << "nLife"
+                << "dValue"
+                << "nValue"));
 const int StyleEditDialog::mErrLineNum = 16;
 
 StyleEditDialog::StyleEditDialog(const CodeEditorStyle& newStyle,

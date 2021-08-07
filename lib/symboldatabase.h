@@ -57,7 +57,7 @@ enum class AccessControl { Public, Protected, Private, Global, Namespace, Argume
  * @brief Array dimension information.
  */
 struct Dimension {
-    Dimension() : tok(nullptr), num(0), known(true) { }
+    Dimension() : tok(nullptr), num(0), known(true) {}
 
     const Token *tok;    ///< size token
     MathLib::bigint num; ///< (assumed) dimension length when size is a number, 0 if not known
@@ -75,10 +75,9 @@ public:
     } needInitialization;
 
     class BaseInfo {
-    public:
+public:
         BaseInfo() :
-            type(nullptr), nameTok(nullptr), access(AccessControl::Public), isVirtual(false) {
-        }
+            type(nullptr), nameTok(nullptr), access(AccessControl::Public), isVirtual(false) {}
 
         std::string name;
         const Type* type;
@@ -93,8 +92,7 @@ public:
 
     struct FriendInfo {
         FriendInfo() :
-            nameStart(nullptr), nameEnd(nullptr), type(nullptr) {
-        }
+            nameStart(nullptr), nameEnd(nullptr), type(nullptr) {}
 
         const Token* nameStart;
         const Token* nameEnd;
@@ -146,17 +144,17 @@ public:
     const Function* getFunction(const std::string& funcName) const;
 
     /**
-    * Check for circulare dependencies, i.e. loops within the class hierarchy
-    * @param ancestors list of ancestors. For internal usage only, clients should not supply this argument.
-    * @return true if there is a circular dependency
-    */
+     * Check for circulare dependencies, i.e. loops within the class hierarchy
+     * @param ancestors list of ancestors. For internal usage only, clients should not supply this argument.
+     * @return true if there is a circular dependency
+     */
     bool hasCircularDependencies(std::set<BaseInfo>* ancestors = nullptr) const;
 
     /**
-    * Check for dependency
-    * @param ancestor potential ancestor
-    * @return true if there is a dependency
-    */
+     * Check for dependency
+     * @param ancestor potential ancestor
+     * @return true if there is a dependency
+     */
     bool findDependency(const Type* ancestor) const;
 
     bool isDerivedFrom(const std::string & ancestor) const;
@@ -164,7 +162,7 @@ public:
 
 class CPPCHECKLIB Enumerator {
 public:
-    explicit Enumerator(const Scope * scope_) : scope(scope_), name(nullptr), value(0), start(nullptr), end(nullptr), value_known(false) { }
+    explicit Enumerator(const Scope * scope_) : scope(scope_), name(nullptr), value(0), start(nullptr), end(nullptr), value_known(false) {}
     const Scope * scope;
     const Token * name;
     MathLib::bigint value;
@@ -559,13 +557,13 @@ public:
     }
 
     /**
-    * Checks if the variable is an STL type ('std::')
-    * E.g.:
-    *   std::string s;
-    *   ...
-    *   sVar->isStlType() == true
-    * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
-    */
+     * Checks if the variable is an STL type ('std::')
+     * E.g.:
+     *   std::string s;
+     *   ...
+     *   sVar->isStlType() == true
+     * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
+     */
     bool isStlType() const {
         return getFlag(fIsStlType);
     }
@@ -617,17 +615,17 @@ public:
     }
 
     /**
-    * Determine whether it's a floating number type
-    * @return true if the type is known and it's a floating type (float, double and long double) or a pointer/array to it
-    */
+     * Determine whether it's a floating number type
+     * @return true if the type is known and it's a floating type (float, double and long double) or a pointer/array to it
+     */
     bool isFloatingType() const {
         return getFlag(fIsFloatType);
     }
 
     /**
-    * Determine whether it's an enumeration type
-    * @return true if the type is known and it's an enumeration type
-    */
+     * Determine whether it's an enumeration type
+     * @return true if the type is known and it's an enumeration type
+     */
     bool isEnumType() const {
         return type() && type()->isEnumType();
     }

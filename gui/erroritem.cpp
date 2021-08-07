@@ -21,11 +21,10 @@
 
 QErrorPathItem::QErrorPathItem(const ErrorMessage::FileLocation &loc)
     : file(QString::fromStdString(loc.getfile(false)))
-    , line(loc.line)
-    , column(loc.column)
-    , info(QString::fromStdString(loc.getinfo()))
-{
-}
+      , line(loc.line)
+      , column(loc.column)
+      , info(QString::fromStdString(loc.getinfo()))
+{}
 
 bool operator==(const QErrorPathItem &i1, const QErrorPathItem &i2)
 {
@@ -34,25 +33,24 @@ bool operator==(const QErrorPathItem &i1, const QErrorPathItem &i2)
 
 ErrorItem::ErrorItem()
     : severity(Severity::none)
-    , incomplete(false)
-    , inconclusive(false)
-    , cwe(-1)
-    , hash(0)
-{
-}
+      , incomplete(false)
+      , inconclusive(false)
+      , cwe(-1)
+      , hash(0)
+{}
 
 ErrorItem::ErrorItem(const ErrorMessage &errmsg)
     : file0(QString::fromStdString(errmsg.file0))
-    , function(QString::fromStdString(errmsg.function))
-    , errorId(QString::fromStdString(errmsg.id))
-    , severity(errmsg.severity)
-    , incomplete(errmsg.incomplete)
-    , inconclusive(errmsg.certainty == Certainty::inconclusive)
-    , summary(QString::fromStdString(errmsg.shortMessage()))
-    , message(QString::fromStdString(errmsg.verboseMessage()))
-    , cwe(errmsg.cwe.id)
-    , hash(errmsg.hash)
-    , symbolNames(QString::fromStdString(errmsg.symbolNames()))
+      , function(QString::fromStdString(errmsg.function))
+      , errorId(QString::fromStdString(errmsg.id))
+      , severity(errmsg.severity)
+      , incomplete(errmsg.incomplete)
+      , inconclusive(errmsg.certainty == Certainty::inconclusive)
+      , summary(QString::fromStdString(errmsg.shortMessage()))
+      , message(QString::fromStdString(errmsg.verboseMessage()))
+      , cwe(errmsg.cwe.id)
+      , hash(errmsg.hash)
+      , symbolNames(QString::fromStdString(errmsg.symbolNames()))
 {
     for (std::list<ErrorMessage::FileLocation>::const_iterator loc = errmsg.callStack.begin();
          loc != errmsg.callStack.end();

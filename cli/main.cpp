@@ -92,23 +92,24 @@ int main(int argc, char* argv[])
 #ifdef NDEBUG
     try {
 #endif
-        return exec.check(argc, argv);
+    return exec.check(argc, argv);
 #ifdef NDEBUG
-    } catch (const InternalError& e) {
-        std::cout << e.errorMessage << std::endl;
-    } catch (const std::exception& error) {
-        std::cout << error.what() << std::endl;
-    } catch (...) {
-        std::cout << "Unknown exception" << std::endl;
-    }
-    return EXIT_FAILURE;
+}
+catch (const InternalError& e) {
+    std::cout << e.errorMessage << std::endl;
+} catch (const std::exception& error) {
+    std::cout << error.what() << std::endl;
+} catch (...) {
+    std::cout << "Unknown exception" << std::endl;
+}
+return EXIT_FAILURE;
 #endif
 }
 
 
 // Warn about deprecated compilers
 #ifdef __clang__
-#   if ( __clang_major__ < 2 || ( __clang_major__  == 2 && __clang_minor__ < 9))
+#   if (__clang_major__ < 2 || (__clang_major__  == 2 && __clang_minor__ < 9))
 #       warning "Using Clang 2.8 or earlier. Support for this version has been removed."
 #   endif
 #elif defined(__GNUC__)

@@ -23,7 +23,7 @@
 #include <vector>
 
 class Token;
-template <class T>
+template<class T>
 class ValuePtr;
 
 struct Analyzer {
@@ -86,7 +86,9 @@ struct Analyzer {
             return get(Incremental);
         }
 
-        bool isSymbolicMatch() const { return get(SymbolicMatch); }
+        bool isSymbolicMatch() const {
+            return get(SymbolicMatch);
+        }
 
         bool matches() const {
             return get(Match);
@@ -110,7 +112,7 @@ struct Analyzer {
             return a.mFlag != b.mFlag;
         }
 
-    private:
+private:
         unsigned int mFlag;
     };
 

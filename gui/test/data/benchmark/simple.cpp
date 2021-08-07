@@ -60,7 +60,7 @@ void CheckOther::incrementBooleanError(const Token *tok)
         "incrementboolean",
         "The use of a variable of type bool with the ++ postfix operator is always true and deprecated by the C++ Standard.\n"
         "The operand of a postfix increment operator may be of type bool but it is deprecated by C++ Standard (Annex D-1) and the operand is always set to true\n"
-    );
+        );
 }
 
 //---------------------------------------------------------------------------
@@ -204,7 +204,7 @@ void CheckOther::checkSizeofForNumericParameter()
             || Token::Match(tok, "sizeof ( - %num% )")
             || Token::Match(tok, "sizeof %num%")
             || Token::Match(tok, "sizeof - %num%")
-           ) {
+            ) {
             sizeofForNumericParameterError(tok);
         }
     }
@@ -292,9 +292,9 @@ void CheckOther::checkRedundantAssignmentInSwitch()
                     }
                     tok2 = endOfConditional;
                 } else
-                    ++ indentLevel;
+                    ++indentLevel;
             } else if (tok2->str() == "}") {
-                -- indentLevel;
+                --indentLevel;
 
                 // End of the switch block
                 if (indentLevel < 0)
@@ -343,7 +343,7 @@ void CheckOther::checkSwitchCaseFallThrough()
     while (tok) {
 
         // Check the contents of the switch statement
-        std::stack<std::pair<Token *, bool> > ifnest;
+        std::stack<std::pair<Token *, bool>> ifnest;
         std::stack<Token *> loopnest;
         std::stack<Token *> scopenest;
         bool justbreak = true;
@@ -618,14 +618,14 @@ void CheckOther::checkIncorrectLogicOperator()
             enum Relation { Equal, NotEqual, Less, LessEqual, More, MoreEqual };
             struct Condition {
                 const char *before;
-                Position   position1;
+                Position position1;
                 const char *op1TokStr;
                 const char *op2TokStr;
-                Position   position2;
+                Position position2;
                 const char *op3TokStr;
                 const char *after;
-                Relation   relation;
-                bool       state;
+                Relation relation;
+                bool state;
             } conditions[] = {
                 { "!!&&", NA,     "!=",   "||", NA,     "!=",   "!!&&", NotEqual,  true  }, // (x != 1) || (x != 3) <- always true
                 { "(",    NA,     "==",   "&&", NA,     "==",   ")",    NotEqual,  false }, // (x == 1) && (x == 3) <- always false
@@ -669,11 +669,11 @@ void CheckOther::checkIncorrectLogicOperator()
                 if (!Token::Match(nextTok, conditions[i].after))
                     continue;
 
-                if ((conditions[i].relation == Equal     && MathLib::isEqual(firstConstant, secondConstant)) ||
-                    (conditions[i].relation == NotEqual  && MathLib::isNotEqual(firstConstant, secondConstant)) ||
-                    (conditions[i].relation == Less      && MathLib::isLess(firstConstant, secondConstant)) ||
+                if ((conditions[i].relation == Equal && MathLib::isEqual(firstConstant, secondConstant)) ||
+                    (conditions[i].relation == NotEqual && MathLib::isNotEqual(firstConstant, secondConstant)) ||
+                    (conditions[i].relation == Less && MathLib::isLess(firstConstant, secondConstant)) ||
                     (conditions[i].relation == LessEqual && MathLib::isLessEqual(firstConstant, secondConstant)) ||
-                    (conditions[i].relation == More      && MathLib::isGreater(firstConstant, secondConstant)) ||
+                    (conditions[i].relation == More && MathLib::isGreater(firstConstant, secondConstant)) ||
                     (conditions[i].relation == MoreEqual && MathLib::isGreaterEqual(firstConstant, secondConstant)))
                     incorrectLogicOperatorError(term1Tok, conditions[i].state);
             }
@@ -878,7 +878,7 @@ void CheckOther::sizeofForNumericParameterError(const Token *tok)
                 "         return sizeof(10);\n"
                 "     }\n"
                 " returns 4 (in 32-bit systems) or 8 (in 64-bit systems) instead of 10."
-               );
+                );
 }
 
 void CheckOther::sizeofForArrayParameterError(const Token *tok)
@@ -895,7 +895,7 @@ void CheckOther::sizeofForArrayParameterError(const Token *tok)
                 "     }\n"
                 " returns 4 (in 32-bit systems) or 8 (in 64-bit systems) instead of 100 (the "
                 "size of the array in bytes)."
-               );
+                );
 }
 
 void CheckOther::invalidScanfError(const Token *tok)
@@ -984,8 +984,8 @@ void CheckOther::checkMemsetZeroBytes()
  */
 class ScopeInfo {
 public:
-    ScopeInfo() : _token(NULL), _parent(NULL) { }
-    ScopeInfo(const Token *token, ScopeInfo *parent_) : _token(token), _parent(parent_) { }
+    ScopeInfo() : _token(NULL), _parent(NULL) {}
+    ScopeInfo(const Token *token, ScopeInfo *parent_) : _token(token), _parent(parent_) {}
     ~ScopeInfo();
 
     ScopeInfo *parent() {
@@ -1039,7 +1039,7 @@ public:
 
     /** Store information about variable usage */
     class VariableUsage {
-    public:
+public:
         VariableUsage(const Token *name = 0,
                       VariableType type = standard,
                       ScopeInfo *scope = NULL,
@@ -1053,8 +1053,7 @@ public:
             _read(read),
             _write(write),
             _modified(modified),
-            _allocateMemory(allocateMemory) {
-        }
+            _allocateMemory(allocateMemory) {}
 
         /** variable is used.. set both read+write */
         void use() {
@@ -1446,7 +1445,7 @@ static int doAssignment(Variables &variables, const Token *tok, bool dereference
                         if (addressOf ||
                             var2->_type == Variables::array ||
                             var2->_type == Variables::pointer) {
-                            bool    replace = true;
+                            bool replace = true;
 
                             // check if variable declared in same scope
                             if (scope == var1->_scope)
@@ -1640,7 +1639,7 @@ void CheckOther::functionVariableUsage()
                 while (tok->str() != "{")
                     tok = tok->next();
                 tok = tok->link();
-                if (! tok)
+                if (!tok)
                     break;
             }
 
@@ -2253,7 +2252,7 @@ void CheckOther::checkVariableScope()
                         break;
                     }
                 }
-                if (! tok)
+                if (!tok)
                     break;
             }
 
@@ -2268,7 +2267,7 @@ void CheckOther::checkVariableScope()
             if (indentlevel > 0 && Token::Match(tok, "[{};]")) {
                 // First token of statement..
                 const Token *tok1 = tok->next();
-                if (! tok1)
+                if (!tok1)
                     continue;
 
                 if ((tok1->str() == "return") ||
@@ -2531,7 +2530,7 @@ void CheckOther::checkStructMemberUsage()
                 }
             }
 
-            if (! used) {
+            if (!used) {
                 unusedStructMemberError(tok->next(), structname, varname);
             }
         }
@@ -2799,7 +2798,7 @@ void CheckOther::checkMathFunctions()
         // pow ( x , y) If x is zero, and y is negative --> division by zero
         else if (tok->varId() == 0 &&
                  Token::Match(tok, "pow ( %num% , %num% )") &&
-                 MathLib::isNullValue(tok->tokAt(2)->str())  &&
+                 MathLib::isNullValue(tok->tokAt(2)->str()) &&
                  MathLib::isNegative(tok->tokAt(4)->str())) {
             mathfunctionCallError(tok, 2);
         }

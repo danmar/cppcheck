@@ -36,10 +36,10 @@ class QXmlStreamWriter;
 
 
 /**
-* @brief A class that reads and writes project files.
-* The project files contain project-specific settings for checking. For
-* example a list of include paths.
-*/
+ * @brief A class that reads and writes project files.
+ * The project files contain project-specific settings for checking. For
+ * example a list of include paths.
+ */
 class ProjectFile : public QObject {
     Q_OBJECT
 
@@ -100,57 +100,57 @@ public:
     }
 
     /**
-    * @brief Get list of include directories.
-    * @return list of directories.
-    */
+     * @brief Get list of include directories.
+     * @return list of directories.
+     */
     QStringList getIncludeDirs() const {
         return ProjectFile::fromNativeSeparators(mIncludeDirs);
     }
 
     /**
-    * @brief Get list of defines.
-    * @return list of defines.
-    */
+     * @brief Get list of defines.
+     * @return list of defines.
+     */
     QStringList getDefines() const {
         return mDefines;
     }
 
     /**
-    * @brief Get list of undefines.
-    * @return list of undefines.
-    */
+     * @brief Get list of undefines.
+     * @return list of undefines.
+     */
     QStringList getUndefines() const {
         return mUndefines;
     }
 
     /**
-    * @brief Get list of paths to check.
-    * @return list of paths.
-    */
+     * @brief Get list of paths to check.
+     * @return list of paths.
+     */
     QStringList getCheckPaths() const {
         return ProjectFile::fromNativeSeparators(mPaths);
     }
 
     /**
-    * @brief Get list of paths to exclude from the check.
-    * @return list of paths.
-    */
+     * @brief Get list of paths to exclude from the check.
+     * @return list of paths.
+     */
     QStringList getExcludedPaths() const {
         return ProjectFile::fromNativeSeparators(mExcludedPaths);
     }
 
     /**
-    * @brief Get list of paths to exclude from the check.
-    * @return list of paths.
-    */
+     * @brief Get list of paths to exclude from the check.
+     * @return list of paths.
+     */
     QStringList getVsConfigurations() const {
         return mVsConfigurations;
     }
 
     /**
-    * @brief Get list libraries.
-    * @return list of libraries.
-    */
+     * @brief Get list libraries.
+     * @return list of libraries.
+     */
     QStringList getLibraries() const {
         return mLibraries;
     }
@@ -164,32 +164,32 @@ public:
     }
 
     /**
-    * @brief Get "raw" suppressions.
-    * @return list of suppressions.
-    */
+     * @brief Get "raw" suppressions.
+     * @return list of suppressions.
+     */
     QList<Suppressions::Suppression> getSuppressions() const {
         return mSuppressions;
     }
 
     /**
-    * @brief Get list addons.
-    * @return list of addons.
-    */
+     * @brief Get list addons.
+     * @return list of addons.
+     */
     QStringList getAddons() const {
         return mAddons;
     }
 
     /**
-    * @brief Get path to addon python script
-    * @param filesDir Data files folder set by --data-dir
-    * @param addon addon i.e. "misra" to lookup
-    */
+     * @brief Get path to addon python script
+     * @param filesDir Data files folder set by --data-dir
+     * @param addon addon i.e. "misra" to lookup
+     */
     static QString getAddonFilePath(QString filesDir, const QString &addon);
 
     /**
-    * @brief Get list of addons and tools.
-    * @return list of addons and tools.
-    */
+     * @brief Get list of addons and tools.
+     * @return list of addons and tools.
+     */
     QStringList getAddonsAndTools() const;
 
     bool getClangAnalyzer() const {
@@ -249,17 +249,17 @@ public:
     }
 
     /**
-    * @brief Get filename for the project file.
-    * @return file name.
-    */
+     * @brief Get filename for the project file.
+     * @return file name.
+     */
     QString getFilename() const {
         return mFilename;
     }
 
     /**
-    * @brief Set project root path.
-    * @param rootpath new project root path.
-    */
+     * @brief Set project root path.
+     * @param rootpath new project root path.
+     */
     void setRootPath(const QString &rootpath) {
         mRootPath = rootpath;
     }
@@ -371,7 +371,7 @@ public:
 
     /** Do not only check how interface is used. Also check that interface is safe. */
     class SafeChecks : public Settings::SafeChecks {
-    public:
+public:
         SafeChecks() : Settings::SafeChecks() {}
 
         void loadFromXml(QXmlStreamReader &xmlReader);
@@ -474,11 +474,11 @@ protected:
     void readTagWarnings(QXmlStreamReader &reader, const QString &tag);
 
     /**
-      * @brief Read string list
-      * @param stringlist   destination string list
-      * @param reader       XML stream reader
-      * @param elementname  elementname for each string
-      */
+     * @brief Read string list
+     * @param stringlist   destination string list
+     * @param reader       XML stream reader
+     * @param elementname  elementname for each string
+     */
     void readStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[]);
 
     /**
