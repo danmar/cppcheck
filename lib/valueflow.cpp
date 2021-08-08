@@ -2041,7 +2041,8 @@ struct ValueFlowAnalyzer : Analyzer {
             if (value->isSymbolicValue() && parent->str() != "+=" && parent->str() != "-=")
                 return Action::None;
             const Token* rhs = parent->astOperand2();
-            const ValueFlow::Value* rhsValue = getKnownValue(rhs, value->isFloatValue() ? ValueFlow::Value::ValueType::FLOAT : ValueFlow::Value::ValueType::INT);
+            const ValueFlow::Value* rhsValue = getKnownValue(
+                rhs, value->isFloatValue() ? ValueFlow::Value::ValueType::FLOAT : ValueFlow::Value::ValueType::INT);
             Action a;
             if (!rhsValue)
                 a = Action::Invalid;
