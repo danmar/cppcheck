@@ -2637,13 +2637,11 @@ static Analyzer::Result valueFlowForward(Token* startToken,
     return valueFlowForwardExpression(startToken, endToken, expr, values, tokenlist, settings);
 }
 
-// *INDENT-OFF*
 static Analyzer::Result valueFlowForward(Token* top,
                                          const Token* exprTok,
                                          const std::list<ValueFlow::Value>& values,
                                          TokenList* const tokenlist,
                                          const Settings* settings)
-// *INDENT-ON*
 {
     Analyzer::Result result{};
     for (const ValueFlow::Value& v : values) {
@@ -6324,12 +6322,10 @@ static Analyzer::Result valueFlowContainerForward(Token* startToken,
     return valueFlowGenericForward(startToken, endToken, a, tokenlist->getSettings());
 }
 
-// *INDENT-OFF*
 static Analyzer::Result valueFlowContainerForwardRecursive(Token* top,
                                                            const Token* exprTok,
                                                            const ValueFlow::Value& value,
                                                            TokenList* tokenlist)
-// *INDENT-ON*
 {
     ContainerExpressionAnalyzer a(exprTok, value, tokenlist);
     return valueFlowGenericForward(top, a, tokenlist->getSettings());
