@@ -80,6 +80,7 @@
 #include "analyzer.h"
 #include "astutils.h"
 #include "checkuninitvar.h"
+#include "config.h"
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "forwardanalyzer.h"
@@ -113,6 +114,7 @@
 #include <stdexcept>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <vector>
 
 static void bailoutInternal(const std::string& type, TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what, const std::string &file, int line, std::string function)
@@ -1739,29 +1741,49 @@ static const std::string& invertAssign(const std::string& assign)
         return it->second;
 }
 
-static bool evalAssignment(ValueFlow::Value &lhsValue, const std::string &assign, const ValueFlow::Value &rhsValue)
+static std::string removeAssign(const std::string& assign)
 {
+    return std::string{assign.begin(), assign.end()-1};
+}
+
+template<class T, class U>
+static void assignValueIfMutable(T& x, const U& y)
+{
+    x = y;
+}
+
+template<class T, class U>
+static void assignValueIfMutable(const T&, const U&)
+{}
+
+template<class Value, REQUIRES("Value must ValueFlow::Value", std::is_convertible<Value&, const ValueFlow::Value&>)>
+static bool evalAssignment(Value &lhsValue, const std::string &assign, const ValueFlow::Value &rhsValue)
+{
+    if (assign.empty())
+        return false;
+    if (assign.back() != '=')
+        return false;
     if (lhsValue.isSymbolicValue() && rhsValue.isIntValue()) {
         bool error = false;
         if (assign != "+=" && assign != "-=")
             return false;
-        lhsValue.intvalue = calculate(assign.substr(0, 1), lhsValue.intvalue, rhsValue.intvalue, &error);
+        assignValueIfMutable(lhsValue.intvalue, calculate(removeAssign(assign), lhsValue.intvalue, rhsValue.intvalue, &error));
         if (error)
             return false;
     } else if (lhsValue.isIntValue() && rhsValue.isIntValue()) {
         bool error = false;
         if (assign == "=")
-            lhsValue.intvalue = rhsValue.intvalue;
+            assignValueIfMutable(lhsValue.intvalue, rhsValue.intvalue);
         else
-            lhsValue.intvalue = calculate(assign.substr(0, 1), lhsValue.intvalue, rhsValue.intvalue, &error);
+            assignValueIfMutable(lhsValue.intvalue, calculate(removeAssign(assign), lhsValue.intvalue, rhsValue.intvalue, &error));
         if (error)
             return false;
-    } else if (lhsValue.isFloatValue() && rhsValue.isFloatValue()) {
+    } else if (lhsValue.isFloatValue() && rhsValue.isIntValue()) {
         bool error = false;
         if (assign == "=")
-            lhsValue.floatValue = rhsValue.floatValue;
+            assignValueIfMutable(lhsValue.floatValue, rhsValue.intvalue);
         else
-            lhsValue.floatValue = calculate(assign.substr(0, 1), lhsValue.floatValue, rhsValue.floatValue, &error);
+            assignValueIfMutable(lhsValue.floatValue, calculate<double, double>(removeAssign(assign), lhsValue.floatValue, rhsValue.intvalue, &error));
         if (error)
             return false;
     } else {
@@ -1868,18 +1890,6 @@ static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, 
             return true;
     }
     return false;
-}
-
-static const ValueFlow::Value* getKnownValue(const Token* tok, ValueFlow::Value::ValueType type)
-{
-    if (!tok)
-        return nullptr;
-    auto it = std::find_if(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
-        return v.isKnown() && v.valueType == type;
-    });
-    if (it != tok->values().end())
-        return &*it;
-    return nullptr;
 }
 
 static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, const Settings* settings, int depth = 20);
@@ -2025,6 +2035,13 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
+    static const std::string& getAssign(const Token* tok, Direction d) {
+        if (d == Direction::Forward)
+            return tok->str();
+        else
+            return invertAssign(tok->str());
+    }
+
     virtual Action isWritable(const Token* tok, Direction d) const {
         const ValueFlow::Value* value = getValue(tok);
         if (!value)
@@ -2035,16 +2052,10 @@ struct ValueFlowAnalyzer : Analyzer {
 
         if (parent && parent->isAssignmentOp() && astIsLHS(tok) &&
             parent->astOperand2()->hasKnownValue()) {
-            // If the operator is invertible
-            if (d == Direction::Reverse && (parent->str() == "&=" || parent->str() == "|=" || parent->str() == "%="))
-                return Action::None;
-            if (value->isSymbolicValue() && parent->str() != "+=" && parent->str() != "-=")
-                return Action::None;
             const Token* rhs = parent->astOperand2();
-            const ValueFlow::Value* rhsValue = getKnownValue(
-                rhs, value->isFloatValue() ? ValueFlow::Value::ValueType::FLOAT : ValueFlow::Value::ValueType::INT);
+            const ValueFlow::Value* rhsValue = rhs->getKnownValue(ValueFlow::Value::ValueType::INT);
             Action a;
-            if (!rhsValue)
+            if (!rhsValue || !evalAssignment(*value, getAssign(parent, d), *rhsValue))
                 a = Action::Invalid;
             else
                 a = Action::Write;
@@ -2065,22 +2076,17 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
-    static const std::string& getAssign(const Token* tok, Direction d) {
-        if (d == Direction::Forward)
-            return tok->str();
-        else
-            return invertAssign(tok->str());
-    }
-
     virtual void writeValue(ValueFlow::Value* value, const Token* tok, Direction d) const {
         if (!value)
             return;
         if (!tok->astParent())
             return;
         if (tok->astParent()->isAssignmentOp()) {
+            const ValueFlow::Value* rhsValue = tok->astParent()->astOperand2()->getKnownValue(ValueFlow::Value::ValueType::INT);
+            assert(rhsValue);
             if (evalAssignment(*value,
                                getAssign(tok->astParent(), d),
-                               *getKnownValue(tok->astParent()->astOperand2(), ValueFlow::Value::ValueType::INT))) {
+                               *rhsValue)) {
                 const std::string info("Compound assignment '" + tok->astParent()->str() + "', assigned value is " +
                                        value->infoString());
                 if (tok->astParent()->str() == "=")

@@ -19,7 +19,9 @@
 #ifndef analyzerH
 #define analyzerH
 
+#include "config.h"
 #include <string>
+#include <type_traits>
 #include <vector>
 
 class Token;
@@ -32,7 +34,8 @@ struct Analyzer {
         Action() : mFlag(0) {}
 
         // cppcheck-suppress noExplicitConstructor
-        Action(unsigned int f) : mFlag(f) {}
+        template<class T, REQUIRES("T must be convertible to unsigned int", std::is_convertible<T, unsigned int>), REQUIRES("T must not be a bool", !std::is_same<T, bool>)>
+        Action(T f) : mFlag(f) {}
 
         enum {
             None = 0,
