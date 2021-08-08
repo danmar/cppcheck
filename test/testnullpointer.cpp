@@ -1473,6 +1473,23 @@ private:
               "    (void)f->x;\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("typedef struct\n"
+              "{\n"
+              "    int x;\n"
+              "} F;\n"
+              "\n"
+              "static void foo(F* f)\n"
+              "{\n"
+              "    if( !f || f->x == 0 )\n"
+              "    {\n"
+              "        if( !f )\n"
+              "            return;\n"
+              "    }\n"
+              "\n"
+              "    (void)f->x;\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer32() { // #8460
