@@ -6356,15 +6356,6 @@ static void valueFlowContainerReverse(Token* tok,
     }
 }
 
-static void valueFlowContainerReverse(Token* tok,
-                                      const Token* const varToken,
-                                      const std::list<ValueFlow::Value>& values,
-                                      TokenList* tokenlist,
-                                      const Settings* settings)
-{
-    valueFlowContainerReverse(tok, nullptr, varToken, values, tokenlist, settings);
-}
-
 static bool isContainerSizeChanged(const Token *tok, int depth)
 {
     if (!tok)
