@@ -653,20 +653,20 @@ if __name__ == '__main__':
                         output_file.write(
                             '\n         <tr class="%s"><td></td><td>%s</td><td></td><td>%s</td><td>%s</td>%s</tr>' %
                             (error["id"], error["id"], error["severity"], html_escape(error["msg"]),
-                             ('<td></td><td>' + git_blame_dict['author'] + '</td><td></td><td>' + git_blame_dict['author_mail'] + '</td><td></td><td>' + git_blame_dict['date'] + '</td>') if add_author_information else ""))
+                             ('<td></td><td>' + git_blame_dict['author'] + '</td><td></td><td>' + git_blame_dict['author-mail'] + '</td><td></td><td>' + git_blame_dict['author-time'] + '</td>') if add_author_information else ""))
 
                     elif (error['id'] == 'unmatchedSuppression') and filename.endswith('*'):
                         output_file.write(
                             '\n         <tr class=%s><td></td><td>%s</td><td></td><td>%s</td><td %s>%s</td><td></td>%s</tr>' %
                             (error["id"], error["id"], error["severity"], error_class, html_escape(error["msg"]),
-                             ('<td></td><td>' + git_blame_dict['author'] + '</td><td></td><td>' + git_blame_dict['author_mail'] + '</td><td></td><td>' + git_blame_dict['date'] + '</td>') if add_author_information else ""))
+                             ('<td></td><td>' + git_blame_dict['author'] + '</td><td></td><td>' + git_blame_dict['author-mail'] + '</td><td></td><td>' + git_blame_dict['author-time'] + '</td>') if add_author_information else ""))
 
                     else:
                         output_file.write(
                             '\n       <tr class="%s"><td><a href="%s#line-%d">%d</a></td><td>%s</td><td>%s</td><td>%s</td><td %s>%s</td>%s</tr>' %
                             (error['id'], data['htmlfile'], error['line'], error['line'],
                              error['id'], cwe_url, error['severity'], error_class,
-                             html_escape(error['msg']), ('<td></td><td>' + git_blame_dict['author'] + '</td><td></td><td>' + git_blame_dict['author_mail'] + '</td><td></td><td>' + git_blame_dict['date'] + '</td>') if add_author_information else ""))
+                             html_escape(error['msg']), ('<td></td><td>' + git_blame_dict['author'] + '</td><td></td><td>' + git_blame_dict['author-mail'] + '</td><td></td><td>' + git_blame_dict['author-time'] + '</td>') if add_author_information else ""))
 
         output_file.write('\n       </table>')
         output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
@@ -677,8 +677,7 @@ if __name__ == '__main__':
 
     print('Creating style.css file')
     os.chdir(cwd)       # going back to the cwd to find style.css
-    with io.open(os.path.join(options.report_dir, 'style.css'),
-                 'w') as css_file:
+    with io.open(os.path.join(options.report_dir, 'style.css'), 'w') as css_file:
         css_file.write(STYLE_FILE)
 
     print("Creating stats.html (statistics)\n")
