@@ -43,7 +43,7 @@ void ThreadResult::fileChecked(const QString &file)
     QMutexLocker locker(&mutex);
 
     mProgress += QFile(file).size();
-    mFilesChecked ++;
+    mFilesChecked++;
 
     if (mMaxProgress > 0) {
         const int value = static_cast<int>(PROGRESS_MAX * mProgress / mMaxProgress);

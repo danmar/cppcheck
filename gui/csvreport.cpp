@@ -24,12 +24,10 @@
 
 CsvReport::CsvReport(const QString &filename) :
     Report(filename)
-{
-}
+{}
 
 CsvReport::~CsvReport()
-{
-}
+{}
 
 bool CsvReport::create()
 {
@@ -54,9 +52,9 @@ void CsvReport::writeFooter()
 void CsvReport::writeError(const ErrorItem &error)
 {
     /*
-    Error as CSV line
-    gui/test.cpp,23,error,Mismatching allocation and deallocation: k
-    */
+       Error as CSV line
+       gui/test.cpp,23,error,Mismatching allocation and deallocation: k
+     */
 
     const QString file = QDir::toNativeSeparators(error.errorPath.back().file);
     QString line = QString("%1,%2,").arg(file).arg(error.errorPath.back().line);

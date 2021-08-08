@@ -596,7 +596,7 @@ void CheckCondition::multiCondition2()
         bool nonlocal = false; // nonlocal variable used in condition
         std::set<int> vars; // variables used in condition
         visitAstNodes(condTok,
-        [&](const Token *cond) {
+                      [&](const Token *cond) {
             if (Token::Match(cond, "%name% (")) {
                 functionCall = true;
                 nonConstFunctionCall = isNonConstFunctionCall(cond, mSettings->library);
@@ -628,7 +628,7 @@ void CheckCondition::multiCondition2()
 
         std::vector<const Variable*> varsInCond;
         visitAstNodes(condTok,
-        [&varsInCond](const Token *cond) {
+                      [&varsInCond](const Token *cond) {
             if (cond->variable()) {
                 const Variable *var = cond->variable();
                 if (std::find(varsInCond.begin(), varsInCond.end(), var) == varsInCond.end())
@@ -885,22 +885,22 @@ static std::string invertOperatorForOperandSwap(std::string s)
     return s;
 }
 
-template <typename T>
+template<typename T>
 static bool checkIntRelation(const std::string &op, const T value1, const T value2)
 {
     return (op == "==" && value1 == value2) ||
            (op == "!=" && value1 != value2) ||
-           (op == ">"  && value1 >  value2) ||
+           (op == ">" && value1 >  value2) ||
            (op == ">=" && value1 >= value2) ||
-           (op == "<"  && value1 <  value2) ||
+           (op == "<" && value1 <  value2) ||
            (op == "<=" && value1 <= value2);
 }
 
 static bool checkFloatRelation(const std::string &op, const double value1, const double value2)
 {
-    return (op == ">"  && value1 >  value2) ||
+    return (op == ">" && value1 >  value2) ||
            (op == ">=" && value1 >= value2) ||
-           (op == "<"  && value1 <  value2) ||
+           (op == "<" && value1 <  value2) ||
            (op == "<=" && value1 <= value2);
 }
 
@@ -1172,7 +1172,7 @@ void CheckCondition::checkIncorrectLogicOperator()
             const double d2 = (isfloat) ? MathLib::toDoubleNumber(value2) : 0;
             const MathLib::bigint i1 = (isfloat) ? 0 : MathLib::toLongNumber(value1);
             const MathLib::bigint i2 = (isfloat) ? 0 : MathLib::toLongNumber(value2);
-            const bool useUnsignedInt = (std::numeric_limits<MathLib::bigint>::max()==i1)||(std::numeric_limits<MathLib::bigint>::max()==i2);
+            const bool useUnsignedInt = (std::numeric_limits<MathLib::bigint>::max()==i1) || (std::numeric_limits<MathLib::bigint>::max()==i2);
             const MathLib::biguint u1 = (useUnsignedInt) ? MathLib::toLongNumber(value1) : 0;
             const MathLib::biguint u2 = (useUnsignedInt) ? MathLib::toLongNumber(value2) : 0;
             // evaluate if expression is always true/false

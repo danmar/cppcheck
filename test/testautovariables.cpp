@@ -25,8 +25,7 @@
 
 class TestAutoVariables : public TestFixture {
 public:
-    TestAutoVariables() : TestFixture("TestAutoVariables") {
-    }
+    TestAutoVariables() : TestFixture("TestAutoVariables") {}
 
 private:
     Settings settings;

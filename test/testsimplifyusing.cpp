@@ -29,8 +29,7 @@ struct InternalError;
 
 class TestSimplifyUsing : public TestFixture {
 public:
-    TestSimplifyUsing() : TestFixture("TestSimplifyUsing") {
-    }
+    TestSimplifyUsing() : TestFixture("TestSimplifyUsing") {}
 
 
 private:

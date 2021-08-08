@@ -842,32 +842,31 @@ void oppositeInnerCondition_SUCCEEDED_FAILED(HRESULT hr)
 {
     if (SUCCEEDED(hr)) {
         // TODO ticket #8596 cppcheck-suppress oppositeInnerCondition
-        if (FAILED(hr)) {
-        }
+        if (FAILED(hr)) {}
     }
 }
 
 /*HANDLE WINAPI CreateThread(
-  _In_opt_  LPSECURITY_ATTRIBUTES  lpThreadAttributes,
-  _In_      SIZE_T                 dwStackSize,
-  _In_      LPTHREAD_START_ROUTINE lpStartAddress,
-  _In_opt_  LPVOID                 lpParameter,
-  _In_      DWORD                  dwCreationFlags,
-  _Out_opt_ LPDWORD                lpThreadId
-);*/
-HANDLE test_CreateThread(LPSECURITY_ATTRIBUTES  lpThreadAttributes,
-                         SIZE_T                 dwStackSize,
+   _In_opt_  LPSECURITY_ATTRIBUTES  lpThreadAttributes,
+   _In_      SIZE_T                 dwStackSize,
+   _In_      LPTHREAD_START_ROUTINE lpStartAddress,
+   _In_opt_  LPVOID                 lpParameter,
+   _In_      DWORD                  dwCreationFlags,
+   _Out_opt_ LPDWORD                lpThreadId
+   );*/
+HANDLE test_CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes,
+                         SIZE_T dwStackSize,
                          LPTHREAD_START_ROUTINE lpStartAddress,
-                         LPVOID                 lpParameter,
-                         DWORD                  dwCreationFlags,
-                         LPDWORD                lpThreadId)
+                         LPVOID lpParameter,
+                         DWORD dwCreationFlags,
+                         LPDWORD lpThreadId)
 {
     // Create uninitialized variables
-    LPSECURITY_ATTRIBUTES  uninit_lpThreadAttributes;
-    SIZE_T                 uninit_dwStackSize;
+    LPSECURITY_ATTRIBUTES uninit_lpThreadAttributes;
+    SIZE_T uninit_dwStackSize;
     LPTHREAD_START_ROUTINE uninit_lpStartAddress;
-    LPVOID                 uninit_lpParameter;
-    DWORD                  uninit_dwCreationFlags;
+    LPVOID uninit_lpParameter;
+    DWORD uninit_dwCreationFlags;
 
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress uninitvar
@@ -996,15 +995,15 @@ void GetShortPathName_validCode(TCHAR* lpszPath)
     TCHAR* buffer = new TCHAR[length];
     length = GetShortPathName(lpszPath, buffer, length);
     if (length == 0) {
-        delete [] buffer;
+        delete[] buffer;
         _tprintf(TEXT("error"));
         return;
     }
     _tprintf(TEXT("long name = %s short name = %s"), lpszPath, buffer);
-    delete [] buffer;
+    delete[] buffer;
 }
 
-class MyClass :public CObject {
+class MyClass : public CObject {
     DECLARE_DYNAMIC(MyClass)
     DECLARE_DYNCREATE(MyClass)
     DECLARE_SERIAL(MyClass)

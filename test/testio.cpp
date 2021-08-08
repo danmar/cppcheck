@@ -26,8 +26,7 @@
 
 class TestIO : public TestFixture {
 public:
-    TestIO() : TestFixture("TestIO") {
-    }
+    TestIO() : TestFixture("TestIO") {}
 
 private:
     Settings settings;
@@ -775,22 +774,22 @@ private:
     }
 
 
-#define TEST_SCANF_CODE(format, type)\
+#define TEST_SCANF_CODE(format, type) \
     "void f(){" type " x; scanf(\"" format "\", &x);}"
 
-#define TEST_SCANF_ERR(format, formatStr, type)\
+#define TEST_SCANF_ERR(format, formatStr, type) \
     "[test.cpp:1]: (warning) " format " in format string (no. 1) requires '" formatStr " *' but the argument type is '" type " *'.\n"
 
-#define TEST_SCANF_ERR_AKA(format, formatStr, type, akaType)\
+#define TEST_SCANF_ERR_AKA(format, formatStr, type, akaType) \
     "[test.cpp:1]: (portability) " format " in format string (no. 1) requires '" formatStr " *' but the argument type is '" type " * {aka " akaType " *}'.\n"
 
-#define TEST_PRINTF_CODE(format, type)\
+#define TEST_PRINTF_CODE(format, type) \
     "void f(" type " x){printf(\"" format "\", x);}"
 
-#define TEST_PRINTF_ERR(format, requiredType, actualType)\
+#define TEST_PRINTF_ERR(format, requiredType, actualType) \
     "[test.cpp:1]: (warning) " format " in format string (no. 1) requires '" requiredType "' but the argument type is '" actualType "'.\n"
 
-#define TEST_PRINTF_ERR_AKA(format, requiredType, actualType, akaType)\
+#define TEST_PRINTF_ERR_AKA(format, requiredType, actualType, akaType) \
     "[test.cpp:1]: (portability) " format " in format string (no. 1) requires '" requiredType "' but the argument type is '" actualType " {aka " akaType "}'.\n"
 
     void testFormatStrNoWarn(const char *filename, unsigned int linenr, const char* code) {

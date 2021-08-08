@@ -42,13 +42,11 @@ class Tokenizer;
 class CPPCHECKLIB CheckUnusedFunctions : public Check {
 public:
     /** @brief This constructor is used when registering the CheckUnusedFunctions */
-    CheckUnusedFunctions() : Check(myName()) {
-    }
+    CheckUnusedFunctions() : Check(myName()) {}
 
     /** @brief This constructor is used when running checks. */
     CheckUnusedFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+        : Check(myName(), tokenizer, settings, errorLogger) {}
 
     static void clear() {
         instance.mFunctions.clear();
@@ -101,13 +99,12 @@ private:
 
     class CPPCHECKLIB FunctionUsage {
     public:
-        FunctionUsage() : lineNumber(0), usedSameFile(false), usedOtherFile(false) {
-        }
+        FunctionUsage() : lineNumber(0), usedSameFile(false), usedOtherFile(false) {}
 
         std::string filename;
         unsigned int lineNumber;
-        bool   usedSameFile;
-        bool   usedOtherFile;
+        bool usedSameFile;
+        bool usedOtherFile;
     };
 
     std::map<std::string, FunctionUsage> mFunctions;

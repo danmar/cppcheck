@@ -23,12 +23,10 @@
 
 TxtReport::TxtReport(const QString &filename) :
     Report(filename)
-{
-}
+{}
 
 TxtReport::~TxtReport()
-{
-}
+{}
 
 bool TxtReport::create()
 {
@@ -52,9 +50,9 @@ void TxtReport::writeFooter()
 void TxtReport::writeError(const ErrorItem &error)
 {
     /*
-    Error example from the core program in text
-    [gui/test.cpp:23] -> [gui/test.cpp:14]: (error) Mismatching allocation and deallocation: k
-    */
+       Error example from the core program in text
+       [gui/test.cpp:23] -> [gui/test.cpp:14]: (error) Mismatching allocation and deallocation: k
+     */
 
     QString line;
 

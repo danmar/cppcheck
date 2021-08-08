@@ -126,7 +126,7 @@ struct ReverseTraversal {
                 throw InternalError(tok, "Cyclic reverse analysis.");
             i = tok->index();
             if (tok == start || (tok->str() == "{" && (tok->scope()->type == Scope::ScopeType::eFunction ||
-                                 tok->scope()->type == Scope::ScopeType::eLambda))) {
+                                                       tok->scope()->type == Scope::ScopeType::eLambda))) {
                 break;
             }
             if (Token::Match(tok, "return|break|continue"))

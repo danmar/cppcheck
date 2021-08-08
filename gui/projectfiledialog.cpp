@@ -309,19 +309,19 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
 
     // Human knowledge..
     /*
-    mUI.mListUnknownFunctionReturn->clear();
-    mUI.mListUnknownFunctionReturn->addItem("rand()");
-    for (int row = 0; row < mUI.mListUnknownFunctionReturn->count(); ++row) {
+       mUI.mListUnknownFunctionReturn->clear();
+       mUI.mListUnknownFunctionReturn->addItem("rand()");
+       for (int row = 0; row < mUI.mListUnknownFunctionReturn->count(); ++row) {
         QListWidgetItem *item = mUI.mListUnknownFunctionReturn->item(row);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable); // set checkable flag
         const bool unknownValues = projectFile->getCheckUnknownFunctionReturn().contains(item->text());
         item->setCheckState(unknownValues ? Qt::Checked : Qt::Unchecked); // AND initialize check state
-    }
-    mUI.mCheckSafeClasses->setChecked(projectFile->getSafeChecks().classes);
-    mUI.mCheckSafeExternalFunctions->setChecked(projectFile->getSafeChecks().externalFunctions);
-    mUI.mCheckSafeInternalFunctions->setChecked(projectFile->getSafeChecks().internalFunctions);
-    mUI.mCheckSafeExternalVariables->setChecked(projectFile->getSafeChecks().externalVariables);
-    */
+       }
+       mUI.mCheckSafeClasses->setChecked(projectFile->getSafeChecks().classes);
+       mUI.mCheckSafeExternalFunctions->setChecked(projectFile->getSafeChecks().externalFunctions);
+       mUI.mCheckSafeInternalFunctions->setChecked(projectFile->getSafeChecks().internalFunctions);
+       mUI.mCheckSafeExternalVariables->setChecked(projectFile->getSafeChecks().externalVariables);
+     */
 
     // Addons..
     QSettings settings;
@@ -383,20 +383,20 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setSuppressions(getSuppressions());
     // Human knowledge
     /*
-    QStringList unknownReturnValues;
-    for (int row = 0; row < mUI.mListUnknownFunctionReturn->count(); ++row) {
+       QStringList unknownReturnValues;
+       for (int row = 0; row < mUI.mListUnknownFunctionReturn->count(); ++row) {
         QListWidgetItem *item = mUI.mListUnknownFunctionReturn->item(row);
         if (item->checkState() == Qt::Checked)
             unknownReturnValues << item->text();
-    }
-    projectFile->setCheckUnknownFunctionReturn(unknownReturnValues);
-    ProjectFile::SafeChecks safeChecks;
-    safeChecks.classes = mUI.mCheckSafeClasses->isChecked();
-    safeChecks.externalFunctions = mUI.mCheckSafeExternalFunctions->isChecked();
-    safeChecks.internalFunctions = mUI.mCheckSafeInternalFunctions->isChecked();
-    safeChecks.externalVariables = mUI.mCheckSafeExternalVariables->isChecked();
-    projectFile->setSafeChecks(safeChecks);
-    */
+       }
+       projectFile->setCheckUnknownFunctionReturn(unknownReturnValues);
+       ProjectFile::SafeChecks safeChecks;
+       safeChecks.classes = mUI.mCheckSafeClasses->isChecked();
+       safeChecks.externalFunctions = mUI.mCheckSafeExternalFunctions->isChecked();
+       safeChecks.internalFunctions = mUI.mCheckSafeInternalFunctions->isChecked();
+       safeChecks.externalVariables = mUI.mCheckSafeExternalVariables->isChecked();
+       projectFile->setSafeChecks(safeChecks);
+     */
     // Addons
     QStringList list;
     if (mUI.mAddonThreadSafety->isChecked())
@@ -425,8 +425,8 @@ QString ProjectFileDialog::getExistingDirectory(const QString &caption, bool tra
     const QFileInfo inf(mProjectFile->getFilename());
     const QString rootpath = inf.absolutePath();
     QString selectedDir = QFileDialog::getExistingDirectory(this,
-                          caption,
-                          rootpath);
+                                                            caption,
+                                                            rootpath);
 
     if (selectedDir.isEmpty())
         return QString();
@@ -491,8 +491,8 @@ void ProjectFileDialog::browseImportProject()
     filters[tr("Compile database")] = "compile_commands.json";
     filters[tr("Borland C++ Builder 6")] = "*.bpr";
     QString fileName = QFileDialog::getOpenFileName(this, tr("Import Project"),
-                       dir.canonicalPath(),
-                       toFilterString(filters));
+                                                    dir.canonicalPath(),
+                                                    toFilterString(filters));
     if (!fileName.isEmpty()) {
         mUI.mEditImportProject->setText(dir.relativeFilePath(fileName));
         updatePathsAndDefines();
@@ -681,9 +681,9 @@ void ProjectFileDialog::addSingleSuppression(const Suppressions::Suppression &su
         (suppression.fileName.find(sep) == std::string::npos)) {
         QFileInfo inf(mProjectFile->getFilename());
         QString rootpath = inf.absolutePath();
-        if (QFile::exists(QString{"%1%2%3"} .arg(rootpath,
-                          QDir::separator(),
-                          QString::fromStdString(suppression.fileName)))) {
+        if (QFile::exists(QString{"%1%2%3"}.arg(rootpath,
+                                                QDir::separator(),
+                                                QString::fromStdString(suppression.fileName)))) {
             Suppressions::Suppression sup = suppression;
             sup.fileName = rootpath.toLatin1().constData();
             sup.fileName += sep;
@@ -849,9 +849,9 @@ int ProjectFileDialog::getSuppressionIndex(const QString &shortText) const
 void ProjectFileDialog::browseMisraFile()
 {
     const QString fileName = QFileDialog::getOpenFileName(this,
-                             tr("Select MISRA rule texts file"),
-                             QDir::homePath(),
-                             tr("MISRA rule texts file (%1)").arg("*.txt"));
+                                                          tr("Select MISRA rule texts file"),
+                                                          QDir::homePath(),
+                                                          tr("MISRA rule texts file (%1)").arg("*.txt"));
     if (!fileName.isEmpty()) {
         QSettings settings;
         mUI.mEditMisraFile->setText(fileName);

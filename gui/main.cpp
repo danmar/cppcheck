@@ -103,24 +103,24 @@ static bool CheckArgs(const QStringList &args)
 static void ShowUsage()
 {
     QString helpMessage = MainWindow::tr(
-                              "Cppcheck GUI.\n\n"
-                              "Syntax:\n"
-                              "    cppcheck-gui [OPTIONS] [files or paths]\n\n"
-                              "Options:\n"
-                              "    -h, --help              Print this help\n"
-                              "    -p <file>               Open given project file and start checking it\n"
-                              "    -l <file>               Open given results xml file\n"
-                              "    -d <directory>          Specify the directory that was checked to generate the results xml specified with -l\n"
-                              "    -v, --version           Show program version\n"
-                              "    --data-dir=<directory>  This option is for installation scripts so they can configure the directory where\n"
-                              "                            datafiles are located (translations, cfg). The GUI is not started when this option\n"
-                              "                            is used.");
+        "Cppcheck GUI.\n\n"
+        "Syntax:\n"
+        "    cppcheck-gui [OPTIONS] [files or paths]\n\n"
+        "Options:\n"
+        "    -h, --help              Print this help\n"
+        "    -p <file>               Open given project file and start checking it\n"
+        "    -l <file>               Open given results xml file\n"
+        "    -d <directory>          Specify the directory that was checked to generate the results xml specified with -l\n"
+        "    -v, --version           Show program version\n"
+        "    --data-dir=<directory>  This option is for installation scripts so they can configure the directory where\n"
+        "                            datafiles are located (translations, cfg). The GUI is not started when this option\n"
+        "                            is used.");
 #if defined(_WIN32)
     QMessageBox msgBox(QMessageBox::Information,
                        MainWindow::tr("Cppcheck GUI - Command line parameters"),
                        helpMessage,
                        QMessageBox::Ok
-                      );
+                       );
     (void)msgBox.exec();
 #else
     std::cout << helpMessage.toStdString() << std::endl;

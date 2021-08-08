@@ -33,8 +33,7 @@ struct InternalError;
 
 class TestTokenRange : public TestFixture {
 public:
-    TestTokenRange() : TestFixture("TestTokenRange") {
-    }
+    TestTokenRange() : TestFixture("TestTokenRange") {}
 
 private:
     void run() OVERRIDE {

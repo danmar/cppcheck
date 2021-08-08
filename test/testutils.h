@@ -50,8 +50,7 @@ public:
 class SimpleSuppressor : public ErrorLogger {
 public:
     SimpleSuppressor(Settings &settings, ErrorLogger *next)
-        : settings(settings), next(next) {
-    }
+        : settings(settings), next(next) {}
     void reportOut(const std::string &outmsg, Color = Color::Reset) OVERRIDE {
         next->reportOut(outmsg);
     }
