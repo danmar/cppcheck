@@ -24,7 +24,7 @@
 QStringList FileList::getDefaultFilters()
 {
     QStringList extensions;
-    extensions << "*.cpp" << "*.cxx" << "*.cc" << "*.c" << "*.c++" << "*.txx" << "*.tpp";
+    extensions << "*.cpp" << "*.cxx" << "*.cc" << "*.c" << "*.c++" << "*.txx" << "*.tpp" << "*.ipp" << "*.ixx";
     return extensions;
 }
 

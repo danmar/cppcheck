@@ -866,18 +866,16 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                     // check for default constructor
                     bool hasDefaultConstructor = false;
 
-                    std::list<Function>::const_iterator func;
-
-                    for (func = scope.functionList.begin(); func != scope.functionList.end(); ++func) {
-                        if (func->type == Function::eConstructor) {
+                    for (Function& func: scope.functionList) {
+                        if (func.type == Function::eConstructor) {
                             // check for no arguments: func ( )
-                            if (func->argCount() == 0) {
+                            if (func.argCount() == 0) {
                                 hasDefaultConstructor = true;
                                 break;
                             }
 
                             /** check for arguments with default values */
-                            else if (func->argCount() == func->initializedArgCount()) {
+                            else if (func.argCount() == func.initializedArgCount()) {
                                 hasDefaultConstructor = true;
                                 break;
                             }
@@ -895,20 +893,21 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                         bool needInitialization = false;
                         bool unknown = false;
 
-                        std::list<Variable>::const_iterator var;
-                        for (var = scope.varlist.begin(); var != scope.varlist.end() && !needInitialization; ++var) {
-                            if (var->isClass()) {
-                                if (var->type()) {
+                        for (const Variable& var: scope.varlist) {
+                            if (var.isClass()) {
+                                if (var.type()) {
                                     // does this type need initialization?
-                                    if (var->type()->needInitialization == Type::NeedInitialization::True)
+                                    if (var.type()->needInitialization == Type::NeedInitialization::True)
                                         needInitialization = true;
-                                    else if (var->type()->needInitialization == Type::NeedInitialization::Unknown) {
-                                        if (!(var->valueType() && var->valueType()->type == ValueType::CONTAINER))
+                                    else if (var.type()->needInitialization == Type::NeedInitialization::Unknown) {
+                                        if (!(var.valueType() && var.valueType()->type == ValueType::CONTAINER))
                                             unknown = true;
                                     }
                                 }
-                            } else if (!var->hasDefault() && !var->isStatic())
+                            } else if (!var.hasDefault() && !var.isStatic()) {
                                 needInitialization = true;
+                                break;
+                            }
                         }
 
                         if (needInitialization)
@@ -946,31 +945,30 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
     // check all scopes for variables
     for (Scope& scope : scopeList) {
         // add all variables
-        for (std::list<Variable>::iterator var = scope.varlist.begin(); var != scope.varlist.end(); ++var) {
-            const unsigned int varId = var->declarationId();
+        for (Variable& var: scope.varlist) {
+            const unsigned int varId = var.declarationId();
             if (varId)
-                mVariableList[varId] = &(*var);
+                mVariableList[varId] = &var;
             // fix up variables without type
-            if (!var->type() && !var->typeStartToken()->isStandardType()) {
-                const Type *type = findType(var->typeStartToken(), &scope);
+            if (!var.type() && !var.typeStartToken()->isStandardType()) {
+                const Type *type = findType(var.typeStartToken(), &scope);
                 if (type)
-                    var->type(type);
+                    var.type(type);
             }
         }
 
         // add all function parameters
         for (Function& func : scope.functionList) {
-            for (std::list<Variable>::iterator arg = func.argumentList.begin(); arg != func.argumentList.end(); ++arg) {
+            for (Variable& arg: func.argumentList) {
                 // check for named parameters
-                if (arg->nameToken() && arg->declarationId()) {
-                    const unsigned int declarationId = arg->declarationId();
-                    if (declarationId > 0U)
-                        mVariableList[declarationId] = &(*arg);
+                if (arg.nameToken() && arg.declarationId()) {
+                    const unsigned int declarationId = arg.declarationId();
+                    mVariableList[declarationId] = &arg;
                     // fix up parameters without type
-                    if (!arg->type() && !arg->typeStartToken()->isStandardType()) {
-                        const Type *type = findTypeInNested(arg->typeStartToken(), &scope);
+                    if (!arg.type() && !arg.typeStartToken()->isStandardType()) {
+                        const Type *type = findTypeInNested(arg.typeStartToken(), &scope);
                         if (type)
-                            arg->type(type);
+                            arg.type(type);
                     }
                 }
             }
@@ -1006,23 +1004,23 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
 void SymbolDatabase::createSymbolDatabaseSetScopePointers()
 {
     // Set scope pointers
-    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-        Token* start = const_cast<Token*>(it->bodyStart);
-        Token* end = const_cast<Token*>(it->bodyEnd);
-        if (it->type == Scope::eGlobal) {
+    for (const Scope& scope: scopeList) {
+        Token* start = const_cast<Token*>(scope.bodyStart);
+        Token* end = const_cast<Token*>(scope.bodyEnd);
+        if (scope.type == Scope::eGlobal) {
             start = const_cast<Token*>(mTokenizer->list.front());
             end = const_cast<Token*>(mTokenizer->list.back());
         }
         assert(start);
         assert(end);
 
-        end->scope(&*it);
+        end->scope(&scope);
 
         for (Token* tok = start; tok != end; tok = tok->next()) {
             if (start != end && tok->str() == "{") {
                 bool isEndOfScope = false;
-                for (std::list<Scope*>::const_iterator innerScope = it->nestedList.begin(); innerScope != it->nestedList.end(); ++innerScope) {
-                    if (tok == (*innerScope)->bodyStart) { // Is begin of inner scope
+                for (const Scope* innerScope: scope.nestedList) {
+                    if (tok == innerScope->bodyStart) { // Is begin of inner scope
                         tok = tok->link();
                         if (tok->next() == end || !tok->next()) {
                             isEndOfScope = true;
@@ -1035,7 +1033,7 @@ void SymbolDatabase::createSymbolDatabaseSetScopePointers()
                 if (isEndOfScope)
                     break;
             }
-            tok->scope(&*it);
+            tok->scope(&scope);
         }
     }
 }
@@ -1044,13 +1042,13 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
 {
     if (firstPass) {
         // Set function definition and declaration pointers
-        for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-            for (std::list<Function>::const_iterator func = it->functionList.begin(); func != it->functionList.end(); ++func) {
-                if (func->tokenDef)
-                    const_cast<Token *>(func->tokenDef)->function(&*func);
+        for (const Scope& scope: scopeList) {
+            for (const Function& func: scope.functionList) {
+                if (func.tokenDef)
+                    const_cast<Token *>(func.tokenDef)->function(&func);
 
-                if (func->token)
-                    const_cast<Token *>(func->token)->function(&*func);
+                if (func.token)
+                    const_cast<Token *>(func.token)->function(&func);
             }
         }
     }
@@ -1081,11 +1079,11 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
     }
 
     // Set C++ 11 delegate constructor function call pointers
-    for (std::list<Scope>::iterator it = scopeList.begin(); it != scopeList.end(); ++it) {
-        for (std::list<Function>::const_iterator func = it->functionList.begin(); func != it->functionList.end(); ++func) {
+    for (const Scope& scope: scopeList) {
+        for (const Function& func: scope.functionList) {
             // look for initializer list
-            if (func->isConstructor() && func->functionScope && func->functionScope->functionOf && func->arg) {
-                const Token * tok = func->arg->link()->next();
+            if (func.isConstructor() && func.functionScope && func.functionScope->functionOf && func.arg) {
+                const Token * tok = func.arg->link()->next();
                 if (tok->str() == "noexcept") {
                     const Token * closingParenTok = tok->linkAt(1);
                     if (!closingParenTok || !closingParenTok->next()) {
@@ -1097,10 +1095,10 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
                     continue;
                 }
                 tok = tok->next();
-                while (tok && tok != func->functionScope->bodyStart) {
+                while (tok && tok != func.functionScope->bodyStart) {
                     if (Token::Match(tok, "%name% {|(")) {
-                        if (tok->str() == func->tokenDef->str()) {
-                            const Function *function = func->functionScope->functionOf->findFunction(tok);
+                        if (tok->str() == func.tokenDef->str()) {
+                            const Function *function = func.functionScope->functionOf->findFunction(tok);
                             if (function)
                                 const_cast<Token *>(tok)->function(function);
                             break;

@@ -31,6 +31,11 @@
 #include <iterator>
 #include <vector>
 
+double invalidFunctionArg_log10(double d = 0.0) {
+    // cppcheck-suppress invalidFunctionArg
+    return log10(d);
+}
+
 void uninitvar_std_next(const std::vector<int> &v, int count)
 {
     // No warning shall be shown:
