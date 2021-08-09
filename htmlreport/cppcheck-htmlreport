@@ -2,11 +2,14 @@
 
 from __future__ import unicode_literals
 
+import datetime
 import io
-import sys
+import locale
+import operator
 import optparse
 import os
-import operator
+import sys
+import subprocess
 
 from collections import Counter
 from pygments import highlight
@@ -287,6 +290,74 @@ def html_escape(text):
     return escape(text, html_escape_table)
 
 
+def git_blame(line, path, file, blame_options):
+    git_blame_dict = {}
+    head, tail = os.path.split(file)
+    if head != "":
+        path = head
+
+    try:
+        os.chdir(path)
+    except:
+        return {}
+
+    try:
+        result = subprocess.check_output('git blame -L %d %s %s --porcelain -- %s' % (
+            line, " -w" if "-w" in blame_options else "", " -M" if "-M" in blame_options else "", file))
+        result = result.decode(locale.getpreferredencoding())
+    except:
+        return {}
+
+    if result.startswith('fatal'):
+        return {}
+
+    disallowed_characters = '<>'
+    for line in result.split('\n')[1:]:
+        space_pos = line.find(' ')
+        if space_pos > 30:
+            break
+        key = line[:space_pos]
+        val = line[space_pos + 1:]
+
+        for character in disallowed_characters:
+            val = val.replace(character, "")
+        git_blame_dict[key] = val
+
+    datetime_object = datetime.date.fromtimestamp(float(git_blame_dict['author-time']))
+    year = datetime_object.strftime("%Y")
+    month = datetime_object.strftime("%m")
+    day = datetime_object.strftime("%d")
+
+    git_blame_dict['author-time'] = '%s/%s/%s' % (day, month, year)
+
+    return git_blame_dict
+
+
+def tr_str(td_th, line, id, cwe, severity, message, author, author_mail, date, add_author, tr_class=None, htmlfile=None, message_class=None):
+    ret = ''
+    if htmlfile:
+        ret += '<%s><a href="%s#line-%d">%d</a></%s>' % (td_th, htmlfile, line, line, td_th)
+        for item in (id, cwe, severity):
+            ret += '<%s>%s</%s>' % (td_th, item, td_th)
+    else:
+        for item in (line, id, cwe, severity):
+            ret += '<%s>%s</%s>' % (td_th, item, td_th)
+    if message_class:
+        message_attribute = ' class="%s"' % message_class
+    else:
+        message_attribute = ''
+    ret += '<%s%s>%s</%s>' % (td_th, message_attribute, html_escape(message), td_th)
+
+    if add_author:
+        for item in (author, author_mail, date):
+            ret += '<%s>%s</%s>' % (td_th, item, td_th)
+    if tr_class:
+        tr_attributes = ' class="%s"' % tr_class
+    else:
+        tr_attributes = ''
+    return '<tr%s>%s</tr>' % (tr_attributes, ret)
+
+
 class AnnotateCodeFormatter(HtmlFormatter):
     errors = []
 
@@ -405,8 +476,15 @@ if __name__ == '__main__':
     parser.add_option('--source-dir', dest='source_dir',
                       help='Base directory where source code files can be '
                            'found.')
+    parser.add_option('--add-author-information', dest='add_author_information',
+                      help='Initially set to false'
+                           'Adds author, author-mail and time to htmlreport')
     parser.add_option('--source-encoding', dest='source_encoding',
                       help='Encoding of source code.', default='utf-8')
+    parser.add_option('--blame-options', dest='blame_options',
+                      help='[-w, -M] blame options which you can use to get author and author mail  '
+                           '-w --> not including white spaces and returns original author of the line  '
+                           '-M --> not including moving of lines and returns original author of the line')
 
     # Parse options and make sure that we have an output directory set.
     options, args = parser.parse_args()
@@ -421,10 +499,19 @@ if __name__ == '__main__':
         parser.error('No report directory set.')
 
     # Get the directory where source code files are located.
+    cwd = os.getcwd()
     source_dir = os.getcwd()
     if options.source_dir:
         source_dir = options.source_dir
 
+    add_author_information = False
+    if options.add_author_information:
+        add_author_information = True
+
+    blame_options = ''
+    if options.blame_options:
+        blame_options = options.blame_options
+        add_author_information = True
     # Parse the xml from all files defined in file argument
     # or from stdin. If no input is provided, stdin is used
     # Produce a simple list of errors.
@@ -589,7 +676,10 @@ if __name__ == '__main__':
         output_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
 
         output_file.write('\n       <table>')
-        output_file.write('\n       <tr><th>Line</th><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th></tr>')
+        output_file.write(
+            '\n       %s' %
+            tr_str('th', 'Line', 'Id', 'CWE', 'Severity', 'Message', 'Author', 'Author mail', 'Date (DD/MM/YYYY)', add_author=add_author_information))
+
         for filename, data in sorted(files.items()):
             if filename in decode_errors:  # don't print a link but a note
                 output_file.write("\n       <tr><td colspan=\"5\">%s</td></tr>" % filename)
@@ -605,10 +695,14 @@ if __name__ == '__main__':
                         (data['htmlfile'], filename))
 
                 for error in sorted(data['errors'], key=lambda k: k['line']):
-                    error_class = ''
+                    if add_author_information:
+                        git_blame_dict = git_blame(error['line'], source_dir, error['file'], blame_options)
+                    else:
+                        git_blame_dict = {}
+                    message_class = None
                     try:
                         if error['inconclusive'] == 'true':
-                            error_class = 'class="inconclusive"'
+                            message_class = 'inconclusive'
                             error['severity'] += ", inconcl."
                     except KeyError:
                         pass
@@ -620,23 +714,21 @@ if __name__ == '__main__':
                         cwe_url = ""
 
                     if error['severity'] == 'error':
-                        error_class = 'class="error"'
-                    if error['id'] == 'missingInclude':
-                        output_file.write(
-                            '\n         <tr class="%s"><td></td><td>%s</td><td></td><td>%s</td><td>%s</td></tr>' %
-                            (error['id'], error['id'], error['severity'], html_escape(error['msg'])))
-                    elif (error['id'] == 'unmatchedSuppression') and filename.endswith('*'):
-                        output_file.write(
-                            '\n         <tr class="%s"><td></td><td>%s</td><td></td><td>%s</td><td %s>%s</td></tr>' %
-                            (error['id'], error['id'], error['severity'], error_class,
-                             html_escape(error['msg'])))
-                    else:
-                        output_file.write(
-                            '\n       <tr class="%s"><td><a href="%s#line-%d">%d</a></td><td>%s</td><td>%s</td><td>%s</td><td %s>%s</td></tr>' %
-                            (error['id'], data['htmlfile'], error['line'], error['line'],
-                             error['id'], cwe_url, error['severity'], error_class,
-                             html_escape(error['msg'])))
+                        message_class = 'error'
 
+                    is_file = filename != '' and not filename.endswith('*')
+                    line = error["line"] if is_file else ""
+                    htmlfile = data.get('htmlfile') if is_file else None
+
+                    output_file.write(
+                        '\n         %s' %
+                        tr_str('td', line, error["id"], cwe_url, error["severity"], error["msg"],
+                               git_blame_dict.get('author', 'Unknown'), git_blame_dict.get('author-mail', '---'),
+                               git_blame_dict.get('author-time', '---'),
+                               tr_class=error["id"],
+                               message_class=message_class,
+                               add_author=add_author_information,
+			       htmlfile=htmlfile))
         output_file.write('\n       </table>')
         output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
 
@@ -645,8 +737,8 @@ if __name__ == '__main__':
         sys.stderr.write("\nConsider changing source-encoding (for example: \"htmlreport ... --source-encoding=\"iso8859-1\"\"\n")
 
     print('Creating style.css file')
-    with io.open(os.path.join(options.report_dir, 'style.css'),
-                 'w') as css_file:
+    os.chdir(cwd)       # going back to the cwd to find style.css
+    with io.open(os.path.join(options.report_dir, 'style.css'), 'w') as css_file:
         css_file.write(STYLE_FILE)
 
     print("Creating stats.html (statistics)\n")
