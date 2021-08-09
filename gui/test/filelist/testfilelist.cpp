@@ -24,7 +24,7 @@
 
 void TestFileList::addFile()
 {
-    // Accepted extensions: *.cpp, *.cxx, *.cc, *.c, *.c++, *.txx, *.tpp"
+    // Accepted extensions: *.cpp, *.cxx, *.cc, *.c, *.c++, *.txx, *.tpp, *.ipp, *.ixx"
     FileList list;
     list.addFile(QString(SRCDIR) + "/../data/files/foo1.cpp");
     list.addFile(QString(SRCDIR) + "/../data/files/foo2.cxx");
@@ -33,13 +33,15 @@ void TestFileList::addFile()
     list.addFile(QString(SRCDIR) + "/../data/files/foo5.c++");
     list.addFile(QString(SRCDIR) + "/../data/files/foo6.txx");
     list.addFile(QString(SRCDIR) + "/../data/files/foo7.tpp");
+    list.addFile(QString(SRCDIR) + "/../data/files/foo8.ipp");
+    list.addFile(QString(SRCDIR) + "/../data/files/foo9.ixx");
     QStringList files = list.getFileList();
-    QCOMPARE(files.size(), 7);
+    QCOMPARE(files.size(), 9);
 }
 
 void TestFileList::addPathList()
 {
-    // Accepted extensions: *.cpp, *.cxx, *.cc, *.c, *.c++, *.txx, *.tpp"
+    // Accepted extensions: *.cpp, *.cxx, *.cc, *.c, *.c++, *.txx, *.tpp, *.ipp, *.ixx"
     QStringList paths;
     paths << QString(SRCDIR) + "/../data/files/foo1.cpp";
     paths << QString(SRCDIR) + "/../data/files/foo2.cxx";
@@ -48,10 +50,12 @@ void TestFileList::addPathList()
     paths << QString(SRCDIR) + "/../data/files/foo5.c++";
     paths << QString(SRCDIR) + "/../data/files/foo6.txx";
     paths << QString(SRCDIR) + "/../data/files/foo7.tpp";
+    paths << QString(SRCDIR) + "/../data/files/foo8.ipp";
+    paths << QString(SRCDIR) + "/../data/files/foo9.ixx";
     FileList list;
     list.addPathList(paths);
     QStringList files = list.getFileList();
-    QCOMPARE(files.size(), 7);
+    QCOMPARE(files.size(), 9);
 }
 
 void TestFileList::addFile_notexist()
@@ -105,8 +109,10 @@ void TestFileList::filterFiles()
     list.addFile(QString(SRCDIR) + "/../data/files/foo5.c++");
     list.addFile(QString(SRCDIR) + "/../data/files/foo6.txx");
     list.addFile(QString(SRCDIR) + "/../data/files/foo7.tpp");
+    list.addFile(QString(SRCDIR) + "/../data/files/foo8.ipp");
+    list.addFile(QString(SRCDIR) + "/../data/files/foo9.ixx");
     QStringList files = list.getFileList();
-    QCOMPARE(files.size(), 5);
+    QCOMPARE(files.size(), 7);
     QDir dir(QString(SRCDIR) + "/../data/files");
     QString base = dir.canonicalPath();
     QVERIFY(!files.contains(base + "/foo1.cpp"));

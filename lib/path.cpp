@@ -195,6 +195,8 @@ bool Path::isCPP(const std::string &path)
            extension == ".hh" ||
            extension == ".tpp" ||
            extension == ".txx" ||
+           extension == ".ipp" ||
+           extension == ".ixx" ||
            getFilenameExtension(path) == ".C"; // In unix, ".C" is considered C++ file
 }
 
