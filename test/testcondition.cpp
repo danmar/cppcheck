@@ -3782,6 +3782,17 @@ private:
               "  if (e) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int g(int i) {\n"
+              "  if (i < 256)\n"
+              "    return 1;\n"
+              "  const int N = 2 * i;\n"
+              "  i -= 256;\n"
+              "  if (i == 0)\n"
+              "    return 0;\n"
+              "  return N;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
