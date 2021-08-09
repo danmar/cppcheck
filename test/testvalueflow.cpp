@@ -6030,9 +6030,9 @@ private:
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, "j", 0));
 
         code = "void f(int x) {\n"
-            "  int y = x + 1;\n"
-            "  return x;\n"
-            "}\n";
+               "  int y = x + 1;\n"
+               "  return x;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, "y", -1));
     }
 };
