@@ -6028,6 +6028,12 @@ private:
         ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, "i", 0));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, "i", 1));
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, "j", 0));
+
+        code = "void f(int x) {\n"
+            "  int y = x + 1;\n"
+            "  return x;\n"
+            "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, "y", -1));
     }
 };
 

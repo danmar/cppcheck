@@ -2320,7 +2320,7 @@ struct ValueFlowAnalyzer : Analyzer {
     }
 };
 
-ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, const ValueFlow::Value& value, const TokenList* tokenlist);
+ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, ValueFlow::Value value, const TokenList* tokenlist);
 
 struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
     std::unordered_map<nonneg int, const Variable*> varids;
@@ -2578,52 +2578,43 @@ static const Token* parseBinaryIntOp(const Token* expr, MathLib::bigint& known)
     return varTok;
 }
 
-template<class F>
-void transformIntValues(std::list<ValueFlow::Value>& values, F f)
+static const Token* solveExprValue(const Token* expr, ValueFlow::Value& value)
 {
-    std::transform(values.begin(), values.end(), values.begin(), [&](ValueFlow::Value x) {
-        if (x.isIntValue() || x.isIteratorValue())
-            x.intvalue = f(x.intvalue);
-        return x;
-    });
-}
-
-static const Token* solveExprValues(const Token* expr, std::list<ValueFlow::Value>& values)
-{
+    if (!value.isIntValue() && !value.isIteratorValue() && !value.isSymbolicValue())
+        return expr;
+    if (value.isSymbolicValue() && !Token::Match(expr, "+|-"))
+        return expr;
     MathLib::bigint intval;
     const Token* binaryTok = parseBinaryIntOp(expr, intval);
     if (binaryTok && expr->str().size() == 1) {
         switch (expr->str()[0]) {
         case '+': {
-            transformIntValues(values, [&](MathLib::bigint x) {
-                    return x - intval;
-                });
-            return solveExprValues(binaryTok, values);
+            value.intvalue -= intval;
+            return solveExprValue(binaryTok, value);
+        }
+        case '-': {
+            value.intvalue += intval;
+            return solveExprValue(binaryTok, value);
         }
         case '*': {
             if (intval == 0)
                 break;
-            transformIntValues(values, [&](MathLib::bigint x) {
-                    return x / intval;
-                });
-            return solveExprValues(binaryTok, values);
+            value.intvalue /= intval;
+            return solveExprValue(binaryTok, value);
         }
         case '^': {
-            transformIntValues(values, [&](MathLib::bigint x) {
-                    return x ^ intval;
-                });
-            return solveExprValues(binaryTok, values);
+            value.intvalue ^= intval;
+            return solveExprValue(binaryTok, value);
         }
         }
     }
     return expr;
 }
 
-ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, const ValueFlow::Value& value, const TokenList* tokenlist)
+ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, ValueFlow::Value value, const TokenList* tokenlist)
 {
-    std::list<ValueFlow::Value> values = {value};
-    const Token* expr = solveExprValues(exprTok, values);
-    return ExpressionAnalyzer(expr, values.front(), tokenlist);
+    const Token* expr = solveExprValue(exprTok, value);
+    return ExpressionAnalyzer(expr, value, tokenlist);
 }
 
 static Analyzer::Result valueFlowForward(Token* startToken,
@@ -2633,8 +2624,11 @@ static Analyzer::Result valueFlowForward(Token* startToken,
                                          TokenList* const tokenlist,
                                          const Settings* settings)
 {
-    const Token* expr = solveExprValues(exprTok, values);
-    return valueFlowForwardExpression(startToken, endToken, expr, values, tokenlist, settings);
+    Analyzer::Result result{};
+    for (const ValueFlow::Value& v : values) {
+        result.update(valueFlowGenericForward(startToken, endToken, makeAnalyzer(exprTok, v, tokenlist), settings));
+    }
+    return result;
 }
 
 // *INDENT-OFF*
