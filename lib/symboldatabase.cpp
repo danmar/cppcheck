@@ -5346,9 +5346,9 @@ Scope *Scope::findInNestedListRecursive(const std::string & name)
 
 const Function *Scope::getDestructor() const
 {
-    for (const Function &function: functionList) {
-        if (function.type == Function::eDestructor)
-            return &function;
+    for (const Function &f: functionList) {
+        if (f.type == Function::eDestructor)
+            return &f;
     }
     return nullptr;
 }
