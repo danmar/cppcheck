@@ -963,8 +963,7 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
                 // check for named parameters
                 if (arg.nameToken() && arg.declarationId()) {
                     const unsigned int declarationId = arg.declarationId();
-                    if (declarationId > 0U)
-                        mVariableList[declarationId] = &arg;
+                    mVariableList[declarationId] = &arg;
                     // fix up parameters without type
                     if (!arg.type() && !arg.typeStartToken()->isStandardType()) {
                         const Type *type = findTypeInNested(arg.typeStartToken(), &scope);
