@@ -103,7 +103,6 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <cstdio>
 #include <cstring>
 #include <functional>
 #include <iterator>
@@ -1731,7 +1730,7 @@ static bool isConditionKnown(const Token* tok, bool then)
 static const std::string& invertAssign(const std::string& assign)
 {
     static std::unordered_map<std::string, std::string> lookup = {
-        {"+=", "-="}, {"-=", "+="}, {"*=", "/="}, {"/=", "*="}, {"<<=", ">>="}, {">>=", "<<="}, {"^=", "^="}
+        {"=", "="}, {"+=", "-="}, {"-=", "+="}, {"*=", "/="}, {"/=", "*="}, {"<<=", ">>="}, {">>=", "<<="}, {"^=", "^="}
     };
     static std::string empty;
     auto it = lookup.find(assign);
