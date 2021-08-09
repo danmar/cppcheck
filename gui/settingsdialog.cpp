@@ -70,7 +70,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mCurrentStyle = new CodeEditorStyle(CodeEditorStyle::loadSettings(&settings));
     manageStyleControls();
 
-    connect(mUI.mEditPythonPath, SIGNAL(textEdited(const QString &)),
+    connect(mUI.mEditPythonPath, SIGNAL(textEdited(const QString&)),
             this, SLOT(validateEditPythonPath()));
 
     connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &SettingsDialog::ok);
@@ -83,7 +83,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
             this, SLOT(editApplication()));
     connect(mUI.mBtnDefaultApplication, SIGNAL(clicked()),
             this, SLOT(defaultApplication()));
-    connect(mUI.mListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)),
+    connect(mUI.mListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
             this, SLOT(editApplication()));
 
     connect(mUI.mBtnBrowsePythonPath, &QPushButton::clicked, this, &SettingsDialog::browsePythonPath);
@@ -379,8 +379,8 @@ void SettingsDialog::editCodeEditorStyle()
 void SettingsDialog::browseClangPath()
 {
     QString selectedDir = QFileDialog::getExistingDirectory(this,
-                          tr("Select clang path"),
-                          QDir::rootPath());
+                                                            tr("Select clang path"),
+                                                            QDir::rootPath());
 
     if (!selectedDir.isEmpty()) {
         mUI.mEditClangPath->setText(selectedDir);

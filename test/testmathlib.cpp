@@ -27,8 +27,7 @@ struct InternalError;
 
 class TestMathLib : public TestFixture {
 public:
-    TestMathLib() : TestFixture("TestMathLib") {
-    }
+    TestMathLib() : TestFixture("TestMathLib") {}
 
 private:
 

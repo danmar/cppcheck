@@ -24,8 +24,7 @@ const Settings givenACodeSampleToTokenize::settings;
 
 class TestUtils : public TestFixture {
 public:
-    TestUtils() : TestFixture("TestUtils") {
-    }
+    TestUtils() : TestFixture("TestUtils") {}
 
 private:
     void run() OVERRIDE {

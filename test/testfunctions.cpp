@@ -28,8 +28,7 @@
 
 class TestFunctions : public TestFixture {
 public:
-    TestFunctions() : TestFixture("TestFunctions") {
-    }
+    TestFunctions() : TestFixture("TestFunctions") {}
 
 private:
     Settings settings;

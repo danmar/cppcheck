@@ -26,46 +26,46 @@
 
 
 /**
-* @brief Printable (in-memory) report.
-* This report formats results and exposes them for printing.
-*/
+ * @brief Printable (in-memory) report.
+ * This report formats results and exposes them for printing.
+ */
 class PrintableReport : public Report {
 public:
     PrintableReport();
     virtual ~PrintableReport();
 
     /**
-    * @brief Create the report (file).
-    * @return true if succeeded, false if file could not be created.
-    */
+     * @brief Create the report (file).
+     * @return true if succeeded, false if file could not be created.
+     */
     virtual bool create() override;
 
     /**
-    * @brief Write report header.
-    */
+     * @brief Write report header.
+     */
     virtual void writeHeader() override;
 
     /**
-    * @brief Write report footer.
-    */
+     * @brief Write report footer.
+     */
     virtual void writeFooter() override;
 
     /**
-    * @brief Write error to report.
-    * @param error Error data.
-    */
+     * @brief Write error to report.
+     * @param error Error data.
+     */
     virtual void writeError(const ErrorItem &error) override;
 
     /**
-    * @brief Returns the formatted report.
-    */
+     * @brief Returns the formatted report.
+     */
     QString getFormattedReportText() const;
 
 private:
 
     /**
-    * @brief Stores the formatted report contents.
-    */
+     * @brief Stores the formatted report contents.
+     */
     QString mFormattedReport;
 };
 /// @}

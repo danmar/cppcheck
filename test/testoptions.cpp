@@ -18,11 +18,10 @@
 #include "testsuite.h"
 
 
-class TestOptions: public TestFixture {
+class TestOptions : public TestFixture {
 public:
     TestOptions()
-        :TestFixture("TestOptions") {
-    }
+        : TestFixture("TestOptions") {}
 
 
 private:

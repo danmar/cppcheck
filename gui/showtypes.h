@@ -27,20 +27,20 @@
 /// @{
 
 /**
-  * @brief A class for different show types we have.
-  * This class contains enum type for the different show types we have. Each
-  * show type presents one severity selectable in the GUI. In addition there
-  * are several supporting functions.
-  *
-  * Notice that the "visibility" settings are automatically loaded when the
-  * class is constructed and saved when the class is destroyed.
-  */
+ * @brief A class for different show types we have.
+ * This class contains enum type for the different show types we have. Each
+ * show type presents one severity selectable in the GUI. In addition there
+ * are several supporting functions.
+ *
+ * Notice that the "visibility" settings are automatically loaded when the
+ * class is constructed and saved when the class is destroyed.
+ */
 class ShowTypes {
 public:
 
     /**
-      * @brief Show types we have (i.e. severities in the GUI).
-      */
+     * @brief Show types we have (i.e. severities in the GUI).
+     */
     enum ShowType {
         ShowStyle = 0,
         ShowWarnings,

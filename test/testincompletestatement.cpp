@@ -27,8 +27,7 @@
 
 class TestIncompleteStatement : public TestFixture {
 public:
-    TestIncompleteStatement() : TestFixture("TestIncompleteStatement") {
-    }
+    TestIncompleteStatement() : TestFixture("TestIncompleteStatement") {}
 
 private:
     Settings settings;

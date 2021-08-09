@@ -38,57 +38,57 @@ class FileList {
 public:
 
     /**
-    * @brief Add filename to the list.
-    * @param filepath Full path to the file.
-    */
+     * @brief Add filename to the list.
+     * @param filepath Full path to the file.
+     */
     void addFile(const QString &filepath);
 
     /**
-    * @brief Add files in the directory to the list.
-    * @param directory Full pathname to directory to add.
-    * @param recursive If true also files in subdirectories are added.
-    */
+     * @brief Add files in the directory to the list.
+     * @param directory Full pathname to directory to add.
+     * @param recursive If true also files in subdirectories are added.
+     */
     void addDirectory(const QString &directory, bool recursive = false);
 
     /**
-    * @brief Add list of filenames and directories to the list.
-    * @param paths List of paths to add.
-    */
+     * @brief Add list of filenames and directories to the list.
+     * @param paths List of paths to add.
+     */
     void addPathList(const QStringList &paths);
 
     /**
-    * @brief Return list of filenames (to check).
-    * @return list of filenames to check.
-    */
+     * @brief Return list of filenames (to check).
+     * @return list of filenames to check.
+     */
     QStringList getFileList() const;
 
     /**
-    * @brief Add list of paths to exclusion list.
-    * @param paths Paths to exclude.
-    */
+     * @brief Add list of paths to exclusion list.
+     * @param paths Paths to exclude.
+     */
     void addExcludeList(const QStringList &paths);
 
     /**
-    * @brief Return list of default filename extensions included.
-    * @return list of default filename extensions included.
-    */
+     * @brief Return list of default filename extensions included.
+     * @return list of default filename extensions included.
+     */
     static QStringList getDefaultFilters();
 
 protected:
 
     /**
-    * @brief Test if filename matches the filename extensions filtering.
-    * @return true if filename matches filtering.
-    */
+     * @brief Test if filename matches the filename extensions filtering.
+     * @return true if filename matches filtering.
+     */
     static bool filterMatches(const QFileInfo &inf);
 
     /**
-    * @brief Get filtered list of paths.
-    * This method takes the list of paths and applies the exclude lists to
-    * it. And then returns the list of paths that did not match the
-    * exclude filters.
-    * @return Filtered list of paths.
-    */
+     * @brief Get filtered list of paths.
+     * This method takes the list of paths and applies the exclude lists to
+     * it. And then returns the list of paths that did not match the
+     * exclude filters.
+     * @return Filtered list of paths.
+     */
     QStringList applyExcludeList() const;
 
 private:

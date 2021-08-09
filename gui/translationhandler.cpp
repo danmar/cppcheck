@@ -31,12 +31,12 @@
 static void unused()
 {
 // NOTE: Keeping semi-colons at end of macro for style preference
-#if ((QT_VERSION >= 0x040000)&&(QT_VERSION < 0x050000))
+#if ((QT_VERSION >= 0x040000) && (QT_VERSION < 0x050000))
     Q_UNUSED(QT_TRANSLATE_NOOP("QDialogButtonBox", "OK"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QDialogButtonBox", "Cancel"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QDialogButtonBox", "Close"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QDialogButtonBox", "Save"));
-#elif ((QT_VERSION >= 0x050000)&&(QT_VERSION < 0x060000))
+#elif ((QT_VERSION >= 0x050000) && (QT_VERSION < 0x060000))
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "OK"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "Cancel"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "Close"));
@@ -69,8 +69,7 @@ TranslationHandler::TranslationHandler(QObject *parent) :
 }
 
 TranslationHandler::~TranslationHandler()
-{
-}
+{}
 
 const QStringList TranslationHandler::getNames() const
 {

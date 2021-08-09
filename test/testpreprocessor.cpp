@@ -266,8 +266,7 @@ private:
                 actual[config] = cfgcode;
             } catch (const simplecpp::Output &) {
                 actual[config] = "";
-            } catch (...) {
-            }
+            } catch (...) {}
         }
     }
 
@@ -1286,7 +1285,7 @@ private:
 
             // invalid code ASSERT_EQUALS("\nprintf ( \"hello\" ) ;", actual);
         }
-    */
+     */
     void va_args_3() const {
         const char filedata[] = "#define FRED(...) { fred(__VA_ARGS__); }\n"
                                 "FRED(123)\n";

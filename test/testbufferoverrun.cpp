@@ -33,8 +33,7 @@
 
 class TestBufferOverrun : public TestFixture {
 public:
-    TestBufferOverrun() : TestFixture("TestBufferOverrun") {
-    }
+    TestBufferOverrun() : TestFixture("TestBufferOverrun") {}
 
 private:
     Settings settings0;
@@ -3431,7 +3430,7 @@ private:
             ASSERT_EQUALS(15, CheckBufferOverrun::countSprintfLength("str%s%d%d", multipleParams));
             ASSERT_EQUALS(26, CheckBufferOverrun::countSprintfLength("str%-6s%08ld%08ld", multipleParams));
         }
-    */
+     */
 
     // extracttests.disable
 
@@ -4322,7 +4321,7 @@ private:
               "  }\n"
               "  return name;\n"
               "}\n");
-      ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void bufferNotZeroTerminated() {

@@ -1070,7 +1070,7 @@ QStringList ProjectFile::fromNativeSeparators(const QStringList &paths)
 {
     QStringList ret;
     foreach (const QString &path, paths)
-        ret << QDir::fromNativeSeparators(path);
+    ret << QDir::fromNativeSeparators(path);
     return ret;
 }
 
@@ -1156,9 +1156,9 @@ QString ProjectFile::getAddonFilePath(QString filesDir, const QString &addon)
     QStringList searchPaths;
     searchPaths << filesDir << (filesDir + "addons/") << (filesDir + "../addons/")
 #ifdef FILESDIR
-                << (QLatin1String(FILESDIR) + "/addons/")
+        << (QLatin1String(FILESDIR) + "/addons/")
 #endif
-                ;
+    ;
 
     foreach (QString path, searchPaths) {
         QString f = path + addon + ".py";

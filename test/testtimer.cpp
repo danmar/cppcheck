@@ -24,8 +24,7 @@
 
 class TestTimer : public TestFixture {
 public:
-    TestTimer() : TestFixture("TestTimer") {
-    }
+    TestTimer() : TestFixture("TestTimer") {}
 
 private:
 

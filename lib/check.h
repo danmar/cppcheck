@@ -62,8 +62,7 @@ public:
 
     /** This constructor is used when running checks. */
     Check(const std::string &aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger), mName(aname) {
-    }
+        : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger), mName(aname) {}
 
     virtual ~Check() {
         if (!mTokenizer)
@@ -116,7 +115,7 @@ public:
     }
 
     // Return true if an error is reported.
-    virtual bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<FileInfo*> &fileInfo, const Settings& /*settings*/, ErrorLogger &/*errorLogger*/) {
+    virtual bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<FileInfo*> &fileInfo, const Settings& /*settings*/, ErrorLogger & /*errorLogger*/) {
         (void)ctu;
         (void)fileInfo;
         //(void)settings;

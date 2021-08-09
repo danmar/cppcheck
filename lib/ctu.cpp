@@ -55,8 +55,7 @@ CTU::FileInfo::Location::Location(const Tokenizer *tokenizer, const Token *tok)
     : fileName(tokenizer->list.file(tok))
     , lineNumber(tok->linenr())
     , column(tok->column())
-{
-}
+{}
 
 std::string CTU::FileInfo::toString() const
 {
@@ -79,9 +78,9 @@ std::string CTU::FileInfo::CallBase::toBaseXmlString() const
 {
     std::ostringstream out;
     out << " " << ATTR_CALL_ID << "=\"" << callId << "\""
-        << " " << ATTR_CALL_FUNCNAME << "=\"" << callFunctionName << "\""
+        << " " << ATTR_CALL_FUNCNAME << "=\"" << ErrorLogger::toxml(callFunctionName) << "\""
         << " " << ATTR_CALL_ARGNR << "=\"" << callArgNr << "\""
-        << " " << ATTR_LOC_FILENAME << "=\"" << location.fileName << "\""
+        << " " << ATTR_LOC_FILENAME << "=\"" << ErrorLogger::toxml(location.fileName) << "\""
         << " " << ATTR_LOC_LINENR << "=\"" << location.lineNumber << "\""
         << " " << ATTR_LOC_COLUMN << "=\"" << location.column << "\"";
     return out.str();
@@ -92,7 +91,7 @@ std::string CTU::FileInfo::FunctionCall::toXmlString() const
     std::ostringstream out;
     out << "<function-call"
         << toBaseXmlString()
-        << " " << ATTR_CALL_ARGEXPR << "=\"" << callArgumentExpression << "\""
+        << " " << ATTR_CALL_ARGEXPR << "=\"" << ErrorLogger::toxml(callArgumentExpression) << "\""
         << " " << ATTR_CALL_ARGVALUETYPE << "=\"" << static_cast<int>(callValueType) << "\""
         << " " << ATTR_CALL_ARGVALUE << "=\"" << callArgValue << "\"";
     if (warning)
@@ -103,10 +102,10 @@ std::string CTU::FileInfo::FunctionCall::toXmlString() const
         out << ">\n";
         for (const ErrorMessage::FileLocation &loc : callValuePath)
             out << "  <path"
-                << " " << ATTR_LOC_FILENAME << "=\"" << loc.getfile() << "\""
+                << " " << ATTR_LOC_FILENAME << "=\"" << ErrorLogger::toxml(loc.getfile()) << "\""
                 << " " << ATTR_LOC_LINENR << "=\"" << loc.line << "\""
                 << " " << ATTR_LOC_COLUMN << "=\"" << loc.column << "\""
-                << " " << ATTR_INFO << "=\"" << loc.getinfo() << "\"/>\n";
+                << " " << ATTR_INFO << "=\"" << ErrorLogger::toxml(loc.getinfo()) << "\"/>\n";
         out << "</function-call>";
     }
     return out.str();
@@ -130,7 +129,7 @@ std::string CTU::FileInfo::UnsafeUsage::toString() const
         << " " << ATTR_MY_ID << "=\"" << myId << '\"'
         << " " << ATTR_MY_ARGNR << "=\"" << myArgNr << '\"'
         << " " << ATTR_MY_ARGNAME << "=\"" << myArgumentName << '\"'
-        << " " << ATTR_LOC_FILENAME << "=\"" << location.fileName << '\"'
+        << " " << ATTR_LOC_FILENAME << "=\"" << ErrorLogger::toxml(location.fileName) << '\"'
         << " " << ATTR_LOC_LINENR << "=\"" << location.lineNumber << '\"'
         << " " << ATTR_LOC_COLUMN << "=\"" << location.column << '\"'
         << " " << ATTR_VALUE << "=\"" << value << "\""
@@ -151,15 +150,13 @@ CTU::FileInfo::CallBase::CallBase(const Tokenizer *tokenizer, const Token *callT
     , callArgNr(0)
     , callFunctionName(callToken->next()->astOperand1()->expressionString())
     , location(CTU::FileInfo::Location(tokenizer, callToken))
-{
-}
+{}
 
 CTU::FileInfo::NestedCall::NestedCall(const Tokenizer *tokenizer, const Function *myFunction, const Token *callToken)
     : CallBase(tokenizer, callToken)
     , myId(getFunctionId(tokenizer, myFunction))
     , myArgNr(0)
-{
-}
+{}
 
 static std::string readAttrString(const tinyxml2::XMLElement *e, const char *attr, bool *error)
 {
@@ -529,11 +526,11 @@ static bool findPath(const std::string &callId,
 }
 
 std::list<ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(InvalidValueType invalidValue,
-        const CTU::FileInfo::UnsafeUsage &unsafeUsage,
-        const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap,
-        const char info[],
-        const FunctionCall * * const functionCallPtr,
-        bool warning)
+                                                                  const CTU::FileInfo::UnsafeUsage &unsafeUsage,
+                                                                  const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap,
+                                                                  const char info[],
+                                                                  const FunctionCall ** const functionCallPtr,
+                                                                  bool warning)
 {
     std::list<ErrorMessage::FileLocation> locationList;
 
