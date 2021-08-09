@@ -1746,6 +1746,19 @@ static std::string removeAssign(const std::string& assign)
 }
 
 template<class T, class U>
+static T calculateAssign(const std::string &assign, const T& x, const U& y, bool* error = nullptr)
+{
+    if(assign.empty() || assign.back() != '=') {
+        if (error)
+            *error = true;
+        return T{};
+    }
+    if (assign == "=")
+        return y;
+    return calculate<T, T>(removeAssign(assign), x, y, error);
+}
+
+template<class T, class U>
 static void assignValueIfMutable(T& x, const U& y)
 {
     x = y;
@@ -1758,37 +1771,19 @@ static void assignValueIfMutable(const T&, const U&)
 template<class Value, REQUIRES("Value must ValueFlow::Value", std::is_convertible<Value&, const ValueFlow::Value&>)>
 static bool evalAssignment(Value &lhsValue, const std::string &assign, const ValueFlow::Value &rhsValue)
 {
-    if (assign.empty())
-        return false;
-    if (assign.back() != '=')
-        return false;
+    bool error = false;
     if (lhsValue.isSymbolicValue() && rhsValue.isIntValue()) {
-        bool error = false;
         if (assign != "+=" && assign != "-=")
             return false;
-        assignValueIfMutable(lhsValue.intvalue, calculate(removeAssign(assign), lhsValue.intvalue, rhsValue.intvalue, &error));
-        if (error)
-            return false;
+        assignValueIfMutable(lhsValue.intvalue, calculateAssign(assign, lhsValue.intvalue, rhsValue.intvalue, &error));
     } else if (lhsValue.isIntValue() && rhsValue.isIntValue()) {
-        bool error = false;
-        if (assign == "=")
-            assignValueIfMutable(lhsValue.intvalue, rhsValue.intvalue);
-        else
-            assignValueIfMutable(lhsValue.intvalue, calculate(removeAssign(assign), lhsValue.intvalue, rhsValue.intvalue, &error));
-        if (error)
-            return false;
+        assignValueIfMutable(lhsValue.intvalue, calculateAssign(assign, lhsValue.intvalue, rhsValue.intvalue, &error));
     } else if (lhsValue.isFloatValue() && rhsValue.isIntValue()) {
-        bool error = false;
-        if (assign == "=")
-            assignValueIfMutable(lhsValue.floatValue, rhsValue.intvalue);
-        else
-            assignValueIfMutable(lhsValue.floatValue, calculate<double, double>(removeAssign(assign), lhsValue.floatValue, rhsValue.intvalue, &error));
-        if (error)
-            return false;
+        assignValueIfMutable(lhsValue.floatValue, calculateAssign(assign, lhsValue.floatValue, rhsValue.intvalue, &error));
     } else {
         return false;
     }
-    return true;
+    return !error;
 }
 
 template<class T>
