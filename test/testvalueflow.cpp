@@ -6033,7 +6033,14 @@ private:
                "  int y = x + 1;\n"
                "  return x;\n"
                "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, "y", 0));
         ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, "y", -1));
+
+        code = "void f(int x) {\n"
+               "  int y = x * 2;\n"
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, "y", 0));
     }
 };
 
