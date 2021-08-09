@@ -728,7 +728,7 @@ if __name__ == '__main__':
                                tr_class=error["id"],
                                message_class=message_class,
                                add_author=add_author_information,
-			       htmlfile=htmlfile))
+                               htmlfile=htmlfile))
         output_file.write('\n       </table>')
         output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
 
