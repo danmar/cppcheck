@@ -505,7 +505,6 @@ if __name__ == '__main__':
         if filename == '':
             continue
 
-        # os.chdir(cwd)       # going back to cwd to find html files
         source_filename = os.path.join(source_dir, filename)
         try:
             with io.open(source_filename, 'r', encoding=options.source_encoding) as input_file:
@@ -610,10 +609,7 @@ if __name__ == '__main__':
         output_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
 
         output_file.write('\n       <table>')
-        if add_author_information:
-            output_file.write('\n       <tr><th>Line</th><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th><th></th><th>Author</th><th></th><th>Author mail</th><th></th><th>Date (DD/MM/YYYY)</th></tr>')
-        else:
-            output_file.write('\n       <tr><th>Line</th><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th></tr>')
+        output_file.write(tr_str(None, 'th', None, 'Line', 'Id', 'CWE', 'Severity', None, 'Message', add_author_information, 'Author', 'Author mail', 'Date (DD/MM/YYYY)'))
 
         for filename, data in sorted(files.items()):
             if filename in decode_errors:  # don't print a link but a note
@@ -632,6 +628,8 @@ if __name__ == '__main__':
                 for error in sorted(data['errors'], key=lambda k: k['line']):
                     if add_author_information:
                         git_blame_dict = git_blame(error['line'], source_dir, error['file'], blame_options)
+                    else:
+                        git_blame_dict = {'author': 'Unknown', 'author-mail': '---', 'author-time': '---'}
                     error_class = ''
                     try:
                         if error['inconclusive'] == 'true':
@@ -651,23 +649,24 @@ if __name__ == '__main__':
 
                     if error['id'] == 'missingInclude':
                         output_file.write(
-                            '\n         <tr class="%s"><td></td><td>%s</td><td></td><td>%s</td><td>%s</td>%s</tr>' %
-                            (error["id"], error["id"], error["severity"], html_escape(error["msg"]),
-                             ('<td></td><td>' + git_blame_dict['author'] + '</td><td></td><td>' + git_blame_dict['author-mail'] + '</td><td></td><td>' + git_blame_dict['author-time'] + '</td>') if add_author_information else ""))
+                            tr_str(error["id"], 'th', None, None, error["id"], None, error["severity"], None,
+                                   html_escape(error["msg"]), add_author_information,
+                                   git_blame_dict['author'], git_blame_dict['author-mail'],
+                                   git_blame_dict['author-time']))
 
                     elif (error['id'] == 'unmatchedSuppression') and filename.endswith('*'):
                         output_file.write(
-                            '\n         <tr class=%s><td></td><td>%s</td><td></td><td>%s</td><td %s>%s</td><td></td>%s</tr>' %
-                            (error["id"], error["id"], error["severity"], error_class, html_escape(error["msg"]),
-                             ('<td></td><td>' + git_blame_dict['author'] + '</td><td></td><td>' + git_blame_dict['author-mail'] + '</td><td></td><td>' + git_blame_dict['author-time'] + '</td>') if add_author_information else ""))
+                            tr_str(error["id"], 'th', None, None, error["id"], None, error["severity"], error_class,
+                                   html_escape(error["msg"]), add_author_information,
+                                   git_blame_dict['author'], git_blame_dict['author-mail'],
+                                   git_blame_dict['author-time']))
 
                     else:
-                        output_file.write(
-                            '\n       <tr class="%s"><td><a href="%s#line-%d">%d</a></td><td>%s</td><td>%s</td><td>%s</td><td %s>%s</td>%s</tr>' %
-                            (error['id'], data['htmlfile'], error['line'], error['line'],
-                             error['id'], cwe_url, error['severity'], error_class,
-                             html_escape(error['msg']), ('<td></td><td>' + git_blame_dict['author'] + '</td><td></td><td>' + git_blame_dict['author-mail'] + '</td><td></td><td>' + git_blame_dict['author-time'] + '</td>') if add_author_information else ""))
-
+                        output_file.write(tr_str(error['id'], 'th', data['htmlfile'], error['line'], error['id'],
+                                                 cwe_url, error['severity'], error_class, html_escape(error["msg"]),
+                                                 add_author_information,
+                                                 git_blame_dict['author'], git_blame_dict['author-mail'],
+                                                 git_blame_dict['author-time']))
         output_file.write('\n       </table>')
         output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
 
