@@ -33,11 +33,10 @@ struct Analyzer {
 
         Action() : mFlag(0) {}
 
-        // cppcheck-suppress noExplicitConstructor
         template<class T,
                  REQUIRES("T must be convertible to unsigned int", std::is_convertible<T, unsigned int> ),
                  REQUIRES("T must not be a bool", !std::is_same<T, bool> )>
-        Action(T f) : mFlag(f)
+        Action(T f) : mFlag(f) // cppcheck-suppress noExplicitConstructor
         {}
 
         enum {
