@@ -1729,9 +1729,14 @@ static bool isConditionKnown(const Token* tok, bool then)
 
 static const std::string& invertAssign(const std::string& assign)
 {
-    static std::unordered_map<std::string, std::string> lookup = {
-        {"=", "="}, {"+=", "-="}, {"-=", "+="}, {"*=", "/="}, {"/=", "*="}, {"<<=", ">>="}, {">>=", "<<="}, {"^=", "^="}
-    };
+    static std::unordered_map<std::string, std::string> lookup = {{"=", "="},
+        {"+=", "-="},
+        {"-=", "+="},
+        {"*=", "/="},
+        {"/=", "*="},
+        {"<<=", ">>="},
+        {">>=", "<<="},
+        {"^=", "^="}};
     static std::string empty;
     auto it = lookup.find(assign);
     if (it == lookup.end())
@@ -1740,15 +1745,14 @@ static const std::string& invertAssign(const std::string& assign)
         return it->second;
 }
 
-static std::string removeAssign(const std::string& assign)
-{
-    return std::string{assign.begin(), assign.end()-1};
+static std::string removeAssign(const std::string& assign) {
+    return std::string{assign.begin(), assign.end() - 1};
 }
 
 template<class T, class U>
-static T calculateAssign(const std::string &assign, const T& x, const U& y, bool* error = nullptr)
+static T calculateAssign(const std::string& assign, const T& x, const U& y, bool* error = nullptr)
 {
-    if(assign.empty() || assign.back() != '=') {
+    if (assign.empty() || assign.back() != '=') {
         if (error)
             *error = true;
         return T{};
@@ -1768,8 +1772,8 @@ template<class T, class U>
 static void assignValueIfMutable(const T&, const U&)
 {}
 
-template<class Value, REQUIRES("Value must ValueFlow::Value", std::is_convertible<Value&, const ValueFlow::Value&>)>
-static bool evalAssignment(Value &lhsValue, const std::string &assign, const ValueFlow::Value &rhsValue)
+template<class Value, REQUIRES("Value must ValueFlow::Value", std::is_convertible<Value&, const ValueFlow::Value&> )>
+static bool evalAssignment(Value& lhsValue, const std::string& assign, const ValueFlow::Value& rhsValue)
 {
     bool error = false;
     if (lhsValue.isSymbolicValue() && rhsValue.isIntValue()) {
@@ -1779,7 +1783,8 @@ static bool evalAssignment(Value &lhsValue, const std::string &assign, const Val
     } else if (lhsValue.isIntValue() && rhsValue.isIntValue()) {
         assignValueIfMutable(lhsValue.intvalue, calculateAssign(assign, lhsValue.intvalue, rhsValue.intvalue, &error));
     } else if (lhsValue.isFloatValue() && rhsValue.isIntValue()) {
-        assignValueIfMutable(lhsValue.floatValue, calculateAssign(assign, lhsValue.floatValue, rhsValue.intvalue, &error));
+        assignValueIfMutable(lhsValue.floatValue,
+                             calculateAssign(assign, lhsValue.floatValue, rhsValue.intvalue, &error));
     } else {
         return false;
     }
@@ -2029,7 +2034,8 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
-    static const std::string& getAssign(const Token* tok, Direction d) {
+    static const std::string& getAssign(const Token* tok, Direction d)
+    {
         if (d == Direction::Forward)
             return tok->str();
         else
@@ -2076,11 +2082,10 @@ struct ValueFlowAnalyzer : Analyzer {
         if (!tok->astParent())
             return;
         if (tok->astParent()->isAssignmentOp()) {
-            const ValueFlow::Value* rhsValue = tok->astParent()->astOperand2()->getKnownValue(ValueFlow::Value::ValueType::INT);
+            const ValueFlow::Value* rhsValue =
+                tok->astParent()->astOperand2()->getKnownValue(ValueFlow::Value::ValueType::INT);
             assert(rhsValue);
-            if (evalAssignment(*value,
-                               getAssign(tok->astParent(), d),
-                               *rhsValue)) {
+            if (evalAssignment(*value, getAssign(tok->astParent(), d), *rhsValue)) {
                 const std::string info("Compound assignment '" + tok->astParent()->str() + "', assigned value is " +
                                        value->infoString());
                 if (tok->astParent()->str() == "=")
