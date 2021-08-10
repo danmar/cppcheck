@@ -134,6 +134,7 @@ private:
         TEST_CASE(array_index_55); // #10254
         TEST_CASE(array_index_56); // #10284
         TEST_CASE(array_index_57); // #10023
+        TEST_CASE(array_index_58); // #7524
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1633,6 +1634,18 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:6] -> [test.cpp:5]: (warning) Either the condition 'i==4' is redundant or the array 'a[3]' is accessed at index 3, which is out of bounds.\n",
             errout.str());
+    }
+
+    void array_index_58() {
+        check("int f(int x, int y) {\n"
+            "    int a[3]= {0,1,2};\n"
+            "    if(x<2)\n"
+            "        y = a[x] + 1;\n"
+            "    else\n"
+            "        y = a[x];\n"
+            "    return y;\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) Either the condition 'x<2' is redundant or the array 'a[3]' is accessed at index 3, which is out of bounds.\n", errout.str());
     }
 
     void array_index_multidim() {
