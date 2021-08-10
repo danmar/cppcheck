@@ -7290,9 +7290,9 @@ static std::vector<ValueFlow::Value> isOutOfBoundsImpl(MathLib::bigint size,
     return {value};
 }
 std::vector<ValueFlow::Value> ValueFlow::isOutOfBounds(MathLib::bigint size,
-                                                   const Token* indexTok,
-                                                   bool possible,
-                                                   MathLib::bigint path)
+                                                       const Token* indexTok,
+                                                       bool possible,
+                                                       MathLib::bigint path)
 {
     std::vector<ValueFlow::Value> result = isOutOfBoundsImpl(size, indexTok, false, path);
     if (!result.empty())
