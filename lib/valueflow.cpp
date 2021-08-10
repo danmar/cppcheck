@@ -5373,7 +5373,8 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
                 std::list<ValueFlow::Value> initValues;
                 initValues.emplace_back(initValue, ValueFlow::Value::Bound::Lower);
                 initValues.push_back(asImpossible(initValues.back()));
-                Analyzer::Result result = valueFlowForward(bodyStart, bodyStart->link(), vartok, initValues, tokenlist, settings);
+                Analyzer::Result result =
+                    valueFlowForward(bodyStart, bodyStart->link(), vartok, initValues, tokenlist, settings);
 
                 if (!result.action.isModified()) {
                     std::list<ValueFlow::Value> lastValues;

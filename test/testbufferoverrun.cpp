@@ -1636,16 +1636,19 @@ private:
             errout.str());
     }
 
-    void array_index_58() {
+    void array_index_58()
+    {
         check("int f(int x, int y) {\n"
-            "    int a[3]= {0,1,2};\n"
-            "    if(x<2)\n"
-            "        y = a[x] + 1;\n"
-            "    else\n"
-            "        y = a[x];\n"
-            "    return y;\n"
-            "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) Either the condition 'x<2' is redundant or the array 'a[3]' is accessed at index 3, which is out of bounds.\n", errout.str());
+              "    int a[3]= {0,1,2};\n"
+              "    if(x<2)\n"
+              "        y = a[x] + 1;\n"
+              "    else\n"
+              "        y = a[x];\n"
+              "    return y;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:6]: (warning) Either the condition 'x<2' is redundant or the array 'a[3]' is accessed at index 3, which is out of bounds.\n",
+            errout.str());
     }
 
     void array_index_multidim() {

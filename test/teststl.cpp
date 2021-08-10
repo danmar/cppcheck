@@ -604,9 +604,11 @@ private:
                     "        y = a[x];\n"
                     "    return y;\n"
                     "}\n");
-        ASSERT_EQUALS("test.cpp:6:warning:Either the condition 'x<2' is redundant or 'x' can have the value greater or equal to 3. Expression 'a[x]' cause access out of bounds.\n"
-                    "test.cpp:3:note:condition 'x<2'\n"
-                    "test.cpp:6:note:Access out of bounds\n", errout.str());
+        ASSERT_EQUALS(
+            "test.cpp:6:warning:Either the condition 'x<2' is redundant or 'x' can have the value greater or equal to 3. Expression 'a[x]' cause access out of bounds.\n"
+            "test.cpp:3:note:condition 'x<2'\n"
+            "test.cpp:6:note:Access out of bounds\n",
+            errout.str());
     }
 
     void outOfBoundsIndexExpression() {

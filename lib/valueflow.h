@@ -102,7 +102,7 @@ namespace ValueFlow {
             lifetimeScope(LifetimeScope::Local),
             valueKind(ValueKind::Possible)
         {}
-        Value(const Token *c, long long val, Bound b = Bound::Point);
+        Value(const Token* c, long long val, Bound b = Bound::Point);
 
         static Value unknown();
 
