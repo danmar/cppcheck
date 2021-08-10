@@ -66,38 +66,6 @@ static bool isElementAccessYield(const Library::Container::Yield& yield)
     return yield == Library::Container::Yield::ITEM || yield == Library::Container::Yield::AT_INDEX;
 }
 
-static std::vector<ValueFlow::Value> isOutOfBounds(MathLib::bigint size, const Token* indexTok, bool condition)
-{
-    if (!indexTok)
-        return {};
-    const ValueFlow::Value* indexValue = indexTok->getMaxValue(condition);
-    if (!indexValue)
-        return {};
-    if (indexValue->intvalue >= size)
-        return {*indexValue};
-    if (!condition)
-        return {};
-    ValueFlow::Value value = inferCondition(">=", indexTok, indexValue->intvalue);
-    if (!value.isKnown())
-        return {};
-    if (value.intvalue == 0)
-        return {};
-    value.intvalue = size;
-    value.bound = ValueFlow::Value::Bound::Lower;
-    return {value};
-}
-static std::vector<ValueFlow::Value> isOutOfBounds(MathLib::bigint size,
-                                                   const Token* indexTok,
-                                                   const Settings* settings)
-{
-    std::vector<ValueFlow::Value> result = isOutOfBounds(size, indexTok, false);
-    if (!result.empty())
-        return result;
-    if (!settings->severity.isEnabled(Severity::warning))
-        return result;
-    return isOutOfBounds(size, indexTok, true);
-}
-
 void CheckStl::outOfBounds()
 {
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
@@ -124,7 +92,7 @@ void CheckStl::outOfBounds()
                     const Token* indexTok = parent->tokAt(2)->astOperand2();
                     if (!indexTok)
                         continue;
-                    std::vector<ValueFlow::Value> indexValues = isOutOfBounds(value.intvalue, indexTok, mSettings);
+                    std::vector<ValueFlow::Value> indexValues = ValueFlow::isOutOfBounds(value.intvalue, indexTok, mSettings->severity.isEnabled(Severity::warning));
                     if (!indexValues.empty()) {
                         outOfBoundsError(
                             parent, tok->expressionString(), &value, indexTok->expressionString(), &indexValues.front());
@@ -156,7 +124,7 @@ void CheckStl::outOfBounds()
                     const Token* indexTok = parent->astOperand2();
                     if (!indexTok)
                         continue;
-                    std::vector<ValueFlow::Value> indexValues = isOutOfBounds(value.intvalue, indexTok, mSettings);
+                    std::vector<ValueFlow::Value> indexValues = ValueFlow::isOutOfBounds(value.intvalue, indexTok, mSettings->severity.isEnabled(Severity::warning));
                     if (!indexValues.empty()) {
                         outOfBoundsError(
                             parent, tok->expressionString(), &value, indexTok->expressionString(), &indexValues.front());

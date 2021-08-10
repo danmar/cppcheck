@@ -7262,3 +7262,42 @@ const ValueFlow::Value* ValueFlow::findValue(const std::list<ValueFlow::Value>& 
     }
     return ret;
 }
+
+static std::vector<ValueFlow::Value> isOutOfBoundsImpl(MathLib::bigint size,
+                                                       const Token* indexTok,
+                                                       bool condition,
+                                                       MathLib::bigint path)
+{
+    if (!indexTok)
+        return {};
+    const ValueFlow::Value* indexValue = indexTok->getMaxValue(condition, path);
+    if (!indexValue)
+        return {};
+    if (indexValue->intvalue >= size)
+        return {*indexValue};
+    if (!condition)
+        return {};
+    ValueFlow::Value inBoundsValue = inferCondition("<", indexTok, size);
+    if (inBoundsValue.isKnown() && inBoundsValue.intvalue != 0)
+        return {};
+    ValueFlow::Value value = inferCondition(">=", indexTok, indexValue->intvalue);
+    if (!value.isKnown())
+        return {};
+    if (value.intvalue == 0)
+        return {};
+    value.intvalue = size;
+    value.bound = ValueFlow::Value::Bound::Lower;
+    return {value};
+}
+std::vector<ValueFlow::Value> ValueFlow::isOutOfBounds(MathLib::bigint size,
+                                                   const Token* indexTok,
+                                                   bool possible,
+                                                   MathLib::bigint path)
+{
+    std::vector<ValueFlow::Value> result = isOutOfBoundsImpl(size, indexTok, false, path);
+    if (!result.empty())
+        return result;
+    if (!possible)
+        return result;
+    return isOutOfBoundsImpl(size, indexTok, true, path);
+}

@@ -224,45 +224,6 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings *set
     return !dimensions->empty();
 }
 
-static std::vector<ValueFlow::Value> isOutOfBoundsImpl(MathLib::bigint size,
-                                                       const Token* indexTok,
-                                                       bool condition,
-                                                       MathLib::bigint path)
-{
-    if (!indexTok)
-        return {};
-    const ValueFlow::Value* indexValue = indexTok->getMaxValue(condition, path);
-    if (!indexValue)
-        return {};
-    if (indexValue->intvalue >= size)
-        return {*indexValue};
-    if (!condition)
-        return {};
-    ValueFlow::Value inBoundsValue = inferCondition("<", indexTok, size);
-    if (inBoundsValue.isKnown() && inBoundsValue.intvalue != 0)
-        return {};
-    ValueFlow::Value value = inferCondition(">=", indexTok, indexValue->intvalue);
-    if (!value.isKnown())
-        return {};
-    if (value.intvalue == 0)
-        return {};
-    value.intvalue = size;
-    value.bound = ValueFlow::Value::Bound::Lower;
-    return {value};
-}
-static std::vector<ValueFlow::Value> isOutOfBounds(MathLib::bigint size,
-                                                   const Token* indexTok,
-                                                   bool possible = true,
-                                                   MathLib::bigint path = 0)
-{
-    std::vector<ValueFlow::Value> result = isOutOfBoundsImpl(size, indexTok, false, path);
-    if (!result.empty())
-        return result;
-    if (!possible)
-        return result;
-    return isOutOfBoundsImpl(size, indexTok, true, path);
-}
-
 static std::vector<ValueFlow::Value> getOverrunIndexValues(const Token* tok,
                                                            const Token* arrayToken,
                                                            const std::vector<Dimension>& dimensions,
@@ -290,7 +251,7 @@ static std::vector<ValueFlow::Value> getOverrunIndexValues(const Token* tok,
             size++;
         const bool zeroArray = array->variable() && array->variable()->isArray() && dimensions[i].num == 0;
         std::vector<ValueFlow::Value> values =
-            !zeroArray ? isOutOfBounds(size, indexTokens[i], true, path) : std::vector<ValueFlow::Value>{};
+            !zeroArray ? ValueFlow::isOutOfBounds(size, indexTokens[i], true, path) : std::vector<ValueFlow::Value>{};
         if (values.empty()) {
             if (indexTokens[i]->hasKnownIntValue())
                 indexValues.push_back(indexTokens[i]->values().front());
