@@ -4439,6 +4439,32 @@ private:
               "  if (b == true) {}\n"
               "}", &settingsUnix64);
         ASSERT_EQUALS("", errout.str());
+
+        // #10372
+        check("void f(signed char x) {\n"
+              "  if (x == 0xff) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed char' against value 255. Condition is always true/false.\n", errout.str());
+
+        check("void f(short x) {\n"
+              "  if (x == 0xffff) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed short' against value 65535. Condition is always true/false.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "  if (x == 0xffffffff) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(long x) {\n"
+              "  if (x == ~0L) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(long long x) {\n"
+              "  if (x == ~0LL) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void knownConditionCast() { // #9976

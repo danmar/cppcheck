@@ -353,6 +353,7 @@ private:
         TEST_CASE(symboldatabase95); // #10295
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
+        TEST_CASE(createSymbolDatabaseFindAllScopes2);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -4786,6 +4787,18 @@ private:
         GET_SYMBOL_DB("void f() { union {int x; char *p;} a={0}; }");
         ASSERT(db->scopeList.size() == 3);
         ASSERT_EQUALS(Scope::eUnion, db->scopeList.back().type);
+    }
+
+    void createSymbolDatabaseFindAllScopes2() {
+        GET_SYMBOL_DB("namespace ns { auto var1{0}; }\n"
+                      "namespace ns { auto var2{0}; }\n");
+        ASSERT(db);
+        ASSERT_EQUALS(2, db->scopeList.size());
+        ASSERT_EQUALS(2, db->scopeList.back().varlist.size());
+        const Token* const var1 = Token::findsimplematch(tokenizer.tokens(), "var1");
+        const Token* const var2 = Token::findsimplematch(tokenizer.tokens(), "var2");
+        ASSERT(var1->variable());
+        ASSERT(var2->variable());
     }
 
     void enum1() {
