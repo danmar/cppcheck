@@ -224,6 +224,39 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings *set
     return !dimensions->empty();
 }
 
+static std::vector<ValueFlow::Value> isOutOfBoundsImpl(MathLib::bigint size, const Token* indexTok, bool condition, MathLib::bigint path)
+{
+    if (!indexTok)
+        return {};
+    const ValueFlow::Value* indexValue = indexTok->getMaxValue(condition, path);
+    if (!indexValue)
+        return {};
+    if (indexValue->intvalue >= size)
+        return {*indexValue};
+    if (!condition)
+        return {};
+    ValueFlow::Value value = inferCondition(">=", indexTok, indexValue->intvalue);
+    if (!value.isKnown())
+        return {};
+    if (value.intvalue == 0)
+        return {};
+    value.intvalue = size;
+    value.bound = ValueFlow::Value::Bound::Lower;
+    return {value};
+}
+static std::vector<ValueFlow::Value> isOutOfBounds(MathLib::bigint size,
+                                                   const Token* indexTok,
+                                                   bool possible = true,
+                                                   MathLib::bigint path = 0)
+{
+    std::vector<ValueFlow::Value> result = isOutOfBoundsImpl(size, indexTok, false, path);
+    if (!result.empty())
+        return result;
+    if (!possible)
+        return result;
+    return isOutOfBoundsImpl(size, indexTok, true, path);
+}
+
 static std::vector<ValueFlow::Value> getOverrunIndexValues(const Token* tok,
                                                            const Token* arrayToken,
                                                            const std::vector<Dimension>& dimensions,
@@ -234,46 +267,74 @@ static std::vector<ValueFlow::Value> getOverrunIndexValues(const Token* tok,
     while (Token::Match(array, ".|::"))
         array = array->astOperand2();
 
-    for (int cond = 0; cond < 2; cond++) {
-        bool equal = false;
-        bool overflow = false;
-        bool allKnown = true;
-        std::vector<ValueFlow::Value> indexValues;
-        for (int i = 0; i < dimensions.size() && i < indexTokens.size(); ++i) {
-            const ValueFlow::Value *value = indexTokens[i]->getMaxValue(cond == 1);
-            if (!value) {
-                indexValues.push_back(ValueFlow::Value::unknown());
-                continue;
-            }
-            indexValues.push_back(*value);
-            if (value->path != path)
-                continue;
-            if (!value->isKnown()) {
-                if (!allKnown)
-                    continue;
-                allKnown = false;
-            }
-            if (array->variable() && array->variable()->isArray() && dimensions[i].num == 0)
-                continue;
-            if (value->intvalue == dimensions[i].num)
-                equal = true;
-            else if (value->intvalue > dimensions[i].num)
-                overflow = true;
-        }
-        if (equal && tok->str() != "[")
-            continue;
-        if (!overflow && equal) {
-            const Token *parent = tok;
-            while (Token::simpleMatch(parent, "["))
-                parent = parent->astParent();
-            if (!parent || parent->isUnaryOp("&"))
-                continue;
-        }
-        if (overflow || equal)
-            return indexValues;
+    bool isArrayIndex = tok->str() == "[";
+    if (isArrayIndex) {
+        const Token *parent = tok;
+        while (Token::simpleMatch(parent, "["))
+            parent = parent->astParent();
+        if (!parent || parent->isUnaryOp("&"))
+            isArrayIndex = false;
     }
 
-    return std::vector<ValueFlow::Value>();
+    std::vector<ValueFlow::Value> indexValues;
+    for (int i = 0; i < dimensions.size() && i < indexTokens.size(); ++i) {
+        MathLib::bigint size = dimensions[i].num;
+        if (!isArrayIndex)
+            size++;
+        const bool zeroArray = array->variable() && array->variable()->isArray() && dimensions[i].num == 0;
+        std::vector<ValueFlow::Value> values = !zeroArray ? isOutOfBounds(size, indexTokens[i], true, path) : std::vector<ValueFlow::Value>{};
+        if (values.empty()) {
+            indexValues.push_back(ValueFlow::Value::unknown());
+            continue;
+        }
+        indexValues.push_back(values.front());
+    }
+    if (std::any_of(indexValues.begin(), indexValues.end(), [](const ValueFlow::Value& value) {
+        return value.isIntValue();
+    }))
+        return indexValues;
+    return {};
+
+    // for (int cond = 0; cond < 2; cond++) {
+    //     bool equal = false;
+    //     bool overflow = false;
+    //     bool allKnown = true;
+    //     std::vector<ValueFlow::Value> indexValues;
+    //     for (int i = 0; i < dimensions.size() && i < indexTokens.size(); ++i) {
+    //         const ValueFlow::Value *value = indexTokens[i]->getMaxValue(cond == 1);
+    //         if (!value) {
+    //             indexValues.push_back(ValueFlow::Value::unknown());
+    //             continue;
+    //         }
+    //         indexValues.push_back(*value);
+    //         if (value->path != path)
+    //             continue;
+    //         if (!value->isKnown()) {
+    //             if (!allKnown)
+    //                 continue;
+    //             allKnown = false;
+    //         }
+    //         if (array->variable() && array->variable()->isArray() && dimensions[i].num == 0)
+    //             continue;
+    //         if (value->intvalue == dimensions[i].num)
+    //             equal = true;
+    //         else if (value->intvalue > dimensions[i].num)
+    //             overflow = true;
+    //     }
+    //     if (equal && tok->str() != "[")
+    //         continue;
+    //     if (!overflow && equal) {
+    //         const Token *parent = tok;
+    //         while (Token::simpleMatch(parent, "["))
+    //             parent = parent->astParent();
+    //         if (!parent || parent->isUnaryOp("&"))
+    //             continue;
+    //     }
+    //     if (overflow || equal)
+    //         return indexValues;
+    // }
+
+    // return std::vector<ValueFlow::Value>();
 }
 
 void CheckBufferOverrun::arrayIndex()
