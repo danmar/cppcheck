@@ -1038,6 +1038,7 @@ public:
     ScopeType type;
     Type* definedType;
     std::map<std::string, Type*> definedTypesMap;
+    std::vector<const Token *> bodyStartList;
 
     // function specific fields
     const Scope *functionOf; ///< scope this function belongs to
@@ -1048,6 +1049,13 @@ public:
     bool enumClass;
 
     std::vector<Enumerator> enumeratorList;
+
+    void setBodyStartEnd(const Token *start) {
+        bodyStart = start;
+        bodyEnd = start ? start->link() : nullptr;
+        if (start)
+            bodyStartList.push_back(start);
+    }
 
     bool isAnonymous() const {
         // TODO: Check if class/struct is anonymous
@@ -1194,6 +1202,9 @@ private:
     bool isVariableDeclaration(const Token* const tok, const Token*& vartok, const Token*& typetok) const;
 
     void findFunctionInBase(const std::string & name, nonneg int args, std::vector<const Function *> & matches) const;
+
+    /** @brief initialize varlist */
+    void getVariableList(const Settings* settings, const Token *start);
 };
 
 enum class Reference {
