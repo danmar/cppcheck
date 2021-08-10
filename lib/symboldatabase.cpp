@@ -2692,7 +2692,7 @@ bool Function::returnsVoid(const Function* function, bool unknown)
 {
     if (!function)
         return false;
-    if (function->type != Function::eFunction)
+    if (function->type != Function::eFunction && function->type != Function::eOperatorEqual)
         return false;
     const Token* defEnd = function->returnDefEnd();
     if (defEnd->strAt(-1) == "void")
