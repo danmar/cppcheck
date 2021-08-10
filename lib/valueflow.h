@@ -80,10 +80,11 @@ namespace ValueFlow {
     public:
         typedef std::pair<const Token *, std::string> ErrorPathItem;
         typedef std::list<ErrorPathItem> ErrorPath;
+        enum class Bound { Upper, Lower, Point };
 
-        explicit Value(long long val = 0)
+        explicit Value(long long val = 0, Bound b = Bound::Point)
             : valueType(ValueType::INT),
-            bound(Bound::Point),
+            bound(b),
             intvalue(val),
             tokvalue(nullptr),
             floatValue(0.0),
@@ -101,7 +102,7 @@ namespace ValueFlow {
             lifetimeScope(LifetimeScope::Local),
             valueKind(ValueKind::Possible)
         {}
-        Value(const Token *c, long long val);
+        Value(const Token *c, long long val, Bound b = Bound::Point);
 
         static Value unknown();
 
@@ -309,7 +310,7 @@ namespace ValueFlow {
         }
 
         /** The value bound  */
-        enum class Bound { Upper, Lower, Point } bound;
+        Bound bound;
 
         /** int value (or sometimes bool value?) */
         long long intvalue;
