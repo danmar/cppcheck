@@ -224,6 +224,13 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings *set
     return !dimensions->empty();
 }
 
+static ValueFlow::Value makeSizeValue(MathLib::bigint size, MathLib::bigint path)
+{
+    ValueFlow::Value v(size);
+    v.path = path;
+    return v;
+}
+
 static std::vector<ValueFlow::Value> getOverrunIndexValues(const Token* tok,
                                                            const Token* arrayToken,
                                                            const std::vector<Dimension>& dimensions,
@@ -251,7 +258,7 @@ static std::vector<ValueFlow::Value> getOverrunIndexValues(const Token* tok,
             size++;
         const bool zeroArray = array->variable() && array->variable()->isArray() && dimensions[i].num == 0;
         std::vector<ValueFlow::Value> values =
-            !zeroArray ? ValueFlow::isOutOfBounds(size, indexTokens[i], true, path) : std::vector<ValueFlow::Value>{};
+            !zeroArray ? ValueFlow::isOutOfBounds(makeSizeValue(size, path), indexTokens[i]) : std::vector<ValueFlow::Value>{};
         if (values.empty()) {
             if (indexTokens[i]->hasKnownIntValue())
                 indexValues.push_back(indexTokens[i]->values().front());

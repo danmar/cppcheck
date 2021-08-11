@@ -93,7 +93,7 @@ void CheckStl::outOfBounds()
                     if (!indexTok)
                         continue;
                     std::vector<ValueFlow::Value> indexValues = ValueFlow::isOutOfBounds(
-                        value.intvalue, indexTok, mSettings->severity.isEnabled(Severity::warning));
+                        value, indexTok, mSettings->severity.isEnabled(Severity::warning));
                     if (!indexValues.empty()) {
                         outOfBoundsError(
                             parent, tok->expressionString(), &value, indexTok->expressionString(), &indexValues.front());
@@ -126,7 +126,7 @@ void CheckStl::outOfBounds()
                     if (!indexTok)
                         continue;
                     std::vector<ValueFlow::Value> indexValues = ValueFlow::isOutOfBounds(
-                        value.intvalue, indexTok, mSettings->severity.isEnabled(Severity::warning));
+                        value, indexTok, mSettings->severity.isEnabled(Severity::warning));
                     if (!indexValues.empty()) {
                         outOfBoundsError(
                             parent, tok->expressionString(), &value, indexTok->expressionString(), &indexValues.front());

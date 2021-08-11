@@ -609,6 +609,13 @@ private:
             "test.cpp:3:note:condition 'x<2'\n"
             "test.cpp:6:note:Access out of bounds\n",
             errout.str());
+
+        checkNormal("int f(std::vector<int> v) {\n"
+                    "    if (v.size() > 3)\n"
+                    "        return v[v.size() - 3];\n"
+                    "    return 0;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
