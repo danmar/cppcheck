@@ -4526,11 +4526,10 @@ struct ConditionHandler {
 
     virtual std::vector<Condition> parse(const Token* tok, const Settings* settings) const = 0;
 
-    void traverseCondition(
-        TokenList* tokenlist,
-        SymbolDatabase* symboldatabase,
-        const std::function<
-            void(const Condition& cond, Token* tok, const Scope* scope)>& f) const {
+    void traverseCondition(TokenList* tokenlist,
+                           SymbolDatabase* symboldatabase,
+                           const std::function<void(const Condition& cond, Token* tok, const Scope* scope)>& f) const
+    {
         for (const Scope *scope : symboldatabase->functionScopes) {
             for (Token *tok = const_cast<Token *>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
                 if (Token::Match(tok, "if|while|for ("))
@@ -4563,10 +4562,7 @@ struct ConditionHandler {
                          SymbolDatabase* symboldatabase,
                          ErrorLogger* errorLogger,
                          const Settings* settings) const {
-        traverseCondition(
-            tokenlist,
-            symboldatabase,
-            [&](const Condition& cond, Token* tok, const Scope*) {
+        traverseCondition(tokenlist, symboldatabase, [&](const Condition& cond, Token* tok, const Scope*) {
             if (cond.vartok->exprId() == 0)
                 return;
 
@@ -4674,10 +4670,7 @@ struct ConditionHandler {
                         SymbolDatabase* symboldatabase,
                         ErrorLogger* errorLogger,
                         const Settings* settings) const {
-        traverseCondition(
-            tokenlist,
-            symboldatabase,
-            [&](const Condition& cond, Token* tok, const Scope* scope) {
+        traverseCondition(tokenlist, symboldatabase, [&](const Condition& cond, Token* tok, const Scope* scope) {
             if (Token::simpleMatch(tok->astParent(), "?"))
                 return;
             const Token* top = tok->astTop();
@@ -4726,10 +4719,12 @@ struct ConditionHandler {
                     if (astIsFloat(cond.vartok, false) ||
                         (!cond.vartok->valueType() &&
                          std::all_of(values.begin(), values.end(), [](const ValueFlow::Value& v) {
-                             return v.isIntValue() || v.isFloatValue();
-                         })))
-                        values.remove_if([&](const ValueFlow::Value& v) { return v.isImpossible(); });
-                    for(Token* start:nextExprs) {
+                        return v.isIntValue() || v.isFloatValue();
+                    })))
+                        values.remove_if([&](const ValueFlow::Value& v) {
+                            return v.isImpossible();
+                        });
+                    for (Token* start:nextExprs) {
                         Analyzer::Result r = forward(start, cond.vartok, values, tokenlist, settings);
                         if (r.terminate != Analyzer::Terminate::None)
                             return;
