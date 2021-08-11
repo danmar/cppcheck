@@ -4529,26 +4529,20 @@ struct ConditionHandler {
     void traverseCondition(
         TokenList* tokenlist,
         SymbolDatabase* symboldatabase,
-        ErrorLogger* errorLogger,
-        const Settings* settings,
         const std::function<
-            void(const Condition& cond, Token* tok, const Scope* scope, const std::vector<const Variable*>& vars)>& f) const {
+            void(const Condition& cond, Token* tok, const Scope* scope)>& f) const {
         for (const Scope *scope : symboldatabase->functionScopes) {
-            std::set<nonneg int> aliased;
             for (Token *tok = const_cast<Token *>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
                 if (Token::Match(tok, "if|while|for ("))
                     continue;
 
-                if (Token::Match(tok, "= & %var% ;"))
-                    aliased.insert(tok->tokAt(2)->varId());
                 const Token* top = tok->astTop();
                 if (!top)
                     continue;
 
                 if (!Token::Match(top->previous(), "if|while|for (") && !Token::Match(tok->astParent(), "&&|%oror%|?"))
                     continue;
-                // *INDENT-OFF*
-                for (const Condition& cond : parse(tok, settings)) {
+                for (const Condition& cond : parse(tok, tokenlist->getSettings())) {
                     if (!cond.vartok)
                         continue;
                     if (cond.vartok->exprId() == 0)
@@ -4557,27 +4551,10 @@ struct ConditionHandler {
                         continue;
                     if (cond.true_values.empty() || cond.false_values.empty())
                         continue;
-                    if (!isConstExpression(cond.vartok, settings->library, true, tokenlist->isCPP()))
+                    if (!isConstExpression(cond.vartok, tokenlist->getSettings()->library, true, tokenlist->isCPP()))
                         continue;
-                    std::vector<const Variable*> vars =
-                        getExprVariables(cond.vartok, tokenlist, symboldatabase, settings);
-                    if (std::any_of(vars.begin(), vars.end(), [](const Variable* var) { return !var; }))
-                        continue;
-                    if (!vars.empty() && (vars.front())) {
-                        if (std::any_of(vars.begin(), vars.end(), [&](const Variable* var) {
-                                return var && aliased.find(var->declarationId()) != aliased.end();
-                            })) {
-                            if (settings->debugwarnings)
-                                bailout(tokenlist,
-                                        errorLogger,
-                                        cond.vartok,
-                                        "variable is aliased so we just skip all valueflow after condition");
-                            continue;
-                        }
-                    }
-                    f(cond, tok, scope, vars);
+                    f(cond, tok, scope);
                 }
-                // *INDENT-ON*
             }
         }
     }
@@ -4589,9 +4566,7 @@ struct ConditionHandler {
         traverseCondition(
             tokenlist,
             symboldatabase,
-            errorLogger,
-            settings,
-            [&](const Condition& cond, Token* tok, const Scope*, const std::vector<const Variable*>&) {
+            [&](const Condition& cond, Token* tok, const Scope*) {
             if (cond.vartok->exprId() == 0)
                 return;
 
@@ -4702,9 +4677,7 @@ struct ConditionHandler {
         traverseCondition(
             tokenlist,
             symboldatabase,
-            errorLogger,
-            settings,
-            [&](const Condition& cond, Token* tok, const Scope* scope, const std::vector<const Variable*>& vars) {
+            [&](const Condition& cond, Token* tok, const Scope* scope) {
             if (Token::simpleMatch(tok->astParent(), "?"))
                 return;
             const Token* top = tok->astTop();
@@ -4750,7 +4723,6 @@ struct ConditionHandler {
                         values = elseValues;
                     if (Token::Match(tok, "==|!=") || (tok == cond.vartok && astIsBool(tok)))
                         changePossibleToKnown(values);
-                    // *INDENT-OFF*
                     if (astIsFloat(cond.vartok, false) ||
                         (!cond.vartok->valueType() &&
                          std::all_of(values.begin(), values.end(), [](const ValueFlow::Value& v) {
@@ -4762,7 +4734,6 @@ struct ConditionHandler {
                         if (r.terminate != Analyzer::Terminate::None)
                             return;
                     }
-                    // *INDENT-ON*
                 }
             }
 
@@ -4792,14 +4763,6 @@ struct ConditionHandler {
             }
 
             if (top && Token::Match(top->previous(), "if|while (") && !top->previous()->isExpandedMacro()) {
-                // does condition reassign variable?
-                if (tok != top->astOperand2() && Token::Match(top->astOperand2(), "%oror%|&&") &&
-                    isVariablesChanged(top, top->link(), 0, vars, settings, tokenlist->isCPP())) {
-                    if (settings->debugwarnings)
-                        bailout(tokenlist, errorLogger, tok, "assignment in condition");
-                    return;
-                }
-
                 // if astParent is "!" we need to invert codeblock
                 {
                     const Token* tok2 = tok;
@@ -7178,10 +7141,9 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowSymbolicInfer(tokenlist, symboldatabase);
         valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);
-        valueFlowAfterMove(tokenlist, symboldatabase, settings);
+        valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowCondition(SimpleConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings);
         valueFlowInferCondition(tokenlist, settings);
-        valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowSubFunction(tokenlist, symboldatabase, errorLogger, settings);
@@ -7191,6 +7153,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowUninit(tokenlist, symboldatabase, settings);
         valueFlowUninitPointerAliasDeref(tokenlist);
         if (tokenlist->isCPP()) {
+            valueFlowAfterMove(tokenlist, symboldatabase, settings);
             valueFlowSmartPointer(tokenlist, errorLogger, settings);
             valueFlowIterators(tokenlist, settings);
             valueFlowCondition(IteratorConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings);
