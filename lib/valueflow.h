@@ -439,9 +439,7 @@ namespace ValueFlow {
                                       const Settings* settings,
                                       std::function<bool(const ValueFlow::Value&)> pred);
 
-    std::vector<ValueFlow::Value> isOutOfBounds(const Value& size,
-                                                       const Token* indexTok,
-                                                       bool possible = true);
+    std::vector<ValueFlow::Value> isOutOfBounds(const Value& size, const Token* indexTok, bool possible = true);
 }
 
 struct LifetimeToken {

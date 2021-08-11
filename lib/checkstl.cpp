@@ -92,8 +92,8 @@ void CheckStl::outOfBounds()
                     const Token* indexTok = parent->tokAt(2)->astOperand2();
                     if (!indexTok)
                         continue;
-                    std::vector<ValueFlow::Value> indexValues = ValueFlow::isOutOfBounds(
-                        value, indexTok, mSettings->severity.isEnabled(Severity::warning));
+                    std::vector<ValueFlow::Value> indexValues =
+                        ValueFlow::isOutOfBounds(value, indexTok, mSettings->severity.isEnabled(Severity::warning));
                     if (!indexValues.empty()) {
                         outOfBoundsError(
                             parent, tok->expressionString(), &value, indexTok->expressionString(), &indexValues.front());
@@ -125,8 +125,8 @@ void CheckStl::outOfBounds()
                     const Token* indexTok = parent->astOperand2();
                     if (!indexTok)
                         continue;
-                    std::vector<ValueFlow::Value> indexValues = ValueFlow::isOutOfBounds(
-                        value, indexTok, mSettings->severity.isEnabled(Severity::warning));
+                    std::vector<ValueFlow::Value> indexValues =
+                        ValueFlow::isOutOfBounds(value, indexTok, mSettings->severity.isEnabled(Severity::warning));
                     if (!indexValues.empty()) {
                         outOfBoundsError(
                             parent, tok->expressionString(), &value, indexTok->expressionString(), &indexValues.front());

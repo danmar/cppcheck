@@ -7291,9 +7291,7 @@ static std::vector<ValueFlow::Value> isOutOfBoundsImpl(const ValueFlow::Value& s
     return {value};
 }
 
-std::vector<ValueFlow::Value> ValueFlow::isOutOfBounds(const Value& size,
-                                                       const Token* indexTok,
-                                                       bool possible)
+std::vector<ValueFlow::Value> ValueFlow::isOutOfBounds(const Value& size, const Token* indexTok, bool possible)
 {
     std::vector<ValueFlow::Value> result = isOutOfBoundsImpl(size, indexTok, false);
     if (!result.empty())
