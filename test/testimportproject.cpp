@@ -33,8 +33,7 @@ public:
 
 class TestImportProject : public TestFixture {
 public:
-    TestImportProject() : TestFixture("TestImportProject") {
-    }
+    TestImportProject() : TestFixture("TestImportProject") {}
 
 private:
 

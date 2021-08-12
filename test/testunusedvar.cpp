@@ -26,8 +26,7 @@
 
 class TestUnusedVar : public TestFixture {
 public:
-    TestUnusedVar() : TestFixture("TestUnusedVar") {
-    }
+    TestUnusedVar() : TestFixture("TestUnusedVar") {}
 
 private:
     Settings settings;
@@ -5732,7 +5731,7 @@ private:
             "void fun(short data[2]) {\n"
             "  data[2] = 1;\n"
             "}"
-        );
+            );
         ASSERT_EQUALS("", errout.str());
 
         // Unknown argument type
@@ -5740,7 +5739,7 @@ private:
             "void A::b(Date& result) {"
             "  result = 12;\n"
             "}"
-        );
+            );
         ASSERT_EQUALS("", errout.str());
 
         {
@@ -5749,7 +5748,7 @@ private:
                 "void fun(Date result) {"
                 "  result.x = 12;\n"
                 "}"
-            );
+                );
             ASSERT_EQUALS("", errout.str());
 
             functionVariableUsage( // there is no reference type in C
@@ -5757,7 +5756,7 @@ private:
                 "  result.x = 12;\n"
                 "}",
                 "test.c"
-            );
+                );
             ASSERT_EQUALS("[test.c:1]: (style) Variable 'result.x' is assigned a value that is never used.\n", errout.str());
 
             functionVariableUsage(
@@ -5765,7 +5764,7 @@ private:
                 "void fun(Date result) {"
                 "  result.x = 12;\n"
                 "}"
-            );
+                );
             ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'result.x' is assigned a value that is never used.\n", errout.str());
         }
 
@@ -5775,7 +5774,7 @@ private:
             "  struct FOO foo;\n"
             "  foo.x = 123;\n"
             "}"
-        );
+            );
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'foo.x' is assigned a value that is never used.\n", errout.str());
     }
 

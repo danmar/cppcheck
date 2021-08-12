@@ -30,8 +30,7 @@
 
 class TestCondition : public TestFixture {
 public:
-    TestCondition() : TestFixture("TestCondition") {
-    }
+    TestCondition() : TestFixture("TestCondition") {}
 
 private:
     Settings settings0;
@@ -49,9 +48,9 @@ private:
         settings0.severity.enable(Severity::warning);
 
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
-        "<def>\n"
-        "  <function name=\"bar\"> <pure/> </function>\n"
-        "</def>";
+                           "<def>\n"
+                           "  <function name=\"bar\"> <pure/> </function>\n"
+                           "</def>";
         tinyxml2::XMLDocument xmldoc;
         xmldoc.Parse(cfg, sizeof(cfg));
         settings1.severity.enable(Severity::style);
@@ -116,6 +115,7 @@ private:
         TEST_CASE(clarifyCondition8);
 
         TEST_CASE(alwaysTrue);
+        TEST_CASE(alwaysTrueSymbolic);
         TEST_CASE(alwaysTrueInfer);
         TEST_CASE(multiConditionAlwaysTrue);
         TEST_CASE(duplicateCondition);
@@ -127,8 +127,9 @@ private:
         TEST_CASE(duplicateConditionalAssign);
 
         TEST_CASE(checkAssignmentInCondition);
-
         TEST_CASE(compareOutOfTypeRange);
+        TEST_CASE(knownConditionCast); // #9976
+        TEST_CASE(knownConditionIncrementLoop); // #9808
     }
 
     void check(const char code[], Settings *settings, const char* filename = "test.cpp") {
@@ -903,7 +904,7 @@ private:
               "    if ((x != 1) || (x != 3) && (y == 1))\n"
               "        a++;\n"
               "}"
-             );
+              );
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x!=3' is always true\n", errout.str());
 
         check("void f(int x) {\n"
@@ -1071,21 +1072,21 @@ private:
               "    if (x >= 3 || x <= 3)\n"
               "        a++;\n"
               "}"
-             );
+              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x >= 3 || x <= 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x >= 3 || x < 3)\n"
               "        a++;\n"
               "}"
-             );
+              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x >= 3 || x < 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 3 || x <= 3)\n"
               "        a++;\n"
               "}"
-             );
+              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x > 3 || x <= 3.\n", errout.str());
 
         check("void f(int x) {\n"
@@ -2949,6 +2950,30 @@ private:
     }
 
     void alwaysTrue() {
+
+        check("void f(const struct S *s) {\n" //#8196
+              "  int x1 = s->x;\n"
+              "  int x2 = s->x;\n"
+              "  if (x1 == 10 && x2 == 10) {}\n" // <<
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (style) Condition 'x2==10' is always true\n", errout.str());
+
+        check("void f ()\n"// #8220
+              "{\n"
+              "    int a;\n"
+              "    int b = 0;\n"
+              "    int ret;\n"
+              " \n"
+              "    a = rand();\n"
+              "    while (((0 < a) && (a < 2)) && ((8 < a) && (a < 10))) \n"
+              "    {\n"
+              "        b += a;\n"
+              "        a ++;\n"
+              "    }\n"
+              "    ret = b;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:8]: (style) Condition '8<a' is always false\n", errout.str());
+
         check("void f() {\n" // #4842
               "  int x = 0;\n"
               "  if (a) { return; }\n" // <- this is just here to fool simplifyKnownVariabels
@@ -3642,6 +3667,27 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #10121
+        check("struct AB {\n"
+              "    int a;\n"
+              "};\n"
+              "struct ABC {\n"
+              "    AB* ab;\n"
+              "};\n"
+              "void g(ABC*);\n"
+              "int f(struct ABC *abc) {\n"
+              "    int err = 0;\n"
+              "    AB *ab = abc->ab;\n"
+              "    if (ab->a == 123){\n"
+              "        g(abc);\n"
+              "        if (ab->a != 123) {\n"
+              "            err = 1;\n"
+              "        }\n"
+              "    }\n"
+              "    return err;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // #10323
         check("void foo(int x) {\n"
               "    if(x)\n"
@@ -3669,6 +3715,82 @@ private:
               "        start = len+start;\n"
               "        if (start < 0) {}\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10362
+        check("int tok;\n"
+              "void next();\n"
+              "void parse_attribute() {\n"
+              "    if (tok == '(') {\n"
+              "        int parenthesis = 0;\n"
+              "        do {\n"
+              "            if (tok == '(')\n"
+              "                parenthesis++;\n"
+              "            else if (tok == ')')\n"
+              "                parenthesis--;\n"
+              "            next();\n"
+              "        } while (parenthesis && tok != -1);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #7843
+        check("void f(int i) {\n"
+              "    if(abs(i) == -1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'abs(i)==-1' is always false\n", errout.str());
+
+        // #7844
+        check("void f(int i) {\n"
+              "    if(i > 0 && abs(i) == i) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'abs(i)==i' is always true\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    if(i < 0 && abs(i) == i) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'abs(i)==i' is always false\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    if(i > -3 && abs(i) == i) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9948
+        check("bool f(bool a, bool b) {\n"
+              "    return a || ! b || ! a;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition '!a' is always true\n", errout.str());
+    }
+
+    void alwaysTrueSymbolic()
+    {
+        check("void f(const uint32_t x) {\n"
+              "    uint32_t y[1];\n"
+              "    y[0]=x;\n"
+              "    if(x > 0 || y[0] < 42){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (style) Condition 'y[0]<42' is always true\n", errout.str());
+
+        check("struct a {\n"
+              "  a *b() const;\n"
+              "} c;\n"
+              "void d() {\n"
+              "  a *e = nullptr;\n"
+              "  e = c.b();\n"
+              "  if (e) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int g(int i) {\n"
+              "  if (i < 256)\n"
+              "    return 1;\n"
+              "  const int N = 2 * i;\n"
+              "  i -= 256;\n"
+              "  if (i == 0)\n"
+              "    return 0;\n"
+              "  return N;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -4316,6 +4438,49 @@ private:
         check("void f(bool b) {\n"
               "  if (b == true) {}\n"
               "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
+
+        // #10372
+        check("void f(signed char x) {\n"
+              "  if (x == 0xff) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed char' against value 255. Condition is always true/false.\n", errout.str());
+
+        check("void f(short x) {\n"
+              "  if (x == 0xffff) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed short' against value 65535. Condition is always true/false.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "  if (x == 0xffffffff) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(long x) {\n"
+              "  if (x == ~0L) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(long long x) {\n"
+              "  if (x == ~0LL) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void knownConditionCast() { // #9976
+        check("void f(int i) {\n"
+              "    if (i < 0 || (unsigned)i > 5) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void knownConditionIncrementLoop() { // #9808
+        check("void f() {\n"
+              "    int a = 0;\n"
+              "    while (++a < 5) {}\n"
+              "    if (a == 1) {}\n"
+              "    std::cout << a;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

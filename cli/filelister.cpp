@@ -193,7 +193,7 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
                              const std::set<std::string> &extra,
                              bool recursive,
                              const PathMatch& ignored
-                            )
+                             )
 {
     struct stat file_stat;
     if (stat(path.c_str(), &file_stat) != -1) {

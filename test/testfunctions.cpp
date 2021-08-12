@@ -28,8 +28,7 @@
 
 class TestFunctions : public TestFixture {
 public:
-    TestFunctions() : TestFixture("TestFunctions") {
-    }
+    TestFunctions() : TestFixture("TestFunctions") {}
 
 private:
     Settings settings;
@@ -1397,6 +1396,9 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void STDCALL foo() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void operator=(int y) { x=y; }");
         ASSERT_EQUALS("", errout.str());
 
         check("int f() {\n"

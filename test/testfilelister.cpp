@@ -25,11 +25,10 @@
 #include <string>
 #include <vector>
 
-class TestFileLister: public TestFixture {
+class TestFileLister : public TestFixture {
 public:
     TestFileLister()
-        :TestFixture("TestFileLister") {
-    }
+        : TestFixture("TestFileLister") {}
 
 private:
     void run() OVERRIDE {

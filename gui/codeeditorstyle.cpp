@@ -94,9 +94,9 @@ CodeEditorStyle CodeEditorStyle::loadSettings(QSettings *settings)
     // style section exists - load values
     settings->beginGroup(SETTINGS_STYLE_GROUP);
     QString type = settings->value(
-                       SETTINGS_STYLE_TYPE,
-                       QVariant(SETTINGS_STYLE_TYPE_LIGHT)
-                   ).toString();
+        SETTINGS_STYLE_TYPE,
+        QVariant(SETTINGS_STYLE_TYPE_LIGHT)
+        ).toString();
     if (type == SETTINGS_STYLE_TYPE_LIGHT) {
         settings->endGroup();
         return theStyle;
@@ -108,53 +108,53 @@ CodeEditorStyle CodeEditorStyle::loadSettings(QSettings *settings)
     }
     if (type == SETTINGS_STYLE_TYPE_CUSTOM) {
         theStyle.widgetFGColor = settings->value(
-                                     SETTINGS_STYLE_WIDGETFG,
-                                     QVariant(defaultStyleLight.widgetFGColor)).value<QColor>();
+            SETTINGS_STYLE_WIDGETFG,
+            QVariant(defaultStyleLight.widgetFGColor)).value<QColor>();
         theStyle.widgetBGColor = settings->value(
-                                     SETTINGS_STYLE_WIDGETBG,
-                                     QVariant(defaultStyleLight.widgetBGColor)).value<QColor>();
+            SETTINGS_STYLE_WIDGETBG,
+            QVariant(defaultStyleLight.widgetBGColor)).value<QColor>();
         theStyle.highlightBGColor = settings->value(
-                                        SETTINGS_STYLE_HILIFG,
-                                        QVariant(defaultStyleLight.highlightBGColor)).value<QColor>();
+            SETTINGS_STYLE_HILIFG,
+            QVariant(defaultStyleLight.highlightBGColor)).value<QColor>();
         theStyle.lineNumFGColor = settings->value(
-                                      SETTINGS_STYLE_LINENUMFG,
-                                      QVariant(defaultStyleLight.lineNumFGColor)).value<QColor>();
+            SETTINGS_STYLE_LINENUMFG,
+            QVariant(defaultStyleLight.lineNumFGColor)).value<QColor>();
         theStyle.lineNumBGColor = settings->value(
-                                      SETTINGS_STYLE_LINENUMBG,
-                                      QVariant(defaultStyleLight.lineNumBGColor)).value<QColor>();
+            SETTINGS_STYLE_LINENUMBG,
+            QVariant(defaultStyleLight.lineNumBGColor)).value<QColor>();
         theStyle.keywordColor = settings->value(
-                                    SETTINGS_STYLE_KEYWORDFG,
-                                    QVariant(defaultStyleLight.keywordColor)).value<QColor>();
+            SETTINGS_STYLE_KEYWORDFG,
+            QVariant(defaultStyleLight.keywordColor)).value<QColor>();
         QVariant defKeyWWt(static_cast<int>(defaultStyleLight.keywordWeight));
         theStyle.keywordWeight = static_cast<QFont::Weight>(
-                                     settings->value(SETTINGS_STYLE_KEYWORDWT, defKeyWWt).toInt());
+            settings->value(SETTINGS_STYLE_KEYWORDWT, defKeyWWt).toInt());
         theStyle.classColor = settings->value(
-                                  SETTINGS_STYLE_CLASSFG,
-                                  QVariant(defaultStyleLight.classColor)).value<QColor>();
+            SETTINGS_STYLE_CLASSFG,
+            QVariant(defaultStyleLight.classColor)).value<QColor>();
         QVariant defClsWt(static_cast<int>(defaultStyleLight.classWeight));
         theStyle.classWeight = static_cast<QFont::Weight>(
-                                   settings->value(SETTINGS_STYLE_CLASSWT, defClsWt).toInt());
+            settings->value(SETTINGS_STYLE_CLASSWT, defClsWt).toInt());
         theStyle.quoteColor = settings->value(
-                                  SETTINGS_STYLE_QUOTEFG,
-                                  QVariant(defaultStyleLight.quoteColor)).value<QColor>();
+            SETTINGS_STYLE_QUOTEFG,
+            QVariant(defaultStyleLight.quoteColor)).value<QColor>();
         QVariant defQteWt(static_cast<int>(defaultStyleLight.quoteWeight));
         theStyle.quoteWeight = static_cast<QFont::Weight>(
-                                   settings->value(SETTINGS_STYLE_QUOTEWT, defQteWt).toInt());
+            settings->value(SETTINGS_STYLE_QUOTEWT, defQteWt).toInt());
         theStyle.commentColor = settings->value(
-                                    SETTINGS_STYLE_COMMENTFG,
-                                    QVariant(defaultStyleLight.commentColor)).value<QColor>();
+            SETTINGS_STYLE_COMMENTFG,
+            QVariant(defaultStyleLight.commentColor)).value<QColor>();
         QVariant defCmtWt(static_cast<int>(defaultStyleLight.commentWeight));
         theStyle.commentWeight = static_cast<QFont::Weight>(
-                                     settings->value(SETTINGS_STYLE_COMMENTWT, defCmtWt).toInt());
+            settings->value(SETTINGS_STYLE_COMMENTWT, defCmtWt).toInt());
         theStyle.symbolFGColor = settings->value(
-                                     SETTINGS_STYLE_SYMBOLFG,
-                                     QVariant(defaultStyleLight.symbolFGColor)).value<QColor>();
+            SETTINGS_STYLE_SYMBOLFG,
+            QVariant(defaultStyleLight.symbolFGColor)).value<QColor>();
         theStyle.symbolBGColor = settings->value(
-                                     SETTINGS_STYLE_SYMBOLBG,
-                                     QVariant(defaultStyleLight.symbolBGColor)).value<QColor>();
+            SETTINGS_STYLE_SYMBOLBG,
+            QVariant(defaultStyleLight.symbolBGColor)).value<QColor>();
         QVariant defSymWt(static_cast<int>(defaultStyleLight.symbolWeight));
         theStyle.symbolWeight = static_cast<QFont::Weight>(
-                                    settings->value(SETTINGS_STYLE_SYMBOLWT, defSymWt).toInt());
+            settings->value(SETTINGS_STYLE_SYMBOLWT, defSymWt).toInt());
     }
     settings->endGroup();
     return theStyle;

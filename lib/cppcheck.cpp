@@ -351,8 +351,7 @@ CppCheck::CppCheck(ErrorLogger &errorLogger,
     , mTooManyConfigs(false)
     , mSimplify(true)
     , mExecuteCommand(executeCommand)
-{
-}
+{}
 
 CppCheck::~CppCheck()
 {
@@ -1115,9 +1114,9 @@ static const char * pcreErrorCodeToString(const int pcreExecRet)
         return "An unexpected internal error has occurred. This error could be caused by a bug "
                "in PCRE or by overwriting of the compiled pattern (PCRE_ERROR_INTERNAL)";
     case PCRE_ERROR_BADCOUNT:
-        return"This error is given if the value of the ovecsize argument is negative "
-              "(PCRE_ERROR_BADCOUNT)";
-    case PCRE_ERROR_RECURSIONLIMIT :
+        return "This error is given if the value of the ovecsize argument is negative "
+               "(PCRE_ERROR_BADCOUNT)";
+    case PCRE_ERROR_RECURSIONLIMIT:
         return "The internal recursion limit, as specified by the match_limit_recursion "
                "field in a pcre_extra structure (or defaulted) was reached. "
                "See the description above (PCRE_ERROR_RECURSIONLIMIT)";
@@ -1534,9 +1533,7 @@ void CppCheck::reportInfo(const ErrorMessage &msg)
 }
 
 void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, std::size_t /*sizedone*/, std::size_t /*sizetotal*/)
-{
-
-}
+{}
 
 void CppCheck::bughuntingReport(const std::string &str)
 {

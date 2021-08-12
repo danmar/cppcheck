@@ -19,11 +19,13 @@
 #ifndef analyzerH
 #define analyzerH
 
+#include "config.h"
 #include <string>
+#include <type_traits>
 #include <vector>
 
 class Token;
-template <class T>
+template<class T>
 class ValuePtr;
 
 struct Analyzer {
@@ -31,8 +33,11 @@ struct Analyzer {
 
         Action() : mFlag(0) {}
 
-        // cppcheck-suppress noExplicitConstructor
-        Action(unsigned int f) : mFlag(f) {}
+        template<class T,
+                 REQUIRES("T must be convertible to unsigned int", std::is_convertible<T, unsigned int> ),
+                 REQUIRES("T must not be a bool", !std::is_same<T, bool> )>
+        Action(T f) : mFlag(f) // cppcheck-suppress noExplicitConstructor
+        {}
 
         enum {
             None = 0,
@@ -43,6 +48,7 @@ struct Analyzer {
             Match = (1 << 4),
             Idempotent = (1 << 5),
             Incremental = (1 << 6),
+            SymbolicMatch = (1 << 7),
         };
 
         void set(unsigned int f, bool state = true) {
@@ -83,6 +89,10 @@ struct Analyzer {
 
         bool isIncremental() const {
             return get(Incremental);
+        }
+
+        bool isSymbolicMatch() const {
+            return get(SymbolicMatch);
         }
 
         bool matches() const {

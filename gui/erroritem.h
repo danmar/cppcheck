@@ -45,8 +45,8 @@ public:
 };
 
 /**
-* @brief A class containing data for one error path item
-*/
+ * @brief A class containing data for one error path item
+ */
 class QErrorPathItem {
 public:
     QErrorPathItem() : line(0), column(-1) {}
@@ -60,22 +60,22 @@ public:
 bool operator==(const QErrorPathItem &i1, const QErrorPathItem &i2);
 
 /**
-* @brief A class containing error data for one error.
-*
-* The paths are stored with internal ("/") separators. Only when we show the
-* path or copy if for user (to clipboard) we convert to native separators.
-* Full path is stored instead of relative path for flexibility. It is easy
-* to get the relative path from full path when needed.
-*/
+ * @brief A class containing error data for one error.
+ *
+ * The paths are stored with internal ("/") separators. Only when we show the
+ * path or copy if for user (to clipboard) we convert to native separators.
+ * Full path is stored instead of relative path for flexibility. It is easy
+ * to get the relative path from full path when needed.
+ */
 class ErrorItem {
 public:
     ErrorItem();
     explicit ErrorItem(const ErrorMessage &errmsg);
 
     /**
-    * @brief Convert error item to string.
-    * @return Error item as string.
-    */
+     * @brief Convert error item to string.
+     * @return Error item as string.
+     */
     QString toString() const;
     QString tool() const;
 
@@ -105,8 +105,8 @@ public:
 Q_DECLARE_METATYPE(ErrorItem)
 
 /**
-* @brief A class containing error data for one shown error line.
-*/
+ * @brief A class containing error data for one shown error line.
+ */
 class ErrorLine {
 public:
     QString file;

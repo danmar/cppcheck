@@ -25,8 +25,7 @@
 
 class TestConstructors : public TestFixture {
 public:
-    TestConstructors() : TestFixture("TestConstructors") {
-    }
+    TestConstructors() : TestFixture("TestConstructors") {}
 
 private:
     Settings settings;
@@ -600,7 +599,7 @@ private:
               "public:\n"
               "    A(wxWindow *parent,\n"
               "      wxWindowID id = 1,\n"
-              "      const wxString &title = wxT(""),\n"
+              "      const wxString &title = wxT(" "),\n"
               "      const wxPoint& pos = wxDefaultPosition,\n"
               "      const wxSize& size = wxDefaultSize,\n"
               "      long style = wxDIALOG_NO_PARENT | wxMINIMIZE_BOX | wxMAXIMIZE_BOX | wxCLOSE_BOX);\n"

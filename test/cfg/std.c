@@ -2698,7 +2698,7 @@ void uninitvar_memset(void)
 void uninitvar_wmemset(void)
 {
     wchar_t *cs;
-    wchar_t  c;
+    wchar_t c;
     size_t n;
     // cppcheck-suppress uninitvar
     (void)wmemset(cs,c,n);
@@ -2861,7 +2861,7 @@ void uninitvar_bsearch(void)
     size_t num;
     size_t size;
     // cppcheck-suppress uninitvar
-    (void)bsearch(key,base,num,size,(int(*)(const void*,const void*)) strcmp);
+    (void)bsearch(key,base,num,size,(int (*)(const void*,const void*))strcmp);
 }
 
 void uninitvar_qsort(void)
@@ -2870,7 +2870,7 @@ void uninitvar_qsort(void)
     size_t n;
     size_t size;
     // cppcheck-suppress uninitvar
-    (void)qsort(base,n,size, (int(*)(const void*,const void*)) strcmp);
+    (void)qsort(base,n,size, (int (*)(const void*,const void*))strcmp);
 }
 
 void uninitvar_putc(void)
@@ -3273,7 +3273,7 @@ void uninitvar_strcpy_s(char * strDest, ssize_t s, char *source)
 {
     char *strUninit1;
     char *strUninit2;
-    ssize_t  size;
+    ssize_t size;
 
     // cppcheck-suppress uninitvar
     (void)strcpy_s(strUninit1, 1, "a");
@@ -4501,7 +4501,7 @@ void invalidPrintfArgType_printf(void)
     // #7016
     uint8_t n = 7;
     // TODO cppcheck-suppress invalidPrintfArgType_uint
-    printf("%"PRIi16"\n", n);
+    printf("%" PRIi16 "\n", n);
 }
 
 

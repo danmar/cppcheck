@@ -60,9 +60,9 @@ void ApplicationDialog::browse()
     filter += tr("Executable files (*.exe);;All files(*.*)");
 #endif // Q_OS_WIN
     QString selectedFile = QFileDialog::getOpenFileName(this,
-                           tr("Select viewer application"),
-                           getPath(SETTINGS_LAST_APP_PATH),
-                           filter);
+                                                        tr("Select viewer application"),
+                                                        getPath(SETTINGS_LAST_APP_PATH),
+                                                        filter);
 
     if (!selectedFile.isEmpty()) {
         setPath(SETTINGS_LAST_APP_PATH, selectedFile);

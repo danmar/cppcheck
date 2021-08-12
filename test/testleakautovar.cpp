@@ -29,8 +29,7 @@
 
 class TestLeakAutoVar : public TestFixture {
 public:
-    TestLeakAutoVar() : TestFixture("TestLeakAutoVar") {
-    }
+    TestLeakAutoVar() : TestFixture("TestLeakAutoVar") {}
 
 private:
     Settings settings;
@@ -53,9 +52,9 @@ private:
         settings.library.smartPointers["std::unique_ptr"].unique = true;
 
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-        "<def>\n"
-        "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
-        "</def>";
+                               "<def>\n"
+                               "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
+                               "</def>";
         tinyxml2::XMLDocument doc;
         doc.Parse(xmldata, sizeof(xmldata));
         settings.library.load(doc);
@@ -1124,7 +1123,7 @@ private:
               "   } while(!done);\n"
               "   return;"
               "}"
-             );
+              );
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1152,7 +1151,7 @@ private:
         check("void do_wordexp(FILE *f) {\n"
               "  free(getword(f));\n"
               "  fclose(f);\n"
-              "}", /*cpp=*/false);
+              "}", /*cpp=*/ false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2207,7 +2206,7 @@ private:
               "  mList.push_back(std::shared_ptr<int>(pt));\n"
               "}\n",
               true
-             );
+              );
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2242,8 +2241,7 @@ REGISTER_TEST(TestLeakAutoVar)
 
 class TestLeakAutoVarRecursiveCountLimit : public TestFixture {
 public:
-    TestLeakAutoVarRecursiveCountLimit() : TestFixture("TestLeakAutoVarRecursiveCountLimit") {
-    }
+    TestLeakAutoVarRecursiveCountLimit() : TestFixture("TestLeakAutoVarRecursiveCountLimit") {}
 
 private:
     Settings settings;
@@ -2302,10 +2300,9 @@ private:
 
 REGISTER_TEST(TestLeakAutoVarRecursiveCountLimit)
 
-class TestLeakAutoVarStrcpy: public TestFixture {
+class TestLeakAutoVarStrcpy : public TestFixture {
 public:
-    TestLeakAutoVarStrcpy() : TestFixture("TestLeakAutoVarStrcpy") {
-    }
+    TestLeakAutoVarStrcpy() : TestFixture("TestLeakAutoVarStrcpy") {}
 
 private:
     Settings settings;
@@ -2355,8 +2352,7 @@ REGISTER_TEST(TestLeakAutoVarStrcpy)
 
 class TestLeakAutoVarWindows : public TestFixture {
 public:
-    TestLeakAutoVarWindows() : TestFixture("TestLeakAutoVarWindows") {
-    }
+    TestLeakAutoVarWindows() : TestFixture("TestLeakAutoVarWindows") {}
 
 private:
     Settings settings;

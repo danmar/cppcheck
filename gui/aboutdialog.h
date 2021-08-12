@@ -29,9 +29,9 @@ class QWidget;
 /// @{
 
 /**
-* @brief About dialog
-*
-*/
+ * @brief About dialog
+ *
+ */
 class AboutDialog : public QDialog {
     Q_OBJECT
 public:

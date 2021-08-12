@@ -25,8 +25,7 @@
 
 class TestInternal : public TestFixture {
 public:
-    TestInternal() : TestFixture("TestInternal") {
-    }
+    TestInternal() : TestFixture("TestInternal") {}
 
 private:
     Settings settings;

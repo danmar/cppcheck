@@ -57,10 +57,10 @@ Token::~Token()
 }
 
 /*
-* Get a TokenRange which starts at this token and contains every token following it in order up to but not including 't'
-* e.g. for the sequence of tokens A B C D E, C.until(E) would yield the Range C D
-* note t can be nullptr to iterate all the way to the end.
-*/
+ * Get a TokenRange which starts at this token and contains every token following it in order up to but not including 't'
+ * e.g. for the sequence of tokens A B C D E, C.until(E) would yield the Range C D
+ * note t can be nullptr to iterate all the way to the end.
+ */
 ConstTokenRange Token::until(const Token* t) const
 {
     return ConstTokenRange(this, t);
@@ -117,9 +117,9 @@ void Token::update_property_info()
         else if (mStr.size() <= 2 && !mLink &&
                  (mStr == "==" ||
                   mStr == "!=" ||
-                  mStr == "<"  ||
+                  mStr == "<" ||
                   mStr == "<=" ||
-                  mStr == ">"  ||
+                  mStr == ">" ||
                   mStr == ">="))
             tokType(eComparisonOp);
         else if (mStr == "<=>")
@@ -153,7 +153,7 @@ static const std::unordered_set<std::string> stdTypes = { "bool"
                                                           , "size_t"
                                                           , "void"
                                                           , "wchar_t"
-                                                        };
+};
 
 void Token::update_property_isStandardType()
 {
@@ -1292,8 +1292,7 @@ std::string Token::stringifyList(const stringifyOptions& options, const std::vec
                 if (options.linenumbers) {
                     ret += std::to_string(lineNumber);
                     ret += ':';
-                    if (lineNumber == tok->linenr())
-                        ret += ' ';
+                    ret += ' ';
                 }
             } else {
                 while (lineNumber < tok->linenr()) {
@@ -1742,6 +1741,10 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::ValueType::LIFETIME:
                     out << "lifetime=\"" << value.tokvalue << '\"';
                     break;
+                case ValueFlow::Value::ValueType::SYMBOLIC:
+                    out << "tokvalue=\"" << value.tokvalue << '\"';
+                    out << " intvalue=\"" << value.intvalue << '\"';
+                    break;
                 }
                 if (value.condition)
                     out << " condition-line=\"" << value.condition->linenr() << '\"';
@@ -1794,6 +1797,14 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::ValueType::LIFETIME:
                     out << "lifetime[" << ValueFlow::Value::toString(value.lifetimeKind) << "]=("
                         << value.tokvalue->expressionString() << ")";
+                    break;
+                case ValueFlow::Value::ValueType::SYMBOLIC:
+                    out << "symbolic=(" << value.tokvalue->expressionString();
+                    if (value.intvalue > 0)
+                        out << "+" << value.intvalue;
+                    else if (value.intvalue < 0)
+                        out << "-" << -value.intvalue;
+                    out << ")";
                     break;
                 }
                 if (value.indirect > 0)
@@ -2012,7 +2023,7 @@ static bool removeContradiction(std::list<ValueFlow::Value>& values)
 
 using ValueIterator = std::list<ValueFlow::Value>::iterator;
 
-template <class Iterator>
+template<class Iterator>
 static ValueIterator removeAdjacentValues(std::list<ValueFlow::Value>& values, ValueIterator x, Iterator start, Iterator last)
 {
     if (!isAdjacent(*x, **start))
@@ -2124,8 +2135,13 @@ bool Token::addValue(const ValueFlow::Value &value)
 {
     if (value.isKnown() && mImpl->mValues) {
         // Clear all other values of the same type since value is known
-        mImpl->mValues->remove_if([&](const ValueFlow::Value & x) {
-            return x.valueType == value.valueType;
+        mImpl->mValues->remove_if([&](const ValueFlow::Value& x) {
+            if (x.valueType != value.valueType)
+                return false;
+            // Allow multiple known symbolic values
+            if (x.isSymbolicValue())
+                return !x.isKnown();
+            return true;
         });
     }
 
@@ -2146,31 +2162,7 @@ bool Token::addValue(const ValueFlow::Value &value)
                 continue;
 
             // different value => continue
-            bool differentValue = true;
-            switch (it->valueType) {
-            case ValueFlow::Value::ValueType::INT:
-            case ValueFlow::Value::ValueType::CONTAINER_SIZE:
-            case ValueFlow::Value::ValueType::BUFFER_SIZE:
-            case ValueFlow::Value::ValueType::ITERATOR_START:
-            case ValueFlow::Value::ValueType::ITERATOR_END:
-                differentValue = (it->intvalue != value.intvalue);
-                break;
-            case ValueFlow::Value::ValueType::TOK:
-            case ValueFlow::Value::ValueType::LIFETIME:
-                differentValue = (it->tokvalue != value.tokvalue);
-                break;
-            case ValueFlow::Value::ValueType::FLOAT:
-                // TODO: Write some better comparison
-                differentValue = (it->floatValue > value.floatValue || it->floatValue < value.floatValue);
-                break;
-            case ValueFlow::Value::ValueType::MOVED:
-                differentValue = (it->moveKind != value.moveKind);
-                break;
-            case ValueFlow::Value::ValueType::UNINIT:
-                differentValue = false;
-                break;
-            }
-            if (differentValue)
+            if (!it->equalValue(value))
                 continue;
 
             if ((value.isTokValue() || value.isLifetimeValue()) && (it->tokvalue != value.tokvalue) && (it->tokvalue->str() != value.tokvalue->str()))
@@ -2217,7 +2209,7 @@ void Token::assignProgressValues(Token *tok)
         ++total_count;
     int count = 0;
     for (Token *tok2 = tok; tok2; tok2 = tok2->next())
-        tok2->mImpl->mProgressValue = count++ * 100 / total_count;
+        tok2->mImpl->mProgressValue = count++ *100 / total_count;
 }
 
 void Token::assignIndexes()
@@ -2292,10 +2284,10 @@ const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
         if (vars.empty())
             return nullptr;
         if (std::all_of(
-        vars.begin(), vars.end(), [&](const Variable* var) {
-        return var->type() == vars.front()->type();
+                vars.begin(), vars.end(), [&](const Variable* var) {
+            return var->type() == vars.front()->type();
         }))
-        return vars.front()->type();
+            return vars.front()->type();
     }
 
     return nullptr;
@@ -2389,8 +2381,8 @@ bool Token::hasKnownValue(ValueFlow::Value::ValueType t) const
 {
     return mImpl->mValues &&
            std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) {
-               return value.isKnown() && value.valueType == t;
-           });
+        return value.isKnown() && value.valueType == t;
+    });
 }
 
 const ValueFlow::Value* Token::getKnownValue(ValueFlow::Value::ValueType t) const
@@ -2451,7 +2443,7 @@ const ValueFlow::Value* Token::getMovedValue() const
         return nullptr;
     const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) {
         return value.isMovedValue() && !value.isImpossible() &&
-               value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
+        value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
     });
     return it == mImpl->mValues->end() ? nullptr : &*it;
 }

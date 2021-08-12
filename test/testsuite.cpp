@@ -67,7 +67,7 @@ public:
  **/
 
 std::ostringstream TestFixture::errmsg;
-unsigned int       TestFixture::countTests;
+unsigned int TestFixture::countTests;
 
 std::size_t TestFixture::fails_counter = 0;
 std::size_t TestFixture::todos_counter = 0;
@@ -75,10 +75,10 @@ std::size_t TestFixture::succeeded_todos_counter = 0;
 std::set<std::string> TestFixture::missingLibs;
 
 TestFixture::TestFixture(const char * const _name)
-    :mVerbose(false),
-     exename(),
-     quiet_tests(false),
-     classname(_name)
+    : mVerbose(false),
+    exename(),
+    quiet_tests(false),
+    classname(_name)
 {
     TestRegistry::theInstance().addTest(this);
 }
@@ -298,21 +298,21 @@ void TestFixture::complainMissingLib(const char * const libname) const
 void TestFixture::printHelp()
 {
     std::cout << "Testrunner - run Cppcheck tests\n"
-              "\n"
-              "Syntax:\n"
-              "    testrunner [OPTIONS] [TestClass::TestCase...]\n"
-              "    run all test cases:\n"
-              "        testrunner\n"
-              "    run all test cases in TestClass:\n"
-              "        testrunner TestClass\n"
-              "    run TestClass::TestCase:\n"
-              "        testrunner TestClass::TestCase\n"
-              "    run all test cases in TestClass1 and TestClass2::TestCase:\n"
-              "        testrunner TestClass1 TestClass2::TestCase\n"
-              "\n"
-              "Options:\n"
-              "    -q                   Do not print the test cases that have run.\n"
-              "    -h, --help           Print this help.\n";
+        "\n"
+        "Syntax:\n"
+        "    testrunner [OPTIONS] [TestClass::TestCase...]\n"
+        "    run all test cases:\n"
+        "        testrunner\n"
+        "    run all test cases in TestClass:\n"
+        "        testrunner TestClass\n"
+        "    run TestClass::TestCase:\n"
+        "        testrunner TestClass::TestCase\n"
+        "    run all test cases in TestClass1 and TestClass2::TestCase:\n"
+        "        testrunner TestClass1 TestClass2::TestCase\n"
+        "\n"
+        "Options:\n"
+        "    -q                   Do not print the test cases that have run.\n"
+        "    -h, --help           Print this help.\n";
 }
 
 void TestFixture::run(const std::string &str)

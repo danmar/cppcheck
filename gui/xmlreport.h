@@ -30,8 +30,8 @@ class ErrorItem;
 
 
 /**
-* @brief Base class for XML report classes.
-*/
+ * @brief Base class for XML report classes.
+ */
 class XmlReport : public Report {
 public:
     explicit XmlReport(const QString &filename);

@@ -334,8 +334,8 @@ static void removeModifiedVars(ProgramMemory& pm, const Token* tok, const Token*
 }
 
 static ProgramMemory getInitialProgramState(const Token* tok,
-        const Token* origin,
-        const ProgramMemory::Map& vars = ProgramMemory::Map {})
+                                            const Token* origin,
+                                            const ProgramMemory::Map& vars = ProgramMemory::Map {})
 {
     ProgramMemory pm;
     if (origin) {
@@ -465,7 +465,8 @@ static PMEvaluateFunction evaluateAsInt(PMEvaluateFunction f, ValueFlow::Value::
         const ValueFlow::Value* value = expr->getKnownValue(t);
         if (!value)
             value = programMemory->getValue(expr->exprId());
-        if (value && value->valueType == t) {
+        if (value && value->valueType == t)
+        {
             *result = value->intvalue;
             return true;
         }
@@ -653,8 +654,8 @@ void execute(const Token* expr,
             *result = result1 / result2;
         else if (expr->str() == "%")
             *result = result1 % result2;
-        else if (expr->str() == "<<")  {
-            if (result2 < 0 || result1 < 0 || result2 >= MathLib::bigint_bits)  { // don't perform UB
+        else if (expr->str() == "<<") {
+            if (result2 < 0 || result1 < 0 || result2 >= MathLib::bigint_bits) {  // don't perform UB
                 *error= true;
             } else {
                 *result = result1 << result2;
@@ -724,6 +725,11 @@ void execute(const Token* expr,
             *result = 0;
         else
             *error = true;
+    } else if (expr->str() == "(" && expr->isCast()) {
+        if (Token::simpleMatch(expr->previous(), ">") && expr->previous()->link())
+            execute(expr->astOperand2(), programMemory, result, error);
+        else
+            execute(expr->astOperand1(), programMemory, result, error);
     } else
         *error = true;
 }
