@@ -155,25 +155,7 @@ namespace {
                     pos2 = std::string::npos;
                 name = scriptFile.substr(pos1, pos2 - pos1);
 
-                std::ifstream fin(scriptFile);
-                if (!fin.is_open())
-                    return "Failed to open " + scriptFile;
-
-                std::string line;
-                while(getline(fin, line)) {
-                    std::string::size_type i = line.find("import", 0);
-                    if (i == std::string::npos)
-                        continue;
-                    i = line.find_first_not_of(' ', i+strlen("import"));
-                    if (i == std::string::npos)
-                        continue;
-                    if (line.compare(i, i+strlen("cppcheck"), "cppcheck") != 0)
-                        continue;
-                    if (line.compare(i, i+strlen("cppcheckdata"), "cppcheckdata") != 0) {
-                        runScript = getFullPath("cppcheck.py", exename);
-                        break;
-                    }
-                }
+                runScript = getFullPath("runaddon.py", exename);
 
                 return "";
             }
@@ -316,7 +298,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
     const std::string args = addonInfo.runScript + " " + cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args + fileArg;
 
     std::string result;
-    if (!executeCommand(pythonExe, split(args), redirect, &result))
+    if (!executeCommand(pythonExe, split(args), redirect, &result)) 
         throw InternalError(nullptr, "Failed to execute addon (command: '" + pythonExe + " " + args + "')");
 
     // Validate output..
