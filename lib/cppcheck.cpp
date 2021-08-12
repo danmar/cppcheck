@@ -296,7 +296,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
 
     const std::string fileArg = (endsWith(file, FILELIST, sizeof(FILELIST)-1) ? " --file-list " : " ") + cmdFileName(file);
     const std::string args =
-        addonInfo.runScript + " " + cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args + fileArg;
+        cmdFileName(addonInfo.runScript) + " " + cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args + fileArg;
 
     std::string result;
     if (!executeCommand(pythonExe, split(args), redirect, &result))
