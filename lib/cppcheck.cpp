@@ -295,10 +295,11 @@ static std::string executeAddon(const AddonInfo &addonInfo,
     }
 
     const std::string fileArg = (endsWith(file, FILELIST, sizeof(FILELIST)-1) ? " --file-list " : " ") + cmdFileName(file);
-    const std::string args = addonInfo.runScript + " " + cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args + fileArg;
+    const std::string args =
+        addonInfo.runScript + " " + cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args + fileArg;
 
     std::string result;
-    if (!executeCommand(pythonExe, split(args), redirect, &result)) 
+    if (!executeCommand(pythonExe, split(args), redirect, &result))
         throw InternalError(nullptr, "Failed to execute addon (command: '" + pythonExe + " " + args + "')");
 
     // Validate output..
