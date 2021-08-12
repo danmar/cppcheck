@@ -616,6 +616,12 @@ private:
                     "    return 0;\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(std::vector<int> v) {\n"
+                    "    v[v.size() - 1];\n"
+                    "    if (v.size() == 1) {}\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
