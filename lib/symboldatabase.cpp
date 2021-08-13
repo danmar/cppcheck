@@ -1416,6 +1416,23 @@ void SymbolDatabase::createSymbolDatabaseEscapeFunctions()
     }
 }
 
+static bool isExpression(const Token* tok)
+{
+    if (!Token::Match(tok, "(|.|[|%cop%"))
+        return false;
+    if (Token::Match(tok, "*|&|&&")) {
+        const Token* vartok = findAstNode(tok, [&](const Token* tok2) {
+            const Variable* var = tok2->variable();
+            if (!var)
+                return false;
+            return var->nameToken() == tok2;
+        });
+        if (vartok)
+            return false;
+    }
+    return true;
+}
+
 void SymbolDatabase::createSymbolDatabaseExprIds()
 {
     nonneg int base = 0;
@@ -1433,7 +1450,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->varId() > 0) {
                 tok->exprId(tok->varId());
-            } else if (Token::Match(tok, "(|.|[|%cop%")) {
+            } else if (isExpression(tok)) {
                 exprs[tok->str()].push_back(tok);
                 tok->exprId(id++);
 
