@@ -3969,6 +3969,21 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10409
+        check("void foo(const std::string& s) {\n"
+                    "    if( s.size() < 2 ) return;\n"
+                    "    if( s == \"ab\" ) return;\n"
+                    "    if( s.size() < 3 ) return;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(const std::string& s) {\n"
+                    "    if( s.size() < 2 ) return;\n"
+                    "    if( s != \"ab\" )\n"
+                    "        if( s.size() < 3 ) return;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void multiConditionAlwaysTrue() {

@@ -4500,8 +4500,10 @@ struct ConditionHandler {
         std::list<ValueFlow::Value> true_values;
         std::list<ValueFlow::Value> false_values;
         bool inverted = false;
+        // Whether to insert impossible values for the condition or only use possible values
+        bool impossible = true;
 
-        Condition() : vartok(nullptr), true_values(), false_values(), inverted(false) {}
+        Condition() : vartok(nullptr), true_values(), false_values(), inverted(false), impossible(true) {}
     };
 
     virtual Analyzer::Result forward(Token* start,
@@ -4680,12 +4682,12 @@ struct ConditionHandler {
 
             if (!Token::Match(tok, "!=|=|(|.") && tok != cond.vartok) {
                 thenValues.insert(thenValues.end(), cond.true_values.begin(), cond.true_values.end());
-                if (isConditionKnown(tok, false))
+                if (cond.impossible && isConditionKnown(tok, false))
                     insertImpossible(elseValues, cond.false_values);
             }
             if (!Token::Match(tok, "==|!")) {
                 elseValues.insert(elseValues.end(), cond.false_values.begin(), cond.false_values.end());
-                if (isConditionKnown(tok, true)) {
+                if (cond.impossible && isConditionKnown(tok, true)) {
                     insertImpossible(thenValues, cond.true_values);
                     if (tok == cond.vartok && astIsBool(tok))
                         insertNegateKnown(thenValues, cond.true_values);
@@ -6734,6 +6736,7 @@ struct ContainerConditionHandler : ConditionHandler {
             cond.false_values.emplace_back(value);
             cond.true_values.emplace_back(std::move(value));
             cond.vartok = vartok;
+            cond.impossible = false;
             return {cond};
         }
         return {};

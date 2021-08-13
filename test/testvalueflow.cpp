@@ -4990,7 +4990,7 @@ private:
                "    if (s != \"hello\")\n"
                "        s[40] = c;\n"
                "}";
-        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "s ["), 5));
+        ASSERT(!isImpossibleContainerSizeValue(tokenValues(code, "s ["), 5).empty());
 
         code = "void f() {\n"
                "    static std::string s;\n"
