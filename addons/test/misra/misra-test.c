@@ -1601,6 +1601,7 @@ static int misra_21_1(void) {
 }
 static int _misra_21_1_2(void); // no warning
 #define errno 11 // 21.1
+#undef errno // 20.5
 
 #define __BUILTIN_SOMETHING 123 // 21.2 21.1
 extern void *memcpy ( void *restrict s1, const void *restrict s2, size_t n ); // 21.2 8.14
@@ -1786,3 +1787,13 @@ static void misra_22_5(FILE *f) {
     int y = f->pos; // 22.5
 }
 
+static void misra_22_10(void)
+{
+  errno = 0;
+  f = atof ( "A.12" ); // 21.7
+  if ( 0 == errno ) {} // 22.10
+
+  errno = 0;
+  f = strtod ( "A.12", NULL );
+  if ( 0 == errno ) {}
+}
