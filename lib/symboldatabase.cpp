@@ -5857,6 +5857,16 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
             return;
         }
     }
+    // Dereference smart pointer
+    if (parent->str() == "*" && !parent->astOperand2() && valuetype.type == ValueType::Type::SMART_POINTER && valuetype.smartPointerTypeToken) {
+        ValueType vt;
+        if (parsedecl(valuetype.smartPointerTypeToken, &vt, mDefaultSignedness, mSettings)) {
+            if (vt.constness == 0)
+                vt.constness = valuetype.constness;
+            setValueType(parent, vt);
+            return;
+        }
+    }
     if (parent->str() == "*" && Token::simpleMatch(parent->astOperand2(), "[") && valuetype.pointer > 0U) {
         const Token *op1 = parent->astOperand2()->astOperand1();
         while (op1 && op1->str() == "[")

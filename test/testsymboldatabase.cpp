@@ -7506,6 +7506,7 @@ private:
             myPtr.name = "MyPtr";
             set.library.smartPointers["MyPtr"] = myPtr;
             ASSERT_EQUALS("smart-pointer(MyPtr)", typeOf("void f() { MyPtr<int> p; return p; }", "p ;", "test.cpp", &set));
+            ASSERT_EQUALS("signed int", typeOf("void f() { MyPtr<int> p; return *p; }", "* p ;", "test.cpp", &set));
             ASSERT_EQUALS("smart-pointer(MyPtr)", typeOf("void f() {return MyPtr<int>();}", "(", "test.cpp", &set));
         }
     }
