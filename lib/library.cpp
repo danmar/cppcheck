@@ -500,6 +500,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             if (!className)
                 return Error(ErrorCode::MISSING_ATTRIBUTE, "class-name");
             SmartPointer& smartPointer = smartPointers[className];
+            smartPointer.name = className;
             for (const tinyxml2::XMLElement* smartPointerNode = node->FirstChildElement(); smartPointerNode;
                  smartPointerNode = smartPointerNode->NextSiblingElement()) {
                 const std::string smartPointerNodeName = smartPointerNode->Name();
