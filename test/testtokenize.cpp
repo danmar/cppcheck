@@ -6617,6 +6617,13 @@ private:
                             "    ;\n"
                             "}\n"));
 
+        // #10015
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "void func() {\n"
+                            "    if (std::is_same_v<int, int> || 1)\n"
+                            "        ;\n"
+                            "}\n"));
+
         // #10309
         ASSERT_NO_THROW(tokenizeAndStringify(
                             "using a = void *;\n"
