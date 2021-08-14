@@ -589,7 +589,7 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
             return;
         if (value.lifetimeKind == ValueFlow::Value::LifetimeKind::Iterator && astIsIterator(parent)) {
             setTokenValue(parent,value,settings);
-        } else if (astIsPointer(tok) && astIsPointer(parent) &&
+        } else if (astIsPointer(tok) && astIsPointer(parent) && !parent->isUnaryOp("*") &&
                    (parent->isArithmeticalOp() || parent->isCast())) {
             setTokenValue(parent,value,settings);
         }
