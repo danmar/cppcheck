@@ -6633,10 +6633,11 @@ private:
                                              "    ;\n"
                                              "}\n"));
 
-        ASSERT_NO_THROW(tokenizeAndStringify("template <std::size_t First, std::size_t... Indices, typename Functor>\n"
-                                            "constexpr void constexpr_for_fold_impl([[maybe_unused]] Functor&& f, std::index_sequence<Indices...>) noexcept {\n"
-                                            "    (std::forward<Functor>(f).template operator() < First + Indices > (), ...);\n"
-                                            "}\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "template <std::size_t First, std::size_t... Indices, typename Functor>\n"
+                            "constexpr void constexpr_for_fold_impl([[maybe_unused]] Functor&& f, std::index_sequence<Indices...>) noexcept {\n"
+                            "    (std::forward<Functor>(f).template operator() < First + Indices > (), ...);\n"
+                            "}\n"));
     }
 
     void checkNamespaces() {

@@ -4509,7 +4509,8 @@ void Tokenizer::createLinks2()
                 type.pop();
             }
         } else if (token->str() == "<" &&
-                   ((token->previous() && (token->previous()->isTemplate() || (token->previous()->isName() && !token->previous()->varId()))) ||
+                   ((token->previous() && (token->previous()->isTemplate() ||
+                                           (token->previous()->isName() && !token->previous()->varId()))) ||
                     Token::Match(token->next(), ">|>>"))) {
             type.push(token);
             if (!templateToken && (token->previous()->str() == "template"))
@@ -5636,8 +5637,8 @@ void Tokenizer::removeExtraTemplateKeywords()
         for (Token *tok = list.front(); tok; tok = tok->next()) {
             if (Token::Match(tok, "%name%|>|) .|:: template %name%")) {
                 tok->next()->deleteNext();
-                Token * templateName = tok->tokAt(2);
-                while(Token::Match(templateName, "%name%|::")) {
+                Token* templateName = tok->tokAt(2);
+                while (Token::Match(templateName, "%name%|::")) {
                     templateName->isTemplate(true);
                     templateName = templateName->next();
                 }
@@ -5647,7 +5648,6 @@ void Tokenizer::removeExtraTemplateKeywords()
                         templateName->link()->isTemplate(true);
                 }
             }
-
         }
     }
 }
