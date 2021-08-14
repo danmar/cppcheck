@@ -7440,6 +7440,7 @@ private:
             vector.arrayLike_indexOp = true;
         vector.functions["front"] = Library::Container::Function{Library::Container::Action::NO_ACTION, Library::Container::Yield::ITEM};
         vector.functions["data"] = Library::Container::Function{Library::Container::Action::NO_ACTION, Library::Container::Yield::BUFFER};
+        vector.functions["begin"] = Library::Container::Function{Library::Container::Action::NO_ACTION, Library::Container::Yield::START_ITERATOR};
             set.library.containers["Vector"] = vector;
             Library::Container string;
             string.startPattern = "test :: string";
@@ -7452,6 +7453,10 @@ private:
         ASSERT_EQUALS("container(test :: string)", typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "+", "test.cpp", &set));
         ASSERT_EQUALS("container(test :: string) &", typeOf("Vector<test::string> v; x = v.front();", "(", "test.cpp", &set));
         ASSERT_EQUALS("container(test :: string) *", typeOf("Vector<test::string> v; x = v.data();", "(", "test.cpp", &set));
+        ASSERT_EQUALS("signed int &", typeOf("Vector<int> v; x = v.front();", "(", "test.cpp", &set));
+        ASSERT_EQUALS("signed int *", typeOf("Vector<int> v; x = v.data();", "(", "test.cpp", &set));
+        ASSERT_EQUALS("iterator(Vector <)", typeOf("Vector<int> v; x = v.begin();", "(", "test.cpp", &set));
+        ASSERT_EQUALS("signed int &", typeOf("Vector<int> v; x = *v.begin();", "*", "test.cpp", &set));
         ASSERT_EQUALS("container(test :: string)", typeOf("void foo(){test::string s; return \"x\"+s;}", "+", "test.cpp", &set));
         ASSERT_EQUALS("container(test :: string)", typeOf("void foo(){test::string s; return s+\"x\";}", "+", "test.cpp", &set));
         ASSERT_EQUALS("container(test :: string)", typeOf("void foo(){test::string s; return 'x'+s;}", "+", "test.cpp", &set));

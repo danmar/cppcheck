@@ -5846,6 +5846,17 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         setValueType(parent, vt);
         return;
     }
+    // Dereference iterator
+    if (parent->str() == "*" && !parent->astOperand2() && valuetype.type == ValueType::Type::ITERATOR && valuetype.containerTypeToken) {
+        ValueType vt;
+        if (parsedecl(valuetype.containerTypeToken, &vt, mDefaultSignedness, mSettings)) {
+            if (vt.constness == 0)
+                vt.constness = valuetype.constness;
+            vt.reference = Reference::LValue;
+            setValueType(parent, vt);
+            return;
+        }
+    }
     if (parent->str() == "*" && Token::simpleMatch(parent->astOperand2(), "[") && valuetype.pointer > 0U) {
         const Token *op1 = parent->astOperand2()->astOperand1();
         while (op1 && op1->str() == "[")
