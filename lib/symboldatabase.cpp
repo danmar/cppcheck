@@ -6112,7 +6112,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
     if (!valuetype->typeScope && !valuetype->smartPointerType)
         valuetype->type = ValueType::Type::UNKNOWN_TYPE;
     else if (valuetype->smartPointerType)
-        valuetype->type = ValueType::Type::NONSTD;
+        valuetype->type = ValueType::Type::SMART_POINTER;
     else if (valuetype->typeScope->type == Scope::eEnum) {
         const Token * enum_type = valuetype->typeScope->enumType;
         if (enum_type) {
