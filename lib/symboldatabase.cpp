@@ -5700,6 +5700,22 @@ static void setAutoTokenProperties(Token * const autoTok)
         autoTok->isStandardType(true);
 }
 
+static bool isContainerYieldElement(Library::Container::Yield yield)
+{
+    return 
+        yield == Library::Container::Yield::ITEM ||
+        yield == Library::Container::Yield::AT_INDEX ||
+        yield == Library::Container::Yield::BUFFER ||
+        yield == Library::Container::Yield::BUFFER_NT;
+}
+
+static bool isContainerYieldPointer(Library::Container::Yield yield)
+{
+    return 
+        yield == Library::Container::Yield::BUFFER ||
+        yield == Library::Container::Yield::BUFFER_NT;
+}
+
 void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
 {
     tok->setValueType(new ValueType(valuetype));
@@ -5730,10 +5746,17 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         return;
     }
 
-    if (vt1 && vt1->container && vt1->containerTypeToken && Token::Match(parent, ". %name% (") && vt1->container->getYield(parent->next()->str()) == Library::Container::Yield::ITEM) {
+    if (vt1 && vt1->container && vt1->containerTypeToken && Token::Match(parent, ". %name% (") && isContainerYieldElement(vt1->container->getYield(parent->next()->str()))) {
         ValueType item;
-        if (parsedecl(vt1->containerTypeToken, &item, mDefaultSignedness, mSettings))
+        if (parsedecl(vt1->containerTypeToken, &item, mDefaultSignedness, mSettings)) {
+            if (item.constness == 0)
+                item.constness = vt1->constness;
+            if (isContainerYieldPointer(vt1->container->getYield(parent->next()->str())))
+                item.pointer = 1;
+            else
+                item.reference = Reference::LValue;
             setValueType(parent->tokAt(2), item);
+        }
     }
 
     if (vt1 && vt1->smartPointerType && Token::Match(parent, ". %name% (") && parent->originalName() == "->" && !parent->next()->function()) {
@@ -6510,6 +6533,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                                 ValueType vt;
                                 vt.type = ValueType::Type::ITERATOR;
                                 vt.container = cont;
+                                vt.containerTypeToken = tok->astOperand1()->astOperand1()->valueType()->containerTypeToken;
                                 setValueType(tok, vt);
                             }
                         }
