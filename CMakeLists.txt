@@ -33,6 +33,16 @@ if (BUILD_TESTS)
     enable_testing()
 endif()
 
+add_custom_target(copy_cfg ALL
+    ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/cfg"
+        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/cfg"
+    COMMENT "Copying cfg files to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
+
+add_custom_target(copy_addons ALL
+    ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/addons"
+        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/addons"
+    COMMENT "Copying addons files to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
+
 if(USE_BUNDLED_TINYXML2)
     message(STATUS "Using bundled version of tinyxml2")
     add_subdirectory(externals/tinyxml2)

@@ -4990,7 +4990,7 @@ private:
                "    if (s != \"hello\")\n"
                "        s[40] = c;\n"
                "}";
-        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "s ["), 5));
+        ASSERT(!isImpossibleContainerSizeValue(tokenValues(code, "s ["), 5).empty());
 
         code = "void f() {\n"
                "    static std::string s;\n"
@@ -6028,6 +6028,19 @@ private:
         ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, "i", 0));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, "i", 1));
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, "j", 0));
+
+        code = "void f(int x) {\n"
+               "  int y = x + 1;\n"
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, "y", 0));
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, "y", -1));
+
+        code = "void f(int x) {\n"
+               "  int y = x * 2;\n"
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, "y", 0));
     }
 };
 
