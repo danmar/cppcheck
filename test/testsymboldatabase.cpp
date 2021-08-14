@@ -7481,7 +7481,13 @@ private:
         ASSERT_EQUALS("", typeOf("; int x[10] = { [3]=1 };", "[ 3 ]"));
 
         // std::make_shared
-        ASSERT_EQUALS("smart-pointer<C>", typeOf("class C {}; x = std::make_shared<C>();", "("));
+        {
+            Settings set;
+            Library::SmartPointer sharedPtr;
+            sharedPtr.name = "std::shared_ptr";
+            set.library.smartPointers["std::shared_ptr"] = sharedPtr;
+            ASSERT_EQUALS("smart-pointer(std::shared_ptr)", typeOf("class C {}; x = std::make_shared<C>();", "(","test.cpp",  &set));
+        }
 
         // return
         {
@@ -7492,6 +7498,15 @@ private:
             c.startPattern2 = "C !!::";
             sC.library.containers["C"] = c;
             ASSERT_EQUALS("container(C)", typeOf("C f(char *p) { char data[10]; return data; }", "return", "test.cpp", &sC));
+        }
+        // Smart pointer
+        {
+            Settings set;
+            Library::SmartPointer myPtr;
+            myPtr.name = "MyPtr";
+            set.library.smartPointers["MyPtr"] = myPtr;
+            ASSERT_EQUALS("smart-pointer(MyPtr)", typeOf("void f() { MyPtr<int> p; return p; }", "p ;", "test.cpp", &set));
+            ASSERT_EQUALS("smart-pointer(MyPtr)", typeOf("{return MyPtr<int>();}", "(", "test.cpp", &set));
         }
     }
 

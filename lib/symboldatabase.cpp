@@ -6210,7 +6210,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->smartPointer = smartPointer;
             valuetype->smartPointerTypeToken = argTok->next();
             valuetype->smartPointerType = argTok->next()->type();
-            valuetype->type = ValueType::Type::NONSTD;
+            valuetype->type = ValueType::Type::SMART_POINTER;
             type = argTok->link();
             if (type)
                 type = type->next();
@@ -6495,6 +6495,13 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                         setValueType(tok, vt);
                         continue;
                     }
+                    if (const Library::SmartPointer *sp = mSettings->library.detectSmartPointer(typeStartToken)) {
+                        ValueType vt;
+                        vt.type = ValueType::Type::SMART_POINTER;
+                        vt.smartPointer = sp;
+                        setValueType(tok, vt);
+                        continue;
+                    }
 
                     const std::string e = tok->astOperand1()->expressionString();
 
@@ -6504,9 +6511,16 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                         if (vt.typeScope) {
                             vt.smartPointerType = vt.typeScope->definedType;
                             vt.typeScope = nullptr;
-                            setValueType(tok, vt);
-                            continue;
                         }
+                        if (e == "std::make_shared" && mSettings->library.smartPointers.count("std::shared_ptr") > 0)
+                            vt.smartPointer = &mSettings->library.smartPointers.at("std::shared_ptr");
+                        if (e == "std::make_unique" && mSettings->library.smartPointers.count("std::unique_ptr") > 0)
+                            vt.smartPointer = &mSettings->library.smartPointers.at("std::unique_ptr");
+                        vt.type = ValueType::Type::SMART_POINTER;
+                        vt.smartPointerTypeToken = tok->astOperand1()->tokAt(3);
+                        setValueType(tok, vt);
+                        continue;
+
                     }
 
                     ValueType podtype;
@@ -6758,6 +6772,9 @@ std::string ValueType::dump() const
     case RECORD:
         ret << "valueType-type=\"record\"";
         break;
+    case SMART_POINTER:
+        ret << "valueType-type=\"smart-pointer\"";
+        break;
     case CONTAINER:
         ret << "valueType-type=\"container\"";
         break;
@@ -6922,8 +6939,8 @@ std::string ValueType::str() const
         ret += " container(" + container->startPattern + ')';
     } else if (type == ValueType::Type::ITERATOR && container) {
         ret += " iterator(" + container->startPattern + ')';
-    } else if (smartPointerType) {
-        ret += " smart-pointer<" + smartPointerType->name() + ">";
+    } else if (type == ValueType::Type::SMART_POINTER && smartPointer) {
+        ret += " smart-pointer(" + smartPointer->name + ")";
     }
     for (unsigned int p = 0; p < pointer; p++) {
         ret += " *";
