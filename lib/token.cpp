@@ -1740,12 +1740,15 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     break;
                 case ValueFlow::Value::ValueType::LIFETIME:
                     out << "lifetime=\"" << value.tokvalue << '\"';
+                    out << " lifetime-scope=\"" << ValueFlow::Value::toString(value.lifetimeScope) << "\"";
+                    out << " lifetime-kind=\"" << ValueFlow::Value::toString(value.lifetimeKind) << "\"";
                     break;
                 case ValueFlow::Value::ValueType::SYMBOLIC:
-                    out << "tokvalue=\"" << value.tokvalue << '\"';
-                    out << " intvalue=\"" << value.intvalue << '\"';
+                    out << "symbolic=\"" << value.tokvalue << '\"';
+                    out << " symbolic-delta=\"" << value.intvalue << '\"';
                     break;
                 }
+                out << " bound=\"" << ValueFlow::Value::toString(value.bound) << "\"";
                 if (value.condition)
                     out << " condition-line=\"" << value.condition->linenr() << '\"';
                 if (value.isKnown())
@@ -1756,6 +1759,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     out << " impossible=\"true\"";
                 else if (value.isInconclusive())
                     out << " inconclusive=\"true\"";
+                out << " path=\"" << value.path << "\"";
                 out << "/>" << std::endl;
             }
 

@@ -366,6 +366,8 @@ namespace ValueFlow {
 
         static const char* toString(MoveKind moveKind);
         static const char* toString(LifetimeKind lifetimeKind);
+        static const char* toString(LifetimeScope lifetimeScope);
+        static const char* toString(Bound bound);
 
         /** How known is this value */
         enum class ValueKind {

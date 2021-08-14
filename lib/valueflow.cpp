@@ -7091,6 +7091,31 @@ const char* ValueFlow::Value::toString(LifetimeKind lifetimeKind)
     return "";
 }
 
+const char* ValueFlow::Value::toString(LifetimeScope lifetimeScope)
+{
+    switch (lifetimeScope) {
+    case ValueFlow::Value::LifetimeScope::Local:
+        return "Local";
+    case ValueFlow::Value::LifetimeScope::Argument:
+        return "Argument";
+    case ValueFlow::Value::LifetimeScope::SubFunction:
+        return "SubFunction";
+    }
+    return "";
+}
+const char* ValueFlow::Value::toString(Bound bound)
+{
+    switch (bound) {
+    case ValueFlow::Value::Bound::Point:
+        return "Point";
+    case ValueFlow::Value::Bound::Upper:
+        return "Upper";
+    case ValueFlow::Value::Bound::Lower:
+        return "Lower";
+    }
+    return "";
+}
+
 const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(Token *expr, const Settings *settings)
 {
     if (expr && expr->values().empty()) {
