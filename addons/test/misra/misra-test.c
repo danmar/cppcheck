@@ -1787,6 +1787,12 @@ static void misra_22_5(FILE *f) {
     int y = f->pos; // 22.5
 }
 
+static void misra_22_8(void)
+{
+    (void)strtoll("123", NULL, 10); // 22.8
+    if (errno == 0) {}
+}
+
 static void misra_22_10(void)
 {
   errno = 0;
