@@ -6586,6 +6586,15 @@ private:
                             "template <class> struct F;\n"
                             "int main() { using T = void (*)(a<j<F, char[]>>); }\n"));
 
+        // #9245
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  typedef int b;\n"
+                                             "  operator b();\n"
+                                             "};\n"
+                                             "template <int> using c = a;\n"
+                                             "template <int d> c<d> e;\n"
+                                             "auto f = ((e<4> | 0));\n"));
+
         // #9340
         ASSERT_NO_THROW(tokenizeAndStringify(
                             "struct a {\n"
@@ -6606,6 +6615,13 @@ private:
                             "  int e;\n"
                             "  for (int d = 0; d < e; d++)\n"
                             "    ;\n"
+                            "}\n"));
+
+        // #10015
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "void func() {\n"
+                            "    if (std::is_same_v<int, int> || 1)\n"
+                            "        ;\n"
                             "}\n"));
 
         // #10309

@@ -1738,12 +1738,13 @@ private:
 
     void cliCode() {
         // #8913
-        ASSERT_THROW(checkCode("public ref class LibCecSharp : public CecCallbackMethods {\n"
-                               "array<CecAdapter ^> ^ FindAdapters(String ^ path) {}\n"
-                               "bool GetDeviceInformation(String ^ port, LibCECConfiguration ^configuration, uint32_t timeoutMs) {\n"
-                               "bool bReturn(false);\n"
-                               "}\n"
-                               "};"), InternalError);
+        ASSERT_NO_THROW(checkCode(
+                            "public ref class LibCecSharp : public CecCallbackMethods {\n"
+                            "array<CecAdapter ^> ^ FindAdapters(String ^ path) {}\n"
+                            "bool GetDeviceInformation(String ^ port, LibCECConfiguration ^configuration, uint32_t timeoutMs) {\n"
+                            "bool bReturn(false);\n"
+                            "}\n"
+                            "};"));
     }
 
     void enumTrailingComma() {

@@ -4525,9 +4525,7 @@ void Tokenizer::createLinks2()
             if (!top2 || top2->str() != "<") {
                 if (token->str() == ">>")
                     continue;
-                if (token->next() &&
-                    !Token::Match(token->next(), "%name%|%comp%|&|&&|*|::|,|(|)|{|}|;|[|:|.|=") &&
-                    !Token::simpleMatch(token->next(), "...") &&
+                if (!Token::Match(token->next(), "%name%|%cop%|::|,|(|)|{|}|;|[|:|.|=|...") &&
                     !Token::Match(token->next(), "&& %name% ="))
                     continue;
             }
