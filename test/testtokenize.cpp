@@ -6587,14 +6587,13 @@ private:
                             "int main() { using T = void (*)(a<j<F, char[]>>); }\n"));
 
         // #9245
-        ASSERT_NO_THROW(tokenizeAndStringify(
-                            "struct a {\n"
-                            "  typedef int b;\n"
-                            "  operator b();\n"
-                            "};\n"
-                            "template <int> using c = a;\n"
-                            "template <int d> c<d> e;\n"
-                            "auto f = ((e<4> | 0));\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  typedef int b;\n"
+                                             "  operator b();\n"
+                                             "};\n"
+                                             "template <int> using c = a;\n"
+                                             "template <int d> c<d> e;\n"
+                                             "auto f = ((e<4> | 0));\n"));
 
         // #9340
         ASSERT_NO_THROW(tokenizeAndStringify(
