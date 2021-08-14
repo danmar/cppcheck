@@ -5748,7 +5748,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
             if (item.constness == 0)
                 item.constness = vt1->constness;
             if (isContainerYieldPointer(vt1->container->getYield(parent->next()->str())))
-                item.pointer = 1;
+                item.pointer += 1;
             else
                 item.reference = Reference::LValue;
             setValueType(parent->tokAt(2), item);
