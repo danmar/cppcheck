@@ -641,6 +641,13 @@ public:
         setFlag(fIsInline, b);
     }
 
+    bool isTemplate() const {
+        return getFlag(fIsTemplate);
+    }
+    void isTemplate(bool b) {
+        setFlag(fIsTemplate, b);
+    }
+
     bool isBitfield() const {
         return mImpl->mBits > 0;
     }
@@ -1239,7 +1246,8 @@ private:
         fIsSplitVarDeclComma    = (1 << 29), // set to true when variable declarations are split up ('int a,b;' => 'int a; int b;')
         fIsSplitVarDeclEq       = (1 << 30), // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
         fIsImplicitInt          = (1U << 31),   // Is "int" token implicitly added?
-        fIsInline               = (1ULL << 32)  // Is this a inline type
+        fIsInline               = (1ULL << 32), // Is this a inline type
+        fIsTemplate             = (1ULL << 33)
     };
 
     Token::Type mTokType;

@@ -34,6 +34,7 @@
 #include "version.h"
 
 #include "exprengine.h"
+#include <string>
 
 #define PICOJSON_USE_INT64
 #include <picojson.h>
@@ -71,6 +72,7 @@ namespace {
         std::string args;
         std::string python;
         bool ctu = false;
+        std::string runScript{};
 
         static std::string getFullPath(const std::string &fileName, const std::string &exename) {
             if (Path::fileExists(fileName))
@@ -152,6 +154,8 @@ namespace {
                 if (pos2 < pos1)
                     pos2 = std::string::npos;
                 name = scriptFile.substr(pos1, pos2 - pos1);
+
+                runScript = getFullPath("runaddon.py", exename);
 
                 return "";
             }
@@ -291,7 +295,8 @@ static std::string executeAddon(const AddonInfo &addonInfo,
     }
 
     const std::string fileArg = (endsWith(file, FILELIST, sizeof(FILELIST)-1) ? " --file-list " : " ") + cmdFileName(file);
-    const std::string args = cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args + fileArg;
+    const std::string args =
+        cmdFileName(addonInfo.runScript) + " " + cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args + fileArg;
 
     std::string result;
     if (!executeCommand(pythonExe, split(args), redirect, &result))

@@ -375,6 +375,16 @@ def is_header(file):
     return file.endswith('.h')
 
 
+def is_errno_setting_function(function_name):
+    return function_name and \
+           function_name in ('ftell', 'fgetpos', 'fsetpos', 'fgetwc', 'fputwc'
+                             'strtoimax', 'strtoumax', 'strtol', 'strtoul',
+                             'strtoll', 'strtoull', 'strtof', 'strtod', 'strtold'
+                             'wcstoimax', 'wcstoumax', 'wcstol', 'wcstoul',
+                             'wcstoll', 'wcstoull', 'wcstof', 'wcstod', 'wcstold'
+                             'wcrtomb', 'wcsrtombs', 'mbrtowc')
+
+
 def get_type_conversion_to_from(token):
     def get_vartok(expr):
         while expr:
@@ -1082,7 +1092,7 @@ def generateTable():
     numberOfRules[19] = 2
     numberOfRules[20] = 14
     numberOfRules[21] = 12
-    numberOfRules[22] = 6
+    numberOfRules[22] = 10
 
     # Rules that can be checked with compilers:
     # compiler = ['1.1', '1.2']
@@ -3453,6 +3463,33 @@ class MisraChecker:
                 if fileptr.variable and cppcheckdata.simpleMatch(fileptr.variable.typeStartToken, 'FILE *'):
                     self.reportError(token, 22, 5)
 
+    def misra_22_8(self, cfg):
+        is_zero = False
+        for token in cfg.tokenlist:
+            if simpleMatch(token, 'errno = 0'):
+                is_zero = True
+            if token.str == '(' and not simpleMatch(token.link, ') {'):
+                name, _ = cppcheckdata.get_function_call_name_args(token.previous)
+                if not is_errno_setting_function(name):
+                    is_zero = False
+                elif not is_zero:
+                    self.reportError(token, 22, 8)
+
+    def misra_22_10(self, cfg):
+        last_function_call = None
+        for token in cfg.tokenlist:
+            if token.str == '(' and not simpleMatch(token.link, ') {'):
+                name, args = cppcheckdata.get_function_call_name_args(token.previous)
+                last_function_call = name
+            if token.str == '}':
+                last_function_call = None
+            if token.str == 'errno' and token.astParent and token.astParent.isComparisonOp:
+                if last_function_call is None:
+                    self.reportError(token, 22, 10)
+                elif not is_errno_setting_function(last_function_call):
+                    self.reportError(token, 22, 10)
+
+
     def get_verify_expected(self):
         """Return the list of expected violations in the verify test"""
         return self.verify_expected
@@ -4022,6 +4059,8 @@ class MisraChecker:
             self.executeCheck(2115, self.misra_21_15, cfg)
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
             self.executeCheck(2205, self.misra_22_5, cfg)
+            self.executeCheck(2210, self.misra_22_8, cfg)
+            self.executeCheck(2210, self.misra_22_10, cfg)
 
     def analyse_ctu_info(self, ctu_info_files):
         all_typedef_info = []

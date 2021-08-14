@@ -1501,6 +1501,10 @@ void CheckOther::checkConstPointer()
         nonConstPointers.insert(tok->variable());
     }
     for (const Variable *p: pointers) {
+        if (p->isArgument()) {
+            if (!p->scope() || !p->scope()->function || p->scope()->function->isImplicitlyVirtual(true) || p->scope()->function->hasVirtualSpecifier())
+                continue;
+        }
         if (nonConstPointers.find(p) == nonConstPointers.end())
             constVariableError(p, nullptr);
     }

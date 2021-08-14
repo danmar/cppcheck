@@ -235,8 +235,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 }
 
                 new_scope->classDef = tok;
-                new_scope->bodyStart = tok2;
-                new_scope->bodyEnd = tok2->link();
+                new_scope->setBodyStartEnd(tok2);
                 // make sure we have valid code
                 if (!new_scope->bodyEnd) {
                     mTokenizer->syntaxError(tok);
@@ -278,8 +277,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                         tok2 = tok2->tokAt(2);
                 }
 
-                new_scope->bodyStart = tok2;
-                new_scope->bodyEnd = tok2->link();
+                new_scope->setBodyStartEnd(tok2);
 
                 // make sure we have valid code
                 if (!new_scope->bodyEnd) {
@@ -314,8 +312,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
             const Token *tok2 = tok->linkAt(3)->next();
 
-            new_scope->bodyStart = tok2;
-            new_scope->bodyEnd = tok2->link();
+            new_scope->setBodyStartEnd(tok2);
 
             // make sure we have valid code
             if (!new_scope->bodyEnd) {
@@ -403,8 +400,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
             const Token *tok2 = tok->next();
 
-            new_scope->bodyStart = tok2;
-            new_scope->bodyEnd = tok2->link();
+            new_scope->setBodyStartEnd(tok2);
 
             // make sure we have valid code
             if (!new_scope->bodyEnd) {
@@ -430,8 +426,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
             const Token *tok2 = tok->next();
 
-            new_scope->bodyStart = tok2;
-            new_scope->bodyEnd = tok2->link();
+            new_scope->setBodyStartEnd(tok2);
 
             typeList.emplace_back(tok, new_scope, scope);
             {
@@ -1003,26 +998,20 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
 
 void SymbolDatabase::createSymbolDatabaseSetScopePointers()
 {
-    // Set scope pointers
-    for (const Scope& scope: scopeList) {
-        Token* start = const_cast<Token*>(scope.bodyStart);
-        Token* end = const_cast<Token*>(scope.bodyEnd);
-        if (scope.type == Scope::eGlobal) {
-            start = const_cast<Token*>(mTokenizer->list.front());
-            end = const_cast<Token*>(mTokenizer->list.back());
-        }
-        assert(start);
-        assert(end);
+    auto setScopePointers = [this](const Scope &scope, const Token *bodyStart, const Token *bodyEnd) {
+        assert(bodyStart);
+        assert(bodyEnd);
 
-        end->scope(&scope);
+        const_cast<Token *>(bodyEnd)->scope(&scope);
 
-        for (Token* tok = start; tok != end; tok = tok->next()) {
-            if (start != end && tok->str() == "{") {
+        for (Token* tok = const_cast<Token *>(bodyStart); tok != bodyEnd; tok = tok->next()) {
+            if (bodyStart != bodyEnd && tok->str() == "{") {
                 bool isEndOfScope = false;
-                for (const Scope* innerScope: scope.nestedList) {
-                    if (tok == innerScope->bodyStart) { // Is begin of inner scope
+                for (Scope* innerScope: scope.nestedList) {
+                    const auto &list = innerScope->bodyStartList;
+                    if (std::find(list.begin(), list.end(), tok) != list.end()) {     // Is begin of inner scope
                         tok = tok->link();
-                        if (tok->next() == end || !tok->next()) {
+                        if (tok->next() == bodyEnd || !tok->next()) {
                             isEndOfScope = true;
                             break;
                         }
@@ -1034,6 +1023,16 @@ void SymbolDatabase::createSymbolDatabaseSetScopePointers()
                     break;
             }
             tok->scope(&scope);
+        }
+    };
+
+    // Set scope pointers
+    for (Scope& scope: scopeList) {
+        if (scope.type == Scope::eGlobal)
+            setScopePointers(scope, mTokenizer->list.front(), mTokenizer->list.back());
+        else {
+            for (const Token *bodyStart: scope.bodyStartList)
+                setScopePointers(scope, bodyStart, bodyStart->link());
         }
     }
 }
@@ -1417,6 +1416,23 @@ void SymbolDatabase::createSymbolDatabaseEscapeFunctions()
     }
 }
 
+static bool isExpression(const Token* tok)
+{
+    if (!Token::Match(tok, "(|.|[|%cop%"))
+        return false;
+    if (Token::Match(tok, "*|&|&&")) {
+        const Token* vartok = findAstNode(tok, [&](const Token* tok2) {
+            const Variable* var = tok2->variable();
+            if (!var)
+                return false;
+            return var->nameToken() == tok2;
+        });
+        if (vartok)
+            return false;
+    }
+    return true;
+}
+
 void SymbolDatabase::createSymbolDatabaseExprIds()
 {
     nonneg int base = 0;
@@ -1434,7 +1450,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->varId() > 0) {
                 tok->exprId(tok->varId());
-            } else if (Token::Match(tok, "(|.|[|%cop%")) {
+            } else if (isExpression(tok)) {
                 exprs[tok->str()].push_back(tok);
                 tok->exprId(id++);
 
@@ -2693,7 +2709,7 @@ bool Function::returnsVoid(const Function* function, bool unknown)
 {
     if (!function)
         return false;
-    if (function->type != Function::eFunction)
+    if (function->type != Function::eFunction && function->type != Function::eOperatorEqual)
         return false;
     const Token* defEnd = function->returnDefEnd();
     if (defEnd->strAt(-1) == "void")
@@ -3005,8 +3021,7 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     }
 
     if (tok1 && tok1->str() == "{") {
-        newScope->bodyStart = tok1;
-        newScope->bodyEnd = tok1->link();
+        newScope->setBodyStartEnd(tok1);
 
         // syntax error?
         if (!newScope->bodyEnd) {
@@ -4070,8 +4085,6 @@ const Variable* Function::getArgumentVar(nonneg int num) const
 Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_) :
     check(check_),
     classDef(classDef_),
-    bodyStart(start_),
-    bodyEnd(start_->link()),
     nestedIn(nestedIn_),
     numConstructors(0),
     numCopyOrMoveConstructors(0),
@@ -4081,7 +4094,9 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
     function(nullptr),
     enumType(nullptr),
     enumClass(false)
-{}
+{
+    setBodyStartEnd(start_);
+}
 
 Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_) :
     check(check_),
@@ -4173,19 +4188,22 @@ void Scope::addVariable(const Token *token_, const Token *start_, const Token *e
 // Get variable list..
 void Scope::getVariableList(const Settings* settings)
 {
-    const Token *start;
-
-    if (bodyStart)
-        start = bodyStart->next();
+    if (!bodyStartList.empty()) {
+        for (const Token *bodyStart: bodyStartList)
+            getVariableList(settings, bodyStart->next());
+    }
 
     // global scope
-    else if (className.empty())
-        start = check->mTokenizer->tokens();
+    else if (type == Scope::eGlobal)
+        getVariableList(settings, check->mTokenizer->tokens());
 
     // forward declaration
     else
         return;
+}
 
+void Scope::getVariableList(const Settings* settings, const Token* start)
+{
     // Variable declared in condition: if (auto x = bar())
     if (Token::Match(classDef, "if|while ( %type%") && Token::simpleMatch(classDef->next()->astOperand2(), "=")) {
         checkVariable(classDef->tokAt(2), defaultAccess(), settings);
@@ -5346,9 +5364,9 @@ Scope *Scope::findInNestedListRecursive(const std::string & name)
 
 const Function *Scope::getDestructor() const
 {
-    for (const Function &function: functionList) {
-        if (function.type == Function::eDestructor)
-            return &function;
+    for (const Function &f: functionList) {
+        if (f.type == Function::eDestructor)
+            return &f;
     }
     return nullptr;
 }
@@ -5699,6 +5717,17 @@ static void setAutoTokenProperties(Token * const autoTok)
         autoTok->isStandardType(true);
 }
 
+static bool isContainerYieldElement(Library::Container::Yield yield)
+{
+    return yield == Library::Container::Yield::ITEM || yield == Library::Container::Yield::AT_INDEX ||
+           yield == Library::Container::Yield::BUFFER || yield == Library::Container::Yield::BUFFER_NT;
+}
+
+static bool isContainerYieldPointer(Library::Container::Yield yield)
+{
+    return yield == Library::Container::Yield::BUFFER || yield == Library::Container::Yield::BUFFER_NT;
+}
+
 void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
 {
     tok->setValueType(new ValueType(valuetype));
@@ -5729,10 +5758,18 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         return;
     }
 
-    if (vt1 && vt1->container && vt1->containerTypeToken && Token::Match(parent, ". %name% (") && vt1->container->getYield(parent->next()->str()) == Library::Container::Yield::ITEM) {
+    if (vt1 && vt1->container && vt1->containerTypeToken && Token::Match(parent, ". %name% (") &&
+        isContainerYieldElement(vt1->container->getYield(parent->next()->str()))) {
         ValueType item;
-        if (parsedecl(vt1->containerTypeToken, &item, mDefaultSignedness, mSettings))
+        if (parsedecl(vt1->containerTypeToken, &item, mDefaultSignedness, mSettings)) {
+            if (item.constness == 0)
+                item.constness = vt1->constness;
+            if (isContainerYieldPointer(vt1->container->getYield(parent->next()->str())))
+                item.pointer += 1;
+            else
+                item.reference = Reference::LValue;
             setValueType(parent->tokAt(2), item);
+        }
     }
 
     if (vt1 && vt1->smartPointerType && Token::Match(parent, ". %name% (") && parent->originalName() == "->" && !parent->next()->function()) {
@@ -5821,6 +5858,29 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         vt.pointer -= 1U;
         setValueType(parent, vt);
         return;
+    }
+    // Dereference iterator
+    if (parent->str() == "*" && !parent->astOperand2() && valuetype.type == ValueType::Type::ITERATOR &&
+        valuetype.containerTypeToken) {
+        ValueType vt;
+        if (parsedecl(valuetype.containerTypeToken, &vt, mDefaultSignedness, mSettings)) {
+            if (vt.constness == 0)
+                vt.constness = valuetype.constness;
+            vt.reference = Reference::LValue;
+            setValueType(parent, vt);
+            return;
+        }
+    }
+    // Dereference smart pointer
+    if (parent->str() == "*" && !parent->astOperand2() && valuetype.type == ValueType::Type::SMART_POINTER &&
+        valuetype.smartPointerTypeToken) {
+        ValueType vt;
+        if (parsedecl(valuetype.smartPointerTypeToken, &vt, mDefaultSignedness, mSettings)) {
+            if (vt.constness == 0)
+                vt.constness = valuetype.constness;
+            setValueType(parent, vt);
+            return;
+        }
     }
     if (parent->str() == "*" && Token::simpleMatch(parent->astOperand2(), "[") && valuetype.pointer > 0U) {
         const Token *op1 = parent->astOperand2()->astOperand1();
@@ -6077,7 +6137,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
     if (!valuetype->typeScope && !valuetype->smartPointerType)
         valuetype->type = ValueType::Type::UNKNOWN_TYPE;
     else if (valuetype->smartPointerType)
-        valuetype->type = ValueType::Type::NONSTD;
+        valuetype->type = ValueType::Type::SMART_POINTER;
     else if (valuetype->typeScope->type == Scope::eEnum) {
         const Token * enum_type = valuetype->typeScope->enumType;
         if (enum_type) {
@@ -6175,7 +6235,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
             valuetype->smartPointer = smartPointer;
             valuetype->smartPointerTypeToken = argTok->next();
             valuetype->smartPointerType = argTok->next()->type();
-            valuetype->type = ValueType::Type::NONSTD;
+            valuetype->type = ValueType::Type::SMART_POINTER;
             type = argTok->link();
             if (type)
                 type = type->next();
@@ -6460,6 +6520,13 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                         setValueType(tok, vt);
                         continue;
                     }
+                    if (const Library::SmartPointer* sp = mSettings->library.detectSmartPointer(typeStartToken)) {
+                        ValueType vt;
+                        vt.type = ValueType::Type::SMART_POINTER;
+                        vt.smartPointer = sp;
+                        setValueType(tok, vt);
+                        continue;
+                    }
 
                     const std::string e = tok->astOperand1()->expressionString();
 
@@ -6469,9 +6536,15 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                         if (vt.typeScope) {
                             vt.smartPointerType = vt.typeScope->definedType;
                             vt.typeScope = nullptr;
-                            setValueType(tok, vt);
-                            continue;
                         }
+                        if (e == "std::make_shared" && mSettings->library.smartPointers.count("std::shared_ptr") > 0)
+                            vt.smartPointer = &mSettings->library.smartPointers.at("std::shared_ptr");
+                        if (e == "std::make_unique" && mSettings->library.smartPointers.count("std::unique_ptr") > 0)
+                            vt.smartPointer = &mSettings->library.smartPointers.at("std::unique_ptr");
+                        vt.type = ValueType::Type::SMART_POINTER;
+                        vt.smartPointerTypeToken = tok->astOperand1()->tokAt(3);
+                        setValueType(tok, vt);
+                        continue;
                     }
 
                     ValueType podtype;
@@ -6509,6 +6582,8 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                                 ValueType vt;
                                 vt.type = ValueType::Type::ITERATOR;
                                 vt.container = cont;
+                                vt.containerTypeToken =
+                                    tok->astOperand1()->astOperand1()->valueType()->containerTypeToken;
                                 setValueType(tok, vt);
                             }
                         }
@@ -6722,6 +6797,9 @@ std::string ValueType::dump() const
     case RECORD:
         ret << "valueType-type=\"record\"";
         break;
+    case SMART_POINTER:
+        ret << "valueType-type=\"smart-pointer\"";
+        break;
     case CONTAINER:
         ret << "valueType-type=\"container\"";
         break;
@@ -6886,8 +6964,8 @@ std::string ValueType::str() const
         ret += " container(" + container->startPattern + ')';
     } else if (type == ValueType::Type::ITERATOR && container) {
         ret += " iterator(" + container->startPattern + ')';
-    } else if (smartPointerType) {
-        ret += " smart-pointer<" + smartPointerType->name() + ">";
+    } else if (type == ValueType::Type::SMART_POINTER && smartPointer) {
+        ret += " smart-pointer(" + smartPointer->name + ")";
     }
     for (unsigned int p = 0; p < pointer; p++) {
         ret += " *";

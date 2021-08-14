@@ -1038,6 +1038,7 @@ public:
     ScopeType type;
     Type* definedType;
     std::map<std::string, Type*> definedTypesMap;
+    std::vector<const Token *> bodyStartList;
 
     // function specific fields
     const Scope *functionOf; ///< scope this function belongs to
@@ -1048,6 +1049,13 @@ public:
     bool enumClass;
 
     std::vector<Enumerator> enumeratorList;
+
+    void setBodyStartEnd(const Token *start) {
+        bodyStart = start;
+        bodyEnd = start ? start->link() : nullptr;
+        if (start)
+            bodyStartList.push_back(start);
+    }
 
     bool isAnonymous() const {
         // TODO: Check if class/struct is anonymous
@@ -1194,6 +1202,9 @@ private:
     bool isVariableDeclaration(const Token* const tok, const Token*& vartok, const Token*& typetok) const;
 
     void findFunctionInBase(const std::string & name, nonneg int args, std::vector<const Function *> & matches) const;
+
+    /** @brief initialize varlist */
+    void getVariableList(const Settings* settings, const Token *start);
 };
 
 enum class Reference {
@@ -1206,7 +1217,26 @@ enum class Reference {
 class CPPCHECKLIB ValueType {
 public:
     enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
-    enum Type { UNKNOWN_TYPE, NONSTD, RECORD, CONTAINER, ITERATOR, VOID, BOOL, CHAR, SHORT, WCHAR_T, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE } type;
+    enum Type {
+        UNKNOWN_TYPE,
+        NONSTD,
+        RECORD,
+        SMART_POINTER,
+        CONTAINER,
+        ITERATOR,
+        VOID,
+        BOOL,
+        CHAR,
+        SHORT,
+        WCHAR_T,
+        INT,
+        LONG,
+        LONGLONG,
+        UNKNOWN_INT,
+        FLOAT,
+        DOUBLE,
+        LONGDOUBLE
+    } type;
     nonneg int bits;                           ///< bitfield bitcount
     nonneg int pointer;                        ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
     nonneg int constness;                      ///< bit 0=data, bit 1=*, bit 2=**
