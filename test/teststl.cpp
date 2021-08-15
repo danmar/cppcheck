@@ -622,6 +622,14 @@ private:
                     "    if (v.size() == 1) {}\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(int n) {\n"
+                    "    std::vector<int> v = {1, 2, 3, 4};\n"
+                    "    const int i = qMin(n, v.size());\n"
+                    "    if (i > 1)\n"
+                    "        v[i] = 1;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
