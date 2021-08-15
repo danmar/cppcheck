@@ -58,6 +58,14 @@ typedef unsigned int       u32;
 typedef signed int         s32;
 typedef unsigned long long u64;
 
+static _Atomic int misra_1_4_var; // 1.4
+static _Noreturn void misra_1_4_func(void) // 1.4
+{
+    if (0 != _Generic(misra_1_4_var)) {} // 1.4
+    printf_s("hello"); // 1.4
+}
+
+
 /* // */   // 3.1
 /* /* */   // 3.1
 ////
