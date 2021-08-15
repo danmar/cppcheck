@@ -7237,6 +7237,9 @@ static std::vector<ValueFlow::Value> isOutOfBoundsImpl(const ValueFlow::Value& s
         return {*indexValue};
     if (!condition)
         return {};
+    // TODO: Use a better way to decide if the variable in unconstrained
+    if (!indexTok->variable() || !indexTok->variable()->isArgument())
+        return {};
     if (indexValue->bound != ValueFlow::Value::Bound::Lower)
         return {};
     if (size.bound == ValueFlow::Value::Bound::Lower)
