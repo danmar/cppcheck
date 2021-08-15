@@ -1793,6 +1793,12 @@ static void misra_22_8(void)
     if (errno == 0) {}
 }
 
+static void misra_22_9(void)
+{
+    errno = 0;
+    (void)strtoll("123", NULL, 10); // 22.9
+}
+
 static void misra_22_10(void)
 {
   errno = 0;

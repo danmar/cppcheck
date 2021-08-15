@@ -6604,6 +6604,14 @@ private:
                             "  }\n"
                             "};\n"));
 
+        // #9444
+        ASSERT_NO_THROW(tokenizeAndStringify("template <int> struct a;\n"
+                                             "template <long b> using c = a<b>;\n"
+                                             "template <long b> c<b> d;\n"
+                                             "template <typename> struct e {\n"
+                                             "  template <typename... f> void g() const { d<e<f &&...>::h>; }\n"
+                                             "};\n"));
+
         // #9858
         ASSERT_NO_THROW(tokenizeAndStringify(
                             "struct a {\n"

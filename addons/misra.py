@@ -3470,10 +3470,31 @@ class MisraChecker:
                 is_zero = True
             if token.str == '(' and not simpleMatch(token.link, ') {'):
                 name, _ = cppcheckdata.get_function_call_name_args(token.previous)
-                if not is_errno_setting_function(name):
+                if name is None:
+                    continue
+                if is_errno_setting_function(name):
+                    if not is_zero:
+                        self.reportError(token, 22, 8)
+                else:
                     is_zero = False
-                elif not is_zero:
-                    self.reportError(token, 22, 8)
+
+    def misra_22_9(self, cfg):
+        errno_is_set = False
+        for token in cfg.tokenlist:
+            if token.str == '(' and not simpleMatch(token.link, ') {'):
+                name, args = cppcheckdata.get_function_call_name_args(token.previous)
+                if name is None:
+                    continue
+                errno_is_set = is_errno_setting_function(name)
+            if errno_is_set and token.str in '{};':
+                errno_is_set = False
+                tok = token.next
+                while tok and tok.str not in ('{','}',';','errno'):
+                    tok = tok.next
+                if tok is None or tok.str != 'errno':
+                    self.reportError(token, 22, 9)
+                elif (tok.astParent is None) or (not tok.astParent.isComparisonOp):
+                    self.reportError(token, 22, 9)
 
     def misra_22_10(self, cfg):
         last_function_call = None
@@ -4059,7 +4080,8 @@ class MisraChecker:
             self.executeCheck(2115, self.misra_21_15, cfg)
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
             self.executeCheck(2205, self.misra_22_5, cfg)
-            self.executeCheck(2210, self.misra_22_8, cfg)
+            self.executeCheck(2208, self.misra_22_8, cfg)
+            self.executeCheck(2209, self.misra_22_9, cfg)
             self.executeCheck(2210, self.misra_22_10, cfg)
 
     def analyse_ctu_info(self, ctu_info_files):
