@@ -7237,6 +7237,8 @@ static std::vector<ValueFlow::Value> isOutOfBoundsImpl(const ValueFlow::Value& s
         return {*indexValue};
     if (!condition)
         return {};
+    if (indexValue->bound != ValueFlow::Value::Bound::Lower)
+        return {};
     if (size.bound == ValueFlow::Value::Bound::Lower)
         return {};
     ValueFlow::Value inBoundsValue = inferCondition("<", indexTok, size.intvalue);
