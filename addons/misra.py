@@ -3463,6 +3463,21 @@ class MisraChecker:
                 if fileptr.variable and cppcheckdata.simpleMatch(fileptr.variable.typeStartToken, 'FILE *'):
                     self.reportError(token, 22, 5)
 
+    def misra_22_7(self, cfg):
+        for eofToken in cfg.tokenlist:
+            if eofToken.str != 'EOF':
+                continue
+            if eofToken.astParent is None or not eofToken.astParent.isComparisonOp:
+                continue
+            if eofToken.astParent.astOperand1 == eofToken:
+                eofTokenSibling = eofToken.astParent.astOperand2
+            else:
+                eofTokenSibling = eofToken.astParent.astOperand1
+            while isCast(eofTokenSibling) and eofTokenSibling.valueType and eofTokenSibling.valueType.type and eofTokenSibling.valueType.type == 'int':
+                eofTokenSibling = eofTokenSibling.astOperand2 if eofTokenSibling.astOperand2 else eofTokenSibling.astOperand1
+            if eofTokenSibling is not None and eofTokenSibling.valueType and eofTokenSibling.valueType and eofTokenSibling.valueType.type in ('bool', 'char', 'short'):
+                self.reportError(eofToken, 22, 7)
+
     def misra_22_8(self, cfg):
         is_zero = False
         for token in cfg.tokenlist:
@@ -4080,6 +4095,7 @@ class MisraChecker:
             self.executeCheck(2115, self.misra_21_15, cfg)
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
             self.executeCheck(2205, self.misra_22_5, cfg)
+            self.executeCheck(2207, self.misra_22_7, cfg)
             self.executeCheck(2208, self.misra_22_8, cfg)
             self.executeCheck(2209, self.misra_22_9, cfg)
             self.executeCheck(2210, self.misra_22_10, cfg)
