@@ -1652,13 +1652,21 @@ static void misra_21_12(void) {
 static void misra_21_14(uint8_t *x) {
     (void)strcpy(x, "123");
     (void)memcmp(x, y, 100); // 21.14
-    (void)memcmp("abc", y, 100); // 21.14
+    (void)memcmp("abc", y, 100); // 21.14 21.16
 }
 
 static void misra_21_15(uint8_t *x, uint16_t *y) {
     (void)memcpy(x, y, 10); // 21.15
     (void)memmove(x, y, 10); // 21.15
     (void)memcmp(x, y, 10); // 21.15
+}
+
+struct misra_21_16_S { int a; int b; };
+static void misra_21_16_f1(struct misra_21_16_S *s1, struct misra_21_16_S *s2) {
+    (void)memcmp(s1, s2, 10); // 21.16
+}
+static void misra_21_16_f2(char *x, char *y) {
+    (void)memcmp(x, y, 10); // 21.16
 }
 
 // Large arrays for R13.1. Size exceeds default Python's max recursion depth.

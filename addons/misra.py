@@ -3522,6 +3522,26 @@ class MisraChecker:
                 continue
             self.reportError(token, 21, 15)
 
+    def misra_21_16(self, cfg):
+        for token in cfg.tokenlist:
+            if token.str != 'memcmp':
+                continue
+            name, args = cppcheckdata.get_function_call_name_args(token)
+            if name is None:
+                continue
+            if len(args) != 3:
+                continue
+            for arg in args[:2]:
+                if arg.valueType is None:
+                    continue
+                if arg.valueType.pointer > 1:
+                    continue
+                if arg.valueType.sign in ('unsigned', 'signed'):
+                    continue
+                if arg.valueType.isEnum():
+                    continue
+                self.reportError(token, 21, 16)
+
     def misra_21_21(self, cfg):
         for token in cfg.tokenlist:
             if token.str == 'system':
@@ -4168,6 +4188,7 @@ class MisraChecker:
             self.executeCheck(2112, self.misra_21_12, cfg)
             self.executeCheck(2114, self.misra_21_14, cfg)
             self.executeCheck(2115, self.misra_21_15, cfg)
+            self.executeCheck(2116, self.misra_21_16, cfg)
             self.executeCheck(2121, self.misra_21_21, cfg)
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
             self.executeCheck(2205, self.misra_22_5, cfg)
