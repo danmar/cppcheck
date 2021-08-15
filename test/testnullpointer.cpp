@@ -115,6 +115,7 @@ private:
         TEST_CASE(nullpointer73); // #10321
         TEST_CASE(nullpointer74);
         TEST_CASE(nullpointer75);
+        TEST_CASE(nullpointer76); // #10408
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2360,6 +2361,17 @@ private:
               "    x->c();\n"
               "  x->c();\n"
               "  if (x->b()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer76() {
+        check("int* foo(int y) {\n"
+              "    std::unique_ptr<int> x = std::make_unique<int>(0);\n"
+              "    if( y == 0 )\n"
+              "        return x.release();\n"
+              "    (*x) ++;\n"
+              "    return x.release();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
