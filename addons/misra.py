@@ -1063,7 +1063,11 @@ def getCppcheckRules():
             '17.4', # missingReturn
             '17.5', '18.1', '18.2', '18.3', '18.6',
             '19.1', # overlappingWriteUnion, overlappingWriteFunction
-            '20.6', '22.1', '22.2',
+            '20.6', # preprocessorErrorDirective
+            '21.17', # bufferAccessOutOfBounds
+            '21.18', # bufferAccessOutOfBounds
+            '22.1', # memleak, resourceLeak, memleakOnRealloc, leakReturnValNotUsed, leakNoVarFunctionCall
+            '22.2', # autovarInvalidDeallocation
             '22.3', # incompatibleFileOpen
             '22.4', '22.6']
 
