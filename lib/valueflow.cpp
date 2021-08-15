@@ -4245,6 +4245,8 @@ static void valueFlowForwardAssign(Token* const tok,
                                    ErrorLogger* const errorLogger,
                                    const Settings* const settings)
 {
+    if (Token::simpleMatch(tok->astParent(), "return"))
+        return;
     const Token* endOfVarScope = getEndOfVarScope(tok, vars);
     if (std::any_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
         valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
@@ -6390,7 +6392,7 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
                     ValueFlow::Value v(0);
                     v.setKnown();
                     values.push_back(v);
-                    valueFlowForwardAssign(tok->tokAt(4), var, values, false, false, tokenlist, errorLogger, settings);
+                    valueFlowForwardAssign(tok->tokAt(3), var, values, false, false, tokenlist, errorLogger, settings);
                 } else {
                     tok->removeValues(std::mem_fn(&ValueFlow::Value::isIntValue));
                     Token* inTok = tok->tokAt(3)->astOperand2();
@@ -6405,7 +6407,7 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
                 ValueFlow::Value v(0);
                 v.setKnown();
                 values.push_back(v);
-                valueFlowForwardAssign(tok->tokAt(4), var, values, false, false, tokenlist, errorLogger, settings);
+                valueFlowForwardAssign(tok->tokAt(3), var, values, false, false, tokenlist, errorLogger, settings);
             }
         } else if (Token::Match(tok->previous(), "%name%|> (|{") && astIsSmartPointer(tok) &&
                    astIsSmartPointer(tok->astOperand1())) {
