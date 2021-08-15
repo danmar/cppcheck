@@ -4482,20 +4482,6 @@ static void insertNegateKnown(std::list<ValueFlow::Value>& values, const std::li
     }
 }
 
-static std::vector<const Variable*> getExprVariables(const Token* expr,
-                                                     const TokenList* tokenlist,
-                                                     const SymbolDatabase* symboldatabase,
-                                                     const Settings* settings)
-{
-    std::vector<const Variable*> result;
-    FwdAnalysis fwdAnalysis(tokenlist->isCPP(), settings->library);
-    std::set<nonneg int> varids = fwdAnalysis.getExprVarIds(expr);
-    std::transform(varids.begin(), varids.end(), std::back_inserter(result), [&](int id) {
-        return symboldatabase->getVariableFromVarId(id);
-    });
-    return result;
-}
-
 struct ConditionHandler {
     struct Condition {
         const Token *vartok;
