@@ -1091,7 +1091,7 @@ def generateTable():
     numberOfRules[18] = 8
     numberOfRules[19] = 2
     numberOfRules[20] = 14
-    numberOfRules[21] = 12
+    numberOfRules[21] = 21
     numberOfRules[22] = 10
 
     # Rules that can be checked with compilers:
@@ -3404,7 +3404,7 @@ class MisraChecker:
 
     def misra_21_8(self, data):
         for token in data.tokenlist:
-            if isFunctionCall(token) and (token.astOperand1.str in ('abort', 'exit', 'getenv', 'system')):
+            if isFunctionCall(token) and (token.astOperand1.str in ('abort', 'exit', 'getenv')):
                 self.reportError(token, 21, 8)
 
     def misra_21_9(self, data):
@@ -3455,6 +3455,13 @@ class MisraChecker:
             if args[0].valueType.type == 'void' or args[1].valueType.type == 'void':
                 continue
             self.reportError(token, 21, 15)
+
+    def misra_21_21(self, cfg):
+        for token in cfg.tokenlist:
+            if token.str == 'system':
+                name, args = cppcheckdata.get_function_call_name_args(token)
+                if name == 'system' and len(args) == 1:
+                    self.reportError(token, 21, 21)
 
     def misra_22_5(self, cfg):
         for token in cfg.tokenlist:
@@ -4093,6 +4100,7 @@ class MisraChecker:
             self.executeCheck(2111, self.misra_21_11, cfg)
             self.executeCheck(2112, self.misra_21_12, cfg)
             self.executeCheck(2115, self.misra_21_15, cfg)
+            self.executeCheck(2121, self.misra_21_21, cfg)
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
             self.executeCheck(2205, self.misra_22_5, cfg)
             self.executeCheck(2207, self.misra_22_7, cfg)
