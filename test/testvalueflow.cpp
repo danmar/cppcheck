@@ -2583,7 +2583,7 @@ private:
                "    while (11 != (x = dostuff()) && y) {}\n"
                "    a = x;\n"
                "}";
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 11));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 11));
 
         code = "void f(int x) {\n"
                "    while (x = dostuff()) {}\n"
@@ -4640,7 +4640,8 @@ private:
                "        if (i != j) {}\n"
                "    }\n"
                "}\n";
-        ASSERT_EQUALS(true, tokenValues(code, "!=").empty());
+        ASSERT_EQUALS(1, tokenValues(code, "!=").size());
+        ASSERT_EQUALS(true, tokenValues(code, "!=").front().isPossible());
 
         code = "void f(bool b, int i, int j) {\n"
                "    if (b || i == j) {} else {\n"

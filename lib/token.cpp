@@ -1981,6 +1981,8 @@ static bool removeContradiction(std::list<ValueFlow::Value>& values)
                 continue;
             if (x.isImpossible() == y.isImpossible())
                 continue;
+            if (x.isSymbolicValue() && x.tokvalue != y.tokvalue)
+                continue;
             if (!x.equalValue(y)) {
                 auto compare = [](const ValueFlow::Value& x, const ValueFlow::Value& y) {
                     return x.compareValue(y, ValueFlow::less{});
@@ -2060,6 +2062,8 @@ static void mergeAdjacent(std::list<ValueFlow::Value>& values)
             if (x->valueType != y->valueType)
                 continue;
             if (x->valueKind != y->valueKind)
+                continue;
+            if (x->isSymbolicValue() && x->tokvalue != y->tokvalue)
                 continue;
             if (x->bound != y->bound) {
                 if (y->bound != ValueFlow::Value::Bound::Point && isAdjacent(*x, *y)) {

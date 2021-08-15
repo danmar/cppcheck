@@ -193,7 +193,7 @@ static void setValueBound(ValueFlow::Value& value, const Token* tok, bool invert
 }
 
 static void setConditionalValues(const Token *tok,
-                                 bool invert,
+                                 bool lhs,
                                  MathLib::bigint value,
                                  ValueFlow::Value &true_value,
                                  ValueFlow::Value &false_value)
@@ -202,7 +202,7 @@ static void setConditionalValues(const Token *tok,
         true_value = ValueFlow::Value{tok, value};
         const char* greaterThan = ">=";
         const char* lessThan = "<=";
-        if (invert)
+        if (lhs)
             std::swap(greaterThan, lessThan);
         if (Token::simpleMatch(tok, greaterThan, strlen(greaterThan))) {
             false_value = ValueFlow::Value{tok, value - 1};
@@ -214,7 +214,7 @@ static void setConditionalValues(const Token *tok,
     } else {
         const char* greaterThan = ">";
         const char* lessThan = "<";
-        if (invert)
+        if (lhs)
             std::swap(greaterThan, lessThan);
         if (Token::simpleMatch(tok, greaterThan, strlen(greaterThan))) {
             true_value = ValueFlow::Value{tok, value + 1};
@@ -224,8 +224,8 @@ static void setConditionalValues(const Token *tok,
             false_value = ValueFlow::Value{tok, value};
         }
     }
-    setValueBound(true_value, tok, invert);
-    setValueBound(false_value, tok, !invert);
+    setValueBound(true_value, tok, lhs);
+    setValueBound(false_value, tok, !lhs);
 }
 
 static bool isSaturated(MathLib::bigint value)
@@ -4091,12 +4091,17 @@ static bool isTruncated(const ValueType* src, const ValueType* dst, const Settin
     return false;
 }
 
+static void setSymbolic(ValueFlow::Value& value, const Token* tok)
+{
+    value.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
+    value.tokvalue = tok;
+}
+
 static ValueFlow::Value makeSymbolic(const Token* tok, MathLib::bigint delta = 0)
 {
     ValueFlow::Value value;
     value.setKnown();
-    value.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
-    value.tokvalue = tok;
+    setSymbolic(value, tok);
     value.intvalue = delta;
     return value;
 }
@@ -5134,6 +5139,38 @@ static void valueFlowInferCondition(TokenList* tokenlist,
         }
     }
 }
+
+struct SymbolicConditionHandler : SimpleConditionHandler {
+    virtual std::vector<Condition> parse(const Token* tok, const Settings*) const OVERRIDE {
+        if (!Token::Match(tok, "%comp%"))
+            return {};
+        if (tok->hasKnownIntValue())
+            return {};
+        if (!tok->astOperand1() || tok->astOperand1()->hasKnownIntValue() || tok->astOperand1()->isLiteral())
+            return {};
+        if (!tok->astOperand2() || tok->astOperand2()->hasKnownIntValue() || tok->astOperand2()->isLiteral())
+            return {};
+
+        std::vector<Condition> result;
+        for(int i=0;i<2;i++) {
+            const bool lhs = i == 0;
+            const Token* vartok = lhs ? tok->astOperand1() : tok->astOperand2();
+            const Token* valuetok = lhs ? tok->astOperand2() : tok->astOperand1();
+            ValueFlow::Value true_value;
+            ValueFlow::Value false_value;
+            setConditionalValues(tok, lhs, 0, true_value, false_value);
+            setSymbolic(true_value, valuetok);
+            setSymbolic(false_value, valuetok);
+            
+            Condition cond;
+            cond.true_values = {true_value};
+            cond.false_values = {false_value};
+            cond.vartok = vartok;
+            result.push_back(cond);
+        }
+        return result;
+    }
+};
 
 static bool valueFlowForLoop2(const Token *tok,
                               ProgramMemory *memory1,
@@ -7136,6 +7173,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         values = getTotalValues(tokenlist);
         valueFlowImpossibleValues(tokenlist, settings);
         valueFlowSymbolicAbs(tokenlist, symboldatabase);
+        valueFlowCondition(SymbolicConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings);
         valueFlowSymbolicInfer(tokenlist, symboldatabase);
         valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);
