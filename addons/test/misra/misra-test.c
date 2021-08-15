@@ -1649,6 +1649,12 @@ static void misra_21_12(void) {
     rc = fetestexcept(1); // 21.12
 }
 
+static void misra_21_14(uint8_t *x) {
+    (void)strcpy(x, "123");
+    (void)memcmp(x, y, 100); // 21.14
+    (void)memcmp("abc", y, 100); // 21.14
+}
+
 static void misra_21_15(uint8_t *x, uint16_t *y) {
     (void)memcpy(x, y, 10); // 21.15
     (void)memmove(x, y, 10); // 21.15

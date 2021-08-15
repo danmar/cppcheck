@@ -3457,6 +3457,50 @@ class MisraChecker:
                         'fetestexcept')):
                     self.reportError(token, 21, 12)
 
+    def misra_21_14(self, data):
+        # buffers used in strcpy/strlen/etc function calls
+        string_buffers = []
+        for token in data.tokenlist:
+            if token.str[0] == 's' and isFunctionCall(token.next):
+                name, args = cppcheckdata.get_function_call_name_args(token)
+                if name is None:
+                    continue
+                def _get_string_buffers(match, args, argnum):
+                    if not match:
+                        return []
+                    ret = []
+                    for a in argnum:
+                        if a < len(args):
+                            arg = args[a]
+                            while arg and arg.str in ('.', '::'):
+                                arg = arg.astOperand2
+                            if arg and arg.varId != 0 and arg.varId not in ret:
+                                ret.append(arg.varId)
+                    return ret
+                string_buffers += _get_string_buffers(name == 'strcpy', args, [0, 1])
+                string_buffers += _get_string_buffers(name == 'strncpy', args, [0, 1])
+                string_buffers += _get_string_buffers(name == 'strlen', args, [0])
+                string_buffers += _get_string_buffers(name == 'strcmp', args, [0, 1])
+                string_buffers += _get_string_buffers(name == 'sprintf', args, [0])
+                string_buffers += _get_string_buffers(name == 'snprintf', args, [0, 3])
+
+        for token in data.tokenlist:
+            if token.str != 'memcmp':
+                continue
+            name, args = cppcheckdata.get_function_call_name_args(token)
+            if name is None:
+                continue
+            if len(args) != 3:
+                continue
+            for arg in args[:2]:
+                if arg.str[-1] == '\"':
+                    self.reportError(arg, 21, 14)
+                    continue
+                while arg and arg.str in ('.', '::'):
+                    arg = arg.astOperand2
+                if arg and arg.varId and arg.varId in string_buffers:
+                    self.reportError(arg, 21, 14)
+
     def misra_21_15(self, data):
         for token in data.tokenlist:
             if token.str not in ('memcpy', 'memmove', 'memcmp'):
@@ -4118,6 +4162,7 @@ class MisraChecker:
             self.executeCheck(2110, self.misra_21_10, cfg)
             self.executeCheck(2111, self.misra_21_11, cfg)
             self.executeCheck(2112, self.misra_21_12, cfg)
+            self.executeCheck(2114, self.misra_21_14, cfg)
             self.executeCheck(2115, self.misra_21_15, cfg)
             self.executeCheck(2121, self.misra_21_21, cfg)
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
