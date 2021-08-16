@@ -3931,6 +3931,13 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition '-128>x' is always false\n", errout.str());
+
+        // #8778
+        check("void f() {\n"
+              "    for(int i = 0; i < 19; ++i)\n"
+              "        if(i<=18) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'i<=18' is always true\n", errout.str());
     }
 
     void alwaysTrueContainer() {

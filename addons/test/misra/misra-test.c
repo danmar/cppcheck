@@ -58,6 +58,14 @@ typedef unsigned int       u32;
 typedef signed int         s32;
 typedef unsigned long long u64;
 
+static _Atomic int misra_1_4_var; // 1.4
+static _Noreturn void misra_1_4_func(void) // 1.4
+{
+    if (0 != _Generic(misra_1_4_var)) {} // 1.4
+    printf_s("hello"); // 1.4
+}
+
+
 /* // */   // 3.1
 /* /* */   // 3.1
 ////
@@ -1623,7 +1631,6 @@ static void misra_21_7(void) {
 static void misra_21_8(void) {
   abort(); // 21.8
   (void)getenv("foo"); // 21.8
-  (void)system(""); // 21.8
   exit(-1); // 21.8
 }
 
@@ -1642,10 +1649,24 @@ static void misra_21_12(void) {
     rc = fetestexcept(1); // 21.12
 }
 
+static void misra_21_14(uint8_t *x) {
+    (void)strcpy(x, "123");
+    (void)memcmp(x, y, 100); // 21.14
+    (void)memcmp("abc", y, 100); // 21.14 21.16
+}
+
 static void misra_21_15(uint8_t *x, uint16_t *y) {
     (void)memcpy(x, y, 10); // 21.15
     (void)memmove(x, y, 10); // 21.15
     (void)memcmp(x, y, 10); // 21.15
+}
+
+struct misra_21_16_S { int a; int b; };
+static void misra_21_16_f1(struct misra_21_16_S *s1, struct misra_21_16_S *s2) {
+    (void)memcmp(s1, s2, 10); // 21.16
+}
+static void misra_21_16_f2(char *x, char *y) {
+    (void)memcmp(x, y, 10); // 21.16
 }
 
 // Large arrays for R13.1. Size exceeds default Python's max recursion depth.
@@ -1782,9 +1803,18 @@ static uint8_t misra_13_1_large_bad[1024] = { // 13.1
 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
 
+static void misra_21_21(void) {
+    (void)system("ls"); // 21.21
+}
+
 static void misra_22_5(FILE *f) {
     int x = *f; // 22.5
     int y = f->pos; // 22.5
+}
+
+static void misra_22_7(char ch)
+{
+    if (EOF == ch) {} // 22.7
 }
 
 static void misra_22_8(void)

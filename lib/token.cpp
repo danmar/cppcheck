@@ -2424,7 +2424,7 @@ const ValueFlow::Value* Token::getValue(const MathLib::bigint val) const
     return it == mImpl->mValues->end() ? nullptr : &*it;
 }
 
-const ValueFlow::Value* Token::getMaxValue(bool condition) const
+const ValueFlow::Value* Token::getMaxValue(bool condition, MathLib::bigint path) const
 {
     if (!mImpl->mValues)
         return nullptr;
@@ -2433,6 +2433,8 @@ const ValueFlow::Value* Token::getMaxValue(bool condition) const
         if (!value.isIntValue())
             continue;
         if (value.isImpossible())
+            continue;
+        if (value.path != 0 && value.path != path)
             continue;
         if ((!ret || value.intvalue > ret->intvalue) &&
             ((value.condition != nullptr) == condition))
