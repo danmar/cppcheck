@@ -7128,6 +7128,17 @@ const char* ValueFlow::Value::toString(LifetimeKind lifetimeKind)
     return "";
 }
 
+bool ValueFlow::Value::sameToken(const Token* tok1, const Token* tok2)
+{
+    if (tok1 == tok2)
+        return true;
+    if (!tok1)
+        return false;
+    if (tok1->exprId() == 0 || tok2->exprId() == 0)
+        return false;
+    return tok1->exprId() == tok2->exprId();
+}
+
 const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(Token *expr, const Settings *settings)
 {
     if (expr && expr->values().empty()) {
