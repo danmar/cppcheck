@@ -5316,10 +5316,23 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
 
         if (extractForLoopValues(tok, &varid, &knownInitValue, &initValue, &partialCond, &stepValue, &lastValue)) {
             const bool executeBody = !knownInitValue || initValue <= lastValue;
-            if (executeBody) {
-                valueFlowForLoopSimplify(bodyStart, varid, false, initValue, tokenlist, errorLogger, settings);
-                if (stepValue == 1)
-                    valueFlowForLoopSimplify(bodyStart, varid, false, lastValue, tokenlist, errorLogger, settings);
+            const Token* vartok = Token::findmatch(tok, "%varid%", bodyStart, varid);
+            if (executeBody && vartok) {
+                std::list<ValueFlow::Value> initValues;
+                initValues.emplace_back(initValue, ValueFlow::Value::Bound::Lower);
+                initValues.push_back(asImpossible(initValues.back()));
+                Analyzer::Result result =
+                    valueFlowForward(bodyStart, bodyStart->link(), vartok, initValues, tokenlist, settings);
+
+                if (!result.action.isModified()) {
+                    std::list<ValueFlow::Value> lastValues;
+                    lastValues.emplace_back(lastValue, ValueFlow::Value::Bound::Upper);
+                    lastValues.back().conditional = true;
+                    lastValues.push_back(asImpossible(lastValues.back()));
+                    if (stepValue != 1)
+                        lastValues.pop_front();
+                    valueFlowForward(bodyStart, bodyStart->link(), vartok, lastValues, tokenlist, settings);
+                }
             }
             const MathLib::bigint afterValue = executeBody ? lastValue + stepValue : initValue;
             valueFlowForLoopSimplifyAfter(tok, varid, afterValue, tokenlist, settings);
@@ -6987,9 +7000,9 @@ static void valueFlowUnknownFunctionReturn(TokenList *tokenlist, const Settings 
     }
 }
 
-ValueFlow::Value::Value(const Token* c, long long val)
+ValueFlow::Value::Value(const Token* c, long long val, Bound b)
     : valueType(ValueType::INT),
-    bound(Bound::Point),
+    bound(b),
     intvalue(val),
     tokvalue(nullptr),
     floatValue(0.0),
@@ -7179,6 +7192,12 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowDynamicBufferSize(tokenlist, symboldatabase, settings);
 }
 
+ValueFlow::Value ValueFlow::Value::unknown()
+{
+    Value v;
+    v.valueType = Value::ValueType::UNINIT;
+    return v;
+}
 
 std::string ValueFlow::eitherTheConditionIsRedundant(const Token *condition)
 {
@@ -7216,4 +7235,47 @@ const ValueFlow::Value* ValueFlow::findValue(const std::list<ValueFlow::Value>& 
             return nullptr;
     }
     return ret;
+}
+
+static std::vector<ValueFlow::Value> isOutOfBoundsImpl(const ValueFlow::Value& size,
+                                                       const Token* indexTok,
+                                                       bool condition)
+{
+    if (!indexTok)
+        return {};
+    const ValueFlow::Value* indexValue = indexTok->getMaxValue(condition, size.path);
+    if (!indexValue)
+        return {};
+    if (indexValue->intvalue >= size.intvalue)
+        return {*indexValue};
+    if (!condition)
+        return {};
+    // TODO: Use a better way to decide if the variable in unconstrained
+    if (!indexTok->variable() || !indexTok->variable()->isArgument())
+        return {};
+    if (indexValue->bound != ValueFlow::Value::Bound::Lower)
+        return {};
+    if (size.bound == ValueFlow::Value::Bound::Lower)
+        return {};
+    ValueFlow::Value inBoundsValue = inferCondition("<", indexTok, size.intvalue);
+    if (inBoundsValue.isKnown() && inBoundsValue.intvalue != 0)
+        return {};
+    ValueFlow::Value value = inferCondition(">=", indexTok, indexValue->intvalue);
+    if (!value.isKnown())
+        return {};
+    if (value.intvalue == 0)
+        return {};
+    value.intvalue = size.intvalue;
+    value.bound = ValueFlow::Value::Bound::Lower;
+    return {value};
+}
+
+std::vector<ValueFlow::Value> ValueFlow::isOutOfBounds(const Value& size, const Token* indexTok, bool possible)
+{
+    std::vector<ValueFlow::Value> result = isOutOfBoundsImpl(size, indexTok, false);
+    if (!result.empty())
+        return result;
+    if (!possible)
+        return result;
+    return isOutOfBoundsImpl(size, indexTok, true);
 }

@@ -595,6 +595,41 @@ private:
         ASSERT_EQUALS("test.cpp:2:warning:Either the condition 'v.size()>=1' is redundant or v size can be 1. Expression 'v[1]' cause access out of bounds.\n"
                       "test.cpp:2:note:condition 'v.size()>=1'\n"
                       "test.cpp:2:note:Access out of bounds\n", errout.str());
+
+        checkNormal("int f(int x, int y) {\n"
+                    "    std::vector<int> a = {0,1,2};\n"
+                    "    if(x<2)\n"
+                    "        y = a[x] + 1;\n"
+                    "    else\n"
+                    "        y = a[x];\n"
+                    "    return y;\n"
+                    "}\n");
+        ASSERT_EQUALS(
+            "test.cpp:6:warning:Either the condition 'x<2' is redundant or 'x' can have the value greater or equal to 3. Expression 'a[x]' cause access out of bounds.\n"
+            "test.cpp:3:note:condition 'x<2'\n"
+            "test.cpp:6:note:Access out of bounds\n",
+            errout.str());
+
+        checkNormal("int f(std::vector<int> v) {\n"
+                    "    if (v.size() > 3)\n"
+                    "        return v[v.size() - 3];\n"
+                    "    return 0;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(std::vector<int> v) {\n"
+                    "    v[v.size() - 1];\n"
+                    "    if (v.size() == 1) {}\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(int n) {\n"
+                    "    std::vector<int> v = {1, 2, 3, 4};\n"
+                    "    const int i = qMin(n, v.size());\n"
+                    "    if (i > 1)\n"
+                    "        v[i] = 1;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
