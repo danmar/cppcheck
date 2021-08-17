@@ -2154,7 +2154,8 @@ bool Token::addValue(const ValueFlow::Value &value)
         });
     }
 
-    // assert(!value.isPossible() || !mImpl->mValues || std::none_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& x) {
+    // assert(!value.isPossible() || !mImpl->mValues || std::none_of(mImpl->mValues->begin(), mImpl->mValues->end(),
+    // [&](const ValueFlow::Value& x) {
     //     return x.isKnown() && sameValueType(x, value);
     // }));
 

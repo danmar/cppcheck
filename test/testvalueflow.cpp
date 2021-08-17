@@ -6090,12 +6090,12 @@ private:
         ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, "y", 0));
 
         code = "int f(int i, int j) {\n"
-                "    if (i == j) {\n"
-                "        int x = i - j;\n"
-                "        return x;\n"
-                "    }\n"
-                "    return 0;\n"
-                "}\n";
+               "    if (i == j) {\n"
+               "        int x = i - j;\n"
+               "        return x;\n"
+               "    }\n"
+               "    return 0;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
     }
 };
