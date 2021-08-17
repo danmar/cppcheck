@@ -5475,7 +5475,7 @@ struct SymbolicConditionHandler : SimpleConditionHandler {
                 continue;
             ValueFlow::Value true_value;
             ValueFlow::Value false_value;
-            setConditionalValues(tok, lhs, 0, true_value, false_value);
+            setConditionalValues(tok, !lhs, 0, true_value, false_value);
             setSymbolic(true_value, valuetok);
             setSymbolic(false_value, valuetok);
 
