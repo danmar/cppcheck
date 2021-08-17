@@ -385,7 +385,7 @@ template<class R, class T>
 static R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
 {
     auto wrap = [](T z) {
-        return static_cast<R>(z);
+        return R{z};
     };
     switch (MathLib::encodeMultiChar(s)) {
     case '+':
@@ -4468,7 +4468,7 @@ static std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
         std::vector<int> r = Interval::compare(lhs, rhs, &refs);
         if (!r.empty()) {
             int x = r.front();
-            ValueFlow::Value value(calculate<bool>(op, x, 0));
+            ValueFlow::Value value(calculate(op, x, 0));
             addToErrorPath(value, refs);
             setValueKind(value, refs);
             result.push_back(value);

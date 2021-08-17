@@ -2398,7 +2398,7 @@ private:
                                 "std :: vector < CharacterConversion > ( ) . swap ( c2c ) ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code, false));
-        ASSERT_EQUALS("[test.cpp:4]: (debug) valueflow.cpp:4635:(valueFlow) bailout: variable 'it' used in loop\n",
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:4]: (debug) valueflow.cpp:4635:(valueFlow) bailout: variable 'it' used in loop\n",
                       errout.str());
     }
 
