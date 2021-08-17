@@ -4343,7 +4343,9 @@ struct Interval {
                                   const Interval& rhs,
                                   std::vector<const ValueFlow::Value*>* ref = nullptr)
     {
-        if (!lhs.isScalar() && !rhs.isScalar())
+        if (!lhs.isScalar())
+            return {};
+        if (!rhs.isScalar())
             return {};
         if (ref)
             *ref = merge(lhs.minRef, rhs.minRef);
@@ -4415,6 +4417,8 @@ static std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
     };
     lhsValues.remove_if(notMatch);
     rhsValues.remove_if(notMatch);
+    if (lhsValues.empty() || rhsValues.empty())
+        return result;
 
     Interval lhs = Interval::fromValues(lhsValues);
     Interval rhs = Interval::fromValues(rhsValues);
