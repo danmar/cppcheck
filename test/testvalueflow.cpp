@@ -233,6 +233,26 @@ private:
         return false;
     }
 
+    bool testValueOfXImpossible(const char code[], unsigned int linenr, const std::string& expr, int value) {
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == "x" && tok->linenr() == linenr) {
+                for (const ValueFlow::Value& val:tok->values()) {
+                    if (!val.isSymbolicValue())
+                        continue;
+                    if (val.isImpossible() && val.intvalue == value && val.tokvalue->expressionString() == expr)
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     bool testValueOfXInconclusive(const char code[], unsigned int linenr, int value) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -263,6 +283,24 @@ private:
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 for (const ValueFlow::Value &v : tok->values()) {
                     if (v.isIntValue() && !v.isImpossible() && v.intvalue == value)
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    bool testValueOfX(const char code[], unsigned int linenr, const std::string& expr, int value) {
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == "x" && tok->linenr() == linenr) {
+                for (const ValueFlow::Value &v : tok->values()) {
+                    if (v.isSymbolicValue() && !v.isImpossible() && v.intvalue == value && v.tokvalue->expressionString() == expr)
                         return true;
                 }
             }
@@ -6096,6 +6134,52 @@ private:
                "    return 0;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "void f(int x, int y) {\n"
+               "    if (x == y) {\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, "y", 0));
+
+        code = "void f(int x, int y) {\n"
+               "    if (x != y) {\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "y", 0));
+
+        code = "void f(int x, int y) {\n"
+               "    if (x < y) {\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, "y", -1));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "y", 0));
+
+        code = "void f(int x, int y) {\n"
+               "    if (x <= y) {\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, "y", 0));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "y", 1));
+
+        code = "void f(int x, int y) {\n"
+               "    if (x > y) {\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, "y", 1));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "y", 0));
+
+        code = "void f(int x, int y) {\n"
+               "    if (x >= y) {\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, "y", 0));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "y", -1));
     }
 };
 
