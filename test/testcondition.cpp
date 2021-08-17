@@ -3781,6 +3781,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'x==y' is always false\n", errout.str());
 
+        check("void f(bool a, bool b) {  if (a == b && a && !b){} }");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Condition '!b' is always false\n", errout.str());
+
+        check("bool f(bool a, bool b) { if(a && b && (!a)){} }");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Condition '!a' is always false\n", errout.str());
+
         check("struct a {\n"
               "  a *b() const;\n"
               "} c;\n"
