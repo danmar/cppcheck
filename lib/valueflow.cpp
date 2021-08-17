@@ -4288,7 +4288,7 @@ struct Interval {
             if (minValue->isPossible() && minValue->bound == ValueFlow::Value::Bound::Lower)
                 result.setMinValue(minValue->intvalue, minValue);
             if (minValue->isKnown())
-                return Interval::fromInt(minValue->intvalue);
+                return Interval::fromInt(minValue->intvalue, minValue);
         }
         const ValueFlow::Value* maxValue = getCompareValue(values, predicate, std::greater<MathLib::bigint>{});
         if (maxValue) {
@@ -4447,10 +4447,10 @@ static std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
                 result.push_back(value);
             }
         }
-    } else if (op == "!=" && lhs.isScalarOrEmpty() && rhs.isScalarOrEmpty()) {
+    } else if ((op == "!=" || op == "==") && lhs.isScalarOrEmpty() && rhs.isScalarOrEmpty()) {
         if (lhs.isScalar() && rhs.isScalar()) {
             std::vector<const ValueFlow::Value*> refs = Interval::merge(lhs.getScalarRef(), rhs.getScalarRef());
-            ValueFlow::Value value(lhs.getScalar() != rhs.getScalar());
+            ValueFlow::Value value(calculate(op, lhs.getScalar(), rhs.getScalar()));
             addToErrorPath(value, refs);
             setValueKind(value, refs);
             result.push_back(value);
@@ -4461,7 +4461,7 @@ static std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
             else if (rhs.isScalar() && inferNotEqual(lhsValues, rhs.getScalar()))
                 refs = rhs.getScalarRef();
             if (!refs.empty()) {
-                ValueFlow::Value value(1);
+                ValueFlow::Value value(op == "!=");
                 addToErrorPath(value, refs);
                 setValueKind(value, refs);
                 result.push_back(value);
