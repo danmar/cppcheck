@@ -1141,6 +1141,7 @@ public:
     bool hasKnownIntValue() const;
     bool hasKnownValue() const;
     bool hasKnownValue(ValueFlow::Value::ValueType t) const;
+    bool hasKnownSymbolicValue(const Token* tok) const;
 
     const ValueFlow::Value* getKnownValue(ValueFlow::Value::ValueType t) const;
     MathLib::bigint getKnownIntValue() const {
