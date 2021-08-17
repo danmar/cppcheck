@@ -3793,6 +3793,17 @@ private:
               "  return N;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i, int j) {\n"
+              "    if (i < j) {\n"
+              "        i++;\n"
+              "        if (i >= j)\n"
+              "            return;\n"
+              "        i++;\n"
+              "        if (i >= j) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
