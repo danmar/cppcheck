@@ -4361,8 +4361,8 @@ struct Interval {
             return {1};
         if (diff.isLessThan(0, ref))
             return {-1};
-        std::vector<int> isEqual = Interval::equal(lhs, rhs, ref);
-        if (!isEqual.empty() && isEqual.front() != 0)
+        std::vector<int> eq = Interval::equal(lhs, rhs, ref);
+        if (!eq.empty() && eq.front() != 0)
             return {0};
         return {};
     }
@@ -4500,14 +4500,14 @@ static std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
 
 struct SymbolicInferModel : InferModel {
     const Token* expr;
-    SymbolicInferModel(const Token* tok) : expr(tok) {
+    explicit SymbolicInferModel(const Token* tok) : expr(tok) {
         assert(expr->exprId() != 0);
     }
-    virtual bool match(const ValueFlow::Value& value) const
+    virtual bool match(const ValueFlow::Value& value) const OVERRIDE
     {
         return value.isSymbolicValue() && value.tokvalue && value.tokvalue->exprId() == expr->exprId();
     }
-    virtual ValueFlow::Value yield(MathLib::bigint value) const
+    virtual ValueFlow::Value yield(MathLib::bigint value) const OVERRIDE
     {
         ValueFlow::Value result(value);
         result.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
