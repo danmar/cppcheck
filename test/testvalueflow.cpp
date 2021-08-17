@@ -4640,8 +4640,7 @@ private:
                "        if (i != j) {}\n"
                "    }\n"
                "}\n";
-        ASSERT_EQUALS(1, tokenValues(code, "!=").size());
-        ASSERT_EQUALS(true, tokenValues(code, "!=").front().isPossible());
+        ASSERT_EQUALS(true, tokenValues(code, "!=").empty());
 
         code = "void f(bool b, int i, int j) {\n"
                "    if (b || i == j) {} else {\n"
