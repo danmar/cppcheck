@@ -233,15 +233,16 @@ private:
         return false;
     }
 
-    bool testValueOfXImpossible(const char code[], unsigned int linenr, const std::string& expr, int value) {
+    bool testValueOfXImpossible(const char code[], unsigned int linenr, const std::string& expr, int value)
+    {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+        for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                for (const ValueFlow::Value& val:tok->values()) {
+                for (const ValueFlow::Value& val : tok->values()) {
                     if (!val.isSymbolicValue())
                         continue;
                     if (val.isImpossible() && val.intvalue == value && val.tokvalue->expressionString() == expr)
@@ -291,16 +292,18 @@ private:
         return false;
     }
 
-    bool testValueOfX(const char code[], unsigned int linenr, const std::string& expr, int value) {
+    bool testValueOfX(const char code[], unsigned int linenr, const std::string& expr, int value)
+    {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+        for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                for (const ValueFlow::Value &v : tok->values()) {
-                    if (v.isSymbolicValue() && !v.isImpossible() && v.intvalue == value && v.tokvalue->expressionString() == expr)
+                for (const ValueFlow::Value& v : tok->values()) {
+                    if (v.isSymbolicValue() && !v.isImpossible() && v.intvalue == value &&
+                        v.tokvalue->expressionString() == expr)
                         return true;
                 }
             }
