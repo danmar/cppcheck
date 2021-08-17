@@ -1063,7 +1063,11 @@ def getCppcheckRules():
             '17.4', # missingReturn
             '17.5', '18.1', '18.2', '18.3', '18.6',
             '19.1', # overlappingWriteUnion, overlappingWriteFunction
-            '20.6', '22.1', '22.2',
+            '20.6', # preprocessorErrorDirective
+            '21.17', # bufferAccessOutOfBounds
+            '21.18', # bufferAccessOutOfBounds
+            '22.1', # memleak, resourceLeak, memleakOnRealloc, leakReturnValNotUsed, leakNoVarFunctionCall
+            '22.2', # autovarInvalidDeallocation
             '22.3', # incompatibleFileOpen
             '22.4', '22.6']
 
@@ -1091,7 +1095,7 @@ def generateTable():
     numberOfRules[18] = 8
     numberOfRules[19] = 2
     numberOfRules[20] = 14
-    numberOfRules[21] = 12
+    numberOfRules[21] = 21
     numberOfRules[22] = 10
 
     # Rules that can be checked with compilers:
@@ -1366,6 +1370,24 @@ class MisraChecker:
         if len(names) > 0:
             cppcheckdata.reportSummary(dumpfile, 'MisraUsage', names)
 
+
+    def misra_1_4(self, cfg):
+        for token in cfg.tokenlist:
+            if token.str in ('_Atomic', '_Noreturn', '_Generic', '_Thread_local', '_Alignas', '_Alignof'):
+                self.reportError(token, 1, 4)
+            if token.str.endswith('_s') and isFunctionCall(token.next):
+                # See C specification C11 - Annex K, page 578
+                if token.str in ('tmpfile_s', 'tmpnam_s', 'fopen_s', 'freopen_s', 'fprintf_s', 'fscanf_s', 'printf_s', 'scanf_s',
+                                 'snprintf_s', 'sprintf_s', 'sscanf_s', 'vfprintf_s', 'vfscanf_s', 'vprintf_s', 'vscanf_s',
+                                 'vsnprintf_s', 'vsprintf_s', 'vsscanf_s', 'gets_s', 'set_constraint_handler_s', 'abort_handler_s',
+                                 'ignore_handler_s', 'getenv_s', 'bsearch_s', 'qsort_s', 'wctomb_s', 'mbstowcs_s', 'wcstombs_s',
+                                 'memcpy_s', 'memmove_s', 'strcpy_s', 'strncpy_s', 'strcat_s', 'strncat_s', 'strtok_s', 'memset_s',
+                                 'strerror_s', 'strerrorlen_s', 'strnlen_s', 'asctime_s', 'ctime_s', 'gmtime_s', 'localtime_s',
+                                 'fwprintf_s', 'fwscanf_s', 'snwprintf_s', 'swprintf_s', 'swscanf_s', 'vfwprintf_s', 'vfwscanf_s',
+                                 'vsnwprintf_s', 'vswprintf_s', 'vswscanf_s', 'vwprintf_s', 'vwscanf_s', 'wprintf_s', 'wscanf_s',
+                                 'wcscpy_s', 'wcsncpy_s', 'wmemcpy_s', 'wmemmove_s', 'wcscat_s', 'wcsncat_s', 'wcstok_s', 'wcsnlen_s',
+                                 'wcrtomb_s', 'mbsrtowcs_s', 'wcsrtombs_s'):
+                    self.reportError(token, 1, 4)
 
     def misra_2_3(self, dumpfile, typedefInfo):
         self._save_ctu_summary_typedefs(dumpfile, typedefInfo)
@@ -3404,7 +3426,7 @@ class MisraChecker:
 
     def misra_21_8(self, data):
         for token in data.tokenlist:
-            if isFunctionCall(token) and (token.astOperand1.str in ('abort', 'exit', 'getenv', 'system')):
+            if isFunctionCall(token) and (token.astOperand1.str in ('abort', 'exit', 'getenv')):
                 self.reportError(token, 21, 8)
 
     def misra_21_9(self, data):
@@ -3439,6 +3461,50 @@ class MisraChecker:
                         'fetestexcept')):
                     self.reportError(token, 21, 12)
 
+    def misra_21_14(self, data):
+        # buffers used in strcpy/strlen/etc function calls
+        string_buffers = []
+        for token in data.tokenlist:
+            if token.str[0] == 's' and isFunctionCall(token.next):
+                name, args = cppcheckdata.get_function_call_name_args(token)
+                if name is None:
+                    continue
+                def _get_string_buffers(match, args, argnum):
+                    if not match:
+                        return []
+                    ret = []
+                    for a in argnum:
+                        if a < len(args):
+                            arg = args[a]
+                            while arg and arg.str in ('.', '::'):
+                                arg = arg.astOperand2
+                            if arg and arg.varId != 0 and arg.varId not in ret:
+                                ret.append(arg.varId)
+                    return ret
+                string_buffers += _get_string_buffers(name == 'strcpy', args, [0, 1])
+                string_buffers += _get_string_buffers(name == 'strncpy', args, [0, 1])
+                string_buffers += _get_string_buffers(name == 'strlen', args, [0])
+                string_buffers += _get_string_buffers(name == 'strcmp', args, [0, 1])
+                string_buffers += _get_string_buffers(name == 'sprintf', args, [0])
+                string_buffers += _get_string_buffers(name == 'snprintf', args, [0, 3])
+
+        for token in data.tokenlist:
+            if token.str != 'memcmp':
+                continue
+            name, args = cppcheckdata.get_function_call_name_args(token)
+            if name is None:
+                continue
+            if len(args) != 3:
+                continue
+            for arg in args[:2]:
+                if arg.str[-1] == '\"':
+                    self.reportError(arg, 21, 14)
+                    continue
+                while arg and arg.str in ('.', '::'):
+                    arg = arg.astOperand2
+                if arg and arg.varId and arg.varId in string_buffers:
+                    self.reportError(arg, 21, 14)
+
     def misra_21_15(self, data):
         for token in data.tokenlist:
             if token.str not in ('memcpy', 'memmove', 'memcmp'):
@@ -3456,12 +3522,54 @@ class MisraChecker:
                 continue
             self.reportError(token, 21, 15)
 
+    def misra_21_16(self, cfg):
+        for token in cfg.tokenlist:
+            if token.str != 'memcmp':
+                continue
+            name, args = cppcheckdata.get_function_call_name_args(token)
+            if name is None:
+                continue
+            if len(args) != 3:
+                continue
+            for arg in args[:2]:
+                if arg.valueType is None:
+                    continue
+                if arg.valueType.pointer > 1:
+                    continue
+                if arg.valueType.sign in ('unsigned', 'signed'):
+                    continue
+                if arg.valueType.isEnum():
+                    continue
+                self.reportError(token, 21, 16)
+
+    def misra_21_21(self, cfg):
+        for token in cfg.tokenlist:
+            if token.str == 'system':
+                name, args = cppcheckdata.get_function_call_name_args(token)
+                if name == 'system' and len(args) == 1:
+                    self.reportError(token, 21, 21)
+
     def misra_22_5(self, cfg):
         for token in cfg.tokenlist:
             if token.isUnaryOp("*") or (token.isBinaryOp() and token.str == '.'):
                 fileptr = token.astOperand1
                 if fileptr.variable and cppcheckdata.simpleMatch(fileptr.variable.typeStartToken, 'FILE *'):
                     self.reportError(token, 22, 5)
+
+    def misra_22_7(self, cfg):
+        for eofToken in cfg.tokenlist:
+            if eofToken.str != 'EOF':
+                continue
+            if eofToken.astParent is None or not eofToken.astParent.isComparisonOp:
+                continue
+            if eofToken.astParent.astOperand1 == eofToken:
+                eofTokenSibling = eofToken.astParent.astOperand2
+            else:
+                eofTokenSibling = eofToken.astParent.astOperand1
+            while isCast(eofTokenSibling) and eofTokenSibling.valueType and eofTokenSibling.valueType.type and eofTokenSibling.valueType.type == 'int':
+                eofTokenSibling = eofTokenSibling.astOperand2 if eofTokenSibling.astOperand2 else eofTokenSibling.astOperand1
+            if eofTokenSibling is not None and eofTokenSibling.valueType and eofTokenSibling.valueType and eofTokenSibling.valueType.type in ('bool', 'char', 'short'):
+                self.reportError(eofToken, 22, 7)
 
     def misra_22_8(self, cfg):
         is_zero = False
@@ -3470,10 +3578,31 @@ class MisraChecker:
                 is_zero = True
             if token.str == '(' and not simpleMatch(token.link, ') {'):
                 name, _ = cppcheckdata.get_function_call_name_args(token.previous)
-                if not is_errno_setting_function(name):
+                if name is None:
+                    continue
+                if is_errno_setting_function(name):
+                    if not is_zero:
+                        self.reportError(token, 22, 8)
+                else:
                     is_zero = False
-                elif not is_zero:
-                    self.reportError(token, 22, 8)
+
+    def misra_22_9(self, cfg):
+        errno_is_set = False
+        for token in cfg.tokenlist:
+            if token.str == '(' and not simpleMatch(token.link, ') {'):
+                name, args = cppcheckdata.get_function_call_name_args(token.previous)
+                if name is None:
+                    continue
+                errno_is_set = is_errno_setting_function(name)
+            if errno_is_set and token.str in '{};':
+                errno_is_set = False
+                tok = token.next
+                while tok and tok.str not in ('{','}',';','errno'):
+                    tok = tok.next
+                if tok is None or tok.str != 'errno':
+                    self.reportError(token, 22, 9)
+                elif (tok.astParent is None) or (not tok.astParent.isComparisonOp):
+                    self.reportError(token, 22, 9)
 
     def misra_22_10(self, cfg):
         last_function_call = None
@@ -3928,6 +4057,7 @@ class MisraChecker:
             if not self.settings.quiet:
                 self.printStatus('Checking %s, config %s...' % (dumpfile, cfg.name))
 
+            self.executeCheck(104, self.misra_1_4, cfg)
             self.executeCheck(203, self.misra_2_3, dumpfile, cfg.typedefInfo)
             self.executeCheck(204, self.misra_2_4, dumpfile, cfg)
             self.executeCheck(205, self.misra_2_5, dumpfile, cfg)
@@ -4056,10 +4186,15 @@ class MisraChecker:
             self.executeCheck(2110, self.misra_21_10, cfg)
             self.executeCheck(2111, self.misra_21_11, cfg)
             self.executeCheck(2112, self.misra_21_12, cfg)
+            self.executeCheck(2114, self.misra_21_14, cfg)
             self.executeCheck(2115, self.misra_21_15, cfg)
+            self.executeCheck(2116, self.misra_21_16, cfg)
+            self.executeCheck(2121, self.misra_21_21, cfg)
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
             self.executeCheck(2205, self.misra_22_5, cfg)
-            self.executeCheck(2210, self.misra_22_8, cfg)
+            self.executeCheck(2207, self.misra_22_7, cfg)
+            self.executeCheck(2208, self.misra_22_8, cfg)
+            self.executeCheck(2209, self.misra_22_9, cfg)
             self.executeCheck(2210, self.misra_22_10, cfg)
 
     def analyse_ctu_info(self, ctu_info_files):

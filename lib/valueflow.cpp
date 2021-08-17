@@ -4564,6 +4564,8 @@ static void valueFlowForwardAssign(Token* const tok,
                                    ErrorLogger* const errorLogger,
                                    const Settings* const settings)
 {
+    if (Token::simpleMatch(tok->astParent(), "return"))
+        return;
     const Token* endOfVarScope = getEndOfVarScope(tok, vars);
     if (std::any_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
         valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
@@ -4797,20 +4799,6 @@ static void insertNegateKnown(std::list<ValueFlow::Value>& values, const std::li
         value.setKnown();
         values.push_back(value);
     }
-}
-
-static std::vector<const Variable*> getExprVariables(const Token* expr,
-                                                     const TokenList* tokenlist,
-                                                     const SymbolDatabase* symboldatabase,
-                                                     const Settings* settings)
-{
-    std::vector<const Variable*> result;
-    FwdAnalysis fwdAnalysis(tokenlist->isCPP(), settings->library);
-    std::set<nonneg int> varids = fwdAnalysis.getExprVarIds(expr);
-    std::transform(varids.begin(), varids.end(), std::back_inserter(result), [&](int id) {
-        return symboldatabase->getVariableFromVarId(id);
-    });
-    return result;
 }
 
 struct ConditionHandler {
@@ -5682,10 +5670,23 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
 
         if (extractForLoopValues(tok, &varid, &knownInitValue, &initValue, &partialCond, &stepValue, &lastValue)) {
             const bool executeBody = !knownInitValue || initValue <= lastValue;
-            if (executeBody) {
-                valueFlowForLoopSimplify(bodyStart, varid, false, initValue, tokenlist, errorLogger, settings);
-                if (stepValue == 1)
-                    valueFlowForLoopSimplify(bodyStart, varid, false, lastValue, tokenlist, errorLogger, settings);
+            const Token* vartok = Token::findmatch(tok, "%varid%", bodyStart, varid);
+            if (executeBody && vartok) {
+                std::list<ValueFlow::Value> initValues;
+                initValues.emplace_back(initValue, ValueFlow::Value::Bound::Lower);
+                initValues.push_back(asImpossible(initValues.back()));
+                Analyzer::Result result =
+                    valueFlowForward(bodyStart, bodyStart->link(), vartok, initValues, tokenlist, settings);
+
+                if (!result.action.isModified()) {
+                    std::list<ValueFlow::Value> lastValues;
+                    lastValues.emplace_back(lastValue, ValueFlow::Value::Bound::Upper);
+                    lastValues.back().conditional = true;
+                    lastValues.push_back(asImpossible(lastValues.back()));
+                    if (stepValue != 1)
+                        lastValues.pop_front();
+                    valueFlowForward(bodyStart, bodyStart->link(), vartok, lastValues, tokenlist, settings);
+                }
             }
             const MathLib::bigint afterValue = executeBody ? lastValue + stepValue : initValue;
             valueFlowForLoopSimplifyAfter(tok, varid, afterValue, tokenlist, settings);
@@ -6744,7 +6745,7 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
                     ValueFlow::Value v(0);
                     v.setKnown();
                     values.push_back(v);
-                    valueFlowForwardAssign(tok->tokAt(4), var, values, false, false, tokenlist, errorLogger, settings);
+                    valueFlowForwardAssign(tok->tokAt(3), var, values, false, false, tokenlist, errorLogger, settings);
                 } else {
                     tok->removeValues(std::mem_fn(&ValueFlow::Value::isIntValue));
                     Token* inTok = tok->tokAt(3)->astOperand2();
@@ -6759,7 +6760,7 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
                 ValueFlow::Value v(0);
                 v.setKnown();
                 values.push_back(v);
-                valueFlowForwardAssign(tok->tokAt(4), var, values, false, false, tokenlist, errorLogger, settings);
+                valueFlowForwardAssign(tok->tokAt(3), var, values, false, false, tokenlist, errorLogger, settings);
             }
         } else if (Token::Match(tok->previous(), "%name%|> (|{") && astIsSmartPointer(tok) &&
                    astIsSmartPointer(tok->astOperand1())) {
@@ -7353,9 +7354,9 @@ static void valueFlowUnknownFunctionReturn(TokenList *tokenlist, const Settings 
     }
 }
 
-ValueFlow::Value::Value(const Token* c, long long val)
+ValueFlow::Value::Value(const Token* c, long long val, Bound b)
     : valueType(ValueType::INT),
-    bound(Bound::Point),
+    bound(b),
     intvalue(val),
     tokvalue(nullptr),
     floatValue(0.0),
@@ -7455,6 +7456,30 @@ bool ValueFlow::Value::sameToken(const Token* tok1, const Token* tok2)
         return false;
     return tok1->exprId() == tok2->exprId();
 }
+const char* ValueFlow::Value::toString(LifetimeScope lifetimeScope)
+{
+    switch (lifetimeScope) {
+    case ValueFlow::Value::LifetimeScope::Local:
+        return "Local";
+    case ValueFlow::Value::LifetimeScope::Argument:
+        return "Argument";
+    case ValueFlow::Value::LifetimeScope::SubFunction:
+        return "SubFunction";
+    }
+    return "";
+}
+const char* ValueFlow::Value::toString(Bound bound)
+{
+    switch (bound) {
+    case ValueFlow::Value::Bound::Point:
+        return "Point";
+    case ValueFlow::Value::Bound::Upper:
+        return "Upper";
+    case ValueFlow::Value::Bound::Lower:
+        return "Lower";
+    }
+    return "";
+}
 
 const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(Token *expr, const Settings *settings)
 {
@@ -7532,6 +7557,12 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowDynamicBufferSize(tokenlist, symboldatabase, settings);
 }
 
+ValueFlow::Value ValueFlow::Value::unknown()
+{
+    Value v;
+    v.valueType = Value::ValueType::UNINIT;
+    return v;
+}
 
 std::string ValueFlow::eitherTheConditionIsRedundant(const Token *condition)
 {
@@ -7569,4 +7600,47 @@ const ValueFlow::Value* ValueFlow::findValue(const std::list<ValueFlow::Value>& 
             return nullptr;
     }
     return ret;
+}
+
+static std::vector<ValueFlow::Value> isOutOfBoundsImpl(const ValueFlow::Value& size,
+                                                       const Token* indexTok,
+                                                       bool condition)
+{
+    if (!indexTok)
+        return {};
+    const ValueFlow::Value* indexValue = indexTok->getMaxValue(condition, size.path);
+    if (!indexValue)
+        return {};
+    if (indexValue->intvalue >= size.intvalue)
+        return {*indexValue};
+    if (!condition)
+        return {};
+    // TODO: Use a better way to decide if the variable in unconstrained
+    if (!indexTok->variable() || !indexTok->variable()->isArgument())
+        return {};
+    if (indexValue->bound != ValueFlow::Value::Bound::Lower)
+        return {};
+    if (size.bound == ValueFlow::Value::Bound::Lower)
+        return {};
+    ValueFlow::Value inBoundsValue = inferCondition("<", indexTok, size.intvalue);
+    if (inBoundsValue.isKnown() && inBoundsValue.intvalue != 0)
+        return {};
+    ValueFlow::Value value = inferCondition(">=", indexTok, indexValue->intvalue);
+    if (!value.isKnown())
+        return {};
+    if (value.intvalue == 0)
+        return {};
+    value.intvalue = size.intvalue;
+    value.bound = ValueFlow::Value::Bound::Lower;
+    return {value};
+}
+
+std::vector<ValueFlow::Value> ValueFlow::isOutOfBounds(const Value& size, const Token* indexTok, bool possible)
+{
+    std::vector<ValueFlow::Value> result = isOutOfBoundsImpl(size, indexTok, false);
+    if (!result.empty())
+        return result;
+    if (!possible)
+        return result;
+    return isOutOfBoundsImpl(size, indexTok, true);
 }

@@ -1152,7 +1152,7 @@ public:
 
     const ValueFlow::Value* getValue(const MathLib::bigint val) const;
 
-    const ValueFlow::Value* getMaxValue(bool condition) const;
+    const ValueFlow::Value* getMaxValue(bool condition, MathLib::bigint path = 0) const;
 
     const ValueFlow::Value* getMovedValue() const;
 
