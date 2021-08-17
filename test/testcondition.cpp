@@ -3773,6 +3773,14 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (style) Condition 'y[0]<42' is always true\n", errout.str());
 
+        check("void f(int x, int y) {\n"
+              "    if(x < y && x < 42) {\n"
+              "        --x;\n"
+              "        if(x == y) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'x==y' is always false\n", errout.str());
+
         check("struct a {\n"
               "  a *b() const;\n"
               "} c;\n"
