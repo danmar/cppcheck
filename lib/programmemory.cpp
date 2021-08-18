@@ -496,8 +496,7 @@ static bool isIterator(const Token* expr)
     return std::any_of(expr->values().begin(), expr->values().end(), std::mem_fn(&ValueFlow::Value::isIteratorValue));
 }
 
-static bool isNumericValue(const ValueFlow::Value& value)
-{
+static bool isNumericValue(const ValueFlow::Value& value) {
     return value.isIntValue() || value.isFloatValue();
 }
 
@@ -506,14 +505,14 @@ static double asFloat(const ValueFlow::Value& value)
     return value.isFloatValue() ? value.floatValue : value.intvalue;
 }
 
-static std::string removeAssign(const std::string& assign)
-{
+static std::string removeAssign(const std::string& assign) {
     return std::string{assign.begin(), assign.end() - 1};
 }
 
 struct assign {
     template<class T, class U>
-    void operator()(T& x, const U& y) const {
+    void operator()(T& x, const U& y) const
+    {
         x = y;
     }
 };
@@ -566,13 +565,11 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
         return unknown;
     else if (expr->hasKnownIntValue() && !expr->isAssignmentOp()) {
         return expr->values().front();
-    }
-    else if (expr->isNumber()) {
+    } else if (expr->isNumber()) {
         if (MathLib::isFloat(expr->str()))
             return unknown;
         return ValueFlow::Value{MathLib::toLongNumber(expr->str())};
-    }
-    else if (Token::Match(expr->tokAt(-2), ". %name% (") && astIsContainer(expr->tokAt(-2)->astOperand1())) {
+    } else if (Token::Match(expr->tokAt(-2), ". %name% (") && astIsContainer(expr->tokAt(-2)->astOperand1())) {
         const Token* containerTok = expr->tokAt(-2)->astOperand1();
         Library::Container::Yield yield = containerTok->valueType()->container->getYield(expr->strAt(-1));
         if (yield == Library::Container::Yield::SIZE) {
@@ -590,8 +587,8 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
             else if (!v.isImpossible())
                 return ValueFlow::Value{v.intvalue == 0};
         }
-    }
-    else if (expr->isAssignmentOp() && expr->astOperand1() && expr->astOperand2() && expr->astOperand1()->exprId() > 0) {
+    } else if (expr->isAssignmentOp() && expr->astOperand1() && expr->astOperand2() &&
+               expr->astOperand1()->exprId() > 0) {
         ValueFlow::Value rhs = execute(expr->astOperand2(), pm);
         if (rhs.isUninitValue())
             return unknown;
@@ -611,26 +608,22 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
             pm.values[expr->astOperand1()->exprId()] = rhs;
             return rhs;
         }
-    }
-    else if (expr->str() == "&&" && expr->astOperand1() && expr->astOperand2()) {
+    } else if (expr->str() == "&&" && expr->astOperand1() && expr->astOperand2()) {
         ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
         if (!lhs.isIntValue())
             return unknown;
         if (lhs.intvalue == 0)
             return lhs;
         return execute(expr->astOperand2(), pm);
-    }
-    else if (expr->str() == "||" && expr->astOperand1() && expr->astOperand2()) {
+    } else if (expr->str() == "||" && expr->astOperand1() && expr->astOperand2()) {
         ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
         if (lhs.isIntValue() && lhs.intvalue == 0)
             return lhs;
         return execute(expr->astOperand2(), pm);
-    }
-    else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
+    } else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
         execute(expr->astOperand1(), pm);
         return execute(expr->astOperand2(), pm);
-    }
-    else if (Token::Match(expr, "++|--") && expr->astOperand1() && expr->astOperand1()->exprId() != 0) {
+    } else if (Token::Match(expr, "++|--") && expr->astOperand1() && expr->astOperand1()->exprId() != 0) {
         if (!pm.hasValue(expr->astOperand1()->exprId()))
             return unknown;
         ValueFlow::Value& lhs = pm.values.at(expr->astOperand1()->exprId());
@@ -645,8 +638,7 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
         else
             lhs.intvalue--;
         return lhs;
-    }
-    else if (Token::Match(expr, "%op%") && expr->astOperand1() && expr->astOperand2()) {
+    } else if (Token::Match(expr, "%op%") && expr->astOperand1() && expr->astOperand2()) {
         ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
         ValueFlow::Value rhs = execute(expr->astOperand2(), pm);
         if (!lhs.isUninitValue() && !rhs.isUninitValue()) {
@@ -675,19 +667,16 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
         if (expr->str() == "-")
             lhs.intvalue = -lhs.intvalue;
         return lhs;
-    }
-    else if (expr->str() == "(" && expr->isCast()) {
+    } else if (expr->str() == "(" && expr->isCast()) {
         if (Token::simpleMatch(expr->previous(), ">") && expr->previous()->link())
             return execute(expr->astOperand2(), pm);
         else
             return execute(expr->astOperand1(), pm);
-    }
-    else if (expr->exprId() > 0 && pm.hasValue(expr->exprId())) {
+    } else if (expr->exprId() > 0 && pm.hasValue(expr->exprId())) {
         return pm.values.at(expr->exprId());
     }
 
     return unknown;
-
 }
 
 void execute(const Token* expr,
