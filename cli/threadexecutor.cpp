@@ -411,7 +411,9 @@ unsigned int ThreadExecutor::check()
         }
     }
 
-    return std::accumulate(threadFutures.begin(), threadFutures.end(), 0U, [](unsigned int v, std::future<unsigned int>& f) { return v + f.get(); });
+    return std::accumulate(threadFutures.begin(), threadFutures.end(), 0U, [](unsigned int v, std::future<unsigned int>& f) {
+        return v + f.get();
+    });
 }
 
 unsigned int __stdcall ThreadExecutor::threadProc(ThreadExecutor* threadExecutor)
@@ -522,7 +524,7 @@ void ThreadExecutor::report(const ErrorMessage &msg, MessageType msgType)
             break;
         }
 
-       mReportSync.unlock();
+        mReportSync.unlock();
     }
 }
 
