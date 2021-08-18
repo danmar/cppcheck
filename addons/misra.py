@@ -907,7 +907,7 @@ def isHexEscapeSequence(symbols):
 
 
 def isOctalEscapeSequence(symbols):
-    r"""Checks that given symbols are valid octal escape sequence:
+    """Checks that given symbols are valid octal escape sequence:
 
      octal-escape-sequence:
              \ octal-digit
