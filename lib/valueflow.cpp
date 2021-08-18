@@ -79,6 +79,7 @@
 
 #include "analyzer.h"
 #include "astutils.h"
+#include "calculate.h"
 #include "checkuninitvar.h"
 #include "config.h"
 #include "errorlogger.h"
@@ -360,98 +361,6 @@ static bool isComputableValue(const Token* parent, const ValueFlow::Value& value
     if (value.isTokValue() && (!parent->isComparisonOp() || value.tokvalue->tokType() != Token::eString))
         return false;
     return true;
-}
-
-template<class T>
-static bool isEqual(T x, T y)
-{
-    return x == y;
-}
-
-template<>
-bool isEqual<double>(double x, double y)
-{
-    const double diff = (x > y) ? x - y : y - x;
-    return !((diff / 2) < diff);
-}
-
-template<class T>
-static bool isZero(T x)
-{
-    return isEqual<T>(x, T(0));
-}
-
-template<class R, class T>
-static R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
-{
-    auto wrap = [](T z) {
-        return R{z};
-    };
-    switch (MathLib::encodeMultiChar(s)) {
-    case '+':
-        return wrap(x + y);
-    case '-':
-        return wrap(x - y);
-    case '*':
-        return wrap(x * y);
-    case '/':
-        if (isZero(y)) {
-            if (error)
-                *error = true;
-            return R{};
-        }
-        return wrap(x / y);
-    case '%':
-        if (isZero(y)) {
-            if (error)
-                *error = true;
-            return R{};
-        }
-        return wrap(MathLib::bigint(x) % MathLib::bigint(y));
-    case '&':
-        return wrap(MathLib::bigint(x) & MathLib::bigint(y));
-    case '|':
-        return wrap(MathLib::bigint(x) | MathLib::bigint(y));
-    case '^':
-        return wrap(MathLib::bigint(x) ^ MathLib::bigint(y));
-    case '>':
-        return wrap(x > y);
-    case '<':
-        return wrap(x < y);
-    case '<<':
-        if (y >= sizeof(MathLib::bigint) * 8) {
-            if (error)
-                *error = true;
-            return R{};
-        }
-        return wrap(MathLib::bigint(x) << MathLib::bigint(y));
-    case '>>':
-        if (y >= sizeof(MathLib::bigint) * 8) {
-            if (error)
-                *error = true;
-            return R{};
-        }
-        return wrap(MathLib::bigint(x) >> MathLib::bigint(y));
-    case '&&':
-        return wrap(!isZero(x) && !isZero(y));
-    case '||':
-        return wrap(!isZero(x) || !isZero(y));
-    case '==':
-        return wrap(isEqual(x, y));
-    case '!=':
-        return wrap(!isEqual(x, y));
-    case '>=':
-        return wrap(x >= y);
-    case '<=':
-        return wrap(x <= y);
-    }
-    throw InternalError(nullptr, "Unknown operator: " + s);
-}
-
-template<class T>
-static T calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
-{
-    return calculate<T, T>(s, x, y, error);
 }
 
 /** Set token value for cast */
