@@ -325,7 +325,19 @@ public:
         bool formatstr_secure;
         Container::Action containerAction;
         Container::Yield containerYield;
-        Function() : use(false), leakignore(false), isconst(false), ispure(false), useretval(UseRetValType::NONE), ignore(false), formatstr(false), formatstr_scan(false), formatstr_secure(false), containerAction(Container::Action::NO_ACTION), containerYield(Container::Yield::NO_YIELD) {}
+        Function()
+            : use(false),
+            leakignore(false),
+            isconst(false),
+            ispure(false),
+            useretval(UseRetValType::NONE),
+            ignore(false),
+            formatstr(false),
+            formatstr_scan(false),
+            formatstr_secure(false),
+            containerAction(Container::Action::NO_ACTION),
+            containerYield(Container::Yield::NO_YIELD)
+        {}
     };
 
     const Function *getFunction(const Token *ftok) const;

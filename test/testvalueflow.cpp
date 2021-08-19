@@ -5422,31 +5422,31 @@ private:
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
 
         code = "void f() {\n"
-            "    std::vector<int> v;\n"
-            "    int x = v.size();\n"
-            "    return x;\n"
-            "}\n";
+               "    std::vector<int> v;\n"
+               "    int x = v.size();\n"
+               "    return x;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
 
         code = "void f() {\n"
-            "    std::vector<int> v;\n"
-            "    int x = v.empty();\n"
-            "    return x;\n"
-            "}\n";
+               "    std::vector<int> v;\n"
+               "    int x = v.empty();\n"
+               "    return x;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
 
         code = "void f() {\n"
-            "    std::vector<int> v;\n"
-            "    int x = std::size(v);\n"
-            "    return x;\n"
-            "}\n";
+               "    std::vector<int> v;\n"
+               "    int x = std::size(v);\n"
+               "    return x;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
 
         code = "void f() {\n"
-            "    std::vector<int> v;\n"
-            "    int x = std::empty(v);\n"
-            "    return x;\n"
-            "}\n";
+               "    std::vector<int> v;\n"
+               "    int x = std::empty(v);\n"
+               "    return x;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
 
         code = "bool f() {\n"
