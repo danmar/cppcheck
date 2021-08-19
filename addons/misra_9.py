@@ -318,7 +318,7 @@ class InitializerParser:
                         if self.ed.parent != self.root:
                             # Check if token is correct value type for self.root.children[?]
                             child = self.root.getChildByValueElement(self.ed)
-                            if hasattr(self.token.valueType, 'type'):
+                            if self.token.valueType:
                                 if child.elementType != 'record' or self.token.valueType.type != 'record' or child.valueType.typeScope != self.token.valueType.typeScope:
                                     self.root.markStuctureViolation(self.token)
 
