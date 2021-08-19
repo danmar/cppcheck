@@ -6162,31 +6162,6 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
     }
 }
 
-static bool isContainerSize(const Token* tok)
-{
-    if (!Token::Match(tok, "%var% . %name% ("))
-        return false;
-    if (!astIsContainer(tok))
-        return false;
-    if (tok->valueType()->container && tok->valueType()->container->getYield(tok->strAt(2)) == Library::Container::Yield::SIZE)
-        return true;
-    if (Token::Match(tok->tokAt(2), "size|length ( )"))
-        return true;
-    return false;
-}
-
-static bool isContainerEmpty(const Token* tok)
-{
-    if (!Token::Match(tok, "%var% . %name% ("))
-        return false;
-    if (!astIsContainer(tok))
-        return false;
-    if (tok->valueType()->container && tok->valueType()->container->getYield(tok->strAt(2)) == Library::Container::Yield::EMPTY)
-        return true;
-    if (Token::simpleMatch(tok->tokAt(2), "empty ( )"))
-        return true;
-    return false;
-}
 static bool isContainerSizeChanged(const Token *tok, const Settings* settings = nullptr, int depth=20);
 
 static bool isContainerSizeChanged(nonneg int varId, const Token *start, const Token *end, const Settings* settings = nullptr, int depth = 20);
