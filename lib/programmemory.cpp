@@ -318,9 +318,7 @@ static ProgramMemory getInitialProgramState(const Token* tok,
     return pm;
 }
 
-ProgramMemoryState::ProgramMemoryState(const Settings* s)
-: state(), origins(), settings(s)
-{}
+ProgramMemoryState::ProgramMemoryState(const Settings* s) : state(), origins(), settings(s) {}
 
 void ProgramMemoryState::insert(const ProgramMemory &pm, const Token* origin)
 {
