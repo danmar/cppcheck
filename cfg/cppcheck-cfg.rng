@@ -110,6 +110,21 @@
             </element>
           </optional>
           <optional>
+            <element name="container">
+              <optional>
+                <attribute name="action">
+                  <ref name="CONTAINER-ACTION"/>
+                </attribute>
+              </optional>
+              <optional>
+                <attribute name="yields">
+                  <ref name="CONTAINER-YIELDS"/>
+                </attribute>
+              </optional>
+              <empty/>
+            </element>            
+          </optional>
+          <optional>
             <element name="pure"><empty/></element>
           </optional>
           <optional>
