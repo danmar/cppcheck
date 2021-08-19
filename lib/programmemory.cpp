@@ -3,6 +3,7 @@
 #include "astutils.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
+#include "settings.h"
 #include "token.h"
 #include "valueflow.h"
 #include <algorithm>
@@ -152,36 +153,6 @@ bool conditionIsTrue(const Token *condition, const ProgramMemory &programMemory)
     return !error && result == 1;
 }
 
-static const Token* getContainerFromEmpty(const Token* tok)
-{
-    if (!Token::Match(tok->tokAt(-2), ". %name% ("))
-        return nullptr;
-    const Token* containerTok = tok->tokAt(-2)->astOperand1();
-    if (!astIsContainer(containerTok))
-        return nullptr;
-    if (containerTok->valueType()->container &&
-        containerTok->valueType()->container->getYield(tok->strAt(-1)) == Library::Container::Yield::EMPTY)
-        return containerTok;
-    if (Token::simpleMatch(tok->tokAt(-1), "empty ( )"))
-        return containerTok;
-    return nullptr;
-}
-
-static const Token* getContainerFromSize(const Token* tok)
-{
-    if (!Token::Match(tok->tokAt(-2), ". %name% ("))
-        return nullptr;
-    const Token* containerTok = tok->tokAt(-2)->astOperand1();
-    if (!astIsContainer(containerTok))
-        return nullptr;
-    if (containerTok->valueType()->container &&
-        containerTok->valueType()->container->getYield(tok->strAt(-1)) == Library::Container::Yield::SIZE)
-        return containerTok;
-    if (Token::Match(tok->tokAt(-1), "size|length ( )"))
-        return containerTok;
-    return nullptr;
-}
-
 void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings, bool then)
 {
     if (Token::Match(tok, "==|>=|<=|<|>|!=")) {
@@ -212,7 +183,7 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
         bool impossible = (tok->str() == "==" && !then) || (tok->str() == "!=" && then);
         if (!impossible)
             pm.setIntValue(vartok->exprId(), then ? truevalue.intvalue : falsevalue.intvalue);
-        const Token* containerTok = getContainerFromSize(vartok);
+        const Token* containerTok = settings->library.getContainerFromYield(vartok, Library::Container::Yield::SIZE);
         if (containerTok)
             pm.setContainerSizeValue(containerTok->exprId(), then ? truevalue.intvalue : falsevalue.intvalue, !impossible);
     } else if (Token::simpleMatch(tok, "!")) {
@@ -229,7 +200,7 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
         if (endTok && isExpressionChanged(tok, tok->next(), endTok, settings, true))
             return;
         pm.setIntValue(tok->exprId(), then);
-        const Token* containerTok = getContainerFromEmpty(tok);
+        const Token* containerTok = settings->library.getContainerFromYield(tok, Library::Container::Yield::EMPTY);
         if (containerTok)
             pm.setContainerSizeValue(containerTok->exprId(), 0, then);
     }

@@ -270,52 +270,6 @@ const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, Val
     });
 }
 
-static const Token* getContainerFromEmpty(const Token* tok, const Settings* settings)
-{
-    if (!tok)
-        return nullptr;
-    if (Token::Match(tok->tokAt(-2), ". %name% (")) {
-        const Token* containerTok = tok->tokAt(-2)->astOperand1();
-        if (!astIsContainer(containerTok))
-            return nullptr;
-        if (containerTok->valueType()->container &&
-            containerTok->valueType()->container->getYield(tok->strAt(-1)) == Library::Container::Yield::EMPTY)
-            return containerTok;
-        if (Token::simpleMatch(tok->tokAt(-1), "empty ( )"))
-            return containerTok;
-    } else if (Token::Match(tok->previous(), "%name% (")) {
-        if (const Library::Function* f = settings->library.getFunction(tok->previous())) {
-            if (f->containerYield == Library::Container::Yield::EMPTY) {
-                return tok->astOperand2();
-            }
-        }
-    }
-    return nullptr;
-}
-
-static const Token* getContainerFromSize(const Token* tok, const Settings* settings)
-{
-    if (!tok)
-        return nullptr;
-    if (Token::Match(tok->tokAt(-2), ". %name% (")) {
-        const Token* containerTok = tok->tokAt(-2)->astOperand1();
-        if (!astIsContainer(containerTok))
-            return nullptr;
-        if (containerTok->valueType()->container &&
-            containerTok->valueType()->container->getYield(tok->strAt(-1)) == Library::Container::Yield::SIZE)
-            return containerTok;
-        if (Token::Match(tok->tokAt(-1), "size|length ( )"))
-            return containerTok;
-    } else if (Token::Match(tok->previous(), "%name% (")) {
-        if (const Library::Function* f = settings->library.getFunction(tok->previous())) {
-            if (f->containerYield == Library::Container::Yield::SIZE) {
-                return tok->astOperand2();
-            }
-        }
-    }
-    return nullptr;
-}
-
 static bool isEscapeScope(const Token* tok, TokenList * tokenlist, bool unknown = false)
 {
     if (!Token::simpleMatch(tok, "{"))
@@ -6721,7 +6675,7 @@ struct ContainerConditionHandler : ConditionHandler {
         ValueFlow::Value false_value;
         const Token *vartok = parseCompareInt(tok, true_value, false_value);
         if (vartok) {
-            vartok = getContainerFromSize(vartok, settings);
+            vartok = settings->library.getContainerFromYield(vartok, Library::Container::Yield::SIZE);
             if (!vartok)
                 return {};
             true_value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
@@ -6734,7 +6688,7 @@ struct ContainerConditionHandler : ConditionHandler {
 
         // Empty check
         if (tok->str() == "(") {
-            vartok = getContainerFromEmpty(tok, settings);
+            vartok = settings->library.getContainerFromYield(tok, Library::Container::Yield::EMPTY);
             // TODO: Handle .size()
             if (!vartok)
                 return {};

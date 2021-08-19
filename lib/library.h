@@ -422,6 +422,9 @@ public:
 
     bool isimporter(const std::string& file, const std::string &importer) const;
 
+    const Token* getContainerFromYield(const Token* tok, Container::Yield yield) const;
+    const Token* getContainerFromAction(const Token* tok, Container::Action action) const;
+
     bool isreflection(const std::string &token) const {
         return mReflection.find(token) != mReflection.end();
     }

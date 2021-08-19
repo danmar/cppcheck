@@ -1544,6 +1544,51 @@ bool Library::isimporter(const std::string& file, const std::string &importer) c
     return (it != mImporters.end() && it->second.count(importer) > 0);
 }
 
+const Token* Library::getContainerFromYield(const Token* tok, Library::Container::Yield yield) const
+{
+    if (!tok)
+        return nullptr;
+    if (Token::Match(tok->tokAt(-2), ". %name% (")) {
+        const Token* containerTok = tok->tokAt(-2)->astOperand1();
+        if (!astIsContainer(containerTok))
+            return nullptr;
+        if (containerTok->valueType()->container &&
+            containerTok->valueType()->container->getYield(tok->strAt(-1)) == yield)
+            return containerTok;
+        if (Token::simpleMatch(tok->tokAt(-1), "empty ( )"))
+            return containerTok;
+    } else if (Token::Match(tok->previous(), "%name% (")) {
+        if (const Library::Function* f = settings->library.getFunction(tok->previous())) {
+            if (f->containerYield == yield) {
+                return tok->astOperand2();
+            }
+        }
+    }
+    return nullptr;
+}
+const Token* Library::getContainerFromAction(const Token* tok, Library::Container::Action action) const
+{
+    if (!tok)
+        return nullptr;
+    if (Token::Match(tok->tokAt(-2), ". %name% (")) {
+        const Token* containerTok = tok->tokAt(-2)->astOperand1();
+        if (!astIsContainer(containerTok))
+            return nullptr;
+        if (containerTok->valueType()->container &&
+            containerTok->valueType()->container->getAction(tok->strAt(-1)) == action)
+            return containerTok;
+        if (Token::simpleMatch(tok->tokAt(-1), "empty ( )"))
+            return containerTok;
+    } else if (Token::Match(tok->previous(), "%name% (")) {
+        if (const Library::Function* f = settings->library.getFunction(tok->previous())) {
+            if (f->containerAction == action) {
+                return tok->astOperand2();
+            }
+        }
+    }
+    return nullptr;
+}
+
 bool Library::isSmartPointer(const Token* tok) const
 {
     return detectSmartPointer(tok);
