@@ -1803,6 +1803,12 @@ static void misra_21_16_f2(char *x, char *y) {
     (void)memcmp(x, y, 10); // 21.16
 }
 
+static void misra_21_19(void) {
+    char *s = setlocale(LC_ALL,0); // 21.19
+    const struct lconv *conv = localeconv ();
+    conv->decimal_point = "^"; // 21.19
+}
+
 static void misra_21_21(void) {
     (void)system("ls"); // 21.21
 }
