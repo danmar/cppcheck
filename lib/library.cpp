@@ -135,6 +135,55 @@ Library::Error Library::load(const char exename[], const char path[])
     }
 }
 
+Library::Container::Yield Library::Container::yieldFrom(const std::string& yieldName)
+{
+    if (yieldName == "at_index")
+        return Container::Yield::AT_INDEX;
+    else if (yieldName == "item")
+        return Container::Yield::ITEM;
+    else if (yieldName == "buffer")
+        return Container::Yield::BUFFER;
+    else if (yieldName == "buffer-nt")
+        return Container::Yield::BUFFER_NT;
+    else if (yieldName == "start-iterator")
+        return Container::Yield::START_ITERATOR;
+    else if (yieldName == "end-iterator")
+        return Container::Yield::END_ITERATOR;
+    else if (yieldName == "iterator")
+        return Container::Yield::ITERATOR;
+    else if (yieldName == "size")
+        return Container::Yield::SIZE;
+    else if (yieldName == "empty")
+        return Container::Yield::EMPTY;
+    else
+        return Container::Yield::NO_YIELD;
+}
+Library::Container::Action Library::Container::actionFrom(const std::string& actionName)
+{
+    if (actionName == "resize")
+        return Container::Action::RESIZE;
+    else if (actionName == "clear")
+        return Container::Action::CLEAR;
+    else if (actionName == "push")
+        return Container::Action::PUSH;
+    else if (actionName == "pop")
+        return Container::Action::POP;
+    else if (actionName == "find")
+        return Container::Action::FIND;
+    else if (actionName == "insert")
+        return Container::Action::INSERT;
+    else if (actionName == "erase")
+        return Container::Action::ERASE;
+    else if (actionName == "change-content")
+        return Container::Action::CHANGE_CONTENT;
+    else if (actionName == "change-internal")
+        return Container::Action::CHANGE_INTERNAL;
+    else if (actionName == "change")
+        return Container::Action::CHANGE;
+    else
+        return Container::Action::NO_ACTION;
+}
+
 bool Library::loadxmldata(const char xmldata[], std::size_t len)
 {
     tinyxml2::XMLDocument doc;
@@ -408,27 +457,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         Container::Action action = Container::Action::NO_ACTION;
                         if (action_ptr) {
                             std::string actionName = action_ptr;
-                            if (actionName == "resize")
-                                action = Container::Action::RESIZE;
-                            else if (actionName == "clear")
-                                action = Container::Action::CLEAR;
-                            else if (actionName == "push")
-                                action = Container::Action::PUSH;
-                            else if (actionName == "pop")
-                                action = Container::Action::POP;
-                            else if (actionName == "find")
-                                action = Container::Action::FIND;
-                            else if (actionName == "insert")
-                                action = Container::Action::INSERT;
-                            else if (actionName == "erase")
-                                action = Container::Action::ERASE;
-                            else if (actionName == "change-content")
-                                action = Container::Action::CHANGE_CONTENT;
-                            else if (actionName == "change-internal")
-                                action = Container::Action::CHANGE_INTERNAL;
-                            else if (actionName == "change")
-                                action = Container::Action::CHANGE;
-                            else
+                            action = Container::actionFrom(actionName);
+                            if (action == Container::Action::NO_ACTION)
                                 return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, actionName);
                         }
 
@@ -436,25 +466,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         Container::Yield yield = Container::Yield::NO_YIELD;
                         if (yield_ptr) {
                             std::string yieldName = yield_ptr;
-                            if (yieldName == "at_index")
-                                yield = Container::Yield::AT_INDEX;
-                            else if (yieldName == "item")
-                                yield = Container::Yield::ITEM;
-                            else if (yieldName == "buffer")
-                                yield = Container::Yield::BUFFER;
-                            else if (yieldName == "buffer-nt")
-                                yield = Container::Yield::BUFFER_NT;
-                            else if (yieldName == "start-iterator")
-                                yield = Container::Yield::START_ITERATOR;
-                            else if (yieldName == "end-iterator")
-                                yield = Container::Yield::END_ITERATOR;
-                            else if (yieldName == "iterator")
-                                yield = Container::Yield::ITERATOR;
-                            else if (yieldName == "size")
-                                yield = Container::Yield::SIZE;
-                            else if (yieldName == "empty")
-                                yield = Container::Yield::EMPTY;
-                            else
+                            yield = Container::yieldFrom(yieldName);
+                            if (yield == Container::Yield::NO_YIELD)
                                 return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, yieldName);
                         }
 
@@ -776,6 +789,9 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     ac.iteratorInfo.last = (str && std::strcmp(str, "last") == 0);
                     ac.iteratorInfo.container = argnode->IntAttribute("container", 0);
                 }
+                else if (argnodename == "container") {
+
+                }
 
                 else
                     unknown_elements.insert(argnodename);
@@ -835,6 +851,26 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             }
 
             functionwarn[name] = wi;
+        } else if (functionnodename == "container") {
+            const char* const action_ptr = functionnode->Attribute("action");
+            Container::Action action = Container::Action::NO_ACTION;
+            if (action_ptr) {
+                std::string actionName = action_ptr;
+                action = Container::actionFrom(actionName);
+                if (action == Container::Action::NO_ACTION)
+                    return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, actionName);
+            }
+            func.containerAction = action;
+
+            const char* const yield_ptr = functionnode->Attribute("yields");
+            Container::Yield yield = Container::Yield::NO_YIELD;
+            if (yield_ptr) {
+                std::string yieldName = yield_ptr;
+                yield = Container::yieldFrom(yieldName);
+                if (yield == Container::Yield::NO_YIELD)
+                    return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, yieldName);
+            }
+            func.containerYield = yield;
         } else
             unknown_elements.insert(functionnodename);
     }
