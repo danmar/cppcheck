@@ -138,7 +138,7 @@ namespace ValueFlow {
                     return false;
                 break;
             case ValueType::SYMBOLIC:
-                if (tokvalue != rhs.tokvalue)
+                if (!sameToken(tokvalue, rhs.tokvalue))
                     return false;
                 if (intvalue != rhs.intvalue)
                     return false;
@@ -188,7 +188,7 @@ namespace ValueFlow {
         template<class Compare>
         bool compareValue(const Value& rhs, Compare compare) const {
             assert((!this->isSymbolicValue() && !rhs.isSymbolicValue()) ||
-                   (this->valueType == rhs.valueType && this->tokvalue == rhs.tokvalue));
+                   (this->valueType == rhs.valueType && sameToken(this->tokvalue, rhs.tokvalue)));
             bool result = false;
             visitValue(
                 *this,
@@ -425,6 +425,8 @@ namespace ValueFlow {
         bool errorSeverity() const {
             return !condition && !defaultArg;
         }
+
+        static bool sameToken(const Token* tok1, const Token* tok2);
     };
 
     /// Constant folding of expression. This can be used before the full ValueFlow has been executed (ValueFlow::setValues).

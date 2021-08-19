@@ -951,7 +951,7 @@ private:
               "    }\n"
               "    return false;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'c!=a' is always false\n", errout.str());
     }
 
     void incorrectLogicOperator2() {
@@ -3773,6 +3773,20 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (style) Condition 'y[0]<42' is always true\n", errout.str());
 
+        check("void f(int x, int y) {\n"
+              "    if(x < y && x < 42) {\n"
+              "        --x;\n"
+              "        if(x == y) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'x==y' is always false\n", errout.str());
+
+        check("void f(bool a, bool b) {  if (a == b && a && !b){} }");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Condition '!b' is always false\n", errout.str());
+
+        check("bool f(bool a, bool b) { if(a && b && (!a)){} }");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Condition '!a' is always false\n", errout.str());
+
         check("struct a {\n"
               "  a *b() const;\n"
               "} c;\n"
@@ -3791,6 +3805,17 @@ private:
               "  if (i == 0)\n"
               "    return 0;\n"
               "  return N;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i, int j) {\n"
+              "    if (i < j) {\n"
+              "        i++;\n"
+              "        if (i >= j)\n"
+              "            return;\n"
+              "        i++;\n"
+              "        if (i >= j) {}\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

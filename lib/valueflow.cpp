@@ -192,17 +192,17 @@ static void setValueBound(ValueFlow::Value& value, const Token* tok, bool invert
     }
 }
 
-static void setConditionalValues(const Token *tok,
-                                 bool invert,
+static void setConditionalValues(const Token* tok,
+                                 bool lhs,
                                  MathLib::bigint value,
-                                 ValueFlow::Value &true_value,
-                                 ValueFlow::Value &false_value)
+                                 ValueFlow::Value& true_value,
+                                 ValueFlow::Value& false_value)
 {
     if (Token::Match(tok, "==|!=|>=|<=")) {
         true_value = ValueFlow::Value{tok, value};
         const char* greaterThan = ">=";
         const char* lessThan = "<=";
-        if (invert)
+        if (lhs)
             std::swap(greaterThan, lessThan);
         if (Token::simpleMatch(tok, greaterThan, strlen(greaterThan))) {
             false_value = ValueFlow::Value{tok, value - 1};
@@ -214,7 +214,7 @@ static void setConditionalValues(const Token *tok,
     } else {
         const char* greaterThan = ">";
         const char* lessThan = "<";
-        if (invert)
+        if (lhs)
             std::swap(greaterThan, lessThan);
         if (Token::simpleMatch(tok, greaterThan, strlen(greaterThan))) {
             true_value = ValueFlow::Value{tok, value + 1};
@@ -224,8 +224,8 @@ static void setConditionalValues(const Token *tok,
             false_value = ValueFlow::Value{tok, value};
         }
     }
-    setValueBound(true_value, tok, invert);
-    setValueBound(false_value, tok, !invert);
+    setValueBound(true_value, tok, lhs);
+    setValueBound(false_value, tok, !lhs);
 }
 
 static bool isSaturated(MathLib::bigint value)
@@ -4091,12 +4091,17 @@ static bool isTruncated(const ValueType* src, const ValueType* dst, const Settin
     return false;
 }
 
+static void setSymbolic(ValueFlow::Value& value, const Token* tok)
+{
+    value.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
+    value.tokvalue = tok;
+}
+
 static ValueFlow::Value makeSymbolic(const Token* tok, MathLib::bigint delta = 0)
 {
     ValueFlow::Value value;
     value.setKnown();
-    value.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
-    value.tokvalue = tok;
+    setSymbolic(value, tok);
     value.intvalue = delta;
     return value;
 }
@@ -4177,6 +4182,341 @@ static void valueFlowSymbolicAbs(TokenList* tokenlist, SymbolDatabase* symboldat
     }
 }
 
+template<class Predicate, class Compare>
+static const ValueFlow::Value* getCompareValue(const std::list<ValueFlow::Value>& values,
+                                               Predicate pred,
+                                               Compare compare)
+{
+    const ValueFlow::Value* result = nullptr;
+    for (const ValueFlow::Value& value : values) {
+        if (!pred(value))
+            continue;
+        if (result)
+            result = &std::min(value, *result, [compare](const ValueFlow::Value& x, const ValueFlow::Value& y) {
+                return compare(x.intvalue, y.intvalue);
+            });
+        else
+            result = &value;
+    }
+    return result;
+}
+
+struct Interval {
+    std::vector<MathLib::bigint> minvalue = {};
+    std::vector<MathLib::bigint> maxvalue = {};
+    std::vector<const ValueFlow::Value*> minRef = {};
+    std::vector<const ValueFlow::Value*> maxRef = {};
+
+    void setMinValue(MathLib::bigint x, const ValueFlow::Value* ref = nullptr)
+    {
+        minvalue = {x};
+        if (ref)
+            minRef = {ref};
+    }
+
+    void setMaxValue(MathLib::bigint x, const ValueFlow::Value* ref = nullptr)
+    {
+        maxvalue = {x};
+        if (ref)
+            maxRef = {ref};
+    }
+
+    bool isLessThan(MathLib::bigint x, std::vector<const ValueFlow::Value*>* ref = nullptr) const
+    {
+        if (!this->maxvalue.empty() && this->maxvalue.front() < x) {
+            if (ref)
+                *ref = maxRef;
+            return true;
+        }
+        return false;
+    }
+
+    bool isGreaterThan(MathLib::bigint x, std::vector<const ValueFlow::Value*>* ref = nullptr) const
+    {
+        if (!this->minvalue.empty() && this->minvalue.front() > x) {
+            if (ref)
+                *ref = minRef;
+            return true;
+        }
+        return false;
+    }
+
+    bool isScalar() const {
+        return minvalue.size() == 1 && minvalue == maxvalue;
+    }
+
+    bool empty() const {
+        return minvalue.empty() && maxvalue.empty();
+    }
+
+    bool isScalarOrEmpty() const {
+        return empty() || isScalar();
+    }
+
+    MathLib::bigint getScalar() const
+    {
+        assert(isScalar());
+        return minvalue.front();
+    }
+
+    std::vector<const ValueFlow::Value*> getScalarRef() const
+    {
+        assert(isScalar());
+        if (!minRef.empty())
+            return minRef;
+        if (!maxRef.empty())
+            return maxRef;
+        return {};
+    }
+
+    static Interval fromInt(MathLib::bigint x, const ValueFlow::Value* ref = nullptr)
+    {
+        Interval result;
+        result.setMinValue(x, ref);
+        result.setMaxValue(x, ref);
+        return result;
+    }
+
+    template<class Predicate>
+    static Interval fromValues(const std::list<ValueFlow::Value>& values, Predicate predicate)
+    {
+        Interval result;
+        const ValueFlow::Value* minValue = getCompareValue(values, predicate, std::less<MathLib::bigint>{});
+        if (minValue) {
+            if (minValue->isImpossible() && minValue->bound == ValueFlow::Value::Bound::Upper)
+                result.setMinValue(minValue->intvalue + 1, minValue);
+            if (minValue->isPossible() && minValue->bound == ValueFlow::Value::Bound::Lower)
+                result.setMinValue(minValue->intvalue, minValue);
+            if (minValue->isKnown())
+                return Interval::fromInt(minValue->intvalue, minValue);
+        }
+        const ValueFlow::Value* maxValue = getCompareValue(values, predicate, std::greater<MathLib::bigint>{});
+        if (maxValue) {
+            if (maxValue->isImpossible() && maxValue->bound == ValueFlow::Value::Bound::Lower)
+                result.setMaxValue(maxValue->intvalue - 1, maxValue);
+            if (maxValue->isPossible() && maxValue->bound == ValueFlow::Value::Bound::Upper)
+                result.setMaxValue(maxValue->intvalue, maxValue);
+            assert(!maxValue->isKnown());
+        }
+        return result;
+    }
+
+    static Interval fromValues(const std::list<ValueFlow::Value>& values)
+    {
+        return Interval::fromValues(values, [](const ValueFlow::Value&) {
+            return true;
+        });
+    }
+
+    template<class F>
+    static std::vector<MathLib::bigint> apply(const std::vector<MathLib::bigint>& x,
+                                              const std::vector<MathLib::bigint>& y,
+                                              F f)
+    {
+        if (x.empty())
+            return {};
+        if (y.empty())
+            return {};
+        return {f(x.front(), y.front())};
+    }
+
+    static std::vector<const ValueFlow::Value*> merge(std::vector<const ValueFlow::Value*> x,
+                                                      const std::vector<const ValueFlow::Value*>& y)
+    {
+        x.insert(x.end(), y.begin(), y.end());
+        return x;
+    }
+
+    friend Interval operator-(const Interval& lhs, const Interval& rhs)
+    {
+        Interval result;
+        result.minvalue = Interval::apply(lhs.minvalue, rhs.maxvalue, std::minus<MathLib::bigint>{});
+        result.maxvalue = Interval::apply(lhs.maxvalue, rhs.minvalue, std::minus<MathLib::bigint>{});
+        if (!result.minvalue.empty())
+            result.minRef = merge(lhs.minRef, rhs.maxRef);
+        if (!result.maxvalue.empty())
+            result.maxRef = merge(lhs.maxRef, rhs.minRef);
+        return result;
+    }
+
+    static std::vector<int> equal(const Interval& lhs,
+                                  const Interval& rhs,
+                                  std::vector<const ValueFlow::Value*>* ref = nullptr)
+    {
+        if (!lhs.isScalar())
+            return {};
+        if (!rhs.isScalar())
+            return {};
+        if (ref)
+            *ref = merge(lhs.minRef, rhs.minRef);
+        return {lhs.minvalue == rhs.minvalue};
+    }
+
+    static std::vector<int> compare(const Interval& lhs,
+                                    const Interval& rhs,
+                                    std::vector<const ValueFlow::Value*>* ref = nullptr)
+    {
+        Interval diff = lhs - rhs;
+        if (diff.isGreaterThan(0, ref))
+            return {1};
+        if (diff.isLessThan(0, ref))
+            return {-1};
+        std::vector<int> eq = Interval::equal(lhs, rhs, ref);
+        if (!eq.empty() && eq.front() != 0)
+            return {0};
+        return {};
+    }
+};
+
+void addToErrorPath(ValueFlow::Value& value, const std::vector<const ValueFlow::Value*>& refs)
+{
+    for (const ValueFlow::Value* ref : refs) {
+        value.errorPath.insert(value.errorPath.end(), ref->errorPath.begin(), ref->errorPath.end());
+    }
+}
+
+void setValueKind(ValueFlow::Value& value, const std::vector<const ValueFlow::Value*>& refs)
+{
+    bool isPossible = false;
+    bool isInconclusive = false;
+    for (const ValueFlow::Value* ref : refs) {
+        if (ref->isPossible())
+            isPossible = true;
+        if (ref->isInconclusive())
+            isInconclusive = true;
+    }
+    if (isInconclusive)
+        value.setInconclusive();
+    else if (isPossible)
+        value.setPossible();
+    else
+        value.setKnown();
+}
+
+struct InferModel {
+    virtual bool match(const ValueFlow::Value& value) const = 0;
+    virtual ValueFlow::Value yield(MathLib::bigint value) const = 0;
+    virtual ~InferModel() {}
+};
+
+static bool inferNotEqual(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
+{
+    return std::any_of(values.begin(), values.end(), [&](const ValueFlow::Value& value) {
+        return value.isImpossible() && value.intvalue == x;
+    });
+}
+
+static std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
+                                           const std::string& op,
+                                           std::list<ValueFlow::Value> lhsValues,
+                                           std::list<ValueFlow::Value> rhsValues)
+{
+    std::vector<ValueFlow::Value> result;
+    auto notMatch = [&](const ValueFlow::Value& value) {
+        return !model->match(value);
+    };
+    lhsValues.remove_if(notMatch);
+    rhsValues.remove_if(notMatch);
+    if (lhsValues.empty() || rhsValues.empty())
+        return result;
+
+    Interval lhs = Interval::fromValues(lhsValues);
+    Interval rhs = Interval::fromValues(rhsValues);
+
+    if (op == "-") {
+        Interval diff = lhs - rhs;
+        if (diff.isScalar()) {
+            std::vector<const ValueFlow::Value*> refs = diff.getScalarRef();
+            ValueFlow::Value value(diff.getScalar());
+            addToErrorPath(value, refs);
+            setValueKind(value, refs);
+            result.push_back(value);
+        } else {
+            if (!diff.minvalue.empty()) {
+                ValueFlow::Value value(diff.minvalue.front() - 1);
+                value.setImpossible();
+                value.bound = ValueFlow::Value::Bound::Lower;
+                addToErrorPath(value, diff.minRef);
+                result.push_back(value);
+            }
+            if (!diff.maxvalue.empty()) {
+                ValueFlow::Value value(diff.maxvalue.front() + 1);
+                value.setImpossible();
+                value.bound = ValueFlow::Value::Bound::Upper;
+                addToErrorPath(value, diff.maxRef);
+                result.push_back(value);
+            }
+        }
+    } else if ((op == "!=" || op == "==") && lhs.isScalarOrEmpty() && rhs.isScalarOrEmpty()) {
+        if (lhs.isScalar() && rhs.isScalar()) {
+            std::vector<const ValueFlow::Value*> refs = Interval::merge(lhs.getScalarRef(), rhs.getScalarRef());
+            ValueFlow::Value value(calculate(op, lhs.getScalar(), rhs.getScalar()));
+            addToErrorPath(value, refs);
+            setValueKind(value, refs);
+            result.push_back(value);
+        } else {
+            std::vector<const ValueFlow::Value*> refs;
+            if (lhs.isScalar() && inferNotEqual(rhsValues, lhs.getScalar()))
+                refs = lhs.getScalarRef();
+            else if (rhs.isScalar() && inferNotEqual(lhsValues, rhs.getScalar()))
+                refs = rhs.getScalarRef();
+            if (!refs.empty()) {
+                ValueFlow::Value value(op == "!=");
+                addToErrorPath(value, refs);
+                setValueKind(value, refs);
+                result.push_back(value);
+            }
+        }
+    } else {
+        std::vector<const ValueFlow::Value*> refs;
+        std::vector<int> r = Interval::compare(lhs, rhs, &refs);
+        if (!r.empty()) {
+            int x = r.front();
+            ValueFlow::Value value(calculate(op, x, 0));
+            addToErrorPath(value, refs);
+            setValueKind(value, refs);
+            result.push_back(value);
+        }
+    }
+
+    return result;
+}
+
+static std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
+                                           const std::string& op,
+                                           MathLib::bigint lhs,
+                                           std::list<ValueFlow::Value> rhsValues)
+{
+    return infer(model, op, {model->yield(lhs)}, std::move(rhsValues));
+}
+
+static std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
+                                           const std::string& op,
+                                           std::list<ValueFlow::Value> lhsValues,
+                                           MathLib::bigint rhs)
+{
+    return infer(model, op, std::move(lhsValues), {model->yield(rhs)});
+}
+
+struct SymbolicInferModel : InferModel {
+    const Token* expr;
+    explicit SymbolicInferModel(const Token* tok) : expr(tok) {
+        assert(expr->exprId() != 0);
+    }
+    virtual bool match(const ValueFlow::Value& value) const OVERRIDE
+    {
+        return value.isSymbolicValue() && value.tokvalue && value.tokvalue->exprId() == expr->exprId();
+    }
+    virtual ValueFlow::Value yield(MathLib::bigint value) const OVERRIDE
+    {
+        ValueFlow::Value result(value);
+        result.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
+        result.tokvalue = expr;
+        result.setKnown();
+        return result;
+    }
+};
+
 static void valueFlowSymbolicInfer(TokenList* tokenlist, SymbolDatabase* symboldatabase)
 {
     for (const Scope* scope : symboldatabase->functionScopes) {
@@ -4189,6 +4529,10 @@ static void valueFlowSymbolicInfer(TokenList* tokenlist, SymbolDatabase* symbold
                 continue;
             if (!tok->astOperand2())
                 continue;
+            if (tok->astOperand1()->exprId() == 0)
+                continue;
+            if (tok->astOperand2()->exprId() == 0)
+                continue;
             if (tok->astOperand1()->hasKnownIntValue())
                 continue;
             if (tok->astOperand2()->hasKnownIntValue())
@@ -4198,40 +4542,15 @@ static void valueFlowSymbolicInfer(TokenList* tokenlist, SymbolDatabase* symbold
             if (astIsFloat(tok->astOperand2(), false))
                 continue;
 
-            MathLib::bigint rhsvalue = 0;
-            const ValueFlow::Value* rhs =
-                ValueFlow::findValue(tok->astOperand2()->values(), nullptr, [&](const ValueFlow::Value& v) {
-                return v.isSymbolicValue() && v.tokvalue && v.tokvalue->exprId() == tok->astOperand1()->exprId();
-            });
-            if (rhs)
-                rhsvalue = rhs->intvalue;
-            MathLib::bigint lhsvalue = 0;
-            const ValueFlow::Value* lhs =
-                ValueFlow::findValue(tok->astOperand1()->values(), nullptr, [&](const ValueFlow::Value& v) {
-                return v.isSymbolicValue() && v.tokvalue && v.tokvalue->exprId() == tok->astOperand2()->exprId();
-            });
-            if (lhs)
-                lhsvalue = lhs->intvalue;
-            if (!lhs && !rhs)
-                continue;
-
-            ValueFlow::Value value{calculate(tok->str(), lhsvalue, rhsvalue)};
-            if (lhs && rhs) {
-                if (lhs->isImpossible() != rhs->isImpossible())
-                    continue;
-                combineValueProperties(*lhs, *rhs, &value);
-            } else if (lhs) {
-                value.valueKind = lhs->valueKind;
-                value.errorPath = lhs->errorPath;
-            } else if (rhs) {
-                value.valueKind = rhs->valueKind;
-                value.errorPath = rhs->errorPath;
+            SymbolicInferModel leftModel{tok->astOperand1()};
+            std::vector<ValueFlow::Value> values = infer(leftModel, tok->str(), 0, tok->astOperand2()->values());
+            if (values.empty()) {
+                SymbolicInferModel rightModel{tok->astOperand2()};
+                values = infer(rightModel, tok->str(), tok->astOperand1()->values(), 0);
             }
-            if (Token::Match(tok, "%comp%") && value.isImpossible() && value.intvalue != 0) {
-                value.intvalue = 0;
-                value.setKnown();
+            for (const ValueFlow::Value& value : values) {
+                setTokenValue(tok, value, tokenlist->getSettings());
             }
-            setTokenValue(tok, value, tokenlist->getSettings());
         }
     }
 }
@@ -5122,6 +5441,41 @@ static void valueFlowInferCondition(TokenList* tokenlist,
         }
     }
 }
+
+struct SymbolicConditionHandler : SimpleConditionHandler {
+    virtual std::vector<Condition> parse(const Token* tok, const Settings*) const OVERRIDE
+    {
+        if (!Token::Match(tok, "%comp%"))
+            return {};
+        if (tok->hasKnownIntValue())
+            return {};
+        if (!tok->astOperand1() || tok->astOperand1()->hasKnownIntValue() || tok->astOperand1()->isLiteral())
+            return {};
+        if (!tok->astOperand2() || tok->astOperand2()->hasKnownIntValue() || tok->astOperand2()->isLiteral())
+            return {};
+
+        std::vector<Condition> result;
+        for (int i = 0; i < 2; i++) {
+            const bool lhs = i == 0;
+            const Token* vartok = lhs ? tok->astOperand1() : tok->astOperand2();
+            const Token* valuetok = lhs ? tok->astOperand2() : tok->astOperand1();
+            if (valuetok->hasKnownSymbolicValue(vartok))
+                continue;
+            ValueFlow::Value true_value;
+            ValueFlow::Value false_value;
+            setConditionalValues(tok, !lhs, 0, true_value, false_value);
+            setSymbolic(true_value, valuetok);
+            setSymbolic(false_value, valuetok);
+
+            Condition cond;
+            cond.true_values = {true_value};
+            cond.false_values = {false_value};
+            cond.vartok = vartok;
+            result.push_back(cond);
+        }
+        return result;
+    }
+};
 
 static bool valueFlowForLoop2(const Token *tok,
                               ProgramMemory *memory1,
@@ -7092,6 +7446,16 @@ const char* ValueFlow::Value::toString(LifetimeKind lifetimeKind)
     return "";
 }
 
+bool ValueFlow::Value::sameToken(const Token* tok1, const Token* tok2)
+{
+    if (tok1 == tok2)
+        return true;
+    if (!tok1)
+        return false;
+    if (tok1->exprId() == 0 || tok2->exprId() == 0)
+        return false;
+    return tok1->exprId() == tok2->exprId();
+}
 const char* ValueFlow::Value::toString(LifetimeScope lifetimeScope)
 {
     switch (lifetimeScope) {
@@ -7162,6 +7526,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         values = getTotalValues(tokenlist);
         valueFlowImpossibleValues(tokenlist, settings);
         valueFlowSymbolicAbs(tokenlist, symboldatabase);
+        valueFlowCondition(SymbolicConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings);
         valueFlowSymbolicInfer(tokenlist, symboldatabase);
         valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);
