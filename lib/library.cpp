@@ -1555,7 +1555,7 @@ const Token* Library::getContainerFromYield(const Token* tok, Library::Container
         if (Token::simpleMatch(tok->tokAt(-1), "empty ( )"))
             return containerTok;
     } else if (Token::Match(tok->previous(), "%name% (")) {
-        if (const Library::Function* f = settings->library.getFunction(tok->previous())) {
+        if (const Library::Function* f = this->getFunction(tok->previous())) {
             if (f->containerYield == yield) {
                 return tok->astOperand2();
             }
@@ -1577,7 +1577,7 @@ const Token* Library::getContainerFromAction(const Token* tok, Library::Containe
         if (Token::simpleMatch(tok->tokAt(-1), "empty ( )"))
             return containerTok;
     } else if (Token::Match(tok->previous(), "%name% (")) {
-        if (const Library::Function* f = settings->library.getFunction(tok->previous())) {
+        if (const Library::Function* f = this->getFunction(tok->previous())) {
             if (f->containerAction == action) {
                 return tok->astOperand2();
             }
