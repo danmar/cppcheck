@@ -1552,7 +1552,9 @@ const Token* Library::getContainerFromYield(const Token* tok, Library::Container
         if (containerTok->valueType()->container &&
             containerTok->valueType()->container->getYield(tok->strAt(-1)) == yield)
             return containerTok;
-        if (Token::simpleMatch(tok->tokAt(-1), "empty ( )"))
+        if (yield == Library::Container::Yield::EMPTY && Token::simpleMatch(tok->tokAt(-1), "empty ( )"))
+            return containerTok;
+        if (yield == Library::Container::Yield::SIZE && Token::Match(tok->tokAt(-1), "size|length ( )"))
             return containerTok;
     } else if (Token::Match(tok->previous(), "%name% (")) {
         if (const Library::Function* f = this->getFunction(tok->previous())) {
