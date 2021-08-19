@@ -788,7 +788,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     ac.iteratorInfo.first = (str && std::strcmp(str, "first") == 0);
                     ac.iteratorInfo.last = (str && std::strcmp(str, "last") == 0);
                     ac.iteratorInfo.container = argnode->IntAttribute("container", 0);
-                } else if (argnodename == "container") {}
+                }
 
                 else
                     unknown_elements.insert(argnodename);
