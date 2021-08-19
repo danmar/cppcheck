@@ -318,6 +318,10 @@ static ProgramMemory getInitialProgramState(const Token* tok,
     return pm;
 }
 
+ProgramMemoryState::ProgramMemoryState(const Settings* s)
+: state(), origins(), settings(s)
+{}
+
 void ProgramMemoryState::insert(const ProgramMemory &pm, const Token* origin)
 {
     if (origin)
@@ -337,7 +341,7 @@ void ProgramMemoryState::replace(const ProgramMemory &pm, const Token* origin)
 void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& vars)
 {
     ProgramMemory pm = state;
-    fillProgramMemoryFromConditions(pm, tok, nullptr);
+    fillProgramMemoryFromConditions(pm, tok, settings);
     for (const auto& p:vars) {
         nonneg int exprid = p.first;
         const ValueFlow::Value &value = p.second;
@@ -356,7 +360,7 @@ void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
     if (isEmpty)
         pm.setContainerSizeValue(tok->exprId(), 0, b);
     else
-        programMemoryParseCondition(pm, tok, nullptr, nullptr, b);
+        programMemoryParseCondition(pm, tok, nullptr, settings, b);
     const Token* origin = tok;
     const Token* top = tok->astTop();
     if (top && Token::Match(top->previous(), "for|while ("))
@@ -367,7 +371,7 @@ void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
 void ProgramMemoryState::removeModifiedVars(const Token* tok)
 {
     for (auto i = state.values.begin(), last = state.values.end(); i != last;) {
-        if (isVariableChanged(origins[i->first], tok, i->first, false, nullptr, true)) {
+        if (isVariableChanged(origins[i->first], tok, i->first, false, settings, true)) {
             origins.erase(i->first);
             i = state.values.erase(i);
         } else {

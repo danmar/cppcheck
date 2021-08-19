@@ -2,6 +2,7 @@
 #define GUARD_PROGRAMMEMORY_H
 
 #include "mathlib.h"
+#include "settings.h"
 #include "utils.h"
 #include "valueflow.h" // needed for alias
 #include <functional>
@@ -45,6 +46,9 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
 struct ProgramMemoryState {
     ProgramMemory state;
     std::map<nonneg int, const Token*> origins;
+    const Settings* settings;
+
+    ProgramMemoryState(const Settings* s);
 
     void insert(const ProgramMemory &pm, const Token* origin = nullptr);
     void replace(const ProgramMemory &pm, const Token* origin = nullptr);
