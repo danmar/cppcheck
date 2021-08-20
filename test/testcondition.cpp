@@ -3787,6 +3787,14 @@ private:
         check("bool f(bool a, bool b) { if(a && b && (!a)){} }");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Condition '!a' is always false\n", errout.str());
 
+        check("void f(int x, int y) {\n"
+              "  if (x < y) {\n"
+              "    auto z = y - x;\n"
+              "    if (z < 1) {}\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'z<1' is always false\n", errout.str());
+
         check("struct a {\n"
               "  a *b() const;\n"
               "} c;\n"
