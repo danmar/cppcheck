@@ -9,6 +9,7 @@ bitwiseOnBoolean
 unusedPrivateFunction:test/test*.cpp
 useStlAlgorithm
 simplifyUsing:lib/valueptr.h
+simplifyUsingUnmatchedBodyEnd
 
 # debug suppressions
 valueFlowBailout
