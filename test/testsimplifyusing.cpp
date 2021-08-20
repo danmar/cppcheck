@@ -90,6 +90,8 @@ private:
         TEST_CASE(simplifyUsing10172);
         TEST_CASE(simplifyUsing10173);
         TEST_CASE(simplifyUsing10335);
+
+        TEST_CASE(scopeInfo1);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -1310,6 +1312,17 @@ private:
                             "enum E : uint8_t { E0 };";
         const char exp[]  = "enum E : unsigned char { E0 } ;";
         ASSERT_EQUALS(exp, tok(code, false));
+    }
+
+    void scopeInfo1() {
+        const char code[] = "struct A {\n"
+                            "    enum class Mode { UNKNOWN, ENABLED, NONE, };\n"
+                            "};\n"
+                            "\n"
+                            "namespace spdlog { class logger; }\n"
+                            "using LoggerPtr = std::shared_ptr<spdlog::logger>;";
+        tok(code, true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
