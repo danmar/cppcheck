@@ -2041,24 +2041,21 @@ struct ValueFlowAnalyzer : Analyzer {
             result.dependent = true;
             result.unknown = false;
             return result;
-        } else if (Token::Match(tok, "%comp%")) {
-            ConditionState lhs = analyzeCondition(tok->astOperand1(), depth - 1);
-            if (lhs.isUnknownDependent())
-                return lhs;
-            ConditionState rhs = analyzeCondition(tok->astOperand2(), depth - 1);
-            if (rhs.isUnknownDependent())
-                return rhs;
-            result.dependent = lhs.dependent && rhs.dependent;
-            result.unknown = lhs.unknown || rhs.unknown;
-            return result;
         } else if (Token::Match(tok, "%cop%")) {
+            if (isLikelyStream(isCPP(), tok->astOperand1())) {
+                result.dependent = false;
+                return result;
+            }
             ConditionState lhs = analyzeCondition(tok->astOperand1(), depth - 1);
             if (lhs.isUnknownDependent())
                 return lhs;
             ConditionState rhs = analyzeCondition(tok->astOperand2(), depth - 1);
             if (rhs.isUnknownDependent())
                 return rhs;
-            result.dependent = lhs.dependent || rhs.dependent;
+            if (Token::Match(tok, "%comp%"))
+                result.dependent = lhs.dependent && rhs.dependent;
+            else
+                result.dependent = lhs.dependent || rhs.dependent;
             result.unknown = lhs.unknown || rhs.unknown;
             return result;
         } else if (Token::Match(tok->previous(), "%name% (")) {
