@@ -2033,12 +2033,12 @@ struct ValueFlowAnalyzer : Analyzer {
         if (depth < 0)
             return result;
         depth--;
-        if (tok->hasKnownIntValue() || tok->isLiteral()) {
-            result.dependent = false;
+        if (analyze(tok, Direction::Forward).isRead()) {
+            result.dependent = true;
             result.unknown = false;
             return result;
-        } else if (analyze(tok, Direction::Forward).isRead()) {
-            result.dependent = true;
+        } else if (tok->hasKnownIntValue() || tok->isLiteral()) {
+            result.dependent = false;
             result.unknown = false;
             return result;
         } else if (Token::Match(tok, "%cop%")) {
