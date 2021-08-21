@@ -400,7 +400,7 @@ void g_once_init_enter_leave_test()
     gsize * init_val3 = NULL;
     // cppcheck-suppress nullPointer
     if (g_once_init_enter(init_val3)) {
-        gsize * init_val31 = NULL;
+        gsize* init_val31 = NULL;
         // cppcheck-suppress nullPointer
         g_once_init_leave(init_val31, 1);
     }
