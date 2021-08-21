@@ -114,6 +114,7 @@
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <unordered_set>
 #include <vector>
 
 static void bailoutInternal(const std::string& type, TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what, const std::string &file, int line, std::string function)
@@ -1996,6 +1997,103 @@ struct ValueFlowAnalyzer : Analyzer {
         return tokenlist->getSettings();
     }
 
+    struct ConditionState {
+        bool dependent = true;
+        bool unknown = true;
+
+        bool isUnknownDependent() const {
+            return unknown && dependent;
+        }
+    };
+
+    std::unordered_map<nonneg int, const Token*> getSymbols(const Token* tok) const
+    {
+        std::unordered_map<nonneg int, const Token*> result;
+        if (!tok)
+            return result;
+        for (const ValueFlow::Value& v : tok->values()) {
+            if (!v.isSymbolicValue())
+                continue;
+            if (v.isImpossible())
+                continue;
+            if (!v.tokvalue)
+                continue;
+            if (v.tokvalue->exprId() == 0)
+                continue;
+            if (match(v.tokvalue))
+                continue;
+            result[v.tokvalue->exprId()] = v.tokvalue;
+        }
+        return result;
+    }
+
+    ConditionState analyzeCondition(const Token* tok, int depth = 20) const
+    {
+        ConditionState result;
+        if (!tok)
+            return result;
+        if (depth < 0)
+            return result;
+        depth--;
+        if (analyze(tok, Direction::Forward).isRead()) {
+            result.dependent = true;
+            result.unknown = false;
+            return result;
+        } else if (tok->hasKnownIntValue() || tok->isLiteral()) {
+            result.dependent = false;
+            result.unknown = false;
+            return result;
+        } else if (Token::Match(tok, "%cop%")) {
+            if (isLikelyStream(isCPP(), tok->astOperand1())) {
+                result.dependent = false;
+                return result;
+            }
+            ConditionState lhs = analyzeCondition(tok->astOperand1(), depth - 1);
+            if (lhs.isUnknownDependent())
+                return lhs;
+            ConditionState rhs = analyzeCondition(tok->astOperand2(), depth - 1);
+            if (rhs.isUnknownDependent())
+                return rhs;
+            if (Token::Match(tok, "%comp%"))
+                result.dependent = lhs.dependent && rhs.dependent;
+            else
+                result.dependent = lhs.dependent || rhs.dependent;
+            result.unknown = lhs.unknown || rhs.unknown;
+            return result;
+        } else if (Token::Match(tok->previous(), "%name% (")) {
+            std::vector<const Token*> args = getArguments(tok->previous());
+            if (Token::Match(tok->tokAt(-2), ". %name% (")) {
+                args.push_back(tok->tokAt(-2)->astOperand1());
+            }
+            result.dependent = std::any_of(args.begin(), args.end(), [&](const Token* arg) {
+                ConditionState cs = analyzeCondition(arg, depth - 1);
+                return cs.dependent;
+            });
+            if (result.dependent) {
+                // Check if we can evaluate the function
+                if (!evaluate(Evaluate::Integral, tok).empty())
+                    result.unknown = false;
+            }
+            return result;
+        } else {
+            std::unordered_map<nonneg int, const Token*> symbols = getSymbols(tok);
+            result.dependent = false;
+            for (auto&& p : symbols) {
+                const Token* arg = p.second;
+                ConditionState cs = analyzeCondition(arg, depth - 1);
+                result.dependent = cs.dependent;
+                if (result.dependent)
+                    break;
+            }
+            if (result.dependent) {
+                // Check if we can evaluate the token
+                if (!evaluate(Evaluate::Integral, tok).empty())
+                    result.unknown = false;
+            }
+            return result;
+        }
+    }
+
     virtual Action isModified(const Token* tok) const {
         Action read = Action::Read;
         bool inconclusive = false;
@@ -2409,6 +2507,18 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
         if (value.condition)
             return !value.isKnown() && !value.isImpossible();
         return false;
+    }
+
+    virtual bool stopOnCondition(const Token* condTok) const OVERRIDE
+    {
+        if (value.isNonValue())
+            return false;
+        if (value.isImpossible())
+            return false;
+        if (isConditional() && !value.isKnown() && !value.isImpossible())
+            return true;
+        ConditionState cs = analyzeCondition(condTok);
+        return cs.isUnknownDependent();
     }
 
     virtual bool updateScope(const Token* endBlock, bool) const OVERRIDE {
@@ -5805,6 +5915,10 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
                 return !p.second.isImpossible();
         }
         return false;
+    }
+
+    virtual bool stopOnCondition(const Token*) const OVERRIDE {
+        return isConditional();
     }
 
     virtual bool updateScope(const Token* endBlock, bool) const OVERRIDE {
