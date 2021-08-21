@@ -4193,8 +4193,8 @@ void Scope::addVariable(const Token *token_, const Token *start_, const Token *e
 void Scope::getVariableList(const Settings* settings)
 {
     if (!bodyStartList.empty()) {
-        for (const Token *bodyStart: bodyStartList)
-            getVariableList(settings, bodyStart->next());
+        for (const Token *bs: bodyStartList)
+            getVariableList(settings, bs->next());
     }
 
     // global scope
