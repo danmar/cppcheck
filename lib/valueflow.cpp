@@ -5917,7 +5917,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         return false;
     }
 
-    virtual bool stopOnCondition(const Token* condTok) const OVERRIDE {
+    virtual bool stopOnCondition(const Token*) const OVERRIDE {
         return isConditional();
     }
 
