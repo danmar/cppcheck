@@ -458,14 +458,14 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
     // guard static members of CppCheck against concurrent access
     EnterCriticalSection(&threadExecutor->mFileSync);
 
-    CppCheck fileChecker(*threadExecutor, false, CppCheckExecutor::executeCommand);
-    fileChecker.settings() = threadExecutor->mSettings;
-
     for (;;) {
         if (itFile == threadExecutor->mFiles.end() && itFileSettings == threadExecutor->mSettings.project.fileSettings.end()) {
             LeaveCriticalSection(&threadExecutor->mFileSync);
             break;
         }
+
+        CppCheck fileChecker(*threadExecutor, false, CppCheckExecutor::executeCommand);
+        fileChecker.settings() = threadExecutor->mSettings;
 
         std::size_t fileSize = 0;
         if (itFile != threadExecutor->mFiles.end()) {

@@ -116,6 +116,7 @@ private:
         TEST_CASE(nullpointer74);
         TEST_CASE(nullpointer75);
         TEST_CASE(nullpointer76);         // #10408
+        TEST_CASE(nullpointer77);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2373,6 +2374,24 @@ private:
               "        return x.release();\n"
               "    (*x) ++;\n"
               "    return x.release();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer77()
+    {
+        check("bool h(int*);\n"
+              "void f(int* i) {\n"
+              "    int* i = nullptr;\n"
+              "    if (h(i) && *i == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool h(int*);\n"
+              "void f(int* i) {\n"
+              "    int* i = nullptr;\n"
+              "    if (h(i))\n"
+              "        if (*i == 1) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
