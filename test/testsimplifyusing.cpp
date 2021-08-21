@@ -92,6 +92,7 @@ private:
         TEST_CASE(simplifyUsing10335);
 
         TEST_CASE(scopeInfo1);
+        TEST_CASE(scopeInfo2);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -1321,6 +1322,18 @@ private:
                             "\n"
                             "namespace spdlog { class logger; }\n"
                             "using LoggerPtr = std::shared_ptr<spdlog::logger>;";
+        tok(code, true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void scopeInfo2() {
+        const char code[] = "struct A {\n"
+                            "    using Map = std::map<int, int>;\n"
+                            "    Map values;\n"
+                            "};\n"
+                            "\n"
+                            "static void getInitialProgramState(const A::Map& vars = A::Map {})\n"
+                            "{}\n";
         tok(code, true);
         ASSERT_EQUALS("", errout.str());
     }

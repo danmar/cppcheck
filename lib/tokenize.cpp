@@ -1915,10 +1915,11 @@ namespace {
                 ScopeInfo3 *parent = (*scopeInfo)->parent;
                 while (parent && parent->bodyEnd != tok)
                     parent = parent->parent;
-                if (parent)
+                if (parent) {
                     *scopeInfo = parent;
-                if (debug)
-                    throw std::runtime_error("Internal error: unmatched }");
+                    if (debug)
+                        throw std::runtime_error("Internal error: unmatched }");
+                }
             }
             return;
         }
