@@ -74,6 +74,7 @@ public:
         checkBufferOverrun.arrayIndexThenCheck();
         checkBufferOverrun.stringNotZeroTerminated();
         checkBufferOverrun.objectIndex();
+        checkBufferOverrun.argumentSize();
     }
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
@@ -84,6 +85,7 @@ public:
         c.arrayIndexThenCheckError(nullptr, "i");
         c.bufferOverflowError(nullptr, nullptr, Certainty::normal);
         c.objectIndexError(nullptr, nullptr, true);
+        c.argumentSizeError(nullptr, "function", "buffer");
     }
 
     /** @brief Parse current TU and extract file info */
@@ -113,6 +115,9 @@ private:
 
     void stringNotZeroTerminated();
     void terminateStrncpyError(const Token *tok, const std::string &varname);
+
+    void argumentSize();
+    void argumentSizeError(const Token *tok, const std::string &functionName, const std::string &varname);
 
     void objectIndex();
     void objectIndexError(const Token *tok, const ValueFlow::Value *v, bool known);
@@ -153,7 +158,8 @@ private:
                "- Buffer overflow\n"
                "- Dangerous usage of strncat()\n"
                "- Using array index before checking it\n"
-               "- Partial string write that leads to buffer that is not zero terminated.\n";
+               "- Partial string write that leads to buffer that is not zero terminated.\n"
+               "- Check for large enough arrays being passed to functions\n";
     }
 };
 /// @}

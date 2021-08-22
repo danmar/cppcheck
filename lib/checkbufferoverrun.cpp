@@ -52,6 +52,7 @@ namespace {
 // CWE ids used:
 static const CWE CWE131(131U);  // Incorrect Calculation of Buffer Size
 static const CWE CWE170(170U);  // Improper Null Termination
+static const CWE CWE_ARGUMENT_SIZE(398U);  // Indicator of Poor Code Quality
 static const CWE CWE_ARRAY_INDEX_THEN_CHECK(398U);  // Indicator of Poor Code Quality
 static const CWE CWE682(682U);  // Incorrect Calculation
 static const CWE CWE758(758U);  // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
@@ -761,8 +762,61 @@ void CheckBufferOverrun::terminateStrncpyError(const Token *tok, const std::stri
                 "zero at the end of the buffer. This causes bugs later in the code if the code "
                 "assumes buffer is null-terminated.", CWE170, Certainty::inconclusive);
 }
+//---------------------------------------------------------------------------
 
+void CheckBufferOverrun::argumentSize()
+{
+    // Check '%type% x[10]' arguments
+    if (!mSettings->severity.isEnabled(Severity::warning))
+        return;
 
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * const scope : symbolDatabase->functionScopes) {
+        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (!tok->function() || !Token::Match(tok, "%name% ("))
+                continue;
+
+            // If argument is '%type% a[num]' then check bounds against num
+            const Function *callfunc = tok->function();
+            const std::vector<const Token *> callargs = getArguments(tok);
+            for (nonneg int paramIndex = 0; paramIndex < callargs.size() && paramIndex < callfunc->argCount(); ++paramIndex) {
+                const Variable* const argument = callfunc->getArgumentVar(paramIndex);
+                if (!argument || !argument->nameToken() || !argument->isArray())
+                    continue;
+                if (!argument->valueType() || !callargs[paramIndex]->valueType())
+                    continue;
+                if (argument->valueType()->type != callargs[paramIndex]->valueType()->type)
+                    continue;
+                const Token * calldata = callargs[paramIndex];
+                while (Token::Match(calldata, "::|."))
+                    calldata = calldata->astOperand2();
+                if (!calldata->variable() || !calldata->variable()->isArray())
+                    continue;
+                if (calldata->variable()->dimensions().size() != argument->dimensions().size())
+                    continue;
+                bool err = false;
+                for (int d = 0; d < argument->dimensions().size(); ++d) {
+                    const auto& dim1 = calldata->variable()->dimensions()[d];
+                    const auto& dim2 = argument->dimensions()[d];
+                    if (!dim1.known || !dim2.known)
+                        break;
+                    if (dim1.num < dim2.num)
+                        err = true;
+                }
+                if (err)
+                    argumentSizeError(tok, tok->str(), argument->name());
+            }
+        }
+    }
+}
+
+void CheckBufferOverrun::argumentSizeError(const Token *tok, const std::string &functionName, const std::string &varname)
+{
+    reportError(tok, Severity::warning, "argumentSize",
+                "$symbol:" + functionName + '\n' +
+                "$symbol:" + varname + '\n' +
+                "The array '" + varname + "' is too small, the function '" + functionName + "' expects a bigger one.", CWE_ARGUMENT_SIZE, Certainty::normal);
+}
 
 //---------------------------------------------------------------------------
 // CTU..
