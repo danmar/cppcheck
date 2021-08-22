@@ -3567,6 +3567,53 @@ class MisraChecker:
                 if lhs and lhs.variable and simpleMatch(lhs.variable.typeStartToken, 'lconv'):
                     self.reportError(token, 21, 19)
 
+    def misra_21_20(self, cfg):
+        assigned = {}
+        invalid = []
+        for token in cfg.tokenlist:
+            # No sophisticated data flow analysis, bail out if control flow is "interrupted"
+            if token.str in ('{', '}', 'break', 'continue', 'return'):
+                assigned = {}
+                invalid = []
+                continue
+
+            # When pointer is assigned, remove it from 'assigned' and 'invalid'
+            if token.varId and token.varId > 0 and simpleMatch(token.next, '='):
+                for name in assigned.keys():
+                    while token.varId in assigned[name]:
+                        assigned[name].remove(token.varId)
+                while token.varId in invalid:
+                    invalid.remove(token.varId)
+                continue
+
+            # Calling dangerous function
+            if token.str in ('asctime', 'ctime', 'gmtime', 'localtime', 'localeconv', 'getenv', 'setlocale', 'strerror'):
+                name, args = cppcheckdata.get_function_call_name_args(token)
+                if name and name == token.str:
+                    # make assigned pointers invalid
+                    for varId in assigned.get(name, ()):
+                        if varId not in invalid:
+                            invalid.append(varId)
+
+                    # assign pointer
+                    parent = token.next
+                    while parent.astParent and (parent.astParent.str == '+' or isCast(parent.astParent)):
+                        parent = parent.astParent
+                    if simpleMatch(parent.astParent, '='):
+                        eq = parent.astParent
+                        vartok = eq.previous
+                        if vartok and vartok.varId and vartok.varId > 0:
+                            if name not in assigned:
+                                assigned[name] = [vartok.varId]
+                            elif vartok.varId not in assigned[name]:
+                                assigned[name].append(vartok.varId)
+                continue
+
+            # taking value of invalid pointer..
+            if token.astParent and token.varId:
+                if token.varId in invalid:
+                    self.reportError(token, 21, 20)
+
     def misra_21_21(self, cfg):
         for token in cfg.tokenlist:
             if token.str == 'system':
@@ -4214,7 +4261,8 @@ class MisraChecker:
             self.executeCheck(2114, self.misra_21_14, cfg)
             self.executeCheck(2115, self.misra_21_15, cfg)
             self.executeCheck(2116, self.misra_21_16, cfg)
-            self.executeCheck(2121, self.misra_21_19, cfg)
+            self.executeCheck(2119, self.misra_21_19, cfg)
+            self.executeCheck(2120, self.misra_21_20, cfg)
             self.executeCheck(2121, self.misra_21_21, cfg)
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
             self.executeCheck(2205, self.misra_22_5, cfg)

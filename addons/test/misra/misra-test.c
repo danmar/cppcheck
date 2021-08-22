@@ -1809,6 +1809,12 @@ static void misra_21_19(void) {
     conv->decimal_point = "^"; // 21.19
 }
 
+static void misra_21_20(void) {
+    const char *res1 = setlocale ( LC_ALL, 0 );
+    (void) setlocale ( LC_MONETARY, "French" );
+    if (res1) {} // 21.20 14.4
+}
+
 static void misra_21_21(void) {
     (void)system("ls"); // 21.21
 }
