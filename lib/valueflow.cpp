@@ -3259,7 +3259,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         // Skip RHS
         const Token *nextExpression = nextAfterAstRightmostLeaf(parent);
 
-        if (Token::Match(parent->astOperand1(), ".|[|(")) {
+        if (Token::Match(parent->astOperand1(), ".|[|(") && parent->astOperand1()->exprId() > 0) {
             valueFlowForwardExpression(
                 const_cast<Token*>(nextExpression), endOfVarScope, parent->astOperand1(), values, tokenlist, settings);
 
