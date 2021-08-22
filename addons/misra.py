@@ -1055,21 +1055,34 @@ def getAddonRules():
 
 def getCppcheckRules():
     """Returns list of rules handled by cppcheck."""
-    return ['1.3', '2.1', '2.2', '2.6', '5.3', '8.3',
+    return ['1.3', # <most "error">
+            '2.1', # alwaysFalse, duplicateBreak
+            '2.2', # alwaysTrue, redundantCondition, redundantAssignment, redundantAssignInSwitch, unreadVariable
+            '2.6', # unusedLabel
+            '5.3', # shadowVariable
+            '8.3', # funcArgNamesDifferent
             '8.13', # constPointer
             '9.1', # uninitvar
             '14.3', # alwaysTrue, alwaysFalse, compareValueOutOfTypeRangeError
-            '13.2', '13.6',
+            '13.2', # unknownEvaluationOrder
+            '13.6', # sizeofCalculation
             '17.4', # missingReturn
-            '17.5', '18.1', '18.2', '18.3', '18.6',
+            '17.5', # argumentSize
+            '18.1', # pointerOutOfBounds
+            '18.2', # comparePointers
+            '18.3', # comparePointers
+            '18.6', # danglingLifetime
             '19.1', # overlappingWriteUnion, overlappingWriteFunction
             '20.6', # preprocessorErrorDirective
+            '21.13', # invalidFunctionArg
             '21.17', # bufferAccessOutOfBounds
             '21.18', # bufferAccessOutOfBounds
             '22.1', # memleak, resourceLeak, memleakOnRealloc, leakReturnValNotUsed, leakNoVarFunctionCall
             '22.2', # autovarInvalidDeallocation
             '22.3', # incompatibleFileOpen
-            '22.4', '22.6']
+            '22.4', # writeReadOnlyFile
+            '22.6' # useClosedFile
+           ]
 
 
 def generateTable():
