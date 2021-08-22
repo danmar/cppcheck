@@ -5626,13 +5626,13 @@ private:
         valueOfTok(code, "0");
 
         code = "namespace juce {\n"
-                "PopupMenu::Item& PopupMenu::Item::operator= (Item&&) = default;\n"
-                "PopupMenu::Options withDeletionCheck (Component& comp) const {\n"
-                "    Options o (*this);\n"
-                "    o.componentToWatchForDeletion = &comp;\n"
-                "    o.isWatchingForDeletion = true;\n"
-                "    return o;\n"
-                "}}\n";
+               "PopupMenu::Item& PopupMenu::Item::operator= (Item&&) = default;\n"
+               "PopupMenu::Options withDeletionCheck (Component& comp) const {\n"
+               "    Options o (*this);\n"
+               "    o.componentToWatchForDeletion = &comp;\n"
+               "    o.isWatchingForDeletion = true;\n"
+               "    return o;\n"
+               "}}\n";
         valueOfTok(code, "return");
     }
 
