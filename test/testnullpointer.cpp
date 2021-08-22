@@ -2398,9 +2398,8 @@ private:
         check("bool h(int*);\n"
               "void f(int* x) {\n"
               "    int* i = x;\n"
-              "    if (h(i)) {\n"
+              "    if (h(i))\n"
               "        i = nullptr;\n"
-              "    }\n"
               "    if (h(i) && *i == 1) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
