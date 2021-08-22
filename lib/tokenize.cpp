@@ -1901,14 +1901,26 @@ namespace {
         }
     };
 
-    void setScopeInfo(Token *tok, ScopeInfo3 **scopeInfo)
+    void setScopeInfo(Token *tok, ScopeInfo3 **scopeInfo, bool debug=false)
     {
         if (!tok)
             return;
         if (tok->str() == "{" && (*scopeInfo)->parent && tok == (*scopeInfo)->bodyStart)
             return;
-        if (tok->str() == "}" && (*scopeInfo)->parent && tok == (*scopeInfo)->bodyEnd) {
-            *scopeInfo = (*scopeInfo)->parent;
+        if (tok->str() == "}") {
+            if ((*scopeInfo)->parent && tok == (*scopeInfo)->bodyEnd)
+                *scopeInfo = (*scopeInfo)->parent;
+            else {
+                // Try to find parent scope
+                ScopeInfo3 *parent = (*scopeInfo)->parent;
+                while (parent && parent->bodyEnd != tok)
+                    parent = parent->parent;
+                if (parent) {
+                    *scopeInfo = parent;
+                    if (debug)
+                        throw std::runtime_error("Internal error: unmatched }");
+                }
+            }
             return;
         }
         if (!Token::Match(tok, "namespace|class|struct|union %name% {|:|::|<")) {
@@ -2235,9 +2247,26 @@ bool Tokenizer::simplifyUsing()
         if (Settings::terminated())
             return substitute;
 
+        if (Token::simpleMatch(tok, "enum class")) {
+            Token *bodyStart = tok;
+            while (Token::Match(bodyStart, "%name%|:|::|<")) {
+                if (bodyStart->str() == "<")
+                    bodyStart = bodyStart->findClosingBracket();
+                bodyStart = bodyStart ? bodyStart->next() : nullptr;
+            }
+            if (Token::simpleMatch(bodyStart, "{"))
+                tok = bodyStart->link();
+            continue;
+        }
+
         if (Token::Match(tok, "{|}|namespace|class|struct|union") ||
             Token::Match(tok, "using namespace %name% ;|::")) {
-            setScopeInfo(tok, &currentScope);
+            try {
+                setScopeInfo(tok, &currentScope, mSettings->debugwarnings);
+            } catch (const std::runtime_error &e) {
+                reportError(tok, Severity::debug, "simplifyUsingUnmatchedBodyEnd",
+                            "simplifyUsing: unmatched body end");
+            }
             continue;
         }
 
@@ -2386,7 +2415,12 @@ bool Tokenizer::simplifyUsing()
 
             if ((Token::Match(tok1, "{|}|namespace|class|struct|union") && tok1->strAt(-1) != "using") ||
                 Token::Match(tok1, "using namespace %name% ;|::")) {
-                setScopeInfo(tok1, &currentScope1);
+                try {
+                    setScopeInfo(tok1, &currentScope1, mSettings->debugwarnings);
+                } catch (const std::runtime_error &e) {
+                    reportError(tok1, Severity::debug, "simplifyUsingUnmatchedBodyEnd",
+                                "simplifyUsing: unmatched body end");
+                }
                 scope1 = currentScope1->fullName;
                 if (inMemberFunc && memberFuncEnd && tok1 == memberFuncEnd) {
                     inMemberFunc = false;
@@ -2406,6 +2440,8 @@ bool Tokenizer::simplifyUsing()
 
             // check for enum with body
             if (tok1->str() == "enum") {
+                if (Token::simpleMatch(tok1, "enum class"))
+                    tok1 = tok1->next();
                 Token *defStart = tok1;
                 while (Token::Match(defStart, "%name%|::|:"))
                     defStart = defStart->next();

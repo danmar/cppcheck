@@ -383,6 +383,7 @@ class Token:
                     self.impossible_values.append(v)
                 else:
                     self.values.append(v)
+                v.setId(IdMap)
         self.typeScope = IdMap[self.typeScopeId]
         self.astParent = IdMap[self.astParentId]
         self.astOperand1 = IdMap[self.astOperand1Id]
@@ -688,7 +689,7 @@ class Value:
         self.intvalue = element.get('intvalue')
         if self.intvalue:
             self.intvalue = int(self.intvalue)
-        self.tokvalue = element.get('tokvalue')
+        self._tokvalueId = element.get('tokvalue')
         self.floatvalue = element.get('floatvalue')
         self.containerSize = element.get('container-size')
         self.condition = element.get('condition-line')
@@ -702,6 +703,9 @@ class Value:
             self.valueKind = 'impossible'
         if element.get('inconclusive'):
             self.inconclusive = True
+
+    def setId(self, IdMap):
+        self.tokvalue = IdMap.get(self._tokvalueId)
 
     def __repr__(self):
         attrs = ["intvalue", "tokvalue", "floatvalue", "containerSize",

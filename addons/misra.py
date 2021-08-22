@@ -1055,21 +1055,34 @@ def getAddonRules():
 
 def getCppcheckRules():
     """Returns list of rules handled by cppcheck."""
-    return ['1.3', '2.1', '2.2', '2.6', '5.3', '8.3',
+    return ['1.3', # <most "error">
+            '2.1', # alwaysFalse, duplicateBreak
+            '2.2', # alwaysTrue, redundantCondition, redundantAssignment, redundantAssignInSwitch, unreadVariable
+            '2.6', # unusedLabel
+            '5.3', # shadowVariable
+            '8.3', # funcArgNamesDifferent
             '8.13', # constPointer
             '9.1', # uninitvar
             '14.3', # alwaysTrue, alwaysFalse, compareValueOutOfTypeRangeError
-            '13.2', '13.6',
+            '13.2', # unknownEvaluationOrder
+            '13.6', # sizeofCalculation
             '17.4', # missingReturn
-            '17.5', '18.1', '18.2', '18.3', '18.6',
+            '17.5', # argumentSize
+            '18.1', # pointerOutOfBounds
+            '18.2', # comparePointers
+            '18.3', # comparePointers
+            '18.6', # danglingLifetime
             '19.1', # overlappingWriteUnion, overlappingWriteFunction
             '20.6', # preprocessorErrorDirective
+            '21.13', # invalidFunctionArg
             '21.17', # bufferAccessOutOfBounds
             '21.18', # bufferAccessOutOfBounds
             '22.1', # memleak, resourceLeak, memleakOnRealloc, leakReturnValNotUsed, leakNoVarFunctionCall
             '22.2', # autovarInvalidDeallocation
             '22.3', # incompatibleFileOpen
-            '22.4', '22.6']
+            '22.4', # writeReadOnlyFile
+            '22.6' # useClosedFile
+           ]
 
 
 def generateTable():
@@ -3264,9 +3277,19 @@ class MisraChecker:
         for cond in cfg.preprocessor_if_conditions:
             if cond.E is None:
                 continue
+            defined = []
+            for directive in cfg.directives:
+                if directive.file == cond.file and directive.linenr == cond.linenr:
+                    for name in re.findall(r'[^_a-zA-Z0-9]defined[ ]*\([ ]*([_a-zA-Z0-9]+)[ ]*\)', directive.str):
+                        defined.append(name)
+                    for name in re.findall(r'[^_a-zA-Z0-9]defined[ ]*([_a-zA-Z0-9]+)', directive.str):
+                        defined.append(name)
+                    break
             for s in cond.E.split(' '):
                 if (s[0] >= 'A' and s[0] <= 'Z') or (s[0] >= 'a' and s[0] <= 'z'):
                     if isKeyword(s):
+                        continue
+                    if s in defined:
                         continue
                     self.reportError(cond, 20, 9)
 
@@ -3541,6 +3564,78 @@ class MisraChecker:
                 if arg.valueType.isEnum():
                     continue
                 self.reportError(token, 21, 16)
+
+    def misra_21_19(self, cfg):
+        for token in cfg.tokenlist:
+            if token.str in ('localeconv', 'getenv', 'setlocale', 'strerror') and simpleMatch(token.next, '('):
+                name, _ = cppcheckdata.get_function_call_name_args(token)
+                if name is None or name != token.str:
+                    continue
+                parent = token.next
+                while simpleMatch(parent.astParent, '+'):
+                    parent = parent.astParent
+                # x = f()
+                if simpleMatch(parent.astParent, '=') and parent == parent.astParent.astOperand2:
+                    lhs = parent.astParent.astOperand1
+                    if lhs and lhs.valueType and lhs.valueType.pointer > 0 and lhs.valueType.constness == 0:
+                        self.reportError(token, 21, 19)
+            if token.str == '=':
+                lhs = token.astOperand1
+                while simpleMatch(lhs, '*') and lhs.astOperand2 is None:
+                    lhs = lhs.astOperand1
+                if not simpleMatch(lhs, '.'):
+                    continue
+                while simpleMatch(lhs, '.'):
+                    lhs = lhs.astOperand1
+                if lhs and lhs.variable and simpleMatch(lhs.variable.typeStartToken, 'lconv'):
+                    self.reportError(token, 21, 19)
+
+    def misra_21_20(self, cfg):
+        assigned = {}
+        invalid = []
+        for token in cfg.tokenlist:
+            # No sophisticated data flow analysis, bail out if control flow is "interrupted"
+            if token.str in ('{', '}', 'break', 'continue', 'return'):
+                assigned = {}
+                invalid = []
+                continue
+
+            # When pointer is assigned, remove it from 'assigned' and 'invalid'
+            if token.varId and token.varId > 0 and simpleMatch(token.next, '='):
+                for name in assigned.keys():
+                    while token.varId in assigned[name]:
+                        assigned[name].remove(token.varId)
+                while token.varId in invalid:
+                    invalid.remove(token.varId)
+                continue
+
+            # Calling dangerous function
+            if token.str in ('asctime', 'ctime', 'gmtime', 'localtime', 'localeconv', 'getenv', 'setlocale', 'strerror'):
+                name, args = cppcheckdata.get_function_call_name_args(token)
+                if name and name == token.str:
+                    # make assigned pointers invalid
+                    for varId in assigned.get(name, ()):
+                        if varId not in invalid:
+                            invalid.append(varId)
+
+                    # assign pointer
+                    parent = token.next
+                    while parent.astParent and (parent.astParent.str == '+' or isCast(parent.astParent)):
+                        parent = parent.astParent
+                    if simpleMatch(parent.astParent, '='):
+                        eq = parent.astParent
+                        vartok = eq.previous
+                        if vartok and vartok.varId and vartok.varId > 0:
+                            if name not in assigned:
+                                assigned[name] = [vartok.varId]
+                            elif vartok.varId not in assigned[name]:
+                                assigned[name].append(vartok.varId)
+                continue
+
+            # taking value of invalid pointer..
+            if token.astParent and token.varId:
+                if token.varId in invalid:
+                    self.reportError(token, 21, 20)
 
     def misra_21_21(self, cfg):
         for token in cfg.tokenlist:
@@ -4189,6 +4284,8 @@ class MisraChecker:
             self.executeCheck(2114, self.misra_21_14, cfg)
             self.executeCheck(2115, self.misra_21_15, cfg)
             self.executeCheck(2116, self.misra_21_16, cfg)
+            self.executeCheck(2119, self.misra_21_19, cfg)
+            self.executeCheck(2120, self.misra_21_20, cfg)
             self.executeCheck(2121, self.misra_21_21, cfg)
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
             self.executeCheck(2205, self.misra_22_5, cfg)
