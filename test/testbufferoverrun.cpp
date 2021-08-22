@@ -185,6 +185,7 @@ private:
         TEST_CASE(buffer_overrun_30); // #6367
         TEST_CASE(buffer_overrun_31);
         TEST_CASE(buffer_overrun_32); //#10244
+        TEST_CASE(buffer_overrun_33); //#2019
         TEST_CASE(buffer_overrun_errorpath);
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
         TEST_CASE(buffer_overrun_function_array_argument);
@@ -2797,6 +2798,17 @@ private:
               "    (void)strxfrm(dest,src,2);\n" // <<
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error, inconclusive) Buffer is accessed out of bounds: src\n", errout.str());
+    }
+
+    void buffer_overrun_33() { // #2019
+        check("int f() {\n"
+              "   int z[16];\n"
+              "   for (int i=0; i<20; i++)\n"
+              "      for (int j=0; j<20; j++)\n"
+              "          z[i] = 0;\n"
+              "   return z[0];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'z[16]' accessed at index 19, which is out of bounds.\n", errout.str());
     }
 
     void buffer_overrun_errorpath() {
