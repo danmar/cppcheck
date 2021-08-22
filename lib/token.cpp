@@ -2139,7 +2139,7 @@ static void removeContradictions(std::list<ValueFlow::Value>& values)
     }
 }
 
-bool sameValueType(const ValueFlow::Value& x, const ValueFlow::Value& y)
+static bool sameValueType(const ValueFlow::Value& x, const ValueFlow::Value& y)
 {
     if (x.valueType != y.valueType)
         return false;

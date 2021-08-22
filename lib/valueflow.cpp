@@ -4478,14 +4478,14 @@ struct Interval {
     }
 };
 
-void addToErrorPath(ValueFlow::Value& value, const std::vector<const ValueFlow::Value*>& refs)
+static void addToErrorPath(ValueFlow::Value& value, const std::vector<const ValueFlow::Value*>& refs)
 {
     for (const ValueFlow::Value* ref : refs) {
         value.errorPath.insert(value.errorPath.end(), ref->errorPath.begin(), ref->errorPath.end());
     }
 }
 
-void setValueKind(ValueFlow::Value& value, const std::vector<const ValueFlow::Value*>& refs)
+static void setValueKind(ValueFlow::Value& value, const std::vector<const ValueFlow::Value*>& refs)
 {
     bool isPossible = false;
     bool isInconclusive = false;
