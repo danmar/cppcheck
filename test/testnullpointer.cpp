@@ -108,15 +108,16 @@ private:
         TEST_CASE(nullpointer66); // #10024
         TEST_CASE(nullpointer67); // #10062
         TEST_CASE(nullpointer68);
-        TEST_CASE(nullpointer69);         // #8143
+        TEST_CASE(nullpointer69); // #8143
         TEST_CASE(nullpointer70);
         TEST_CASE(nullpointer71); // #10178
         TEST_CASE(nullpointer72); // #10215
         TEST_CASE(nullpointer73); // #10321
         TEST_CASE(nullpointer74);
         TEST_CASE(nullpointer75);
-        TEST_CASE(nullpointer76);         // #10408
+        TEST_CASE(nullpointer76); // #10408
         TEST_CASE(nullpointer77);
+        TEST_CASE(nullpointer78); // #7802
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2394,6 +2395,18 @@ private:
               "        if (*i == 1) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer78() // #7802
+    {
+        check("void f()\n"
+              "{\n"
+              "    int **pp;\n"
+              "    int *p = 0;\n"
+              "    pp = &p;\n"
+              "    **pp = 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Null pointer dereference: *pp\n", errout.str());
     }
 
     void nullpointer_addressOf() { // address of
