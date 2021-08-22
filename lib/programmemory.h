@@ -48,7 +48,7 @@ struct ProgramMemoryState {
     std::map<nonneg int, const Token*> origins;
     const Settings* settings;
 
-    ProgramMemoryState(const Settings* s);
+    explicit ProgramMemoryState(const Settings* s);
 
     void insert(const ProgramMemory &pm, const Token* origin = nullptr);
     void replace(const ProgramMemory &pm, const Token* origin = nullptr);
