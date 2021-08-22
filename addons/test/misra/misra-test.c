@@ -1388,6 +1388,9 @@ static void misra_15_6(void) {
   do {} while (x<0); // no-warning
 }
 
+#if defined(M_20_9) && M_20_9 > 1 // no-warning (#10380)
+#endif
+
 static void misra_15_7(void) {
   uint32_t var = 0;
   uint32_t var2 = 0;

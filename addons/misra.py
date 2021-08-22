@@ -3277,9 +3277,19 @@ class MisraChecker:
         for cond in cfg.preprocessor_if_conditions:
             if cond.E is None:
                 continue
+            defined = []
+            for directive in cfg.directives:
+                if directive.file == cond.file and directive.linenr == cond.linenr:
+                    for name in re.findall(r'[^_a-zA-Z0-9]defined[ ]*\([ ]*([_a-zA-Z0-9]+)[ ]*\)', directive.str):
+                        defined.append(name)
+                    for name in re.findall(r'[^_a-zA-Z0-9]defined[ ]*([_a-zA-Z0-9]+)', directive.str):
+                        defined.append(name)
+                    break
             for s in cond.E.split(' '):
                 if (s[0] >= 'A' and s[0] <= 'Z') or (s[0] >= 'a' and s[0] <= 'z'):
                     if isKeyword(s):
+                        continue
+                    if s in defined:
                         continue
                     self.reportError(cond, 20, 9)
 
