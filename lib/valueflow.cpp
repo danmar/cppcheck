@@ -271,7 +271,6 @@ const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, Val
     });
 }
 
-
 static bool isEscapeScope(const Token* tok, TokenList * tokenlist, bool unknown = false)
 {
     if (!Token::simpleMatch(tok, "{"))
@@ -579,6 +578,19 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
                 v.intvalue = !v.intvalue;
                 v.valueType = ValueFlow::Value::ValueType::INT;
                 setTokenValue(parent->astParent(), v, settings);
+            }
+        } else if (Token::Match(parent->previous(), "%name% (")) {
+            if (const Library::Function* f = settings->library.getFunction(parent->previous())) {
+                if (f->containerYield == Library::Container::Yield::SIZE) {
+                    ValueFlow::Value v(value);
+                    v.valueType = ValueFlow::Value::ValueType::INT;
+                    setTokenValue(parent, v, settings);
+                } else if (f->containerYield == Library::Container::Yield::EMPTY) {
+                    ValueFlow::Value v(value);
+                    v.intvalue = !v.intvalue;
+                    v.valueType = ValueFlow::Value::ValueType::INT;
+                    setTokenValue(parent, v, settings);
+                }
             }
         }
 
@@ -1949,9 +1961,9 @@ struct ValueFlowAnalyzer : Analyzer {
     const TokenList* tokenlist;
     ProgramMemoryState pms;
 
-    ValueFlowAnalyzer() : tokenlist(nullptr), pms() {}
+    ValueFlowAnalyzer() : tokenlist(nullptr), pms(nullptr) {}
 
-    explicit ValueFlowAnalyzer(const TokenList* t) : tokenlist(t), pms() {}
+    explicit ValueFlowAnalyzer(const TokenList* t) : tokenlist(t), pms(tokenlist->getSettings()) {}
 
     virtual const ValueFlow::Value* getValue(const Token* tok) const = 0;
     virtual ValueFlow::Value* getValue(const Token* tok) = 0;
@@ -6571,36 +6583,15 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
     }
 }
 
-static bool isContainerSize(const Token* tok)
-{
-    if (!Token::Match(tok, "%var% . %name% ("))
-        return false;
-    if (!astIsContainer(tok))
-        return false;
-    if (tok->valueType()->container && tok->valueType()->container->getYield(tok->strAt(2)) == Library::Container::Yield::SIZE)
-        return true;
-    if (Token::Match(tok->tokAt(2), "size|length ( )"))
-        return true;
-    return false;
-}
+static bool isContainerSizeChanged(const Token* tok, const Settings* settings = nullptr, int depth = 20);
 
-static bool isContainerEmpty(const Token* tok)
-{
-    if (!Token::Match(tok, "%var% . %name% ("))
-        return false;
-    if (!astIsContainer(tok))
-        return false;
-    if (tok->valueType()->container && tok->valueType()->container->getYield(tok->strAt(2)) == Library::Container::Yield::EMPTY)
-        return true;
-    if (Token::simpleMatch(tok->tokAt(2), "empty ( )"))
-        return true;
-    return false;
-}
-static bool isContainerSizeChanged(const Token *tok, int depth=20);
+static bool isContainerSizeChanged(nonneg int varId,
+                                   const Token* start,
+                                   const Token* end,
+                                   const Settings* settings = nullptr,
+                                   int depth = 20);
 
-static bool isContainerSizeChanged(nonneg int varId, const Token *start, const Token *end, int depth = 20);
-
-static bool isContainerSizeChangedByFunction(const Token *tok, int depth = 20)
+static bool isContainerSizeChangedByFunction(const Token* tok, const Settings* settings = nullptr, int depth = 20)
 {
     if (!tok->valueType() || !tok->valueType()->container)
         return false;
@@ -6636,7 +6627,8 @@ static bool isContainerSizeChangedByFunction(const Token *tok, int depth = 20)
                 if (!arg->nameToken())
                     return false;
                 if (depth > 0)
-                    return isContainerSizeChanged(arg->declarationId(), scope->bodyStart, scope->bodyEnd, depth - 1);
+                    return isContainerSizeChanged(
+                        arg->declarationId(), scope->bodyStart, scope->bodyEnd, settings, depth - 1);
             }
             // Don't know => Safe guess
             return true;
@@ -6644,7 +6636,7 @@ static bool isContainerSizeChangedByFunction(const Token *tok, int depth = 20)
     }
 
     bool inconclusive = false;
-    const bool isChanged = isVariableChangedByFunctionCall(tok, 0, nullptr, &inconclusive);
+    const bool isChanged = isVariableChangedByFunctionCall(tok, 0, settings, &inconclusive);
     return (isChanged || inconclusive);
 }
 
@@ -6731,7 +6723,7 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
             return Action::Invalid;
         if (isLikelyStreamRead(isCPP(), tok->astParent()))
             return Action::Invalid;
-        if (astIsContainer(tok) && isContainerSizeChanged(tok))
+        if (astIsContainer(tok) && isContainerSizeChanged(tok, getSettings()))
             return Action::Invalid;
         return read;
     }
@@ -6781,7 +6773,7 @@ static void valueFlowContainerReverse(Token* tok,
     }
 }
 
-static bool isContainerSizeChanged(const Token *tok, int depth)
+static bool isContainerSizeChanged(const Token* tok, const Settings* settings, int depth)
 {
     if (!tok)
         return false;
@@ -6811,17 +6803,21 @@ static bool isContainerSizeChanged(const Token *tok, int depth)
             break;
         }
     }
-    if (isContainerSizeChangedByFunction(tok, depth))
+    if (isContainerSizeChangedByFunction(tok, settings, depth))
         return true;
     return false;
 }
 
-static bool isContainerSizeChanged(nonneg int varId, const Token *start, const Token *end, int depth)
+static bool isContainerSizeChanged(nonneg int varId,
+                                   const Token* start,
+                                   const Token* end,
+                                   const Settings* settings,
+                                   int depth)
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() != varId)
             continue;
-        if (isContainerSizeChanged(tok, depth))
+        if (isContainerSizeChanged(tok, settings, depth))
             return true;
     }
     return false;
@@ -7149,14 +7145,15 @@ struct ContainerConditionHandler : ConditionHandler {
         return valueFlowContainerReverse(start, endTok, exprTok, values, tokenlist, settings);
     }
 
-    virtual std::vector<Condition> parse(const Token* tok, const Settings*) const OVERRIDE {
+    virtual std::vector<Condition> parse(const Token* tok, const Settings* settings) const OVERRIDE
+    {
         Condition cond;
         ValueFlow::Value true_value;
         ValueFlow::Value false_value;
         const Token *vartok = parseCompareInt(tok, true_value, false_value);
         if (vartok) {
-            vartok = vartok->tokAt(-3);
-            if (!isContainerSize(vartok))
+            vartok = settings->library.getContainerFromYield(vartok, Library::Container::Yield::SIZE);
+            if (!vartok)
                 return {};
             true_value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             false_value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
@@ -7168,9 +7165,9 @@ struct ContainerConditionHandler : ConditionHandler {
 
         // Empty check
         if (tok->str() == "(") {
-            vartok = tok->tokAt(-3);
+            vartok = settings->library.getContainerFromYield(tok, Library::Container::Yield::EMPTY);
             // TODO: Handle .size()
-            if (!isContainerEmpty(vartok))
+            if (!vartok)
                 return {};
             const Token *parent = tok->astParent();
             while (parent) {

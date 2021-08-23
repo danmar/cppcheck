@@ -252,6 +252,9 @@ public:
                 return i->second.yield;
             return Yield::NO_YIELD;
         }
+
+        static Yield yieldFrom(const std::string& yieldName);
+        static Action actionFrom(const std::string& actionName);
     };
     std::map<std::string, Container> containers;
     const Container* detectContainer(const Token* typeStart, bool iterator = false) const;
@@ -320,7 +323,21 @@ public:
         bool formatstr;
         bool formatstr_scan;
         bool formatstr_secure;
-        Function() : use(false), leakignore(false), isconst(false), ispure(false), useretval(UseRetValType::NONE), ignore(false), formatstr(false), formatstr_scan(false), formatstr_secure(false) {}
+        Container::Action containerAction;
+        Container::Yield containerYield;
+        Function()
+            : use(false),
+            leakignore(false),
+            isconst(false),
+            ispure(false),
+            useretval(UseRetValType::NONE),
+            ignore(false),
+            formatstr(false),
+            formatstr_scan(false),
+            formatstr_secure(false),
+            containerAction(Container::Action::NO_ACTION),
+            containerYield(Container::Yield::NO_YIELD)
+        {}
     };
 
     const Function *getFunction(const Token *ftok) const;
@@ -416,6 +433,9 @@ public:
     }
 
     bool isimporter(const std::string& file, const std::string &importer) const;
+
+    const Token* getContainerFromYield(const Token* tok, Container::Yield yield) const;
+    const Token* getContainerFromAction(const Token* tok, Container::Action action) const;
 
     bool isreflection(const std::string &token) const {
         return mReflection.find(token) != mReflection.end();
