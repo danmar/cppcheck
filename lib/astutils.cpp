@@ -34,6 +34,7 @@
 #include <functional>
 #include <iterator>
 #include <list>
+#include <set>
 #include <stack>
 #include <utility>
 
@@ -2096,6 +2097,41 @@ static std::function<R()> memoize(F f)
     };
 }
 
+template<class F, REQUIRES("F must be a function that returns a Token class", std::is_convertible<decltype(std::declval<F>()()), const Token*> )>
+static bool isExpressionChangedAt(const F& getExprTok, const Token* tok, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth)
+{
+    if (tok->exprId() != exprid) {
+        if (globalvar && Token::Match(tok, "%name% ("))
+            // TODO: Is global variable really changed by function call?
+            return true;
+        // Is aliased function call or alias passed to function
+        if ((Token::Match(tok, "%var% (") || isVariableChangedByFunctionCall(tok, 1, settings)) &&
+            std::any_of(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
+            bool aliased = false;
+            // If we can't find the expression then assume it was modified
+            if (!getExprTok())
+                return true;
+            visitAstNodes(getExprTok(), [&](const Token* childTok) {
+                if (childTok->varId() > 0 && isAliasOf(tok, childTok->varId())) {
+                    aliased = true;
+                    return ChildrenToVisit::done;
+                }
+                return ChildrenToVisit::op1_and_op2;
+            });
+            // TODO: Try to traverse the lambda function
+            if (aliased)
+                return true;
+        }
+        return false;
+    }
+    return (isVariableChanged(tok, indirect, settings, cpp, depth));
+}
+
+bool isExpressionChangedAt(const Token* expr, const Token* tok, int indirect, bool globalvar, const Settings *settings, bool cpp, int depth)
+{
+    return isExpressionChangedAt([&]{ return expr; }, tok, indirect, expr->exprId(), globalvar, settings, cpp, depth);
+}
+
 Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth)
 {
     if (!precedes(start, end))
@@ -2106,31 +2142,7 @@ Token* findVariableChanged(Token *start, const Token *end, int indirect, const n
         return findExpression(start, exprid);
     });
     for (Token *tok = start; tok != end; tok = tok->next()) {
-        if (tok->exprId() != exprid) {
-            if (globalvar && Token::Match(tok, "%name% ("))
-                // TODO: Is global variable really changed by function call?
-                return tok;
-            // Is aliased function call or alias passed to function
-            if ((Token::Match(tok, "%var% (") || isVariableChangedByFunctionCall(tok, 1, settings)) &&
-                std::any_of(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
-                bool aliased = false;
-                // If we can't find the expression then assume it was modified
-                if (!getExprTok())
-                    return tok;
-                visitAstNodes(getExprTok(), [&](const Token* childTok) {
-                    if (childTok->varId() > 0 && isAliasOf(tok, childTok->varId())) {
-                        aliased = true;
-                        return ChildrenToVisit::done;
-                    }
-                    return ChildrenToVisit::op1_and_op2;
-                });
-                // TODO: Try to traverse the lambda function
-                if (aliased)
-                    return tok;
-            }
-            continue;
-        }
-        if (isVariableChanged(tok, indirect, settings, cpp, depth))
+        if (isExpressionChangedAt(getExprTok, tok, indirect, exprid, globalvar, settings, cpp, depth))
             return tok;
     }
     return nullptr;
@@ -2223,10 +2235,13 @@ bool isExpressionChanged(const Token* expr, const Token* start, const Token* end
                 return false;
             global = !tok->variable()->isLocal() && !tok->variable()->isArgument();
         }
-        if (tok->exprId() > 0 &&
-            isVariableChanged(
-                start, end, tok->valueType() ? tok->valueType()->pointer : 0, tok->exprId(), global, settings, cpp, depth))
-            return true;
+
+        if (tok->exprId() > 0) {
+            for (const Token *tok2 = start; tok2 != end; tok2 = tok2->next()) {
+                if (isExpressionChangedAt(tok, tok2, tok->valueType() ? tok->valueType()->pointer : 0, global, settings, cpp, depth))
+                    return true;
+            }
+        }
         return false;
     });
     return result;
