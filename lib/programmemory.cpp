@@ -495,7 +495,7 @@ struct assign {
 static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& lhs, const ValueFlow::Value& rhs)
 {
     ValueFlow::Value result;
-    if (lhs.isImpossible() == rhs.isImpossible())
+    if (lhs.isImpossible() && rhs.isImpossible())
         return ValueFlow::Value::unknown();
     if (lhs.isImpossible() || rhs.isImpossible()) {
         // noninvertible
@@ -592,7 +592,7 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
         return execute(expr->astOperand2(), pm);
     } else if (expr->str() == "||" && expr->astOperand1() && expr->astOperand2()) {
         ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
-        if (lhs.isIntValue() && lhs.intvalue == 0)
+        if (lhs.isIntValue() && lhs.intvalue != 0)
             return lhs;
         return execute(expr->astOperand2(), pm);
     } else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
@@ -613,6 +613,29 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
         else
             lhs.intvalue--;
         return lhs;
+    } else if (expr->str() == "[" && expr->astOperand1() && expr->astOperand2()) {
+        const Token *tokvalue = nullptr;
+        if (!pm.getTokValue(expr->astOperand1()->exprId(), &tokvalue)) {
+            auto tokvalue_it = std::find_if(expr->astOperand1()->values().begin(),
+                                            expr->astOperand1()->values().end(),
+                                            std::mem_fn(&ValueFlow::Value::isTokValue));
+            if (tokvalue_it == expr->astOperand1()->values().end()) {
+                return unknown;
+            }
+            tokvalue = tokvalue_it->tokvalue;
+        }
+        if (!tokvalue || !tokvalue->isLiteral()) {
+            return unknown;
+        }
+        const std::string strValue = tokvalue->strValue();
+        ValueFlow::Value rhs = execute(expr->astOperand2(), pm);
+        if (!rhs.isIntValue())
+            return unknown;
+        MathLib::bigint index = rhs.intvalue;
+        if (index >= 0 && index < strValue.size())
+            return ValueFlow::Value{strValue[index]};
+        else if (index == strValue.size())
+            return ValueFlow::Value{};
     } else if (Token::Match(expr, "%op%") && expr->astOperand1() && expr->astOperand2()) {
         ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
         ValueFlow::Value rhs = execute(expr->astOperand2(), pm);
