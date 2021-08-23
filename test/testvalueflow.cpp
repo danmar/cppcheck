@@ -5671,13 +5671,13 @@ private:
         valueOfTok(code, "return");
 
         code = "class dummy_resource : public instrument_resource {\n"
-                "public:\n"
-                "    int reads;\n"
-                "    static std::list<int> log;\n"
-                "};\n"
-                "void dummy_reader_reset() {\n"
-                "    dummy_resource::log.clear();\n"
-                "}\n";
+               "public:\n"
+               "    int reads;\n"
+               "    static std::list<int> log;\n"
+               "};\n"
+               "void dummy_reader_reset() {\n"
+               "    dummy_resource::log.clear();\n"
+               "}\n";
         valueOfTok(code, "log");
     }
 
