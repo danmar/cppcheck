@@ -4925,6 +4925,13 @@ private:
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . front"), 0));
 
         code = "void f(const std::vector<std::string>& v) {\n"
+               "    if(std::empty(v)) {\n"
+               "        v.front();\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . front"), 0));
+
+        code = "void f(const std::vector<std::string>& v) {\n"
                "    if(!v.empty()) {\n"
                "        v.front();\n"
                "    }\n"
@@ -5455,6 +5462,34 @@ private:
         ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
 
+        code = "void f() {\n"
+               "    std::vector<int> v;\n"
+               "    int x = v.size();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "void f() {\n"
+               "    std::vector<int> v;\n"
+               "    int x = v.empty();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
+
+        code = "void f() {\n"
+               "    std::vector<int> v;\n"
+               "    int x = std::size(v);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "void f() {\n"
+               "    std::vector<int> v;\n"
+               "    int x = std::empty(v);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
+
         code = "bool f() {\n"
                "    std::list<int> x1;\n"
                "    std::list<int> x2;\n"
@@ -5624,6 +5659,16 @@ private:
                "  };\n"
                "}\n";
         valueOfTok(code, "0");
+
+        code = "namespace juce {\n"
+               "PopupMenu::Item& PopupMenu::Item::operator= (Item&&) = default;\n"
+               "PopupMenu::Options withDeletionCheck (Component& comp) const {\n"
+               "    Options o (*this);\n"
+               "    o.componentToWatchForDeletion = &comp;\n"
+               "    o.isWatchingForDeletion = true;\n"
+               "    return o;\n"
+               "}}\n";
+        valueOfTok(code, "return");
     }
 
     void valueFlowCrash() {

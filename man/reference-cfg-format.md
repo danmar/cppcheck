@@ -263,6 +263,21 @@ printf - format string follows the printf rules
 
 scanf - format string follows the scanf rules
 
+### Container inputs
+
+If this is a free function for containers(like for `std::size` or `std::erase_if`) then the `<container>` tag can be used to specify the `yield` or `action`. Here is an example of `std::size`:
+
+    <function name="std::size">
+        <noreturn>false</noreturn>
+        <use-retval/>
+        <leak-ignore/>
+        <container yields="size"/>
+        <returnValue type="size_t"/>
+        <arg nr="1" direction="in">
+            <not-uninit/>
+        </arg>
+    </function>
+
 ### Value range
 
 The valid values can be defined. Imagine:
