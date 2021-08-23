@@ -39,6 +39,7 @@ private:
         TEST_CASE(ptrcompare);
         TEST_CASE(ptrarithmetic);
         TEST_CASE(returnIssues);
+        TEST_CASE(assignment);
     }
 
     void check(const char code[]) {
@@ -54,6 +55,15 @@ private:
         // Check char variable usage..
         Check64BitPortability check64BitPortability(&tokenizer, &settings, this);
         check64BitPortability.pointerassignment();
+    }
+
+    void assignment() {
+        // #8631
+        check("using CharArray = char[16];\n"
+              "void f() {\n"
+              "    CharArray foo = \"\";\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void novardecl() {
