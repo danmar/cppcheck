@@ -2097,8 +2097,17 @@ static std::function<R()> memoize(F f)
     };
 }
 
-template<class F, REQUIRES("F must be a function that returns a Token class", std::is_convertible<decltype(std::declval<F>()()), const Token*> )>
-static bool isExpressionChangedAt(const F& getExprTok, const Token* tok, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth)
+template<class F,
+         REQUIRES("F must be a function that returns a Token class",
+                  std::is_convertible<decltype(std::declval<F>()()), const Token*> )>
+static bool isExpressionChangedAt(const F& getExprTok,
+                                  const Token* tok,
+                                  int indirect,
+                                  const nonneg int exprid,
+                                  bool globalvar,
+                                  const Settings* settings,
+                                  bool cpp,
+                                  int depth)
 {
     if (tok->exprId() != exprid) {
         if (globalvar && Token::Match(tok, "%name% ("))
@@ -2127,9 +2136,17 @@ static bool isExpressionChangedAt(const F& getExprTok, const Token* tok, int ind
     return (isVariableChanged(tok, indirect, settings, cpp, depth));
 }
 
-bool isExpressionChangedAt(const Token* expr, const Token* tok, int indirect, bool globalvar, const Settings *settings, bool cpp, int depth)
+bool isExpressionChangedAt(const Token* expr,
+                           const Token* tok,
+                           int indirect,
+                           bool globalvar,
+                           const Settings* settings,
+                           bool cpp,
+                           int depth)
 {
-    return isExpressionChangedAt([&]{ return expr; }, tok, indirect, expr->exprId(), globalvar, settings, cpp, depth);
+    return isExpressionChangedAt([&] {
+        return expr;
+    }, tok, indirect, expr->exprId(), globalvar, settings, cpp, depth);
 }
 
 Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth)
@@ -2237,8 +2254,9 @@ bool isExpressionChanged(const Token* expr, const Token* start, const Token* end
         }
 
         if (tok->exprId() > 0) {
-            for (const Token *tok2 = start; tok2 != end; tok2 = tok2->next()) {
-                if (isExpressionChangedAt(tok, tok2, tok->valueType() ? tok->valueType()->pointer : 0, global, settings, cpp, depth))
+            for (const Token* tok2 = start; tok2 != end; tok2 = tok2->next()) {
+                if (isExpressionChangedAt(
+                        tok, tok2, tok->valueType() ? tok->valueType()->pointer : 0, global, settings, cpp, depth))
                     return true;
             }
         }

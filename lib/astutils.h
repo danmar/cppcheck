@@ -242,7 +242,13 @@ bool isExpressionChanged(const Token* expr,
                          bool cpp,
                          int depth = 20);
 
-bool isExpressionChangedAt(const Token* expr, const Token* tok, int indirect, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
+bool isExpressionChangedAt(const Token* expr,
+                           const Token* tok,
+                           int indirect,
+                           bool globalvar,
+                           const Settings* settings,
+                           bool cpp,
+                           int depth = 20);
 
 /// If token is an alias if another variable
 bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive = nullptr);
