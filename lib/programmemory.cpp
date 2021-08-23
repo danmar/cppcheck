@@ -369,10 +369,9 @@ void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
 void ProgramMemoryState::removeModifiedVars(const Token* tok)
 {
     for (auto i = state.values.begin(), last = state.values.end(); i != last;) {
-        const Token* expr = findExpression(i->first, origins[i->first], tok, [](const Token*) {
-            return true;
-        });
-        if (expr && isExpressionChanged(expr, origins[i->first], tok, settings, true)) {
+        const Token* start = origins[i->first];
+        const Token* expr = findExpression(start ? start : tok, i->first);
+        if (!expr || isExpressionChanged(expr, start, tok, settings, true)) {
             origins.erase(i->first);
             i = state.values.erase(i);
         } else {

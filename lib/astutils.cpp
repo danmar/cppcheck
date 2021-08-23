@@ -2065,7 +2065,7 @@ bool isVariableChanged(const Token *start, const Token *end, int indirect, const
     return findVariableChanged(start, end, indirect, exprid, globalvar, settings, cpp, depth) != nullptr;
 }
 
-static const Token* findExpression(const Token* start, const nonneg int exprid)
+const Token* findExpression(const Token* start, const nonneg int exprid)
 {
     Function * f = Scope::nestedInFunction(start->scope());
     if (!f)

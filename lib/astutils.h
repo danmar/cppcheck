@@ -55,6 +55,7 @@ const Token* findExpression(const nonneg int exprid,
                             const Token* start,
                             const Token* end,
                             const std::function<bool(const Token*)>& pred);
+const Token* findExpression(const Token* start, const nonneg int exprid);
 
 std::vector<const Token*> astFlatten(const Token* tok, const char* op);
 
