@@ -636,20 +636,19 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
             return ValueFlow::Value{strValue[index]};
         else if (index == strValue.size())
             return ValueFlow::Value{};
-    } else if (Token::Match(expr, "%op%") && expr->astOperand1() && expr->astOperand2()) {
+    } else if (Token::Match(expr, "%cop%") && expr->astOperand1() && expr->astOperand2()) {
         ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
         ValueFlow::Value rhs = execute(expr->astOperand2(), pm);
-        if (!lhs.isUninitValue() && !rhs.isUninitValue()) {
+        if (!lhs.isUninitValue() && !rhs.isUninitValue())
             return evaluate(expr->str(), lhs, rhs);
-        } else if (expr->isComparisonOp()) {
+        if (expr->isComparisonOp()) {
             if (rhs.isIntValue()) {
                 ValueFlow::Value v = inferCondition(expr->str(), expr->astOperand1(), rhs.intvalue);
-                if (!v.isKnown())
-                    return unknown;
-                return v;
+                if (v.isKnown())
+                    return v;
             } else if (lhs.isIntValue()) {
                 ValueFlow::Value v = inferCondition(expr->str(), lhs.intvalue, expr->astOperand2());
-                if (!v.isKnown())
+                if (v.isKnown())
                     return unknown;
                 return v;
             }
@@ -670,7 +669,8 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
             return execute(expr->astOperand2(), pm);
         else
             return execute(expr->astOperand1(), pm);
-    } else if (expr->exprId() > 0 && pm.hasValue(expr->exprId())) {
+    }
+    if (expr->exprId() > 0 && pm.hasValue(expr->exprId())) {
         return pm.values.at(expr->exprId());
     }
 
