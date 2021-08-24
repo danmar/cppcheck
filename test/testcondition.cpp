@@ -1093,8 +1093,14 @@ private:
               "   if((x==3) && (x!=4))\n"
               "        a++;\n"
               "}");
-
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x == 3', the comparison 'x != 4' is always true.\n", errout.str());
+
+        check("void f(const std::string &s) {\n" // #8860
+              "    const std::size_t p = s.find(\"42\");\n"
+              "    const std::size_t * const ptr = &p;\n"
+              "    if(p != std::string::npos && p == 0 && *ptr != 1){;}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (style) Condition '*ptr!=1' is always true\n", errout.str());
 
         check("void f(int x) {\n"
               "    if ((x!=4) && (x==3))\n"
