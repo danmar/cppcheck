@@ -7079,7 +7079,9 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                 setTokenValue(const_cast<Token*>(tok), value, settings);
             } else if (Token::Match(tok, "%name%|;|{|} %var% = %str% ;")) {
                 const Token *containerTok = tok->next();
-                if (containerTok && containerTok->valueType() && containerTok->valueType()->container && containerTok->valueType()->container->stdStringLike) {
+                if (containerTok->exprId() == 0)
+                    continue;
+                if (containerTok->valueType() && containerTok->valueType()->container && containerTok->valueType()->container->stdStringLike) {
                     ValueFlow::Value value(Token::getStrLength(containerTok->tokAt(2)));
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
@@ -7087,6 +7089,8 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                 }
             } else if (Token::Match(tok, "%name%|;|{|}|> %var% = {") && Token::simpleMatch(tok->linkAt(3), "} ;")) {
                 const Token* containerTok = tok->next();
+                if (containerTok->exprId() == 0)
+                    continue;
                 if (astIsContainer(containerTok) && containerTok->valueType()->container->size_templateArgNo < 0) {
                     std::vector<ValueFlow::Value> values = getInitListSize(tok->tokAt(3), containerTok->valueType()->container);
                     for (const ValueFlow::Value& value : values)
@@ -7094,6 +7098,8 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                 }
             } else if (Token::Match(tok, ". %name% (") && tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->container) {
                 const Token* containerTok = tok->astOperand1();
+                if (containerTok->exprId() == 0)
+                    continue;
                 Library::Container::Action action = containerTok->valueType()->container->getAction(tok->strAt(1));
                 if (action == Library::Container::Action::CLEAR) {
                     ValueFlow::Value value(0);
