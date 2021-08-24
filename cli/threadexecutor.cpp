@@ -465,9 +465,8 @@ unsigned int __stdcall ThreadExecutor::threadProc(ThreadExecutor* threadExecutor
         threadExecutor->mProcessedSize += fileSize;
         threadExecutor->mProcessedFiles++;
         if (!threadExecutor->mSettings.quiet) {
-            threadExecutor->mReportSync.lock();
+            std::lock_guard<std::mutex> lg(threadExecutor->mReportSync);
             CppCheckExecutor::reportStatus(threadExecutor->mProcessedFiles, threadExecutor->mTotalFiles, threadExecutor->mProcessedSize, threadExecutor->mTotalFileSize);
-            threadExecutor->mReportSync.unlock();
         }
     }
     return result;
@@ -475,11 +474,9 @@ unsigned int __stdcall ThreadExecutor::threadProc(ThreadExecutor* threadExecutor
 
 void ThreadExecutor::reportOut(const std::string &outmsg, Color c)
 {
-    mReportSync.lock();
+    std::lock_guard<std::mutex> lg(mReportSync);
 
     mErrorLogger.reportOut(outmsg, c);
-
-    mReportSync.unlock();
 }
 void ThreadExecutor::reportErr(const ErrorMessage &msg)
 {
@@ -505,15 +502,17 @@ void ThreadExecutor::report(const ErrorMessage &msg, MessageType msgType)
     bool reportError = false;
     const std::string errmsg = msg.toString(mSettings.verbose);
 
-    mErrorSync.lock();
-    if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) == mErrorList.end()) {
-        mErrorList.emplace_back(errmsg);
-        reportError = true;
+    {
+        std::lock_guard<std::mutex> lg(mErrorSync);
+        if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) == mErrorList.end()) {
+            mErrorList.emplace_back(errmsg);
+            reportError = true;
+        }
     }
-    mErrorSync.unlock();
+
 
     if (reportError) {
-        mReportSync.lock();
+        std::lock_guard<std::mutex> lg(mReportSync);
 
         switch (msgType) {
         case MessageType::REPORT_ERROR:
@@ -523,8 +522,6 @@ void ThreadExecutor::report(const ErrorMessage &msg, MessageType msgType)
             mErrorLogger.reportInfo(msg);
             break;
         }
-
-        mReportSync.unlock();
     }
 }
 
