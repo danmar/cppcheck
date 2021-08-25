@@ -70,9 +70,9 @@
 
 #if defined(_MSC_VER)
 #define USE_WINDOWS_SEH
+#include <Windows.h>
 #include <DbgHelp.h>
 #include <TCHAR.H>
-#include <Windows.h>
 #include <excpt.h>
 #endif
 
