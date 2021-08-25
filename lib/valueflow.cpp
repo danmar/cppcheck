@@ -3839,6 +3839,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                         tok2, "Lambda captures variable by value here.", ValueFlow::Value::LifetimeKind::Lambda};
                     ls.forward = false;
                     update |= ls.byVal(tok, tokenlist, errorLogger, settings, pred);
+                    pred(tok2);
                 }
             };
 
