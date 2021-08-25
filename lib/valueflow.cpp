@@ -5585,6 +5585,8 @@ struct SymbolicConditionHandler : SimpleConditionHandler {
             const Token* valuetok = lhs ? tok->astOperand2() : tok->astOperand1();
             if (valuetok->hasKnownSymbolicValue(vartok))
                 continue;
+            if (vartok->hasKnownSymbolicValue(valuetok))
+                continue;
             ValueFlow::Value true_value;
             ValueFlow::Value false_value;
             setConditionalValues(tok, !lhs, 0, true_value, false_value);
