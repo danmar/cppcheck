@@ -2037,6 +2037,18 @@ private:
               "    };\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    int x;\n"
+              "};\n"
+              "auto f() {\n"
+              "    A a;\n"
+              "    return [=] {\n"
+              "        const A* ap = &a;\n"
+              "        ap->x;\n"
+              "    };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeContainer() {
