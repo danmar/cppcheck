@@ -208,10 +208,10 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
         std::vector<MathLib::bigint> lhs = eval(tok->astOperand1());
         std::vector<MathLib::bigint> rhs = eval(tok->astOperand2());
         if (lhs.empty() || rhs.empty()) {
-            if (!frontIs(lhs, !then))
-                programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, then);
-            if (!frontIs(rhs, !then))
+            if (frontIs(lhs, !then))
                 programMemoryParseCondition(pm, tok->astOperand2(), endTok, settings, then);
+            if (frontIs(rhs, !then))
+                programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, then);
         }
     } else if (tok->exprId() > 0) {
         if (then && !astIsPointer(tok) && !astIsBool(tok))

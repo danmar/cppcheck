@@ -3125,6 +3125,20 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
+        code = "int g();\n"
+                "int f(bool i, bool j) {\n"
+                "    if (i && j) {}\n"
+                "    else {\n"
+                "        int x = 0;\n"
+                "        if (i)\n"
+                "            x = g();\n"
+                "        return x;\n"
+                "    }\n"
+                "    return 0;\n"
+                "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 8U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 8U, 0));
     }
 
     void valueFlowForwardModifiedVariables() {
