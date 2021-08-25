@@ -69,7 +69,9 @@
 #endif
 
 #if defined(_WIN32)
+#if defined(_MSC_VER)
 #define USE_WINDOWS_SEH
+#endif
 #include <Windows.h>
 #include <DbgHelp.h>
 #include <TCHAR.H>
