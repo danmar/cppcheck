@@ -2543,7 +2543,7 @@ private:
     }
 
     void identicalConditionAfterEarlyExit() {
-        check("void f(int x) {\n"
+        check("void f(int x) {\n" // #8137
               "  if (x > 100) { return; }\n"
               "  if (x > 100) {}\n"
               "}");
