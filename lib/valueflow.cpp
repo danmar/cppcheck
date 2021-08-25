@@ -4716,12 +4716,13 @@ static void valueFlowForwardAssign(Token* const tok,
     }
 
     if (tokenlist->isCPP() && vars.size() == 1 && Token::Match(vars.front()->typeStartToken(), "bool|_Bool")) {
-        std::list<ValueFlow::Value>::iterator it;
-        for (it = values.begin(); it != values.end(); ++it) {
-            if (it->isIntValue())
-                it->intvalue = (it->intvalue != 0);
-            if (it->isTokValue())
-                it->intvalue = (it->tokvalue != nullptr);
+        for (ValueFlow::Value& value : values) {
+            if (value.isImpossible())
+                continue;
+            if (value.isIntValue())
+                value.intvalue = (value.intvalue != 0);
+            if (value.isTokValue())
+                value.intvalue = (value.tokvalue != nullptr);
         }
     }
 
