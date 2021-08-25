@@ -3748,6 +3748,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                         tok2, "Lambda captures variable by value here.", ValueFlow::Value::LifetimeKind::Lambda};
                     ls.forward = false;
                     update |= ls.byVal(tok, tokenlist, errorLogger, settings, pred);
+                    pred(tok2);
                 }
             };
 
@@ -4624,12 +4625,13 @@ static void valueFlowForwardAssign(Token* const tok,
     }
 
     if (tokenlist->isCPP() && vars.size() == 1 && Token::Match(vars.front()->typeStartToken(), "bool|_Bool")) {
-        std::list<ValueFlow::Value>::iterator it;
-        for (it = values.begin(); it != values.end(); ++it) {
-            if (it->isIntValue())
-                it->intvalue = (it->intvalue != 0);
-            if (it->isTokValue())
-                it->intvalue = (it->tokvalue != nullptr);
+        for (ValueFlow::Value& value : values) {
+            if (value.isImpossible())
+                continue;
+            if (value.isIntValue())
+                value.intvalue = (value.intvalue != 0);
+            if (value.isTokValue())
+                value.intvalue = (value.tokvalue != nullptr);
         }
     }
 
@@ -5598,7 +5600,7 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const nonneg int v
         }
 
         if (Token::Match(tok2, "%oror%|&&")) {
-            const ProgramMemory programMemory(getProgramMemory(tok2->astTop(), varid, ValueFlow::Value(value)));
+            const ProgramMemory programMemory(getProgramMemory(tok2->astTop(), varid, ValueFlow::Value(value), settings));
             if ((tok2->str() == "&&" && !conditionIsTrue(tok2->astOperand1(), programMemory)) ||
                 (tok2->str() == "||" && !conditionIsFalse(tok2->astOperand1(), programMemory))) {
                 // Skip second expression..
@@ -5615,8 +5617,8 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const nonneg int v
             }
 
         }
-        if ((tok2->str() == "&&" && conditionIsFalse(tok2->astOperand1(), getProgramMemory(tok2->astTop(), varid, ValueFlow::Value(value)))) ||
-            (tok2->str() == "||" && conditionIsTrue(tok2->astOperand1(), getProgramMemory(tok2->astTop(), varid, ValueFlow::Value(value)))))
+        if ((tok2->str() == "&&" && conditionIsFalse(tok2->astOperand1(), getProgramMemory(tok2->astTop(), varid, ValueFlow::Value(value), settings))) ||
+            (tok2->str() == "||" && conditionIsTrue(tok2->astOperand1(), getProgramMemory(tok2->astTop(), varid, ValueFlow::Value(value), settings))))
             break;
 
         else if (Token::simpleMatch(tok2, ") {") && Token::findmatch(tok2->link(), "%varid%", tok2, varid)) {
@@ -6988,7 +6990,9 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                 setTokenValue(const_cast<Token*>(tok), value, settings);
             } else if (Token::Match(tok, "%name%|;|{|} %var% = %str% ;")) {
                 const Token *containerTok = tok->next();
-                if (containerTok && containerTok->valueType() && containerTok->valueType()->container && containerTok->valueType()->container->stdStringLike) {
+                if (containerTok->exprId() == 0)
+                    continue;
+                if (containerTok->valueType() && containerTok->valueType()->container && containerTok->valueType()->container->stdStringLike) {
                     ValueFlow::Value value(Token::getStrLength(containerTok->tokAt(2)));
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
@@ -6996,6 +7000,8 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                 }
             } else if (Token::Match(tok, "%name%|;|{|}|> %var% = {") && Token::simpleMatch(tok->linkAt(3), "} ;")) {
                 const Token* containerTok = tok->next();
+                if (containerTok->exprId() == 0)
+                    continue;
                 if (astIsContainer(containerTok) && containerTok->valueType()->container->size_templateArgNo < 0) {
                     std::vector<ValueFlow::Value> values = getInitListSize(tok->tokAt(3), containerTok->valueType()->container);
                     for (const ValueFlow::Value& value : values)
@@ -7003,6 +7009,8 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                 }
             } else if (Token::Match(tok, ". %name% (") && tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->container) {
                 const Token* containerTok = tok->astOperand1();
+                if (containerTok->exprId() == 0)
+                    continue;
                 Library::Container::Action action = containerTok->valueType()->container->getAction(tok->strAt(1));
                 if (action == Library::Container::Action::CLEAR) {
                     ValueFlow::Value value(0);

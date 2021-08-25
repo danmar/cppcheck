@@ -159,21 +159,31 @@ bool conditionIsTrue(const Token *condition, const ProgramMemory &programMemory)
     return !error && result == 1;
 }
 
+static bool frontIs(const std::vector<MathLib::bigint>& v, bool i)
+{
+    if (v.empty())
+        return false;
+    if (v.front())
+        return i;
+    return !i;
+}
+
 void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings, bool then)
 {
+    auto eval = [&](const Token* t) -> std::vector<MathLib::bigint> {
+        if (t->hasKnownIntValue())
+            return {t->values().front().intvalue};
+        MathLib::bigint result = 0;
+        bool error = false;
+        execute(t, &pm, &result, &error);
+        if (!error)
+            return {result};
+        return std::vector<MathLib::bigint>{};
+    };
     if (Token::Match(tok, "==|>=|<=|<|>|!=")) {
         ValueFlow::Value truevalue;
         ValueFlow::Value falsevalue;
-        const Token* vartok = parseCompareInt(tok, truevalue, falsevalue, [&](const Token* t) -> std::vector<MathLib::bigint> {
-            if (t->hasKnownIntValue())
-                return {t->values().front().intvalue};
-            MathLib::bigint result = 0;
-            bool error = false;
-            execute(t, &pm, &result, &error);
-            if (!error)
-                return {result};
-            return std::vector<MathLib::bigint>{};
-        });
+        const Token* vartok = parseCompareInt(tok, truevalue, falsevalue, eval);
         if (!vartok)
             return;
         if (vartok->exprId() == 0)
@@ -195,6 +205,15 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
     } else if (!then && Token::simpleMatch(tok, "||")) {
         programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, then);
         programMemoryParseCondition(pm, tok->astOperand2(), endTok, settings, then);
+    } else if (Token::Match(tok, "&&|%oror%")) {
+        std::vector<MathLib::bigint> lhs = eval(tok->astOperand1());
+        std::vector<MathLib::bigint> rhs = eval(tok->astOperand2());
+        if (lhs.empty() || rhs.empty()) {
+            if (frontIs(lhs, !then))
+                programMemoryParseCondition(pm, tok->astOperand2(), endTok, settings, then);
+            if (frontIs(rhs, !then))
+                programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, then);
+        }
     } else if (tok->exprId() > 0) {
         if (then && !astIsPointer(tok) && !astIsBool(tok))
             return;
@@ -421,12 +440,12 @@ ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars)
     return programMemory;
 }
 
-ProgramMemory getProgramMemory(const Token* tok, nonneg int exprid, const ValueFlow::Value& value)
+ProgramMemory getProgramMemory(const Token* tok, nonneg int exprid, const ValueFlow::Value& value, const Settings *settings)
 {
     ProgramMemory programMemory;
     programMemory.replace(getInitialProgramState(tok, value.tokvalue));
     programMemory.replace(getInitialProgramState(tok, value.condition));
-    fillProgramMemoryFromConditions(programMemory, tok, nullptr);
+    fillProgramMemoryFromConditions(programMemory, tok, settings);
     programMemory.setValue(exprid, value);
     if (value.varId)
         programMemory.setIntValue(value.varId, value.varvalue);
