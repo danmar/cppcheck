@@ -32,6 +32,8 @@
 #include <cstring>
 #include <iostream>
 #include <utility>
+#include <future>
+#include <numeric>
 
 #ifdef __SVR4  // Solaris
 #include <sys/loadavg.h>
@@ -385,7 +387,8 @@ void ThreadExecutor::addFileContent(const std::string &path, const std::string &
 
 unsigned int ThreadExecutor::check()
 {
-    HANDLE *threadHandles = new HANDLE[mSettings.jobs];
+    std::vector<std::future<unsigned int>> threadFutures;
+    threadFutures.reserve(mSettings.jobs);
 
     mItNextFile = mFiles.begin();
     mItNextFileSettings = mSettings.project.fileSettings.begin();
@@ -398,69 +401,34 @@ unsigned int ThreadExecutor::check()
         mTotalFileSize += i->second;
     }
 
-    InitializeCriticalSection(&mFileSync);
-    InitializeCriticalSection(&mErrorSync);
-    InitializeCriticalSection(&mReportSync);
-
     for (unsigned int i = 0; i < mSettings.jobs; ++i) {
-        threadHandles[i] = (HANDLE)_beginthreadex(nullptr, 0, threadProc, this, 0, nullptr);
-        if (!threadHandles[i]) {
-            std::cerr << "#### ThreadExecutor::check error, errno :" << errno << std::endl;
+        try {
+            threadFutures.emplace_back(std::async(std::launch::async, threadProc, this));
+        }
+        catch (const std::system_error &e) {
+            std::cerr << "#### ThreadExecutor::check exception :" << e.what() << std::endl;
             exit(EXIT_FAILURE);
         }
     }
 
-    const DWORD waitResult = WaitForMultipleObjects(mSettings.jobs, threadHandles, TRUE, INFINITE);
-    if (waitResult != WAIT_OBJECT_0) {
-        if (waitResult == WAIT_FAILED) {
-            std::cerr << "#### ThreadExecutor::check wait failed, result: " << waitResult << " error: " << GetLastError() << std::endl;
-            exit(EXIT_FAILURE);
-        } else {
-            std::cerr << "#### ThreadExecutor::check wait failed, result: " << waitResult << std::endl;
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    unsigned int result = 0;
-    for (unsigned int i = 0; i < mSettings.jobs; ++i) {
-        DWORD exitCode;
-
-        if (!GetExitCodeThread(threadHandles[i], &exitCode)) {
-            std::cerr << "#### ThreadExecutor::check get exit code failed, error:" << GetLastError() << std::endl;
-            exit(EXIT_FAILURE);
-        }
-
-        result += exitCode;
-
-        if (!CloseHandle(threadHandles[i])) {
-            std::cerr << "#### ThreadExecutor::check close handle failed, error:" << GetLastError() << std::endl;
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    DeleteCriticalSection(&mFileSync);
-    DeleteCriticalSection(&mErrorSync);
-    DeleteCriticalSection(&mReportSync);
-
-    delete[] threadHandles;
-
-    return result;
+    return std::accumulate(threadFutures.begin(), threadFutures.end(), 0U, [](unsigned int v, std::future<unsigned int>& f) {
+        return v + f.get();
+    });
 }
 
-unsigned int __stdcall ThreadExecutor::threadProc(void *args)
+unsigned int __stdcall ThreadExecutor::threadProc(ThreadExecutor* threadExecutor)
 {
     unsigned int result = 0;
 
-    ThreadExecutor *threadExecutor = static_cast<ThreadExecutor*>(args);
     std::map<std::string, std::size_t>::const_iterator &itFile = threadExecutor->mItNextFile;
     std::list<ImportProject::FileSettings>::const_iterator &itFileSettings = threadExecutor->mItNextFileSettings;
 
     // guard static members of CppCheck against concurrent access
-    EnterCriticalSection(&threadExecutor->mFileSync);
+    threadExecutor->mFileSync.lock();
 
     for (;;) {
         if (itFile == threadExecutor->mFiles.end() && itFileSettings == threadExecutor->mSettings.project.fileSettings.end()) {
-            LeaveCriticalSection(&threadExecutor->mFileSync);
+            threadExecutor->mFileSync.unlock();
             break;
         }
 
@@ -473,7 +441,7 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
             fileSize = itFile->second;
             ++itFile;
 
-            LeaveCriticalSection(&threadExecutor->mFileSync);
+            threadExecutor->mFileSync.unlock();
 
             const std::map<std::string, std::string>::const_iterator fileContent = threadExecutor->mFileContents.find(file);
             if (fileContent != threadExecutor->mFileContents.end()) {
@@ -486,20 +454,19 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
         } else { // file settings..
             const ImportProject::FileSettings &fs = *itFileSettings;
             ++itFileSettings;
-            LeaveCriticalSection(&threadExecutor->mFileSync);
+            threadExecutor->mFileSync.unlock();
             result += fileChecker.check(fs);
             if (threadExecutor->mSettings.clangTidy)
                 fileChecker.analyseClangTidy(fs);
         }
 
-        EnterCriticalSection(&threadExecutor->mFileSync);
+        threadExecutor->mFileSync.lock();
 
         threadExecutor->mProcessedSize += fileSize;
         threadExecutor->mProcessedFiles++;
         if (!threadExecutor->mSettings.quiet) {
-            EnterCriticalSection(&threadExecutor->mReportSync);
+            std::lock_guard<std::mutex> lg(threadExecutor->mReportSync);
             CppCheckExecutor::reportStatus(threadExecutor->mProcessedFiles, threadExecutor->mTotalFiles, threadExecutor->mProcessedSize, threadExecutor->mTotalFileSize);
-            LeaveCriticalSection(&threadExecutor->mReportSync);
         }
     }
     return result;
@@ -507,11 +474,9 @@ unsigned int __stdcall ThreadExecutor::threadProc(void *args)
 
 void ThreadExecutor::reportOut(const std::string &outmsg, Color c)
 {
-    EnterCriticalSection(&mReportSync);
+    std::lock_guard<std::mutex> lg(mReportSync);
 
     mErrorLogger.reportOut(outmsg, c);
-
-    LeaveCriticalSection(&mReportSync);
 }
 void ThreadExecutor::reportErr(const ErrorMessage &msg)
 {
@@ -537,15 +502,17 @@ void ThreadExecutor::report(const ErrorMessage &msg, MessageType msgType)
     bool reportError = false;
     const std::string errmsg = msg.toString(mSettings.verbose);
 
-    EnterCriticalSection(&mErrorSync);
-    if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) == mErrorList.end()) {
-        mErrorList.emplace_back(errmsg);
-        reportError = true;
+    {
+        std::lock_guard<std::mutex> lg(mErrorSync);
+        if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) == mErrorList.end()) {
+            mErrorList.emplace_back(errmsg);
+            reportError = true;
+        }
     }
-    LeaveCriticalSection(&mErrorSync);
+
 
     if (reportError) {
-        EnterCriticalSection(&mReportSync);
+        std::lock_guard<std::mutex> lg(mReportSync);
 
         switch (msgType) {
         case MessageType::REPORT_ERROR:
@@ -555,8 +522,6 @@ void ThreadExecutor::report(const ErrorMessage &msg, MessageType msgType)
             mErrorLogger.reportInfo(msg);
             break;
         }
-
-        LeaveCriticalSection(&mReportSync);
     }
 }
 

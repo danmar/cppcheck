@@ -2434,6 +2434,16 @@ private:
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 12U, 0));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 12U, 0));
+
+        code = "bool f(unsigned char uc) {\n"
+               "  const bool x = uc;\n"
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, 1));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, 0));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 0));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 1));
     }
 
     void valueFlowAfterCondition() {
@@ -3115,6 +3125,20 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
+        code = "int g();\n"
+               "int f(bool i, bool j) {\n"
+               "    if (i && j) {}\n"
+               "    else {\n"
+               "        int x = 0;\n"
+               "        if (i)\n"
+               "            x = g();\n"
+               "        return x;\n"
+               "    }\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 8U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 8U, 0));
     }
 
     void valueFlowForwardModifiedVariables() {
@@ -3717,6 +3741,19 @@ private:
                "    n = (int)(i < 10 || abs(negWander) < abs(negTravel));\n"
                "}";
         testValueOfX(code,0,0); // <- don't hang
+
+        // crash (daca@home)
+        code = "void foo(char *z, int n) {\n"
+               "    int i;\n"
+               "    if (fPScript) {\n"
+               "        i = 1;\n"
+               "    } else if (strncmp(&z[n], \"<!--\", 4) == 0) {\n"
+               "        for (i = 4;;) {\n"
+               "            if (z[n] && strncmp(&z[n+i], \"-->\", 3) == 0) ;\n"
+               "        }\n"
+               "    }\n"
+               "}";
+        testValueOfX(code,0,0); // <- don't crash
 
         // conditional code in loop
         code = "void f(int mask) {\n" // #6000
@@ -4925,6 +4962,13 @@ private:
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . front"), 0));
 
         code = "void f(const std::vector<std::string>& v) {\n"
+               "    if(std::empty(v)) {\n"
+               "        v.front();\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . front"), 0));
+
+        code = "void f(const std::vector<std::string>& v) {\n"
                "    if(!v.empty()) {\n"
                "        v.front();\n"
                "    }\n"
@@ -5455,6 +5499,34 @@ private:
         ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
 
+        code = "void f() {\n"
+               "    std::vector<int> v;\n"
+               "    int x = v.size();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "void f() {\n"
+               "    std::vector<int> v;\n"
+               "    int x = v.empty();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
+
+        code = "void f() {\n"
+               "    std::vector<int> v;\n"
+               "    int x = std::size(v);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "void f() {\n"
+               "    std::vector<int> v;\n"
+               "    int x = std::empty(v);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
+
         code = "bool f() {\n"
                "    std::list<int> x1;\n"
                "    std::list<int> x2;\n"
@@ -5624,6 +5696,26 @@ private:
                "  };\n"
                "}\n";
         valueOfTok(code, "0");
+
+        code = "namespace juce {\n"
+               "PopupMenu::Item& PopupMenu::Item::operator= (Item&&) = default;\n"
+               "PopupMenu::Options withDeletionCheck (Component& comp) const {\n"
+               "    Options o (*this);\n"
+               "    o.componentToWatchForDeletion = &comp;\n"
+               "    o.isWatchingForDeletion = true;\n"
+               "    return o;\n"
+               "}}\n";
+        valueOfTok(code, "return");
+
+        code = "class dummy_resource : public instrument_resource {\n"
+               "public:\n"
+               "    int reads;\n"
+               "    static std::list<int> log;\n"
+               "};\n"
+               "void dummy_reader_reset() {\n"
+               "    dummy_resource::log.clear();\n"
+               "}\n";
+        valueOfTok(code, "log");
     }
 
     void valueFlowCrash() {

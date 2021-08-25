@@ -1388,6 +1388,9 @@ static void misra_15_6(void) {
   do {} while (x<0); // no-warning
 }
 
+#if defined(M_20_9) && M_20_9 > 1 // no-warning (#10380)
+#endif
+
 static void misra_15_7(void) {
   uint32_t var = 0;
   uint32_t var2 = 0;
@@ -1807,6 +1810,12 @@ static void misra_21_19(void) {
     char *s = setlocale(LC_ALL,0); // 21.19
     const struct lconv *conv = localeconv ();
     conv->decimal_point = "^"; // 21.19
+}
+
+static void misra_21_20(void) {
+    const char *res1 = setlocale ( LC_ALL, 0 );
+    (void) setlocale ( LC_MONETARY, "French" );
+    if (res1) {} // 21.20 14.4
 }
 
 static void misra_21_21(void) {

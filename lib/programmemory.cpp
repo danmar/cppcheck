@@ -3,6 +3,7 @@
 #include "astutils.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
+#include "settings.h"
 #include "token.h"
 #include "valueflow.h"
 #include <algorithm>
@@ -152,38 +153,27 @@ bool conditionIsTrue(const Token *condition, const ProgramMemory &programMemory)
     return !error && result == 1;
 }
 
-static const Token* getContainerFromEmpty(const Token* tok)
+static bool frontIs(const std::vector<MathLib::bigint>& v, bool i)
 {
-    if (!Token::Match(tok->tokAt(-2), ". %name% ("))
-        return nullptr;
-    const Token* containerTok = tok->tokAt(-2)->astOperand1();
-    if (!astIsContainer(containerTok))
-        return nullptr;
-    if (containerTok->valueType()->container &&
-        containerTok->valueType()->container->getYield(tok->strAt(-1)) == Library::Container::Yield::EMPTY)
-        return containerTok;
-    if (Token::simpleMatch(tok->tokAt(-1), "empty ( )"))
-        return containerTok;
-    return nullptr;
-}
-
-static const Token* getContainerFromSize(const Token* tok)
-{
-    if (!Token::Match(tok->tokAt(-2), ". %name% ("))
-        return nullptr;
-    const Token* containerTok = tok->tokAt(-2)->astOperand1();
-    if (!astIsContainer(containerTok))
-        return nullptr;
-    if (containerTok->valueType()->container &&
-        containerTok->valueType()->container->getYield(tok->strAt(-1)) == Library::Container::Yield::SIZE)
-        return containerTok;
-    if (Token::Match(tok->tokAt(-1), "size|length ( )"))
-        return containerTok;
-    return nullptr;
+    if (v.empty())
+        return false;
+    if (v.front())
+        return i;
+    return !i;
 }
 
 void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings, bool then)
 {
+    auto eval = [&](const Token* t) -> std::vector<MathLib::bigint> {
+        if (t->hasKnownIntValue())
+            return {t->values().front().intvalue};
+        MathLib::bigint result = 0;
+        bool error = false;
+        execute(t, &pm, &result, &error);
+        if (!error)
+            return {result};
+        return std::vector<MathLib::bigint>{};
+    };
     if (Token::Match(tok, "==|>=|<=|<|>|!=")) {
         if (then && !Token::Match(tok, "==|>=|<=|<|>"))
             return;
@@ -191,16 +181,7 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
             return;
         ValueFlow::Value truevalue;
         ValueFlow::Value falsevalue;
-        const Token* vartok = parseCompareInt(tok, truevalue, falsevalue, [&](const Token* t) -> std::vector<MathLib::bigint> {
-            if (t->hasKnownIntValue())
-                return {t->values().front().intvalue};
-            MathLib::bigint result = 0;
-            bool error = false;
-            execute(t, &pm, &result, &error);
-            if (!error)
-                return {result};
-            return std::vector<MathLib::bigint>{};
-        });
+        const Token* vartok = parseCompareInt(tok, truevalue, falsevalue, eval);
         if (!vartok)
             return;
         if (vartok->exprId() == 0)
@@ -212,7 +193,7 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
         bool impossible = (tok->str() == "==" && !then) || (tok->str() == "!=" && then);
         if (!impossible)
             pm.setIntValue(vartok->exprId(), then ? truevalue.intvalue : falsevalue.intvalue);
-        const Token* containerTok = getContainerFromSize(vartok);
+        const Token* containerTok = settings->library.getContainerFromYield(vartok, Library::Container::Yield::SIZE);
         if (containerTok)
             pm.setContainerSizeValue(containerTok->exprId(), then ? truevalue.intvalue : falsevalue.intvalue, !impossible);
     } else if (Token::simpleMatch(tok, "!")) {
@@ -223,13 +204,22 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
     } else if (!then && Token::simpleMatch(tok, "||")) {
         programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, then);
         programMemoryParseCondition(pm, tok->astOperand2(), endTok, settings, then);
+    } else if (Token::Match(tok, "&&|%oror%")) {
+        std::vector<MathLib::bigint> lhs = eval(tok->astOperand1());
+        std::vector<MathLib::bigint> rhs = eval(tok->astOperand2());
+        if (lhs.empty() || rhs.empty()) {
+            if (frontIs(lhs, !then))
+                programMemoryParseCondition(pm, tok->astOperand2(), endTok, settings, then);
+            if (frontIs(rhs, !then))
+                programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, then);
+        }
     } else if (tok->exprId() > 0) {
         if (then && !astIsPointer(tok) && !astIsBool(tok))
             return;
         if (endTok && isExpressionChanged(tok, tok->next(), endTok, settings, true))
             return;
         pm.setIntValue(tok->exprId(), then);
-        const Token* containerTok = getContainerFromEmpty(tok);
+        const Token* containerTok = settings->library.getContainerFromYield(tok, Library::Container::Yield::EMPTY);
         if (containerTok)
             pm.setContainerSizeValue(containerTok->exprId(), 0, then);
     }
@@ -347,6 +337,8 @@ static ProgramMemory getInitialProgramState(const Token* tok,
     return pm;
 }
 
+ProgramMemoryState::ProgramMemoryState(const Settings* s) : state(), origins(), settings(s) {}
+
 void ProgramMemoryState::insert(const ProgramMemory &pm, const Token* origin)
 {
     if (origin)
@@ -366,7 +358,7 @@ void ProgramMemoryState::replace(const ProgramMemory &pm, const Token* origin)
 void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& vars)
 {
     ProgramMemory pm = state;
-    fillProgramMemoryFromConditions(pm, tok, nullptr);
+    fillProgramMemoryFromConditions(pm, tok, settings);
     for (const auto& p:vars) {
         nonneg int exprid = p.first;
         const ValueFlow::Value &value = p.second;
@@ -385,7 +377,7 @@ void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
     if (isEmpty)
         pm.setContainerSizeValue(tok->exprId(), 0, b);
     else
-        programMemoryParseCondition(pm, tok, nullptr, nullptr, b);
+        programMemoryParseCondition(pm, tok, nullptr, settings, b);
     const Token* origin = tok;
     const Token* top = tok->astTop();
     if (top && Token::Match(top->previous(), "for|while ("))
@@ -396,7 +388,9 @@ void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
 void ProgramMemoryState::removeModifiedVars(const Token* tok)
 {
     for (auto i = state.values.begin(), last = state.values.end(); i != last;) {
-        if (isVariableChanged(origins[i->first], tok, i->first, false, nullptr, true)) {
+        const Token* start = origins[i->first];
+        const Token* expr = findExpression(start ? start : tok, i->first);
+        if (!expr || isExpressionChanged(expr, start, tok, settings, true)) {
             origins.erase(i->first);
             i = state.values.erase(i);
         } else {
@@ -445,12 +439,12 @@ ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars)
     return programMemory;
 }
 
-ProgramMemory getProgramMemory(const Token* tok, nonneg int exprid, const ValueFlow::Value& value)
+ProgramMemory getProgramMemory(const Token* tok, nonneg int exprid, const ValueFlow::Value& value, const Settings *settings)
 {
     ProgramMemory programMemory;
     programMemory.replace(getInitialProgramState(tok, value.tokvalue));
     programMemory.replace(getInitialProgramState(tok, value.condition));
-    fillProgramMemoryFromConditions(programMemory, tok, nullptr);
+    fillProgramMemoryFromConditions(programMemory, tok, settings);
     programMemory.setValue(exprid, value);
     if (value.varId)
         programMemory.setIntValue(value.varId, value.varvalue);
