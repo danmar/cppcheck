@@ -118,6 +118,7 @@ private:
         TEST_CASE(nullpointer76); // #10408
         TEST_CASE(nullpointer77);
         TEST_CASE(nullpointer78); // #7802
+        TEST_CASE(nullpointer79); // #10400
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2416,6 +2417,18 @@ private:
               "    **pp = 1;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Null pointer dereference: *pp\n", errout.str());
+    }
+
+    void nullpointer79() // #10400
+    {
+        check("void resize(size_t nF, size_t nT) {\n"
+              "    double* pValues = nullptr;\n"
+              "    if (nF > 0 && nT > 0)\n"
+              "        pValues = new double[nF * nT];\n"
+              "    for (size_t cc = 0; cc < nF * nT; ++cc)\n"
+              "        pValues[cc] = 42;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_addressOf() { // address of

@@ -411,6 +411,8 @@ struct ForwardTraversal {
                 if (updateRecursive(condTok) == Progress::Break)
                     return Break();
         }
+        if (!checkThen && !checkElse && !isDoWhile && analyzer->stopOnCondition(condTok) && stopUpdates())
+            return Break(Analyzer::Terminate::Conditional);
         // condition is false, we don't enter the loop
         if (checkElse)
             return Progress::Continue;
