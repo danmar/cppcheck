@@ -68,7 +68,7 @@
 #include <execinfo.h>
 #endif
 
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 #define USE_WINDOWS_SEH
 #include <Windows.h>
 #include <DbgHelp.h>
