@@ -5824,13 +5824,13 @@ private:
         valueOfTok(code, "c");
 
         code = "void h(char* p, int s) {\n"
-                "  char *q = p+s;\n"
-                "  char buf[100];\n"
-                "  char *b = buf;\n"
-                "  ++b;\n"
-                "  if (p < q && buf < b)\n"
-                "    diff = (buf-b);\n"
-                "}\n";
+               "  char *q = p+s;\n"
+               "  char buf[100];\n"
+               "  char *b = buf;\n"
+               "  ++b;\n"
+               "  if (p < q && buf < b)\n"
+               "    diff = (buf-b);\n"
+               "}\n";
         valueOfTok(code, "diff");
     }
 
