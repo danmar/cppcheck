@@ -2434,6 +2434,16 @@ private:
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 12U, 0));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 12U, 0));
+
+        code = "bool f(unsigned char uc) {\n"
+               "  const bool x = uc;\n"
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, 1));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, 0));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 0));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 1));
     }
 
     void valueFlowAfterCondition() {
@@ -3717,6 +3727,19 @@ private:
                "    n = (int)(i < 10 || abs(negWander) < abs(negTravel));\n"
                "}";
         testValueOfX(code,0,0); // <- don't hang
+
+        // crash (daca@home)
+        code = "void foo(char *z, int n) {\n"
+               "    int i;\n"
+               "    if (fPScript) {\n"
+               "        i = 1;\n"
+               "    } else if (strncmp(&z[n], \"<!--\", 4) == 0) {\n"
+               "        for (i = 4;;) {\n"
+               "            if (z[n] && strncmp(&z[n+i], \"-->\", 3) == 0) ;\n"
+               "        }\n"
+               "    }\n"
+               "}";
+        testValueOfX(code,0,0); // <- don't crash
 
         // conditional code in loop
         code = "void f(int mask) {\n" // #6000

@@ -439,12 +439,12 @@ ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars)
     return programMemory;
 }
 
-ProgramMemory getProgramMemory(const Token* tok, nonneg int exprid, const ValueFlow::Value& value)
+ProgramMemory getProgramMemory(const Token* tok, nonneg int exprid, const ValueFlow::Value& value, const Settings *settings)
 {
     ProgramMemory programMemory;
     programMemory.replace(getInitialProgramState(tok, value.tokvalue));
     programMemory.replace(getInitialProgramState(tok, value.condition));
-    fillProgramMemoryFromConditions(programMemory, tok, nullptr);
+    fillProgramMemoryFromConditions(programMemory, tok, settings);
     programMemory.setValue(exprid, value);
     if (value.varId)
         programMemory.setIntValue(value.varId, value.varvalue);
