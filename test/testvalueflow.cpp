@@ -5980,14 +5980,14 @@ private:
         valueOfTok(code, "root");
 
         code = "bool isCharPotentialOperator(char ch)  {\n"
-                "    return (ispunct((unsigned char) ch)\n"
-                "            && ch != '{' && ch != '}'\n"
-                "            && ch != '(' && ch != ')'\n"
-                "            && ch != '[' && ch != ']'\n"
-                "            && ch != ';' && ch != ','\n"
-                "            && ch != '#' && ch != '\\'\n"
-                "            && ch != '\'' && ch != '\"');\n"
-                "}\n";
+               "    return (ispunct((unsigned char) ch)\n"
+               "            && ch != '{' && ch != '}'\n"
+               "            && ch != '(' && ch != ')'\n"
+               "            && ch != '[' && ch != ']'\n"
+               "            && ch != ';' && ch != ','\n"
+               "            && ch != '#' && ch != '\\'\n"
+               "            && ch != '\'' && ch != '\"');\n"
+               "}\n";
         valueOfTok(code, "return");
     }
 

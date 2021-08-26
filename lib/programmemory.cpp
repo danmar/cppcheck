@@ -629,7 +629,6 @@ void execute(const Token* expr,
         }
     }
 
-
     else if (expr->str() == "&&") {
         bool error1 = false;
         execute(expr->astOperand1(), programMemory, result, &error1, f);
@@ -649,8 +648,7 @@ void execute(const Token* expr,
             *result = 1;
         else if (*result == 0 && *error == false)
             execute(expr->astOperand2(), programMemory, result, error, f);
-    }
-    else if (expr->isConstOp() && expr->astOperand1() && expr->astOperand2()) {
+    } else if (expr->isConstOp() && expr->astOperand1() && expr->astOperand2()) {
         MathLib::bigint result1(0), result2(0);
         execute(expr->astOperand1(), programMemory, &result1, error, f);
         execute(expr->astOperand2(), programMemory, &result2, error, f);
@@ -731,7 +729,7 @@ void execute(const Token* expr,
             *error = true;
     } else if (expr->str() == "?" && expr->astOperand1() && expr->astOperand2()) {
         execute(expr->astOperand1(), programMemory, result, error, f);
-        if (*error) 
+        if (*error)
             return;
         const Token* childTok = expr->astOperand2();
         if (*result == 0)

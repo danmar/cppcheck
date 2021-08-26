@@ -6063,8 +6063,12 @@ bool productParams(const std::unordered_map<Key, std::list<ValueFlow::Value>>& v
     return true;
 }
 
-
-static void valueFlowInjectParameter(TokenList* tokenlist, SymbolDatabase* symboldatabase, ErrorLogger* errorLogger, const Settings* settings, const Scope* functionScope, const std::unordered_map<const Variable*, std::list<ValueFlow::Value>>& vars)
+static void valueFlowInjectParameter(TokenList* tokenlist,
+                                     SymbolDatabase* symboldatabase,
+                                     ErrorLogger* errorLogger,
+                                     const Settings* settings,
+                                     const Scope* functionScope,
+                                     const std::unordered_map<const Variable*, std::list<ValueFlow::Value>>& vars)
 {
     bool r = productParams(vars, [&](const std::unordered_map<const Variable*, ValueFlow::Value>& arg) {
         MultiValueFlowAnalyzer a(arg, tokenlist, symboldatabase);
@@ -6235,7 +6239,7 @@ static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue,
         return;
 
     // set varids
-    for (Token *tok2 = tokenList.front(); tok2; tok2 = tok2->next()) {
+    for (Token* tok2 = tokenList.front(); tok2; tok2 = tok2->next()) {
         if (tok2->str().compare(0, 3, "arg") != 0)
             continue;
         nonneg int id = std::atoi(tok2->str().c_str() + 3);
@@ -6256,7 +6260,7 @@ static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue,
             return;
         ValueFlow::Value value(result);
         value.setKnown();
-        for(auto&& p:arg) {
+        for (auto&& p : arg) {
             if (p.second.isPossible())
                 value.setPossible();
             if (p.second.isInconclusive()) {
