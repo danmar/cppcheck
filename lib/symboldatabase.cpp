@@ -7050,8 +7050,7 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
             funcVar->scope() && funcVar->scope()->function && funcVar->scope()->function->templateDef;
         if (type1 == type2)
             return ValueType::MatchResult::SAME;
-        if (!templateVar && type1.find("auto") == std::string::npos && type2.find("auto") == std::string::npos &&
-            type1 != type2)
+        if (!templateVar && type1.find("auto") == std::string::npos && type2.find("auto") == std::string::npos)
             return ValueType::MatchResult::NOMATCH;
     }
     return res;

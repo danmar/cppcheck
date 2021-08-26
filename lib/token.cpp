@@ -2409,7 +2409,8 @@ bool Token::hasKnownSymbolicValue(const Token* tok) const
         return false;
     return mImpl->mValues &&
            std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) {
-        return value.isSymbolicValue() && value.tokvalue && value.tokvalue->exprId() == tok->exprId();
+        return value.isKnown() && value.isSymbolicValue() && value.tokvalue &&
+        value.tokvalue->exprId() == tok->exprId();
     });
 }
 
