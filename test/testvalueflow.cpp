@@ -5978,6 +5978,17 @@ private:
                "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
                "}\n";
         valueOfTok(code, "root");
+
+        code = "bool isCharPotentialOperator(char ch)  {\n"
+                "    return (ispunct((unsigned char) ch)\n"
+                "            && ch != '{' && ch != '}'\n"
+                "            && ch != '(' && ch != ')'\n"
+                "            && ch != '[' && ch != ']'\n"
+                "            && ch != ';' && ch != ','\n"
+                "            && ch != '#' && ch != '\\'\n"
+                "            && ch != '\'' && ch != '\"');\n"
+                "}\n";
+        valueOfTok(code, "return");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577
