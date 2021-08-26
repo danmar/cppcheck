@@ -385,23 +385,26 @@ struct ForwardTraversal {
             std::tie(checkThen, checkElse) = evalCond(condTok, isDoWhile ? endBlock->previous() : nullptr);
         if (checkElse && exit)
             return Progress::Continue;
+        Analyzer::Action bodyAnalysis = analyzeScope(endBlock);
+        Analyzer::Action allAnalysis = bodyAnalysis;
+        Analyzer::Action condAnalysis;
+        if (condTok) {
+            condAnalysis = analyzeRecursive(condTok);
+            allAnalysis |= condAnalysis;
+        }
+        if (stepTok)
+            allAnalysis |= analyzeRecursive(stepTok);
+        actions |= allAnalysis;
         // do while(false) is not really a loop
-        if (checkElse && isDoWhile) {
+        if (checkElse && isDoWhile && (condTok->hasKnownIntValue() || (!bodyAnalysis.isModified() && condAnalysis.isRead()))) {
             if (updateRange(endBlock->link(), endBlock) == Progress::Break)
                 return Break();
             return updateRecursive(condTok);
         }
-        Analyzer::Action bodyAnalysis = analyzeScope(endBlock);
-        Analyzer::Action allAnalysis = bodyAnalysis;
-        if (condTok)
-            allAnalysis |= analyzeRecursive(condTok);
-        if (stepTok)
-            allAnalysis |= analyzeRecursive(stepTok);
-        actions |= allAnalysis;
         if (allAnalysis.isInconclusive()) {
             if (!analyzer->lowerToInconclusive())
                 return Break(Analyzer::Terminate::Bail);
-        } else if (allAnalysis.isModified()) {
+        } else if (allAnalysis.isModified() || (exit && allAnalysis.isIdempotent())) {
             if (!analyzer->lowerToPossible())
                 return Break(Analyzer::Terminate::Bail);
         }
@@ -417,6 +420,9 @@ struct ForwardTraversal {
         if (checkElse)
             return Progress::Continue;
         if (checkThen || isDoWhile) {
+            // Since we are re-entering the loop then assume the condition is true to update the state
+            if (exit)
+                analyzer->assume(condTok, true, Analyzer::Assume::Quiet | Analyzer::Assume::Absolute);
             if (updateInnerLoop(endBlock, stepTok, condTok) == Progress::Break)
                 return Break();
             // If loop re-enters then it could be modified again

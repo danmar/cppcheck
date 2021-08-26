@@ -117,6 +117,8 @@ private:
         TEST_CASE(alwaysTrue);
         TEST_CASE(alwaysTrueSymbolic);
         TEST_CASE(alwaysTrueInfer);
+        TEST_CASE(alwaysTrueContainer);
+        TEST_CASE(alwaysTrueLoop);
         TEST_CASE(multiConditionAlwaysTrue);
         TEST_CASE(duplicateCondition);
 
@@ -4028,6 +4030,39 @@ private:
               "    if( s.size() < 2 ) return;\n"
               "    if( s != \"ab\" )\n"
               "        if( s.size() < 3 ) return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void alwaysTrueLoop() {
+        check("long foo() {\n"
+              "  bool bUpdated = false;\n"
+              "  long Ret{};\n"
+              "  do {\n"
+              "    Ret = bar();\n"
+              "    if (Ret == 0) {\n"
+              "      if (bUpdated)\n"
+              "        return 1;\n"
+              "      bUpdated = true;\n"
+              "    }\n"
+              "    else\n"
+              "      bUpdated = false;\n"
+              "  }\n"
+              "  while (bUpdated);\n"
+              "  return Ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool foo() {\n"
+              "  bool bFirst = true;\n"
+              "  do {\n"
+              "    if (bFirst)\n"
+              "      bar();\n"
+              "    if (baz())\n"
+              "      break;       \n"
+              "    bFirst = false;\n"
+              "  } while (true);\n"
+              "  return bFirst;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
