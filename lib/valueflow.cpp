@@ -2383,7 +2383,7 @@ struct ValueFlowAnalyzer : Analyzer {
         if (isCondBlock) {
             const Token* startBlock = parent->link()->next();
             if (Token::simpleMatch(startBlock, ";") && Token::simpleMatch(parent->tokAt(-2), "} while ("))
-                startBlock = parent->tokAt(-2)->link();
+                startBlock = parent->linkAt(-2);
             const Token* endBlock = startBlock->link();
             pms.removeModifiedVars(endBlock);
             if (state)
