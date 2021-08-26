@@ -4034,7 +4034,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void alwaysTrueLoop() {
+    void alwaysTrueLoop()
+    {
         check("long foo() {\n"
               "  bool bUpdated = false;\n"
               "  long Ret{};\n"

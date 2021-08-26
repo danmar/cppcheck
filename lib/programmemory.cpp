@@ -288,8 +288,7 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                 // Keep progressing with anonymous/do scopes
                 if (!Token::Match(tok2->previous(), "do|; {"))
                     break;
-            }
-            else
+            } else
                 --indentlevel;
             if (Token::simpleMatch(tok2->previous(), "else {"))
                 tok2 = tok2->linkAt(-2)->previous();

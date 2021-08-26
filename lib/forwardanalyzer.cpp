@@ -396,7 +396,8 @@ struct ForwardTraversal {
             allAnalysis |= analyzeRecursive(stepTok);
         actions |= allAnalysis;
         // do while(false) is not really a loop
-        if (checkElse && isDoWhile && (condTok->hasKnownIntValue() || (!bodyAnalysis.isModified() && condAnalysis.isRead()))) {
+        if (checkElse && isDoWhile &&
+            (condTok->hasKnownIntValue() || (!bodyAnalysis.isModified() && condAnalysis.isRead()))) {
             if (updateRange(endBlock->link(), endBlock) == Progress::Break)
                 return Break();
             return updateRecursive(condTok);
