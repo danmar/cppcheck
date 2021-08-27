@@ -2172,6 +2172,7 @@ private:
                "  } while (1);\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 3));
 
         // pointer/reference to x
         code = "int f(void) {\n"
