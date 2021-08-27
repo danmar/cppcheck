@@ -2834,7 +2834,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 parent = parent->astParent();
                 if (parent->str() == "(" && !parent->isCast())
                     break;
-                if (parent && isSameExpression(mCpp, false, expr, parent, mLibrary, true, false, nullptr)) {
+                if (isSameExpression(mCpp, false, expr, parent, mLibrary, true, false, nullptr)) {
                     same = true;
                     if (mWhat == What::ValueFlow) {
                         KnownAndToken v;
