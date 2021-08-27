@@ -32,8 +32,6 @@
 #include <cstring>
 #include <iostream>
 #include <utility>
-#include <future>
-#include <numeric>
 
 #ifdef __SVR4  // Solaris
 #include <sys/loadavg.h>
@@ -48,8 +46,8 @@
 #include <unistd.h>
 #endif
 #ifdef THREADING_MODEL_WIN
-#include <process.h>
-#include <windows.h>
+#include <future>
+#include <numeric>
 #endif
 
 // required for FD_ZERO

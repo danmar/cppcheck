@@ -2263,7 +2263,7 @@ bool Tokenizer::simplifyUsing()
             Token::Match(tok, "using namespace %name% ;|::")) {
             try {
                 setScopeInfo(tok, &currentScope, mSettings->debugwarnings);
-            } catch (const std::runtime_error &e) {
+            } catch (const std::runtime_error &) {
                 reportError(tok, Severity::debug, "simplifyUsingUnmatchedBodyEnd",
                             "simplifyUsing: unmatched body end");
             }
@@ -2417,7 +2417,7 @@ bool Tokenizer::simplifyUsing()
                 Token::Match(tok1, "using namespace %name% ;|::")) {
                 try {
                     setScopeInfo(tok1, &currentScope1, mSettings->debugwarnings);
-                } catch (const std::runtime_error &e) {
+                } catch (const std::runtime_error &) {
                     reportError(tok1, Severity::debug, "simplifyUsingUnmatchedBodyEnd",
                                 "simplifyUsing: unmatched body end");
                 }
