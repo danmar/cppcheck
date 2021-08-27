@@ -6026,6 +6026,8 @@ bool productParams(const std::unordered_map<Key, std::list<ValueFlow::Value>>& v
     for (const auto& p:vars) {
         if (args.size() > 256)
             return false;
+        if (p.second.empty())
+            continue;
         std::for_each(std::next(p.second.begin()), p.second.end(), [&](const ValueFlow::Value& value) {
             Args new_args;
             for (auto arg:args) {
