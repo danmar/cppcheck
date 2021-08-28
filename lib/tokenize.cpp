@@ -2901,7 +2901,8 @@ void Tokenizer::combineOperators()
             if (c2 == '=' && (std::strchr("+-*/%|^=!<>", c1))) {
                 // skip templates
                 if (cpp && (tok->str() == ">" || Token::simpleMatch(tok->previous(), "> *"))) {
-                    const Token *opening = tok->str() == ">" ? tok->findOpeningBracket() : tok->previous()->findOpeningBracket();
+                    const Token* opening =
+                        tok->str() == ">" ? tok->findOpeningBracket() : tok->previous()->findOpeningBracket();
                     if (opening && Token::Match(opening->previous(), "%name%"))
                         continue;
                 }
