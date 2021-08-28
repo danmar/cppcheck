@@ -728,7 +728,7 @@ static void compileBinOp(Token *&tok, AST_state& state, void (*f)(Token *&tok, A
     Token *binop = tok;
     if (f) {
         tok = tok->next();
-        if (Token::simpleMatch(binop, ":: ~"))
+        if (Token::Match(binop, "::|. ~"))
             tok = tok->next();
         state.depth++;
         if (tok && state.depth <= AST_MAX_DEPTH)
@@ -934,8 +934,8 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 state.op.push(tok);
                 tok = tok->tokAt(3);
                 break;
-            } else
-                compileBinOp(tok, state, compileScope);
+            }
+            compileBinOp(tok, state, compileScope);
         } else if (tok->str() == "[") {
             if (state.cpp && isPrefixUnary(tok, state.cpp) && Token::Match(tok->link(), "] (|{")) { // Lambda
                 // What we do here:
