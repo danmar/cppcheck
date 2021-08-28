@@ -172,6 +172,7 @@ private:
         TEST_CASE(localvarStruct8);
         TEST_CASE(localvarStruct9);
         TEST_CASE(localvarStruct10);
+        TEST_CASE(localvarStruct11); // 10095
         TEST_CASE(localvarStructArray);
         TEST_CASE(localvarUnion1);
 
@@ -4494,6 +4495,18 @@ private:
                               "    memcpy (&s, &s2, sizeof (S));\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:5]: (style) Variable 's.x' is assigned a value that is never used.\n", errout.str());
+    }
+
+    void localvarStruct11() { // #10095
+        functionVariableUsage("struct Point { int x; int y; };\n"
+                              "Point scale(Point *p);\n"
+                              "\n"
+                              "int foo() {\n"
+                              "    Point p;\n"
+                              "    p.x = 42;\n"
+                              "    return scale(&p).y;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarStructArray() {
