@@ -2160,6 +2160,9 @@ struct ValueFlowAnalyzer : Analyzer {
         if (!(value->isIntValue() || value->isFloatValue() || value->isSymbolicValue()))
             return Action::None;
         const Token* parent = tok->astParent();
+        // Only if its invertible
+        if (value->isImpossible() && !Token::Match(parent, "+=|-=|*=|++|--"))
+            return Action::None;
 
         if (parent && parent->isAssignmentOp() && astIsLHS(tok) &&
             parent->astOperand2()->hasKnownValue()) {
