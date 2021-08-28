@@ -52,7 +52,7 @@
 #include "translationhandler.h"
 #include "variablecontractsdialog.h"
 
-static const QString OnlineHelpURL("http://cppcheck.net/manual.html");
+static const QString OnlineHelpURL("https://cppcheck.sourceforge.io/manual.html");
 static const QString compile_commands_json("compile_commands.json");
 
 MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :

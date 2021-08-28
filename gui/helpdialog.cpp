@@ -75,7 +75,7 @@ HelpDialog::HelpDialog(QWidget *parent) :
 
     mUi->textBrowser->setHelpEngine(mHelpEngine);
 
-    mUi->textBrowser->setSource(QUrl("qthelp://cppcheck.sourceforge.net/doc/index.html"));
+    mUi->textBrowser->setSource(QUrl("qthelp://cppcheck.sourceforge.io/doc/index.html"));
     connect(mHelpEngine->contentWidget(),
             SIGNAL(linkActivated(QUrl)),
             mUi->textBrowser,
