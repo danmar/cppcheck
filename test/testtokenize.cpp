@@ -6479,6 +6479,10 @@ private:
                             "    int x = a < b ? b : a;"
                             "};\n"));
 
+        // #10139
+        ASSERT_NO_THROW(tokenizeAndStringify("template<typename F>\n"
+                                             "void foo(std::enable_if_t<value<F>>* = 0) {}\n"));
+
     }
 
     void checkTemplates() {
