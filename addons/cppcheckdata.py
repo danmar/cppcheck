@@ -185,7 +185,7 @@ class Token:
 
     The CppcheckData.tokenlist is a list of Token items
 
-    C++ class: http://cppcheck.net/devinfo/doxyoutput/classToken.html
+    C++ class: https://cppcheck.sourceforge.io/devinfo/doxyoutput/classToken.html
 
     Attributes:
         str                Token string
@@ -425,7 +425,7 @@ class Token:
 class Scope:
     """
     Scope. Information about global scope, function scopes, class scopes, inner scopes, etc.
-    C++ class: http://cppcheck.net/devinfo/doxyoutput/classScope.html
+    C++ class: https://cppcheck.sourceforge.io/devinfo/doxyoutput/classScope.html
 
     Attributes
         bodyStart      The { Token for this scope
@@ -493,7 +493,7 @@ class Function:
     """
     Information about a function
     C++ class:
-    http://cppcheck.net/devinfo/doxyoutput/classFunction.html
+    https://cppcheck.sourceforge.io/devinfo/doxyoutput/classFunction.html
 
     Attributes
         argument                Argument list
@@ -554,7 +554,7 @@ class Variable:
     """
     Information about a variable
     C++ class:
-    http://cppcheck.net/devinfo/doxyoutput/classVariable.html
+    https://cppcheck.sourceforge.io/devinfo/doxyoutput/classVariable.html
 
     Attributes:
         nameToken       Name token in variable declaration
@@ -722,7 +722,7 @@ class ValueFlow:
     Each possible value has a ValueFlow::Value item.
     Each ValueFlow::Value either has a intvalue or tokvalue
     C++ class:
-    http://cppcheck.net/devinfo/doxyoutput/classValueFlow_1_1Value.html
+    https://cppcheck.sourceforge.io/devinfo/doxyoutput/classValueFlow_1_1Value.html
 
     Attributes:
         values    Possible values

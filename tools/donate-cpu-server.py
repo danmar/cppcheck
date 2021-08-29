@@ -1079,7 +1079,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             # save data
             res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2|xz)', url)
             if res is None:
-                res = re.match(r'http://cppcheck\.sf\.net/([a-z]+).tgz', url)
+                res = re.match(r'https?://cppcheck\.sf\.net/([a-z]+).tgz', url)
             if res is None:
                 print('results not written. res is None.')
                 continue
@@ -1148,7 +1148,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             # save data
             res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2|xz)', url)
             if res is None:
-                res = re.match(r'http://cppcheck\.sf\.net/([a-z]+).tgz', url)
+                res = re.match(r'https://cppcheck\.sf\.net/([a-z]+).tgz', url)
             if res is None:
                 print('info output not written. res is None.')
                 continue

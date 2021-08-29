@@ -804,18 +804,26 @@ void CheckBufferOverrun::argumentSize()
                         err = true;
                 }
                 if (err)
-                    argumentSizeError(tok, tok->str(), argument->name());
+                    argumentSizeError(tok, tok->str(), paramIndex, callargs[paramIndex]->expressionString(), calldata->variable(), argument);
             }
         }
     }
 }
 
-void CheckBufferOverrun::argumentSizeError(const Token *tok, const std::string &functionName, const std::string &varname)
+void CheckBufferOverrun::argumentSizeError(const Token *tok, const std::string &functionName, nonneg int paramIndex, const std::string &paramExpression, const Variable *paramVar, const Variable *functionArg)
 {
-    reportError(tok, Severity::warning, "argumentSize",
+    const std::string strParamNum = std::to_string(paramIndex + 1) + getOrdinalText(paramIndex + 1);
+    ErrorPath errorPath;
+    errorPath.emplace_back(tok, "Function '" + functionName + "' is called");
+    if (functionArg)
+        errorPath.emplace_back(functionArg->nameToken(), "Declaration of " + strParamNum + " function argument.");
+    if (paramVar)
+        errorPath.emplace_back(paramVar->nameToken(), "Passing buffer '" + paramVar->name() + "' to function that is declared here");
+    errorPath.emplace_back(tok, "");
+
+    reportError(errorPath, Severity::warning, "argumentSize",
                 "$symbol:" + functionName + '\n' +
-                "$symbol:" + varname + '\n' +
-                "The array '" + varname + "' is too small, the function '" + functionName + "' expects a bigger one.", CWE_ARGUMENT_SIZE, Certainty::normal);
+                "Buffer '" + paramExpression + "' is too small, the function '" + functionName + "' expects a bigger buffer in " + strParamNum + " argument", CWE_ARGUMENT_SIZE, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------

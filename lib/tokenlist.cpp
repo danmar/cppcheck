@@ -560,52 +560,6 @@ static bool iscast(const Token *tok, bool cpp)
     return false;
 }
 
-static Token* findTypeEnd(Token* tok)
-{
-    while (Token::Match(tok, "%name%|.|::|*|&|&&|<|(|template|decltype|sizeof")) {
-        if (Token::Match(tok, "(|<"))
-            tok = tok->link();
-        if (!tok)
-            return nullptr;
-        tok = tok->next();
-    }
-    return tok;
-}
-
-static const Token* findTypeEnd(const Token* tok)
-{
-    return findTypeEnd(const_cast<Token*>(tok));
-}
-
-static const Token * findLambdaEndScope(const Token *tok)
-{
-    if (!Token::simpleMatch(tok, "["))
-        return nullptr;
-    tok = tok->link();
-    if (!Token::Match(tok, "] (|{"))
-        return nullptr;
-    tok = tok->linkAt(1);
-    if (Token::simpleMatch(tok, "}"))
-        return tok;
-    if (Token::simpleMatch(tok, ") {"))
-        return tok->linkAt(1);
-    if (!Token::simpleMatch(tok, ")"))
-        return nullptr;
-    tok = tok->next();
-    while (Token::Match(tok, "mutable|constexpr|constval|noexcept|.")) {
-        if (Token::simpleMatch(tok, "noexcept ("))
-            tok = tok->linkAt(1);
-        if (Token::simpleMatch(tok, ".")) {
-            tok = findTypeEnd(tok);
-            break;
-        }
-        tok = tok->next();
-    }
-    if (Token::simpleMatch(tok, "{"))
-        return tok->link();
-    return nullptr;
-}
-
 // int(1), int*(2), ..
 static Token * findCppTypeInitPar(Token *tok)
 {
@@ -728,7 +682,7 @@ static void compileBinOp(Token *&tok, AST_state& state, void (*f)(Token *&tok, A
     Token *binop = tok;
     if (f) {
         tok = tok->next();
-        if (Token::simpleMatch(binop, ":: ~"))
+        if (Token::Match(binop, "::|. ~"))
             tok = tok->next();
         state.depth++;
         if (tok && state.depth <= AST_MAX_DEPTH)
@@ -934,8 +888,8 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 state.op.push(tok);
                 tok = tok->tokAt(3);
                 break;
-            } else
-                compileBinOp(tok, state, compileScope);
+            }
+            compileBinOp(tok, state, compileScope);
         } else if (tok->str() == "[") {
             if (state.cpp && isPrefixUnary(tok, state.cpp) && Token::Match(tok->link(), "] (|{")) { // Lambda
                 // What we do here:

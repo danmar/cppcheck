@@ -361,7 +361,6 @@ void ProgramMemoryState::replace(const ProgramMemory &pm, const Token* origin)
 void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& vars)
 {
     ProgramMemory pm = state;
-    fillProgramMemoryFromConditions(pm, tok, settings);
     for (const auto& p:vars) {
         nonneg int exprid = p.first;
         const ValueFlow::Value &value = p.second;
@@ -369,6 +368,7 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
         if (value.varId)
             pm.setIntValue(value.varId, value.varvalue);
     }
+    fillProgramMemoryFromConditions(pm, tok, settings);
     ProgramMemory local = pm;
     fillProgramMemoryFromAssignments(pm, tok, local, vars);
     replace(pm, tok);
