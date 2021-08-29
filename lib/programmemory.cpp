@@ -614,7 +614,9 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
         return execute(expr->astOperand2(), pm);
     } else if (expr->str() == "||" && expr->astOperand1() && expr->astOperand2()) {
         ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
-        if (lhs.isIntValue() && lhs.intvalue != 0)
+        if (!lhs.isIntValue())
+            return unknown;
+        if (lhs.intvalue != 0)
             return lhs;
         return execute(expr->astOperand2(), pm);
     } else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
