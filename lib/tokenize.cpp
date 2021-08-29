@@ -7239,9 +7239,20 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
     // Split up variable declarations..
     // "int a=4;" => "int a; a=4;"
     bool finishedwithkr = true;
+    bool scopeDecl = false;
     for (Token *tok = tokBegin; tok != tokEnd; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "= {")) {
+        if (Token::Match(tok, "{|;"))
+            scopeDecl = false;
+        if (Token::Match(tok, "class|struct|namespace|union"))
+            scopeDecl = true;
+        if (Token::simpleMatch(tok, "= {") || Token::Match(tok, "decltype|noexcept (") || 
+            (isCPP() && !scopeDecl && Token::Match(tok, "%name%|> {") && 
+            !Token::Match(tok, "else|try|do|const|constexpr|override|volatile|noexcept"))) {
+            // TODO: Check for lambdas before skipping
             tok = tok->next()->link();
+            // skip decltype(...){...}
+            if (tok && Token::simpleMatch(tok->previous(), ") {"))
+                tok = tok->link();
         }
         if (!tok) {
             syntaxError(tokBegin);
