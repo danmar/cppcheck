@@ -527,11 +527,11 @@ def getEssentialType(expr):
             return None
         e1 = getEssentialType(expr.astOperand1)
         e2 = getEssentialType(expr.astOperand2)
-        if not e1 or not e2:
+        if e1 is None or e2 is None:
             return None
         if is_constant_integer_expression(expr):
             sign1 = e1.split(' ')[0]
-            sign2 = e1.split(' ')[0]
+            sign2 = e2.split(' ')[0]
             if sign1 == sign2 and sign1 in ('signed', 'unsigned'):
                 e = get_essential_type_from_value(expr.getKnownIntValue(), sign1 == 'signed')
                 if e:
@@ -2074,9 +2074,11 @@ class MisraChecker:
                     elif not isUnsignedType(e2) and not token.astOperand2.isNumber:
                         self.reportError(token, 10, 1)
                 elif token.str in ('~', '&', '|', '^'):
-                    e1_et = getEssentialType(token.astOperand1).split(' ')[-1]
-                    e2_et = getEssentialType(token.astOperand2).split(' ')[-1]
-                    if e1_et == 'char' and e2_et == 'char':
+                    def _is_char(essential_type):
+                        return essential_type and (essential_type.split(' ')[-1] == 'char')
+                    e1_et = getEssentialType(token.astOperand1)
+                    e2_et = getEssentialType(token.astOperand2)
+                    if _is_char(e1_et) and _is_char(e2_et):
                         self.reportError(token, 10, 1)
 
     def misra_10_2(self, data):

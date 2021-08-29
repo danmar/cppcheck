@@ -2263,7 +2263,7 @@ bool Tokenizer::simplifyUsing()
             Token::Match(tok, "using namespace %name% ;|::")) {
             try {
                 setScopeInfo(tok, &currentScope, mSettings->debugwarnings);
-            } catch (const std::runtime_error &e) {
+            } catch (const std::runtime_error &) {
                 reportError(tok, Severity::debug, "simplifyUsingUnmatchedBodyEnd",
                             "simplifyUsing: unmatched body end");
             }
@@ -2417,7 +2417,7 @@ bool Tokenizer::simplifyUsing()
                 Token::Match(tok1, "using namespace %name% ;|::")) {
                 try {
                     setScopeInfo(tok1, &currentScope1, mSettings->debugwarnings);
-                } catch (const std::runtime_error &e) {
+                } catch (const std::runtime_error &) {
                     reportError(tok1, Severity::debug, "simplifyUsingUnmatchedBodyEnd",
                                 "simplifyUsing: unmatched body end");
                 }
@@ -2900,12 +2900,11 @@ void Tokenizer::combineOperators()
             // combine +-*/ and =
             if (c2 == '=' && (std::strchr("+-*/%|^=!<>", c1))) {
                 // skip templates
-                if (cpp && tok->str() == ">") {
-                    const Token *opening = tok->findOpeningBracket();
-                    if (opening) {
-                        if (Token::Match(opening->previous(), "%name%"))
-                            continue;
-                    }
+                if (cpp && (tok->str() == ">" || Token::simpleMatch(tok->previous(), "> *"))) {
+                    const Token* opening =
+                        tok->str() == ">" ? tok->findOpeningBracket() : tok->previous()->findOpeningBracket();
+                    if (opening && Token::Match(opening->previous(), "%name%"))
+                        continue;
                 }
                 tok->str(tok->str() + c2);
                 tok->deleteNext();
@@ -4561,7 +4560,7 @@ void Tokenizer::createLinks2()
             if (!top2 || top2->str() != "<") {
                 if (token->str() == ">>")
                     continue;
-                if (!Token::Match(token->next(), "%name%|%cop%|::|,|(|)|{|}|;|[|:|.|=|...") &&
+                if (!Token::Match(token->next(), "%name%|%cop%|%assign%|::|,|(|)|{|}|;|[|:|.|=|...") &&
                     !Token::Match(token->next(), "&& %name% ="))
                     continue;
             }

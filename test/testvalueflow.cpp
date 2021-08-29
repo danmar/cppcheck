@@ -2172,6 +2172,7 @@ private:
                "  } while (1);\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 3));
 
         // pointer/reference to x
         code = "int f(void) {\n"
@@ -5822,6 +5823,16 @@ private:
                "      a *const d = arguments[c.arg];\n"
                "}\n";
         valueOfTok(code, "c");
+
+        code = "void h(char* p, int s) {\n"
+               "  char *q = p+s;\n"
+               "  char buf[100];\n"
+               "  char *b = buf;\n"
+               "  ++b;\n"
+               "  if (p < q && buf < b)\n"
+               "    diff = (buf-b);\n"
+               "}\n";
+        valueOfTok(code, "diff");
     }
 
     void valueFlowHang() {
@@ -5968,6 +5979,17 @@ private:
                "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
                "}\n";
         valueOfTok(code, "root");
+
+        code = "bool isCharPotentialOperator(char ch)  {\n"
+               "    return (ispunct((unsigned char) ch)\n"
+               "            && ch != '{' && ch != '}'\n"
+               "            && ch != '(' && ch != ')'\n"
+               "            && ch != '[' && ch != ']'\n"
+               "            && ch != ';' && ch != ','\n"
+               "            && ch != '#' && ch != '\\'\n"
+               "            && ch != '\'' && ch != '\"');\n"
+               "}\n";
+        valueOfTok(code, "return");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577

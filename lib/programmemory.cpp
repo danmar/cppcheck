@@ -285,9 +285,12 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
         }
 
         if (tok2->str() == "{") {
-            if (indentlevel <= 0)
-                break;
-            --indentlevel;
+            if (indentlevel <= 0) {
+                // Keep progressing with anonymous/do scopes
+                if (!Token::Match(tok2->previous(), "do|; {"))
+                    break;
+            } else
+                --indentlevel;
             if (Token::simpleMatch(tok2->previous(), "else {"))
                 tok2 = tok2->linkAt(-2)->previous();
         }
@@ -843,7 +846,26 @@ void execute(const Token* expr,
         }
     }
 
-    else if (expr->isArithmeticalOp() && expr->astOperand1() && expr->astOperand2()) {
+    else if (expr->str() == "&&") {
+        bool error1 = false;
+        execute(expr->astOperand1(), programMemory, result, &error1, f);
+        if (!error1 && *result == 0)
+            *result = 0;
+        else {
+            bool error2 = false;
+            execute(expr->astOperand2(), programMemory, result, &error2, f);
+            if (error1 || error2)
+                *error = true;
+        }
+    }
+
+    else if (expr->str() == "||") {
+        execute(expr->astOperand1(), programMemory, result, error, f);
+        if (*result == 1 && *error == false)
+            *result = 1;
+        else if (*result == 0 && *error == false)
+            execute(expr->astOperand2(), programMemory, result, error, f);
+    } else if (expr->isConstOp() && expr->astOperand1() && expr->astOperand2()) {
         MathLib::bigint result1(0), result2(0);
         execute(expr->astOperand1(), programMemory, &result1, error, f);
         execute(expr->astOperand2(), programMemory, &result2, error, f);
@@ -874,36 +896,24 @@ void execute(const Token* expr,
             } else {
                 *result = result1 >> result2;
             }
+        } else if (expr->str() == "&") {
+            *result = result1 & result2;
+        } else if (expr->str() == "|") {
+            *result = result1 | result2;
+        } else {
+            *error = true;
         }
-    }
-
-    else if (expr->str() == "&&") {
-        bool error1 = false;
-        execute(expr->astOperand1(), programMemory, result, &error1, f);
-        if (!error1 && *result == 0)
-            *result = 0;
-        else {
-            bool error2 = false;
-            execute(expr->astOperand2(), programMemory, result, &error2, f);
-            if (error1 || error2)
-                *error = true;
-        }
-    }
-
-    else if (expr->str() == "||") {
-        execute(expr->astOperand1(), programMemory, result, error, f);
-        if (*result == 1 && *error == false)
-            *result = 1;
-        else if (*result == 0 && *error == false)
-            execute(expr->astOperand2(), programMemory, result, error, f);
     }
 
     else if (expr->str() == "!") {
         execute(expr->astOperand1(), programMemory, result, error, f);
         *result = !(*result);
-    }
-
-    else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
+    } else if (expr->isUnaryOp("-")) {
+        execute(expr->astOperand1(), programMemory, result, error, f);
+        *result = -(*result);
+    } else if (expr->isUnaryOp("+")) {
+        execute(expr->astOperand1(), programMemory, result, error, f);
+    } else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
         execute(expr->astOperand1(), programMemory, result, error, f);
         execute(expr->astOperand2(), programMemory, result, error, f);
     }
@@ -933,6 +943,16 @@ void execute(const Token* expr,
             *result = 0;
         else
             *error = true;
+    } else if (expr->str() == "?" && expr->astOperand1() && expr->astOperand2()) {
+        execute(expr->astOperand1(), programMemory, result, error, f);
+        if (*error)
+            return;
+        const Token* childTok = expr->astOperand2();
+        if (*result == 0)
+            execute(childTok->astOperand2(), programMemory, result, error, f);
+        else
+            execute(childTok->astOperand1(), programMemory, result, error, f);
+
     } else if (expr->str() == "(" && expr->isCast()) {
         if (Token::simpleMatch(expr->previous(), ">") && expr->previous()->link())
             execute(expr->astOperand2(), programMemory, result, error);

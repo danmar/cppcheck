@@ -6133,6 +6133,7 @@ private:
         ASSERT_EQUALS("abc{d{,{(=", testAst("a = b({ c{}, d{} });"));
         ASSERT_EQUALS("abc;(", testAst("a(b;c)"));
         ASSERT_EQUALS("x{( forbc;;(", testAst("x({ for(a;b;c){} });"));
+        ASSERT_EQUALS("PT.(", testAst("P->~T();"));  // <- The "T" token::function() will be a destructor
     }
 
     void asttemplate() { // uninstantiated templates will have <,>,etc..
@@ -6479,6 +6480,9 @@ private:
                             "    int x = a < b ? b : a;"
                             "};\n"));
 
+        // #10139
+        ASSERT_NO_THROW(tokenizeAndStringify("template<typename F>\n"
+                                             "void foo(std::enable_if_t<value<F>>* = 0) {}\n"));
     }
 
     void checkTemplates() {

@@ -589,6 +589,18 @@ private:
                     "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkNormal("bool g();\n"
+                    "void f(int x) {\n"
+                    "    std::vector<int> v;\n"
+                    "    if (g())\n"
+                    "        v.emplace_back(x);\n"
+                    "    const int n = v.size();\n"
+                    "    h(n);\n"
+                    "    for (int i = 0; i < n; ++i)\n"
+                    "        h(v[i]);\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkNormal("void foo(const std::vector<int> &v) {\n"
                     "    if(v.size() >=1 && v[0] == 4 && v[1] == 2){}\n"
                     "}\n");

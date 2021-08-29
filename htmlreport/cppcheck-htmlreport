@@ -264,7 +264,7 @@ HTML_FOOTER = """
       <p>
         Cppcheck %s - a tool for static C/C++ code analysis<br>
         <br>
-        Internet: <a href="http://cppcheck.net">http://cppcheck.net</a><br>
+        Internet: <a href="https://cppcheck.sourceforge.io">https://cppcheck.sourceforge.io</a><br>
         IRC: <a href="irc://irc.freenode.net/cppcheck">irc://irc.freenode.net/cppcheck</a><br>
       </p>
     </div>
