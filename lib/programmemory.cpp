@@ -686,6 +686,15 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
         if (expr->str() == "-")
             lhs.intvalue = -lhs.intvalue;
         return lhs;
+    } else if (expr->str() == "?" && expr->astOperand1() && expr->astOperand2()) {
+        ValueFlow::Value cond = execute(expr->astOperand1(), pm);
+        if (!cond.isIntValue())
+            return unknown;
+        const Token* child = expr->astOperand2();
+        if (cond.intvalue == 0)
+            return execute(child->astOperand2(), pm);
+        else
+            return execute(child->astOperand1(), pm);
     } else if (expr->str() == "(" && expr->isCast()) {
         if (Token::simpleMatch(expr->previous(), ">") && expr->previous()->link())
             return execute(expr->astOperand2(), pm);
