@@ -136,7 +136,7 @@ private:
               "   void Foo();\n"
               "};\n"
               "void foo(SquarePack s) {\n"
-              "   assert( s.Foo(); );\n"
+              "   assert( s.Foo() );\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Assert statement calls a function which may have desired side effects: 'Foo'.\n", errout.str());
 
@@ -144,7 +144,7 @@ private:
               "   void Foo() const;\n"
               "};\n"
               "void foo(SquarePack* s) {\n"
-              "   assert( s->Foo(); );\n"
+              "   assert( s->Foo() );\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -152,14 +152,14 @@ private:
               "   static void Foo();\n"
               "};\n"
               "void foo(SquarePack* s) {\n"
-              "   assert( s->Foo(); );\n"
+              "   assert( s->Foo() );\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         check("struct SquarePack {\n"
               "};\n"
               "void foo(SquarePack* s) {\n"
-              "   assert( s->Foo(); );\n"
+              "   assert( s->Foo() );\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
