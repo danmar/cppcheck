@@ -4573,6 +4573,12 @@ private:
               "  if (x == ~0LL) {}\n"
               "}", &settingsUnix64);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  char c;\n"
+              "  if ((c = foo()) != -1) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void knownConditionCast() { // #9976
