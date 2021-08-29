@@ -548,9 +548,11 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
     result.intvalue = calculate(op, lhs.intvalue, rhs.intvalue, &error);
     if (error)
         return ValueFlow::Value::unknown();
-    if (result.isImpossible() && contains({"==", "!=", "<", ">", "<=", ">="}, op)) {
-        result.setPossible();
-        result.intvalue = !result.intvalue;
+    if (result.isImpossible()) {
+        if ((result.intvalue == 0 && op == "!=") || (result.intvalue != 0 && op == "==")) {
+            result.setPossible();
+            result.intvalue = !result.intvalue;
+        }
     }
     return result;
 }
