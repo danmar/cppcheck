@@ -85,7 +85,7 @@ public:
         c.arrayIndexThenCheckError(nullptr, "i");
         c.bufferOverflowError(nullptr, nullptr, Certainty::normal);
         c.objectIndexError(nullptr, nullptr, true);
-        c.argumentSizeError(nullptr, "function", "buffer");
+        c.argumentSizeError(nullptr, "function", 1, "buffer", nullptr, nullptr);
     }
 
     /** @brief Parse current TU and extract file info */
@@ -117,7 +117,7 @@ private:
     void terminateStrncpyError(const Token *tok, const std::string &varname);
 
     void argumentSize();
-    void argumentSizeError(const Token *tok, const std::string &functionName, const std::string &varname);
+    void argumentSizeError(const Token *tok, const std::string &functionName, nonneg int paramIndex, const std::string &paramExpression, const Variable *paramVar, const Variable *functionArg);
 
     void objectIndex();
     void objectIndexError(const Token *tok, const ValueFlow::Value *v, bool known);

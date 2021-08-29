@@ -24,6 +24,10 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
+#include <sstream>
+#include <simplecpp.h>
+
+
 struct InternalError;
 
 
@@ -190,6 +194,8 @@ private:
         TEST_CASE(simplifyTypedefFunction10); // #5191
 
         TEST_CASE(simplifyTypedefShadow);  // #4445 - shadow variable
+
+        TEST_CASE(simplifyTypedefMacro);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -218,6 +224,31 @@ private:
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
+
+
+    std::string simplifyTypedefP(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Raw tokens..
+        std::vector<std::string> files(1, "test.cpp");
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings0, this);
+        tokenizer.createTokens(std::move(tokens2));
+        tokenizer.createLinks();
+        tokenizer.simplifyTypedef();
+
+        return tokenizer.tokens()->stringifyList(nullptr, false);
+    }
+
 
     void checkSimplifyTypedef(const char code[]) {
         errout.str("");
@@ -3561,6 +3592,18 @@ private:
                             "}";
         ASSERT_EQUALS("struct xyz { int x ; } ; void f ( ) { int abc ; int xyz ; }",
                       tok(code,false));
+    }
+
+    void simplifyTypedefMacro() {
+        const char code[] = "typedef uint32_t index_t;\n"
+                            "\n"
+                            "#define NO_SEGMENT     ((index_t)12)\n"
+                            "\n"
+                            "void foo(index_t prev_segment) {\n"
+                            "    if(prev_segment==NO_SEGMENT) {}\n" // <- test that index_t is replaced with uint32_t in the expanded tokens
+                            "}";
+        ASSERT_EQUALS("void foo ( uint32_t prev_segment ) { if ( prev_segment == ( ( uint32_t ) 12 ) ) { } }",
+                      simplifyTypedefP(code));
     }
 };
 

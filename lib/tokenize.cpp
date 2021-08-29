@@ -1168,7 +1168,7 @@ void Tokenizer::simplifyTypedef()
                 }
 
                 // check for typedef that can be substituted
-                else if (tok2->isNameOnly() &&
+                else if ((tok2->isNameOnly() || (tok2->isName() && tok2->isExpandedMacro())) &&
                          (Token::simpleMatch(tok2, pattern.c_str(), pattern.size()) ||
                           (inMemberFunc && tok2->str() == typeName->str()))) {
                     // member function class variables don't need qualification
@@ -7239,8 +7239,34 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
     // Split up variable declarations..
     // "int a=4;" => "int a; a=4;"
     bool finishedwithkr = true;
+    bool scopeDecl = false;
     for (Token *tok = tokBegin; tok != tokEnd; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "= {")) {
+        if (Token::Match(tok, "{|;"))
+            scopeDecl = false;
+        if (isCPP()) {
+            if (Token::Match(tok, "class|struct|namespace|union"))
+                scopeDecl = true;
+            if (Token::Match(tok, "decltype|noexcept (")) {
+                tok = tok->next()->link();
+                // skip decltype(...){...}
+                if (tok && Token::simpleMatch(tok->previous(), ") {"))
+                    tok = tok->link();
+            } else if (Token::simpleMatch(tok, "= {") ||
+                       (!scopeDecl && Token::Match(tok, "%name%|> {") &&
+                        !Token::Match(tok, "else|try|do|const|constexpr|override|volatile|noexcept"))) {
+                if (!tok->next()->link())
+                    syntaxError(tokBegin);
+                // Check for lambdas before skipping
+                for (Token* tok2 = tok->next(); tok2 != tok->next()->link(); tok2 = tok2->next()) {
+                    Token* lambdaEnd = findLambdaEndScope(tok2);
+                    if (!lambdaEnd)
+                        continue;
+                    simplifyVarDecl(lambdaEnd->link()->next(), lambdaEnd, only_k_r_fpar);
+                }
+                tok = tok->next()->link();
+            }
+
+        } else if (Token::simpleMatch(tok, "= {")) {
             tok = tok->next()->link();
         }
         if (!tok) {
