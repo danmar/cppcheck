@@ -675,8 +675,7 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
             } else if (lhs.isIntValue() && !lhs.isImpossible()) {
                 ValueFlow::Value v = inferCondition(expr->str(), lhs.intvalue, expr->astOperand2());
                 if (v.isKnown())
-                    return unknown;
-                return v;
+                    return v;
             }
         }
     }
