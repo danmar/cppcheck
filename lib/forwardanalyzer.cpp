@@ -666,11 +666,23 @@ struct ForwardTraversal {
                 }
             } else if (Token::simpleMatch(tok, "try {")) {
                 Token* endBlock = tok->next()->link();
-                Analyzer::Action a = analyzeScope(endBlock);
-                if (updateRange(tok->next(), endBlock, depth - 1) == Progress::Break)
-                    return Break();
-                if (a.isModified())
+                ForwardTraversal tryTraversal = fork();
+                tryTraversal.updateRange(tok->next(), endBlock, depth - 1);
+                bool bail = tryTraversal.actions.isModified();
+                if (bail)
                     analyzer->lowerToPossible();
+
+                while(Token::Match(endBlock, "} catch (")) {
+                    Token* endCatch = endBlock->linkAt(2);
+                    if (!Token::Match(endCatch, ") {"))
+                        return Break();
+                    endBlock = endCatch->linkAt(1);
+                    ForwardTraversal ft = fork();
+                    ft.updateRange(endBlock->link(), endBlock, depth - 1);
+                    bail |= ft.terminate != Analyzer::Terminate::None || ft.actions.isModified();
+                }
+                if (bail)
+                    return Break();
                 tok = endBlock;
             } else if (Token::simpleMatch(tok, "do {")) {
                 Token* endBlock = tok->next()->link();
