@@ -4079,7 +4079,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
-    
+
     void alwaysTrueTryCatch()
     {
         check("void g();\n"

@@ -672,7 +672,7 @@ struct ForwardTraversal {
                 if (bail)
                     analyzer->lowerToPossible();
 
-                while(Token::Match(endBlock, "} catch (")) {
+                while (Token::Match(endBlock, "} catch (")) {
                     Token* endCatch = endBlock->linkAt(2);
                     if (!Token::Match(endCatch, ") {"))
                         return Break();
