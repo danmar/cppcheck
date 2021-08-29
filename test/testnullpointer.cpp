@@ -119,6 +119,7 @@ private:
         TEST_CASE(nullpointer77);
         TEST_CASE(nullpointer78); // #7802
         TEST_CASE(nullpointer79); // #10400
+        TEST_CASE(nullpointer80); // #10410
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2437,6 +2438,20 @@ private:
               "        pValues = new double[nF * nT];\n"
               "    for (size_t cc = 0; cc < nF * nT; ++cc)\n"
               "        pValues[cc] = 42;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer80() // #10410
+    {
+        check("int f(int* a, int* b) {\n"
+              "    if( a || b ) {\n"
+              "        int n = a ? *a : *b;\n"
+              "        if( b )\n"
+              "            n++;\n"
+              "        return n;\n"
+              "    }\n"
+              "    return 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
