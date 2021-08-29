@@ -367,6 +367,7 @@ private:
         TEST_CASE(simplify_constants4);
         TEST_CASE(simplify_constants5);
         TEST_CASE(simplify_constants6);     // Ticket #5625: Ternary operator as template parameter
+        TEST_CASE(simplifyVarDeclInitLists);
 
     }
 
@@ -7062,6 +7063,13 @@ private:
             const char exp[] = "bool b ; b = false ;";
             ASSERT_EQUALS(exp, tok(code));
         }
+    }
+
+    void simplifyVarDeclInitLists()
+    {
+        const char code[] = "std::vector<int> v{a * b, 1};";
+        const char exp[] = "std :: vector < int > v { a * b , 1 } ;";
+        ASSERT_EQUALS(exp, tok(code));
     }
 };
 
