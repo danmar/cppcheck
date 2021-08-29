@@ -1395,6 +1395,11 @@ public:
     }
 };
 
+Token* findTypeEnd(Token* tok);
+const Token* findTypeEnd(const Token* tok);
+Token * findLambdaEndScope(Token *tok);
+const Token * findLambdaEndScope(const Token *tok);
+
 /// @}
 //---------------------------------------------------------------------------
 #endif // tokenH
