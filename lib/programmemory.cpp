@@ -664,11 +664,11 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
         if (!lhs.isUninitValue() && !rhs.isUninitValue())
             return evaluate(expr->str(), lhs, rhs);
         if (expr->isComparisonOp()) {
-            if (rhs.isIntValue()) {
+            if (rhs.isIntValue() && !rhs.isImpossible()) {
                 ValueFlow::Value v = inferCondition(expr->str(), expr->astOperand1(), rhs.intvalue);
                 if (v.isKnown())
                     return v;
-            } else if (lhs.isIntValue()) {
+            } else if (lhs.isIntValue() && !lhs.isImpossible()) {
                 ValueFlow::Value v = inferCondition(expr->str(), lhs.intvalue, expr->astOperand2());
                 if (v.isKnown())
                     return unknown;
