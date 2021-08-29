@@ -2546,12 +2546,11 @@ Token* findTypeEnd(Token* tok)
     return tok;
 }
 
-const Token* findTypeEnd(const Token* tok)
-{
+const Token* findTypeEnd(const Token* tok) {
     return findTypeEnd(const_cast<Token*>(tok));
 }
 
-Token * findLambdaEndScope(Token *tok)
+Token* findLambdaEndScope(Token* tok)
 {
     if (!Token::simpleMatch(tok, "["))
         return nullptr;
@@ -2579,8 +2578,6 @@ Token * findLambdaEndScope(Token *tok)
         return tok->link();
     return nullptr;
 }
-const Token * findLambdaEndScope(const Token *tok)
-{
+const Token* findLambdaEndScope(const Token* tok) {
     return findLambdaEndScope(const_cast<Token*>(tok));
 }
-

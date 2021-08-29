@@ -368,7 +368,6 @@ private:
         TEST_CASE(simplify_constants5);
         TEST_CASE(simplify_constants6);     // Ticket #5625: Ternary operator as template parameter
         TEST_CASE(simplifyVarDeclInitLists);
-
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {

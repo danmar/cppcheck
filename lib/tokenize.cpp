@@ -7251,14 +7251,13 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                 // skip decltype(...){...}
                 if (tok && Token::simpleMatch(tok->previous(), ") {"))
                     tok = tok->link();
-            }
-            else if (Token::simpleMatch(tok, "= {") || 
-                (!scopeDecl && Token::Match(tok, "%name%|> {") && 
-                !Token::Match(tok, "else|try|do|const|constexpr|override|volatile|noexcept"))) {
+            } else if (Token::simpleMatch(tok, "= {") ||
+                       (!scopeDecl && Token::Match(tok, "%name%|> {") &&
+                        !Token::Match(tok, "else|try|do|const|constexpr|override|volatile|noexcept"))) {
                 if (!tok->next()->link())
                     syntaxError(tokBegin);
                 // Check for lambdas before skipping
-                for (Token *tok2 = tok->next(); tok2 != tok->next()->link(); tok2 = tok2->next()) {
+                for (Token* tok2 = tok->next(); tok2 != tok->next()->link(); tok2 = tok2->next()) {
                     Token* lambdaEnd = findLambdaEndScope(tok2);
                     if (!lambdaEnd)
                         continue;
