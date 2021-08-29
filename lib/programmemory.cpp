@@ -560,10 +560,16 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
 static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
 {
     ValueFlow::Value unknown = ValueFlow::Value::unknown();
+    const ValueFlow::Value* value = nullptr;
     if (!expr)
         return unknown;
     else if (expr->hasKnownIntValue() && !expr->isAssignmentOp()) {
         return expr->values().front();
+    } else if ((value = expr->getKnownValue(ValueFlow::Value::ValueType::FLOAT)) ||
+                (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_START)) ||
+                (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_END)) ||
+                (value = expr->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))) {
+        return *value;
     } else if (expr->isNumber()) {
         if (MathLib::isFloat(expr->str()))
             return unknown;
