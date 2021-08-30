@@ -3669,7 +3669,7 @@ void CheckOther::checkMismatchingNames()
                     }
                 }
             }
-            if (Token::Match(tok, "%var% = %var%")) {
+            if (Token::Match(tok, "%var% = %var%;")) {
                 const Variable* svar2 = tok->tokAt(2)->variable();
                 const Variable* svar = tok->variable();
                 if (svar)
