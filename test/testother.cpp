@@ -258,8 +258,8 @@ private:
 
         TEST_CASE(constVariableArrayMember); // #10371
 
-        TEST_CASE(foundMismatchingNames); // #10371
-        
+        TEST_CASE(foundMismatchingNames);
+        TEST_CASE(foundMismatchingNames2);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
@@ -9552,10 +9552,24 @@ private:
             "		this->xin = xax;\n"
             "		this->xax = 0.0F;\n"
             "	}\n"
-            "};\n"
-            "\n");
+            "};\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) this->xin=xax has more appropriate arg name: xin\n", errout.str());
     }
+
+    void foundMismatchingNames2() {
+        check("void foo3(float fmin, float fmax)\n"
+            "{\n"
+            "	float max = fmin;\n"
+            "	float min = 0.0F;\n"
+            "	MinMax tmpMinMax = MinMax(max,min);\n"
+            "	foo4(tmpMinMax);\n"
+            "}\n");
+        printf("%s", errout.str().c_str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) max=fmin has more appropriate arg name: fmax\n", errout.str());
+    }
+
+   
+
 };
 
 REGISTER_TEST(TestOther)
