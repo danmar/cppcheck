@@ -9554,7 +9554,7 @@ private:
             "	}\n"
             "};\n"
             "\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) this->xin=xax has more appropriate arg name: xin", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) this->xin=xax has more appropriate arg name: xin\n", errout.str());
     }
 };
 
