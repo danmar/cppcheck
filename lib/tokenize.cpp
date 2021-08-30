@@ -2247,7 +2247,7 @@ bool Tokenizer::simplifyUsing()
         if (Settings::terminated())
             return substitute;
 
-        if (Token::simpleMatch(tok, "enum class")) {
+        if (Token::Match(tok, "enum class|struct")) {
             Token *bodyStart = tok;
             while (Token::Match(bodyStart, "%name%|:|::|<")) {
                 if (bodyStart->str() == "<")
@@ -2440,7 +2440,7 @@ bool Tokenizer::simplifyUsing()
 
             // check for enum with body
             if (tok1->str() == "enum") {
-                if (Token::simpleMatch(tok1, "enum class"))
+                if (Token::Match(tok1, "enum class|struct"))
                     tok1 = tok1->next();
                 Token *defStart = tok1;
                 while (Token::Match(defStart, "%name%|::|:"))
