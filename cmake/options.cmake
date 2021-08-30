@@ -42,6 +42,7 @@ option(WITH_QCHART          "When building GUI(need BUILD_GUI=ON), use Qt5 Chart
 option(HAVE_RULES           "Usage of rules (needs PCRE library and headers)"               OFF)
 option(USE_Z3               "Usage of z3 library"                                           OFF)
 option(USE_BUNDLED_TINYXML2 "Usage of bundled tinyxml2 library"                             ON)
+option(USE_BOOST_MULTIPREC  "Usage of boost::multiprecision instead of int128_t"            OFF)
 
 if (CMAKE_VERSION VERSION_EQUAL "3.16" OR CMAKE_VERSION VERSION_GREATER "3.16")
     set(CMAKE_DISABLE_PRECOMPILE_HEADERS Off CACHE BOOL "Disable precompiled headers")

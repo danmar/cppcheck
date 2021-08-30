@@ -40,11 +40,16 @@ class Variable;
 #if defined(__GNUC__) && defined (__SIZEOF_INT128__)
 typedef __int128_t int128_t;
 #else
+#if defined(USE_BOOST_MULTIPREC)
+#include <boost/multiprecision/cpp_int.hpp>
+using int128_t = boost::multiprecision::int128_t;
+#else
 typedef long long int128_t;
 #ifdef _MSC_VER
 #pragma message(__FILE__ "(" _CRT_STRINGIZE(__LINE__) ")" ": warning: TODO No 128-bit integer type is available => Limited analysis of large integers...")
 #else
 #warning TODO No 128-bit integer type is available => Limited analysis of large integers
+#endif
 #endif
 #endif
 

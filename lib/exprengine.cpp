@@ -997,7 +997,7 @@ ExprEngine::ConditionalValue::Vector ExprEngine::ArrayValue::read(ExprEngine::Va
                 if (i->minValue >= 0 && i->minValue == i->maxValue) {
                     int c = 0;
                     if (i->minValue < stringLiteral->size())
-                        c = stringLiteral->string[i->minValue];
+                        c = stringLiteral->string[static_cast<size_t>(i->minValue)];
                     ret.push_back(std::pair<ValuePtr,ValuePtr>(indexAndValue.index, std::make_shared<ExprEngine::IntRange>(std::to_string(c), c, c)));
                     continue;
                 }
