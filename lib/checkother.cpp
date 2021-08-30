@@ -3648,6 +3648,7 @@ void CheckOther::checkMismatchingNames()
             tmpArgListInfo.push_back(tmpArgInfo);
         }
         const Token* tok = function->arg->link()->next();
+        bool error_found = false;
         for (; tok && tok != function->functionScope->bodyEnd; tok = tok->next())
         {
             if (Token::simpleMatch(tok, "this ."))
@@ -3665,16 +3666,17 @@ void CheckOther::checkMismatchingNames()
                                 std::string foundusedname = targ.varname;
                                 std::string msg = "this->" + fieldname + "=" + svar->name() + " has more appropriate arg name: " + targ.varname;
                                 reportError(targ.tok, Severity::error, "mismatchingNames", msg);
+                                error_found = true;
                                 break;
                             }
                         }
                     }
                 }
             }
-            if (Token::Match(tok, "%var% = %var%;")) {
+            if (!error_found && Token::Match(tok, "%var% = %var% ;")) {
                 const Variable* svar2 = tok->tokAt(2)->variable();
                 const Variable* svar = tok->variable();
-                if (svar && svar2)
+                if (svar && !svar->isArgument() && svar2 && svar != svar2)
                 {
                     if (!IsSameName(svar->name(), svar2->name()))
                     {
