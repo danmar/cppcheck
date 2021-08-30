@@ -257,6 +257,9 @@ private:
         TEST_CASE(checkOverlappingWrite);
 
         TEST_CASE(constVariableArrayMember); // #10371
+
+        TEST_CASE(foundMismatchingNames); // #10371
+        
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
@@ -9537,6 +9540,21 @@ private:
               "    int m_Arr[1];\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void foundMismatchingNames() {
+        check("struct MinMax\n"
+            "{\n"
+            "	float min = 0.0F;\n"
+            "	float max = 0.0F;\n"
+            "	MinMax(float xin, float xax)\n"
+            "	{\n"
+            "		this->xin = xax;\n"
+            "		this->xax = 0.0F;\n"
+            "	}\n"
+            "};\n"
+            "\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) this->xin=xax has more appropriate arg name: xin", errout.str());
     }
 };
 

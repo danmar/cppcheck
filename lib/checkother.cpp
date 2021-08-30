@@ -3626,9 +3626,12 @@ bool CheckOther::IsSameName(std::string name1, std::string name2)
 void CheckOther::checkMismatchingNames()
 {
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
-
+    if (!symbolDatabase)
+        return;
     for (const Scope* scope : symbolDatabase->functionScopes) {
         const Function* function = scope->function;
+        if (!function)
+            continue;
         struct ArgListInfo
         {
             std::string varname;
@@ -3645,7 +3648,6 @@ void CheckOther::checkMismatchingNames()
             tmpArgListInfo.push_back(tmpArgInfo);
         }
         const Token* tok = function->arg->link()->next();
-
         for (; tok && tok != function->functionScope->bodyEnd; tok = tok->next())
         {
             if (Token::simpleMatch(tok, "this ."))
@@ -3672,7 +3674,7 @@ void CheckOther::checkMismatchingNames()
             if (Token::Match(tok, "%var% = %var%;")) {
                 const Variable* svar2 = tok->tokAt(2)->variable();
                 const Variable* svar = tok->variable();
-                if (svar)
+                if (svar && svar2)
                 {
                     if (!IsSameName(svar->name(), svar2->name()))
                     {
