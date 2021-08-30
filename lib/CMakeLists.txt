@@ -7,7 +7,7 @@ include_directories(${PROJECT_SOURCE_DIR}/externals/simplecpp/)
 if (USE_BOOST_MULTIPREC)
     find_package(Boost REQUIRED COMPONENTS system)
     include_directories(${Boost_INCLUDE_DIRS})
-	add_compile_definitions(USE_BOOST_MULTIPREC)
+    add_compile_definitions(USE_BOOST_MULTIPREC)
 endif()
 
 file(GLOB_RECURSE hdrs "*.h")
