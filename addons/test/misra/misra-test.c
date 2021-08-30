@@ -1768,6 +1768,7 @@ static void misra_21_7(void) {
 static void misra_21_8(void) {
   abort(); // 21.8
   (void)getenv("foo"); // 21.8
+  (void)system("cmd"); // 21.8
   exit(-1); // 21.8
 }
 
