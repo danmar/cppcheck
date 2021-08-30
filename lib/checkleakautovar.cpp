@@ -480,7 +480,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     if (tok3->str() == "(" && Token::Match(tok3->astOperand1(), "UNLIKELY|LIKELY")) {
                         return ChildrenToVisit::op2;
                     } else if (tok3->str() == "(" && Token::Match(tok3->previous(), "%name%")) {
-                        const std::vector<const Token *> params = getArguments(tok3->previous());
+                        const auto params = getArguments(tok3->previous());
                         for (const Token *par : params) {
                             if (!par->isComparisonOp())
                                 continue;

@@ -4961,7 +4961,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 {
     const bool isCall = Token::Match(tok->next(), "(|{");
 
-    const std::vector<const Token *> arguments = getArguments(tok);
+    const auto arguments = getArguments(tok);
 
     std::vector<const Function *> matches;
 

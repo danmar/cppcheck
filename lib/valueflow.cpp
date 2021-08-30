@@ -2074,7 +2074,7 @@ struct ValueFlowAnalyzer : Analyzer {
             result.unknown = lhs.unknown || rhs.unknown;
             return result;
         } else if (Token::Match(tok->previous(), "%name% (")) {
-            std::vector<const Token*> args = getArguments(tok->previous());
+            auto args = getArguments(tok->previous());
             if (Token::Match(tok->tokAt(-2), ". %name% (")) {
                 args.push_back(tok->tokAt(-2)->astOperand1());
             }
@@ -2956,7 +2956,7 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                         int n = getArgumentPos(argvar, f);
                         if (n < 0)
                             return std::vector<LifetimeToken> {};
-                        std::vector<const Token*> args = getArguments(tok->previous());
+                        auto args = getArguments(tok->previous());
                         // TODO: Track lifetimes of default parameters
                         if (n >= args.size())
                             return std::vector<LifetimeToken> {};
@@ -3358,7 +3358,7 @@ struct LifetimeStore {
     {}
 
     template<class F>
-    static void forEach(const std::vector<const Token*>& argtoks,
+    static void forEach(const TokenVector& argtoks,
                         const std::string& message,
                         ValueFlow::Value::LifetimeKind type,
                         F f) {
@@ -3386,7 +3386,7 @@ struct LifetimeStore {
         int n = getArgumentPos(var, f);
         if (n < 0)
             return LifetimeStore{};
-        std::vector<const Token *> args = getArguments(tok);
+        auto args = getArguments(tok);
         if (n >= args.size()) {
             if (tokenlist->getSettings()->debugwarnings)
                 bailout(tokenlist,
@@ -3556,7 +3556,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         return;
     int returnContainer = settings->library.returnValueContainer(tok);
     if (returnContainer >= 0) {
-        std::vector<const Token *> args = getArguments(tok);
+        auto args = getArguments(tok);
         for (int argnr = 1; argnr <= args.size(); ++argnr) {
             const Library::ArgumentChecks::IteratorInfo *i = settings->library.getArgIteratorInfo(tok, argnr);
             if (!i)
@@ -3585,7 +3585,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
     } else if (Token::Match(tok->tokAt(-2), "%var% . push_back|push_front|insert|push|assign") &&
                astIsContainer(tok->tokAt(-2))) {
         Token *vartok = tok->tokAt(-2);
-        std::vector<const Token *> args = getArguments(tok);
+        auto args = getArguments(tok);
         std::size_t n = args.size();
         if (n > 1 && Token::typeStr(args[n - 2]) == Token::typeStr(args[n - 1]) &&
             (((astIsIterator(args[n - 2]) && astIsIterator(args[n - 1])) ||
@@ -3651,7 +3651,7 @@ static void valueFlowLifetimeConstructor(Token* tok,
             return;
         // If the type is unknown then assume it captures by value in the
         // constructor, but make each lifetime inconclusive
-        std::vector<const Token*> args = getArguments(tok);
+        auto args = getArguments(tok);
         LifetimeStore::forEach(
             args, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::SubObject, [&](LifetimeStore& ls) {
             ls.inconclusive = true;
@@ -3664,7 +3664,7 @@ static void valueFlowLifetimeConstructor(Token* tok,
         return;
     // Only support aggregate constructors for now
     if (scope->numConstructors == 0 && t->derivedFrom.empty() && (t->isClassType() || t->isStructType())) {
-        std::vector<const Token*> args = getArguments(tok);
+        auto args = getArguments(tok);
         auto it = scope->varlist.begin();
         LifetimeStore::forEach(args,
                                "Passed to constructor of '" + t->name() + "'.",
@@ -3706,7 +3706,7 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
     if (Token::simpleMatch(parent, "{") && hasInitList(parent->astParent())) {
         valueFlowLifetimeConstructor(tok, Token::typeOf(parent->previous()), tokenlist, errorLogger, settings);
     } else if (Token::simpleMatch(tok, "{") && hasInitList(parent)) {
-        std::vector<const Token *> args = getArguments(tok);
+        auto args = getArguments(tok);
         // Assume range constructor if passed a pair of iterators
         if (astIsContainer(parent) && args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1])) {
             LifetimeStore::forEach(
@@ -3770,7 +3770,7 @@ struct Lambda {
     std::unordered_map<const Variable*, std::pair<const Token*, Capture>> explicitCaptures;
     Capture implicitCapture;
 
-    std::vector<const Token*> getCaptures() {
+    TokenVector getCaptures() {
         return getArguments(capture);
     }
 
@@ -4111,7 +4111,7 @@ static std::vector<const Token*> getConditions(const Token* tok, const char* op)
 {
     std::vector<const Token*> conds = {tok};
     if (tok->str() == op) {
-        std::vector<const Token*> args = astFlatten(tok, op);
+        auto args = astFlatten(tok, op);
         std::copy_if(args.begin(), args.end(), std::back_inserter(conds), [&](const Token* tok2) {
             if (tok2->exprId() == 0)
                 return false;
@@ -6306,7 +6306,7 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
             id++;
             std::unordered_map<const Variable*, std::list<ValueFlow::Value>> argvars;
             // TODO: Rewrite this. It does not work well to inject 1 argument at a time.
-            const std::vector<const Token *> &callArguments = getArguments(tok);
+            const auto &callArguments = getArguments(tok);
             for (int argnr = 0U; argnr < callArguments.size(); ++argnr) {
                 const Token *argtok = callArguments[argnr];
                 // Get function argument
@@ -6595,7 +6595,7 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
         } else if (Token::Match(tok, "%name% . %name% (")) {
             Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
             if (action == Library::Container::Action::PUSH || action == Library::Container::Action::POP) {
-                std::vector<const Token*> args = getArguments(tok->tokAt(3));
+                auto args = getArguments(tok->tokAt(3));
                 if (args.size() < 2)
                     return Action::Read | Action::Write | Action::Incremental;
             }
@@ -6794,7 +6794,7 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
             }
         } else if (Token::Match(tok->previous(), "%name%|> (|{") && astIsSmartPointer(tok) &&
                    astIsSmartPointer(tok->astOperand1())) {
-            std::vector<const Token*> args = getArguments(tok);
+            auto args = getArguments(tok);
             if (args.empty())
                 continue;
             for (const ValueFlow::Value& v : args.front()->values())
@@ -6929,7 +6929,7 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
                                                      const Library::Container* container,
                                                      bool known = true)
 {
-    std::vector<const Token*> args = getArguments(tok);
+    auto args = getArguments(tok);
     // Strings don't use an init list
     if (!args.empty() && container->stdStringLike) {
         if (astIsIntegral(args[0], false)) {
@@ -7160,7 +7160,7 @@ static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* sym
             if (!allocFunc || allocFunc->bufferSize == Library::AllocFunc::BufferSize::none)
                 continue;
 
-            const std::vector<const Token *> args = getArguments(rhs->previous());
+            const auto args = getArguments(rhs->previous());
 
             const Token * const arg1 = (args.size() >= allocFunc->bufferSizeArg1) ? args[allocFunc->bufferSizeArg1 - 1] : nullptr;
             const Token * const arg2 = (args.size() >= allocFunc->bufferSizeArg2) ? args[allocFunc->bufferSizeArg2 - 1] : nullptr;

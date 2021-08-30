@@ -101,7 +101,7 @@ const Token* findExpression(const nonneg int exprid,
     return nullptr;
 }
 
-static void astFlattenRecursive(const Token *tok, std::vector<const Token *> *result, const char* op, nonneg int depth = 0)
+static void astFlattenRecursive(const Token *tok, TokenVector *result, const char* op, nonneg int depth = 0)
 {
     ++depth;
     if (!tok || depth >= 100)
@@ -114,9 +114,10 @@ static void astFlattenRecursive(const Token *tok, std::vector<const Token *> *re
     }
 }
 
-std::vector<const Token*> astFlatten(const Token* tok, const char* op)
+TokenVector astFlatten(const Token* tok, const char* op)
 {
-    std::vector<const Token*> result;
+    TokenVector result;
+    result.clear();
     astFlattenRecursive(tok, &result, op);
     return result;
 }
@@ -830,7 +831,7 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclus
                         int n = getArgumentPos(argvar, f);
                         if (n < 0)
                             return {{tok, std::move(errors)}};
-                        std::vector<const Token*> args = getArguments(tok->previous());
+                        auto args = getArguments(tok->previous());
                         if (n >= args.size())
                             return {{tok, std::move(errors)}};
                         const Token* argTok = args[n];
@@ -1465,7 +1466,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
                 constMember = var->isConst();
         }
         // TODO: Only check const on lvalues
-        std::vector<const Token*> args = getArguments(ftok);
+        auto args = getArguments(ftok);
         if (memberFunction && args.empty())
             return false;
         return constMember && std::all_of(args.begin(), args.end(), [](const Token* tok) {
@@ -1747,7 +1748,7 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
         if (Token::Match(tok, "(|{"))
             break;
     }
-    std::vector<const Token*> args = getArguments(tok);
+    auto args = getArguments(tok);
     auto it = std::find(args.begin(), args.end(), argtok);
     if (it != args.end())
         argn = std::distance(args.begin(), it);
@@ -2279,13 +2280,13 @@ int numberOfArguments(const Token *start)
     return arguments;
 }
 
-std::vector<const Token *> getArguments(const Token *ftok)
+TokenVector getArguments(const Token *ftok)
 {
     const Token* tok = ftok;
     if (Token::Match(tok, "%name% (|{"))
         tok = ftok->next();
     if (!Token::Match(tok, "(|{|["))
-        return std::vector<const Token *> {};
+        return {};
     const Token *startTok = tok->astOperand2();
     if (!startTok && tok->next() != tok->link())
         startTok = tok->astOperand1();
@@ -2397,7 +2398,7 @@ bool isConstVarExpression(const Token *tok, const char* skipMatch)
     if (Token::Match(tok->previous(), "%name% (")) {
         if (Token::simpleMatch(tok->astOperand1(), ".") && !isConstVarExpression(tok->astOperand1(), skipMatch))
             return false;
-        std::vector<const Token *> args = getArguments(tok);
+        auto args = getArguments(tok);
         return std::all_of(args.begin(), args.end(), [&](const Token* t) {
             return isConstVarExpression(t, skipMatch);
         });
@@ -2883,7 +2884,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 while (Token::simpleMatch(ftok, ","))
                     ftok = ftok->astParent();
                 if (ftok && Token::Match(ftok->previous(), "%name% (")) {
-                    const std::vector<const Token *> args = getArguments(ftok);
+                    const auto args = getArguments(ftok);
                     int argnr = 0;
                     while (argnr < args.size() && args[argnr] != parent)
                         argnr++;
@@ -3074,7 +3075,7 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
 
         if (Token::Match(tok, "%name% (") && !Token::Match(tok, "if|while|for")) {
             // Is argument passed by reference?
-            const std::vector<const Token*> args = getArguments(tok);
+            const auto args = getArguments(tok);
             for (int argnr = 0; argnr < args.size(); ++argnr) {
                 if (!Token::Match(args[argnr], "%name%|.|::"))
                     continue;

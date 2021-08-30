@@ -3490,7 +3490,7 @@ void CheckOther::checkOverlappingWrite()
                 const Library::NonOverlappingData *nonOverlappingData = mSettings->library.getNonOverlappingData(tok);
                 if (!nonOverlappingData)
                     continue;
-                const std::vector<const Token *> args = getArguments(tok);
+                const auto args = getArguments(tok);
                 if (nonOverlappingData->ptr1Arg <= 0 || nonOverlappingData->ptr1Arg > args.size())
                     continue;
                 if (nonOverlappingData->ptr2Arg <= 0 || nonOverlappingData->ptr2Arg > args.size())

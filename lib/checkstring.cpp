@@ -362,8 +362,8 @@ void CheckString::overlappingStrcmp()
                         continue;
                     if (!Token::Match(ne0->previous(), "strcmp|wcscmp ("))
                         continue;
-                    const std::vector<const Token *> args1 = getArguments(eq0->previous());
-                    const std::vector<const Token *> args2 = getArguments(ne0->previous());
+                    const auto args1 = getArguments(eq0->previous());
+                    const auto args2 = getArguments(ne0->previous());
                     if (args1.size() != 2 || args2.size() != 2)
                         continue;
                     if (args1[1]->isLiteral() &&
@@ -402,7 +402,7 @@ void CheckString::sprintfOverlappingData()
             if (!Token::Match(tok, "sprintf|snprintf|swprintf ("))
                 continue;
 
-            const std::vector<const Token *> args = getArguments(tok);
+            const auto args = getArguments(tok);
 
             const int formatString = Token::simpleMatch(tok, "sprintf") ? 1 : 2;
             for (unsigned int argnr = formatString + 1; argnr < args.size(); ++argnr) {

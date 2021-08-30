@@ -1010,7 +1010,7 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
         if (!CheckMemoryLeakInFunction::test_white_list(functionName, mSettings, mTokenizer->isCPP()))
             continue;
 
-        const std::vector<const Token *> args = getArguments(tok);
+        const auto args = getArguments(tok);
         for (const Token* arg : args) {
             if (arg->isOp())
                 continue;

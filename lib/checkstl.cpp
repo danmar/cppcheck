@@ -718,7 +718,7 @@ void CheckStl::mismatchingContainers()
                 continue;
             const Token * const ftok = tok;
 
-            const std::vector<const Token *> args = getArguments(ftok);
+            const auto args = getArguments(ftok);
             if (args.size() < 2)
                 continue;
 
@@ -772,7 +772,7 @@ void CheckStl::mismatchingContainerIterator()
             if (!Token::Match(tok, "%var% . %name% ( !!)"))
                 continue;
             const Token * const ftok = tok->tokAt(2);
-            const std::vector<const Token *> args = getArguments(ftok);
+            const auto args = getArguments(ftok);
 
             const Library::Container * c = tok->valueType()->container;
             Library::Container::Action action = c->getAction(tok->strAt(2));
@@ -894,7 +894,7 @@ struct InvalidContainerAnalyzer {
                         return false;
                     return true;
                 });
-                std::vector<const Token*> args = getArguments(tok);
+                auto args = getArguments(tok);
                 for (Info::Reference& r : result) {
                     r.errorPath.push_front(epi);
                     const Variable* var = r.tok->variable();
@@ -2682,7 +2682,7 @@ void CheckStl::knownEmptyContainer()
                     continue;
                 knownEmptyContainerError(contTok, "");
             } else {
-                const std::vector<const Token *> args = getArguments(tok);
+                const auto args = getArguments(tok);
                 if (args.empty())
                     continue;
 

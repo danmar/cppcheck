@@ -102,7 +102,7 @@ void CheckFunctions::invalidFunctionUsage()
             if (!Token::Match(tok, "%name% ( !!)"))
                 continue;
             const Token * const functionToken = tok;
-            const std::vector<const Token *> arguments = getArguments(tok);
+            const auto arguments = getArguments(tok);
             for (int argnr = 1; argnr <= arguments.size(); ++argnr) {
                 const Token * const argtok = arguments[argnr-1];
 
@@ -465,7 +465,7 @@ void CheckFunctions::memsetZeroBytes()
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "memset|wmemset (") && (numberOfArguments(tok)==3)) {
-                const std::vector<const Token *> &arguments = getArguments(tok);
+                const auto &arguments = getArguments(tok);
                 if (WRONG_DATA(arguments.size() != 3U, tok))
                     continue;
                 const Token* lastParamTok = arguments[2];
@@ -506,7 +506,7 @@ void CheckFunctions::memsetInvalid2ndParam()
             if (!Token::simpleMatch(tok, "memset ("))
                 continue;
 
-            const std::vector<const Token *> args = getArguments(tok);
+            const auto args = getArguments(tok);
             if (args.size() != 3)
                 continue;
 

@@ -100,7 +100,7 @@ static void bufferOverflow(const Token *tok, const ExprEngine::Value &value, Exp
     if (!functionCallArguments)
         return;
 
-    const std::vector<const Token *> arguments = getArguments(tok);
+    const auto arguments = getArguments(tok);
     if (functionCallArguments->argValues.size() != arguments.size())
         // TODO investigate what to do
         return;

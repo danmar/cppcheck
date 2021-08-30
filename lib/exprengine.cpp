@@ -2046,7 +2046,7 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
         }
     }
 
-    const std::vector<const Token *> &argTokens = getArguments(tok);
+    const auto &argTokens = getArguments(tok);
     std::vector<ExprEngine::ValuePtr> argValues;
     for (const Token *argtok : argTokens) {
         auto val = hasBody ? executeExpression1(argtok, data) : executeExpression(argtok, data);

@@ -57,7 +57,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
     if (Token::Match(&tok, "%name% ( )") || !tok.tokAt(2))
         return;
 
-    const std::vector<const Token *> args = getArguments(&tok);
+    const auto args = getArguments(&tok);
 
     if (library || tok.function() != nullptr) {
         for (int argnr = 1; argnr <= args.size(); ++argnr) {
@@ -368,7 +368,7 @@ void CheckNullPointer::nullConstantDereference()
                 nullPointerError(tok);
 
             else if (Token::Match(tok->previous(), "::|. %name% (")) {
-                const std::vector<const Token *> &args = getArguments(tok);
+                const auto &args = getArguments(tok);
                 for (int argnr = 0; argnr < args.size(); ++argnr) {
                     const Token *argtok = args[argnr];
                     if (!argtok->hasKnownIntValue())

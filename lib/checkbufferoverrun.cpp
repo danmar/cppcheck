@@ -69,7 +69,7 @@ static const ValueFlow::Value *getBufferSizeValue(const Token *tok)
     return it == tokenValues.end() ? nullptr : &*it;
 }
 
-static int getMinFormatStringOutputLength(const std::vector<const Token*> &parameters, nonneg int formatStringArgNr)
+static int getMinFormatStringOutputLength(const TokenVector &parameters, nonneg int formatStringArgNr)
 {
     if (formatStringArgNr <= 0 || formatStringArgNr > parameters.size())
         return 0;
@@ -558,7 +558,7 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
 }
 //---------------------------------------------------------------------------
 
-static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::MinSize &minsize, const std::vector<const Token *> &args, const MathLib::bigint bufferSize, const Settings *settings)
+static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::MinSize &minsize, const TokenVector &args, const MathLib::bigint bufferSize, const Settings *settings)
 {
     const Token * const arg = (minsize.arg > 0 && minsize.arg - 1 < args.size()) ? args[minsize.arg - 1] : nullptr;
     const Token * const arg2 = (minsize.arg2 > 0 && minsize.arg2 - 1 < args.size()) ? args[minsize.arg2 - 1] : nullptr;
@@ -602,7 +602,7 @@ void CheckBufferOverrun::bufferOverflow()
                 continue;
             if (!mSettings->library.hasminsize(tok))
                 continue;
-            const std::vector<const Token *> args = getArguments(tok);
+            const auto args = getArguments(tok);
             for (int argnr = 0; argnr < args.size(); ++argnr) {
                 if (!args[argnr]->valueType() || args[argnr]->valueType()->pointer == 0)
                     continue;
@@ -720,7 +720,7 @@ void CheckBufferOverrun::stringNotZeroTerminated()
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "strncpy ("))
                 continue;
-            const std::vector<const Token *> args = getArguments(tok);
+            const auto args = getArguments(tok);
             if (args.size() != 3)
                 continue;
             const Token *sizeToken = args[2];
@@ -778,7 +778,7 @@ void CheckBufferOverrun::argumentSize()
 
             // If argument is '%type% a[num]' then check bounds against num
             const Function *callfunc = tok->function();
-            const std::vector<const Token *> callargs = getArguments(tok);
+            const auto callargs = getArguments(tok);
             for (nonneg int paramIndex = 0; paramIndex < callargs.size() && paramIndex < callfunc->argCount(); ++paramIndex) {
                 const Variable* const argument = callfunc->getArgumentVar(paramIndex);
                 if (!argument || !argument->nameToken() || !argument->isArray())

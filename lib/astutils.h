@@ -26,6 +26,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <boost/container/small_vector.hpp>
 
 #include "errortypes.h"
 #include "utils.h"
@@ -35,6 +36,8 @@ class Library;
 class Settings;
 class Token;
 class Variable;
+
+using TokenVector = boost::container::small_vector<const Token*, 32>;
 
 enum class ChildrenToVisit {
     none,
@@ -57,7 +60,7 @@ const Token* findExpression(const nonneg int exprid,
                             const std::function<bool(const Token*)>& pred);
 const Token* findExpression(const Token* start, const nonneg int exprid);
 
-std::vector<const Token*> astFlatten(const Token* tok, const char* op);
+TokenVector astFlatten(const Token* tok, const char* op);
 
 bool astHasToken(const Token* root, const Token * tok);
 
@@ -264,7 +267,7 @@ int numberOfArguments(const Token *start);
 /**
  * Get arguments (AST)
  */
-std::vector<const Token *> getArguments(const Token *ftok);
+TokenVector getArguments(const Token *ftok);
 
 int getArgumentPos(const Variable* var, const Function* f);
 
