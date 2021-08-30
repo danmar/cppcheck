@@ -3451,7 +3451,7 @@ class MisraChecker:
 
     def misra_21_8(self, data):
         for token in data.tokenlist:
-            if isFunctionCall(token) and (token.astOperand1.str in ('abort', 'exit', 'getenv', 'system')):
+            if isFunctionCall(token) and (token.astOperand1.str in ('abort', 'exit', 'getenv')):
                 self.reportError(token, 21, 8)
 
     def misra_21_9(self, data):
