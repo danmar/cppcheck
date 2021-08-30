@@ -674,7 +674,7 @@ struct ForwardTraversal {
 
                 while (Token::simpleMatch(endBlock, "} catch (")) {
                     Token* endCatch = endBlock->linkAt(2);
-                    if (!Token::Match(endCatch, ") {"))
+                    if (!Token::simpleMatch(endCatch, ") {"))
                         return Break();
                     endBlock = endCatch->linkAt(1);
                     ForwardTraversal ft = fork();
