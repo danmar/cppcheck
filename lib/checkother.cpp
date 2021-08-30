@@ -3611,13 +3611,7 @@ bool CheckOther::IsSameName(std::string name1, std::string name2)
 
     if (mSettings->severity.isEnabled(Severity::warning) && name1.length() > 2 && name2.length() > 2)
     {
-        if (name1.find(name2) != std::string::npos ||
-            name2.find(name1) != std::string::npos)
-            return true;
-        if (mSettings->certainty.isEnabled(Certainty::inconclusive))
-        {
-            return std::max(percent_of_varname_match_back(name1, name2), percent_of_varname_match_front(name1, name2)) > 50;
-        }
+        return std::max(percent_of_varname_match_back(name1, name2), percent_of_varname_match_front(name1, name2)) > 50;
     }
 
     return false;
@@ -3676,7 +3670,7 @@ void CheckOther::checkMismatchingNames()
             if (!error_found && Token::Match(tok, "%var% = %var% ;")) {
                 const Variable* svar2 = tok->tokAt(2)->variable();
                 const Variable* svar = tok->variable();
-                if (svar && !svar->isArgument() && svar2 && svar != svar2)
+                if (svar && svar->isLocal() && !svar->isArgument() && svar2 && svar != svar2)
                 {
                     if (!IsSameName(svar->name(), svar2->name()))
                     {
