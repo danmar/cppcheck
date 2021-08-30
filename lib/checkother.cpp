@@ -3554,3 +3554,141 @@ void CheckOther::overlappingWriteFunction(const Token *tok)
     const std::string funcname = tok ? tok->str() : "";
     reportError(tok, Severity::error, "overlappingWriteFunction", "Overlapping read/write in " + funcname + "() is undefined behavior");
 }
+
+float percent_of_varname_match_back(std::string varname1, std::string varname2)
+{
+    float maxlen = std::max(varname1.length(), varname2.length());
+    float matchlen = 0;
+    while (varname1.length() && varname2.length())
+    {
+        if (varname1.back() == varname2.back())
+        {
+            matchlen++;
+            varname1.pop_back();
+            varname2.pop_back();
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return (matchlen / maxlen * 100.f);
+}
+
+float percent_of_varname_match_front(std::string varname1, std::string varname2)
+{
+    float maxlen = std::max(varname1.length(), varname2.length());
+    float matchlen = 0;
+    while (varname1.length() && varname2.length())
+    {
+        if (varname1.front() == varname2.front())
+        {
+            matchlen++;
+            varname1.erase(varname1.begin());
+            varname2.erase(varname2.begin());
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return (matchlen / maxlen * 100.f);
+}
+
+bool CheckOther::IsSameName(std::string name1, std::string name2)
+{
+    if (name1 == name2)
+        return true;
+
+    std::transform(name1.begin(), name1.end(), name1.begin(),
+        [](unsigned char c) { return std::tolower(c); });
+    std::transform(name2.begin(), name2.end(), name2.begin(),
+        [](unsigned char c) { return std::tolower(c); });
+    if (name1 == name2)
+        return true;
+
+    if (mSettings->severity.isEnabled(Severity::warning) && name1.length() > 2 && name2.length() > 2)
+    {
+        if (name1.find(name2) != std::string::npos ||
+            name2.find(name1) != std::string::npos)
+            return true;
+        if (mSettings->certainty.isEnabled(Certainty::inconclusive))
+        {
+            return std::max(percent_of_varname_match_back(name1, name2), percent_of_varname_match_front(name1, name2)) > 50;
+        }
+    }
+
+    return false;
+}
+
+void CheckOther::checkMismatchingNames()
+{
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
+
+    for (const Scope* scope : symbolDatabase->functionScopes) {
+        const Function* function = scope->function;
+        struct ArgListInfo
+        {
+            std::string varname;
+            const Token* tok;
+        };
+        std::vector< ArgListInfo> tmpArgListInfo;
+        ArgListInfo tmpArgInfo = ArgListInfo();
+
+        for (const Variable var : function->argumentList)
+        {
+            tmpArgInfo = ArgListInfo();
+            tmpArgInfo.varname = var.name();
+            tmpArgInfo.tok = var.nameToken();
+            tmpArgListInfo.push_back(tmpArgInfo);
+        }
+        const Token* tok = function->arg->link()->next();
+
+        for (; tok && tok != function->functionScope->bodyEnd; tok = tok->next())
+        {
+            if (Token::simpleMatch(tok, "this ."))
+            {
+                const Variable * svar = tok->tokAt(4)->variable();
+                if (svar)
+                {
+                    std::string fieldname = tok->tokAt(2)->str().c_str();
+                    if (!IsSameName(svar->name(), fieldname))
+                    {
+                        for (auto const& targ : tmpArgListInfo)
+                        {
+                            if (IsSameName(targ.varname, fieldname))
+                            {
+                                std::string foundusedname = targ.varname;
+                                std::string msg = "this->" + fieldname + "=" + svar->name() + " has more appropriate arg name: " + targ.varname;
+                                reportError(targ.tok, Severity::error, "mismatchingNames", msg);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (Token::Match(tok, "%var% = %var%")) {
+                const Variable* svar2 = tok->tokAt(2)->variable();
+                const Variable* svar = tok->variable();
+                if (svar)
+                {
+                    if (!IsSameName(svar->name(), svar2->name()))
+                    {
+                        for (auto const& targ : tmpArgListInfo)
+                        {
+                            if (svar2->name() != targ.varname && IsSameName(targ.varname, svar->name()))
+                            {
+                                std::string foundusedname = targ.varname;
+                                std::string msg = svar->name() + "=" + svar2->name() + " has more appropriate arg name: " + targ.varname;
+                                reportError(targ.tok, Severity::error, "mismatchingNames", msg);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
