@@ -3253,7 +3253,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         return;
     }
     Token *parent = tok->astParent();
-    while (parent && (parent->isArithmeticalOp() || parent->str() == ","))
+    while (parent && parent->str() == ",")
         parent = parent->astParent();
     if (!parent)
         return;
