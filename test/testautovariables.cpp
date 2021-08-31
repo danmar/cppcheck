@@ -2686,6 +2686,17 @@ private:
               "  return (entry == lookup.end()) ? \"\" : entry->value;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9811
+        check("struct Base {\n"
+              "    virtual auto get() -> int & = 0;\n"
+              "};\n"
+              "struct A : public Base {\n"
+              "    int z = 42;\n"
+              "    auto get() -> int & override { return z; }\n"
+              "    auto getMore() -> int & { return get(); }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {
