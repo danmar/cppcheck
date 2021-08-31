@@ -3609,7 +3609,7 @@ bool CheckOther::IsSameName(std::string name1, std::string name2)
     if (name1 == name2)
         return true;
 
-    if (mSettings->severity.isEnabled(Severity::warning) && name1.length() > 2 && name2.length() > 2)
+    if (mSettings->certainty.isEnabled(Certainty::inconclusive) && name1.length() > 2 && name2.length() > 2)
     {
         return std::max(percent_of_varname_match_back(name1, name2), percent_of_varname_match_front(name1, name2)) > 50;
     }
@@ -3667,21 +3667,33 @@ void CheckOther::checkMismatchingNames()
                     }
                 }
             }
-            if (!error_found && Token::Match(tok, "%var% = %var% ;")) {
-                const Variable* svar2 = tok->tokAt(2)->variable();
-                const Variable* svar = tok->variable();
-                if (svar && svar->isLocal() && !svar->isArgument() && svar2 && svar != svar2)
+
+         
+            if (!error_found) {
+                bool found_match1 = Token::Match(tok, "%var% = %var% ;");
+                bool found_match2 = Token::Match(tok, "%var% . %var% = %var% ;");
+                if (found_match2)
                 {
-                    if (!IsSameName(svar->name(), svar2->name()))
+                    tok = tok->tokAt(2);
+                    found_match1 = true;
+                }
+                if (found_match1)
+                {
+                    const Variable* svar2 = tok->tokAt(2)->variable();
+                    const Variable* svar = tok->variable();
+                    if (svar && !svar->isArgument() && svar2 && svar != svar2)
                     {
-                        for (auto const& targ : tmpArgListInfo)
+                        if (!IsSameName(svar->name(), svar2->name()))
                         {
-                            if (svar2->name() != targ.varname && IsSameName(targ.varname, svar->name()))
+                            for (auto const& targ : tmpArgListInfo)
                             {
-                                std::string foundusedname = targ.varname;
-                                std::string msg = svar->name() + "=" + svar2->name() + " has more appropriate arg name: " + targ.varname;
-                                reportError(targ.tok, Severity::error, "mismatchingNames", msg);
-                                break;
+                                if (svar2->name() != targ.varname && IsSameName(targ.varname, svar->name()))
+                                {
+                                    std::string foundusedname = targ.varname;
+                                    std::string msg = svar->name() + "=" + svar2->name() + " has more appropriate arg name: " + targ.varname;
+                                    reportError(targ.tok, Severity::error, "mismatchingNames", msg);
+                                    break;
+                                }
                             }
                         }
                     }
