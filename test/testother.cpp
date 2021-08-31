@@ -9553,7 +9553,7 @@ private:
             "		this->xax = 0.0F;\n"
             "	}\n"
             "};\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) this->xin=xax has more appropriate arg name: xin\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) this->xin and xax name mismatch. Did you mean: xin\n", errout.str());
     }
 
     void foundMismatchingNames2() {
@@ -9565,7 +9565,7 @@ private:
             "	foo4(tmpMinMax);\n"
             "}\n");
         printf("%s", errout.str().c_str());
-        ASSERT_EQUALS("[test.cpp:1]: (error) max=fmin has more appropriate arg name: fmax\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) max and fmin name mismatch. Did you mean: fmax\n", errout.str());
     }
 
    

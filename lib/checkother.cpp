@@ -3658,7 +3658,7 @@ void CheckOther::checkMismatchingNames()
                             if (IsSameName(targ.varname, fieldname))
                             {
                                 std::string foundusedname = targ.varname;
-                                std::string msg = "this->" + fieldname + "=" + svar->name() + " has more appropriate arg name: " + targ.varname;
+                                std::string msg = "this->" + fieldname + " and " + svar->name() + " name mismatch. Did you mean: " + targ.varname;
                                 reportError(targ.tok, Severity::error, "mismatchingNames", msg);
                                 error_found = true;
                                 break;
@@ -3689,7 +3689,7 @@ void CheckOther::checkMismatchingNames()
                                 if (svar2->name() != targ.varname && IsSameName(targ.varname, svar->name()))
                                 {
                                     std::string foundusedname = targ.varname;
-                                    std::string msg = svar->name() + "=" + svar2->name() + " has more appropriate arg name: " + targ.varname;
+                                    std::string msg = svar->name() + " and " + svar2->name() + " name mismatch. Did you mean: " + targ.varname;
                                     reportError(targ.tok, Severity::error, "mismatchingNames", msg);
                                     break;
                                 }
