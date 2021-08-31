@@ -2421,6 +2421,17 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    int i;\n"
+              "    {\n"
+              "        std::vector<int> vec;\n"
+              "        const auto iter = vec.begin();\n"
+              "        i = (int)(iter - vec.begin());\n"
+              "    }\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetime() {
