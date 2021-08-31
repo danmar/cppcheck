@@ -3670,14 +3670,13 @@ void CheckOther::checkMismatchingNames()
 
          
             if (!error_found) {
-                bool found_match1 = Token::Match(tok, "%var% = %var% ;");
-                bool found_match2 = Token::Match(tok, "%var% . %var% = %var% ;");
-                if (found_match2)
+                bool matched = Token::Match(tok, "%var% = %var% ;");
+                if (!matched && Token::Match(tok, "%var% . %var% = %var% ;"))
                 {
                     tok = tok->tokAt(2);
-                    found_match1 = true;
+                    matched = true;
                 }
-                if (found_match1)
+                if (matched)
                 {
                     const Variable* svar2 = tok->tokAt(2)->variable();
                     const Variable* svar = tok->variable();
