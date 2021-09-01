@@ -70,6 +70,7 @@ private:
         TEST_CASE(iterator25); // #9742
         TEST_CASE(iterator26); // #9176
         TEST_CASE(iterator27); // #10378
+        TEST_CASE(iterator28); // #10450
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
         TEST_CASE(mismatchingContainerIterator);
@@ -1484,6 +1485,27 @@ private:
               "    const int b( it == m.cend() ? 0 : it->second.b );\n"
               "    return a + b;\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator28() {
+        // #10450
+        check("struct S {\n"
+            "    struct Private {\n"
+            "        std::list<int> l;\n"
+            "    };\n"
+            "    std::unique_ptr<Private> p;\n"
+            "    int foo();\n"
+            "};\n"
+            "int S::foo() {\n"
+            "    for(auto iter = p->l.begin(); iter != p->l.end(); ++iter) {\n"
+            "        if(*iter == 1) {\n"
+            "            p->l.erase(iter);\n"
+            "            return 1;\n"
+            "        }\n"
+            "    }\n"
+            "    return 0;\n"
+            "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
