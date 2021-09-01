@@ -3671,7 +3671,7 @@ void CheckOther::checkMismatchingNames()
                                 }
                                 if (!error_found)
                                 {
-                                    if (mSettings->severity.isEnabled(Severity::warning))
+                                    if (mSettings->severity.isEnabled(Severity::warning) && !mSettings->certainty.isEnabled(Certainty::inconclusive)))
                                     {
                                         mismatchingNamesWriteError(targ.tok, "this->" + fieldname, svar->name(), targ.varname);
                                         error_found = true;
@@ -3718,7 +3718,7 @@ void CheckOther::checkMismatchingNames()
                                     }
                                     if (!error_found)
                                     {
-                                        if (mSettings->severity.isEnabled(Severity::warning))
+                                        if (mSettings->severity.isEnabled(Severity::warning) && !mSettings->certainty.isEnabled(Certainty::inconclusive)))
                                         {
                                             mismatchingNamesWriteError(targ.tok, svar->name(), svar2->name(), targ.varname);
                                             error_found = true;
