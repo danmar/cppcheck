@@ -764,7 +764,11 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
     errors->push_back(item);
 }
 
-std::vector<ReferenceToken> followAllReferences(const Token* tok, bool temporary, bool inconclusive, ErrorPath errors, int depth)
+std::vector<ReferenceToken> followAllReferences(const Token* tok,
+                                                bool temporary,
+                                                bool inconclusive,
+                                                ErrorPath errors,
+                                                int depth)
 {
     struct ReferenceTokenLess {
         bool operator()(const ReferenceToken& x, const ReferenceToken& y) const {
@@ -788,7 +792,8 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok, bool temporary
             } else if (Token::simpleMatch(var->declEndToken(), "=")) {
                 errors.emplace_back(var->declEndToken(), "Assigned to reference.");
                 const Token *vartok = var->declEndToken()->astOperand2();
-                if (vartok == tok || (!temporary && isTemporary(true, vartok, nullptr, true) && (var->isConst() || var->isRValueReference())))
+                if (vartok == tok || (!temporary && isTemporary(true, vartok, nullptr, true) &&
+                                      (var->isConst() || var->isRValueReference())))
                     return {{tok, std::move(errors)}};
                 if (vartok)
                     return followAllReferences(vartok, temporary, inconclusive, std::move(errors), depth - 1);
@@ -822,7 +827,8 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok, bool temporary
             for (const Token* returnTok : returns) {
                 if (returnTok == tok)
                     continue;
-                for (const ReferenceToken& rt:followAllReferences(returnTok, temporary, inconclusive, errors, depth - returns.size())) {
+                for (const ReferenceToken& rt :
+                     followAllReferences(returnTok, temporary, inconclusive, errors, depth - returns.size())) {
                     const Variable* argvar = rt.token->variable();
                     if (!argvar)
                         return {{tok, std::move(errors)}};
@@ -837,7 +843,8 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok, bool temporary
                         ErrorPath er = errors;
                         er.emplace_back(returnTok, "Return reference.");
                         er.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
-                        std::vector<ReferenceToken> refs = followAllReferences(argTok, temporary, inconclusive, std::move(er), depth - returns.size());
+                        std::vector<ReferenceToken> refs =
+                            followAllReferences(argTok, temporary, inconclusive, std::move(er), depth - returns.size());
                         result.insert(refs.begin(), refs.end());
                         if (!inconclusive && result.size() > 1)
                             return {{tok, std::move(errors)}};

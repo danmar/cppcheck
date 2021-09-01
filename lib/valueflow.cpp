@@ -3913,19 +3913,18 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 ls = LifetimeStore{tok, "Iterator to container is created here.", ValueFlow::Value::LifetimeKind::Iterator};
                 master.errorPath.emplace_back(parent->tokAt(2), "Iterator to container is created here.");
                 master.lifetimeKind = ValueFlow::Value::LifetimeKind::Iterator;
-            }
-            else if ((astIsPointer(parent->tokAt(2)) && !isContainerOfPointers) || Token::Match(parent->next(), "data|c_str")) {
+            } else if ((astIsPointer(parent->tokAt(2)) && !isContainerOfPointers) ||
+                       Token::Match(parent->next(), "data|c_str")) {
                 master.errorPath.emplace_back(parent->tokAt(2), "Pointer to container is created here.");
                 master.lifetimeKind = ValueFlow::Value::LifetimeKind::Object;
                 ls = LifetimeStore{tok, "Pointer to container is created here.", ValueFlow::Value::LifetimeKind::Object};
-            }
-            else {
+            } else {
                 continue;
             }
 
             std::vector<const Token*> toks = {};
             if (tok->isUnaryOp("*") || parent->originalName() == "->") {
-                for(const ValueFlow::Value& v:tok->values()) {
+                for (const ValueFlow::Value& v : tok->values()) {
                     if (!v.isSymbolicValue())
                         continue;
                     if (v.isKnown())
@@ -3940,15 +3939,16 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 toks = {tok};
             }
 
-            for(const Token* tok2:toks) {
-                for(const ReferenceToken& rt:followAllReferences(tok2, false)) {
+            for (const Token* tok2 : toks) {
+                for (const ReferenceToken& rt : followAllReferences(tok2, false)) {
                     ValueFlow::Value value = master;
                     value.tokvalue = rt.token;
                     value.errorPath.insert(value.errorPath.begin(), rt.errors.begin(), rt.errors.end());
                     setTokenValue(parent->tokAt(2), value, tokenlist->getSettings());
 
                     if (!rt.token->variable()) {
-                        LifetimeStore ls = LifetimeStore{rt.token, master.errorPath.back().second, ValueFlow::Value::LifetimeKind::Object};
+                        LifetimeStore ls = LifetimeStore{
+                            rt.token, master.errorPath.back().second, ValueFlow::Value::LifetimeKind::Object};
                         ls.byRef(parent->tokAt(2), tokenlist, errorLogger, settings);
                     }
                 }
