@@ -3735,7 +3735,7 @@ void CheckOther::checkMismatchingNames()
     }
 }
 
-void CheckOther::mismatchingNamesWriteError(const Token* tok, std::string var, std::string arg, std::string newname)
+void CheckOther::mismatchingNamesWriteError(const Token* tok, const std::string var, const std::string arg, const std::string newname)
 {
     reportError(tok, mSettings->severity.isEnabled(Severity::error) ? Severity::error : Severity::warning, "mismatchingNamesWriteError", var + " and " + arg + " name mismatch. Did you mean: " + newname);
 }
