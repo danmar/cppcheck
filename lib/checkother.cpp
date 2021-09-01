@@ -3663,7 +3663,7 @@ void CheckOther::checkMismatchingNames()
                                     {
                                         if (svar->name() == targ2.varname)
                                         {
-                                            mismatchingNamesWriteError(targ.tok, "this->"+fieldname, svar->name(), targ.varname);
+                                            mismatchingNamesWriteError(targ.tok, mSettings->certainty.isEnabled(Certainty::inconclusive) ? Severity::style : Severity::warning, "this->"+fieldname, svar->name(), targ.varname);
                                             error_found = true;
                                             break;
                                         }
@@ -3673,7 +3673,7 @@ void CheckOther::checkMismatchingNames()
                                 {
                                     if (mSettings->severity.isEnabled(Severity::warning) && !mSettings->certainty.isEnabled(Certainty::inconclusive))
                                     {
-                                        mismatchingNamesWriteError(targ.tok, "this->" + fieldname, svar->name(), targ.varname);
+                                        mismatchingNamesWriteError(targ.tok, Severity::style, "this->" + fieldname, svar->name(), targ.varname);
                                         error_found = true;
                                     }
                                 }
@@ -3710,7 +3710,7 @@ void CheckOther::checkMismatchingNames()
                                         {
                                             if (svar2->name() == targ2.varname)
                                             {
-                                                mismatchingNamesWriteError(targ.tok, svar->name(), svar2->name(), targ.varname);
+                                                mismatchingNamesWriteError(targ.tok, mSettings->certainty.isEnabled(Certainty::inconclusive) ? Severity::style : Severity::warning, svar->name(), svar2->name(), targ.varname);
                                                 error_found = true;
                                                 break;
                                             }
@@ -3720,7 +3720,7 @@ void CheckOther::checkMismatchingNames()
                                     {
                                         if (mSettings->severity.isEnabled(Severity::warning) && !mSettings->certainty.isEnabled(Certainty::inconclusive))
                                         {
-                                            mismatchingNamesWriteError(targ.tok, svar->name(), svar2->name(), targ.varname);
+                                            mismatchingNamesWriteError(targ.tok, Severity::style, svar->name(), svar2->name(), targ.varname);
                                             error_found = true;
                                         }
                                     }
@@ -3735,7 +3735,7 @@ void CheckOther::checkMismatchingNames()
     }
 }
 
-void CheckOther::mismatchingNamesWriteError(const Token* tok, const std::string var, const std::string arg, const std::string newname)
+void CheckOther::mismatchingNamesWriteError(const Token* tok, Severity::SeverityType warntype, const std::string& var, const std::string& arg, const std::string& newname)
 {
-    reportError(tok, mSettings->severity.isEnabled(Severity::error) ? Severity::error : Severity::warning, "mismatchingNamesWriteError", var + " and " + arg + " name mismatch. Did you mean: " + newname);
+    reportError(tok, warntype, "mismatchingNamesWriteError", var + " and " + arg + " name mismatch. Did you mean: " + newname);
 }
