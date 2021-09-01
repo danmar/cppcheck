@@ -101,6 +101,49 @@ const Token* findExpression(const nonneg int exprid,
     return nullptr;
 }
 
+static int findArgumentPosRecursive(const Token* tok, const Token* tokToFind,  bool &found, nonneg int depth=0)
+{
+    ++depth;
+    if (!tok || depth >= 100)
+        return -1;
+    if (tok->str() == ",") {
+        int res = findArgumentPosRecursive(tok->astOperand1(), tokToFind, found, depth);
+        if (res == -1)
+            return -1;
+        if (found)
+            return res;
+        int argn = res;
+        res = findArgumentPosRecursive(tok->astOperand2(), tokToFind, found, depth);
+        if (res == -1)
+            return -1;
+        return argn + res;
+    } else {
+        if (tokToFind == tok)
+            found = true;
+        return 1;
+    }
+}
+
+static int findArgumentPos(const Token* tok, const Token* tokToFind){
+    bool found = false;
+    int argn = findArgumentPosRecursive(tok, tokToFind, found, 0);
+    if (found)
+        return argn - 1;
+    return -1;
+}
+
+static int getArgumentPos(const Token* ftok, const Token* tokToFind){
+    const Token* tok = ftok;
+    if (Token::Match(tok, "%name% (|{"))
+        tok = ftok->next();
+    if (!Token::Match(tok, "(|{|["))
+        return -1;
+    const Token* startTok = tok->astOperand2();
+    if (!startTok && tok->next() != tok->link())
+        startTok = tok->astOperand1();
+    return findArgumentPos(startTok, tokToFind);
+}
+
 static void astFlattenRecursive(const Token *tok, std::vector<const Token *> *result, const char* op, nonneg int depth = 0)
 {
     ++depth;
@@ -1747,10 +1790,7 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
         if (Token::Match(tok, "(|{"))
             break;
     }
-    std::vector<const Token*> args = getArguments(tok);
-    auto it = std::find(args.begin(), args.end(), argtok);
-    if (it != args.end())
-        argn = std::distance(args.begin(), it);
+    argn = getArgumentPos(tok, argtok);
     if (argn == -1)
         return nullptr;
     if (!Token::Match(tok, "{|("))
