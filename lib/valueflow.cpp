@@ -3944,7 +3944,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 for(const ReferenceToken& rt:followAllReferences(tok2, false)) {
                     ValueFlow::Value value = master;
                     value.tokvalue = rt.token;
-                    value.errorPath.insert(value.errorPath.end(), rt.errors.begin(), rt.errors.end());
+                    value.errorPath.insert(value.errorPath.begin(), rt.errors.begin(), rt.errors.end());
                     setTokenValue(parent->tokAt(2), value, tokenlist->getSettings());
 
                     if (!rt.token->variable()) {
