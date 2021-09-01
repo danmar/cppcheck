@@ -1488,24 +1488,25 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void iterator28() {
+    void iterator28()
+    {
         // #10450
         check("struct S {\n"
-            "    struct Private {\n"
-            "        std::list<int> l;\n"
-            "    };\n"
-            "    std::unique_ptr<Private> p;\n"
-            "    int foo();\n"
-            "};\n"
-            "int S::foo() {\n"
-            "    for(auto iter = p->l.begin(); iter != p->l.end(); ++iter) {\n"
-            "        if(*iter == 1) {\n"
-            "            p->l.erase(iter);\n"
-            "            return 1;\n"
-            "        }\n"
-            "    }\n"
-            "    return 0;\n"
-            "}\n");
+              "    struct Private {\n"
+              "        std::list<int> l;\n"
+              "    };\n"
+              "    std::unique_ptr<Private> p;\n"
+              "    int foo();\n"
+              "};\n"
+              "int S::foo() {\n"
+              "    for(auto iter = p->l.begin(); iter != p->l.end(); ++iter) {\n"
+              "        if(*iter == 1) {\n"
+              "            p->l.erase(iter);\n"
+              "            return 1;\n"
+              "        }\n"
+              "    }\n"
+              "    return 0;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
