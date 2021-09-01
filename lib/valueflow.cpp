@@ -3904,21 +3904,56 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 isContainerOfPointers = vt.pointer > 0;
             }
 
+            ValueFlow::Value master;
+            master.valueType = ValueFlow::Value::ValueType::LIFETIME;
+            master.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
+
             LifetimeStore ls;
-
-            if (astIsIterator(parent->tokAt(2)))
+            if (astIsIterator(parent->tokAt(2))) {
                 ls = LifetimeStore{tok, "Iterator to container is created here.", ValueFlow::Value::LifetimeKind::Iterator};
-            else if ((astIsPointer(parent->tokAt(2)) && !isContainerOfPointers) || Token::Match(parent->next(), "data|c_str"))
+                master.errorPath.emplace_back(parent->tokAt(2), "Iterator to container is created here.");
+                master.lifetimeKind = ValueFlow::Value::LifetimeKind::Iterator;
+            }
+            else if ((astIsPointer(parent->tokAt(2)) && !isContainerOfPointers) || Token::Match(parent->next(), "data|c_str")) {
+                master.errorPath.emplace_back(parent->tokAt(2), "Pointer to container is created here.");
+                master.lifetimeKind = ValueFlow::Value::LifetimeKind::Object;
                 ls = LifetimeStore{tok, "Pointer to container is created here.", ValueFlow::Value::LifetimeKind::Object};
-            else
+            }
+            else {
                 continue;
+            }
 
-            // Dereferencing
-            if (tok->isUnaryOp("*") || parent->originalName() == "->")
-                ls.byDerefCopy(parent->tokAt(2), tokenlist, errorLogger, settings);
-            else
-                ls.byRef(parent->tokAt(2), tokenlist, errorLogger, settings);
+            std::vector<const Token*> toks = {};
+            if (tok->isUnaryOp("*") || parent->originalName() == "->") {
+                for(const ValueFlow::Value& v:tok->values()) {
+                    if (!v.isSymbolicValue())
+                        continue;
+                    if (v.isKnown())
+                        continue;
+                    if (v.intvalue != 0)
+                        continue;
+                    if (!v.tokvalue)
+                        continue;
+                    toks.push_back(v.tokvalue);
+                }
+            } else {
+                toks = {tok};
+            }
 
+            for(const Token* tok2:toks) {
+                for(const ReferenceToken& rt:followAllReferences(tok2, false)) {
+                    ValueFlow::Value value = master;
+                    value.tokvalue = rt.token;
+                    value.errorPath.insert(value.errorPath.end(), rt.errors.begin(), rt.errors.end());
+                    setTokenValue(parent->tokAt(2), value, tokenlist->getSettings());
+
+                    if (!rt.token->variable()) {
+                        LifetimeStore ls = LifetimeStore{rt.token, master.errorPath.back().second, ValueFlow::Value::LifetimeKind::Object};
+                        ls.byRef(parent->tokAt(2), tokenlist, errorLogger, settings);
+                    }
+                }
+            }
+            valueFlowForwardLifetime(parent->tokAt(2), tokenlist, errorLogger, settings);
         }
         // Check constructors
         else if (Token::Match(tok, "=|return|%type%|%var% {")) {
