@@ -3908,16 +3908,13 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             master.valueType = ValueFlow::Value::ValueType::LIFETIME;
             master.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
 
-            LifetimeStore ls;
             if (astIsIterator(parent->tokAt(2))) {
-                ls = LifetimeStore{tok, "Iterator to container is created here.", ValueFlow::Value::LifetimeKind::Iterator};
                 master.errorPath.emplace_back(parent->tokAt(2), "Iterator to container is created here.");
                 master.lifetimeKind = ValueFlow::Value::LifetimeKind::Iterator;
             } else if ((astIsPointer(parent->tokAt(2)) && !isContainerOfPointers) ||
                        Token::Match(parent->next(), "data|c_str")) {
                 master.errorPath.emplace_back(parent->tokAt(2), "Pointer to container is created here.");
                 master.lifetimeKind = ValueFlow::Value::LifetimeKind::Object;
-                ls = LifetimeStore{tok, "Pointer to container is created here.", ValueFlow::Value::LifetimeKind::Object};
             } else {
                 continue;
             }
