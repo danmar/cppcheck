@@ -3657,7 +3657,7 @@ void CheckOther::checkMismatchingNames()
                         {
                             if (IsSameName(fieldname, targ.varname))
                             {
-                                if (mSettings->severity.isEnabled(Severity::error))
+                                if (mSettings->severity.isEnabled(Severity::error) || mSettings->certainty.isEnabled(Certainty::inconclusive))
                                 {
                                     for (auto const& targ2 : tmpArgListInfo)
                                     {
@@ -3704,7 +3704,7 @@ void CheckOther::checkMismatchingNames()
                             {
                                 if (IsSameName(svar->name(), targ.varname))
                                 {
-                                    if (mSettings->severity.isEnabled(Severity::error))
+                                    if (mSettings->severity.isEnabled(Severity::error) || mSettings->certainty.isEnabled(Certainty::inconclusive))
                                     {
                                         for (auto const& targ2 : tmpArgListInfo)
                                         {
