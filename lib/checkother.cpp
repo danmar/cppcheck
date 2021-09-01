@@ -3647,20 +3647,36 @@ void CheckOther::checkMismatchingNames()
         {
             if (Token::simpleMatch(tok, "this ."))
             {
-                const Variable * svar = tok->tokAt(4)->variable();
+                const Variable* svar = tok->tokAt(4)->variable();
                 if (svar)
                 {
                     std::string fieldname = tok->tokAt(2)->str();
-                    if (!IsSameName(svar->name(), fieldname))
+                    if (!IsSameName(fieldname, svar->name()))
                     {
                         for (auto const& targ : tmpArgListInfo)
                         {
-                            if (IsSameName(targ.varname, fieldname))
+                            if (IsSameName(fieldname, targ.varname))
                             {
-                                std::string foundusedname = targ.varname;
-                                std::string msg = "this->" + fieldname + " and " + svar->name() + " name mismatch. Did you mean: " + targ.varname;
-                                reportError(targ.tok, Severity::error, "mismatchingNames", msg);
-                                error_found = true;
+                                if (mSettings->severity.isEnabled(Severity::error))
+                                {
+                                    for (auto const& targ2 : tmpArgListInfo)
+                                    {
+                                        if (svar->name() == targ2.varname)
+                                        {
+                                            mismatchingNamesWriteError(targ.tok, "this->"+fieldname, svar->name(), targ.varname);
+                                            error_found = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (!error_found)
+                                {
+                                    if (mSettings->severity.isEnabled(Severity::warning))
+                                    {
+                                        mismatchingNamesWriteError(targ.tok, "this->" + fieldname, svar->name(), targ.varname);
+                                        error_found = true;
+                                    }
+                                }
                                 break;
                             }
                         }
@@ -3686,11 +3702,28 @@ void CheckOther::checkMismatchingNames()
                         {
                             for (auto const& targ : tmpArgListInfo)
                             {
-                                if (svar2->name() != targ.varname && IsSameName(targ.varname, svar->name()))
+                                if (IsSameName(svar->name(), targ.varname))
                                 {
-                                    std::string foundusedname = targ.varname;
-                                    std::string msg = svar->name() + " and " + svar2->name() + " name mismatch. Did you mean: " + targ.varname;
-                                    reportError(targ.tok, Severity::error, "mismatchingNames", msg);
+                                    if (mSettings->severity.isEnabled(Severity::error))
+                                    {
+                                        for (auto const& targ2 : tmpArgListInfo)
+                                        {
+                                            if (svar2->name() == targ2.varname)
+                                            {
+                                                mismatchingNamesWriteError(targ.tok, svar->name(), svar2->name(), targ.varname);
+                                                error_found = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (!error_found)
+                                    {
+                                        if (mSettings->severity.isEnabled(Severity::warning))
+                                        {
+                                            mismatchingNamesWriteError(targ.tok, svar->name(), svar2->name(), targ.varname);
+                                            error_found = true;
+                                        }
+                                    }
                                     break;
                                 }
                             }
@@ -3700,4 +3733,9 @@ void CheckOther::checkMismatchingNames()
             }
         }
     }
+}
+
+void CheckOther::mismatchingNamesWriteError(const Token* tok, std::string var, std::string arg, std::string newname)
+{
+    reportError(tok, mSettings->severity.isEnabled(Severity::error) ? Severity::error : Severity::warning, "mismatchingNamesWriteError", var + " and " + arg + " name mismatch. Did you mean: " + newname);
 }

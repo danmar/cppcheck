@@ -231,7 +231,7 @@ public:
     void checkOverlappingWrite();
     void overlappingWriteUnion(const Token *tok);
     void overlappingWriteFunction(const Token* tok);
-
+    void mismatchingNamesWriteError(const Token* tok, std::string var, std::string arg, std::string newname);
     void checkMismatchingNames();
 
 private:
@@ -309,7 +309,8 @@ private:
         c.raceAfterInterlockedDecrementError(nullptr);
         c.invalidFreeError(nullptr, "malloc", false);
         c.overlappingWriteUnion(nullptr);
-        c.overlappingWriteFunction(nullptr);
+        c.overlappingWriteFunction(nullptr); 
+        c.mismatchingNamesWriteError(nullptr,"varname","argname","newargname");
 
         //performance
         c.redundantCopyError(nullptr,  "varname");

@@ -9567,9 +9567,6 @@ private:
         printf("%s", errout.str().c_str());
         ASSERT_EQUALS("[test.cpp:1]: (error) max and fmin name mismatch. Did you mean: fmax\n", errout.str());
     }
-
-   
-
 };
 
 REGISTER_TEST(TestOther)
