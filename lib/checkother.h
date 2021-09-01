@@ -231,7 +231,7 @@ public:
     void checkOverlappingWrite();
     void overlappingWriteUnion(const Token *tok);
     void overlappingWriteFunction(const Token* tok);
-    void mismatchingNamesWriteError(const Token* tok, std::string var, std::string arg, std::string newname);
+    void mismatchingNamesWriteError(const Token* tok, const std::string var, const std::string arg, const std::string newname);
     void checkMismatchingNames();
 
 private:
