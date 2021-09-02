@@ -2821,9 +2821,9 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
     return nullptr;
 }
 
-Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token *tok, const Token *argStart, const Token* funcStart)
+Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token *tok, const Token *argStart, const Token* funcStartToken)
 {
-    Function function(mTokenizer, tok, scope, funcStart, argStart);
+    Function function(mTokenizer, tok, scope, funcStartToken, argStart);
     scope->addFunction(function);
     return &scope->functionList.back();
 }
