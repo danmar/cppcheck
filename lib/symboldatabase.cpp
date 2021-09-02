@@ -2788,7 +2788,7 @@ bool Function::isSafe(const Settings *settings) const
     return false;
 }
 
-Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart)
+Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStartToken)
 {
     Function* function = nullptr;
     // Lambda functions are always unique
@@ -2805,10 +2805,10 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
     }
 
     if (!function)
-        function = addGlobalFunctionDecl(scope, tok, argStart, funcStart);
+        function = addGlobalFunctionDecl(scope, tok, argStart, funcStartToken);
 
     function->arg = argStart;
-    function->token = funcStart;
+    function->token = funcStartToken;
     function->hasBody(true);
 
     addNewFunction(&scope, &tok);
