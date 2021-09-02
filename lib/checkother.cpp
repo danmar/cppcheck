@@ -3555,9 +3555,9 @@ void CheckOther::overlappingWriteFunction(const Token *tok)
     reportError(tok, Severity::error, "overlappingWriteFunction", "Overlapping read/write in " + funcname + "() is undefined behavior");
 }
 
-float percent_of_varname_match_back(std::string varname1, std::string varname2)
+float percent_of_varname_match_back(std::string varname1, std::string varname2, bool checkmin = false)
 {
-    float maxlen = std::max(varname1.length(), varname2.length());
+    float maxlen = checkmin ? std::min(varname1.length(), varname2.length()) : std::max(varname1.length(), varname2.length());
     float matchlen = 0;
     while (varname1.length() && varname2.length())
     {
@@ -3576,9 +3576,9 @@ float percent_of_varname_match_back(std::string varname1, std::string varname2)
     return (matchlen / maxlen * 100.f);
 }
 
-float percent_of_varname_match_front(std::string varname1, std::string varname2)
+float percent_of_varname_match_front(std::string varname1, std::string varname2, bool checkmin = false)
 {
-    float maxlen = std::max(varname1.length(), varname2.length());
+    float maxlen = checkmin ? std::min(varname1.length(), varname2.length()) : std::max(varname1.length(), varname2.length());
     float matchlen = 0;
     while (varname1.length() && varname2.length())
     {
@@ -3597,7 +3597,7 @@ float percent_of_varname_match_front(std::string varname1, std::string varname2)
     return (matchlen / maxlen * 100.f);
 }
 
-bool CheckOther::IsSameName(std::string name1, std::string name2)
+bool CheckOther::IsSameName(std::string name1, std::string name2, bool forcecheck = false)
 {
     if (name1 == name2)
         return true;
@@ -3609,9 +3609,10 @@ bool CheckOther::IsSameName(std::string name1, std::string name2)
     if (name1 == name2)
         return true;
 
-    if (mSettings->certainty.isEnabled(Certainty::inconclusive) && name1.length() > 2 && name2.length() > 2)
+    if (name1.length() > 2 && name2.length() > 2)
     {
-        return std::max(percent_of_varname_match_back(name1, name2), percent_of_varname_match_front(name1, name2)) > 50;
+        if (mSettings->certainty.isEnabled(Certainty::inconclusive) || forcecheck)
+            return std::max(percent_of_varname_match_back(name1, name2, forcecheck), percent_of_varname_match_front(name1, name2, forcecheck)) > 50;
     }
 
     return false;
@@ -3651,33 +3652,37 @@ void CheckOther::checkMismatchingNames()
                 if (svar)
                 {
                     std::string fieldname = tok->tokAt(2)->str();
-                    if (!IsSameName(fieldname, svar->name()))
+                    if (!IsSameName(fieldname, svar->name(), true))
                     {
                         for (auto const& targ : tmpArgListInfo)
                         {
                             if (IsSameName(fieldname, targ.varname))
                             {
-                                if (mSettings->severity.isEnabled(Severity::error) || mSettings->certainty.isEnabled(Certainty::inconclusive))
+                                if (!IsSameName(svar->name(), targ.varname, true))
                                 {
-                                    for (auto const& targ2 : tmpArgListInfo)
+                                    if (mSettings->severity.isEnabled(Severity::error) || mSettings->certainty.isEnabled(Certainty::inconclusive))
                                     {
-                                        if (svar->name() == targ2.varname)
+                                        for (auto const& targ2 : tmpArgListInfo)
                                         {
-                                            mismatchingNamesWriteError(targ.tok, mSettings->certainty.isEnabled(Certainty::inconclusive) ? Severity::style : Severity::warning, "this->"+fieldname, svar->name(), targ.varname);
-                                            error_found = true;
-                                            break;
+                                            if (svar->name() == targ2.varname)
+                                            {
+                                                mismatchingNamesWriteError(targ.tok, mSettings->certainty.isEnabled(Certainty::inconclusive) ? Severity::style : Severity::warning, "this->" + fieldname, svar->name(), targ.varname);
+                                                    error_found = true;
+                                                    break;
+                                            }
                                         }
                                     }
-                                }
-                                if (!error_found)
-                                {
-                                    if (mSettings->severity.isEnabled(Severity::warning) && !mSettings->certainty.isEnabled(Certainty::inconclusive))
+
+                                    if (!error_found)
                                     {
-                                        mismatchingNamesWriteError(targ.tok, Severity::style, "this->" + fieldname, svar->name(), targ.varname);
-                                        error_found = true;
+                                        if (mSettings->severity.isEnabled(Severity::warning) && !mSettings->certainty.isEnabled(Certainty::inconclusive))
+                                        {
+                                            mismatchingNamesWriteError(targ.tok, Severity::style, "this->" + fieldname, svar->name(), targ.varname);
+                                            error_found = true;
+                                        }
                                     }
+                                    break;
                                 }
-                                break;
                             }
                         }
                     }
@@ -3698,33 +3703,36 @@ void CheckOther::checkMismatchingNames()
                     const Variable* svar = tok->variable();
                     if (svar && !svar->isArgument() && svar2 && svar != svar2)
                     {
-                        if (!IsSameName(svar->name(), svar2->name()))
+                        if (!IsSameName(svar->name(), svar2->name(), true))
                         {
                             for (auto const& targ : tmpArgListInfo)
                             {
                                 if (IsSameName(svar->name(), targ.varname))
                                 {
-                                    if (mSettings->severity.isEnabled(Severity::error) || mSettings->certainty.isEnabled(Certainty::inconclusive))
+                                    if (!IsSameName(svar2->name(), targ.varname, true))
                                     {
-                                        for (auto const& targ2 : tmpArgListInfo)
+                                        if (mSettings->severity.isEnabled(Severity::error) || mSettings->certainty.isEnabled(Certainty::inconclusive))
                                         {
-                                            if (svar2->name() == targ2.varname)
+                                            for (auto const& targ2 : tmpArgListInfo)
                                             {
-                                                mismatchingNamesWriteError(targ.tok, mSettings->certainty.isEnabled(Certainty::inconclusive) ? Severity::style : Severity::warning, svar->name(), svar2->name(), targ.varname);
-                                                error_found = true;
-                                                break;
+                                                if (svar2->name() == targ2.varname)
+                                                {
+                                                    mismatchingNamesWriteError(targ.tok, mSettings->certainty.isEnabled(Certainty::inconclusive) ? Severity::style : Severity::warning, svar->name(), svar2->name(), targ.varname);
+                                                    error_found = true;
+                                                    break;
+                                                }
                                             }
                                         }
-                                    }
-                                    if (!error_found)
-                                    {
-                                        if (mSettings->severity.isEnabled(Severity::warning) && !mSettings->certainty.isEnabled(Certainty::inconclusive))
+                                        if (!error_found)
                                         {
-                                            mismatchingNamesWriteError(targ.tok, Severity::style, svar->name(), svar2->name(), targ.varname);
-                                            error_found = true;
+                                            if (mSettings->severity.isEnabled(Severity::warning) && !mSettings->certainty.isEnabled(Certainty::inconclusive))
+                                            {
+                                                mismatchingNamesWriteError(targ.tok, Severity::style, svar->name(), svar2->name(), targ.varname);
+                                                error_found = true;
+                                            }
                                         }
+                                        break;
                                     }
-                                    break;
                                 }
                             }
                         }
