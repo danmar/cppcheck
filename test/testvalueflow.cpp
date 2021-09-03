@@ -143,6 +143,7 @@ private:
         TEST_CASE(valueFlowUnsigned);
         TEST_CASE(valueFlowMod);
         TEST_CASE(valueFlowSymbolic);
+        TEST_CASE(valueFlowSmartPointer);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -6297,6 +6298,18 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, "y", 0));
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "y", -1));
+    }
+
+    void valueFlowSmartPointer() {
+        const char* code;
+
+        code = "int* df(int* expr);\n"
+                "int * f() {\n"
+                "    std::unique_ptr<int> x;\n"
+                "    x.reset(df(x.release()));\n"
+                "    return x;\n"
+                "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
     }
 };
 
