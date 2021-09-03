@@ -6785,10 +6785,10 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
                     const bool constValue = inTok->isNumber();
                     valueFlowForwardAssign(inTok, var, values, constValue, false, tokenlist, errorLogger, settings);
                 }
-            } else if (Token::Match(tok, "%var% . release ( )") && tok->next()->originalName() != "->") {                
+            } else if (Token::Match(tok, "%var% . release ( )") && tok->next()->originalName() != "->") {
                 const Token* parent = tok->tokAt(3)->astParent();
                 bool hasParentReset = false;
-                while(parent) {
+                while (parent) {
                     if (Token::Match(parent->tokAt(-3), "%varid% . release|reset (", tok->varId())) {
                         hasParentReset = true;
                         break;
