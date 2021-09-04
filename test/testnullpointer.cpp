@@ -120,6 +120,7 @@ private:
         TEST_CASE(nullpointer78); // #7802
         TEST_CASE(nullpointer79); // #10400
         TEST_CASE(nullpointer80); // #10410
+        TEST_CASE(nullpointer81); // #8724
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2452,6 +2453,23 @@ private:
               "        return n;\n"
               "    }\n"
               "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer81() // #8724
+    {
+        check("void f(A **list) {\n"
+              "  A *tmp_List = NULL;\n"
+              "  *list = NULL;\n"
+              "  while (1) {\n"
+              "    if (*list == NULL) {\n"
+              "      tmp_List = malloc (sizeof (ArchiveList_struct));\n"
+              "      *list = tmp_List;\n"
+              "    } else {\n"
+              "      tmp_List->next = malloc (sizeof (ArchiveList_struct));\n"
+              "    }\n"
+              "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
