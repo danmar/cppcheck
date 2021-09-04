@@ -2892,8 +2892,6 @@ ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive)
     return values.front();
 }
 
-
-
 template<class Predicate>
 static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                                                     bool escape,
@@ -2936,7 +2934,7 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                 if (astIsContainer(contok))
                     return getLifetimeTokens(contok, escape, std::move(errorPath), pred, depth - 1);
                 else
-                    return std::vector<LifetimeToken> {};
+                    return std::vector<LifetimeToken>{};
             } else {
                 return std::vector<LifetimeToken> {};
             }
