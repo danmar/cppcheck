@@ -9547,13 +9547,13 @@ private:
             "{\n"
             "	float min = 0.0F;\n"
             "	float max = 0.0F;\n"
-            "	MinMax(float xin, float xax)\n"
+            "	MinMax(float min, float max)\n"
             "	{\n"
-            "		this->xin = xax;\n"
-            "		this->xax = 0.0F;\n"
+            "		this->min = max;\n"
+            "		this->max = 0.0F;\n"
             "	}\n"
             "};\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) this->xin and xax name mismatch. Did you mean: xin\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) this->min and max name mismatch. Did you mean: min\n", errout.str());
     }
 
     void foundMismatchingNames2() {
@@ -9564,7 +9564,6 @@ private:
             "	MinMax tmpMinMax = MinMax(max,min);\n"
             "	foo4(tmpMinMax);\n"
             "}\n");
-        printf("%s", errout.str().c_str());
         ASSERT_EQUALS("[test.cpp:1]: (style) max and fmin name mismatch. Did you mean: fmax\n", errout.str());
     }
 };
