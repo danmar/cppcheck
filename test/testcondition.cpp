@@ -2676,6 +2676,17 @@ private:
               "    return ret;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #10456
+        check("int f() {\n"
+              "    int i = 0;\n"
+              "    auto f = [&](bool b) { if (b) ++i; };\n"
+              "    if (i) return i;\n"
+              "    f(true);\n"
+              "    if (i) return i;\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void innerConditionModified() {

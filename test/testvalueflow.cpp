@@ -3242,6 +3242,16 @@ private:
                "  f();\n"
                "}";
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 3));
+
+        code = "void f() {\n"
+               "  int x=3;\n"
+               "  auto f = [&](){ x++; }\n"
+               "  x = 1;\n"
+               "  f();\n"
+               "  int a = x;\n" // x is actually 2
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 1));
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 3));
     }
 
     void valueFlowForwardTryCatch() {

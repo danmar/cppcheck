@@ -2131,6 +2131,10 @@ struct ValueFlowAnalyzer : Analyzer {
     }
 
     virtual Action isAliasModified(const Token* tok) const {
+        // Lambda function call
+        if (Token::Match(tok, "%var% ("))
+            // TODO: Check if modified in the lambda function
+            return Action::Invalid;
         int indirect = 0;
         if (tok->valueType())
             indirect = tok->valueType()->pointer;
