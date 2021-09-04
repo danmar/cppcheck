@@ -3597,7 +3597,7 @@ float percent_of_varname_match_front(std::string varname1, std::string varname2,
     return (matchlen / maxlen * 100.f);
 }
 
-bool CheckOther::IsSameName(std::string name1, std::string name2, bool forcecheck = false)
+bool CheckOther::IsSameName(std::string name1, std::string name2, bool forcecheck)
 {
     if (name1 == name2)
         return true;
@@ -3656,7 +3656,7 @@ void CheckOther::checkMismatchingNames()
                     {
                         for (auto const& targ : tmpArgListInfo)
                         {
-                            if (IsSameName(fieldname, targ.varname))
+                            if (IsSameName(fieldname, targ.varname, false))
                             {
                                 if (!IsSameName(svar->name(), targ.varname, true))
                                 {
@@ -3707,7 +3707,7 @@ void CheckOther::checkMismatchingNames()
                         {
                             for (auto const& targ : tmpArgListInfo)
                             {
-                                if (IsSameName(svar->name(), targ.varname))
+                                if (IsSameName(svar->name(), targ.varname, false))
                                 {
                                     if (!IsSameName(svar2->name(), targ.varname, true))
                                     {
