@@ -663,7 +663,7 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
                 if (std::find(values.begin(), values.end(), value) != values.end())
                     setTokenValue(parent, value, settings);
             }
-        } else {
+        } else if (!value.isImpossible()) {
             // is condition only depending on 1 variable?
             nonneg int varId = 0;
             bool ret = false;
