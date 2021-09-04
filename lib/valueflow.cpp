@@ -6790,6 +6790,17 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
                     valueFlowForwardAssign(inTok, var, values, constValue, false, tokenlist, errorLogger, settings);
                 }
             } else if (Token::Match(tok, "%var% . release ( )") && tok->next()->originalName() != "->") {
+                const Token* parent = tok->tokAt(3)->astParent();
+                bool hasParentReset = false;
+                while (parent) {
+                    if (Token::Match(parent->tokAt(-3), "%varid% . release|reset (", tok->varId())) {
+                        hasParentReset = true;
+                        break;
+                    }
+                    parent = parent->astParent();
+                }
+                if (hasParentReset)
+                    continue;
                 std::list<ValueFlow::Value> values;
                 ValueFlow::Value v(0);
                 v.setKnown();
