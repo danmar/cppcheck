@@ -2432,6 +2432,15 @@ private:
               "    return i;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int* get(std::vector<int>& container) {\n"
+              "    Sequence seq(container);\n"
+              "    for (auto& r : seq) {\n"
+              "        return &r;\n"
+              "    }\n"
+              "    return &*seq.begin();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetime() {
