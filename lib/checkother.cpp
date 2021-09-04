@@ -3666,7 +3666,7 @@ void CheckOther::checkMismatchingNames()
                                         {
                                             if (svar->name() == targ2.varname)
                                             {
-                                                mismatchingNamesWriteError(targ.tok, "Warning: ", "this->" + fieldname, svar->name(), targ.varname);
+                                                mismatchingNamesWriteError(targ.tok, "Warning, ", "this->" + fieldname, svar->name(), targ.varname);
                                                     error_found = true;
                                                     break;
                                             }
@@ -3674,7 +3674,7 @@ void CheckOther::checkMismatchingNames()
                                             {
                                                 if (IsSameName(svar->name(), targ2.varname, false))
                                                 {
-                                                    mismatchingNamesWriteError(targ.tok, "Note: " , "this->" + fieldname, svar->name(), targ.varname);
+                                                    mismatchingNamesWriteError(targ.tok, "Note, " , "this->" + fieldname, svar->name(), targ.varname);
                                                     error_found = true;
                                                     break;
                                                 }
@@ -3686,7 +3686,7 @@ void CheckOther::checkMismatchingNames()
                                     {
                                         if (mSettings->severity.isEnabled(Severity::warning) && !mSettings->certainty.isEnabled(Certainty::inconclusive))
                                         {
-                                            mismatchingNamesWriteError(targ.tok, "Info: ", "this->" + fieldname, svar->name(), targ.varname);
+                                            mismatchingNamesWriteError(targ.tok, "Info, ", "this->" + fieldname, svar->name(), targ.varname);
                                             error_found = true;
                                         }
                                     }
@@ -3726,7 +3726,7 @@ void CheckOther::checkMismatchingNames()
                                             {
                                                 if (svar->name() == targ2.varname)
                                                 {
-                                                    mismatchingNamesWriteError(targ.tok, "Warning: ", svar->name(), svar2->name(), targ.varname);
+                                                    mismatchingNamesWriteError(targ.tok, "Warning, ", svar->name(), svar2->name(), targ.varname);
                                                     error_found = true;
                                                     break;
                                                 }
@@ -3734,7 +3734,7 @@ void CheckOther::checkMismatchingNames()
                                                 {
                                                     if (IsSameName(svar->name(), targ2.varname, false))
                                                     {
-                                                        mismatchingNamesWriteError(targ.tok, "Note: ", svar->name(), svar2->name(), targ.varname);
+                                                        mismatchingNamesWriteError(targ.tok, "Note, ", svar->name(), svar2->name(), targ.varname);
                                                         error_found = true;
                                                         break;
                                                     }
@@ -3745,7 +3745,7 @@ void CheckOther::checkMismatchingNames()
                                         {
                                             if (mSettings->severity.isEnabled(Severity::warning) && !mSettings->certainty.isEnabled(Certainty::inconclusive))
                                             {
-                                                mismatchingNamesWriteError(targ.tok, "Info: ", svar->name(), svar2->name(), targ.varname);
+                                                mismatchingNamesWriteError(targ.tok, "Info, ", svar->name(), svar2->name(), targ.varname);
                                                 error_found = true;
                                             }
                                         }
