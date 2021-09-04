@@ -3612,7 +3612,7 @@ bool CheckOther::IsSameName(std::string name1, std::string name2, bool forcechec
     if (name1.length() > 2 && name2.length() > 2)
     {
         if (mSettings->certainty.isEnabled(Certainty::inconclusive) || forcecheck)
-            return std::max(percent_of_varname_match_back(name1, name2, forcecheck), percent_of_varname_match_front(name1, name2, forcecheck)) > 50;
+            return std::max(percent_of_varname_match_back(name1, name2, forcecheck), percent_of_varname_match_front(name1, name2, forcecheck)) > 60;
     }
 
     return false;
@@ -3666,9 +3666,18 @@ void CheckOther::checkMismatchingNames()
                                         {
                                             if (svar->name() == targ2.varname)
                                             {
-                                                mismatchingNamesWriteError(targ.tok, mSettings->certainty.isEnabled(Certainty::inconclusive) ? Severity::style : Severity::warning, "this->" + fieldname, svar->name(), targ.varname);
+                                                mismatchingNamesWriteError(targ.tok, "Warning: ", "this->" + fieldname, svar->name(), targ.varname);
                                                     error_found = true;
                                                     break;
+                                            }
+                                            else if (mSettings->certainty.isEnabled(Certainty::inconclusive))
+                                            {
+                                                if (IsSameName(svar->name(), targ2.varname, false))
+                                                {
+                                                    mismatchingNamesWriteError(targ.tok, "Note: " , "this->" + fieldname, svar->name(), targ.varname);
+                                                    error_found = true;
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
@@ -3677,7 +3686,7 @@ void CheckOther::checkMismatchingNames()
                                     {
                                         if (mSettings->severity.isEnabled(Severity::warning) && !mSettings->certainty.isEnabled(Certainty::inconclusive))
                                         {
-                                            mismatchingNamesWriteError(targ.tok, Severity::style, "this->" + fieldname, svar->name(), targ.varname);
+                                            mismatchingNamesWriteError(targ.tok, "Info: ", "this->" + fieldname, svar->name(), targ.varname);
                                             error_found = true;
                                         }
                                     }
@@ -3715,11 +3724,20 @@ void CheckOther::checkMismatchingNames()
                                         {
                                             for (auto const& targ2 : tmpArgListInfo)
                                             {
-                                                if (svar2->name() == targ2.varname)
+                                                if (svar->name() == targ2.varname)
                                                 {
-                                                    mismatchingNamesWriteError(targ.tok, mSettings->certainty.isEnabled(Certainty::inconclusive) ? Severity::style : Severity::warning, svar->name(), svar2->name(), targ.varname);
+                                                    mismatchingNamesWriteError(targ.tok, "Warning: ", svar->name(), svar2->name(), targ.varname);
                                                     error_found = true;
                                                     break;
+                                                }
+                                                else if (mSettings->certainty.isEnabled(Certainty::inconclusive))
+                                                {
+                                                    if (IsSameName(svar->name(), targ2.varname, false))
+                                                    {
+                                                        mismatchingNamesWriteError(targ.tok, "Note: ", svar->name(), svar2->name(), targ.varname);
+                                                        error_found = true;
+                                                        break;
+                                                    }
                                                 }
                                             }
                                         }
@@ -3727,7 +3745,7 @@ void CheckOther::checkMismatchingNames()
                                         {
                                             if (mSettings->severity.isEnabled(Severity::warning) && !mSettings->certainty.isEnabled(Certainty::inconclusive))
                                             {
-                                                mismatchingNamesWriteError(targ.tok, Severity::style, svar->name(), svar2->name(), targ.varname);
+                                                mismatchingNamesWriteError(targ.tok, "Info: ", svar->name(), svar2->name(), targ.varname);
                                                 error_found = true;
                                             }
                                         }
@@ -3743,7 +3761,7 @@ void CheckOther::checkMismatchingNames()
     }
 }
 
-void CheckOther::mismatchingNamesWriteError(const Token* tok, Severity::SeverityType warntype, const std::string& var, const std::string& arg, const std::string& newname)
+void CheckOther::mismatchingNamesWriteError(const Token* tok, const std::string& prefix, const std::string& var, const std::string& arg, const std::string& newname)
 {
-    reportError(tok, warntype, "mismatchingNamesWriteError", var + " and " + arg + " name mismatch. Did you mean: " + newname);
+    reportError(tok, Severity::style, "mismatchingNamesWriteError", prefix + var + " and " + arg + " name mismatch. Did you mean: " + newname);
 }

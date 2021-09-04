@@ -260,6 +260,7 @@ private:
 
         TEST_CASE(foundMismatchingNames);
         TEST_CASE(foundMismatchingNames2);
+        TEST_CASE(foundMismatchingNames3);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
@@ -9542,7 +9543,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void foundMismatchingNames() {
+    void foundMismatchingNames() { // Warning: 100% mismatch
         check("struct MinMax\n"
             "{\n"
             "	float min = 0.0F;\n"
@@ -9553,10 +9554,10 @@ private:
             "		this->max = 0.0F;\n"
             "	}\n"
             "};\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) this->min and max name mismatch. Did you mean: min\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Warning: this->min and max name mismatch. Did you mean: min\n", errout.str());
     }
 
-    void foundMismatchingNames2() {
+    void foundMismatchingNames2() { // Style: Possible mismatch ( 50/50 )
         check("void foo3(float fmin, float fmax)\n"
             "{\n"
             "	float max = fmin;\n"
@@ -9564,7 +9565,21 @@ private:
             "	MinMax tmpMinMax = MinMax(max,min);\n"
             "	foo4(tmpMinMax);\n"
             "}\n");
-        ASSERT_EQUALS("[test.cpp:1]: (style) max and fmin name mismatch. Did you mean: fmax\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Note: max and fmin name mismatch. Did you mean: fmax\n", errout.str());
+    }
+
+    void foundMismatchingNames3() { // Style: Possible mismatch ( 50/50 )
+        check("struct MinMax\n"
+            "{\n"
+            "	float min = 0.0F;\n"
+            "	float max = 0.0F;\n"
+            "	MinMax(float fmin, float fmax)\n"
+            "	{\n"
+            "		this->min = fmax;\n"
+            "		this->max = 0.0F;\n"
+            "	}\n"
+            "};\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Warning: this->min and fmax name mismatch. Did you mean: fmin\n", errout.str());
     }
 };
 
