@@ -3651,7 +3651,7 @@ void CheckOther::checkMismatchingNames()
                 const Variable* svar = tok->tokAt(4)->variable();
                 if (svar)
                 {
-                    std::string fieldname = tok->tokAt(2)->str();
+                    std::string fieldname = tok->strAt(2);
                     if (!IsSameName(fieldname, svar->name(), true))
                     {
                         for (auto const& targ : tmpArgListInfo)
