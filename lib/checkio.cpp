@@ -1782,7 +1782,7 @@ void CheckIO::invalidScanfArgTypeError_int(const Token* tok, nonneg int numForma
         else
             errmsg << "intmax_t";
     } else if (specifier[0] == 'z') {
-        if (specifier[1] == 'd')
+        if (specifier[1] == 'd' || specifier[1] == 'i')
             errmsg << "ssize_t";
         else
             errmsg << "size_t";
@@ -1875,7 +1875,7 @@ static void printfFormatType(std::ostream& os, const std::string& specifier, boo
         else
             os << "intmax_t";
     } else if (specifier[0] == 'z') {
-        if (specifier[1] == 'd')
+        if (specifier[1] == 'd' || specifier[1] == 'i')
             os << "ssize_t";
         else
             os << "size_t";
