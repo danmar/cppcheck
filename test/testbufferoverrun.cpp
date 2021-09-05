@@ -1656,12 +1656,12 @@ private:
     void array_index_59()
     {
         check("long f(long b) {\n"
-            "  const long a[] = { 0, 1, };\n"
-            "  const long c = std::size(a);\n"
-            "  if (b < 0 || b >= c)\n"
-            "    return 0;\n"
-            "  return a[b];\n"
-            "}\n");
+              "  const long a[] = { 0, 1, };\n"
+              "  const long c = std::size(a);\n"
+              "  if (b < 0 || b >= c)\n"
+              "    return 0;\n"
+              "  return a[b];\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
