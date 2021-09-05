@@ -292,7 +292,7 @@ private:
     void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
     void checkModuloOfOneError(const Token *tok);
 
-    bool IsSameName(std::string name1, std::string name2, bool forcecheck);
+    bool IsSameName(std::string name1, std::string name2, bool partialMatch);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckOther c(nullptr, settings, errorLogger);

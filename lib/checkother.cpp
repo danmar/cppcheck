@@ -3597,7 +3597,7 @@ float percent_of_varname_match_front(std::string varname1, std::string varname2,
     return (matchlen / maxlen * 100.f);
 }
 
-bool CheckOther::IsSameName(std::string name1, std::string name2, bool forcecheck)
+bool CheckOther::IsSameName(std::string name1, std::string name2, bool partialMatch)
 {
     if (name1 == name2)
         return true;
@@ -3611,8 +3611,8 @@ bool CheckOther::IsSameName(std::string name1, std::string name2, bool forcechec
 
     if (name1.length() > 2 && name2.length() > 2)
     {
-        if (mSettings->certainty.isEnabled(Certainty::inconclusive) || forcecheck)
-            return std::max(percent_of_varname_match_back(name1, name2, forcecheck), percent_of_varname_match_front(name1, name2, forcecheck)) > 60;
+        if (partialMatch)
+            return std::max(percent_of_varname_match_back(name1, name2, partialMatch), percent_of_varname_match_front(name1, name2, partialMatch)) > 50;
     }
 
     return false;
@@ -3656,11 +3656,11 @@ void CheckOther::checkMismatchingNames()
                     {
                         for (auto const& targ : tmpArgListInfo)
                         {
-                            if (IsSameName(fieldname, targ.varname, false))
+                            if (IsSameName(fieldname, targ.varname, mSettings->certainty.isEnabled(Certainty::inconclusive)))
                             {
                                 if (!IsSameName(svar->name(), targ.varname, true))
                                 {
-                                    if (mSettings->severity.isEnabled(Severity::error) || mSettings->certainty.isEnabled(Certainty::inconclusive))
+                                    if (mSettings->severity.isEnabled(Severity::warning))
                                     {
                                         for (auto const& targ2 : tmpArgListInfo)
                                         {
@@ -3670,23 +3670,13 @@ void CheckOther::checkMismatchingNames()
                                                     error_found = true;
                                                     break;
                                             }
-                                            else if (mSettings->certainty.isEnabled(Certainty::inconclusive))
-                                            {
-                                                if (IsSameName(svar->name(), targ2.varname, false))
-                                                {
-                                                    mismatchingNamesWriteError(targ.tok, "Note, " , "this->" + fieldname, svar->name(), targ.varname);
-                                                    error_found = true;
-                                                    break;
-                                                }
-                                            }
                                         }
                                     }
-
                                     if (!error_found)
                                     {
-                                        if (mSettings->severity.isEnabled(Severity::warning) && !mSettings->certainty.isEnabled(Certainty::inconclusive))
+                                        if (mSettings->certainty.isEnabled(Certainty::inconclusive))
                                         {
-                                            mismatchingNamesWriteError(targ.tok, "Info, ", "this->" + fieldname, svar->name(), targ.varname);
+                                            mismatchingNamesWriteError(targ.tok, "Note, ", "this->" + fieldname, svar->name(), targ.varname);
                                             error_found = true;
                                         }
                                     }
@@ -3716,11 +3706,11 @@ void CheckOther::checkMismatchingNames()
                         {
                             for (auto const& targ : tmpArgListInfo)
                             {
-                                if (IsSameName(svar->name(), targ.varname, false))
+                                if (IsSameName(svar->name(), targ.varname, mSettings->certainty.isEnabled(Certainty::inconclusive)))
                                 {
                                     if (!IsSameName(svar2->name(), targ.varname, true))
                                     {
-                                        if (mSettings->severity.isEnabled(Severity::error) || mSettings->certainty.isEnabled(Certainty::inconclusive))
+                                        if (mSettings->severity.isEnabled(Severity::warning))
                                         {
                                             for (auto const& targ2 : tmpArgListInfo)
                                             {
@@ -3730,22 +3720,13 @@ void CheckOther::checkMismatchingNames()
                                                     error_found = true;
                                                     break;
                                                 }
-                                                else if (mSettings->certainty.isEnabled(Certainty::inconclusive))
-                                                {
-                                                    if (IsSameName(svar->name(), targ2.varname, false))
-                                                    {
-                                                        mismatchingNamesWriteError(targ.tok, "Note, ", svar->name(), svar2->name(), targ.varname);
-                                                        error_found = true;
-                                                        break;
-                                                    }
-                                                }
                                             }
                                         }
                                         if (!error_found)
                                         {
-                                            if (mSettings->severity.isEnabled(Severity::warning) && !mSettings->certainty.isEnabled(Certainty::inconclusive))
+                                            if (mSettings->certainty.isEnabled(Certainty::inconclusive))
                                             {
-                                                mismatchingNamesWriteError(targ.tok, "Info, ", svar->name(), svar2->name(), targ.varname);
+                                                mismatchingNamesWriteError(targ.tok, "Note, ", svar->name(), svar2->name(), targ.varname);
                                                 error_found = true;
                                             }
                                         }
