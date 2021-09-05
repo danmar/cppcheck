@@ -945,6 +945,13 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
         setTokenValue(parent, castValue(value, valueType.sign, settings->long_bit), settings);
     else if (valueType.type == ValueType::Type::LONGLONG)
         setTokenValue(parent, castValue(value, valueType.sign, settings->long_long_bit), settings);
+    else if (valueType.isFloat()) {
+        ValueFlow::Value floatValue = value;
+        floatValue.valueType = ValueFlow::Value::ValueType::FLOAT;
+        if (value.isIntValue())
+            floatValue.floatValue = value.intvalue;
+        setTokenValue(parent, floatValue, settings);
+    }
     else if (value.isIntValue()) {
         const long long charMax = settings->signedCharMax();
         const long long charMin = settings->signedCharMin();
