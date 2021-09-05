@@ -3612,7 +3612,7 @@ bool CheckOther::IsSameName(std::string name1, std::string name2, bool partialMa
     if (name1.length() > 2 && name2.length() > 2)
     {
         if (partialMatch)
-            return std::max(percent_of_varname_match_back(name1, name2, partialMatch), percent_of_varname_match_front(name1, name2, partialMatch)) > 50;
+            return std::max(percent_of_varname_match_back(name1, name2, partialMatch), percent_of_varname_match_front(name1, name2, partialMatch)) > 60;
     }
 
     return false;
@@ -3620,6 +3620,9 @@ bool CheckOther::IsSameName(std::string name1, std::string name2, bool partialMa
 
 void CheckOther::checkMismatchingNames()
 {
+    if (!mSettings->severity.isEnabled(Severity::style))
+        return;
+
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     if (!symbolDatabase)
         return;
@@ -3651,6 +3654,7 @@ void CheckOther::checkMismatchingNames()
                 const Variable* svar = tok->tokAt(4)->variable();
                 if (svar)
                 {
+                    // if this->name != varname && this->name found in args...
                     std::string fieldname = tok->strAt(2);
                     if (!IsSameName(fieldname, svar->name(), true))
                     {
@@ -3660,16 +3664,13 @@ void CheckOther::checkMismatchingNames()
                             {
                                 if (!IsSameName(svar->name(), targ.varname, true))
                                 {
-                                    if (mSettings->severity.isEnabled(Severity::warning))
+                                    for (auto const& targ2 : tmpArgListInfo)
                                     {
-                                        for (auto const& targ2 : tmpArgListInfo)
+                                        if (IsSameName(fieldname, targ2.varname, false))
                                         {
-                                            if (svar->name() == targ2.varname)
-                                            {
-                                                mismatchingNamesWriteError(targ.tok, "Warning, ", "this->" + fieldname, svar->name(), targ.varname);
-                                                    error_found = true;
-                                                    break;
-                                            }
+                                            mismatchingNamesWriteError(targ.tok, "Warning, ", "this->" + fieldname, svar->name(), targ.varname);
+                                                error_found = true;
+                                                break;
                                         }
                                     }
                                     if (!error_found)
@@ -3710,16 +3711,13 @@ void CheckOther::checkMismatchingNames()
                                 {
                                     if (!IsSameName(svar2->name(), targ.varname, true))
                                     {
-                                        if (mSettings->severity.isEnabled(Severity::warning))
+                                        for (auto const& targ2 : tmpArgListInfo)
                                         {
-                                            for (auto const& targ2 : tmpArgListInfo)
+                                            if (IsSameName(svar->name(), targ2.varname, false))
                                             {
-                                                if (svar->name() == targ2.varname)
-                                                {
-                                                    mismatchingNamesWriteError(targ.tok, "Warning, ", svar->name(), svar2->name(), targ.varname);
-                                                    error_found = true;
-                                                    break;
-                                                }
+                                                mismatchingNamesWriteError(targ.tok, "Warning, ", svar->name(), svar2->name(), targ.varname);
+                                                error_found = true;
+                                                break;
                                             }
                                         }
                                         if (!error_found)
