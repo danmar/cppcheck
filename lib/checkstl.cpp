@@ -2711,12 +2711,14 @@ static bool isMutex(const Variable* var)
 static bool isLockGuard(const Variable* var)
 {
     const Token* tok = Token::typeDecl(var->nameToken()).first;
-    return Token::Match(tok, "std :: lock_guard|unique_lock|scoped_lock");
+    return Token::Match(tok, "std :: lock_guard|unique_lock|scoped_lock|shared_lock");
 }
 
 static bool isLocalMutex(const Variable* var, const Scope* scope)
 {
     if (!var)
+        return false;
+    if (isLockGuard(var))
         return false;
     return !var->isReference() && !var->isRValueReference() && !var->isStatic() && var->scope() == scope;
 }

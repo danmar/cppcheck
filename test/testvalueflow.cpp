@@ -143,6 +143,7 @@ private:
         TEST_CASE(valueFlowUnsigned);
         TEST_CASE(valueFlowMod);
         TEST_CASE(valueFlowSymbolic);
+        TEST_CASE(valueFlowSmartPointer);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -518,6 +519,8 @@ private:
         ASSERT_EQUALS((int)('\n'), valueOfTok("x='\\n';", "'\\n'").intvalue);
         TODO_ASSERT_EQUALS(
             0xFFFFFFFF00000000, -1, valueOfTok("x=0xFFFFFFFF00000000;", "0xFFFFFFFF00000000").intvalue); // #7701
+        ASSERT_EQUALS_DOUBLE(16, valueOfTok("x=(double)16;", "(").floatValue, 1e-5);
+        ASSERT_EQUALS_DOUBLE(0.0625, valueOfTok("x=1/(double)16;", "/").floatValue, 1e-5);
 
         // scope
         {
@@ -3222,6 +3225,14 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 13));
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 26));
+
+        code = "void f(int* i) {\n"
+               "    if (!i) return;\n"
+               "    int * x = *i == 1 ? i : nullptr;\n"
+               "    int* a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
     }
 
     void valueFlowForwardLambda() {
@@ -3242,6 +3253,16 @@ private:
                "  f();\n"
                "}";
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 3));
+
+        code = "void f() {\n"
+               "  int x=3;\n"
+               "  auto f = [&](){ x++; }\n"
+               "  x = 1;\n"
+               "  f();\n"
+               "  int a = x;\n" // x is actually 2
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 1));
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 3));
     }
 
     void valueFlowForwardTryCatch() {
@@ -6297,6 +6318,19 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, "y", 0));
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "y", -1));
+    }
+
+    void valueFlowSmartPointer()
+    {
+        const char* code;
+
+        code = "int* df(int* expr);\n"
+               "int * f() {\n"
+               "    std::unique_ptr<int> x;\n"
+               "    x.reset(df(x.release()));\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
     }
 };
 

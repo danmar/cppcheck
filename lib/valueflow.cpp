@@ -663,7 +663,7 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
                 if (std::find(values.begin(), values.end(), value) != values.end())
                     setTokenValue(parent, value, settings);
             }
-        } else {
+        } else if (!value.isImpossible()) {
             // is condition only depending on 1 variable?
             nonneg int varId = 0;
             bool ret = false;
@@ -945,6 +945,13 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
         setTokenValue(parent, castValue(value, valueType.sign, settings->long_bit), settings);
     else if (valueType.type == ValueType::Type::LONGLONG)
         setTokenValue(parent, castValue(value, valueType.sign, settings->long_long_bit), settings);
+    else if (valueType.isFloat()) {
+        ValueFlow::Value floatValue = value;
+        floatValue.valueType = ValueFlow::Value::ValueType::FLOAT;
+        if (value.isIntValue())
+            floatValue.floatValue = value.intvalue;
+        setTokenValue(parent, floatValue, settings);
+    }
     else if (value.isIntValue()) {
         const long long charMax = settings->signedCharMax();
         const long long charMin = settings->signedCharMin();
@@ -2131,6 +2138,10 @@ struct ValueFlowAnalyzer : Analyzer {
     }
 
     virtual Action isAliasModified(const Token* tok) const {
+        // Lambda function call
+        if (Token::Match(tok, "%var% ("))
+            // TODO: Check if modified in the lambda function
+            return Action::Invalid;
         int indirect = 0;
         if (tok->valueType())
             indirect = tok->valueType()->pointer;
@@ -2931,8 +2942,10 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                 if (vartok == tok)
                     return {{tok, true, std::move(errorPath)}};
                 const Token* contok = var->nameToken()->astParent()->astOperand2();
-                if (contok)
+                if (astIsContainer(contok))
                     return getLifetimeTokens(contok, escape, std::move(errorPath), pred, depth - 1);
+                else
+                    return std::vector<LifetimeToken>{};
             } else {
                 return std::vector<LifetimeToken> {};
             }
@@ -3904,21 +3917,53 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 isContainerOfPointers = vt.pointer > 0;
             }
 
-            LifetimeStore ls;
+            ValueFlow::Value master;
+            master.valueType = ValueFlow::Value::ValueType::LIFETIME;
+            master.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
 
-            if (astIsIterator(parent->tokAt(2)))
-                ls = LifetimeStore{tok, "Iterator to container is created here.", ValueFlow::Value::LifetimeKind::Iterator};
-            else if ((astIsPointer(parent->tokAt(2)) && !isContainerOfPointers) || Token::Match(parent->next(), "data|c_str"))
-                ls = LifetimeStore{tok, "Pointer to container is created here.", ValueFlow::Value::LifetimeKind::Object};
-            else
+            if (astIsIterator(parent->tokAt(2))) {
+                master.errorPath.emplace_back(parent->tokAt(2), "Iterator to container is created here.");
+                master.lifetimeKind = ValueFlow::Value::LifetimeKind::Iterator;
+            } else if ((astIsPointer(parent->tokAt(2)) && !isContainerOfPointers) ||
+                       Token::Match(parent->next(), "data|c_str")) {
+                master.errorPath.emplace_back(parent->tokAt(2), "Pointer to container is created here.");
+                master.lifetimeKind = ValueFlow::Value::LifetimeKind::Object;
+            } else {
                 continue;
+            }
 
-            // Dereferencing
-            if (tok->isUnaryOp("*") || parent->originalName() == "->")
-                ls.byDerefCopy(parent->tokAt(2), tokenlist, errorLogger, settings);
-            else
-                ls.byRef(parent->tokAt(2), tokenlist, errorLogger, settings);
+            std::vector<const Token*> toks = {};
+            if (tok->isUnaryOp("*") || parent->originalName() == "->") {
+                for (const ValueFlow::Value& v : tok->values()) {
+                    if (!v.isSymbolicValue())
+                        continue;
+                    if (v.isKnown())
+                        continue;
+                    if (v.intvalue != 0)
+                        continue;
+                    if (!v.tokvalue)
+                        continue;
+                    toks.push_back(v.tokvalue);
+                }
+            } else {
+                toks = {tok};
+            }
 
+            for (const Token* tok2 : toks) {
+                for (const ReferenceToken& rt : followAllReferences(tok2, false)) {
+                    ValueFlow::Value value = master;
+                    value.tokvalue = rt.token;
+                    value.errorPath.insert(value.errorPath.begin(), rt.errors.begin(), rt.errors.end());
+                    setTokenValue(parent->tokAt(2), value, tokenlist->getSettings());
+
+                    if (!rt.token->variable()) {
+                        LifetimeStore ls = LifetimeStore{
+                            rt.token, master.errorPath.back().second, ValueFlow::Value::LifetimeKind::Object};
+                        ls.byRef(parent->tokAt(2), tokenlist, errorLogger, settings);
+                    }
+                }
+            }
+            valueFlowForwardLifetime(parent->tokAt(2), tokenlist, errorLogger, settings);
         }
         // Check constructors
         else if (Token::Match(tok, "=|return|%type%|%var% {")) {
@@ -6786,6 +6831,17 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
                     valueFlowForwardAssign(inTok, var, values, constValue, false, tokenlist, errorLogger, settings);
                 }
             } else if (Token::Match(tok, "%var% . release ( )") && tok->next()->originalName() != "->") {
+                const Token* parent = tok->tokAt(3)->astParent();
+                bool hasParentReset = false;
+                while (parent) {
+                    if (Token::Match(parent->tokAt(-3), "%varid% . release|reset (", tok->varId())) {
+                        hasParentReset = true;
+                        break;
+                    }
+                    parent = parent->astParent();
+                }
+                if (hasParentReset)
+                    continue;
                 std::list<ValueFlow::Value> values;
                 ValueFlow::Value v(0);
                 v.setKnown();
