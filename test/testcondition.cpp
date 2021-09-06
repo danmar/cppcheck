@@ -119,6 +119,7 @@ private:
         TEST_CASE(alwaysTrueInfer);
         TEST_CASE(alwaysTrueContainer);
         TEST_CASE(alwaysTrueLoop);
+        TEST_CASE(alwaysTrueTryCatch);
         TEST_CASE(multiConditionAlwaysTrue);
         TEST_CASE(duplicateCondition);
 
@@ -2675,6 +2676,17 @@ private:
               "    return ret;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #10456
+        check("int f() {\n"
+              "    int i = 0;\n"
+              "    auto f = [&](bool b) { if (b) ++i; };\n"
+              "    if (i) return i;\n"
+              "    f(true);\n"
+              "    if (i) return i;\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void innerConditionModified() {
@@ -4075,6 +4087,44 @@ private:
               "    bFirst = false;\n"
               "  } while (true);\n"
               "  return bFirst;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void alwaysTrueTryCatch()
+    {
+        check("void g();\n"
+              "void f(int x)\n"
+              "{\n"
+              "    if( x ) {\n"
+              "        try {\n"
+              "            g();\n"
+              "        }\n"
+              "        catch(...) {\n"
+              "            return;\n"
+              "        }\n"
+              "    }\n"
+              "    g();\n"
+              "    if( x ) {\n"
+              "        g();\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g();\n"
+              "void h();\n"
+              "void f(int x) {\n"
+              "    if( x ) {\n"
+              "        try {\n"
+              "            g();\n"
+              "            return;\n"
+              "        }\n"
+              "        catch( ... ) {}\n"
+              "    }\n"
+              "    h();\n"
+              "    if( x ) {\n"
+              "        g();\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
