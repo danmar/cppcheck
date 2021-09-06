@@ -159,7 +159,7 @@ class ValueType:
 
     def __repr__(self):
         attrs = ["type", "sign", "bits", "typeScopeId", "originalTypeName",
-                 "constness", "constness", "pointer"]
+                 "constness", "pointer"]
         return "{}({})".format(
             "ValueType",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
