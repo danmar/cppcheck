@@ -362,7 +362,7 @@ C11_ADDED_KEYWORDS = {
 
 def isKeyword(keyword, standard='c99'):
     kw_set = {}
-    if standard == 'c90':
+    if standard == 'c89':
         kw_set = C90_KEYWORDS
     elif standard == 'c99':
         kw_set = C90_KEYWORDS
