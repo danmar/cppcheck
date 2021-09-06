@@ -133,6 +133,7 @@ private:
         TEST_CASE(compareOutOfTypeRange);
         TEST_CASE(knownConditionCast); // #9976
         TEST_CASE(knownConditionIncrementLoop); // #9808
+        TEST_CASE(knownConditionUnsignedMax); // #10454
     }
 
     void check(const char code[], Settings *settings, const char* filename = "test.cpp") {
@@ -4646,6 +4647,35 @@ private:
               "    std::cout << a;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void knownConditionUnsignedMax() { // 10454
+        check("#define MAX (18446744073709551615ULL)\n"
+              "\n"
+              "class Value {\n"
+              " public:\n"
+              "  explicit Value(unsigned long long x) : _x(x) {}\n"
+              "\n"
+              "  unsigned long long amount() const { return isNotInitialized() ? MAX : _x; }\n"
+              "  unsigned long long amount2() const { return isNotInitialized2() ? MAX : _x; }\n"
+              "  unsigned long long amount3() const { return isNotInitialized3() ? MAX : _x; }\n"
+              "  unsigned long long amount4() const { return isNotInitialized4() ? MAX : _x; }\n"
+              "  unsigned long long amount5() const { return isNotInitialized5() ? MAX : _x; }\n"
+              "  unsigned long long amount6() const { return isNotInitialized6() ? MAX : _x; }\n"
+              "\n"
+              " private:\n"
+              "  unsigned long long _x;\n"
+              "\n"
+              "  bool isNotInitialized() const { return _x == MAX; }\n"
+              "  bool isNotInitialized2() const { return _x != MAX; }\n"
+              "  bool isNotInitialized3() const { return _x < MAX; }\n"
+              "  bool isNotInitialized4() const { return _x <= MAX; }\n"
+              "  bool isNotInitialized5() const { return _x > MAX; }\n"
+              "  bool isNotInitialized6() const { return _x >= MAX; }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:10]: (style) Condition 'isNotInitialized4()' is always true\n"
+                      "[test.cpp:11]: (style) Condition 'isNotInitialized5()' is always false\n", errout.str());
+
     }
 };
 
