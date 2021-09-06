@@ -4676,7 +4676,7 @@ private:
               "    for(int i=0;i<strlen(*test);i++)\n"
               "        printf(\"%c\",*test[i]);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4] -> [test.cpp:9]: (warning) The address of local variable 'test' might be accessed at non-zero index.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4] -> [test.cpp:9]: (warning) The address of local variable 'test' might be accessed at non-zero index.\n", "", errout.str());
 
         check("void Bar(uint8_t data);\n"
               "void Foo(const uint8_t * const data, const uint8_t length) {\n"
@@ -4687,6 +4687,18 @@ private:
               "    const uint8_t data = 0U;\n"
               "    Foo(&data,1U);\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo(int n, int* p) {\n"
+                "    int res = 0;\n"
+                "    for(int i = 0; i < n; i++ )\n"
+                "        res += p[i];\n"
+                "    return res;\n"
+                "}\n"
+                "int bar() {\n"
+                "    int single_value = 0;\n"
+                "    return foo(1, &single_value);\n"
+                "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
