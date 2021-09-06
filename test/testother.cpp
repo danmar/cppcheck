@@ -9567,7 +9567,7 @@ private:
             "	MinMax tmpMinMax = MinMax(max,min);\n"
             "	foo4(tmpMinMax);\n"
             "}\n", &mismatchingFalse);
-        ASSERT_EQUALS("[test.cpp:1]: (style) Note, max and fmin name mismatch. Did you mean: fmax\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Warning, max and fmin name mismatch. Did you mean: fmax\n", errout.str());
     }
 
     void foundMismatchingNames3() { // Note: Possible mismatch ( 50/50 )
@@ -9583,7 +9583,7 @@ private:
             "		this->max = 0.0F;\n"
             "	}\n"
             "};\n", &mismatchingFalse);
-        ASSERT_EQUALS("[test.cpp:5]: (style) Note, this->min and fmax name mismatch. Did you mean: fmin\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Warning, this->min and fmax name mismatch. Did you mean: fmin\n", errout.str());
     }
 };
 

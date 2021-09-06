@@ -3668,7 +3668,7 @@ void CheckOther::checkMismatchingNames()
                                 {
                                     for (auto const& targ2 : tmpArgListInfo)
                                     {
-                                        if (IsSameName(fieldname, targ2.varname, false))
+                                        if (IsSameName(svar->name(), targ2.varname, false))
                                         {
                                             mismatchingNamesWriteError(targ.tok, "Warning, ", "this->" + fieldname, svar->name(), targ.varname);
                                                 error_found = true;
@@ -3715,7 +3715,7 @@ void CheckOther::checkMismatchingNames()
                                     {
                                         for (auto const& targ2 : tmpArgListInfo)
                                         {
-                                            if (IsSameName(svar->name(), targ2.varname, false))
+                                            if (IsSameName(svar2->name(), targ2.varname, false))
                                             {
                                                 mismatchingNamesWriteError(targ.tok, "Warning, ", svar->name(), svar2->name(), targ.varname);
                                                 error_found = true;
