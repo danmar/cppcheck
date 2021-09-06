@@ -198,7 +198,7 @@ class Token:
         isName             Is this token a symbol name
         isNumber           Is this token a number, for example 123, 12.34
         isInt              Is this token a int value such as 1234
-        isFloat            Is this token a int value such as 12.34
+        isFloat            Is this token a float value such as 12.34
         isString           Is this token a string literal such as "hello"
         strlen             string length for string literal
         isChar             Is this token a char literal such as 'x'
