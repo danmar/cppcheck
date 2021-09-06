@@ -9557,18 +9557,22 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (style) Warning, this->min and max name mismatch. Did you mean: min\n", errout.str());
     }
 
-    void foundMismatchingNames2() { // Style: Possible mismatch ( 50/50 )
+    void foundMismatchingNames2() { // Note: Possible mismatch ( 50/50 )
+        Settings mismatchingFalse;
+        mismatchingFalse.addons.push_back("mismatchingFalse");
         check("void foo3(float fmin, float fmax)\n"
             "{\n"
             "	float max = fmin;\n"
             "	float min = 0.0F;\n"
             "	MinMax tmpMinMax = MinMax(max,min);\n"
             "	foo4(tmpMinMax);\n"
-            "}\n");
+            "}\n", &mismatchingFalse);
         ASSERT_EQUALS("[test.cpp:1]: (style) Note, max and fmin name mismatch. Did you mean: fmax\n", errout.str());
     }
 
-    void foundMismatchingNames3() { // Style: Possible mismatch ( 50/50 )
+    void foundMismatchingNames3() { // Note: Possible mismatch ( 50/50 )
+        Settings mismatchingFalse;
+        mismatchingFalse.addons.push_back("mismatchingFalse");
         check("struct MinMax\n"
             "{\n"
             "	float min = 0.0F;\n"
@@ -9578,7 +9582,7 @@ private:
             "		this->min = fmax;\n"
             "		this->max = 0.0F;\n"
             "	}\n"
-            "};\n");
+            "};\n", &mismatchingFalse);
         ASSERT_EQUALS("[test.cpp:5]: (style) Note, this->min and fmax name mismatch. Did you mean: fmin\n", errout.str());
     }
 };

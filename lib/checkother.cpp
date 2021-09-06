@@ -3623,6 +3623,8 @@ void CheckOther::checkMismatchingNames()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
+    bool printFalseDetections = std::find(std::begin(mSettings->addons), std::end(mSettings->addons), "mismatchingFalse") != std::end(mSettings->addons);
+
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     if (!symbolDatabase)
         return;
@@ -3673,7 +3675,7 @@ void CheckOther::checkMismatchingNames()
                                                 break;
                                         }
                                     }
-                                    if (!error_found)
+                                    if (!error_found && printFalseDetections)
                                     {
                                         if (mSettings->certainty.isEnabled(Certainty::inconclusive))
                                         {
@@ -3720,7 +3722,7 @@ void CheckOther::checkMismatchingNames()
                                                 break;
                                             }
                                         }
-                                        if (!error_found)
+                                        if (!error_found && printFalseDetections)
                                         {
                                             if (mSettings->certainty.isEnabled(Certainty::inconclusive))
                                             {
