@@ -3662,7 +3662,7 @@ void CheckOther::checkMismatchingNames()
                     {
                         for (auto const& targ : tmpArgListInfo)
                         {
-                            if (IsSameName(fieldname, targ.varname, mSettings->certainty.isEnabled(Certainty::inconclusive)))
+                            if (IsSameName(fieldname, targ.varname, printFalseDetections))
                             {
                                 if (!IsSameName(svar->name(), targ.varname, true))
                                 {
@@ -3677,7 +3677,7 @@ void CheckOther::checkMismatchingNames()
                                     }
                                     if (!error_found && printFalseDetections)
                                     {
-                                        if (mSettings->certainty.isEnabled(Certainty::inconclusive))
+                                        if (printFalseDetections)
                                         {
                                             mismatchingNamesWriteError(targ.tok, "Note, ", "this->" + fieldname, svar->name(), targ.varname);
                                             error_found = true;
@@ -3709,7 +3709,7 @@ void CheckOther::checkMismatchingNames()
                         {
                             for (auto const& targ : tmpArgListInfo)
                             {
-                                if (IsSameName(svar->name(), targ.varname, mSettings->certainty.isEnabled(Certainty::inconclusive)))
+                                if (IsSameName(svar->name(), targ.varname, printFalseDetections))
                                 {
                                     if (!IsSameName(svar2->name(), targ.varname, true))
                                     {
@@ -3724,7 +3724,7 @@ void CheckOther::checkMismatchingNames()
                                         }
                                         if (!error_found && printFalseDetections)
                                         {
-                                            if (mSettings->certainty.isEnabled(Certainty::inconclusive))
+                                            if (printFalseDetections)
                                             {
                                                 mismatchingNamesWriteError(targ.tok, "Note, ", svar->name(), svar2->name(), targ.varname);
                                                 error_found = true;
