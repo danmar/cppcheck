@@ -1493,6 +1493,9 @@ private:
 
         check("int f(int x) { assert(0); }");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(int x) { if (x) return 1; else return bar({1}, {}); }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // NRVO check
