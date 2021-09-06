@@ -340,30 +340,37 @@ def isStdLibId(id_, standard='c99'):
 
 # Reserved keywords defined in ISO/IEC9899:1990 -- ch 6.1.1
 C90_KEYWORDS = {
-    'auto', 'break', 'double', 'else', 'enum', 'extern', 'float', 'for',
-    'goto', 'if', 'case', 'char', 'const', 'continue', 'default', 'do', 'int',
-    'long', 'struct', 'switch', 'register', 'typedef', 'union', 'unsigned',
-    'void', 'volatile', 'while', 'return', 'short', 'signed', 'sizeof',
-    'static'
+    'auto', 'break', 'case', 'char', 'const', 'continue', 'default', 'do',
+    'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if', 
+    'int', 'long', 'register', 'return', 'short', 'signed',
+    'sizeof', 'static', 'struct', 'switch', 'typedef', 'union', 'unsigned',
+    'void', 'volatile', 'while'
 }
 
 
 # Reserved keywords defined in ISO/IEC 9899 WF14/N1256 -- ch. 6.4.1
-C99_KEYWORDS = {
-    'auto', 'break', 'case', 'char', 'const', 'continue', 'default', 'do',
-    'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if', 'inline',
-    'int', 'long', 'register', 'restrict', 'return', 'short', 'signed',
-    'sizeof', 'static', 'struct', 'switch', 'typedef', 'union', 'unsigned',
-    'void', 'volatile', 'while', '_Bool', '_Complex', '_Imaginary'
+C99_ADDED_KEYWORDS = {
+    'inline', 'restrict', '_Bool', '_Complex', '_Imaginary',
+    'bool', 'complex', 'imaginary',
 }
 
+C11_ADDED_KEYWORDS = {
+    '_Alignas', '_Alignof', '_Atomic', '_Generic', '_Noreturn',
+    '_Statis_assert', '_Thread_local' ,
+    'alignas', 'alignof', 'noreturn', 'static_assert'
+}
 
 def isKeyword(keyword, standard='c99'):
     kw_set = {}
-    if standard == 'c89':
+    if standard == 'c90':
         kw_set = C90_KEYWORDS
     elif standard == 'c99':
-        kw_set = C99_KEYWORDS
+        kw_set = C90_KEYWORDS
+        kw_set.update(C99_ADDED_KEYWORDS)
+    else
+        kw_set = C90_KEYWORDS
+        kw_set.update(C99_ADDED_KEYWORDS)
+        kw_set.update(C11_ADDED_KEYWORDS)
     return keyword in kw_set
 
 
