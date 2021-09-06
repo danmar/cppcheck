@@ -24,6 +24,7 @@ import os
 import argparse
 import codecs
 import string
+import copy
 
 try:
     from itertools import izip as zip
@@ -365,10 +366,10 @@ def isKeyword(keyword, standard='c99'):
     if standard == 'c89':
         kw_set = C90_KEYWORDS
     elif standard == 'c99':
-        kw_set = C90_KEYWORDS
+        kw_set = copy.copy(C90_KEYWORDS)
         kw_set.update(C99_ADDED_KEYWORDS)
-    else
-        kw_set = C90_KEYWORDS
+    else:
+        kw_set = copy.copy(C90_KEYWORDS)
         kw_set.update(C99_ADDED_KEYWORDS)
         kw_set.update(C11_ADDED_KEYWORDS)
     return keyword in kw_set
