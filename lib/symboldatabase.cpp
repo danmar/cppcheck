@@ -1955,7 +1955,7 @@ const Token * Variable::declEndToken() const
 {
     Token const * declEnd = typeStartToken();
     while (declEnd && !Token::Match(declEnd, "[;,)={]")) {
-        if (declEnd->link() && Token::Match(declEnd,"(|["))
+        if (declEnd->link() && Token::Match(declEnd,"(|[|<"))
             declEnd = declEnd->link();
         declEnd = declEnd->next();
     }
