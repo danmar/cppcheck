@@ -342,7 +342,7 @@ def isStdLibId(id_, standard='c99'):
 # Reserved keywords defined in ISO/IEC9899:1990 -- ch 6.1.1
 C90_KEYWORDS = {
     'auto', 'break', 'case', 'char', 'const', 'continue', 'default', 'do',
-    'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if', 
+    'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if',
     'int', 'long', 'register', 'return', 'short', 'signed',
     'sizeof', 'static', 'struct', 'switch', 'typedef', 'union', 'unsigned',
     'void', 'volatile', 'while'
@@ -352,7 +352,7 @@ C90_KEYWORDS = {
 # Reserved keywords defined in ISO/IEC 9899 WF14/N1256 -- ch. 6.4.1
 C99_ADDED_KEYWORDS = {
     'inline', 'restrict', '_Bool', '_Complex', '_Imaginary',
-    'bool', 'complex', 'imaginary',
+    'bool', 'complex', 'imaginary'
 }
 
 C11_ADDED_KEYWORDS = {
