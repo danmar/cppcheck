@@ -257,6 +257,10 @@ private:
         TEST_CASE(checkOverlappingWrite);
 
         TEST_CASE(constVariableArrayMember); // #10371
+
+        TEST_CASE(foundMismatchingNames);
+        TEST_CASE(foundMismatchingNames2);
+        TEST_CASE(foundMismatchingNames3);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
@@ -9537,6 +9541,49 @@ private:
               "    int m_Arr[1];\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void foundMismatchingNames() { // Warning: 100% mismatch
+        check("struct MinMax\n"
+            "{\n"
+            "	float min = 0.0F;\n"
+            "	float max = 0.0F;\n"
+            "	MinMax(float min, float max)\n"
+            "	{\n"
+            "		this->min = max;\n"
+            "		this->max = 0.0F;\n"
+            "	}\n"
+            "};\n", nullptr, false, false);
+        ASSERT_EQUALS("[test.cpp:5]: (style) Warning, this->min and max name mismatch. Did you mean: min\n", errout.str());
+    }
+
+    void foundMismatchingNames2() { // Note: Possible mismatch ( 50/50 )
+        Settings mismatchingFalse;
+        mismatchingFalse.addons.push_back("mismatchingFalse");
+        check("void foo3(float fmin, float fmax)\n"
+            "{\n"
+            "	float max = fmin;\n"
+            "	float min = 0.0F;\n"
+            "	MinMax tmpMinMax = MinMax(max,min);\n"
+            "	foo4(tmpMinMax);\n"
+            "}\n", &mismatchingFalse);
+        ASSERT_EQUALS("[test.cpp:1]: (style) Warning, max and fmin name mismatch. Did you mean: fmax\n", errout.str());
+    }
+
+    void foundMismatchingNames3() { // Note: Possible mismatch ( 50/50 )
+        Settings mismatchingFalse;
+        mismatchingFalse.addons.push_back("mismatchingFalse");
+        check("struct MinMax\n"
+            "{\n"
+            "	float min = 0.0F;\n"
+            "	float max = 0.0F;\n"
+            "	MinMax(float fmin, float fmax)\n"
+            "	{\n"
+            "		this->min = fmax;\n"
+            "		this->max = 0.0F;\n"
+            "	}\n"
+            "};\n", &mismatchingFalse);
+        ASSERT_EQUALS("[test.cpp:5]: (style) Warning, this->min and fmax name mismatch. Did you mean: fmin\n", errout.str());
     }
 };
 

@@ -3554,3 +3554,195 @@ void CheckOther::overlappingWriteFunction(const Token *tok)
     const std::string funcname = tok ? tok->str() : "";
     reportError(tok, Severity::error, "overlappingWriteFunction", "Overlapping read/write in " + funcname + "() is undefined behavior");
 }
+
+float percent_of_varname_match_back(std::string varname1, std::string varname2, bool checkmin = false)
+{
+    float maxlen = checkmin ? std::min(varname1.length(), varname2.length()) : std::max(varname1.length(), varname2.length());
+    float matchlen = 0;
+    while (varname1.length() && varname2.length())
+    {
+        if (varname1.back() == varname2.back())
+        {
+            matchlen++;
+            varname1.pop_back();
+            varname2.pop_back();
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return (matchlen / maxlen * 100.f);
+}
+
+float percent_of_varname_match_front(std::string varname1, std::string varname2, bool checkmin = false)
+{
+    float maxlen = checkmin ? std::min(varname1.length(), varname2.length()) : std::max(varname1.length(), varname2.length());
+    float matchlen = 0;
+    while (varname1.length() && varname2.length())
+    {
+        if (varname1.front() == varname2.front())
+        {
+            matchlen++;
+            varname1.erase(varname1.begin());
+            varname2.erase(varname2.begin());
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return (matchlen / maxlen * 100.f);
+}
+
+bool CheckOther::IsSameName(std::string name1, std::string name2, bool partialMatch)
+{
+    if (name1 == name2)
+        return true;
+
+    std::transform(name1.begin(), name1.end(), name1.begin(),
+        [](unsigned char c) { return std::tolower(c); });
+    std::transform(name2.begin(), name2.end(), name2.begin(),
+        [](unsigned char c) { return std::tolower(c); });
+    if (name1 == name2)
+        return true;
+
+    if (name1.length() > 2 && name2.length() > 2)
+    {
+        if (partialMatch)
+            return std::max(percent_of_varname_match_back(name1, name2, partialMatch), percent_of_varname_match_front(name1, name2, partialMatch)) > 60;
+    }
+
+    return false;
+}
+
+void CheckOther::checkMismatchingNames()
+{
+    if (!mSettings->severity.isEnabled(Severity::style))
+        return;
+
+    bool printFalseDetections = std::find(std::begin(mSettings->addons), std::end(mSettings->addons), "mismatchingFalse") != std::end(mSettings->addons);
+
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
+    if (!symbolDatabase)
+        return;
+    for (const Scope* scope : symbolDatabase->functionScopes) {
+        const Function* function = scope->function;
+        if (!function)
+            continue;
+        struct ArgListInfo
+        {
+            std::string varname;
+            const Token* tok;
+        };
+        std::vector< ArgListInfo> tmpArgListInfo;
+        ArgListInfo tmpArgInfo = ArgListInfo();
+
+        for (const Variable var : function->argumentList)
+        {
+            tmpArgInfo = ArgListInfo();
+            tmpArgInfo.varname = var.name();
+            tmpArgInfo.tok = var.nameToken();
+            tmpArgListInfo.push_back(tmpArgInfo);
+        }
+        const Token* tok = function->arg->link()->next();
+        bool error_found = false;
+        for (; tok && tok != function->functionScope->bodyEnd; tok = tok->next())
+        {
+            if (Token::simpleMatch(tok, "this ."))
+            {
+                const Variable* svar = tok->tokAt(4)->variable();
+                if (svar)
+                {
+                    // if this->name != varname && this->name found in args...
+                    std::string fieldname = tok->strAt(2);
+                    if (!IsSameName(fieldname, svar->name(), true))
+                    {
+                        for (auto const& targ : tmpArgListInfo)
+                        {
+                            if (IsSameName(fieldname, targ.varname, printFalseDetections))
+                            {
+                                if (!IsSameName(svar->name(), targ.varname, true))
+                                {
+                                    for (auto const& targ2 : tmpArgListInfo)
+                                    {
+                                        if (IsSameName(svar->name(), targ2.varname, false))
+                                        {
+                                            mismatchingNamesWriteError(targ.tok, "Warning, ", "this->" + fieldname, svar->name(), targ.varname);
+                                                error_found = true;
+                                                break;
+                                        }
+                                    }
+                                    if (!error_found && printFalseDetections)
+                                    {
+                                        if (printFalseDetections)
+                                        {
+                                            mismatchingNamesWriteError(targ.tok, "Note, ", "this->" + fieldname, svar->name(), targ.varname);
+                                            error_found = true;
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+         
+            if (!error_found) {
+                bool matched = Token::Match(tok, "%var% = %var% ;");
+                if (!matched && Token::Match(tok, "%var% . %var% = %var% ;"))
+                {
+                    tok = tok->tokAt(2);
+                    matched = true;
+                }
+                if (matched)
+                {
+                    const Variable* svar2 = tok->tokAt(2)->variable();
+                    const Variable* svar = tok->variable();
+                    if (svar && !svar->isArgument() && svar2 && svar != svar2)
+                    {
+                        if (!IsSameName(svar->name(), svar2->name(), true))
+                        {
+                            for (auto const& targ : tmpArgListInfo)
+                            {
+                                if (IsSameName(svar->name(), targ.varname, printFalseDetections))
+                                {
+                                    if (!IsSameName(svar2->name(), targ.varname, true))
+                                    {
+                                        for (auto const& targ2 : tmpArgListInfo)
+                                        {
+                                            if (IsSameName(svar2->name(), targ2.varname, false))
+                                            {
+                                                mismatchingNamesWriteError(targ.tok, "Warning, ", svar->name(), svar2->name(), targ.varname);
+                                                error_found = true;
+                                                break;
+                                            }
+                                        }
+                                        if (!error_found && printFalseDetections)
+                                        {
+                                            if (printFalseDetections)
+                                            {
+                                                mismatchingNamesWriteError(targ.tok, "Note, ", svar->name(), svar2->name(), targ.varname);
+                                                error_found = true;
+                                            }
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::mismatchingNamesWriteError(const Token* tok, const std::string& prefix, const std::string& var, const std::string& arg, const std::string& newname)
+{
+    reportError(tok, Severity::style, "mismatchingNamesWriteError", prefix + var + " and " + arg + " name mismatch. Did you mean: " + newname);
+}

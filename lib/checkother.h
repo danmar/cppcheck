@@ -102,6 +102,7 @@ public:
         checkOther.checkAccessOfMovedVariable();
         checkOther.checkModuloOfOne();
         checkOther.checkOverlappingWrite();
+        checkOther.checkMismatchingNames();
     }
 
     /** Is expression a comparison that checks if a nonzero (unsigned/pointer) expression is less than zero? */
@@ -229,7 +230,9 @@ public:
 
     void checkOverlappingWrite();
     void overlappingWriteUnion(const Token *tok);
-    void overlappingWriteFunction(const Token *tok);
+    void overlappingWriteFunction(const Token* tok);
+    void mismatchingNamesWriteError(const Token* tok, const std::string& prefix, const std::string& var, const std::string& arg, const std::string& newname);
+    void checkMismatchingNames();
 
 private:
     // Error messages..
@@ -289,6 +292,8 @@ private:
     void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
     void checkModuloOfOneError(const Token *tok);
 
+    bool IsSameName(std::string name1, std::string name2, bool partialMatch);
+
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckOther c(nullptr, settings, errorLogger);
 
@@ -305,6 +310,7 @@ private:
         c.invalidFreeError(nullptr, "malloc", false);
         c.overlappingWriteUnion(nullptr);
         c.overlappingWriteFunction(nullptr);
+        c.mismatchingNamesWriteError(nullptr,"Warning: ", "varname","argname","newargname");
 
         //performance
         c.redundantCopyError(nullptr,  "varname");
