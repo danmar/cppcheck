@@ -133,22 +133,22 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSe
         if (!tok->comment)
             continue;
 
-        std::list<Suppressions::Suppression> inlineSuppressions;
-        if (!parseInlineSuppressionCommentToken(tok, inlineSuppressions, bad))
+        std::list<Suppressions::Suppression> inlineSuppr;
+        if (!parseInlineSuppressionCommentToken(tok, inlineSuppr, bad))
             continue;
 
         if (!sameline(tok->previous, tok)) {
             // find code after comment..
             tok = tok->next;
             while (tok && tok->comment) {
-                parseInlineSuppressionCommentToken(tok, inlineSuppressions, bad);
+                parseInlineSuppressionCommentToken(tok, inlineSuppr, bad);
                 tok = tok->next;
             }
             if (!tok)
                 break;
         }
 
-        if (inlineSuppressions.empty())
+        if (inlineSuppr.empty())
             continue;
 
         // Relative filename
@@ -173,7 +173,7 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSe
                                      tok->previous->str() == "{";
 
         // Add the suppressions.
-        for (Suppressions::Suppression &suppr : inlineSuppressions) {
+        for (Suppressions::Suppression &suppr : inlineSuppr) {
             suppr.fileName = relativeFilename;
             suppr.lineNumber = tok->location.line;
             suppr.thisAndNextLine = thisAndNextLine;
@@ -292,13 +292,13 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
         if (sameline(iftok,dtok) && dtok->name && defined.find(dtok->str()) == defined.end() && undefined.find(dtok->str()) == undefined.end())
             configset.insert(dtok->str());
     }
-    std::string cfg;
+    std::string c;
     for (const std::string &s : configset) {
-        if (!cfg.empty())
-            cfg += ';';
-        cfg += s;
+        if (!c.empty())
+          c += ';';
+        c += s;
     }
-    return cfg;
+    return c;
 }
 
 static bool hasDefine(const std::string &userDefines, const std::string &cfg)
@@ -324,16 +324,16 @@ static std::string cfg(const std::vector<std::string> &configs, const std::strin
 {
     std::set<std::string> configs2(configs.begin(), configs.end());
     std::string ret;
-    for (const std::string &cfg : configs2) {
-        if (cfg.empty())
+    for (const std::string &c : configs2) {
+        if (c.empty())
             continue;
-        if (cfg == "0")
+        if (c == "0")
             return "";
-        if (hasDefine(userDefines, cfg))
+        if (hasDefine(userDefines, c))
             continue;
         if (!ret.empty())
             ret += ';';
-        ret += cfg;
+        ret += c;
     }
     return ret;
 }
@@ -552,9 +552,9 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
 
     const std::set<std::string> configs = getConfigs(tokens1);
 
-    for (const std::string &cfg : configs) {
-        if (mSettings.userUndefs.find(cfg) == mSettings.userUndefs.end()) {
-            result[cfg] = getcode(tokens1, cfg, files, false);
+    for (const std::string &c : configs) {
+        if (mSettings.userUndefs.find(c) == mSettings.userUndefs.end()) {
+            result[c] = getcode(tokens1, c, files, false);
         }
     }
 }

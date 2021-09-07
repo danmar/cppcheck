@@ -1257,7 +1257,7 @@ bool Library::isCompliantValidationExpression(const char* p)
         if (std::isdigit(*p))
             error |= (*(p + 1) == '-');
         else if (*p == ':') {
-            error |= range | (*(p + 1) == '.');
+            error |= range || (*(p + 1) == '.');
             range = true;
             has_dot = false;
             has_E = false;
@@ -1269,7 +1269,7 @@ bool Library::isCompliantValidationExpression(const char* p)
             has_dot = false;
             has_E = false;
         } else if (*p == '.') {
-            error |= has_dot | (!std::isdigit(*(p + 1)));
+            error |= has_dot || (!std::isdigit(*(p + 1)));
             has_dot = true;
         } else if (*p == 'E' || *p == 'e') {
             error |= has_E;
