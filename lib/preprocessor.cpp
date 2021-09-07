@@ -295,7 +295,7 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
     std::string c;
     for (const std::string &s : configset) {
         if (!c.empty())
-          c += ';';
+            c += ';';
         c += s;
     }
     return c;
