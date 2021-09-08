@@ -307,8 +307,7 @@ static ValueFlow::Value castValue(ValueFlow::Value value, const ValueType::Sign 
     return value;
 }
 
-static bool isNumeric(const ValueFlow::Value &value)
-{
+static bool isNumeric(const ValueFlow::Value& value) {
     return value.isIntValue() || value.isFloatValue();
 }
 
@@ -474,8 +473,14 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
 
 static bool isCompatibleValueTypes(ValueFlow::Value::ValueType x, ValueFlow::Value::ValueType y)
 {
-    static const std::unordered_map<ValueFlow::Value::ValueType, std::unordered_set<ValueFlow::Value::ValueType, EnumClassHash>, EnumClassHash> compatibleTypes = {
-        {ValueFlow::Value::ValueType::INT, {ValueFlow::Value::ValueType::FLOAT, ValueFlow::Value::ValueType::SYMBOLIC, ValueFlow::Value::ValueType::TOK}},
+    static const std::unordered_map<ValueFlow::Value::ValueType,
+                                    std::unordered_set<ValueFlow::Value::ValueType, EnumClassHash>,
+                                    EnumClassHash>
+    compatibleTypes = {
+        {ValueFlow::Value::ValueType::INT,
+         {ValueFlow::Value::ValueType::FLOAT,
+              ValueFlow::Value::ValueType::SYMBOLIC,
+              ValueFlow::Value::ValueType::TOK}},
         {ValueFlow::Value::ValueType::FLOAT, {ValueFlow::Value::ValueType::INT}},
         {ValueFlow::Value::ValueType::TOK, {ValueFlow::Value::ValueType::INT}},
         {ValueFlow::Value::ValueType::ITERATOR_START, {ValueFlow::Value::ValueType::INT}},
@@ -989,8 +994,7 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
         if (value.isIntValue())
             floatValue.floatValue = value.intvalue;
         setTokenValue(parent, floatValue, settings);
-    }
-    else if (value.isIntValue()) {
+    } else if (value.isIntValue()) {
         const long long charMax = settings->signedCharMax();
         const long long charMin = settings->signedCharMin();
         if (charMin <= value.intvalue && value.intvalue <= charMax) {
