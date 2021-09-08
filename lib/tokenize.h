@@ -829,18 +829,18 @@ private:
     void setVarIdClassDeclaration(const Token * const startToken,
                                   const VariableMap &variableMap,
                                   const nonneg int scopeStartVarId,
-                                  std::map<int, std::map<std::string,int>>& structMembers) const;
+                                  std::map<int, std::map<std::string,int>>& structMembers);
 
     void setVarIdStructMembers(Token **tok1,
                                std::map<int, std::map<std::string, int>>& structMembers,
-                               nonneg int *varId) const;
+                               nonneg int *varId);
 
     void setVarIdClassFunction(const std::string &classname,
                                Token * const startToken,
                                const Token * const endToken,
                                const std::map<std::string,int> &varlist,
                                std::map<int, std::map<std::string,int>>& structMembers,
-                               nonneg int *varId_) const;
+                               nonneg int *varId_);
 
     /**
      * Simplify e.g. 'return(strncat(temp,"a",1));' into
