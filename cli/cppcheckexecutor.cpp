@@ -924,8 +924,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
             totalfilesize += i->second;
         }
 
-        std::size_t processedsize = 0;
-        unsigned int c = 0;
+        std::size_t processedsize = 0, c = 0;
         if (settings.project.fileSettings.empty()) {
             for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
                 if (!mSettings->library.markupFile(i->first)
