@@ -127,28 +127,28 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
     return true;
 }
 
-static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> *bad)
+static void addInlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> *bad)
 {
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (!tok->comment)
             continue;
 
-        std::list<Suppressions::Suppression> inlineSuppr;
-        if (!parseInlineSuppressionCommentToken(tok, inlineSuppr, bad))
+        std::list<Suppressions::Suppression> inlineSuppressions;
+        if (!parseInlineSuppressionCommentToken(tok, inlineSuppressions, bad))
             continue;
 
         if (!sameline(tok->previous, tok)) {
             // find code after comment..
             tok = tok->next;
             while (tok && tok->comment) {
-                parseInlineSuppressionCommentToken(tok, inlineSuppr, bad);
+                parseInlineSuppressionCommentToken(tok, inlineSuppressions, bad);
                 tok = tok->next;
             }
             if (!tok)
                 break;
         }
 
-        if (inlineSuppr.empty())
+        if (inlineSuppressions.empty())
             continue;
 
         // Relative filename
@@ -173,7 +173,7 @@ static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSe
                                      tok->previous->str() == "{";
 
         // Add the suppressions.
-        for (Suppressions::Suppression &suppr : inlineSuppr) {
+        for (Suppressions::Suppression &suppr : inlineSuppressions) {
             suppr.fileName = relativeFilename;
             suppr.lineNumber = tok->location.line;
             suppr.thisAndNextLine = thisAndNextLine;
@@ -187,10 +187,10 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
     if (!mSettings.inlineSuppressions)
         return;
     std::list<BadInlineSuppression> err;
-    ::inlineSuppressions(tokens, mSettings, &err);
+    ::addInlineSuppressions(tokens, mSettings, &err);
     for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
         if (it->second)
-            ::inlineSuppressions(*it->second, mSettings, &err);
+            ::addInlineSuppressions(*it->second, mSettings, &err);
     }
     for (const BadInlineSuppression &bad : err) {
         error(bad.location.file(), bad.location.line, bad.errmsg);
@@ -292,13 +292,13 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
         if (sameline(iftok,dtok) && dtok->name && defined.find(dtok->str()) == defined.end() && undefined.find(dtok->str()) == undefined.end())
             configset.insert(dtok->str());
     }
-    std::string c;
+    std::string cfgStr;
     for (const std::string &s : configset) {
-        if (!c.empty())
-            c += ';';
-        c += s;
+        if (!cfgStr.empty())
+            cfgStr += ';';
+        cfgStr += s;
     }
-    return c;
+    return cfgStr;
 }
 
 static bool hasDefine(const std::string &userDefines, const std::string &cfg)
