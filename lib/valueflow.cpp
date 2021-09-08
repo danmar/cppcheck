@@ -115,6 +115,7 @@
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -306,6 +307,11 @@ static ValueFlow::Value castValue(ValueFlow::Value value, const ValueType::Sign 
     return value;
 }
 
+static bool isNumeric(const ValueFlow::Value &value)
+{
+    return value.isIntValue() || value.isFloatValue();
+}
+
 static void combineValueProperties(const ValueFlow::Value &value1, const ValueFlow::Value &value2, ValueFlow::Value *result)
 {
     if (value1.isKnown() && value2.isKnown())
@@ -316,6 +322,14 @@ static void combineValueProperties(const ValueFlow::Value &value1, const ValueFl
         result->setInconclusive();
     else
         result->setPossible();
+    if (value1.isSymbolicValue()) {
+        result->valueType = value1.valueType;
+        result->tokvalue = value1.tokvalue;
+    }
+    if (value2.isSymbolicValue()) {
+        result->valueType = value2.valueType;
+        result->tokvalue = value2.tokvalue;
+    }
     if (value1.isIteratorValue())
         result->valueType = value1.valueType;
     if (value2.isIteratorValue())
@@ -420,14 +434,14 @@ static R calculate(const std::string& s, const T& x, const T& y, bool* error = n
     case '<':
         return wrap(x < y);
     case '<<':
-        if (y >= sizeof(MathLib::bigint) * 8) {
+        if (y >= sizeof(MathLib::bigint) * 8 || y < 0 || x < 0) {
             if (error)
                 *error = true;
             return R{};
         }
         return wrap(MathLib::bigint(x) << MathLib::bigint(y));
     case '>>':
-        if (y >= sizeof(MathLib::bigint) * 8) {
+        if (y >= sizeof(MathLib::bigint) * 8 || y < 0 || x < 0) {
             if (error)
                 *error = true;
             return R{};
@@ -458,8 +472,29 @@ static T calculate(const std::string& s, const T& x, const T& y, bool* error = n
 /** Set token value for cast */
 static void setTokenValueCast(Token *parent, const ValueType &valueType, const ValueFlow::Value &value, const Settings *settings);
 
+static bool isCompatibleValueTypes(ValueFlow::Value::ValueType x, ValueFlow::Value::ValueType y)
+{
+    static const std::unordered_map<ValueFlow::Value::ValueType, std::unordered_set<ValueFlow::Value::ValueType, EnumClassHash>, EnumClassHash> compatibleTypes = {
+        {ValueFlow::Value::ValueType::INT, {ValueFlow::Value::ValueType::FLOAT, ValueFlow::Value::ValueType::SYMBOLIC, ValueFlow::Value::ValueType::TOK}},
+        {ValueFlow::Value::ValueType::FLOAT, {ValueFlow::Value::ValueType::INT}},
+        {ValueFlow::Value::ValueType::TOK, {ValueFlow::Value::ValueType::INT}},
+        {ValueFlow::Value::ValueType::ITERATOR_START, {ValueFlow::Value::ValueType::INT}},
+        {ValueFlow::Value::ValueType::ITERATOR_END, {ValueFlow::Value::ValueType::INT}},
+    };
+    if (x == y)
+        return true;
+    auto it = compatibleTypes.find(x);
+    if (it == compatibleTypes.end())
+        return false;
+    return it->second.count(y) > 0;
+}
+
 static bool isCompatibleValues(const ValueFlow::Value& value1, const ValueFlow::Value& value2)
 {
+    if (value1.isSymbolicValue() && value2.isSymbolicValue() && value1.tokvalue->exprId() != value2.tokvalue->exprId())
+        return false;
+    if (!isCompatibleValueTypes(value1.valueType, value2.valueType))
+        return false;
     if (value1.isKnown() || value2.isKnown())
         return true;
     if (value1.isImpossible() || value2.isImpossible())
@@ -744,15 +779,16 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
                     continue;
                 ValueFlow::Value result(0);
                 combineValueProperties(value1, value2, &result);
-                const double floatValue1 = value1.isIntValue() ? value1.intvalue : value1.floatValue;
-                const double floatValue2 = value2.isIntValue() ? value2.intvalue : value2.floatValue;
-                const bool isFloat = value1.isFloatValue() || value2.isFloatValue();
-                if (isFloat && Token::Match(parent, "&|^|%|<<|>>|%or%"))
-                    continue;
-                if (Token::Match(parent, "<<|>>") &&
-                    !(value1.intvalue >= 0 && value2.intvalue >= 0 && value2.intvalue < MathLib::bigint_bits))
-                    continue;
-                if (Token::Match(parent, "/|%") && isZero<double>(floatValue2))
+                if (astIsFloat(parent, false)) {
+                    if (!result.isIntValue() && !result.isFloatValue())
+                        continue;
+                    result.valueType = ValueFlow::Value::ValueType::FLOAT;
+                }
+                const double floatValue1 = value1.isFloatValue() ? value1.floatValue : value1.intvalue;
+                const double floatValue2 = value2.isFloatValue() ? value2.floatValue : value2.intvalue;
+                const MathLib::bigint intValue1 = value1.isFloatValue() ? value1.floatValue : value1.intvalue;
+                const MathLib::bigint intValue2 = value2.isFloatValue() ? value2.floatValue : value2.intvalue;
+                if ((value1.isFloatValue() || value2.isFloatValue()) && Token::Match(parent, "&|^|%|<<|>>|==|!=|%or%"))
                     continue;
                 if (Token::Match(parent, "==|!=")) {
                     if ((value1.isIntValue() && value2.isTokValue()) || (value1.isTokValue() && value2.isIntValue())) {
@@ -761,28 +797,30 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
                         else if (parent->str() == "!=")
                             result.intvalue = 1;
                     } else if (value1.isIntValue() && value2.isIntValue()) {
-                        result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
+                        bool error = false;
+                        result.intvalue = calculate(parent->str(), intValue1, intValue2, &error);
+                        if (error)
+                            continue;
                     } else {
                         continue;
                     }
-                    setTokenValue(parent, result, settings);
-                } else if (Token::Match(parent, "%comp%")) {
-                    if (!isFloat && !value1.isIntValue() && !value2.isIntValue())
-                        continue;
-                    if (isFloat)
-                        result.intvalue = calculate(parent->str(), floatValue1, floatValue2);
-                    else
-                        result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
                     setTokenValue(parent, result, settings);
                 } else if (Token::Match(parent, "%op%")) {
-                    if (value1.isTokValue() || value2.isTokValue())
-                        break;
-                    if (isFloat) {
-                        result.valueType = ValueFlow::Value::ValueType::FLOAT;
-                        result.floatValue = calculate(parent->str(), floatValue1, floatValue2);
+                    if (Token::Match(parent, "%comp%")) {
+                        if (!result.isFloatValue() && !value1.isIntValue() && !value2.isIntValue())
+                            continue;
                     } else {
-                        result.intvalue = calculate(parent->str(), value1.intvalue, value2.intvalue);
+                        if (value1.isTokValue() || value2.isTokValue())
+                            break;
                     }
+                    bool error = false;
+                    if (result.isFloatValue()) {
+                        result.floatValue = calculate(parent->str(), floatValue1, floatValue2, &error);
+                    } else {
+                        result.intvalue = calculate(parent->str(), intValue1, intValue2, &error);
+                    }
+                    if (error)
+                        continue;
                     // If the bound comes from the second value then invert the bound when subtracting
                     if (Token::simpleMatch(parent, "-") && value2.bound == result.bound &&
                         value2.bound != ValueFlow::Value::Bound::Point)
@@ -945,7 +983,7 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
         setTokenValue(parent, castValue(value, valueType.sign, settings->long_bit), settings);
     else if (valueType.type == ValueType::Type::LONGLONG)
         setTokenValue(parent, castValue(value, valueType.sign, settings->long_long_bit), settings);
-    else if (valueType.isFloat()) {
+    else if (valueType.isFloat() && isNumeric(value)) {
         ValueFlow::Value floatValue = value;
         floatValue.valueType = ValueFlow::Value::ValueType::FLOAT;
         if (value.isIntValue())

@@ -41,6 +41,14 @@ struct SelectMapValues {
     }
 };
 
+// Enum hash for C++11. This is not needed in C++14
+struct EnumClassHash {
+    template <typename T>
+    std::size_t operator()(T t) const {
+        return static_cast<std::size_t>(t);
+    }
+};
+
 inline bool endsWith(const std::string &str, char c)
 {
     return str[str.size()-1U] == c;
