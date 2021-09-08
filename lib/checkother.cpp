@@ -3606,6 +3606,7 @@ bool CheckOther::IsSameName(std::string name1, std::string name2, bool partialMa
         [](unsigned char c) { return std::tolower(c); });
     std::transform(name2.begin(), name2.end(), name2.begin(),
         [](unsigned char c) { return std::tolower(c); });
+
     if (name1 == name2)
         return true;
 
@@ -3632,11 +3633,13 @@ void CheckOther::checkMismatchingNames()
         const Function* function = scope->function;
         if (!function)
             continue;
+
         struct ArgListInfo
         {
             std::string varname;
             const Token* tok;
         };
+
         std::vector< ArgListInfo> tmpArgListInfo;
         ArgListInfo tmpArgInfo = ArgListInfo();
 
@@ -3647,97 +3650,58 @@ void CheckOther::checkMismatchingNames()
             tmpArgInfo.tok = var.nameToken();
             tmpArgListInfo.push_back(tmpArgInfo);
         }
+
         const Token* tok = function->arg->link()->next();
         bool error_found = false;
+
         for (; tok && tok != function->functionScope->bodyEnd; tok = tok->next())
         {
-            if (Token::simpleMatch(tok, "this ."))
+            if (!error_found)
             {
-                const Variable* svar = tok->tokAt(4)->variable();
-                if (svar)
-                {
-                    // if this->name != varname && this->name found in args...
-                    std::string fieldname = tok->strAt(2);
-                    if (!IsSameName(fieldname, svar->name(), true))
-                    {
-                        for (auto const& targ : tmpArgListInfo)
-                        {
-                            if (IsSameName(fieldname, targ.varname, printFalseDetections))
-                            {
-                                if (!IsSameName(svar->name(), targ.varname, true))
-                                {
-                                    for (auto const& targ2 : tmpArgListInfo)
-                                    {
-                                        if (IsSameName(svar->name(), targ2.varname, false))
-                                        {
-                                            mismatchingNamesWriteError(targ.tok, "Warning, ", "this->" + fieldname, svar->name(), targ.varname);
-                                                error_found = true;
-                                                break;
-                                        }
-                                    }
-                                    if (!error_found && printFalseDetections)
-                                    {
-                                        if (printFalseDetections)
-                                        {
-                                            mismatchingNamesWriteError(targ.tok, "Note, ", "this->" + fieldname, svar->name(), targ.varname);
-                                            error_found = true;
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-         
-            if (!error_found) {
                 bool matched = Token::Match(tok, "%var% = %var% ;");
                 if (!matched && Token::Match(tok, "%var% . %var% = %var% ;"))
                 {
                     tok = tok->tokAt(2);
                     matched = true;
                 }
-                if (matched)
+
+                if (!matched)
                 {
-                    const Variable* svar2 = tok->tokAt(2)->variable();
-                    const Variable* svar = tok->variable();
-                    if (svar && !svar->isArgument() && svar2 && svar != svar2)
+                    continue;
+                }
+
+                const Variable* svar = tok->variable();
+                if (!svar || svar->isArgument())
+                {
+                    continue;
+                }
+
+                const Variable* svar2 = tok->tokAt(2)->variable();
+                if (!svar2 || IsSameName(svar->name(), svar2->name(), true))
+                {
+                    continue;
+                }
+
+                for (auto const& targ : tmpArgListInfo)
+                {
+                    if (IsSameName(svar->name(), targ.varname, printFalseDetections) &&
+                        !IsSameName(svar2->name(), targ.varname, true))
                     {
-                        if (!IsSameName(svar->name(), svar2->name(), true))
+                        if (svar2->isArgument())
                         {
-                            for (auto const& targ : tmpArgListInfo)
-                            {
-                                if (IsSameName(svar->name(), targ.varname, printFalseDetections))
-                                {
-                                    if (!IsSameName(svar2->name(), targ.varname, true))
-                                    {
-                                        for (auto const& targ2 : tmpArgListInfo)
-                                        {
-                                            if (IsSameName(svar2->name(), targ2.varname, false))
-                                            {
-                                                mismatchingNamesWriteError(targ.tok, "Warning, ", svar->name(), svar2->name(), targ.varname);
-                                                error_found = true;
-                                                break;
-                                            }
-                                        }
-                                        if (!error_found && printFalseDetections)
-                                        {
-                                            if (printFalseDetections)
-                                            {
-                                                mismatchingNamesWriteError(targ.tok, "Note, ", svar->name(), svar2->name(), targ.varname);
-                                                error_found = true;
-                                            }
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
+                            mismatchingNamesWriteError(targ.tok, "Warning, ", svar->name(), svar2->name(), targ.varname);
+                            error_found = true;
                         }
+                        if (!error_found && printFalseDetections)
+                        {
+                            mismatchingNamesWriteError(targ.tok, "Note, ", svar->name(), svar2->name(), targ.varname);
+                            error_found = true;
+                        }
+                        break;
                     }
                 }
             }
+
         }
     }
 }
