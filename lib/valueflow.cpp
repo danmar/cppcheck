@@ -505,6 +505,8 @@ static ValueFlow::Value truncateImplicitConversion(Token* parent, const ValueFlo
 /** set ValueFlow value and perform calculations if possible */
 static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* settings)
 {
+    if (Token::Match(tok, "it") && value.isLifetimeValue() && value.lifetimeKind == ValueFlow::Value::LifetimeKind::Iterator)
+        assert(true);
     // Skip setting values that are too big since its ambiguous
     if (!value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok) &&
         ValueFlow::getSizeOf(*tok->valueType(), settings) >= sizeof(MathLib::bigint))
@@ -3577,11 +3579,17 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
             if (i->container != returnContainer)
                 continue;
             const Token * const argTok = args[argnr - 1];
+            bool forward = false;
+            for(ValueFlow::Value val:argTok->values()) {
+                if (!val.isLifetimeValue())
+                    continue;
+                val.errorPath.emplace_back(argTok, "Passed to '" + tok->str() + "'.");
+                setTokenValue(tok->next(), val, settings);
+                forward = true;
+            }
             // Check if lifetime is available to avoid adding the lifetime twice
-            ValueFlow::Value val = getLifetimeObjValue(argTok);
-            if (val.tokvalue) {
-                LifetimeStore{argTok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Iterator}.byVal(
-                    tok->next(), tokenlist, errorLogger, settings);
+            if (forward) {
+                valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
                 break;
             }
         }

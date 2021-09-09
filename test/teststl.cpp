@@ -1704,6 +1704,16 @@ private:
               "    if (c.end() == d.end()) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10467
+        check("void f(std::array<std::vector<int>, N>& A) {\n"
+                "  for (auto& a : A) {\n"
+                "    auto it = std::find_if(a.begin(), a.end(), \n"
+                "                           [](auto i) { return i == 0; });\n"
+                "    if (it != a.end()) {}\n"
+                "  }\n"
+                "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Dereferencing invalid pointer
