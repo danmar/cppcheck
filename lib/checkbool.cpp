@@ -90,9 +90,7 @@ void CheckBool::checkBitwiseOnBoolean()
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->isBinaryOp() && (tok->str() == "&" || tok->str() == "|")) {
-                if (tok->str() == "&" && !(astIsBool(tok->astOperand1()) || astIsBool(tok->astOperand2())))
-                    continue;
-                if (tok->str() == "|" && !(astIsBool(tok->astOperand1()) && astIsBool(tok->astOperand2())))
+                if (!astIsBool(tok->astOperand1()) && !astIsBool(tok->astOperand2()))
                     continue;
                 if (!isConstExpression(tok->astOperand1(), mSettings->library, true, mTokenizer->isCPP()))
                     continue;
@@ -102,19 +100,37 @@ void CheckBool::checkBitwiseOnBoolean()
                     continue;
                 const std::string expression = astIsBool(tok->astOperand1()) ? tok->astOperand1()->expressionString()
                                                                              : tok->astOperand2()->expressionString();
-                bitwiseOnBooleanError(tok, expression, tok->str() == "&" ? "&&" : "||");
+                const std::string nonbool = astIsBool(tok->astOperand1()) ? tok->astOperand2()->expressionString()
+                                                                             : tok->astOperand1()->expressionString();
+                if (tok->str() == "|" && !(astIsBool(tok->astOperand1()) && astIsBool(tok->astOperand2())))
+                    bitwiseOnBooleanError(tok, expression, nonbool, tok->expressionString());
+                else
+                    bitwiseOnBooleanError(tok, expression, tok->str() == "&" ? "&&" : "||");
             }
         }
     }
 }
 
-void CheckBool::bitwiseOnBooleanError(const Token *tok, const std::string &expression, const std::string &op)
+void CheckBool::bitwiseOnBooleanError(const Token *tok, const std::string &expression, const std::string &op, const std::string& bitwise)
 {
+    std::string msg;
+    if (bitwise.empty())
+        msg = "Boolean expression '" + expression + "' is used in bitwise operation. Did you mean '" + op + "'?";
+    else
+        msg = "Bitwise expression '" + bitwise + "' with boolean expression '" + expression + "' is equivalent to '" + op + "'?";
     reportError(tok, Severity::style, "bitwiseOnBoolean",
-                "Boolean expression '" + expression + "' is used in bitwise operation. Did you mean '" + op + "'?",
+                msg,
                 CWE398,
                 Certainty::inconclusive);
 }
+
+// void CheckBool::bitwiseOrIntegerError(const Token *tok, const std::string &expression, const std::string &op)
+// {
+//     reportError(tok, Severity::style, "bitwiseOnBoolean",
+//                 "Bitwise expression '" + expression + "' with boolean is used in bitwise operation. Did you mean '" + op + "'?",
+//                 CWE398,
+//                 Certainty::inconclusive);
+// }
 
 //---------------------------------------------------------------------------
 //    if (!x==3) <- Probably meant to be "x!=3"

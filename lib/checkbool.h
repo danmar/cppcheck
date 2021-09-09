@@ -104,7 +104,7 @@ private:
     void comparisonOfBoolWithInvalidComparator(const Token *tok, const std::string &expression);
     void assignBoolToPointerError(const Token *tok);
     void assignBoolToFloatError(const Token *tok);
-    void bitwiseOnBooleanError(const Token *tok, const std::string &expression, const std::string &op);
+    void bitwiseOnBooleanError(const Token *tok, const std::string &expression, const std::string &op, const std::string& bitwise = "");
     void comparisonOfBoolExpressionWithIntError(const Token *tok, bool not0or1);
     void pointerArithBoolError(const Token *tok);
     void returnValueBoolError(const Token *tok);
