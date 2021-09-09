@@ -29,6 +29,7 @@
 #include "standards.h"
 #include "symboldatabase.h"
 #include "token.h"
+#include "tokenize.h"
 #include "utils.h"
 #include "valueflow.h"
 
@@ -87,22 +88,16 @@ void CheckStl::outOfBounds()
                         outOfBoundsError(parent->tokAt(2), tok->expressionString(), &value, parent->strAt(1), nullptr);
                         continue;
                     }
+
                     const Token* indexTok = parent->tokAt(2)->astOperand2();
                     if (!indexTok)
                         continue;
-                    const ValueFlow::Value* indexValue = indexTok->getMaxValue(false);
-                    if (indexValue && indexValue->intvalue >= value.intvalue) {
+                    std::vector<ValueFlow::Value> indexValues =
+                        ValueFlow::isOutOfBounds(value, indexTok, mSettings->severity.isEnabled(Severity::warning));
+                    if (!indexValues.empty()) {
                         outOfBoundsError(
-                            parent, tok->expressionString(), &value, indexTok->expressionString(), indexValue);
+                            parent, tok->expressionString(), &value, indexTok->expressionString(), &indexValues.front());
                         continue;
-                    }
-                    if (mSettings->severity.isEnabled(Severity::warning)) {
-                        indexValue = indexTok->getMaxValue(true);
-                        if (indexValue && indexValue->intvalue >= value.intvalue) {
-                            outOfBoundsError(
-                                parent, tok->expressionString(), &value, indexTok->expressionString(), indexValue);
-                            continue;
-                        }
                     }
                 }
                 if (Token::Match(tok, "%name% . %name% (") && container->getYield(tok->strAt(2)) == Library::Container::Yield::START_ITERATOR) {
@@ -127,17 +122,15 @@ void CheckStl::outOfBounds()
                     continue;
                 }
                 if (container->arrayLike_indexOp && Token::Match(parent, "[")) {
-                    const ValueFlow::Value *indexValue = parent->astOperand2() ? parent->astOperand2()->getMaxValue(false) : nullptr;
-                    if (indexValue && indexValue->intvalue >= value.intvalue) {
-                        outOfBoundsError(parent, tok->expressionString(), &value, parent->astOperand2()->expressionString(), indexValue);
+                    const Token* indexTok = parent->astOperand2();
+                    if (!indexTok)
                         continue;
-                    }
-                    if (mSettings->severity.isEnabled(Severity::warning)) {
-                        indexValue = parent->astOperand2() ? parent->astOperand2()->getMaxValue(true) : nullptr;
-                        if (indexValue && indexValue->intvalue >= value.intvalue) {
-                            outOfBoundsError(parent, tok->expressionString(), &value, parent->astOperand2()->expressionString(), indexValue);
-                            continue;
-                        }
+                    std::vector<ValueFlow::Value> indexValues =
+                        ValueFlow::isOutOfBounds(value, indexTok, mSettings->severity.isEnabled(Severity::warning));
+                    if (!indexValues.empty()) {
+                        outOfBoundsError(
+                            parent, tok->expressionString(), &value, indexTok->expressionString(), &indexValues.front());
+                        continue;
                     }
                 }
             }
@@ -151,6 +144,8 @@ static std::string indexValueString(const ValueFlow::Value& indexValue)
         return "at position " + MathLib::toString(indexValue.intvalue) + " from the beginning";
     if (indexValue.isIteratorEndValue())
         return "at position " + MathLib::toString(-indexValue.intvalue) + " from the end";
+    if (indexValue.bound == ValueFlow::Value::Bound::Lower)
+        return "greater or equal to " + MathLib::toString(indexValue.intvalue);
     return MathLib::toString(indexValue.intvalue);
 }
 
@@ -988,7 +983,7 @@ void CheckStl::invalidContainer()
                 const ValueFlow::Value* v = nullptr;
                 ErrorPath errorPath;
                 PathAnalysis::Info info =
-                PathAnalysis{endToken, library} .forwardFind([&](const PathAnalysis::Info& info) {
+                    PathAnalysis{endToken, library}.forwardFind([&](const PathAnalysis::Info& info) {
                     if (!info.tok->variable())
                         return false;
                     if (info.tok->varId() == 0)
@@ -1152,7 +1147,7 @@ void CheckStl::stlOutOfBounds()
         std::vector<const Token *> conds;
 
         visitAstNodes(condition,
-        [&](const Token *cond) {
+                      [&](const Token *cond) {
             if (Token::Match(cond, "%oror%|&&"))
                 return ChildrenToVisit::op1_and_op2;
             if (cond->isComparisonOp())
@@ -2716,12 +2711,14 @@ static bool isMutex(const Variable* var)
 static bool isLockGuard(const Variable* var)
 {
     const Token* tok = Token::typeDecl(var->nameToken()).first;
-    return Token::Match(tok, "std :: lock_guard|unique_lock|scoped_lock");
+    return Token::Match(tok, "std :: lock_guard|unique_lock|scoped_lock|shared_lock");
 }
 
 static bool isLocalMutex(const Variable* var, const Scope* scope)
 {
     if (!var)
+        return false;
+    if (isLockGuard(var))
         return false;
     return !var->isReference() && !var->isRValueReference() && !var->isStatic() && var->scope() == scope;
 }

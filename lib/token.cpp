@@ -57,10 +57,10 @@ Token::~Token()
 }
 
 /*
-* Get a TokenRange which starts at this token and contains every token following it in order up to but not including 't'
-* e.g. for the sequence of tokens A B C D E, C.until(E) would yield the Range C D
-* note t can be nullptr to iterate all the way to the end.
-*/
+ * Get a TokenRange which starts at this token and contains every token following it in order up to but not including 't'
+ * e.g. for the sequence of tokens A B C D E, C.until(E) would yield the Range C D
+ * note t can be nullptr to iterate all the way to the end.
+ */
 ConstTokenRange Token::until(const Token* t) const
 {
     return ConstTokenRange(this, t);
@@ -117,9 +117,9 @@ void Token::update_property_info()
         else if (mStr.size() <= 2 && !mLink &&
                  (mStr == "==" ||
                   mStr == "!=" ||
-                  mStr == "<"  ||
+                  mStr == "<" ||
                   mStr == "<=" ||
-                  mStr == ">"  ||
+                  mStr == ">" ||
                   mStr == ">="))
             tokType(eComparisonOp);
         else if (mStr == "<=>")
@@ -153,7 +153,7 @@ static const std::unordered_set<std::string> stdTypes = { "bool"
                                                           , "size_t"
                                                           , "void"
                                                           , "wchar_t"
-                                                        };
+};
 
 void Token::update_property_isStandardType()
 {
@@ -1740,12 +1740,15 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     break;
                 case ValueFlow::Value::ValueType::LIFETIME:
                     out << "lifetime=\"" << value.tokvalue << '\"';
+                    out << " lifetime-scope=\"" << ValueFlow::Value::toString(value.lifetimeScope) << "\"";
+                    out << " lifetime-kind=\"" << ValueFlow::Value::toString(value.lifetimeKind) << "\"";
                     break;
                 case ValueFlow::Value::ValueType::SYMBOLIC:
-                    out << "tokvalue=\"" << value.tokvalue << '\"';
-                    out << " intvalue=\"" << value.intvalue << '\"';
+                    out << "symbolic=\"" << value.tokvalue << '\"';
+                    out << " symbolic-delta=\"" << value.intvalue << '\"';
                     break;
                 }
+                out << " bound=\"" << ValueFlow::Value::toString(value.bound) << "\"";
                 if (value.condition)
                     out << " condition-line=\"" << value.condition->linenr() << '\"';
                 if (value.isKnown())
@@ -1756,6 +1759,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     out << " impossible=\"true\"";
                 else if (value.isInconclusive())
                     out << " inconclusive=\"true\"";
+                out << " path=\"" << value.path << "\"";
                 out << "/>" << std::endl;
             }
 
@@ -1981,6 +1985,8 @@ static bool removeContradiction(std::list<ValueFlow::Value>& values)
                 continue;
             if (x.isImpossible() == y.isImpossible())
                 continue;
+            if (x.isSymbolicValue() && !ValueFlow::Value::sameToken(x.tokvalue, y.tokvalue))
+                continue;
             if (!x.equalValue(y)) {
                 auto compare = [](const ValueFlow::Value& x, const ValueFlow::Value& y) {
                     return x.compareValue(y, ValueFlow::less{});
@@ -2023,7 +2029,7 @@ static bool removeContradiction(std::list<ValueFlow::Value>& values)
 
 using ValueIterator = std::list<ValueFlow::Value>::iterator;
 
-template <class Iterator>
+template<class Iterator>
 static ValueIterator removeAdjacentValues(std::list<ValueFlow::Value>& values, ValueIterator x, Iterator start, Iterator last)
 {
     if (!isAdjacent(*x, **start))
@@ -2060,6 +2066,8 @@ static void mergeAdjacent(std::list<ValueFlow::Value>& values)
             if (x->valueType != y->valueType)
                 continue;
             if (x->valueKind != y->valueKind)
+                continue;
+            if (x->isSymbolicValue() && !ValueFlow::Value::sameToken(x->tokvalue, y->tokvalue))
                 continue;
             if (x->bound != y->bound) {
                 if (y->bound != ValueFlow::Value::Bound::Point && isAdjacent(*x, *y)) {
@@ -2131,19 +2139,29 @@ static void removeContradictions(std::list<ValueFlow::Value>& values)
     }
 }
 
+static bool sameValueType(const ValueFlow::Value& x, const ValueFlow::Value& y)
+{
+    if (x.valueType != y.valueType)
+        return false;
+    // Symbolic are the same type if they share the same tokvalue
+    if (x.isSymbolicValue())
+        return x.tokvalue->exprId() == 0 || x.tokvalue->exprId() == y.tokvalue->exprId();
+    return true;
+}
+
 bool Token::addValue(const ValueFlow::Value &value)
 {
     if (value.isKnown() && mImpl->mValues) {
         // Clear all other values of the same type since value is known
         mImpl->mValues->remove_if([&](const ValueFlow::Value& x) {
-            if (x.valueType != value.valueType)
-                return false;
-            // Allow multiple known symbolic values
-            if (x.isSymbolicValue())
-                return !x.isKnown();
-            return true;
+            return sameValueType(x, value);
         });
     }
+
+    // assert(!value.isPossible() || !mImpl->mValues || std::none_of(mImpl->mValues->begin(), mImpl->mValues->end(),
+    // [&](const ValueFlow::Value& x) {
+    //     return x.isKnown() && sameValueType(x, value);
+    // }));
 
     if (mImpl->mValues) {
         // Don't handle more than 10 values for performance reasons
@@ -2209,7 +2227,7 @@ void Token::assignProgressValues(Token *tok)
         ++total_count;
     int count = 0;
     for (Token *tok2 = tok; tok2; tok2 = tok2->next())
-        tok2->mImpl->mProgressValue = count++ * 100 / total_count;
+        tok2->mImpl->mProgressValue = count++ *100 / total_count;
 }
 
 void Token::assignIndexes()
@@ -2284,10 +2302,10 @@ const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
         if (vars.empty())
             return nullptr;
         if (std::all_of(
-        vars.begin(), vars.end(), [&](const Variable* var) {
-        return var->type() == vars.front()->type();
+                vars.begin(), vars.end(), [&](const Variable* var) {
+            return var->type() == vars.front()->type();
         }))
-        return vars.front()->type();
+            return vars.front()->type();
     }
 
     return nullptr;
@@ -2317,7 +2335,7 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token * tok)
             const Token * tok2 = var->declEndToken();
             if (Token::Match(tok2, "; %varid% =", var->declarationId()))
                 tok2 = tok2->tokAt(2);
-            if (Token::simpleMatch(tok2, "=") && Token::Match(tok2->astOperand2(), "!!=")) {
+            if (Token::simpleMatch(tok2, "=") && Token::Match(tok2->astOperand2(), "!!=") && tok != tok2->astOperand2()) {
                 std::pair<const Token*, const Token*> r = typeDecl(tok2->astOperand2());
                 if (r.first)
                     return r;
@@ -2380,8 +2398,19 @@ bool Token::hasKnownValue() const
 bool Token::hasKnownValue(ValueFlow::Value::ValueType t) const
 {
     return mImpl->mValues &&
-    std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) {
+           std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) {
         return value.isKnown() && value.valueType == t;
+    });
+}
+
+bool Token::hasKnownSymbolicValue(const Token* tok) const
+{
+    if (tok->exprId() == 0)
+        return false;
+    return mImpl->mValues &&
+           std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) {
+        return value.isKnown() && value.isSymbolicValue() && value.tokvalue &&
+        value.tokvalue->exprId() == tok->exprId();
     });
 }
 
@@ -2420,7 +2449,7 @@ const ValueFlow::Value* Token::getValue(const MathLib::bigint val) const
     return it == mImpl->mValues->end() ? nullptr : &*it;
 }
 
-const ValueFlow::Value* Token::getMaxValue(bool condition) const
+const ValueFlow::Value* Token::getMaxValue(bool condition, MathLib::bigint path) const
 {
     if (!mImpl->mValues)
         return nullptr;
@@ -2429,6 +2458,8 @@ const ValueFlow::Value* Token::getMaxValue(bool condition) const
         if (!value.isIntValue())
             continue;
         if (value.isImpossible())
+            continue;
+        if (value.path != 0 && value.path != path)
             continue;
         if ((!ret || value.intvalue > ret->intvalue) &&
             ((value.condition != nullptr) == condition))
@@ -2443,7 +2474,7 @@ const ValueFlow::Value* Token::getMovedValue() const
         return nullptr;
     const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) {
         return value.isMovedValue() && !value.isImpossible() &&
-               value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
+        value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
     });
     return it == mImpl->mValues->end() ? nullptr : &*it;
 }
@@ -2501,4 +2532,52 @@ bool TokenImpl::getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, M
     if (attr)
         *value = attr->value;
     return attr != nullptr;
+}
+
+Token* findTypeEnd(Token* tok)
+{
+    while (Token::Match(tok, "%name%|.|::|*|&|&&|<|(|template|decltype|sizeof")) {
+        if (Token::Match(tok, "(|<"))
+            tok = tok->link();
+        if (!tok)
+            return nullptr;
+        tok = tok->next();
+    }
+    return tok;
+}
+
+const Token* findTypeEnd(const Token* tok) {
+    return findTypeEnd(const_cast<Token*>(tok));
+}
+
+Token* findLambdaEndScope(Token* tok)
+{
+    if (!Token::simpleMatch(tok, "["))
+        return nullptr;
+    tok = tok->link();
+    if (!Token::Match(tok, "] (|{"))
+        return nullptr;
+    tok = tok->linkAt(1);
+    if (Token::simpleMatch(tok, "}"))
+        return tok;
+    if (Token::simpleMatch(tok, ") {"))
+        return tok->linkAt(1);
+    if (!Token::simpleMatch(tok, ")"))
+        return nullptr;
+    tok = tok->next();
+    while (Token::Match(tok, "mutable|constexpr|constval|noexcept|.")) {
+        if (Token::simpleMatch(tok, "noexcept ("))
+            tok = tok->linkAt(1);
+        if (Token::simpleMatch(tok, ".")) {
+            tok = findTypeEnd(tok);
+            break;
+        }
+        tok = tok->next();
+    }
+    if (Token::simpleMatch(tok, "{"))
+        return tok->link();
+    return nullptr;
+}
+const Token* findLambdaEndScope(const Token* tok) {
+    return findLambdaEndScope(const_cast<Token*>(tok));
 }

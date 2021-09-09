@@ -560,52 +560,6 @@ static bool iscast(const Token *tok, bool cpp)
     return false;
 }
 
-static Token* findTypeEnd(Token* tok)
-{
-    while (Token::Match(tok, "%name%|.|::|*|&|&&|<|(|template|decltype|sizeof")) {
-        if (Token::Match(tok, "(|<"))
-            tok = tok->link();
-        if (!tok)
-            return nullptr;
-        tok = tok->next();
-    }
-    return tok;
-}
-
-static const Token* findTypeEnd(const Token* tok)
-{
-    return findTypeEnd(const_cast<Token*>(tok));
-}
-
-static const Token * findLambdaEndScope(const Token *tok)
-{
-    if (!Token::simpleMatch(tok, "["))
-        return nullptr;
-    tok = tok->link();
-    if (!Token::Match(tok, "] (|{"))
-        return nullptr;
-    tok = tok->linkAt(1);
-    if (Token::simpleMatch(tok, "}"))
-        return tok;
-    if (Token::simpleMatch(tok, ") {"))
-        return tok->linkAt(1);
-    if (!Token::simpleMatch(tok, ")"))
-        return nullptr;
-    tok = tok->next();
-    while (Token::Match(tok, "mutable|constexpr|constval|noexcept|.")) {
-        if (Token::simpleMatch(tok, "noexcept ("))
-            tok = tok->linkAt(1);
-        if (Token::simpleMatch(tok, ".")) {
-            tok = findTypeEnd(tok);
-            break;
-        }
-        tok = tok->next();
-    }
-    if (Token::simpleMatch(tok, "{"))
-        return tok->link();
-    return nullptr;
-}
-
 // int(1), int*(2), ..
 static Token * findCppTypeInitPar(Token *tok)
 {
@@ -703,7 +657,7 @@ static bool isQualifier(const Token* tok)
     return true;
 }
 
-static void compileUnaryOp(Token *&tok, AST_state& state, void(*f)(Token *&tok, AST_state& state))
+static void compileUnaryOp(Token *&tok, AST_state& state, void (*f)(Token *&tok, AST_state& state))
 {
     Token *unaryop = tok;
     if (f) {
@@ -723,12 +677,12 @@ static void compileUnaryOp(Token *&tok, AST_state& state, void(*f)(Token *&tok, 
     state.op.push(unaryop);
 }
 
-static void compileBinOp(Token *&tok, AST_state& state, void(*f)(Token *&tok, AST_state& state))
+static void compileBinOp(Token *&tok, AST_state& state, void (*f)(Token *&tok, AST_state& state))
 {
     Token *binop = tok;
     if (f) {
         tok = tok->next();
-        if (Token::simpleMatch(binop, ":: ~"))
+        if (Token::Match(binop, "::|. ~"))
             tok = tok->next();
         state.depth++;
         if (tok && state.depth <= AST_MAX_DEPTH)
@@ -791,7 +745,7 @@ static void compileTerm(Token *&tok, AST_state& state)
         } else if (Token::Match(tok, "sizeof !!(")) {
             compileUnaryOp(tok, state, compileExpression);
             state.op.pop();
-        } else if (state.cpp && findCppTypeInitPar(tok))  { // int(0), int*(123), ..
+        } else if (state.cpp && findCppTypeInitPar(tok)) {  // int(0), int*(123), ..
             tok = findCppTypeInitPar(tok);
             state.op.push(tok);
             tok = tok->tokAt(2);
@@ -934,8 +888,8 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 state.op.push(tok);
                 tok = tok->tokAt(3);
                 break;
-            } else
-                compileBinOp(tok, state, compileScope);
+            }
+            compileBinOp(tok, state, compileScope);
         } else if (tok->str() == "[") {
             if (state.cpp && isPrefixUnary(tok, state.cpp) && Token::Match(tok->link(), "] (|{")) { // Lambda
                 // What we do here:
@@ -1646,7 +1600,7 @@ void TokenList::validateAst() const
                 mTokensFrontBack.front->printOut();
         }};
     // Check for some known issues in AST to avoid crash/hang later on
-    std::set < const Token* > safeAstTokens; // list of "safe" AST tokens without endless recursion
+    std::set<const Token*> safeAstTokens;    // list of "safe" AST tokens without endless recursion
     for (const Token *tok = mTokensFrontBack.front; tok; tok = tok->next()) {
         // Syntax error if binary operator only has 1 operand
         if ((tok->isAssignmentOp() || tok->isComparisonOp() || Token::Match(tok,"[|^/%]")) && tok->astOperand1() && !tok->astOperand2())
@@ -1663,7 +1617,7 @@ void TokenList::validateAst() const
         // Check for endless recursion
         const Token* parent = tok->astParent();
         if (parent) {
-            std::set < const Token* > astTokens; // list of ancestors
+            std::set<const Token*> astTokens;    // list of ancestors
             astTokens.insert(tok);
             do {
                 if (safeAstTokens.find(parent) != safeAstTokens.end())
@@ -1709,8 +1663,8 @@ void TokenList::validateAst() const
                 throw InternalError(tok, "Syntax Error: AST broken, binary operator '" + tok->str() + "' doesn't have two operands.", InternalError::AST);
         }
 
-        // Check control blocks
-        if (Token::Match(tok->previous(), "if|while|for|switch (")) {
+        // Check control blocks and asserts
+        if (Token::Match(tok->previous(), "if|while|for|switch|assert|ASSERT (")) {
             if (!tok->astOperand1() || !tok->astOperand2())
                 throw InternalError(tok,
                                     "Syntax Error: AST broken, '" + tok->previous()->str() +

@@ -252,7 +252,6 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
 
 void CheckFunctions::checkMissingReturn()
 {
-    const bool inconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         const Function *function = scope->function;
@@ -267,20 +266,8 @@ void CheckFunctions::checkMissingReturn()
         if (Function::returnsVoid(function, true))
             continue;
         const Token *errorToken = checkMissingReturnScope(scope->bodyEnd, mSettings->library);
-        if (errorToken) {
+        if (errorToken)
             missingReturnError(errorToken);
-            continue;
-        }
-        if (inconclusive && Token::simpleMatch(scope->bodyEnd->tokAt(-2), ") ; }")) {
-            const Token *ftok = scope->bodyEnd->linkAt(-2)->previous();
-            if (mSettings->library.isNotLibraryFunction(ftok)) {
-                const Token *tok = ftok;
-                while (Token::Match(tok->tokAt(-2), "%name% :: %name%"))
-                    tok = tok->tokAt(-2);
-                if (Token::Match(tok->previous(), "[;{}] %name% (|::") && !tok->isKeyword())
-                    missingReturnError(tok, Certainty::inconclusive);
-            }
-        }
     }
 }
 
@@ -301,6 +288,8 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
 {
     const Token *lastStatement = nullptr;
     while ((tok = tok->previous()) != nullptr) {
+        if (tok->str() == ")")
+            tok = tok->link();
         if (tok->str() == "{")
             return lastStatement ? lastStatement : tok->next();
         if (tok->str() == "}") {
@@ -366,10 +355,10 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
     return nullptr;
 }
 
-void CheckFunctions::missingReturnError(const Token* tok, Certainty::CertaintyLevel certainty)
+void CheckFunctions::missingReturnError(const Token* tok)
 {
     reportError(tok, Severity::error, "missingReturn",
-                "Found a exit path from function with non-void return type that has missing return statement", CWE758, certainty);
+                "Found a exit path from function with non-void return type that has missing return statement", CWE758, Certainty::normal);
 }
 //---------------------------------------------------------------------------
 // Detect passing wrong values to <cmath> functions like atan(0, x);

@@ -23,7 +23,7 @@
 
 #include "config.h"
 
-template<typename T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*>)>
+template<typename T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
 class TokenRangeBase {
     T* mFront;
     T* mBack;

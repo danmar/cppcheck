@@ -25,9 +25,9 @@
 #include <functional>
 #include <memory>
 
-template <class T>
+template<class T>
 class CPPCHECKLIB ValuePtr {
-    template <class U>
+    template<class U>
     struct cloner {
         static T* apply(const T* x) {
             return new U(*static_cast<const U*>(x));
@@ -41,7 +41,7 @@ public:
 
     ValuePtr() : mPtr(nullptr), mClone() {}
 
-    template <class U>
+    template<class U>
     // cppcheck-suppress noExplicitConstructor
     ValuePtr(const U& value) : mPtr(cloner<U>::apply(&value)), mClone(&cloner<U>::apply)
     {}
@@ -57,7 +57,9 @@ public:
         return mPtr.release();
     }
 
-    T* get() NOEXCEPT { return mPtr.get(); }
+    T* get() NOEXCEPT {
+        return mPtr.get();
+    }
     const T* get() const NOEXCEPT {
         return mPtr.get();
     }
@@ -69,7 +71,9 @@ public:
         return *get();
     }
 
-    T* operator->() NOEXCEPT { return get(); }
+    T* operator->() NOEXCEPT {
+        return get();
+    }
     const T* operator->() const NOEXCEPT {
         return get();
     }

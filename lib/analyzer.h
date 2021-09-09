@@ -19,11 +19,13 @@
 #ifndef analyzerH
 #define analyzerH
 
+#include "config.h"
 #include <string>
+#include <type_traits>
 #include <vector>
 
 class Token;
-template <class T>
+template<class T>
 class ValuePtr;
 
 struct Analyzer {
@@ -31,8 +33,11 @@ struct Analyzer {
 
         Action() : mFlag(0) {}
 
-        // cppcheck-suppress noExplicitConstructor
-        Action(unsigned int f) : mFlag(f) {}
+        template<class T,
+                 REQUIRES("T must be convertible to unsigned int", std::is_convertible<T, unsigned int> ),
+                 REQUIRES("T must not be a bool", !std::is_same<T, bool> )>
+        Action(T f) : mFlag(f) // cppcheck-suppress noExplicitConstructor
+        {}
 
         enum {
             None = 0,
@@ -86,7 +91,9 @@ struct Analyzer {
             return get(Incremental);
         }
 
-        bool isSymbolicMatch() const { return get(SymbolicMatch); }
+        bool isSymbolicMatch() const {
+            return get(SymbolicMatch);
+        }
 
         bool matches() const {
             return get(Match);
@@ -162,6 +169,8 @@ struct Analyzer {
     virtual void forkScope(const Token* /*endBlock*/) {}
     /// If the value is conditional
     virtual bool isConditional() const = 0;
+    /// If analysis should stop on the condition
+    virtual bool stopOnCondition(const Token* condTok) const = 0;
     /// The condition that will be assumed during analysis
     virtual void assume(const Token* tok, bool state, unsigned int flags = 0) = 0;
     /// Return analyzer for expression at token

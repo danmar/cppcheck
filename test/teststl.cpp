@@ -28,8 +28,7 @@
 
 class TestStl : public TestFixture {
 public:
-    TestStl() : TestFixture("TestStl") {
-    }
+    TestStl() : TestFixture("TestStl") {}
 
 private:
     Settings settings;
@@ -71,6 +70,7 @@ private:
         TEST_CASE(iterator25); // #9742
         TEST_CASE(iterator26); // #9176
         TEST_CASE(iterator27); // #10378
+        TEST_CASE(iterator28); // #10450
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
         TEST_CASE(mismatchingContainerIterator);
@@ -590,12 +590,59 @@ private:
                     "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkNormal("bool g();\n"
+                    "void f(int x) {\n"
+                    "    std::vector<int> v;\n"
+                    "    if (g())\n"
+                    "        v.emplace_back(x);\n"
+                    "    const int n = v.size();\n"
+                    "    h(n);\n"
+                    "    for (int i = 0; i < n; ++i)\n"
+                    "        h(v[i]);\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkNormal("void foo(const std::vector<int> &v) {\n"
                     "    if(v.size() >=1 && v[0] == 4 && v[1] == 2){}\n"
                     "}\n");
         ASSERT_EQUALS("test.cpp:2:warning:Either the condition 'v.size()>=1' is redundant or v size can be 1. Expression 'v[1]' cause access out of bounds.\n"
                       "test.cpp:2:note:condition 'v.size()>=1'\n"
                       "test.cpp:2:note:Access out of bounds\n", errout.str());
+
+        checkNormal("int f(int x, int y) {\n"
+                    "    std::vector<int> a = {0,1,2};\n"
+                    "    if(x<2)\n"
+                    "        y = a[x] + 1;\n"
+                    "    else\n"
+                    "        y = a[x];\n"
+                    "    return y;\n"
+                    "}\n");
+        ASSERT_EQUALS(
+            "test.cpp:6:warning:Either the condition 'x<2' is redundant or 'x' can have the value greater or equal to 3. Expression 'a[x]' cause access out of bounds.\n"
+            "test.cpp:3:note:condition 'x<2'\n"
+            "test.cpp:6:note:Access out of bounds\n",
+            errout.str());
+
+        checkNormal("int f(std::vector<int> v) {\n"
+                    "    if (v.size() > 3)\n"
+                    "        return v[v.size() - 3];\n"
+                    "    return 0;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(std::vector<int> v) {\n"
+                    "    v[v.size() - 1];\n"
+                    "    if (v.size() == 1) {}\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(int n) {\n"
+                    "    std::vector<int> v = {1, 2, 3, 4};\n"
+                    "    const int i = qMin(n, v.size());\n"
+                    "    if (i > 1)\n"
+                    "        v[i] = 1;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsIndexExpression() {
@@ -1441,6 +1488,28 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void iterator28()
+    {
+        // #10450
+        check("struct S {\n"
+              "    struct Private {\n"
+              "        std::list<int> l;\n"
+              "    };\n"
+              "    std::unique_ptr<Private> p;\n"
+              "    int foo();\n"
+              "};\n"
+              "int S::foo() {\n"
+              "    for(auto iter = p->l.begin(); iter != p->l.end(); ++iter) {\n"
+              "        if(*iter == 1) {\n"
+              "            p->l.erase(iter);\n"
+              "            return 1;\n"
+              "        }\n"
+              "    }\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void iteratorExpression() {
         check("std::vector<int>& f();\n"
               "std::vector<int>& g();\n"
@@ -1633,6 +1702,16 @@ private:
               "};\n"
               "void f(a c, a d) {\n"
               "    if (c.end() == d.end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10467
+        check("void f(std::array<std::vector<int>, N>& A) {\n"
+              "  for (auto& a : A) {\n"
+              "    auto it = std::find_if(a.begin(), a.end(), \n"
+              "                           [](auto i) { return i == 0; });\n"
+              "    if (it != a.end()) {}\n"
+              "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -2634,7 +2713,7 @@ private:
     }
 
     template<size_t n, typename T>
-    static size_t getArraylength(const T(&)[n]) {
+    static size_t getArraylength(const T (&)[n]) {
         return n;
     }
 
@@ -3070,10 +3149,10 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         code =  "void f()\n"
-                "{\n"
-                "    std::list<int> x;\n"
-                "    if (x.size() >= 1) {}\n"
-                "}";
+               "{\n"
+               "    std::list<int> x;\n"
+               "    if (x.size() >= 1) {}\n"
+               "}";
         check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
         check(code);
@@ -3137,10 +3216,10 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         code ="void f()\n"
-              "{\n"
-              "    std::list<int> x;\n"
-              "    fun(!x.size());\n"
-              "}";
+               "{\n"
+               "    std::list<int> x;\n"
+               "    fun(!x.size());\n"
+               "}";
         check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
         check(code);
@@ -5319,6 +5398,22 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() { int f = 0; auto g(f); g = g; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct foobar {\n"
+              "    int foo;\n"
+              "    std::shared_mutex foo_mtx;\n"
+              "    int bar;\n"
+              "    std::shared_mutex bar_mtx;\n"
+              "};\n"
+              "void f() {\n"
+              "    foobar xyz;\n"
+              "    {\n"
+              "        std::shared_lock shared_foo_lock(xyz.foo_mtx, std::defer_lock);\n"
+              "        std::shared_lock shared_bar_lock(xyz.bar_mtx, std::defer_lock);\n"
+              "        std::scoped_lock shared_multi_lock(shared_foo_lock, shared_bar_lock);\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

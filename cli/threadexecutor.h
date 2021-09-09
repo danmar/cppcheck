@@ -27,13 +27,12 @@
 #include <list>
 #include <map>
 #include <string>
+#include <mutex>
 
 #if ((defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__) && !defined(__CYGWIN__)) || defined(__CPPCHECK__)
 #define THREADING_MODEL_FORK
 #elif defined(_WIN32)
 #define THREADING_MODEL_WIN
-#include <windows.h>
-
 #include "importproject.h"
 #endif
 
@@ -129,16 +128,16 @@ private:
     std::size_t mTotalFiles;
     std::size_t mProcessedSize;
     std::size_t mTotalFileSize;
-    CRITICAL_SECTION mFileSync;
+    std::mutex mFileSync;
 
     std::list<std::string> mErrorList;
-    CRITICAL_SECTION mErrorSync;
+    std::mutex mErrorSync;
 
-    CRITICAL_SECTION mReportSync;
+    std::mutex mReportSync;
 
     void report(const ErrorMessage &msg, MessageType msgType);
 
-    static unsigned __stdcall threadProc(void*);
+    static unsigned __stdcall threadProc(ThreadExecutor *threadExecutor);
 
 public:
     /**

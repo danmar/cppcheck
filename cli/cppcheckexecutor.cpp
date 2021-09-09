@@ -68,11 +68,13 @@
 #include <execinfo.h>
 #endif
 
+#if defined(_WIN32)
 #if defined(_MSC_VER)
 #define USE_WINDOWS_SEH
+#endif
+#include <Windows.h>
 #include <DbgHelp.h>
 #include <TCHAR.H>
-#include <Windows.h>
 #include <excpt.h>
 #endif
 
@@ -81,8 +83,7 @@
 
 CppCheckExecutor::CppCheckExecutor()
     : mSettings(nullptr), mLatestProgressOutputTime(0), mErrorOutput(nullptr), mBugHuntingReport(nullptr), mShowAllErrors(false)
-{
-}
+{}
 
 CppCheckExecutor::~CppCheckExecutor()
 {
@@ -125,7 +126,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     {
         for (std::list<std::string>::iterator iter = settings.includePaths.begin();
              iter != settings.includePaths.end();
-            ) {
+             ) {
             const std::string path(Path::toNativeSeparators(*iter));
             if (FileLister::isDirectory(path))
                 ++iter;
@@ -250,7 +251,7 @@ void CppCheckExecutor::setSettings(const Settings &settings)
  * \return size of array
  * */
 template<typename T, int size>
-std::size_t getArrayLength(const T(&)[size])
+std::size_t getArrayLength(const T (&)[size])
 {
     return size;
 }
@@ -548,7 +549,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
                 (type==0) ? "reading " : "writing ",
                 (unsigned long)info->si_addr,
                 (isAddressOnStack)?" Stackoverflow?":""
-               );
+                );
         break;
     case SIGUSR1:
         fputs("cppcheck received signal ", output);
@@ -589,15 +590,15 @@ namespace {
     };
     typedef BOOL (WINAPI *fpStackWalk64)(DWORD, HANDLE, HANDLE, LPSTACKFRAME64, PVOID, PREAD_PROCESS_MEMORY_ROUTINE64, PFUNCTION_TABLE_ACCESS_ROUTINE64, PGET_MODULE_BASE_ROUTINE64, PTRANSLATE_ADDRESS_ROUTINE64);
     fpStackWalk64 pStackWalk64;
-    typedef DWORD64(WINAPI *fpSymGetModuleBase64)(HANDLE, DWORD64);
+    typedef DWORD64 (WINAPI *fpSymGetModuleBase64)(HANDLE, DWORD64);
     fpSymGetModuleBase64 pSymGetModuleBase64;
     typedef BOOL (WINAPI *fpSymGetSymFromAddr64)(HANDLE, DWORD64, PDWORD64, PIMAGEHLP_SYMBOL64);
     fpSymGetSymFromAddr64 pSymGetSymFromAddr64;
     typedef BOOL (WINAPI *fpSymGetLineFromAddr64)(HANDLE, DWORD64, PDWORD, PIMAGEHLP_LINE64);
     fpSymGetLineFromAddr64 pSymGetLineFromAddr64;
-    typedef DWORD (WINAPI *fpUnDecorateSymbolName)(const TCHAR*, PTSTR, DWORD, DWORD) ;
+    typedef DWORD (WINAPI *fpUnDecorateSymbolName)(const TCHAR*, PTSTR, DWORD, DWORD);
     fpUnDecorateSymbolName pUnDecorateSymbolName;
-    typedef PVOID(WINAPI *fpSymFunctionTableAccess64)(HANDLE, DWORD64);
+    typedef PVOID (WINAPI *fpSymFunctionTableAccess64)(HANDLE, DWORD64);
     fpSymFunctionTableAccess64 pSymFunctionTableAccess64;
     typedef BOOL (WINAPI *fpSymInitialize)(HANDLE, PCSTR, BOOL);
     fpSymInitialize pSymInitialize;
@@ -630,9 +631,9 @@ namespace {
             hProcess,
             nullptr,
             TRUE
-        );
-        CONTEXT             context = *(ex->ContextRecord);
-        STACKFRAME64        stack= {0};
+            );
+        CONTEXT context = *(ex->ContextRecord);
+        STACKFRAME64 stack= {0};
 #ifdef _M_IX86
         stack.AddrPC.Offset    = context.Eip;
         stack.AddrPC.Mode      = AddrModeFlat;
@@ -657,18 +658,18 @@ namespace {
             BOOL result = pStackWalk64
                           (
 #ifdef _M_IX86
-                              IMAGE_FILE_MACHINE_I386,
+                IMAGE_FILE_MACHINE_I386,
 #else
-                              IMAGE_FILE_MACHINE_AMD64,
+                IMAGE_FILE_MACHINE_AMD64,
 #endif
-                              hProcess,
-                              hThread,
-                              &stack,
-                              &context,
-                              nullptr,
-                              pSymFunctionTableAccess64,
-                              pSymGetModuleBase64,
-                              nullptr
+                hProcess,
+                hThread,
+                &stack,
+                &context,
+                nullptr,
+                pSymFunctionTableAccess64,
+                pSymGetModuleBase64,
+                nullptr
                           );
             if (!result)  // official end...
                 break;

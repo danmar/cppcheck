@@ -2,6 +2,7 @@
 #define GUARD_PROGRAMMEMORY_H
 
 #include "mathlib.h"
+#include "settings.h"
 #include "utils.h"
 #include "valueflow.h" // needed for alias
 #include <functional>
@@ -45,6 +46,9 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
 struct ProgramMemoryState {
     ProgramMemory state;
     std::map<nonneg int, const Token*> origins;
+    const Settings* settings;
+
+    explicit ProgramMemoryState(const Settings* s);
 
     void insert(const ProgramMemory &pm, const Token* origin = nullptr);
     void replace(const ProgramMemory &pm, const Token* origin = nullptr);
@@ -59,7 +63,7 @@ struct ProgramMemoryState {
 };
 
 using PMEvaluateFunction =
-    std::function<bool(const Token* expr, ProgramMemory* const programMemory, MathLib::bigint* result)>;
+    std::function<bool (const Token* expr, ProgramMemory* const programMemory, MathLib::bigint* result)>;
 
 void execute(const Token* expr,
              ProgramMemory* const programMemory,
@@ -84,7 +88,7 @@ bool conditionIsTrue(const Token *condition, const ProgramMemory &programMemory)
 /**
  * Get program memory by looking backwards from given token.
  */
-ProgramMemory getProgramMemory(const Token* tok, nonneg int exprid, const ValueFlow::Value& value);
+ProgramMemory getProgramMemory(const Token* tok, nonneg int exprid, const ValueFlow::Value& value, const Settings *settings);
 
 ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars);
 

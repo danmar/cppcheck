@@ -31,8 +31,7 @@
 
 class TestSuppressions : public TestFixture {
 public:
-    TestSuppressions() : TestFixture("TestSuppressions") {
-    }
+    TestSuppressions() : TestFixture("TestSuppressions") {}
 
 private:
 

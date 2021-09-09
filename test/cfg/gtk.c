@@ -18,13 +18,9 @@ void validCode(int argInt, GHashTableIter * hash_table_iter, GHashTable * hash_t
     g_assert_cmpstr("test", ==, "test");
 
     // if G_UNLIKELY is not defined this results in a syntax error
-    if G_UNLIKELY(argInt == 1) {
-    } else if (G_UNLIKELY(argInt == 2)) {
-    }
+    if G_UNLIKELY(argInt == 1) {} else if (G_UNLIKELY(argInt == 2)) {}
 
-    if G_LIKELY(argInt == 0) {
-    } else if (G_LIKELY(argInt == -1)) {
-    }
+    if G_LIKELY(argInt == 0) {} else if (G_LIKELY(argInt == -1)) {}
 
     printf("%s", _("test"));
     printf("%s", Q_("a|test"));
@@ -404,8 +400,9 @@ void g_once_init_enter_leave_test()
     gsize * init_val3 = NULL;
     // cppcheck-suppress nullPointer
     if (g_once_init_enter(init_val3)) {
+        gsize* init_val31 = NULL;
         // cppcheck-suppress nullPointer
-        g_once_init_leave(init_val3, 1);
+        g_once_init_leave(init_val31, 1);
     }
 
     gsize * init_val4;

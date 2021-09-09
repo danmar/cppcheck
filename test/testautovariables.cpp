@@ -25,8 +25,7 @@
 
 class TestAutoVariables : public TestFixture {
 public:
-    TestAutoVariables() : TestFixture("TestAutoVariables") {
-    }
+    TestAutoVariables() : TestFixture("TestAutoVariables") {}
 
 private:
     Settings settings;
@@ -2038,6 +2037,18 @@ private:
               "    };\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    int x;\n"
+              "};\n"
+              "auto f() {\n"
+              "    A a;\n"
+              "    return [=] {\n"
+              "        const A* ap = &a;\n"
+              "        ap->x;\n"
+              "    };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeContainer() {
@@ -2059,7 +2070,9 @@ private:
               "    auto p = x.data();\n"
               "    return p;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'x' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning pointer to local variable 'x' that will be invalid when returning.\n",
+            errout.str());
 
         check("auto f() {\n"
               "    std::vector<int> x;\n"
@@ -2408,6 +2421,26 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    int i;\n"
+              "    {\n"
+              "        std::vector<int> vec;\n"
+              "        const auto iter = vec.begin();\n"
+              "        i = (int)(iter - vec.begin());\n"
+              "    }\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int* get(std::vector<int>& container) {\n"
+              "    Sequence seq(container);\n"
+              "    for (auto& r : seq) {\n"
+              "        return &r;\n"
+              "    }\n"
+              "    return &*seq.begin();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetime() {
@@ -2661,6 +2694,17 @@ private:
               "                   [key](const auto &v) { return v.key == key; });\n"
               "  return (entry == lookup.end()) ? \"\" : entry->value;\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9811
+        check("struct Base {\n"
+              "    virtual auto get() -> int & = 0;\n"
+              "};\n"
+              "struct A : public Base {\n"
+              "    int z = 42;\n"
+              "    auto get() -> int & override { return z; }\n"
+              "    auto getMore() -> int & { return get(); }\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 

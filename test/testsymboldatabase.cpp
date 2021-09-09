@@ -46,27 +46,26 @@ struct InternalError;
     LOAD_LIB_2(settings1.library, "std.cfg"); \
     const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.cpp"); \
     ASSERT(db); \
-    do {} while(false)
+    do {} while (false)
 
 #define GET_SYMBOL_DB(code) \
     Tokenizer tokenizer(&settings1, this); \
     const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.cpp"); \
     ASSERT(db); \
-    do {} while(false)
+    do {} while (false)
 
 #define GET_SYMBOL_DB_C(code) \
     Tokenizer tokenizer(&settings1, this); \
     const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, "test.c"); \
-    do {} while(false)
+    do {} while (false)
 
-class TestSymbolDatabase: public TestFixture {
+class TestSymbolDatabase : public TestFixture {
 public:
     TestSymbolDatabase()
-        :TestFixture("TestSymbolDatabase")
+        : TestFixture("TestSymbolDatabase")
         ,nullScope(nullptr, nullptr, nullptr)
         ,vartok(nullptr)
-        ,typetok(nullptr) {
-    }
+        ,typetok(nullptr) {}
 
 private:
     const Scope nullScope;
@@ -246,6 +245,7 @@ private:
         TEST_CASE(functionArgs15); // #7159
         TEST_CASE(functionArgs16); // #9591
         TEST_CASE(functionArgs17);
+        TEST_CASE(functionArgs18); // #10376
 
         TEST_CASE(functionImplicitlyVirtual);
 
@@ -354,6 +354,8 @@ private:
         TEST_CASE(symboldatabase95); // #10295
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
+        TEST_CASE(createSymbolDatabaseFindAllScopes2);
+        TEST_CASE(createSymbolDatabaseFindAllScopes3);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -2490,6 +2492,15 @@ private:
         ASSERT_EQUALS(3, func->argCount());
     }
 
+    void functionArgs18() {
+        const char code[] = "void f(int (*param1)[2], int param2) {}";
+        GET_SYMBOL_DB(code);
+        ASSERT(db != nullptr);
+        const Scope *scope = db->functionScopes.front();
+        const Function *func = scope->function;
+        ASSERT_EQUALS(2, func->argCount());
+    }
+
     void functionImplicitlyVirtual() {
         GET_SYMBOL_DB("class base { virtual void f(); };\n"
                       "class derived : base { void f(); };\n"
@@ -3175,11 +3186,11 @@ private:
         ASSERT(db && !db->functionScopes.empty() && db->functionScopes.front()->function && db->functionScopes.front()->function->functionScope == db->functionScopes.front());
 
         const Token *f = Token::findsimplematch(tokenizer.tokens(), "MyClass ( ) ;");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 3  && f->function()->token->linenr() == 9);
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 3 && f->function()->token->linenr() == 9);
 
         f = Token::findsimplematch(tokenizer.tokens(), "~ MyClass ( ) ;");
         f = f->next();
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 4  && f->function()->token->linenr() == 8);
+        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 4 && f->function()->token->linenr() == 8);
     }
 
     void symboldatabase49() { // #6424
@@ -4735,7 +4746,7 @@ private:
                       "void Fred::foo(const std::vector<std::function<void(const Fred::Value &)>> &callbacks) { }");
         ASSERT_EQUALS("", errout.str());
         const Token *functok = Token::findsimplematch(tokenizer.tokens(),
-                               "foo ( const std :: vector < std :: function < void ( const Fred :: Value & ) > > & callbacks ) { }");
+                                                      "foo ( const std :: vector < std :: function < void ( const Fred :: Value & ) > > & callbacks ) { }");
         ASSERT(functok);
         ASSERT(functok->function());
         ASSERT(functok->function()->name() == "foo");
@@ -4752,7 +4763,7 @@ private:
     void symboldatabase93() { // alignas attribute
         GET_SYMBOL_DB("struct alignas(int) A{\n"
                       "};\n"
-                     );
+                      );
         ASSERT(db != nullptr);
         const Scope* scope = db->findScopeByName("A");
         ASSERT(scope);
@@ -4787,6 +4798,45 @@ private:
         GET_SYMBOL_DB("void f() { union {int x; char *p;} a={0}; }");
         ASSERT(db->scopeList.size() == 3);
         ASSERT_EQUALS(Scope::eUnion, db->scopeList.back().type);
+    }
+
+    void createSymbolDatabaseFindAllScopes2() {
+        GET_SYMBOL_DB("namespace ns { auto var1{0}; }\n"
+                      "namespace ns { auto var2{0}; }\n");
+        ASSERT(db);
+        ASSERT_EQUALS(2, db->scopeList.size());
+        ASSERT_EQUALS(2, db->scopeList.back().varlist.size());
+        const Token* const var1 = Token::findsimplematch(tokenizer.tokens(), "var1");
+        const Token* const var2 = Token::findsimplematch(tokenizer.tokens(), "var2");
+        ASSERT(var1->variable());
+        ASSERT(var2->variable());
+    }
+
+    void createSymbolDatabaseFindAllScopes3() {
+        GET_SYMBOL_DB("namespace ns {\n"
+                      "\n"
+                      "namespace ns_details {\n"
+                      "template <typename T, typename = void> struct has_A : std::false_type {};\n"
+                      "template <typename T> struct has_A<T, typename make_void<typename T::A>::type> : std::true_type {};\n"
+                      "template <typename T, bool> struct is_A_impl : public std::is_trivially_copyable<T> {};\n"
+                      "template <typename T> struct is_A_impl<T, true> : public std::is_same<typename T::A, std::true_type> {};\n"
+                      "}\n"
+                      "\n"
+                      "template <typename T> struct is_A : ns_details::is_A_impl<T, ns_details::has_A<T>::value> {};\n"
+                      "template <class T, class U> struct is_A<std::pair<T, U>> : std::integral_constant<bool, is_A<T>::value && is_A<U>::value> {};\n"
+                      "}\n"
+                      "\n"
+                      "extern \"C\" {\n"
+                      "static const int foo = 8;\n"
+                      "}\n");
+        ASSERT(db);
+        ASSERT_EQUALS(6, db->scopeList.size());
+        ASSERT_EQUALS(1, db->scopeList.front().varlist.size());
+        auto list = db->scopeList;
+        list.pop_front();
+        for (const auto &scope : list) {
+            ASSERT_EQUALS(0, scope.varlist.size());
+        }
     }
 
     void enum1() {
@@ -4986,11 +5036,11 @@ private:
     }
 
 #define TEST(S) \
-        v = db->getVariableFromVarId(id++); \
-        ASSERT(v != nullptr); \
-        ASSERT(v->isArray()); \
-        ASSERT_EQUALS(1U, v->dimensions().size()); \
-        ASSERT_EQUALS(S, v->dimension(0))
+    v = db->getVariableFromVarId(id++); \
+    ASSERT(v != nullptr); \
+    ASSERT(v->isArray()); \
+    ASSERT_EQUALS(1U, v->dimensions().size()); \
+    ASSERT_EQUALS(S, v->dimension(0))
 
     void enum7() {
         GET_SYMBOL_DB("enum E { X };\n"
@@ -5248,7 +5298,7 @@ private:
                       "    foo(1);\n"     /* 5 */
                       "}");               /* 6 */
         ASSERT_EQUALS("", errout.str());
-        ASSERT(db) ;
+        ASSERT(db);
         const Scope * bar = db->findScopeByName("bar");
         ASSERT(bar != nullptr);
         const unsigned int linenrs[2] = { 2, 1 };
@@ -6621,10 +6671,10 @@ private:
     }
 
 #define FUNC(x) do { \
-                const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
-                ASSERT_EQUALS(true, x != nullptr);                                  \
-                ASSERT_EQUALS(true, x->isNoExcept()); \
-                } while(false)
+        const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
+        ASSERT_EQUALS(true, x != nullptr);                                  \
+        ASSERT_EQUALS(true, x->isNoExcept()); \
+} while (false)
 
     void noexceptFunction1() {
         GET_SYMBOL_DB("void func1() noexcept;\n"
@@ -6650,10 +6700,10 @@ private:
     }
 
 #define CLASS_FUNC(x, y, z) do { \
-                         const Function *x = findFunctionByName(#x, y); \
-                         ASSERT_EQUALS(true, x != nullptr);             \
-                         ASSERT_EQUALS(z, x->isNoExcept()); \
-                         } while(false)
+        const Function *x = findFunctionByName(#x, y); \
+        ASSERT_EQUALS(true, x != nullptr);             \
+        ASSERT_EQUALS(z, x->isNoExcept()); \
+} while (false)
 
     void noexceptFunction3() {
         GET_SYMBOL_DB("struct Fred {\n"
@@ -6711,10 +6761,10 @@ private:
     }
 
 #define FUNC_THROW(x) do { \
-                      const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
-                      ASSERT_EQUALS(true, x != nullptr);                                  \
-                      ASSERT_EQUALS(true, x->isThrow()); \
-                      } while(false)
+        const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
+        ASSERT_EQUALS(true, x != nullptr);                                  \
+        ASSERT_EQUALS(true, x->isThrow()); \
+} while (false)
 
     void throwFunction1() {
         GET_SYMBOL_DB("void func1() throw();\n"
@@ -6731,10 +6781,10 @@ private:
     }
 
 #define CLASS_FUNC_THROW(x, y) do { \
-                               const Function *x = findFunctionByName(#x, y); \
-                               ASSERT_EQUALS(true, x != nullptr);             \
-                               ASSERT_EQUALS(true, x->isThrow()); \
-                               } while(false)
+        const Function *x = findFunctionByName(#x, y); \
+        ASSERT_EQUALS(true, x != nullptr);             \
+        ASSERT_EQUALS(true, x->isThrow()); \
+} while (false)
     void throwFunction2() {
         GET_SYMBOL_DB("struct Fred {\n"
                       "    void func1() throw();\n"
@@ -6825,7 +6875,7 @@ private:
                       "template <class T> [[nodiscard]] int func4() { }"
                       "std::pair<bool, char> [[nodiscard]] func5();\n"
                       "[[nodiscard]] std::pair<bool, char> func6();\n"
-                     );
+                      );
         ASSERT_EQUALS("", errout.str());
         ASSERT_EQUALS(true,  db != nullptr); // not null
 
@@ -7324,7 +7374,8 @@ private:
         doc.Parse(xmldata, sizeof(xmldata)); \
         sF.library.load(doc); \
         ASSERT_EQUALS(#type, typeOf("void f() { auto x = g(); }", "x", "test.cpp", &sF)); \
-    } while (false)
+} while (false)
+        // *INDENT-OFF*
         CHECK_LIBRARY_FUNCTION_RETURN_TYPE(bool);
         CHECK_LIBRARY_FUNCTION_RETURN_TYPE(signed char);
         CHECK_LIBRARY_FUNCTION_RETURN_TYPE(unsigned char);
@@ -7339,6 +7390,7 @@ private:
         CHECK_LIBRARY_FUNCTION_RETURN_TYPE(void *);
         CHECK_LIBRARY_FUNCTION_RETURN_TYPE(void * *);
         CHECK_LIBRARY_FUNCTION_RETURN_TYPE(const void *);
+        // *INDENT-ON*
 #undef CHECK_LIBRARY_FUNCTION_RETURN_TYPE
 
         // Library types
@@ -7424,7 +7476,12 @@ private:
             vector.startPattern2 = "Vector !!::";
             vector.type_templateArgNo = 0;
             vector.arrayLike_indexOp = true;
-            vector.functions["front"] = Library::Container::Function{Library::Container::Action::NO_ACTION, Library::Container::Yield::ITEM};
+            vector.functions["front"] =
+                Library::Container::Function{Library::Container::Action::NO_ACTION, Library::Container::Yield::ITEM};
+            vector.functions["data"] =
+                Library::Container::Function{Library::Container::Action::NO_ACTION, Library::Container::Yield::BUFFER};
+            vector.functions["begin"] = Library::Container::Function{Library::Container::Action::NO_ACTION,
+                                                                     Library::Container::Yield::START_ITERATOR};
             set.library.containers["Vector"] = vector;
             Library::Container string;
             string.startPattern = "test :: string";
@@ -7433,13 +7490,29 @@ private:
             set.library.containers["test::string"] = string;
             ASSERT_EQUALS("signed int", typeOf("Vector<int> v; v[0]=3;", "[", "test.cpp", &set));
             ASSERT_EQUALS("container(test :: string)", typeOf("{return test::string();}", "(", "test.cpp", &set));
-            ASSERT_EQUALS("container(test :: string)", typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "s", "test.cpp", &set));
-            ASSERT_EQUALS("container(test :: string)", typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "+", "test.cpp", &set));
-            ASSERT_EQUALS("container(test :: string)", typeOf("Vector<test::string> v; x = v.front();", "(", "test.cpp", &set));
-            ASSERT_EQUALS("container(test :: string)", typeOf("void foo(){test::string s; return \"x\"+s;}", "+", "test.cpp", &set));
-            ASSERT_EQUALS("container(test :: string)", typeOf("void foo(){test::string s; return s+\"x\";}", "+", "test.cpp", &set));
-            ASSERT_EQUALS("container(test :: string)", typeOf("void foo(){test::string s; return 'x'+s;}", "+", "test.cpp", &set));
-            ASSERT_EQUALS("container(test :: string)", typeOf("void foo(){test::string s; return s+'x';}", "+", "test.cpp", &set));
+            ASSERT_EQUALS(
+                "container(test :: string)",
+                typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "s", "test.cpp", &set));
+            ASSERT_EQUALS(
+                "container(test :: string)",
+                typeOf("void foo(Vector<test::string> v) { for (auto s: v) { x=s+s; } }", "+", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string) &",
+                          typeOf("Vector<test::string> v; x = v.front();", "(", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string) *",
+                          typeOf("Vector<test::string> v; x = v.data();", "(", "test.cpp", &set));
+            ASSERT_EQUALS("signed int &", typeOf("Vector<int> v; x = v.front();", "(", "test.cpp", &set));
+            ASSERT_EQUALS("signed int *", typeOf("Vector<int> v; x = v.data();", "(", "test.cpp", &set));
+            ASSERT_EQUALS("signed int * *", typeOf("Vector<int*> v; x = v.data();", "(", "test.cpp", &set));
+            ASSERT_EQUALS("iterator(Vector <)", typeOf("Vector<int> v; x = v.begin();", "(", "test.cpp", &set));
+            ASSERT_EQUALS("signed int &", typeOf("Vector<int> v; x = *v.begin();", "*", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)",
+                          typeOf("void foo(){test::string s; return \"x\"+s;}", "+", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)",
+                          typeOf("void foo(){test::string s; return s+\"x\";}", "+", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)",
+                          typeOf("void foo(){test::string s; return 'x'+s;}", "+", "test.cpp", &set));
+            ASSERT_EQUALS("container(test :: string)",
+                          typeOf("void foo(){test::string s; return s+'x';}", "+", "test.cpp", &set));
         }
 
         // new
@@ -7460,7 +7533,14 @@ private:
         ASSERT_EQUALS("", typeOf("; int x[10] = { [3]=1 };", "[ 3 ]"));
 
         // std::make_shared
-        ASSERT_EQUALS("smart-pointer<C>", typeOf("class C {}; x = std::make_shared<C>();", "("));
+        {
+            Settings set;
+            Library::SmartPointer sharedPtr;
+            sharedPtr.name = "std::shared_ptr";
+            set.library.smartPointers["std::shared_ptr"] = sharedPtr;
+            ASSERT_EQUALS("smart-pointer(std::shared_ptr)",
+                          typeOf("class C {}; x = std::make_shared<C>();", "(", "test.cpp", &set));
+        }
 
         // return
         {
@@ -7471,6 +7551,17 @@ private:
             c.startPattern2 = "C !!::";
             sC.library.containers["C"] = c;
             ASSERT_EQUALS("container(C)", typeOf("C f(char *p) { char data[10]; return data; }", "return", "test.cpp", &sC));
+        }
+        // Smart pointer
+        {
+            Settings set;
+            Library::SmartPointer myPtr;
+            myPtr.name = "MyPtr";
+            set.library.smartPointers["MyPtr"] = myPtr;
+            ASSERT_EQUALS("smart-pointer(MyPtr)",
+                          typeOf("void f() { MyPtr<int> p; return p; }", "p ;", "test.cpp", &set));
+            ASSERT_EQUALS("signed int", typeOf("void f() { MyPtr<int> p; return *p; }", "* p ;", "test.cpp", &set));
+            ASSERT_EQUALS("smart-pointer(MyPtr)", typeOf("void f() {return MyPtr<int>();}", "(", "test.cpp", &set));
         }
     }
 

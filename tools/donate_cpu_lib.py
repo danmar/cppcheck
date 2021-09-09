@@ -224,7 +224,7 @@ def unpack_package(work_path, tgz):
                     # Skip dangerous file names
                     continue
                 elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp',
-                                                   '.h++', '.hxx', '.hh', '.tpp', '.txx', '.qml')):
+                                                   '.h++', '.hxx', '.hh', '.tpp', '.txx', '.ipp', '.ixx', '.qml')):
                     try:
                         tf.extract(member.name)
                         found = True

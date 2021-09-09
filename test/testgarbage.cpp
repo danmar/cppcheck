@@ -27,8 +27,7 @@
 
 class TestGarbage : public TestFixture {
 public:
-    TestGarbage() : TestFixture("TestGarbage") {
-    }
+    TestGarbage() : TestFixture("TestGarbage") {}
 
 private:
     Settings settings;
@@ -267,8 +266,7 @@ private:
         // run alternate check first. It should only ensure stability - so we catch exceptions here.
         try {
             checkCodeInternal(code, alternatefilename);
-        } catch (const InternalError&) {
-        }
+        } catch (const InternalError&) {}
 
         return checkCodeInternal(code, filename);
     }
@@ -950,9 +948,9 @@ private:
     }
 
     void garbageCode121() { // #2585
-        ASSERT_THROW(checkCode("abcdef?""?<"
-                               "123456?""?>"
-                               "+?""?="), InternalError);
+        ASSERT_THROW(checkCode("abcdef?" "?<"
+                               "123456?" "?>"
+                               "+?" "?="), InternalError);
     }
 
     void garbageCode122() { // #6303
@@ -1580,7 +1578,7 @@ private:
 
     // #8752
     void garbageCode199() {
-        checkCode("d f(){e n00e0[]n00e0&""0+f=0}");
+        checkCode("d f(){e n00e0[]n00e0&" "0+f=0}");
     }
 
     // #8757
@@ -1740,12 +1738,13 @@ private:
 
     void cliCode() {
         // #8913
-        ASSERT_THROW(checkCode("public ref class LibCecSharp : public CecCallbackMethods {\n"
-                               "array<CecAdapter ^> ^ FindAdapters(String ^ path) {}\n"
-                               "bool GetDeviceInformation(String ^ port, LibCECConfiguration ^configuration, uint32_t timeoutMs) {\n"
-                               "bool bReturn(false);\n"
-                               "}\n"
-                               "};"), InternalError);
+        ASSERT_NO_THROW(checkCode(
+                            "public ref class LibCecSharp : public CecCallbackMethods {\n"
+                            "array<CecAdapter ^> ^ FindAdapters(String ^ path) {}\n"
+                            "bool GetDeviceInformation(String ^ port, LibCECConfiguration ^configuration, uint32_t timeoutMs) {\n"
+                            "bool bReturn(false);\n"
+                            "}\n"
+                            "};"));
     }
 
     void enumTrailingComma() {

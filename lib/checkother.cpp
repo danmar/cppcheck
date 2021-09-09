@@ -139,7 +139,7 @@ void CheckOther::checkCastIntToCharAndBackError(const Token *tok, const std::str
         "variable with EOF can have unexpected results. For instance a loop \"while (EOF != (c = $symbol());\" "
         "loops forever on some compilers/platforms and on other compilers/platforms it will stop "
         "when the file contains a matching character.", CWE197, Certainty::normal
-    );
+        );
 }
 
 
@@ -450,7 +450,7 @@ void CheckOther::checkRedundantAssignment()
                     isInitialization = true;
                     bool trivial = true;
                     visitAstNodes(tok->astOperand2(),
-                    [&](const Token *rhs) {
+                                  [&](const Token *rhs) {
                         if (Token::simpleMatch(rhs, "{ 0 }"))
                             return ChildrenToVisit::none;
                         if (Token::Match(rhs, "%str%|%num%|%name%") && !rhs->varId())
@@ -1218,7 +1218,7 @@ static bool canBeConst(const Variable *var)
                 return false;
             else {
                 const Variable* argVar = tok3->astOperand1()->function()->getArgumentVar(argNr);
-                if (!argVar|| (!argVar->isConst() && argVar->isReference()))
+                if (!argVar || (!argVar->isConst() && argVar->isReference()))
                     return false;
             }
         } else if (parent->isUnaryOp("&")) {
@@ -1268,8 +1268,7 @@ void CheckOther::checkPassByReference()
 
         bool inconclusive = false;
 
-        if (var->valueType() && var->valueType()->type == ValueType::Type::CONTAINER) {
-        } else if (var->type() && !var->type()->isEnumType()) { // Check if type is a struct or class.
+        if (var->valueType() && var->valueType()->type == ValueType::Type::CONTAINER) {} else if (var->type() && !var->type()->isEnumType()) { // Check if type is a struct or class.
             // Ensure that it is a large object.
             if (!var->type()->classScope)
                 inconclusive = true;
@@ -1399,7 +1398,7 @@ void CheckOther::checkConstVariable()
         if (Function::returnsReference(function) && !Function::returnsConst(function)) {
             std::vector<const Token*> returns = Function::findReturns(function);
             if (std::any_of(returns.begin(), returns.end(), [&](const Token* retTok) {
-            if (retTok->varId() == var->declarationId())
+                if (retTok->varId() == var->declarationId())
                     return true;
                 while (retTok && retTok->isCast())
                     retTok = retTok->astOperand2();
@@ -1407,7 +1406,7 @@ void CheckOther::checkConstVariable()
                     retTok = retTok->astOperand2();
                 return hasLifetimeToken(getParentLifetime(retTok), var->nameToken());
             }))
-            continue;
+                continue;
         }
         // Skip if address is taken
         if (Token::findmatch(var->nameToken(), "& %varid%", scope->bodyEnd, var->declarationId()))
@@ -1502,6 +1501,10 @@ void CheckOther::checkConstPointer()
         nonConstPointers.insert(tok->variable());
     }
     for (const Variable *p: pointers) {
+        if (p->isArgument()) {
+            if (!p->scope() || !p->scope()->function || p->scope()->function->isImplicitlyVirtual(true) || p->scope()->function->hasVirtualSpecifier())
+                continue;
+        }
         if (nonConstPointers.find(p) == nonConstPointers.end())
             constVariableError(p, nullptr);
     }
@@ -2076,7 +2079,7 @@ namespace {
         for (const Scope &scope : symbolDatabase->scopeList) {
             // only add const functions that do not have a non-const overloaded version
             // since it is pretty much impossible to tell which is being called.
-            using StringFunctionMap = std::map<std::string, std::list<const Function*> >;
+            using StringFunctionMap = std::map<std::string, std::list<const Function*>>;
             StringFunctionMap functionsByName;
             for (const Function &func : scope.functionList) {
                 functionsByName[func.tokenDef->str()].push_back(&func);
@@ -2127,7 +2130,7 @@ void CheckOther::checkDuplicateExpression()
                             tok->astOperand2()->isArithmeticalOp() ||
                             tok->astOperand2()->str() == "." ||
                             Token::Match(tok->astOperand2()->previous(), "%name% (")
-                        ) &&
+                            ) &&
                         tok->next()->tokType() != Token::eType &&
                         isSameExpression(mTokenizer->isCPP(), true, tok->next(), nextAssign->next(), mSettings->library, true, false) &&
                         isSameExpression(mTokenizer->isCPP(), true, tok->astOperand2(), nextAssign->astOperand2(), mSettings->library, true, false) &&
@@ -2931,7 +2934,7 @@ void CheckOther::checkEvaluationOrder()
                 // Is expression used?
                 bool foundError = false;
                 visitAstNodes((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2(),
-                [&](const Token *tok3) {
+                              [&](const Token *tok3) {
                     if (tok3->str() == "&" && !tok3->astOperand2())
                         return ChildrenToVisit::none; // don't handle address-of for now
                     if (tok3->str() == "(" && Token::simpleMatch(tok3->previous(), "sizeof"))

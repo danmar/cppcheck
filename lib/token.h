@@ -215,8 +215,8 @@ public:
     void deleteNext(nonneg int count = 1);
 
     /**
-    * Unlink and delete the previous 'count' tokens.
-    */
+     * Unlink and delete the previous 'count' tokens.
+     */
     void deletePrevious(nonneg int count = 1);
 
     /**
@@ -641,6 +641,13 @@ public:
         setFlag(fIsInline, b);
     }
 
+    bool isTemplate() const {
+        return getFlag(fIsTemplate);
+    }
+    void isTemplate(bool b) {
+        setFlag(fIsTemplate, b);
+    }
+
     bool isBitfield() const {
         return mImpl->mBits > 0;
     }
@@ -1010,14 +1017,14 @@ public:
     }
 
     /**
-    * Associate this token with given type
-    * @param t Type to be associated
-    */
+     * Associate this token with given type
+     * @param t Type to be associated
+     */
     void type(const ::Type *t);
 
     /**
-    * @return a pointer to the type associated with this token.
-    */
+     * @return a pointer to the type associated with this token.
+     */
     const ::Type *type() const {
         return mTokType == eType ? mImpl->mType : nullptr;
     }
@@ -1029,8 +1036,8 @@ public:
     static std::string typeStr(const Token* tok);
 
     /**
-    * @return a pointer to the Enumerator associated with this token.
-    */
+     * @return a pointer to the Enumerator associated with this token.
+     */
     const Enumerator *enumerator() const {
         return mTokType == eEnumerator ? mImpl->mEnumerator : nullptr;
     }
@@ -1092,10 +1099,10 @@ public:
     Token* nextArgumentBeforeCreateLinks2() const;
 
     /**
-    * @return the first token of the next template argument. Does only work on template argument
-    * lists. Requires that Tokenizer::createLinks2() has been called before.
-    * Returns 0, if there is no next argument.
-    */
+     * @return the first token of the next template argument. Does only work on template argument
+     * lists. Requires that Tokenizer::createLinks2() has been called before.
+     * Returns 0, if there is no next argument.
+     */
     Token* nextTemplateArgument() const;
 
     /**
@@ -1134,6 +1141,7 @@ public:
     bool hasKnownIntValue() const;
     bool hasKnownValue() const;
     bool hasKnownValue(ValueFlow::Value::ValueType t) const;
+    bool hasKnownSymbolicValue(const Token* tok) const;
 
     const ValueFlow::Value* getKnownValue(ValueFlow::Value::ValueType t) const;
     MathLib::bigint getKnownIntValue() const {
@@ -1144,7 +1152,7 @@ public:
 
     const ValueFlow::Value* getValue(const MathLib::bigint val) const;
 
-    const ValueFlow::Value* getMaxValue(bool condition) const;
+    const ValueFlow::Value* getMaxValue(bool condition, MathLib::bigint path = 0) const;
 
     const ValueFlow::Value* getMovedValue() const;
 
@@ -1239,7 +1247,8 @@ private:
         fIsSplitVarDeclComma    = (1 << 29), // set to true when variable declarations are split up ('int a,b;' => 'int a; int b;')
         fIsSplitVarDeclEq       = (1 << 30), // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
         fIsImplicitInt          = (1U << 31),   // Is "int" token implicitly added?
-        fIsInline               = (1ULL << 32)  // Is this a inline type
+        fIsInline               = (1ULL << 32), // Is this a inline type
+        fIsTemplate             = (1ULL << 33)
     };
 
     Token::Type mTokType;
@@ -1385,6 +1394,11 @@ public:
         return mImpl->mCpp11init;
     }
 };
+
+Token* findTypeEnd(Token* tok);
+const Token* findTypeEnd(const Token* tok);
+Token* findLambdaEndScope(Token* tok);
+const Token* findLambdaEndScope(const Token* tok);
 
 /// @}
 //---------------------------------------------------------------------------

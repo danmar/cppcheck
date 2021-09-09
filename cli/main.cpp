@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
     GetModuleFileNameA(nullptr, exename, sizeof(exename)/sizeof(exename[0])-1);
     argv[0] = exename;
 #endif
-
+// *INDENT-OFF*
 #ifdef NDEBUG
     try {
 #endif
@@ -103,12 +103,13 @@ int main(int argc, char* argv[])
     }
     return EXIT_FAILURE;
 #endif
+// *INDENT-ON*
 }
 
 
 // Warn about deprecated compilers
 #ifdef __clang__
-#   if ( __clang_major__ < 2 || ( __clang_major__  == 2 && __clang_minor__ < 9))
+#   if (__clang_major__ < 2 || (__clang_major__  == 2 && __clang_minor__ < 9))
 #       warning "Using Clang 2.8 or earlier. Support for this version has been removed."
 #   endif
 #elif defined(__GNUC__)

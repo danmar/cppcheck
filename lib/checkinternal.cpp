@@ -360,28 +360,28 @@ void CheckInternal::multiComparePatternError(const Token* tok, const std::string
 {
     reportError(tok, Severity::error, "multiComparePatternError",
                 "Bad multicompare pattern (a %cmd% must be first unless it is %or%,%op%,%cop%,%name%,%oror%) inside Token::" + funcname + "() call: \"" + pattern + "\""
-               );
+                );
 }
 
 void CheckInternal::simplePatternError(const Token* tok, const std::string& pattern, const std::string &funcname)
 {
     reportError(tok, Severity::warning, "simplePatternError",
                 "Found simple pattern inside Token::" + funcname + "() call: \"" + pattern + "\""
-               );
+                );
 }
 
 void CheckInternal::complexPatternError(const Token* tok, const std::string& pattern, const std::string &funcname)
 {
     reportError(tok, Severity::error, "complexPatternError",
                 "Found complex pattern inside Token::" + funcname + "() call: \"" + pattern + "\""
-               );
+                );
 }
 
 void CheckInternal::missingPercentCharacterError(const Token* tok, const std::string& pattern, const std::string& funcname)
 {
     reportError(tok, Severity::error, "missingPercentCharacter",
                 "Missing percent end character in Token::" + funcname + "() pattern: \"" + pattern + "\""
-               );
+                );
 }
 
 void CheckInternal::unknownPatternError(const Token* tok, const std::string& pattern)
@@ -406,7 +406,7 @@ void CheckInternal::extraWhitespaceError(const Token* tok, const std::string& pa
 {
     reportError(tok, Severity::warning, "extraWhitespaceError",
                 "Found extra whitespace inside Token::" + funcname + "() call: \"" + pattern + "\""
-               );
+                );
 }
 
 #endif // #ifdef CHECK_INTERNAL

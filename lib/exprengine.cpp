@@ -412,7 +412,7 @@ namespace {
             return tokenizer->isCPP();
         }
 
-        ExprEngine::ValuePtr executeContract(const Function *function, ExprEngine::ValuePtr(*executeExpression)(const Token*, Data&)) {
+        ExprEngine::ValuePtr executeContract(const Function *function, ExprEngine::ValuePtr (*executeExpression)(const Token*, Data&)) {
             const auto it = settings->functionContracts.find(function->fullName());
             if (it == settings->functionContracts.end())
                 return ExprEngine::ValuePtr();
@@ -434,7 +434,7 @@ namespace {
             return executeExpression(tokenList.front()->astTop(), *this);
         }
 
-        void contractConstraints(const Function *function, ExprEngine::ValuePtr(*executeExpression)(const Token*, Data&)) {
+        void contractConstraints(const Function *function, ExprEngine::ValuePtr (*executeExpression)(const Token*, Data&)) {
             auto value = executeContract(function, executeExpression);
             if (value)
                 constraints.push_back(value);
@@ -916,8 +916,7 @@ ExprEngine::ArrayValue::ArrayValue(const std::string &name, const ExprEngine::Ar
     : Value(name, ExprEngine::ValueType::ArrayValue)
     , pointer(arrayValue.pointer), nullPointer(arrayValue.nullPointer), uninitPointer(arrayValue.uninitPointer)
     , data(arrayValue.data), size(arrayValue.size)
-{
-}
+{}
 
 
 std::string ExprEngine::ArrayValue::getRange() const
@@ -1112,7 +1111,7 @@ public:
     using ValueExpr = std::map<std::string, z3::expr>;
     using AssertionList = std::vector<z3::expr>;
 
-    class BailoutValueException: public ExprEngineException {
+    class BailoutValueException : public ExprEngineException {
     public:
         BailoutValueException() : ExprEngineException(nullptr, "Incomplete analysis") {}
     };
@@ -1130,8 +1129,7 @@ public:
         for (auto constraint : data->constraints) {
             try {
                 solver.add(getConstraintExpr(constraint));
-            } catch (const BailoutValueException &) {
-            }
+            } catch (const BailoutValueException &) {}
         }
     }
 

@@ -24,8 +24,7 @@
 
 class TestPath : public TestFixture {
 public:
-    TestPath() : TestFixture("TestPath") {
-    }
+    TestPath() : TestFixture("TestPath") {}
 
 private:
 

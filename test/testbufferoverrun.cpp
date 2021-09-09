@@ -33,8 +33,7 @@
 
 class TestBufferOverrun : public TestFixture {
 public:
-    TestBufferOverrun() : TestFixture("TestBufferOverrun") {
-    }
+    TestBufferOverrun() : TestFixture("TestBufferOverrun") {}
 
 private:
     Settings settings0;
@@ -135,6 +134,8 @@ private:
         TEST_CASE(array_index_55); // #10254
         TEST_CASE(array_index_56); // #10284
         TEST_CASE(array_index_57); // #10023
+        TEST_CASE(array_index_58); // #7524
+        TEST_CASE(array_index_59); // #10413
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -185,6 +186,7 @@ private:
         TEST_CASE(buffer_overrun_30); // #6367
         TEST_CASE(buffer_overrun_31);
         TEST_CASE(buffer_overrun_32); //#10244
+        TEST_CASE(buffer_overrun_33); //#2019
         TEST_CASE(buffer_overrun_errorpath);
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
         TEST_CASE(buffer_overrun_function_array_argument);
@@ -1636,6 +1638,33 @@ private:
             errout.str());
     }
 
+    void array_index_58()
+    {
+        check("int f(int x, int y) {\n"
+              "    int a[3]= {0,1,2};\n"
+              "    if(x<2)\n"
+              "        y = a[x] + 1;\n"
+              "    else\n"
+              "        y = a[x];\n"
+              "    return y;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:6]: (warning) Either the condition 'x<2' is redundant or the array 'a[3]' is accessed at index 3, which is out of bounds.\n",
+            errout.str());
+    }
+
+    void array_index_59()
+    {
+        check("long f(long b) {\n"
+              "  const long a[] = { 0, 1, };\n"
+              "  const long c = std::size(a);\n"
+              "  if (b < 0 || b >= c)\n"
+              "    return 0;\n"
+              "  return a[b];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void array_index_multidim() {
         check("void f()\n"
               "{\n"
@@ -2784,6 +2813,17 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error, inconclusive) Buffer is accessed out of bounds: src\n", errout.str());
     }
 
+    void buffer_overrun_33() { // #2019
+        check("int f() {\n"
+              "   int z[16];\n"
+              "   for (int i=0; i<20; i++)\n"
+              "      for (int j=0; j<20; j++)\n"
+              "          z[i] = 0;\n"
+              "   return z[0];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'z[16]' accessed at index 19, which is out of bounds.\n", errout.str());
+    }
+
     void buffer_overrun_errorpath() {
         setMultiline();
         settings0.templateLocation = "{file}:{line}:note:{info}";
@@ -2835,33 +2875,40 @@ private:
     }
 
     void buffer_overrun_function_array_argument() {
+        setMultiline();
+
         check("void f(char a[10]);\n"
               "void g() {\n"
               "    char a[2];\n"
               "    f(a);\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) The array 'a' is too small, the function 'f' expects a bigger one.\n", "", errout.str());
+        ASSERT_EQUALS("test.cpp:4:warning:Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n"
+                      "test.cpp:4:note:Function 'f' is called\n"
+                      "test.cpp:1:note:Declaration of 1st function argument.\n"
+                      "test.cpp:3:note:Passing buffer 'a' to function that is declared here\n"
+                      "test.cpp:4:note:Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n", errout.str());
 
         check("void f(float a[10][3]);\n"
               "void g() {\n"
               "    float a[2][3];\n"
               "    f(a);\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) The array 'a' is too small, the function 'f' expects a bigger one.\n", "", errout.str());
+        ASSERT_EQUALS("test.cpp:4:warning:Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n"
+                      "test.cpp:4:note:Function 'f' is called\n"
+                      "test.cpp:1:note:Declaration of 1st function argument.\n"
+                      "test.cpp:3:note:Passing buffer 'a' to function that is declared here\n"
+                      "test.cpp:4:note:Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n", errout.str());
 
         check("void f(int a[20]);\n"
               "void g() {\n"
               "    int a[2];\n"
               "    f(a);\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) The array 'a' is too small, the function 'f' expects a bigger one.\n", "", errout.str());
-
-        check("void f(int a[20]);\n"
-              "void g() {\n"
-              "    int a[5];\n"
-              "    f(a);\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("test.cpp:4:warning:Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n"
+                      "test.cpp:4:note:Function 'f' is called\n"
+                      "test.cpp:1:note:Declaration of 1st function argument.\n"
+                      "test.cpp:3:note:Passing buffer 'a' to function that is declared here\n"
+                      "test.cpp:4:note:Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n", errout.str());
 
         check("void f(int a[]) {\n"
               "  switch (2) {\n"
@@ -3431,7 +3478,7 @@ private:
             ASSERT_EQUALS(15, CheckBufferOverrun::countSprintfLength("str%s%d%d", multipleParams));
             ASSERT_EQUALS(26, CheckBufferOverrun::countSprintfLength("str%-6s%08ld%08ld", multipleParams));
         }
-    */
+     */
 
     // extracttests.disable
 
@@ -4642,7 +4689,10 @@ private:
               "    for(int i=0;i<strlen(*test);i++)\n"
               "        printf(\"%c\",*test[i]);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4] -> [test.cpp:9]: (warning) The address of local variable 'test' might be accessed at non-zero index.\n", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:9]: (warning) The address of local variable 'test' might be accessed at non-zero index.\n",
+            "",
+            errout.str());
 
         check("void Bar(uint8_t data);\n"
               "void Foo(const uint8_t * const data, const uint8_t length) {\n"
@@ -4652,6 +4702,18 @@ private:
               "void test() {\n"
               "    const uint8_t data = 0U;\n"
               "    Foo(&data,1U);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo(int n, int* p) {\n"
+              "    int res = 0;\n"
+              "    for(int i = 0; i < n; i++ )\n"
+              "        res += p[i];\n"
+              "    return res;\n"
+              "}\n"
+              "int bar() {\n"
+              "    int single_value = 0;\n"
+              "    return foo(1, &single_value);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

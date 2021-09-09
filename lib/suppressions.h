@@ -182,7 +182,7 @@ public:
     /**
      * @brief Create an xml dump of suppressions
      * @param out stream to write XML to
-    */
+     */
     void dump(std::ostream &out) const;
 
     /**
@@ -201,7 +201,7 @@ public:
      * @brief Returns list of all suppressions.
      * @return list of suppressions
      */
-    std::list<Suppression> getSuppressions() const;
+    const std::list<Suppression> &getSuppressions() const;
 
 private:
     /** @brief List of error which the user doesn't want to see. */

@@ -34,8 +34,7 @@
 
 class TestNullPointer : public TestFixture {
 public:
-    TestNullPointer() : TestFixture("TestNullPointer") {
-    }
+    TestNullPointer() : TestFixture("TestNullPointer") {}
 
 private:
     Settings settings;
@@ -109,13 +108,19 @@ private:
         TEST_CASE(nullpointer66); // #10024
         TEST_CASE(nullpointer67); // #10062
         TEST_CASE(nullpointer68);
-        TEST_CASE(nullpointer69);         // #8143
+        TEST_CASE(nullpointer69); // #8143
         TEST_CASE(nullpointer70);
         TEST_CASE(nullpointer71); // #10178
         TEST_CASE(nullpointer72); // #10215
         TEST_CASE(nullpointer73); // #10321
         TEST_CASE(nullpointer74);
         TEST_CASE(nullpointer75);
+        TEST_CASE(nullpointer76); // #10408
+        TEST_CASE(nullpointer77);
+        TEST_CASE(nullpointer78); // #7802
+        TEST_CASE(nullpointer79); // #10400
+        TEST_CASE(nullpointer80); // #10410
+        TEST_CASE(nullpointer81); // #8724
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1172,7 +1177,7 @@ private:
                   "        p = q;\n"
                   "    if (p || *p) { }\n"
                   "}");
-            ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5]: (warning) Either the condition 'p' is redundant or there is possible null pointer dereference: p.\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:5]: (warning) Possible null pointer dereference: p\n", errout.str());
         }
 
         // ticket #8831 - FP triggered by if/return/else sequence
@@ -1474,6 +1479,23 @@ private:
               "    (void)f->x;\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("typedef struct\n"
+              "{\n"
+              "    int x;\n"
+              "} F;\n"
+              "\n"
+              "static void foo(F* f)\n"
+              "{\n"
+              "    if( !f || f->x == 0 )\n"
+              "    {\n"
+              "        if( !f )\n"
+              "            return;\n"
+              "    }\n"
+              "\n"
+              "    (void)f->x;\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer32() { // #8460
@@ -1500,7 +1522,7 @@ private:
 
     void nullpointer34() {
         check("void g() {\n"
-              "    throw "";\n"
+              "    throw " ";\n"
               "}\n"
               "bool f(int * x) {\n"
               "    if (x) *x += 1;\n"
@@ -2248,20 +2270,30 @@ private:
 
     void nullpointer72() { // #10215
         check("int test() {\n"
-              "int* p0 = nullptr, *p1 = nullptr;\n"
-              "getFoo(p0);\n"
-              "getBar(p1);\n"
-              "if (!(p0 != nullptr && p1 != nullptr))\n"
-              "return {};\n"
-              "return *p0 + *p1;\n"
+              "  int* p0 = nullptr, *p1 = nullptr;\n"
+              "  getFoo(p0);\n"
+              "  getBar(p1);\n"
+              "  if (!(p0 != nullptr && p1 != nullptr))\n"
+              "    return {};\n"
+              "  return *p0 + *p1;\n"
               "}\n", true /*inconclusive*/);
         ASSERT_EQUALS("", errout.str());
 
         check("int test2() {\n"
-              "int* p0 = nullptr; \n"
-              "if (!(getBaz(p0) && p0 != nullptr))\n"
-              "return 0;\n"
-              "return *p0;\n"
+              "  int* p0 = nullptr;\n"
+              "  if (!(getBaz(p0) && p0 != nullptr))\n"
+              "    return 0;\n"
+              "  return *p0;\n"
+              "}\n", true /*inconclusive*/);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int test3() {\n"
+              "  Obj* PObj = nullptr;\n"
+              "  if (!(GetObj(PObj) && PObj != nullptr))\n"
+              "    return 1;\n"
+              "  if (!PObj->foo())\n"
+              "    test();\n"
+              "  PObj->bar();\n"
               "}\n", true /*inconclusive*/);
         ASSERT_EQUALS("", errout.str());
     }
@@ -2344,6 +2376,100 @@ private:
               "    x->c();\n"
               "  x->c();\n"
               "  if (x->b()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer76()
+    {
+        check("int* foo(int y) {\n"
+              "    std::unique_ptr<int> x = std::make_unique<int>(0);\n"
+              "    if( y == 0 )\n"
+              "        return x.release();\n"
+              "    (*x) ++;\n"
+              "    return x.release();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer77()
+    {
+        check("bool h(int*);\n"
+              "void f(int* i) {\n"
+              "    int* i = nullptr;\n"
+              "    if (h(i) && *i == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool h(int*);\n"
+              "void f(int* i) {\n"
+              "    int* i = nullptr;\n"
+              "    if (h(i))\n"
+              "        if (*i == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool h(int*);\n"
+              "void f(int* x) {\n"
+              "    int* i = x;\n"
+              "    if (h(i))\n"
+              "        i = nullptr;\n"
+              "    if (h(i) && *i == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer78() // #7802
+    {
+        check("void f()\n"
+              "{\n"
+              "    int **pp;\n"
+              "    int *p = 0;\n"
+              "    pp = &p;\n"
+              "    **pp = 1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Null pointer dereference: *pp\n", errout.str());
+    }
+
+    void nullpointer79() // #10400
+    {
+        check("void resize(size_t nF, size_t nT) {\n"
+              "    double* pValues = nullptr;\n"
+              "    if (nF > 0 && nT > 0)\n"
+              "        pValues = new double[nF * nT];\n"
+              "    for (size_t cc = 0; cc < nF * nT; ++cc)\n"
+              "        pValues[cc] = 42;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer80() // #10410
+    {
+        check("int f(int* a, int* b) {\n"
+              "    if( a || b ) {\n"
+              "        int n = a ? *a : *b;\n"
+              "        if( b )\n"
+              "            n++;\n"
+              "        return n;\n"
+              "    }\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer81() // #8724
+    {
+        check("void f(A **list) {\n"
+              "  A *tmp_List = NULL;\n"
+              "  *list = NULL;\n"
+              "  while (1) {\n"
+              "    if (*list == NULL) {\n"
+              "      tmp_List = malloc (sizeof (ArchiveList_struct));\n"
+              "      *list = tmp_List;\n"
+              "    } else {\n"
+              "      tmp_List->next = malloc (sizeof (ArchiveList_struct));\n"
+              "    }\n"
+              "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

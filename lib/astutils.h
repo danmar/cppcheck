@@ -55,6 +55,7 @@ const Token* findExpression(const nonneg int exprid,
                             const Token* start,
                             const Token* end,
                             const std::function<bool(const Token*)>& pred);
+const Token* findExpression(const Token* start, const nonneg int exprid);
 
 std::vector<const Token*> astFlatten(const Token* tok, const char* op);
 
@@ -144,7 +145,11 @@ struct ReferenceToken {
     ErrorPath errors;
 };
 
-std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclusive = true, ErrorPath errors = ErrorPath{}, int depth = 20);
+std::vector<ReferenceToken> followAllReferences(const Token* tok,
+                                                bool temporary = true,
+                                                bool inconclusive = true,
+                                                ErrorPath errors = ErrorPath{},
+                                                int depth = 20);
 const Token* followReferences(const Token* tok, ErrorPath* errors = nullptr);
 
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
@@ -240,6 +245,14 @@ bool isExpressionChanged(const Token* expr,
                          const Settings* settings,
                          bool cpp,
                          int depth = 20);
+
+bool isExpressionChangedAt(const Token* expr,
+                           const Token* tok,
+                           int indirect,
+                           bool globalvar,
+                           const Settings* settings,
+                           bool cpp,
+                           int depth = 20);
 
 /// If token is an alias if another variable
 bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive = nullptr);

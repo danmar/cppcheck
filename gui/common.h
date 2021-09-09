@@ -29,8 +29,8 @@
 #define CLANG_TIDY       "clang-tidy"
 
 /**
-* QSetting value names
-*/
+ * QSetting value names
+ */
 
 // Window/dialog sizes
 #define SETTINGS_WINDOW_MAXIMIZED       "Window maximized"

@@ -27,8 +27,7 @@
 
 class TestClass : public TestFixture {
 public:
-    TestClass() : TestFixture("TestClass") {
-    }
+    TestClass() : TestFixture("TestClass") {}
 
 private:
     Settings settings0;
@@ -41,13 +40,13 @@ private:
         // Load std.cfg configuration
         {
             const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-            "<def>\n"
-            "  <memory>\n"
-            "    <alloc init=\"false\">malloc</alloc>\n"
-            "    <dealloc>free</dealloc>\n"
-            "  </memory>\n"
-            "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
-            "</def>";
+                                   "<def>\n"
+                                   "  <memory>\n"
+                                   "    <alloc init=\"false\">malloc</alloc>\n"
+                                   "    <dealloc>free</dealloc>\n"
+                                   "  </memory>\n"
+                                   "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
+                                   "</def>";
             tinyxml2::XMLDocument doc;
             doc.Parse(xmldata, sizeof(xmldata));
             settings0.library.load(doc);
@@ -6809,7 +6808,7 @@ private:
     }
 
 
-    void checkSelfInitialization(const char code []) {
+    void checkSelfInitialization(const char code[]) {
         // Clear the error log
         errout.str("");
 
@@ -6883,21 +6882,21 @@ private:
         checkSelfInitialization("struct Foo : Bar {\n"
                                 "    int i;\n"
                                 "    Foo(int i)\n"
-                                "        : Bar(""), i(i) {}\n"
+                                "        : Bar(\"\"), i(i) {}\n"
                                 "};");
         ASSERT_EQUALS("", errout.str());
 
         checkSelfInitialization("struct Foo : std::Bar {\n" // #6073
                                 "    int i;\n"
                                 "    Foo(int i)\n"
-                                "        : std::Bar(""), i(i) {}\n"
+                                "        : std::Bar(\"\"), i(i) {}\n"
                                 "};");
         ASSERT_EQUALS("", errout.str());
 
         checkSelfInitialization("struct Foo : std::Bar {\n" // #6073
                                 "    int i;\n"
                                 "    Foo(int i)\n"
-                                "        : std::Bar(""), i{i} {}\n"
+                                "        : std::Bar(\"\"), i{i} {}\n"
                                 "};");
         ASSERT_EQUALS("", errout.str());
     }

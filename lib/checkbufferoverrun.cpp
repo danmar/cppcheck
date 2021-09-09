@@ -52,6 +52,7 @@ namespace {
 // CWE ids used:
 static const CWE CWE131(131U);  // Incorrect Calculation of Buffer Size
 static const CWE CWE170(170U);  // Improper Null Termination
+static const CWE CWE_ARGUMENT_SIZE(398U);  // Indicator of Poor Code Quality
 static const CWE CWE_ARRAY_INDEX_THEN_CHECK(398U);  // Indicator of Poor Code Quality
 static const CWE CWE682(682U);  // Incorrect Calculation
 static const CWE CWE758(758U);  // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
@@ -191,7 +192,7 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings *set
         *dimensions = array->variable()->dimensions();
         if (dimensions->size() >= 1 && ((*dimensions)[0].num <= 1 || !(*dimensions)[0].tok)) {
             visitAstNodes(arrayToken,
-            [&](const Token *child) {
+                          [&](const Token *child) {
                 if (child->originalName() == "->") {
                     *mightBeLarger = true;
                     return ChildrenToVisit::none;
@@ -224,50 +225,55 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings *set
     return !dimensions->empty();
 }
 
-static std::vector<const ValueFlow::Value *> getOverrunIndexValues(const Token *tok, const Token *arrayToken, const std::vector<Dimension> &dimensions, const std::vector<const Token *> &indexTokens, MathLib::bigint path)
+static ValueFlow::Value makeSizeValue(MathLib::bigint size, MathLib::bigint path)
+{
+    ValueFlow::Value v(size);
+    v.path = path;
+    return v;
+}
+
+static std::vector<ValueFlow::Value> getOverrunIndexValues(const Token* tok,
+                                                           const Token* arrayToken,
+                                                           const std::vector<Dimension>& dimensions,
+                                                           const std::vector<const Token*>& indexTokens,
+                                                           MathLib::bigint path)
 {
     const Token *array = arrayToken;
     while (Token::Match(array, ".|::"))
         array = array->astOperand2();
 
-    for (int cond = 0; cond < 2; cond++) {
-        bool equal = false;
-        bool overflow = false;
-        bool allKnown = true;
-        std::vector<const ValueFlow::Value *> indexValues;
-        for (int i = 0; i < dimensions.size() && i < indexTokens.size(); ++i) {
-            const ValueFlow::Value *value = indexTokens[i]->getMaxValue(cond == 1);
-            indexValues.push_back(value);
-            if (!value)
-                continue;
-            if (value->path != path)
-                continue;
-            if (!value->isKnown()) {
-                if (!allKnown)
-                    continue;
-                allKnown = false;
-            }
-            if (array->variable() && array->variable()->isArray() && dimensions[i].num == 0)
-                continue;
-            if (value->intvalue == dimensions[i].num)
-                equal = true;
-            else if (value->intvalue > dimensions[i].num)
-                overflow = true;
-        }
-        if (equal && tok->str() != "[")
-            continue;
-        if (!overflow && equal) {
-            const Token *parent = tok;
-            while (Token::simpleMatch(parent, "["))
-                parent = parent->astParent();
-            if (!parent || parent->isUnaryOp("&"))
-                continue;
-        }
-        if (overflow || equal)
-            return indexValues;
+    bool isArrayIndex = tok->str() == "[";
+    if (isArrayIndex) {
+        const Token* parent = tok;
+        while (Token::simpleMatch(parent, "["))
+            parent = parent->astParent();
+        if (!parent || parent->isUnaryOp("&"))
+            isArrayIndex = false;
     }
 
-    return std::vector<const ValueFlow::Value *>();
+    bool overflow = false;
+    std::vector<ValueFlow::Value> indexValues;
+    for (int i = 0; i < dimensions.size() && i < indexTokens.size(); ++i) {
+        MathLib::bigint size = dimensions[i].num;
+        if (!isArrayIndex)
+            size++;
+        const bool zeroArray = array->variable() && array->variable()->isArray() && dimensions[i].num == 0;
+        std::vector<ValueFlow::Value> values = !zeroArray
+                                                   ? ValueFlow::isOutOfBounds(makeSizeValue(size, path), indexTokens[i])
+                                                   : std::vector<ValueFlow::Value>{};
+        if (values.empty()) {
+            if (indexTokens[i]->hasKnownIntValue())
+                indexValues.push_back(indexTokens[i]->values().front());
+            else
+                indexValues.push_back(ValueFlow::Value::unknown());
+            continue;
+        }
+        overflow = true;
+        indexValues.push_back(values.front());
+    }
+    if (overflow)
+        return indexValues;
+    return {};
 }
 
 void CheckBufferOverrun::arrayIndex()
@@ -312,19 +318,23 @@ void CheckBufferOverrun::arrayIndex()
 
         // Positive index
         if (!mightBeLarger) { // TODO check arrays with dim 1 also
-            const std::vector<const ValueFlow::Value *> &indexValues = getOverrunIndexValues(tok, tok->astOperand1(), dimensions, indexTokens, path);
+            const std::vector<ValueFlow::Value>& indexValues =
+                getOverrunIndexValues(tok, tok->astOperand1(), dimensions, indexTokens, path);
             if (!indexValues.empty())
                 arrayIndexError(tok, dimensions, indexValues);
         }
 
         // Negative index
         bool neg = false;
-        std::vector<const ValueFlow::Value *> negativeIndexes;
+        std::vector<ValueFlow::Value> negativeIndexes;
         for (const Token * indexToken : indexTokens) {
             const ValueFlow::Value *negativeValue = indexToken->getValueLE(-1, mSettings);
-            negativeIndexes.emplace_back(negativeValue);
-            if (negativeValue)
+            if (negativeValue) {
+                negativeIndexes.emplace_back(*negativeValue);
                 neg = true;
+            } else {
+                negativeIndexes.emplace_back(ValueFlow::Value::unknown());
+            }
         }
         if (neg) {
             negativeIndexError(tok, dimensions, negativeIndexes);
@@ -332,25 +342,28 @@ void CheckBufferOverrun::arrayIndex()
     }
 }
 
-static std::string stringifyIndexes(const std::string &array, const std::vector<const ValueFlow::Value *> &indexValues)
+static std::string stringifyIndexes(const std::string& array, const std::vector<ValueFlow::Value>& indexValues)
 {
     if (indexValues.size() == 1)
-        return MathLib::toString(indexValues[0]->intvalue);
+        return MathLib::toString(indexValues[0].intvalue);
 
     std::ostringstream ret;
     ret << array;
-    for (const ValueFlow::Value *index : indexValues) {
+    for (const ValueFlow::Value& index : indexValues) {
         ret << "[";
-        if (index)
-            ret << index->intvalue;
-        else
+        if (index.isNonValue())
             ret << "*";
+        else
+            ret << index.intvalue;
         ret << "]";
     }
     return ret.str();
 }
 
-static std::string arrayIndexMessage(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<const ValueFlow::Value *> &indexValues, const Token *condition)
+static std::string arrayIndexMessage(const Token* tok,
+                                     const std::vector<Dimension>& dimensions,
+                                     const std::vector<ValueFlow::Value>& indexValues,
+                                     const Token* condition)
 {
     auto add_dim = [](const std::string &s, const Dimension &dim) {
         return s + "[" + MathLib::toString(dim.num) + "]";
@@ -367,7 +380,9 @@ static std::string arrayIndexMessage(const Token *tok, const std::vector<Dimensi
     return errmsg.str();
 }
 
-void CheckBufferOverrun::arrayIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<const ValueFlow::Value *> &indexes)
+void CheckBufferOverrun::arrayIndexError(const Token* tok,
+                                         const std::vector<Dimension>& dimensions,
+                                         const std::vector<ValueFlow::Value>& indexes)
 {
     if (!tok) {
         reportError(tok, Severity::error, "arrayIndexOutOfBounds", "Array 'arr[16]' accessed at index 16, which is out of bounds.", CWE_BUFFER_OVERRUN, Certainty::normal);
@@ -377,15 +392,13 @@ void CheckBufferOverrun::arrayIndexError(const Token *tok, const std::vector<Dim
 
     const Token *condition = nullptr;
     const ValueFlow::Value *index = nullptr;
-    for (const ValueFlow::Value *indexValue: indexes) {
-        if (!indexValue)
-            continue;
-        if (!indexValue->errorSeverity() && !mSettings->severity.isEnabled(Severity::warning))
+    for (const ValueFlow::Value& indexValue : indexes) {
+        if (!indexValue.errorSeverity() && !mSettings->severity.isEnabled(Severity::warning))
             return;
-        if (indexValue->condition)
-            condition = indexValue->condition;
-        if (!index || !indexValue->errorPath.empty())
-            index = indexValue;
+        if (indexValue.condition)
+            condition = indexValue.condition;
+        if (!index || !indexValue.errorPath.empty())
+            index = &indexValue;
     }
 
     reportError(getErrorPath(tok, index, "Array index out of bounds"),
@@ -396,7 +409,9 @@ void CheckBufferOverrun::arrayIndexError(const Token *tok, const std::vector<Dim
                 index->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
 }
 
-void CheckBufferOverrun::negativeIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<const ValueFlow::Value *> &indexes)
+void CheckBufferOverrun::negativeIndexError(const Token* tok,
+                                            const std::vector<Dimension>& dimensions,
+                                            const std::vector<ValueFlow::Value>& indexes)
 {
     if (!tok) {
         reportError(tok, Severity::error, "negativeIndex", "Negative array index", CWE_BUFFER_UNDERRUN, Certainty::normal);
@@ -405,15 +420,13 @@ void CheckBufferOverrun::negativeIndexError(const Token *tok, const std::vector<
 
     const Token *condition = nullptr;
     const ValueFlow::Value *negativeValue = nullptr;
-    for (const ValueFlow::Value *indexValue: indexes) {
-        if (!indexValue)
-            continue;
-        if (!indexValue->errorSeverity() && !mSettings->severity.isEnabled(Severity::warning))
+    for (const ValueFlow::Value& indexValue : indexes) {
+        if (!indexValue.errorSeverity() && !mSettings->severity.isEnabled(Severity::warning))
             return;
-        if (indexValue->condition)
-            condition = indexValue->condition;
-        if (!negativeValue || !indexValue->errorPath.empty())
-            negativeValue = indexValue;
+        if (indexValue.condition)
+            condition = indexValue.condition;
+        if (!negativeValue || !indexValue.errorPath.empty())
+            negativeValue = &indexValue;
     }
 
     reportError(getErrorPath(tok, negativeValue, "Negative array index"),
@@ -464,9 +477,10 @@ void CheckBufferOverrun::pointerArithmetic()
             // Positive index
             if (!mightBeLarger) { // TODO check arrays with dim 1 also
                 const std::vector<const Token *> indexTokens{indexToken};
-                const std::vector<const ValueFlow::Value *> &indexValues = getOverrunIndexValues(tok, arrayToken, dimensions, indexTokens, path);
+                const std::vector<ValueFlow::Value>& indexValues =
+                    getOverrunIndexValues(tok, arrayToken, dimensions, indexTokens, path);
                 if (!indexValues.empty())
-                    pointerArithmeticError(tok, indexToken, indexValues.front());
+                    pointerArithmeticError(tok, indexToken, &indexValues.front());
             }
 
             if (const ValueFlow::Value *neg = indexToken->getValueLE(-1, mSettings))
@@ -748,8 +762,69 @@ void CheckBufferOverrun::terminateStrncpyError(const Token *tok, const std::stri
                 "zero at the end of the buffer. This causes bugs later in the code if the code "
                 "assumes buffer is null-terminated.", CWE170, Certainty::inconclusive);
 }
+//---------------------------------------------------------------------------
 
+void CheckBufferOverrun::argumentSize()
+{
+    // Check '%type% x[10]' arguments
+    if (!mSettings->severity.isEnabled(Severity::warning))
+        return;
 
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * const scope : symbolDatabase->functionScopes) {
+        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (!tok->function() || !Token::Match(tok, "%name% ("))
+                continue;
+
+            // If argument is '%type% a[num]' then check bounds against num
+            const Function *callfunc = tok->function();
+            const std::vector<const Token *> callargs = getArguments(tok);
+            for (nonneg int paramIndex = 0; paramIndex < callargs.size() && paramIndex < callfunc->argCount(); ++paramIndex) {
+                const Variable* const argument = callfunc->getArgumentVar(paramIndex);
+                if (!argument || !argument->nameToken() || !argument->isArray())
+                    continue;
+                if (!argument->valueType() || !callargs[paramIndex]->valueType())
+                    continue;
+                if (argument->valueType()->type != callargs[paramIndex]->valueType()->type)
+                    continue;
+                const Token * calldata = callargs[paramIndex];
+                while (Token::Match(calldata, "::|."))
+                    calldata = calldata->astOperand2();
+                if (!calldata->variable() || !calldata->variable()->isArray())
+                    continue;
+                if (calldata->variable()->dimensions().size() != argument->dimensions().size())
+                    continue;
+                bool err = false;
+                for (int d = 0; d < argument->dimensions().size(); ++d) {
+                    const auto& dim1 = calldata->variable()->dimensions()[d];
+                    const auto& dim2 = argument->dimensions()[d];
+                    if (!dim1.known || !dim2.known)
+                        break;
+                    if (dim1.num < dim2.num)
+                        err = true;
+                }
+                if (err)
+                    argumentSizeError(tok, tok->str(), paramIndex, callargs[paramIndex]->expressionString(), calldata->variable(), argument);
+            }
+        }
+    }
+}
+
+void CheckBufferOverrun::argumentSizeError(const Token *tok, const std::string &functionName, nonneg int paramIndex, const std::string &paramExpression, const Variable *paramVar, const Variable *functionArg)
+{
+    const std::string strParamNum = std::to_string(paramIndex + 1) + getOrdinalText(paramIndex + 1);
+    ErrorPath errorPath;
+    errorPath.emplace_back(tok, "Function '" + functionName + "' is called");
+    if (functionArg)
+        errorPath.emplace_back(functionArg->nameToken(), "Declaration of " + strParamNum + " function argument.");
+    if (paramVar)
+        errorPath.emplace_back(paramVar->nameToken(), "Passing buffer '" + paramVar->name() + "' to function that is declared here");
+    errorPath.emplace_back(tok, "");
+
+    reportError(errorPath, Severity::warning, "argumentSize",
+                "$symbol:" + functionName + '\n' +
+                "Buffer '" + paramExpression + "' is too small, the function '" + functionName + "' expects a bigger buffer in " + strParamNum + " argument", CWE_ARGUMENT_SIZE, Certainty::normal);
+}
 
 //---------------------------------------------------------------------------
 // CTU..
@@ -940,14 +1015,13 @@ void CheckBufferOverrun::objectIndex()
                     std::copy_if(idx->values().begin(),
                                  idx->values().end(),
                                  std::back_inserter(idxValues),
-                    [&](const ValueFlow::Value& vidx) {
+                                 [&](const ValueFlow::Value& vidx) {
                         if (!vidx.isIntValue())
                             return false;
                         return vidx.path == v.path || vidx.path == 0;
                     });
-                    if (idxValues.empty() ||
-                    std::any_of(idxValues.begin(), idxValues.end(), [&](const ValueFlow::Value& vidx) {
-                    if (vidx.isImpossible())
+                    if (std::any_of(idxValues.begin(), idxValues.end(), [&](const ValueFlow::Value& vidx) {
+                        if (vidx.isImpossible())
                             return (vidx.intvalue == 0);
                         else
                             return (vidx.intvalue != 0);

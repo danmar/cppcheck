@@ -29,8 +29,7 @@
 
 class TestCppcheck : public TestFixture {
 public:
-    TestCppcheck() : TestFixture("TestCppcheck") {
-    }
+    TestCppcheck() : TestFixture("TestCppcheck") {}
 
 private:
 

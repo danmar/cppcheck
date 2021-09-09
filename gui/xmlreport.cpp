@@ -27,8 +27,7 @@ static const char VersionAttribute[] = "version";
 
 XmlReport::XmlReport(const QString &filename) :
     Report(filename)
-{
-}
+{}
 
 QString XmlReport::quoteMessage(const QString &message)
 {

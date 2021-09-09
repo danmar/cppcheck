@@ -62,11 +62,11 @@ public:
         explicit Error(ErrorCode e) : errorcode(e) {}
         template<typename T>
         Error(ErrorCode e, T&& r) : errorcode(e), reason(r) {}
-        ErrorCode     errorcode;
-        std::string   reason;
+        ErrorCode errorcode;
+        std::string reason;
     };
 
-    Error load(const char exename [], const char path []);
+    Error load(const char exename[], const char path[]);
     Error load(const tinyxml2::XMLDocument &doc);
 
     /** this is primarily meant for unit tests. it only returns true/false */
@@ -213,8 +213,7 @@ public:
             opLessAllowed(true),
             hasInitializerListConstructor(false),
             unstableErase(false),
-            unstableInsert(false) {
-        }
+            unstableInsert(false) {}
 
         enum class Action {
             RESIZE, CLEAR, PUSH, POP, FIND, INSERT, ERASE, CHANGE_CONTENT, CHANGE, CHANGE_INTERNAL,
@@ -253,6 +252,9 @@ public:
                 return i->second.yield;
             return Yield::NO_YIELD;
         }
+
+        static Yield yieldFrom(const std::string& yieldName);
+        static Action actionFrom(const std::string& actionName);
     };
     std::map<std::string, Container> containers;
     const Container* detectContainer(const Token* typeStart, bool iterator = false) const;
@@ -268,23 +270,22 @@ public:
             optional(false),
             variadic(false),
             iteratorInfo(),
-            direction(Direction::DIR_UNKNOWN) {
-        }
+            direction(Direction::DIR_UNKNOWN) {}
 
-        bool         notbool;
-        bool         notnull;
-        int          notuninit;
-        bool         formatstr;
-        bool         strz;
-        bool         optional;
-        bool         variadic;
-        std::string  valid;
+        bool notbool;
+        bool notnull;
+        int notuninit;
+        bool formatstr;
+        bool strz;
+        bool optional;
+        bool variadic;
+        std::string valid;
 
         class IteratorInfo {
         public:
             IteratorInfo() : container(0), it(false), first(false), last(false) {}
 
-            int  container;
+            int container;
             bool it;
             bool first;
             bool last;
@@ -322,7 +323,21 @@ public:
         bool formatstr;
         bool formatstr_scan;
         bool formatstr_secure;
-        Function() : use(false), leakignore(false), isconst(false), ispure(false), useretval(UseRetValType::NONE), ignore(false), formatstr(false), formatstr_scan(false), formatstr_secure(false) {}
+        Container::Action containerAction;
+        Container::Yield containerYield;
+        Function()
+            : use(false),
+            leakignore(false),
+            isconst(false),
+            ispure(false),
+            useretval(UseRetValType::NONE),
+            ignore(false),
+            formatstr(false),
+            formatstr_scan(false),
+            formatstr_secure(false),
+            containerAction(Container::Action::NO_ACTION),
+            containerYield(Container::Yield::NO_YIELD)
+        {}
     };
 
     const Function *getFunction(const Token *ftok) const;
@@ -419,6 +434,9 @@ public:
 
     bool isimporter(const std::string& file, const std::string &importer) const;
 
+    const Token* getContainerFromYield(const Token* tok, Container::Yield yield) const;
+    const Token* getContainerFromAction(const Token* tok, Container::Action action) const;
+
     bool isreflection(const std::string &token) const {
         return mReflection.find(token) != mReflection.end();
     }
@@ -433,6 +451,7 @@ public:
     std::vector<std::string> defines; // to provide some library defines
 
     struct SmartPointer {
+        std::string name = "";
         bool unique = false;
     };
 
@@ -441,8 +460,8 @@ public:
     const SmartPointer* detectSmartPointer(const Token* tok) const;
 
     struct PodType {
-        unsigned int   size;
-        char           sign;
+        unsigned int size;
+        char sign;
         enum class Type { NO, BOOL, CHAR, SHORT, INT, LONG, LONGLONG } stdtype;
     };
     const struct PodType *podtype(const std::string &name) const {
@@ -457,8 +476,7 @@ public:
             , mLong(false)
             , mPointer(false)
             , mPtrPtr(false)
-            , mConstPtr(false) {
-        }
+            , mConstPtr(false) {}
         bool operator == (const PlatformType & type) const {
             return (mSigned == type.mSigned &&
                     mUnsigned == type.mUnsigned &&
@@ -585,10 +603,10 @@ private:
     std::map<std::string, bool> mReportErrors;
     std::map<std::string, bool> mProcessAfterCode;
     std::set<std::string> mMarkupExtensions; // file extensions of markup files
-    std::map<std::string, std::set<std::string> > mKeywords; // keywords for code in the library
+    std::map<std::string, std::set<std::string>> mKeywords;  // keywords for code in the library
     std::map<std::string, CodeBlock> mExecutableBlocks; // keywords for blocks of executable code
     std::map<std::string, ExportedFunctions> mExporters; // keywords that export variables/functions to libraries (meta-code/macros)
-    std::map<std::string, std::set<std::string> > mImporters; // keywords that import variables/functions
+    std::map<std::string, std::set<std::string>> mImporters;  // keywords that import variables/functions
     std::map<std::string, int> mReflection; // invocation of reflection
     std::unordered_map<std::string, struct PodType> mPodTypes; // pod types
     std::map<std::string, PlatformType> mPlatformTypes; // platform independent typedefs

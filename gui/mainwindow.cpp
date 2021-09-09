@@ -52,7 +52,7 @@
 #include "translationhandler.h"
 #include "variablecontractsdialog.h"
 
-static const QString OnlineHelpURL("http://cppcheck.net/manual.html");
+static const QString OnlineHelpURL("https://cppcheck.sourceforge.io/manual.html");
 static const QString compile_commands_json("compile_commands.json");
 
 MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
@@ -515,7 +515,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
         checkSettings.loadSummaries();
         std::list<std::string> sourcefiles;
         foreach (QString s, fileNames)
-            sourcefiles.push_back(s.toStdString());
+        sourcefiles.push_back(s.toStdString());
         AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, checkSettings.project.fileSettings);
     }
 
@@ -528,14 +528,14 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     // Initialize dummy ThreadResult as ErrorLogger
     ThreadResult result;
     result.setFiles(QStringList(filename));
-    connect(&result, SIGNAL(progress(int, const QString&)),
-            mUI.mResults, SLOT(progress(int, const QString&)));
-    connect(&result, SIGNAL(error(const ErrorItem &)),
-            mUI.mResults, SLOT(error(const ErrorItem &)));
-    connect(&result, SIGNAL(log(const QString &)),
-            mUI.mResults, SLOT(log(const QString &)));
-    connect(&result, SIGNAL(debugError(const ErrorItem &)),
-            mUI.mResults, SLOT(debugError(const ErrorItem &)));
+    connect(&result, SIGNAL(progress(int,const QString&)),
+            mUI.mResults, SLOT(progress(int,const QString&)));
+    connect(&result, SIGNAL(error(const ErrorItem&)),
+            mUI.mResults, SLOT(error(const ErrorItem&)));
+    connect(&result, SIGNAL(log(const QString&)),
+            mUI.mResults, SLOT(log(const QString&)));
+    connect(&result, SIGNAL(debugError(const ErrorItem&)),
+            mUI.mResults, SLOT(debugError(const ErrorItem&)));
 
     // Create CppCheck instance
     CppCheck cppcheck(result, true, nullptr);
@@ -578,10 +578,10 @@ QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
         filters[tr("Borland C++ Builder 6")] = "*.bpr";
         QString lastFilter = mSettings->value(SETTINGS_LAST_ANALYZE_FILES_FILTER).toString();
         selected = QFileDialog::getOpenFileNames(this,
-                   tr("Select files to analyze"),
-                   getPath(SETTINGS_LAST_CHECK_PATH),
-                   toFilterString(filters),
-                   &lastFilter);
+                                                 tr("Select files to analyze"),
+                                                 getPath(SETTINGS_LAST_CHECK_PATH),
+                                                 toFilterString(filters),
+                                                 &lastFilter);
         mSettings->setValue(SETTINGS_LAST_ANALYZE_FILES_FILTER, lastFilter);
 
         if (selected.isEmpty())
@@ -593,8 +593,8 @@ QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
         formatAndSetTitle();
     } else if (mode == QFileDialog::DirectoryOnly) {
         QString dir = QFileDialog::getExistingDirectory(this,
-                      tr("Select directory to analyze"),
-                      getPath(SETTINGS_LAST_CHECK_PATH));
+                                                        tr("Select directory to analyze"),
+                                                        getPath(SETTINGS_LAST_CHECK_PATH));
         if (!dir.isEmpty()) {
             qDebug() << "Setting current directory to: " << dir;
             mCurrentDirectory = dir;
@@ -884,7 +884,7 @@ Settings MainWindow::getCppcheckSettings()
 
         const QStringList undefines = mProjectFile->getUndefines();
         foreach (QString undefine, undefines)
-            result.userUndefs.insert(undefine.toStdString());
+        result.userUndefs.insert(undefine.toStdString());
 
         const QStringList libraries = mProjectFile->getLibraries();
         foreach (QString library, libraries) {
@@ -938,7 +938,7 @@ Settings MainWindow::getCppcheckSettings()
         result.safeChecks.internalFunctions = mProjectFile->safeChecks.internalFunctions;
         result.safeChecks.externalVariables = mProjectFile->safeChecks.externalVariables;
         foreach (QString s, mProjectFile->getCheckUnknownFunctionReturn())
-            result.checkUnknownFunctionReturn.insert(s.toStdString());
+        result.checkUnknownFunctionReturn.insert(s.toStdString());
 
         QString filesDir(getDataDir());
         const QString pythonCmd = mSettings->value(SETTINGS_PYTHON_PATH).toString();
@@ -1210,10 +1210,10 @@ void MainWindow::openResults()
     QString selectedFilter;
     const QString filter(tr("XML files (*.xml)"));
     QString selectedFile = QFileDialog::getOpenFileName(this,
-                           tr("Open the report file"),
-                           getPath(SETTINGS_LAST_RESULT_PATH),
-                           filter,
-                           &selectedFilter);
+                                                        tr("Open the report file"),
+                                                        getPath(SETTINGS_LAST_RESULT_PATH),
+                                                        filter,
+                                                        &selectedFilter);
 
     if (!selectedFile.isEmpty()) {
         loadResults(selectedFile);
@@ -1381,10 +1381,10 @@ void MainWindow::save()
     QString selectedFilter;
     const QString filter(tr("XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)"));
     QString selectedFile = QFileDialog::getSaveFileName(this,
-                           tr("Save the report file"),
-                           getPath(SETTINGS_LAST_RESULT_PATH),
-                           filter,
-                           &selectedFilter);
+                                                        tr("Save the report file"),
+                                                        getPath(SETTINGS_LAST_RESULT_PATH),
+                                                        filter,
+                                                        &selectedFilter);
 
     if (!selectedFile.isEmpty()) {
         Report::Type type = Report::TXT;
@@ -1415,8 +1415,7 @@ void MainWindow::save()
 }
 
 void MainWindow::resultsAdded()
-{
-}
+{}
 
 void MainWindow::toggleMainToolBar()
 {
@@ -1501,9 +1500,9 @@ void MainWindow::openProjectFile()
 {
     const QString filter = tr("Project files (*.cppcheck);;All files(*.*)");
     const QString filepath = QFileDialog::getOpenFileName(this,
-                             tr("Select Project File"),
-                             getPath(SETTINGS_LAST_PROJECT_PATH),
-                             filter);
+                                                          tr("Select Project File"),
+                                                          getPath(SETTINGS_LAST_PROJECT_PATH),
+                                                          filter);
 
     if (!filepath.isEmpty()) {
         const QFileInfo fi(filepath);
@@ -1650,9 +1649,9 @@ void MainWindow::newProjectFile()
 {
     const QString filter = tr("Project files (*.cppcheck)");
     QString filepath = QFileDialog::getSaveFileName(this,
-                       tr("Select Project Filename"),
-                       getPath(SETTINGS_LAST_PROJECT_PATH),
-                       filter);
+                                                    tr("Select Project Filename"),
+                                                    getPath(SETTINGS_LAST_PROJECT_PATH),
+                                                    filter);
 
     if (filepath.isEmpty())
         return;

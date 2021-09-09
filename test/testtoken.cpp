@@ -31,8 +31,7 @@ struct InternalError;
 
 class TestToken : public TestFixture {
 public:
-    TestToken() : TestFixture("TestToken") {
-    }
+    TestToken() : TestFixture("TestToken") {}
 
 private:
     std::vector<std::string> arithmeticalOps;

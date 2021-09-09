@@ -30,8 +30,7 @@
 
 class TestCondition : public TestFixture {
 public:
-    TestCondition() : TestFixture("TestCondition") {
-    }
+    TestCondition() : TestFixture("TestCondition") {}
 
 private:
     Settings settings0;
@@ -49,9 +48,9 @@ private:
         settings0.severity.enable(Severity::warning);
 
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
-        "<def>\n"
-        "  <function name=\"bar\"> <pure/> </function>\n"
-        "</def>";
+                           "<def>\n"
+                           "  <function name=\"bar\"> <pure/> </function>\n"
+                           "</def>";
         tinyxml2::XMLDocument xmldoc;
         xmldoc.Parse(cfg, sizeof(cfg));
         settings1.severity.enable(Severity::style);
@@ -118,6 +117,9 @@ private:
         TEST_CASE(alwaysTrue);
         TEST_CASE(alwaysTrueSymbolic);
         TEST_CASE(alwaysTrueInfer);
+        TEST_CASE(alwaysTrueContainer);
+        TEST_CASE(alwaysTrueLoop);
+        TEST_CASE(alwaysTrueTryCatch);
         TEST_CASE(multiConditionAlwaysTrue);
         TEST_CASE(duplicateCondition);
 
@@ -905,7 +907,7 @@ private:
               "    if ((x != 1) || (x != 3) && (y == 1))\n"
               "        a++;\n"
               "}"
-             );
+              );
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x!=3' is always true\n", errout.str());
 
         check("void f(int x) {\n"
@@ -952,7 +954,7 @@ private:
               "    }\n"
               "    return false;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'c!=a' is always false\n", errout.str());
     }
 
     void incorrectLogicOperator2() {
@@ -1073,29 +1075,35 @@ private:
               "    if (x >= 3 || x <= 3)\n"
               "        a++;\n"
               "}"
-             );
+              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x >= 3 || x <= 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x >= 3 || x < 3)\n"
               "        a++;\n"
               "}"
-             );
+              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x >= 3 || x < 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 3 || x <= 3)\n"
               "        a++;\n"
               "}"
-             );
+              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x > 3 || x <= 3.\n", errout.str());
 
         check("void f(int x) {\n"
               "   if((x==3) && (x!=4))\n"
               "        a++;\n"
               "}");
-
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x == 3', the comparison 'x != 4' is always true.\n", errout.str());
+
+        check("void f(const std::string &s) {\n" // #8860
+              "    const std::size_t p = s.find(\"42\");\n"
+              "    const std::size_t * const ptr = &p;\n"
+              "    if(p != std::string::npos && p == 0 && *ptr != 1){;}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (style) Condition '*ptr!=1' is always true\n", errout.str());
 
         check("void f(int x) {\n"
               "    if ((x!=4) && (x==3))\n"
@@ -2538,7 +2546,7 @@ private:
     }
 
     void identicalConditionAfterEarlyExit() {
-        check("void f(int x) {\n"
+        check("void f(int x) {\n" // #8137
               "  if (x > 100) { return; }\n"
               "  if (x > 100) {}\n"
               "}");
@@ -2667,6 +2675,17 @@ private:
               "#endif\n"
               "    return ret;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10456
+        check("int f() {\n"
+              "    int i = 0;\n"
+              "    auto f = [&](bool b) { if (b) ++i; };\n"
+              "    if (i) return i;\n"
+              "    f(true);\n"
+              "    if (i) return i;\n"
+              "    return 0;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3763,6 +3782,17 @@ private:
               "    return a || ! b || ! a;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition '!a' is always true\n", errout.str());
+
+        // #10148
+        check("void f(int i) {\n"
+              "    if (i >= 64) {}\n"
+              "    else if (i >= 32) {\n"
+              "        i &= 31;\n"
+              "        if (i == 0) {}\n"
+              "        else {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -3774,6 +3804,28 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (style) Condition 'y[0]<42' is always true\n", errout.str());
 
+        check("void f(int x, int y) {\n"
+              "    if(x < y && x < 42) {\n"
+              "        --x;\n"
+              "        if(x == y) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'x==y' is always false\n", errout.str());
+
+        check("void f(bool a, bool b) {  if (a == b && a && !b){} }");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Condition '!b' is always false\n", errout.str());
+
+        check("bool f(bool a, bool b) { if(a && b && (!a)){} }");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Condition '!a' is always false\n", errout.str());
+
+        check("void f(int x, int y) {\n"
+              "  if (x < y) {\n"
+              "    auto z = y - x;\n"
+              "    if (z < 1) {}\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'z<1' is always false\n", errout.str());
+
         check("struct a {\n"
               "  a *b() const;\n"
               "} c;\n"
@@ -3781,6 +3833,28 @@ private:
               "  a *e = nullptr;\n"
               "  e = c.b();\n"
               "  if (e) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int g(int i) {\n"
+              "  if (i < 256)\n"
+              "    return 1;\n"
+              "  const int N = 2 * i;\n"
+              "  i -= 256;\n"
+              "  if (i == 0)\n"
+              "    return 0;\n"
+              "  return N;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i, int j) {\n"
+              "    if (i < j) {\n"
+              "        i++;\n"
+              "        if (i >= j)\n"
+              "            return;\n"
+              "        i++;\n"
+              "        if (i >= j) {}\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -3921,6 +3995,13 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition '-128>x' is always false\n", errout.str());
+
+        // #8778
+        check("void f() {\n"
+              "    for(int i = 0; i < 19; ++i)\n"
+              "        if(i<=18) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'i<=18' is always true\n", errout.str());
     }
 
     void alwaysTrueContainer() {
@@ -3958,6 +4039,93 @@ private:
               "        return !v.empty();\n"
               "    }\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10409
+        check("void foo(const std::string& s) {\n"
+              "    if( s.size() < 2 ) return;\n"
+              "    if( s == \"ab\" ) return;\n"
+              "    if( s.size() < 3 ) return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(const std::string& s) {\n"
+              "    if( s.size() < 2 ) return;\n"
+              "    if( s != \"ab\" )\n"
+              "        if( s.size() < 3 ) return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void alwaysTrueLoop()
+    {
+        check("long foo() {\n"
+              "  bool bUpdated = false;\n"
+              "  long Ret{};\n"
+              "  do {\n"
+              "    Ret = bar();\n"
+              "    if (Ret == 0) {\n"
+              "      if (bUpdated)\n"
+              "        return 1;\n"
+              "      bUpdated = true;\n"
+              "    }\n"
+              "    else\n"
+              "      bUpdated = false;\n"
+              "  }\n"
+              "  while (bUpdated);\n"
+              "  return Ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool foo() {\n"
+              "  bool bFirst = true;\n"
+              "  do {\n"
+              "    if (bFirst)\n"
+              "      bar();\n"
+              "    if (baz())\n"
+              "      break;       \n"
+              "    bFirst = false;\n"
+              "  } while (true);\n"
+              "  return bFirst;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void alwaysTrueTryCatch()
+    {
+        check("void g();\n"
+              "void f(int x)\n"
+              "{\n"
+              "    if( x ) {\n"
+              "        try {\n"
+              "            g();\n"
+              "        }\n"
+              "        catch(...) {\n"
+              "            return;\n"
+              "        }\n"
+              "    }\n"
+              "    g();\n"
+              "    if( x ) {\n"
+              "        g();\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g();\n"
+              "void h();\n"
+              "void f(int x) {\n"
+              "    if( x ) {\n"
+              "        try {\n"
+              "            g();\n"
+              "            return;\n"
+              "        }\n"
+              "        catch( ... ) {}\n"
+              "    }\n"
+              "    h();\n"
+              "    if( x ) {\n"
+              "        g();\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -4427,6 +4595,38 @@ private:
 
         check("void f(bool b) {\n"
               "  if (b == true) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
+
+        // #10372
+        check("void f(signed char x) {\n"
+              "  if (x == 0xff) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed char' against value 255. Condition is always true/false.\n", errout.str());
+
+        check("void f(short x) {\n"
+              "  if (x == 0xffff) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed short' against value 65535. Condition is always true/false.\n", errout.str());
+
+        check("void f(int x) {\n"
+              "  if (x == 0xffffffff) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(long x) {\n"
+              "  if (x == ~0L) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(long long x) {\n"
+              "  if (x == ~0LL) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  char c;\n"
+              "  if ((c = foo()) != -1) {}\n"
               "}", &settingsUnix64);
         ASSERT_EQUALS("", errout.str());
     }

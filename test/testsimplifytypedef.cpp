@@ -24,13 +24,16 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
+#include <sstream>
+#include <simplecpp.h>
+
+
 struct InternalError;
 
 
 class TestSimplifyTypedef : public TestFixture {
 public:
-    TestSimplifyTypedef() : TestFixture("TestSimplifyTypedef") {
-    }
+    TestSimplifyTypedef() : TestFixture("TestSimplifyTypedef") {}
 
 
 private:
@@ -191,6 +194,8 @@ private:
         TEST_CASE(simplifyTypedefFunction10); // #5191
 
         TEST_CASE(simplifyTypedefShadow);  // #4445 - shadow variable
+
+        TEST_CASE(simplifyTypedefMacro);
     }
 
     std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
@@ -219,6 +224,31 @@ private:
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
+
+
+    std::string simplifyTypedefP(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Raw tokens..
+        std::vector<std::string> files(1, "test.cpp");
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings0, this);
+        tokenizer.createTokens(std::move(tokens2));
+        tokenizer.createLinks();
+        tokenizer.simplifyTypedef();
+
+        return tokenizer.tokens()->stringifyList(nullptr, false);
+    }
+
 
     void checkSimplifyTypedef(const char code[]) {
         errout.str("");
@@ -2399,7 +2429,8 @@ private:
                                 "std :: vector < CharacterConversion > ( ) . swap ( c2c ) ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code, false));
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
+            "[test.cpp:4]: (debug) valueflow.cpp:4635:(valueFlow) bailout: variable 'it' used in loop\n", errout.str());
     }
 
     void simplifyTypedef117() { // #6507
@@ -2438,7 +2469,7 @@ private:
                             "}\n"
                             "namespace Baz { }\n"
                             "enum Bar { XX = 1 };";
-        const char exp [] = "enum Bar { XX = 1 } ;";
+        const char exp[] = "enum Bar { XX = 1 } ;";
         ASSERT_EQUALS(exp, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }
@@ -2447,8 +2478,8 @@ private:
         const char code[] = "typedef char test_utf8_char[5];\n"
                             "static test_utf8_char const bad_chars[] = { };\n"
                             "static void report_good(bool passed, test_utf8_char const c) { };";
-        const char exp [] = "static const char bad_chars [ ] [ 5 ] = { } ; "
-                            "static void report_good ( bool passed , const char c [ 5 ] ) { } ;";
+        const char exp[] = "static const char bad_chars [ ] [ 5 ] = { } ; "
+                           "static void report_good ( bool passed , const char c [ 5 ] ) { } ;";
         ASSERT_EQUALS(exp, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }
@@ -2471,21 +2502,21 @@ private:
                             "mat3x3 & Fred::m() { return m3x3; }\n"
                             "const vec3 & Fred::vc() const { return v3; }\n"
                             "const mat3x3 & Fred::mc() const { return m3x3; }";
-        const char exp [] = "float v3 [ 3 ] ; "
-                            "float m3x3 [ 3 ] [ 3 ] ; "
-                            "const float ( & gv ( ) ) [ 3 ] { return v3 ; } "
-                            "const float ( & gm ( ) ) [ 3 ] [ 3 ] { return m3x3 ; } "
-                            "class Fred { "
-                            "public: "
-                            "float ( & v ( ) ) [ 3 ] ; "
-                            "float ( & m ( ) ) [ 3 ] [ 3 ] ; "
-                            "const float ( & vc ( ) const ) [ 3 ] ; "
-                            "const float ( & mc ( ) const ) [ 3 ] [ 3 ] ; "
-                            "} ; "
-                            "float ( & Fred :: v ( ) ) [ 3 ] { return v3 ; } "
-                            "float ( & Fred :: m ( ) ) [ 3 ] [ 3 ] { return m3x3 ; } "
-                            "const float ( & Fred :: vc ( ) const ) [ 3 ] { return v3 ; } "
-                            "const float ( & Fred :: mc ( ) const ) [ 3 ] [ 3 ] { return m3x3 ; }";
+        const char exp[] = "float v3 [ 3 ] ; "
+                           "float m3x3 [ 3 ] [ 3 ] ; "
+                           "const float ( & gv ( ) ) [ 3 ] { return v3 ; } "
+                           "const float ( & gm ( ) ) [ 3 ] [ 3 ] { return m3x3 ; } "
+                           "class Fred { "
+                           "public: "
+                           "float ( & v ( ) ) [ 3 ] ; "
+                           "float ( & m ( ) ) [ 3 ] [ 3 ] ; "
+                           "const float ( & vc ( ) const ) [ 3 ] ; "
+                           "const float ( & mc ( ) const ) [ 3 ] [ 3 ] ; "
+                           "} ; "
+                           "float ( & Fred :: v ( ) ) [ 3 ] { return v3 ; } "
+                           "float ( & Fred :: m ( ) ) [ 3 ] [ 3 ] { return m3x3 ; } "
+                           "const float ( & Fred :: vc ( ) const ) [ 3 ] { return v3 ; } "
+                           "const float ( & Fred :: mc ( ) const ) [ 3 ] [ 3 ] { return m3x3 ; }";
         ASSERT_EQUALS(exp, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }
@@ -2499,7 +2530,7 @@ private:
     void simplifyTypedef123() { // ticket #7406
         const char code[] = "typedef int intvec[1];\n"
                             "Dummy<intvec> y;";
-        const char exp [] = "Dummy < int [ 1 ] > y ;";
+        const char exp[] = "Dummy < int [ 1 ] > y ;";
         ASSERT_EQUALS(exp, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }
@@ -2524,14 +2555,14 @@ private:
     void simplifyTypedef125() { // #8749
         const char code[] = "typedef char A[3];\n"
                             "char (*p)[3] = new A[4];";
-        const char exp [] = "char ( * p ) [ 3 ] = new char [ 4 ] [ 3 ] ;";
+        const char exp[] = "char ( * p ) [ 3 ] = new char [ 4 ] [ 3 ] ;";
         ASSERT_EQUALS(exp, tok(code, false));
     }
 
     void simplifyTypedef126() { // #5953
         const char code[] = "typedef char automap_data_t[100];\n"
                             "void write_array(automap_data_t *data) {}";
-        const char exp [] = "void write_array ( char ( * data ) [ 100 ] ) { }";
+        const char exp[] = "void write_array ( char ( * data ) [ 100 ] ) { }";
         ASSERT_EQUALS(exp, tok(code, false));
     }
 
@@ -2539,9 +2570,9 @@ private:
         const char code[] = "class a; typedef int (a::*b); "
                             "template <long, class> struct c; "
                             "template <int g> struct d { enum { e = c<g, b>::f }; };";
-        const char exp [] = "class a ; "
-                            "template < long , class > struct c ; "
-                            "template < int g > struct d { enum Anonymous0 { e = c < g , int ( a :: * ) > :: f } ; } ;";
+        const char exp[] = "class a ; "
+                           "template < long , class > struct c ; "
+                           "template < int g > struct d { enum Anonymous0 { e = c < g , int ( a :: * ) > :: f } ; } ;";
         ASSERT_EQUALS(exp, tok(code, false));
     }
 
@@ -2550,9 +2581,9 @@ private:
                             "void f() {\n"
                             "    dostuff((const d){1,2,3,4});\n"
                             "}";
-        const char exp [] = "void f ( ) { "
-                            "dostuff ( ( const int [ 4 ] ) { 1 , 2 , 3 , 4 } ) ; "
-                            "}";
+        const char exp[] = "void f ( ) { "
+                           "dostuff ( ( const int [ 4 ] ) { 1 , 2 , 3 , 4 } ) ; "
+                           "}";
         ASSERT_EQUALS(exp, tok(code, false));
     }
 
@@ -2563,7 +2594,7 @@ private:
                                 "  foo &f ;\n"
                                 "};";
 
-            const char exp [] = "class c { char ( & f ) [ 4 ] ; } ;";
+            const char exp[] = "class c { char ( & f ) [ 4 ] ; } ;";
             ASSERT_EQUALS(exp, tok(code, false));
         }
 
@@ -2573,7 +2604,7 @@ private:
                                 "  const foo &f;\n"
                                 "};";
 
-            const char exp [] = "class c { const char ( & f ) [ 4 ] ; } ;";
+            const char exp[] = "class c { const char ( & f ) [ 4 ] ; } ;";
             ASSERT_EQUALS(exp, tok(code, false));
         }
 
@@ -2584,7 +2615,7 @@ private:
                                 "  constexpr const foo &c_str() const noexcept { return _a; }\n"
                                 "};";
 
-            const char exp [] = "class c { char _a [ 4 ] ; const constexpr char ( & c_str ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
+            const char exp[] = "class c { char _a [ 4 ] ; const constexpr char ( & c_str ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
             ASSERT_EQUALS(exp, tok(code, false));
         }
 
@@ -2595,8 +2626,8 @@ private:
                                 "  constexpr operator foo &() const noexcept { return _a; }\n"
                                 "};";
 
-            const char actual [] = "class c { char _a [ 4 ] ; constexpr operatorchar ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
-            const char exp [] = "class c { char _a [ 4 ] ; const operator char ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
+            const char actual[] = "class c { char _a [ 4 ] ; constexpr operatorchar ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
+            const char exp[] = "class c { char _a [ 4 ] ; const operator char ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
             TODO_ASSERT_EQUALS(exp, actual, tok(code, false));
         }
 
@@ -2607,8 +2638,8 @@ private:
                                 "  constexpr operator const foo &() const noexcept { return _a; }\n"
                                 "};";
 
-            const char actual [] = "class c { char _a [ 4 ] ; constexpr operatorconstchar ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
-            const char exp [] = "class c { char _a [ 4 ] ; const operator const char ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
+            const char actual[] = "class c { char _a [ 4 ] ; constexpr operatorconstchar ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
+            const char exp[] = "class c { char _a [ 4 ] ; const operator const char ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
             TODO_ASSERT_EQUALS(exp, actual, tok(code, false));
         }
     }
@@ -2619,9 +2650,9 @@ private:
                             "  a<b, b>();\n"
                             "}";
 
-        const char exp [] = "template < class , class > void a ( ) { "
-                            "a < int ( * ) [ 10 ] , int ( * ) [ 10 ] > ( ) ; "
-                            "}";
+        const char exp[] = "template < class , class > void a ( ) { "
+                           "a < int ( * ) [ 10 ] , int ( * ) [ 10 ] > ( ) ; "
+                           "}";
 
         ASSERT_EQUALS(exp, tok(code, false));
     }
@@ -2633,11 +2664,11 @@ private:
                             "a4* a4p = &(a4obj);\n"
                             "a4*&& a4p_rref = std::move(a4p);";
 
-        const char exp [] = "unsigned char a4obj [ 4 ] ; "
-                            "unsigned char ( && a4_rref ) [ 4 ] = std :: move ( a4obj ) ; "
-                            "unsigned char ( * a4p ) [ 4 ] ; "
-                            "a4p = & ( a4obj ) ; "
-                            "unsigned char ( * && a4p_rref ) [ 4 ] = std :: move ( a4p ) ;";
+        const char exp[] = "unsigned char a4obj [ 4 ] ; "
+                           "unsigned char ( && a4_rref ) [ 4 ] = std :: move ( a4obj ) ; "
+                           "unsigned char ( * a4p ) [ 4 ] ; "
+                           "a4p = & ( a4obj ) ; "
+                           "unsigned char ( * && a4p_rref ) [ 4 ] = std :: move ( a4p ) ;";
 
         ASSERT_EQUALS(exp, tok(code, false));
     }
@@ -2655,10 +2686,10 @@ private:
                             "\n"
                             "void A::DoSomething( MySpecialType wrongName ) {}";
 
-        const char exp [] = "class A { "
-                            "void DoSomething ( int special ) ; "
-                            "} ; "
-                            "void A :: DoSomething ( int wrongName ) { }";
+        const char exp[] = "class A { "
+                           "void DoSomething ( int special ) ; "
+                           "} ; "
+                           "void A :: DoSomething ( int wrongName ) { }";
 
         ASSERT_EQUALS(exp, tok(code, false));
     }
@@ -3561,6 +3592,18 @@ private:
                             "}";
         ASSERT_EQUALS("struct xyz { int x ; } ; void f ( ) { int abc ; int xyz ; }",
                       tok(code,false));
+    }
+
+    void simplifyTypedefMacro() {
+        const char code[] = "typedef uint32_t index_t;\n"
+                            "\n"
+                            "#define NO_SEGMENT     ((index_t)12)\n"
+                            "\n"
+                            "void foo(index_t prev_segment) {\n"
+                            "    if(prev_segment==NO_SEGMENT) {}\n" // <- test that index_t is replaced with uint32_t in the expanded tokens
+                            "}";
+        ASSERT_EQUALS("void foo ( uint32_t prev_segment ) { if ( prev_segment == ( ( uint32_t ) 12 ) ) { } }",
+                      simplifyTypedefP(code));
     }
 };
 

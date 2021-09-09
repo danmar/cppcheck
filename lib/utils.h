@@ -28,16 +28,25 @@
 #include <vector>
 
 struct SelectMapKeys {
-    template <class Pair>
+    template<class Pair>
     typename Pair::first_type operator()(const Pair& p) const {
         return p.first;
     }
 };
 
 struct SelectMapValues {
-    template <class Pair>
+    template<class Pair>
     typename Pair::second_type operator()(const Pair& p) const {
         return p.second;
+    }
+};
+
+// Enum hash for C++11. This is not needed in C++14
+struct EnumClassHash {
+    template<typename T>
+    std::size_t operator()(T t) const
+    {
+        return static_cast<std::size_t>(t);
     }
 };
 

@@ -51,13 +51,11 @@ namespace ValueFlow {
 class CPPCHECKLIB CheckFunctions : public Check {
 public:
     /** This constructor is used when registering the CheckFunctions */
-    CheckFunctions() : Check(myName()) {
-    }
+    CheckFunctions() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
     CheckFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+        : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
@@ -81,13 +79,13 @@ public:
     void checkProhibitedFunctions();
 
     /**
-    * @brief Invalid function usage (invalid input value / overlapping data)
-    *
-    * %Check that given function parameters are valid according to the standard
-    * - wrong radix given for strtol/strtoul
-    * - overlapping data when using sprintf/snprintf
-    * - wrong input value according to library
-    */
+     * @brief Invalid function usage (invalid input value / overlapping data)
+     *
+     * %Check that given function parameters are valid according to the standard
+     * - wrong radix given for strtol/strtoul
+     * - overlapping data when using sprintf/snprintf
+     * - wrong input value according to library
+     */
     void invalidFunctionUsage();
 
     /** @brief %Check for ignored return values. */
@@ -122,7 +120,7 @@ private:
     void memsetZeroBytesError(const Token *tok);
     void memsetFloatError(const Token *tok, const std::string &var_value);
     void memsetValueOutOfRangeError(const Token *tok, const std::string &value);
-    void missingReturnError(const Token *tok, Certainty::CertaintyLevel certainty=Certainty::normal);
+    void missingReturnError(const Token *tok);
     void copyElisionError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {

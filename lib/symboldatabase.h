@@ -57,7 +57,7 @@ enum class AccessControl { Public, Protected, Private, Global, Namespace, Argume
  * @brief Array dimension information.
  */
 struct Dimension {
-    Dimension() : tok(nullptr), num(0), known(true) { }
+    Dimension() : tok(nullptr), num(0), known(true) {}
 
     const Token *tok;    ///< size token
     MathLib::bigint num; ///< (assumed) dimension length when size is a number, 0 if not known
@@ -77,8 +77,7 @@ public:
     class BaseInfo {
     public:
         BaseInfo() :
-            type(nullptr), nameTok(nullptr), access(AccessControl::Public), isVirtual(false) {
-        }
+            type(nullptr), nameTok(nullptr), access(AccessControl::Public), isVirtual(false) {}
 
         std::string name;
         const Type* type;
@@ -93,8 +92,7 @@ public:
 
     struct FriendInfo {
         FriendInfo() :
-            nameStart(nullptr), nameEnd(nullptr), type(nullptr) {
-        }
+            nameStart(nullptr), nameEnd(nullptr), type(nullptr) {}
 
         const Token* nameStart;
         const Token* nameEnd;
@@ -146,17 +144,17 @@ public:
     const Function* getFunction(const std::string& funcName) const;
 
     /**
-    * Check for circulare dependencies, i.e. loops within the class hierarchy
-    * @param ancestors list of ancestors. For internal usage only, clients should not supply this argument.
-    * @return true if there is a circular dependency
-    */
+     * Check for circulare dependencies, i.e. loops within the class hierarchy
+     * @param ancestors list of ancestors. For internal usage only, clients should not supply this argument.
+     * @return true if there is a circular dependency
+     */
     bool hasCircularDependencies(std::set<BaseInfo>* ancestors = nullptr) const;
 
     /**
-    * Check for dependency
-    * @param ancestor potential ancestor
-    * @return true if there is a dependency
-    */
+     * Check for dependency
+     * @param ancestor potential ancestor
+     * @return true if there is a dependency
+     */
     bool findDependency(const Type* ancestor) const;
 
     bool isDerivedFrom(const std::string & ancestor) const;
@@ -164,7 +162,7 @@ public:
 
 class CPPCHECKLIB Enumerator {
 public:
-    explicit Enumerator(const Scope * scope_) : scope(scope_), name(nullptr), value(0), start(nullptr), end(nullptr), value_known(false) { }
+    explicit Enumerator(const Scope * scope_) : scope(scope_), name(nullptr), value(0), start(nullptr), end(nullptr), value_known(false) {}
     const Scope * scope;
     const Token * name;
     MathLib::bigint value;
@@ -226,14 +224,14 @@ public:
              nonneg int index_, AccessControl access_, const Type *type_,
              const Scope *scope_, const Settings* settings)
         : mNameToken(name_),
-          mTypeStartToken(start_),
-          mTypeEndToken(end_),
-          mIndex(index_),
-          mAccess(access_),
-          mFlags(0),
-          mType(type_),
-          mScope(scope_),
-          mValueType(nullptr) {
+        mTypeStartToken(start_),
+        mTypeEndToken(end_),
+        mIndex(index_),
+        mAccess(access_),
+        mFlags(0),
+        mType(type_),
+        mScope(scope_),
+        mValueType(nullptr) {
         evaluate(settings);
     }
 
@@ -559,13 +557,13 @@ public:
     }
 
     /**
-    * Checks if the variable is an STL type ('std::')
-    * E.g.:
-    *   std::string s;
-    *   ...
-    *   sVar->isStlType() == true
-    * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
-    */
+     * Checks if the variable is an STL type ('std::')
+     * E.g.:
+     *   std::string s;
+     *   ...
+     *   sVar->isStlType() == true
+     * @return true if it is an stl type and its type matches any of the types in 'stlTypes'
+     */
     bool isStlType() const {
         return getFlag(fIsStlType);
     }
@@ -617,17 +615,17 @@ public:
     }
 
     /**
-    * Determine whether it's a floating number type
-    * @return true if the type is known and it's a floating type (float, double and long double) or a pointer/array to it
-    */
+     * Determine whether it's a floating number type
+     * @return true if the type is known and it's a floating type (float, double and long double) or a pointer/array to it
+     */
     bool isFloatingType() const {
         return getFlag(fIsFloatType);
     }
 
     /**
-    * Determine whether it's an enumeration type
-    * @return true if the type is known and it's an enumeration type
-    */
+     * Determine whether it's an enumeration type
+     * @return true if the type is known and it's an enumeration type
+     */
     bool isEnumType() const {
         return type() && type()->isEnumType();
     }
@@ -1040,6 +1038,7 @@ public:
     ScopeType type;
     Type* definedType;
     std::map<std::string, Type*> definedTypesMap;
+    std::vector<const Token *> bodyStartList;
 
     // function specific fields
     const Scope *functionOf; ///< scope this function belongs to
@@ -1050,6 +1049,13 @@ public:
     bool enumClass;
 
     std::vector<Enumerator> enumeratorList;
+
+    void setBodyStartEnd(const Token *start) {
+        bodyStart = start;
+        bodyEnd = start ? start->link() : nullptr;
+        if (start)
+            bodyStartList.push_back(start);
+    }
 
     bool isAnonymous() const {
         // TODO: Check if class/struct is anonymous
@@ -1196,6 +1202,9 @@ private:
     bool isVariableDeclaration(const Token* const tok, const Token*& vartok, const Token*& typetok) const;
 
     void findFunctionInBase(const std::string & name, nonneg int args, std::vector<const Function *> & matches) const;
+
+    /** @brief initialize varlist */
+    void getVariableList(const Settings* settings, const Token *start, const Token *end);
 };
 
 enum class Reference {
@@ -1208,7 +1217,26 @@ enum class Reference {
 class CPPCHECKLIB ValueType {
 public:
     enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
-    enum Type { UNKNOWN_TYPE, NONSTD, RECORD, CONTAINER, ITERATOR, VOID, BOOL, CHAR, SHORT, WCHAR_T, INT, LONG, LONGLONG, UNKNOWN_INT, FLOAT, DOUBLE, LONGDOUBLE } type;
+    enum Type {
+        UNKNOWN_TYPE,
+        NONSTD,
+        RECORD,
+        SMART_POINTER,
+        CONTAINER,
+        ITERATOR,
+        VOID,
+        BOOL,
+        CHAR,
+        SHORT,
+        WCHAR_T,
+        INT,
+        LONG,
+        LONGLONG,
+        UNKNOWN_INT,
+        FLOAT,
+        DOUBLE,
+        LONGDOUBLE
+    } type;
     nonneg int bits;                           ///< bitfield bitcount
     nonneg int pointer;                        ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
     nonneg int constness;                      ///< bit 0=data, bit 1=*, bit 2=**
@@ -1227,56 +1255,56 @@ public:
 
     ValueType()
         : sign(UNKNOWN_SIGN),
-          type(UNKNOWN_TYPE),
-          bits(0),
-          pointer(0U),
-          constness(0U),
-          typeScope(nullptr),
-          smartPointerType(nullptr),
-          smartPointerTypeToken(nullptr),
-          smartPointer(nullptr),
-          container(nullptr),
-          containerTypeToken(nullptr)
+        type(UNKNOWN_TYPE),
+        bits(0),
+        pointer(0U),
+        constness(0U),
+        typeScope(nullptr),
+        smartPointerType(nullptr),
+        smartPointerTypeToken(nullptr),
+        smartPointer(nullptr),
+        container(nullptr),
+        containerTypeToken(nullptr)
     {}
     ValueType(enum Sign s, enum Type t, nonneg int p)
         : sign(s),
-          type(t),
-          bits(0),
-          pointer(p),
-          constness(0U),
-          typeScope(nullptr),
-          smartPointerType(nullptr),
-          smartPointerTypeToken(nullptr),
-          smartPointer(nullptr),
-          container(nullptr),
-          containerTypeToken(nullptr)
+        type(t),
+        bits(0),
+        pointer(p),
+        constness(0U),
+        typeScope(nullptr),
+        smartPointerType(nullptr),
+        smartPointerTypeToken(nullptr),
+        smartPointer(nullptr),
+        container(nullptr),
+        containerTypeToken(nullptr)
     {}
     ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c)
         : sign(s),
-          type(t),
-          bits(0),
-          pointer(p),
-          constness(c),
-          typeScope(nullptr),
-          smartPointerType(nullptr),
-          smartPointerTypeToken(nullptr),
-          smartPointer(nullptr),
-          container(nullptr),
-          containerTypeToken(nullptr)
+        type(t),
+        bits(0),
+        pointer(p),
+        constness(c),
+        typeScope(nullptr),
+        smartPointerType(nullptr),
+        smartPointerTypeToken(nullptr),
+        smartPointer(nullptr),
+        container(nullptr),
+        containerTypeToken(nullptr)
     {}
     ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c, const std::string& otn)
         : sign(s),
-          type(t),
-          bits(0),
-          pointer(p),
-          constness(c),
-          typeScope(nullptr),
-          smartPointerType(nullptr),
-          smartPointerTypeToken(nullptr),
-          smartPointer(nullptr),
-          container(nullptr),
-          containerTypeToken(nullptr),
-          originalTypeName(otn)
+        type(t),
+        bits(0),
+        pointer(p),
+        constness(c),
+        typeScope(nullptr),
+        smartPointerType(nullptr),
+        smartPointerTypeToken(nullptr),
+        smartPointer(nullptr),
+        container(nullptr),
+        containerTypeToken(nullptr),
+        originalTypeName(otn)
     {}
 
     static ValueType parseDecl(const Token *type, const Settings *settings);

@@ -50,12 +50,11 @@ static std::string trim(const std::string& s)
     return s.substr(beg, end - beg + 1);
 }
 
-Directive::Directive(const std::string &_file, const int _linenr, const std::string &_str):
+Directive::Directive(const std::string &_file, const int _linenr, const std::string &_str) :
     file(_file),
     linenr(_linenr),
     str(trim(_str))
-{
-}
+{}
 
 std::atomic<bool> Preprocessor::missingIncludeFlag;
 std::atomic<bool> Preprocessor::missingSystemIncludeFlag;
@@ -63,8 +62,7 @@ std::atomic<bool> Preprocessor::missingSystemIncludeFlag;
 char Preprocessor::macroChar = char(1);
 
 Preprocessor::Preprocessor(Settings& settings, ErrorLogger *errorLogger) : mSettings(settings), mErrorLogger(errorLogger)
-{
-}
+{}
 
 Preprocessor::~Preprocessor()
 {
@@ -360,7 +358,7 @@ static bool isUndefined(const std::string &cfg, const std::set<std::string> &und
 static bool getConfigsElseIsFalse(const std::vector<std::string> &configs_if, const std::string &userDefines)
 {
     return std::any_of(configs_if.cbegin(), configs_if.cend(),
-    [=](const std::string &cfg) {
+                       [=](const std::string &cfg) {
         return hasDefine(userDefines, cfg);
     });
 }
@@ -571,7 +569,7 @@ std::string Preprocessor::removeSpaceNearNL(const std::string &str)
              i + 1 >= str.size() || // treat end of file as newline
              str[i+1] == '\n'
             )
-           ) {
+            ) {
             // Ignore space that has new line in either side of it
         } else {
             tmp.append(1, str[i]);
@@ -912,7 +910,7 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
             if (mu.macroName != macroName)
                 continue;
             bool directiveLocation = std::any_of(mDirectives.cbegin(), mDirectives.cend(),
-            [=](const Directive &dir) {
+                                                 [=](const Directive &dir) {
                 return mu.useLocation.file() == dir.file && mu.useLocation.line == dir.linenr;
             });
 

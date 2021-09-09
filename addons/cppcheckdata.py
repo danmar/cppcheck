@@ -159,7 +159,7 @@ class ValueType:
 
     def __repr__(self):
         attrs = ["type", "sign", "bits", "typeScopeId", "originalTypeName",
-                 "constness", "constness", "pointer"]
+                 "constness", "pointer"]
         return "{}({})".format(
             "ValueType",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -185,7 +185,7 @@ class Token:
 
     The CppcheckData.tokenlist is a list of Token items
 
-    C++ class: http://cppcheck.net/devinfo/doxyoutput/classToken.html
+    C++ class: https://cppcheck.sourceforge.io/devinfo/doxyoutput/classToken.html
 
     Attributes:
         str                Token string
@@ -198,7 +198,7 @@ class Token:
         isName             Is this token a symbol name
         isNumber           Is this token a number, for example 123, 12.34
         isInt              Is this token a int value such as 1234
-        isFloat            Is this token a int value such as 12.34
+        isFloat            Is this token a float value such as 12.34
         isString           Is this token a string literal such as "hello"
         strlen             string length for string literal
         isChar             Is this token a char literal such as 'x'
@@ -383,6 +383,7 @@ class Token:
                     self.impossible_values.append(v)
                 else:
                     self.values.append(v)
+                v.setId(IdMap)
         self.typeScope = IdMap[self.typeScopeId]
         self.astParent = IdMap[self.astParentId]
         self.astOperand1 = IdMap[self.astOperand1Id]
@@ -424,7 +425,7 @@ class Token:
 class Scope:
     """
     Scope. Information about global scope, function scopes, class scopes, inner scopes, etc.
-    C++ class: http://cppcheck.net/devinfo/doxyoutput/classScope.html
+    C++ class: https://cppcheck.sourceforge.io/devinfo/doxyoutput/classScope.html
 
     Attributes
         bodyStart      The { Token for this scope
@@ -492,7 +493,7 @@ class Function:
     """
     Information about a function
     C++ class:
-    http://cppcheck.net/devinfo/doxyoutput/classFunction.html
+    https://cppcheck.sourceforge.io/devinfo/doxyoutput/classFunction.html
 
     Attributes
         argument                Argument list
@@ -553,7 +554,7 @@ class Variable:
     """
     Information about a variable
     C++ class:
-    http://cppcheck.net/devinfo/doxyoutput/classVariable.html
+    https://cppcheck.sourceforge.io/devinfo/doxyoutput/classVariable.html
 
     Attributes:
         nameToken       Name token in variable declaration
@@ -688,7 +689,7 @@ class Value:
         self.intvalue = element.get('intvalue')
         if self.intvalue:
             self.intvalue = int(self.intvalue)
-        self.tokvalue = element.get('tokvalue')
+        self._tokvalueId = element.get('tokvalue')
         self.floatvalue = element.get('floatvalue')
         self.containerSize = element.get('container-size')
         self.condition = element.get('condition-line')
@@ -702,6 +703,9 @@ class Value:
             self.valueKind = 'impossible'
         if element.get('inconclusive'):
             self.inconclusive = True
+
+    def setId(self, IdMap):
+        self.tokvalue = IdMap.get(self._tokvalueId)
 
     def __repr__(self):
         attrs = ["intvalue", "tokvalue", "floatvalue", "containerSize",
@@ -718,7 +722,7 @@ class ValueFlow:
     Each possible value has a ValueFlow::Value item.
     Each ValueFlow::Value either has a intvalue or tokvalue
     C++ class:
-    http://cppcheck.net/devinfo/doxyoutput/classValueFlow_1_1Value.html
+    https://cppcheck.sourceforge.io/devinfo/doxyoutput/classValueFlow_1_1Value.html
 
     Attributes:
         values    Possible values

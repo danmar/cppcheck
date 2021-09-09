@@ -24,6 +24,7 @@ import os
 import argparse
 import codecs
 import string
+import copy
 
 try:
     from itertools import izip as zip
@@ -340,30 +341,37 @@ def isStdLibId(id_, standard='c99'):
 
 # Reserved keywords defined in ISO/IEC9899:1990 -- ch 6.1.1
 C90_KEYWORDS = {
-    'auto', 'break', 'double', 'else', 'enum', 'extern', 'float', 'for',
-    'goto', 'if', 'case', 'char', 'const', 'continue', 'default', 'do', 'int',
-    'long', 'struct', 'switch', 'register', 'typedef', 'union', 'unsigned',
-    'void', 'volatile', 'while', 'return', 'short', 'signed', 'sizeof',
-    'static'
+    'auto', 'break', 'case', 'char', 'const', 'continue', 'default', 'do',
+    'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if',
+    'int', 'long', 'register', 'return', 'short', 'signed',
+    'sizeof', 'static', 'struct', 'switch', 'typedef', 'union', 'unsigned',
+    'void', 'volatile', 'while'
 }
 
 
 # Reserved keywords defined in ISO/IEC 9899 WF14/N1256 -- ch. 6.4.1
-C99_KEYWORDS = {
-    'auto', 'break', 'case', 'char', 'const', 'continue', 'default', 'do',
-    'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if', 'inline',
-    'int', 'long', 'register', 'restrict', 'return', 'short', 'signed',
-    'sizeof', 'static', 'struct', 'switch', 'typedef', 'union', 'unsigned',
-    'void', 'volatile', 'while', '_Bool', '_Complex', '_Imaginary'
+C99_ADDED_KEYWORDS = {
+    'inline', 'restrict', '_Bool', '_Complex', '_Imaginary',
+    'bool', 'complex', 'imaginary'
 }
 
+C11_ADDED_KEYWORDS = {
+    '_Alignas', '_Alignof', '_Atomic', '_Generic', '_Noreturn',
+    '_Statis_assert', '_Thread_local' ,
+    'alignas', 'alignof', 'noreturn', 'static_assert'
+}
 
 def isKeyword(keyword, standard='c99'):
     kw_set = {}
     if standard == 'c89':
         kw_set = C90_KEYWORDS
     elif standard == 'c99':
-        kw_set = C99_KEYWORDS
+        kw_set = copy.copy(C90_KEYWORDS)
+        kw_set.update(C99_ADDED_KEYWORDS)
+    else:
+        kw_set = copy.copy(C90_KEYWORDS)
+        kw_set.update(C99_ADDED_KEYWORDS)
+        kw_set.update(C11_ADDED_KEYWORDS)
     return keyword in kw_set
 
 
@@ -373,6 +381,16 @@ def is_source_file(file):
 
 def is_header(file):
     return file.endswith('.h')
+
+
+def is_errno_setting_function(function_name):
+    return function_name and \
+           function_name in ('ftell', 'fgetpos', 'fsetpos', 'fgetwc', 'fputwc'
+                             'strtoimax', 'strtoumax', 'strtol', 'strtoul',
+                             'strtoll', 'strtoull', 'strtof', 'strtod', 'strtold'
+                             'wcstoimax', 'wcstoumax', 'wcstol', 'wcstoul',
+                             'wcstoll', 'wcstoull', 'wcstof', 'wcstod', 'wcstold'
+                             'wcrtomb', 'wcsrtombs', 'mbrtowc')
 
 
 def get_type_conversion_to_from(token):
@@ -517,11 +535,11 @@ def getEssentialType(expr):
             return None
         e1 = getEssentialType(expr.astOperand1)
         e2 = getEssentialType(expr.astOperand2)
-        if not e1 or not e2:
+        if e1 is None or e2 is None:
             return None
         if is_constant_integer_expression(expr):
             sign1 = e1.split(' ')[0]
-            sign2 = e1.split(' ')[0]
+            sign2 = e2.split(' ')[0]
             if sign1 == sign2 and sign1 in ('signed', 'unsigned'):
                 e = get_essential_type_from_value(expr.getKnownIntValue(), sign1 == 'signed')
                 if e:
@@ -1045,17 +1063,34 @@ def getAddonRules():
 
 def getCppcheckRules():
     """Returns list of rules handled by cppcheck."""
-    return ['1.3', '2.1', '2.2', '2.6', '5.3', '8.3',
+    return ['1.3', # <most "error">
+            '2.1', # alwaysFalse, duplicateBreak
+            '2.2', # alwaysTrue, redundantCondition, redundantAssignment, redundantAssignInSwitch, unreadVariable
+            '2.6', # unusedLabel
+            '5.3', # shadowVariable
+            '8.3', # funcArgNamesDifferent
             '8.13', # constPointer
             '9.1', # uninitvar
             '14.3', # alwaysTrue, alwaysFalse, compareValueOutOfTypeRangeError
-            '13.2', '13.6',
+            '13.2', # unknownEvaluationOrder
+            '13.6', # sizeofCalculation
             '17.4', # missingReturn
-            '17.5', '18.1', '18.2', '18.3', '18.6',
+            '17.5', # argumentSize
+            '18.1', # pointerOutOfBounds
+            '18.2', # comparePointers
+            '18.3', # comparePointers
+            '18.6', # danglingLifetime
             '19.1', # overlappingWriteUnion, overlappingWriteFunction
-            '20.6', '22.1', '22.2',
+            '20.6', # preprocessorErrorDirective
+            '21.13', # invalidFunctionArg
+            '21.17', # bufferAccessOutOfBounds
+            '21.18', # bufferAccessOutOfBounds
+            '22.1', # memleak, resourceLeak, memleakOnRealloc, leakReturnValNotUsed, leakNoVarFunctionCall
+            '22.2', # autovarInvalidDeallocation
             '22.3', # incompatibleFileOpen
-            '22.4', '22.6']
+            '22.4', # writeReadOnlyFile
+            '22.6' # useClosedFile
+           ]
 
 
 def generateTable():
@@ -1081,8 +1116,8 @@ def generateTable():
     numberOfRules[18] = 8
     numberOfRules[19] = 2
     numberOfRules[20] = 14
-    numberOfRules[21] = 12
-    numberOfRules[22] = 6
+    numberOfRules[21] = 21
+    numberOfRules[22] = 10
 
     # Rules that can be checked with compilers:
     # compiler = ['1.1', '1.2']
@@ -1356,6 +1391,24 @@ class MisraChecker:
         if len(names) > 0:
             cppcheckdata.reportSummary(dumpfile, 'MisraUsage', names)
 
+
+    def misra_1_4(self, cfg):
+        for token in cfg.tokenlist:
+            if token.str in ('_Atomic', '_Noreturn', '_Generic', '_Thread_local', '_Alignas', '_Alignof'):
+                self.reportError(token, 1, 4)
+            if token.str.endswith('_s') and isFunctionCall(token.next):
+                # See C specification C11 - Annex K, page 578
+                if token.str in ('tmpfile_s', 'tmpnam_s', 'fopen_s', 'freopen_s', 'fprintf_s', 'fscanf_s', 'printf_s', 'scanf_s',
+                                 'snprintf_s', 'sprintf_s', 'sscanf_s', 'vfprintf_s', 'vfscanf_s', 'vprintf_s', 'vscanf_s',
+                                 'vsnprintf_s', 'vsprintf_s', 'vsscanf_s', 'gets_s', 'set_constraint_handler_s', 'abort_handler_s',
+                                 'ignore_handler_s', 'getenv_s', 'bsearch_s', 'qsort_s', 'wctomb_s', 'mbstowcs_s', 'wcstombs_s',
+                                 'memcpy_s', 'memmove_s', 'strcpy_s', 'strncpy_s', 'strcat_s', 'strncat_s', 'strtok_s', 'memset_s',
+                                 'strerror_s', 'strerrorlen_s', 'strnlen_s', 'asctime_s', 'ctime_s', 'gmtime_s', 'localtime_s',
+                                 'fwprintf_s', 'fwscanf_s', 'snwprintf_s', 'swprintf_s', 'swscanf_s', 'vfwprintf_s', 'vfwscanf_s',
+                                 'vsnwprintf_s', 'vswprintf_s', 'vswscanf_s', 'vwprintf_s', 'vwscanf_s', 'wprintf_s', 'wscanf_s',
+                                 'wcscpy_s', 'wcsncpy_s', 'wmemcpy_s', 'wmemmove_s', 'wcscat_s', 'wcsncat_s', 'wcstok_s', 'wcsnlen_s',
+                                 'wcrtomb_s', 'mbsrtowcs_s', 'wcsrtombs_s'):
+                    self.reportError(token, 1, 4)
 
     def misra_2_3(self, dumpfile, typedefInfo):
         self._save_ctu_summary_typedefs(dumpfile, typedefInfo)
@@ -2029,9 +2082,11 @@ class MisraChecker:
                     elif not isUnsignedType(e2) and not token.astOperand2.isNumber:
                         self.reportError(token, 10, 1)
                 elif token.str in ('~', '&', '|', '^'):
-                    e1_et = getEssentialType(token.astOperand1).split(' ')[-1]
-                    e2_et = getEssentialType(token.astOperand2).split(' ')[-1]
-                    if e1_et == 'char' and e2_et == 'char':
+                    def _is_char(essential_type):
+                        return essential_type and (essential_type.split(' ')[-1] == 'char')
+                    e1_et = getEssentialType(token.astOperand1)
+                    e2_et = getEssentialType(token.astOperand2)
+                    if _is_char(e1_et) and _is_char(e2_et):
                         self.reportError(token, 10, 1)
 
     def misra_10_2(self, data):
@@ -3232,9 +3287,19 @@ class MisraChecker:
         for cond in cfg.preprocessor_if_conditions:
             if cond.E is None:
                 continue
+            defined = []
+            for directive in cfg.directives:
+                if directive.file == cond.file and directive.linenr == cond.linenr:
+                    for name in re.findall(r'[^_a-zA-Z0-9]defined[ ]*\([ ]*([_a-zA-Z0-9]+)[ ]*\)', directive.str):
+                        defined.append(name)
+                    for name in re.findall(r'[^_a-zA-Z0-9]defined[ ]*([_a-zA-Z0-9]+)', directive.str):
+                        defined.append(name)
+                    break
             for s in cond.E.split(' '):
                 if (s[0] >= 'A' and s[0] <= 'Z') or (s[0] >= 'a' and s[0] <= 'z'):
                     if isKeyword(s):
+                        continue
+                    if s in defined:
                         continue
                     self.reportError(cond, 20, 9)
 
@@ -3394,7 +3459,7 @@ class MisraChecker:
 
     def misra_21_8(self, data):
         for token in data.tokenlist:
-            if isFunctionCall(token) and (token.astOperand1.str in ('abort', 'exit', 'getenv', 'system')):
+            if isFunctionCall(token) and (token.astOperand1.str in ('abort', 'exit', 'getenv')):
                 self.reportError(token, 21, 8)
 
     def misra_21_9(self, data):
@@ -3429,6 +3494,50 @@ class MisraChecker:
                         'fetestexcept')):
                     self.reportError(token, 21, 12)
 
+    def misra_21_14(self, data):
+        # buffers used in strcpy/strlen/etc function calls
+        string_buffers = []
+        for token in data.tokenlist:
+            if token.str[0] == 's' and isFunctionCall(token.next):
+                name, args = cppcheckdata.get_function_call_name_args(token)
+                if name is None:
+                    continue
+                def _get_string_buffers(match, args, argnum):
+                    if not match:
+                        return []
+                    ret = []
+                    for a in argnum:
+                        if a < len(args):
+                            arg = args[a]
+                            while arg and arg.str in ('.', '::'):
+                                arg = arg.astOperand2
+                            if arg and arg.varId != 0 and arg.varId not in ret:
+                                ret.append(arg.varId)
+                    return ret
+                string_buffers += _get_string_buffers(name == 'strcpy', args, [0, 1])
+                string_buffers += _get_string_buffers(name == 'strncpy', args, [0, 1])
+                string_buffers += _get_string_buffers(name == 'strlen', args, [0])
+                string_buffers += _get_string_buffers(name == 'strcmp', args, [0, 1])
+                string_buffers += _get_string_buffers(name == 'sprintf', args, [0])
+                string_buffers += _get_string_buffers(name == 'snprintf', args, [0, 3])
+
+        for token in data.tokenlist:
+            if token.str != 'memcmp':
+                continue
+            name, args = cppcheckdata.get_function_call_name_args(token)
+            if name is None:
+                continue
+            if len(args) != 3:
+                continue
+            for arg in args[:2]:
+                if arg.str[-1] == '\"':
+                    self.reportError(arg, 21, 14)
+                    continue
+                while arg and arg.str in ('.', '::'):
+                    arg = arg.astOperand2
+                if arg and arg.varId and arg.varId in string_buffers:
+                    self.reportError(arg, 21, 14)
+
     def misra_21_15(self, data):
         for token in data.tokenlist:
             if token.str not in ('memcpy', 'memmove', 'memcmp'):
@@ -3446,12 +3555,174 @@ class MisraChecker:
                 continue
             self.reportError(token, 21, 15)
 
+    def misra_21_16(self, cfg):
+        for token in cfg.tokenlist:
+            if token.str != 'memcmp':
+                continue
+            name, args = cppcheckdata.get_function_call_name_args(token)
+            if name is None:
+                continue
+            if len(args) != 3:
+                continue
+            for arg in args[:2]:
+                if arg.valueType is None:
+                    continue
+                if arg.valueType.pointer > 1:
+                    continue
+                if arg.valueType.sign in ('unsigned', 'signed'):
+                    continue
+                if arg.valueType.isEnum():
+                    continue
+                self.reportError(token, 21, 16)
+
+    def misra_21_19(self, cfg):
+        for token in cfg.tokenlist:
+            if token.str in ('localeconv', 'getenv', 'setlocale', 'strerror') and simpleMatch(token.next, '('):
+                name, _ = cppcheckdata.get_function_call_name_args(token)
+                if name is None or name != token.str:
+                    continue
+                parent = token.next
+                while simpleMatch(parent.astParent, '+'):
+                    parent = parent.astParent
+                # x = f()
+                if simpleMatch(parent.astParent, '=') and parent == parent.astParent.astOperand2:
+                    lhs = parent.astParent.astOperand1
+                    if lhs and lhs.valueType and lhs.valueType.pointer > 0 and lhs.valueType.constness == 0:
+                        self.reportError(token, 21, 19)
+            if token.str == '=':
+                lhs = token.astOperand1
+                while simpleMatch(lhs, '*') and lhs.astOperand2 is None:
+                    lhs = lhs.astOperand1
+                if not simpleMatch(lhs, '.'):
+                    continue
+                while simpleMatch(lhs, '.'):
+                    lhs = lhs.astOperand1
+                if lhs and lhs.variable and simpleMatch(lhs.variable.typeStartToken, 'lconv'):
+                    self.reportError(token, 21, 19)
+
+    def misra_21_20(self, cfg):
+        assigned = {}
+        invalid = []
+        for token in cfg.tokenlist:
+            # No sophisticated data flow analysis, bail out if control flow is "interrupted"
+            if token.str in ('{', '}', 'break', 'continue', 'return'):
+                assigned = {}
+                invalid = []
+                continue
+
+            # When pointer is assigned, remove it from 'assigned' and 'invalid'
+            if token.varId and token.varId > 0 and simpleMatch(token.next, '='):
+                for name in assigned.keys():
+                    while token.varId in assigned[name]:
+                        assigned[name].remove(token.varId)
+                while token.varId in invalid:
+                    invalid.remove(token.varId)
+                continue
+
+            # Calling dangerous function
+            if token.str in ('asctime', 'ctime', 'gmtime', 'localtime', 'localeconv', 'getenv', 'setlocale', 'strerror'):
+                name, args = cppcheckdata.get_function_call_name_args(token)
+                if name and name == token.str:
+                    # make assigned pointers invalid
+                    for varId in assigned.get(name, ()):
+                        if varId not in invalid:
+                            invalid.append(varId)
+
+                    # assign pointer
+                    parent = token.next
+                    while parent.astParent and (parent.astParent.str == '+' or isCast(parent.astParent)):
+                        parent = parent.astParent
+                    if simpleMatch(parent.astParent, '='):
+                        eq = parent.astParent
+                        vartok = eq.previous
+                        if vartok and vartok.varId and vartok.varId > 0:
+                            if name not in assigned:
+                                assigned[name] = [vartok.varId]
+                            elif vartok.varId not in assigned[name]:
+                                assigned[name].append(vartok.varId)
+                continue
+
+            # taking value of invalid pointer..
+            if token.astParent and token.varId:
+                if token.varId in invalid:
+                    self.reportError(token, 21, 20)
+
+    def misra_21_21(self, cfg):
+        for token in cfg.tokenlist:
+            if token.str == 'system':
+                name, args = cppcheckdata.get_function_call_name_args(token)
+                if name == 'system' and len(args) == 1:
+                    self.reportError(token, 21, 21)
+
     def misra_22_5(self, cfg):
         for token in cfg.tokenlist:
             if token.isUnaryOp("*") or (token.isBinaryOp() and token.str == '.'):
                 fileptr = token.astOperand1
                 if fileptr.variable and cppcheckdata.simpleMatch(fileptr.variable.typeStartToken, 'FILE *'):
                     self.reportError(token, 22, 5)
+
+    def misra_22_7(self, cfg):
+        for eofToken in cfg.tokenlist:
+            if eofToken.str != 'EOF':
+                continue
+            if eofToken.astParent is None or not eofToken.astParent.isComparisonOp:
+                continue
+            if eofToken.astParent.astOperand1 == eofToken:
+                eofTokenSibling = eofToken.astParent.astOperand2
+            else:
+                eofTokenSibling = eofToken.astParent.astOperand1
+            while isCast(eofTokenSibling) and eofTokenSibling.valueType and eofTokenSibling.valueType.type and eofTokenSibling.valueType.type == 'int':
+                eofTokenSibling = eofTokenSibling.astOperand2 if eofTokenSibling.astOperand2 else eofTokenSibling.astOperand1
+            if eofTokenSibling is not None and eofTokenSibling.valueType and eofTokenSibling.valueType and eofTokenSibling.valueType.type in ('bool', 'char', 'short'):
+                self.reportError(eofToken, 22, 7)
+
+    def misra_22_8(self, cfg):
+        is_zero = False
+        for token in cfg.tokenlist:
+            if simpleMatch(token, 'errno = 0'):
+                is_zero = True
+            if token.str == '(' and not simpleMatch(token.link, ') {'):
+                name, _ = cppcheckdata.get_function_call_name_args(token.previous)
+                if name is None:
+                    continue
+                if is_errno_setting_function(name):
+                    if not is_zero:
+                        self.reportError(token, 22, 8)
+                else:
+                    is_zero = False
+
+    def misra_22_9(self, cfg):
+        errno_is_set = False
+        for token in cfg.tokenlist:
+            if token.str == '(' and not simpleMatch(token.link, ') {'):
+                name, args = cppcheckdata.get_function_call_name_args(token.previous)
+                if name is None:
+                    continue
+                errno_is_set = is_errno_setting_function(name)
+            if errno_is_set and token.str in '{};':
+                errno_is_set = False
+                tok = token.next
+                while tok and tok.str not in ('{','}',';','errno'):
+                    tok = tok.next
+                if tok is None or tok.str != 'errno':
+                    self.reportError(token, 22, 9)
+                elif (tok.astParent is None) or (not tok.astParent.isComparisonOp):
+                    self.reportError(token, 22, 9)
+
+    def misra_22_10(self, cfg):
+        last_function_call = None
+        for token in cfg.tokenlist:
+            if token.str == '(' and not simpleMatch(token.link, ') {'):
+                name, args = cppcheckdata.get_function_call_name_args(token.previous)
+                last_function_call = name
+            if token.str == '}':
+                last_function_call = None
+            if token.str == 'errno' and token.astParent and token.astParent.isComparisonOp:
+                if last_function_call is None:
+                    self.reportError(token, 22, 10)
+                elif not is_errno_setting_function(last_function_call):
+                    self.reportError(token, 22, 10)
+
 
     def get_verify_expected(self):
         """Return the list of expected violations in the verify test"""
@@ -3891,6 +4162,7 @@ class MisraChecker:
             if not self.settings.quiet:
                 self.printStatus('Checking %s, config %s...' % (dumpfile, cfg.name))
 
+            self.executeCheck(104, self.misra_1_4, cfg)
             self.executeCheck(203, self.misra_2_3, dumpfile, cfg.typedefInfo)
             self.executeCheck(204, self.misra_2_4, dumpfile, cfg)
             self.executeCheck(205, self.misra_2_5, dumpfile, cfg)
@@ -4019,9 +4291,18 @@ class MisraChecker:
             self.executeCheck(2110, self.misra_21_10, cfg)
             self.executeCheck(2111, self.misra_21_11, cfg)
             self.executeCheck(2112, self.misra_21_12, cfg)
+            self.executeCheck(2114, self.misra_21_14, cfg)
             self.executeCheck(2115, self.misra_21_15, cfg)
+            self.executeCheck(2116, self.misra_21_16, cfg)
+            self.executeCheck(2119, self.misra_21_19, cfg)
+            self.executeCheck(2120, self.misra_21_20, cfg)
+            self.executeCheck(2121, self.misra_21_21, cfg)
             # 22.4 is already covered by Cppcheck writeReadOnlyFile
             self.executeCheck(2205, self.misra_22_5, cfg)
+            self.executeCheck(2207, self.misra_22_7, cfg)
+            self.executeCheck(2208, self.misra_22_8, cfg)
+            self.executeCheck(2209, self.misra_22_9, cfg)
+            self.executeCheck(2210, self.misra_22_10, cfg)
 
     def analyse_ctu_info(self, ctu_info_files):
         all_typedef_info = []

@@ -23,12 +23,10 @@
 
 PrintableReport::PrintableReport() :
     Report(QString())
-{
-}
+{}
 
 PrintableReport::~PrintableReport()
-{
-}
+{}
 
 bool PrintableReport::create()
 {

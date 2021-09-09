@@ -31,6 +31,11 @@
 #include <iterator>
 #include <vector>
 
+double invalidFunctionArg_log10(double d = 0.0) {
+    // cppcheck-suppress invalidFunctionArg
+    return log10(d);
+}
+
 void uninitvar_std_next(const std::vector<int> &v, int count)
 {
     // No warning shall be shown:
@@ -2068,7 +2073,7 @@ void uninitvar_memset(void)
 void uninitvar_wmemset(void)
 {
     wchar_t *cs;
-    wchar_t  c;
+    wchar_t c;
     size_t n;
     // cppcheck-suppress uninitvar
     (void)std::wmemset(cs,c,n);
@@ -2212,20 +2217,20 @@ void uninivar_bsearch(void)
     size_t num;
     size_t size;
     // cppcheck-suppress uninitvar
-    (void)std::bsearch(key,base,num,size,(int(*)(const void*,const void*)) strcmp);
+    (void)std::bsearch(key,base,num,size,(int (*)(const void*,const void*))strcmp);
 }
 
 void minsize_bsearch(const void* key, const void* base,
                      size_t num, size_t size,
                      int (*compar)(const void*,const void*))
 {
-    int Base [3] = {42, 43, 44};
+    int Base[3] = {42, 43, 44};
 
-    (void)std::bsearch(key,Base,2,size,(int(*)(const void*,const void*)) strcmp);
-    (void)std::bsearch(key,Base,3,size,(int(*)(const void*,const void*)) strcmp);
-    (void)std::bsearch(key,Base,4,size,(int(*)(const void*,const void*)) strcmp);
+    (void)std::bsearch(key,Base,2,size,(int (*)(const void*,const void*))strcmp);
+    (void)std::bsearch(key,Base,3,size,(int (*)(const void*,const void*))strcmp);
+    (void)std::bsearch(key,Base,4,size,(int (*)(const void*,const void*))strcmp);
 
-    (void)std::bsearch(key,base,2,size,(int(*)(const void*,const void*)) strcmp);
+    (void)std::bsearch(key,base,2,size,(int (*)(const void*,const void*))strcmp);
 }
 
 void uninitvar_qsort(void)
@@ -2234,7 +2239,7 @@ void uninitvar_qsort(void)
     size_t n;
     size_t size;
     // cppcheck-suppress uninitvar
-    (void)std::qsort(base,n,size, (int(*)(const void*,const void*)) strcmp);
+    (void)std::qsort(base,n,size, (int (*)(const void*,const void*))strcmp);
 }
 
 void uninitvar_putc(void)
@@ -3477,7 +3482,7 @@ void nullPointer_wmemcmp(wchar_t *p)
 #include <algorithm>
 #include <list>
 
-#define pred    [](int i){return i==0;}
+#define pred    [] (int i) {return i==0;}
 
 
 void stdalgorithm(const std::list<int> &ints1, const std::list<int> &ints2)

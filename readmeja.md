@@ -12,7 +12,7 @@
 
 ## マニュアル
 
-マニュアルは[オンライン上に](http://cppcheck.sourceforge.net/manual.pdf)あります。
+マニュアルは[オンライン上に](https://cppcheck.sourceforge.io/manual.pdf)あります。
 
 ## ビルド
 
@@ -137,4 +137,4 @@ mv cppcheck cppcheck.exe
 
 ## Webページ
 
-http://cppcheck.sourceforge.net/
+https://cppcheck.sourceforge.io/

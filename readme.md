@@ -12,7 +12,7 @@ Despite the name, Cppcheck is designed for both C and C++.
 
 ## Manual
 
-A manual is available [online](http://cppcheck.sourceforge.net/manual.pdf).
+A manual is available [online](https://cppcheck.sourceforge.io/manual.pdf).
 
 ## Donate CPU
 
@@ -223,4 +223,4 @@ https://src.fedoraproject.org/rpms/cppcheck/tree/master
 
 ## Webpage
 
-http://cppcheck.sourceforge.net/
+https://cppcheck.sourceforge.io/
