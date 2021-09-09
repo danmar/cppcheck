@@ -288,6 +288,8 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
 {
     const Token *lastStatement = nullptr;
     while ((tok = tok->previous()) != nullptr) {
+        if (tok->str() == ")")
+            tok = tok->link();
         if (tok->str() == "{")
             return lastStatement ? lastStatement : tok->next();
         if (tok->str() == "}") {

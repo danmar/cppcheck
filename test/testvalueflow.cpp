@@ -826,6 +826,12 @@ private:
         ASSERT(tokenValues(";10>>-1;",">>").empty());
         ASSERT(tokenValues(";10>>64;",">>").empty());
 
+        code = "float f(const uint16_t& value) {\n"
+               "    const uint16_t uVal = value; \n"
+               "    return static_cast<float>(uVal) / 2;\n"
+               "}\n";
+        ASSERT_EQUALS(true, tokenValues(code, "/").empty());
+
         // calculation using 1,2 variables/values
         code  = "void f(int x) {\n"
                 "    a = x+456;\n"
