@@ -820,7 +820,6 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-
         check("void f(int a, int b) {\n"
               "    if(a & b) {}\n"
               "}");

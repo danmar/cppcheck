@@ -100,7 +100,8 @@ void CheckBool::checkBitwiseOnBoolean()
                     continue;
                 if (tok->astOperand2()->variable() && tok->astOperand2()->variable()->nameToken() == tok->astOperand2())
                     continue;
-                const std::string expression = astIsBool(tok->astOperand1()) ? tok->astOperand1()->expressionString() : tok->astOperand2()->expressionString();
+                const std::string expression = astIsBool(tok->astOperand1()) ? tok->astOperand1()->expressionString()
+                                                                             : tok->astOperand2()->expressionString();
                 bitwiseOnBooleanError(tok, expression, tok->str() == "&" ? "&&" : "||");
             }
         }
