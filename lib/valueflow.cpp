@@ -505,7 +505,8 @@ static ValueFlow::Value truncateImplicitConversion(Token* parent, const ValueFlo
 /** set ValueFlow value and perform calculations if possible */
 static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* settings)
 {
-    if (Token::Match(tok, "it") && value.isLifetimeValue() && value.lifetimeKind == ValueFlow::Value::LifetimeKind::Iterator)
+    if (Token::Match(tok, "it") && value.isLifetimeValue() &&
+        value.lifetimeKind == ValueFlow::Value::LifetimeKind::Iterator)
         assert(true);
     // Skip setting values that are too big since its ambiguous
     if (!value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok) &&
@@ -3580,7 +3581,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
                 continue;
             const Token * const argTok = args[argnr - 1];
             bool forward = false;
-            for(ValueFlow::Value val:argTok->values()) {
+            for (ValueFlow::Value val : argTok->values()) {
                 if (!val.isLifetimeValue())
                     continue;
                 val.errorPath.emplace_back(argTok, "Passed to '" + tok->str() + "'.");
