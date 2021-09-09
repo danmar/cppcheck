@@ -813,12 +813,16 @@ private:
         check("void f(bool a, int b) {\n"
               "    if(a | b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Bitwise expression 'a|b' with boolean expression 'a' is equivalent to 'b'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style, inconclusive) Bitwise expression 'a|b' with boolean expression 'a' is equivalent to 'b'?\n",
+            errout.str());
 
         check("void f(int a, bool b) {\n"
               "    if(a | b) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Bitwise expression 'a|b' with boolean expression 'b' is equivalent to 'a'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (style, inconclusive) Bitwise expression 'a|b' with boolean expression 'b' is equivalent to 'a'?\n",
+            errout.str());
 
         check("void f(int a, int b) {\n"
               "    if(a & b) {}\n"
