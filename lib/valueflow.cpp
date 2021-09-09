@@ -479,8 +479,8 @@ static bool isCompatibleValueTypes(ValueFlow::Value::ValueType x, ValueFlow::Val
     compatibleTypes = {
         {ValueFlow::Value::ValueType::INT,
          {ValueFlow::Value::ValueType::FLOAT,
-              ValueFlow::Value::ValueType::SYMBOLIC,
-              ValueFlow::Value::ValueType::TOK}},
+          ValueFlow::Value::ValueType::SYMBOLIC,
+          ValueFlow::Value::ValueType::TOK}},
         {ValueFlow::Value::ValueType::FLOAT, {ValueFlow::Value::ValueType::INT}},
         {ValueFlow::Value::ValueType::TOK, {ValueFlow::Value::ValueType::INT}},
         {ValueFlow::Value::ValueType::ITERATOR_START, {ValueFlow::Value::ValueType::INT}},
