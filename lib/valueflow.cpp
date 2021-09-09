@@ -505,9 +505,6 @@ static ValueFlow::Value truncateImplicitConversion(Token* parent, const ValueFlo
 /** set ValueFlow value and perform calculations if possible */
 static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* settings)
 {
-    if (Token::Match(tok, "it") && value.isLifetimeValue() &&
-        value.lifetimeKind == ValueFlow::Value::LifetimeKind::Iterator)
-        assert(true);
     // Skip setting values that are too big since its ambiguous
     if (!value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok) &&
         ValueFlow::getSizeOf(*tok->valueType(), settings) >= sizeof(MathLib::bigint))
