@@ -3621,11 +3621,17 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
             if (i->container != returnContainer)
                 continue;
             const Token * const argTok = args[argnr - 1];
+            bool forward = false;
+            for (ValueFlow::Value val : argTok->values()) {
+                if (!val.isLifetimeValue())
+                    continue;
+                val.errorPath.emplace_back(argTok, "Passed to '" + tok->str() + "'.");
+                setTokenValue(tok->next(), val, settings);
+                forward = true;
+            }
             // Check if lifetime is available to avoid adding the lifetime twice
-            ValueFlow::Value val = getLifetimeObjValue(argTok);
-            if (val.tokvalue) {
-                LifetimeStore{argTok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Iterator}.byVal(
-                    tok->next(), tokenlist, errorLogger, settings);
+            if (forward) {
+                valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
                 break;
             }
         }
