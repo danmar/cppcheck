@@ -90,12 +90,18 @@ void CheckBool::checkBitwiseOnBoolean()
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->isBinaryOp() && (tok->str() == "&" || tok->str() == "|")) {
-                if (astIsBool(tok->astOperand1()) || astIsBool(tok->astOperand2())) {
-                    if (tok->astOperand2()->variable() && tok->astOperand2()->variable()->nameToken() == tok->astOperand2())
-                        continue;
-                    const std::string expression = astIsBool(tok->astOperand1()) ? tok->astOperand1()->expressionString() : tok->astOperand2()->expressionString();
-                    bitwiseOnBooleanError(tok, expression, tok->str() == "&" ? "&&" : "||");
-                }
+                if (tok->str() == "&" && !(astIsBool(tok->astOperand1()) || astIsBool(tok->astOperand2())))
+                    continue;
+                if (tok->str() == "|" && !(astIsBool(tok->astOperand1()) && astIsBool(tok->astOperand2())))
+                    continue;
+                if (!isConstExpression(tok->astOperand1(), mSettings->library, true, mTokenizer->isCPP()))
+                    continue;
+                if (!isConstExpression(tok->astOperand1(), mSettings->library, true, mTokenizer->isCPP()))
+                    continue;
+                if (tok->astOperand2()->variable() && tok->astOperand2()->variable()->nameToken() == tok->astOperand2())
+                    continue;
+                const std::string expression = astIsBool(tok->astOperand1()) ? tok->astOperand1()->expressionString() : tok->astOperand2()->expressionString();
+                bitwiseOnBooleanError(tok, expression, tok->str() == "&" ? "&&" : "||");
             }
         }
     }
