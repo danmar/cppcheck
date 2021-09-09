@@ -125,13 +125,6 @@ void CheckBool::bitwiseOnBooleanError(const Token* tok,
     reportError(tok, Severity::style, "bitwiseOnBoolean", msg, CWE398, Certainty::inconclusive);
 }
 
-// void CheckBool::bitwiseOrIntegerError(const Token *tok, const std::string &expression, const std::string &op)
-// {
-//     reportError(tok, Severity::style, "bitwiseOnBoolean",
-//                 "Bitwise expression '" + expression + "' with boolean is used in bitwise operation. Did you mean '" +
-//                 op + "'?", CWE398, Certainty::inconclusive);
-// }
-
 //---------------------------------------------------------------------------
 //    if (!x==3) <- Probably meant to be "x!=3"
 //---------------------------------------------------------------------------
