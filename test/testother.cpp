@@ -9543,7 +9543,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void foundMismatchingNames() { // Warning: 100% mismatch
+    void foundMismatchingNames() {
         check("struct MinMax\n"
             "{\n"
             "	float min = 0.0F;\n"
@@ -9554,12 +9554,14 @@ private:
             "		this->max = 0.0F;\n"
             "	}\n"
             "};\n", nullptr, false, false);
-        ASSERT_EQUALS("[test.cpp:5]: (style) Warning, min and max name mismatch. Did you mean: min\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Warning, variable min and argument max name mismatch. Did you mean: min\n", errout.str());
     }
 
-    void foundMismatchingNames2() { // Note: Possible mismatch ( 50/50 )
+    void foundMismatchingNames2() {
         Settings mismatchingFalse;
-        mismatchingFalse.addons.push_back("mismatchingFalse");
+        mismatchingFalse.certainty.setEnabled(Certainty::inconclusive, true);
+        mismatchingFalse.severity.setEnabled(Severity::style, true);
+        mismatchingFalse.addons.push_back("checkMismatchingNamesFalse");
         check("void foo3(float fmin, float fmax)\n"
             "{\n"
             "	float max = fmin;\n"
@@ -9567,12 +9569,14 @@ private:
             "	MinMax tmpMinMax = MinMax(max,min);\n"
             "	foo4(tmpMinMax);\n"
             "}\n", &mismatchingFalse);
-        ASSERT_EQUALS("[test.cpp:1]: (style) Warning, max and fmin name mismatch. Did you mean: fmax\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Warning, variable max and argument fmin name mismatch. Did you mean: fmax\n", errout.str());
     }
 
-    void foundMismatchingNames3() { // Note: Possible mismatch ( 50/50 )
+    void foundMismatchingNames3() {
         Settings mismatchingFalse;
-        mismatchingFalse.addons.push_back("mismatchingFalse");
+        mismatchingFalse.certainty.setEnabled(Certainty::inconclusive, true);
+        mismatchingFalse.severity.setEnabled(Severity::style, true);
+        mismatchingFalse.addons.push_back("checkMismatchingNamesFalse");
         check("struct MinMax\n"
             "{\n"
             "	float min = 0.0F;\n"
@@ -9583,7 +9587,7 @@ private:
             "		this->max = 0.0F;\n"
             "	}\n"
             "};\n", &mismatchingFalse);
-        ASSERT_EQUALS("[test.cpp:5]: (style) Warning, min and fmax name mismatch. Did you mean: fmin\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Warning, variable min and argument fmax name mismatch. Did you mean: fmin\n", errout.str());
     }
 };
 

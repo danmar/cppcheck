@@ -3624,11 +3624,12 @@ void CheckOther::checkMismatchingNames()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
-    bool printFalseDetections = std::find(std::begin(mSettings->addons), std::end(mSettings->addons), "mismatchingFalse") != std::end(mSettings->addons);
+    bool printFalseDetections = std::find(std::begin(mSettings->addons), std::end(mSettings->addons), "checkMismatchingNamesFalse") != std::end(mSettings->addons);
 
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     if (!symbolDatabase)
         return;
+
     for (const Scope* scope : symbolDatabase->functionScopes) {
         const Function* function = scope->function;
         if (!function)
@@ -3651,11 +3652,15 @@ void CheckOther::checkMismatchingNames()
             tmpArgListInfo.push_back(tmpArgInfo);
         }
 
-        const Token* tok = function->arg->link()->next();
+        const Token* tok = function->arg->link()->next() ? function->arg->link()->next()->next() : nullptr;
         bool error_found = false;
-
         for (; tok && tok != function->functionScope->bodyEnd; tok = tok->next())
         {
+            if (Token::simpleMatch(tok, "{"))
+            {
+                if (!mSettings->certainty.isEnabled(Certainty::inconclusive))
+                    break;
+            }
             if (!error_found)
             {
                 bool matched = Token::Match(tok, "%var% = %var% ;");
@@ -3689,12 +3694,12 @@ void CheckOther::checkMismatchingNames()
                     {
                         if (svar2->isArgument())
                         {
-                            mismatchingNamesWriteError(targ.tok, "Warning, ", svar->name(), svar2->name(), targ.varname);
+                            mismatchingNamesWriteError(tok, "Warning,", svar->name(), svar2->name(), targ.varname);
                             error_found = true;
                         }
                         if (!error_found && printFalseDetections)
                         {
-                            mismatchingNamesWriteError(targ.tok, "Note, ", svar->name(), svar2->name(), targ.varname);
+                            mismatchingNamesWriteError(tok, "Note,", svar->name(), svar2->name(), targ.varname);
                             error_found = true;
                         }
                         break;
@@ -3708,5 +3713,5 @@ void CheckOther::checkMismatchingNames()
 
 void CheckOther::mismatchingNamesWriteError(const Token* tok, const std::string& prefix, const std::string& var, const std::string& arg, const std::string& newname)
 {
-    reportError(tok, Severity::style, "mismatchingNamesWriteError", prefix + var + " and " + arg + " name mismatch. Did you mean: " + newname);
+    reportError(tok, Severity::style, "mismatchingNamesNotify", prefix + " variable " + var + " and argument " + arg + " name mismatch. Did you mean: " + newname);
 }
