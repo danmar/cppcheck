@@ -4586,7 +4586,7 @@ private:
         check("void f(unsigned char c) {\n"
               "  if (c == 256) {}\n"
               "}", &settingsUnix64);
-        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always true/false.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always false.\n", errout.str());
 
         check("void f(unsigned char c) {\n"
               "  if (c == 255) {}\n"
@@ -4602,12 +4602,12 @@ private:
         check("void f(signed char x) {\n"
               "  if (x == 0xff) {}\n"
               "}", &settingsUnix64);
-        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed char' against value 255. Condition is always true/false.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed char' against value 255. Condition is always false.\n", errout.str());
 
         check("void f(short x) {\n"
               "  if (x == 0xffff) {}\n"
               "}", &settingsUnix64);
-        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed short' against value 65535. Condition is always true/false.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed short' against value 65535. Condition is always false.\n", errout.str());
 
         check("void f(int x) {\n"
               "  if (x == 0xffffffff) {}\n"
@@ -4629,6 +4629,11 @@ private:
               "  if ((c = foo()) != -1) {}\n"
               "}", &settingsUnix64);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "  if (x < 3000000000) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed int' against value 3000000000. Condition is always true.\n", errout.str());
     }
 
     void knownConditionCast() { // #9976
