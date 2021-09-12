@@ -258,9 +258,8 @@ private:
 
         TEST_CASE(constVariableArrayMember); // #10371
 
-        TEST_CASE(foundMismatchingNames);
-        TEST_CASE(foundMismatchingNames2);
-        TEST_CASE(foundMismatchingNames3);
+        TEST_CASE(foundMismatchingNames); // ticket #10444
+        TEST_CASE(foundMismatchingNamesPartial);
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
@@ -9557,7 +9556,7 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (style) Warning, variable min and argument max name mismatch. Did you mean: min\n", errout.str());
     }
 
-    void foundMismatchingNames2() {
+    void foundMismatchingNamesPartial() {
         Settings mismatchingFalse;
         mismatchingFalse.certainty.setEnabled(Certainty::inconclusive, true);
         mismatchingFalse.severity.setEnabled(Severity::style, true);
@@ -9570,13 +9569,7 @@ private:
             "	foo4(tmpMinMax);\n"
             "}\n", &mismatchingFalse);
         ASSERT_EQUALS("[test.cpp:3]: (style) Warning, variable max and argument fmin name mismatch. Did you mean: fmax\n", errout.str());
-    }
 
-    void foundMismatchingNames3() {
-        Settings mismatchingFalse;
-        mismatchingFalse.certainty.setEnabled(Certainty::inconclusive, true);
-        mismatchingFalse.severity.setEnabled(Severity::style, true);
-        mismatchingFalse.addons.push_back("checkMismatchingNamesFalse");
         check("struct MinMax\n"
             "{\n"
             "	float min = 0.0F;\n"
