@@ -813,16 +813,12 @@ private:
         check("void f(bool a, int b) {\n"
               "    if(a | b) {}\n"
               "}");
-        ASSERT_EQUALS(
-            "",
-            errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f(int a, bool b) {\n"
               "    if(a | b) {}\n"
               "}");
-        ASSERT_EQUALS(
-            "",
-            errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f(int a, int b) {\n"
               "    if(a & b) {}\n"
