@@ -446,6 +446,8 @@ def getEssentialTypeCategory(expr):
     if expr.variable:
         typeToken = expr.variable.typeStartToken
         while typeToken:
+            if typeToken.str == 'char' and not typeToken.isSigned and not typeToken.isUnsigned:
+                return 'char'
             if typeToken.valueType:
                 if typeToken.valueType.type == 'bool':
                     return typeToken.valueType.type
@@ -510,6 +512,8 @@ def getEssentialType(expr):
             if expr.valueType.isFloat():
                 return expr.valueType.type
             if expr.valueType.isIntegral():
+                if (expr.valueType.sign is None) and expr.valueType.type == 'char':
+                    return 'char'
                 return '%s %s' % (expr.valueType.sign, expr.valueType.type)
 
     elif expr.isNumber:
@@ -2082,11 +2086,9 @@ class MisraChecker:
                     elif not isUnsignedType(e2) and not token.astOperand2.isNumber:
                         self.reportError(token, 10, 1)
                 elif token.str in ('~', '&', '|', '^'):
-                    def _is_char(essential_type):
-                        return essential_type and (essential_type.split(' ')[-1] == 'char')
                     e1_et = getEssentialType(token.astOperand1)
                     e2_et = getEssentialType(token.astOperand2)
-                    if _is_char(e1_et) and _is_char(e2_et):
+                    if e1_et == 'char' or e2_et == 'char':
                         self.reportError(token, 10, 1)
 
     def misra_10_2(self, data):
