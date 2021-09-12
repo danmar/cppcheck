@@ -678,6 +678,7 @@ static void misra_10_3(uint32_t u32a, uint32_t u32b) {
     res = (uint16_t)(2U + 3U); // 10.3 10.8
     res = (uint16_t)2U + (uint16_t)3U;
     res = 0.1f; // 10.3
+    const char c = '0'; // no-warning
 }
 
 static void misra_10_4(u32 x, s32 y) {

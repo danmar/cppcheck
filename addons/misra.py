@@ -445,7 +445,7 @@ def getEssentialTypeCategory(expr):
         return "enum<" + expr.valueType.typeScope.className + ">"
     if expr.variable:
         typeToken = expr.variable.typeStartToken
-        while typeToken:
+        while typeToken and typeToken.isName:
             if typeToken.str == 'char' and not typeToken.isSigned and not typeToken.isUnsigned:
                 return 'char'
             if typeToken.valueType:
@@ -506,6 +506,11 @@ def getEssentialType(expr):
         return '%s %s' % (expr.valueType.sign, expr.valueType.type)
 
     if expr.variable or isCast(expr):
+        typeToken = expr.variable.typeStartToken if expr.variable else expr.next
+        while typeToken and typeToken.isName:
+            if typeToken.str == 'char' and not typeToken.isSigned and not typeToken.isUnsigned:
+                return 'char'
+            typeToken = typeToken.next
         if expr.valueType:
             if expr.valueType.type == 'bool':
                 return 'bool'
