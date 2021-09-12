@@ -110,16 +110,9 @@ void CheckBool::checkBitwiseOnBoolean()
 
 void CheckBool::bitwiseOnBooleanError(const Token* tok,
                                       const std::string& expression,
-                                      const std::string& op,
-                                      const std::string& bitwise)
+                                      const std::string& op)
 {
-    std::string msg;
-    if (bitwise.empty())
-        msg = "Boolean expression '" + expression + "' is used in bitwise operation. Did you mean '" + op + "'?";
-    else
-        msg = "Bitwise expression '" + bitwise + "' with boolean expression '" + expression + "' is equivalent to '" +
-              op + "'?";
-    reportError(tok, Severity::style, "bitwiseOnBoolean", msg, CWE398, Certainty::inconclusive);
+    reportError(tok, Severity::style, "bitwiseOnBoolean", "Boolean expression '" + expression + "' is used in bitwise operation. Did you mean '" + op + "'?", CWE398, Certainty::inconclusive);
 }
 
 //---------------------------------------------------------------------------
