@@ -1801,6 +1801,13 @@ private:
             check(code, &s64);
             ASSERT_EQUALS("", errout.str());
         }
+
+        check("Writer* getWriter();\n"
+              "\n"
+              "void foo(Buffer& buffer) {\n"
+              "    getWriter()->operator<<(buffer);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void passedByValue_externC() {
