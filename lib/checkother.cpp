@@ -2988,8 +2988,8 @@ void CheckOther::checkAccessOfMovedVariable()
                 else
                     inconclusive = true;
             } else {
-                const bool isVariableChanged = isVariableChangedByFunctionCall(tok, 0, mSettings, &inconclusive);
-                accessOfMoved = !isVariableChanged && checkUninitVar.isVariableUsage(tok, false, CheckUninitVar::NO_ALLOC);
+                const bool variableChanged = isVariableChangedByFunctionCall(tok, 0, mSettings, &inconclusive);
+                accessOfMoved = !variableChanged && checkUninitVar.isVariableUsage(tok, false, CheckUninitVar::NO_ALLOC);
                 if (inconclusive) {
                     accessOfMoved = !isMovedParameterAllowedForInconclusiveFunction(tok);
                     if (accessOfMoved)
