@@ -45,6 +45,7 @@ private:
         TEST_CASE(template2);
         TEST_CASE(template3);
         TEST_CASE(template4); // #9805
+        TEST_CASE(template5);
         TEST_CASE(throwIsNotAFunction);
         TEST_CASE(unusedError);
         TEST_CASE(unusedMain);
@@ -245,6 +246,18 @@ private:
               "        test();\n"
               "    }\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void template5() { // #9220
+        check("void f(){}\n"
+              "\n"
+              "typedef void(*Filter)();\n"
+              "\n"
+              "template <Filter fun>\n"
+              "void g() { fun(); }\n"
+              "\n"
+              "int main() { g<f>(); return 0;}");
         ASSERT_EQUALS("", errout.str());
     }
 

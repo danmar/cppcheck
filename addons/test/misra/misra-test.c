@@ -600,7 +600,7 @@ static void misra_9_5(void) {
 
 typedef char misra_10_1_char_t;
 #define MISRA_10_1_CHAR char
-static void misra_10_1(uint32_t u, char c1, char c2) {
+static void misra_10_1(uint32_t u, char c1, char c2, uint8_t u8) {
   int32_t i;
   char c;
   enum { E1 = 1 };
@@ -625,6 +625,8 @@ static void misra_10_1(uint32_t u, char c1, char c2) {
   MISRA_10_1_CHAR cd2 = 'b';
   MISRA_10_1_CHAR cd3;
   cd3 = cd1 & cd2; // 10.1
+
+  uint8_t temp1 = u8 & 0x42U; // no-warning
 }
 static void misra_10_1_ternary(void)
 {
@@ -676,6 +678,7 @@ static void misra_10_3(uint32_t u32a, uint32_t u32b) {
     res = (uint16_t)(2U + 3U); // 10.3 10.8
     res = (uint16_t)2U + (uint16_t)3U;
     res = 0.1f; // 10.3
+    const char c = '0'; // no-warning
 }
 
 static void misra_10_4(u32 x, s32 y) {
@@ -705,7 +708,7 @@ static void misra_10_6(u8 x, u32 a, u32 b, char c1, char c2) {
   u16 y = x+x; // 10.6
   u16 z = ~u8 x ;//10.6
   u32 c = ( u16) ( u32 a + u32 b ); //10.6
-  s32 i = c1 - c2; // FIXME: False positive for 10.6 (this is compliant). Trac #9488
+  s32 i = c1 - c2; // 10.3 FIXME: False positive for 10.6 (this is compliant). Trac #9488
 }
 static void misra_10_6_1(uint32_t *a, uint16_t b, uint16_t c)
 {

@@ -197,6 +197,10 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             funcname = tok;
         } else if ((lambdaEndToken || tok->scope()->isExecutable()) && Token::Match(tok, "%name% <") && Token::simpleMatch(tok->linkAt(1), "> (")) {
             funcname = tok;
+        } else if (Token::Match(tok, "< %name%") && tok->link()) {
+            funcname = tok->next();
+            while (Token::Match(funcname, "%name% :: %name%"))
+                funcname = funcname->tokAt(2);
         } else if (Token::Match(tok, "[;{}.,()[=+-/|!?:]")) {
             funcname = tok->next();
             if (funcname && funcname->str() == "&")
