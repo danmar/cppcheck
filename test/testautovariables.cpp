@@ -149,6 +149,7 @@ private:
         TEST_CASE(danglingTemporaryLifetime);
         TEST_CASE(invalidLifetime);
         TEST_CASE(deadPointer);
+        TEST_CASE(splitNamespaceAuto); // crash #10473
     }
 
 
@@ -3192,6 +3193,18 @@ private:
               "    return 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:8]: (error) Using pointer to local variable 'x' that is out of scope.\n", errout.str());
+    }
+
+    void splitNamespaceAuto() { // #10473
+        check("namespace ns\n"
+              "{\n"
+              "    auto var{ 0 };\n"
+              "}\n"
+              "namespace ns\n"
+              "{\n"
+              "    int i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 };

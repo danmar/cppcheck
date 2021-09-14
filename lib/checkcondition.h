@@ -167,7 +167,7 @@ private:
     void assignmentInCondition(const Token *eq);
 
     void checkCompareValueOutOfTypeRange();
-    void compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, long long value);
+    void compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, long long value, bool result);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckCondition c(nullptr, settings, errorLogger);
@@ -192,7 +192,7 @@ private:
         c.pointerAdditionResultNotNullError(nullptr, nullptr);
         c.duplicateConditionalAssignError(nullptr, nullptr);
         c.assignmentInCondition(nullptr);
-        c.compareValueOutOfTypeRangeError(nullptr, "unsigned char", 256);
+        c.compareValueOutOfTypeRangeError(nullptr, "unsigned char", 256, true);
     }
 
     static std::string myName() {
