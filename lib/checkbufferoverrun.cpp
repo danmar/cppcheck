@@ -486,6 +486,9 @@ void CheckBufferOverrun::pointerArithmetic()
             if (const ValueFlow::Value *neg = indexToken->getValueLE(-1, mSettings))
                 pointerArithmeticError(tok, indexToken, neg);
         } else if (tok->str() == "-") {
+            if (arrayToken->variable() && arrayToken->variable()->isArgument())
+                continue;
+
             const Token *array = arrayToken;
             while (Token::Match(array, ".|::"))
                 array = array->astOperand2();
