@@ -1959,10 +1959,24 @@ class MisraChecker:
             if func.tokenDef.str == 'main':
                 continue
             self.reportError(func.tokenDef, 8, 4)
+
+        extern_vars = []
+        var_defs = []
+
         for var in cfg.variables:
-            # extern variable declaration in source file
-            if var.isExtern and var.nameToken and not is_header(var.nameToken.file):
-                self.reportError(var.nameToken, 8, 4)
+            if not var.isGlobal:
+                continue
+            if var.isStatic:
+                continue
+            if var.nameToken is None:
+                continue
+            if var.isExtern:
+                extern_vars.append(var.nameToken)
+            else:
+                var_defs.append(var.nameToken)
+        for vartok in var_defs:
+            if vartok not in extern_vars:
+                self.reportError(vartok, 8, 4)
 
     def misra_8_5(self, dumpfile, cfg):
         self._save_ctu_summary_identifiers(dumpfile, cfg)
