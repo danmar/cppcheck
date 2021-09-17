@@ -127,7 +127,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
     return true;
 }
 
-static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> *bad)
+static void addinlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> *bad)
 {
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (!tok->comment)
@@ -187,10 +187,10 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
     if (!mSettings.inlineSuppressions)
         return;
     std::list<BadInlineSuppression> err;
-    ::inlineSuppressions(tokens, mSettings, &err);
+    ::addinlineSuppressions(tokens, mSettings, &err);
     for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
         if (it->second)
-            ::inlineSuppressions(*it->second, mSettings, &err);
+            ::addinlineSuppressions(*it->second, mSettings, &err);
     }
     for (const BadInlineSuppression &bad : err) {
         error(bad.location.file(), bad.location.line, bad.errmsg);
@@ -292,13 +292,13 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
         if (sameline(iftok,dtok) && dtok->name && defined.find(dtok->str()) == defined.end() && undefined.find(dtok->str()) == undefined.end())
             configset.insert(dtok->str());
     }
-    std::string cfg;
+    std::string cfgStr;
     for (const std::string &s : configset) {
-        if (!cfg.empty())
-            cfg += ';';
-        cfg += s;
+        if (!cfgStr.empty())
+            cfgStr += ';';
+        cfgStr += s;
     }
-    return cfg;
+    return cfgStr;
 }
 
 static bool hasDefine(const std::string &userDefines, const std::string &cfg)
@@ -324,16 +324,16 @@ static std::string cfg(const std::vector<std::string> &configs, const std::strin
 {
     std::set<std::string> configs2(configs.begin(), configs.end());
     std::string ret;
-    for (const std::string &cfg : configs2) {
-        if (cfg.empty())
+    for (const std::string &c : configs2) {
+        if (c.empty())
             continue;
-        if (cfg == "0")
+        if (c == "0")
             return "";
-        if (hasDefine(userDefines, cfg))
+        if (hasDefine(userDefines, c))
             continue;
         if (!ret.empty())
             ret += ';';
-        ret += cfg;
+        ret += c;
     }
     return ret;
 }
@@ -552,9 +552,9 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
 
     const std::set<std::string> configs = getConfigs(tokens1);
 
-    for (const std::string &cfg : configs) {
-        if (mSettings.userUndefs.find(cfg) == mSettings.userUndefs.end()) {
-            result[cfg] = getcode(tokens1, cfg, files, false);
+    for (const std::string &c : configs) {
+        if (mSettings.userUndefs.find(c) == mSettings.userUndefs.end()) {
+            result[c] = getcode(tokens1, c, files, false);
         }
     }
 }
