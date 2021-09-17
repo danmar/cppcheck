@@ -7036,8 +7036,9 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
                                                      bool known = true)
 {
     std::vector<const Token*> args = getArguments(tok);
-    // Strings don't use an init list
     if (!args.empty() && container->stdStringLike) {
+        if (args[0]->tokType() == Token::Type::eChar) // init list of chars
+          return { makeContainerSizeValue(args.size(), known) };
         if (astIsIntegral(args[0], false)) {
             if (args.size() > 1)
                 return {makeContainerSizeValue(args[0], known)};
