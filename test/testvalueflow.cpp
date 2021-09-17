@@ -5613,6 +5613,13 @@ private:
                "    return v;\n"
                "}\n";
         ASSERT_EQUALS(true, tokenValues(code, "v [ 0 ] != 0 ) { }", ValueFlow::Value::ValueType::CONTAINER_SIZE).empty());
+
+        code = "int f(std::wsregex_token_iterator it) {\n"
+               "    std::vector<std::wstring> w{ it, {} };\n"
+               "    int x = w.size();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, 0));
     }
 
     void valueFlowDynamicBufferSize() {

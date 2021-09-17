@@ -6949,7 +6949,7 @@ static std::vector<ValueFlow::Value> makeContainerSizeValue(const Token* tok, bo
     return {};
 }
 
-static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
+static std::vector<ValueFlow::Value> getInitListSize(const std::vector<const Token*>& args,
                                                      const Library::Container* container,
                                                      bool known = true)
 {
@@ -7006,9 +7006,15 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
         values.back().valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
         if (known)
             values.back().setKnown();
-        if (Token::simpleMatch(var->nameToken()->next(), "{")) {
+        if (Token::simpleMatch(var->nameToken()->next(), "{")) { // TODO: distinguish uniform initialization from init lists
             const Token* initList = var->nameToken()->next();
-            values = getInitListSize(initList, var->valueType()->container, known);
+            const std::vector<const Token*> args = getArguments(initList);
+
+            // call to constructor taking two iterators (not an init list)
+            if (args.size() == 2 && args[0]->variable() && args[0]->variable()->isStlType() && endsWith(args[0]->variable()->getTypeName(), "iterator", 8))
+                continue;
+
+            values = getInitListSize(args, var->valueType()->container, known);
         }
         for (const ValueFlow::Value& value : values)
             valueFlowContainerForward(var->nameToken()->next(), var->nameToken(), value, tokenlist);
@@ -7037,7 +7043,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                 if (containerTok->exprId() == 0)
                     continue;
                 if (astIsContainer(containerTok) && containerTok->valueType()->container->size_templateArgNo < 0) {
-                    std::vector<ValueFlow::Value> values = getInitListSize(tok->tokAt(3), containerTok->valueType()->container);
+                    std::vector<ValueFlow::Value> values = getInitListSize(getArguments(tok->tokAt(3)), containerTok->valueType()->container);
                     for (const ValueFlow::Value& value : values)
                         valueFlowContainerForward(containerTok->next(), containerTok, value, tokenlist);
                 }
