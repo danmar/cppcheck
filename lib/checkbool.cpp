@@ -72,6 +72,13 @@ void CheckBool::incrementBooleanError(const Token *tok)
         );
 }
 
+static bool isConvertedToBool(const Token* tok)
+{
+    if (!tok->astParent())
+        return false;
+    return astIsBool(tok->astParent()) || Token::Match(tok->astParent()->previous(), "if|while (");
+}
+
 //---------------------------------------------------------------------------
 // if (bool & bool) -> if (bool && bool)
 // if (bool | bool) -> if (bool || bool)
@@ -90,9 +97,9 @@ void CheckBool::checkBitwiseOnBoolean()
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->isBinaryOp() && (tok->str() == "&" || tok->str() == "|")) {
-                if (tok->str() == "&" && !(astIsBool(tok->astOperand1()) || astIsBool(tok->astOperand2())))
+                if (!(astIsBool(tok->astOperand1()) || astIsBool(tok->astOperand2())))
                     continue;
-                if (tok->str() == "|" && !(astIsBool(tok->astOperand1()) && astIsBool(tok->astOperand2())))
+                if (tok->str() == "|" && !isConvertedToBool(tok) && !(astIsBool(tok->astOperand1()) && astIsBool(tok->astOperand2())))
                     continue;
                 if (!isConstExpression(tok->astOperand1(), mSettings->library, true, mTokenizer->isCPP()))
                     continue;
