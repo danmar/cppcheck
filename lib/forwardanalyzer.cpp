@@ -67,7 +67,7 @@ struct ForwardTraversal {
         std::vector<int> result = analyzer->evaluate(tok, ctx);
         // TODO: We should convert to bool
         bool checkThen = std::any_of(result.begin(), result.end(), [](int x) {
-            return x == 1;
+            return x != 0;
         });
         bool checkElse = std::any_of(result.begin(), result.end(), [](int x) {
             return x == 0;
