@@ -121,6 +121,7 @@ private:
         TEST_CASE(nullpointer79); // #10400
         TEST_CASE(nullpointer80); // #10410
         TEST_CASE(nullpointer81); // #8724
+        TEST_CASE(nullpointer82); // #10331
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2470,6 +2471,26 @@ private:
               "      tmp_List->next = malloc (sizeof (ArchiveList_struct));\n"
               "    }\n"
               "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer82() // #10331
+    {
+        check("bool g();\n"
+              "int* h();\n"
+              "void f(int* ptr) {\n"
+              "    if (!ptr) {\n"
+              "        if (g())\n"
+              "            goto done;\n"
+              "        ptr = h();\n"
+              "        if (!ptr)\n"
+              "            return;\n"
+              "    }\n"
+              "    if (*ptr == 1)\n"
+              "        return;\n"
+              "\n"
+              "done:\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

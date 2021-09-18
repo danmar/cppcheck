@@ -5315,6 +5315,7 @@ struct ConditionHandler {
                     startTokens[1] = top->link()->linkAt(1)->tokAt(2);
 
                 int changeBlock = -1;
+                int bailBlock = -1;
 
                 for (int i = 0; i < 2; i++) {
                     const Token* const startToken = startTokens[i];
@@ -5328,6 +5329,8 @@ struct ConditionHandler {
                     deadBranch[i] = r.terminate == Analyzer::Terminate::Escape;
                     if (r.action.isModified() && !deadBranch[i])
                         changeBlock = i;
+                    if (r.terminate != Analyzer::Terminate::None && r.terminate != Analyzer::Terminate::Escape && r.terminate != Analyzer::Terminate::Modified)
+                        bailBlock = i;
                     changeKnownToPossible(values);
                 }
                 if (changeBlock >= 0 && !Token::simpleMatch(top->previous(), "while (")) {
@@ -5337,6 +5340,13 @@ struct ConditionHandler {
                                 startTokens[changeBlock]->link(),
                                 "valueFlowAfterCondition: " + cond.vartok->expressionString() +
                                 " is changed in conditional block");
+                    return;
+                } else if (bailBlock >= 0) {
+                    if (settings->debugwarnings)
+                        bailout(tokenlist,
+                                errorLogger,
+                                startTokens[bailBlock]->link(),
+                                "valueFlowAfterCondition: bailing in conditional block");
                     return;
                 }
 

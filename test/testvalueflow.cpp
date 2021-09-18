@@ -1703,7 +1703,8 @@ private:
                 "    if (x==123){}\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n",
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n"
+            "[test.cpp:2]: (debug) valueflow.cpp::(valueFlow) bailout: valueFlowAfterCondition: bailing in conditional block\n",
             errout.str());
 
         // #5721 - FP
@@ -2952,6 +2953,18 @@ private:
                "    return 0;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
+
+        code = "int f(int x) {\n"
+                "    if (x == 1) {\n"
+                "        for(int i=0;i<1;i++) {\n"
+                "            if (x == 1)\n"
+                "                continue;\n"
+                "        }\n"
+                "    }\n"
+                "    return x;\n"
+                "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 8U, 1));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 8U, 1));
     }
 
     void valueFlowAfterConditionExpr() {
