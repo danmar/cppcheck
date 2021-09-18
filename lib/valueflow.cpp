@@ -724,9 +724,6 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
             v.conditional = true;
             v.changeKnownToPossible();
 
-            if (varId)
-                v.varId = varId;
-
             setTokenValue(parent, v, settings);
         }
     }
