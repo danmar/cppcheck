@@ -2955,14 +2955,14 @@ private:
         ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
 
         code = "int f(int x) {\n"
-                "    if (x == 1) {\n"
-                "        for(int i=0;i<1;i++) {\n"
-                "            if (x == 1)\n"
-                "                continue;\n"
-                "        }\n"
-                "    }\n"
-                "    return x;\n"
-                "}\n";
+               "    if (x == 1) {\n"
+               "        for(int i=0;i<1;i++) {\n"
+               "            if (x == 1)\n"
+               "                continue;\n"
+               "        }\n"
+               "    }\n"
+               "    return x;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 8U, 1));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 8U, 1));
     }

@@ -5329,7 +5329,8 @@ struct ConditionHandler {
                     deadBranch[i] = r.terminate == Analyzer::Terminate::Escape;
                     if (r.action.isModified() && !deadBranch[i])
                         changeBlock = i;
-                    if (r.terminate != Analyzer::Terminate::None && r.terminate != Analyzer::Terminate::Escape && r.terminate != Analyzer::Terminate::Modified)
+                    if (r.terminate != Analyzer::Terminate::None && r.terminate != Analyzer::Terminate::Escape &&
+                        r.terminate != Analyzer::Terminate::Modified)
                         bailBlock = i;
                     changeKnownToPossible(values);
                 }

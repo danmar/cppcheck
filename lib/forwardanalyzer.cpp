@@ -102,8 +102,7 @@ struct ForwardTraversal {
             // If we are in a loop then jump to the end
             if (out)
                 *out = loopEnds.back();
-        }
-        else if (Token::Match(tok, "return|throw") || isEscapeFunction(tok, &settings->library)) {
+        } else if (Token::Match(tok, "return|throw") || isEscapeFunction(tok, &settings->library)) {
             traverseRecursive(tok->astOperand1(), f, traverseUnknown);
             traverseRecursive(tok->astOperand2(), f, traverseUnknown);
             return Break(Analyzer::Terminate::Escape);
@@ -379,8 +378,8 @@ struct ForwardTraversal {
     Progress updateInnerLoop(Token* endBlock, Token* stepTok, Token* condTok) {
         loopEnds.push_back(endBlock);
         OnExit oe{[&] {
-            loopEnds.pop_back();
-        }};
+                loopEnds.pop_back();
+            }};
         if (endBlock && updateScope(endBlock) == Progress::Break)
             return Break();
         if (stepTok && updateRecursive(stepTok) == Progress::Break)
