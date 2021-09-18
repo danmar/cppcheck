@@ -3928,9 +3928,9 @@ private:
 
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
-        CheckNullPointer check(&tokenizer, &settings, this);
-        fileInfo.push_back(check.getFileInfo(&tokenizer, &settings));
-        check.analyseWholeProgram(ctu, fileInfo, settings, *this);
+        CheckNullPointer checkNullPointer(&tokenizer, &settings, this);
+        fileInfo.push_back(checkNullPointer.getFileInfo(&tokenizer, &settings));
+        checkNullPointer.analyseWholeProgram(ctu, fileInfo, settings, *this);
         while (!fileInfo.empty()) {
             delete fileInfo.back();
             fileInfo.pop_back();

@@ -1809,26 +1809,49 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
 
                 const auto typeMinValue = (typeTok->valueType()->sign == ValueType::Sign::UNSIGNED) ? 0 : (-(1LL << (bits-1)));
                 const auto unsignedTypeMaxValue = (1LL << bits) - 1LL;
-                const auto typeMaxValue = (typeTok->valueType()->sign != ValueType::Sign::SIGNED || bits >= mSettings->int_bit) ?
-                                          unsignedTypeMaxValue : // unsigned type. signed int/long/long long; comparing sign bit is ok. i.e. 'i == 0xffffffff'
-                                          (unsignedTypeMaxValue / 2); // signed char/short
+                long long typeMaxValue;
+                if (typeTok->valueType()->sign != ValueType::Sign::SIGNED)
+                    typeMaxValue = unsignedTypeMaxValue;
+                else if (bits >= mSettings->int_bit && (!valueTok->valueType() || valueTok->valueType()->sign != ValueType::Sign::SIGNED))
+                    typeMaxValue = unsignedTypeMaxValue;
+                else
+                    typeMaxValue = unsignedTypeMaxValue / 2;
 
-                if (valueTok->getKnownIntValue() < typeMinValue)
-                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), valueTok->getKnownIntValue());
+                bool result;
+                if (tok->str() == "==")
+                    result = false;
+                else if (tok->str() == "!=")
+                    result = true;
+                else if (tok->str()[0] == '>' && i == 0)
+                    // num > var
+                    result = (valueTok->getKnownIntValue() > 0);
+                else if (tok->str()[0] == '>' && i == 1)
+                    // var > num
+                    result = (valueTok->getKnownIntValue() < 0);
+                else if (tok->str()[0] == '<' && i == 0)
+                    // num < var
+                    result = (valueTok->getKnownIntValue() < 0);
+                else if (tok->str()[0] == '<' && i == 1)
+                    // var < num
+                    result = (valueTok->getKnownIntValue() > 0);
+
+                if (valueTok->getKnownIntValue() < typeMinValue) {
+                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), valueTok->getKnownIntValue(), result);
+                }
                 else if (valueTok->getKnownIntValue() > typeMaxValue)
-                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), valueTok->getKnownIntValue());
+                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), valueTok->getKnownIntValue(), result);
             }
         }
     }
 }
 
-void CheckCondition::compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, long long value)
+void CheckCondition::compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, long long value, bool result)
 {
     reportError(
         comparison,
         Severity::style,
         "compareValueOutOfTypeRangeError",
-        "Comparing expression of type '" + type + "' against value " + std::to_string(value) + ". Condition is always true/false.",
+        "Comparing expression of type '" + type + "' against value " + std::to_string(value) + ". Condition is always " + (result ? "true" : "false") + ".",
         CWE398,
         Certainty::normal);
 }

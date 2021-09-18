@@ -1801,6 +1801,13 @@ private:
             check(code, &s64);
             ASSERT_EQUALS("", errout.str());
         }
+
+        check("Writer* getWriter();\n"
+              "\n"
+              "void foo(Buffer& buffer) {\n"
+              "    getWriter()->operator<<(buffer);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void passedByValue_externC() {
@@ -2749,6 +2756,13 @@ private:
 
         check("class Base { virtual void dostuff(int *p) = 0; };\n" // #10397
               "class Derived: public Base { int x; void dostuff(int *p) override { x = *p; } };");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Data { char buf[128]; };\n" // #10483
+              "void encrypt(Data& data) {\n"
+              "    const char a[] = \"asfasd\";\n"
+              "    memcpy(data.buf, &a, sizeof(a));\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -445,7 +445,9 @@ def getEssentialTypeCategory(expr):
         return "enum<" + expr.valueType.typeScope.className + ">"
     if expr.variable:
         typeToken = expr.variable.typeStartToken
-        while typeToken:
+        while typeToken and typeToken.isName:
+            if typeToken.str == 'char' and not typeToken.isSigned and not typeToken.isUnsigned:
+                return 'char'
             if typeToken.valueType:
                 if typeToken.valueType.type == 'bool':
                     return typeToken.valueType.type
@@ -504,12 +506,19 @@ def getEssentialType(expr):
         return '%s %s' % (expr.valueType.sign, expr.valueType.type)
 
     if expr.variable or isCast(expr):
+        typeToken = expr.variable.typeStartToken if expr.variable else expr.next
+        while typeToken and typeToken.isName:
+            if typeToken.str == 'char' and not typeToken.isSigned and not typeToken.isUnsigned:
+                return 'char'
+            typeToken = typeToken.next
         if expr.valueType:
             if expr.valueType.type == 'bool':
                 return 'bool'
             if expr.valueType.isFloat():
                 return expr.valueType.type
             if expr.valueType.isIntegral():
+                if (expr.valueType.sign is None) and expr.valueType.type == 'char':
+                    return 'char'
                 return '%s %s' % (expr.valueType.sign, expr.valueType.type)
 
     elif expr.isNumber:
@@ -559,19 +568,19 @@ def getEssentialType(expr):
 def bitsOfEssentialType(ty):
     if ty is None:
         return 0
-    ty = ty.split(' ')[-1]
-    if ty == 'Boolean':
+    last_type = ty.split(' ')[-1]
+    if last_type == 'Boolean':
         return 1
-    if ty == 'char':
+    if last_type == 'char':
         return typeBits['CHAR']
-    if ty == 'short':
+    if last_type == 'short':
         return typeBits['SHORT']
-    if ty == 'int':
+    if last_type == 'int':
         return typeBits['INT']
-    if ty == 'long':
-        return typeBits['LONG']
-    if ty == 'long long':
+    if ty.endswith('long long'):
         return typeBits['LONG_LONG']
+    if last_type == 'long':
+        return typeBits['LONG']
     for sty in STDINT_TYPES:
         if ty == sty:
             return int(''.join(filter(str.isdigit, sty)))
@@ -1950,10 +1959,24 @@ class MisraChecker:
             if func.tokenDef.str == 'main':
                 continue
             self.reportError(func.tokenDef, 8, 4)
+
+        extern_vars = []
+        var_defs = []
+
         for var in cfg.variables:
-            # extern variable declaration in source file
-            if var.isExtern and var.nameToken and not is_header(var.nameToken.file):
-                self.reportError(var.nameToken, 8, 4)
+            if not var.isGlobal:
+                continue
+            if var.isStatic:
+                continue
+            if var.nameToken is None:
+                continue
+            if var.isExtern:
+                extern_vars.append(var.nameToken)
+            else:
+                var_defs.append(var.nameToken)
+        for vartok in var_defs:
+            if vartok not in extern_vars:
+                self.reportError(vartok, 8, 4)
 
     def misra_8_5(self, dumpfile, cfg):
         self._save_ctu_summary_identifiers(dumpfile, cfg)
@@ -2082,11 +2105,9 @@ class MisraChecker:
                     elif not isUnsignedType(e2) and not token.astOperand2.isNumber:
                         self.reportError(token, 10, 1)
                 elif token.str in ('~', '&', '|', '^'):
-                    def _is_char(essential_type):
-                        return essential_type and (essential_type.split(' ')[-1] == 'char')
                     e1_et = getEssentialType(token.astOperand1)
                     e2_et = getEssentialType(token.astOperand2)
-                    if _is_char(e1_et) and _is_char(e2_et):
+                    if e1_et == 'char' or e2_et == 'char':
                         self.reportError(token, 10, 1)
 
     def misra_10_2(self, data):
