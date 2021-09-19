@@ -568,19 +568,19 @@ def getEssentialType(expr):
 def bitsOfEssentialType(ty):
     if ty is None:
         return 0
-    ty = ty.split(' ')[-1]
-    if ty == 'Boolean':
+    last_type = ty.split(' ')[-1]
+    if last_type == 'Boolean':
         return 1
-    if ty == 'char':
+    if last_type == 'char':
         return typeBits['CHAR']
-    if ty == 'short':
+    if last_type == 'short':
         return typeBits['SHORT']
-    if ty == 'int':
+    if last_type == 'int':
         return typeBits['INT']
-    if ty == 'long':
-        return typeBits['LONG']
-    if ty == 'long long':
+    if ty.endswith('long long'):
         return typeBits['LONG_LONG']
+    if last_type == 'long':
+        return typeBits['LONG']
     for sty in STDINT_TYPES:
         if ty == sty:
             return int(''.join(filter(str.isdigit, sty)))
