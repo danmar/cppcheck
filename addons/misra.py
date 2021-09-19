@@ -1695,7 +1695,7 @@ class MisraChecker:
             isExplicitlySignedOrUnsigned = False
             typeToken = token.variable.typeStartToken
             while typeToken:
-                if typeToken.isUnsigned or typeToken.isSigned:
+                if typeToken.isUnsigned or typeToken.isSigned or isUnsignedType(typeToken.str):
                     isExplicitlySignedOrUnsigned = True
                     break
 
