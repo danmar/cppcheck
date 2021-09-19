@@ -679,7 +679,7 @@ static void misra_10_3(uint32_t u32a, uint32_t u32b) {
     uint8_t res;
     res = u32a + u32b; // 10.3
     res = (uint16_t)(2U + 3U); // 10.3 10.8
-    res = (uint16_t)2U + (uint16_t)3U;
+    res = 2U + 3U; // no warning, utlr=unsigned char
     res = 0.1f; // 10.3
     const char c = '0'; // no-warning
 }
@@ -725,6 +725,7 @@ static void misra_10_7(uint16_t u16a, uint16_t u16b) {
     res = u32a * ( ( uint32_t ) u16a + u16b ); // no-warning
     res = u32a * (u16a + u16b); // 10.7
     u32a *= u16a + u16b; // 10.7
+    u32a = ((uint32_t)4 * (uint32_t)2 * (uint32_t)4 ); // no-warning (#10488)
 }
 
 static void misra_10_8(u8 x, s32 a, s32 b) {

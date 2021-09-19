@@ -617,11 +617,15 @@ def isCast(expr):
 def is_constant_integer_expression(expr):
     if expr is None:
         return False
+    if expr.isInt:
+        return True
+    if not expr.isArithmeticalOp:
+        return False
     if expr.astOperand1 and not is_constant_integer_expression(expr.astOperand1):
         return False
     if expr.astOperand2 and not is_constant_integer_expression(expr.astOperand2):
         return False
-    return expr.astOperand1 or expr.astOperand2 or expr.isInt
+    return True
 
 def isFunctionCall(expr, std='c99'):
     if not expr:
