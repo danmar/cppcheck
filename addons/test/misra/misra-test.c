@@ -252,6 +252,7 @@ struct struct_with_bitfields
   signed long  f:2; // 6.1 - signed long not compliant
   unsigned int g:1; // Compliant
   signed int   h:1; // 6.2 - signed int with size 1 is not compliant
+  uint16_t     i:1; // Compliant
 };
 
 static void misra6_1_fn(void) {
