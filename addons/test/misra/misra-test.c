@@ -124,7 +124,7 @@ int misra_5_1_var_hides_var________d; //5.1 8.4
 int misra_5_1_var_hides_var________e; //5.1 8.4
 
 extern const uint8_t misra_5_2_var1;
-const uint8_t        misra_5_2_var1 = 3; // 8.4
+const uint8_t        misra_5_2_var1 = 3;
 static int misra_5_2_var_hides_var______31x;
 static int misra_5_2_var_hides_var______31y;//5.2
 static int misra_5_2_function_hides_var_31x;
@@ -382,9 +382,12 @@ static int misra_8_2_q
 void misra_8_4_foo(void) {} // 8.4
 static void misra_8_4_bar(void) {} // Declared in header
 extern int16_t misra_8_4_count; // no-warning
-int16_t misra_8_4_count = 0; // 8.4
+int16_t misra_8_4_count = 0; // Compliant
 extern uint8_t misra_8_4_buf1[13]; // no-warning
 uint8_t misra_8_4_buf2[24]; // 8.4
+typedef struct { uint16_t a; uint16_t b; } misra_8_4_struct;
+extern misra_8_4_struct bar[42];
+misra_8_4_struct bar[42]; // compliant
 
 static int32_t misra_8_8 = 123;
 extern int32_t misra_8_8; // 8.8

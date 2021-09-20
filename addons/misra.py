@@ -1975,11 +1975,11 @@ class MisraChecker:
             if var.nameToken is None:
                 continue
             if var.isExtern:
-                extern_vars.append(var.nameToken)
+                extern_vars.append(var.nameToken.str)
             else:
                 var_defs.append(var.nameToken)
         for vartok in var_defs:
-            if vartok not in extern_vars:
+            if vartok.str not in extern_vars:
                 self.reportError(vartok, 8, 4)
 
     def misra_8_5(self, dumpfile, cfg):
