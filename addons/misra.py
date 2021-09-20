@@ -2265,7 +2265,8 @@ class MisraChecker:
                     e = getEssentialType(token.astOperand2)
                 if not e:
                     continue
-                if bitsOfEssentialType(vt1.type) > bitsOfEssentialType(e):
+                lhsbits = vt1.bits if vt1.bits else bitsOfEssentialType(vt1.type)
+                if lhsbits > bitsOfEssentialType(e):
                     self.reportError(token, 10, 6)
             except ValueError:
                 pass

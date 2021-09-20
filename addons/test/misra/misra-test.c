@@ -707,11 +707,16 @@ static void misra_10_5(uint16_t x) {
     res = (float) 'x';
 }
 
+struct misra_10_6_s {
+    unsigned int a:4;
+};
 static void misra_10_6(u8 x, u32 a, u32 b, char c1, char c2) {
   u16 y = x+x; // 10.6
   u16 z = ~u8 x ;//10.6
   u32 c = ( u16) ( u32 a + u32 b ); //10.6
   s32 i = c1 - c2; // 10.3 FIXME: False positive for 10.6 (this is compliant). Trac #9488
+  struct misra_10_6_s s;
+  s.a = x & 1U; // no-warning (#10487)
 }
 static void misra_10_6_1(uint32_t *a, uint16_t b, uint16_t c)
 {
