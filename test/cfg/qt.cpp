@@ -281,7 +281,7 @@ QVector<int>::iterator QVector2()
 
 void duplicateExpression_QString_Compare(QString style) //#8723
 {
-	// cppcheck-suppress duplicateExpression
+    // cppcheck-suppress duplicateExpression
     if (style.compare( "x", Qt::CaseInsensitive ) == 0 || style.compare( "x", Qt::CaseInsensitive ) == 0)
     {}
 }

@@ -124,7 +124,7 @@ int misra_5_1_var_hides_var________d; //5.1 8.4
 int misra_5_1_var_hides_var________e; //5.1 8.4
 
 extern const uint8_t misra_5_2_var1;
-const uint8_t        misra_5_2_var1 = 3; // 8.4
+const uint8_t        misra_5_2_var1 = 3;
 static int misra_5_2_var_hides_var______31x;
 static int misra_5_2_var_hides_var______31y;//5.2
 static int misra_5_2_function_hides_var_31x;
@@ -382,9 +382,12 @@ static int misra_8_2_q
 void misra_8_4_foo(void) {} // 8.4
 static void misra_8_4_bar(void) {} // Declared in header
 extern int16_t misra_8_4_count; // no-warning
-int16_t misra_8_4_count = 0; // 8.4
+int16_t misra_8_4_count = 0; // Compliant
 extern uint8_t misra_8_4_buf1[13]; // no-warning
 uint8_t misra_8_4_buf2[24]; // 8.4
+typedef struct { uint16_t a; uint16_t b; } misra_8_4_struct;
+extern misra_8_4_struct bar[42];
+misra_8_4_struct bar[42]; // compliant
 
 static int32_t misra_8_8 = 123;
 extern int32_t misra_8_8; // 8.8
@@ -679,7 +682,7 @@ static void misra_10_3(uint32_t u32a, uint32_t u32b) {
     uint8_t res;
     res = u32a + u32b; // 10.3
     res = (uint16_t)(2U + 3U); // 10.3 10.8
-    res = (uint16_t)2U + (uint16_t)3U;
+    res = 2U + 3U; // no warning, utlr=unsigned char
     res = 0.1f; // 10.3
     const char c = '0'; // no-warning
 }
@@ -707,11 +710,16 @@ static void misra_10_5(uint16_t x) {
     res = (float) 'x';
 }
 
+struct misra_10_6_s {
+    unsigned int a:4;
+};
 static void misra_10_6(u8 x, u32 a, u32 b, char c1, char c2) {
   u16 y = x+x; // 10.6
   u16 z = ~u8 x ;//10.6
   u32 c = ( u16) ( u32 a + u32 b ); //10.6
   s32 i = c1 - c2; // 10.3 FIXME: False positive for 10.6 (this is compliant). Trac #9488
+  struct misra_10_6_s s;
+  s.a = x & 1U; // no-warning (#10487)
 }
 static void misra_10_6_1(uint32_t *a, uint16_t b, uint16_t c)
 {
@@ -725,6 +733,7 @@ static void misra_10_7(uint16_t u16a, uint16_t u16b) {
     res = u32a * ( ( uint32_t ) u16a + u16b ); // no-warning
     res = u32a * (u16a + u16b); // 10.7
     u32a *= u16a + u16b; // 10.7
+    u32a = ((uint32_t)4 * (uint32_t)2 * (uint32_t)4 ); // no-warning (#10488)
 }
 
 static void misra_10_8(u8 x, s32 a, s32 b) {

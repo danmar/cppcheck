@@ -14,7 +14,7 @@ def reportError(location, severity, message, errorId=None):
     cppcheckdata.reportError(location, severity, message, __addon_name__, errorId or __errorid__)
 
 def runcheckers():
-    # If there are no checkers then dont run
+    # If there are no checkers then don't run
     if len(__checkers__) == 0:
         return
     global __addon_name__
