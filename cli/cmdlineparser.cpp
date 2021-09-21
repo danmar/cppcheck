@@ -1028,7 +1028,7 @@ void CmdLineParser::printHelp()
         "                                  Enable warning messages\n"
         "                          * style\n"
         "                                  Enable all coding style checks. All messages\n"
-        "                                  with the severities 'style', 'performance' and\n"
+        "                                  with the severities 'warning', 'performance' and\n"
         "                                  'portability' are enabled.\n"
         "                          * performance\n"
         "                                  Enable performance messages\n"
