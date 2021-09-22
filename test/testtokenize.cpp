@@ -3304,6 +3304,32 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> . f (")->link());
         }
+
+        {
+            // #10491
+            const char code[] = "template <template <class> class> struct a;\n";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< class");
+            const Token* tok2 = Token::findsimplematch(tok1, "> class");
+            ASSERT_EQUALS(true, tok1->link() == tok2);
+            ASSERT_EQUALS(true, tok2->link() == tok1);
+        }
+
+        {
+            // #10491
+            const char code[] = "template <template <class> class> struct a;\n";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< template");
+            const Token* tok2 = Token::findsimplematch(tok1, "> struct");
+            ASSERT_EQUALS(true, tok1->link() == tok2);
+            ASSERT_EQUALS(true, tok2->link() == tok1);
+        }
     }
 
     void simplifyString() {
