@@ -1693,7 +1693,7 @@ class MisraChecker:
                 continue
 
             if data.standards.c == 'c89':
-                if token.valueType.type != 'int':
+                if token.valueType.type != 'int' and  not isUnsignedType(token.variable.typeStartToken.str):
                     self.reportError(token, 6, 1)
             elif data.standards.c == 'c99':
                 if token.valueType.type == 'bool':
@@ -1702,7 +1702,7 @@ class MisraChecker:
             isExplicitlySignedOrUnsigned = False
             typeToken = token.variable.typeStartToken
             while typeToken:
-                if typeToken.isUnsigned or typeToken.isSigned:
+                if typeToken.isUnsigned or typeToken.isSigned or isUnsignedType(typeToken.str):
                     isExplicitlySignedOrUnsigned = True
                     break
 
