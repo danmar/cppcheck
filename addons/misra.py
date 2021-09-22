@@ -443,8 +443,11 @@ def getEssentialTypeCategory(expr):
             return expr.valueType.sign
     if expr.valueType and expr.valueType.typeScope and expr.valueType.typeScope.className:
         return "enum<" + expr.valueType.typeScope.className + ">"
-    if expr.variable:
-        typeToken = expr.variable.typeStartToken
+    vartok = expr
+    while simpleMatch(vartok, '[') or (vartok and vartok.str == '*' and vartok.astOperand2 is None):
+        vartok = vartok.astOperand1
+    if vartok and vartok.variable:
+        typeToken = vartok.variable.typeStartToken
         while typeToken and typeToken.isName:
             if typeToken.str == 'char' and not typeToken.isSigned and not typeToken.isUnsigned:
                 return 'char'
