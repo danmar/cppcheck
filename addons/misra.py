@@ -443,8 +443,11 @@ def getEssentialTypeCategory(expr):
             return expr.valueType.sign
     if expr.valueType and expr.valueType.typeScope and expr.valueType.typeScope.className:
         return "enum<" + expr.valueType.typeScope.className + ">"
-    if expr.variable:
-        typeToken = expr.variable.typeStartToken
+    vartok = expr
+    while simpleMatch(vartok, '[') or (vartok and vartok.str == '*' and vartok.astOperand2 is None):
+        vartok = vartok.astOperand1
+    if vartok and vartok.variable:
+        typeToken = vartok.variable.typeStartToken
         while typeToken and typeToken.isName:
             if typeToken.str == 'char' and not typeToken.isSigned and not typeToken.isUnsigned:
                 return 'char'
@@ -456,6 +459,13 @@ def getEssentialTypeCategory(expr):
                 if typeToken.valueType.sign:
                     return typeToken.valueType.sign
             typeToken = typeToken.next
+
+    # See Appendix D, section D.6, Character constants
+    if expr.str[0] == "'" and expr.str[-1] == "'":
+        if len(expr.str) == 3 or (len(expr.str) == 4 and expr.str[1] == '\\'):
+            return 'char'
+        return expr.valueType.sign
+
     if expr.valueType:
         return expr.valueType.sign
     return None
@@ -1690,7 +1700,7 @@ class MisraChecker:
                 continue
 
             if data.standards.c == 'c89':
-                if token.valueType.type != 'int':
+                if token.valueType.type != 'int' and  not isUnsignedType(token.variable.typeStartToken.str):
                     self.reportError(token, 6, 1)
             elif data.standards.c == 'c99':
                 if token.valueType.type == 'bool':
@@ -1699,7 +1709,7 @@ class MisraChecker:
             isExplicitlySignedOrUnsigned = False
             typeToken = token.variable.typeStartToken
             while typeToken:
-                if typeToken.isUnsigned or typeToken.isSigned:
+                if typeToken.isUnsigned or typeToken.isSigned or isUnsignedType(typeToken.str):
                     isExplicitlySignedOrUnsigned = True
                     break
 

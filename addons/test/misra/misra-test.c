@@ -252,6 +252,7 @@ struct struct_with_bitfields
   signed long  f:2; // 6.1 - signed long not compliant
   unsigned int g:1; // Compliant
   signed int   h:1; // 6.2 - signed int with size 1 is not compliant
+  uint16_t     i:1; // Compliant
 };
 
 static void misra6_1_fn(void) {
@@ -668,13 +669,13 @@ static void misra_10_2(void) {
     float f32a = 0.0;
     char res;
 
-    res = '0' + u8a; // 10.4
+    res = '0' + u8a; // Convert u8a to digit
     res = s8a + '0';
     res = cha - '0';
     res = '0' - s8a;
     res = cha + ':'; // 10.2
 
-    res = s16a - 'a'; // 10.2 10.3
+    res = s16a - 'a'; // 10.2 10.3 10.4
     res = '0' + f32a; // 10.2 10.4
 }
 
@@ -698,6 +699,12 @@ static void misra_10_4(u32 x, s32 y) {
   z = x + y; //10.4
   z = (a == misra_10_4_A3) ? x : y; //10.4
   z = (a == misra_10_4_A3) ? y : y; // no-warning
+  
+  // #10499
+  const char buf[10] = {0};
+  if ('0' == buf[x]) // no-warning
+  {
+  }
 }
 
 static void misra_10_5(uint16_t x) {

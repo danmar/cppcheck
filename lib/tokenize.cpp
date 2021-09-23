@@ -4482,6 +4482,7 @@ void Tokenizer::createLinks2()
     bool isStruct = false;
 
     std::stack<Token*> type;
+    std::stack<Token*> templateTokens;
     for (Token *token = list.front(); token; token = token->next()) {
         if (Token::Match(token, "%name%|> %name% [:<]"))
             isStruct = true;
@@ -4493,14 +4494,14 @@ void Tokenizer::createLinks2()
                 type.push(token);
             else if (!type.empty() && Token::Match(token, "}|]|)")) {
                 while (type.top()->str() == "<") {
-                    if (templateToken && templateToken->next() == type.top())
-                        templateToken = nullptr;
+                    if (!templateTokens.empty() && templateTokens.top()->next() == type.top())
+                        templateTokens.pop();
                     type.pop();
                 }
                 type.pop();
             } else
                 token->link(nullptr);
-        } else if (!templateToken && !isStruct && Token::Match(token, "%oror%|&&|;")) {
+        } else if (templateTokens.empty() && !isStruct && Token::Match(token, "%oror%|&&|;")) {
             if (Token::Match(token, "&& [,>]"))
                 continue;
             // If there is some such code:  A<B||C>..
@@ -4548,8 +4549,8 @@ void Tokenizer::createLinks2()
                                            (token->previous()->isName() && !token->previous()->varId()))) ||
                     Token::Match(token->next(), ">|>>"))) {
             type.push(token);
-            if (!templateToken && (token->previous()->str() == "template"))
-                templateToken = token;
+            if (token->previous()->str() == "template")
+                templateTokens.push(token);
         } else if (token->str() == ">" || token->str() == ">>") {
             if (type.empty() || type.top()->str() != "<") // < and > don't match.
                 continue;
@@ -4580,15 +4581,18 @@ void Tokenizer::createLinks2()
                 type.pop();
                 type.pop();
                 Token::createMutualLinks(top2, token);
-                if (top1 == templateToken || top2 == templateToken)
-                    templateToken = nullptr;
+                if (templateTokens.size() == 2 && (top1 == templateTokens.top() || top2 == templateTokens.top())) {
+                    templateTokens.pop();
+                    templateTokens.pop();
+                }
             } else {
                 type.pop();
-                if (Token::Match(token, "> %name%") && Token::Match(top1->tokAt(-2), "%op% %name% <"))
+                if (Token::Match(token, "> %name%") && Token::Match(top1->tokAt(-2), "%op% %name% <") &&
+                    (templateTokens.empty() || top1 != templateTokens.top()))
                     continue;
                 Token::createMutualLinks(top1, token);
-                if (top1 == templateToken)
-                    templateToken = nullptr;
+                if (!templateTokens.empty() && top1 == templateTokens.top())
+                    templateTokens.pop();
             }
         }
     }
