@@ -459,6 +459,13 @@ def getEssentialTypeCategory(expr):
                 if typeToken.valueType.sign:
                     return typeToken.valueType.sign
             typeToken = typeToken.next
+
+    # See Appendix D, section D.6, Character constants
+    if expr.str[0] == "'" and expr.str[-1] == "'":
+        if len(expr.str) == 3 or (len(expr.str) == 4 and expr.str[1] == '\\'):
+            return 'char'
+        return expr.valueType.sign
+
     if expr.valueType:
         return expr.valueType.sign
     return None
