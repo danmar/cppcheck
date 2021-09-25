@@ -2627,6 +2627,14 @@ bool isNullOperand(const Token *expr)
 
 bool isGlobalData(const Token *expr, bool cpp)
 {
+    // function call that returns reference => assume global data
+    if (expr && expr->str() == "(" && expr->valueType() && expr->valueType()->reference != Reference::None) {
+        if (expr->isBinaryOp())
+            return true;
+        if (expr->astOperand1() && precedes(expr->astOperand1(), expr))
+            return true;
+    }
+
     bool globalData = false;
     bool var = false;
     visitAstNodes(expr,
