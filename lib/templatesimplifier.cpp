@@ -2244,10 +2244,9 @@ void TemplateSimplifier::expandTemplate(
 
     // add new instantiations
     for (const auto & inst : newInstantiations) {
-        std::string fullName = inst.scope + (inst.scope.empty() ? "" : " :: ") + inst.token->str();
         simplifyTemplateArgs(inst.token->tokAt(2), inst.token->next()->findClosingBracket());
         // only add recursive instantiation if its arguments are a constant expression
-        if (templateDeclaration.fullName() != fullName ||
+        if (templateDeclaration.name() != inst.token->str() ||
             (inst.token->tokAt(2)->isNumber() || inst.token->tokAt(2)->isStandardType()))
             mTemplateInstantiations.emplace_back(inst.token, inst.scope);
     }
