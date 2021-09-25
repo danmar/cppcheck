@@ -6846,11 +6846,12 @@ private:
                                              "}\n"));
     }
 
-    void checkUnknownCircularVar() {
+    void checkUnknownCircularVar()
+    {
         ASSERT_NO_THROW(tokenizeAndStringify("void execute() {\n"
-                                            "    const auto &bias = GEMM_CTX_ARG_STORAGE(bias);\n"
-                                            "    auto &c = GEMM_CTX_ARG_STORAGE(c);\n"
-                                            "}\n"));
+                                             "    const auto &bias = GEMM_CTX_ARG_STORAGE(bias);\n"
+                                             "    auto &c = GEMM_CTX_ARG_STORAGE(c);\n"
+                                             "}\n"));
     }
 
     void noCrash1() {
