@@ -409,6 +409,7 @@ private:
         TEST_CASE(checkIfCppCast);
         TEST_CASE(checkRefQualifiers);
         TEST_CASE(checkConditionBlock);
+        TEST_CASE(checkUnknownCircularVar);
 
         // #9052
         TEST_CASE(noCrash1);
@@ -6842,6 +6843,14 @@ private:
     void checkConditionBlock() {
         ASSERT_NO_THROW(tokenizeAndStringify("void a() {\n"
                                              "  for (auto b : std::vector<std::vector<int>>{{}, {}}) {}\n"
+                                             "}\n"));
+    }
+
+    void checkUnknownCircularVar()
+    {
+        ASSERT_NO_THROW(tokenizeAndStringify("void execute() {\n"
+                                             "    const auto &bias = GEMM_CTX_ARG_STORAGE(bias);\n"
+                                             "    auto &c = GEMM_CTX_ARG_STORAGE(c);\n"
                                              "}\n"));
     }
 

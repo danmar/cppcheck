@@ -169,9 +169,9 @@ bool astHasToken(const Token* root, const Token * tok)
 {
     if (!root)
         return false;
-    if (root == tok)
-        return true;
-    return astHasToken(root->astOperand1(), tok) || astHasToken(root->astOperand2(), tok);
+    while (tok->astParent() && tok != root)
+        tok = tok->astParent();
+    return root == tok;
 }
 
 bool astHasVar(const Token * tok, nonneg int varid)
@@ -833,6 +833,8 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok,
                 errors.emplace_back(var->declEndToken(), "Passed to reference.");
                 return {{tok, std::move(errors)}};
             } else if (Token::simpleMatch(var->declEndToken(), "=")) {
+                if (astHasToken(var->declEndToken(), tok))
+                    return std::vector<ReferenceToken>{};
                 errors.emplace_back(var->declEndToken(), "Assigned to reference.");
                 const Token *vartok = var->declEndToken()->astOperand2();
                 if (vartok == tok || (!temporary && isTemporary(true, vartok, nullptr, true) &&
