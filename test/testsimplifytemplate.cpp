@@ -4440,15 +4440,16 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
-    void template174() { // #10506 hang
+    void template174()
+    { // #10506 hang
         const char code[] = "namespace a {\n"
                             "template <typename> using b = int;\n"
                             "template <typename c> c d() { return d<b<c>>(); }\n"
                             "}\n"
                             "void e() { a::d<int>(); }\n";
-        const char exp[]  = "namespace a { int d<int> ( ) ; } "
-                            "void e ( ) { a :: d<int> ( ) ; } "
-                            "int a :: d<int> ( ) { return d < int > ( ) ; }";
+        const char exp[] = "namespace a { int d<int> ( ) ; } "
+                           "void e ( ) { a :: d<int> ( ) ; } "
+                           "int a :: d<int> ( ) { return d < int > ( ) ; }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
