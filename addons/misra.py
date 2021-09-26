@@ -2150,7 +2150,8 @@ class MisraChecker:
                     self.reportError(token, 10, 2)
 
             if token.str == '-':
-                if getEssentialType(token.astOperand1).split(' ')[-1] != 'char':
+                e1 = getEssentialType(token.astOperand1)
+                if e1 and e1.split(' ')[-1] != 'char':
                     self.reportError(token, 10, 2)
                 if not isEssentiallyChar(token.astOperand2) and not isEssentiallySignedOrUnsigned(token.astOperand2):
                     self.reportError(token, 10, 2)

@@ -677,6 +677,10 @@ static void misra_10_2(void) {
 
     res = s16a - 'a'; // 10.2 10.3 10.4
     res = '0' + f32a; // 10.2 10.4
+
+    // 10481 - crash
+    char buf[1] = {'f'};
+    x = buf[0] - '0';
 }
 
 static void misra_10_3(uint32_t u32a, uint32_t u32b) {
