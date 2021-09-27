@@ -52,7 +52,13 @@ struct EnumClassHash {
 
 inline bool endsWith(const std::string &str, char c)
 {
-    return str[str.size()-1U] == c;
+    return !str.empty() && str.back() == c;
+}
+
+template<std::size_t N>
+bool endsWith(const std::string& str, const char (&end)[N])
+{
+    return endsWith(str, end, N - 1);
 }
 
 inline bool endsWith(const std::string &str, const char end[], std::size_t endlen)
