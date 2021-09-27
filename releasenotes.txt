@@ -1,0 +1,8 @@
+
+
+Misra C 2012 compliance has been "completed"
+
+All misra C 2012 rules have been implemented except 1.1 , 1.2 and 17.3. Including the rules in amendment 1 and amendment 2.
+The rules 1.1 and 1.2 must be checked with a compiler.
+The rule 17.3 can be checked by a compiler, for instance GCC.
+
