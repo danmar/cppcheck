@@ -4,6 +4,10 @@ Added symbolic analysis for ValueFlow. A simple delta is used to compute the dif
 
 Rules using the "define" tokenlist can also match #include as well.
 
+Library `<function>` tags can now use `<container>` tag, so free functions that accept containers such as `std::size`, `std::empty`, `std::begin`, `std::end`, etc. can specify the `yields` or `action` for the container.
+
+Library `<smart-pointer>` tag can specify a `<unique>` tag for smart pointers that have unique ownership. Cppcheck now warns about dangling references to smart pointers with unique ownership.
+
 Misra C 2012 compliance has been "completed"
 
 All misra C 2012 rules have been implemented except 1.1 , 1.2 and 17.3. Including the rules in amendment 1 and amendment 2.
