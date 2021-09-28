@@ -197,24 +197,24 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
 
     const std::string fileFilter = settings ? settings->fileFilter : std::string();
 
-    if (endsWith(filename, ".json", 5)) {
+    if (endsWith(filename, ".json")) {
         importCompileCommands(fin);
         setRelativePaths(filename);
         return ImportProject::Type::COMPILE_DB;
-    } else if (endsWith(filename, ".sln", 4)) {
+    } else if (endsWith(filename, ".sln")) {
         importSln(fin, mPath, fileFilter);
         setRelativePaths(filename);
         return ImportProject::Type::VS_SLN;
-    } else if (endsWith(filename, ".vcxproj", 8)) {
+    } else if (endsWith(filename, ".vcxproj")) {
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         importVcxproj(filename, variables, emptyString, fileFilter);
         setRelativePaths(filename);
         return ImportProject::Type::VS_VCXPROJ;
-    } else if (endsWith(filename, ".bpr", 4)) {
+    } else if (endsWith(filename, ".bpr")) {
         importBcb6Prj(filename);
         setRelativePaths(filename);
         return ImportProject::Type::BORLAND;
-    } else if (settings && endsWith(filename, ".cppcheck", 9)) {
+    } else if (settings && endsWith(filename, ".cppcheck")) {
         const bool success = importCppcheckGuiProject(fin, settings);
         setRelativePaths(filename);
         return success ? ImportProject::Type::CPPCHECK_GUI : ImportProject::Type::MISSING;
@@ -294,7 +294,7 @@ void ImportProject::FileSettings::parseCommand(std::string command)
             defs += fval;
             if (defval.size() >= 3 && defval.compare(0,2,"=\"")==0 && defval.back()=='\"')
                 defval = "=" + unescape(defval.substr(2, defval.size() - 3));
-            else if (defval.size() >= 5 && defval.compare(0,3,"=\\\"")==0 && endsWith(defval,"\\\"",2))
+            else if (defval.size() >= 5 && defval.compare(0, 3, "=\\\"") == 0 && endsWith(defval, "\\\""))
                 defval = "=\"" + unescape(defval.substr(3, defval.size() - 5)) + "\"";
             if (!defval.empty())
                 defs += defval;

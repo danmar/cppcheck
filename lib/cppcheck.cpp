@@ -140,7 +140,7 @@ namespace {
             if (fileName.find(".") == std::string::npos)
                 return getAddonInfo(fileName + ".py", exename);
 
-            if (endsWith(fileName, ".py", 3)) {
+            if (endsWith(fileName, ".py")) {
                 scriptFile = getFullPath(fileName, exename);
                 if (scriptFile.empty())
                     return "Did not find addon " + fileName;
@@ -160,7 +160,7 @@ namespace {
                 return "";
             }
 
-            if (!endsWith(fileName, ".json", 5))
+            if (!endsWith(fileName, ".json"))
                 return "Failed to open addon " + fileName;
 
             std::ifstream fin(fileName);
@@ -1312,7 +1312,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
 
     std::string fileList;
 
-    if (files.size() >= 2 || endsWith(files[0], ".ctu-info", 9)) {
+    if (files.size() >= 2 || endsWith(files[0], ".ctu-info")) {
         fileList = Path::getPathFromFilename(files[0]) + FILELIST;
         std::ofstream fout(fileList);
         for (const std::string& f: files)
@@ -1327,7 +1327,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             mExitCode = 1;
             continue;
         }
-        if (addon != "misra" && !addonInfo.ctu && endsWith(files.back(), ".ctu-info", 9))
+        if (addon != "misra" && !addonInfo.ctu && endsWith(files.back(), ".ctu-info"))
             continue;
 
         const std::string results =
