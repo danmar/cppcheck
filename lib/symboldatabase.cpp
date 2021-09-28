@@ -2279,7 +2279,7 @@ Function::Function(const Token *tokenDef, const std::string &clangType)
 
     setFlags(tokenDef, tokenDef->scope());
 
-    if (endsWith(clangType, " const", 6))
+    if (endsWith(clangType, " const"))
         isConst(true);
 }
 
