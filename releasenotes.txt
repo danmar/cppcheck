@@ -1,4 +1,8 @@
+Color output for diagnostics are added for unix-based platforms.
 
+Added symbolic analysis for ValueFlow. A simple delta is used to compute the difference between two unknown variable. 
+
+Rules using the "define" tokenlist can also match #include as well.
 
 Misra C 2012 compliance has been "completed"
 
