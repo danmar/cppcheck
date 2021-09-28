@@ -61,7 +61,7 @@ inline bool endsWith(const std::string &str, const char end[], std::size_t endle
 }
 
 template<std::size_t N>
-bool endsWith(const std::string& str, const char(&end)[N])
+bool endsWith(const std::string& str, const char (&end)[N])
 {
     return endsWith(str, end, N - 1);
 }
