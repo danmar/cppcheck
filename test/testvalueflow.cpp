@@ -4261,14 +4261,6 @@ private:
         value = valueOfTok(code, "1");
         ASSERT_EQUALS(1, value.intvalue);
         ASSERT_EQUALS(false, value.isKnown());
-
-        code = "bool f() {\n"
-               "  const int s( 4 );"
-               "  return s == 4;\n" // <- known value
-               "}";
-        value = valueOfTok(code, "==");
-        ASSERT(value.isKnown());
-        ASSERT_EQUALS(1, value.intvalue);
     }
 
     void valueFlowSizeofForwardDeclaredEnum() {
