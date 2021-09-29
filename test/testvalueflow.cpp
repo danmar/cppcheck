@@ -4261,6 +4261,14 @@ private:
         value = valueOfTok(code, "1");
         ASSERT_EQUALS(1, value.intvalue);
         ASSERT_EQUALS(false, value.isKnown());
+
+        code = "bool f() {\n"
+               "  const int s( 4 );"
+               "  return s == 4;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT(value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
     }
 
     void valueFlowSizeofForwardDeclaredEnum() {
@@ -5163,7 +5171,7 @@ private:
                "    std::vector<uint8_t> v{ data, data + sizeof(data) };\n"
                "    v.size();\n"
                "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . size"), 3));
+        ASSERT_EQUALS("ContainerSizeValue", isKnownContainerSizeValue(tokenValues(code, "v . size"), 3)); // TODO: extract container size
 
         // valueFlowContainerForward, loop
         code = "void f() {\n"
