@@ -2349,6 +2349,11 @@ int getArgumentPos(const Variable* var, const Function* f)
     return std::distance(f->argumentList.begin(), arg_it);
 }
 
+bool isIteratorPair(std::vector<const Token*> args)
+{
+    return args.size() == 2 && ((astIsIterator(args[0]) && astIsIterator(args[1])) || (astIsPointer(args[0]) && astIsPointer(args[1])));
+}
+
 const Token *findLambdaStartToken(const Token *last)
 {
     if (!last || last->str() != "}")
