@@ -1872,7 +1872,7 @@ static bool isCPPCastKeyword(const Token* tok)
 {
     if (!tok)
         return false;
-    return endsWith(tok->str(), "_cast", 5);
+    return endsWith(tok->str(), "_cast");
 }
 
 static bool isTrivialConstructor(const Token* tok)
