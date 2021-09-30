@@ -5163,7 +5163,7 @@ private:
                "    std::vector<uint8_t> v{ data, data + sizeof(data) };\n"
                "    v.size();\n"
                "}";
-        ASSERT_EQUALS("ContainerSizeValue", isKnownContainerSizeValue(tokenValues(code, "v . size"), 3)); // TODO: extract container size
+        TODO_ASSERT_EQUALS("", "ContainerSizeValue", isKnownContainerSizeValue(tokenValues(code, "v . size"), 3)); // TODO: extract container size
 
         // valueFlowContainerForward, loop
         code = "void f() {\n"
