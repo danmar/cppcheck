@@ -3194,7 +3194,7 @@ static const Token* getEndOfVarScope(const Token* tok, const std::vector<const V
 {
     const Token* endOfVarScope = nullptr;
     for (const Variable* var : vars) {
-        if (var && (var->isLocal() || var->isArgument()))
+        if (var && (var->isLocal() || var->isArgument()) && var->typeStartToken()->scope()->type != Scope::eNamespace)
             endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
         else if (!endOfVarScope)
             endOfVarScope = tok->scope()->bodyEnd;
