@@ -2764,6 +2764,29 @@ private:
               "    memcpy(data.buf, &a, sizeof(a));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  char  foo[2][2];\n"
+              "  char *bar[2];\n"
+              "  bar[0] = foo[0];\n"
+              "  bar[1] = foo[1];\n"
+              "  bar[0][0] = 'a';\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  char  foo[2][2];\n"
+              "  const char *bar[2];\n"
+              "  bar[0] = foo[0];\n"
+              "  bar[1] = foo[1];\n"
+              "}");
+        TODO_ASSERT_EQUALS("test.cpp:2]: (style) Variable 'foo' can be declared with const\n", "", errout.str());
+
+        check("bool f() {\n"
+              "  char foo[2][2]={{0,1}, {2,3}};\n"
+              "  return foo[0][1] == 42;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'foo' can be declared with const\n", errout.str());
     }
 
     void switchRedundantAssignmentTest() {

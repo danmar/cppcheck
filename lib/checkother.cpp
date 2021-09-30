@@ -1494,10 +1494,29 @@ void CheckOther::checkConstPointer()
         pointers.insert(tok->variable());
         const Token *parent = tok->astParent();
         bool deref = false;
-        if (parent && parent->isUnaryOp("*"))
-            deref = true;
-        else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok)
-            deref = true;
+        int dimension = tok->valueType()->pointer;
+        if (parent && parent->isUnaryOp("*")) {
+            int nbDeref = 0;
+            const Token *parentDeref = tok->astParent();
+            while (parentDeref && parentDeref->isUnaryOp("*")) {
+                ++nbDeref;
+                parent = parentDeref;
+                parentDeref = parentDeref->astParent();
+            }
+
+            deref = dimension == nbDeref;
+        }
+        else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok) {
+            int nbDeref = 0;
+            const Token *parentDeref = tok->astParent();
+            while (Token::simpleMatch(parentDeref, "[")) {
+                ++nbDeref;
+                parent = parentDeref;
+                parentDeref = parentDeref->astParent();
+            }
+
+            deref = dimension == nbDeref;
+        }
         if (deref) {
             if (Token::Match(parent->astParent(), "%cop%") && !parent->astParent()->isUnaryOp("&") && !parent->astParent()->isUnaryOp("*"))
                 continue;
