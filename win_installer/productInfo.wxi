@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Include>
-  <?define ProductName = "Cppcheck $(var.Platform) 2.5 dev" ?>
+  <?define ProductName = "Cppcheck $(var.Platform) 2.6 dev" ?>
   <?define ProductNameShort = "Cppcheck" ?>
-  <?define ProductVersion = "2.5.99" ?>
+  <?define ProductVersion = "2.6.99" ?>
 
   <?define ProductManufacturer = "The Cppcheck team" ?>
   <?define ProductDescription = "Cppcheck is a tool for static analysis of C/C++ code" ?>
