@@ -271,8 +271,8 @@ private:
 
     void template7() { // #9766
         check("void f() {\n"
-            "    std::array<std::array<double,3>,3> array;\n"
-            "}\n");
+              "    std::array<std::array<double,3>,3> array;\n"
+              "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function 'f' is never used.\n", errout.str());
     }
 
