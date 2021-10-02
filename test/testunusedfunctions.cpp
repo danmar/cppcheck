@@ -269,7 +269,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void template7() { // #9766
+    void template7()
+    { // #9766
         check("void f() {\n"
               "    std::array<std::array<double,3>,3> array;\n"
               "}\n");

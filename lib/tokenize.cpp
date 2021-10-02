@@ -4013,7 +4013,8 @@ void Tokenizer::setVarIdPass1()
                     if (tok && tok->str() == "<") {
                         const Token *end = tok->findClosingBracket();
                         while (tok != end) {
-                            if (tok->isName() && !(Token::simpleMatch(tok->next(), "<") && Token::Match(tok->tokAt(-2), "std :: %name%"))) {
+                            if (tok->isName() && !(Token::simpleMatch(tok->next(), "<") &&
+                                                   Token::Match(tok->tokAt(-2), "std :: %name%"))) {
                                 const std::map<std::string, int>::const_iterator it = variableMap.find(tok->str());
                                 if (it != variableMap.end())
                                     tok->varId(it->second);
