@@ -67,6 +67,9 @@
 # Create a release folder on sourceforge:
 # https://sourceforge.net/projects/cppcheck/files/cppcheck/
 #
+# copy msi from release-windows
+# copy manual from build-manual
+#
 # Update download link on index.php main page
 #
 # write a news
