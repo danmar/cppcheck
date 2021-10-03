@@ -426,15 +426,15 @@ void uninitvar(int fd)
     // cppcheck-suppress gcvtCalled
     gcvt(3.141, 2, buf);
 
-    char *filename;
+    char *filename1, *filename2;
     struct utimbuf *times;
     // cppcheck-suppress uninitvar
     // cppcheck-suppress utimeCalled
-    utime(filename, times);
+    utime(filename1, times);
     struct timeval times1[2];
     // cppcheck-suppress uninitvar
     // cppcheck-suppress utimeCalled
-    utime(filename, times1);
+    utime(filename2, times1);
 
     // cppcheck-suppress unreadVariable
     // cppcheck-suppress uninitvar
