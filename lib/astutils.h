@@ -67,6 +67,8 @@ bool astHasVar(const Token * tok, nonneg int varid);
 bool astIsSignedChar(const Token *tok);
 /** Is expression a 'char' if no promotion is used? */
 bool astIsUnknownSignChar(const Token *tok);
+/** Is expression a char according to valueType? */
+bool astIsGenericChar(const Token* tok);
 /** Is expression of integral type? */
 bool astIsIntegral(const Token *tok, bool unknown);
 bool astIsUnsigned(const Token* tok);
