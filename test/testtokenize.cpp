@@ -409,6 +409,7 @@ private:
         TEST_CASE(checkIfCppCast);
         TEST_CASE(checkRefQualifiers);
         TEST_CASE(checkConditionBlock);
+        TEST_CASE(checkUnknownCircularVar);
 
         // #9052
         TEST_CASE(noCrash1);
@@ -3304,6 +3305,32 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> . f (")->link());
         }
+
+        {
+            // #10491
+            const char code[] = "template <template <class> class> struct a;\n";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< class");
+            const Token* tok2 = Token::findsimplematch(tok1, "> class");
+            ASSERT_EQUALS(true, tok1->link() == tok2);
+            ASSERT_EQUALS(true, tok2->link() == tok1);
+        }
+
+        {
+            // #10491
+            const char code[] = "template <template <class> class> struct a;\n";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< template");
+            const Token* tok2 = Token::findsimplematch(tok1, "> struct");
+            ASSERT_EQUALS(true, tok1->link() == tok2);
+            ASSERT_EQUALS(true, tok2->link() == tok1);
+        }
     }
 
     void simplifyString() {
@@ -6133,6 +6160,7 @@ private:
         ASSERT_EQUALS("abc{d{,{(=", testAst("a = b({ c{}, d{} });"));
         ASSERT_EQUALS("abc;(", testAst("a(b;c)"));
         ASSERT_EQUALS("x{( forbc;;(", testAst("x({ for(a;b;c){} });"));
+        ASSERT_EQUALS("PT.(", testAst("P->~T();"));  // <- The "T" token::function() will be a destructor
     }
 
     void asttemplate() { // uninstantiated templates will have <,>,etc..
@@ -6479,6 +6507,9 @@ private:
                             "    int x = a < b ? b : a;"
                             "};\n"));
 
+        // #10139
+        ASSERT_NO_THROW(tokenizeAndStringify("template<typename F>\n"
+                                             "void foo(std::enable_if_t<value<F>>* = 0) {}\n"));
     }
 
     void checkTemplates() {
@@ -6812,6 +6843,14 @@ private:
     void checkConditionBlock() {
         ASSERT_NO_THROW(tokenizeAndStringify("void a() {\n"
                                              "  for (auto b : std::vector<std::vector<int>>{{}, {}}) {}\n"
+                                             "}\n"));
+    }
+
+    void checkUnknownCircularVar()
+    {
+        ASSERT_NO_THROW(tokenizeAndStringify("void execute() {\n"
+                                             "    const auto &bias = GEMM_CTX_ARG_STORAGE(bias);\n"
+                                             "    auto &c = GEMM_CTX_ARG_STORAGE(c);\n"
                                              "}\n"));
     }
 

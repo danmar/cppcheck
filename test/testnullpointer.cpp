@@ -119,6 +119,9 @@ private:
         TEST_CASE(nullpointer77);
         TEST_CASE(nullpointer78); // #7802
         TEST_CASE(nullpointer79); // #10400
+        TEST_CASE(nullpointer80); // #10410
+        TEST_CASE(nullpointer81); // #8724
+        TEST_CASE(nullpointer82); // #10331
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2268,20 +2271,30 @@ private:
 
     void nullpointer72() { // #10215
         check("int test() {\n"
-              "int* p0 = nullptr, *p1 = nullptr;\n"
-              "getFoo(p0);\n"
-              "getBar(p1);\n"
-              "if (!(p0 != nullptr && p1 != nullptr))\n"
-              "return {};\n"
-              "return *p0 + *p1;\n"
+              "  int* p0 = nullptr, *p1 = nullptr;\n"
+              "  getFoo(p0);\n"
+              "  getBar(p1);\n"
+              "  if (!(p0 != nullptr && p1 != nullptr))\n"
+              "    return {};\n"
+              "  return *p0 + *p1;\n"
               "}\n", true /*inconclusive*/);
         ASSERT_EQUALS("", errout.str());
 
         check("int test2() {\n"
-              "int* p0 = nullptr; \n"
-              "if (!(getBaz(p0) && p0 != nullptr))\n"
-              "return 0;\n"
-              "return *p0;\n"
+              "  int* p0 = nullptr;\n"
+              "  if (!(getBaz(p0) && p0 != nullptr))\n"
+              "    return 0;\n"
+              "  return *p0;\n"
+              "}\n", true /*inconclusive*/);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int test3() {\n"
+              "  Obj* PObj = nullptr;\n"
+              "  if (!(GetObj(PObj) && PObj != nullptr))\n"
+              "    return 1;\n"
+              "  if (!PObj->foo())\n"
+              "    test();\n"
+              "  PObj->bar();\n"
               "}\n", true /*inconclusive*/);
         ASSERT_EQUALS("", errout.str());
     }
@@ -2427,6 +2440,57 @@ private:
               "        pValues = new double[nF * nT];\n"
               "    for (size_t cc = 0; cc < nF * nT; ++cc)\n"
               "        pValues[cc] = 42;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer80() // #10410
+    {
+        check("int f(int* a, int* b) {\n"
+              "    if( a || b ) {\n"
+              "        int n = a ? *a : *b;\n"
+              "        if( b )\n"
+              "            n++;\n"
+              "        return n;\n"
+              "    }\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer81() // #8724
+    {
+        check("void f(A **list) {\n"
+              "  A *tmp_List = NULL;\n"
+              "  *list = NULL;\n"
+              "  while (1) {\n"
+              "    if (*list == NULL) {\n"
+              "      tmp_List = malloc (sizeof (ArchiveList_struct));\n"
+              "      *list = tmp_List;\n"
+              "    } else {\n"
+              "      tmp_List->next = malloc (sizeof (ArchiveList_struct));\n"
+              "    }\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer82() // #10331
+    {
+        check("bool g();\n"
+              "int* h();\n"
+              "void f(int* ptr) {\n"
+              "    if (!ptr) {\n"
+              "        if (g())\n"
+              "            goto done;\n"
+              "        ptr = h();\n"
+              "        if (!ptr)\n"
+              "            return;\n"
+              "    }\n"
+              "    if (*ptr == 1)\n"
+              "        return;\n"
+              "\n"
+              "done:\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -3885,9 +3949,9 @@ private:
 
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
-        CheckNullPointer check(&tokenizer, &settings, this);
-        fileInfo.push_back(check.getFileInfo(&tokenizer, &settings));
-        check.analyseWholeProgram(ctu, fileInfo, settings, *this);
+        CheckNullPointer checkNullPointer(&tokenizer, &settings, this);
+        fileInfo.push_back(checkNullPointer.getFileInfo(&tokenizer, &settings));
+        checkNullPointer.analyseWholeProgram(ctu, fileInfo, settings, *this);
         while (!fileInfo.empty()) {
             delete fileInfo.back();
             fileInfo.pop_back();

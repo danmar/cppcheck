@@ -1,6 +1,6 @@
 ---
 title: Cppcheck manual
-subtitle: Version 2.5
+subtitle: Version 2.6
 author: Cppcheck team
 lang: en
 documentclass: report
@@ -883,7 +883,7 @@ Cppcheck is distributed with a few addons which are listed below.
 
 This standard is proprietary, and open source tools are not allowed to distribute the Misra rule texts. Therefore Cppcheck is not allowed to write the rule texts directly. Cppcheck is allowed to distribute the rules and display the id of each violated rule (for example, [c2012-21.3]). The corresponding rule text can also be written however you need to provide that. To get the rule texts, please buy the PDF from MISRA (https://www.misra.org.uk). If you copy the rule texts from "Appendix A - Summary of guidelines" in the PDF and write those in a text file, then by using that text file Cppcheck can write the proper warning messages. To see how the text file can be formatted, take a look at the files listed here: https://github.com/danmar/cppcheck/blob/main/addons/test/misra/. You can use the option `--rule-texts` to specify your rules text file.
 
-The full list of supported rules is available on [Cppcheck](http://cppcheck.sourceforge.net/misra.php) home page.
+The full list of supported rules is available on [Cppcheck](https://cppcheck.sourceforge.io/misra.php) home page.
 
 ### y2038.py
 
@@ -933,7 +933,7 @@ You can create and use your own .cfg files for your projects. Use `--check-libra
 
 You can use the `Library Editor` in the `Cppcheck GUI` to edit configuration files. It is available in the `View` menu.
 
-The .cfg file format is documented in the `Reference: Cppcheck .cfg format` (http://cppcheck.sf.net/reference-cfg-format.pdf) document.
+The .cfg file format is documented in the `Reference: Cppcheck .cfg format` (https://cppcheck.sf.net/reference-cfg-format.pdf) document.
 
 # HTML Report
 

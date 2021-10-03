@@ -1955,7 +1955,7 @@ const Token * Variable::declEndToken() const
 {
     Token const * declEnd = typeStartToken();
     while (declEnd && !Token::Match(declEnd, "[;,)={]")) {
-        if (declEnd->link() && Token::Match(declEnd,"(|["))
+        if (declEnd->link() && Token::Match(declEnd,"(|[|<"))
             declEnd = declEnd->link();
         declEnd = declEnd->next();
     }
@@ -2279,7 +2279,7 @@ Function::Function(const Token *tokenDef, const std::string &clangType)
 
     setFlags(tokenDef, tokenDef->scope());
 
-    if (endsWith(clangType, " const", 6))
+    if (endsWith(clangType, " const"))
         isConst(true);
 }
 
@@ -4194,19 +4194,19 @@ void Scope::getVariableList(const Settings* settings)
 {
     if (!bodyStartList.empty()) {
         for (const Token *bs: bodyStartList)
-            getVariableList(settings, bs->next());
+            getVariableList(settings, bs->next(), bs->link());
     }
 
     // global scope
     else if (type == Scope::eGlobal)
-        getVariableList(settings, check->mTokenizer->tokens());
+        getVariableList(settings, check->mTokenizer->tokens(), nullptr);
 
     // forward declaration
     else
         return;
 }
 
-void Scope::getVariableList(const Settings* settings, const Token* start)
+void Scope::getVariableList(const Settings* settings, const Token* start, const Token* end)
 {
     // Variable declared in condition: if (auto x = bar())
     if (Token::Match(classDef, "if|while ( %type%") && Token::simpleMatch(classDef->next()->astOperand2(), "=")) {
@@ -4214,7 +4214,7 @@ void Scope::getVariableList(const Settings* settings, const Token* start)
     }
 
     AccessControl varaccess = defaultAccess();
-    for (const Token *tok = start; tok && tok != bodyEnd; tok = tok->next()) {
+    for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         // syntax error?
         if (tok->next() == nullptr)
             break;
@@ -7050,8 +7050,7 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
             funcVar->scope() && funcVar->scope()->function && funcVar->scope()->function->templateDef;
         if (type1 == type2)
             return ValueType::MatchResult::SAME;
-        if (!templateVar && type1.find("auto") == std::string::npos && type2.find("auto") == std::string::npos &&
-            type1 != type2)
+        if (!templateVar && type1.find("auto") == std::string::npos && type2.find("auto") == std::string::npos)
             return ValueType::MatchResult::NOMATCH;
     }
     return res;

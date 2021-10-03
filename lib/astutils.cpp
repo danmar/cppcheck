@@ -101,6 +101,49 @@ const Token* findExpression(const nonneg int exprid,
     return nullptr;
 }
 
+static int findArgumentPosRecursive(const Token* tok, const Token* tokToFind,  bool &found, nonneg int depth=0)
+{
+    ++depth;
+    if (!tok || depth >= 100)
+        return -1;
+    if (tok->str() == ",") {
+        int res = findArgumentPosRecursive(tok->astOperand1(), tokToFind, found, depth);
+        if (res == -1)
+            return -1;
+        if (found)
+            return res;
+        int argn = res;
+        res = findArgumentPosRecursive(tok->astOperand2(), tokToFind, found, depth);
+        if (res == -1)
+            return -1;
+        return argn + res;
+    } else {
+        if (tokToFind == tok)
+            found = true;
+        return 1;
+    }
+}
+
+static int findArgumentPos(const Token* tok, const Token* tokToFind){
+    bool found = false;
+    int argn = findArgumentPosRecursive(tok, tokToFind, found, 0);
+    if (found)
+        return argn - 1;
+    return -1;
+}
+
+static int getArgumentPos(const Token* ftok, const Token* tokToFind){
+    const Token* tok = ftok;
+    if (Token::Match(tok, "%name% (|{"))
+        tok = ftok->next();
+    if (!Token::Match(tok, "(|{|["))
+        return -1;
+    const Token* startTok = tok->astOperand2();
+    if (!startTok && tok->next() != tok->link())
+        startTok = tok->astOperand1();
+    return findArgumentPos(startTok, tokToFind);
+}
+
 static void astFlattenRecursive(const Token *tok, std::vector<const Token *> *result, const char* op, nonneg int depth = 0)
 {
     ++depth;
@@ -126,9 +169,9 @@ bool astHasToken(const Token* root, const Token * tok)
 {
     if (!root)
         return false;
-    if (root == tok)
-        return true;
-    return astHasToken(root->astOperand1(), tok) || astHasToken(root->astOperand2(), tok);
+    while (tok->astParent() && tok != root)
+        tok = tok->astParent();
+    return root == tok;
 }
 
 bool astHasVar(const Token * tok, nonneg int varid)
@@ -158,6 +201,11 @@ bool astIsSignedChar(const Token *tok)
 bool astIsUnknownSignChar(const Token *tok)
 {
     return astIsCharWithSign(tok, ValueType::Sign::UNKNOWN_SIGN);
+}
+
+bool astIsGenericChar(const Token* tok)
+{
+    return tok && tok->valueType() && (tok->valueType()->type == ValueType::Type::CHAR || tok->valueType()->type == ValueType::Type::WCHAR_T);
 }
 
 bool astIsIntegral(const Token *tok, bool unknown)
@@ -764,7 +812,11 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
     errors->push_back(item);
 }
 
-std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclusive, ErrorPath errors, int depth)
+std::vector<ReferenceToken> followAllReferences(const Token* tok,
+                                                bool temporary,
+                                                bool inconclusive,
+                                                ErrorPath errors,
+                                                int depth)
 {
     struct ReferenceTokenLess {
         bool operator()(const ReferenceToken& x, const ReferenceToken& y) const {
@@ -786,12 +838,15 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclus
                 errors.emplace_back(var->declEndToken(), "Passed to reference.");
                 return {{tok, std::move(errors)}};
             } else if (Token::simpleMatch(var->declEndToken(), "=")) {
+                if (astHasToken(var->declEndToken(), tok))
+                    return std::vector<ReferenceToken>{};
                 errors.emplace_back(var->declEndToken(), "Assigned to reference.");
                 const Token *vartok = var->declEndToken()->astOperand2();
-                if (vartok == tok)
+                if (vartok == tok || (!temporary && isTemporary(true, vartok, nullptr, true) &&
+                                      (var->isConst() || var->isRValueReference())))
                     return {{tok, std::move(errors)}};
                 if (vartok)
-                    return followAllReferences(vartok, inconclusive, std::move(errors), depth - 1);
+                    return followAllReferences(vartok, temporary, inconclusive, std::move(errors), depth - 1);
             } else {
                 return {{tok, std::move(errors)}};
             }
@@ -801,9 +856,9 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclus
         const Token* tok2 = tok->astOperand2();
 
         std::vector<ReferenceToken> refs;
-        refs = followAllReferences(tok2->astOperand1(), inconclusive, errors, depth - 1);
+        refs = followAllReferences(tok2->astOperand1(), temporary, inconclusive, errors, depth - 1);
         result.insert(refs.begin(), refs.end());
-        refs = followAllReferences(tok2->astOperand2(), inconclusive, errors, depth - 1);
+        refs = followAllReferences(tok2->astOperand2(), temporary, inconclusive, errors, depth - 1);
         result.insert(refs.begin(), refs.end());
 
         if (!inconclusive && result.size() != 1)
@@ -822,7 +877,8 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclus
             for (const Token* returnTok : returns) {
                 if (returnTok == tok)
                     continue;
-                for (const ReferenceToken& rt:followAllReferences(returnTok, inconclusive, errors, depth - returns.size())) {
+                for (const ReferenceToken& rt :
+                     followAllReferences(returnTok, temporary, inconclusive, errors, depth - returns.size())) {
                     const Variable* argvar = rt.token->variable();
                     if (!argvar)
                         return {{tok, std::move(errors)}};
@@ -837,7 +893,8 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclus
                         ErrorPath er = errors;
                         er.emplace_back(returnTok, "Return reference.");
                         er.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
-                        std::vector<ReferenceToken> refs = followAllReferences(argTok, inconclusive, std::move(er), depth - returns.size());
+                        std::vector<ReferenceToken> refs =
+                            followAllReferences(argTok, temporary, inconclusive, std::move(er), depth - returns.size());
                         result.insert(refs.begin(), refs.end());
                         if (!inconclusive && result.size() > 1)
                             return {{tok, std::move(errors)}};
@@ -855,7 +912,7 @@ const Token* followReferences(const Token* tok, ErrorPath* errors)
 {
     if (!tok)
         return nullptr;
-    std::vector<ReferenceToken> refs = followAllReferences(tok, false);
+    std::vector<ReferenceToken> refs = followAllReferences(tok, true, false);
     if (refs.size() == 1) {
         if (errors)
             *errors = refs.front().errors;
@@ -1747,10 +1804,7 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
         if (Token::Match(tok, "(|{"))
             break;
     }
-    std::vector<const Token*> args = getArguments(tok);
-    auto it = std::find(args.begin(), args.end(), argtok);
-    if (it != args.end())
-        argn = std::distance(args.begin(), it);
+    argn = getArgumentPos(tok, argtok);
     if (argn == -1)
         return nullptr;
     if (!Token::Match(tok, "{|("))
@@ -1823,7 +1877,7 @@ static bool isCPPCastKeyword(const Token* tok)
 {
     if (!tok)
         return false;
-    return endsWith(tok->str(), "_cast", 5);
+    return endsWith(tok->str(), "_cast");
 }
 
 static bool isTrivialConstructor(const Token* tok)
@@ -1856,7 +1910,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         return false; // not a function => variable not changed
     if (Token::simpleMatch(tok, "{") && isTrivialConstructor(tok))
         return false;
-    if (tok->isKeyword() && !isCPPCastKeyword(tok))
+    if (tok->isKeyword() && !isCPPCastKeyword(tok) && tok->str().compare(0,8,"operator") != 0)
         return false;
     const Token * parenTok = tok->next();
     if (Token::simpleMatch(parenTok, "<") && parenTok->link())
@@ -2580,6 +2634,14 @@ bool isNullOperand(const Token *expr)
 
 bool isGlobalData(const Token *expr, bool cpp)
 {
+    // function call that returns reference => assume global data
+    if (expr && expr->str() == "(" && expr->valueType() && expr->valueType()->reference != Reference::None) {
+        if (expr->isBinaryOp())
+            return true;
+        if (expr->astOperand1() && precedes(expr->astOperand1(), expr))
+            return true;
+    }
+
     bool globalData = false;
     bool var = false;
     visitAstNodes(expr,
@@ -2832,7 +2894,9 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             bool same = tok->astParent() && isSameExpression(mCpp, false, expr, tok, mLibrary, true, false, nullptr);
             while (!same && Token::Match(parent->astParent(), "*|.|::|[|(|%cop%")) {
                 parent = parent->astParent();
-                if (parent && isSameExpression(mCpp, false, expr, parent, mLibrary, true, false, nullptr)) {
+                if (parent->str() == "(" && !parent->isCast())
+                    break;
+                if (isSameExpression(mCpp, false, expr, parent, mLibrary, true, false, nullptr)) {
                     same = true;
                     if (mWhat == What::ValueFlow) {
                         KnownAndToken v;
@@ -2841,7 +2905,8 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                         mValueFlow.push_back(v);
                     }
                 }
-                if (Token::Match(parent, ". %var%") && parent->next()->varId() && exprVarIds.find(parent->next()->varId()) == exprVarIds.end()) {
+                if (Token::Match(parent, ". %var%") && parent->next()->varId() && exprVarIds.find(parent->next()->varId()) == exprVarIds.end() &&
+                    isSameExpression(mCpp, false, expr->astOperand1(), parent->astOperand1(), mLibrary, true, false, nullptr)) {
                     other = true;
                     break;
                 }

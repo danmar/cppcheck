@@ -70,6 +70,7 @@ private:
         TEST_CASE(iterator25); // #9742
         TEST_CASE(iterator26); // #9176
         TEST_CASE(iterator27); // #10378
+        TEST_CASE(iterator28); // #10450
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
         TEST_CASE(mismatchingContainerIterator);
@@ -586,6 +587,18 @@ private:
                     "        if (v[i] > 0)\n"
                     "            return i;\n"
                     "    return 0;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("bool g();\n"
+                    "void f(int x) {\n"
+                    "    std::vector<int> v;\n"
+                    "    if (g())\n"
+                    "        v.emplace_back(x);\n"
+                    "    const int n = v.size();\n"
+                    "    h(n);\n"
+                    "    for (int i = 0; i < n; ++i)\n"
+                    "        h(v[i]);\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -1475,6 +1488,28 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void iterator28()
+    {
+        // #10450
+        check("struct S {\n"
+              "    struct Private {\n"
+              "        std::list<int> l;\n"
+              "    };\n"
+              "    std::unique_ptr<Private> p;\n"
+              "    int foo();\n"
+              "};\n"
+              "int S::foo() {\n"
+              "    for(auto iter = p->l.begin(); iter != p->l.end(); ++iter) {\n"
+              "        if(*iter == 1) {\n"
+              "            p->l.erase(iter);\n"
+              "            return 1;\n"
+              "        }\n"
+              "    }\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void iteratorExpression() {
         check("std::vector<int>& f();\n"
               "std::vector<int>& g();\n"
@@ -1667,6 +1702,16 @@ private:
               "};\n"
               "void f(a c, a d) {\n"
               "    if (c.end() == d.end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10467
+        check("void f(std::array<std::vector<int>, N>& A) {\n"
+              "  for (auto& a : A) {\n"
+              "    auto it = std::find_if(a.begin(), a.end(), \n"
+              "                           [](auto i) { return i == 0; });\n"
+              "    if (it != a.end()) {}\n"
+              "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -5353,6 +5398,22 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() { int f = 0; auto g(f); g = g; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct foobar {\n"
+              "    int foo;\n"
+              "    std::shared_mutex foo_mtx;\n"
+              "    int bar;\n"
+              "    std::shared_mutex bar_mtx;\n"
+              "};\n"
+              "void f() {\n"
+              "    foobar xyz;\n"
+              "    {\n"
+              "        std::shared_lock shared_foo_lock(xyz.foo_mtx, std::defer_lock);\n"
+              "        std::shared_lock shared_bar_lock(xyz.bar_mtx, std::defer_lock);\n"
+              "        std::scoped_lock shared_multi_lock(shared_foo_lock, shared_bar_lock);\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

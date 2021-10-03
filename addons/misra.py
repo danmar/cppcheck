@@ -24,6 +24,7 @@ import os
 import argparse
 import codecs
 import string
+import copy
 
 try:
     from itertools import izip as zip
@@ -340,30 +341,37 @@ def isStdLibId(id_, standard='c99'):
 
 # Reserved keywords defined in ISO/IEC9899:1990 -- ch 6.1.1
 C90_KEYWORDS = {
-    'auto', 'break', 'double', 'else', 'enum', 'extern', 'float', 'for',
-    'goto', 'if', 'case', 'char', 'const', 'continue', 'default', 'do', 'int',
-    'long', 'struct', 'switch', 'register', 'typedef', 'union', 'unsigned',
-    'void', 'volatile', 'while', 'return', 'short', 'signed', 'sizeof',
-    'static'
+    'auto', 'break', 'case', 'char', 'const', 'continue', 'default', 'do',
+    'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if',
+    'int', 'long', 'register', 'return', 'short', 'signed',
+    'sizeof', 'static', 'struct', 'switch', 'typedef', 'union', 'unsigned',
+    'void', 'volatile', 'while'
 }
 
 
 # Reserved keywords defined in ISO/IEC 9899 WF14/N1256 -- ch. 6.4.1
-C99_KEYWORDS = {
-    'auto', 'break', 'case', 'char', 'const', 'continue', 'default', 'do',
-    'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if', 'inline',
-    'int', 'long', 'register', 'restrict', 'return', 'short', 'signed',
-    'sizeof', 'static', 'struct', 'switch', 'typedef', 'union', 'unsigned',
-    'void', 'volatile', 'while', '_Bool', '_Complex', '_Imaginary'
+C99_ADDED_KEYWORDS = {
+    'inline', 'restrict', '_Bool', '_Complex', '_Imaginary',
+    'bool', 'complex', 'imaginary'
 }
 
+C11_ADDED_KEYWORDS = {
+    '_Alignas', '_Alignof', '_Atomic', '_Generic', '_Noreturn',
+    '_Statis_assert', '_Thread_local' ,
+    'alignas', 'alignof', 'noreturn', 'static_assert'
+}
 
 def isKeyword(keyword, standard='c99'):
     kw_set = {}
     if standard == 'c89':
         kw_set = C90_KEYWORDS
     elif standard == 'c99':
-        kw_set = C99_KEYWORDS
+        kw_set = copy.copy(C90_KEYWORDS)
+        kw_set.update(C99_ADDED_KEYWORDS)
+    else:
+        kw_set = copy.copy(C90_KEYWORDS)
+        kw_set.update(C99_ADDED_KEYWORDS)
+        kw_set.update(C11_ADDED_KEYWORDS)
     return keyword in kw_set
 
 
@@ -435,9 +443,14 @@ def getEssentialTypeCategory(expr):
             return expr.valueType.sign
     if expr.valueType and expr.valueType.typeScope and expr.valueType.typeScope.className:
         return "enum<" + expr.valueType.typeScope.className + ">"
-    if expr.variable:
-        typeToken = expr.variable.typeStartToken
-        while typeToken:
+    vartok = expr
+    while simpleMatch(vartok, '[') or (vartok and vartok.str == '*' and vartok.astOperand2 is None):
+        vartok = vartok.astOperand1
+    if vartok and vartok.variable:
+        typeToken = vartok.variable.typeStartToken
+        while typeToken and typeToken.isName:
+            if typeToken.str == 'char' and not typeToken.isSigned and not typeToken.isUnsigned:
+                return 'char'
             if typeToken.valueType:
                 if typeToken.valueType.type == 'bool':
                     return typeToken.valueType.type
@@ -446,6 +459,13 @@ def getEssentialTypeCategory(expr):
                 if typeToken.valueType.sign:
                     return typeToken.valueType.sign
             typeToken = typeToken.next
+
+    # See Appendix D, section D.6, Character constants
+    if expr.str[0] == "'" and expr.str[-1] == "'":
+        if len(expr.str) == 3 or (len(expr.str) == 4 and expr.str[1] == '\\'):
+            return 'char'
+        return expr.valueType.sign
+
     if expr.valueType:
         return expr.valueType.sign
     return None
@@ -496,12 +516,19 @@ def getEssentialType(expr):
         return '%s %s' % (expr.valueType.sign, expr.valueType.type)
 
     if expr.variable or isCast(expr):
+        typeToken = expr.variable.typeStartToken if expr.variable else expr.next
+        while typeToken and typeToken.isName:
+            if typeToken.str == 'char' and not typeToken.isSigned and not typeToken.isUnsigned:
+                return 'char'
+            typeToken = typeToken.next
         if expr.valueType:
             if expr.valueType.type == 'bool':
                 return 'bool'
             if expr.valueType.isFloat():
                 return expr.valueType.type
             if expr.valueType.isIntegral():
+                if (expr.valueType.sign is None) and expr.valueType.type == 'char':
+                    return 'char'
                 return '%s %s' % (expr.valueType.sign, expr.valueType.type)
 
     elif expr.isNumber:
@@ -527,11 +554,11 @@ def getEssentialType(expr):
             return None
         e1 = getEssentialType(expr.astOperand1)
         e2 = getEssentialType(expr.astOperand2)
-        if not e1 or not e2:
+        if e1 is None or e2 is None:
             return None
         if is_constant_integer_expression(expr):
             sign1 = e1.split(' ')[0]
-            sign2 = e1.split(' ')[0]
+            sign2 = e2.split(' ')[0]
             if sign1 == sign2 and sign1 in ('signed', 'unsigned'):
                 e = get_essential_type_from_value(expr.getKnownIntValue(), sign1 == 'signed')
                 if e:
@@ -551,19 +578,19 @@ def getEssentialType(expr):
 def bitsOfEssentialType(ty):
     if ty is None:
         return 0
-    ty = ty.split(' ')[-1]
-    if ty == 'Boolean':
+    last_type = ty.split(' ')[-1]
+    if last_type == 'Boolean':
         return 1
-    if ty == 'char':
+    if last_type == 'char':
         return typeBits['CHAR']
-    if ty == 'short':
+    if last_type == 'short':
         return typeBits['SHORT']
-    if ty == 'int':
+    if last_type == 'int':
         return typeBits['INT']
-    if ty == 'long':
-        return typeBits['LONG']
-    if ty == 'long long':
+    if ty.endswith('long long'):
         return typeBits['LONG_LONG']
+    if last_type == 'long':
+        return typeBits['LONG']
     for sty in STDINT_TYPES:
         if ty == sty:
             return int(''.join(filter(str.isdigit, sty)))
@@ -600,11 +627,15 @@ def isCast(expr):
 def is_constant_integer_expression(expr):
     if expr is None:
         return False
+    if expr.isInt:
+        return True
+    if not expr.isArithmeticalOp:
+        return False
     if expr.astOperand1 and not is_constant_integer_expression(expr.astOperand1):
         return False
     if expr.astOperand2 and not is_constant_integer_expression(expr.astOperand2):
         return False
-    return expr.astOperand1 or expr.astOperand2 or expr.isInt
+    return True
 
 def isFunctionCall(expr, std='c99'):
     if not expr:
@@ -1669,7 +1700,7 @@ class MisraChecker:
                 continue
 
             if data.standards.c == 'c89':
-                if token.valueType.type != 'int':
+                if token.valueType.type != 'int' and  not isUnsignedType(token.variable.typeStartToken.str):
                     self.reportError(token, 6, 1)
             elif data.standards.c == 'c99':
                 if token.valueType.type == 'bool':
@@ -1678,7 +1709,7 @@ class MisraChecker:
             isExplicitlySignedOrUnsigned = False
             typeToken = token.variable.typeStartToken
             while typeToken:
-                if typeToken.isUnsigned or typeToken.isSigned:
+                if typeToken.isUnsigned or typeToken.isSigned or isUnsignedType(typeToken.str):
                     isExplicitlySignedOrUnsigned = True
                     break
 
@@ -1846,7 +1877,7 @@ class MisraChecker:
             #
             # TODO: We actually need to check if the names of the arguments are
             # the same. But we can't do this because we have no links to
-            # variables in the arguments in function defintion in the dump file.
+            # variables in the arguments in function definition in the dump file.
             foundVariables = 0
             while startCall and startCall != endCall:
                 if startCall.varId:
@@ -1942,10 +1973,24 @@ class MisraChecker:
             if func.tokenDef.str == 'main':
                 continue
             self.reportError(func.tokenDef, 8, 4)
+
+        extern_vars = []
+        var_defs = []
+
         for var in cfg.variables:
-            # extern variable declaration in source file
-            if var.isExtern and var.nameToken and not is_header(var.nameToken.file):
-                self.reportError(var.nameToken, 8, 4)
+            if not var.isGlobal:
+                continue
+            if var.isStatic:
+                continue
+            if var.nameToken is None:
+                continue
+            if var.isExtern:
+                extern_vars.append(var.nameToken.str)
+            else:
+                var_defs.append(var.nameToken)
+        for vartok in var_defs:
+            if vartok.str not in extern_vars:
+                self.reportError(vartok, 8, 4)
 
     def misra_8_5(self, dumpfile, cfg):
         self._save_ctu_summary_identifiers(dumpfile, cfg)
@@ -2074,9 +2119,9 @@ class MisraChecker:
                     elif not isUnsignedType(e2) and not token.astOperand2.isNumber:
                         self.reportError(token, 10, 1)
                 elif token.str in ('~', '&', '|', '^'):
-                    e1_et = getEssentialType(token.astOperand1).split(' ')[-1]
-                    e2_et = getEssentialType(token.astOperand2).split(' ')[-1]
-                    if e1_et == 'char' and e2_et == 'char':
+                    e1_et = getEssentialType(token.astOperand1)
+                    e2_et = getEssentialType(token.astOperand2)
+                    if e1_et == 'char' or e2_et == 'char':
                         self.reportError(token, 10, 1)
 
     def misra_10_2(self, data):
@@ -2105,7 +2150,8 @@ class MisraChecker:
                     self.reportError(token, 10, 2)
 
             if token.str == '-':
-                if getEssentialType(token.astOperand1).split(' ')[-1] != 'char':
+                e1 = getEssentialType(token.astOperand1)
+                if e1 and e1.split(' ')[-1] != 'char':
                     self.reportError(token, 10, 2)
                 if not isEssentiallyChar(token.astOperand2) and not isEssentiallySignedOrUnsigned(token.astOperand2):
                     self.reportError(token, 10, 2)
@@ -2230,7 +2276,8 @@ class MisraChecker:
                     e = getEssentialType(token.astOperand2)
                 if not e:
                     continue
-                if bitsOfEssentialType(vt1.type) > bitsOfEssentialType(e):
+                lhsbits = vt1.bits if vt1.bits else bitsOfEssentialType(vt1.type)
+                if lhsbits > bitsOfEssentialType(e):
                     self.reportError(token, 10, 6)
             except ValueError:
                 pass

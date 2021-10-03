@@ -1576,7 +1576,7 @@ void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
         const std::string nodeType = line.substr(pos1+1, pos2 - pos1 - 1);
         const std::string ext = line.substr(pos2);
 
-        if (pos1 == 1 && endsWith(nodeType, "Decl", 4)) {
+        if (pos1 == 1 && endsWith(nodeType, "Decl")) {
             if (!tree.empty())
                 tree[0]->createTokens1(tokenList);
             tree.clear();

@@ -1168,7 +1168,7 @@ void Tokenizer::simplifyTypedef()
                 }
 
                 // check for typedef that can be substituted
-                else if (tok2->isNameOnly() &&
+                else if ((tok2->isNameOnly() || (tok2->isName() && tok2->isExpandedMacro())) &&
                          (Token::simpleMatch(tok2, pattern.c_str(), pattern.size()) ||
                           (inMemberFunc && tok2->str() == typeName->str()))) {
                     // member function class variables don't need qualification
@@ -2247,7 +2247,7 @@ bool Tokenizer::simplifyUsing()
         if (Settings::terminated())
             return substitute;
 
-        if (Token::simpleMatch(tok, "enum class")) {
+        if (Token::Match(tok, "enum class|struct")) {
             Token *bodyStart = tok;
             while (Token::Match(bodyStart, "%name%|:|::|<")) {
                 if (bodyStart->str() == "<")
@@ -2263,7 +2263,7 @@ bool Tokenizer::simplifyUsing()
             Token::Match(tok, "using namespace %name% ;|::")) {
             try {
                 setScopeInfo(tok, &currentScope, mSettings->debugwarnings);
-            } catch (const std::runtime_error &e) {
+            } catch (const std::runtime_error &) {
                 reportError(tok, Severity::debug, "simplifyUsingUnmatchedBodyEnd",
                             "simplifyUsing: unmatched body end");
             }
@@ -2417,7 +2417,7 @@ bool Tokenizer::simplifyUsing()
                 Token::Match(tok1, "using namespace %name% ;|::")) {
                 try {
                     setScopeInfo(tok1, &currentScope1, mSettings->debugwarnings);
-                } catch (const std::runtime_error &e) {
+                } catch (const std::runtime_error &) {
                     reportError(tok1, Severity::debug, "simplifyUsingUnmatchedBodyEnd",
                                 "simplifyUsing: unmatched body end");
                 }
@@ -2440,7 +2440,7 @@ bool Tokenizer::simplifyUsing()
 
             // check for enum with body
             if (tok1->str() == "enum") {
-                if (Token::simpleMatch(tok1, "enum class"))
+                if (Token::Match(tok1, "enum class|struct"))
                     tok1 = tok1->next();
                 Token *defStart = tok1;
                 while (Token::Match(defStart, "%name%|::|:"))
@@ -2900,12 +2900,11 @@ void Tokenizer::combineOperators()
             // combine +-*/ and =
             if (c2 == '=' && (std::strchr("+-*/%|^=!<>", c1))) {
                 // skip templates
-                if (cpp && tok->str() == ">") {
-                    const Token *opening = tok->findOpeningBracket();
-                    if (opening) {
-                        if (Token::Match(opening->previous(), "%name%"))
-                            continue;
-                    }
+                if (cpp && (tok->str() == ">" || Token::simpleMatch(tok->previous(), "> *"))) {
+                    const Token* opening =
+                        tok->str() == ">" ? tok->findOpeningBracket() : tok->previous()->findOpeningBracket();
+                    if (opening && Token::Match(opening->previous(), "%name%"))
+                        continue;
                 }
                 tok->str(tok->str() + c2);
                 tok->deleteNext();
@@ -4483,6 +4482,7 @@ void Tokenizer::createLinks2()
     bool isStruct = false;
 
     std::stack<Token*> type;
+    std::stack<Token*> templateTokens;
     for (Token *token = list.front(); token; token = token->next()) {
         if (Token::Match(token, "%name%|> %name% [:<]"))
             isStruct = true;
@@ -4494,14 +4494,14 @@ void Tokenizer::createLinks2()
                 type.push(token);
             else if (!type.empty() && Token::Match(token, "}|]|)")) {
                 while (type.top()->str() == "<") {
-                    if (templateToken && templateToken->next() == type.top())
-                        templateToken = nullptr;
+                    if (!templateTokens.empty() && templateTokens.top()->next() == type.top())
+                        templateTokens.pop();
                     type.pop();
                 }
                 type.pop();
             } else
                 token->link(nullptr);
-        } else if (!templateToken && !isStruct && Token::Match(token, "%oror%|&&|;")) {
+        } else if (templateTokens.empty() && !isStruct && Token::Match(token, "%oror%|&&|;")) {
             if (Token::Match(token, "&& [,>]"))
                 continue;
             // If there is some such code:  A<B||C>..
@@ -4549,8 +4549,8 @@ void Tokenizer::createLinks2()
                                            (token->previous()->isName() && !token->previous()->varId()))) ||
                     Token::Match(token->next(), ">|>>"))) {
             type.push(token);
-            if (!templateToken && (token->previous()->str() == "template"))
-                templateToken = token;
+            if (token->previous()->str() == "template")
+                templateTokens.push(token);
         } else if (token->str() == ">" || token->str() == ">>") {
             if (type.empty() || type.top()->str() != "<") // < and > don't match.
                 continue;
@@ -4561,7 +4561,7 @@ void Tokenizer::createLinks2()
             if (!top2 || top2->str() != "<") {
                 if (token->str() == ">>")
                     continue;
-                if (!Token::Match(token->next(), "%name%|%cop%|::|,|(|)|{|}|;|[|:|.|=|...") &&
+                if (!Token::Match(token->next(), "%name%|%cop%|%assign%|::|,|(|)|{|}|;|[|:|.|=|...") &&
                     !Token::Match(token->next(), "&& %name% ="))
                     continue;
             }
@@ -4581,15 +4581,18 @@ void Tokenizer::createLinks2()
                 type.pop();
                 type.pop();
                 Token::createMutualLinks(top2, token);
-                if (top1 == templateToken || top2 == templateToken)
-                    templateToken = nullptr;
+                if (templateTokens.size() == 2 && (top1 == templateTokens.top() || top2 == templateTokens.top())) {
+                    templateTokens.pop();
+                    templateTokens.pop();
+                }
             } else {
                 type.pop();
-                if (Token::Match(token, "> %name%") && Token::Match(top1->tokAt(-2), "%op% %name% <"))
+                if (Token::Match(token, "> %name%") && Token::Match(top1->tokAt(-2), "%op% %name% <") &&
+                    (templateTokens.empty() || top1 != templateTokens.top()))
                     continue;
                 Token::createMutualLinks(top1, token);
-                if (top1 == templateToken)
-                    templateToken = nullptr;
+                if (!templateTokens.empty() && top1 == templateTokens.top())
+                    templateTokens.pop();
             }
         }
     }
@@ -7240,8 +7243,34 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
     // Split up variable declarations..
     // "int a=4;" => "int a; a=4;"
     bool finishedwithkr = true;
+    bool scopeDecl = false;
     for (Token *tok = tokBegin; tok != tokEnd; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "= {")) {
+        if (Token::Match(tok, "{|;"))
+            scopeDecl = false;
+        if (isCPP()) {
+            if (Token::Match(tok, "class|struct|namespace|union"))
+                scopeDecl = true;
+            if (Token::Match(tok, "decltype|noexcept (")) {
+                tok = tok->next()->link();
+                // skip decltype(...){...}
+                if (tok && Token::simpleMatch(tok->previous(), ") {"))
+                    tok = tok->link();
+            } else if (Token::simpleMatch(tok, "= {") ||
+                       (!scopeDecl && Token::Match(tok, "%name%|> {") &&
+                        !Token::Match(tok, "else|try|do|const|constexpr|override|volatile|noexcept"))) {
+                if (!tok->next()->link())
+                    syntaxError(tokBegin);
+                // Check for lambdas before skipping
+                for (Token* tok2 = tok->next(); tok2 != tok->next()->link(); tok2 = tok2->next()) {
+                    Token* lambdaEnd = findLambdaEndScope(tok2);
+                    if (!lambdaEnd)
+                        continue;
+                    simplifyVarDecl(lambdaEnd->link()->next(), lambdaEnd, only_k_r_fpar);
+                }
+                tok = tok->next()->link();
+            }
+
+        } else if (Token::simpleMatch(tok, "= {")) {
             tok = tok->next()->link();
         }
         if (!tok) {

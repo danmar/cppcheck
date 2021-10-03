@@ -10,7 +10,7 @@ About
 Manual
 
     A manual is available online:
-    http://cppcheck.sourceforge.net/manual.pdf
+    https://cppcheck.sourceforge.io/manual.pdf
 
 Compiling
 
@@ -128,4 +128,4 @@ Packages
 
 Webpage
 
-    http://cppcheck.sourceforge.net/
+    https://cppcheck.sourceforge.io/

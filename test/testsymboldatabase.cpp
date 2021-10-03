@@ -355,6 +355,7 @@ private:
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
+        TEST_CASE(createSymbolDatabaseFindAllScopes3);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -4809,6 +4810,33 @@ private:
         const Token* const var2 = Token::findsimplematch(tokenizer.tokens(), "var2");
         ASSERT(var1->variable());
         ASSERT(var2->variable());
+    }
+
+    void createSymbolDatabaseFindAllScopes3() {
+        GET_SYMBOL_DB("namespace ns {\n"
+                      "\n"
+                      "namespace ns_details {\n"
+                      "template <typename T, typename = void> struct has_A : std::false_type {};\n"
+                      "template <typename T> struct has_A<T, typename make_void<typename T::A>::type> : std::true_type {};\n"
+                      "template <typename T, bool> struct is_A_impl : public std::is_trivially_copyable<T> {};\n"
+                      "template <typename T> struct is_A_impl<T, true> : public std::is_same<typename T::A, std::true_type> {};\n"
+                      "}\n"
+                      "\n"
+                      "template <typename T> struct is_A : ns_details::is_A_impl<T, ns_details::has_A<T>::value> {};\n"
+                      "template <class T, class U> struct is_A<std::pair<T, U>> : std::integral_constant<bool, is_A<T>::value && is_A<U>::value> {};\n"
+                      "}\n"
+                      "\n"
+                      "extern \"C\" {\n"
+                      "static const int foo = 8;\n"
+                      "}\n");
+        ASSERT(db);
+        ASSERT_EQUALS(6, db->scopeList.size());
+        ASSERT_EQUALS(1, db->scopeList.front().varlist.size());
+        auto list = db->scopeList;
+        list.pop_front();
+        for (const auto &scope : list) {
+            ASSERT_EQUALS(0, scope.varlist.size());
+        }
     }
 
     void enum1() {

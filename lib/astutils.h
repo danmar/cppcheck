@@ -67,6 +67,8 @@ bool astHasVar(const Token * tok, nonneg int varid);
 bool astIsSignedChar(const Token *tok);
 /** Is expression a 'char' if no promotion is used? */
 bool astIsUnknownSignChar(const Token *tok);
+/** Is expression a char according to valueType? */
+bool astIsGenericChar(const Token* tok);
 /** Is expression of integral type? */
 bool astIsIntegral(const Token *tok, bool unknown);
 bool astIsUnsigned(const Token* tok);
@@ -145,7 +147,11 @@ struct ReferenceToken {
     ErrorPath errors;
 };
 
-std::vector<ReferenceToken> followAllReferences(const Token* tok, bool inconclusive = true, ErrorPath errors = ErrorPath{}, int depth = 20);
+std::vector<ReferenceToken> followAllReferences(const Token* tok,
+                                                bool temporary = true,
+                                                bool inconclusive = true,
+                                                ErrorPath errors = ErrorPath{},
+                                                int depth = 20);
 const Token* followReferences(const Token* tok, ErrorPath* errors = nullptr);
 
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);

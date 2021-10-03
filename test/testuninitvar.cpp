@@ -4895,6 +4895,15 @@ private:
                         "  return a;\n" // <- a has been initialized
                         "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: x\n", errout.str());
+
+        // #10468
+        valueFlowUninit("uint32_t foo(uint32_t in) {\n"
+                        "    uint32_t out, mask = 0x7F;\n"
+                        "    while (mask ^ 0x7FFFFFFF)\n"
+                        "        out = in & ~mask;\n"
+                        "    return out;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_ipa() {

@@ -108,6 +108,7 @@ private:
         TEST_CASE(initvar_2constructors);       // BUG 2270353
         TEST_CASE(initvar_constvar);
         TEST_CASE(initvar_staticvar);
+        TEST_CASE(initvar_brace_init);
         TEST_CASE(initvar_union);
         TEST_CASE(initvar_delegate);       // ticket #4302
         TEST_CASE(initvar_delegate2);
@@ -1041,6 +1042,19 @@ private:
               "public:\n"
               "    Fred() { }\n"
               "    static void *p;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
+    void initvar_brace_init() { // #10142
+        check("class C\n"
+              "{\n"
+              "public:\n"
+              "  C() {}\n"
+              "\n"
+              "private:\n"
+              "  std::map<int, double> * values_{};\n"
               "};");
         ASSERT_EQUALS("", errout.str());
     }

@@ -279,6 +279,13 @@ QVector<int>::iterator QVector2()
     return it;
 }
 
+void duplicateExpression_QString_Compare(QString style) //#8723
+{
+    // cppcheck-suppress duplicateExpression
+    if (style.compare( "x", Qt::CaseInsensitive ) == 0 || style.compare( "x", Qt::CaseInsensitive ) == 0)
+    {}
+}
+
 void QStack1(QStack<int> intStackArg)
 {
     for (int i = 0; i <= intStackArg.size(); ++i) {

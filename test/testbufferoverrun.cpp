@@ -135,6 +135,7 @@ private:
         TEST_CASE(array_index_56); // #10284
         TEST_CASE(array_index_57); // #10023
         TEST_CASE(array_index_58); // #7524
+        TEST_CASE(array_index_59); // #10413
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1652,6 +1653,18 @@ private:
             errout.str());
     }
 
+    void array_index_59()
+    {
+        check("long f(long b) {\n"
+              "  const long a[] = { 0, 1, };\n"
+              "  const long c = std::size(a);\n"
+              "  if (b < 0 || b >= c)\n"
+              "    return 0;\n"
+              "  return a[b];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void array_index_multidim() {
         check("void f()\n"
               "{\n"
@@ -2862,26 +2875,40 @@ private:
     }
 
     void buffer_overrun_function_array_argument() {
+        setMultiline();
+
         check("void f(char a[10]);\n"
               "void g() {\n"
               "    char a[2];\n"
               "    f(a);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The array 'a' is too small, the function 'f' expects a bigger one.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:4:warning:Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n"
+                      "test.cpp:4:note:Function 'f' is called\n"
+                      "test.cpp:1:note:Declaration of 1st function argument.\n"
+                      "test.cpp:3:note:Passing buffer 'a' to function that is declared here\n"
+                      "test.cpp:4:note:Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n", errout.str());
 
         check("void f(float a[10][3]);\n"
               "void g() {\n"
               "    float a[2][3];\n"
               "    f(a);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The array 'a' is too small, the function 'f' expects a bigger one.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:4:warning:Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n"
+                      "test.cpp:4:note:Function 'f' is called\n"
+                      "test.cpp:1:note:Declaration of 1st function argument.\n"
+                      "test.cpp:3:note:Passing buffer 'a' to function that is declared here\n"
+                      "test.cpp:4:note:Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n", errout.str());
 
         check("void f(int a[20]);\n"
               "void g() {\n"
               "    int a[2];\n"
               "    f(a);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) The array 'a' is too small, the function 'f' expects a bigger one.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:4:warning:Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n"
+                      "test.cpp:4:note:Function 'f' is called\n"
+                      "test.cpp:1:note:Declaration of 1st function argument.\n"
+                      "test.cpp:3:note:Passing buffer 'a' to function that is declared here\n"
+                      "test.cpp:4:note:Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n", errout.str());
 
         check("void f(int a[]) {\n"
               "  switch (2) {\n"
@@ -3149,6 +3176,11 @@ private:
               "    dostuff(x-i);\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (portability) Undefined behaviour, when 'i' is -20 the pointer arithmetic 'x-i' is out of bounds.\n", "", errout.str());
+
+        check("void f(const char *x[10]) {\n"
+              "    return x-4;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void strcat1() {
@@ -4662,7 +4694,10 @@ private:
               "    for(int i=0;i<strlen(*test);i++)\n"
               "        printf(\"%c\",*test[i]);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4] -> [test.cpp:9]: (warning) The address of local variable 'test' might be accessed at non-zero index.\n", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:9]: (warning) The address of local variable 'test' might be accessed at non-zero index.\n",
+            "",
+            errout.str());
 
         check("void Bar(uint8_t data);\n"
               "void Foo(const uint8_t * const data, const uint8_t length) {\n"
@@ -4672,6 +4707,18 @@ private:
               "void test() {\n"
               "    const uint8_t data = 0U;\n"
               "    Foo(&data,1U);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo(int n, int* p) {\n"
+              "    int res = 0;\n"
+              "    for(int i = 0; i < n; i++ )\n"
+              "        res += p[i];\n"
+              "    return res;\n"
+              "}\n"
+              "int bar() {\n"
+              "    int single_value = 0;\n"
+              "    return foo(1, &single_value);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

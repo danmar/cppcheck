@@ -117,6 +117,9 @@ private:
         TEST_CASE(alwaysTrue);
         TEST_CASE(alwaysTrueSymbolic);
         TEST_CASE(alwaysTrueInfer);
+        TEST_CASE(alwaysTrueContainer);
+        TEST_CASE(alwaysTrueLoop);
+        TEST_CASE(alwaysTrueTryCatch);
         TEST_CASE(multiConditionAlwaysTrue);
         TEST_CASE(duplicateCondition);
 
@@ -2673,6 +2676,17 @@ private:
               "    return ret;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #10456
+        check("int f() {\n"
+              "    int i = 0;\n"
+              "    auto f = [&](bool b) { if (b) ++i; };\n"
+              "    if (i) return i;\n"
+              "    f(true);\n"
+              "    if (i) return i;\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void innerConditionModified() {
@@ -3768,6 +3782,17 @@ private:
               "    return a || ! b || ! a;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition '!a' is always true\n", errout.str());
+
+        // #10148
+        check("void f(int i) {\n"
+              "    if (i >= 64) {}\n"
+              "    else if (i >= 32) {\n"
+              "        i &= 31;\n"
+              "        if (i == 0) {}\n"
+              "        else {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -4028,6 +4053,78 @@ private:
               "    if( s.size() < 2 ) return;\n"
               "    if( s != \"ab\" )\n"
               "        if( s.size() < 3 ) return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void alwaysTrueLoop()
+    {
+        check("long foo() {\n"
+              "  bool bUpdated = false;\n"
+              "  long Ret{};\n"
+              "  do {\n"
+              "    Ret = bar();\n"
+              "    if (Ret == 0) {\n"
+              "      if (bUpdated)\n"
+              "        return 1;\n"
+              "      bUpdated = true;\n"
+              "    }\n"
+              "    else\n"
+              "      bUpdated = false;\n"
+              "  }\n"
+              "  while (bUpdated);\n"
+              "  return Ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool foo() {\n"
+              "  bool bFirst = true;\n"
+              "  do {\n"
+              "    if (bFirst)\n"
+              "      bar();\n"
+              "    if (baz())\n"
+              "      break;       \n"
+              "    bFirst = false;\n"
+              "  } while (true);\n"
+              "  return bFirst;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void alwaysTrueTryCatch()
+    {
+        check("void g();\n"
+              "void f(int x)\n"
+              "{\n"
+              "    if( x ) {\n"
+              "        try {\n"
+              "            g();\n"
+              "        }\n"
+              "        catch(...) {\n"
+              "            return;\n"
+              "        }\n"
+              "    }\n"
+              "    g();\n"
+              "    if( x ) {\n"
+              "        g();\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g();\n"
+              "void h();\n"
+              "void f(int x) {\n"
+              "    if( x ) {\n"
+              "        try {\n"
+              "            g();\n"
+              "            return;\n"
+              "        }\n"
+              "        catch( ... ) {}\n"
+              "    }\n"
+              "    h();\n"
+              "    if( x ) {\n"
+              "        g();\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -4489,7 +4586,7 @@ private:
         check("void f(unsigned char c) {\n"
               "  if (c == 256) {}\n"
               "}", &settingsUnix64);
-        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always true/false.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always false.\n", errout.str());
 
         check("void f(unsigned char c) {\n"
               "  if (c == 255) {}\n"
@@ -4505,12 +4602,12 @@ private:
         check("void f(signed char x) {\n"
               "  if (x == 0xff) {}\n"
               "}", &settingsUnix64);
-        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed char' against value 255. Condition is always true/false.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed char' against value 255. Condition is always false.\n", errout.str());
 
         check("void f(short x) {\n"
               "  if (x == 0xffff) {}\n"
               "}", &settingsUnix64);
-        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed short' against value 65535. Condition is always true/false.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed short' against value 65535. Condition is always false.\n", errout.str());
 
         check("void f(int x) {\n"
               "  if (x == 0xffffffff) {}\n"
@@ -4526,6 +4623,17 @@ private:
               "  if (x == ~0LL) {}\n"
               "}", &settingsUnix64);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  char c;\n"
+              "  if ((c = foo()) != -1) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "  if (x < 3000000000) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed int' against value 3000000000. Condition is always true.\n", errout.str());
     }
 
     void knownConditionCast() { // #9976

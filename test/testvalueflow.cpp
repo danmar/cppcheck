@@ -143,6 +143,7 @@ private:
         TEST_CASE(valueFlowUnsigned);
         TEST_CASE(valueFlowMod);
         TEST_CASE(valueFlowSymbolic);
+        TEST_CASE(valueFlowSmartPointer);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -518,6 +519,8 @@ private:
         ASSERT_EQUALS((int)('\n'), valueOfTok("x='\\n';", "'\\n'").intvalue);
         TODO_ASSERT_EQUALS(
             0xFFFFFFFF00000000, -1, valueOfTok("x=0xFFFFFFFF00000000;", "0xFFFFFFFF00000000").intvalue); // #7701
+        ASSERT_EQUALS_DOUBLE(16, valueOfTok("x=(double)16;", "(").floatValue, 1e-5);
+        ASSERT_EQUALS_DOUBLE(0.0625, valueOfTok("x=1/(double)16;", "/").floatValue, 1e-5);
 
         // scope
         {
@@ -822,6 +825,12 @@ private:
         ASSERT(tokenValues(";-1>>10;",">>").empty());
         ASSERT(tokenValues(";10>>-1;",">>").empty());
         ASSERT(tokenValues(";10>>64;",">>").empty());
+
+        code = "float f(const uint16_t& value) {\n"
+               "    const uint16_t uVal = value; \n"
+               "    return static_cast<float>(uVal) / 2;\n"
+               "}\n";
+        ASSERT_EQUALS(true, tokenValues(code, "/").empty());
 
         // calculation using 1,2 variables/values
         code  = "void f(int x) {\n"
@@ -1694,7 +1703,8 @@ private:
                 "    if (x==123){}\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n",
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n"
+            "[test.cpp:2]: (debug) valueflow.cpp::(valueFlow) bailout: valueFlowAfterCondition: bailing in conditional block\n",
             errout.str());
 
         // #5721 - FP
@@ -2172,6 +2182,7 @@ private:
                "  } while (1);\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 3));
 
         // pointer/reference to x
         code = "int f(void) {\n"
@@ -2942,6 +2953,18 @@ private:
                "    return 0;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
+
+        code = "int f(int x) {\n"
+               "    if (x == 1) {\n"
+               "        for(int i=0;i<1;i++) {\n"
+               "            if (x == 1)\n"
+               "                continue;\n"
+               "        }\n"
+               "    }\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 8U, 1));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 8U, 1));
     }
 
     void valueFlowAfterConditionExpr() {
@@ -3221,6 +3244,14 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 13));
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 26));
+
+        code = "void f(int* i) {\n"
+               "    if (!i) return;\n"
+               "    int * x = *i == 1 ? i : nullptr;\n"
+               "    int* a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
     }
 
     void valueFlowForwardLambda() {
@@ -3241,6 +3272,16 @@ private:
                "  f();\n"
                "}";
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 3U, 3));
+
+        code = "void f() {\n"
+               "  int x=3;\n"
+               "  auto f = [&](){ x++; }\n"
+               "  x = 1;\n"
+               "  f();\n"
+               "  int a = x;\n" // x is actually 2
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 1));
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, 3));
     }
 
     void valueFlowForwardTryCatch() {
@@ -5086,6 +5127,12 @@ private:
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 3));
 
         code = "void f() {\n"
+               "  std::string s = { 'a', 'b', 'c' };\n" // size of s is 3
+               "  s.size();\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 3));
+
+        code = "void f() {\n"
                "  std::string s=\"abc\";\n" // size of s is 3
                "  s += unknown;\n"
                "  s.size();\n"
@@ -5822,6 +5869,16 @@ private:
                "      a *const d = arguments[c.arg];\n"
                "}\n";
         valueOfTok(code, "c");
+
+        code = "void h(char* p, int s) {\n"
+               "  char *q = p+s;\n"
+               "  char buf[100];\n"
+               "  char *b = buf;\n"
+               "  ++b;\n"
+               "  if (p < q && buf < b)\n"
+               "    diff = (buf-b);\n"
+               "}\n";
+        valueOfTok(code, "diff");
     }
 
     void valueFlowHang() {
@@ -5968,6 +6025,17 @@ private:
                "    for (auto *el = root->FirstChildElement(\"Result\"); el && !ParseAddItem(GetItem(el)); el = el->NextSiblingElement(\"Result\")) ;\n"
                "}\n";
         valueOfTok(code, "root");
+
+        code = "bool isCharPotentialOperator(char ch)  {\n"
+               "    return (ispunct((unsigned char) ch)\n"
+               "            && ch != '{' && ch != '}'\n"
+               "            && ch != '(' && ch != ')'\n"
+               "            && ch != '[' && ch != ']'\n"
+               "            && ch != ';' && ch != ','\n"
+               "            && ch != '#' && ch != '\\'\n"
+               "            && ch != '\'' && ch != '\"');\n"
+               "}\n";
+        valueOfTok(code, "return");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577
@@ -6275,6 +6343,19 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, "y", 0));
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "y", -1));
+    }
+
+    void valueFlowSmartPointer()
+    {
+        const char* code;
+
+        code = "int* df(int* expr);\n"
+               "int * f() {\n"
+               "    std::unique_ptr<int> x;\n"
+               "    x.reset(df(x.release()));\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
     }
 };
 

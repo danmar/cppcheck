@@ -214,6 +214,7 @@ private:
         TEST_CASE(template171); // crash
         TEST_CASE(template172); // #10258 crash
         TEST_CASE(template173); // #10332 crash
+        TEST_CASE(template174); // #10506 hang
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -4436,6 +4437,19 @@ private:
                             "void swap<a::c<b>> ( a :: c<b> & , a :: c<b> & ) { } "
                             "} "
                             "class a :: c<b> { } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template174()
+    { // #10506 hang
+        const char code[] = "namespace a {\n"
+                            "template <typename> using b = int;\n"
+                            "template <typename c> c d() { return d<b<c>>(); }\n"
+                            "}\n"
+                            "void e() { a::d<int>(); }\n";
+        const char exp[] = "namespace a { int d<int> ( ) ; } "
+                           "void e ( ) { a :: d<int> ( ) ; } "
+                           "int a :: d<int> ( ) { return d < int > ( ) ; }";
         ASSERT_EQUALS(exp, tok(code));
     }
 

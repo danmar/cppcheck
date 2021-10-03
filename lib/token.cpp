@@ -2335,7 +2335,7 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token * tok)
             const Token * tok2 = var->declEndToken();
             if (Token::Match(tok2, "; %varid% =", var->declarationId()))
                 tok2 = tok2->tokAt(2);
-            if (Token::simpleMatch(tok2, "=") && Token::Match(tok2->astOperand2(), "!!=")) {
+            if (Token::simpleMatch(tok2, "=") && Token::Match(tok2->astOperand2(), "!!=") && tok != tok2->astOperand2()) {
                 std::pair<const Token*, const Token*> r = typeDecl(tok2->astOperand2());
                 if (r.first)
                     return r;
@@ -2409,7 +2409,8 @@ bool Token::hasKnownSymbolicValue(const Token* tok) const
         return false;
     return mImpl->mValues &&
            std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) {
-        return value.isSymbolicValue() && value.tokvalue && value.tokvalue->exprId() == tok->exprId();
+        return value.isKnown() && value.isSymbolicValue() && value.tokvalue &&
+        value.tokvalue->exprId() == tok->exprId();
     });
 }
 
@@ -2531,4 +2532,52 @@ bool TokenImpl::getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, M
     if (attr)
         *value = attr->value;
     return attr != nullptr;
+}
+
+Token* findTypeEnd(Token* tok)
+{
+    while (Token::Match(tok, "%name%|.|::|*|&|&&|<|(|template|decltype|sizeof")) {
+        if (Token::Match(tok, "(|<"))
+            tok = tok->link();
+        if (!tok)
+            return nullptr;
+        tok = tok->next();
+    }
+    return tok;
+}
+
+const Token* findTypeEnd(const Token* tok) {
+    return findTypeEnd(const_cast<Token*>(tok));
+}
+
+Token* findLambdaEndScope(Token* tok)
+{
+    if (!Token::simpleMatch(tok, "["))
+        return nullptr;
+    tok = tok->link();
+    if (!Token::Match(tok, "] (|{"))
+        return nullptr;
+    tok = tok->linkAt(1);
+    if (Token::simpleMatch(tok, "}"))
+        return tok;
+    if (Token::simpleMatch(tok, ") {"))
+        return tok->linkAt(1);
+    if (!Token::simpleMatch(tok, ")"))
+        return nullptr;
+    tok = tok->next();
+    while (Token::Match(tok, "mutable|constexpr|constval|noexcept|.")) {
+        if (Token::simpleMatch(tok, "noexcept ("))
+            tok = tok->linkAt(1);
+        if (Token::simpleMatch(tok, ".")) {
+            tok = findTypeEnd(tok);
+            break;
+        }
+        tok = tok->next();
+    }
+    if (Token::simpleMatch(tok, "{"))
+        return tok->link();
+    return nullptr;
+}
+const Token* findLambdaEndScope(const Token* tok) {
+    return findLambdaEndScope(const_cast<Token*>(tok));
 }

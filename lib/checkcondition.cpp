@@ -654,6 +654,8 @@ void CheckCondition::multiCondition2()
             const Token * const endToken = tok->scope()->bodyEnd;
 
             for (; tok && tok != endToken; tok = tok->next()) {
+                if (isExpressionChangedAt(cond1, tok, 0, false, mSettings, mTokenizer->isCPP()))
+                    break;
                 if (Token::Match(tok, "if|return")) {
                     const Token * condStartToken = tok->str() == "if" ? tok->next() : tok;
                     const Token * condEndToken = tok->str() == "if" ? condStartToken->link() : Token::findsimplematch(condStartToken, ";");
@@ -1805,28 +1807,51 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
                 if (bits == 0 || bits >= 64)
                     continue;
 
-                const auto typeMinValue = (typeTok->valueType()->sign == ValueType::Sign::SIGNED) ? (-(1LL << (bits-1))) : 0;
+                const auto typeMinValue = (typeTok->valueType()->sign == ValueType::Sign::UNSIGNED) ? 0 : (-(1LL << (bits-1)));
                 const auto unsignedTypeMaxValue = (1LL << bits) - 1LL;
-                const auto typeMaxValue = (typeTok->valueType()->sign != ValueType::Sign::SIGNED || bits >= mSettings->int_bit) ?
-                                          unsignedTypeMaxValue : // unsigned type. signed int/long/long long; comparing sign bit is ok. i.e. 'i == 0xffffffff'
-                                          (unsignedTypeMaxValue / 2); // signed char/short
+                long long typeMaxValue;
+                if (typeTok->valueType()->sign != ValueType::Sign::SIGNED)
+                    typeMaxValue = unsignedTypeMaxValue;
+                else if (bits >= mSettings->int_bit && (!valueTok->valueType() || valueTok->valueType()->sign != ValueType::Sign::SIGNED))
+                    typeMaxValue = unsignedTypeMaxValue;
+                else
+                    typeMaxValue = unsignedTypeMaxValue / 2;
 
-                if (valueTok->getKnownIntValue() < typeMinValue)
-                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), valueTok->getKnownIntValue());
+                bool result;
+                if (tok->str() == "==")
+                    result = false;
+                else if (tok->str() == "!=")
+                    result = true;
+                else if (tok->str()[0] == '>' && i == 0)
+                    // num > var
+                    result = (valueTok->getKnownIntValue() > 0);
+                else if (tok->str()[0] == '>' && i == 1)
+                    // var > num
+                    result = (valueTok->getKnownIntValue() < 0);
+                else if (tok->str()[0] == '<' && i == 0)
+                    // num < var
+                    result = (valueTok->getKnownIntValue() < 0);
+                else if (tok->str()[0] == '<' && i == 1)
+                    // var < num
+                    result = (valueTok->getKnownIntValue() > 0);
+
+                if (valueTok->getKnownIntValue() < typeMinValue) {
+                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), valueTok->getKnownIntValue(), result);
+                }
                 else if (valueTok->getKnownIntValue() > typeMaxValue)
-                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), valueTok->getKnownIntValue());
+                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), valueTok->getKnownIntValue(), result);
             }
         }
     }
 }
 
-void CheckCondition::compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, long long value)
+void CheckCondition::compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, long long value, bool result)
 {
     reportError(
         comparison,
         Severity::style,
         "compareValueOutOfTypeRangeError",
-        "Comparing expression of type '" + type + "' against value " + std::to_string(value) + ". Condition is always true/false.",
+        "Comparing expression of type '" + type + "' against value " + std::to_string(value) + ". Condition is always " + (result ? "true" : "false") + ".",
         CWE398,
         Certainty::normal);
 }

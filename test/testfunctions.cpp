@@ -1494,8 +1494,8 @@ private:
         check("int f(int x) { assert(0); }");
         ASSERT_EQUALS("", errout.str());
 
-        check("int f(int x) { RETURN(0); }");
-        ASSERT_EQUALS("[test.cpp:1]: (error, inconclusive) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+        check("int f(int x) { if (x) return 1; else return bar({1}, {}); }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // NRVO check

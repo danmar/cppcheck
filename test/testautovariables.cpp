@@ -149,6 +149,7 @@ private:
         TEST_CASE(danglingTemporaryLifetime);
         TEST_CASE(invalidLifetime);
         TEST_CASE(deadPointer);
+        TEST_CASE(splitNamespaceAuto); // crash #10473
     }
 
 
@@ -2421,6 +2422,26 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    int i;\n"
+              "    {\n"
+              "        std::vector<int> vec;\n"
+              "        const auto iter = vec.begin();\n"
+              "        i = (int)(iter - vec.begin());\n"
+              "    }\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int* get(std::vector<int>& container) {\n"
+              "    Sequence seq(container);\n"
+              "    for (auto& r : seq) {\n"
+              "        return &r;\n"
+              "    }\n"
+              "    return &*seq.begin();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetime() {
@@ -2674,6 +2695,17 @@ private:
               "                   [key](const auto &v) { return v.key == key; });\n"
               "  return (entry == lookup.end()) ? \"\" : entry->value;\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9811
+        check("struct Base {\n"
+              "    virtual auto get() -> int & = 0;\n"
+              "};\n"
+              "struct A : public Base {\n"
+              "    int z = 42;\n"
+              "    auto get() -> int & override { return z; }\n"
+              "    auto getMore() -> int & { return get(); }\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3161,6 +3193,18 @@ private:
               "    return 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:8]: (error) Using pointer to local variable 'x' that is out of scope.\n", errout.str());
+    }
+
+    void splitNamespaceAuto() { // #10473
+        check("namespace ns\n"
+              "{\n"
+              "    auto var{ 0 };\n"
+              "}\n"
+              "namespace ns\n"
+              "{\n"
+              "    int i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 };

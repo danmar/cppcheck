@@ -79,14 +79,14 @@ static R calculate(const std::string& s, const T& x, const T& y, bool* error = n
     case '<':
         return wrap(x < y);
     case '<<':
-        if (y >= sizeof(MathLib::bigint) * 8) {
+        if (y >= sizeof(MathLib::bigint) * 8 || y < 0 || x < 0) {
             if (error)
                 *error = true;
             return R{};
         }
         return wrap(MathLib::bigint(x) << MathLib::bigint(y));
     case '>>':
-        if (y >= sizeof(MathLib::bigint) * 8) {
+        if (y >= sizeof(MathLib::bigint) * 8 || y < 0 || x < 0) {
             if (error)
                 *error = true;
             return R{};
