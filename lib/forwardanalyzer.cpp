@@ -12,6 +12,8 @@
 #include <tuple>
 #include <utility>
 
+bool isSizeOfEtc(const Token *tok);
+
 struct OnExit {
     std::function<void()> f;
 
@@ -192,8 +194,16 @@ struct ForwardTraversal {
     Progress update(Token* tok) {
         Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Forward);
         actions |= action;
-        if (!action.isNone() && !analyzeOnly)
+        if (!action.isNone() && !analyzeOnly) {
             analyzer->update(tok, action, Analyzer::Direction::Forward);
+
+            // uninit value => skip further analysis
+            auto v = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
+            if (v != tok->values().end()) {
+                if (Token::Match(tok->astParent(), "[,(]") && !isSizeOfEtc(tok->astParent()->previous()))
+                    return Break(Analyzer::Terminate::Modified);
+            }
+        }
         if (action.isInconclusive() && !analyzer->lowerToInconclusive())
             return Break(Analyzer::Terminate::Inconclusive);
         if (action.isInvalid())

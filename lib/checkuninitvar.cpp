@@ -50,7 +50,7 @@ namespace {
 
 //---------------------------------------------------------------------------
 
-static bool isSizeOfEtc(const Token *tok)
+bool isSizeOfEtc(const Token *tok)
 {
     return Token::Match(tok, "sizeof|typeof|offsetof|decltype|__typeof__ (");
 }
