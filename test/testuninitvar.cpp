@@ -4563,8 +4563,7 @@ private:
                             "    arc << p;\n"  // <- TODO initialization?
                             "    return *p;\n"
                             "}");
-            ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: p\n"
-                          "[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: p\n", errout.str());
 
             // #4320
             valueFlowUninit("void f() {\n"
@@ -4572,8 +4571,7 @@ private:
                             "    a << 1;\n"
                             "    return a;\n"
                             "}");
-            ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n"
-                          "[test.cpp:4]: (error) Uninitialized variable: a\n",
+            ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n",
                           errout.str());
 
             // #9750

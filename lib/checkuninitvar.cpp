@@ -1508,58 +1508,71 @@ void CheckUninitVar::valueFlowUninit()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
-    // check every executable scope
-    for (const Scope *scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-            if (isSizeOfEtc(tok)) {
-                tok = tok->linkAt(1);
-                continue;
+    std::unordered_set<nonneg int> ids;
+    for(bool subfunction:{false, true}) {
+        // check every executable scope
+        for (const Scope *scope : symbolDatabase->functionScopes) {
+            for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+                if (isSizeOfEtc(tok)) {
+                    tok = tok->linkAt(1);
+                    continue;
+                }
+                if (ids.count(tok->exprId()) > 0)
+                    continue;
+                if (!tok->variable() && !tok->isUnaryOp("*"))
+                    continue;
+                if (Token::Match(tok, "%name% ("))
+                    continue;
+                const Token* parent = tok->astParent();
+                while (Token::simpleMatch(parent, "."))
+                    parent = parent->astParent();
+                if (parent && parent->isUnaryOp("&"))
+                    continue;
+                if (isVoidCast(parent))
+                    continue;
+                auto v = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
+                if (v == tok->values().end())
+                    continue;
+                if (v->tokvalue && ids.count(v->tokvalue->exprId()) > 0)
+                    continue;
+                if (subfunction == (v->path == 0))
+                    continue;
+                if (v->isInconclusive())
+                    continue;
+                if (v->indirect > 1 || v->indirect < 0)
+                    continue;
+                bool uninitderef = false;
+                if (tok->variable()) {
+                    bool unknown;
+                    const bool isarray = !tok->variable() || tok->variable()->isArray();
+                    const bool ispointer = astIsPointer(tok) && !isarray;
+                    const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
+                    if (ispointer && v->indirect == 1 && !deref)
+                        continue;
+                    if (isarray && !deref)
+                        continue;
+                    uninitderef = deref && v->indirect == 0;
+                    const bool isleaf = isLeafDot(tok) || uninitderef;
+                    if (Token::Match(tok->astParent(), ". %var%") && !isleaf)
+                        continue;
+                }
+                if (!(Token::Match(tok->astParent(), ". %name% (") && uninitderef) &&
+                    isVariableChanged(tok, v->indirect, mSettings, mTokenizer->isCPP()))
+                    continue;
+                bool inconclusive = false;
+                if (isVariableChangedByFunctionCall(tok, v->indirect, mSettings, &inconclusive) || inconclusive)
+                    continue;
+                uninitvarError(tok, tok->expressionString(), v->errorPath);
+                ids.insert(tok->exprId());
+                if (v->tokvalue)
+                    ids.insert(v->tokvalue->exprId());
+                const Token* nextTok = nextAfterAstRightmostLeaf(parent);
+                if (nextTok == scope->bodyEnd)
+                    break;
+                tok = nextTok ? nextTok : tok;
             }
-            if (!tok->variable() && !tok->isUnaryOp("*"))
-                continue;
-            if (Token::Match(tok, "%name% ("))
-                continue;
-            const Token* parent = tok->astParent();
-            while (Token::simpleMatch(parent, "."))
-                parent = parent->astParent();
-            if (parent && parent->isUnaryOp("&"))
-                continue;
-            if (isVoidCast(parent))
-                continue;
-            auto v = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
-            if (v == tok->values().end())
-                continue;
-            if (v->isInconclusive())
-                continue;
-            if (v->indirect > 1 || v->indirect < 0)
-                continue;
-            bool uninitderef = false;
-            if (tok->variable()) {
-                bool unknown;
-                const bool isarray = !tok->variable() || tok->variable()->isArray();
-                const bool ispointer = astIsPointer(tok) && !isarray;
-                const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
-                if (ispointer && v->indirect == 1 && !deref)
-                    continue;
-                if (isarray && !deref)
-                    continue;
-                uninitderef = deref && v->indirect == 0;
-                const bool isleaf = isLeafDot(tok) || uninitderef;
-                if (Token::Match(tok->astParent(), ". %var%") && !isleaf)
-                    continue;
-            }
-            if (!(Token::Match(tok->astParent(), ". %name% (") && uninitderef) &&
-                isVariableChanged(tok, v->indirect, mSettings, mTokenizer->isCPP()))
-                continue;
-            bool inconclusive = false;
-            if (isVariableChangedByFunctionCall(tok, v->indirect, mSettings, &inconclusive) || inconclusive)
-                continue;
-            uninitvarError(tok, tok->expressionString(), v->errorPath);
-            const Token* nextTok = nextAfterAstRightmostLeaf(parent);
-            if (nextTok == scope->bodyEnd)
-                break;
-            tok = nextTok ? nextTok : tok;
         }
+
     }
 }
 
