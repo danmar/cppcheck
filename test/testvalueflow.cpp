@@ -5127,6 +5127,12 @@ private:
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 3));
 
         code = "void f() {\n"
+               "  std::string s = { 'a', 'b', 'c' };\n" // size of s is 3
+               "  s.size();\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 3));
+
+        code = "void f() {\n"
                "  std::string s=\"abc\";\n" // size of s is 3
                "  s += unknown;\n"
                "  s.size();\n"

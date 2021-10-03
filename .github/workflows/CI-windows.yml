@@ -126,7 +126,7 @@ jobs:
           :: since FILESDIR is not set copy the binary to the root so the addons are found
           copy .\build\bin\Release\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
           cd test/cli || exit /b !errorlevel!
-          python -m pytest --suppress-no-test-exit-code test-clang-import.py || exit /b !errorlevel!
+          :: python -m pytest --suppress-no-test-exit-code test-clang-import.py || exit /b !errorlevel!
           python -m pytest test-helloworld.py || exit /b !errorlevel!
           python -m pytest test-inline-suppress.py || exit /b !errorlevel!
           python -m pytest test-more-projects.py || exit /b !errorlevel!

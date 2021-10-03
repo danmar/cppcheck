@@ -52,12 +52,18 @@ struct EnumClassHash {
 
 inline bool endsWith(const std::string &str, char c)
 {
-    return str[str.size()-1U] == c;
+    return !str.empty() && str.back() == c;
 }
 
 inline bool endsWith(const std::string &str, const char end[], std::size_t endlen)
 {
     return (str.size() >= endlen) && (str.compare(str.size()-endlen, endlen, end)==0);
+}
+
+template<std::size_t N>
+bool endsWith(const std::string& str, const char (&end)[N])
+{
+    return endsWith(str, end, N - 1);
 }
 
 inline static bool isPrefixStringCharLiteral(const std::string &str, char q, const std::string& p)

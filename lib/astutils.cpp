@@ -203,6 +203,11 @@ bool astIsUnknownSignChar(const Token *tok)
     return astIsCharWithSign(tok, ValueType::Sign::UNKNOWN_SIGN);
 }
 
+bool astIsGenericChar(const Token* tok)
+{
+    return tok && tok->valueType() && (tok->valueType()->type == ValueType::Type::CHAR || tok->valueType()->type == ValueType::Type::WCHAR_T);
+}
+
 bool astIsIntegral(const Token *tok, bool unknown)
 {
     const ValueType *vt = tok ? tok->valueType() : nullptr;
@@ -1872,7 +1877,7 @@ static bool isCPPCastKeyword(const Token* tok)
 {
     if (!tok)
         return false;
-    return endsWith(tok->str(), "_cast", 5);
+    return endsWith(tok->str(), "_cast");
 }
 
 static bool isTrivialConstructor(const Token* tok)
