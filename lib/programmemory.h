@@ -62,14 +62,10 @@ struct ProgramMemoryState {
     ProgramMemory get(const Token* tok, const Token* ctx, const ProgramMemory::Map& vars) const;
 };
 
-using PMEvaluateFunction =
-    std::function<bool (const Token* expr, ProgramMemory* const programMemory, MathLib::bigint* result)>;
-
 void execute(const Token* expr,
              ProgramMemory* const programMemory,
              MathLib::bigint* result,
-             bool* error,
-             const PMEvaluateFunction& f = nullptr);
+             bool* error);
 
 /**
  * Is condition always false when variable has given value?
