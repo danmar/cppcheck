@@ -1509,9 +1509,9 @@ void CheckUninitVar::valueFlowUninit()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     std::unordered_set<nonneg int> ids;
-    for(bool subfunction:{false, true}) {
+    for (bool subfunction : {false, true}) {
         // check every executable scope
-        for (const Scope *scope : symbolDatabase->functionScopes) {
+        for (const Scope* scope : symbolDatabase->functionScopes) {
             for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
                 if (isSizeOfEtc(tok)) {
                     tok = tok->linkAt(1);
@@ -1530,7 +1530,8 @@ void CheckUninitVar::valueFlowUninit()
                     continue;
                 if (isVoidCast(parent))
                     continue;
-                auto v = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
+                auto v = std::find_if(
+                    tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
                 if (v == tok->values().end())
                     continue;
                 if (v->tokvalue && ids.count(v->tokvalue->exprId()) > 0)
@@ -1572,7 +1573,6 @@ void CheckUninitVar::valueFlowUninit()
                 tok = nextTok ? nextTok : tok;
             }
         }
-
     }
 }
 

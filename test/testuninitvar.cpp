@@ -4571,8 +4571,7 @@ private:
                             "    a << 1;\n"
                             "    return a;\n"
                             "}");
-            ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n",
-                          errout.str());
+            ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
 
             // #9750
             valueFlowUninit("struct S {\n"
