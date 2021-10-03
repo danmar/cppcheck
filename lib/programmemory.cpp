@@ -4,8 +4,8 @@
 #include "calculate.h"
 #include "errortypes.h"
 #include "mathlib.h"
-#include "symboldatabase.h"
 #include "settings.h"
+#include "symboldatabase.h"
 #include "token.h"
 #include "valueflow.h"
 #include <algorithm>
@@ -530,9 +530,9 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
     else if (expr->hasKnownIntValue() && !expr->isAssignmentOp()) {
         return expr->values().front();
     } else if ((value = expr->getKnownValue(ValueFlow::Value::ValueType::FLOAT)) ||
-                (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_START)) ||
-                (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_END)) ||
-                (value = expr->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))) {
+               (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_START)) ||
+               (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_END)) ||
+               (value = expr->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))) {
         return *value;
     } else if (expr->isNumber()) {
         if (MathLib::isFloat(expr->str()))
@@ -556,8 +556,7 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
             else if (!v.isImpossible())
                 return ValueFlow::Value{v.intvalue == 0};
         }
-    } else if (expr->isAssignmentOp() && expr->astOperand1() && expr->astOperand2() &&
-               expr->astOperand1()->exprId() > 0) {
+    } else if (expr->isAssignmentOp() && expr->astOperand1() && expr->astOperand2() && expr->astOperand1()->exprId() > 0) {
         ValueFlow::Value rhs = execute(expr->astOperand2(), pm);
         if (rhs.isUninitValue())
             return unknown;
@@ -681,10 +680,7 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
     return unknown;
 }
 
-void execute(const Token* expr,
-             ProgramMemory* const programMemory,
-             MathLib::bigint* result,
-             bool* error)
+void execute(const Token* expr, ProgramMemory* const programMemory, MathLib::bigint* result, bool* error)
 {
     ValueFlow::Value v = execute(expr, *programMemory);
     if (!v.isIntValue() || v.isImpossible())

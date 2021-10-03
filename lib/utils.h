@@ -23,8 +23,8 @@
 
 #include "config.h"
 
-#include <cstddef>
 #include <algorithm>
+#include <cstddef>
 #include <initializer_list>
 #include <string>
 #include <vector>
