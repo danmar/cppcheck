@@ -50,11 +50,6 @@ namespace {
 
 //---------------------------------------------------------------------------
 
-static bool isSizeOfEtc(const Token *tok)
-{
-    return Token::Match(tok, "sizeof|typeof|offsetof|decltype|__typeof__ (");
-}
-
 // get ast parent, skip possible address-of and casts
 static const Token *getAstParentSkipPossibleCastAndAddressOf(const Token *vartok, bool *unknown)
 {
