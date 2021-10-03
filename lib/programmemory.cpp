@@ -548,9 +548,11 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
     result.intvalue = calculate(op, lhs.intvalue, rhs.intvalue, &error);
     if (error)
         return ValueFlow::Value::unknown();
-    if (result.isImpossible() && contains({"==", "!=", "<", ">", "<=", ">="}, op)) {
-        result.setPossible();
-        result.intvalue = !result.intvalue;
+    if (result.isImpossible()) {
+        if ((result.intvalue == 0 && op == "!=") || (result.intvalue != 0 && op == "==")) {
+            result.setPossible();
+            result.intvalue = !result.intvalue;
+        }
     }
     return result;
 }
@@ -558,10 +560,16 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
 static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
 {
     ValueFlow::Value unknown = ValueFlow::Value::unknown();
+    const ValueFlow::Value* value = nullptr;
     if (!expr)
         return unknown;
     else if (expr->hasKnownIntValue() && !expr->isAssignmentOp()) {
         return expr->values().front();
+    } else if ((value = expr->getKnownValue(ValueFlow::Value::ValueType::FLOAT)) ||
+                (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_START)) ||
+                (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_END)) ||
+                (value = expr->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))) {
+        return *value;
     } else if (expr->isNumber()) {
         if (MathLib::isFloat(expr->str()))
             return unknown;
@@ -614,7 +622,9 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
         return execute(expr->astOperand2(), pm);
     } else if (expr->str() == "||" && expr->astOperand1() && expr->astOperand2()) {
         ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
-        if (lhs.isIntValue() && lhs.intvalue != 0)
+        if (!lhs.isIntValue())
+            return unknown;
+        if (lhs.intvalue != 0)
             return lhs;
         return execute(expr->astOperand2(), pm);
     } else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
@@ -664,15 +674,14 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
         if (!lhs.isUninitValue() && !rhs.isUninitValue())
             return evaluate(expr->str(), lhs, rhs);
         if (expr->isComparisonOp()) {
-            if (rhs.isIntValue()) {
+            if (rhs.isIntValue() && !rhs.isImpossible()) {
                 ValueFlow::Value v = inferCondition(expr->str(), expr->astOperand1(), rhs.intvalue);
                 if (v.isKnown())
                     return v;
-            } else if (lhs.isIntValue()) {
+            } else if (lhs.isIntValue() && !lhs.isImpossible()) {
                 ValueFlow::Value v = inferCondition(expr->str(), lhs.intvalue, expr->astOperand2());
                 if (v.isKnown())
-                    return unknown;
-                return v;
+                    return v;
             }
         }
     }
@@ -686,6 +695,15 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
         if (expr->str() == "-")
             lhs.intvalue = -lhs.intvalue;
         return lhs;
+    } else if (expr->str() == "?" && expr->astOperand1() && expr->astOperand2()) {
+        ValueFlow::Value cond = execute(expr->astOperand1(), pm);
+        if (!cond.isIntValue())
+            return unknown;
+        const Token* child = expr->astOperand2();
+        if (cond.intvalue == 0)
+            return execute(child->astOperand2(), pm);
+        else
+            return execute(child->astOperand1(), pm);
     } else if (expr->str() == "(" && expr->isCast()) {
         if (Token::simpleMatch(expr->previous(), ">") && expr->previous()->link())
             return execute(expr->astOperand2(), pm);
