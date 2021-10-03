@@ -5,14 +5,13 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueptr.h"
+#include "checknullpointer.h" // UninitValue => isPointerDeref
 
 #include <algorithm>
 #include <cstdio>
 #include <functional>
 #include <tuple>
 #include <utility>
-
-bool isSizeOfEtc(const Token *tok);
 
 struct OnExit {
     std::function<void()> f;
@@ -200,6 +199,11 @@ struct ForwardTraversal {
             // uninit value => skip further analysis
             auto v = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
             if (v != tok->values().end()) {
+                if (tok->valueType() && tok->valueType()->pointer > 0) {
+                    bool unknown = false;
+                    if (CheckNullPointer::isPointerDeRef(tok, unknown, settings))
+                        return Break(Analyzer::Terminate::Modified);
+                }
                 if (Token::Match(tok->astParent(), "[,(]") && !isSizeOfEtc(tok->astParent()->previous()))
                     return Break(Analyzer::Terminate::Modified);
             }
