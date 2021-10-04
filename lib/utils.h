@@ -23,7 +23,9 @@
 
 #include "config.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <initializer_list>
 #include <string>
 #include <vector>
 
@@ -40,6 +42,24 @@ struct SelectMapValues {
         return p.second;
     }
 };
+
+template<class Range, class T>
+bool contains(const Range& r, const T& x)
+{
+    return std::find(r.begin(), r.end(), x) != r.end();
+}
+
+template<class T>
+bool contains(const std::initializer_list<T>& r, const T& x)
+{
+    return std::find(r.begin(), r.end(), x) != r.end();
+}
+
+template<class T, class U>
+bool contains(const std::initializer_list<T>& r, const U& x)
+{
+    return std::find(r.begin(), r.end(), x) != r.end();
+}
 
 // Enum hash for C++11. This is not needed in C++14
 struct EnumClassHash {

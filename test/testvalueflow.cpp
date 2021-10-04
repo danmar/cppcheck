@@ -5177,6 +5177,13 @@ private:
                "}";
         ASSERT(tokenValues(code, "s . size").empty());
 
+        code = "void f() {\n"
+               "    const uint8_t data[] = { 1, 2, 3 };\n"
+               "    std::vector<uint8_t> v{ data, data + sizeof(data) };\n"
+               "    v.size();\n"
+               "}";
+        TODO_ASSERT_EQUALS("", "ContainerSizeValue", isKnownContainerSizeValue(tokenValues(code, "v . size"), 3)); // TODO: extract container size
+
         // valueFlowContainerForward, loop
         code = "void f() {\n"
                "    std::stack<Token *> links;\n"
