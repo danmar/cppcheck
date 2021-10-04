@@ -303,7 +303,7 @@ namespace {
             }
         }
 
-        void report(std::ostream &out, const Scope *functionScope) {
+        void report(std::ostream &out, const Scope *functionScope) const {
             int linenr = -1;
             std::string code;
             for (const Token *tok = functionScope->bodyStart->next(); tok != functionScope->bodyEnd; tok = tok->next()) {

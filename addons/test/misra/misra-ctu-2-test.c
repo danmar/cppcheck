@@ -3,7 +3,7 @@
 
 #include "misra-ctu-test.h"
 
-MISRA_2_3_B  misra_2_3_b;
+extern MISRA_2_3_B  misra_2_3_b;
 
 x = MISRA_2_5_OK_2;
 
@@ -31,10 +31,10 @@ static int misra_5_9_count;
 // cppcheck-suppress misra-c2012-5.9
 static void misra_5_8_foo(void) {}
 
-// cppcheck-suppress misra-c2012-8.4
 // cppcheck-suppress misra-c2012-8.5
 extern int misra_8_5;
 
+// cppcheck-suppress misra-c2012-8.4
 // cppcheck-suppress misra-c2012-8.6
 int32_t misra_8_6 = 2;
 

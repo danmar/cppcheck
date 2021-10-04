@@ -1703,7 +1703,8 @@ private:
                 "    if (x==123){}\n"
                 "}");
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n",
+            "[test.cpp:3]: (debug) valueflow.cpp::valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n"
+            "[test.cpp:2]: (debug) valueflow.cpp::(valueFlow) bailout: valueFlowAfterCondition: bailing in conditional block\n",
             errout.str());
 
         // #5721 - FP
@@ -2952,6 +2953,18 @@ private:
                "    return 0;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
+
+        code = "int f(int x) {\n"
+               "    if (x == 1) {\n"
+               "        for(int i=0;i<1;i++) {\n"
+               "            if (x == 1)\n"
+               "                continue;\n"
+               "        }\n"
+               "    }\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 8U, 1));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 8U, 1));
     }
 
     void valueFlowAfterConditionExpr() {
@@ -5114,6 +5127,12 @@ private:
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 3));
 
         code = "void f() {\n"
+               "  std::string s = { 'a', 'b', 'c' };\n" // size of s is 3
+               "  s.size();\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 3));
+
+        code = "void f() {\n"
                "  std::string s=\"abc\";\n" // size of s is 3
                "  s += unknown;\n"
                "  s.size();\n"
@@ -5157,6 +5176,13 @@ private:
                "        s = x;\n"
                "}";
         ASSERT(tokenValues(code, "s . size").empty());
+
+        code = "void f() {\n"
+               "    const uint8_t data[] = { 1, 2, 3 };\n"
+               "    std::vector<uint8_t> v{ data, data + sizeof(data) };\n"
+               "    v.size();\n"
+               "}";
+        TODO_ASSERT_EQUALS("", "ContainerSizeValue", isKnownContainerSizeValue(tokenValues(code, "v . size"), 3)); // TODO: extract container size
 
         // valueFlowContainerForward, loop
         code = "void f() {\n"

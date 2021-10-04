@@ -2757,6 +2757,13 @@ private:
         check("class Base { virtual void dostuff(int *p) = 0; };\n" // #10397
               "class Derived: public Base { int x; void dostuff(int *p) override { x = *p; } };");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct Data { char buf[128]; };\n" // #10483
+              "void encrypt(Data& data) {\n"
+              "    const char a[] = \"asfasd\";\n"
+              "    memcpy(data.buf, &a, sizeof(a));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -4581,6 +4588,11 @@ private:
         check("void *f(char* p) {\n"
               "    for (p = path; *p++;) ;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::array<std::array<double,3>,3> array;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
