@@ -376,4 +376,6 @@ private:
     bool mValueFlowKnown;
 };
 
+bool isSizeOfEtc(const Token *tok);
+
 #endif // astutilsH

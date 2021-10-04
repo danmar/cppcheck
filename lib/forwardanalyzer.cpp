@@ -5,6 +5,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueptr.h"
+#include "checknullpointer.h" // UninitValue => isPointerDeref
 
 #include <algorithm>
 #include <cstdio>
@@ -192,8 +193,21 @@ struct ForwardTraversal {
     Progress update(Token* tok) {
         Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Forward);
         actions |= action;
-        if (!action.isNone() && !analyzeOnly)
+        if (!action.isNone() && !analyzeOnly) {
             analyzer->update(tok, action, Analyzer::Direction::Forward);
+
+            // uninit value => skip further analysis
+            auto v = std::find_if(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
+            if (v != tok->values().end()) {
+                if (tok->valueType() && tok->valueType()->pointer > 0) {
+                    bool unknown = false;
+                    if (CheckNullPointer::isPointerDeRef(tok, unknown, settings))
+                        return Break(Analyzer::Terminate::Modified);
+                }
+                if (Token::Match(tok->astParent(), "[,(]") && !isSizeOfEtc(tok->astParent()->previous()))
+                    return Break(Analyzer::Terminate::Modified);
+            }
+        }
         if (action.isInconclusive() && !analyzer->lowerToInconclusive())
             return Break(Analyzer::Terminate::Inconclusive);
         if (action.isInvalid())

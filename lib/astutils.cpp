@@ -3186,3 +3186,8 @@ bool FwdAnalysis::isEscapedAlias(const Token* expr)
     }
     return false;
 }
+
+bool isSizeOfEtc(const Token *tok)
+{
+    return Token::Match(tok, "sizeof|typeof|offsetof|decltype|__typeof__ (");
+}
