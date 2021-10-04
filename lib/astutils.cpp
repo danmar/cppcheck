@@ -259,7 +259,7 @@ bool astIsContainerView(const Token* tok)
     return container && !astIsIterator(tok) && container->view;
 }
 
-bool astIsOwnedContainer(const Token* tok) {
+bool astIsContainerOwned(const Token* tok) {
     return astIsContainer(tok) && !astIsContainerView(tok);
 }
 

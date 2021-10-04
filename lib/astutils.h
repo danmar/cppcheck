@@ -86,7 +86,7 @@ bool astIsIterator(const Token *tok);
 bool astIsContainer(const Token *tok);
 
 bool astIsContainerView(const Token* tok);
-bool astIsOwnedContainer(const Token* tok);
+bool astIsContainerOwned(const Token* tok);
 
 /**
  * Get canonical type of expression. const/static/etc are not included and neither *&.

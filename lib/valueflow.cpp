@@ -3821,7 +3821,7 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
         parent = parent->astParent();
     if (Token::Match(tok, "{|(") && astIsContainerView(tok) && !tok->function()) {
         std::vector<const Token*> args = getArguments(tok);
-        if (args.size() == 1 && astIsOwnedContainer(args.front())) {
+        if (args.size() == 1 && astIsContainerOwned(args.front())) {
             LifetimeStore{args.front(), "Passed to container view.", ValueFlow::Value::LifetimeKind::SubObject}.byRef(
                 tok, tokenlist, errorLogger, settings);
         }
@@ -4024,7 +4024,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             }
         }
         // Converting to container view
-        else if (astIsOwnedContainer(tok) && isConvertedToView(tok, settings)) {
+        else if (astIsContainerOwned(tok) && isConvertedToView(tok, settings)) {
             LifetimeStore ls =
                 LifetimeStore{tok, "Converted to container view", ValueFlow::Value::LifetimeKind::SubObject};
             ls.byRef(tok, tokenlist, errorLogger, settings);
@@ -4077,7 +4077,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                         continue;
                     if (!v.tokvalue)
                         continue;
-                    if (!astIsOwnedContainer(v.tokvalue))
+                    if (!astIsContainerOwned(v.tokvalue))
                         continue;
                     toks.push_back(v.tokvalue);
                 }
