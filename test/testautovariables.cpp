@@ -2474,6 +2474,51 @@ private:
             "}\n");
         ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:6] -> [test.cpp:5] -> [test.cpp:6]: (error) Returning object that points to local variable 's' that will be invalid when returning.\n", errout.str());
 
+        check("const char * f() {\n"
+            "    std::string s;\n"
+            "    std::string_view sv = s;\n"
+            "    return sv.begin();\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning iterator to local container 's' that will be invalid when returning.\n", errout.str());
+
+        check("const char * f() {\n"
+            "    std::string s;\n"
+            "    return std::string_view{s}.begin();\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning iterator to local container 's' that will be invalid when returning.\n", errout.str());
+
+        check("const char * f() {\n"
+            "    std::string s;\n"
+            "    return std::string_view(s).begin();\n"
+            "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning iterator to local container 's' that will be invalid when returning.\n", "", errout.str());
+
+        check("const char * f(std::string_view sv) {\n"
+            "    return sv.begin();\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("const char * f(std::string s) {\n"
+            "    std::string_view sv = s;\n"
+            "    return sv.begin();\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1] -> [test.cpp:3]: (error) Returning iterator to local container 's' that will be invalid when returning.\n", errout.str());
+
+        check("std::string_view f(std::string s) {\n"
+            "    return s;\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1] -> [test.cpp:2]: (error) Returning object that points to local variable 's' that will be invalid when returning.\n", errout.str());
+
+        check("const char * f(const std::string& s) {\n"
+            "    std::string_view sv = s;\n"
+            "    return sv.begin();\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::string_view f(const std::string_view& sv) {\n"
+            "    return sv;\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetime() {

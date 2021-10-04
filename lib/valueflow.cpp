@@ -3138,6 +3138,9 @@ static bool isLifetimeOwned(const ValueType *vt, const ValueType *vtParent)
             return true;
         return false;
     }
+    // If converted from iterator to pointer then the iterator is most likely a pointer
+    if (vtParent->pointer == 1 && vt->pointer == 0 && vt->type == ValueType::ITERATOR)
+        return false;
     if (vt->type != ValueType::UNKNOWN_TYPE && vtParent->type != ValueType::UNKNOWN_TYPE) {
         if (vt->pointer != vtParent->pointer)
             return true;
@@ -3244,6 +3247,42 @@ static bool isDifferentType(const Token* src, const Token* dst)
             return true;
     }
     return false;
+}
+
+static std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings* settings = nullptr)
+{
+    if (!tok)
+        return {};
+    if (!tok->astParent())
+        return {};
+    if (Token::Match(tok->astParent(), "(|{|,")) {
+        int argn = -1;
+        const Token* ftok = getTokenArgumentFunction(tok, argn);
+        if (ftok && ftok->function()) {
+            std::vector<ValueType> result;
+            std::vector<const Variable*> argsVars = getArgumentVars(ftok, argn);
+            for(const Variable* var:getArgumentVars(ftok, argn)) {
+                if (!var)
+                    continue;
+                if (!var->valueType())
+                    continue;
+                result.push_back(*var->valueType());
+            }
+            return result;
+        }
+    }
+    if (settings && Token::Match(tok->astParent()->tokAt(-2), ". push_back|push_front|insert|push (") &&
+               astIsContainer(tok->astParent()->tokAt(-2)->astOperand1())) {
+        const Token* contTok = tok->astParent()->tokAt(-2)->astOperand1();
+        const ValueType *vtCont = contTok->valueType();
+        if (!vtCont->containerTypeToken)
+            return {};
+        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, settings);
+        return {std::move(vtParent)};
+    }
+    if (tok->astParent()->valueType())
+        return {*tok->astParent()->valueType()};
+    return {};
 }
 
 bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
@@ -3705,6 +3744,13 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         }
         if (update)
             valueFlowForwardLifetime(tok->next(), tokenlist, errorLogger, settings);
+    } else if (tok->valueType()) {
+        // TODO: Propagate lifetimes with library functions
+        if (settings->library.getFunction(tok->previous()))
+            return;
+        // Assume constructing the valueType
+        valueFlowLifetimeConstructor(tok, tokenlist, errorLogger, settings);
+        valueFlowForwardLifetime(tok->next(), tokenlist, errorLogger, settings);
     }
 }
 
@@ -3870,28 +3916,14 @@ static bool isDecayedPointer(const Token *tok)
     return astIsPointer(tok->astParent());
 }
 
-static bool isConvertedToView(const Token* tok)
+static bool isConvertedToView(const Token* tok, const Settings* settings)
 {
-    if (Token::Match(tok->astParent(), "(|{|,")) {
-        int argn = -1;
-        const Token* ftok = getTokenArgumentFunction(tok, argn);
-        if (!ftok)
+    std::vector<ValueType> vtParents = getParentValueTypes(tok, settings);
+    return std::any_of(vtParents.begin(), vtParents.end(), [&](const ValueType& vt) {
+        if (!vt.container)
             return false;
-        std::vector<const Variable*> argsVars = getArgumentVars(ftok, argn);
-        return std::any_of(argsVars.begin(), argsVars.end(), [&](const Variable* var) {
-            if (!var)
-                return false;
-            if (!var->valueType())
-                return false;
-            if (!var->valueType()->container)
-                return false;
-            return var->valueType()->container->view;
-        });
-
-    } else if (astIsContainerView(tok->astParent())) {
-        return true;
-    }
-    return false;
+        return vt.container->view;
+    });
 }
 
 static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger *errorLogger, const Settings *settings)
@@ -3992,7 +4024,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             }
         }
         // Converting to container view
-        else if (astIsOwnedContainer(tok) && isConvertedToView(tok)) {
+        else if (astIsOwnedContainer(tok) && isConvertedToView(tok, settings)) {
             LifetimeStore ls = LifetimeStore{
                 tok, "Converted to container view", ValueFlow::Value::LifetimeKind::SubObject};
             ls.byRef(tok, tokenlist, errorLogger, settings);
@@ -4036,6 +4068,16 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                     if (v.intvalue != 0)
                         continue;
                     if (!v.tokvalue)
+                        continue;
+                    toks.push_back(v.tokvalue);
+                }
+            } else if (astIsContainerView(tok)) {
+                for (const ValueFlow::Value& v : tok->values()) {
+                    if (!v.isLifetimeValue())
+                        continue;
+                    if (!v.tokvalue)
+                        continue;
+                    if (!astIsOwnedContainer(v.tokvalue))
                         continue;
                     toks.push_back(v.tokvalue);
                 }
