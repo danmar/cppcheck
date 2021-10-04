@@ -23,26 +23,25 @@
 #include <string>
 
 template<class T>
-static bool isEqual(T x, T y)
+bool isEqual(T x, T y)
 {
     return x == y;
 }
 
-template<>
-bool isEqual<double>(double x, double y)
+inline bool isEqual(double x, double y)
 {
     const double diff = (x > y) ? x - y : y - x;
     return !((diff / 2) < diff);
 }
 
 template<class T>
-static bool isZero(T x)
+bool isZero(T x)
 {
     return isEqual<T>(x, T(0));
 }
 
 template<class R, class T>
-static R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
+R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
 {
     auto wrap = [](T z) {
         return R{z};
@@ -109,7 +108,7 @@ static R calculate(const std::string& s, const T& x, const T& y, bool* error = n
 }
 
 template<class T>
-static T calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
+T calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
 {
     return calculate<T, T>(s, x, y, error);
 }
