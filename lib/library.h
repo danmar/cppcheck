@@ -213,7 +213,8 @@ public:
             opLessAllowed(true),
             hasInitializerListConstructor(false),
             unstableErase(false),
-            unstableInsert(false) {}
+            unstableInsert(false),
+            view(false) {}
 
         enum class Action {
             RESIZE, CLEAR, PUSH, POP, FIND, INSERT, ERASE, CHANGE_CONTENT, CHANGE, CHANGE_INTERNAL,
@@ -238,6 +239,7 @@ public:
         bool hasInitializerListConstructor;
         bool unstableErase;
         bool unstableInsert;
+        bool view;
 
         Action getAction(const std::string& function) const {
             const std::map<std::string, Function>::const_iterator i = functions.find(function);

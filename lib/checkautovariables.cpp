@@ -558,14 +558,13 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     break;
                 }
             }
-
         }
+        const bool escape = Token::Match(tok->astParent(), "return|throw");
         for (const ValueFlow::Value& val:tok->values()) {
             if (!val.isLocalLifetimeValue() && !val.isSubFunctionLifetimeValue())
                 continue;
             if (!printInconclusive && val.isInconclusive())
                 continue;
-            const bool escape = Token::Match(tok->astParent(), "return|throw");
             for (const LifetimeToken& lt :
                  getLifetimeTokens(getParentLifetime(val.tokvalue), escape || isAssignedToNonLocal(tok))) {
                 const Token * tokvalue = lt.token;
@@ -575,7 +574,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                             continue;
                         if (!isLifetimeBorrowed(tok, mSettings))
                             continue;
-                        if (tokvalue->exprId() == tok->exprId() && !(tok->variable() && tok->variable()->isArray()))
+                        if (tokvalue->exprId() == tok->exprId() && !(tok->variable() && tok->variable()->isArray()) && !astIsContainerView(tok->astParent()))
                             continue;
                         if ((tokvalue->variable() && !isEscapedReference(tokvalue->variable()) &&
                              isInScope(tokvalue->variable()->nameToken(), scope)) ||

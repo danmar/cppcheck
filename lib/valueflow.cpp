@@ -3122,12 +3122,19 @@ static bool isNotLifetimeValue(const ValueFlow::Value& val)
     return !val.isLifetimeValue();
 }
 
+static bool isLifetimeOwned(const ValueType *vtParent)
+{
+    if (vtParent->container)
+        return !vtParent->container->view;
+    return vtParent->type == ValueType::CONTAINER;
+}
+
 static bool isLifetimeOwned(const ValueType *vt, const ValueType *vtParent)
 {
     if (!vtParent)
         return false;
     if (!vt) {
-        if (vtParent->type == ValueType::CONTAINER)
+        if (isLifetimeOwned(vtParent))
             return true;
         return false;
     }
@@ -3137,7 +3144,7 @@ static bool isLifetimeOwned(const ValueType *vt, const ValueType *vtParent)
         if (vt->type != vtParent->type) {
             if (vtParent->type == ValueType::RECORD)
                 return true;
-            if (vtParent->type == ValueType::CONTAINER)
+            if (isLifetimeOwned(vtParent))
                 return true;
         }
     }
@@ -3152,6 +3159,8 @@ static bool isLifetimeBorrowed(const ValueType *vt, const ValueType *vtParent)
     if (!vt)
         return false;
     if (vt->pointer > 0 && vt->pointer == vtParent->pointer)
+        return true;
+    if (vtParent->container && vtParent->container->view)
         return true;
     if (vt->type != ValueType::UNKNOWN_TYPE && vtParent->type != ValueType::UNKNOWN_TYPE && vtParent->container == vt->container) {
         if (vtParent->pointer > vt->pointer)
@@ -3764,7 +3773,13 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
     Token* parent = tok->astParent();
     while (Token::simpleMatch(parent, ","))
         parent = parent->astParent();
-    if (Token::simpleMatch(parent, "{") && hasInitList(parent->astParent())) {
+    if (Token::Match(tok, "{|(") && astIsContainerView(tok) && !tok->function()) {
+        std::vector<const Token *> args = getArguments(tok);
+        if (args.size() == 1 && astIsOwnedContainer(args.front())) {
+            LifetimeStore{args.front(), "Passed to container view.", ValueFlow::Value::LifetimeKind::SubObject}.byRef(
+                tok, tokenlist, errorLogger, settings);
+        }
+    } else if (Token::simpleMatch(parent, "{") && hasInitList(parent->astParent())) {
         valueFlowLifetimeConstructor(tok, Token::typeOf(parent->previous()), tokenlist, errorLogger, settings);
     } else if (Token::simpleMatch(tok, "{") && hasInitList(parent)) {
         std::vector<const Token *> args = getArguments(tok);
@@ -3951,6 +3966,13 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
 
                 valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
             }
+        }
+        // Converting to container view
+        else if (!astIsContainerView(tok) && astIsContainerView(tok->astParent()) && Token::Match(tok->astParent(), "return|%assign%")) {
+            LifetimeStore ls = LifetimeStore{
+                tok, "Converted to container view", ValueFlow::Value::LifetimeKind::SubObject};
+            ls.byRef(tok, tokenlist, errorLogger, settings);
+            valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         }
         // container lifetimes
         else if (astIsContainer(tok)) {

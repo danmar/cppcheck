@@ -141,6 +141,7 @@ private:
 
         TEST_CASE(danglingLifetimeLambda);
         TEST_CASE(danglingLifetimeContainer);
+        TEST_CASE(danglingLifetimeContainerView);
         TEST_CASE(danglingLifetime);
         TEST_CASE(danglingLifetimeFunction);
         TEST_CASE(danglingLifetimeAggegrateConstructor);
@@ -2442,6 +2443,27 @@ private:
               "    return &*seq.begin();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void danglingLifetimeContainerView() {
+        check("std::string_view f() {\n"
+            "    std::string s = \"\";\n"
+            "    return s;\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 's' that will be invalid when returning.\n", errout.str());
+
+        check("std::string_view f() {\n"
+            "    std::string s = \"\";\n"
+            "    std::string_view sv = s;\n"
+            "    return sv;\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 's' that will be invalid when returning.\n", errout.str());
+
+        check("std::string_view f() {\n"
+            "    std::string s = \"\";\n"
+            "    return std::string_view{s};\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 's' that will be invalid when returning.\n", errout.str());
     }
 
     void danglingLifetime() {
