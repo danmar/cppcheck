@@ -274,6 +274,11 @@ std::vector<const Token *> getArguments(const Token *ftok);
 
 int getArgumentPos(const Variable* var, const Function* f);
 
+/**
+ * Are the arguments a pair of iterators/pointers?
+ */
+bool isIteratorPair(std::vector<const Token*> args);
+
 const Token *findLambdaStartToken(const Token *last);
 
 /**

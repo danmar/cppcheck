@@ -6972,7 +6972,7 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
         }
         return {};
     } else if ((args.size() == 1 && astIsContainer(args[0]) && args[0]->valueType()->container == container) ||
-               (args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1]))) {
+               isIteratorPair(args)) {
         return getContainerValues(args[0]);
     }
     return {makeContainerSizeValue(args.size(), known)};
