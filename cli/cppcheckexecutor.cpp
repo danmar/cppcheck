@@ -161,12 +161,12 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 #else
     const bool caseSensitive = true;
 #endif
-    if (!mSettings->project.fileSettings.empty() && !mSettings->fileFilter.empty()) {
+    if (!mSettings->project.fileSettings.empty() && !mSettings->fileFilters.empty()) {
         // filter only for the selected filenames from all project files
         std::list<ImportProject::FileSettings> newList;
 
         for (const ImportProject::FileSettings &fsetting : settings.project.fileSettings) {
-            if (matchglob(mSettings->fileFilter, fsetting.filename)) {
+            if (matchglobs(mSettings->fileFilters, fsetting.filename)) {
                 newList.emplace_back(fsetting);
             }
         }
@@ -192,10 +192,10 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         if (!ignored.empty())
             std::cout << "cppcheck: Maybe all paths were ignored?" << std::endl;
         return false;
-    } else if (!mSettings->fileFilter.empty() && settings.project.fileSettings.empty()) {
+    } else if (!mSettings->fileFilters.empty() && settings.project.fileSettings.empty()) {
         std::map<std::string, std::size_t> newMap;
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i)
-            if (matchglob(mSettings->fileFilter, i->first)) {
+            if (matchglobs(mSettings->fileFilters, i->first)) {
                 newMap[i->first] = i->second;
             }
         mFiles = newMap;
