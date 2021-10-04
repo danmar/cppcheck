@@ -5588,15 +5588,12 @@ private:
                "}\n";
         ASSERT_EQUALS(true, tokenValues(code, "v [ 0 ] != 0 ) { }", ValueFlow::Value::ValueType::CONTAINER_SIZE).empty());
 
-        code = "int foo() {\n"
-               "    std::wstring s{ L\"foo, bar; baz, , thud\" };\n"
-               "    std::wregex regex{ L\"[; , ] + \" };\n"
-               "    std::wsregex_token_iterator it{ s.begin(), s.end(), regex, -1 };\n"
+        code = "int f(std::wsregex_token_iterator it) {\n"
                "    std::vector<std::wstring> w{ it, {} };\n"
-               "    int x =  w.size();\n"
+               "    int x = w.size();\n"
                "    return x;\n"
                "}\n";
-        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, 0));
     }
 
     void valueFlowDynamicBufferSize() {
