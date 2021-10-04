@@ -33,6 +33,10 @@ inline bool isEqual(double x, double y)
     const double diff = (x > y) ? x - y : y - x;
     return !((diff / 2) < diff);
 }
+inline bool isEqual(float x, float y)
+{
+    return isEqual(double{x}, double{y});
+}
 
 template<class T>
 bool isZero(T x)
