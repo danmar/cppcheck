@@ -2464,6 +2464,16 @@ private:
             "    return std::string_view{s};\n"
             "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 's' that will be invalid when returning.\n", errout.str());
+      
+        check("std::string_view f(std::string_view s) {\n"
+            "    return s;\n"
+            "}\n"
+            "std::string_view g() {\n"
+            "    std::string s = \"\";\n"
+            "    return f(s);\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:6] -> [test.cpp:5] -> [test.cpp:6]: (error) Returning object that points to local variable 's' that will be invalid when returning.\n", errout.str());
+
     }
 
     void danglingLifetime() {

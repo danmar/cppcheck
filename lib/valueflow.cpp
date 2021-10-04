@@ -3870,6 +3870,30 @@ static bool isDecayedPointer(const Token *tok)
     return astIsPointer(tok->astParent());
 }
 
+static bool isConvertedToView(const Token* tok)
+{
+    if (Token::Match(tok->astParent(), "(|{|,")) {
+        int argn = -1;
+        const Token* ftok = getTokenArgumentFunction(tok, argn);
+        if (!ftok)
+            return false;
+        std::vector<const Variable*> argsVars = getArgumentVars(ftok, argn);
+        return std::any_of(argsVars.begin(), argsVars.end(), [&](const Variable* var) {
+            if (!var)
+                return false;
+            if (!var->valueType())
+                return false;
+            if (!var->valueType()->container)
+                return false;
+            return var->valueType()->container->view;
+        });
+
+    } else if (astIsContainerView(tok->astParent())) {
+        return true;
+    }
+    return false;
+}
+
 static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -3968,7 +3992,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             }
         }
         // Converting to container view
-        else if (!astIsContainerView(tok) && astIsContainerView(tok->astParent()) && Token::Match(tok->astParent(), "return|%assign%")) {
+        else if (astIsOwnedContainer(tok) && isConvertedToView(tok)) {
             LifetimeStore ls = LifetimeStore{
                 tok, "Converted to container view", ValueFlow::Value::LifetimeKind::SubObject};
             ls.byRef(tok, tokenlist, errorLogger, settings);
