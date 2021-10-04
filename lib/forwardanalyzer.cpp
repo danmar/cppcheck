@@ -659,14 +659,16 @@ struct ForwardTraversal {
                     } else {
                         tok = endBlock;
                     }
-                    for(const Branch* b:activeBranches)
+                    for (const Branch* b : activeBranches)
                         actions |= b->action;
                     if (bail)
                         return Break(Analyzer::Terminate::Bail);
-                    if (activeBranches.size() == 2 && std::all_of(activeBranches.begin(), activeBranches.end(), std::mem_fn(&Branch::isDead))) {
+                    if (activeBranches.size() == 2 &&
+                        std::all_of(activeBranches.begin(), activeBranches.end(), std::mem_fn(&Branch::isDead))) {
                         if (std::all_of(activeBranches.begin(), activeBranches.end(), std::mem_fn(&Branch::isModified)))
                             return Break(Analyzer::Terminate::Modified);
-                        if (std::all_of(activeBranches.begin(), activeBranches.end(), std::mem_fn(&Branch::isConclusiveEscape)))
+                        if (std::all_of(
+                                activeBranches.begin(), activeBranches.end(), std::mem_fn(&Branch::isConclusiveEscape)))
                             return Break(Analyzer::Terminate::Escape);
                         return Break(Analyzer::Terminate::Bail);
                     }
@@ -686,7 +688,8 @@ struct ForwardTraversal {
                     if (std::any_of(activeBranches.begin(), activeBranches.end(), std::mem_fn(&Branch::isInconclusive))) {
                         if (!analyzer->lowerToInconclusive())
                             return Break(Analyzer::Terminate::Bail);
-                    } else if (std::any_of(activeBranches.begin(), activeBranches.end(), std::mem_fn(&Branch::isModified))) {
+                    } else if (std::any_of(
+                                   activeBranches.begin(), activeBranches.end(), std::mem_fn(&Branch::isModified))) {
                         if (!hasElse && analyzer->isConditional() && stopUpdates())
                             return Break(Analyzer::Terminate::Conditional);
                         if (!analyzer->lowerToPossible())

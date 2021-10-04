@@ -2499,15 +2499,15 @@ private:
     void nullpointer83() // #9870
     {
         check("int* qux();\n"
-            "int* f7c2(int *x) {\n"
-            "  int* p = 0;\n"
-            "  if (nullptr == x)\n"
-            "    p = qux();\n"
-            "  if (nullptr == x)\n"
-            "    return x;\n"
-            "  *p = 1;\n"
-            "  return x;\n"
-            "}\n");
+              "int* f7c2(int *x) {\n"
+              "  int* p = 0;\n"
+              "  if (nullptr == x)\n"
+              "    p = qux();\n"
+              "  if (nullptr == x)\n"
+              "    return x;\n"
+              "  *p = 1;\n"
+              "  return x;\n"
+              "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (warning) Possible null pointer dereference: p\n", errout.str());
     }
 
