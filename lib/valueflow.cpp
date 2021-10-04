@@ -3122,7 +3122,7 @@ static bool isNotLifetimeValue(const ValueFlow::Value& val)
     return !val.isLifetimeValue();
 }
 
-static bool isLifetimeOwned(const ValueType *vtParent)
+static bool isLifetimeOwned(const ValueType* vtParent)
 {
     if (vtParent->container)
         return !vtParent->container->view;
@@ -3261,7 +3261,7 @@ static std::vector<ValueType> getParentValueTypes(const Token* tok, const Settin
         if (ftok && ftok->function()) {
             std::vector<ValueType> result;
             std::vector<const Variable*> argsVars = getArgumentVars(ftok, argn);
-            for(const Variable* var:getArgumentVars(ftok, argn)) {
+            for (const Variable* var : getArgumentVars(ftok, argn)) {
                 if (!var)
                     continue;
                 if (!var->valueType())
@@ -3272,9 +3272,9 @@ static std::vector<ValueType> getParentValueTypes(const Token* tok, const Settin
         }
     }
     if (settings && Token::Match(tok->astParent()->tokAt(-2), ". push_back|push_front|insert|push (") &&
-               astIsContainer(tok->astParent()->tokAt(-2)->astOperand1())) {
+        astIsContainer(tok->astParent()->tokAt(-2)->astOperand1())) {
         const Token* contTok = tok->astParent()->tokAt(-2)->astOperand1();
-        const ValueType *vtCont = contTok->valueType();
+        const ValueType* vtCont = contTok->valueType();
         if (!vtCont->containerTypeToken)
             return {};
         ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, settings);
@@ -3820,7 +3820,7 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
     while (Token::simpleMatch(parent, ","))
         parent = parent->astParent();
     if (Token::Match(tok, "{|(") && astIsContainerView(tok) && !tok->function()) {
-        std::vector<const Token *> args = getArguments(tok);
+        std::vector<const Token*> args = getArguments(tok);
         if (args.size() == 1 && astIsOwnedContainer(args.front())) {
             LifetimeStore{args.front(), "Passed to container view.", ValueFlow::Value::LifetimeKind::SubObject}.byRef(
                 tok, tokenlist, errorLogger, settings);
@@ -4025,8 +4025,8 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
         }
         // Converting to container view
         else if (astIsOwnedContainer(tok) && isConvertedToView(tok, settings)) {
-            LifetimeStore ls = LifetimeStore{
-                tok, "Converted to container view", ValueFlow::Value::LifetimeKind::SubObject};
+            LifetimeStore ls =
+                LifetimeStore{tok, "Converted to container view", ValueFlow::Value::LifetimeKind::SubObject};
             ls.byRef(tok, tokenlist, errorLogger, settings);
             valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         }

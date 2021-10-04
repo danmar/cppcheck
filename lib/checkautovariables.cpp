@@ -574,7 +574,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                             continue;
                         if (!isLifetimeBorrowed(tok, mSettings))
                             continue;
-                        if (tokvalue->exprId() == tok->exprId() && !(tok->variable() && tok->variable()->isArray()) && !astIsContainerView(tok->astParent()))
+                        if (tokvalue->exprId() == tok->exprId() && !(tok->variable() && tok->variable()->isArray()) &&
+                            !astIsContainerView(tok->astParent()))
                             continue;
                         if ((tokvalue->variable() && !isEscapedReference(tokvalue->variable()) &&
                              isInScope(tokvalue->variable()->nameToken(), scope)) ||
