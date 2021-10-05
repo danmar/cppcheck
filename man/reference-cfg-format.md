@@ -580,6 +580,8 @@ A lot of C++ libraries, among those the STL itself, provide containers with very
 
 The `hasInitializerListConstructor` attribute can be set when the container has a constructor taking an initializer list.
 
+The `view` attribute can be set when the container is a view, which means it borrows the lifetime of another container.
+
 Inside the `<container>` tag, functions can be defined inside of the tags `<size>`, `<access>` and `<other>` (on your choice). Each of them can specify an action like "resize" and/or the result it yields, for example "end-iterator".
 
 The following example provides a definition for std::vector, based on the definition of "stdContainer" (not shown):

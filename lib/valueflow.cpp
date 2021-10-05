@@ -3038,22 +3038,32 @@ static bool isNotLifetimeValue(const ValueFlow::Value& val)
     return !val.isLifetimeValue();
 }
 
+static bool isLifetimeOwned(const ValueType* vtParent)
+{
+    if (vtParent->container)
+        return !vtParent->container->view;
+    return vtParent->type == ValueType::CONTAINER;
+}
+
 static bool isLifetimeOwned(const ValueType *vt, const ValueType *vtParent)
 {
     if (!vtParent)
         return false;
     if (!vt) {
-        if (vtParent->type == ValueType::CONTAINER)
+        if (isLifetimeOwned(vtParent))
             return true;
         return false;
     }
+    // If converted from iterator to pointer then the iterator is most likely a pointer
+    if (vtParent->pointer == 1 && vt->pointer == 0 && vt->type == ValueType::ITERATOR)
+        return false;
     if (vt->type != ValueType::UNKNOWN_TYPE && vtParent->type != ValueType::UNKNOWN_TYPE) {
         if (vt->pointer != vtParent->pointer)
             return true;
         if (vt->type != vtParent->type) {
             if (vtParent->type == ValueType::RECORD)
                 return true;
-            if (vtParent->type == ValueType::CONTAINER)
+            if (isLifetimeOwned(vtParent))
                 return true;
         }
     }
@@ -3068,6 +3078,8 @@ static bool isLifetimeBorrowed(const ValueType *vt, const ValueType *vtParent)
     if (!vt)
         return false;
     if (vt->pointer > 0 && vt->pointer == vtParent->pointer)
+        return true;
+    if (vtParent->container && vtParent->container->view)
         return true;
     if (vt->type != ValueType::UNKNOWN_TYPE && vtParent->type != ValueType::UNKNOWN_TYPE && vtParent->container == vt->container) {
         if (vtParent->pointer > vt->pointer)
@@ -3151,6 +3163,42 @@ static bool isDifferentType(const Token* src, const Token* dst)
             return true;
     }
     return false;
+}
+
+static std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings* settings = nullptr)
+{
+    if (!tok)
+        return {};
+    if (!tok->astParent())
+        return {};
+    if (Token::Match(tok->astParent(), "(|{|,")) {
+        int argn = -1;
+        const Token* ftok = getTokenArgumentFunction(tok, argn);
+        if (ftok && ftok->function()) {
+            std::vector<ValueType> result;
+            std::vector<const Variable*> argsVars = getArgumentVars(ftok, argn);
+            for (const Variable* var : getArgumentVars(ftok, argn)) {
+                if (!var)
+                    continue;
+                if (!var->valueType())
+                    continue;
+                result.push_back(*var->valueType());
+            }
+            return result;
+        }
+    }
+    if (settings && Token::Match(tok->astParent()->tokAt(-2), ". push_back|push_front|insert|push (") &&
+        astIsContainer(tok->astParent()->tokAt(-2)->astOperand1())) {
+        const Token* contTok = tok->astParent()->tokAt(-2)->astOperand1();
+        const ValueType* vtCont = contTok->valueType();
+        if (!vtCont->containerTypeToken)
+            return {};
+        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, settings);
+        return {std::move(vtParent)};
+    }
+    if (tok->astParent()->valueType())
+        return {*tok->astParent()->valueType()};
+    return {};
 }
 
 bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
@@ -3612,6 +3660,13 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         }
         if (update)
             valueFlowForwardLifetime(tok->next(), tokenlist, errorLogger, settings);
+    } else if (tok->valueType()) {
+        // TODO: Propagate lifetimes with library functions
+        if (settings->library.getFunction(tok->previous()))
+            return;
+        // Assume constructing the valueType
+        valueFlowLifetimeConstructor(tok, tokenlist, errorLogger, settings);
+        valueFlowForwardLifetime(tok->next(), tokenlist, errorLogger, settings);
     }
 }
 
@@ -3680,7 +3735,13 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
     Token* parent = tok->astParent();
     while (Token::simpleMatch(parent, ","))
         parent = parent->astParent();
-    if (Token::simpleMatch(parent, "{") && hasInitList(parent->astParent())) {
+    if (Token::Match(tok, "{|(") && astIsContainerView(tok) && !tok->function()) {
+        std::vector<const Token*> args = getArguments(tok);
+        if (args.size() == 1 && astIsContainerOwned(args.front())) {
+            LifetimeStore{args.front(), "Passed to container view.", ValueFlow::Value::LifetimeKind::SubObject}.byRef(
+                tok, tokenlist, errorLogger, settings);
+        }
+    } else if (Token::simpleMatch(parent, "{") && hasInitList(parent->astParent())) {
         valueFlowLifetimeConstructor(tok, Token::typeOf(parent->previous()), tokenlist, errorLogger, settings);
     } else if (Token::simpleMatch(tok, "{") && hasInitList(parent)) {
         std::vector<const Token *> args = getArguments(tok);
@@ -3769,6 +3830,16 @@ static bool isDecayedPointer(const Token *tok)
     if (!Token::simpleMatch(tok->astParent(), "return"))
         return false;
     return astIsPointer(tok->astParent());
+}
+
+static bool isConvertedToView(const Token* tok, const Settings* settings)
+{
+    std::vector<ValueType> vtParents = getParentValueTypes(tok, settings);
+    return std::any_of(vtParents.begin(), vtParents.end(), [&](const ValueType& vt) {
+        if (!vt.container)
+            return false;
+        return vt.container->view;
+    });
 }
 
 static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger *errorLogger, const Settings *settings)
@@ -3868,6 +3939,13 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
             }
         }
+        // Converting to container view
+        else if (astIsContainerOwned(tok) && isConvertedToView(tok, settings)) {
+            LifetimeStore ls =
+                LifetimeStore{tok, "Converted to container view", ValueFlow::Value::LifetimeKind::SubObject};
+            ls.byRef(tok, tokenlist, errorLogger, settings);
+            valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+        }
         // container lifetimes
         else if (astIsContainer(tok)) {
             Token * parent = astParentSkipParens(tok);
@@ -3906,6 +3984,16 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                     if (v.intvalue != 0)
                         continue;
                     if (!v.tokvalue)
+                        continue;
+                    toks.push_back(v.tokvalue);
+                }
+            } else if (astIsContainerView(tok)) {
+                for (const ValueFlow::Value& v : tok->values()) {
+                    if (!v.isLifetimeValue())
+                        continue;
+                    if (!v.tokvalue)
+                        continue;
+                    if (!astIsContainerOwned(v.tokvalue))
                         continue;
                     toks.push_back(v.tokvalue);
                 }
@@ -6358,8 +6446,6 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
                         return !v.isLocalLifetimeValue() && !v.isSubFunctionLifetimeValue();
                     return false;
                 });
-                // Don't forward container sizes for now since programmemory can't evaluate conditions
-                argvalues.remove_if(std::mem_fn(&ValueFlow::Value::isContainerSizeValue));
                 // Remove uninit values if argument is passed by value
                 if (argtok->variable() && !argtok->variable()->isPointer() && argvalues.size() == 1 && argvalues.front().isUninitValue()) {
                     if (CheckUninitVar::isVariableUsage(tokenlist->isCPP(), argtok, settings->library, false, CheckUninitVar::Alloc::NO_ALLOC, 0))
@@ -6998,18 +7084,19 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
     if (!args.empty() && container->stdStringLike) {
         if (astIsGenericChar(args[0])) // init list of chars
             return { makeContainerSizeValue(args.size(), known) };
-        if (astIsIntegral(args[0], false)) {
+        if (astIsIntegral(args[0], false)) { // { count, 'c' }
             if (args.size() > 1)
                 return {makeContainerSizeValue(args[0], known)};
         } else if (astIsPointer(args[0])) {
-            // TODO: Try to read size of string literal
-            if (args.size() == 2 && astIsIntegral(args[1], false))
+            // TODO: Try to read size of string literal { "abc" }
+            if (args.size() == 2 && astIsIntegral(args[1], false)) // { char*, count }
                 return {makeContainerSizeValue(args[1], known)};
         } else if (astIsContainer(args[0])) {
-            if (args.size() == 1)
+            if (args.size() == 1) // copy constructor { str }
                 return getContainerValues(args[0]);
-            if (args.size() == 3)
+            if (args.size() == 3) // { str, pos, count }
                 return {makeContainerSizeValue(args[2], known)};
+            // TODO: { str, pos }, { ..., alloc }
         }
         return {};
     } else if ((args.size() == 1 && astIsContainer(args[0]) && args[0]->valueType()->container == container) ||
