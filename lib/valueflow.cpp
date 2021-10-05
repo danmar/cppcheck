@@ -6963,9 +6963,7 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
         } else if (astIsPointer(args[0])) {
             // TODO: Try to read size of string literal { "abc" }
             if (args.size() == 2 && astIsIntegral(args[1], false)) // { char*, count }
-                return {makeContainerSizeValue(args[1], known)};            
-        } else if (isIteratorPair(args)) { // { p, p + size } or { s.begin(), s.begin() + n }
-            return getContainerValues(args[0]);
+                return {makeContainerSizeValue(args[1], known)};
         } else if (astIsContainer(args[0])) {
             if (args.size() == 1) // copy constructor { str }
                 return getContainerValues(args[0]);
