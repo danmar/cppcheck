@@ -249,9 +249,18 @@ bool astIsIterator(const Token *tok)
     return tok && tok->valueType() && tok->valueType()->type == ValueType::Type::ITERATOR;
 }
 
-bool astIsContainer(const Token *tok)
+bool astIsContainer(const Token* tok) {
+    return getLibraryContainer(tok) != nullptr && !astIsIterator(tok);
+}
+
+bool astIsContainerView(const Token* tok)
 {
-    return getLibraryContainer(tok) != nullptr && tok->valueType()->type != ValueType::Type::ITERATOR;
+    const Library::Container* container = getLibraryContainer(tok);
+    return container && !astIsIterator(tok) && container->view;
+}
+
+bool astIsContainerOwned(const Token* tok) {
+    return astIsContainer(tok) && !astIsContainerView(tok);
 }
 
 std::string astCanonicalType(const Token *expr)

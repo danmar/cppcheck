@@ -439,6 +439,9 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             const char* const hasInitializerListConstructor = node->Attribute("hasInitializerListConstructor");
             if (hasInitializerListConstructor)
                 container.hasInitializerListConstructor = std::string(hasInitializerListConstructor) == "true";
+            const char* const view = node->Attribute("view");
+            if (view)
+                container.view = std::string(view) == "true";
 
             for (const tinyxml2::XMLElement *containerNode = node->FirstChildElement(); containerNode; containerNode = containerNode->NextSiblingElement()) {
                 const std::string containerNodeName = containerNode->Name();
