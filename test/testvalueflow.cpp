@@ -5126,6 +5126,13 @@ private:
                "}";
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 3));
 
+        code = "void f(const char* p) {\n"
+               "  if (p == nullptr) return;\n"
+               "  std::string s { p };\n" // size of s is unknown
+               "  s.front();\n"
+               "}";
+        ASSERT(tokenValues(code, "s . front").empty());
+
         code = "void f() {\n"
                "  std::string s = { 'a', 'b', 'c' };\n" // size of s is 3
                "  s.size();\n"

@@ -7043,18 +7043,19 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
     if (!args.empty() && container->stdStringLike) {
         if (astIsGenericChar(args[0])) // init list of chars
             return { makeContainerSizeValue(args.size(), known) };
-        if (astIsIntegral(args[0], false)) {
+        if (astIsIntegral(args[0], false)) { // { count, 'c' }
             if (args.size() > 1)
                 return {makeContainerSizeValue(args[0], known)};
         } else if (astIsPointer(args[0])) {
-            // TODO: Try to read size of string literal
-            if (args.size() == 2 && astIsIntegral(args[1], false))
+            // TODO: Try to read size of string literal { "abc" }
+            if (args.size() == 2 && astIsIntegral(args[1], false)) // { char*, count }
                 return {makeContainerSizeValue(args[1], known)};
         } else if (astIsContainer(args[0])) {
-            if (args.size() == 1)
+            if (args.size() == 1) // copy constructor { str }
                 return getContainerValues(args[0]);
-            if (args.size() == 3)
+            if (args.size() == 3) // { str, pos, count }
                 return {makeContainerSizeValue(args[2], known)};
+            // TODO: { str, pos }, { ..., alloc }
         }
         return {};
     } else if ((args.size() == 1 && astIsContainer(args[0]) && args[0]->valueType()->container == container) ||
