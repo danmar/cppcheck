@@ -2565,14 +2565,17 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
         if (depth > maxDepth)
             return;
         visitAstNodes(start, [&](const Token* tok) {
-            for (const ValueFlow::Value& v : tok->values()) {
-                if (!(v.isLocalLifetimeValue() || (astIsPointer(tok) && v.isSymbolicValue() && v.isKnown())))
-                    continue;
-                if (!v.tokvalue)
-                    continue;
-                if (v.tokvalue == tok)
-                    continue;
-                setupExprVarIds(v.tokvalue, depth + 1);
+            const bool top = depth == 0 && tok == start;
+            if (!(top && astIsPointer(tok) && value.indirect == 0)) {
+                for (const ValueFlow::Value& v : tok->values()) {
+                    if (!(v.isLocalLifetimeValue() || (astIsPointer(tok) && v.isSymbolicValue() && v.isKnown())))
+                        continue;
+                    if (!v.tokvalue)
+                        continue;
+                    if (v.tokvalue == tok)
+                        continue;
+                    setupExprVarIds(v.tokvalue, depth + 1);
+                }
             }
             if (depth == 0 && tok->varId() == 0 && !tok->function() && tok->isName() && tok->previous()->str() != ".") {
                 // unknown variable
