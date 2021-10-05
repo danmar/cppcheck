@@ -2191,6 +2191,8 @@ struct ValueFlowAnalyzer : Analyzer {
     {
         if (!useSymbolicValues())
             return false;
+        if (Token::Match(tok, "%assign%"))
+            return false;
         for (const ValueFlow::Value& v : tok->values()) {
             if (!v.isSymbolicValue())
                 continue;
