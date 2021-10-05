@@ -2568,9 +2568,10 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
             return;
         visitAstNodes(start, [&](const Token* tok) {
             const bool top = depth == 0 && tok == start;
-            if (!(top && astIsPointer(tok) && value.indirect == 0)) {
+            const bool ispointer = astIsPointer(tok) || astIsSmartPointer(tok);
+            if (!top || !ispointer || value.indirect != 0) {
                 for (const ValueFlow::Value& v : tok->values()) {
-                    if (!(v.isLocalLifetimeValue() || (astIsPointer(tok) && v.isSymbolicValue() && v.isKnown())))
+                    if (!(v.isLocalLifetimeValue() || (ispointer && v.isSymbolicValue() && v.isKnown())))
                         continue;
                     if (!v.tokvalue)
                         continue;
