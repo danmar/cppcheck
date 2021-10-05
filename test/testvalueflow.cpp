@@ -5126,6 +5126,13 @@ private:
                "}";
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 3));
 
+        code = "void f(const char* p) {\n"
+               "  if (p == nullptr) return;\n"
+               "  std::string s { p };\n" // size of s is unknown
+               "  s.front();\n"
+               "}";
+        ASSERT(tokenValues(code, "s . front").empty());
+
         code = "void f() {\n"
                "  std::string s = { 'a', 'b', 'c' };\n" // size of s is 3
                "  s.size();\n"
@@ -5614,19 +5621,6 @@ private:
                "}\n";
         ASSERT_EQUALS(true, tokenValues(code, "v [ 0 ] != 0 ) { }", ValueFlow::Value::ValueType::CONTAINER_SIZE).empty());
 
-        code = "int f(std::wsregex_token_iterator it) {\n"
-               "    std::vector<std::wstring> w{ it, {} };\n"
-               "    int x = w.size();\n"
-               "    return x;\n"
-               "}\n";
-        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 2));
-
-        //code = "bool f() {\n"
-        //       "    std::vector<int> vec;\n"
-        //       "    auto it = vec.begin();\n"
-        //       "    return it == vec.begin();\n"
-        //       "}\n";
-        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "it"), 0));
     }
 
     void valueFlowDynamicBufferSize() {

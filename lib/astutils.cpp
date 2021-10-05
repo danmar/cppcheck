@@ -205,7 +205,7 @@ bool astIsUnknownSignChar(const Token *tok)
 
 bool astIsGenericChar(const Token* tok)
 {
-    return tok && tok->valueType() && (tok->valueType()->type == ValueType::Type::CHAR || tok->valueType()->type == ValueType::Type::WCHAR_T);
+    return !astIsPointer(tok) && tok && tok->valueType() && (tok->valueType()->type == ValueType::Type::CHAR || tok->valueType()->type == ValueType::Type::WCHAR_T);
 }
 
 bool astIsIntegral(const Token *tok, bool unknown)
