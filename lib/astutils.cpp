@@ -460,6 +460,9 @@ Token* astParentSkipParens(Token* tok)
         return parent;
     if (parent->link() != nextAfterAstRightmostLeaf(tok))
         return parent;
+    if (Token::Match(parent->previous(), "%name% (") ||
+        (Token::simpleMatch(parent->previous(), "> (") && parent->previous()->link()))
+        return parent;
     return astParentSkipParens(parent);
 }
 
