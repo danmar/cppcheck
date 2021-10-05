@@ -5620,7 +5620,6 @@ private:
                "    return v;\n"
                "}\n";
         ASSERT_EQUALS(true, tokenValues(code, "v [ 0 ] != 0 ) { }", ValueFlow::Value::ValueType::CONTAINER_SIZE).empty());
-
     }
 
     void valueFlowDynamicBufferSize() {
