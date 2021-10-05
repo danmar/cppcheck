@@ -619,11 +619,6 @@ struct ForwardTraversal {
                         return Break();
                     Branch thenBranch{endBlock};
                     Branch elseBranch{endBlock->tokAt(2) ? endBlock->linkAt(2) : nullptr};
-                    std::vector<const Branch*> activeBranches;
-                    auto activate = [&](Branch& b) {
-                        b.active = true;
-                        activeBranches.push_back(&b);
-                    };
                     // Check if condition is true or false
                     std::tie(thenBranch.check, elseBranch.check) = evalCond(condTok);
                     if (!thenBranch.check && !elseBranch.check && analyzer->stopOnCondition(condTok) && stopUpdates())
@@ -634,11 +629,11 @@ struct ForwardTraversal {
                     // Traverse then block
                     thenBranch.escape = isEscapeScope(endBlock, thenBranch.escapeUnknown);
                     if (thenBranch.check) {
-                        activate(thenBranch);
+                        thenBranch.active = true;
                         if (updateRange(endCond->next(), endBlock, depth - 1) == Progress::Break)
                             return Break();
                     } else if (!elseBranch.check) {
-                        activate(thenBranch);
+                        thenBranch.active = true;
                         if (checkBranch(thenBranch))
                             bail = true;
                     }
@@ -646,12 +641,12 @@ struct ForwardTraversal {
                     if (hasElse) {
                         elseBranch.escape = isEscapeScope(endBlock->linkAt(2), elseBranch.escapeUnknown);
                         if (elseBranch.check) {
-                            activate(elseBranch);
+                            elseBranch.active = true;
                             Progress result = updateRange(endBlock->tokAt(2), endBlock->linkAt(2), depth - 1);
                             if (result == Progress::Break)
                                 return Break();
                         } else if (!thenBranch.check) {
-                            activate(elseBranch);
+                            elseBranch.active = true;
                             if (checkBranch(elseBranch))
                                 bail = true;
                         }
@@ -659,16 +654,16 @@ struct ForwardTraversal {
                     } else {
                         tok = endBlock;
                     }
-                    for (const Branch* b : activeBranches)
-                        actions |= b->action;
+                    if (thenBranch.active)
+                        actions |= thenBranch.action;
+                    if (elseBranch.active)
+                        actions |= elseBranch.action;
                     if (bail)
                         return Break(Analyzer::Terminate::Bail);
-                    if (activeBranches.size() == 2 &&
-                        std::all_of(activeBranches.begin(), activeBranches.end(), std::mem_fn(&Branch::isDead))) {
-                        if (std::all_of(activeBranches.begin(), activeBranches.end(), std::mem_fn(&Branch::isModified)))
+                    if (thenBranch.isDead() && elseBranch.isDead()) {
+                        if (thenBranch.isModified() && elseBranch.isModified())
                             return Break(Analyzer::Terminate::Modified);
-                        if (std::all_of(
-                                activeBranches.begin(), activeBranches.end(), std::mem_fn(&Branch::isConclusiveEscape)))
+                        if (thenBranch.isConclusiveEscape() && elseBranch.isConclusiveEscape())
                             return Break(Analyzer::Terminate::Escape);
                         return Break(Analyzer::Terminate::Bail);
                     }
@@ -685,11 +680,10 @@ struct ForwardTraversal {
                             analyzer->assume(condTok, false);
                         }
                     }
-                    if (std::any_of(activeBranches.begin(), activeBranches.end(), std::mem_fn(&Branch::isInconclusive))) {
+                    if (thenBranch.isInconclusive() || elseBranch.isInconclusive()) {
                         if (!analyzer->lowerToInconclusive())
                             return Break(Analyzer::Terminate::Bail);
-                    } else if (std::any_of(
-                                   activeBranches.begin(), activeBranches.end(), std::mem_fn(&Branch::isModified))) {
+                    } else if (thenBranch.isModified() || elseBranch.isModified()) {
                         if (!hasElse && analyzer->isConditional() && stopUpdates())
                             return Break(Analyzer::Terminate::Conditional);
                         if (!analyzer->lowerToPossible())
