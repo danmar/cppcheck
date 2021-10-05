@@ -6336,8 +6336,6 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
                         return !v.isLocalLifetimeValue() && !v.isSubFunctionLifetimeValue();
                     return false;
                 });
-                // Don't forward container sizes for now since programmemory can't evaluate conditions
-                argvalues.remove_if(std::mem_fn(&ValueFlow::Value::isContainerSizeValue));
                 // Remove uninit values if argument is passed by value
                 if (argtok->variable() && !argtok->variable()->isPointer() && argvalues.size() == 1 && argvalues.front().isUninitValue()) {
                     if (CheckUninitVar::isVariableUsage(tokenlist->isCPP(), argtok, settings->library, false, CheckUninitVar::Alloc::NO_ALLOC, 0))
