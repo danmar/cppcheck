@@ -1055,6 +1055,7 @@ void CmdLineParser::printHelp()
         "                         Used when certain messages should be displayed but\n"
         "                         should not cause a non-zero exitcode.\n"
         "    --file-filter=<str>  Analyze only those files matching the given filter str\n"
+        "                         Can be used multiple times\n"
         "                         Example: --file-filter=*bar.cpp analyzes only files\n"
         "                                  that end with bar.cpp.\n"
         "    --file-list=<file>   Specify the files to check in a text file. Add one\n"
