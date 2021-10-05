@@ -48,6 +48,7 @@ struct ForwardTraversal {
         bool check = false;
         bool escape = false;
         bool escapeUnknown = false;
+        bool active = false;
         bool isEscape() const {
             return escape || escapeUnknown;
         }
@@ -628,9 +629,11 @@ struct ForwardTraversal {
                     // Traverse then block
                     thenBranch.escape = isEscapeScope(endBlock, thenBranch.escapeUnknown);
                     if (thenBranch.check) {
+                        thenBranch.active = true;
                         if (updateRange(endCond->next(), endBlock, depth - 1) == Progress::Break)
                             return Break();
                     } else if (!elseBranch.check) {
+                        thenBranch.active = true;
                         if (checkBranch(thenBranch))
                             bail = true;
                     }
@@ -638,10 +641,12 @@ struct ForwardTraversal {
                     if (hasElse) {
                         elseBranch.escape = isEscapeScope(endBlock->linkAt(2), elseBranch.escapeUnknown);
                         if (elseBranch.check) {
+                            elseBranch.active = true;
                             Progress result = updateRange(endBlock->tokAt(2), endBlock->linkAt(2), depth - 1);
                             if (result == Progress::Break)
                                 return Break();
                         } else if (!thenBranch.check) {
+                            elseBranch.active = true;
                             if (checkBranch(elseBranch))
                                 bail = true;
                         }
@@ -649,7 +654,10 @@ struct ForwardTraversal {
                     } else {
                         tok = endBlock;
                     }
-                    actions |= (thenBranch.action | elseBranch.action);
+                    if (thenBranch.active)
+                        actions |= thenBranch.action;
+                    if (elseBranch.active)
+                        actions |= elseBranch.action;
                     if (bail)
                         return Break(Analyzer::Terminate::Bail);
                     if (thenBranch.isDead() && elseBranch.isDead()) {
@@ -660,7 +668,7 @@ struct ForwardTraversal {
                         return Break(Analyzer::Terminate::Bail);
                     }
                     // Conditional return
-                    if (thenBranch.isEscape() && !hasElse) {
+                    if (thenBranch.active && thenBranch.isEscape() && !hasElse) {
                         if (!thenBranch.isConclusiveEscape()) {
                             if (!analyzer->lowerToInconclusive())
                                 return Break(Analyzer::Terminate::Bail);

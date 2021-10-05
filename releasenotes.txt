@@ -1,1 +1,3 @@
 release notes for cppcheck-2.7
+
+Add support for container views. The `view` attribute has been added to the `<container>` library tag to specify the class is a view. The lifetime analysis has been updated to use this new attribute to find dangling lifetime containers.

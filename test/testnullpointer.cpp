@@ -122,6 +122,7 @@ private:
         TEST_CASE(nullpointer80); // #10410
         TEST_CASE(nullpointer81); // #8724
         TEST_CASE(nullpointer82); // #10331
+        TEST_CASE(nullpointer83); // #9870
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2493,6 +2494,21 @@ private:
               "done:\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer83() // #9870
+    {
+        check("int* qux();\n"
+              "int* f7c2(int *x) {\n"
+              "  int* p = 0;\n"
+              "  if (nullptr == x)\n"
+              "    p = qux();\n"
+              "  if (nullptr == x)\n"
+              "    return x;\n"
+              "  *p = 1;\n"
+              "  return x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Possible null pointer dereference: p\n", errout.str());
     }
 
     void nullpointer_addressOf() { // address of

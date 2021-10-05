@@ -4098,6 +4098,12 @@ private:
               "    return *it;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(std::vector<int> &vect) {\n"
+              "    const int &v = *vect.emplace(vect.end());\n"
+              "    return v;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dereferenceInvalidIterator2() {
