@@ -1525,7 +1525,8 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
         } else if (lf->argumentChecks.empty()) {
             return false;
         }
-    } else if (Token::Match(ftok->previous(), ". %name% (") && ftok->previous()->originalName() != "->" && astIsSmartPointer(ftok->previous()->astOperand1())) {
+    } else if (Token::Match(ftok->previous(), ". %name% (") && ftok->previous()->originalName() != "->" &&
+               astIsSmartPointer(ftok->previous()->astOperand1())) {
         return Token::Match(ftok, "get|get_deleter ( )");
     } else if (Token::Match(ftok->previous(), ". %name% (") && astIsContainer(ftok->previous()->astOperand1())) {
         const Library::Container* container = ftok->previous()->astOperand1()->valueType()->container;

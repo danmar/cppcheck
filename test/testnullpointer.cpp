@@ -2515,12 +2515,14 @@ private:
     void nullpointer84() // #9873
     {
         check("void f(std::unique_ptr<A> P) {\n"
-            "  A *RP = P.get();\n"
-            "  if (!RP) {\n"
-            "    P->foo();\n"
-            "  }\n"
-            "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition '!RP' is redundant or there is possible null pointer dereference: P.\n", errout.str());
+              "  A *RP = P.get();\n"
+              "  if (!RP) {\n"
+              "    P->foo();\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition '!RP' is redundant or there is possible null pointer dereference: P.\n",
+            errout.str());
     }
 
     void nullpointer_addressOf() { // address of
