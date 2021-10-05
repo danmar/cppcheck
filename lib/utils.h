@@ -153,7 +153,7 @@ CPPCHECKLIB bool isValidGlobPattern(const std::string& pattern);
 
 CPPCHECKLIB bool matchglob(const std::string& pattern, const std::string& name);
 
-CPPCHECKLIB bool matchglobs(const std::list<std::string> &patterns, const std::string &name);
+CPPCHECKLIB bool matchglobs(const std::vector<std::string> &patterns, const std::string &name);
 
 #define UNUSED(x) (void)(x)
 

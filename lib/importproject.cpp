@@ -195,7 +195,8 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
     if (!mPath.empty() && !endsWith(mPath,'/'))
         mPath += '/';
 
-    const std::list<std::string> fileFilters = settings ? settings->fileFilters : std::list<std::string>();
+    const std::vector<std::string> fileFilters =
+        settings ? settings->fileFilters : std::vector<std::string>();
 
     if (endsWith(filename, ".json")) {
         importCompileCommands(fin);
@@ -447,7 +448,7 @@ void ImportProject::importCompileCommands(std::istream &istr)
     }
 }
 
-void ImportProject::importSln(std::istream &istr, const std::string &path, const std::list<std::string> &fileFilters)
+void ImportProject::importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters)
 {
     std::map<std::string,std::string,cppcheck::stricmp> variables;
     variables["SolutionDir"] = path;
@@ -658,7 +659,7 @@ static void loadVisualStudioProperties(const std::string &props, std::map<std::s
     }
 }
 
-void ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::list<std::string> &fileFilters)
+void ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters)
 {
     variables["ProjectDir"] = Path::simplifyPath(Path::getPathFromFilename(filename));
 
@@ -719,7 +720,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
     for (const std::string &c : compileList) {
         const std::string cfilename = Path::simplifyPath(Path::isAbsolute(c) ? c : Path::getPathFromFilename(filename) + c);
         if (!fileFilters.empty() && !matchglobs(fileFilters, cfilename))
-          continue;
+            continue;
 
         for (const ProjectConfiguration &p : projectConfigurationList) {
 

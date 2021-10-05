@@ -109,8 +109,8 @@ protected:
     void importCompileCommands(std::istream &istr);
     bool importCppcheckGuiProject(std::istream &istr, Settings *settings);
 private:
-    void importSln(std::istream &istr, const std::string &path, const std::list<std::string> &fileFilters);
-    void importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::list<std::string> &fileFilters);
+    void importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters);
+    void importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters);
     void importBcb6Prj(const std::string &projectFilename);
 
     void setRelativePaths(const std::string &filename);

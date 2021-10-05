@@ -192,7 +192,7 @@ public:
     int exitCode;
 
     /** @brief List of --file-filter for analyzing special files */
-    std::list<std::string> fileFilters;
+    std::vector<std::string> fileFilters;
 
     /** @brief Force checking the files with "too many" configurations (--force). */
     bool force;
