@@ -3420,13 +3420,13 @@ private:
             "}\n");
 
         const char expected[] = "1: struct A {\n"
-                                "2: int x ; int y ;\n"
-                                "3: } ;\n"
-                                "4: int f ( A a , A b ) {\n"
-                                "5: int x@5 ; x@5 = a@3 .@9 x@6 +@10 b@4 .@11 x@7 ;\n"
-                                "6: int y@8 ; y@8 = b@4 .@11 x@7 +@10 a@3 .@9 x@6 ;\n"
-                                "7: return x@5 +@15 y@8 +@16 a@3 .@17 y@9 +@18 b@4 .@19 y@10 ;\n"
-                                "8: }\n";
+                            "2: int x ; int y ;\n"
+                            "3: } ;\n"
+                            "4: int f ( A a , A b ) {\n"
+                            "5: int x@5 ; x@5 =@9 a@3 .@10 x@6 +@11 b@4 .@12 x@7 ;\n"
+                            "6: int y@8 ; y@8 =@13 b@4 .@12 x@7 +@11 a@3 .@10 x@6 ;\n"
+                            "7: return x@5 +@17 y@8 +@18 a@3 .@19 y@9 +@20 b@4 .@21 y@10 ;\n"
+                            "8: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }

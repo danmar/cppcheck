@@ -5716,6 +5716,8 @@ struct SymbolicConditionHandler : SimpleConditionHandler {
             const bool lhs = i == 0;
             const Token* vartok = lhs ? tok->astOperand1() : tok->astOperand2();
             const Token* valuetok = lhs ? tok->astOperand2() : tok->astOperand1();
+            if (valuetok->exprId() == 0)
+                continue;
             if (valuetok->hasKnownSymbolicValue(vartok))
                 continue;
             if (vartok->hasKnownSymbolicValue(valuetok))
