@@ -10,7 +10,6 @@ import re
 import signal
 import tarfile
 import shlex
-import psutil
 
 
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
@@ -91,9 +90,9 @@ def compile_version(work_path, jobs, version):
     subprocess.call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g'])
     if os.path.isfile(work_path + '/cppcheck/cppcheck'):
         os.mkdir(work_path + '/' + version)
-        destPath = work_path + '/' + version + '/'
-        subprocess.call(['cp', '-R', work_path + '/cppcheck/cfg', destPath])
-        subprocess.call(['cp', 'cppcheck', destPath])
+        dest_path = work_path + '/' + version + '/'
+        subprocess.call(['cp', '-R', work_path + '/cppcheck/cfg', dest_path])
+        subprocess.call(['cp', 'cppcheck', dest_path])
     subprocess.call(['git', 'checkout', 'main'])
     try:
         subprocess.call([work_path + '/' + version + '/cppcheck', '--version'])
@@ -166,19 +165,19 @@ def handle_remove_readonly(func, path, exc):
         func(path)
 
 
-def remove_tree(folderName):
-    if not os.path.exists(folderName):
+def remove_tree(folder_name):
+    if not os.path.exists(folder_name):
         return
     count = 5
     while count > 0:
         count -= 1
         try:
-            shutil.rmtree(folderName, onerror=handle_remove_readonly)
+            shutil.rmtree(folder_name, onerror=handle_remove_readonly)
             break
         except OSError as err:
             time.sleep(30)
             if count == 0:
-                print('Failed to cleanup {}: {}'.format(folderName, err))
+                print('Failed to cleanup {}: {}'.format(folder_name, err))
                 sys.exit(1)
 
 
@@ -252,7 +251,7 @@ def has_include(path, includes):
 
 def run_command(cmd):
     print(cmd)
-    startTime = time.time()
+    start_time = time.time()
     comm = None
     p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
     try:
@@ -260,6 +259,7 @@ def run_command(cmd):
         return_code = p.returncode
         p = None
     except subprocess.TimeoutExpired:
+        import psutil
         return_code = RETURN_CODE_TIMEOUT
         # terminate all the child processes so we get messages about which files were hanging
         child_procs = psutil.Process(p.pid).children(recursive=True)
@@ -279,7 +279,7 @@ def run_command(cmd):
     stop_time = time.time()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore')
-    elapsed_time = stop_time - startTime
+    elapsed_time = stop_time - start_time
     return return_code, stdout, stderr, elapsed_time
 
 
@@ -477,11 +477,11 @@ def upload_info(package, info_output, server_address):
 def get_libraries():
     libraries = ['posix', 'gnu']
     library_includes = {'boost': ['<boost/'],
-                       'bsd': ['<sys/queue.h>','<sys/tree.h>','<bsd/','<fts.h>','<db.h>','<err.h>','<vis.h>'],
+                       'bsd': ['<sys/queue.h>', '<sys/tree.h>', '<bsd/', '<fts.h>', '<db.h>', '<err.h>', '<vis.h>'],
                        'cairo': ['<cairo.h>'],
                        'cppunit': ['<cppunit/'],
                        'icu': ['<unicode/', '"unicode/'],
-                       'ginac': ['<ginac/','"ginac/'],
+                       'ginac': ['<ginac/', '"ginac/'],
                        'googletest': ['<gtest/gtest.h>'],
                        'gtk': ['<gtk', '<glib.h>', '<glib-', '<glib/', '<gnome'],
                        'kde': ['<KGlobal>', '<KApplication>', '<KDE/'],
