@@ -4321,6 +4321,7 @@ static bool isTruncated(const ValueType* src, const ValueType* dst, const Settin
 
 static void setSymbolic(ValueFlow::Value& value, const Token* tok)
 {
+    assert(tok && tok->exprId() > 0 && "Missing expr id for symbolic value");
     value.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
     value.tokvalue = tok;
 }
@@ -4983,19 +4984,20 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             valueFlowForwardAssign(
                 tok->astOperand2(), tok->astOperand1(), vars, values, init, tokenlist, errorLogger, settings);
             // Back propagate symbolic values
-            values.remove_if([&](const ValueFlow::Value& value) {
-                return !value.isSymbolicValue();
-            });
-            Token* start = nextAfterAstRightmostLeaf(tok);
-            const Token* end = scope->bodyEnd;
-            for (ValueFlow::Value value : values) {
-                const Token* expr = value.tokvalue;
-                value.intvalue = -value.intvalue;
-                value.tokvalue = tok->astOperand1();
-                value.errorPath.emplace_back(tok,
-                                             tok->astOperand1()->expressionString() + " is assigned '" +
-                                             tok->astOperand2()->expressionString() + "' here.");
-                valueFlowForward(start, end, expr, {value}, tokenlist, settings);
+            if (tok->astOperand1()->exprId() > 0) {
+                Token* start = nextAfterAstRightmostLeaf(tok);
+                const Token* end = scope->bodyEnd;
+                for (ValueFlow::Value value : values) {
+                    if (!value.isSymbolicValue())
+                        continue;
+                    const Token* expr = value.tokvalue;
+                    value.intvalue = -value.intvalue;
+                    value.tokvalue = tok->astOperand1();
+                    value.errorPath.emplace_back(tok,
+                                                tok->astOperand1()->expressionString() + " is assigned '" +
+                                                tok->astOperand2()->expressionString() + "' here.");
+                    valueFlowForward(start, end, expr, {value}, tokenlist, settings);
+                }
             }
         }
     }
