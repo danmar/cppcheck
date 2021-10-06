@@ -142,6 +142,7 @@ private:
         TEST_CASE(danglingLifetimeLambda);
         TEST_CASE(danglingLifetimeContainer);
         TEST_CASE(danglingLifetimeContainerView);
+        TEST_CASE(danglingLifetimeUniquePtr);
         TEST_CASE(danglingLifetime);
         TEST_CASE(danglingLifetimeFunction);
         TEST_CASE(danglingLifetimeAggegrateConstructor);
@@ -2541,6 +2542,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void danglingLifetimeUniquePtr()
+    {
+        check("int* f(std::unique_ptr<int> p) {\n"
+              "    int * rp = p.get();\n"
+              "    return rp;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:1] -> [test.cpp:3]: (error) Returning pointer to local variable 'p' that will be invalid when returning.\n",
+            errout.str());
+    }
     void danglingLifetime() {
         check("auto f() {\n"
               "    std::vector<int> a;\n"

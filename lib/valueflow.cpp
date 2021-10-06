@@ -4027,6 +4027,19 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
         else if (Token::Match(tok, "%name% (")) {
             valueFlowLifetimeFunction(tok, tokenlist, errorLogger, settings);
         }
+        // Unique pointer lifetimes
+        else if (isUniqueSmartPointer(tok) && astIsLHS(tok) && Token::simpleMatch(tok->astParent(), ". get ( )")) {
+            Token* ptok = tok->astParent()->tokAt(2);
+            ErrorPath errorPath = {{ptok, "Raw pointer to smart pointer created here."}};
+            ValueFlow::Value value;
+            value.valueType = ValueFlow::Value::ValueType::LIFETIME;
+            value.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
+            value.lifetimeKind = ValueFlow::Value::LifetimeKind::SubObject;
+            value.tokvalue = tok;
+            value.errorPath = errorPath;
+            setTokenValue(ptok, value, tokenlist->getSettings());
+            valueFlowForwardLifetime(ptok, tokenlist, errorLogger, settings);
+        }
         // Check variables
         else if (tok->variable()) {
             ErrorPath errorPath;
