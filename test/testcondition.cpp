@@ -1573,7 +1573,7 @@ private:
               "        ;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:200] -> [test.cpp:200]: (style) Condition 'g' is always true\n", errout.str());
     }
 
     void incorrectLogicOperator15() {
