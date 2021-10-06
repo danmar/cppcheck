@@ -1418,7 +1418,7 @@ void SymbolDatabase::createSymbolDatabaseEscapeFunctions()
 
 static bool isExpression(const Token* tok)
 {
-    if (!Token::Match(tok, "(|.|[|%cop%"))
+    if (!Token::Match(tok, "(|.|[|::|?|:|++|--|%cop%|%assign%"))
         return false;
     if (Token::Match(tok, "*|&|&&")) {
         const Token* vartok = findAstNode(tok, [&](const Token* tok2) {
@@ -1444,6 +1444,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
     }
     nonneg int id = base + 1;
     for (const Scope * scope : functionScopes) {
+        nonneg int thisId = 0;
         std::unordered_map<std::string, std::vector<Token*>> exprs;
 
         // Assign IDs
@@ -1457,6 +1458,10 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                 if (id == std::numeric_limits<nonneg int>::max()) {
                     throw InternalError(nullptr, "Ran out of expression ids.", InternalError::INTERNAL);
                 }
+            } else if (isCPP() && Token::simpleMatch(tok, "this")) {
+                if (thisId == 0)
+                    thisId = id++;
+                tok->exprId(thisId);
             }
         }
 

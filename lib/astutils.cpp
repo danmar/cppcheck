@@ -205,7 +205,7 @@ bool astIsUnknownSignChar(const Token *tok)
 
 bool astIsGenericChar(const Token* tok)
 {
-    return tok && tok->valueType() && (tok->valueType()->type == ValueType::Type::CHAR || tok->valueType()->type == ValueType::Type::WCHAR_T);
+    return !astIsPointer(tok) && tok && tok->valueType() && (tok->valueType()->type == ValueType::Type::CHAR || tok->valueType()->type == ValueType::Type::WCHAR_T);
 }
 
 bool astIsIntegral(const Token *tok, bool unknown)
@@ -1525,6 +1525,18 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
         } else if (lf->argumentChecks.empty()) {
             return false;
         }
+    } else if (Token::Match(ftok->previous(), ". %name% (") && ftok->previous()->originalName() != "->" &&
+               astIsSmartPointer(ftok->previous()->astOperand1())) {
+        return Token::Match(ftok, "get|get_deleter ( )");
+    } else if (Token::Match(ftok->previous(), ". %name% (") && astIsContainer(ftok->previous()->astOperand1())) {
+        const Library::Container* container = ftok->previous()->astOperand1()->valueType()->container;
+        if (!container)
+            return false;
+        if (container->getYield(ftok->str()) != Library::Container::Yield::NO_YIELD)
+            return true;
+        if (container->getAction(ftok->str()) == Library::Container::Action::FIND)
+            return true;
+        return false;
     } else {
         bool memberFunction = Token::Match(ftok->previous(), ". %name% (");
         bool constMember = !memberFunction;
