@@ -41,6 +41,7 @@ HEADERS += $${PWD}/analyzerinfo.h \
            $${PWD}/exprengine.h \
            $${PWD}/forwardanalyzer.h \
            $${PWD}/importproject.h \
+           $${PWD}/infer.h \
            $${PWD}/library.h \
            $${PWD}/mathlib.h \
            $${PWD}/path.h \
@@ -100,6 +101,7 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/exprengine.cpp \
            $${PWD}/forwardanalyzer.cpp \
            $${PWD}/importproject.cpp \
+           $${PWD}/infer.cpp \
            $${PWD}/library.cpp \
            $${PWD}/mathlib.cpp \
            $${PWD}/path.cpp \
