@@ -195,8 +195,30 @@ struct Interval {
         if (diff.isLessThan(0, ref))
             return {-1};
         std::vector<int> eq = Interval::equal(lhs, rhs, ref);
-        if (!eq.empty() && eq.front() != 0)
-            return {0};
+        if (!eq.empty()) {
+            if (eq.front() == 0)
+                return {1, -1};
+            else
+                return {0};
+        }
+        if (diff.isGreaterThan(-1, ref))
+            return {0, 1};
+        if (diff.isLessThan(1, ref))
+            return {0, -1};
+        return {};
+    }
+
+    static std::vector<bool> compare(const std::string& op,
+                                    const Interval& lhs,
+                                    const Interval& rhs,
+                                    std::vector<const ValueFlow::Value*>* ref = nullptr)
+    {
+        std::vector<int> r = compare(lhs, rhs, ref);
+        if (r.empty())
+            return {};
+        bool b = calculate(op, r.front(), 0);
+        if (std::all_of(r.begin()+1, r.end(), [&](int i) { return b == calculate(op, i, 0); }))
+            return {b};
         return {};
     }
 };
@@ -303,10 +325,9 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
         }
     } else {
         std::vector<const ValueFlow::Value*> refs;
-        std::vector<int> r = Interval::compare(lhs, rhs, &refs);
+        std::vector<bool> r = Interval::compare(op, lhs, rhs, &refs);
         if (!r.empty()) {
-            int x = r.front();
-            ValueFlow::Value value(calculate(op, x, 0));
+            ValueFlow::Value value(r.front());
             addToErrorPath(value, refs);
             setValueKind(value, refs);
             result.push_back(value);
