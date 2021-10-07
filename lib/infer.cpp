@@ -209,6 +209,8 @@ std::string toString(const Interval& i)
 static void addToErrorPath(ValueFlow::Value& value, const std::vector<const ValueFlow::Value*>& refs)
 {
     for (const ValueFlow::Value* ref : refs) {
+        if (ref->condition && !value.condition)
+            value.condition = ref->condition;
         value.errorPath.insert(value.errorPath.end(), ref->errorPath.begin(), ref->errorPath.end());
     }
 }
