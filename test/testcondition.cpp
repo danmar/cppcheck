@@ -4008,7 +4008,7 @@ private:
             "        if (u1 != u2) {}\n"
             "    }\n"
             "}\n");
-        ASSERT_EQUALS("error", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition 'u1!=u2' is always true\n", errout.str());
     }
 
     void alwaysTrueContainer() {
