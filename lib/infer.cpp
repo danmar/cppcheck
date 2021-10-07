@@ -1,6 +1,7 @@
 #include "infer.h"
 #include "calculate.h"
 #include "valueptr.h"
+#include <unordered_set>
 
 template<class Predicate, class Compare>
 static const ValueFlow::Value* getCompareValue(const std::list<ValueFlow::Value>& values,
@@ -230,10 +231,13 @@ std::string toString(const Interval& i)
 
 static void addToErrorPath(ValueFlow::Value& value, const std::vector<const ValueFlow::Value*>& refs)
 {
+    std::unordered_set<const Token*> locations;
     for (const ValueFlow::Value* ref : refs) {
         if (ref->condition && !value.condition)
             value.condition = ref->condition;
-        value.errorPath.insert(value.errorPath.end(), ref->errorPath.begin(), ref->errorPath.end());
+        std::copy_if(ref->errorPath.begin(), ref->errorPath.end(), std::back_inserter(value.errorPath), [&](const ErrorPathItem& e) {
+            return locations.insert(e.first).second;
+        });
     }
 }
 
