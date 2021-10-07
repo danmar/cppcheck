@@ -3330,7 +3330,7 @@ private:
               "    if (handle) return 1;\n"
               "    else return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition 'handle' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'handle' is always true\n", errout.str());
 
         check("int f(void *handle) {\n"
               "    if (handle != 0) return 0;\n"
@@ -3393,7 +3393,7 @@ private:
               "        if(array){}\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Condition 'array' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'array' is always true\n", errout.str());
 
         check("void f(int *array, int size ) {\n"
               "    for(int i = 0; i < size; ++i) {\n"
@@ -3402,7 +3402,7 @@ private:
               "        else if(array){}\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Condition 'array' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'array' is always true\n", errout.str());
 
         // #9277
         check("int f() {\n"

@@ -5228,83 +5228,6 @@ struct SimpleConditionHandler : ConditionHandler {
     }
 };
 
-static bool isInBounds(const ValueFlow::Value& value, MathLib::bigint x)
-{
-    if (value.intvalue == x)
-        return true;
-    if (value.bound == ValueFlow::Value::Bound::Lower && value.intvalue > x)
-        return false;
-    if (value.bound == ValueFlow::Value::Bound::Upper && value.intvalue < x)
-        return false;
-    // Checking for equality is not necessary since we already know the value is not equal
-    if (value.bound == ValueFlow::Value::Bound::Point)
-        return false;
-    return true;
-}
-
-static const ValueFlow::Value* getCompareIntValue(const std::list<ValueFlow::Value>& values, std::function<bool(MathLib::bigint, MathLib::bigint)> compare)
-{
-    const ValueFlow::Value* result = nullptr;
-    for (const ValueFlow::Value& value : values) {
-        if (!value.isIntValue())
-            continue;
-        if (result)
-            result = &std::min(value, *result, [compare](const ValueFlow::Value& x, const ValueFlow::Value& y) {
-                return compare(x.intvalue, y.intvalue);
-            });
-        else
-            result = &value;
-    }
-    return result;
-}
-
-static const ValueFlow::Value* proveLessThan(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
-{
-    const ValueFlow::Value* result = nullptr;
-    const ValueFlow::Value* maxValue = getCompareIntValue(values, std::greater<MathLib::bigint> {});
-    if (maxValue && maxValue->isImpossible() && maxValue->bound == ValueFlow::Value::Bound::Lower) {
-        if (maxValue->intvalue <= x)
-            result = maxValue;
-    }
-    return result;
-}
-
-static const ValueFlow::Value* proveGreaterThan(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
-{
-    const ValueFlow::Value* result = nullptr;
-    const ValueFlow::Value* minValue = getCompareIntValue(values, std::less<MathLib::bigint> {});
-    if (minValue && minValue->isImpossible() && minValue->bound == ValueFlow::Value::Bound::Upper) {
-        if (minValue->intvalue >= x)
-            result = minValue;
-    }
-    return result;
-}
-
-static const ValueFlow::Value* proveNotEqual(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
-{
-    const ValueFlow::Value* result = nullptr;
-    for (const ValueFlow::Value& value : values) {
-        if (value.valueType != ValueFlow::Value::ValueType::INT)
-            continue;
-        if (result && !isInBounds(value, result->intvalue))
-            continue;
-        if (value.isImpossible()) {
-            if (value.intvalue == x)
-                return &value;
-            if (!isInBounds(value, x))
-                continue;
-            result = &value;
-        } else {
-            if (value.intvalue == x)
-                return nullptr;
-            if (!isInBounds(value, x))
-                continue;
-            result = nullptr;
-        }
-    }
-    return result;
-}
-
 struct IntegralInferModel : InferModel {
     virtual bool match(const ValueFlow::Value& value) const OVERRIDE
     {
@@ -5325,52 +5248,22 @@ ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, Math
         return ValueFlow::Value{};
     if (varTok->hasKnownIntValue())
         return ValueFlow::Value{};
-    if (std::none_of(varTok->values().begin(), varTok->values().end(), [](const ValueFlow::Value& v) {
-        return v.isImpossible() && v.valueType == ValueFlow::Value::ValueType::INT;
-    })) {
-        return ValueFlow::Value{};
-    }
-    const ValueFlow::Value* result = nullptr;
-    bool known = false;
-    if (op == "==" || op == "!=") {
-        result = proveNotEqual(varTok->values(), val);
-        known = op == "!=";
-    } else if (op == "<" || op == ">=") {
-        result = proveLessThan(varTok->values(), val);
-        known = op == "<";
-        if (!result && !isSaturated(val)) {
-            result = proveGreaterThan(varTok->values(), val - 1);
-            known = op == ">=";
-        }
-    } else if (op == ">" || op == "<=") {
-        result = proveGreaterThan(varTok->values(), val);
-        known = op == ">";
-        if (!result && !isSaturated(val)) {
-            result = proveLessThan(varTok->values(), val + 1);
-            known = op == "<=";
-        }
-    }
-    if (!result)
-        return ValueFlow::Value{};
-    ValueFlow::Value value = *result;
-    value.intvalue = known;
-    value.bound = ValueFlow::Value::Bound::Point;
-    value.setKnown();
-    return value;
+    std::vector<ValueFlow::Value> r = infer(IntegralInferModel{}, op, varTok->values(), val);
+    if (r.size() == 1 && r.front().isKnown())
+        return r.front();
+    return ValueFlow::Value{};
 }
 
 ValueFlow::Value inferCondition(std::string op, MathLib::bigint val, const Token* varTok)
 {
-    // Flip the operator
-    if (op == ">")
-        op = "<";
-    else if (op == "<")
-        op = ">";
-    else if (op == ">=")
-        op = "<=";
-    else if (op == "<=")
-        op = ">=";
-    return inferCondition(op, varTok, val);
+    if (!varTok)
+        return ValueFlow::Value{};
+    if (varTok->hasKnownIntValue())
+        return ValueFlow::Value{};
+    std::vector<ValueFlow::Value> r = infer(IntegralInferModel{}, op, val, varTok->values());
+    if (r.size() == 1 && r.front().isKnown())
+        return r.front();
+    return ValueFlow::Value{};
 }
 
 static void valueFlowInferCondition(TokenList* tokenlist,
@@ -5383,16 +5276,15 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             continue;
         if (tok->variable() && (Token::Match(tok->astParent(), "?|&&|!|%oror%") ||
                                 Token::Match(tok->astParent()->previous(), "if|while ("))) {
-            const ValueFlow::Value* result = proveNotEqual(tok->values(), 0);
-            if (!result)
+            std::vector<ValueFlow::Value> result = infer(IntegralInferModel{}, "!=", tok->values(), 0);
+            if (result.size() != 1)
                 continue;
-            ValueFlow::Value value = *result;
+            ValueFlow::Value value = result.front();
             value.intvalue = 1;
             value.bound = ValueFlow::Value::Bound::Point;
             value.setKnown();
             setTokenValue(tok, value, settings);
         } else if (Token::Match(tok, "%comp%|-") && tok->astOperand1() && tok->astOperand2()) {
-            // ValueFlow::Value value{};
             std::vector<ValueFlow::Value> result = infer(IntegralInferModel{}, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
             for(const ValueFlow::Value& value:result) {
                 setTokenValue(tok, value, settings);
