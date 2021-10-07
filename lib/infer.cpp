@@ -97,11 +97,9 @@ struct Interval {
     std::vector<const ValueFlow::Value*> getScalarRef() const
     {
         assert(isScalar());
-        if (!minRef.empty())
-            return minRef;
-        if (!maxRef.empty())
-            return maxRef;
-        return {};
+        if (minRef != maxRef)
+            return merge(minRef, maxRef);
+        return minRef;
     }
 
     static Interval fromInt(MathLib::bigint x, const ValueFlow::Value* ref = nullptr)
@@ -183,7 +181,7 @@ struct Interval {
         if (!rhs.isScalar())
             return {};
         if (ref)
-            *ref = merge(merge(lhs.minRef, rhs.minRef), merge(lhs.maxRef, rhs.maxRef));
+            *ref = merge(lhs.getScalarRef(), rhs.getScalarRef());
         return {lhs.minvalue == rhs.minvalue};
     }
 
