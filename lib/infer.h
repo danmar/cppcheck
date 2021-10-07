@@ -22,6 +22,7 @@
 #include "mathlib.h"
 #include "valueflow.h"
 
+struct Interval;
 template<class T> class ValuePtr;
 
 struct InferModel {
@@ -44,5 +45,7 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
                                            const std::string& op,
                                            std::list<ValueFlow::Value> lhsValues,
                                            MathLib::bigint rhs);
+
+std::string toString(const Interval& i);
 
 #endif

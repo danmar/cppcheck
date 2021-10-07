@@ -5305,6 +5305,20 @@ static const ValueFlow::Value* proveNotEqual(const std::list<ValueFlow::Value>& 
     return result;
 }
 
+struct IntegralInferModel : InferModel {
+    virtual bool match(const ValueFlow::Value& value) const OVERRIDE
+    {
+        return value.isIntValue();
+    }
+    virtual ValueFlow::Value yield(MathLib::bigint value) const OVERRIDE
+    {
+        ValueFlow::Value result(value);
+        result.valueType = ValueFlow::Value::ValueType::INT;
+        result.setKnown();
+        return result;
+    }
+};
+
 ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val)
 {
     if (!varTok)
@@ -5377,22 +5391,12 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             value.bound = ValueFlow::Value::Bound::Point;
             value.setKnown();
             setTokenValue(tok, value, settings);
-        } else if (tok->isComparisonOp()) {
-            ValueFlow::Value value{};
-            std::string op = tok->str();
-            if (tok->astOperand1()->hasKnownIntValue()) {
-                MathLib::bigint val = tok->astOperand1()->values().front().intvalue;
-                const Token* varTok = tok->astOperand2();
-                value = inferCondition(tok->str(), val, varTok);
-            } else if (tok->astOperand2()->hasKnownIntValue()) {
-                MathLib::bigint val = tok->astOperand2()->values().front().intvalue;
-                const Token* varTok = tok->astOperand1();
-                value = inferCondition(tok->str(), varTok, val);
+        } else if (Token::Match(tok, "%comp%|-") && tok->astOperand1() && tok->astOperand2()) {
+            // ValueFlow::Value value{};
+            std::vector<ValueFlow::Value> result = infer(IntegralInferModel{}, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
+            for(const ValueFlow::Value& value:result) {
+                setTokenValue(tok, value, settings);
             }
-
-            if (!value.isKnown())
-                continue;
-            setTokenValue(tok, value, settings);
         }
     }
 }

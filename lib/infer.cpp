@@ -27,6 +27,21 @@ struct Interval {
     std::vector<const ValueFlow::Value*> minRef = {};
     std::vector<const ValueFlow::Value*> maxRef = {};
 
+    std::string str() const {
+        std::string result = "[";
+        if (minvalue.size() == 1)
+            result += std::to_string(minvalue.front());
+        else
+            result += "*";
+        result += ",";
+        if (maxvalue.size() == 1)
+            result += std::to_string(maxvalue.front());
+        else
+            result += "*";
+        result += "]";
+        return result;
+    }
+
     void setMinValue(MathLib::bigint x, const ValueFlow::Value* ref = nullptr)
     {
         minvalue = {x};
@@ -168,7 +183,7 @@ struct Interval {
         if (!rhs.isScalar())
             return {};
         if (ref)
-            *ref = merge(lhs.minRef, rhs.minRef);
+            *ref = merge(merge(lhs.minRef, rhs.minRef), merge(lhs.maxRef, rhs.maxRef));
         return {lhs.minvalue == rhs.minvalue};
     }
 
@@ -187,6 +202,11 @@ struct Interval {
         return {};
     }
 };
+
+std::string toString(const Interval& i)
+{
+    return i.str();
+}
 
 static void addToErrorPath(ValueFlow::Value& value, const std::vector<const ValueFlow::Value*>& refs)
 {
