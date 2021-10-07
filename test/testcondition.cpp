@@ -4002,6 +4002,13 @@ private:
               "        if(i<=18) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'i<=18' is always true\n", errout.str());
+
+        check("void f(unsigned int u1, unsigned int u2) {\n"
+            "    if (u1 <= 10 && u2 >= 20) {\n"
+            "        if (u1 != u2) {}\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("error", errout.str());
     }
 
     void alwaysTrueContainer() {
