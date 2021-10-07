@@ -23,7 +23,8 @@
 #include "valueflow.h"
 
 struct Interval;
-template<class T> class ValuePtr;
+template<class T>
+class ValuePtr;
 
 struct InferModel {
     virtual bool match(const ValueFlow::Value& value) const = 0;
@@ -32,19 +33,19 @@ struct InferModel {
 };
 
 std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
-                                           const std::string& op,
-                                           std::list<ValueFlow::Value> lhsValues,
-                                           std::list<ValueFlow::Value> rhsValues);
+                                    const std::string& op,
+                                    std::list<ValueFlow::Value> lhsValues,
+                                    std::list<ValueFlow::Value> rhsValues);
 
 std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
-                                           const std::string& op,
-                                           MathLib::bigint lhs,
-                                           std::list<ValueFlow::Value> rhsValues);
+                                    const std::string& op,
+                                    MathLib::bigint lhs,
+                                    std::list<ValueFlow::Value> rhsValues);
 
 std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
-                                           const std::string& op,
-                                           std::list<ValueFlow::Value> lhsValues,
-                                           MathLib::bigint rhs);
+                                    const std::string& op,
+                                    std::list<ValueFlow::Value> lhsValues,
+                                    MathLib::bigint rhs);
 
 std::string toString(const Interval& i);
 

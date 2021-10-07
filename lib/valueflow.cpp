@@ -5229,8 +5229,7 @@ struct SimpleConditionHandler : ConditionHandler {
 };
 
 struct IntegralInferModel : InferModel {
-    virtual bool match(const ValueFlow::Value& value) const OVERRIDE
-    {
+    virtual bool match(const ValueFlow::Value& value) const OVERRIDE {
         return value.isIntValue();
     }
     virtual ValueFlow::Value yield(MathLib::bigint value) const OVERRIDE
@@ -5285,8 +5284,9 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             value.setKnown();
             setTokenValue(tok, value, settings);
         } else if (Token::Match(tok, "%comp%|-") && tok->astOperand1() && tok->astOperand2()) {
-            std::vector<ValueFlow::Value> result = infer(IntegralInferModel{}, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
-            for(const ValueFlow::Value& value:result) {
+            std::vector<ValueFlow::Value> result =
+                infer(IntegralInferModel{}, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
+            for (const ValueFlow::Value& value : result) {
                 setTokenValue(tok, value, settings);
             }
         }

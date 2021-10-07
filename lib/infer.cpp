@@ -4,9 +4,7 @@
 #include <unordered_set>
 
 template<class Predicate, class Compare>
-static const ValueFlow::Value* getCompareValue(const std::list<ValueFlow::Value>& values,
-                                               Predicate pred,
-                                               Compare compare)
+static const ValueFlow::Value* getCompareValue(const std::list<ValueFlow::Value>& values, Predicate pred, Compare compare)
 {
     const ValueFlow::Value* result = nullptr;
     for (const ValueFlow::Value& value : values) {
@@ -28,7 +26,8 @@ struct Interval {
     std::vector<const ValueFlow::Value*> minRef = {};
     std::vector<const ValueFlow::Value*> maxRef = {};
 
-    std::string str() const {
+    std::string str() const
+    {
         std::string result = "[";
         if (minvalue.size() == 1)
             result += std::to_string(minvalue.front());
@@ -210,22 +209,23 @@ struct Interval {
     }
 
     static std::vector<bool> compare(const std::string& op,
-                                    const Interval& lhs,
-                                    const Interval& rhs,
-                                    std::vector<const ValueFlow::Value*>* ref = nullptr)
+                                     const Interval& lhs,
+                                     const Interval& rhs,
+                                     std::vector<const ValueFlow::Value*>* ref = nullptr)
     {
         std::vector<int> r = compare(lhs, rhs, ref);
         if (r.empty())
             return {};
         bool b = calculate(op, r.front(), 0);
-        if (std::all_of(r.begin()+1, r.end(), [&](int i) { return b == calculate(op, i, 0); }))
+        if (std::all_of(r.begin() + 1, r.end(), [&](int i) {
+            return b == calculate(op, i, 0);
+        }))
             return {b};
         return {};
     }
 };
 
-std::string toString(const Interval& i)
-{
+std::string toString(const Interval& i) {
     return i.str();
 }
 
@@ -235,7 +235,10 @@ static void addToErrorPath(ValueFlow::Value& value, const std::vector<const Valu
     for (const ValueFlow::Value* ref : refs) {
         if (ref->condition && !value.condition)
             value.condition = ref->condition;
-        std::copy_if(ref->errorPath.begin(), ref->errorPath.end(), std::back_inserter(value.errorPath), [&](const ErrorPathItem& e) {
+        std::copy_if(ref->errorPath.begin(),
+                     ref->errorPath.end(),
+                     std::back_inserter(value.errorPath),
+                     [&](const ErrorPathItem& e) {
             return locations.insert(e.first).second;
         });
     }
@@ -267,9 +270,9 @@ static bool inferNotEqual(const std::list<ValueFlow::Value>& values, MathLib::bi
 }
 
 std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
-                                           const std::string& op,
-                                           std::list<ValueFlow::Value> lhsValues,
-                                           std::list<ValueFlow::Value> rhsValues)
+                                    const std::string& op,
+                                    std::list<ValueFlow::Value> lhsValues,
+                                    std::list<ValueFlow::Value> rhsValues)
 {
     std::vector<ValueFlow::Value> result;
     auto notMatch = [&](const ValueFlow::Value& value) {
@@ -342,17 +345,17 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
 }
 
 std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
-                                           const std::string& op,
-                                           MathLib::bigint lhs,
-                                           std::list<ValueFlow::Value> rhsValues)
+                                    const std::string& op,
+                                    MathLib::bigint lhs,
+                                    std::list<ValueFlow::Value> rhsValues)
 {
     return infer(model, op, {model->yield(lhs)}, std::move(rhsValues));
 }
 
 std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
-                                           const std::string& op,
-                                           std::list<ValueFlow::Value> lhsValues,
-                                           MathLib::bigint rhs)
+                                    const std::string& op,
+                                    std::list<ValueFlow::Value> lhsValues,
+                                    MathLib::bigint rhs)
 {
     return infer(model, op, std::move(lhsValues), {model->yield(rhs)});
 }

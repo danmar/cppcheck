@@ -4004,10 +4004,10 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'i<=18' is always true\n", errout.str());
 
         check("void f(unsigned int u1, unsigned int u2) {\n"
-            "    if (u1 <= 10 && u2 >= 20) {\n"
-            "        if (u1 != u2) {}\n"
-            "    }\n"
-            "}\n");
+              "    if (u1 <= 10 && u2 >= 20) {\n"
+              "        if (u1 != u2) {}\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition 'u1!=u2' is always true\n", errout.str());
     }
 
