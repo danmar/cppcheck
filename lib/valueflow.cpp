@@ -4377,6 +4377,13 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
             } else if (isDifferentType(tok->astOperand2(), tok->astOperand1())) {
                 continue;
             }
+            const std::vector<const Variable*> vars = getLHSVariables(tok);
+            if (std::any_of(vars.begin(), vars.end(), [](const Variable* var) {
+                if (var->isLocal())
+                    return var->isStatic();
+                return !var->isArgument();
+            }))
+                continue;
 
             Token* start = nextAfterAstRightmostLeaf(tok);
             const Token* end = scope->bodyEnd;
