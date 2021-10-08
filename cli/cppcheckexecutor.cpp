@@ -72,9 +72,15 @@
 #if defined(_MSC_VER)
 #define USE_WINDOWS_SEH
 #endif
-#include <Windows.h>
-#include <DbgHelp.h>
-#include <TCHAR.H>
+#if defined (__MINGW32__)
+#   include <windows.h>
+#   include <dbghelp.h>
+#   include <tchar.h>
+#else
+#   include <Windows.h>
+#   include <DbgHelp.h>
+#   include <TCHAR.H>
+#endif
 #include <excpt.h>
 #endif
 
