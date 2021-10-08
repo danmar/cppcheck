@@ -1,6 +1,7 @@
 #include "infer.h"
 #include "calculate.h"
 #include "valueptr.h"
+#include <iterator>
 #include <unordered_set>
 
 template<class Predicate, class Compare>
