@@ -3857,6 +3857,17 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int get_delta() {\n"
+              "    clock_t now_ms = (clock() / (CLOCKS_PER_SEC / 1000));\n"
+              "    static clock_t last_clock_ms = now_ms;\n"
+              "    clock_t delta = now_ms - last_clock_ms;\n"
+              "    last_clock_ms = now_ms;\n"
+              "    if (delta > 50)\n"
+              "        delta = 50;\n"
+              "    return delta;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
