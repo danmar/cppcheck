@@ -55,10 +55,7 @@ jobs:
       - name: run pylint
         if: matrix.python-version == '3.10'
         run: |
-          pylint --rcfile=pylintrc_travis addons/*.py
-          pylint --rcfile=pylintrc_travis htmlreport/cppcheck-htmlreport
-          pylint --rcfile=pylintrc_travis htmlreport/*.py
-          pylint --rcfile=pylintrc_travis tools/*.py
+          pylint --rcfile=pylintrc_travis --jobs $(nproc) addons/*.py htmlreport/cppcheck-htmlreport htmlreport/*.py tools/*.py
 
       - name: check .json files
         if: matrix.python-version == '3.10'
