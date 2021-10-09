@@ -803,11 +803,11 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
     // increment
     else if (parent->str() == "++") {
         for (const ValueFlow::Value &val : tok->values()) {
-            if (!val.isIntValue() && !val.isFloatValue())
+            if (!val.isIntValue() && !val.isFloatValue() && !val.isSymbolicValue())
                 continue;
             ValueFlow::Value v(val);
             if (parent == tok->previous()) {
-                if (v.isIntValue())
+                if (v.isIntValue() || v.isSymbolicValue())
                     v.intvalue = v.intvalue + 1;
                 else
                     v.floatValue = v.floatValue + 1.0;
@@ -819,11 +819,11 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
     // decrement
     else if (parent->str() == "--") {
         for (const ValueFlow::Value &val : tok->values()) {
-            if (!val.isIntValue() && !val.isFloatValue())
+            if (!val.isIntValue() && !val.isFloatValue() && !val.isSymbolicValue())
                 continue;
             ValueFlow::Value v(val);
             if (parent == tok->previous()) {
-                if (v.isIntValue())
+                if (v.isIntValue() || v.isSymbolicValue())
                     v.intvalue = v.intvalue - 1;
                 else
                     v.floatValue = v.floatValue - 1.0;
