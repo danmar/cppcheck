@@ -2190,7 +2190,7 @@ struct ValueFlowAnalyzer : Analyzer {
         return true;
     }
 
-    bool isSameSymbolicValue(const Token* tok, const ValueFlow::Value ** value = nullptr, std::vector<MathLib::bigint>* result = nullptr) const
+    bool isSameSymbolicValue(const Token* tok, ValueFlow::Value * value = nullptr) const
     {
         if (!useSymbolicValues())
             return false;
@@ -2205,16 +2205,18 @@ struct ValueFlowAnalyzer : Analyzer {
             if (exact && v.intvalue != 0)
                 continue;
             if (match(v.tokvalue)) {
-                if (value)
-                    *value = &v;
+                if (value) {
+                    value->errorPath.insert(value->errorPath.end(), v.errorPath.begin(), v.errorPath.end());
+                    value->intvalue += v.intvalue;
+                }
                 return true;
             } else if (!exact && !astIsBool(v.tokvalue)) {
                 std::vector<int> r = evaluate(Evaluate::Integral, v.tokvalue, tok);
                 if (!r.empty()) {
-                    if (value)
-                        *value = &v;
-                    if (result)
-                        *result = {r.front()};
+                    if (value) {
+                        value->errorPath.insert(value->errorPath.end(), v.errorPath.begin(), v.errorPath.end());
+                        value->intvalue = r.front();
+                    }
                     return true;
                 }
             }
@@ -2396,15 +2398,7 @@ struct ValueFlowAnalyzer : Analyzer {
             // Make a copy of the value to modify it
             localValue = *value;
             value = &localValue;
-            const ValueFlow::Value * symValue = nullptr;
-            std::vector<MathLib::bigint> e = {};
-            isSameSymbolicValue(tok, &symValue, &e);
-            assert(symValue);
-            value->errorPath.insert(value->errorPath.end(), symValue->errorPath.begin(), symValue->errorPath.end());
-            if (e.empty())
-                value->intvalue += symValue->intvalue;
-            else
-                value->intvalue = e.front();
+            isSameSymbolicValue(tok, &localValue);
         }
         // Read first when moving forward
         if (d == Direction::Forward && a.isRead())
