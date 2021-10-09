@@ -6364,6 +6364,21 @@ private:
               "    int a = x;\n"
               "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "struct A {\n"
+              "    A* b();\n"
+              "    int c() const;\n"
+              "};\n"
+              "void f(A *d) {\n"
+              "    if (!d || d->c() != 1)\n"
+              "        return;\n"
+              "    A * y = d;\n"
+              "    d = d->b();\n"
+              "    A * x = d;\n"
+              "    A* z = x;\n"
+              "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 11U, "d", 0));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 11U, 0));
     }
 
     void valueFlowSmartPointer()

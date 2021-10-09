@@ -2187,7 +2187,7 @@ struct ValueFlowAnalyzer : Analyzer {
         return true;
     }
     virtual bool useSymbolicValuesExact() const {
-        return false;
+        return true;
     }
 
     bool isSameSymbolicValue(const Token* tok, const ValueFlow::Value ** value = nullptr, std::vector<MathLib::bigint>* result = nullptr) const
@@ -2462,7 +2462,7 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
     }
 
     virtual bool useSymbolicValuesExact() const OVERRIDE {
-        return !value.isIntValue();
+        return !value.isIntValue() || value.isImpossible();
     }
 
     virtual void addErrorPath(const Token* tok, const std::string& s) OVERRIDE {
