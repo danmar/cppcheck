@@ -3834,7 +3834,7 @@ private:
               "        return (index++) >= s;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (style) Condition '(index++)>=s' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:6]: (style) Condition '(index++)>=s' is always false\n", errout.str());
 
         check("struct a {\n"
               "  a *b() const;\n"
