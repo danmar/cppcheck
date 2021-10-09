@@ -6357,6 +6357,13 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, "y", 0));
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "y", -1));
+
+        code = "void f(int y) {\n"
+              "  int x = y - 1;\n"
+              "  if (y == 1)\n"
+              "    int a = x;\n"
+              "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
     }
 
     void valueFlowSmartPointer()

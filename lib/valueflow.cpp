@@ -2186,24 +2186,37 @@ struct ValueFlowAnalyzer : Analyzer {
     virtual bool useSymbolicValues() const {
         return true;
     }
+    virtual bool useSymbolicValuesExact() const {
+        return false;
+    }
 
-    bool isSameSymbolicValue(const Token* tok, ErrorPath* errorPath = nullptr) const
+    bool isSameSymbolicValue(const Token* tok, const ValueFlow::Value ** value = nullptr, std::vector<MathLib::bigint>* result = nullptr) const
     {
         if (!useSymbolicValues())
             return false;
         if (Token::Match(tok, "%assign%"))
             return false;
+        bool exact = useSymbolicValuesExact() || astIsBool(tok);
         for (const ValueFlow::Value& v : tok->values()) {
             if (!v.isSymbolicValue())
                 continue;
             if (!v.isKnown())
                 continue;
-            if (v.intvalue != 0)
+            if (exact && v.intvalue != 0)
                 continue;
             if (match(v.tokvalue)) {
-                if (errorPath)
-                    errorPath->insert(errorPath->end(), v.errorPath.begin(), v.errorPath.end());
+                if (value)
+                    *value = &v;
                 return true;
+            } else if (!exact && !astIsBool(v.tokvalue)) {
+                std::vector<int> r = evaluate(Evaluate::Integral, v.tokvalue, tok);
+                if (!r.empty()) {
+                    if (value)
+                        *value = &v;
+                    if (result)
+                        *result = {r.front()};
+                    return true;
+                }
             }
         }
         return false;
@@ -2383,7 +2396,15 @@ struct ValueFlowAnalyzer : Analyzer {
             // Make a copy of the value to modify it
             localValue = *value;
             value = &localValue;
-            isSameSymbolicValue(tok, &value->errorPath);
+            const ValueFlow::Value * symValue = nullptr;
+            std::vector<MathLib::bigint> e = {};
+            isSameSymbolicValue(tok, &symValue, &e);
+            assert(symValue);
+            value->errorPath.insert(value->errorPath.end(), symValue->errorPath.begin(), symValue->errorPath.end());
+            if (e.empty())
+                value->intvalue += symValue->intvalue;
+            else
+                value->intvalue = e.front();
         }
         // Read first when moving forward
         if (d == Direction::Forward && a.isRead())
@@ -2438,6 +2459,10 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
         if (value.isUninitValue())
             return false;
         return true;
+    }
+
+    virtual bool useSymbolicValuesExact() const OVERRIDE {
+        return !value.isIntValue();
     }
 
     virtual void addErrorPath(const Token* tok, const std::string& s) OVERRIDE {
