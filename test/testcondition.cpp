@@ -954,7 +954,7 @@ private:
               "    }\n"
               "    return false;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'c!=a' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'c!=a' is always false\n", errout.str());
     }
 
     void incorrectLogicOperator2() {
@@ -3330,7 +3330,7 @@ private:
               "    if (handle) return 1;\n"
               "    else return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition 'handle' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'handle' is always true\n", errout.str());
 
         check("int f(void *handle) {\n"
               "    if (handle != 0) return 0;\n"
@@ -3393,7 +3393,7 @@ private:
               "        if(array){}\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Condition 'array' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'array' is always true\n", errout.str());
 
         check("void f(int *array, int size ) {\n"
               "    for(int i = 0; i < size; ++i) {\n"
@@ -3402,7 +3402,7 @@ private:
               "        else if(array){}\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Condition 'array' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'array' is always true\n", errout.str());
 
         // #9277
         check("int f() {\n"
@@ -3770,7 +3770,7 @@ private:
         check("void f(int i) {\n"
               "    if(i < 0 && abs(i) == i) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'abs(i)==i' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'abs(i)==i' is always false\n", errout.str());
 
         check("void f(int i) {\n"
               "    if(i > -3 && abs(i) == i) {}\n"
@@ -3810,7 +3810,7 @@ private:
               "        if(x == y) {}\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'x==y' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x==y' is always false\n", errout.str());
 
         check("void f(bool a, bool b) {  if (a == b && a && !b){} }");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Condition '!b' is always false\n", errout.str());
@@ -3824,7 +3824,7 @@ private:
               "    if (z < 1) {}\n"
               "  }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'z<1' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'z<1' is always false\n", errout.str());
 
         check("struct a {\n"
               "  a *b() const;\n"
@@ -4002,6 +4002,13 @@ private:
               "        if(i<=18) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'i<=18' is always true\n", errout.str());
+
+        check("void f(unsigned int u1, unsigned int u2) {\n"
+              "    if (u1 <= 10 && u2 >= 20) {\n"
+              "        if (u1 != u2) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition 'u1!=u2' is always true\n", errout.str());
     }
 
     void alwaysTrueContainer() {
