@@ -6402,6 +6402,13 @@ private:
 
         code = "void f(int x, int y) {\n"
               "  if (x == y*y)\n"
+              "    if (y != 2)\n"
+              "      int a = x;\n"
+              "}\n";
+        TODO_ASSERT_EQUALS(true, false, testValueOfXImpossible(code, 4U, 4));
+
+        code = "void f(int x, int y) {\n"
+              "  if (x == y*y)\n"
               "    if (y > 2)\n"
               "      int a = x;\n"
               "}\n";
