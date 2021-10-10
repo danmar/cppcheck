@@ -6379,6 +6379,27 @@ private:
               "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 4));
 
+        code = "void f(int x, int y) {\n"
+              "  if (x > y*y)\n"
+              "    if (y == 2)\n"
+              "      int a = x;\n"
+              "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 4));
+
+        code = "void f(int x, int y) {\n"
+              "  if (x != y*y)\n"
+              "    if (y == 2)\n"
+              "      int a = x;\n"
+              "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 4));
+
+        code = "void f(int x, int y) {\n"
+              "  if (x >= y*y)\n"
+              "    if (y == 2)\n"
+              "      int a = x;\n"
+              "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 3));
+
         code = "struct A {\n"
               "    A* b();\n"
               "    int c() const;\n"

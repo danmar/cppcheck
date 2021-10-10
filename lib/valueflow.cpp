@@ -2207,26 +2207,28 @@ struct ValueFlowAnalyzer : Analyzer {
         for (const ValueFlow::Value& v : tok->values()) {
             if (!v.isSymbolicValue())
                 continue;
-            if (!v.isKnown())
+            const bool toImpossible = v.isImpossible() && currValue->isKnown();
+            if (!v.isKnown() && !toImpossible)
                 continue;
             if (exact && v.intvalue != 0)
                 continue;
+            std::vector<MathLib::bigint> r;
+            ValueFlow::Value::Bound bound = currValue->bound;
             if (match(v.tokvalue)) {
+                r = {currValue->intvalue};
+            } else if (!exact && findMatch(v.tokvalue) && bound == ValueFlow::Value::Bound::Point) {
+                r = evaluate(Evaluate::Integral, v.tokvalue, tok);
+                bound = v.bound;
+            }
+            if (!r.empty()) {
                 if (value) {
                     value->errorPath.insert(value->errorPath.end(), v.errorPath.begin(), v.errorPath.end());
-                    value->intvalue += v.intvalue;
+                    value->intvalue = r.front() + v.intvalue;
+                    if (toImpossible)
+                        value->setImpossible();
+                    value->bound = bound;
                 }
                 return true;
-            } else if (!exact && findMatch(v.tokvalue) && currValue->bound == ValueFlow::Value::Bound::Point) {
-                std::vector<MathLib::bigint> r = evaluate(Evaluate::Integral, v.tokvalue, tok);
-                if (!r.empty()) {
-                    if (value) {
-                        value->errorPath.insert(value->errorPath.end(), v.errorPath.begin(), v.errorPath.end());
-                        value->intvalue = r.front();
-                        value->bound = v.bound;
-                    }
-                    return true;
-                }
             }
         }
         return false;
