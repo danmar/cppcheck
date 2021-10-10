@@ -2188,13 +2188,14 @@ struct ValueFlowAnalyzer : Analyzer {
         return true;
     }
 
-    const Token* findMatch(const Token* tok) const {
-        return findAstNode(tok, [&](const Token* child) { 
+    const Token* findMatch(const Token* tok) const
+    {
+        return findAstNode(tok, [&](const Token* child) {
             return match(child);
         });
     }
 
-    bool isSameSymbolicValue(const Token* tok, ValueFlow::Value * value = nullptr) const
+    bool isSameSymbolicValue(const Token* tok, ValueFlow::Value* value = nullptr) const
     {
         if (!useSymbolicValues())
             return false;
@@ -2327,7 +2328,8 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
-    virtual std::vector<MathLib::bigint> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const OVERRIDE {
+    virtual std::vector<MathLib::bigint> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const OVERRIDE
+    {
         if (e == Evaluate::Integral) {
             if (tok->hasKnownIntValue())
                 return {static_cast<int>(tok->values().front().intvalue)};

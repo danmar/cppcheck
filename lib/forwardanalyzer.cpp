@@ -600,7 +600,8 @@ struct ForwardTraversal {
                         if (conTok && updateRecursive(conTok) == Progress::Break)
                             return Break();
                         bool isEmpty = false;
-                        std::vector<MathLib::bigint> result = analyzer->evaluate(Analyzer::Evaluate::ContainerEmpty, conTok);
+                        std::vector<MathLib::bigint> result =
+                            analyzer->evaluate(Analyzer::Evaluate::ContainerEmpty, conTok);
                         if (result.empty())
                             analyzer->assume(conTok, false, Analyzer::Assume::ContainerEmpty);
                         else

@@ -157,7 +157,8 @@ struct Analyzer {
     virtual void update(Token* tok, Action a, Direction d) = 0;
     /// Try to evaluate the value of a token(most likely a condition)
     virtual std::vector<MathLib::bigint> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const = 0;
-    std::vector<MathLib::bigint> evaluate(const Token* tok, const Token* ctx = nullptr) const {
+    std::vector<MathLib::bigint> evaluate(const Token* tok, const Token* ctx = nullptr) const
+    {
         return evaluate(Evaluate::Integral, tok, ctx);
     }
     /// Lower any values to possible
