@@ -3826,6 +3826,16 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'z<1' is always false\n", errout.str());
 
+        check("bool f(int &index, const int s, const double * const array, double & x) {\n"
+              "    if (index >= s)\n"
+              "        return false;\n"
+              "    else {\n"
+              "        x = array[index];\n"
+              "        return (index++) >= s;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:6]: (style) Condition '(index++)>=s' is always false\n", errout.str());
+
         check("struct a {\n"
               "  a *b() const;\n"
               "} c;\n"
