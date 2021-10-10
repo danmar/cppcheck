@@ -8,6 +8,7 @@ jobs:
   build:
 
     runs-on: ubuntu-20.04
+    timeout-minutes: 15
 
     env:
       UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
