@@ -2217,12 +2217,13 @@ struct ValueFlowAnalyzer : Analyzer {
                     value->intvalue += v.intvalue;
                 }
                 return true;
-            } else if (!exact && findMatch(v.tokvalue)) {
+            } else if (!exact && findMatch(v.tokvalue) && currValue->bound == ValueFlow::Value::Bound::Point) {
                 std::vector<MathLib::bigint> r = evaluate(Evaluate::Integral, v.tokvalue, tok);
                 if (!r.empty()) {
                     if (value) {
                         value->errorPath.insert(value->errorPath.end(), v.errorPath.begin(), v.errorPath.end());
                         value->intvalue = r.front();
+                        value->bound = v.bound;
                     }
                     return true;
                 }
