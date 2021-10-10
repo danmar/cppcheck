@@ -2216,9 +2216,10 @@ struct ValueFlowAnalyzer : Analyzer {
             ValueFlow::Value::Bound bound = currValue->bound;
             if (match(v.tokvalue)) {
                 r = {currValue->intvalue};
-            } else if (!exact && findMatch(v.tokvalue) && bound == ValueFlow::Value::Bound::Point) {
+            } else if (!exact && findMatch(v.tokvalue)) {
                 r = evaluate(Evaluate::Integral, v.tokvalue, tok);
-                bound = v.bound;
+                if (bound == ValueFlow::Value::Bound::Point)
+                    bound = v.bound;
             }
             if (!r.empty()) {
                 if (value) {
