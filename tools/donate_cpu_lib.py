@@ -333,12 +333,19 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
     timing_str = ''.join(timing_info_list)
 
     # detect errors
+    sig_file = None
     sig_num = -1
-    sig_msg = 'Internal error: Child process crashed with signal '
-    sig_pos = stderr.find(sig_msg)
-    if sig_pos != -1:
-        sig_start_pos = sig_pos + len(sig_msg)
-        sig_num = int(stderr[sig_start_pos:stderr.find(' ', sig_start_pos)])
+    for ie_line in internal_error_messages_list:
+        # temp/dlib-19.10/dlib/test/dnn.cpp:0:0: error: Internal error: Child process crashed with signal 11 [cppcheckError]
+        if 'Child process crashed with signal' in ie_line:
+            sig_file = ie_line.split(':')[0]
+            sig_msg = 'signal '
+            sig_pos = stderr.find(sig_msg)
+            if sig_pos != -1:
+                sig_start_pos = sig_pos + len(sig_msg)
+                sig_num = int(ie_line[sig_start_pos:ie_line.find(' ', sig_start_pos)])
+            # break on the first signalled file for now
+            break
     print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
 
     if returncode == RETURN_CODE_TIMEOUT:
