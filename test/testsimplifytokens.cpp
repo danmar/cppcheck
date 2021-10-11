@@ -392,7 +392,7 @@ private:
         Tokenizer tokenizer(&settings_windows, this);
 
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp")) false;
+        ASSERT(tokenizer.tokenize(istr, "test.cpp")) {};
 
         if (simplify)
             tokenizer.simplifyTokenList2();
@@ -419,7 +419,7 @@ private:
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp")) false;
+        ASSERT(tokenizer.tokenize(istr, "test.cpp")) {};
         tokenizer.simplifyTokenList2();
 
         return tokenizer.tokens()->stringifyList(false, false, false, true, false);
@@ -431,7 +431,7 @@ private:
         Tokenizer tokenizer(&settings_std, this);
 
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp")) false;
+        ASSERT(tokenizer.tokenize(istr, "test.cpp")) {};
         tokenizer.simplifyTokenList2();
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
@@ -5239,7 +5239,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp")) false;
+        ASSERT(tokenizer.tokenize(istr, "test.cpp")) {};
 
         tokenizer.simplifyKnownVariables();
 

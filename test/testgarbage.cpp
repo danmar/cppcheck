@@ -277,7 +277,7 @@ private:
         // tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, filename)) false;
+        ASSERT(tokenizer.tokenize(istr, filename)) {};
 
         // call all "runChecks" in all registered Check classes
         for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
