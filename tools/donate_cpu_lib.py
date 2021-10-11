@@ -340,7 +340,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         if 'Child process crashed with signal' in ie_line:
             sig_file = ie_line.split(':')[0]
             sig_msg = 'signal '
-            sig_pos = stderr.find(sig_msg)
+            sig_pos = ie_line.find(sig_msg)
             if sig_pos != -1:
                 sig_start_pos = sig_pos + len(sig_msg)
                 sig_num = int(ie_line[sig_start_pos:ie_line.find(' ', sig_start_pos)])
