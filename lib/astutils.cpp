@@ -169,9 +169,9 @@ bool astHasToken(const Token* root, const Token * tok)
 {
     if (!root)
         return false;
-    if (root == tok)
-        return true;
-    return astHasToken(root->astOperand1(), tok) || astHasToken(root->astOperand2(), tok);
+    while (tok->astParent() && tok != root)
+        tok = tok->astParent();
+    return root == tok;
 }
 
 bool astHasVar(const Token * tok, nonneg int varid)
@@ -201,6 +201,11 @@ bool astIsSignedChar(const Token *tok)
 bool astIsUnknownSignChar(const Token *tok)
 {
     return astIsCharWithSign(tok, ValueType::Sign::UNKNOWN_SIGN);
+}
+
+bool astIsGenericChar(const Token* tok)
+{
+    return !astIsPointer(tok) && tok && tok->valueType() && (tok->valueType()->type == ValueType::Type::CHAR || tok->valueType()->type == ValueType::Type::WCHAR_T);
 }
 
 bool astIsIntegral(const Token *tok, bool unknown)
@@ -244,9 +249,18 @@ bool astIsIterator(const Token *tok)
     return tok && tok->valueType() && tok->valueType()->type == ValueType::Type::ITERATOR;
 }
 
-bool astIsContainer(const Token *tok)
+bool astIsContainer(const Token* tok) {
+    return getLibraryContainer(tok) != nullptr && !astIsIterator(tok);
+}
+
+bool astIsContainerView(const Token* tok)
 {
-    return getLibraryContainer(tok) != nullptr && tok->valueType()->type != ValueType::Type::ITERATOR;
+    const Library::Container* container = getLibraryContainer(tok);
+    return container && !astIsIterator(tok) && container->view;
+}
+
+bool astIsContainerOwned(const Token* tok) {
+    return astIsContainer(tok) && !astIsContainerView(tok);
 }
 
 std::string astCanonicalType(const Token *expr)
@@ -454,6 +468,9 @@ Token* astParentSkipParens(Token* tok)
     if (!Token::simpleMatch(parent, "("))
         return parent;
     if (parent->link() != nextAfterAstRightmostLeaf(tok))
+        return parent;
+    if (Token::Match(parent->previous(), "%name% (") ||
+        (Token::simpleMatch(parent->previous(), "> (") && parent->previous()->link()))
         return parent;
     return astParentSkipParens(parent);
 }
@@ -833,6 +850,8 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok,
                 errors.emplace_back(var->declEndToken(), "Passed to reference.");
                 return {{tok, std::move(errors)}};
             } else if (Token::simpleMatch(var->declEndToken(), "=")) {
+                if (astHasToken(var->declEndToken(), tok))
+                    return std::vector<ReferenceToken>{};
                 errors.emplace_back(var->declEndToken(), "Assigned to reference.");
                 const Token *vartok = var->declEndToken()->astOperand2();
                 if (vartok == tok || (!temporary && isTemporary(true, vartok, nullptr, true) &&
@@ -1506,6 +1525,18 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
         } else if (lf->argumentChecks.empty()) {
             return false;
         }
+    } else if (Token::Match(ftok->previous(), ". %name% (") && ftok->previous()->originalName() != "->" &&
+               astIsSmartPointer(ftok->previous()->astOperand1())) {
+        return Token::Match(ftok, "get|get_deleter ( )");
+    } else if (Token::Match(ftok->previous(), ". %name% (") && astIsContainer(ftok->previous()->astOperand1())) {
+        const Library::Container* container = ftok->previous()->astOperand1()->valueType()->container;
+        if (!container)
+            return false;
+        if (container->getYield(ftok->str()) != Library::Container::Yield::NO_YIELD)
+            return true;
+        if (container->getAction(ftok->str()) == Library::Container::Action::FIND)
+            return true;
+        return false;
     } else {
         bool memberFunction = Token::Match(ftok->previous(), ". %name% (");
         bool constMember = !memberFunction;
@@ -1870,7 +1901,7 @@ static bool isCPPCastKeyword(const Token* tok)
 {
     if (!tok)
         return false;
-    return endsWith(tok->str(), "_cast", 5);
+    return endsWith(tok->str(), "_cast");
 }
 
 static bool isTrivialConstructor(const Token* tok)
@@ -2349,6 +2380,11 @@ int getArgumentPos(const Variable* var, const Function* f)
     return std::distance(f->argumentList.begin(), arg_it);
 }
 
+bool isIteratorPair(std::vector<const Token*> args)
+{
+    return args.size() == 2 && ((astIsIterator(args[0]) && astIsIterator(args[1])) || (astIsPointer(args[0]) && astIsPointer(args[1])));
+}
+
 const Token *findLambdaStartToken(const Token *last)
 {
     if (!last || last->str() != "}")
@@ -2627,6 +2663,14 @@ bool isNullOperand(const Token *expr)
 
 bool isGlobalData(const Token *expr, bool cpp)
 {
+    // function call that returns reference => assume global data
+    if (expr && expr->str() == "(" && expr->valueType() && expr->valueType()->reference != Reference::None) {
+        if (expr->isBinaryOp())
+            return true;
+        if (expr->astOperand1() && precedes(expr->astOperand1(), expr))
+            return true;
+    }
+
     bool globalData = false;
     bool var = false;
     visitAstNodes(expr,
@@ -3170,4 +3214,9 @@ bool FwdAnalysis::isEscapedAlias(const Token* expr)
         }
     }
     return false;
+}
+
+bool isSizeOfEtc(const Token *tok)
+{
+    return Token::Match(tok, "sizeof|typeof|offsetof|decltype|__typeof__ (");
 }

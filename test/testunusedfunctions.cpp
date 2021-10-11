@@ -46,6 +46,8 @@ private:
         TEST_CASE(template3);
         TEST_CASE(template4); // #9805
         TEST_CASE(template5);
+        TEST_CASE(template6); // #10475 crash
+        TEST_CASE(template7); // #9766 crash
         TEST_CASE(throwIsNotAFunction);
         TEST_CASE(unusedError);
         TEST_CASE(unusedMain);
@@ -259,6 +261,20 @@ private:
               "\n"
               "int main() { g<f>(); return 0;}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void template6() { // #10475
+        check("template<template<typename...> class Ref, typename... Args>\n"
+              "struct Foo<Ref<Args...>, Ref> : std::true_type {};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void template7()
+    { // #9766
+        check("void f() {\n"
+              "    std::array<std::array<double,3>,3> array;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'f' is never used.\n", errout.str());
     }
 
     void throwIsNotAFunction() {

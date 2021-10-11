@@ -10,13 +10,12 @@ import re
 import signal
 import tarfile
 import shlex
-import psutil
 
 
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.12"
+CLIENT_VERSION = "1.3.13"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -91,9 +90,9 @@ def compile_version(work_path, jobs, version):
     subprocess.call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g'])
     if os.path.isfile(work_path + '/cppcheck/cppcheck'):
         os.mkdir(work_path + '/' + version)
-        destPath = work_path + '/' + version + '/'
-        subprocess.call(['cp', '-R', work_path + '/cppcheck/cfg', destPath])
-        subprocess.call(['cp', 'cppcheck', destPath])
+        dest_path = work_path + '/' + version + '/'
+        subprocess.call(['cp', '-R', work_path + '/cppcheck/cfg', dest_path])
+        subprocess.call(['cp', 'cppcheck', dest_path])
     subprocess.call(['git', 'checkout', 'main'])
     try:
         subprocess.call([work_path + '/' + version + '/cppcheck', '--version'])
@@ -166,19 +165,19 @@ def handle_remove_readonly(func, path, exc):
         func(path)
 
 
-def remove_tree(folderName):
-    if not os.path.exists(folderName):
+def remove_tree(folder_name):
+    if not os.path.exists(folder_name):
         return
     count = 5
     while count > 0:
         count -= 1
         try:
-            shutil.rmtree(folderName, onerror=handle_remove_readonly)
+            shutil.rmtree(folder_name, onerror=handle_remove_readonly)
             break
         except OSError as err:
             time.sleep(30)
             if count == 0:
-                print('Failed to cleanup {}: {}'.format(folderName, err))
+                print('Failed to cleanup {}: {}'.format(folder_name, err))
                 sys.exit(1)
 
 
@@ -215,7 +214,6 @@ def unpack_package(work_path, tgz):
     temp_path = work_path + '/temp'
     remove_tree(temp_path)
     os.mkdir(temp_path)
-    os.chdir(temp_path)
     found = False
     if tarfile.is_tarfile(tgz):
         with tarfile.open(tgz) as tf:
@@ -226,13 +224,12 @@ def unpack_package(work_path, tgz):
                 elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp',
                                                    '.h++', '.hxx', '.hh', '.tpp', '.txx', '.ipp', '.ixx', '.qml')):
                     try:
-                        tf.extract(member.name)
+                        tf.extract(member.name, temp_path)
                         found = True
                     except OSError:
                         pass
                     except AttributeError:
                         pass
-    os.chdir(work_path)
     return found
 
 
@@ -254,7 +251,7 @@ def has_include(path, includes):
 
 def run_command(cmd):
     print(cmd)
-    startTime = time.time()
+    start_time = time.time()
     comm = None
     p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
     try:
@@ -262,6 +259,7 @@ def run_command(cmd):
         return_code = p.returncode
         p = None
     except subprocess.TimeoutExpired:
+        import psutil
         return_code = RETURN_CODE_TIMEOUT
         # terminate all the child processes so we get messages about which files were hanging
         child_procs = psutil.Process(p.pid).children(recursive=True)
@@ -281,7 +279,7 @@ def run_command(cmd):
     stop_time = time.time()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore')
-    elapsed_time = stop_time - startTime
+    elapsed_time = stop_time - start_time
     return return_code, stdout, stderr, elapsed_time
 
 
@@ -293,11 +291,14 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         if os.path.exists(os.path.join(cppcheck_path, 'cfg', library + '.cfg')):
             libs += '--library=' + library + ' '
 
+    dir_to_scan = 'temp'
+
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
-    options = libs + jobs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --template=daca2 -rp=temp'
-    options += ' -D__GNUC__ --platform=unix64 temp'
+    options = libs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --template=daca2'
+    options += ' -D__GNUC__ --platform=unix64'
+    options += ' -rp={}'.format(dir_to_scan)
     cppcheck_cmd = cppcheck_path + '/cppcheck' + ' ' + options
-    cmd = 'nice ' + cppcheck_cmd
+    cmd = 'nice ' + cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
     returncode, stdout, stderr, elapsed_time = run_command(cmd)
 
     # collect messages
@@ -350,7 +351,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         stacktrace = ''
         if cppcheck_path == 'cppcheck':
             # re-run within gdb to get a stacktrace
-            cmd = 'gdb --batch --eval-command=run --eval-command="bt 50" --return-child-result --args ' + cppcheck_cmd + " -j1"
+            cmd = 'gdb --batch --eval-command=run --eval-command="bt 50" --return-child-result --args ' + cppcheck_cmd + " -j1 " + dir_to_scan
             _, st_stdout, _, _ = run_command(cmd)
             gdb_pos = st_stdout.find(" received signal")
             if not gdb_pos == -1:
@@ -476,11 +477,11 @@ def upload_info(package, info_output, server_address):
 def get_libraries():
     libraries = ['posix', 'gnu']
     library_includes = {'boost': ['<boost/'],
-                       'bsd': ['<sys/queue.h>','<sys/tree.h>','<bsd/','<fts.h>','<db.h>','<err.h>','<vis.h>'],
+                       'bsd': ['<sys/queue.h>', '<sys/tree.h>', '<bsd/', '<fts.h>', '<db.h>', '<err.h>', '<vis.h>'],
                        'cairo': ['<cairo.h>'],
                        'cppunit': ['<cppunit/'],
                        'icu': ['<unicode/', '"unicode/'],
-                       'ginac': ['<ginac/','"ginac/'],
+                       'ginac': ['<ginac/', '"ginac/'],
                        'googletest': ['<gtest/gtest.h>'],
                        'gtk': ['<gtk', '<glib.h>', '<glib-', '<glib/', '<gnome'],
                        'kde': ['<KGlobal>', '<KApplication>', '<KDE/'],

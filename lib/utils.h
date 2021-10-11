@@ -23,7 +23,9 @@
 
 #include "config.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <initializer_list>
 #include <string>
 #include <vector>
 
@@ -41,6 +43,24 @@ struct SelectMapValues {
     }
 };
 
+template<class Range, class T>
+bool contains(const Range& r, const T& x)
+{
+    return std::find(r.begin(), r.end(), x) != r.end();
+}
+
+template<class T>
+bool contains(const std::initializer_list<T>& r, const T& x)
+{
+    return std::find(r.begin(), r.end(), x) != r.end();
+}
+
+template<class T, class U>
+bool contains(const std::initializer_list<T>& r, const U& x)
+{
+    return std::find(r.begin(), r.end(), x) != r.end();
+}
+
 // Enum hash for C++11. This is not needed in C++14
 struct EnumClassHash {
     template<typename T>
@@ -52,12 +72,18 @@ struct EnumClassHash {
 
 inline bool endsWith(const std::string &str, char c)
 {
-    return str[str.size()-1U] == c;
+    return !str.empty() && str.back() == c;
 }
 
 inline bool endsWith(const std::string &str, const char end[], std::size_t endlen)
 {
     return (str.size() >= endlen) && (str.compare(str.size()-endlen, endlen, end)==0);
+}
+
+template<std::size_t N>
+bool endsWith(const std::string& str, const char (&end)[N])
+{
+    return endsWith(str, end, N - 1);
 }
 
 inline static bool isPrefixStringCharLiteral(const std::string &str, char q, const std::string& p)

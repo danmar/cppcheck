@@ -67,6 +67,8 @@ bool astHasVar(const Token * tok, nonneg int varid);
 bool astIsSignedChar(const Token *tok);
 /** Is expression a 'char' if no promotion is used? */
 bool astIsUnknownSignChar(const Token *tok);
+/** Is expression a char according to valueType? */
+bool astIsGenericChar(const Token* tok);
 /** Is expression of integral type? */
 bool astIsIntegral(const Token *tok, bool unknown);
 bool astIsUnsigned(const Token* tok);
@@ -82,6 +84,9 @@ bool astIsSmartPointer(const Token* tok);
 bool astIsIterator(const Token *tok);
 
 bool astIsContainer(const Token *tok);
+
+bool astIsContainerView(const Token* tok);
+bool astIsContainerOwned(const Token* tok);
 
 /**
  * Get canonical type of expression. const/static/etc are not included and neither *&.
@@ -272,6 +277,11 @@ std::vector<const Token *> getArguments(const Token *ftok);
 
 int getArgumentPos(const Variable* var, const Function* f);
 
+/**
+ * Are the arguments a pair of iterators/pointers?
+ */
+bool isIteratorPair(std::vector<const Token*> args);
+
 const Token *findLambdaStartToken(const Token *last);
 
 /**
@@ -373,5 +383,7 @@ private:
     std::vector<KnownAndToken> mValueFlow;
     bool mValueFlowKnown;
 };
+
+bool isSizeOfEtc(const Token *tok);
 
 #endif // astutilsH

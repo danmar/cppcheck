@@ -121,6 +121,9 @@ private:
         TEST_CASE(nullpointer79); // #10400
         TEST_CASE(nullpointer80); // #10410
         TEST_CASE(nullpointer81); // #8724
+        TEST_CASE(nullpointer82); // #10331
+        TEST_CASE(nullpointer83); // #9870
+        TEST_CASE(nullpointer84); // #9873
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2474,6 +2477,54 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void nullpointer82() // #10331
+    {
+        check("bool g();\n"
+              "int* h();\n"
+              "void f(int* ptr) {\n"
+              "    if (!ptr) {\n"
+              "        if (g())\n"
+              "            goto done;\n"
+              "        ptr = h();\n"
+              "        if (!ptr)\n"
+              "            return;\n"
+              "    }\n"
+              "    if (*ptr == 1)\n"
+              "        return;\n"
+              "\n"
+              "done:\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer83() // #9870
+    {
+        check("int* qux();\n"
+              "int* f7c2(int *x) {\n"
+              "  int* p = 0;\n"
+              "  if (nullptr == x)\n"
+              "    p = qux();\n"
+              "  if (nullptr == x)\n"
+              "    return x;\n"
+              "  *p = 1;\n"
+              "  return x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Possible null pointer dereference: p\n", errout.str());
+    }
+
+    void nullpointer84() // #9873
+    {
+        check("void f(std::unique_ptr<A> P) {\n"
+              "  A *RP = P.get();\n"
+              "  if (!RP) {\n"
+              "    P->foo();\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition '!RP' is redundant or there is possible null pointer dereference: P.\n",
+            errout.str());
+    }
+
     void nullpointer_addressOf() { // address of
         check("void f() {\n"
               "  struct X *x = 0;\n"
@@ -3928,9 +3979,9 @@ private:
 
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
-        CheckNullPointer check(&tokenizer, &settings, this);
-        fileInfo.push_back(check.getFileInfo(&tokenizer, &settings));
-        check.analyseWholeProgram(ctu, fileInfo, settings, *this);
+        CheckNullPointer checkNullPointer(&tokenizer, &settings, this);
+        fileInfo.push_back(checkNullPointer.getFileInfo(&tokenizer, &settings));
+        checkNullPointer.analyseWholeProgram(ctu, fileInfo, settings, *this);
         while (!fileInfo.empty()) {
             delete fileInfo.back();
             fileInfo.pop_back();

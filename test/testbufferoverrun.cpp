@@ -3176,6 +3176,11 @@ private:
               "    dostuff(x-i);\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (portability) Undefined behaviour, when 'i' is -20 the pointer arithmetic 'x-i' is out of bounds.\n", "", errout.str());
+
+        check("void f(const char *x[10]) {\n"
+              "    return x-4;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void strcat1() {
