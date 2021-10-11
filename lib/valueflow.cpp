@@ -4404,9 +4404,9 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
     }
 }
 
-static void valueFlowSymbolicIdentity(TokenList *tokenlist)
+static void valueFlowSymbolicIdentity(TokenList* tokenlist)
 {
-    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+    for (Token* tok = tokenlist->front(); tok; tok = tok->next()) {
         if (tok->hasKnownIntValue())
             continue;
         if (!Token::Match(tok, "*|/|<<|>>|^|+|-|%or%"))
@@ -4439,14 +4439,15 @@ static void valueFlowSymbolicIdentity(TokenList *tokenlist)
             continue;
         std::vector<ValueFlow::Value> values = {makeSymbolic(vartok)};
         std::unordered_set<nonneg int> ids = {vartok->exprId()};
-        std::copy_if(vartok->values().begin(), vartok->values().end(), std::back_inserter(values), [&](const ValueFlow::Value& v) {
-            if(!v.isSymbolicValue())
+        std::copy_if(
+            vartok->values().begin(), vartok->values().end(), std::back_inserter(values), [&](const ValueFlow::Value& v) {
+            if (!v.isSymbolicValue())
                 return false;
             if (!v.tokvalue)
                 return false;
             return ids.insert(v.tokvalue->exprId()).second;
         });
-        for(const ValueFlow::Value& v:values)
+        for (const ValueFlow::Value& v : values)
             setTokenValue(tok, v, tokenlist->getSettings());
     }
 }
