@@ -18,7 +18,7 @@ struct ReverseTraversal {
     const Settings* settings;
 
     std::pair<bool, bool> evalCond(const Token* tok) {
-        std::vector<int> result = analyzer->evaluate(tok);
+        std::vector<MathLib::bigint> result = analyzer->evaluate(tok);
         // TODO: We should convert to bool
         bool checkThen = std::any_of(result.begin(), result.end(), [](int x) {
             return x == 1;
