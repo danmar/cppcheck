@@ -539,7 +539,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         CheckCondition checkCondition;
         checkCondition.runChecks(&tokenizer, &settings1, this);

@@ -208,7 +208,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, cpp?"test.cpp":"test.c");
+        ASSERT(tokenizer.tokenize(istr, cpp ? "test.cpp" : "test.c"));
 
         // Check for leaks..
         CheckLeakAutoVar c;
@@ -224,7 +224,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings_, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         // Check for leaks..
         CheckLeakAutoVar c;
@@ -2314,7 +2314,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         // Check for leaks..
         CheckLeakAutoVar checkLeak;
@@ -2364,7 +2364,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.c");
+        ASSERT(tokenizer.tokenize(istr, "test.c"));
 
         // Check for leaks..
         CheckLeakAutoVar checkLeak;

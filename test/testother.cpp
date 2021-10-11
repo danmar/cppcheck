@@ -279,7 +279,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename ? filename : "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, filename ? filename : "test.cpp"));
 
         // Check..
         CheckOther checkOther(&tokenizer, settings, this);
@@ -1454,7 +1454,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         CheckOther checkOtherCpp(&tokenizer, &settings, this);
         checkOtherCpp.invalidPointerCast();

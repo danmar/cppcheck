@@ -104,7 +104,7 @@ private:
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp")) false;
 
         return tokenizer.tokens()->stringifyList(nullptr);
     }

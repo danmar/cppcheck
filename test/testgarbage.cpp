@@ -277,7 +277,7 @@ private:
         // tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT(tokenizer.tokenize(istr, filename)) false;
 
         // call all "runChecks" in all registered Check classes
         for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
@@ -291,7 +291,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         try {
-            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(tokenizer.tokenize(istr, "test.cpp")) {};
         } catch (InternalError& e) {
             if (e.id != "syntaxError")
                 return "";
@@ -308,7 +308,7 @@ private:
             errout.str("");
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT_EQUALS("", errout.str());
         }
     }
@@ -356,7 +356,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         try {
-            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             assertThrowFail(__FILE__, __LINE__);
         } catch (InternalError& e) {
             ASSERT_EQUALS("syntax error", e.errorMessage);
@@ -390,14 +390,14 @@ private:
             errout.str("");
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.c");
+            ASSERT(tokenizer.tokenize(istr, "test.c"));
             ASSERT_EQUALS("", errout.str());
         }
         {
             errout.str("");
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT_EQUALS("[test.cpp:1]: (information) The code 'class x y {' is not handled. You can use -I or --include to add handling of this code.\n", errout.str());
         }
     }

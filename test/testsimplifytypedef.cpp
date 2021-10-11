@@ -207,7 +207,7 @@ private:
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp")) {};
 
         return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
@@ -257,7 +257,7 @@ private:
         settings2.debugwarnings = true;   // show warnings about unhandled typedef
         Tokenizer tokenizer(&settings2, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
     }
 
 

@@ -55,7 +55,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT(tokenizer.tokenize(istr, filename));
 
         // Check..
         CheckType checkType(&tokenizer, settings, this);

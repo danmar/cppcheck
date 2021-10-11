@@ -47,7 +47,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT(tokenizer.tokenize(istr, filename));
 
         // Check for buffer overruns..
         CheckBufferOverrun checkBufferOverrun;
@@ -57,7 +57,7 @@ private:
     void check(const char code[], const Settings &settings, const char filename[] = "test.cpp") {
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT(tokenizer.tokenize(istr, filename));
 
         // Clear the error buffer..
         errout.str("");
@@ -4447,7 +4447,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         CTU::FileInfo *ctu = CTU::getFileInfo(&tokenizer);
 

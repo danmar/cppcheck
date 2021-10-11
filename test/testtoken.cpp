@@ -137,7 +137,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(";" + code + ";");
         try {
-            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(tokenizer.tokenize(istr, "test.cpp")) false;
         } catch (...) {}
         return Token::Match(tokenizer.tokens()->next(), pattern.c_str(), varid);
     }

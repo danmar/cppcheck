@@ -309,7 +309,7 @@ private:
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp")) false;
 
         return tokenizer.tokens()->stringifyList(nullptr, true);
     }
@@ -5584,7 +5584,7 @@ private:
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp", "");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp", "")) false;
 
         return TemplateSimplifier::instantiateMatch(tokenizer.tokens(), numberOfArguments, false, patternAfter);
     }

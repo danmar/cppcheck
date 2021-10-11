@@ -235,7 +235,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         tokenizer.setPreprocessor(&preprocessor);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);

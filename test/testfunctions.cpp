@@ -105,7 +105,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(settings_, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT(tokenizer.tokenize(istr, filename));
 
         CheckFunctions checkFunctions(&tokenizer, settings_, this);
         checkFunctions.runChecks(&tokenizer, settings_, this);

@@ -50,7 +50,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         LOAD_LIB_2(settings.library, "std.cfg");
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         // Check char variable usage..
         Check64BitPortability check64BitPortability(&tokenizer, &settings, this);

@@ -39,7 +39,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT(tokenizer.tokenize(istr, filename));
 
         CheckAutoVariables checkAutoVariables;
         checkAutoVariables.runChecks(&tokenizer, &settings, this);
