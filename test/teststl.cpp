@@ -534,8 +534,8 @@ private:
                     "  if (DirName == nullptr)\n"
                     "      return {};\n"
                     "  std::string Name{ DirName };\n"
-                    "  if (!Name.empty() && Name.back() != '\\')\n"
-                    "    Name += '\\';\n"
+                    "  if (!Name.empty() && Name.back() != '\\\\')\n"
+                    "    Name += '\\\\';\n"
                     "  return Name;\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());

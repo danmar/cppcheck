@@ -142,6 +142,7 @@ private:
         TEST_CASE(valueFlowIdempotent);
         TEST_CASE(valueFlowUnsigned);
         TEST_CASE(valueFlowMod);
+        TEST_CASE(valueFlowNotNull);
         TEST_CASE(valueFlowSymbolic);
         TEST_CASE(valueFlowSmartPointer);
     }
@@ -6046,8 +6047,8 @@ private:
                "            && ch != '(' && ch != ')'\n"
                "            && ch != '[' && ch != ']'\n"
                "            && ch != ';' && ch != ','\n"
-               "            && ch != '#' && ch != '\\'\n"
-               "            && ch != '\'' && ch != '\"');\n"
+               "            && ch != '#' && ch != '\\\\'\n"
+               "            && ch != '\\\'' && ch != '\\\"');\n"
                "}\n";
         valueOfTok(code, "return");
     }
@@ -6195,6 +6196,43 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 1));
+    }
+
+    void valueFlowNotNull()
+    {
+        const char* code;
+
+        code = "int f(const std::string &str) {\n"
+               "    int x = str.c_str();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, 0));
+
+        code = "int f(const std::string_view &str) {\n"
+               "    int x = str.c_str();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 0));
+
+        code = "auto f() {\n"
+               "    std::shared_ptr<int> x = std::make_shared<int>(1);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, 0));
+
+        code = "auto f() {\n"
+               "    std::unique_ptr<int> x = std::make_unique<int>(1);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, 0));
+
+        code = "struct A {\n"
+               "    A* f() {\n"
+               "        A* x = this;\n"
+               "        return x;\n"
+               "    }\n"
+               "};\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 0));
     }
 
     void valueFlowSymbolic() {
@@ -6357,6 +6395,77 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, "y", 0));
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "y", -1));
+
+        code = "void f(int y) {\n"
+               "  int x = y - 1;\n"
+               "  if (y == 1)\n"
+               "    int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "void f(int y) {\n"
+               "  int x = y * y;\n"
+               "  if (y == 2)\n"
+               "    int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 4));
+
+        code = "void f(int x, int y) {\n"
+               "  if (x == y*y)\n"
+               "    if (y == 2)\n"
+               "      int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 4));
+
+        code = "void f(int x, int y) {\n"
+               "  if (x > y*y)\n"
+               "    if (y == 2)\n"
+               "      int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 4));
+
+        code = "void f(int x, int y) {\n"
+               "  if (x != y*y)\n"
+               "    if (y == 2)\n"
+               "      int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 4));
+
+        code = "void f(int x, int y) {\n"
+               "  if (x >= y*y)\n"
+               "    if (y == 2)\n"
+               "      int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 3));
+
+        code = "void f(int x, int y) {\n"
+               "  if (x == y*y)\n"
+               "    if (y != 2)\n"
+               "      int a = x;\n"
+               "}\n";
+        TODO_ASSERT_EQUALS(true, false, testValueOfXImpossible(code, 4U, 4));
+
+        code = "void f(int x, int y) {\n"
+               "  if (x == y*y)\n"
+               "    if (y > 2)\n"
+               "      int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 9));
+
+        code = "struct A {\n"
+               "    A* b();\n"
+               "    int c() const;\n"
+               "};\n"
+               "void f(A *d) {\n"
+               "    if (!d || d->c() != 1)\n"
+               "        return;\n"
+               "    A * y = d;\n"
+               "    d = d->b();\n"
+               "    A * x = d;\n"
+               "    A* z = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 11U, "d", 0));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 11U, 0));
     }
 
     void valueFlowSmartPointer()
