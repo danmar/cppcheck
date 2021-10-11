@@ -142,6 +142,7 @@ private:
         TEST_CASE(valueFlowIdempotent);
         TEST_CASE(valueFlowUnsigned);
         TEST_CASE(valueFlowMod);
+        TEST_CASE(valueFlowNotNull);
         TEST_CASE(valueFlowSymbolic);
         TEST_CASE(valueFlowSmartPointer);
     }
@@ -6195,6 +6196,36 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 1));
+    }
+
+    void valueFlowNotNull() {
+        const char* code;
+
+        code = "int f(const std::string &str) {\n"
+            "    int x = str.c_str();\n"
+            "    return x;\n"
+            "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, 0));
+
+        code = "auto f() {\n"
+            "    std::shared_ptr<int> x = std::make_shared<int>(1);\n"
+            "    return x;\n"
+            "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, 0));
+
+        code = "auto f() {\n"
+            "    std::unique_ptr<int> x = std::make_unique<int>(1);\n"
+            "    return x;\n"
+            "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, 0));
+
+        code = "struct A {\n"
+            "    A* f() {\n"
+            "        A* x = this;\n"
+            "        return x;\n"
+            "    }\n"
+            "};\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 0));
     }
 
     void valueFlowSymbolic() {
