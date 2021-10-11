@@ -82,7 +82,7 @@
     <ClCompile Include="errorlogger.cpp" />
     <ClCompile Include="errortypes.cpp" />
     <ClCompile Include="exprengine.cpp" />
-	<ClCompile Include="infer.cpp" />
+    <ClCompile Include="infer.cpp" />
     <ClCompile Include="library.cpp" />
     <ClCompile Include="mathlib.cpp" />
     <ClCompile Include="path.cpp" />
