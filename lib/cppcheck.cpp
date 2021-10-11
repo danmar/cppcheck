@@ -68,9 +68,10 @@ static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 namespace {
     struct AddonInfo {
         std::string name;
-        std::string scriptFile;
-        std::string args;
-        std::string python;
+        std::string scriptFile; // addon script
+        std::string executable; // addon executable
+        std::string args;       // special extra arguments
+        std::string python;     // script interpreter
         bool ctu = false;
         std::string runScript{};
 
@@ -111,7 +112,7 @@ namespace {
             if (obj.count("ctu")) {
                 // ctu is specified in the config file
                 if (!obj["ctu"].is<bool>())
-                    return "Loading " + fileName + " failed. ctu must be array.";
+                    return "Loading " + fileName + " failed. ctu must be boolean.";
                 ctu = obj["ctu"].get<bool>();
             } else {
                 ctu = false;
@@ -125,6 +126,13 @@ namespace {
                 python = obj["python"].get<std::string>();
             } else {
                 python = "";
+            }
+
+            if (obj.count("executable")) {
+                if (!obj["executable"].is<std::string>())
+                    return "Loading " + fileName + " failed. executable must be a string.";
+                executable = obj["executable"].get<std::string>();
+                return "";
             }
 
             return getAddonInfo(obj["script"].get<std::string>(), exename);
@@ -273,7 +281,9 @@ static std::string executeAddon(const AddonInfo &addonInfo,
 
     std::string pythonExe;
 
-    if (!addonInfo.python.empty())
+    if (!addonInfo.executable.empty())
+        pythonExe = addonInfo.executable;
+    else if (!addonInfo.python.empty())
         pythonExe = cmdFileName(addonInfo.python);
     else if (!defaultPythonExe.empty())
         pythonExe = cmdFileName(defaultPythonExe);
@@ -294,9 +304,13 @@ static std::string executeAddon(const AddonInfo &addonInfo,
             throw InternalError(nullptr, "Failed to auto detect python");
     }
 
+    std::string args;
+    if (addonInfo.executable.empty())
+        args = cmdFileName(addonInfo.runScript) + " " + cmdFileName(addonInfo.scriptFile);
+    args += std::string(args.empty() ? "" : " ") + "--cli" + addonInfo.args;
+
     const std::string fileArg = (endsWith(file, FILELIST, sizeof(FILELIST)-1) ? " --file-list " : " ") + cmdFileName(file);
-    const std::string args =
-        cmdFileName(addonInfo.runScript) + " " + cmdFileName(addonInfo.scriptFile) + " --cli" + addonInfo.args + fileArg;
+    args += fileArg;
 
     std::string result;
     if (!executeCommand(pythonExe, split(args), redirect, &result))
