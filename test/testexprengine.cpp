@@ -180,7 +180,7 @@ private:
         settings.platform(cppcheck::Platform::Unix64);
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp")) false;
+        ASSERT(tokenizer.tokenize(istr, "test.cpp")) {};
         std::string ret;
         ExprEngine::Callback f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
             if (tok->str() != binop)
@@ -223,7 +223,7 @@ private:
         settings.library.smartPointers["std::shared_ptr"];
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp")) false;
+        ASSERT(tokenizer.tokenize(istr, "test.cpp")) {};
         std::string ret;
         ExprEngine::Callback f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
             (void)dataBase;
@@ -250,7 +250,7 @@ private:
         settings->library.smartPointers["std::shared_ptr"];
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp")) false;
+        ASSERT(tokenizer.tokenize(istr, "test.cpp")) {};
         std::vector<ExprEngine::Callback> callbacks;
         std::ostringstream ret;
         ExprEngine::executeAllFunctions(this, &tokenizer, settings, callbacks, ret);
