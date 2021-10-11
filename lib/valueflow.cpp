@@ -1560,6 +1560,25 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
             value.bound = ValueFlow::Value::Bound::Upper;
             value.setImpossible();
             setTokenValue(tok->next(), value, settings);
+        } else if (Token::Match(tok, ". data|c_str (") && astIsContainerOwned(tok->astOperand1())) {
+            const Library::Container* container = tok->astOperand1()->valueType()->container;
+            if (!container)
+                continue;
+            if (!container->stdStringLike)
+                continue;
+            if (container->view)
+                continue;
+            ValueFlow::Value value{0};
+            value.setImpossible();
+            setTokenValue(tok->tokAt(2), value, settings);
+        } else if (Token::Match(tok, "make_shared|make_unique <") && Token::simpleMatch(tok->linkAt(1), "> (")) {
+            ValueFlow::Value value{0};
+            value.setImpossible();
+            setTokenValue(tok->linkAt(1)->next(), value, settings);
+        } else if (tokenList->isCPP() && Token::simpleMatch(tok, "this")) {
+            ValueFlow::Value value{0};
+            value.setImpossible();
+            setTokenValue(tok, value, settings);
         }
     }
 }
