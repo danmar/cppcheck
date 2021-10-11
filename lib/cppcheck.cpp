@@ -1361,13 +1361,23 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
 
             picojson::object obj = res.get<picojson::object>();
 
-            const std::string fileName = obj["file"].get<std::string>();
-            const int64_t lineNumber = obj["linenr"].get<int64_t>();
-            const int64_t column = obj["column"].get<int64_t>();
-
             ErrorMessage errmsg;
 
-            errmsg.callStack.emplace_back(ErrorMessage::FileLocation(fileName, lineNumber, column));
+            if (obj.count("file") > 0) {
+                const std::string fileName = obj["file"].get<std::string>();
+                const int64_t lineNumber = obj["linenr"].get<int64_t>();
+                const int64_t column = obj["column"].get<int64_t>();
+                errmsg.callStack.emplace_back(ErrorMessage::FileLocation(fileName, lineNumber, column));
+            } else if (obj.count("loc") > 0) {
+                for (const picojson::value &locvalue: obj["loc"].get<picojson::array>()) {
+                    picojson::object loc = locvalue.get<picojson::object>();
+                    const std::string fileName = loc["file"].get<std::string>();
+                    const int64_t lineNumber = loc["linenr"].get<int64_t>();
+                    const int64_t column = loc["column"].get<int64_t>();
+                    const std::string info = loc["info"].get<std::string>();
+                    errmsg.callStack.emplace_back(ErrorMessage::FileLocation(fileName, info, lineNumber, column));
+                }
+            }
 
             errmsg.id = obj["addon"].get<std::string>() + "-" + obj["errorId"].get<std::string>();
             const std::string text = obj["message"].get<std::string>();
@@ -1376,7 +1386,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             errmsg.severity = Severity::fromString(severity);
             if (errmsg.severity == Severity::SeverityType::none)
                 continue;
-            errmsg.file0 = fileName;
+            errmsg.file0 = ((files.size() == 1) ? files[0] : "");
 
             reportErr(errmsg);
         }
