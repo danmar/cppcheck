@@ -6207,6 +6207,12 @@ private:
             "}\n";
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, 0));
 
+        code = "int f(const std::string_view &str) {\n"
+            "    int x = str.c_str();\n"
+            "    return x;\n"
+            "}\n";
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 0));
+
         code = "auto f() {\n"
             "    std::shared_ptr<int> x = std::make_shared<int>(1);\n"
             "    return x;\n"
