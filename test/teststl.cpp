@@ -202,14 +202,11 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        if (!tokenizer.tokenize(istr, "test.cpp"))
-            errout << "Tokenizer failed!";
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         // Check..
         CheckStl checkStl(&tokenizer, &settings, this);
         checkStl.runChecks(&tokenizer, &settings, this);
-        if (!tokenizer.list.isCPP())
-            errout << "Check failed, language must be CPP!";
     }
 
     void outOfBounds() {
