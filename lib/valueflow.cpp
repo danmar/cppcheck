@@ -4663,7 +4663,7 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
 
 static bool isVariableInit(const Token *tok)
 {
-    return tok->str() == "(" &&
+    return (tok->str() == "(" || tok->str() == "{") &&
            tok->isBinaryOp() &&
            tok->astOperand1()->variable() &&
            tok->astOperand1()->variable()->nameToken() == tok->astOperand1() &&
