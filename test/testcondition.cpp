@@ -4031,6 +4031,15 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'x==-5' is always false\n", errout.str());
 
+        // #8407
+        check("int f(void) {\n"
+              "    for(int i = 0; i <1; ++i)\n"
+              "        if(i == 0) return 1; \n" // <<
+              "        else return 0;\n"
+              "    return -1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'i==0' is always true\n", errout.str());
+
         check("void f(unsigned int u1, unsigned int u2) {\n"
               "    if (u1 <= 10 && u2 >= 20) {\n"
               "        if (u1 != u2) {}\n"
