@@ -2458,8 +2458,9 @@ private:
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 1));
     }
 
-    void valueFlowAfterSwap() {
-        const char *code;
+    void valueFlowAfterSwap()
+    {
+        const char* code;
 
         code = "int f() {\n"
                "    int a = 1;\n"

@@ -4719,9 +4719,12 @@ static std::vector<const Variable*> getVariables(const Token* tok)
     return result;
 }
 
-static void valueFlowAfterSwap(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+static void valueFlowAfterSwap(TokenList* tokenlist,
+                               SymbolDatabase* symboldatabase,
+                               ErrorLogger* errorLogger,
+                               const Settings* settings)
 {
-    for (const Scope * scope : symboldatabase->functionScopes) {
+    for (const Scope* scope : symboldatabase->functionScopes) {
         std::set<nonneg int> aliased;
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "swap ("))
@@ -4731,11 +4734,10 @@ static void valueFlowAfterSwap(TokenList *tokenlist, SymbolDatabase* symboldatab
             std::vector<Token*> args = astFlatten(tok->next()->astOperand2(), ",");
             if (args.size() != 2)
                 continue;
-            for(int i=0;i<2;i++) {
+            for (int i = 0; i < 2; i++) {
                 std::vector<const Variable*> vars = getVariables(args[0]);
                 std::list<ValueFlow::Value> values = args[0]->values();
-                valueFlowForwardAssign(
-                    args[0], args[1], vars, values, false, tokenlist, errorLogger, settings);
+                valueFlowForwardAssign(args[0], args[1], vars, values, false, tokenlist, errorLogger, settings);
                 std::swap(args[0], args[1]);
             }
         }
