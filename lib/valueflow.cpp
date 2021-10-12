@@ -4725,7 +4725,6 @@ static void valueFlowAfterSwap(TokenList* tokenlist,
                                const Settings* settings)
 {
     for (const Scope* scope : symboldatabase->functionScopes) {
-        std::set<nonneg int> aliased;
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "swap ("))
                 continue;
