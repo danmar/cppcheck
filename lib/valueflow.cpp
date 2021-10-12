@@ -4431,6 +4431,8 @@ static void valueFlowSymbolicIdentity(TokenList* tokenlist)
             continue;
         if (!vartok)
             continue;
+        if (vartok->exprId() == 0)
+            continue;
         if (Token::Match(tok, "<<|>>|/") && !astIsLHS(vartok))
             continue;
         if (Token::Match(tok, "<<|>>|^|+|-|%or%") && constant->intvalue != 0)
