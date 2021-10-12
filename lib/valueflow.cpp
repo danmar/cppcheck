@@ -1560,6 +1560,25 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
             value.bound = ValueFlow::Value::Bound::Upper;
             value.setImpossible();
             setTokenValue(tok->next(), value, settings);
+        } else if (Token::Match(tok, ". data|c_str (") && astIsContainerOwned(tok->astOperand1())) {
+            const Library::Container* container = tok->astOperand1()->valueType()->container;
+            if (!container)
+                continue;
+            if (!container->stdStringLike)
+                continue;
+            if (container->view)
+                continue;
+            ValueFlow::Value value{0};
+            value.setImpossible();
+            setTokenValue(tok->tokAt(2), value, settings);
+        } else if (Token::Match(tok, "make_shared|make_unique <") && Token::simpleMatch(tok->linkAt(1), "> (")) {
+            ValueFlow::Value value{0};
+            value.setImpossible();
+            setTokenValue(tok->linkAt(1)->next(), value, settings);
+        } else if (tokenList->isCPP() && Token::simpleMatch(tok, "this")) {
+            ValueFlow::Value value{0};
+            value.setImpossible();
+            setTokenValue(tok, value, settings);
         }
     }
 }
@@ -2080,7 +2099,7 @@ struct ValueFlowAnalyzer : Analyzer {
             // Check if its assigned to the same value
             if (value && !value->isImpossible() && Token::simpleMatch(tok->astParent(), "=") && astIsLHS(tok) &&
                 astIsIntegral(tok->astParent()->astOperand2(), false)) {
-                std::vector<int> result = evaluate(Evaluate::Integral, tok->astParent()->astOperand2());
+                std::vector<MathLib::bigint> result = evaluate(Evaluate::Integral, tok->astParent()->astOperand2());
                 if (!result.empty() && value->equalTo(result.front()))
                     return Action::Idempotent;
             }
@@ -2188,22 +2207,48 @@ struct ValueFlowAnalyzer : Analyzer {
         return true;
     }
 
-    bool isSameSymbolicValue(const Token* tok, ErrorPath* errorPath = nullptr) const
+    const Token* findMatch(const Token* tok) const
+    {
+        return findAstNode(tok, [&](const Token* child) {
+            return match(child);
+        });
+    }
+
+    bool isSameSymbolicValue(const Token* tok, ValueFlow::Value* value = nullptr) const
     {
         if (!useSymbolicValues())
             return false;
         if (Token::Match(tok, "%assign%"))
             return false;
+        const ValueFlow::Value* currValue = getValue(tok);
+        if (!currValue)
+            return false;
+        const bool exact = !currValue->isIntValue() || currValue->isImpossible();
         for (const ValueFlow::Value& v : tok->values()) {
             if (!v.isSymbolicValue())
                 continue;
-            if (!v.isKnown())
+            const bool toImpossible = v.isImpossible() && currValue->isKnown();
+            if (!v.isKnown() && !toImpossible)
                 continue;
-            if (v.intvalue != 0)
+            if (exact && v.intvalue != 0)
                 continue;
+            std::vector<MathLib::bigint> r;
+            ValueFlow::Value::Bound bound = currValue->bound;
             if (match(v.tokvalue)) {
-                if (errorPath)
-                    errorPath->insert(errorPath->end(), v.errorPath.begin(), v.errorPath.end());
+                r = {currValue->intvalue};
+            } else if (!exact && findMatch(v.tokvalue)) {
+                r = evaluate(Evaluate::Integral, v.tokvalue, tok);
+                if (bound == ValueFlow::Value::Bound::Point)
+                    bound = v.bound;
+            }
+            if (!r.empty()) {
+                if (value) {
+                    value->errorPath.insert(value->errorPath.end(), v.errorPath.begin(), v.errorPath.end());
+                    value->intvalue = r.front() + v.intvalue;
+                    if (toImpossible)
+                        value->setImpossible();
+                    value->bound = bound;
+                }
                 return true;
             }
         }
@@ -2302,11 +2347,12 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
-    virtual std::vector<int> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const OVERRIDE {
+    virtual std::vector<MathLib::bigint> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const OVERRIDE
+    {
         if (e == Evaluate::Integral) {
             if (tok->hasKnownIntValue())
                 return {static_cast<int>(tok->values().front().intvalue)};
-            std::vector<int> result;
+            std::vector<MathLib::bigint> result;
             ProgramMemory pm = pms.get(tok, ctx, getProgramState());
             if (Token::Match(tok, "&&|%oror%")) {
                 if (conditionIsTrue(tok, pm))
@@ -2384,7 +2430,7 @@ struct ValueFlowAnalyzer : Analyzer {
             // Make a copy of the value to modify it
             localValue = *value;
             value = &localValue;
-            isSameSymbolicValue(tok, &value->errorPath);
+            isSameSymbolicValue(tok, &localValue);
         }
         // Read first when moving forward
         if (d == Direction::Forward && a.isRead())
