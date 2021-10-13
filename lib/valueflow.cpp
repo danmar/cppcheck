@@ -5965,14 +5965,6 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
     }
 }
 
-static void setTokenValues(Token *tok, const std::list<ValueFlow::Value> &values, const Settings *settings)
-{
-    for (const ValueFlow::Value &value : values) {
-        if (value.isIntValue())
-            setTokenValue(tok, value, settings);
-    }
-}
-
 static std::list<ValueFlow::Value> getFunctionArgumentValues(const Token *argtok)
 {
     std::list<ValueFlow::Value> argvalues(argtok->values());
@@ -6517,7 +6509,7 @@ static bool isContainerSizeChanged(nonneg int varId,
     return false;
 }
 
-std::vector<const Variable*> getVariables(const Token* tok)
+static std::vector<const Variable*> getVariables(const Token* tok)
 {
     std::vector<const Variable*> result;
     visitAstNodes(tok, [&](const Token* child) {
