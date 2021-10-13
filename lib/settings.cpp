@@ -17,8 +17,14 @@
  */
 
 #include "settings.h"
+#include "path.h"
 #include "summaries.h"
 #include "valueflow.h"
+
+#include <fstream>
+
+#define PICOJSON_USE_INT64
+#include <picojson.h>
 
 std::atomic<bool> Settings::mTerminated;
 
@@ -68,6 +74,31 @@ Settings::Settings()
 {
     severity.setEnabled(Severity::error, true);
     certainty.setEnabled(Certainty::normal, true);
+}
+
+void Settings::loadCppcheckCfg(const std::string &filename)
+{
+    std::ifstream fin(filename);
+    if (!fin.is_open())
+        return;
+    picojson::value json;
+    fin >> json;
+    if (!picojson::get_last_error().empty())
+        return;
+    picojson::object obj = json.get<picojson::object>();
+    if (obj.count("addons") && obj["addons"].is<picojson::array>()) {
+        for (const picojson::value &v : obj["addons"].get<picojson::array>()) {
+            const std::string &s = v.get<std::string>();
+            if (!Path::isAbsolute(s))
+                addons.push_back(Path::getPathFromFilename(filename) + s);
+            else
+                addons.push_back(s);
+        }
+    }
+    if (obj.count("suppressions") && obj["suppressions"].is<picojson::array>()) {
+        for (const picojson::value &v : obj["suppressions"].get<picojson::array>())
+            nomsg.addSuppressionLine(v.get<std::string>());
+    }
 }
 
 std::string Settings::addEnabled(const std::string &str)
