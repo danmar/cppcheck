@@ -16,6 +16,7 @@ permissions:
   contents: read
 
 jobs:
+  # TODO: enable information
   build:
 
     runs-on: ubuntu-22.04
