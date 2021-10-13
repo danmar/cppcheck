@@ -98,24 +98,6 @@ matrix:
         - python3 ../namingng.py --configfile ../naming.json --verify namingng_test.c.dump
         - cd ../..
 
-# bug hunting
-    - name: "bug hunting"
-      compiler: gcc
-      script:
-        - make clean
-        - make USE_Z3=yes -j$(nproc) all
-        - ./testrunner TestExprEngine
-        # FIXME: this is slowish
-        #- python3 test/bug-hunting/cve.py
-        #- git clone https://github.com/regehr/itc-benchmarks.git ~/itc
-        #- python3 test/bug-hunting/itc.py
-        #- mkdir ~/juliet
-        #- curl https://samate.nist.gov/SARD/testsuites/juliet/Juliet_Test_Suite_v1.3_for_C_Cpp.zip -o ~/juliet/juliet.zip
-        #- cd ~/juliet
-        #- unzip -qq ~/juliet/juliet.zip
-        #- cd -
-        #- python3 test/bug-hunting/juliet.py
-
 script:
 # fail the entire job as soon as one of the subcommands exits non-zero to save time and resources
   - set -e
