@@ -810,7 +810,7 @@ void CheckStl::mismatchingContainerIterator()
     }
 }
 
-static const Token* getInvalidMethod(const Token * tok)
+static const Token* getInvalidMethod(const Token* tok)
 {
     if (!astIsLHS(tok))
         return nullptr;
@@ -966,7 +966,7 @@ static const Token* getLoopContainer(const Token* tok)
 {
     if (!Token::simpleMatch(tok, "for ("))
         return nullptr;
-    const Token * sepTok = tok->next()->astOperand2();
+    const Token* sepTok = tok->next()->astOperand2();
     if (!Token::simpleMatch(sepTok, ":"))
         return nullptr;
     return sepTok->astOperand2();
@@ -981,8 +981,8 @@ void CheckStl::invalidContainer()
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (const Token* contTok = getLoopContainer(tok)) {
-                const Token * blockStart = tok->next()->link()->next();
-                const Token * blockEnd = blockStart->link();
+                const Token* blockStart = tok->next()->link()->next();
+                const Token* blockEnd = blockStart->link();
                 if (contTok->exprId() == 0)
                     continue;
                 if (!astIsContainer(contTok))
@@ -1052,7 +1052,7 @@ void CheckStl::invalidContainer()
                                 // An argument always reaches
                                 if (var->isArgument() ||
                                     (!var->isReference() && !var->isRValueReference() && !isVariableDecl(tok) &&
-                                    reaches(var->nameToken(), tok, library, &ep))) {
+                                     reaches(var->nameToken(), tok, library, &ep))) {
                                     errorPath = ep;
                                     return true;
                                 }
@@ -1094,7 +1094,7 @@ void CheckStl::invalidContainer()
     }
 }
 
-void CheckStl::invalidContainerLoopError(const Token *tok, const Token * loopTok, ErrorPath errorPath)
+void CheckStl::invalidContainerLoopError(const Token* tok, const Token* loopTok, ErrorPath errorPath)
 {
     const std::string method = tok ? tok->str() : "erase";
     errorPath.emplace_back(loopTok, "Iterating container here.");
