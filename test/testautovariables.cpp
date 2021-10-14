@@ -1463,13 +1463,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void returnReference24() {
+    void returnReference24()
+    {
         check("struct A {\n"
-            "    A() {}\n"
-            "};\n"
-            "const A& a() {\n"
-            "    return A();\n"
-            "}\n");
+              "    A() {}\n"
+              "};\n"
+              "const A& a() {\n"
+              "    return A();\n"
+              "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Reference to temporary returned.\n", errout.str());
     }
 
