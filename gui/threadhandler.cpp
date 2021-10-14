@@ -92,8 +92,15 @@ void ThreadHandler::check(const Settings &settings)
         mRunningThreadCount = mResults.getFileCount();
     }
 
+    QStringList addonsAndTools = mAddonsAndTools;
+    for (const std::string& addon: settings.addons) {
+        QString s = QString::fromStdString(addon);
+        if (!addonsAndTools.contains(s))
+            addonsAndTools << s;
+    }
+
     for (int i = 0; i < mRunningThreadCount; i++) {
-        mThreads[i]->setAddonsAndTools(mAddonsAndTools);
+        mThreads[i]->setAddonsAndTools(addonsAndTools);
         mThreads[i]->setSuppressions(mSuppressions);
         mThreads[i]->setClangIncludePaths(mClangIncludePaths);
         mThreads[i]->setDataDir(mDataDir);

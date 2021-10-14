@@ -3826,6 +3826,16 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'z<1' is always false\n", errout.str());
 
+        check("bool f(int &index, const int s, const double * const array, double & x) {\n"
+              "    if (index >= s)\n"
+              "        return false;\n"
+              "    else {\n"
+              "        x = array[index];\n"
+              "        return (index++) >= s;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:6]: (style) Condition '(index++)>=s' is always false\n", errout.str());
+
         check("struct a {\n"
               "  a *b() const;\n"
               "} c;\n"
@@ -4013,6 +4023,22 @@ private:
               "        if(i<=18) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'i<=18' is always true\n", errout.str());
+
+        // #8209
+        check("void f() {\n"
+              "    for(int x = 0; x < 3; ++x)\n"
+              "        if(x == -5) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'x==-5' is always false\n", errout.str());
+
+        // #8407
+        check("int f(void) {\n"
+              "    for(int i = 0; i <1; ++i)\n"
+              "        if(i == 0) return 1; \n" // <<
+              "        else return 0;\n"
+              "    return -1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'i==0' is always true\n", errout.str());
 
         check("void f(unsigned int u1, unsigned int u2) {\n"
               "    if (u1 <= 10 && u2 >= 20) {\n"

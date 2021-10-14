@@ -4479,7 +4479,6 @@ void Tokenizer::createLinks2()
     if (isC())
         return;
 
-    const Token * templateToken = nullptr;
     bool isStruct = false;
 
     std::stack<Token*> type;

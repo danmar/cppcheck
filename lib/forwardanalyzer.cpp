@@ -74,7 +74,7 @@ struct ForwardTraversal {
     std::pair<bool, bool> evalCond(const Token* tok, const Token* ctx = nullptr) const {
         if (!tok)
             return std::make_pair(false, false);
-        std::vector<int> result = analyzer->evaluate(tok, ctx);
+        std::vector<MathLib::bigint> result = analyzer->evaluate(tok, ctx);
         // TODO: We should convert to bool
         bool checkThen = std::any_of(result.begin(), result.end(), [](int x) {
             return x != 0;
@@ -600,7 +600,8 @@ struct ForwardTraversal {
                         if (conTok && updateRecursive(conTok) == Progress::Break)
                             return Break();
                         bool isEmpty = false;
-                        std::vector<int> result = analyzer->evaluate(Analyzer::Evaluate::ContainerEmpty, conTok);
+                        std::vector<MathLib::bigint> result =
+                            analyzer->evaluate(Analyzer::Evaluate::ContainerEmpty, conTok);
                         if (result.empty())
                             analyzer->assume(conTok, false, Analyzer::Assume::ContainerEmpty);
                         else

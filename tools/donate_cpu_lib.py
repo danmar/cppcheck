@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.13"
+CLIENT_VERSION = "1.3.15"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -333,12 +333,19 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
     timing_str = ''.join(timing_info_list)
 
     # detect errors
+    sig_file = None
     sig_num = -1
-    sig_msg = 'Internal error: Child process crashed with signal '
-    sig_pos = stderr.find(sig_msg)
-    if sig_pos != -1:
-        sig_start_pos = sig_pos + len(sig_msg)
-        sig_num = int(stderr[sig_start_pos:stderr.find(' ', sig_start_pos)])
+    for ie_line in internal_error_messages_list:
+        # temp/dlib-19.10/dlib/test/dnn.cpp:0:0: error: Internal error: Child process crashed with signal 11 [cppcheckError]
+        if 'Child process crashed with signal' in ie_line:
+            sig_file = ie_line.split(':')[0]
+            sig_msg = 'signal '
+            sig_pos = ie_line.find(sig_msg)
+            if sig_pos != -1:
+                sig_start_pos = sig_pos + len(sig_msg)
+                sig_num = int(ie_line[sig_start_pos:ie_line.find(' ', sig_start_pos)])
+            # break on the first signalled file for now
+            break
     print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
 
     if returncode == RETURN_CODE_TIMEOUT:
@@ -346,12 +353,21 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         return returncode, ''.join(internal_error_messages_list), '', elapsed_time, options, ''
 
     # generate stack trace for SIGSEGV, SIGABRT, SIGILL, SIGFPE, SIGBUS
-    if returncode in (-11, -6, -4, -8, -7) or sig_num in (11, 6, 4, 8, 7):
+    has_error = returncode in (-11, -6, -4, -8, -7)
+    has_sig = sig_num in (11, 6, 4, 8, 7)
+    if has_error or has_sig:
         print('Crash!')
+        # make sure we have the actual error code set
+        if has_sig:
+            returncode = -sig_num
         stacktrace = ''
         if cppcheck_path == 'cppcheck':
             # re-run within gdb to get a stacktrace
-            cmd = 'gdb --batch --eval-command=run --eval-command="bt 50" --return-child-result --args ' + cppcheck_cmd + " -j1 " + dir_to_scan
+            cmd = 'gdb --batch --eval-command=run --eval-command="bt 50" --return-child-result --args ' + cppcheck_cmd + " -j1 "
+            if sig_file is not None:
+                cmd += sig_file
+            else:
+                cmd += dir_to_scan
             _, st_stdout, _, _ = run_command(cmd)
             gdb_pos = st_stdout.find(" received signal")
             if not gdb_pos == -1:
@@ -360,9 +376,12 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
                     stacktrace = st_stdout[gdb_pos:]
                 else:
                     stacktrace = st_stdout[last_check_pos:]
-        # if no stacktrace was generated return the original stdout
+        # if no stacktrace was generated return the original stdout or internal errors list
         if not stacktrace:
-            stacktrace = stdout
+            if has_sig:
+                stacktrace = ''.join(internal_error_messages_list)
+            else:
+                stacktrace = stdout
         return returncode, stacktrace, '', returncode, options, ''
 
     if returncode != 0:
