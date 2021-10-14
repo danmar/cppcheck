@@ -4901,6 +4901,19 @@ private:
               true);
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
 
+        check("struct A {\n"
+            "  std::vector<int> v;\n"
+            "  void add(int i) {\n"
+            "    v.push_back(i);\n"
+            "  } \n"
+            "  void f() {\n"
+            "    for(auto i:v)\n"
+            "      add(i);\n"
+            "  }\n"
+            "};\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:7] -> [test.cpp:8]: (error) Calling 'add' while iterating the container is invalid.\n", errout.str());
+
     }
 
     void findInsert() {
