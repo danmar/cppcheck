@@ -364,6 +364,8 @@ bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknow
             return false;
         if (const Function * f = ftok->function()) {
             return !Function::returnsReference(f, true);
+        } else if (ftok->type()) {
+            return true;
         } else if (library) {
             std::string returnType = library->returnValueType(ftok);
             return !returnType.empty() && returnType.back() != '&';
