@@ -4049,11 +4049,11 @@ private:
 
         // #10544
         check("void f(int N) {\n"
-            "    if (N > 0) {\n"
-            "        while (N)\n"
-            "            N = test();\n"
-            "    }\n"
-            "}\n");
+              "    if (N > 0) {\n"
+              "        while (N)\n"
+              "            N = test();\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
