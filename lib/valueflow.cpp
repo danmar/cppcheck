@@ -5384,7 +5384,6 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             ValueFlow::Value value = result.front();
             value.intvalue = 1;
             value.bound = ValueFlow::Value::Bound::Point;
-            value.setKnown();
             setTokenValue(tok, value, settings);
         } else if (Token::Match(tok, "%comp%|-") && tok->astOperand1() && tok->astOperand2()) {
             std::vector<ValueFlow::Value> result =
