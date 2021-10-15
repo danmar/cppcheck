@@ -26,7 +26,6 @@
 #include <algorithm>
 #include <cstddef>
 #include <initializer_list>
-#include <list>
 #include <string>
 #include <vector>
 
