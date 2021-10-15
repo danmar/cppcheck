@@ -2333,7 +2333,7 @@ struct ValueFlowAnalyzer : Analyzer {
             return isThisModified(tok);
 
         // bailout: global non-const variables
-        if (isGlobal() && Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
+        if (isGlobal() && !dependsOnThis() && Token::Match(tok, "%name% (") && !Token::simpleMatch(tok->linkAt(1), ") {")) {
             if (tok->function()) {
                 if (!tok->function()->isConstexpr() && !isConstFunctionCall(tok, getSettings()->library))
                     return Action::Invalid;

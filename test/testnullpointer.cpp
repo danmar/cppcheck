@@ -124,6 +124,7 @@ private:
         TEST_CASE(nullpointer82); // #10331
         TEST_CASE(nullpointer83); // #9870
         TEST_CASE(nullpointer84); // #9873
+        TEST_CASE(nullpointer85); // #10210
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2522,6 +2523,27 @@ private:
               "}\n");
         ASSERT_EQUALS(
             "[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition '!RP' is redundant or there is possible null pointer dereference: P.\n",
+            errout.str());
+    }
+
+    void nullpointer85() // #10210
+    {
+        check("struct MyStruct {\n"
+            "  int GetId() const {\n"
+            "      int id = 0;\n"
+            "      int page = m_notebook->GetSelection();\n"
+            "      if (m_notebook && (m_notebook->GetPageCount() > 0))\n"
+            "        id = page;\n"
+            "      return id;\n"
+            "  }\n"
+            "  wxNoteBook *m_notebook = nullptr;\n"
+            "};\n"
+            "int f() {\n"
+            "  const MyStruct &s = Get();\n"
+            "  return s.GetId();\n"
+            "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:5] -> [test.cpp:4]: (warning) Either the condition 'm_notebook' is redundant or there is possible null pointer dereference: m_notebook.\n",
             errout.str());
     }
 

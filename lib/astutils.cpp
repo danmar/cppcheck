@@ -2291,7 +2291,7 @@ bool isVariablesChanged(const Token* start,
 
 bool isThisChanged(const Token* tok, int indirect, const Settings* settings, bool cpp)
 {
-    if (Token::Match(tok->previous(), "%name% (")) {
+    if ((Token::Match(tok->previous(), "%name% (") && !Token::simpleMatch(tok->astOperand1(), ".")) || Token::Match(tok->tokAt(-3), "this . %name% (")) {
         if (tok->previous()->function()) {
             return (!tok->previous()->function()->isConst());
         } else if (!tok->previous()->isKeyword()) {
