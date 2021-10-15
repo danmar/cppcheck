@@ -3099,7 +3099,7 @@ private:
                        "   return 0;\n"
                        "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: a\n", errout.str());
-        
+
         // non-pointer variable
         checkUninitVar("void a(char);\n"  // value => error
                        "void b() {\n"
