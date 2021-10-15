@@ -3793,6 +3793,13 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10548
+        check("void f() {\n"
+            "    int i = 0;\n"
+            "    do {} while (i++ == 0);\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
