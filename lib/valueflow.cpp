@@ -4805,6 +4805,41 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
     }
 }
 
+static std::vector<const Variable*> getVariables(const Token* tok)
+{
+    std::vector<const Variable*> result;
+    visitAstNodes(tok, [&](const Token* child) {
+        if (child->variable())
+            result.push_back(child->variable());
+        return ChildrenToVisit::op1_and_op2;
+    });
+    return result;
+}
+
+static void valueFlowAfterSwap(TokenList* tokenlist,
+                               SymbolDatabase* symboldatabase,
+                               ErrorLogger* errorLogger,
+                               const Settings* settings)
+{
+    for (const Scope* scope : symboldatabase->functionScopes) {
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+            if (!Token::simpleMatch(tok, "swap ("))
+                continue;
+            if (!Token::simpleMatch(tok->next()->astOperand2(), ","))
+                continue;
+            std::vector<Token*> args = astFlatten(tok->next()->astOperand2(), ",");
+            if (args.size() != 2)
+                continue;
+            for (int i = 0; i < 2; i++) {
+                std::vector<const Variable*> vars = getVariables(args[0]);
+                std::list<ValueFlow::Value> values = args[0]->values();
+                valueFlowForwardAssign(args[0], args[1], vars, values, false, tokenlist, errorLogger, settings);
+                std::swap(args[0], args[1]);
+            }
+        }
+    }
+}
+
 static void valueFlowSetConditionToKnown(const Token* tok, std::list<ValueFlow::Value>& values, bool then)
 {
     if (values.empty())
@@ -6559,17 +6594,6 @@ static bool isContainerSizeChanged(nonneg int varId,
     return false;
 }
 
-static std::vector<const Variable*> getVariables(const Token* tok)
-{
-    std::vector<const Variable*> result;
-    visitAstNodes(tok, [&](const Token* child) {
-        if (child->variable())
-            result.push_back(child->variable());
-        return ChildrenToVisit::op1_and_op2;
-    });
-    return result;
-}
-
 static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -7419,6 +7443,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowArrayBool(tokenlist);
         valueFlowRightShift(tokenlist, settings);
         valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
+        valueFlowAfterSwap(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowCondition(SimpleConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings);
         valueFlowInferCondition(tokenlist, settings);
         valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);

@@ -83,6 +83,7 @@ private:
         TEST_CASE(valueFlowBeforeConditionForward);
 
         TEST_CASE(valueFlowAfterAssign);
+        TEST_CASE(valueFlowAfterSwap);
         TEST_CASE(valueFlowAfterCondition);
         TEST_CASE(valueFlowAfterConditionExpr);
         TEST_CASE(valueFlowAfterConditionSeveralNot);
@@ -2463,6 +2464,31 @@ private:
         ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 1));
+    }
+
+    void valueFlowAfterSwap()
+    {
+        const char* code;
+
+        code = "int f() {\n"
+               "    int a = 1;\n"
+               "    int b = 2;\n"
+               "    std::swap(a, b);\n"
+               "    int x = a;\n"
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 2));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 1));
+
+        code = "int f() {\n"
+               "    int a = 1;\n"
+               "    int b = 2;\n"
+               "    std::swap(a, b);\n"
+               "    int x = b;\n"
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 1));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 2));
     }
 
     void valueFlowAfterCondition() {

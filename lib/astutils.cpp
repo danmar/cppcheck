@@ -144,7 +144,8 @@ static int getArgumentPos(const Token* ftok, const Token* tokToFind){
     return findArgumentPos(startTok, tokToFind);
 }
 
-static void astFlattenRecursive(const Token *tok, std::vector<const Token *> *result, const char* op, nonneg int depth = 0)
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+static void astFlattenRecursive(T* tok, std::vector<T*>* result, const char* op, nonneg int depth = 0)
 {
     ++depth;
     if (!tok || depth >= 100)
@@ -164,6 +165,12 @@ std::vector<const Token*> astFlatten(const Token* tok, const char* op)
     return result;
 }
 
+std::vector<Token*> astFlatten(Token* tok, const char* op)
+{
+    std::vector<Token*> result;
+    astFlattenRecursive(tok, &result, op);
+    return result;
+}
 
 bool astHasToken(const Token* root, const Token * tok)
 {
