@@ -1391,6 +1391,9 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             reportErr(errmsg);
         }
     }
+
+    if (!fileList.empty())
+        std::remove(fileList.c_str());
 }
 
 void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t> &files)
@@ -1405,6 +1408,10 @@ void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t
     }
 
     executeAddons(ctuInfoFiles);
+
+    for (const std::string &f: ctuInfoFiles) {
+        std::remove(f.c_str());
+    }
 }
 
 Settings &CppCheck::settings()
