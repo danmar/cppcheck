@@ -3002,8 +3002,10 @@ private:
         const char code[] = "namespace foo { class Bar; }\n"
                             "class Baz;\n"
                             "typedef foo::Bar C;\n"
-                            "class C : Baz {};";
-        ASSERT_EQUALS("namespace foo { class Bar ; } class Baz ; class C : Baz { } ;", tok(code));
+                            "namespace bar {\n"
+                            "class C : Baz {};\n"
+                            "}\n";
+        ASSERT_EQUALS("namespace foo { class Bar ; } class Baz ; namespace bar { class C : Baz { } ; }", tok(code));
     }
 
     void simplifyTypedefFunction1() {
