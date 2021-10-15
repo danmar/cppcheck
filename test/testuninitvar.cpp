@@ -3090,6 +3090,16 @@ private:
 
     // Handling of function calls
     void uninitvar2_func() {
+        // #4716
+        checkUninitVar("void bar(const int a, const int * const b);\n"
+                       "int foo(void) {\n"
+                       "   int a;\n"
+                       "   int *b = 0;\n"
+                       "   bar(a,b);\n" // <<
+                       "   return 0;\n"
+                       "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: a\n", errout.str());
+        
         // non-pointer variable
         checkUninitVar("void a(char);\n"  // value => error
                        "void b() {\n"
