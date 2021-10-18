@@ -22,20 +22,6 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Cache uncrustify
-        uses: actions/cache@v2
-        id: cache-uncrustify
-        with:
-          path: |
-            ~/uncrustify
-          key: ${{ runner.os }}-uncrustify
-
-      - name: build uncrustify
-        if: steps.cache-uncrustify.outputs.cache-hit != 'true'
-        run: |
-          wget https://github.com/uncrustify/uncrustify/archive/refs/tags/uncrustify-0.72.0.tar.gz
-          tar xzvf uncrustify-0.72.0.tar.gz && cd uncrustify-uncrustify-0.72.0 && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j$(nproc) -s && mkdir ~/uncrustify && cp uncrustify ~/uncrustify/
-
       - name: Install missing software on ubuntu 18.04
         if: matrix.os == 'ubuntu-18.04'
         run: |
@@ -67,10 +53,6 @@ jobs:
         uses: jurplel/install-qt-action@v2
         with:
           modules: 'qtcharts'
-
-      - name: Uncrustify check
-        run: |
-          ~/uncrustify/uncrustify -c .uncrustify.cfg -l CPP --check */*.cpp */*.h
 
       - name: Test CMake build
         run: |
