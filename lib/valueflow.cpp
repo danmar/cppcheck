@@ -2688,6 +2688,48 @@ struct OppositeExpressionAnalyzer : ExpressionAnalyzer {
     }
 };
 
+struct SubExpressionAnalyzer : ExpressionAnalyzer {
+    SubExpressionAnalyzer() : ExpressionAnalyzer() {}
+
+    SubExpressionAnalyzer(const Token* e, const ValueFlow::Value& val, const TokenList* t)
+        : ExpressionAnalyzer(e, val, t)
+    {}
+
+    virtual bool submatch(const Token* tok, bool exact = true) const = 0;
+
+    virtual bool isAlias(const Token* tok, bool& inconclusive) const OVERRIDE {
+        if (tok->exprId() == expr->exprId() && tok->astParent() && submatch(tok->astParent(), false))
+            return false;
+        return ExpressionAnalyzer::isAlias(tok, inconclusive);
+    }
+
+    virtual bool match(const Token* tok) const OVERRIDE {
+        return tok->astOperand1() && tok->astOperand1()->exprId() == expr->exprId() && submatch(tok);
+    }
+
+    // No reanalysis for subexression
+    virtual ValuePtr<Analyzer> reanalyze(Token*, const std::string&) const OVERRIDE {
+        return {};
+    }
+};
+
+struct MemberExpressionAnalyzer : SubExpressionAnalyzer {
+    std::string varname;
+    MemberExpressionAnalyzer() : SubExpressionAnalyzer(), varname() {}
+
+    MemberExpressionAnalyzer(std::string varname, const Token* e, const ValueFlow::Value& val, const TokenList* t)
+        : SubExpressionAnalyzer(e, val, t),  varname(std::move(varname))
+    {}
+
+    virtual bool submatch(const Token* tok, bool exact) const OVERRIDE {
+        if (!Token::Match(tok, ". %var%"))
+            return false;
+        if (!exact)
+            return true;
+        return tok->next()->str() == varname;
+    }
+};
+
 static Analyzer::Result valueFlowForwardExpression(Token* startToken,
                                                    const Token* endToken,
                                                    const Token* exprTok,
@@ -6351,6 +6393,15 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
         values.push_back(uninitValue);
 
         valueFlowForward(vardecl->next(), vardecl->scope()->bodyEnd, var->nameToken(), values, tokenlist, settings);
+
+        if (const Scope* scope = var->typeScope()) {
+            for(const Variable& memVar:scope->varlist) {
+                if (!memVar.isPublic())
+                    continue;
+                MemberExpressionAnalyzer analyzer(memVar.nameToken()->str(), vardecl, uninitValue, tokenlist);
+                valueFlowGenericForward(vardecl->next(), vardecl->scope()->bodyEnd, analyzer, settings);
+            }
+        }
     }
 }
 
