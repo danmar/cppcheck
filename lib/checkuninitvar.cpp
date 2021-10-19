@@ -1492,7 +1492,7 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
                 "$symbol:" + membername + "\nUninitialized struct member: $symbol", CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
 }
 
-static bool isUsed(const Token* tok, int indirect, const Settings* settings)
+static bool isUsedByFunction(const Token* tok, int indirect, const Settings* settings)
 {
     const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
 
@@ -1573,7 +1573,7 @@ void CheckUninitVar::valueFlowUninit()
                     if (Token::Match(tok->astParent(), ". %var%") && !isleaf)
                         continue;
                 }
-                if (!isUsed(tok, v->indirect, mSettings)) {
+                if (!isUsedByFunction(tok, v->indirect, mSettings)) {
                     if (!(Token::Match(tok->astParent(), ". %name% (") && uninitderef) &&
                         isVariableChanged(tok, v->indirect, mSettings, mTokenizer->isCPP()))
                         continue;
