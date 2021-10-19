@@ -6362,15 +6362,19 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
     }
 }
 
-static bool needsInitialization(const Variable* var)
+static bool needsInitialization(const Variable* var, bool cpp)
 {
     if (!var)
         return false;
     if (var->isPointer())
         return true;
+    if (var->type() && var->type()->isUnionType())
+        return false;
+    if (!cpp)
+        return true;
     if (var->type() && var->type()->needInitialization == Type::NeedInitialization::True)
         return true;
-    if (var->valueType() && var->valueType()->isIntegral())
+    if (var->valueType() && var->valueType()->isPrimitive())
         return true;
     return false;
 }
@@ -6395,7 +6399,7 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
         if (!Token::Match(vardecl, "%var% ;"))
             continue;
         const Variable *var = vardecl->variable();
-        if (!needsInitialization(var))
+        if (!needsInitialization(var, tokenlist->isCPP()))
             continue;
         if (var->nameToken() != vardecl || var->isInit())
             continue;
@@ -6408,13 +6412,8 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
         uninitValue.setKnown();
         uninitValue.valueType = ValueFlow::Value::ValueType::UNINIT;
         uninitValue.tokvalue = vardecl;
-        std::list<ValueFlow::Value> values;
-        values.push_back(uninitValue);
 
-        valueFlowForward(vardecl->next(), vardecl->scope()->bodyEnd, var->nameToken(), values, tokenlist, settings);
-
-        if (var->type() && var->type()->isUnionType())
-            continue;
+        bool partial = false;
 
         if (const Scope* scope = var->typeScope()) {
             if (Token::findsimplematch(scope->bodyStart, "union", scope->bodyEnd))
@@ -6422,14 +6421,19 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
             for (const Variable& memVar : scope->varlist) {
                 if (!memVar.isPublic())
                     continue;
-                if (!needsInitialization(&memVar))
+                if (!needsInitialization(&memVar, tokenlist->isCPP())) {
+                    partial = true;
                     continue;
-                if (memVar.type() && memVar.type()->isUnionType())
-                    continue;
+                }
                 MemberExpressionAnalyzer analyzer(memVar.nameToken()->str(), vardecl, uninitValue, tokenlist);
                 valueFlowGenericForward(vardecl->next(), vardecl->scope()->bodyEnd, analyzer, settings);
             }
         }
+
+        if (partial)
+            continue;
+
+        valueFlowForward(vardecl->next(), vardecl->scope()->bodyEnd, var->nameToken(), {uninitValue}, tokenlist, settings);
     }
 }
 
