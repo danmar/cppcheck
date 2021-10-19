@@ -87,6 +87,7 @@ private:
         TEST_CASE(trac_5970);
         TEST_CASE(valueFlowUninit);
         TEST_CASE(valueFlowUninitBreak);
+        TEST_CASE(valueFlowUninitStructMembers);
         TEST_CASE(uninitvar_ipa);
         TEST_CASE(uninitvar_memberfunction);
         TEST_CASE(uninitvar_nonmember); // crash in ycmd test
@@ -4963,7 +4964,7 @@ private:
                         "    someType_t gVar;\n"
                         "    bar(&gVar);\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:5]: (error) Uninitialized variable: flags\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:5]: (error) Uninitialized variable: p->flags\n", errout.str());
 
         valueFlowUninit("typedef struct\n"
                         "{\n"
@@ -4973,7 +4974,7 @@ private:
                         "        someType_t gVar;\n"
                         "        if(gVar.flags[1] == 42){}\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: flags\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: gVar.flags\n", errout.str());
 
         valueFlowUninit("void foo() {\n" // #10293
                         "  union {\n"
@@ -5166,6 +5167,16 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:2]: (error) Uninitialized variable: *buflen\n", errout.str());
 
+    }
+
+    void valueFlowUninitStructMembers() {
+        valueFlowUninit("struct AB { int a; int b; };\n"
+                        "void f(void) {\n"
+                        "    struct AB ab;\n"
+                        "    ab.a = 1;\n"
+                        "    if (ab.b == 2) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: ab.b\n", errout.str());
     }
 
     void uninitvar_memberfunction() {
