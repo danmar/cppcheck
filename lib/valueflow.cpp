@@ -561,6 +561,8 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
     }
 
     if (value.isUninitValue()) {
+        if (Token::Match(tok, ". %var%"))
+            setTokenValue(tok->next(), value, settings);
         ValueFlow::Value pvalue = value;
         if (parent->isUnaryOp("&")) {
             pvalue.indirect++;
@@ -6357,6 +6359,18 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
     }
 }
 
+static bool needsInitialization(const Variable* var) {
+    if (!var)
+        return false;
+    if (var->isPointer())
+        return true;
+    if (var->type() && var->type()->needInitialization == Type::NeedInitialization::True)
+        return true;
+    if (var->valueType() && var->valueType()->isIntegral())
+        return true;
+    return false;
+}
+
 static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDatabase*/, const Settings* settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -6377,10 +6391,11 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
         if (!Token::Match(vardecl, "%var% ;"))
             continue;
         const Variable *var = vardecl->variable();
-        if (!var || var->nameToken() != vardecl || var->isInit())
+        if (!needsInitialization(var))
             continue;
-        if ((!var->isPointer() && var->type() && var->type()->needInitialization != Type::NeedInitialization::True) ||
-            !var->isLocal() || var->isStatic() || var->isExtern() || var->isReference() || var->isThrow())
+        if (var->nameToken() != vardecl || var->isInit())
+            continue;
+        if (!var->isLocal() || var->isStatic() || var->isExtern() || var->isReference() || var->isThrow())
             continue;
         if (!var->type() && !stdtype && !pointer)
             continue;
@@ -6394,9 +6409,14 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
 
         valueFlowForward(vardecl->next(), vardecl->scope()->bodyEnd, var->nameToken(), values, tokenlist, settings);
 
+        if (var->type() && var->type()->isUnionType())
+            continue;
+
         if (const Scope* scope = var->typeScope()) {
             for(const Variable& memVar:scope->varlist) {
                 if (!memVar.isPublic())
+                    continue;
+                if (!needsInitialization(var))
                     continue;
                 MemberExpressionAnalyzer analyzer(memVar.nameToken()->str(), vardecl, uninitValue, tokenlist);
                 valueFlowGenericForward(vardecl->next(), vardecl->scope()->bodyEnd, analyzer, settings);
