@@ -6417,10 +6417,14 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
             continue;
 
         if (const Scope* scope = var->typeScope()) {
+            if (Token::findsimplematch(scope->bodyStart, "union", scope->bodyEnd))
+                continue;
             for (const Variable& memVar : scope->varlist) {
                 if (!memVar.isPublic())
                     continue;
-                if (!needsInitialization(var))
+                if (!needsInitialization(&memVar))
+                    continue;
+                if (memVar.type() && memVar.type()->isUnionType())
                     continue;
                 MemberExpressionAnalyzer analyzer(memVar.nameToken()->str(), vardecl, uninitValue, tokenlist);
                 valueFlowGenericForward(vardecl->next(), vardecl->scope()->bodyEnd, analyzer, settings);
