@@ -2699,13 +2699,15 @@ struct SubExpressionAnalyzer : ExpressionAnalyzer {
 
     virtual bool submatch(const Token* tok, bool exact = true) const = 0;
 
-    virtual bool isAlias(const Token* tok, bool& inconclusive) const OVERRIDE {
+    virtual bool isAlias(const Token* tok, bool& inconclusive) const OVERRIDE
+    {
         if (tok->exprId() == expr->exprId() && tok->astParent() && submatch(tok->astParent(), false))
             return false;
         return ExpressionAnalyzer::isAlias(tok, inconclusive);
     }
 
-    virtual bool match(const Token* tok) const OVERRIDE {
+    virtual bool match(const Token* tok) const OVERRIDE
+    {
         return tok->astOperand1() && tok->astOperand1()->exprId() == expr->exprId() && submatch(tok);
     }
 
@@ -2720,10 +2722,11 @@ struct MemberExpressionAnalyzer : SubExpressionAnalyzer {
     MemberExpressionAnalyzer() : SubExpressionAnalyzer(), varname() {}
 
     MemberExpressionAnalyzer(std::string varname, const Token* e, const ValueFlow::Value& val, const TokenList* t)
-        : SubExpressionAnalyzer(e, val, t),  varname(std::move(varname))
+        : SubExpressionAnalyzer(e, val, t), varname(std::move(varname))
     {}
 
-    virtual bool submatch(const Token* tok, bool exact) const OVERRIDE {
+    virtual bool submatch(const Token* tok, bool exact) const OVERRIDE
+    {
         if (!Token::Match(tok, ". %var%"))
             return false;
         if (!exact)
@@ -6359,7 +6362,8 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
     }
 }
 
-static bool needsInitialization(const Variable* var) {
+static bool needsInitialization(const Variable* var)
+{
     if (!var)
         return false;
     if (var->isPointer())
@@ -6413,7 +6417,7 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
             continue;
 
         if (const Scope* scope = var->typeScope()) {
-            for(const Variable& memVar:scope->varlist) {
+            for (const Variable& memVar : scope->varlist) {
                 if (!memVar.isPublic())
                     continue;
                 if (!needsInitialization(var))

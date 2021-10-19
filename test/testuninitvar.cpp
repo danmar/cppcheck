@@ -5169,7 +5169,8 @@ private:
 
     }
 
-    void valueFlowUninitStructMembers() {
+    void valueFlowUninitStructMembers()
+    {
         valueFlowUninit("struct AB { int a; int b; };\n"
                         "void f(void) {\n"
                         "    struct AB ab;\n"
