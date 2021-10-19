@@ -1564,7 +1564,7 @@ void CheckUninitVar::valueFlowUninit()
                 if (isVariableChangedByFunctionCall(tok, v->indirect, mSettings, &inconclusive) || inconclusive)
                     continue;
                 const Token* ltok = tok;
-                if (Token::Match(tok->astParent(), ".") && astIsRHS(tok))
+                if (Token::simpleMatch(tok->astParent(), ".") && astIsRHS(tok))
                     ltok = tok->astParent();
                 uninitvarError(ltok, ltok->expressionString(), v->errorPath);
                 ids.insert(tok->exprId());
