@@ -4401,6 +4401,47 @@ private:
     }
 
     void valueFlowUninit() {
+        // Ticket #2207 - False negative
+        valueFlowUninit("void foo() {\n"
+                        "    int a;\n"
+                        "    b = c - a;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
+        valueFlowUninit("void foo() {\n"
+                        "    int a;\n"
+                        "    b = a - c;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
+        // Ticket #6455 - some compilers allow const variables to be uninitialized
+        // extracttests.disable
+        valueFlowUninit("void foo() {\n"
+                        "    const int a;\n"
+                        "    b = c - a;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+        // extracttests.enable
+
+        valueFlowUninit("void foo() {\n"
+                        "    int *p;\n"
+                        "    realloc(p,10);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: p\n", errout.str());
+
+        valueFlowUninit("void foo() {\n" // #5240
+                        "    char *p = malloc(100);\n"
+                        "    char *tmp = realloc(p,1000);\n"
+                        "    if (!tmp) free(p);\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void foo() {\n"
+                        "    int *p = NULL;\n"
+                        "    realloc(p,10);\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         valueFlowUninit("void f() {\n"
                         "  int x;\n"
                         "  switch (x) {}\n"

@@ -998,7 +998,7 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
 
 void SymbolDatabase::createSymbolDatabaseSetScopePointers()
 {
-    auto setScopePointers = [this](const Scope &scope, const Token *bodyStart, const Token *bodyEnd) {
+    auto setScopePointers = [](const Scope &scope, const Token *bodyStart, const Token *bodyEnd) {
         assert(bodyStart);
         assert(bodyEnd);
 
