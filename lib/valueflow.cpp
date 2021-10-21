@@ -561,6 +561,8 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
     }
 
     if (value.isUninitValue()) {
+        if (Token::Match(tok, ". %var%"))
+            setTokenValue(tok->next(), value, settings);
         ValueFlow::Value pvalue = value;
         if (parent->isUnaryOp("&")) {
             pvalue.indirect++;
@@ -2685,6 +2687,51 @@ struct OppositeExpressionAnalyzer : ExpressionAnalyzer {
 
     virtual bool match(const Token* tok) const OVERRIDE {
         return isOppositeCond(isNot, isCPP(), expr, tok, getSettings()->library, true, true);
+    }
+};
+
+struct SubExpressionAnalyzer : ExpressionAnalyzer {
+    SubExpressionAnalyzer() : ExpressionAnalyzer() {}
+
+    SubExpressionAnalyzer(const Token* e, const ValueFlow::Value& val, const TokenList* t)
+        : ExpressionAnalyzer(e, val, t)
+    {}
+
+    virtual bool submatch(const Token* tok, bool exact = true) const = 0;
+
+    virtual bool isAlias(const Token* tok, bool& inconclusive) const OVERRIDE
+    {
+        if (tok->exprId() == expr->exprId() && tok->astParent() && submatch(tok->astParent(), false))
+            return false;
+        return ExpressionAnalyzer::isAlias(tok, inconclusive);
+    }
+
+    virtual bool match(const Token* tok) const OVERRIDE
+    {
+        return tok->astOperand1() && tok->astOperand1()->exprId() == expr->exprId() && submatch(tok);
+    }
+
+    // No reanalysis for subexression
+    virtual ValuePtr<Analyzer> reanalyze(Token*, const std::string&) const OVERRIDE {
+        return {};
+    }
+};
+
+struct MemberExpressionAnalyzer : SubExpressionAnalyzer {
+    std::string varname;
+    MemberExpressionAnalyzer() : SubExpressionAnalyzer(), varname() {}
+
+    MemberExpressionAnalyzer(std::string varname, const Token* e, const ValueFlow::Value& val, const TokenList* t)
+        : SubExpressionAnalyzer(e, val, t), varname(std::move(varname))
+    {}
+
+    virtual bool submatch(const Token* tok, bool exact) const OVERRIDE
+    {
+        if (!Token::Match(tok, ". %var%"))
+            return false;
+        if (!exact)
+            return true;
+        return tok->next()->str() == varname;
     }
 };
 
@@ -6315,6 +6362,23 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
     }
 }
 
+static bool needsInitialization(const Variable* var, bool cpp)
+{
+    if (!var)
+        return false;
+    if (var->isPointer())
+        return true;
+    if (var->type() && var->type()->isUnionType())
+        return false;
+    if (!cpp)
+        return true;
+    if (var->type() && var->type()->needInitialization == Type::NeedInitialization::True)
+        return true;
+    if (var->valueType() && var->valueType()->isPrimitive())
+        return true;
+    return false;
+}
+
 static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDatabase*/, const Settings* settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -6335,10 +6399,11 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
         if (!Token::Match(vardecl, "%var% ;"))
             continue;
         const Variable *var = vardecl->variable();
-        if (!var || var->nameToken() != vardecl || var->isInit())
+        if (!needsInitialization(var, tokenlist->isCPP()))
             continue;
-        if ((!var->isPointer() && var->type() && var->type()->needInitialization != Type::NeedInitialization::True) ||
-            !var->isLocal() || var->isStatic() || var->isExtern() || var->isReference() || var->isThrow())
+        if (var->nameToken() != vardecl || var->isInit())
+            continue;
+        if (!var->isLocal() || var->isStatic() || var->isExtern() || var->isReference() || var->isThrow())
             continue;
         if (!var->type() && !stdtype && !pointer)
             continue;
@@ -6347,10 +6412,28 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
         uninitValue.setKnown();
         uninitValue.valueType = ValueFlow::Value::ValueType::UNINIT;
         uninitValue.tokvalue = vardecl;
-        std::list<ValueFlow::Value> values;
-        values.push_back(uninitValue);
 
-        valueFlowForward(vardecl->next(), vardecl->scope()->bodyEnd, var->nameToken(), values, tokenlist, settings);
+        bool partial = false;
+
+        if (const Scope* scope = var->typeScope()) {
+            if (Token::findsimplematch(scope->bodyStart, "union", scope->bodyEnd))
+                continue;
+            for (const Variable& memVar : scope->varlist) {
+                if (!memVar.isPublic())
+                    continue;
+                if (!needsInitialization(&memVar, tokenlist->isCPP())) {
+                    partial = true;
+                    continue;
+                }
+                MemberExpressionAnalyzer analyzer(memVar.nameToken()->str(), vardecl, uninitValue, tokenlist);
+                valueFlowGenericForward(vardecl->next(), vardecl->scope()->bodyEnd, analyzer, settings);
+            }
+        }
+
+        if (partial)
+            continue;
+
+        valueFlowForward(vardecl->next(), vardecl->scope()->bodyEnd, var->nameToken(), {uninitValue}, tokenlist, settings);
     }
 }
 
