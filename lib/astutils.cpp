@@ -144,7 +144,8 @@ static int getArgumentPos(const Token* ftok, const Token* tokToFind){
     return findArgumentPos(startTok, tokToFind);
 }
 
-static void astFlattenRecursive(const Token *tok, std::vector<const Token *> *result, const char* op, nonneg int depth = 0)
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+static void astFlattenRecursive(T* tok, std::vector<T*>* result, const char* op, nonneg int depth = 0)
 {
     ++depth;
     if (!tok || depth >= 100)
@@ -164,6 +165,12 @@ std::vector<const Token*> astFlatten(const Token* tok, const char* op)
     return result;
 }
 
+std::vector<Token*> astFlatten(Token* tok, const char* op)
+{
+    std::vector<Token*> result;
+    astFlattenRecursive(tok, &result, op);
+    return result;
+}
 
 bool astHasToken(const Token* root, const Token * tok)
 {
@@ -364,6 +371,8 @@ bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknow
             return false;
         if (const Function * f = ftok->function()) {
             return !Function::returnsReference(f, true);
+        } else if (ftok->type()) {
+            return true;
         } else if (library) {
             std::string returnType = library->returnValueType(ftok);
             return !returnType.empty() && returnType.back() != '&';
@@ -2291,7 +2300,8 @@ bool isVariablesChanged(const Token* start,
 
 bool isThisChanged(const Token* tok, int indirect, const Settings* settings, bool cpp)
 {
-    if (Token::Match(tok->previous(), "%name% (")) {
+    if ((Token::Match(tok->previous(), "%name% (") && !Token::simpleMatch(tok->astOperand1(), ".")) ||
+        Token::Match(tok->tokAt(-3), "this . %name% (")) {
         if (tok->previous()->function()) {
             return (!tok->previous()->function()->isConst());
         } else if (!tok->previous()->isKeyword()) {

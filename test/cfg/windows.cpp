@@ -87,6 +87,28 @@ void invalidFunctionArg__getcwd(char * buffer)
     }
     free(buffer);
 }
+// DWORD GetPrivateProfileString(
+//  [in]  LPCTSTR lpAppName,
+//  [in]  LPCTSTR lpKeyName,
+//  [in]  LPCTSTR lpDefault,
+//  [out] LPTSTR  lpReturnedString,
+//  [in]  DWORD   nSize,
+//  [in]  LPCTSTR lpFileName)
+void nullPointer_GetPrivateProfileString(LPCTSTR lpAppName,
+                                         LPCTSTR lpKeyName,
+                                         LPCTSTR lpDefault,
+                                         LPTSTR lpReturnedString,
+                                         DWORD nSize,
+                                         LPCTSTR lpFileName)
+{
+    // No warning is expected
+    (void)GetPrivateProfileString(lpAppName, lpKeyName, lpDefault, lpReturnedString, nSize, lpFileName);
+
+    // No warning is expected for 1st arg as nullptr
+    (void)GetPrivateProfileString(nullptr, lpKeyName, lpDefault, lpReturnedString, nSize, lpFileName);
+    // No warning is expected for 2st arg as nullptr
+    (void)GetPrivateProfileString(lpAppName, nullptr, lpDefault, lpReturnedString, nSize, lpFileName);
+}
 
 void nullPointer__get_timezone(long *sec)
 {
