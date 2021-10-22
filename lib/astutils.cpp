@@ -720,7 +720,7 @@ bool isAliased(const Variable *var)
     return isAliased(start, var->scope()->bodyEnd, var->declarationId());
 }
 
-bool exprDependsOnThis(const Token* expr, bool var, nonneg int depth)
+bool exprDependsOnThis(const Token* expr, bool onVar, nonneg int depth)
 {
     if (!expr)
         return false;
@@ -743,13 +743,13 @@ bool exprDependsOnThis(const Token* expr, bool var, nonneg int depth)
             nestedIn = nestedIn->nestedIn;
         }
         return nestedIn == expr->function()->nestedIn;
-    } else if (var && Token::Match(expr, "%var%") && expr->variable()) {
+    } else if (onVar && Token::Match(expr, "%var%") && expr->variable()) {
         const Variable* var = expr->variable();
         return (var->isPrivate() || var->isPublic() || var->isProtected());
     }
     if (Token::simpleMatch(expr, "."))
-        return exprDependsOnThis(expr->astOperand1(), var, depth);
-    return exprDependsOnThis(expr->astOperand1(), var, depth) || exprDependsOnThis(expr->astOperand2(), var, depth);
+        return exprDependsOnThis(expr->astOperand1(), onVar, depth);
+    return exprDependsOnThis(expr->astOperand1(), onVar, depth) || exprDependsOnThis(expr->astOperand2(), onVar, depth);
 }
 
 static bool hasUnknownVars(const Token* startTok)

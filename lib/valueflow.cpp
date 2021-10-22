@@ -5871,7 +5871,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         // ProgramMemory pm = pms.get(endBlock->link()->next(), getProgramState());
         for (const auto& p:pm.values) {
             nonneg int varid = p.first;
-            if (!symboldatabase->isVarId(varid))
+            if (symboldatabase && !symboldatabase->isVarId(varid))
                 continue;
             ValueFlow::Value value = p.second;
             if (vars.count(varid) != 0)
