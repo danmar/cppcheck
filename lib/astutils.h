@@ -144,7 +144,7 @@ bool extractForLoopValues(const Token *forToken,
 
 bool precedes(const Token * tok1, const Token * tok2);
 
-bool exprDependsOnThis(const Token* expr, nonneg int depth = 0);
+bool exprDependsOnThis(const Token* expr, bool var = true, nonneg int depth = 0);
 
 struct ReferenceToken {
     const Token* token;
