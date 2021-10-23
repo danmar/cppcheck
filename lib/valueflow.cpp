@@ -1938,6 +1938,8 @@ static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, cons
     return false;
 }
 
+static bool isContainerSizeChanged(const Token* tok, const Settings* settings = nullptr, int depth = 20);
+
 struct ValueFlowAnalyzer : Analyzer {
     const TokenList* tokenlist;
     ProgramMemoryState pms;
@@ -1975,6 +1977,9 @@ struct ValueFlowAnalyzer : Analyzer {
         return false;
     }
     virtual bool dependsOnThis() const {
+        return false;
+    }
+    virtual bool isVariable() const {
         return false;
     }
 
@@ -2330,8 +2335,7 @@ struct ValueFlowAnalyzer : Analyzer {
             if (a != Action::None)
                 return a;
         }
-
-        if (dependsOnThis() && exprDependsOnThis(tok))
+        if (dependsOnThis() && exprDependsOnThis(tok, !isVariable()))
             return isThisModified(tok);
 
         // bailout: global non-const variables
@@ -2673,6 +2677,10 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
 
     virtual bool isGlobal() const OVERRIDE {
         return !local;
+    }
+
+    virtual bool isVariable() const OVERRIDE {
+        return expr->varId() > 0;
     }
 };
 
@@ -5910,7 +5918,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         // ProgramMemory pm = pms.get(endBlock->link()->next(), getProgramState());
         for (const auto& p:pm.values) {
             nonneg int varid = p.first;
-            if (!symboldatabase->isVarId(varid))
+            if (symboldatabase && !symboldatabase->isVarId(varid))
                 continue;
             ValueFlow::Value value = p.second;
             if (vars.count(varid) != 0)
@@ -6436,8 +6444,6 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
         valueFlowForward(vardecl->next(), vardecl->scope()->bodyEnd, var->nameToken(), {uninitValue}, tokenlist, settings);
     }
 }
-
-static bool isContainerSizeChanged(const Token* tok, const Settings* settings = nullptr, int depth = 20);
 
 static bool isContainerSizeChanged(nonneg int varId,
                                    const Token* start,
