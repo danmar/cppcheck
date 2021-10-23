@@ -25,7 +25,7 @@ import html as html_lib
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.20"
+SERVER_VERSION = "1.3.21"
 
 OLD_VERSION = '2.6'
 
@@ -207,7 +207,7 @@ def crashReport(results_path: str) -> str:
                             stack_trace.append(m.group('number') + ' ' + m.group('function') + '(...) from ' + m.group('binary'))
                             continue
                         # #11 0x00000000006f2414 in valueFlowNumber (tokenlist=tokenlist@entry=0x7fffffffc610) at build/valueflow.cpp:2503
-                        m = re.search(r'(?P<number>#\d+) .* in (?P<function>.+) \(.*\) at (?P<location>.*)$', l)
+                        m = re.search(r'(?P<number>#\d+) .* in (?P<function>.+?) \(.*\) at (?P<location>.*)$', l)
                         if m:
                             #print('1 - {} - {} - {}'.format(m.group('number'), m.group('function'), m.group('location')))
                             stack_trace.append(m.group('number') + ' ' + m.group('function') + '(...) at ' + m.group('location'))
