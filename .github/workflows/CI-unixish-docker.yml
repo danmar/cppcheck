@@ -30,8 +30,7 @@ jobs:
         if: matrix.image != 'centos:7'
         run: |
           apt-get update
-          apt-get install -y cmake g++ make python libxml2-utils
-          apt-get install -y libpcre3-dev
+          apt-get install -y cmake g++ make python libxml2-utils libpcre3-dev
 
       # tests require CMake 3.4
       - name: Test CMake build (no tests)

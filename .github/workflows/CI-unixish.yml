@@ -26,16 +26,14 @@ jobs:
         if: matrix.os == 'ubuntu-18.04'
         run: |
           sudo apt-get update
-          sudo apt-get install libxml2-utils
-          sudo apt-get install z3 libz3-dev
+          sudo apt-get install libxml2-utils z3 libz3-dev
           cp externals/z3_version_old.h externals/z3_version.h
 
       - name: Install missing software on ubuntu 20.04
         if: matrix.os == 'ubuntu-20.04' 
         run: |
           sudo apt-get update
-          sudo apt-get install libxml2-utils
-          sudo apt-get install z3 libz3-dev
+          sudo apt-get install libxml2-utils z3 libz3-dev
 
       - name: Install missing software on macos
         if: contains(matrix.os, 'macos')

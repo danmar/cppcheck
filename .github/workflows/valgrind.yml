@@ -28,10 +28,7 @@ jobs:
       - name: Install missing software
         run: |
           sudo apt-get update
-          sudo apt-get install libxml2-utils
-          sudo apt-get install valgrind
-          sudo apt-get install libz3-dev libz3-4 libz3-4-dbgsym
-          sudo apt-get install libc6-dbg-amd64-cross
+          sudo apt-get install libxml2-utils valgrind libz3-dev libz3-4 libz3-4-dbgsym libc6-dbg-amd64-cross
 
       - name: Build cppcheck
         run: |

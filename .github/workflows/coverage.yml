@@ -15,10 +15,7 @@ jobs:
       - name: Install missing software on ubuntu
         run: |
           sudo apt-get update
-          sudo apt-get install libxml2-utils
-          sudo apt-get install libz3-dev libz3-4
-          sudo apt-get install lcov
-          sudo apt-get install libcppunit-dev
+          sudo apt-get install libxml2-utils libz3-dev libz3-4 lcov libcppunit-dev
           python -m pip install pip --upgrade
           python -m pip install lcov_cobertura
 

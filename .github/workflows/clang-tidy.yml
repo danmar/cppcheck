@@ -18,10 +18,7 @@ jobs:
       - name: Install missing software
         run: |
           apt-get update
-          apt-get install -y cmake g++ make
-          apt-get install -y z3 libz3-dev
-          apt-get install -y libpcre3-dev
-          apt-get install -y software-properties-common
+          apt-get install -y cmake g++ make z3 libz3-dev libpcre3-dev software-properties-common
           add-apt-repository universe
           apt-get update
           apt-get install -y clang-tidy-12
