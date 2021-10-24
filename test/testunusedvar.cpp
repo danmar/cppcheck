@@ -119,6 +119,7 @@ private:
         TEST_CASE(localvar57); // #8974 - increment
         TEST_CASE(localvar58); // #9901 - increment false positive
         TEST_CASE(localvar59); // #9737
+        TEST_CASE(localvar60);
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -3187,6 +3188,16 @@ private:
         functionVariableUsage("Response foo() {\n"
                               "    const std::vector<char> cmanifest = z;\n"
                               "    return {.a = cmanifest, .b =0};\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar60() { // #10531
+        functionVariableUsage("void Scale(double scale) {\n"
+                              "    for (int i = 0; i < m_points.size(); ++i) {\n"
+                              "        auto& p = m_points[i];\n"
+                              "        p += scale;\n"
+                              "    }\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
