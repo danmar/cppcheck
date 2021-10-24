@@ -139,7 +139,7 @@
      <addaction name="mActionCpp14"/>
      <addaction name="mActionCpp17"/>
      <addaction name="mActionCpp20"/>
-     <addaction name="mActionCpp23"/>
+     <!--addaction name="mActionCpp23"/-->
     </widget>
     <widget class="QMenu" name="menuC_standard">
      <property name="title">
@@ -841,7 +841,7 @@
     <string>C++20</string>
    </property>
   </action>
-  <action name="mActionCpp23">
+  <!--action name="mActionCpp23">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -851,7 +851,7 @@
    <property name="text">
     <string>C++23</string>
    </property>
-  </action>
+  </action-->
  </widget>
  <customwidgets>
   <customwidget>
