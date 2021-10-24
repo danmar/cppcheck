@@ -1593,8 +1593,19 @@ void CheckStl::checkFindInsert()
 
 void CheckStl::checkFindInsertError(const Token *tok)
 {
+    std::string replaceExpr;
+    if (tok && Token::simpleMatch(tok->astParent(), "=") && tok == tok->astParent()->astOperand2() && Token::simpleMatch(tok->astParent()->astOperand1(), "[")) {
+        replaceExpr = " Instead of '" + tok->astParent()->expressionString() + "' consider using '" +
+                      tok->astParent()->astOperand1()->astOperand1()->expressionString() +
+                      (mSettings->standards.cpp < Standards::CPP17 ? ".insert(" : ".emplace(") +
+                      tok->astParent()->astOperand1()->astOperand2()->expressionString() +
+                      ", " +
+                      tok->expressionString() +
+                      ");'.";
+    }
+
     reportError(
-        tok, Severity::performance, "stlFindInsert", "Searching before insertion is not necessary.", CWE398, Certainty::normal);
+        tok, Severity::performance, "stlFindInsert", "Searching before insertion is not necessary." + replaceExpr, CWE398, Certainty::normal);
 }
 
 /**

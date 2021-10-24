@@ -5152,6 +5152,17 @@ private:
             check(code, true, Standards::CPP17);
             ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout.str());
         }
+
+        check("void foo() {\n"
+              "   std::map<int, int> x;\n"
+              "   int data = 0;\n"
+              "   for(int i=0; i<10; ++i) {\n"
+              "      data += 123;\n"
+              "      if(x.find(5) == x.end())\n"
+              "         x[5] = data;\n"
+              "   }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (performance) Searching before insertion is not necessary. Instead of 'x[5]=data' consider using 'x.emplace(5, data);'.\n", errout.str());
     }
 
     void checkKnownEmptyContainer() {
