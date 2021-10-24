@@ -770,11 +770,16 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // --std
             else if (std::strncmp(argv[i], "--std=", 6) == 0) {
                 const std::string std = argv[i] + 6;
+                // TODO: print error when standard is unknown
                 if (std::strncmp(std.c_str(), "c++", 3) == 0) {
                     mSettings->standards.cpp = Standards::getCPP(std);
                 }
                 else if (std::strncmp(std.c_str(), "c", 1) == 0) {
                     mSettings->standards.c = Standards::getC(std);
+                }
+                else {
+                    printError("unknown --std value '" + std + "'");
+                    return false;
                 }
             }
 
