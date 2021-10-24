@@ -101,10 +101,14 @@ protected:
     static void printHelp();
 
     /**
-     * Print message (to console?).
+     * Print message (to stdout).
      */
     static void printMessage(const std::string &message);
-    static void printMessage(const char* message);
+
+    /**
+     * Print error message (to stdout).
+     */
+    static void printError(const std::string &message);
 
 private:
     std::vector<std::string> mPathNames;
