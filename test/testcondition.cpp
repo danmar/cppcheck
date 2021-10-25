@@ -3793,6 +3793,13 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10548
+        check("void f() {\n"
+              "    int i = 0;\n"
+              "    do {} while (i++ == 0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -4046,6 +4053,15 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition 'u1!=u2' is always true\n", errout.str());
+
+        // #10544
+        check("void f(int N) {\n"
+              "    if (N > 0) {\n"
+              "        while (N)\n"
+              "            N = test();\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueContainer() {

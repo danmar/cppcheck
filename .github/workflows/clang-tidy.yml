@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     container:
-      image: "ubuntu:21.04"
+      image: "ubuntu:21.10"
 
     steps:
       - uses: actions/checkout@v2
@@ -24,7 +24,7 @@ jobs:
           apt-get install -y software-properties-common
           add-apt-repository universe
           apt-get update
-          apt-get install -y clang-tidy-12
+          apt-get install -y clang-tidy-13
 
       # uses "sudo" internally which is not available on docker by default
       #- name: Install Qt

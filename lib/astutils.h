@@ -58,6 +58,7 @@ const Token* findExpression(const nonneg int exprid,
 const Token* findExpression(const Token* start, const nonneg int exprid);
 
 std::vector<const Token*> astFlatten(const Token* tok, const char* op);
+std::vector<Token*> astFlatten(Token* tok, const char* op);
 
 bool astHasToken(const Token* root, const Token * tok);
 
@@ -143,7 +144,7 @@ bool extractForLoopValues(const Token *forToken,
 
 bool precedes(const Token * tok1, const Token * tok2);
 
-bool exprDependsOnThis(const Token* expr, nonneg int depth = 0);
+bool exprDependsOnThis(const Token* expr, bool onVar = true, nonneg int depth = 0);
 
 struct ReferenceToken {
     const Token* token;

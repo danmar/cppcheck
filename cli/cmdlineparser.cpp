@@ -121,6 +121,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
     mSettings->exename = argv[0];
 
+    mSettings->loadCppcheckCfg(Path::getPathFromFilename(argv[0]) + "cppcheck.cfg");
+
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             // User define

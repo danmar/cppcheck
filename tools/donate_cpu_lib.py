@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.14"
+CLIENT_VERSION = "1.3.16"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -340,7 +340,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         if 'Child process crashed with signal' in ie_line:
             sig_file = ie_line.split(':')[0]
             sig_msg = 'signal '
-            sig_pos = stderr.find(sig_msg)
+            sig_pos = ie_line.find(sig_msg)
             if sig_pos != -1:
                 sig_start_pos = sig_pos + len(sig_msg)
                 sig_num = int(ie_line[sig_start_pos:ie_line.find(' ', sig_start_pos)])
@@ -385,19 +385,20 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         return returncode, stacktrace, '', returncode, options, ''
 
     if returncode != 0:
+        # returncode is always 1 when this message is written
+        thr_pos = stderr.find('#### ThreadExecutor')
+        if thr_pos != -1:
+            print('Thread!')
+            return -222, stderr[thr_pos:], '', -222, options, ''
+
         print('Error!')
         if returncode > 0:
             returncode = -100-returncode
         return returncode, stdout, '', returncode, options, ''
 
     if sig_num != -1:
-        print('Error!')
+        print('Signal!')
         return -sig_num, ''.join(internal_error_messages_list), '', -sig_num, options, ''
-
-    thr_pos = stderr.find('#### ThreadExecutor')
-    if thr_pos != -1:
-        print('Thread!')
-        return -222, stderr[thr_pos:], '', -222, options, ''
 
     return count, ''.join(issue_messages_list), ''.join(information_messages_list), elapsed_time, options, timing_str
 

@@ -1525,8 +1525,13 @@ void CheckOther::checkConstPointer()
             if (!p->scope() || !p->scope()->function || p->scope()->function->isImplicitlyVirtual(true) || p->scope()->function->hasVirtualSpecifier())
                 continue;
         }
-        if (nonConstPointers.find(p) == nonConstPointers.end())
+        if (nonConstPointers.find(p) == nonConstPointers.end()) {
+            const Token *start = (p->isArgument()) ? p->scope()->bodyStart : p->nameToken()->next();
+            const int indirect = p->isArray() ? p->dimensions().size() : 1;
+            if (isVariableChanged(start, p->scope()->bodyEnd, indirect, p->declarationId(), false, mSettings, mTokenizer->isCPP()))
+                continue;
             constVariableError(p, nullptr);
+        }
     }
 }
 void CheckOther::constVariableError(const Variable *var, const Function *function)

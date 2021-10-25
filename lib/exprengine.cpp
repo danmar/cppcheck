@@ -574,10 +574,6 @@ namespace {
             mTrackExecution->addMissingContract(f);
         }
 
-        const std::set<std::string> getMissingContracts() const {
-            return mTrackExecution->getMissingContracts();
-        }
-
         ExprEngine::ValuePtr notValue(ExprEngine::ValuePtr v) {
             auto b = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(v);
             if (b) {

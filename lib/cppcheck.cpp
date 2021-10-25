@@ -51,7 +51,9 @@
 #include <cstdio>
 
 #ifdef HAVE_RULES
+#ifdef _WIN32
 #define PCRE_STATIC
+#endif
 #include <pcre.h>
 #endif
 
@@ -131,7 +133,7 @@ namespace {
             if (obj.count("executable")) {
                 if (!obj["executable"].is<std::string>())
                     return "Loading " + fileName + " failed. executable must be a string.";
-                executable = obj["executable"].get<std::string>();
+                executable = getFullPath(obj["executable"].get<std::string>(), exename);
                 return "";
             }
 
@@ -1391,6 +1393,9 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             reportErr(errmsg);
         }
     }
+
+    if (!fileList.empty())
+        std::remove(fileList.c_str());
 }
 
 void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t> &files)
@@ -1405,6 +1410,10 @@ void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t
     }
 
     executeAddons(ctuInfoFiles);
+
+    for (const std::string &f: ctuInfoFiles) {
+        std::remove(f.c_str());
+    }
 }
 
 Settings &CppCheck::settings()
