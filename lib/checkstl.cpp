@@ -1595,9 +1595,13 @@ void CheckStl::checkFindInsertError(const Token *tok)
 {
     std::string replaceExpr;
     if (tok && Token::simpleMatch(tok->astParent(), "=") && tok == tok->astParent()->astOperand2() && Token::simpleMatch(tok->astParent()->astOperand1(), "[")) {
+        if (mSettings->standards.cpp < Standards::CPP11)
+            // We will recommend using emplace/try_emplace instead
+            return;
+        const std::string f = (mSettings->standards.cpp < Standards::CPP17) ? "emplace" : "try_emplace";
         replaceExpr = " Instead of '" + tok->astParent()->expressionString() + "' consider using '" +
                       tok->astParent()->astOperand1()->astOperand1()->expressionString() +
-                      (mSettings->standards.cpp < Standards::CPP17 ? ".insert(" : ".emplace(") +
+                      "." + f + "(" +
                       tok->astParent()->astOperand1()->astOperand2()->expressionString() +
                       ", " +
                       tok->expressionString() +
