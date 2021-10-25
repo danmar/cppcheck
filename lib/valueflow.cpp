@@ -359,6 +359,9 @@ static const Token *getCastTypeStartToken(const Token *parent)
         return nullptr;
     if (!parent->astOperand2() && Token::Match(parent,"( %name%"))
         return parent->next();
+    auto prev = parent->previous();
+    if (prev && prev->isStandardType() && Token::Match(prev, "%type% (")) // functional style cast int(x)
+      return prev;
     if (parent->astOperand2() && Token::Match(parent->astOperand1(), "const_cast|dynamic_cast|reinterpret_cast|static_cast <"))
         return parent->astOperand1()->tokAt(2);
     return nullptr;
