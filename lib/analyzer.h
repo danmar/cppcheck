@@ -20,6 +20,7 @@
 #define analyzerH
 
 #include "config.h"
+#include "mathlib.h"
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -155,8 +156,9 @@ struct Analyzer {
     /// Update the state of the value
     virtual void update(Token* tok, Action a, Direction d) = 0;
     /// Try to evaluate the value of a token(most likely a condition)
-    virtual std::vector<int> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const = 0;
-    std::vector<int> evaluate(const Token* tok, const Token* ctx = nullptr) const {
+    virtual std::vector<MathLib::bigint> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const = 0;
+    std::vector<MathLib::bigint> evaluate(const Token* tok, const Token* ctx = nullptr) const
+    {
         return evaluate(Evaluate::Integral, tok, ctx);
     }
     /// Lower any values to possible

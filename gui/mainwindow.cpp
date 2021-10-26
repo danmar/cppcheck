@@ -508,6 +508,10 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     checkSettings.checkLibrary = checkLibrary;
     checkSettings.checkConfiguration = checkConfiguration;
 
+    const QString applicationFilePath = QCoreApplication::applicationFilePath();
+    const QString appPath = QFileInfo(applicationFilePath).canonicalPath();
+    checkSettings.loadCppcheckCfg(appPath.toStdString() + "/cppcheck.cfg");
+
     if (mProjectFile)
         qDebug() << "Checking project file" << mProjectFile->getFilename();
 

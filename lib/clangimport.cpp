@@ -187,10 +187,6 @@ static std::vector<std::string> splitString(const std::string &line)
     return ret;
 }
 
-static bool contains(const std::vector<std::string> &haystack, const std::string &needle)
-{
-    return std::find(haystack.begin(), haystack.end(), needle) != haystack.end();
-}
 
 namespace clangimport {
     struct Data {

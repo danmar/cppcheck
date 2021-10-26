@@ -534,8 +534,8 @@ private:
                     "  if (DirName == nullptr)\n"
                     "      return {};\n"
                     "  std::string Name{ DirName };\n"
-                    "  if (!Name.empty() && Name.back() != '\\')\n"
-                    "    Name += '\\';\n"
+                    "  if (!Name.empty() && Name.back() != '\\\\')\n"
+                    "    Name += '\\\\';\n"
                     "  return Name;\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
@@ -4901,6 +4901,20 @@ private:
               true);
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
 
+        check("struct A {\n"
+              "  std::vector<int> v;\n"
+              "  void add(int i) {\n"
+              "    v.push_back(i);\n"
+              "  } \n"
+              "  void f() {\n"
+              "    for(auto i:v)\n"
+              "      add(i);\n"
+              "  }\n"
+              "};\n",
+              true);
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:7] -> [test.cpp:8]: (error) Calling 'add' while iterating the container is invalid.\n",
+            errout.str());
     }
 
     void findInsert() {
@@ -5138,6 +5152,17 @@ private:
             check(code, true, Standards::CPP17);
             ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout.str());
         }
+
+        check("void foo() {\n"
+              "   std::map<int, int> x;\n"
+              "   int data = 0;\n"
+              "   for(int i=0; i<10; ++i) {\n"
+              "      data += 123;\n"
+              "      if(x.find(5) == x.end())\n"
+              "         x[5] = data;\n"
+              "   }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (performance) Searching before insertion is not necessary. Instead of 'x[5]=data' consider using 'x.emplace(5, data);'.\n", errout.str());
     }
 
     void checkKnownEmptyContainer() {

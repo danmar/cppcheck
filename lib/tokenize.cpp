@@ -1794,47 +1794,6 @@ namespace {
             return false;
         }
 
-        void  printOut(const std::string & indent = "  ") const {
-            std::cerr << indent << "type: " << (type == Global ? "Global" :
-                                                type == Namespace ? "Namespace" :
-                                                type == Record ? "Record" :
-                                                type == MemberFunction ? "MemberFunction" :
-                                                type == Other ? "Other" :
-                                                "Unknown") << std::endl;
-            std::cerr << indent << "fullName: " << fullName << std::endl;
-            std::cerr << indent << "name: " << name << std::endl;
-            std::cerr << indent << usingNamespaces.size() << " usingNamespaces:";
-            for (const auto & usingNamespace : usingNamespaces)
-                std::cerr << " " << usingNamespace;
-            std::cerr << std::endl;
-            std::cerr << indent << baseTypes.size() << " baseTypes:";
-            for (const auto & baseType : baseTypes)
-                std::cerr << " " << baseType;
-            std::cerr << std::endl;
-            std::cerr << indent << children.size() << " children:" << std::endl;
-            size_t i = 0;
-            for (const auto & child : children) {
-                std::cerr << indent << "child " << i++ << std::endl;
-                child.printOut(indent + "  ");
-            }
-        }
-
-        const ScopeInfo3 * findScopeRecursive(const std::string & scope) const {
-            if (fullName.size() < scope.size() &&
-                fullName == scope.substr(0, fullName.size())) {
-                for (const auto & child : children) {
-                    if (child.fullName == scope && &child != this)
-                        return &child;
-                    else {
-                        const ScopeInfo3 * temp1 = child.findScopeRecursive(scope);
-                        if (temp1)
-                            return temp1;
-                    }
-                }
-            }
-            return nullptr;
-        }
-
         const ScopeInfo3 * findInChildren(const std::string & scope) const {
             for (const auto & child : children) {
                 if (child.type == Record && (child.name == scope || child.fullName == scope))
@@ -4479,7 +4438,6 @@ void Tokenizer::createLinks2()
     if (isC())
         return;
 
-    const Token * templateToken = nullptr;
     bool isStruct = false;
 
     std::stack<Token*> type;

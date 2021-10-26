@@ -83,6 +83,7 @@ private:
         TEST_CASE(valueFlowBeforeConditionForward);
 
         TEST_CASE(valueFlowAfterAssign);
+        TEST_CASE(valueFlowAfterSwap);
         TEST_CASE(valueFlowAfterCondition);
         TEST_CASE(valueFlowAfterConditionExpr);
         TEST_CASE(valueFlowAfterConditionSeveralNot);
@@ -142,7 +143,9 @@ private:
         TEST_CASE(valueFlowIdempotent);
         TEST_CASE(valueFlowUnsigned);
         TEST_CASE(valueFlowMod);
+        TEST_CASE(valueFlowNotNull);
         TEST_CASE(valueFlowSymbolic);
+        TEST_CASE(valueFlowSymbolicIdentity);
         TEST_CASE(valueFlowSmartPointer);
     }
 
@@ -505,6 +508,12 @@ private:
     ValueFlow::Value valueOfTok(const char code[], const char tokstr[]) {
         std::list<ValueFlow::Value> values = tokenValues(code, tokstr);
         return values.size() == 1U && !values.front().isTokValue() ? values.front() : ValueFlow::Value();
+    }
+
+    std::list<ValueFlow::Value> removeSymbolic(std::list<ValueFlow::Value> values)
+    {
+        values.remove_if(std::mem_fn(&ValueFlow::Value::isSymbolicValue));
+        return values;
     }
 
     void valueFlowNumber() {
@@ -2455,6 +2464,42 @@ private:
         ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 1));
+
+        code = "struct A {\n"
+               "    int i, j;\n"
+               "    int foo() {\n"
+               "        i = 1;\n"
+               "        j = 2;\n"
+               "        int x = i;\n"
+               "        return x;\n"
+               "    }\n"
+               "};\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 7U, 1));
+    }
+
+    void valueFlowAfterSwap()
+    {
+        const char* code;
+
+        code = "int f() {\n"
+               "    int a = 1;\n"
+               "    int b = 2;\n"
+               "    std::swap(a, b);\n"
+               "    int x = a;\n"
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 2));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 1));
+
+        code = "int f() {\n"
+               "    int a = 1;\n"
+               "    int b = 2;\n"
+               "    std::swap(a, b);\n"
+               "    int x = b;\n"
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 1));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 2));
     }
 
     void valueFlowAfterCondition() {
@@ -3448,7 +3493,7 @@ private:
                "  foo.x = 1;\n"
                "  x = 0 + foo.x;\n" // <- foo.x is 1
                "}";
-        values = tokenValues(code, "+");
+        values = removeSymbolic(tokenValues(code, "+"));
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(true, values.front().isKnown());
         ASSERT_EQUALS(true, values.front().isIntValue());
@@ -3486,7 +3531,7 @@ private:
                "    hints.x = 2;\n"
                "  x = 0 + foo.x;\n" // <- foo.x is possible 1, possible 2
                "}";
-        values = tokenValues(code, "+");
+        values = removeSymbolic(tokenValues(code, "+"));
         TODO_ASSERT_EQUALS(2U, 0U, values.size()); // should be 2
 
         // FP: Condition '*b>0' is always true
@@ -3925,23 +3970,23 @@ private:
                "  return x+y;\n"
                "}\n"
                "void f2() {\n"
-               "    x = 1 * add(10+1,4);\n"
+               "    x = 2 * add(10+1,4);\n"
                "}";
-        ASSERT_EQUALS(15, valueOfTok(code, "*").intvalue);
+        ASSERT_EQUALS(30, valueOfTok(code, "*").intvalue);
         ASSERT_EQUALS(true, valueOfTok(code, "*").isKnown());
 
         code = "int one() { return 1; }\n"
-               "void f() { x = 1 * one(); }";
-        ASSERT_EQUALS(1, valueOfTok(code, "*").intvalue);
+               "void f() { x = 2 * one(); }";
+        ASSERT_EQUALS(2, valueOfTok(code, "*").intvalue);
         ASSERT_EQUALS(true, valueOfTok(code, "*").isKnown());
 
         code = "int add(int x, int y) {\n"
                "  return x+y;\n"
                "}\n"
                "void f2() {\n"
-               "    x = 1 * add(1,add(2,3));\n"
+               "    x = 2 * add(1,add(2,3));\n"
                "}";
-        ASSERT_EQUALS(6, valueOfTok(code, "*").intvalue);
+        ASSERT_EQUALS(12, valueOfTok(code, "*").intvalue);
         ASSERT_EQUALS(true, valueOfTok(code, "*").isKnown());
 
         code = "int f(int i, X x) {\n"
@@ -4261,6 +4306,22 @@ private:
                "}";
         ASSERT_EQUALS(true,  testValueOfX(code, 3U, 1)); // value of x can be 1
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 2)); // value of x can't be 2
+
+        code = "bool f() {\n"
+               "  const int s( 4 );"
+               "  return s == 4;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT(value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
+
+        code = "bool f() {\n"
+               "  const int s{ 4 };"
+               "  return s == 4;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT(value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
 
         // calculation with known result
         code = "int f(int x) { a = x & 0; }"; // <- & is 0
@@ -5672,7 +5733,7 @@ private:
         code = "short f(short x) {\n"
                "  return x + 0;\n"
                "}";
-        values = tokenValues(code, "+", &s);
+        values = removeSymbolic(tokenValues(code, "+", &s));
         ASSERT_EQUALS(2, values.size());
         ASSERT_EQUALS(-0x8000, values.front().intvalue);
         ASSERT_EQUALS(0x7fff, values.back().intvalue);
@@ -5696,7 +5757,7 @@ private:
         code = "short f(__cppcheck_low__(0) __cppcheck_high__(100) short x) {\n"
                "  return x + 0;\n"
                "}";
-        values = tokenValues(code, "+", &s);
+        values = removeSymbolic(tokenValues(code, "+", &s));
         ASSERT_EQUALS(2, values.size());
         ASSERT_EQUALS(0, values.front().intvalue);
         ASSERT_EQUALS(100, values.back().intvalue);
@@ -5704,7 +5765,7 @@ private:
         code = "unsigned short f(unsigned short x) [[expects: x <= 100]] {\n"
                "  return x + 0;\n"
                "}";
-        values = tokenValues(code, "+", &s);
+        values = removeSymbolic(tokenValues(code, "+", &s));
         values.remove_if([](const ValueFlow::Value& v) {
             return v.isImpossible();
         });
@@ -6046,8 +6107,8 @@ private:
                "            && ch != '(' && ch != ')'\n"
                "            && ch != '[' && ch != ']'\n"
                "            && ch != ';' && ch != ','\n"
-               "            && ch != '#' && ch != '\\'\n"
-               "            && ch != '\'' && ch != '\"');\n"
+               "            && ch != '#' && ch != '\\\\'\n"
+               "            && ch != '\\\'' && ch != '\\\"');\n"
                "}\n";
         valueOfTok(code, "return");
     }
@@ -6195,6 +6256,43 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 1));
+    }
+
+    void valueFlowNotNull()
+    {
+        const char* code;
+
+        code = "int f(const std::string &str) {\n"
+               "    int x = str.c_str();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, 0));
+
+        code = "int f(const std::string_view &str) {\n"
+               "    int x = str.c_str();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 0));
+
+        code = "auto f() {\n"
+               "    std::shared_ptr<int> x = std::make_shared<int>(1);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, 0));
+
+        code = "auto f() {\n"
+               "    std::unique_ptr<int> x = std::make_unique<int>(1);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, 0));
+
+        code = "struct A {\n"
+               "    A* f() {\n"
+               "        A* x = this;\n"
+               "        return x;\n"
+               "    }\n"
+               "};\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 0));
     }
 
     void valueFlowSymbolic() {
@@ -6357,6 +6455,142 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, "y", 0));
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "y", -1));
+
+        code = "void f(int y) {\n"
+               "  int x = y - 1;\n"
+               "  if (y == 1)\n"
+               "    int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "void f(int y) {\n"
+               "  int x = y * y;\n"
+               "  if (y == 2)\n"
+               "    int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 4));
+
+        code = "void f(int x, int y) {\n"
+               "  if (x == y*y)\n"
+               "    if (y == 2)\n"
+               "      int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 4));
+
+        code = "void f(int x, int y) {\n"
+               "  if (x > y*y)\n"
+               "    if (y == 2)\n"
+               "      int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 4));
+
+        code = "void f(int x, int y) {\n"
+               "  if (x != y*y)\n"
+               "    if (y == 2)\n"
+               "      int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 4));
+
+        code = "void f(int x, int y) {\n"
+               "  if (x >= y*y)\n"
+               "    if (y == 2)\n"
+               "      int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 3));
+
+        code = "void f(int x, int y) {\n"
+               "  if (x == y*y)\n"
+               "    if (y != 2)\n"
+               "      int a = x;\n"
+               "}\n";
+        TODO_ASSERT_EQUALS(true, false, testValueOfXImpossible(code, 4U, 4));
+
+        code = "void f(int x, int y) {\n"
+               "  if (x == y*y)\n"
+               "    if (y > 2)\n"
+               "      int a = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 9));
+
+        code = "struct A {\n"
+               "    A* b();\n"
+               "    int c() const;\n"
+               "};\n"
+               "void f(A *d) {\n"
+               "    if (!d || d->c() != 1)\n"
+               "        return;\n"
+               "    A * y = d;\n"
+               "    d = d->b();\n"
+               "    A * x = d;\n"
+               "    A* z = x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 11U, "d", 0));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 11U, 0));
+    }
+
+    void valueFlowSymbolicIdentity()
+    {
+        const char* code;
+
+        code = "void f(int a) {\n"
+               "    int x = a*1;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, "a", 0));
+
+        code = "void f(int a) {\n"
+               "    int x = a/1;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, "a", 0));
+
+        code = "void f(int a) {\n"
+               "    int x = a+0;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, "a", 0));
+
+        code = "void f(int a) {\n"
+               "    int x = a-0;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, "a", 0));
+
+        code = "void f(int a) {\n"
+               "    int x = a^0;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, "a", 0));
+
+        code = "void f(int a) {\n"
+               "    int x = a|0;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, "a", 0));
+
+        code = "void f(int a) {\n"
+               "    int x = a>>0;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, "a", 0));
+
+        code = "void f(int a) {\n"
+               "    int x = a<<0;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, "a", 0));
+
+        code = "void f(int a) {\n"
+               "    int x = 0>>a;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, "a", 0));
+
+        code = "void f(int a) {\n"
+               "    int x = 0<<a;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, "a", 0));
     }
 
     void valueFlowSmartPointer()

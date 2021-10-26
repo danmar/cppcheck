@@ -2764,6 +2764,13 @@ private:
               "    memcpy(data.buf, &a, sizeof(a));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #10547
+        check("void foo(std::istream &istr) {\n"
+              "  unsigned char x[2];\n"
+              "  istr >> x[0];\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
