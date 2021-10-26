@@ -51,7 +51,9 @@
 #include <cstdio>
 
 #ifdef HAVE_RULES
+#ifdef _WIN32
 #define PCRE_STATIC
+#endif
 #include <pcre.h>
 #endif
 

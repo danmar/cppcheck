@@ -720,7 +720,7 @@ bool isAliased(const Variable *var)
     return isAliased(start, var->scope()->bodyEnd, var->declarationId());
 }
 
-bool exprDependsOnThis(const Token* expr, nonneg int depth)
+bool exprDependsOnThis(const Token* expr, bool onVar, nonneg int depth)
 {
     if (!expr)
         return false;
@@ -743,13 +743,13 @@ bool exprDependsOnThis(const Token* expr, nonneg int depth)
             nestedIn = nestedIn->nestedIn;
         }
         return nestedIn == expr->function()->nestedIn;
-    } else if (Token::Match(expr, "%var%") && expr->variable()) {
+    } else if (onVar && Token::Match(expr, "%var%") && expr->variable()) {
         const Variable* var = expr->variable();
         return (var->isPrivate() || var->isPublic() || var->isProtected());
     }
     if (Token::simpleMatch(expr, "."))
-        return exprDependsOnThis(expr->astOperand1(), depth);
-    return exprDependsOnThis(expr->astOperand1(), depth) || exprDependsOnThis(expr->astOperand2(), depth);
+        return exprDependsOnThis(expr->astOperand1(), onVar, depth);
+    return exprDependsOnThis(expr->astOperand1(), onVar, depth) || exprDependsOnThis(expr->astOperand2(), onVar, depth);
 }
 
 static bool hasUnknownVars(const Token* startTok)
@@ -2976,6 +2976,8 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 return Result(Result::Type::READ);
             } else if (Token::Match(parent->astParent(), "%assign%") && !parent->astParent()->astParent() && parent == parent->astParent()->astOperand1()) {
                 if (mWhat == What::Reassign)
+                    return Result(Result::Type::BAILOUT, parent->astParent());
+                if (mWhat == What::UnusedValue && (!parent->valueType() || parent->valueType()->reference != Reference::None))
                     return Result(Result::Type::BAILOUT, parent->astParent());
                 continue;
             } else if (mWhat == What::UnusedValue && parent->isUnaryOp("&") && Token::Match(parent->astParent(), "[,(]")) {

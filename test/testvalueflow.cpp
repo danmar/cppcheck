@@ -2464,6 +2464,17 @@ private:
         ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 0));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 3U, 1));
+
+        code = "struct A {\n"
+               "    int i, j;\n"
+               "    int foo() {\n"
+               "        i = 1;\n"
+               "        j = 2;\n"
+               "        int x = i;\n"
+               "        return x;\n"
+               "    }\n"
+               "};\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 7U, 1));
     }
 
     void valueFlowAfterSwap()
