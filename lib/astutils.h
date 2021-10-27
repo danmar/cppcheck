@@ -162,8 +162,6 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
 
 bool isEqualKnownValue(const Token * const tok1, const Token * const tok2);
 
-bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2);
-
 /**
  * Is token used a boolean, that is to say cast to a bool, or used as a condition in a if/while/for
  */
