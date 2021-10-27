@@ -355,9 +355,15 @@ static void combineValueProperties(const ValueFlow::Value &value1, const ValueFl
 static const Token *getCastTypeStartToken(const Token *parent)
 {
     // TODO: This might be a generic utility function?
-    if (!parent || parent->str() != "(")
+    if (!parent || (parent->str() != "(" && parent->str() != "{"))
         return nullptr;
-    if (!parent->astOperand2() && Token::Match(parent,"( %name%"))
+    if (parent->str() == "{") {
+        auto* prev = parent->previous();
+        if (prev && prev->isStandardType() && Token::Match(prev, "%type% {")) // list initialization int{x}
+           return prev;
+        return nullptr;
+    }
+    if (!parent->astOperand2() && Token::Match(parent,"( %name%")) // c-style cast (int)x
         return parent->next();
     auto *prev = parent->previous();
     if (prev && prev->isStandardType() && Token::Match(prev, "%type% (")) // functional style cast int(x)
