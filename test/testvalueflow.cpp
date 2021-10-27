@@ -4353,23 +4353,6 @@ private:
         ASSERT(value.isKnown());
         ASSERT_EQUALS(1, value.intvalue);
 
-        code = "bool f() {\n"
-               "  const int s = int( 4 );"
-               "  return s == 4;\n" // <- known value
-               "}";
-        value = valueOfTok(code, "==");
-        ASSERT(value.isKnown());
-        ASSERT_EQUALS(1, value.intvalue);
-
-
-        code = "bool f() {\n"
-               "  const int s = int{ 4 };"
-               "  return s == 4;\n" // <- known value
-               "}";
-        value = valueOfTok(code, "==");
-        ASSERT(value.isKnown());
-        ASSERT_EQUALS(1, value.intvalue);
-
         // calculation with known result
         code = "int f(int x) { a = x & 0; }"; // <- & is 0
         value = valueOfTok(code, "&");
