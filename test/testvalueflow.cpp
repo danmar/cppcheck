@@ -2959,6 +2959,36 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 12U, 3));
 
+        code = "long long f(const long long& x, const long long& y) {\n"
+               "    switch (s) {\n"
+               "    case 0:\n"
+               "        if (x >= 64)\n"
+               "            return 0;\n"
+               "        return (long long)y << (long long)x;\n"
+               "    case 1:\n"
+               "        if (x >= 64) {\n"
+               "        }\n"
+               "    }\n"
+               "    return 0; \n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 6U, 63));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 6U, 64));
+
+        code = "long long f(const long long& x, const long long& y) {\n"
+               "    switch (s) {\n"
+               "    case 0:\n"
+               "        if (x >= 64)\n"
+               "            return 0;\n"
+               "        return long long(y) << long long(x);\n"
+               "    case 1:\n"
+               "        if (x >= 64) {\n"
+               "        }\n"
+               "    }\n"
+               "    return 0; \n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 6U, 63));
+        TODO_ASSERT_EQUALS(true, false, testValueOfXImpossible(code, 6U, 64));
+
         code = "int g(int x) { throw 0; }\n"
                "void f(int x) {\n"
                "    if (x == 3)\n"
@@ -4317,6 +4347,23 @@ private:
 
         code = "bool f() {\n"
                "  const int s{ 4 };"
+               "  return s == 4;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT(value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
+
+        code = "bool f() {\n"
+               "  const int s = int( 4 );"
+               "  return s == 4;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT(value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
+
+
+        code = "bool f() {\n"
+               "  const int s = int{ 4 };"
                "  return s == 4;\n" // <- known value
                "}";
         value = valueOfTok(code, "==");
