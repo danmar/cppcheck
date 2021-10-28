@@ -880,7 +880,7 @@ ExprEngine::ArrayValue::ArrayValue(const std::string &name, ExprEngine::ValuePtr
 
 ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
     : Value(data->getNewSymbolName(), ExprEngine::ValueType::ArrayValue)
-    , pointer(var->isPointer()), nullPointer(var->isPointer()), uninitPointer(var->isPointer())
+    , pointer(var && var->isPointer()), nullPointer(var && var->isPointer()), uninitPointer(var && var->isPointer())
 {
     if (var) {
         for (const auto &dim : var->dimensions()) {
