@@ -1644,7 +1644,7 @@ void CheckStl::size()
                 const Token* const end = varTok->tokAt(5);
 
                 // check for comparison to zero
-                if ((tok->previous() && !tok->previous()->isArithmeticalOp() && Token::Match(end, "==|<=|!=|> 0")) ||
+                if ((!tok->previous()->isArithmeticalOp() && Token::Match(end, "==|<=|!=|> 0")) ||
                     (end->next() && !end->next()->isArithmeticalOp() && Token::Match(tok->tokAt(-2), "0 ==|>=|!=|<"))) {
                     if (isCpp03ContainerSizeSlow(varTok)) {
                         sizeError(varTok);
@@ -1653,7 +1653,7 @@ void CheckStl::size()
                 }
 
                 // check for comparison to one
-                if ((tok->previous() && !tok->previous()->isArithmeticalOp() && Token::Match(end, ">=|< 1") && !end->tokAt(2)->isArithmeticalOp()) ||
+                if ((!tok->previous()->isArithmeticalOp() && Token::Match(end, ">=|< 1") && !end->tokAt(2)->isArithmeticalOp()) ||
                     (end->next() && !end->next()->isArithmeticalOp() && Token::Match(tok->tokAt(-2), "1 <=|>") && !tok->tokAt(-3)->isArithmeticalOp())) {
                     if (isCpp03ContainerSizeSlow(varTok))
                         sizeError(varTok);
