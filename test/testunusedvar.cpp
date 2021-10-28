@@ -119,6 +119,7 @@ private:
         TEST_CASE(localvar57); // #8974 - increment
         TEST_CASE(localvar58); // #9901 - increment false positive
         TEST_CASE(localvar59); // #9737
+        TEST_CASE(localvar60);
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -224,7 +225,9 @@ private:
         TEST_CASE(globalData);
     }
 
-    void checkStructMemberUsage(const char code[], const std::list<Directive> *directives=nullptr) {
+#define functionVariableUsage(...) functionVariableUsage_(__FILE__, __LINE__, __VA_ARGS__)
+#define checkStructMemberUsage(...) checkStructMemberUsage_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkStructMemberUsage_(const char* file, int line, const char code[], const std::list<Directive>* directives = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
@@ -236,11 +239,11 @@ private:
         Tokenizer tokenizer(&settings, this);
         tokenizer.setPreprocessor(&preprocessor);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
-        checkUnusedVar.checkStructMemberUsage();
+        (checkUnusedVar.checkStructMemberUsage)();
     }
 
     void isRecordTypeWithoutSideEffects() {
@@ -1562,15 +1565,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void functionVariableUsage(const char code[], const char filename[]="test.cpp") {
+    void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        if (!tokenizer.tokenize(istr, filename))
-            return;
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
