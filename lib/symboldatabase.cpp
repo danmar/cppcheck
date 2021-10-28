@@ -2008,7 +2008,8 @@ void Variable::evaluate(const Settings* settings)
             setFlag(fIsConst, true);
             setFlag(fIsStatic, true);
         } else if (tok->str() == "*") {
-            setFlag(fIsPointer, !isArray() || Token::Match(tok->previous(), "( * %name% )"));
+            // handle array of pointers, function pointer, pointer to std::array
+            setFlag(fIsPointer, !isArray() || Token::Match(tok->previous(), "( * %name% )") || (tok->previous() && tok->previous()->str() == ">"));
             setFlag(fIsConst, false); // Points to const, isn't necessarily const itself
         } else if (tok->str() == "&") {
             if (isReference())
