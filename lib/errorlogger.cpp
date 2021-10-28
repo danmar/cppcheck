@@ -32,6 +32,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
+#include <limits>
 #include <memory>
 #include <sstream> // IWYU pragma: keep
 #include <string>
@@ -457,8 +458,14 @@ static std::string readCode(const std::string &file, int linenr, int column, con
 {
     std::ifstream fin(file);
     std::string line;
-    while (linenr > 0 && std::getline(fin,line)) {
-        linenr--;
+    if (linenr > 0) {
+        while (true) {
+            if (--linenr == 0) {
+                std::getline(fin,line);
+                break;
+            }
+            fin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
     }
     const std::string::size_type endPos = line.find_last_not_of("\r\n\t ");
     if (endPos + 1 < line.size())
