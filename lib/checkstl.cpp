@@ -1352,7 +1352,7 @@ static bool if_findCompare(const Token * const tokBack, bool stdStringLike)
     if (tok->isComparisonOp()) {
         if (stdStringLike) {
             const Token * const tokOther = tokBack->astSibling();
-            return !tokOther->hasKnownIntValue() || tokOther->getKnownIntValue() != 0;
+            return !tokOther || !tokOther->hasKnownIntValue() || tokOther->getKnownIntValue() != 0;
         }
         return (!tok->astOperand1()->isNumber() && !tok->astOperand2()->isNumber());
     }
@@ -1379,7 +1379,7 @@ void CheckStl::if_find()
             continue;
 
         const Token *conditionStart = scope.classDef->next();
-        if (conditionStart && Token::simpleMatch(conditionStart->astOperand2(), ";"))
+        if (Token::simpleMatch(conditionStart->astOperand2(), ";"))
             conditionStart = conditionStart->astOperand2();
 
         for (const Token *tok = conditionStart; tok->str() != "{"; tok = tok->next()) {
