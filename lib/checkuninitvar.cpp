@@ -1484,6 +1484,27 @@ void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname
     reportError(errorPath, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized variable: $symbol", CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
 }
 
+void CheckUninitVar::uninitvarError(const Token *tok, const ValueFlow::Value& v)
+{
+    const Token* ltok = tok;
+    if (tok && Token::simpleMatch(tok->astParent(), ".") && astIsRHS(tok))
+        ltok = tok->astParent();
+    const std::string& varname = ltok ? ltok->expressionString() : "x";
+    ErrorPath errorPath = v.errorPath;
+    errorPath.emplace_back(tok, "");
+    if (v.subexpressions.empty()) {
+        reportError(errorPath, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized variable: $symbol", CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
+        return;
+    }
+    std::string vars = v.subexpressions.size() == 1 ? "variable: " : "variables: ";
+    std::string prefix;
+    for(const std::string& var:v.subexpressions) {
+        vars += prefix + varname + "." + var;
+        prefix = ", ";
+    }
+    reportError(errorPath, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized " + vars, CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
+}
+
 void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string &membername)
 {
     reportError(tok,
@@ -1581,10 +1602,7 @@ void CheckUninitVar::valueFlowUninit()
                     if (isVariableChangedByFunctionCall(tok, v->indirect, mSettings, &inconclusive) || inconclusive)
                         continue;
                 }
-                const Token* ltok = tok;
-                if (Token::simpleMatch(tok->astParent(), ".") && astIsRHS(tok))
-                    ltok = tok->astParent();
-                uninitvarError(ltok, ltok->expressionString(), v->errorPath);
+                uninitvarError(tok, *v);
                 ids.insert(tok->exprId());
                 if (v->tokvalue)
                     ids.insert(v->tokvalue->exprId());

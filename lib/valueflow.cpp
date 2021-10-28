@@ -6486,7 +6486,7 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
                             continue;
                         addToErrorPath(v2, v);
                     }
-                    v2.errorPath.push_back(std::make_pair(memVar.nameToken(), "Member variable not initialized"));
+                    v2.subexpressions.push_back(memVar.nameToken()->str());
                 }
             }
         }
@@ -7430,6 +7430,7 @@ ValueFlow::Value::Value(const Token* c, long long val, Bound b)
     indirect(0),
     path(0),
     wideintvalue(0),
+    subexpressions(),
     lifetimeKind(LifetimeKind::Object),
     lifetimeScope(LifetimeScope::Local),
     valueKind(ValueKind::Possible)
