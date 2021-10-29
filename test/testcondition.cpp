@@ -493,6 +493,7 @@ private:
         ASSERT_EQUALS("",errout.str()); //correct for negative 'a'
     }
 
+#define checkPureFunction(code) checkPureFunction_(code, __FILE__, __LINE__)
     void multicompare() {
         check("void foo(int x)\n"
               "{\n"
@@ -532,14 +533,14 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
     }
 
-    void checkPureFunction(const char code[]) {
+    void checkPureFunction_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CheckCondition checkCondition;
         checkCondition.runChecks(&tokenizer, &settings1, this);

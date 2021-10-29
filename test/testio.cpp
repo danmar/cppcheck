@@ -77,7 +77,8 @@ private:
         TEST_CASE(testStdDistance); // #10304
     }
 
-    void check(const char* code, bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified, bool onlyFormatStr = false) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char* code, bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified, bool onlyFormatStr = false) {
         // Clear the error buffer..
         errout.str("");
 
@@ -92,7 +93,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckIO checkIO(&tokenizer, &settings, this);

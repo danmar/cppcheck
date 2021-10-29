@@ -55,7 +55,8 @@ private:
         TEST_CASE(rethrowNoCurrentException3);
     }
 
-    void check(const char code[], bool inconclusive = false) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
@@ -64,7 +65,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check char variable usage..
         CheckExceptionSafety checkExceptionSafety(&tokenizer, &settings, this);
