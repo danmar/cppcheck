@@ -20,7 +20,7 @@ if (BUILD_GUI AND BUILD_TESTS)
         ${PROJECT_SOURCE_DIR}/gui/codeeditorstyle.cpp
         ${PROJECT_SOURCE_DIR}/gui/codeeditor.cpp)
     set_target_properties(triage PROPERTIES AUTOMOC ON)
-    target_include_directories(triage PUBLIC ${PROJECT_SOURCE_DIR}/gui/)
+    target_include_directories(triage PRIVATE ${PROJECT_SOURCE_DIR}/lib/ ${PROJECT_SOURCE_DIR}/gui/)
     target_link_libraries(triage Qt5::Core Qt5::Gui Qt5::Widgets)
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
