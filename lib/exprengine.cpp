@@ -1920,7 +1920,8 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     }
 
     const Token *lhsToken = tok->astOperand1();
-    assignValue = truncateValue(assignValue, lhsToken->valueType(), data);
+    if (lhsToken)
+        assignValue = truncateValue(assignValue, lhsToken->valueType(), data);
     call(data.callbacks, tok, assignValue, &data);
 
     assignExprValue(lhsToken, assignValue, data);
