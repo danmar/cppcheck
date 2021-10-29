@@ -110,7 +110,7 @@ public:
     /** @brief Analyse all file infos for all TU */
     bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) OVERRIDE;
 
-    void uninitvarError(const Token *tok, const ValueFlow::Value& v);
+    void uninitvarError(const Token* tok, const ValueFlow::Value& v);
     void uninitstringError(const Token *tok, const std::string &varname, bool strncpy_);
     void uninitdataError(const Token *tok, const std::string &varname);
     void uninitvarError(const Token *tok, const std::string &varname, ErrorPath errorPath);

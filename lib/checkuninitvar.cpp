@@ -1484,7 +1484,7 @@ void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname
     reportError(errorPath, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized variable: $symbol", CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
 }
 
-void CheckUninitVar::uninitvarError(const Token *tok, const ValueFlow::Value& v)
+void CheckUninitVar::uninitvarError(const Token* tok, const ValueFlow::Value& v)
 {
     const Token* ltok = tok;
     if (tok && Token::simpleMatch(tok->astParent(), ".") && astIsRHS(tok))
@@ -1493,16 +1493,26 @@ void CheckUninitVar::uninitvarError(const Token *tok, const ValueFlow::Value& v)
     ErrorPath errorPath = v.errorPath;
     errorPath.emplace_back(tok, "");
     if (v.subexpressions.empty()) {
-        reportError(errorPath, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized variable: $symbol", CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
+        reportError(errorPath,
+                    Severity::error,
+                    "uninitvar",
+                    "$symbol:" + varname + "\nUninitialized variable: $symbol",
+                    CWE_USE_OF_UNINITIALIZED_VARIABLE,
+                    Certainty::normal);
         return;
     }
     std::string vars = v.subexpressions.size() == 1 ? "variable: " : "variables: ";
     std::string prefix;
-    for(const std::string& var:v.subexpressions) {
+    for (const std::string& var : v.subexpressions) {
         vars += prefix + varname + "." + var;
         prefix = ", ";
     }
-    reportError(errorPath, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized " + vars, CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
+    reportError(errorPath,
+                Severity::error,
+                "uninitvar",
+                "$symbol:" + varname + "\nUninitialized " + vars,
+                CWE_USE_OF_UNINITIALIZED_VARIABLE,
+                Certainty::normal);
 }
 
 void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string &membername)
@@ -1529,11 +1539,7 @@ static bool isUsedByFunction(const Token* tok, int indirect, const Settings* set
     return isuninitbad && (!addressOf || isnullbad);
 }
 
-enum class FunctionUsage {
-    None,
-    PassedByReference,
-    Used
-};
+enum class FunctionUsage { None, PassedByReference, Used };
 
 static FunctionUsage getFunctionUsage(const Token* tok, int indirect, const Settings* settings)
 {
@@ -1545,7 +1551,7 @@ static FunctionUsage getFunctionUsage(const Token* tok, int indirect, const Sett
         return FunctionUsage::None;
     if (ftok->function()) {
         std::vector<const Variable*> args = getArgumentVars(ftok, argnr);
-        for (const Variable *arg:args) {
+        for (const Variable* arg : args) {
             if (!arg)
                 continue;
             if (arg->isReference())

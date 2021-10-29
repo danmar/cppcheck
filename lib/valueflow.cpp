@@ -2440,7 +2440,8 @@ struct ValueFlowAnalyzer : Analyzer {
             makeConditional();
     }
 
-    virtual void internalUpdate(Token*, const ValueFlow::Value&, Direction d) {
+    virtual void internalUpdate(Token*, const ValueFlow::Value&, Direction d)
+    {
         assert(false && "Internal update unimplemented.");
     }
 
@@ -6422,9 +6423,9 @@ static void addToErrorPath(ValueFlow::Value& value, const ValueFlow::Value& from
     if (from.condition && !value.condition)
         value.condition = from.condition;
     std::copy_if(from.errorPath.begin(),
-                    from.errorPath.end(),
-                    std::back_inserter(value.errorPath),
-                    [&](const ErrorPathItem& e) {
+                 from.errorPath.end(),
+                 std::back_inserter(value.errorPath),
+                 [&](const ErrorPathItem& e) {
         return locations.insert(e.first).second;
     });
 }
@@ -6479,7 +6480,7 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
                 MemberExpressionAnalyzer analyzer(memVar.nameToken()->str(), vardecl, uninitValue, tokenlist);
                 valueFlowGenericForward(vardecl->next(), vardecl->scope()->bodyEnd, analyzer, settings);
 
-                for(auto&& p:*analyzer.partialReads) {
+                for (auto&& p : *analyzer.partialReads) {
                     Token* tok2 = p.first;
                     const ValueFlow::Value& v = p.second;
                     // Try to insert into map
@@ -6497,7 +6498,7 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
             }
         }
 
-        for(auto&& p:partialReads) {
+        for (auto&& p : partialReads) {
             Token* tok2 = p.first;
             const ValueFlow::Value& v = p.second;
 
