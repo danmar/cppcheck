@@ -188,7 +188,7 @@ private:
 
         CheckStl checkStl(&tokenizer, &settings, this);
 
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         checkStl.runChecks(&tokenizer, &settings, this);
     }
 
