@@ -32,7 +32,6 @@ if (USE_Z3)
 endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC OFF)
 
 if (NOT USE_MATCHCOMPILER_OPT MATCHES "Off")
     find_package(PythonInterp)

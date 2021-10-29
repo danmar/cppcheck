@@ -1,5 +1,4 @@
 if (BUILD_GUI AND BUILD_TESTS)
-    set(CMAKE_AUTOMOC ON)
     if (CMAKE_BUILD_TYPE MATCHES "Release")
         add_definitions(-DQT_NO_DEBUG)
         add_definitions(-DQT_NO_DEBUG_OUTPUT)
@@ -20,6 +19,7 @@ if (BUILD_GUI AND BUILD_TESTS)
         ${uis_hdrs}
         ${PROJECT_SOURCE_DIR}/gui/codeeditorstyle.cpp
         ${PROJECT_SOURCE_DIR}/gui/codeeditor.cpp)
+    set_target_properties(triage PROPERTIES AUTOMOC ON)
     target_include_directories(triage PUBLIC ${PROJECT_SOURCE_DIR}/gui/)
     target_link_libraries(triage Qt5::Core Qt5::Gui Qt5::Widgets)
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -28,6 +28,4 @@ if (BUILD_GUI AND BUILD_TESTS)
             target_compile_options(triage PRIVATE -Wno-extra-semi-stmt)
         endif()
     endif()
-
-    set(CMAKE_AUTOMOC OFF)
 endif()

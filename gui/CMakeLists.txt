@@ -1,6 +1,5 @@
 if (BUILD_GUI)
 
-    set(CMAKE_AUTOMOC ON)
     if (CMAKE_BUILD_TYPE MATCHES "Release")
         add_definitions(-DQT_NO_DEBUG)
         add_definitions(-DQT_NO_DEBUG_OUTPUT)
@@ -27,6 +26,7 @@ if (BUILD_GUI)
     endif()
 
     add_executable(cppcheck-gui ${cppcheck-gui_SOURCES})
+    set_target_properties(cppcheck-gui PROPERTIES AUTOMOC ON)
     if (HAVE_RULES)
         target_link_libraries(cppcheck-gui ${PCRE_LIBRARY})
     endif()
@@ -56,7 +56,5 @@ if (BUILD_GUI)
     # icons
     install(FILES cppcheck-gui.svg DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
     install(FILES cppcheck-gui.png DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/64x64/apps)
-
-    set(CMAKE_AUTOMOC OFF)
 
 endif()
