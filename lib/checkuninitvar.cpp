@@ -1529,6 +1529,40 @@ static bool isUsedByFunction(const Token* tok, int indirect, const Settings* set
     return isuninitbad && (!addressOf || isnullbad);
 }
 
+enum class FunctionUsage {
+    None,
+    PassedByReference,
+    Used
+};
+
+static FunctionUsage getFunctionUsage(const Token* tok, int indirect, const Settings* settings)
+{
+    const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
+
+    int argnr;
+    const Token* ftok = getTokenArgumentFunction(tok, argnr);
+    if (!ftok)
+        return FunctionUsage::None;
+    if (ftok->function()) {
+        std::vector<const Variable*> args = getArgumentVars(ftok, argnr);
+        for (const Variable *arg:args) {
+            if (!arg)
+                continue;
+            if (arg->isReference())
+                return FunctionUsage::PassedByReference;
+        }
+    } else {
+        const bool isnullbad = settings->library.isnullargbad(ftok, argnr + 1);
+        if (indirect == 0 && astIsPointer(tok) && !addressOf && isnullbad)
+            return FunctionUsage::Used;
+        bool hasIndirect = false;
+        const bool isuninitbad = settings->library.isuninitargbad(ftok, argnr + 1, indirect, &hasIndirect);
+        if (isuninitbad && (!addressOf || isnullbad))
+            return FunctionUsage::Used;
+    }
+    return FunctionUsage::None;
+}
+
 static bool isLeafDot(const Token* tok)
 {
     if (!tok)
@@ -1594,7 +1628,10 @@ void CheckUninitVar::valueFlowUninit()
                     if (Token::Match(tok->astParent(), ". %var%") && !isleaf)
                         continue;
                 }
-                if (!isUsedByFunction(tok, v->indirect, mSettings)) {
+                FunctionUsage fusage = getFunctionUsage(tok, v->indirect, mSettings);
+                if (!v->subexpressions.empty() && fusage == FunctionUsage::PassedByReference)
+                    continue;
+                if (fusage != FunctionUsage::Used) {
                     if (!(Token::Match(tok->astParent(), ". %name% (") && uninitderef) &&
                         isVariableChanged(tok, v->indirect, mSettings, mTokenizer->isCPP()))
                         continue;

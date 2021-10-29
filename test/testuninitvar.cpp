@@ -5230,6 +5230,15 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         valueFlowUninit("struct AB { int a; int b; };\n"
+                        "void do_something(const struct AB &ab) { a = ab.b; }\n"
+                        "void f(void) {\n"
+                        "    struct AB ab;\n"
+                        "    ab.a = 0;\n"
+                        "    do_something(ab);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Uninitialized variable: ab.b\n", errout.str());
+
+        valueFlowUninit("struct AB { int a; int b; };\n"
                         "void f(void) {\n"
                         "    struct AB ab;\n"
                         "    int a = ab.a;\n"

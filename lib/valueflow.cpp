@@ -564,6 +564,12 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
         if (Token::Match(tok, ". %var%"))
             setTokenValue(tok->next(), value, settings);
         ValueFlow::Value pvalue = value;
+        if (!value.subexpressions.empty()) {
+            if (Token::Match(parent, ". %var%") && contains(value.subexpressions, parent->next()->str()))
+                pvalue.subexpressions.clear();
+        }
+        if (!pvalue.subexpressions.empty())
+            return;
         if (parent->isUnaryOp("&")) {
             pvalue.indirect++;
             setTokenValue(parent, pvalue, settings);
