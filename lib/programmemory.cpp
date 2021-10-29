@@ -215,8 +215,6 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
                 programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, then);
         }
     } else if (tok->exprId() > 0) {
-        if (then && !astIsPointer(tok) && !astIsBool(tok))
-            return;
         if (endTok && isExpressionChanged(tok, tok->next(), endTok, settings, true))
             return;
         pm.setIntValue(tok->exprId(), then);
