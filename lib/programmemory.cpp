@@ -217,7 +217,7 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
     } else if (tok->exprId() > 0) {
         if (endTok && isExpressionChanged(tok, tok->next(), endTok, settings, true))
             return;
-        pm.setIntValue(tok->exprId(), then);
+        pm.setIntValue(tok->exprId(), 0, then);
         const Token* containerTok = settings->library.getContainerFromYield(tok, Library::Container::Yield::EMPTY);
         if (containerTok)
             pm.setContainerSizeValue(containerTok->exprId(), 0, then);
@@ -681,8 +681,14 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
 void execute(const Token* expr, ProgramMemory* const programMemory, MathLib::bigint* result, bool* error)
 {
     ValueFlow::Value v = execute(expr, *programMemory);
-    if (!v.isIntValue() || v.isImpossible())
+    if (!v.isIntValue())
         *error = true;
-    else
+    else if (v.isImpossible()) {
+        if (isUsedAsBool(expr) && v.intvalue == 0)
+            *result = !v.intvalue;
+        else
+            *error = true;
+    } else {
         *result = v.intvalue;
+    }
 }
