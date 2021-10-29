@@ -3193,6 +3193,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void localvar60() { // #10531
+        functionVariableUsage("void Scale(double scale) {\n"
+                              "    for (int i = 0; i < m_points.size(); ++i) {\n"
+                              "        auto& p = m_points[i];\n"
+                              "        p += scale;\n"
+                              "    }\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void localvarloops() {
         // loops
         functionVariableUsage("void fun(int c) {\n"
