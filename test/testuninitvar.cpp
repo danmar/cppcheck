@@ -4543,7 +4543,7 @@ private:
                         "        p = new S(io);\n"
                         "    p->Write();\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:10]: (error) Uninitialized variable: p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:10]: (error) Uninitialized variable: p.rIo\n", errout.str());
 
         // Unknown types
         {
@@ -5271,7 +5271,7 @@ private:
         valueFlowUninit("void f(void) {\n"
                        "    struct AB ab;\n"
                        "    int x;\n"
-                       "    ab.a = (addr)&x;\n"
+                       "    ab.a = (void*)&x;\n"
                        "    dostuff(&ab,0);\n"
                        "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
@@ -5561,7 +5561,7 @@ private:
                         "    s.a = 0;\n"
                         "    return s;\n"
                         "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: s.b\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: s.b\n", errout.str());
 
         valueFlowUninit("struct S { int a; int b; };\n" // #9810
                         "void f(void) {\n"
