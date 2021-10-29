@@ -1963,7 +1963,7 @@ struct ValueFlowAnalyzer : Analyzer {
 
     virtual bool match(const Token* tok) const = 0;
 
-    virtual bool internalMatch(const Token* tok) const {
+    virtual bool internalMatch(const Token*) const {
         return false;
     }
 
@@ -2440,7 +2440,7 @@ struct ValueFlowAnalyzer : Analyzer {
             makeConditional();
     }
 
-    virtual void internalUpdate(Token*, const ValueFlow::Value&, Direction d)
+    virtual void internalUpdate(Token*, const ValueFlow::Value&, Direction)
     {
         assert(false && "Internal update unimplemented.");
     }

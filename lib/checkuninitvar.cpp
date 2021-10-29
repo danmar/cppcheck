@@ -1523,22 +1523,6 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
                 "$symbol:" + membername + "\nUninitialized struct member: $symbol", CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
 }
 
-static bool isUsedByFunction(const Token* tok, int indirect, const Settings* settings)
-{
-    const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
-
-    int argnr;
-    const Token* ftok = getTokenArgumentFunction(tok, argnr);
-    if (!ftok)
-        return false;
-    const bool isnullbad = settings->library.isnullargbad(ftok, argnr + 1);
-    if (indirect == 0 && astIsPointer(tok) && !addressOf && isnullbad)
-        return true;
-    bool hasIndirect = false;
-    const bool isuninitbad = settings->library.isuninitargbad(ftok, argnr + 1, indirect, &hasIndirect);
-    return isuninitbad && (!addressOf || isnullbad);
-}
-
 enum class FunctionUsage { None, PassedByReference, Used };
 
 static FunctionUsage getFunctionUsage(const Token* tok, int indirect, const Settings* settings)
