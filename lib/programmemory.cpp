@@ -684,9 +684,10 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
     }
     if (expr->exprId() > 0 && pm.hasValue(expr->exprId())) {
         ValueFlow::Value result = pm.values.at(expr->exprId());
-        if (result.isImpossible() && result.isIntValue() && result.intvalue == 0 && isUsedAsBool(expr))
+        if (result.isImpossible() && result.isIntValue() && result.intvalue == 0 && isUsedAsBool(expr)) {
             result.intvalue = !result.intvalue;
             result.setKnown();
+        }
         return result;
     }
 
