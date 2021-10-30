@@ -3,10 +3,12 @@
 #include "astutils.h"
 #include "calculate.h"
 #include "errortypes.h"
+#include "infer.h"
 #include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
+#include "valueptr.h"
 #include "valueflow.h"
 #include <algorithm>
 #include <cassert>
@@ -632,17 +634,26 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
     } else if (Token::Match(expr, "%cop%") && expr->astOperand1() && expr->astOperand2()) {
         ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
         ValueFlow::Value rhs = execute(expr->astOperand2(), pm);
-        if (!lhs.isUninitValue() && !rhs.isUninitValue())
+        if (!lhs.isUninitValue() && !rhs.isUninitValue()) {
+            if (Token::Match(expr, ">|<|>=|<=") && lhs.isIntValue() && rhs.isIntValue() && (lhs.bound != ValueFlow::Value::Bound::Point || rhs.bound != ValueFlow::Value::Bound::Point)) {
+                std::vector<ValueFlow::Value> result = infer(makeIntegralInferModel(), expr->str(), {lhs}, {rhs});
+                if (result.empty())
+                    return unknown;
+                return result.front();
+            }
             return evaluate(expr->str(), lhs, rhs);
+        }
         if (expr->isComparisonOp()) {
-            if (rhs.isIntValue() && !rhs.isImpossible()) {
-                ValueFlow::Value v = inferCondition(expr->str(), expr->astOperand1(), rhs.intvalue);
-                if (v.isKnown())
-                    return v;
-            } else if (lhs.isIntValue() && !lhs.isImpossible()) {
-                ValueFlow::Value v = inferCondition(expr->str(), lhs.intvalue, expr->astOperand2());
-                if (v.isKnown())
-                    return v;
+            if (rhs.isIntValue()) {
+                std::vector<ValueFlow::Value> result = infer(makeIntegralInferModel(), expr->str(), expr->astOperand1()->values(), {rhs});
+                if (result.empty())
+                    return unknown;
+                return result.front();
+            } else if (lhs.isIntValue()) {
+                std::vector<ValueFlow::Value> result = infer(makeIntegralInferModel(), expr->str(), {lhs}, expr->astOperand2()->values());
+                if (result.empty())
+                    return unknown;
+                return result.front();
             }
         }
     }
