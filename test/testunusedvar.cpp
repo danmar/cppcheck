@@ -2720,7 +2720,7 @@ private:
                               "    int ppos = 1;\n"
                               "    int pneg = 0;\n"
                               "    const char*edge = ppos? \" +\" : pneg ? \" -\" : \"\";\n"
-                              "    printf(\"This should be a '+' -> %s\n\", edge);\n"
+                              "    printf(\"This should be a '+' -> %s\\n\", edge);\n"
                               "    return 0;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
