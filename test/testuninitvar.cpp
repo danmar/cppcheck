@@ -73,7 +73,6 @@ private:
         TEST_CASE(uninitvar11); // ticket #9123
         TEST_CASE(uninitvar12); // #10218 - stream read
         TEST_CASE(uninitvar13); // #9772
-        TEST_CASE(uninitvar14); // #9735
         TEST_CASE(uninitvar_unconditionalTry);
         TEST_CASE(uninitvar_funcptr); // #6404
         TEST_CASE(uninitvar_operator); // #6680
@@ -3020,30 +3019,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void uninitvar14() { // #9735 - FN
-        const char code[] = "typedef struct\n"
-                            "{\n"
-                            "    int x;\n"
-                            "    unsigned int flag : 1; // bit filed gets never initialized\n"
-                            "} status;\n"
-                            "bool foo(const status * const s)\n"
-                            "{\n"
-                            "    return s->flag ;\n"             // << uninitvar
-                            "}\n"
-                            "void bar(const status * const s)\n"
-                            "{\n"
-                            "    if( foo(s) == 1) {;}\n"
-                            "}\n"
-                            "void f(void)\n"
-                            "{\n"
-                            "    status s;\n"
-                            "    s.x = 42;\n"
-                            "    bar(&s);\n"
-                            "}";
-        checkUninitVar(code);
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void uninitvar_unconditionalTry() {
         // Unconditional scopes and try{} scopes
         checkUninitVar("int f() {\n"
@@ -5844,6 +5819,28 @@ private:
     }
 
     void ctu() {
+        // #9735 - FN
+        ctu("typedef struct\n"
+            "{\n"
+            "    int x;\n"
+            "    unsigned int flag : 1;\n"                 // bit filed gets never initialized
+            "} status;\n"
+            "bool foo(const status * const s)\n"
+            "{\n"
+            "    return s->flag;\n"                // << uninitvar
+            "}\n"
+            "void bar(const status * const s)\n"
+            "{\n"
+            "    if( foo(s) == 1) {;}\n"
+            "}\n"
+            "void f(void)\n"
+            "{\n"
+            "    status s;\n"
+            "    s.x = 42;\n"
+            "    bar(&s);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:18] -> [test.cpp:12] -> [test.cpp:8]: (error) Using argument s that points at uninitialized variable s\n", errout.str());
+
         ctu("void f(int *p) {\n"
             "    a = *p;\n"
             "}\n"
