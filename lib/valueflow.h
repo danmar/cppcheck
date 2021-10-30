@@ -98,6 +98,7 @@ namespace ValueFlow {
             indirect(0),
             path(0),
             wideintvalue(val),
+            subexpressions(),
             lifetimeKind(LifetimeKind::Object),
             lifetimeScope(LifetimeScope::Local),
             valueKind(ValueKind::Possible)
@@ -351,6 +352,8 @@ namespace ValueFlow {
 
         /** int value before implicit truncation */
         long long wideintvalue;
+
+        std::vector<std::string> subexpressions;
 
         enum class LifetimeKind {
             // Pointer points to a member of lifetime
