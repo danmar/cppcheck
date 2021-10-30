@@ -652,7 +652,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     return false;
                 }
                 if (projType == ImportProject::Type::FAILURE) {
-                    printMessage("cppcheck: Failed to load project '" + projectFile + "'. An error occurred.");
+                    printError("failed to load project '" + projectFile + "'. An error occurred.");
                     return false;
                 }
             }

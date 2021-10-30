@@ -12,7 +12,7 @@ def test_missing_project(project_ext):
 
     ret, stdout, stderr = cppcheck(['--project=' + project_file, '--template=cppcheck1'])
     assert 1 == ret
-    assert "cppcheck: Failed to open project '{}'. The file does not exist.\n".format(project_file) == stdout
+    assert "cppcheck: error: failed to open project '{}'. The file does not exist.\n".format(project_file) == stdout
     assert "" == stderr
 
 
@@ -25,7 +25,7 @@ def _test_project_error(tmpdir, ext, content, expected):
 
     ret, stdout, stderr = cppcheck(['--project=' + str(project_file)])
     assert 1 == ret
-    assert expected + "\ncppcheck: Failed to load project '{}'. An error occurred.\n".format(project_file) == stdout
+    assert "cppcheck: error: " + expected + "\ncppcheck: error: failed to load project '{}'. An error occurred.\n".format(project_file) == stdout
     assert "" == stderr
 
 
@@ -99,7 +99,7 @@ def test_sln_no_projects(tmpdir):
     content = "\xEF\xBB\xBF\r\n" \
               "Microsoft Visual Studio Solution File, Format Version 12.00\r\n"
 
-    expected = "No projects found in Visual Studio solution file"
+    expected = "no projects found in Visual Studio solution file"
 
     _test_project_error(tmpdir, "sln", content, expected)
 
@@ -117,7 +117,7 @@ def test_sln_project_file_not_found(tmpdir):
               "EndProject\r\n"
 
     expected = "Visual Studio project file is not a valid XML - XML_ERROR_FILE_NOT_FOUND\n" \
-               "Failed to load '{}' from Visual Studio solution".format(os.path.join(tmpdir, "cli\\cli.vcxproj"))
+               "cppcheck: error: failed to load '{}' from Visual Studio solution".format(os.path.join(tmpdir, "cli\\cli.vcxproj"))
 
     _test_project_error(tmpdir, "sln", content, expected)
 
