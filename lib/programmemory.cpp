@@ -634,15 +634,8 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
     } else if (Token::Match(expr, "%cop%") && expr->astOperand1() && expr->astOperand2()) {
         ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
         ValueFlow::Value rhs = execute(expr->astOperand2(), pm);
-        if (!lhs.isUninitValue() && !rhs.isUninitValue()) {
-            // if (Token::Match(expr, ">|<|>=|<=") && lhs.isIntValue() && rhs.isIntValue() && (lhs.bound != ValueFlow::Value::Bound::Point || rhs.bound != ValueFlow::Value::Bound::Point)) {
-            //     std::vector<ValueFlow::Value> result = infer(makeIntegralInferModel(), expr->str(), {lhs}, {rhs});
-            //     if (result.empty())
-            //         return unknown;
-            //     return result.front();
-            // }
+        if (!lhs.isUninitValue() && !rhs.isUninitValue())
             return evaluate(expr->str(), lhs, rhs);
-        }
         if (expr->isComparisonOp()) {
             if (rhs.isIntValue()) {
                 std::vector<ValueFlow::Value> result = infer(makeIntegralInferModel(), expr->str(), expr->astOperand1()->values(), {rhs});
