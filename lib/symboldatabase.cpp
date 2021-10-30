@@ -6615,7 +6615,8 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
             const Scope *functionScope = tok->scope();
             while (functionScope && functionScope->isExecutable() && functionScope->type != Scope::eLambda && functionScope->type != Scope::eFunction)
                 functionScope = functionScope->nestedIn;
-            if (functionScope && functionScope->type == Scope::eFunction && functionScope->function && functionScope->function->retDef) {
+            if (functionScope && functionScope->type == Scope::eFunction && functionScope->function &&
+                functionScope->function->retDef) {
                 ValueType vt = ValueType::parseDecl(functionScope->function->retDef, mSettings);
                 setValueType(tok, vt);
                 if (Token::simpleMatch(tok, "return {"))

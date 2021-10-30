@@ -2458,8 +2458,9 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("std::string f(std::string Str, int first, int last) {\n"
-            "    return { Str.begin() + first, Str.begin() + last + 1 };\n"
-            "}\n", true);
+              "    return { Str.begin() + first, Str.begin() + last + 1 };\n"
+              "}\n",
+              true);
         ASSERT_EQUALS("", errout.str());
     }
 
