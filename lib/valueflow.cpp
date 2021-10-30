@@ -2718,7 +2718,7 @@ struct OppositeExpressionAnalyzer : ExpressionAnalyzer {
 };
 
 struct SubExpressionAnalyzer : ExpressionAnalyzer {
-    typedef std::vector<std::pair<Token*, ValueFlow::Value>> PartialReadContainer;
+    using PartialReadContainer = std::vector<std::pair<Token *, ValueFlow::Value>>;
     // A shared_ptr is used so partial reads can be captured even after forking
     std::shared_ptr<PartialReadContainer> partialReads;
     SubExpressionAnalyzer() : ExpressionAnalyzer(), partialReads(nullptr) {}
