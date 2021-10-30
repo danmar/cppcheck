@@ -26,18 +26,18 @@ jobs:
           apt-get update
           apt-get install -y clang-tidy-13
 
-      # uses "sudo" internally which is not available on docker by default
-      #- name: Install Qt
-      #  uses: jurplel/install-qt-action@v2
-      #  with:
-      #    modules: 'qtcharts'
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          install-deps: 'nosudo'
+          version: '5.15.2'
+          modules: 'qtcharts'
 
       - name: Prepare CMake
         run: |
           mkdir cmake.output
           cd cmake.output
-          # cannot include GUI since we need to generate the ui_*.h files first
-          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=Off -DWITH_QCHART=Off ..
+          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On ..
           cd ..
 
       - name: Clang-Tidy
@@ -45,4 +45,5 @@ jobs:
           # make sure the precompiled headers exist
           make -C cmake.output lib/CMakeFiles/lib_objs.dir/cmake_pch.hxx.cxx
           make -C cmake.output test/CMakeFiles/testrunner.dir/cmake_pch.hxx.cxx
+          make -C cmake.output autogen
           cmake --build cmake.output --target run-clang-tidy 2> /dev/null
