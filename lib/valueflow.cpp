@@ -5125,20 +5125,18 @@ struct ConditionHandler {
             std::list<ValueFlow::Value> thenValues;
             std::list<ValueFlow::Value> elseValues;
 
-            std::list<ValueFlow::Value> thenImpossibleValues;
-            std::list<ValueFlow::Value> elseImpossibleValues;
-
             if (!Token::Match(tok, "!=|=|(|.") && tok != cond.vartok) {
                 thenValues.insert(thenValues.end(), cond.true_values.begin(), cond.true_values.end());
-                bool impossible = cond.impossible && isConditionKnown(tok, false);
-                insertImpossible(impossible ? elseValues : elseImpossibleValues, cond.false_values);
+                if (cond.impossible && isConditionKnown(tok, false))
+                    insertImpossible(elseValues, cond.false_values);
             }
             if (!Token::Match(tok, "==|!")) {
                 elseValues.insert(elseValues.end(), cond.false_values.begin(), cond.false_values.end());
-                bool impossible = cond.impossible && isConditionKnown(tok, true);
-                insertImpossible(impossible ? thenValues : thenImpossibleValues, cond.true_values);
-                if (impossible && tok == cond.vartok && astIsBool(tok))
-                    insertNegateKnown(thenValues, cond.true_values);
+                if (cond.impossible && isConditionKnown(tok, true)) {
+                    insertImpossible(thenValues, cond.true_values);
+                    if (tok == cond.vartok && astIsBool(tok))
+                        insertNegateKnown(thenValues, cond.true_values);
+                }
             }
 
             if (cond.inverted)
@@ -5159,13 +5157,10 @@ struct ConditionHandler {
                     }
                     const std::string& op(parent->str());
                     std::list<ValueFlow::Value> values;
-                    if (op == "&&") {
+                    if (op == "&&")
                         values = thenValues;
-                        values.insert(values.end(), thenImpossibleValues.begin(), thenImpossibleValues.end());
-                    } else if (op == "||") {
+                    else if (op == "||")
                         values = elseValues;
-                        values.insert(values.end(), elseImpossibleValues.begin(), elseImpossibleValues.end());
-                    }
                     if (Token::Match(tok, "==|!=") || (tok == cond.vartok && astIsBool(tok)))
                         changePossibleToKnown(values);
                     if (astIsFloat(cond.vartok, false) ||
