@@ -5435,8 +5435,7 @@ struct IntegralInferModel : InferModel {
     }
 };
 
-ValuePtr<InferModel> makeIntegralInferModel()
-{
+ValuePtr<InferModel> makeIntegralInferModel() {
     return IntegralInferModel{};
 }
 

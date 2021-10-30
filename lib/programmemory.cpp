@@ -8,8 +8,8 @@
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
-#include "valueptr.h"
 #include "valueflow.h"
+#include "valueptr.h"
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -638,12 +638,14 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
             return evaluate(expr->str(), lhs, rhs);
         if (expr->isComparisonOp()) {
             if (rhs.isIntValue()) {
-                std::vector<ValueFlow::Value> result = infer(makeIntegralInferModel(), expr->str(), expr->astOperand1()->values(), {rhs});
+                std::vector<ValueFlow::Value> result =
+                    infer(makeIntegralInferModel(), expr->str(), expr->astOperand1()->values(), {rhs});
                 if (result.empty())
                     return unknown;
                 return result.front();
             } else if (lhs.isIntValue()) {
-                std::vector<ValueFlow::Value> result = infer(makeIntegralInferModel(), expr->str(), {lhs}, expr->astOperand2()->values());
+                std::vector<ValueFlow::Value> result =
+                    infer(makeIntegralInferModel(), expr->str(), {lhs}, expr->astOperand2()->values());
                 if (result.empty())
                     return unknown;
                 return result.front();
