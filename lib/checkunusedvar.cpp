@@ -1456,14 +1456,17 @@ void CheckUnusedVar::checkStructMemberUsage()
                 continue;
 
             // Check if the struct member variable is used anywhere in the file
-            std::string tmp(". " + var.name());
-            if (Token::findsimplematch(mTokenizer->tokens(), tmp.c_str(), tmp.size()))
-                continue;
-            tmp = (":: " + var.name());
-            if (Token::findsimplematch(mTokenizer->tokens(), tmp.c_str(), tmp.size()))
-                continue;
-
-            unusedStructMemberError(var.nameToken(), scope.className, var.name(), scope.type == Scope::eUnion);
+            bool use = false;
+            for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+                if (tok->variable() != &var)
+                    continue;
+                if (tok != var.nameToken()) {
+                    use = true;
+                    break;
+                }
+            }
+            if (!use)
+                unusedStructMemberError(var.nameToken(), scope.className, var.name(), scope.type == Scope::eUnion);
         }
     }
 }
