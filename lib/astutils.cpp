@@ -1080,6 +1080,8 @@ static bool isUsedAsBool_internal(const Token * const tok, bool checkingParent)
         }
     } else if (isForLoopCondition(tok))
         return true;
+    else if (Token::simpleMatch(parent, "?") && astIsLHS(tok))
+        return true;
 
     return isUsedAsBool_internal(parent, true);
 }

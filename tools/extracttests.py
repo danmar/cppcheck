@@ -355,10 +355,7 @@ if filename is not None:
         if not os.path.exists(codedir):
             os.mkdir(codedir)
 
-        testfile = filename
-        if testfile.find('/'):
-            testfile = testfile[testfile.rfind('/'):]
-        testfile = testfile[:testfile.find('.')]
+        testfile = os.path.splitext(os.path.basename(filename))[0]
 
         for node in e.nodes:
             if onlyTP and node['expected'] == '':

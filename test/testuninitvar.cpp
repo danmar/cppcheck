@@ -63,6 +63,7 @@ private:
         TEST_CASE(uninitvar5);          // #3861
         TEST_CASE(uninitvar2_func);     // function calls
         TEST_CASE(uninitvar2_value);    // value flow
+        TEST_CASE(valueFlowUninit2_value);
         TEST_CASE(uninitStructMember);  // struct members
         TEST_CASE(uninitvar2_while);
         TEST_CASE(uninitvar2_4494);      // #4494
@@ -3310,13 +3311,6 @@ private:
 
         checkUninitVar("void f(int x) {\n"
                        "    int i;\n"
-                       "    if (!x) i = 0;\n"
-                       "    if (!x || i>0) {}\n" // <- error
-                       "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: i\n", "", errout.str());
-
-        checkUninitVar("void f(int x) {\n"
-                       "    int i;\n"
                        "    if (x) i = 0;\n"
                        "    if (!x || i>0) {}\n" // <- no error
                        "}");
@@ -3393,6 +3387,127 @@ private:
                        "        i++;\n"
                        "    }\n"
                        "}");
+        TODO_ASSERT_EQUALS("error", "", errout.str());
+    }
+
+    void valueFlowUninit2_value()
+    {
+        valueFlowUninit("void f() {\n"
+                        "    int i;\n"
+                        "    if (x) {\n"
+                        "        int y = -ENOMEM;\n" // assume constant ENOMEM is nonzero since it's negated
+                        "        if (y != 0) return;\n"
+                        "        i++;\n"
+                        "    }\n"
+                        "}",
+                        "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f() {\n"
+                        "    int i, y;\n"
+                        "    if (x) {\n"
+                        "        y = -ENOMEM;\n" // assume constant ENOMEM is nonzero since it's negated
+                        "        if (y != 0) return;\n"
+                        "        i++;\n"
+                        "    }\n"
+                        "}",
+                        "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f() {\n"
+                        "    int i, y;\n"
+                        "    if (x) y = -ENOMEM;\n" // assume constant ENOMEM is nonzero since it's negated
+                        "    else y = get_value(i);\n"
+                        "    if (y != 0) return;\n" // <- condition is always true if i is uninitialized
+                        "    i++;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f(int x) {\n"
+                        "    int i;\n"
+                        "    if (!x) i = 0;\n"
+                        "    if (!x || i>0) {}\n" // <- error
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Uninitialized variable: i\n", errout.str());
+
+        valueFlowUninit("void f(int x) {\n"
+                        "    int i;\n"
+                        "    if (x) i = 0;\n"
+                        "    if (!x || i>0) {}\n" // <- no error
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f(int x) {\n"
+                        "    int i;\n"
+                        "    if (!x) { }\n"
+                        "    else i = 0;\n"
+                        "    if (x || i>0) {}\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (error) Uninitialized variable: i\n", errout.str());
+
+        valueFlowUninit("void f(int x) {\n"
+                        "    int i;\n"
+                        "    if (x) { }\n"
+                        "    else i = 0;\n"
+                        "    if (x || i>0) {}\n" // <- no error
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("int f(int x) {\n"
+                        "    int y;\n"
+                        "    if (x) y = do_something();\n"
+                        "    if (!x) return 0;\n"
+                        "    return y;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // extracttests.start: int y;
+        valueFlowUninit("int f(int x) {\n" // FP with ?:
+                        "    int a;\n"
+                        "    if (x)\n"
+                        "        a = y;\n"
+                        "    return x ? 2*a : 0;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("int f(int x) {\n"
+                        "    int a;\n"
+                        "    if (x)\n"
+                        "        a = y;\n"
+                        "    return y ? 2*a : 3*a;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (error) Uninitialized variable: a\n", errout.str());
+
+        valueFlowUninit("void f() {\n" // Don't crash
+                        "    int a;\n"
+                        "    dostuff(\"ab\" cd \"ef\", x?a:z);\n" // <- No AST is created for ?:
+                        "}");
+
+        // Unknown => bail out..
+        valueFlowUninit("void f(int x) {\n"
+                        "    int i;\n"
+                        "    if (a(x)) i = 0;\n"
+                        "    if (b(x)) return;\n"
+                        "    i++;\n" // <- no error if b(x) is always true when a(x) is false
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f(int x) {\n"
+                        "    int i;\n"
+                        "    if (x) i = 0;\n"
+                        "    while (condition) {\n"
+                        "        if (x) i++;\n" // <- no error
+                        "    }\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f(int x) {\n"
+                        "    int i;\n"
+                        "    if (x) i = 0;\n"
+                        "    while (condition) {\n"
+                        "        i++;\n"
+                        "    }\n"
+                        "}");
         TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
@@ -4954,6 +5069,18 @@ private:
                         "    return out;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #6597
+        valueFlowUninit("int f(int b) {\n"
+                        "    int a;\n"
+                        "    if (!b)\n"
+                        "        a = 1;\n"
+                        "    if (b)\n"
+                        "        return a;\n"
+                        "    else\n"
+                        "        return -1;\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (error) Uninitialized variable: a\n", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
