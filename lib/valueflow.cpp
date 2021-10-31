@@ -5504,7 +5504,8 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             setTokenValue(tok, value, settings);
         } else if (Token::Match(tok, "%comp%|-") && tok->astOperand1() && tok->astOperand2()) {
             if (astIsIterator(tok->astOperand1()) || astIsIterator(tok->astOperand2())) {
-                for(ValuePtr<InferModel> model:std::vector<ValuePtr<InferModel>>{EndIteratorInferModel{}, StartIteratorInferModel{}}) {
+                for (ValuePtr<InferModel> model :
+                     std::vector<ValuePtr<InferModel>>{EndIteratorInferModel{}, StartIteratorInferModel{}}) {
                     std::vector<ValueFlow::Value> result =
                         infer(model, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
                     for (ValueFlow::Value value : result) {

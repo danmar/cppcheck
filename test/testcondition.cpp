@@ -4118,12 +4118,12 @@ private:
 
         // #10226
         check("int f(std::vector<int>::iterator it, const std::vector<int>& vector) {\n"
-            "    if (!(it != vector.end() && it != vector.begin()))\n"
-            "        throw 0;\n"
-            "    if (it != vector.end() && *it == 0)\n"
-            "        return -1;\n"
-            "    return *it;\n"
-            "}\n");
+              "    if (!(it != vector.end() && it != vector.begin()))\n"
+              "        throw 0;\n"
+              "    if (it != vector.end() && *it == 0)\n"
+              "        return -1;\n"
+              "    return *it;\n"
+              "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'it!=vector.end()' is always true\n", errout.str());
     }
 
