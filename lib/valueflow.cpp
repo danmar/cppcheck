@@ -5493,6 +5493,32 @@ ValueFlow::Value inferCondition(std::string op, MathLib::bigint val, const Token
     return ValueFlow::Value{};
 }
 
+struct IteratorInferModel : InferModel {
+    virtual ValueFlow::Value::ValueType getType() const = 0;
+    virtual bool match(const ValueFlow::Value& value) const OVERRIDE {
+        return value.valueType == getType();
+    }
+    virtual ValueFlow::Value yield(MathLib::bigint value) const OVERRIDE
+    {
+        ValueFlow::Value result(value);
+        result.valueType = getType();
+        result.setKnown();
+        return result;
+    }
+};
+
+struct EndIteratorInferModel : IteratorInferModel {
+    virtual ValueFlow::Value::ValueType getType() const OVERRIDE {
+        return ValueFlow::Value::ValueType::ITERATOR_END;
+    }
+};
+
+struct StartIteratorInferModel : IteratorInferModel {
+    virtual ValueFlow::Value::ValueType getType() const OVERRIDE {
+        return ValueFlow::Value::ValueType::ITERATOR_END;
+    }
+};
+
 static void valueFlowInferCondition(TokenList* tokenlist,
                                     const Settings* settings)
 {
@@ -5511,10 +5537,22 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             value.bound = ValueFlow::Value::Bound::Point;
             setTokenValue(tok, value, settings);
         } else if (Token::Match(tok, "%comp%|-") && tok->astOperand1() && tok->astOperand2()) {
-            std::vector<ValueFlow::Value> result =
-                infer(IntegralInferModel{}, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
-            for (const ValueFlow::Value& value : result) {
-                setTokenValue(tok, value, settings);
+            if (astIsIterator(tok->astOperand1()) || astIsIterator(tok->astOperand2())) {
+                for (ValuePtr<InferModel> model :
+                     std::vector<ValuePtr<InferModel>>{EndIteratorInferModel{}, StartIteratorInferModel{}}) {
+                    std::vector<ValueFlow::Value> result =
+                        infer(model, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
+                    for (ValueFlow::Value value : result) {
+                        value.valueType = ValueFlow::Value::ValueType::INT;
+                        setTokenValue(tok, value, settings);
+                    }
+                }
+            } else {
+                std::vector<ValueFlow::Value> result =
+                    infer(IntegralInferModel{}, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
+                for (const ValueFlow::Value& value : result) {
+                    setTokenValue(tok, value, settings);
+                }
             }
         }
     }
