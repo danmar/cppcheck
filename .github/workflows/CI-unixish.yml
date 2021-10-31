@@ -162,15 +162,33 @@ jobs:
       - name: Run GUI tests on ubuntu
         if: contains(matrix.os, 'ubuntu')
         run: |
+          pushd gui/test/cppchecklibrarydata
+          qmake
+          make -j$(nproc)
+          ./test-cppchecklibrarydata
+          popd
+          pushd gui/test/filelist
+          qmake
+          make -j$(nproc)
+          # TODO: requires X session
+          #./test-filelist
+          popd
           pushd gui/test/projectfile
           qmake
           make -j$(nproc)
           ./test-projectfile
           popd
-          pushd gui/test/cppchecklibrarydata
+          pushd gui/test/translationhandler
           qmake
           make -j$(nproc)
-          ./test-cppchecklibrarydata
+          # TODO: requires X session
+          #./test-translationhandler
+          popd
+          pushd gui/test/xmlreportv2
+          qmake
+          make -j$(nproc)
+          # TODO: requires X session
+          #./test-xmlreportv2
 
       - name: Generate Qt help file on ubuntu
         if: contains(matrix.os, 'ubuntu')
