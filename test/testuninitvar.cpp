@@ -4517,7 +4517,7 @@ private:
 
     void valueFlowUninit() {
         // #9735 - FN
-        ctu("typedef struct\n"
+        valueFlowUninit("typedef struct\n"
             "{\n"
             "    int x;\n"
             "    unsigned int flag : 1;\n"// bit filed gets never initialized
@@ -4536,7 +4536,7 @@ private:
             "    s.x = 42;\n"
             "    bar(&s);\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:18] -> [test.cpp:12] -> [test.cpp:8]: (error) Using argument s that points at uninitialized variable s\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:18] -> [test.cpp:12] -> [test.cpp:8]: (error) Uninitialized variable: s->flag\n", errout.str());
 
         // Ticket #2207 - False negative
         valueFlowUninit("void foo() {\n"
