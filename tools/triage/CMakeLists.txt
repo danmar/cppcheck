@@ -12,6 +12,7 @@ if (BUILD_GUI AND BUILD_TESTS)
     file(GLOB uis  "*.ui")
     qt5_wrap_ui(uis_hdrs ${uis})
 
+    add_custom_target(triage-build-ui-deps SOURCES ${hdrs} ${uis_hdrs})
     add_executable(
         triage
         ${hdrs}
