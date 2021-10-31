@@ -51,7 +51,7 @@
 #include <csignal>
 #include <unistd.h>
 
-// required for FD_ZERO
+// NOLINTNEXTLINE(misc-unused-using-decls) - required for FD_ZERO
 using std::memset;
 #endif
 
