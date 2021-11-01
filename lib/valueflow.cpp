@@ -6261,10 +6261,31 @@ static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue,
     });
 }
 
+template<class Iterator>
+struct IteratorRange
+{
+    Iterator mBegin;
+    Iterator mEnd;
+
+    Iterator begin() const {
+        return mBegin;
+    }
+
+    Iterator end() const {
+        return mEnd;
+    }
+};
+
+template<class Iterator>
+IteratorRange<Iterator> MakeIteratorRange(Iterator start, Iterator last)
+{
+    return {start, last};
+}
+
 static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldatabase,  ErrorLogger* errorLogger, const Settings* settings)
 {
     int id = 0;
-    for (const Scope* scope : symboldatabase->functionScopes) {
+    for (const Scope* scope : MakeIteratorRange(symboldatabase->functionScopes.rbegin(), symboldatabase->functionScopes.rend())) {
         const Function* function = scope->function;
         if (!function)
             continue;
