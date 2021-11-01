@@ -500,7 +500,7 @@ static const Variable* getParentVar(const Token* tok)
 {
     if (!tok)
         return nullptr;
-    if (Token::Match(tok, "."))
+    if (Token::simpleMatch(tok, "."))
         return getParentVar(tok->astOperand1());
     return tok->variable();
 }
