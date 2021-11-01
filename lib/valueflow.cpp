@@ -2340,7 +2340,9 @@ struct ValueFlowAnalyzer : Analyzer {
         // Follow references
         std::vector<ReferenceToken> refs = followAllReferences(tok);
         const bool inconclusiveRefs = refs.size() != 1;
-        if (std::none_of(refs.begin(), refs.end(), [&](const ReferenceToken& ref) { return tok == ref.token; }))
+        if (std::none_of(refs.begin(), refs.end(), [&](const ReferenceToken& ref) {
+            return tok == ref.token;
+        }))
             refs.push_back(ReferenceToken{tok, {}});
         for (const ReferenceToken& ref:refs) {
             Action a = analyzeToken(ref.token, tok, d, inconclusiveRefs && ref.token != tok);
