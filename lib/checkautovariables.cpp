@@ -588,7 +588,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                         break;
                     } else if (!tokvalue->variable() &&
                                isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
-                        errorDanglingTemporaryLifetime(tok, &val);
+                        errorDanglingTemporaryLifetime(tok, &val, tokvalue);
                         break;
                     }
                 }
@@ -670,13 +670,14 @@ void CheckAutoVariables::errorInvalidLifetime(const Token *tok, const ValueFlow:
     reportError(errorPath, Severity::error, "invalidLifetime", msg + " that is out of scope.", CWE562, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
-void CheckAutoVariables::errorDanglingTemporaryLifetime(const Token* tok, const ValueFlow::Value* val)
+void CheckAutoVariables::errorDanglingTemporaryLifetime(const Token* tok, const ValueFlow::Value* val, const Token* tempTok)
 {
     const bool inconclusive = val ? val->isInconclusive() : false;
     ErrorPath errorPath = val ? val->errorPath : ErrorPath();
     std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
+    errorPath.emplace_back(tempTok, "Temporary created here.");
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "danglingTemporaryLifetime", msg + " to temporary.", CWE562, inconclusive ? Certainty::inconclusive : Certainty::normal);
+    reportError(errorPath, Severity::error, "danglingTemporaryLifetime", msg + " that is a temporary.", CWE562, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckAutoVariables::errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val)

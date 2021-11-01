@@ -1767,7 +1767,7 @@ private:
               "    int& x = h();\n"
               "    g(&x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5] -> [test.cpp:5]: (error) Using pointer to temporary.\n"
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5] -> [test.cpp:4] -> [test.cpp:5]: (error) Using pointer that is a temporary.\n"
                       "[test.cpp:4] -> [test.cpp:5]: (error) Using reference to dangling temporary.\n", errout.str());
 
         check("void g(int*);\n"
@@ -3101,7 +3101,7 @@ private:
               "    i += *x;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:5] -> [test.cpp:5] -> [test.cpp:6]: (error) Using pointer to temporary.\n",
+            "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:5] -> [test.cpp:5] -> [test.cpp:5] -> [test.cpp:6]: (error) Using pointer that is a temporary.\n",
             errout.str());
 
         check("QString f() {\n"
@@ -3111,7 +3111,7 @@ private:
               "    return c;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:3] -> [test.cpp:4]: (error) Using pointer to temporary.\n",
+            "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:4]: (error) Using pointer that is a temporary.\n",
             errout.str());
 
         check("auto f(std::string s) {\n"
@@ -3120,7 +3120,7 @@ private:
               "    return *i;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:3] -> [test.cpp:4]: (error) Using iterator to temporary.\n",
+            "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:4]: (error) Using iterator that is a temporary.\n",
             errout.str());
 
         check("std::string f() {\n"
@@ -3164,6 +3164,19 @@ private:
               "    a->fun();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+         check("struct A {\n"
+            "    std::map<int, int> m_;\n"
+            "};\n"
+            "struct B {\n"
+            "    A a_;\n"
+            "};\n"
+            "B func();\n"
+            "void f() {\n"
+            "    const std::map<int, int>::iterator& m = func().a_.m_.begin();\n"
+            "    (void)m->first;\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:9] -> [test.cpp:10]: (error) Using object that points to member variable 'm_' that is a temporary.\n", errout.str());
     }
 
     void invalidLifetime() {

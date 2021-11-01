@@ -491,8 +491,11 @@ const Token* getParentMember(const Token * tok)
     const Token * parent = tok->astParent();
     if (!Token::simpleMatch(parent, "."))
         return tok;
-    if (tok == parent->astOperand2())
+    if (astIsRHS(tok)) {
+        if (Token::simpleMatch(parent->astOperand1(), "."))
+            return parent->astOperand1()->astOperand2();
         return parent->astOperand1();
+    }
     const Token * gparent = parent->astParent();
     if (!Token::simpleMatch(gparent, ".") || gparent->astOperand2() != parent)
         return tok;
@@ -2533,6 +2536,8 @@ static void getLHSVariablesRecursive(std::vector<const Variable*>& vars, const T
         getLHSVariablesRecursive(vars, tok->next());
     } else if (Token::simpleMatch(tok, ".")) {
         getLHSVariablesRecursive(vars, tok->astOperand1());
+        getLHSVariablesRecursive(vars, tok->astOperand2());
+    } else if (Token::simpleMatch(tok, "::")) {
         getLHSVariablesRecursive(vars, tok->astOperand2());
     } else if (tok->variable()) {
         vars.push_back(tok->variable());
