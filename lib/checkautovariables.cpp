@@ -496,13 +496,22 @@ static bool isDanglingSubFunction(const Token* tokvalue, const Token* tok)
     return exprDependsOnThis(parent);
 }
 
+static const Variable* getParentVar(const Token* tok)
+{
+    if (!tok)
+        return nullptr;
+    if (Token::simpleMatch(tok, "."))
+        return getParentVar(tok->astOperand1());
+    return tok->variable();
+}
+
 static bool isAssignedToNonLocal(const Token* tok)
 {
     if (!Token::simpleMatch(tok->astParent(), "="))
         return false;
-    if (!Token::Match(tok->astParent()->astOperand1(), "%var%"))
+    if (!astIsRHS(tok))
         return false;
-    const Variable* var = tok->astParent()->astOperand1()->variable();
+    const Variable* var = getParentVar(tok->astParent()->astOperand1());
     if (!var)
         return false;
     return !var->isLocal() || var->isStatic();
@@ -597,8 +606,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     const Variable * var = nullptr;
                     const Token * tok2 = tok;
                     if (Token::simpleMatch(tok->astParent(), "=")) {
-                        if (tok->astParent()->astOperand2() == tok) {
-                            var = getLHSVariable(tok->astParent());
+                        if (astIsRHS(tok)) {
+                            var = getParentVar(tok->astParent()->astOperand1());
                             tok2 = tok->astParent()->astOperand1();
                         }
                     } else if (tok->variable() && tok->variable()->declarationId() == tok->varId()) {
