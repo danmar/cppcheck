@@ -2341,8 +2341,12 @@ struct ValueFlowAnalyzer : Analyzer {
         // Follow references
         std::vector<ReferenceToken> refs = followAllReferences(tok);
         const bool inconclusiveRefs = refs.size() != 1;
+        if (std::none_of(refs.begin(), refs.end(), [&](const ReferenceToken& ref) {
+            return tok == ref.token;
+        }))
+            refs.push_back(ReferenceToken{tok, {}});
         for (const ReferenceToken& ref:refs) {
-            Action a = analyzeToken(ref.token, tok, d, inconclusiveRefs);
+            Action a = analyzeToken(ref.token, tok, d, inconclusiveRefs && ref.token != tok);
             if (internalMatch(ref.token))
                 a |= Action::Internal;
             if (a != Action::None)
@@ -2944,29 +2948,34 @@ std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, Error
     const Token *tokvalue = val ? val->tokvalue : nullptr;
     const Variable *tokvar = tokvalue ? tokvalue->variable() : nullptr;
     const Token *vartok = tokvar ? tokvar->nameToken() : nullptr;
+    const bool classVar = tokvar ? (!tokvar->isLocal() && !tokvar->isArgument() && !tokvar->isGlobal()) : false;
     std::string type = lifetimeType(tok, val);
     std::string msg = type;
     if (vartok) {
-        errorPath.emplace_back(vartok, "Variable created here.");
+        if (!classVar)
+            errorPath.emplace_back(vartok, "Variable created here.");
         const Variable * var = vartok->variable();
+        std::string submessage;
         if (var) {
             switch (val->lifetimeKind) {
             case ValueFlow::Value::LifetimeKind::SubObject:
             case ValueFlow::Value::LifetimeKind::Object:
             case ValueFlow::Value::LifetimeKind::Address:
                 if (type == "pointer")
-                    msg += " to local variable";
+                    submessage = " to local variable";
                 else
-                    msg += " that points to local variable";
+                    submessage = " that points to local variable";
                 break;
             case ValueFlow::Value::LifetimeKind::Lambda:
-                msg += " that captures local variable";
+                submessage = " that captures local variable";
                 break;
             case ValueFlow::Value::LifetimeKind::Iterator:
-                msg += " to local container";
+                submessage = " to local container";
                 break;
             }
-            msg += " '" + var->name() + "'";
+            if (classVar)
+                submessage.replace(submessage.find("local"), 5, "member");
+            msg += submessage + " '" + var->name() + "'";
         }
     }
     return msg;
