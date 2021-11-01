@@ -2836,20 +2836,22 @@ private:
 
         // #10575
         check("struct Data {\n"
-            "    int x=0;\n"
-            "    int y=0;\n"
-            "};\n"
-            "struct MoreData {\n"
-            "    Data *data1;\n"
-            "};\n"
-            "struct Fred {\n"
-            "    Fred() {\n"
-            "        Data data;\n"
-            "        mMoreData.data1 = &data;\n"
-            "    }\n"
-            "    MoreData mMoreData;\n"
-            "};\n");
-        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:10] -> [test.cpp:11]: (error) Non-local variable 'mMoreData.data1' will use pointer to local variable 'data'.\n", errout.str());
+              "    int x=0;\n"
+              "    int y=0;\n"
+              "};\n"
+              "struct MoreData {\n"
+              "    Data *data1;\n"
+              "};\n"
+              "struct Fred {\n"
+              "    Fred() {\n"
+              "        Data data;\n"
+              "        mMoreData.data1 = &data;\n"
+              "    }\n"
+              "    MoreData mMoreData;\n"
+              "};\n");
+        ASSERT_EQUALS(
+            "[test.cpp:11] -> [test.cpp:10] -> [test.cpp:11]: (error) Non-local variable 'mMoreData.data1' will use pointer to local variable 'data'.\n",
+            errout.str());
     }
 
     void danglingLifetimeFunction() {
