@@ -132,12 +132,13 @@ private:
         TokenList::deleteTokens(token);
     }
 
-    bool Match(const std::string &code, const std::string &pattern, unsigned int varid=0) {
+#define MatchCheck(...) MatchCheck_(__FILE__, __LINE__, __VA_ARGS__)
+    bool MatchCheck_(const char* file, int line, const std::string& code, const std::string& pattern, unsigned int varid = 0) {
         static const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(";" + code + ";");
         try {
-            ASSERT(tokenizer.tokenize(istr, "test.cpp")) false;
+            ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         } catch (...) {}
         return Token::Match(tokenizer.tokens()->next(), pattern.c_str(), varid);
     }
@@ -762,7 +763,7 @@ private:
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
         for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
-            ASSERT_EQUALS(true, Match(*test_op, "%op%"));
+            ASSERT_EQUALS(true, MatchCheck(*test_op, "%op%"));
         }
 
         // Negative test against other operators
@@ -771,7 +772,7 @@ private:
 
         std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
         for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
-            ASSERT_EQUALS_MSG(false, Match(*other_op, "%op%"), "Failing other operator: " + *other_op);
+            ASSERT_EQUALS_MSG(false, MatchCheck(*other_op, "%op%"), "Failing other operator: " + *other_op);
         }
     }
 
@@ -784,7 +785,7 @@ private:
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
         for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
-            ASSERT_EQUALS(true, Match(*test_op, "%cop%"));
+            ASSERT_EQUALS(true, MatchCheck(*test_op, "%cop%"));
         }
 
         // Negative test against other operators
@@ -794,7 +795,7 @@ private:
 
         std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
         for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
-            ASSERT_EQUALS_MSG(false, Match(*other_op, "%cop%"), "Failing other operator: " + *other_op);
+            ASSERT_EQUALS_MSG(false, MatchCheck(*other_op, "%cop%"), "Failing other operator: " + *other_op);
         }
     }
 

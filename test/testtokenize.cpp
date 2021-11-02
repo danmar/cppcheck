@@ -6352,10 +6352,11 @@ private:
         tokenizeAndStringify(code.c_str()); // just survive...
     }
 
-    bool isStartOfExecutableScope(int offset, const char code[]) {
+#define isStartOfExecutableScope(offset, code) isStartOfExecutableScope_(offset, code, __FILE__, __LINE__)
+    bool isStartOfExecutableScope_(int offset, const char code[], const char* file, int line) {
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp")) false;
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         return Tokenizer::startOfExecutableScope(tokenizer.tokens()->tokAt(offset)) != nullptr;
     }
