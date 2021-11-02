@@ -1484,6 +1484,37 @@ void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname
     reportError(errorPath, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized variable: $symbol", CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
 }
 
+void CheckUninitVar::uninitvarError(const Token* tok, const ValueFlow::Value& v)
+{
+    const Token* ltok = tok;
+    if (tok && Token::simpleMatch(tok->astParent(), ".") && astIsRHS(tok))
+        ltok = tok->astParent();
+    const std::string& varname = ltok ? ltok->expressionString() : "x";
+    ErrorPath errorPath = v.errorPath;
+    errorPath.emplace_back(tok, "");
+    if (v.subexpressions.empty()) {
+        reportError(errorPath,
+                    Severity::error,
+                    "uninitvar",
+                    "$symbol:" + varname + "\nUninitialized variable: $symbol",
+                    CWE_USE_OF_UNINITIALIZED_VARIABLE,
+                    Certainty::normal);
+        return;
+    }
+    std::string vars = v.subexpressions.size() == 1 ? "variable: " : "variables: ";
+    std::string prefix;
+    for (const std::string& var : v.subexpressions) {
+        vars += prefix + varname + "." + var;
+        prefix = ", ";
+    }
+    reportError(errorPath,
+                Severity::error,
+                "uninitvar",
+                "$symbol:" + varname + "\nUninitialized " + vars,
+                CWE_USE_OF_UNINITIALIZED_VARIABLE,
+                Certainty::normal);
+}
+
 void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string &membername)
 {
     reportError(tok,
@@ -1492,20 +1523,34 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
                 "$symbol:" + membername + "\nUninitialized struct member: $symbol", CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
 }
 
-static bool isUsedByFunction(const Token* tok, int indirect, const Settings* settings)
+enum class FunctionUsage { None, PassedByReference, Used };
+
+static FunctionUsage getFunctionUsage(const Token* tok, int indirect, const Settings* settings)
 {
     const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
 
     int argnr;
     const Token* ftok = getTokenArgumentFunction(tok, argnr);
     if (!ftok)
-        return false;
-    const bool isnullbad = settings->library.isnullargbad(ftok, argnr + 1);
-    if (indirect == 0 && astIsPointer(tok) && !addressOf && isnullbad)
-        return true;
-    bool hasIndirect = false;
-    const bool isuninitbad = settings->library.isuninitargbad(ftok, argnr + 1, indirect, &hasIndirect);
-    return isuninitbad && (!addressOf || isnullbad);
+        return FunctionUsage::None;
+    if (ftok->function()) {
+        std::vector<const Variable*> args = getArgumentVars(ftok, argnr);
+        for (const Variable* arg : args) {
+            if (!arg)
+                continue;
+            if (arg->isReference())
+                return FunctionUsage::PassedByReference;
+        }
+    } else {
+        const bool isnullbad = settings->library.isnullargbad(ftok, argnr + 1);
+        if (indirect == 0 && astIsPointer(tok) && !addressOf && isnullbad)
+            return FunctionUsage::Used;
+        bool hasIndirect = false;
+        const bool isuninitbad = settings->library.isuninitargbad(ftok, argnr + 1, indirect, &hasIndirect);
+        if (isuninitbad && (!addressOf || isnullbad))
+            return FunctionUsage::Used;
+    }
+    return FunctionUsage::None;
 }
 
 static bool isLeafDot(const Token* tok)
@@ -1573,7 +1618,10 @@ void CheckUninitVar::valueFlowUninit()
                     if (Token::Match(tok->astParent(), ". %var%") && !isleaf)
                         continue;
                 }
-                if (!isUsedByFunction(tok, v->indirect, mSettings)) {
+                FunctionUsage fusage = getFunctionUsage(tok, v->indirect, mSettings);
+                if (!v->subexpressions.empty() && fusage == FunctionUsage::PassedByReference)
+                    continue;
+                if (fusage != FunctionUsage::Used) {
                     if (!(Token::Match(tok->astParent(), ". %name% (") && uninitderef) &&
                         isVariableChanged(tok, v->indirect, mSettings, mTokenizer->isCPP()))
                         continue;
@@ -1581,10 +1629,7 @@ void CheckUninitVar::valueFlowUninit()
                     if (isVariableChangedByFunctionCall(tok, v->indirect, mSettings, &inconclusive) || inconclusive)
                         continue;
                 }
-                const Token* ltok = tok;
-                if (Token::simpleMatch(tok->astParent(), ".") && astIsRHS(tok))
-                    ltok = tok->astParent();
-                uninitvarError(ltok, ltok->expressionString(), v->errorPath);
+                uninitvarError(tok, *v);
                 ids.insert(tok->exprId());
                 if (v->tokvalue)
                     ids.insert(v->tokvalue->exprId());

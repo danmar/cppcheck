@@ -1767,8 +1767,10 @@ private:
               "    int& x = h();\n"
               "    g(&x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5] -> [test.cpp:5]: (error) Using pointer to temporary.\n"
-                      "[test.cpp:4] -> [test.cpp:5]: (error) Using reference to dangling temporary.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:5] -> [test.cpp:4] -> [test.cpp:5]: (error) Using pointer that is a temporary.\n"
+            "[test.cpp:4] -> [test.cpp:5]: (error) Using reference to dangling temporary.\n",
+            errout.str());
 
         check("void g(int*);\n"
               "int h();\n"
@@ -2456,6 +2458,12 @@ private:
               "    return &*seq.begin();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::string f(std::string Str, int first, int last) {\n"
+              "    return { Str.begin() + first, Str.begin() + last + 1 };\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeContainerView()
@@ -2827,6 +2835,25 @@ private:
               "    auto getMore() -> int & { return get(); }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10575
+        check("struct Data {\n"
+              "    int x=0;\n"
+              "    int y=0;\n"
+              "};\n"
+              "struct MoreData {\n"
+              "    Data *data1;\n"
+              "};\n"
+              "struct Fred {\n"
+              "    Fred() {\n"
+              "        Data data;\n"
+              "        mMoreData.data1 = &data;\n"
+              "    }\n"
+              "    MoreData mMoreData;\n"
+              "};\n");
+        ASSERT_EQUALS(
+            "[test.cpp:11] -> [test.cpp:10] -> [test.cpp:11]: (error) Non-local variable 'mMoreData.data1' will use pointer to local variable 'data'.\n",
+            errout.str());
     }
 
     void danglingLifetimeFunction() {
@@ -3095,7 +3122,7 @@ private:
               "    i += *x;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:5] -> [test.cpp:5] -> [test.cpp:6]: (error) Using pointer to temporary.\n",
+            "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:5] -> [test.cpp:5] -> [test.cpp:5] -> [test.cpp:6]: (error) Using pointer that is a temporary.\n",
             errout.str());
 
         check("QString f() {\n"
@@ -3104,18 +3131,16 @@ private:
               "    QString c = b;\n"
               "    return c;\n"
               "}");
-        ASSERT_EQUALS(
-            "[test.cpp:3] -> [test.cpp:4]: (error) Using pointer to temporary.\n",
-            errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:4]: (error) Using pointer that is a temporary.\n",
+                      errout.str());
 
         check("auto f(std::string s) {\n"
               "    const char *x = s.substr(1,2).c_str();\n"
               "    auto i = s.substr(4,5).begin();\n"
               "    return *i;\n"
               "}");
-        ASSERT_EQUALS(
-            "[test.cpp:3] -> [test.cpp:4]: (error) Using iterator to temporary.\n",
-            errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:4]: (error) Using iterator that is a temporary.\n",
+                      errout.str());
 
         check("std::string f() {\n"
               "    std::stringstream tmp;\n"
@@ -3158,6 +3183,21 @@ private:
               "    a->fun();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    std::map<int, int> m_;\n"
+              "};\n"
+              "struct B {\n"
+              "    A a_;\n"
+              "};\n"
+              "B func();\n"
+              "void f() {\n"
+              "    const std::map<int, int>::iterator& m = func().a_.m_.begin();\n"
+              "    (void)m->first;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:9] -> [test.cpp:9] -> [test.cpp:10]: (error) Using object that points to member variable 'm_' that is a temporary.\n",
+            errout.str());
     }
 
     void invalidLifetime() {

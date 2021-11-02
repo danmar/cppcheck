@@ -60,6 +60,7 @@ private:
         TEST_CASE(structmember14); // #6508 - (struct x){1,2,..}
         TEST_CASE(structmember15); // #3088 - #pragma pack(1)
         TEST_CASE(structmember_sizeof);
+        TEST_CASE(structmember16); // #10485
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -1564,6 +1565,15 @@ private:
                                "input.skip(sizeof(struct Header));");
         ASSERT_EQUALS("", errout.str());
     }
+    
+    void structmember16() {
+        checkStructMemberUsage("struct S {\n"
+                               "  static const int N = 128;\n" // <- used
+                               "  char E[N];\n" // <- not used
+                               "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) struct member 'S::E' is never used.\n", errout.str());
+    }
+
 
     void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
