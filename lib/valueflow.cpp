@@ -3394,10 +3394,22 @@ static const Token* getEndOfVarScope(const Token* tok, const std::vector<const V
 {
     const Token* endOfVarScope = nullptr;
     for (const Variable* var : vars) {
+        const Scope *varScope = nullptr;
         if (var && (var->isLocal() || var->isArgument()) && var->typeStartToken()->scope()->type != Scope::eNamespace)
-            endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
-        else if (!endOfVarScope)
-            endOfVarScope = tok->scope()->bodyEnd;
+            varScope = var->typeStartToken()->scope();
+        else if (!endOfVarScope) {
+            varScope = tok->scope();
+            // A "local member" will be a expression like foo.x where foo is a local variable.
+            // A "global member" will be a member that belongs to a global object.
+            const bool globalMember = vars.size() == 1; // <- could check if it's a member here also but it seems redundant
+            if (var && (var->isGlobal() || var->isNamespace() || globalMember)) {
+                // Global variable => end of function
+                while (varScope->isLocal())
+                    varScope = varScope->nestedIn;
+            }
+        }
+        if (varScope && (!endOfVarScope || precedes(varScope->bodyEnd, endOfVarScope)))
+            endOfVarScope = varScope->bodyEnd;
     }
     return endOfVarScope;
 }
