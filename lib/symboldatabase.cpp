@@ -1983,7 +1983,7 @@ void Variable::evaluate(const Settings* settings)
 
     bool isContainer = false;
     if (mNameToken)
-        setFlag(fIsArray, arrayDimensions(settings, isContainer));
+        setFlag(fIsArray, arrayDimensions(settings, &isContainer));
 
     if (mTypeStartToken)
         setValueType(ValueType::parseDecl(mTypeStartToken,settings));
@@ -2054,7 +2054,7 @@ void Variable::evaluate(const Settings* settings)
                 tok = tok->link()->previous();
             // add array dimensions if present
             if (tok && tok->next()->str() == "[")
-                setFlag(fIsArray, arrayDimensions(settings, isContainer));
+                setFlag(fIsArray, arrayDimensions(settings, &isContainer));
         }
         if (!tok)
             return;
@@ -3244,14 +3244,14 @@ bool Type::isDerivedFrom(const std::string & ancestor) const
     return false;
 }
 
-bool Variable::arrayDimensions(const Settings* settings, bool& isContainer)
+bool Variable::arrayDimensions(const Settings* settings, bool* isContainer)
 {
-    isContainer = false;
+    *isContainer = false;
     const Library::Container* container = settings->library.detectContainer(mTypeStartToken);
     if (container && container->arrayLike_indexOp && container->size_templateArgNo > 0) {
         const Token* tok = Token::findsimplematch(mTypeStartToken, "<");
         if (tok) {
-            isContainer = true;
+            *isContainer = true;
             Dimension dimension_;
             tok = tok->next();
             for (int i = 0; i < container->size_templateArgNo && tok; i++) {
