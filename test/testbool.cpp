@@ -74,6 +74,7 @@ private:
         TEST_CASE(returnNonBoolLogicalOp);
         TEST_CASE(returnNonBoolClass);
     }
+
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     void check_(const char* file, int line, const char code[], bool experimental = false, const char filename[] = "test.cpp") {
         // Clear the error buffer..
