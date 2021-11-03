@@ -1791,6 +1791,13 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: vertices\n",
                       errout.str());
+
+        checkUninitVar("void f() {\n"
+                       "    std::array<int, 3> *PArr[2] = { p0, p1 };\n"
+                       "    (*PArr[0])[2] = 0;\n"
+                       "    (*PArr[1])[2] = 0;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_cpp11ArrayInit() { // #7010
