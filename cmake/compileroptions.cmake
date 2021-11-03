@@ -1,15 +1,17 @@
 include(CheckCXXCompilerFlag)
 
 function(add_compile_options_safe FLAG)
-    check_cxx_compiler_flag(${FLAG} _has_flag)
-    if (_has_flag)
+    string(MAKE_C_IDENTIFIER "HAS_CXX_FLAG${FLAG}" mangled_flag)
+    check_cxx_compiler_flag(${FLAG} ${mangled_flag})
+    if (${mangled_flag})
         add_compile_options(${FLAG})
     endif()
 endfunction()
-
+    
 function(target_compile_options_safe TARGET FLAG)
-    check_cxx_compiler_flag(${FLAG} _has_flag)
-    if (_has_flag)
+    string(MAKE_C_IDENTIFIER "HAS_CXX_FLAG${FLAG}" mangled_flag)
+    check_cxx_compiler_flag(${FLAG} ${mangled_flag})
+    if (${mangled_flag})
         target_compile_options(${TARGET} PRIVATE ${FLAG})
     endif()
 endfunction()

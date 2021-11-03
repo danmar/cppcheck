@@ -109,7 +109,7 @@ std::string Settings::addEnabled(const std::string &str)
         std::string::size_type pos = 0;
         while ((pos = str.find(',', pos)) != std::string::npos) {
             if (pos == prevPos)
-                return std::string("cppcheck: --enable parameter is empty");
+                return std::string("--enable parameter is empty");
             const std::string errmsg(addEnabled(str.substr(prevPos, pos - prevPos)));
             if (!errmsg.empty())
                 return errmsg;
@@ -117,7 +117,7 @@ std::string Settings::addEnabled(const std::string &str)
             prevPos = pos;
         }
         if (prevPos >= str.length())
-            return std::string("cppcheck: --enable parameter is empty");
+            return std::string("--enable parameter is empty");
         return addEnabled(str.substr(prevPos));
     }
 

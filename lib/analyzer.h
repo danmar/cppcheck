@@ -50,6 +50,7 @@ struct Analyzer {
             Idempotent = (1 << 5),
             Incremental = (1 << 6),
             SymbolicMatch = (1 << 7),
+            Internal = (1 << 8),
         };
 
         void set(unsigned int f, bool state = true) {
@@ -94,6 +95,10 @@ struct Analyzer {
 
         bool isSymbolicMatch() const {
             return get(SymbolicMatch);
+        }
+
+        bool isInternal() const {
+            return get(Internal);
         }
 
         bool matches() const {

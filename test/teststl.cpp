@@ -4835,7 +4835,7 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS(
-            "[test.cpp:7] -> [test.cpp:8] -> [test.cpp:12] -> [test.cpp:2] -> [test.cpp:9]: (error) Using iterator to local container 'v' that may be invalid.\n",
+            "[test.cpp:7] -> [test.cpp:8] -> [test.cpp:12] -> [test.cpp:9]: (error) Using iterator to member container 'v' that may be invalid.\n",
             errout.str());
 
         check("void foo(std::vector<int>& v) {\n"
