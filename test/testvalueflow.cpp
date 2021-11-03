@@ -469,17 +469,18 @@ private:
         settings.debugwarnings = false;
     }
 
-    std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[], const Settings *s = nullptr) {
+#define tokenValues(...) tokenValues_(__FILE__, __LINE__, __VA_ARGS__)
+    std::list<ValueFlow::Value> tokenValues_(const char* file, int line, const char code[], const char tokstr[], const Settings *s = nullptr) {
         Tokenizer tokenizer(s ? s : &settings, this);
         std::istringstream istr(code);
         errout.str("");
-        ASSERT(tokenizer.tokenize(istr, "test.cpp")) {};
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token *tok = Token::findmatch(tokenizer.tokens(), tokstr);
         return tok ? tok->values() : std::list<ValueFlow::Value>();
     }
 
-    std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[], ValueFlow::Value::ValueType vt, const Settings *s = nullptr) {
-        std::list<ValueFlow::Value> values = tokenValues(code, tokstr, s);
+    std::list<ValueFlow::Value> tokenValues_(const char* file, int line, const char code[], const char tokstr[], ValueFlow::Value::ValueType vt, const Settings *s = nullptr) {
+        std::list<ValueFlow::Value> values = tokenValues_(file, line, code, tokstr, s);
         values.remove_if([&](const ValueFlow::Value& v) {
             return v.valueType != vt;
         });
@@ -505,8 +506,9 @@ private:
         return result;
     }
 
-    ValueFlow::Value valueOfTok(const char code[], const char tokstr[]) {
-        std::list<ValueFlow::Value> values = tokenValues(code, tokstr);
+#define valueOfTok(code, tokstr) valueOfTok_(code, tokstr, __FILE__, __LINE__)
+    ValueFlow::Value valueOfTok_(const char code[], const char tokstr[], const char* file, int line) {
+        std::list<ValueFlow::Value> values = tokenValues_(file, line, code, tokstr);
         return values.size() == 1U && !values.front().isTokValue() ? values.front() : ValueFlow::Value();
     }
 
