@@ -1565,7 +1565,7 @@ private:
                                "input.skip(sizeof(struct Header));");
         ASSERT_EQUALS("", errout.str());
     }
-    
+
     void structmember16() {
         checkStructMemberUsage("struct S {\n"
                                "  static const int N = 128;\n" // <- used
