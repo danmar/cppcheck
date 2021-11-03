@@ -524,10 +524,10 @@ static std::vector<const Token*> getParentMembers(const Token* tok)
     if (!Token::simpleMatch(tok->astParent(), "."))
         return {tok};
     const Token* parent = tok;
-    while(Token::simpleMatch(parent->astParent(), "."))
+    while (Token::simpleMatch(parent->astParent(), "."))
         parent = parent->astParent();
     std::vector<const Token*> result;
-    for(const Token* tok2:astFlatten(parent, ".")) {
+    for (const Token* tok2 : astFlatten(parent, ".")) {
         if (Token::simpleMatch(tok2, "(") && Token::simpleMatch(tok2->astOperand1(), ".")) {
             std::vector<const Token*> sub = getParentMembers(tok2->astOperand1());
             result.insert(result.end(), sub.begin(), sub.end());
@@ -554,7 +554,7 @@ static const Token* getParentLifetime(bool cpp, const Token* tok, const Library*
     if (it == members.rend())
         return tok;
     // If any of the submembers are borrowed types then stop
-    if (std::any_of(it.base()-1, members.end()-1, [&](const Token* tok2) {
+    if (std::any_of(it.base() - 1, members.end() - 1, [&](const Token* tok2) {
         if (astIsPointer(tok2) || astIsContainerView(tok2) || astIsIterator(tok2))
             return true;
         const Variable* var = tok2->variable();
@@ -625,8 +625,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             const Token* parent = getParentLifetime(mTokenizer->isCPP(), val.tokvalue, &mSettings->library);
             if (!exprs.insert(parent).second)
                 continue;
-            for (const LifetimeToken& lt :
-                 getLifetimeTokens(parent, escape || isAssignedToNonLocal(tok))) {
+            for (const LifetimeToken& lt : getLifetimeTokens(parent, escape || isAssignedToNonLocal(tok))) {
                 const Token * tokvalue = lt.token;
                 if (val.isLocalLifetimeValue()) {
                     if (escape) {
