@@ -95,7 +95,7 @@ private:
 public:
     Settings();
 
-    void loadCppcheckCfg(const std::string &filename);
+    void loadCppcheckCfg(const std::string &exepath);
 
     /** @brief addons, either filename of python/json file or json data */
     std::list<std::string> addons;

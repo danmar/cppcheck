@@ -76,9 +76,15 @@ Settings::Settings()
     certainty.setEnabled(Certainty::normal, true);
 }
 
-void Settings::loadCppcheckCfg(const std::string &filename)
+void Settings::loadCppcheckCfg(const std::string &exename)
 {
-    std::ifstream fin(filename);
+    std::string fileName = Path::getPathFromFilename(exename) + "cppcheck.cfg";
+#ifdef FILESDIR
+    if (Path::fileExists(FILESDIR "/cppcheck.cfg"))
+        fileName = FILESDIR "/cppcheck.cfg";
+#endif
+
+    std::ifstream fin(fileName);
     if (!fin.is_open())
         return;
     picojson::value json;
@@ -90,7 +96,7 @@ void Settings::loadCppcheckCfg(const std::string &filename)
         for (const picojson::value &v : obj["addons"].get<picojson::array>()) {
             const std::string &s = v.get<std::string>();
             if (!Path::isAbsolute(s))
-                addons.push_back(Path::getPathFromFilename(filename) + s);
+                addons.push_back(Path::getPathFromFilename(fileName) + s);
             else
                 addons.push_back(s);
         }
