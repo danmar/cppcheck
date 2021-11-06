@@ -25,7 +25,6 @@ jobs:
           echo 'deb http://old-releases.ubuntu.com/ubuntu/ precise main restricted universe multiverse' > /etc/apt/sources.list
           echo 'deb http://old-releases.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse' >> /etc/apt/sources.list
           echo 'deb http://old-releases.ubuntu.com/ubuntu/ precise-security main restricted universe multiverse' >> /etc/apt/sources.list
-          # update so the new repositories are being used
           apt-get update
           apt-get install -y binutils
           strings /lib/x86_64-linux-gnu/libc.so.6 | grep GLIBC
