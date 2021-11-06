@@ -26,13 +26,12 @@ jobs:
           echo 'deb http://old-releases.ubuntu.com/ubuntu/ precise-security main restricted universe multiverse' >> /etc/apt/sources.list
           apt-get update
           apt-get install -y binutils
-          strings /usr/lib/x86_64-linux-gnu/libstdc++.so.6 | grep GLIBCXX
           strings /lib/x86_64-linux-gnu/libc.so.6 | grep GLIBC
           apt-get install -y python-software-properties
           add-apt-repository ppa:ubuntu-toolchain-r/test
           apt-get update
           apt-get install -y libstdc++6-4.6-dev
-          strings /usr/lib/x86_64-linux-gnu/libstdc++.so.6 | grep GLIBCXX
+          strings /lib/x86_64-linux-gnu/libc.so.6 | grep GLIBC
 
       - uses: actions/checkout@v2
 
