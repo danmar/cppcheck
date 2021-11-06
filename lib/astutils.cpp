@@ -1948,6 +1948,9 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         return false; // not a function => variable not changed
     if (Token::simpleMatch(tok, "{") && isTrivialConstructor(tok))
         return false;
+    // A functional cast won't modify the variable
+    if (Token::Match(tok, "%type% (") && isTrivialConstructor(tok->next()))
+        return false;
     if (tok->isKeyword() && !isCPPCastKeyword(tok) && tok->str().compare(0,8,"operator") != 0)
         return false;
     const Token * parenTok = tok->next();

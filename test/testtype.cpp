@@ -212,6 +212,34 @@ private:
               "    outfile << vec_points[0](0) << static_cast<int>(d) << ' ';\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(const int& x, const int& y) {\n"
+            "    switch (s) {\n"
+            "    case 0:\n"
+            "        if (x >= 32)\n"
+            "            return 0;\n"
+            "        return int(y) << int(x);\n"
+            "    case 1:\n"
+            "        if (x >= 32) {}\n"
+            "    }\n"
+            "    return 0;\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:6]: (warning) Shifting 32-bit value by 32 bits is undefined behaviour. See condition at line 8.\n", errout.str());
+
+      check("int f(const int& x, const int& y) {\n"
+            "    switch (s) {\n"
+            "    case 0:\n"
+            "        if (x >= 32)\n"
+            "            return 0;\n"
+            "        return int{y} << int{x};\n"
+            "    case 1:\n"
+            "        if (x >= 32) {}\n"
+            "    }\n"
+            "    return 0;\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:6]: (warning) Shifting 32-bit value by 32 bits is undefined behaviour. See condition at line 8.\n", errout.str());
+
+
     }
 
     void checkIntegerOverflow() {

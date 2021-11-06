@@ -516,6 +516,12 @@ private:
         return values;
     }
 
+    std::list<ValueFlow::Value> removeImpossible(std::list<ValueFlow::Value> values)
+    {
+        values.remove_if(std::mem_fn(&ValueFlow::Value::isImpossible));
+        return values;
+    }
+
     void valueFlowNumber() {
         ASSERT_EQUALS(123, valueOfTok("x=123;", "123").intvalue);
         ASSERT_EQUALS_DOUBLE(192.0, valueOfTok("x=0x0.3p10;", "0x0.3p10").floatValue, 1e-5); // 3 * 16^-1 * 2^10 = 192
@@ -1078,7 +1084,7 @@ private:
         code = "void f() {\n"                    \
                "    x = sizeof(" A ");\n"        \
                "}";                              \
-        values = tokenValues(code,"( " C " )");  \
+        values = removeImpossible(tokenValues(code,"( " C " )"));  \
         ASSERT_EQUALS(1U, values.size());        \
         ASSERT_EQUALS(B, values.back().intvalue); \
     } while (false)
