@@ -101,6 +101,7 @@
 #include "valueptr.h"
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
@@ -564,12 +565,12 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
         if (Token::Match(tok, ". %var%"))
             setTokenValue(tok->next(), value, settings);
         ValueFlow::Value pvalue = value;
-        if (!value.subexpressions.empty()) {
-            if (Token::Match(parent, ". %var%") && contains(value.subexpressions, parent->next()->str()))
+        if (!value.subexpressions.empty() && Token::Match(parent, ". %var%")) {
+            if (contains(value.subexpressions, parent->next()->str()))
                 pvalue.subexpressions.clear();
+            else
+                return;
         }
-        if (!pvalue.subexpressions.empty())
-            return;
         if (parent->isUnaryOp("&")) {
             pvalue.indirect++;
             setTokenValue(parent, pvalue, settings);
@@ -2304,8 +2305,12 @@ struct ValueFlowAnalyzer : Analyzer {
         // Follow references
         std::vector<ReferenceToken> refs = followAllReferences(tok);
         const bool inconclusiveRefs = refs.size() != 1;
+        if (std::none_of(refs.begin(), refs.end(), [&](const ReferenceToken& ref) {
+            return tok == ref.token;
+        }))
+            refs.push_back(ReferenceToken{tok, {}});
         for (const ReferenceToken& ref:refs) {
-            Action a = analyzeToken(ref.token, tok, d, inconclusiveRefs);
+            Action a = analyzeToken(ref.token, tok, d, inconclusiveRefs && ref.token != tok);
             if (internalMatch(ref.token))
                 a |= Action::Internal;
             if (a != Action::None)
@@ -2473,6 +2478,8 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
     virtual bool useSymbolicValues() const OVERRIDE
     {
         if (value.isUninitValue())
+            return false;
+        if (value.isLifetimeValue())
             return false;
         return true;
     }
@@ -2907,29 +2914,34 @@ std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, Error
     const Token *tokvalue = val ? val->tokvalue : nullptr;
     const Variable *tokvar = tokvalue ? tokvalue->variable() : nullptr;
     const Token *vartok = tokvar ? tokvar->nameToken() : nullptr;
+    const bool classVar = tokvar ? (!tokvar->isLocal() && !tokvar->isArgument() && !tokvar->isGlobal()) : false;
     std::string type = lifetimeType(tok, val);
     std::string msg = type;
     if (vartok) {
-        errorPath.emplace_back(vartok, "Variable created here.");
+        if (!classVar)
+            errorPath.emplace_back(vartok, "Variable created here.");
         const Variable * var = vartok->variable();
+        std::string submessage;
         if (var) {
             switch (val->lifetimeKind) {
             case ValueFlow::Value::LifetimeKind::SubObject:
             case ValueFlow::Value::LifetimeKind::Object:
             case ValueFlow::Value::LifetimeKind::Address:
                 if (type == "pointer")
-                    msg += " to local variable";
+                    submessage = " to local variable";
                 else
-                    msg += " that points to local variable";
+                    submessage = " that points to local variable";
                 break;
             case ValueFlow::Value::LifetimeKind::Lambda:
-                msg += " that captures local variable";
+                submessage = " that captures local variable";
                 break;
             case ValueFlow::Value::LifetimeKind::Iterator:
-                msg += " to local container";
+                submessage = " to local container";
                 break;
             }
-            msg += " '" + var->name() + "'";
+            if (classVar)
+                submessage.replace(submessage.find("local"), 5, "member");
+            msg += submessage + " '" + var->name() + "'";
         }
     }
     return msg;
@@ -3348,10 +3360,22 @@ static const Token* getEndOfVarScope(const Token* tok, const std::vector<const V
 {
     const Token* endOfVarScope = nullptr;
     for (const Variable* var : vars) {
+        const Scope *varScope = nullptr;
         if (var && (var->isLocal() || var->isArgument()) && var->typeStartToken()->scope()->type != Scope::eNamespace)
-            endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
-        else if (!endOfVarScope)
-            endOfVarScope = tok->scope()->bodyEnd;
+            varScope = var->typeStartToken()->scope();
+        else if (!endOfVarScope) {
+            varScope = tok->scope();
+            // A "local member" will be a expression like foo.x where foo is a local variable.
+            // A "global member" will be a member that belongs to a global object.
+            const bool globalMember = vars.size() == 1; // <- could check if it's a member here also but it seems redundant
+            if (var && (var->isGlobal() || var->isNamespace() || globalMember)) {
+                // Global variable => end of function
+                while (varScope->isLocal())
+                    varScope = varScope->nestedIn;
+            }
+        }
+        if (varScope && (!endOfVarScope || precedes(varScope->bodyEnd, endOfVarScope)))
+            endOfVarScope = varScope->bodyEnd;
     }
     return endOfVarScope;
 }
@@ -5502,8 +5526,9 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             setTokenValue(tok, value, settings);
         } else if (Token::Match(tok, "%comp%|-") && tok->astOperand1() && tok->astOperand2()) {
             if (astIsIterator(tok->astOperand1()) || astIsIterator(tok->astOperand2())) {
-                for (ValuePtr<InferModel> model :
-                     std::vector<ValuePtr<InferModel>>{EndIteratorInferModel{}, StartIteratorInferModel{}}) {
+                static const std::array<ValuePtr<InferModel>, 2> iteratorModels = {EndIteratorInferModel{},
+                                                                                   StartIteratorInferModel{}};
+                for (const ValuePtr<InferModel>& model : iteratorModels) {
                     std::vector<ValueFlow::Value> result =
                         infer(model, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
                     for (ValueFlow::Value value : result) {
@@ -6223,10 +6248,31 @@ static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue,
     });
 }
 
+template<class Iterator>
+struct IteratorRange
+{
+    Iterator mBegin;
+    Iterator mEnd;
+
+    Iterator begin() const {
+        return mBegin;
+    }
+
+    Iterator end() const {
+        return mEnd;
+    }
+};
+
+template<class Iterator>
+IteratorRange<Iterator> MakeIteratorRange(Iterator start, Iterator last)
+{
+    return {start, last};
+}
+
 static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldatabase,  ErrorLogger* errorLogger, const Settings* settings)
 {
     int id = 0;
-    for (const Scope* scope : symboldatabase->functionScopes) {
+    for (const Scope* scope : MakeIteratorRange(symboldatabase->functionScopes.rbegin(), symboldatabase->functionScopes.rend())) {
         const Function* function = scope->function;
         if (!function)
             continue;

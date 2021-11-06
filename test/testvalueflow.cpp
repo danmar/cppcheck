@@ -2475,6 +2475,34 @@ private:
                "    }\n"
                "};\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 7U, 1));
+
+        // global variable
+        code = "int x;\n"
+               "int foo(int y) {\n"
+               "  if (y)\n"
+               "    x = 10;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 10));
+
+        code = "namespace A { int x; }\n"
+               "int foo(int y) {\n"
+               "  if (y)\n"
+               "    A::x = 10;\n"
+               "  return A::x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 10));
+
+        // member variable
+        code = "struct Fred {\n"
+               "  int x;\n"
+               "  int foo(int y) {\n"
+               "    if (y)\n"
+               "      x = 10;\n"
+               "    return x;\n"
+               "  }\n"
+               "};";
+        ASSERT_EQUALS(true, testValueOfX(code, 6U, 10));
     }
 
     void valueFlowAfterSwap()

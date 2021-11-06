@@ -150,6 +150,7 @@ private:
         TEST_CASE(danglingLifetimeInitList);
         TEST_CASE(danglingLifetimeImplicitConversion);
         TEST_CASE(danglingTemporaryLifetime);
+        TEST_CASE(danglingLifetimeBorrowedMembers);
         TEST_CASE(invalidLifetime);
         TEST_CASE(deadPointer);
         TEST_CASE(splitNamespaceAuto); // crash #10473
@@ -1767,8 +1768,10 @@ private:
               "    int& x = h();\n"
               "    g(&x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5] -> [test.cpp:5]: (error) Using pointer to temporary.\n"
-                      "[test.cpp:4] -> [test.cpp:5]: (error) Using reference to dangling temporary.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:5] -> [test.cpp:4] -> [test.cpp:5]: (error) Using pointer that is a temporary.\n"
+            "[test.cpp:4] -> [test.cpp:5]: (error) Using reference to dangling temporary.\n",
+            errout.str());
 
         check("void g(int*);\n"
               "int h();\n"
@@ -2462,6 +2465,15 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    std::vector<std::unique_ptr<int>> mA;\n"
+              "    void f(std::unique_ptr<int> a) {\n"
+              "        auto x = a.get();\n"
+              "        mA.push_back(std::move(a));\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeContainerView()
@@ -2833,6 +2845,25 @@ private:
               "    auto getMore() -> int & { return get(); }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10575
+        check("struct Data {\n"
+              "    int x=0;\n"
+              "    int y=0;\n"
+              "};\n"
+              "struct MoreData {\n"
+              "    Data *data1;\n"
+              "};\n"
+              "struct Fred {\n"
+              "    Fred() {\n"
+              "        Data data;\n"
+              "        mMoreData.data1 = &data;\n"
+              "    }\n"
+              "    MoreData mMoreData;\n"
+              "};\n");
+        ASSERT_EQUALS(
+            "[test.cpp:11] -> [test.cpp:10] -> [test.cpp:11]: (error) Non-local variable 'mMoreData.data1' will use pointer to local variable 'data'.\n",
+            errout.str());
     }
 
     void danglingLifetimeFunction() {
@@ -3101,7 +3132,7 @@ private:
               "    i += *x;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:5] -> [test.cpp:5] -> [test.cpp:6]: (error) Using pointer to temporary.\n",
+            "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:5] -> [test.cpp:5] -> [test.cpp:5] -> [test.cpp:6]: (error) Using pointer that is a temporary.\n",
             errout.str());
 
         check("QString f() {\n"
@@ -3110,18 +3141,16 @@ private:
               "    QString c = b;\n"
               "    return c;\n"
               "}");
-        ASSERT_EQUALS(
-            "[test.cpp:3] -> [test.cpp:4]: (error) Using pointer to temporary.\n",
-            errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:4]: (error) Using pointer that is a temporary.\n",
+                      errout.str());
 
         check("auto f(std::string s) {\n"
               "    const char *x = s.substr(1,2).c_str();\n"
               "    auto i = s.substr(4,5).begin();\n"
               "    return *i;\n"
               "}");
-        ASSERT_EQUALS(
-            "[test.cpp:3] -> [test.cpp:4]: (error) Using iterator to temporary.\n",
-            errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:4]: (error) Using iterator that is a temporary.\n",
+                      errout.str());
 
         check("std::string f() {\n"
               "    std::stringstream tmp;\n"
@@ -3164,8 +3193,80 @@ private:
               "    a->fun();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    std::map<int, int> m_;\n"
+              "};\n"
+              "struct B {\n"
+              "    A a_;\n"
+              "};\n"
+              "B func();\n"
+              "void f() {\n"
+              "    const std::map<int, int>::iterator& m = func().a_.m_.begin();\n"
+              "    (void)m->first;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:9] -> [test.cpp:10]: (error) Using iterator that is a temporary.\n",
+                      errout.str());
     }
 
+    void danglingLifetimeBorrowedMembers()
+    {
+        // #10585
+        check("struct Info { int k; };\n"
+              "struct MoreInfo {\n"
+              "    int* k;\n"
+              "    char dat;\n"
+              "};\n"
+              "struct Fields {\n"
+              "    Info info;\n"
+              "};\n"
+              "template <typename T> void func1(T val){}\n"
+              "template <typename T> void func2(T val){}\n"
+              "Fields* get();\n"
+              "void doit() {\n"
+              "    MoreInfo rech;\n"
+              "    rech.k = &get()->info.k;\n"
+              "    func1(&rech.dat);\n"
+              "    func2(rech.k);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int x; };\n"
+              "A* g();\n"
+              "void f() {\n"
+              "    A** ap = &g();\n"
+              "    (*ap)->x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4] -> [test.cpp:5]: (error) Using pointer that is a temporary.\n",
+                      errout.str());
+
+        check("struct A { int* x; };\n"
+              "A g();\n"
+              "void f() {\n"
+              "    int* x = g().x;\n"
+              "    (void)*x + 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int x; };\n"
+              "struct B { A* a; }\n"
+              "B g();\n"
+              "void f() {\n"
+              "    int* x = &g()->a.x;\n"
+              "    (void)*x + 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int x; };\n"
+              "struct B { A* g(); };\n"
+              "A* g();\n"
+              "void f(B b) {\n"
+              "    A** ap = &b.g();\n"
+              "    (*ap)->x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5] -> [test.cpp:6]: (error) Using pointer that is a temporary.\n",
+                      errout.str());
+    }
     void invalidLifetime() {
         check("void foo(int a) {\n"
               "    std::function<void()> f;\n"
