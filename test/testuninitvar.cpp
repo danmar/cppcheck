@@ -5366,7 +5366,6 @@ private:
                         "    return(*(uint32_t *)buf);\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
-
     }
 
     void valueFlowUninitStructMembers()
