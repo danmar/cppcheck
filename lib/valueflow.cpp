@@ -358,7 +358,8 @@ static const Token *getCastTypeStartToken(const Token *parent)
     // TODO: This might be a generic utility function?
     if (!Token::Match(parent, "{|("))
         return nullptr;
-    if (parent->isBinaryOp() && Token::Match(parent->astOperand1(), "%type% (|{") && parent->valueType() && parent->valueType()->isPrimitive())
+    // Functional cast
+    if (parent->isBinaryOp() && Token::Match(parent->astOperand1(), "%type% (|{") && parent->astOperand1()->tokType() == Token::eType && astIsPrimitive(parent))
         return parent->astOperand1();
     if (parent->str() != "(")
         return nullptr;

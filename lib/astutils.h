@@ -64,6 +64,7 @@ bool astHasToken(const Token* root, const Token * tok);
 
 bool astHasVar(const Token * tok, nonneg int varid);
 
+bool astIsPrimitive(const Token *tok);
 /** Is expression a 'signed char' if no promotion is used */
 bool astIsSignedChar(const Token *tok);
 /** Is expression a 'char' if no promotion is used? */
