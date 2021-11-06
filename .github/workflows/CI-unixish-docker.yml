@@ -36,7 +36,7 @@ jobs:
           apt-get install -y libstdc++6-4.6-dev
           strings /lib/x86_64-linux-gnu/libc.so.6 | grep GLIBC
 
-
+      - uses: actions/checkout@v2
 
       - name: Install missing software on CentOS 7
         if: matrix.image == 'centos:7'
@@ -50,7 +50,6 @@ jobs:
           apt-get update
           apt-get install -y cmake g++ make python libxml2-utils
           apt-get install -y libpcre3-dev
-          g++ --version
 
       # tests require CMake 3.4
       - name: Test CMake build (no tests)
