@@ -18,14 +18,14 @@ jobs:
       image: ${{ matrix.image }}
 
     steps:
-      - name: Install missing software on ubuntu 12.04
+      - name: Prepare EOL repositories for ubuntu 12.04
         if: matrix.image == 'ubuntu:12.04'
         run: |
           echo 'deb http://old-releases.ubuntu.com/ubuntu/ precise main restricted universe multiverse' > /etc/apt/sources.list
           echo 'deb http://old-releases.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse' >> /etc/apt/sources.list
           echo 'deb http://old-releases.ubuntu.com/ubuntu/ precise-security main restricted universe multiverse' >> /etc/apt/sources.list
-          apt-get update
-          apt-get install libstdc++6 
+          strings /usr/lib/x86_64-linux-gnu/libstdc++.so.6 | grep GLIBCXX
+          strings /lib/x86_64-linux-gnu/libc.so.6 | grep GLIBC
 
       - uses: actions/checkout@v2
 
