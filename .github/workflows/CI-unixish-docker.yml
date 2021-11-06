@@ -18,6 +18,12 @@ jobs:
       image: ${{ matrix.image }}
 
     steps:
+      - name: Install missing software on ubuntu 12.04
+        if: matrix.image == 'ubuntu:12.04'
+        run: |
+          apt-get update
+          apt-get install libstdc++6 
+
       - uses: actions/checkout@v2
 
       - name: Install missing software on CentOS 7
