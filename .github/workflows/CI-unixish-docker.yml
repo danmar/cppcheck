@@ -31,7 +31,6 @@ jobs:
           add-apt-repository ppa:ubuntu-toolchain-r/test
           apt-get update
           apt-get install -y libstdc++6-4.6-dev
-          apt-get -t testing install -y libc6-dev
           strings /lib/x86_64-linux-gnu/libc.so.6 | grep GLIBC
 
       - uses: actions/checkout@v2
