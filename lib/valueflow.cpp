@@ -2515,6 +2515,8 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
     {
         if (value.isUninitValue())
             return false;
+        if (value.isLifetimeValue())
+            return false;
         return true;
     }
 

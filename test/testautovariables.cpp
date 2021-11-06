@@ -2465,6 +2465,15 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    std::vector<std::unique_ptr<int>> mA;\n"
+              "    void f(std::unique_ptr<int> a) {\n"
+              "        auto x = a.get();\n"
+              "        mA.push_back(std::move(a));\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeContainerView()
