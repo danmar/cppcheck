@@ -5358,6 +5358,15 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:2]: (error) Uninitialized variable: *buflen\n", errout.str());
 
+        // # 9953
+        valueFlowUninit("uint32_t f(uint8_t *mem) {\n"
+                        "    uint32_t u32;\n"
+                        "    uint8_t *buf = (uint8_t *)(&u32);\n"
+                        "    buf[0] = mem[0];\n"
+                        "    return(*(uint32_t *)buf);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void valueFlowUninitStructMembers()
@@ -5427,7 +5436,7 @@ private:
                         "    x = *(&ab);\n"
                         "}\n",
                         "test.c");
-        ASSERT_EQUALS("[test.c:5] -> [test.c:5]: (error) Uninitialized variable: *(&ab).b\n", errout.str());
+        ASSERT_EQUALS("[test.c:5]: (error) Uninitialized variable: *(&ab).b\n", errout.str());
 
         valueFlowUninit("void f(void) {\n"
                         "    struct AB ab;\n"
