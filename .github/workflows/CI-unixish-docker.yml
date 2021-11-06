@@ -33,7 +33,7 @@ jobs:
           apt-get install -y python-software-properties
           add-apt-repository ppa:ubuntu-toolchain-r/test
           apt-get update
-          # install to satisfy GLBCXX requirement from bin/node used by GitHub action - also gives us GCC 4.6
+          # install to satisfy GLBCXX requirement of bin/node used by GitHub action - also gives us GCC 4.6
           apt-get install -y libstdc++6-4.6-dev
           strings /lib/x86_64-linux-gnu/libc.so.6 | grep GLIBC
 
