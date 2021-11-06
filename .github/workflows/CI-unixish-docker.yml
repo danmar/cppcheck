@@ -25,13 +25,13 @@ jobs:
           echo 'deb http://old-releases.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse' >> /etc/apt/sources.list
           echo 'deb http://old-releases.ubuntu.com/ubuntu/ precise-security main restricted universe multiverse' >> /etc/apt/sources.list
           apt-get update
-          apt-get install binutils
+          apt-get install -y binutils
           strings /usr/lib/x86_64-linux-gnu/libstdc++.so.6 | grep GLIBCXX
           strings /lib/x86_64-linux-gnu/libc.so.6 | grep GLIBC
-          apt-get install software-properties-common
+          apt-get install -y software-properties-common
           add-apt-repository ppa:ubuntu-toolchain-r/test
           apt-get update
-          apt-get install libstdc++6-4.6-dev
+          apt-get install -y libstdc++6-4.6-dev
           strings /usr/lib/x86_64-linux-gnu/libstdc++.so.6 | grep GLIBCXX
 
       - uses: actions/checkout@v2
