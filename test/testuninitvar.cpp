@@ -4517,26 +4517,27 @@ private:
 
     void valueFlowUninit() {
         // #9735 - FN
-        ctu("typedef struct\n"
-            "{\n"
-            "    int x;\n"
-            "    unsigned int flag : 1;\n"// bit filed gets never initialized
-            "} status;\n"
-            "bool foo(const status * const s)\n"
-            "{\n"
-            "    return s->flag;\n"// << uninitvar
-            "}\n"
-            "void bar(const status * const s)\n"
-            "{\n"
-            "    if( foo(s) == 1) {;}\n"
-            "}\n"
-            "void f(void)\n"
-            "{\n"
-            "    status s;\n"
-            "    s.x = 42;\n"
-            "    bar(&s);\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:18] -> [test.cpp:12] -> [test.cpp:8]: (error) Using argument s that points at uninitialized variable s\n", errout.str());
+        valueFlowUninit("typedef struct\n"
+                        "{\n"
+                        "    int x;\n"
+                        "    unsigned int flag : 1;\n" // bit filed gets never initialized
+                        "} status;\n"
+                        "bool foo(const status * const s)\n"
+                        "{\n"
+                        "    return s->flag;\n" // << uninitvar
+                        "}\n"
+                        "void bar(const status * const s)\n"
+                        "{\n"
+                        "    if( foo(s) == 1) {;}\n"
+                        "}\n"
+                        "void f(void)\n"
+                        "{\n"
+                        "    status s;\n"
+                        "    s.x = 42;\n"
+                        "    bar(&s);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:18] -> [test.cpp:12] -> [test.cpp:8]: (error) Uninitialized variable: s->flag\n",
+                      errout.str());
 
         // Ticket #2207 - False negative
         valueFlowUninit("void foo() {\n"
