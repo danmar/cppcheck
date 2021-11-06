@@ -1084,7 +1084,7 @@ private:
         code = "void f() {\n"                    \
                "    x = sizeof(" A ");\n"        \
                "}";                              \
-        values = removeImpossible(tokenValues(code,"( " C " )"));  \
+        values = tokenValues(code,"( " C " )");  \
         ASSERT_EQUALS(1U, values.size());        \
         ASSERT_EQUALS(B, values.back().intvalue); \
     } while (false)
