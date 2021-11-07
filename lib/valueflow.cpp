@@ -359,7 +359,8 @@ static const Token *getCastTypeStartToken(const Token *parent)
     if (!Token::Match(parent, "{|("))
         return nullptr;
     // Functional cast
-    if (parent->isBinaryOp() && Token::Match(parent->astOperand1(), "%type% (|{") && parent->astOperand1()->tokType() == Token::eType && astIsPrimitive(parent))
+    if (parent->isBinaryOp() && Token::Match(parent->astOperand1(), "%type% (|{") &&
+        parent->astOperand1()->tokType() == Token::eType && astIsPrimitive(parent))
         return parent->astOperand1();
     if (parent->str() != "(")
         return nullptr;
@@ -2369,7 +2370,7 @@ struct ValueFlowAnalyzer : Analyzer {
             } else if (getSettings()->library.getFunction(tok)) {
                 // Assume library function doesn't modify user-global variables
                 return Action::None;
-            // Function cast does not modify global variables
+                // Function cast does not modify global variables
             } else if (tok->tokType() == Token::eType && astIsPrimitive(tok->next())) {
                 return Action::None;
             } else {

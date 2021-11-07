@@ -215,9 +215,9 @@ bool astIsGenericChar(const Token* tok)
     return !astIsPointer(tok) && tok && tok->valueType() && (tok->valueType()->type == ValueType::Type::CHAR || tok->valueType()->type == ValueType::Type::WCHAR_T);
 }
 
-bool astIsPrimitive(const Token *tok)
+bool astIsPrimitive(const Token* tok)
 {
-    const ValueType *vt = tok ? tok->valueType() : nullptr;
+    const ValueType* vt = tok ? tok->valueType() : nullptr;
     if (!vt)
         return false;
     return vt->isPrimitive();
