@@ -2369,6 +2369,9 @@ struct ValueFlowAnalyzer : Analyzer {
             } else if (getSettings()->library.getFunction(tok)) {
                 // Assume library function doesn't modify user-global variables
                 return Action::None;
+            // Function cast does not modify global variables
+            } else if (tok->tokType() == Token::eType && astIsPrimitive(tok->next())) {
+                return Action::None;
             } else {
                 return Action::Invalid;
             }

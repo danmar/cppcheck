@@ -224,7 +224,7 @@ private:
             "    }\n"
             "    return 0;\n"
             "}\n");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:6]: (warning) Shifting 32-bit value by 32 bits is undefined behaviour. See condition at line 8.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 4.\n", errout.str());
 
       check("int f(const int& x, const int& y) {\n"
             "    switch (s) {\n"
