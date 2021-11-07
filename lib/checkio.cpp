@@ -973,6 +973,10 @@ void CheckIO::checkFormatString(const Token * const tok,
                         std::string specifier;
                         bool done = false;
                         while (!done) {
+                            if (i == formatString.end()) {
+                                done = true;
+                                break;
+                            }
                             switch (*i) {
                             case 's':
                                 if (argListTok->tokType() != Token::eString &&
@@ -1242,7 +1246,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                             case 'h': // Can be 'hh' (signed char or unsigned char) or 'h' (short int or unsigned short int)
                             case 'l': { // Can be 'll' (long long int or unsigned long long int) or 'l' (long int or unsigned long int)
                                 // If the next character is the same (which makes 'hh' or 'll') then expect another alphabetical character
-                                if (i != formatString.end() && (i + 1) != formatString.end() && *(i + 1) == *i) {
+                                if ((i + 1) != formatString.end() && *(i + 1) == *i) {
                                     if ((i + 2) != formatString.end() && !isalpha(*(i + 2))) {
                                         std::string modifier;
                                         modifier += *i;
@@ -1254,7 +1258,6 @@ void CheckIO::checkFormatString(const Token * const tok,
                                         specifier += *i++;
                                     }
                                 } else {
-                                    if (i != formatString.end()) {
                                         if ((i + 1) != formatString.end() && !isalpha(*(i + 1))) {
                                             std::string modifier;
                                             modifier += *i;
@@ -1263,9 +1266,6 @@ void CheckIO::checkFormatString(const Token * const tok,
                                         } else {
                                             specifier = *i++;
                                         }
-                                    } else {
-                                        done = true;
-                                    }
                                 }
                             }
                             break;
