@@ -215,6 +215,14 @@ bool astIsGenericChar(const Token* tok)
     return !astIsPointer(tok) && tok && tok->valueType() && (tok->valueType()->type == ValueType::Type::CHAR || tok->valueType()->type == ValueType::Type::WCHAR_T);
 }
 
+bool astIsPrimitive(const Token* tok)
+{
+    const ValueType* vt = tok ? tok->valueType() : nullptr;
+    if (!vt)
+        return false;
+    return vt->isPrimitive();
+}
+
 bool astIsIntegral(const Token *tok, bool unknown)
 {
     const ValueType *vt = tok ? tok->valueType() : nullptr;
@@ -1949,6 +1957,9 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     if (Token::simpleMatch(tok, "{") && isTrivialConstructor(tok))
         return false;
     if (tok->isKeyword() && !isCPPCastKeyword(tok) && tok->str().compare(0,8,"operator") != 0)
+        return false;
+    // A functional cast won't modify the variable
+    if (Token::Match(tok, "%type% (|{") && tok->tokType() == Token::eType && astIsPrimitive(tok->next()))
         return false;
     const Token * parenTok = tok->next();
     if (Token::simpleMatch(parenTok, "<") && parenTok->link())

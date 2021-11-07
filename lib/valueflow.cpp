@@ -356,7 +356,13 @@ static void combineValueProperties(const ValueFlow::Value &value1, const ValueFl
 static const Token *getCastTypeStartToken(const Token *parent)
 {
     // TODO: This might be a generic utility function?
-    if (!parent || parent->str() != "(")
+    if (!Token::Match(parent, "{|("))
+        return nullptr;
+    // Functional cast
+    if (parent->isBinaryOp() && Token::Match(parent->astOperand1(), "%type% (|{") &&
+        parent->astOperand1()->tokType() == Token::eType && astIsPrimitive(parent))
+        return parent->astOperand1();
+    if (parent->str() != "(")
         return nullptr;
     if (!parent->astOperand2() && Token::Match(parent,"( %name%"))
         return parent->next();
@@ -2327,6 +2333,9 @@ struct ValueFlowAnalyzer : Analyzer {
                     return Action::Invalid;
             } else if (getSettings()->library.getFunction(tok)) {
                 // Assume library function doesn't modify user-global variables
+                return Action::None;
+                // Function cast does not modify global variables
+            } else if (tok->tokType() == Token::eType && astIsPrimitive(tok->next())) {
                 return Action::None;
             } else {
                 return Action::Invalid;
