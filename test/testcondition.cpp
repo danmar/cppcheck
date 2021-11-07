@@ -3803,11 +3803,11 @@ private:
 
         // #10582
         check("static void fun(message_t *message) {\n"
-            "    if (message->length >= 1) {\n"
-            "        switch (data[0]) {}\n"
-            "    }\n"
-            "    uint8_t d0 = message->length > 0 ? data[0] : 0xff;\n"
-            "}\n");
+              "    if (message->length >= 1) {\n"
+              "        switch (data[0]) {}\n"
+              "    }\n"
+              "    uint8_t d0 = message->length > 0 ? data[0] : 0xff;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
