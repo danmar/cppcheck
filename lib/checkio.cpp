@@ -1258,14 +1258,14 @@ void CheckIO::checkFormatString(const Token * const tok,
                                         specifier += *i++;
                                     }
                                 } else {
-                                        if ((i + 1) != formatString.end() && !isalpha(*(i + 1))) {
-                                            std::string modifier;
-                                            modifier += *i;
-                                            invalidLengthModifierError(tok, numFormat, modifier);
-                                            done = true;
-                                        } else {
-                                            specifier = *i++;
-                                        }
+                                    if ((i + 1) != formatString.end() && !isalpha(*(i + 1))) {
+                                        std::string modifier;
+                                        modifier += *i;
+                                        invalidLengthModifierError(tok, numFormat, modifier);
+                                        done = true;
+                                    } else {
+                                        specifier = *i++;
+                                    }
                                 }
                             }
                             break;
