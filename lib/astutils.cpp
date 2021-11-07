@@ -1748,7 +1748,7 @@ bool isReturnScope(const Token* const endToken, const Library* library, const To
         if (!functionScope && Token::simpleMatch(prev->link()->previous(), ") {") &&
             Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "switch (") &&
             !Token::findsimplematch(prev->link(), "break", prev)) {
-            return true;
+            return isReturnScope(prev, library, unknownFunc, functionScope);
         }
         if (isEscaped(prev->link()->astTop(), functionScope, library))
             return true;
