@@ -3021,7 +3021,22 @@ private:
                "    return 0; \n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 6U, 63));
-        TODO_ASSERT_EQUALS(true, false, testValueOfXImpossible(code, 6U, 64));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 6U, 64));
+
+        code = "long long f(const long long& x, const long long& y) {\n"
+               "    switch (s) {\n"
+               "    case 0:\n"
+               "        if (x >= 64)\n"
+               "            return 0;\n"
+               "        return long long{y} << long long{x};\n"
+               "    case 1:\n"
+               "        if (x >= 64) {\n"
+               "        }\n"
+               "    }\n"
+               "    return 0; \n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 6U, 63));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 6U, 64));
 
         code = "int g(int x) { throw 0; }\n"
                "void f(int x) {\n"
