@@ -1352,7 +1352,7 @@ static bool if_findCompare(const Token * const tokBack, bool stdStringLike)
     if (tok->isComparisonOp()) {
         if (stdStringLike) {
             const Token * const tokOther = tokBack->astSibling();
-            return !tokOther->hasKnownIntValue() || tokOther->getKnownIntValue() != 0;
+            return !tokOther || !tokOther->hasKnownIntValue() || tokOther->getKnownIntValue() != 0;
         }
         return (!tok->astOperand1()->isNumber() && !tok->astOperand2()->isNumber());
     }
@@ -1379,7 +1379,7 @@ void CheckStl::if_find()
             continue;
 
         const Token *conditionStart = scope.classDef->next();
-        if (conditionStart && Token::simpleMatch(conditionStart->astOperand2(), ";"))
+        if (Token::simpleMatch(conditionStart->astOperand2(), ";"))
             conditionStart = conditionStart->astOperand2();
 
         for (const Token *tok = conditionStart; tok->str() != "{"; tok = tok->next()) {
@@ -1595,9 +1595,13 @@ void CheckStl::checkFindInsertError(const Token *tok)
 {
     std::string replaceExpr;
     if (tok && Token::simpleMatch(tok->astParent(), "=") && tok == tok->astParent()->astOperand2() && Token::simpleMatch(tok->astParent()->astOperand1(), "[")) {
+        if (mSettings->standards.cpp < Standards::CPP11)
+            // We will recommend using emplace/try_emplace instead
+            return;
+        const std::string f = (mSettings->standards.cpp < Standards::CPP17) ? "emplace" : "try_emplace";
         replaceExpr = " Instead of '" + tok->astParent()->expressionString() + "' consider using '" +
                       tok->astParent()->astOperand1()->astOperand1()->expressionString() +
-                      (mSettings->standards.cpp < Standards::CPP17 ? ".insert(" : ".emplace(") +
+                      "." + f + "(" +
                       tok->astParent()->astOperand1()->astOperand2()->expressionString() +
                       ", " +
                       tok->expressionString() +
@@ -1640,7 +1644,7 @@ void CheckStl::size()
                 const Token* const end = varTok->tokAt(5);
 
                 // check for comparison to zero
-                if ((tok->previous() && !tok->previous()->isArithmeticalOp() && Token::Match(end, "==|<=|!=|> 0")) ||
+                if ((!tok->previous()->isArithmeticalOp() && Token::Match(end, "==|<=|!=|> 0")) ||
                     (end->next() && !end->next()->isArithmeticalOp() && Token::Match(tok->tokAt(-2), "0 ==|>=|!=|<"))) {
                     if (isCpp03ContainerSizeSlow(varTok)) {
                         sizeError(varTok);
@@ -1649,7 +1653,7 @@ void CheckStl::size()
                 }
 
                 // check for comparison to one
-                if ((tok->previous() && !tok->previous()->isArithmeticalOp() && Token::Match(end, ">=|< 1") && !end->tokAt(2)->isArithmeticalOp()) ||
+                if ((!tok->previous()->isArithmeticalOp() && Token::Match(end, ">=|< 1") && !end->tokAt(2)->isArithmeticalOp()) ||
                     (end->next() && !end->next()->isArithmeticalOp() && Token::Match(tok->tokAt(-2), "1 <=|>") && !tok->tokAt(-3)->isArithmeticalOp())) {
                     if (isCpp03ContainerSizeSlow(varTok))
                         sizeError(varTok);

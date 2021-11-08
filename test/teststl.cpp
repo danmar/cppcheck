@@ -4833,7 +4833,7 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS(
-            "[test.cpp:7] -> [test.cpp:8] -> [test.cpp:12] -> [test.cpp:2] -> [test.cpp:9]: (error) Using iterator to local container 'v' that may be invalid.\n",
+            "[test.cpp:7] -> [test.cpp:8] -> [test.cpp:12] -> [test.cpp:9]: (error) Using iterator to member container 'v' that may be invalid.\n",
             errout.str());
 
         check("void foo(std::vector<int>& v) {\n"
@@ -5153,16 +5153,40 @@ private:
             ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout.str());
         }
 
-        check("void foo() {\n"
-              "   std::map<int, int> x;\n"
-              "   int data = 0;\n"
-              "   for(int i=0; i<10; ++i) {\n"
-              "      data += 123;\n"
-              "      if(x.find(5) == x.end())\n"
-              "         x[5] = data;\n"
-              "   }\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:7]: (performance) Searching before insertion is not necessary. Instead of 'x[5]=data' consider using 'x.emplace(5, data);'.\n", errout.str());
+        { // #10558
+            check("void foo() {\n"
+                  "   std::map<int, int> x;\n"
+                  "   int data = 0;\n"
+                  "   for(int i=0; i<10; ++i) {\n"
+                  "      data += 123;\n"
+                  "      if(x.find(5) == x.end())\n"
+                  "         x[5] = data;\n"
+                  "   }\n"
+                  "}", false, Standards::CPP03);
+            ASSERT_EQUALS("", errout.str());
+
+            check("void foo() {\n"
+                  "   std::map<int, int> x;\n"
+                  "   int data = 0;\n"
+                  "   for(int i=0; i<10; ++i) {\n"
+                  "      data += 123;\n"
+                  "      if(x.find(5) == x.end())\n"
+                  "         x[5] = data;\n"
+                  "   }\n"
+                  "}", false, Standards::CPP11);
+            ASSERT_EQUALS("[test.cpp:7]: (performance) Searching before insertion is not necessary. Instead of 'x[5]=data' consider using 'x.emplace(5, data);'.\n", errout.str());
+
+            check("void foo() {\n"
+                  "   std::map<int, int> x;\n"
+                  "   int data = 0;\n"
+                  "   for(int i=0; i<10; ++i) {\n"
+                  "      data += 123;\n"
+                  "      if(x.find(5) == x.end())\n"
+                  "         x[5] = data;\n"
+                  "   }\n"
+                  "}");
+            ASSERT_EQUALS("[test.cpp:7]: (performance) Searching before insertion is not necessary. Instead of 'x[5]=data' consider using 'x.try_emplace(5, data);'.\n", errout.str());
+        }
     }
 
     void checkKnownEmptyContainer() {

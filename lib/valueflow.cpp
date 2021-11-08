@@ -101,6 +101,7 @@
 #include "valueptr.h"
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
@@ -573,6 +574,12 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
         if (Token::Match(tok, ". %var%"))
             setTokenValue(tok->next(), value, settings);
         ValueFlow::Value pvalue = value;
+        if (!value.subexpressions.empty()) {
+            if (Token::Match(parent, ". %var%") && contains(value.subexpressions, parent->next()->str()))
+                pvalue.subexpressions.clear();
+        }
+        if (!pvalue.subexpressions.empty())
+            return;
         if (parent->isUnaryOp("&")) {
             pvalue.indirect++;
             setTokenValue(parent, pvalue, settings);
@@ -1966,6 +1973,10 @@ struct ValueFlowAnalyzer : Analyzer {
 
     virtual bool match(const Token* tok) const = 0;
 
+    virtual bool internalMatch(const Token*) const {
+        return false;
+    }
+
     virtual bool isAlias(const Token* tok, bool& inconclusive) const = 0;
 
     using ProgramState = std::unordered_map<nonneg int, ValueFlow::Value>;
@@ -2339,8 +2350,14 @@ struct ValueFlowAnalyzer : Analyzer {
         // Follow references
         std::vector<ReferenceToken> refs = followAllReferences(tok);
         const bool inconclusiveRefs = refs.size() != 1;
+        if (std::none_of(refs.begin(), refs.end(), [&](const ReferenceToken& ref) {
+            return tok == ref.token;
+        }))
+            refs.push_back(ReferenceToken{tok, {}});
         for (const ReferenceToken& ref:refs) {
-            Action a = analyzeToken(ref.token, tok, d, inconclusiveRefs);
+            Action a = analyzeToken(ref.token, tok, d, inconclusiveRefs && ref.token != tok);
+            if (internalMatch(ref.token))
+                a |= Action::Internal;
             if (a != Action::None)
                 return a;
         }
@@ -2437,6 +2454,11 @@ struct ValueFlowAnalyzer : Analyzer {
             makeConditional();
     }
 
+    virtual void internalUpdate(Token*, const ValueFlow::Value&, Direction)
+    {
+        assert(false && "Internal update unimplemented.");
+    }
+
     virtual void update(Token* tok, Action a, Direction d) OVERRIDE {
         ValueFlow::Value* value = getValue(tok);
         if (!value)
@@ -2448,6 +2470,8 @@ struct ValueFlowAnalyzer : Analyzer {
             value = &localValue;
             isSameSymbolicValue(tok, &localValue);
         }
+        if (a.isInternal())
+            internalUpdate(tok, *value, d);
         // Read first when moving forward
         if (d == Direction::Forward && a.isRead())
             setTokenValue(tok, *value, getSettings());
@@ -2708,10 +2732,13 @@ struct OppositeExpressionAnalyzer : ExpressionAnalyzer {
 };
 
 struct SubExpressionAnalyzer : ExpressionAnalyzer {
-    SubExpressionAnalyzer() : ExpressionAnalyzer() {}
+    using PartialReadContainer = std::vector<std::pair<Token *, ValueFlow::Value>>;
+    // A shared_ptr is used so partial reads can be captured even after forking
+    std::shared_ptr<PartialReadContainer> partialReads;
+    SubExpressionAnalyzer() : ExpressionAnalyzer(), partialReads(nullptr) {}
 
     SubExpressionAnalyzer(const Token* e, const ValueFlow::Value& val, const TokenList* t)
-        : ExpressionAnalyzer(e, val, t)
+        : ExpressionAnalyzer(e, val, t), partialReads(std::make_shared<PartialReadContainer>())
     {}
 
     virtual bool submatch(const Token* tok, bool exact = true) const = 0;
@@ -2726,6 +2753,14 @@ struct SubExpressionAnalyzer : ExpressionAnalyzer {
     virtual bool match(const Token* tok) const OVERRIDE
     {
         return tok->astOperand1() && tok->astOperand1()->exprId() == expr->exprId() && submatch(tok);
+    }
+    virtual bool internalMatch(const Token* tok) const OVERRIDE
+    {
+        return tok->exprId() == expr->exprId() && !(astIsLHS(tok) && submatch(tok->astParent(), false));
+    }
+    virtual void internalUpdate(Token* tok, const ValueFlow::Value& v, Direction) OVERRIDE
+    {
+        partialReads->push_back(std::make_pair(tok, v));
     }
 
     // No reanalysis for subexression
@@ -2922,29 +2957,34 @@ std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, Error
     const Token *tokvalue = val ? val->tokvalue : nullptr;
     const Variable *tokvar = tokvalue ? tokvalue->variable() : nullptr;
     const Token *vartok = tokvar ? tokvar->nameToken() : nullptr;
+    const bool classVar = tokvar ? (!tokvar->isLocal() && !tokvar->isArgument() && !tokvar->isGlobal()) : false;
     std::string type = lifetimeType(tok, val);
     std::string msg = type;
     if (vartok) {
-        errorPath.emplace_back(vartok, "Variable created here.");
+        if (!classVar)
+            errorPath.emplace_back(vartok, "Variable created here.");
         const Variable * var = vartok->variable();
+        std::string submessage;
         if (var) {
             switch (val->lifetimeKind) {
             case ValueFlow::Value::LifetimeKind::SubObject:
             case ValueFlow::Value::LifetimeKind::Object:
             case ValueFlow::Value::LifetimeKind::Address:
                 if (type == "pointer")
-                    msg += " to local variable";
+                    submessage = " to local variable";
                 else
-                    msg += " that points to local variable";
+                    submessage = " that points to local variable";
                 break;
             case ValueFlow::Value::LifetimeKind::Lambda:
-                msg += " that captures local variable";
+                submessage = " that captures local variable";
                 break;
             case ValueFlow::Value::LifetimeKind::Iterator:
-                msg += " to local container";
+                submessage = " to local container";
                 break;
             }
-            msg += " '" + var->name() + "'";
+            if (classVar)
+                submessage.replace(submessage.find("local"), 5, "member");
+            msg += submessage + " '" + var->name() + "'";
         }
     }
     return msg;
@@ -5444,6 +5484,10 @@ struct IntegralInferModel : InferModel {
     }
 };
 
+ValuePtr<InferModel> makeIntegralInferModel() {
+    return IntegralInferModel{};
+}
+
 ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val)
 {
     if (!varTok)
@@ -5468,6 +5512,32 @@ ValueFlow::Value inferCondition(std::string op, MathLib::bigint val, const Token
     return ValueFlow::Value{};
 }
 
+struct IteratorInferModel : InferModel {
+    virtual ValueFlow::Value::ValueType getType() const = 0;
+    virtual bool match(const ValueFlow::Value& value) const OVERRIDE {
+        return value.valueType == getType();
+    }
+    virtual ValueFlow::Value yield(MathLib::bigint value) const OVERRIDE
+    {
+        ValueFlow::Value result(value);
+        result.valueType = getType();
+        result.setKnown();
+        return result;
+    }
+};
+
+struct EndIteratorInferModel : IteratorInferModel {
+    virtual ValueFlow::Value::ValueType getType() const OVERRIDE {
+        return ValueFlow::Value::ValueType::ITERATOR_END;
+    }
+};
+
+struct StartIteratorInferModel : IteratorInferModel {
+    virtual ValueFlow::Value::ValueType getType() const OVERRIDE {
+        return ValueFlow::Value::ValueType::ITERATOR_END;
+    }
+};
+
 static void valueFlowInferCondition(TokenList* tokenlist,
                                     const Settings* settings)
 {
@@ -5486,10 +5556,23 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             value.bound = ValueFlow::Value::Bound::Point;
             setTokenValue(tok, value, settings);
         } else if (Token::Match(tok, "%comp%|-") && tok->astOperand1() && tok->astOperand2()) {
-            std::vector<ValueFlow::Value> result =
-                infer(IntegralInferModel{}, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
-            for (const ValueFlow::Value& value : result) {
-                setTokenValue(tok, value, settings);
+            if (astIsIterator(tok->astOperand1()) || astIsIterator(tok->astOperand2())) {
+                static const std::array<ValuePtr<InferModel>, 2> iteratorModels = {EndIteratorInferModel{},
+                                                                                   StartIteratorInferModel{}};
+                for (const ValuePtr<InferModel>& model : iteratorModels) {
+                    std::vector<ValueFlow::Value> result =
+                        infer(model, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
+                    for (ValueFlow::Value value : result) {
+                        value.valueType = ValueFlow::Value::ValueType::INT;
+                        setTokenValue(tok, value, settings);
+                    }
+                }
+            } else {
+                std::vector<ValueFlow::Value> result =
+                    infer(IntegralInferModel{}, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
+                for (const ValueFlow::Value& value : result) {
+                    setTokenValue(tok, value, settings);
+                }
             }
         }
     }
@@ -6196,10 +6279,31 @@ static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue,
     });
 }
 
+template<class Iterator>
+struct IteratorRange
+{
+    Iterator mBegin;
+    Iterator mEnd;
+
+    Iterator begin() const {
+        return mBegin;
+    }
+
+    Iterator end() const {
+        return mEnd;
+    }
+};
+
+template<class Iterator>
+IteratorRange<Iterator> MakeIteratorRange(Iterator start, Iterator last)
+{
+    return {start, last};
+}
+
 static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldatabase,  ErrorLogger* errorLogger, const Settings* settings)
 {
     int id = 0;
-    for (const Scope* scope : symboldatabase->functionScopes) {
+    for (const Scope* scope : MakeIteratorRange(symboldatabase->functionScopes.rbegin(), symboldatabase->functionScopes.rend())) {
         const Function* function = scope->function;
         if (!function)
             continue;
@@ -6396,6 +6500,19 @@ static bool needsInitialization(const Variable* var, bool cpp)
     return false;
 }
 
+static void addToErrorPath(ValueFlow::Value& value, const ValueFlow::Value& from)
+{
+    std::unordered_set<const Token*> locations;
+    if (from.condition && !value.condition)
+        value.condition = from.condition;
+    std::copy_if(from.errorPath.begin(),
+                 from.errorPath.end(),
+                 std::back_inserter(value.errorPath),
+                 [&](const ErrorPathItem& e) {
+        return locations.insert(e.first).second;
+    });
+}
+
 static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDatabase*/, const Settings* settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -6432,6 +6549,7 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
 
         bool partial = false;
 
+        std::map<Token*, ValueFlow::Value> partialReads;
         if (const Scope* scope = var->typeScope()) {
             if (Token::findsimplematch(scope->bodyStart, "union", scope->bodyEnd))
                 continue;
@@ -6444,7 +6562,30 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
                 }
                 MemberExpressionAnalyzer analyzer(memVar.nameToken()->str(), vardecl, uninitValue, tokenlist);
                 valueFlowGenericForward(vardecl->next(), vardecl->scope()->bodyEnd, analyzer, settings);
+
+                for (auto&& p : *analyzer.partialReads) {
+                    Token* tok2 = p.first;
+                    const ValueFlow::Value& v = p.second;
+                    // Try to insert into map
+                    auto pp = partialReads.insert(std::make_pair(tok2, v));
+                    ValueFlow::Value& v2 = pp.first->second;
+                    bool inserted = pp.second;
+                    // Merge the two values if it is already in map
+                    if (!inserted) {
+                        if (v.valueType != v2.valueType)
+                            continue;
+                        addToErrorPath(v2, v);
+                    }
+                    v2.subexpressions.push_back(memVar.nameToken()->str());
+                }
             }
+        }
+
+        for (auto&& p : partialReads) {
+            Token* tok2 = p.first;
+            const ValueFlow::Value& v = p.second;
+
+            setTokenValue(tok2, v, settings);
         }
 
         if (partial)
@@ -7379,6 +7520,7 @@ ValueFlow::Value::Value(const Token* c, long long val, Bound b)
     indirect(0),
     path(0),
     wideintvalue(0),
+    subexpressions(),
     lifetimeKind(LifetimeKind::Object),
     lifetimeScope(LifetimeScope::Local),
     valueKind(ValueKind::Possible)

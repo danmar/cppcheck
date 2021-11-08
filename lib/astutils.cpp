@@ -491,8 +491,11 @@ const Token* getParentMember(const Token * tok)
     const Token * parent = tok->astParent();
     if (!Token::simpleMatch(parent, "."))
         return tok;
-    if (tok == parent->astOperand2())
+    if (astIsRHS(tok)) {
+        if (Token::simpleMatch(parent->astOperand1(), "."))
+            return parent->astOperand1()->astOperand2();
         return parent->astOperand1();
+    }
     const Token * gparent = parent->astParent();
     if (!Token::simpleMatch(gparent, ".") || gparent->astOperand2() != parent)
         return tok;
@@ -1079,6 +1082,8 @@ static bool isUsedAsBool_internal(const Token * const tok, bool checkingParent)
             return var && (var->getTypeName() == "bool");
         }
     } else if (isForLoopCondition(tok))
+        return true;
+    else if (Token::simpleMatch(parent, "?") && astIsLHS(tok))
         return true;
 
     return isUsedAsBool_internal(parent, true);
@@ -2532,6 +2537,8 @@ static void getLHSVariablesRecursive(std::vector<const Variable*>& vars, const T
     } else if (Token::simpleMatch(tok, ".")) {
         getLHSVariablesRecursive(vars, tok->astOperand1());
         getLHSVariablesRecursive(vars, tok->astOperand2());
+    } else if (Token::simpleMatch(tok, "::")) {
+        getLHSVariablesRecursive(vars, tok->astOperand2());
     } else if (tok->variable()) {
         vars.push_back(tok->variable());
     }
@@ -2976,6 +2983,8 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 return Result(Result::Type::READ);
             } else if (Token::Match(parent->astParent(), "%assign%") && !parent->astParent()->astParent() && parent == parent->astParent()->astOperand1()) {
                 if (mWhat == What::Reassign)
+                    return Result(Result::Type::BAILOUT, parent->astParent());
+                if (mWhat == What::UnusedValue && (!parent->valueType() || parent->valueType()->reference != Reference::None))
                     return Result(Result::Type::BAILOUT, parent->astParent());
                 continue;
             } else if (mWhat == What::UnusedValue && parent->isUnaryOp("&") && Token::Match(parent->astParent(), "[,(]")) {

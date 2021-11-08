@@ -880,7 +880,7 @@ ExprEngine::ArrayValue::ArrayValue(const std::string &name, ExprEngine::ValuePtr
 
 ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
     : Value(data->getNewSymbolName(), ExprEngine::ValueType::ArrayValue)
-    , pointer(var->isPointer()), nullPointer(var->isPointer()), uninitPointer(var->isPointer())
+    , pointer(var && var->isPointer()), nullPointer(var && var->isPointer()), uninitPointer(var && var->isPointer())
 {
     if (var) {
         for (const auto &dim : var->dimensions()) {
@@ -1920,7 +1920,8 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     }
 
     const Token *lhsToken = tok->astOperand1();
-    assignValue = truncateValue(assignValue, lhsToken->valueType(), data);
+    if (lhsToken)
+        assignValue = truncateValue(assignValue, lhsToken->valueType(), data);
     call(data.callbacks, tok, assignValue, &data);
 
     assignExprValue(lhsToken, assignValue, data);

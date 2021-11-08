@@ -175,6 +175,6 @@ def test_exclude():
     prjpath = getRelativeProjectPath()
     ret, stdout, _ = cppcheck(['-i' + prjpath, '--platform=win64', '--project=' + os.path.join(prjpath, 'helloworld.cppcheck')])
     assert ret == 1
-    assert stdout == 'cppcheck: No C or C++ source files found.\n'
+    assert stdout == 'cppcheck: error: no C or C++ source files found.\n'
 
 

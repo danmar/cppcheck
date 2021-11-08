@@ -1441,6 +1441,20 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("bool test(unsigned char v1, int v2) {\n"
+              "    switch (v1) {\n"
+              "        case 0:\n"
+              "            switch (v2) {\n"
+              "            case 48000:\n"
+              "                break;\n"
+              "            }\n"
+              "            return false;\n"
+              "        default:\n"
+              "            return true;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // if/else
         check("int f(int x) {\n"
               "    if (x) {\n"

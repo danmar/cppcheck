@@ -60,6 +60,7 @@ private:
         TEST_CASE(structmember14); // #6508 - (struct x){1,2,..}
         TEST_CASE(structmember15); // #3088 - #pragma pack(1)
         TEST_CASE(structmember_sizeof);
+        TEST_CASE(structmember16); // #10485
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -119,6 +120,7 @@ private:
         TEST_CASE(localvar57); // #8974 - increment
         TEST_CASE(localvar58); // #9901 - increment false positive
         TEST_CASE(localvar59); // #9737
+        TEST_CASE(localvar60);
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -1562,6 +1564,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void structmember16() {
+        checkStructMemberUsage("struct S {\n"
+                               "  static const int N = 128;\n" // <- used
+                               "  char E[N];\n" // <- not used
+                               "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) struct member 'S::E' is never used.\n", errout.str());
+    }
+
     void functionVariableUsage(const char code[], const char filename[]="test.cpp") {
         // Clear the error buffer..
         errout.str("");
@@ -2719,7 +2729,7 @@ private:
                               "    int ppos = 1;\n"
                               "    int pneg = 0;\n"
                               "    const char*edge = ppos? \" +\" : pneg ? \" -\" : \"\";\n"
-                              "    printf(\"This should be a '+' -> %s\n\", edge);\n"
+                              "    printf(\"This should be a '+' -> %s\\n\", edge);\n"
                               "    return 0;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
@@ -3187,6 +3197,16 @@ private:
         functionVariableUsage("Response foo() {\n"
                               "    const std::vector<char> cmanifest = z;\n"
                               "    return {.a = cmanifest, .b =0};\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar60() { // #10531
+        functionVariableUsage("void Scale(double scale) {\n"
+                              "    for (int i = 0; i < m_points.size(); ++i) {\n"
+                              "        auto& p = m_points[i];\n"
+                              "        p += scale;\n"
+                              "    }\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
