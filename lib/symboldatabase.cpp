@@ -6504,6 +6504,8 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     valuetype.sign = ValueType::Sign::UNSIGNED;
                 else if (tok->previous()->isSigned())
                     valuetype.sign = ValueType::Sign::SIGNED;
+                else if (valuetype.isIntegral() && valuetype.type != ValueType::UNKNOWN_INT)
+                    valuetype.sign = mDefaultSignedness;
                 setValueType(tok, valuetype);
             }
 

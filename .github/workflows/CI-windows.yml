@@ -36,6 +36,7 @@ jobs:
         uses: microsoft/setup-msbuild@v1.0.2
 
       - name: Install PCRE
+        if: false
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           curl -fsSL https://ftp.pcre.org/pub/pcre/pcre-%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!

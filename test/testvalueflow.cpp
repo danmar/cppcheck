@@ -516,6 +516,12 @@ private:
         return values;
     }
 
+    std::list<ValueFlow::Value> removeImpossible(std::list<ValueFlow::Value> values)
+    {
+        values.remove_if(std::mem_fn(&ValueFlow::Value::isImpossible));
+        return values;
+    }
+
     void valueFlowNumber() {
         ASSERT_EQUALS(123, valueOfTok("x=123;", "123").intvalue);
         ASSERT_EQUALS_DOUBLE(192.0, valueOfTok("x=0x0.3p10;", "0x0.3p10").floatValue, 1e-5); // 3 * 16^-1 * 2^10 = 192
@@ -2475,6 +2481,34 @@ private:
                "    }\n"
                "};\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 7U, 1));
+
+        // global variable
+        code = "int x;\n"
+               "int foo(int y) {\n"
+               "  if (y)\n"
+               "    x = 10;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 10));
+
+        code = "namespace A { int x; }\n"
+               "int foo(int y) {\n"
+               "  if (y)\n"
+               "    A::x = 10;\n"
+               "  return A::x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 10));
+
+        // member variable
+        code = "struct Fred {\n"
+               "  int x;\n"
+               "  int foo(int y) {\n"
+               "    if (y)\n"
+               "      x = 10;\n"
+               "    return x;\n"
+               "  }\n"
+               "};";
+        ASSERT_EQUALS(true, testValueOfX(code, 6U, 10));
     }
 
     void valueFlowAfterSwap()
@@ -2987,7 +3021,22 @@ private:
                "    return 0; \n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 6U, 63));
-        TODO_ASSERT_EQUALS(true, false, testValueOfXImpossible(code, 6U, 64));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 6U, 64));
+
+        code = "long long f(const long long& x, const long long& y) {\n"
+               "    switch (s) {\n"
+               "    case 0:\n"
+               "        if (x >= 64)\n"
+               "            return 0;\n"
+               "        return long long{y} << long long{x};\n"
+               "    case 1:\n"
+               "        if (x >= 64) {\n"
+               "        }\n"
+               "    }\n"
+               "    return 0; \n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 6U, 63));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 6U, 64));
 
         code = "int g(int x) { throw 0; }\n"
                "void f(int x) {\n"

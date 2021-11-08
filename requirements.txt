@@ -1,1 +1,1 @@
-pcre,https://ftp.pcre.org/pub/pcre/pcre-8.43.tar.gz -H sha256:0b8e7465dc5e98c757cc3650a20a7843ee4c3edf50aaf60bb33fd879690d2c73
+pcre,pfultz2/pcre@8.45 -H sha256:d6f7182602a775a7d500a0cedca6449af0400c6493951513046d17615ed0bf11

@@ -4517,26 +4517,27 @@ private:
 
     void valueFlowUninit() {
         // #9735 - FN
-        ctu("typedef struct\n"
-            "{\n"
-            "    int x;\n"
-            "    unsigned int flag : 1;\n"// bit filed gets never initialized
-            "} status;\n"
-            "bool foo(const status * const s)\n"
-            "{\n"
-            "    return s->flag;\n"// << uninitvar
-            "}\n"
-            "void bar(const status * const s)\n"
-            "{\n"
-            "    if( foo(s) == 1) {;}\n"
-            "}\n"
-            "void f(void)\n"
-            "{\n"
-            "    status s;\n"
-            "    s.x = 42;\n"
-            "    bar(&s);\n"
-            "}");
-        ASSERT_EQUALS("[test.cpp:18] -> [test.cpp:12] -> [test.cpp:8]: (error) Using argument s that points at uninitialized variable s\n", errout.str());
+        valueFlowUninit("typedef struct\n"
+                        "{\n"
+                        "    int x;\n"
+                        "    unsigned int flag : 1;\n" // bit filed gets never initialized
+                        "} status;\n"
+                        "bool foo(const status * const s)\n"
+                        "{\n"
+                        "    return s->flag;\n" // << uninitvar
+                        "}\n"
+                        "void bar(const status * const s)\n"
+                        "{\n"
+                        "    if( foo(s) == 1) {;}\n"
+                        "}\n"
+                        "void f(void)\n"
+                        "{\n"
+                        "    status s;\n"
+                        "    s.x = 42;\n"
+                        "    bar(&s);\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:18] -> [test.cpp:12] -> [test.cpp:8]: (error) Uninitialized variable: s->flag\n",
+                      errout.str());
 
         // Ticket #2207 - False negative
         valueFlowUninit("void foo() {\n"
@@ -5357,6 +5358,14 @@ private:
                         "}");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:2]: (error) Uninitialized variable: *buflen\n", errout.str());
 
+        // # 9953
+        valueFlowUninit("uint32_t f(uint8_t *mem) {\n"
+                        "    uint32_t u32;\n"
+                        "    uint8_t *buf = (uint8_t *)(&u32);\n"
+                        "    buf[0] = mem[0];\n"
+                        "    return(*(uint32_t *)buf);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitStructMembers()
@@ -5426,7 +5435,7 @@ private:
                         "    x = *(&ab);\n"
                         "}\n",
                         "test.c");
-        ASSERT_EQUALS("[test.c:5] -> [test.c:5]: (error) Uninitialized variable: *(&ab).b\n", errout.str());
+        ASSERT_EQUALS("[test.c:5]: (error) Uninitialized variable: *(&ab).b\n", errout.str());
 
         valueFlowUninit("void f(void) {\n"
                         "    struct AB ab;\n"

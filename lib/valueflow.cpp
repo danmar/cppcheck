@@ -356,19 +356,16 @@ static void combineValueProperties(const ValueFlow::Value &value1, const ValueFl
 static const Token *getCastTypeStartToken(const Token *parent)
 {
     // TODO: This might be a generic utility function?
-    if (!parent || (parent->str() != "(" && parent->str() != "{"))
+    if (!Token::Match(parent, "{|("))
         return nullptr;
-    if (parent->str() == "{") {
-        auto* prev = parent->previous();
-        if (prev && prev->isStandardType() && Token::Match(prev, "%type% {")) // list initialization int{x}
-           return prev;
+    // Functional cast
+    if (parent->isBinaryOp() && Token::Match(parent->astOperand1(), "%type% (|{") &&
+        parent->astOperand1()->tokType() == Token::eType && astIsPrimitive(parent))
+        return parent->astOperand1();
+    if (parent->str() != "(")
         return nullptr;
-    }
-    if (!parent->astOperand2() && Token::Match(parent,"( %name%")) // c-style cast (int)x
+    if (!parent->astOperand2() && Token::Match(parent,"( %name%"))
         return parent->next();
-    auto *prev = parent->previous();
-    if (prev && prev->isStandardType() && Token::Match(prev, "%type% (")) // functional style cast int(x)
-        return prev;
     if (parent->astOperand2() && Token::Match(parent->astOperand1(), "const_cast|dynamic_cast|reinterpret_cast|static_cast <"))
         return parent->astOperand1()->tokAt(2);
     return nullptr;
@@ -574,12 +571,12 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
         if (Token::Match(tok, ". %var%"))
             setTokenValue(tok->next(), value, settings);
         ValueFlow::Value pvalue = value;
-        if (!value.subexpressions.empty()) {
-            if (Token::Match(parent, ". %var%") && contains(value.subexpressions, parent->next()->str()))
+        if (!value.subexpressions.empty() && Token::Match(parent, ". %var%")) {
+            if (contains(value.subexpressions, parent->next()->str()))
                 pvalue.subexpressions.clear();
+            else
+                return;
         }
-        if (!pvalue.subexpressions.empty())
-            return;
         if (parent->isUnaryOp("&")) {
             pvalue.indirect++;
             setTokenValue(parent, pvalue, settings);
@@ -1323,42 +1320,6 @@ static void valueFlowPointerAlias(TokenList *tokenlist)
         value.valueType = ValueFlow::Value::ValueType::TOK;
         value.tokvalue = tok;
         setTokenValue(tok, value, tokenlist->getSettings());
-    }
-}
-
-static void valueFlowUninitPointerAliasDeref(TokenList *tokenlist)
-{
-    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-        if (!tok->isUnaryOp("*"))
-            continue;
-        if (!astIsPointer(tok->astOperand1()))
-            continue;
-
-        const Token* lifeTok = nullptr;
-        ErrorPath errorPath;
-        for (const ValueFlow::Value& v:tok->astOperand1()->values()) {
-            if (!v.isLocalLifetimeValue())
-                continue;
-            lifeTok = v.tokvalue;
-            errorPath = v.errorPath;
-        }
-        if (!lifeTok)
-            continue;
-        if (lifeTok->varId() == 0)
-            continue;
-        const Variable * var = lifeTok->variable();
-        if (!var)
-            continue;
-        if (!var->isConst() && isVariableChanged(lifeTok->next(), tok, lifeTok->varId(), !var->isLocal(), tokenlist->getSettings(), tokenlist->isCPP()))
-            continue;
-        for (const ValueFlow::Value& v:lifeTok->values()) {
-            // Forward uninit values since not all values can be forwarded directly
-            if (!v.isUninitValue())
-                continue;
-            ValueFlow::Value value = v;
-            value.errorPath.insert(value.errorPath.begin(), errorPath.begin(), errorPath.end());
-            setTokenValue(tok, value, tokenlist->getSettings());
-        }
     }
 }
 
@@ -2373,6 +2334,9 @@ struct ValueFlowAnalyzer : Analyzer {
             } else if (getSettings()->library.getFunction(tok)) {
                 // Assume library function doesn't modify user-global variables
                 return Action::None;
+                // Function cast does not modify global variables
+            } else if (tok->tokType() == Token::eType && astIsPrimitive(tok->next())) {
+                return Action::None;
             } else {
                 return Action::Invalid;
             }
@@ -2523,6 +2487,8 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
     virtual bool useSymbolicValues() const OVERRIDE
     {
         if (value.isUninitValue())
+            return false;
+        if (value.isLifetimeValue())
             return false;
         return true;
     }
@@ -3403,10 +3369,22 @@ static const Token* getEndOfVarScope(const Token* tok, const std::vector<const V
 {
     const Token* endOfVarScope = nullptr;
     for (const Variable* var : vars) {
+        const Scope *varScope = nullptr;
         if (var && (var->isLocal() || var->isArgument()) && var->typeStartToken()->scope()->type != Scope::eNamespace)
-            endOfVarScope = var->typeStartToken()->scope()->bodyEnd;
-        else if (!endOfVarScope)
-            endOfVarScope = tok->scope()->bodyEnd;
+            varScope = var->typeStartToken()->scope();
+        else if (!endOfVarScope) {
+            varScope = tok->scope();
+            // A "local member" will be a expression like foo.x where foo is a local variable.
+            // A "global member" will be a member that belongs to a global object.
+            const bool globalMember = vars.size() == 1; // <- could check if it's a member here also but it seems redundant
+            if (var && (var->isGlobal() || var->isNamespace() || globalMember)) {
+                // Global variable => end of function
+                while (varScope->isLocal())
+                    varScope = varScope->nestedIn;
+            }
+        }
+        if (varScope && (!endOfVarScope || precedes(varScope->bodyEnd, endOfVarScope)))
+            endOfVarScope = varScope->bodyEnd;
     }
     return endOfVarScope;
 }
@@ -7693,7 +7671,6 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings);
         valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, settings);
         valueFlowUninit(tokenlist, symboldatabase, settings);
-        valueFlowUninitPointerAliasDeref(tokenlist);
         if (tokenlist->isCPP()) {
             valueFlowAfterMove(tokenlist, symboldatabase, settings);
             valueFlowSmartPointer(tokenlist, errorLogger, settings);

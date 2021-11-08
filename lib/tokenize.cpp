@@ -1167,6 +1167,10 @@ void Tokenizer::simplifyTypedef()
                     }
                 }
 
+                else if (Token::Match(tok2->previous(), "class|struct %name% [:{]")) {
+                    // don't replace names in struct/class definition
+                }
+
                 // check for typedef that can be substituted
                 else if ((tok2->isNameOnly() || (tok2->isName() && tok2->isExpandedMacro())) &&
                          (Token::simpleMatch(tok2, pattern.c_str(), pattern.size()) ||

@@ -263,6 +263,15 @@ struct ReverseTraversal {
                 tok = parent;
                 continue;
             }
+            if (tok->str() == "case") {
+                const Scope* scope = tok->scope();
+                while (scope && scope->type != Scope::eSwitch)
+                    scope = scope->nestedIn;
+                if (!scope || scope->type != Scope::eSwitch)
+                    break;
+                tok = tok->tokAt(scope->bodyStart->index() - tok->index() - 1);
+                continue;
+            }
             if (!update(tok))
                 break;
         }

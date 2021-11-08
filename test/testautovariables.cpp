@@ -150,6 +150,7 @@ private:
         TEST_CASE(danglingLifetimeInitList);
         TEST_CASE(danglingLifetimeImplicitConversion);
         TEST_CASE(danglingTemporaryLifetime);
+        TEST_CASE(danglingLifetimeBorrowedMembers);
         TEST_CASE(invalidLifetime);
         TEST_CASE(deadPointer);
         TEST_CASE(splitNamespaceAuto); // crash #10473
@@ -2464,6 +2465,15 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    std::vector<std::unique_ptr<int>> mA;\n"
+              "    void f(std::unique_ptr<int> a) {\n"
+              "        auto x = a.get();\n"
+              "        mA.push_back(std::move(a));\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeContainerView()
@@ -3195,11 +3205,68 @@ private:
               "    const std::map<int, int>::iterator& m = func().a_.m_.begin();\n"
               "    (void)m->first;\n"
               "}\n");
-        ASSERT_EQUALS(
-            "[test.cpp:9] -> [test.cpp:9] -> [test.cpp:10]: (error) Using object that points to member variable 'm_' that is a temporary.\n",
-            errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:9] -> [test.cpp:10]: (error) Using iterator that is a temporary.\n",
+                      errout.str());
     }
 
+    void danglingLifetimeBorrowedMembers()
+    {
+        // #10585
+        check("struct Info { int k; };\n"
+              "struct MoreInfo {\n"
+              "    int* k;\n"
+              "    char dat;\n"
+              "};\n"
+              "struct Fields {\n"
+              "    Info info;\n"
+              "};\n"
+              "template <typename T> void func1(T val){}\n"
+              "template <typename T> void func2(T val){}\n"
+              "Fields* get();\n"
+              "void doit() {\n"
+              "    MoreInfo rech;\n"
+              "    rech.k = &get()->info.k;\n"
+              "    func1(&rech.dat);\n"
+              "    func2(rech.k);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int x; };\n"
+              "A* g();\n"
+              "void f() {\n"
+              "    A** ap = &g();\n"
+              "    (*ap)->x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4] -> [test.cpp:5]: (error) Using pointer that is a temporary.\n",
+                      errout.str());
+
+        check("struct A { int* x; };\n"
+              "A g();\n"
+              "void f() {\n"
+              "    int* x = g().x;\n"
+              "    (void)*x + 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int x; };\n"
+              "struct B { A* a; }\n"
+              "B g();\n"
+              "void f() {\n"
+              "    int* x = &g()->a.x;\n"
+              "    (void)*x + 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int x; };\n"
+              "struct B { A* g(); };\n"
+              "A* g();\n"
+              "void f(B b) {\n"
+              "    A** ap = &b.g();\n"
+              "    (*ap)->x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5] -> [test.cpp:6]: (error) Using pointer that is a temporary.\n",
+                      errout.str());
+    }
     void invalidLifetime() {
         check("void foo(int a) {\n"
               "    std::function<void()> f;\n"
