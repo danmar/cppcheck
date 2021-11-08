@@ -302,7 +302,8 @@ private:
         TEST_CASE(explicitBool2);
     }
 
-    std::string tok(const char code[], bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
+#define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tok_(const char* file, int line, const char code[], bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
         errout.str("");
 
         settings.debugwarnings = debugwarnings;
@@ -310,7 +311,7 @@ private:
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp")) {};
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         return tokenizer.tokens()->stringifyList(nullptr, true);
     }

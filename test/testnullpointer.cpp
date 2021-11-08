@@ -155,10 +155,11 @@ private:
         TEST_CASE(addNull);
         TEST_CASE(isPointerDeRefFunctionDecl);
 
-        TEST_CASE(ctu);
+        TEST_CASE(ctuTest);
     }
 
-    void check(const char code[], bool inconclusive = false, const char filename[] = "test.cpp") {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], bool inconclusive = false, const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -167,8 +168,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        if (!tokenizer.tokenize(istr, filename))
-            return;
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check for null pointer dereferences..
         CheckNullPointer checkNullPointer;
@@ -3666,7 +3666,7 @@ private:
         Settings settings1;
         Tokenizer tokenizer(&settings1,this);
         std::istringstream code("void f() { int a,b,c; x(a,b,c); }");
-        ASSERT(tokenizer.tokenize(code, "test.c"));
+        ASSERT_EQUALS(true, tokenizer.tokenize(code, "test.c"));
         const Token *xtok = Token::findsimplematch(tokenizer.tokens(), "x");
 
         // nothing bad..
@@ -3988,14 +3988,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void ctu(const char code[]) {
+#define ctu(code) ctu_(code, __FILE__, __LINE__)
+    void ctu_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CTU::FileInfo *ctu = CTU::getFileInfo(&tokenizer);
 
@@ -4011,7 +4012,7 @@ private:
         delete ctu;
     }
 
-    void ctu() {
+    void ctuTest() {
         setMultiline();
 
         ctu("void f(int *fp) {\n"

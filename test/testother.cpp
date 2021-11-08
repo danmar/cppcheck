@@ -259,7 +259,8 @@ private:
         TEST_CASE(constVariableArrayMember); // #10371
     }
 
-    void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
@@ -279,7 +280,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, filename ? filename : "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, filename ? filename : "test.cpp"), file, line);
 
         // Check..
         CheckOther checkOther(&tokenizer, settings, this);
@@ -288,8 +289,8 @@ private:
         (void)runSimpleChecks; // TODO Remove this
     }
 
-    void check(const char code[], Settings *s) {
-        check(code,"test.cpp",false,true,true,false,s);
+    void check_(const char* file, int line, const char code[], Settings *s) {
+        check_(file, line, code, "test.cpp", false, true, true, false, s);
     }
 
     void checkP(const char code[], const char *filename = "test.cpp") {
@@ -1440,7 +1441,8 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (style) C-style pointer casting\n", errout.str());
     }
 
-    void checkInvalidPointerCast(const char code[], bool portability = true, bool inconclusive = false) {
+#define checkInvalidPointerCast(...) checkInvalidPointerCast_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkInvalidPointerCast_(const char* file, int line, const char code[], bool portability = true, bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
@@ -1454,7 +1456,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CheckOther checkOtherCpp(&tokenizer, &settings, this);
         checkOtherCpp.invalidPointerCast();

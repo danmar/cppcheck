@@ -95,7 +95,8 @@ private:
         TEST_CASE(scopeInfo2);
     }
 
-    std::string tok(const char code[], Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
+#define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tok_(const char* file, int line, const char code[], Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
         errout.str("");
 
         settings0.certainty.enable(Certainty::inconclusive);
@@ -104,7 +105,7 @@ private:
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp")) {};
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         return tokenizer.tokens()->stringifyList(nullptr);
     }

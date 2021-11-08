@@ -198,7 +198,8 @@ private:
         TEST_CASE(simplifyTypedefMacro);
     }
 
-    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
+#define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tok_(const char* file, int line, const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
         errout.str("");
 
         settings0.certainty.enable(Certainty::inconclusive);
@@ -207,7 +208,7 @@ private:
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp")) {};
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
@@ -249,15 +250,15 @@ private:
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
-
-    void checkSimplifyTypedef(const char code[]) {
+#define checkSimplifyTypedef(code) checkSimplifyTypedef_(code, __FILE__, __LINE__)
+    void checkSimplifyTypedef_(const char code[], const char* file, int line) {
         errout.str("");
         // Tokenize..
         settings2.certainty.enable(Certainty::inconclusive);
         settings2.debugwarnings = true;   // show warnings about unhandled typedef
         Tokenizer tokenizer(&settings2, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
     }
 
 

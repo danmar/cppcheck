@@ -39,18 +39,19 @@ private:
         TEST_CASE(open);
     }
 
-    CheckMemoryLeak::AllocType functionReturnType(const char code[]) {
+#define functionReturnType(code) functionReturnType_(code, __FILE__, __LINE__)
+    CheckMemoryLeak::AllocType functionReturnType_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp")) {};
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         const CheckMemoryLeak c(&tokenizer, this, &settings);
 
-        return c.functionReturnType(&tokenizer.getSymbolDatabase()->scopeList.front().functionList.front());
+        return (c.functionReturnType)(&tokenizer.getSymbolDatabase()->scopeList.front().functionList.front());
     }
 
     void testFunctionReturnType() {
@@ -122,7 +123,8 @@ private:
     Settings settings1;
     Settings settings2;
 
-    void check(const char code[]) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -131,7 +133,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, settings, this);
@@ -467,18 +469,18 @@ private:
      * Tokenize and execute leak check for given code
      * @param code Source code
      */
-    void check(const char code[]) {
+    void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakInClass checkMemoryLeak(&tokenizer, &settings, this);
-        checkMemoryLeak.check();
+        (checkMemoryLeak.check)();
     }
 
     void run() OVERRIDE {
@@ -1639,18 +1641,18 @@ public:
 private:
     Settings settings;
 
-    void check(const char code[], bool isCPP = true) {
+    void check_(const char* file, int line, const char code[], bool isCPP = true) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, isCPP ? "test.cpp" : "test.c"));
+        ASSERT_LOC(tokenizer.tokenize(istr, isCPP ? "test.cpp" : "test.c"), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakStructMember checkMemoryLeakStructMember(&tokenizer, &settings, this);
-        checkMemoryLeakStructMember.check();
+        (checkMemoryLeakStructMember.check)();
     }
 
     void run() OVERRIDE {
@@ -2120,18 +2122,18 @@ public:
 private:
     Settings settings;
 
-    void check(const char code[]) {
+    void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakNoVar checkMemoryLeakNoVar(&tokenizer, &settings, this);
-        checkMemoryLeakNoVar.check();
+        (checkMemoryLeakNoVar.check)();
     }
 
     void run() OVERRIDE {

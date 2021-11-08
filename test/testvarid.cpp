@@ -219,7 +219,8 @@ private:
         TEST_CASE(structuredBindings);
     }
 
-    std::string tokenize(const char code[], const char filename[] = "test.cpp") {
+#define tokenize(...) tokenize_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tokenize_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         errout.str("");
 
         Settings settings;
@@ -230,7 +231,7 @@ private:
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, filename)) {};
+        ASSERT_LOC((tokenizer.tokenize)(istr, filename), file, line);
 
         // result..
         Token::stringifyOptions options = Token::stringifyOptions::forDebugVarId();
@@ -238,7 +239,8 @@ private:
         return tokenizer.tokens()->stringifyList(options);
     }
 
-    std::string tokenizeExpr(const char code[], const char filename[] = "test.cpp") {
+#define tokenizeExpr(...) tokenizeExpr_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tokenizeExpr_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         errout.str("");
 
         Settings settings;
@@ -249,7 +251,7 @@ private:
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, filename)) {};
+        ASSERT_LOC((tokenizer.tokenize)(istr, filename), file, line);
 
         // result..
         Token::stringifyOptions options = Token::stringifyOptions::forDebugExprId();
@@ -257,7 +259,8 @@ private:
         return tokenizer.tokens()->stringifyList(options);
     }
 
-    std::string compareVaridsForVariable(const char code[], const char varname[], const char filename[] = "test.cpp") {
+#define compareVaridsForVariable(...) compareVaridsForVariable_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string compareVaridsForVariable_(const char* file, int line, const char code[], const char varname[], const char filename[] = "test.cpp") {
         errout.str("");
 
         Settings settings;
@@ -268,7 +271,7 @@ private:
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, filename)) {};
+        ASSERT_LOC((tokenizer.tokenize)(istr, filename), file, line);
 
         unsigned int varid = ~0U;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {

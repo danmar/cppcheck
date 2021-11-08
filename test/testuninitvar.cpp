@@ -86,7 +86,7 @@ private:
         TEST_CASE(trac_4871);
         TEST_CASE(syntax_error); // Ticket #5073
         TEST_CASE(trac_5970);
-        TEST_CASE(valueFlowUninit);
+        TEST_CASE(valueFlowUninitTest);
         TEST_CASE(valueFlowUninitBreak);
         TEST_CASE(valueFlowUninitStructMembers);
         TEST_CASE(uninitvar_ipa);
@@ -96,10 +96,11 @@ private:
         TEST_CASE(isVariableUsageDeref); // *p
 
         // whole program analysis
-        TEST_CASE(ctu);
+        TEST_CASE(ctuTest);
     }
 
-    void checkUninitVar(const char code[], const char fname[] = "test.cpp", bool debugwarnings = false) {
+#define checkUninitVar(...) checkUninitVar_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkUninitVar_(const char* file, int line, const char code[], const char fname[] = "test.cpp", bool debugwarnings = false) {
         // Clear the error buffer..
         errout.str("");
 
@@ -107,7 +108,7 @@ private:
         settings.debugwarnings = debugwarnings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, fname));
+        ASSERT_LOC(tokenizer.tokenize(istr, fname), file, line);
 
         // Check for redundant code..
         CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
@@ -3390,6 +3391,7 @@ private:
         TODO_ASSERT_EQUALS("error", "", errout.str());
     }
 
+#define valueFlowUninit(...) valueFlowUninit_(__FILE__, __LINE__, __VA_ARGS__)
     void valueFlowUninit2_value()
     {
         valueFlowUninit("void f() {\n"
@@ -4497,7 +4499,7 @@ private:
         // FP Unknown type ASSERT_EQUALS("", errout.str());
     }
 
-    void valueFlowUninit(const char code[], const char fname[] = "test.cpp")
+    void valueFlowUninit_(const char* file, int line, const char code[], const char fname[] = "test.cpp")
     {
         // Clear the error buffer..
         errout.str("");
@@ -4508,14 +4510,15 @@ private:
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, fname));
+        ASSERT_LOC(tokenizer.tokenize(istr, fname), file, line);
 
         // Check for redundant code..
         CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
-        checkuninitvar.valueFlowUninit();
+        (checkuninitvar.valueFlowUninit)();
     }
 
-    void valueFlowUninit() {
+#define ctu(code) ctu_(__FILE__, __LINE__, code)
+    void valueFlowUninitTest() {
         // #9735 - FN
         ctu("typedef struct\n"
             "{\n"
@@ -5944,14 +5947,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void ctu(const char code[]) {
+    void ctu_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CTU::FileInfo *ctu = CTU::getFileInfo(&tokenizer);
 
@@ -5967,7 +5970,7 @@ private:
         delete ctu;
     }
 
-    void ctu() {
+    void ctuTest() {
         ctu("void f(int *p) {\n"
             "    a = *p;\n"
             "}\n"

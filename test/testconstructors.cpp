@@ -30,7 +30,8 @@ public:
 private:
     Settings settings;
 
-    void check(const char code[], bool inconclusive = false) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
@@ -39,21 +40,21 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check class constructors..
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.constructors();
     }
 
-    void check(const char code[], const Settings &s) {
+    void check_(const char* file, int line, const char code[], const Settings &s) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&s, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check class constructors..
         CheckClass checkClass(&tokenizer, &s, this);
