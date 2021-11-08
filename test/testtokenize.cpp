@@ -3418,6 +3418,8 @@ private:
         ASSERT_EQUALS("void * ( * f ) ( ) ;", tokenizeAndStringify("void *(*f)();"));
         ASSERT_EQUALS("unsigned int ( * f ) ( ) ;", tokenizeAndStringify("unsigned int (*f)();"));
         ASSERT_EQUALS("unsigned int * ( * f ) ( ) ;", tokenizeAndStringify("unsigned int * (*f)();"));
+        ASSERT_EQUALS("void ( * f [ 2 ] ) ( ) ;", tokenizeAndStringify("void (*f[2])();"));
+        TODO_ASSERT_EQUALS("void ( * f [ 2 ] ) ( ) ;", "void ( * f ) ( ) [ 2 ] ;", tokenizeAndStringify("typedef void func_t(void); func_t *f[2];"));
     }
 
     void simplifyFunctionPointers2() {
