@@ -746,6 +746,14 @@ private:
               "    free((char **)args2);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #10097
+        check("struct Array {\n"
+              "    ~Array() { delete m_Arr; }\n"
+              "    std::array<long, 256>* m_Arr{};\n"
+              "};\n"
+              "Array arr;\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testinvaliddealloc_C() {

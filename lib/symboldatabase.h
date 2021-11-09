@@ -215,9 +215,10 @@ class CPPCHECKLIB Variable {
     /**
      * @brief parse and save array dimension information
      * @param settings Platform settings and library
+     * @param isContainer Is the array container-like?
      * @return true if array, false if not
      */
-    bool arrayDimensions(const Settings* settings);
+    bool arrayDimensions(const Settings* settings, bool* isContainer);
 
 public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
