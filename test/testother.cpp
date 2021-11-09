@@ -1300,7 +1300,8 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) The scope of the variable 'x' can be reduced.\n", errout.str());
     }
 
-    void checkOldStylePointerCast(const char code[]) {
+#define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
+    void checkOldStylePointerCast_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
@@ -1311,7 +1312,7 @@ private:
         // Tokenize..
         Tokenizer tokenizerCpp(&settings, this);
         std::istringstream istr(code);
-        tokenizerCpp.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizerCpp.tokenize(istr, "test.cpp"), file, line);
 
         CheckOther checkOtherCpp(&tokenizerCpp, &settings, this);
         checkOtherCpp.warningOldStylePointerCast();

@@ -228,7 +228,8 @@ private:
         TEST_CASE(getFileInfo);
     }
 
-    void checkCopyCtorAndEqOperator(const char code[]) {
+#define checkCopyCtorAndEqOperator(code) checkCopyCtorAndEqOperator_(code, __FILE__, __LINE__)
+    void checkCopyCtorAndEqOperator_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
         Settings settings;
@@ -237,11 +238,11 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.checkCopyCtorAndEqOperator();
+        (checkClass.checkCopyCtorAndEqOperator)();
     }
 
     void copyCtorAndEqOperator() {
@@ -333,18 +334,19 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkExplicitConstructors(const char code[]) {
+#define checkExplicitConstructors(code) checkExplicitConstructors_(code, __FILE__, __LINE__)
+    void checkExplicitConstructors_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings0, this);
-        checkClass.checkExplicitConstructors();
+        (checkClass.checkExplicitConstructors)();
     }
 
     void explicitConstructors() {
@@ -442,18 +444,19 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) Struct 'A' has a constructor with 1 argument that is not explicit.\n", errout.str());
     }
 
-    void checkDuplInheritedMembers(const char code[]) {
+#define checkDuplInheritedMembers(code) checkDuplInheritedMembers_(code, __FILE__, __LINE__)
+    void checkDuplInheritedMembers_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings1, this);
-        checkClass.checkDuplInheritedMembers();
+        (checkClass.checkDuplInheritedMembers)();
     }
 
     void duplInheritedMembers() {
@@ -596,14 +599,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkCopyConstructor(const char code[]) {
+#define checkCopyConstructor(code) checkCopyConstructor_(code, __FILE__, __LINE__)
+    void checkCopyConstructor_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings0, this);
@@ -1027,14 +1031,15 @@ private:
     }
 
     // Check that operator Equal returns reference to this
-    void checkOpertorEqRetRefThis(const char code[]) {
+#define checkOpertorEqRetRefThis(code) checkOpertorEqRetRefThis_(code, __FILE__, __LINE__)
+    void checkOpertorEqRetRefThis_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings0, this);
@@ -1490,14 +1495,15 @@ private:
     }
 
     // Check that operator Equal checks for assignment to self
-    void checkOpertorEqToSelf(const char code[]) {
+#define checkOpertorEqToSelf(code) checkOpertorEqToSelf_(code, __FILE__, __LINE__)
+    void checkOpertorEqToSelf_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings1, this);
@@ -2448,7 +2454,8 @@ private:
     }
 
     // Check that base classes have virtual destructors
-    void checkVirtualDestructor(const char code[], bool inconclusive = false) {
+#define checkVirtualDestructor(...) checkVirtualDestructor_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkVirtualDestructor_(const char* file, int line, const char code[], bool inconclusive = false) {
         // Clear the error log
         errout.str("");
 
@@ -2458,7 +2465,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings0, this);

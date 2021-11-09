@@ -3312,7 +3312,7 @@ private:
             errout.str("");
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< class");
             const Token* tok2 = Token::findsimplematch(tok1, "> class");
             ASSERT_EQUALS(true, tok1->link() == tok2);
@@ -3325,7 +3325,7 @@ private:
             errout.str("");
             Tokenizer tokenizer(&settings0, this);
             std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< template");
             const Token* tok2 = Token::findsimplematch(tok1, "> struct");
             ASSERT_EQUALS(true, tok1->link() == tok2);

@@ -259,6 +259,7 @@ private:
         TEST_CASE(nonGarbageCode1); // #8346
     }
 
+#define checkCodeInternal(code, filename) checkCodeInternal_(code, filename, __FILE__, __LINE__)
     std::string checkCode(const std::string &code, bool cpp = true) {
         // double the tests - run each example as C as well as C++
         const char* const filename = cpp ? "test.cpp" : "test.c";
@@ -272,13 +273,13 @@ private:
         return checkCodeInternal(code, filename);
     }
 
-    std::string checkCodeInternal(const std::string &code, const char* filename) {
+    std::string checkCodeInternal_(const std::string &code, const char* filename, const char* file, int line) {
         errout.str("");
 
         // tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, filename)) {};
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // call all "runChecks" in all registered Check classes
         for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
@@ -288,11 +289,12 @@ private:
         return tokenizer.tokens()->stringifyList(false, false, false, true, false, nullptr, nullptr);
     }
 
-    std::string getSyntaxError(const char code[]) {
+#define getSyntaxError(code) getSyntaxError_(code, __FILE__, __LINE__)
+    std::string getSyntaxError_(const char code[], const char* file, int line) {
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         try {
-            ASSERT(tokenizer.tokenize(istr, "test.cpp")) {};
+            ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         } catch (InternalError& e) {
             if (e.id != "syntaxError")
                 return "";

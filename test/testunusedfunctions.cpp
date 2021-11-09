@@ -440,7 +440,7 @@ private:
 
             Tokenizer tokenizer2(&settings, this);
             std::istringstream istr(code);
-            tokenizer2.tokenize(istr, fname.str().c_str());
+            ASSERT(tokenizer2.tokenize(istr, fname.str().c_str()));
 
             c.parseTokens(tokenizer2, "someFile.c", &settings);
         }
