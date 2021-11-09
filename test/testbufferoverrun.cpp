@@ -3129,6 +3129,22 @@ private:
               "    int *p = s->a + 100;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour, pointer arithmetic 's->a+100' is out of bounds.\n", errout.str());
+
+        check("template <class T> class Vector\n"
+              "{\n"
+              "public:\n"
+              "    void test() const;\n"
+              "    T* data();\n"
+              "};\n"
+              "template <class T>\n"
+              "void Vector<T>::test() const\n"
+              "{\n"
+              "    const T* PDat = data();\n"
+              "    const T* P2 = PDat + 1;\n"
+              "    const T* P1 = P2 - 1;\n"
+              "}\n"
+              "Vector<std::array<long, 2>> Foo;\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pointer_out_of_bounds_4() {
