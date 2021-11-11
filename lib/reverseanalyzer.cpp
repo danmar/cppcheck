@@ -127,6 +127,11 @@ struct ReverseTraversal {
             i = tok->index();
             if (tok == start || (tok->str() == "{" && (tok->scope()->type == Scope::ScopeType::eFunction ||
                                                        tok->scope()->type == Scope::ScopeType::eLambda))) {
+                const Function* f = tok->scope()->function;
+                if (f && f->isConstructor()) {
+                    if (const Token* initList = f->constructorMemberInitialization())
+                        traverse(tok->previous(), tok->tokAt(initList->index() - tok->index()));
+                }
                 break;
             }
             if (Token::Match(tok, "return|break|continue"))
