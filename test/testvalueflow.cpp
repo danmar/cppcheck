@@ -81,6 +81,7 @@ private:
         TEST_CASE(valueFlowBeforeConditionSwitch);
         TEST_CASE(valueFlowBeforeConditionTernaryOp);
         TEST_CASE(valueFlowBeforeConditionForward);
+        TEST_CASE(valueFlowBeforeConditionConstructor);
 
         TEST_CASE(valueFlowAfterAssign);
         TEST_CASE(valueFlowAfterSwap);
@@ -513,6 +514,12 @@ private:
     std::list<ValueFlow::Value> removeSymbolic(std::list<ValueFlow::Value> values)
     {
         values.remove_if(std::mem_fn(&ValueFlow::Value::isSymbolicValue));
+        return values;
+    }
+
+    std::list<ValueFlow::Value> removeImpossible(std::list<ValueFlow::Value> values)
+    {
+        values.remove_if(std::mem_fn(&ValueFlow::Value::isImpossible));
         return values;
     }
 
@@ -1747,6 +1754,30 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
     }
 
+    void valueFlowBeforeConditionConstructor()
+    {
+        const char* code;
+
+        code = "struct Fred {\n"
+               "    Fred(int *x)\n"
+               "      : i(*x) {\n"    // <- dereference x
+               "        if (!x) {}\n" // <- check x
+               "    }\n"
+               "    int i;\n"
+               "};\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+
+        code = "struct Fred {\n"
+               "    Fred(int *x)\n"
+               "      : i(*x), j(0) {\n" // <- dereference x
+               "        if (!x) {}\n"    // <- check x
+               "    }\n"
+               "    int i;\n"
+               "    int j;\n"
+               "};\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+    }
+
     void valueFlowAfterAssign() {
         const char *code;
 
@@ -2475,6 +2506,34 @@ private:
                "    }\n"
                "};\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 7U, 1));
+
+        // global variable
+        code = "int x;\n"
+               "int foo(int y) {\n"
+               "  if (y)\n"
+               "    x = 10;\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 10));
+
+        code = "namespace A { int x; }\n"
+               "int foo(int y) {\n"
+               "  if (y)\n"
+               "    A::x = 10;\n"
+               "  return A::x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 5U, 10));
+
+        // member variable
+        code = "struct Fred {\n"
+               "  int x;\n"
+               "  int foo(int y) {\n"
+               "    if (y)\n"
+               "      x = 10;\n"
+               "    return x;\n"
+               "  }\n"
+               "};";
+        ASSERT_EQUALS(true, testValueOfX(code, 6U, 10));
     }
 
     void valueFlowAfterSwap()
@@ -2958,6 +3017,51 @@ private:
                "    int a = x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 12U, 3));
+
+        code = "long long f(const long long& x, const long long& y) {\n"
+               "    switch (s) {\n"
+               "    case 0:\n"
+               "        if (x >= 64)\n"
+               "            return 0;\n"
+               "        return (long long)y << (long long)x;\n"
+               "    case 1:\n"
+               "        if (x >= 64) {\n"
+               "        }\n"
+               "    }\n"
+               "    return 0; \n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 6U, 63));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 6U, 64));
+
+        code = "long long f(const long long& x, const long long& y) {\n"
+               "    switch (s) {\n"
+               "    case 0:\n"
+               "        if (x >= 64)\n"
+               "            return 0;\n"
+               "        return long long(y) << long long(x);\n"
+               "    case 1:\n"
+               "        if (x >= 64) {\n"
+               "        }\n"
+               "    }\n"
+               "    return 0; \n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 6U, 63));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 6U, 64));
+
+        code = "long long f(const long long& x, const long long& y) {\n"
+               "    switch (s) {\n"
+               "    case 0:\n"
+               "        if (x >= 64)\n"
+               "            return 0;\n"
+               "        return long long{y} << long long{x};\n"
+               "    case 1:\n"
+               "        if (x >= 64) {\n"
+               "        }\n"
+               "    }\n"
+               "    return 0; \n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 6U, 63));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 6U, 64));
 
         code = "int g(int x) { throw 0; }\n"
                "void f(int x) {\n"
@@ -4317,6 +4421,22 @@ private:
 
         code = "bool f() {\n"
                "  const int s{ 4 };"
+               "  return s == 4;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT(value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
+
+        code = "bool f() {\n"
+               "  const int s = int( 4 );"
+               "  return s == 4;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT(value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
+
+        code = "bool f() {\n"
+               "  const int s = int{ 4 };"
                "  return s == 4;\n" // <- known value
                "}";
         value = valueOfTok(code, "==");

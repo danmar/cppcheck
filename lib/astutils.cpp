@@ -215,6 +215,14 @@ bool astIsGenericChar(const Token* tok)
     return !astIsPointer(tok) && tok && tok->valueType() && (tok->valueType()->type == ValueType::Type::CHAR || tok->valueType()->type == ValueType::Type::WCHAR_T);
 }
 
+bool astIsPrimitive(const Token* tok)
+{
+    const ValueType* vt = tok ? tok->valueType() : nullptr;
+    if (!vt)
+        return false;
+    return vt->isPrimitive();
+}
+
 bool astIsIntegral(const Token *tok, bool unknown)
 {
     const ValueType *vt = tok ? tok->valueType() : nullptr;
@@ -249,6 +257,15 @@ bool astIsPointer(const Token *tok)
 bool astIsSmartPointer(const Token* tok)
 {
     return tok && tok->valueType() && tok->valueType()->smartPointerTypeToken;
+}
+
+bool astIsUniqueSmartPointer(const Token* tok)
+{
+    if (!astIsSmartPointer(tok))
+        return false;
+    if (!tok->valueType()->smartPointer)
+        return false;
+    return tok->valueType()->smartPointer->unique;
 }
 
 bool astIsIterator(const Token *tok)
@@ -491,8 +508,11 @@ const Token* getParentMember(const Token * tok)
     const Token * parent = tok->astParent();
     if (!Token::simpleMatch(parent, "."))
         return tok;
-    if (tok == parent->astOperand2())
+    if (astIsRHS(tok)) {
+        if (Token::simpleMatch(parent->astOperand1(), "."))
+            return parent->astOperand1()->astOperand2();
         return parent->astOperand1();
+    }
     const Token * gparent = parent->astParent();
     if (!Token::simpleMatch(gparent, ".") || gparent->astOperand2() != parent)
         return tok;
@@ -1079,6 +1099,8 @@ static bool isUsedAsBool_internal(const Token * const tok, bool checkingParent)
             return var && (var->getTypeName() == "bool");
         }
     } else if (isForLoopCondition(tok))
+        return true;
+    else if (Token::simpleMatch(parent, "?") && astIsLHS(tok))
         return true;
 
     return isUsedAsBool_internal(parent, true);
@@ -1743,7 +1765,7 @@ bool isReturnScope(const Token* const endToken, const Library* library, const To
         if (!functionScope && Token::simpleMatch(prev->link()->previous(), ") {") &&
             Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "switch (") &&
             !Token::findsimplematch(prev->link(), "break", prev)) {
-            return true;
+            return isReturnScope(prev, library, unknownFunc, functionScope);
         }
         if (isEscaped(prev->link()->astTop(), functionScope, library))
             return true;
@@ -1944,6 +1966,9 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     if (Token::simpleMatch(tok, "{") && isTrivialConstructor(tok))
         return false;
     if (tok->isKeyword() && !isCPPCastKeyword(tok) && tok->str().compare(0,8,"operator") != 0)
+        return false;
+    // A functional cast won't modify the variable
+    if (Token::Match(tok, "%type% (|{") && tok->tokType() == Token::eType && astIsPrimitive(tok->next()))
         return false;
     const Token * parenTok = tok->next();
     if (Token::simpleMatch(parenTok, "<") && parenTok->link())
@@ -2531,6 +2556,8 @@ static void getLHSVariablesRecursive(std::vector<const Variable*>& vars, const T
         getLHSVariablesRecursive(vars, tok->next());
     } else if (Token::simpleMatch(tok, ".")) {
         getLHSVariablesRecursive(vars, tok->astOperand1());
+        getLHSVariablesRecursive(vars, tok->astOperand2());
+    } else if (Token::simpleMatch(tok, "::")) {
         getLHSVariablesRecursive(vars, tok->astOperand2());
     } else if (tok->variable()) {
         vars.push_back(tok->variable());

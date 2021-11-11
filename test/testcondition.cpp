@@ -3800,6 +3800,15 @@ private:
               "    do {} while (i++ == 0);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10582
+        check("static void fun(message_t *message) {\n"
+              "    if (message->length >= 1) {\n"
+              "        switch (data[0]) {}\n"
+              "    }\n"
+              "    uint8_t d0 = message->length > 0 ? data[0] : 0xff;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -4115,6 +4124,16 @@ private:
               "        if( s.size() < 3 ) return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10226
+        check("int f(std::vector<int>::iterator it, const std::vector<int>& vector) {\n"
+              "    if (!(it != vector.end() && it != vector.begin()))\n"
+              "        throw 0;\n"
+              "    if (it != vector.end() && *it == 0)\n"
+              "        return -1;\n"
+              "    return *it;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'it!=vector.end()' is always true\n", errout.str());
     }
 
     void alwaysTrueLoop()
