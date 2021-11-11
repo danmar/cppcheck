@@ -2885,15 +2885,6 @@ static void valueFlowReverse(TokenList* tokenlist,
     valueFlowReverse(tok, nullptr, varToken, values, tokenlist, settings);
 }
 
-static bool isUniqueSmartPointer(const Token* tok)
-{
-    if (!astIsSmartPointer(tok))
-        return false;
-    if (!tok->valueType()->smartPointer)
-        return false;
-    return tok->valueType()->smartPointer->unique;
-}
-
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
 {
     std::string result;
@@ -3090,8 +3081,7 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
             return {{tok, std::move(errorPath)}};
         const Variable *tokvar = vartok->variable();
         const bool isContainer = astIsContainer(vartok) && !astIsPointer(vartok);
-        if (!isUniqueSmartPointer(vartok) && !isContainer &&
-            !(tokvar && tokvar->isArray() && !tokvar->isArgument()) &&
+        if (!astIsUniqueSmartPointer(vartok) && !isContainer && !(tokvar && tokvar->isArray() && !tokvar->isArgument()) &&
             (Token::Match(vartok->astParent(), "[|*") || vartok->astParent()->originalName() == "->")) {
             for (const ValueFlow::Value &v : vartok->values()) {
                 if (!v.isLocalLifetimeValue())
@@ -4158,7 +4148,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             valueFlowLifetimeFunction(tok, tokenlist, errorLogger, settings);
         }
         // Unique pointer lifetimes
-        else if (isUniqueSmartPointer(tok) && astIsLHS(tok) && Token::simpleMatch(tok->astParent(), ". get ( )")) {
+        else if (astIsUniqueSmartPointer(tok) && astIsLHS(tok) && Token::simpleMatch(tok->astParent(), ". get ( )")) {
             Token* ptok = tok->astParent()->tokAt(2);
             ErrorPath errorPath = {{ptok, "Raw pointer to smart pointer created here."}};
             ValueFlow::Value value;

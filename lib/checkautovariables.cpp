@@ -557,6 +557,21 @@ static const Token* getParentLifetime(bool cpp, const Token* tok, const Library*
     if (std::any_of(it.base() - 1, members.end() - 1, [&](const Token* tok2) {
         if (astIsPointer(tok2) || astIsContainerView(tok2) || astIsIterator(tok2))
             return true;
+        if (!astIsUniqueSmartPointer(tok2)) {
+            if (astIsSmartPointer(tok2))
+                return true;
+            const Token* dotTok = tok2->next();
+            if (!Token::simpleMatch(dotTok, ".")) {
+                const Token* endTok = nextAfterAstRightmostLeaf(tok2);
+                if (Token::simpleMatch(endTok, "."))
+                    dotTok = endTok;
+                else if (Token::simpleMatch(endTok->next(), "."))
+                    dotTok = endTok->next();
+            }
+            // If we are dereferencing the member variable then treat it as borrowed
+            if (Token::simpleMatch(dotTok, ".") && dotTok->originalName() == "->")
+                return true;
+        }
         const Variable* var = tok2->variable();
         return var && var->isReference();
     }))
