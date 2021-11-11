@@ -82,6 +82,7 @@ bool astIsBool(const Token *tok);
 bool astIsPointer(const Token *tok);
 
 bool astIsSmartPointer(const Token* tok);
+bool astIsUniqueSmartPointer(const Token* tok);
 
 bool astIsIterator(const Token *tok);
 

@@ -259,6 +259,15 @@ bool astIsSmartPointer(const Token* tok)
     return tok && tok->valueType() && tok->valueType()->smartPointerTypeToken;
 }
 
+bool astIsUniqueSmartPointer(const Token* tok)
+{
+    if (!astIsSmartPointer(tok))
+        return false;
+    if (!tok->valueType()->smartPointer)
+        return false;
+    return tok->valueType()->smartPointer->unique;
+}
+
 bool astIsIterator(const Token *tok)
 {
     return tok && tok->valueType() && tok->valueType()->type == ValueType::Type::ITERATOR;

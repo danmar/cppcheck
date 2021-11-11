@@ -2482,6 +2482,15 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    std::map<std::string, int> m;\n"
+              "    int* f(std::string s) {\n"
+              "        auto r = m.emplace(name, name);\n"
+              "        return &(r.first->second);\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeContainerView()
