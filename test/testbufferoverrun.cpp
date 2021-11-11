@@ -4737,6 +4737,19 @@ private:
               "    return foo(1, &single_value);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(const char* app, size_t applen) {\n" // #10137
+              "    char* tmp_de = NULL;\n"
+              "    char** str = &tmp_de;\n"
+              "    char* tmp = (char*)realloc(*str, applen + 1);\n"
+              "    if (tmp) {\n"
+              "        *str = tmp;\n"
+              "        memcpy(*str, app, applen);\n"
+              "        (*str)[applen] = '\\0';\n"
+              "    }\n"
+              "    free(*str);\n"
+              "}\n", "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
