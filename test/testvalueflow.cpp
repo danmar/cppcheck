@@ -81,6 +81,7 @@ private:
         TEST_CASE(valueFlowBeforeConditionSwitch);
         TEST_CASE(valueFlowBeforeConditionTernaryOp);
         TEST_CASE(valueFlowBeforeConditionForward);
+        TEST_CASE(valueFlowBeforeConditionConstructor);
 
         TEST_CASE(valueFlowAfterAssign);
         TEST_CASE(valueFlowAfterSwap);
@@ -1751,6 +1752,30 @@ private:
                "    int b = x;\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 123));
+    }
+
+    void valueFlowBeforeConditionConstructor()
+    {
+        const char* code;
+
+        code = "struct Fred {\n"
+               "    Fred(int *x)\n"
+               "      : i(*x) {\n"    // <- dereference x
+               "        if (!x) {}\n" // <- check x
+               "    }\n"
+               "    int i;\n"
+               "};\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
+
+        code = "struct Fred {\n"
+               "    Fred(int *x)\n"
+               "      : i(*x), j(0) {\n" // <- dereference x
+               "        if (!x) {}\n"    // <- check x
+               "    }\n"
+               "    int i;\n"
+               "    int j;\n"
+               "};\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
     }
 
     void valueFlowAfterAssign() {
