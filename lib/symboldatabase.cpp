@@ -4895,7 +4895,7 @@ const Scope *Scope::findRecordInBase(const std::string & name) const
 std::vector<const Scope*> Scope::findAssociatedScopes() const
 {
     std::vector<const Scope*> result = {this};
-    if (isClassOrStruct() || definedType || !definedType->derivedFrom.empty()) {
+    if (isClassOrStruct() && definedType && !definedType->derivedFrom.empty()) {
         const std::vector<Type::BaseInfo>& derivedFrom = definedType->derivedFrom;
         for (const Type::BaseInfo& i : derivedFrom) {
             const Type* base = i.type;
