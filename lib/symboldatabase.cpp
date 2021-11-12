@@ -4892,6 +4892,24 @@ const Scope *Scope::findRecordInBase(const std::string & name) const
     return nullptr;
 }
 
+std::vector<const Scope*> Scope::findAssociatedScopes() const
+{
+    std::vector<const Scope*> result = {this};
+    if (isClassOrStruct() || definedType || !definedType->derivedFrom.empty()) {
+        const std::vector<Type::BaseInfo> &derivedFrom = definedType->derivedFrom;
+        for (const Type::BaseInfo & i : derivedFrom) {
+            const Type *base = i.type;
+            if (base && base->classScope) {
+                if (contains(result, base->classScope))
+                    continue;
+                std::vector<const Scope*> baseScopes = base->classScope->findAssociatedScopes();
+                result.insert(result.end(), baseScopes.begin(), baseScopes.end());
+            }
+        }
+    }
+    return result;
+}
+
 //---------------------------------------------------------------------------
 
 static void checkVariableCallMatch(const Variable* callarg, const Variable* funcarg, size_t& same, size_t& fallback1, size_t& fallback2)

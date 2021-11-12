@@ -751,18 +751,20 @@ bool exprDependsOnThis(const Token* expr, bool onVar, nonneg int depth)
         return true;
     ++depth;
     // calling nonstatic method?
-    if (Token::Match(expr->previous(), "!!:: %name% (") && expr->function() && expr->function()->nestedIn && expr->function()->nestedIn->isClassOrStruct()) {
+    if (Token::Match(expr->previous(), "!!:: %name% (") && expr->function() && expr->function()->nestedIn &&
+        expr->function()->nestedIn->isClassOrStruct()) {
         // is it a method of this?
         const Scope* fScope = expr->scope();
         while (!fScope->functionOf && fScope->nestedIn)
             fScope = fScope->nestedIn;
-        const Scope* nestedIn = fScope->functionOf;
-        if (nestedIn && nestedIn->function)
-            nestedIn = nestedIn->function->token->scope();
-        while (nestedIn && nestedIn != expr->function()->nestedIn) {
-            nestedIn = nestedIn->nestedIn;
-        }
-        return nestedIn == expr->function()->nestedIn;
+
+        const Scope* classScope = fScope->functionOf;
+        if (classScope && classScope->function)
+            classScope = classScope->function->token->scope();
+
+        if (classScope && classScope->isClassOrStruct())
+            return contains(classScope->findAssociatedScopes(), expr->function()->nestedIn);
+        return false;
     } else if (onVar && Token::Match(expr, "%var%") && expr->variable()) {
         const Variable* var = expr->variable();
         return (var->isPrivate() || var->isPublic() || var->isProtected());

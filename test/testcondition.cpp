@@ -3894,6 +3894,25 @@ private:
               "    return delta;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10555
+        check("struct C {\n"
+              "  int GetI() const { return i; }\n"
+              "  int i{};\n"
+              "};\n"
+              "struct B {\n"
+              "    C *m_PC{};\n"
+              "    Modify();\n"
+              "};\n"
+              "struct D : B {\n"
+              "  void test();  \n"
+              "};\n"
+              "void D::test() {\n"
+              "    const int I = m_PC->GetI();\n"
+              "    Modify();\n"
+              "    if (m_PC->GetI() != I) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
