@@ -67,8 +67,8 @@ static bool isElementAccessYield(const Library::Container::Yield& yield)
 }
 
 static bool containerYieldsElement(const Library::Container* container, const Token* parent) {
-    Library::Container::Yield yield = container->getYield(parent->strAt(1));
     if (Token::Match(parent, ". %name% (")) {
+        Library::Container::Yield yield = container->getYield(parent->strAt(1));
         if (isElementAccessYield(yield))
             return true;
     }
@@ -77,8 +77,8 @@ static bool containerYieldsElement(const Library::Container* container, const To
 
 static const Token* getContainerIndex(const Library::Container* container, const Token* parent)
 {
-    Library::Container::Yield yield = container->getYield(parent->strAt(1));
     if (Token::Match(parent, ". %name% (")) {
+        Library::Container::Yield yield = container->getYield(parent->strAt(1));
         if (isElementAccessYield(yield) && !Token::simpleMatch(parent->tokAt(2), "( )"))
             return parent->tokAt(2)->astOperand2();
     }
@@ -86,6 +86,18 @@ static const Token* getContainerIndex(const Library::Container* container, const
         return nullptr;
     if (Token::simpleMatch(parent, "["))
         return parent->astOperand2();
+    return nullptr;
+}
+
+static const Token* getContainerFromSize(const Library::Container* container, const Token* tok)
+{
+    if (!tok)
+        return nullptr;
+    if (Token::Match(tok->tokAt(-2), ". %name% (")) {
+        Library::Container::Yield yield = container->getYield(tok->strAt(-1));
+        if (yield == Library::Container::Yield::SIZE)
+            return tok->tokAt(-2)->astOperand1();
+    }
     return nullptr;
 }
 
@@ -131,19 +143,42 @@ void CheckStl::outOfBounds()
                     }
                 }
             }
+            if (indexTok && !indexTok->hasKnownIntValue()) {
+                const ValueFlow::Value* value = ValueFlow::findValue(indexTok->values(), mSettings, [&](const ValueFlow::Value& v) {
+                    if (!v.isSymbolicValue())
+                        return false;
+                    if (v.isImpossible())
+                        return false;
+                    if (v.intvalue < 0)
+                        return false;
+                    const Token* containerTok = getContainerFromSize(container, v.tokvalue);
+                    if (!containerTok)
+                        return false;
+                    return containerTok->exprId() == tok->exprId();
+                });
+                if (!value)
+                    continue;
+                outOfBoundsError(accessTok, tok->expressionString(), nullptr, indexTok->expressionString(), value);
+            }
         }
     }
 }
 
-static std::string indexValueString(const ValueFlow::Value& indexValue)
+static std::string indexValueString(const ValueFlow::Value& indexValue, const std::string &containerName = "")
 {
     if (indexValue.isIteratorStartValue())
         return "at position " + MathLib::toString(indexValue.intvalue) + " from the beginning";
     if (indexValue.isIteratorEndValue())
         return "at position " + MathLib::toString(-indexValue.intvalue) + " from the end";
+    std::string indexString = MathLib::toString(indexValue.intvalue);
+    if (indexValue.isSymbolicValue()) {
+        indexString = containerName + ".size()";
+        if (indexValue.intvalue != 0)
+            indexString += "+" + MathLib::toString(indexValue.intvalue);
+    }
     if (indexValue.bound == ValueFlow::Value::Bound::Lower)
-        return "greater or equal to " + MathLib::toString(indexValue.intvalue);
-    return MathLib::toString(indexValue.intvalue);
+        return "greater or equal to " + indexString;
+    return indexString;
 }
 
 void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerName, const ValueFlow::Value *containerSize, const std::string &index, const ValueFlow::Value *indexValue)
@@ -155,8 +190,12 @@ void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerNa
     const std::string expression = tok ? tok->expressionString() : (containerName+"[x]");
 
     std::string errmsg;
-    if (!containerSize)
-        errmsg = "Out of bounds access in expression '" + expression + "'";
+    if (!containerSize) {
+        if (indexValue && indexValue->condition)
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(indexValue->condition) + " or '" + index + "' can have the value " + indexValueString(*indexValue, containerName) + ". Expression '" + expression + "' cause access out of bounds.";
+        else
+            errmsg = "Out of bounds access in expression '" + expression + "'";
+    }
     else if (containerSize->intvalue == 0) {
         if (containerSize->condition)
             errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or expression '" + expression + "' cause access out of bounds.";
