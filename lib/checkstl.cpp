@@ -63,7 +63,30 @@ static const struct CWE CWE834(834U);   // Excessive Iteration
 
 static bool isElementAccessYield(const Library::Container::Yield& yield)
 {
-    return yield == Library::Container::Yield::ITEM || yield == Library::Container::Yield::AT_INDEX;
+    return contains({Library::Container::Yield::ITEM, Library::Container::Yield::AT_INDEX}, yield);
+}
+
+static bool containerYieldsElement(const Library::Container* container, const Token* parent) {
+    Library::Container::Yield yield = container->getYield(parent->strAt(1));
+    if (Token::Match(parent, ". %name% (")) {
+        if (isElementAccessYield(yield))
+            return true;
+    }
+    return false;
+}
+
+static const Token* getContainerIndex(const Library::Container* container, const Token* parent)
+{
+    Library::Container::Yield yield = container->getYield(parent->strAt(1));
+    if (Token::Match(parent, ". %name% (")) {
+        if (isElementAccessYield(yield) && !Token::simpleMatch(parent->tokAt(2), "( )"))
+            return parent->tokAt(2)->astOperand2();
+    }
+    if (!container->arrayLike_indexOp && !container->stdStringLike)
+        return nullptr;
+    if (Token::simpleMatch(parent, "["))
+        return parent->astOperand2();
+    return nullptr;
 }
 
 void CheckStl::outOfBounds()
@@ -74,6 +97,14 @@ void CheckStl::outOfBounds()
             if (!container)
                 continue;
             const Token * parent = astParentSkipParens(tok);
+            const Token * accessTok = parent;
+            if (Token::simpleMatch(accessTok, ".") && Token::simpleMatch(accessTok->astParent(), "("))
+                accessTok = accessTok->astParent();
+            if (astIsIterator(accessTok) && Token::simpleMatch(accessTok->astParent(), "+"))
+                accessTok = accessTok->astParent();
+            const Token * indexTok = getContainerIndex(container, parent);
+            if (indexTok == tok)
+                continue;
             for (const ValueFlow::Value &value : tok->values()) {
                 if (!value.isContainerSizeValue())
                     continue;
@@ -83,53 +114,19 @@ void CheckStl::outOfBounds()
                     continue;
                 if (!value.errorSeverity() && !mSettings->severity.isEnabled(Severity::warning))
                     continue;
-                if (Token::Match(parent, ". %name% (") && isElementAccessYield(container->getYield(parent->strAt(1)))) {
-                    if (value.intvalue == 0) {
-                        outOfBoundsError(parent->tokAt(2), tok->expressionString(), &value, parent->strAt(1), nullptr);
-                        continue;
-                    }
-
-                    const Token* indexTok = parent->tokAt(2)->astOperand2();
-                    if (!indexTok)
-                        continue;
+                if (value.intvalue == 0 && (indexTok || containerYieldsElement(container, parent))) {
+                    std::string indexExpr;
+                    if (indexTok && !indexTok->hasKnownValue())
+                        indexExpr = indexTok->expressionString();
+                    outOfBoundsError(accessTok, tok->expressionString(), &value, indexExpr, nullptr);
+                    continue;
+                }
+                if (indexTok) {
                     std::vector<ValueFlow::Value> indexValues =
                         ValueFlow::isOutOfBounds(value, indexTok, mSettings->severity.isEnabled(Severity::warning));
                     if (!indexValues.empty()) {
                         outOfBoundsError(
-                            parent, tok->expressionString(), &value, indexTok->expressionString(), &indexValues.front());
-                        continue;
-                    }
-                }
-                if (Token::Match(tok, "%name% . %name% (") && container->getYield(tok->strAt(2)) == Library::Container::Yield::START_ITERATOR) {
-                    const Token *fparent = tok->tokAt(3)->astParent();
-                    const Token *other = nullptr;
-                    if (Token::simpleMatch(fparent, "+") && fparent->astOperand1() == tok->tokAt(3))
-                        other = fparent->astOperand2();
-                    else if (Token::simpleMatch(fparent, "+") && fparent->astOperand2() == tok->tokAt(3))
-                        other = fparent->astOperand1();
-                    if (other && other->hasKnownIntValue() && other->getKnownIntValue() > value.intvalue) {
-                        outOfBoundsError(fparent, tok->expressionString(), &value, other->expressionString(), &other->values().back());
-                        continue;
-                    } else if (other && !other->hasKnownIntValue() && value.isKnown() && value.intvalue==0) {
-                        outOfBoundsError(fparent, tok->expressionString(), &value, other->expressionString(), nullptr);
-                        continue;
-                    }
-                }
-                if (!container->arrayLike_indexOp && !container->stdStringLike)
-                    continue;
-                if (value.intvalue == 0 && Token::Match(parent, "[") && tok == parent->astOperand1()) {
-                    outOfBoundsError(parent, tok->expressionString(), &value, "", nullptr);
-                    continue;
-                }
-                if (container->arrayLike_indexOp && Token::Match(parent, "[")) {
-                    const Token* indexTok = parent->astOperand2();
-                    if (!indexTok)
-                        continue;
-                    std::vector<ValueFlow::Value> indexValues =
-                        ValueFlow::isOutOfBounds(value, indexTok, mSettings->severity.isEnabled(Severity::warning));
-                    if (!indexValues.empty()) {
-                        outOfBoundsError(
-                            parent, tok->expressionString(), &value, indexTok->expressionString(), &indexValues.front());
+                            accessTok, tok->expressionString(), &value, indexTok->expressionString(), &indexValues.front());
                         continue;
                     }
                 }
@@ -1175,6 +1172,9 @@ void CheckStl::stlOutOfBounds()
                 continue;
             }
 
+            if (containerToken->hasKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
+                continue;
+
             // Is it a array like container?
             const Library::Container* container = containerToken->valueType() ? containerToken->valueType()->container : nullptr;
             if (!container)
@@ -2183,6 +2183,9 @@ void CheckStl::checkDereferenceInvalidIterator2()
             continue;
         }
 
+        if (Token::Match(tok, "%assign%"))
+            continue;
+
         std::vector<ValueFlow::Value> contValues;
         std::copy_if(tok->values().begin(), tok->values().end(), std::back_inserter(contValues), [&](const ValueFlow::Value& value) {
             if (value.isImpossible())
@@ -2201,9 +2204,13 @@ void CheckStl::checkDereferenceInvalidIterator2()
                 continue;
             if (!value.isIteratorValue())
                 continue;
-            const bool isInvalidIterator = (value.isIteratorEndValue() && value.intvalue >= 0) || (value.isIteratorStartValue() && value.intvalue < 0);
+            bool isInvalidIterator = false;
             const ValueFlow::Value* cValue = nullptr;
-            if (!isInvalidIterator) {
+            if (value.isIteratorEndValue() && value.intvalue >= 0) {
+                isInvalidIterator = value.intvalue > 0;
+            } else if (value.isIteratorStartValue() && value.intvalue < 0) {
+                isInvalidIterator = true;
+            } else {
                 auto it = std::find_if(contValues.begin(), contValues.end(), [&](const ValueFlow::Value& c) {
                     if (value.isIteratorStartValue() && value.intvalue >= c.intvalue)
                         return true;
@@ -2214,17 +2221,37 @@ void CheckStl::checkDereferenceInvalidIterator2()
                 if (it == contValues.end())
                     continue;
                 cValue = &*it;
+                if (value.isIteratorStartValue() && value.intvalue > cValue->intvalue)
+                    isInvalidIterator = true;
             }
             bool inconclusive = false;
             bool unknown = false;
-            if (!CheckNullPointer::isPointerDeRef(tok, unknown, mSettings)) {
+            const Token* emptyAdvance = nullptr;
+            const Token* advanceIndex = nullptr;
+            if (cValue && cValue->intvalue == 0) {
+                if (Token::Match(tok->astParent(), "+|-") && astIsIntegral(tok->astSibling(), false)) {
+                    if (tok->astSibling() && tok->astSibling()->hasKnownIntValue()) {
+                        if (tok->astSibling()->values().front().intvalue == 0)
+                            continue;
+                    } else {
+                        advanceIndex = tok->astSibling();
+                    }
+                    emptyAdvance = tok->astParent();
+                } else if (Token::Match(tok->astParent(), "++|--")) {
+                    emptyAdvance = tok->astParent();
+                }
+            }
+            if (!CheckNullPointer::isPointerDeRef(tok, unknown, mSettings) && !isInvalidIterator && !emptyAdvance) {
                 if (!unknown)
                     continue;
                 inconclusive = true;
             }
             if (cValue) {
                 const ValueFlow::Value& lValue = getLifetimeObjValue(tok, true);
-                outOfBoundsError(tok, lValue.tokvalue->expressionString(), cValue, tok->expressionString(), &value);
+                if (emptyAdvance)
+                    outOfBoundsError(emptyAdvance, lValue.tokvalue->expressionString(), cValue, advanceIndex ? advanceIndex->expressionString() : "", nullptr);
+                else
+                    outOfBoundsError(tok, lValue.tokvalue->expressionString(), cValue, tok->expressionString(), &value);
             } else {
                 dereferenceInvalidIteratorError(tok, &value, inconclusive);
             }

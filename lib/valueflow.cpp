@@ -2955,7 +2955,7 @@ std::vector<ValueFlow::Value> getLifetimeObjValues(const Token *tok, bool inconc
             return false;
         if (!inconclusive && v.isInconclusive())
             return false;
-        if (!v.tokvalue->variable())
+        if (!v.tokvalue)
             return false;
         return true;
     };
