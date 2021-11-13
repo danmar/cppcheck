@@ -66,7 +66,8 @@ static bool isElementAccessYield(const Library::Container::Yield& yield)
     return contains({Library::Container::Yield::ITEM, Library::Container::Yield::AT_INDEX}, yield);
 }
 
-static bool containerYieldsElement(const Library::Container* container, const Token* parent) {
+static bool containerYieldsElement(const Library::Container* container, const Token* parent)
+{
     if (Token::Match(parent, ". %name% (")) {
         Library::Container::Yield yield = container->getYield(parent->strAt(1));
         if (isElementAccessYield(yield))
@@ -109,12 +110,12 @@ void CheckStl::outOfBounds()
             if (!container)
                 continue;
             const Token * parent = astParentSkipParens(tok);
-            const Token * accessTok = parent;
+            const Token* accessTok = parent;
             if (Token::simpleMatch(accessTok, ".") && Token::simpleMatch(accessTok->astParent(), "("))
                 accessTok = accessTok->astParent();
             if (astIsIterator(accessTok) && Token::simpleMatch(accessTok->astParent(), "+"))
                 accessTok = accessTok->astParent();
-            const Token * indexTok = getContainerIndex(container, parent);
+            const Token* indexTok = getContainerIndex(container, parent);
             if (indexTok == tok)
                 continue;
             for (const ValueFlow::Value &value : tok->values()) {
@@ -144,7 +145,8 @@ void CheckStl::outOfBounds()
                 }
             }
             if (indexTok && !indexTok->hasKnownIntValue()) {
-                const ValueFlow::Value* value = ValueFlow::findValue(indexTok->values(), mSettings, [&](const ValueFlow::Value& v) {
+                const ValueFlow::Value* value =
+                    ValueFlow::findValue(indexTok->values(), mSettings, [&](const ValueFlow::Value& v) {
                     if (!v.isSymbolicValue())
                         return false;
                     if (v.isImpossible())
@@ -164,7 +166,7 @@ void CheckStl::outOfBounds()
     }
 }
 
-static std::string indexValueString(const ValueFlow::Value& indexValue, const std::string &containerName = "")
+static std::string indexValueString(const ValueFlow::Value& indexValue, const std::string& containerName = "")
 {
     if (indexValue.isIteratorStartValue())
         return "at position " + MathLib::toString(indexValue.intvalue) + " from the beginning";
@@ -192,11 +194,12 @@ void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerNa
     std::string errmsg;
     if (!containerSize) {
         if (indexValue && indexValue->condition)
-            errmsg = ValueFlow::eitherTheConditionIsRedundant(indexValue->condition) + " or '" + index + "' can have the value " + indexValueString(*indexValue, containerName) + ". Expression '" + expression + "' cause access out of bounds.";
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(indexValue->condition) + " or '" + index +
+                     "' can have the value " + indexValueString(*indexValue, containerName) + ". Expression '" +
+                     expression + "' cause access out of bounds.";
         else
             errmsg = "Out of bounds access in expression '" + expression + "'";
-    }
-    else if (containerSize->intvalue == 0) {
+    } else if (containerSize->intvalue == 0) {
         if (containerSize->condition)
             errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or expression '" + expression + "' cause access out of bounds.";
         else if (indexValue == nullptr && !index.empty())
@@ -2288,7 +2291,11 @@ void CheckStl::checkDereferenceInvalidIterator2()
             if (cValue) {
                 const ValueFlow::Value& lValue = getLifetimeObjValue(tok, true);
                 if (emptyAdvance)
-                    outOfBoundsError(emptyAdvance, lValue.tokvalue->expressionString(), cValue, advanceIndex ? advanceIndex->expressionString() : "", nullptr);
+                    outOfBoundsError(emptyAdvance,
+                                     lValue.tokvalue->expressionString(),
+                                     cValue,
+                                     advanceIndex ? advanceIndex->expressionString() : "",
+                                     nullptr);
                 else
                     outOfBoundsError(tok, lValue.tokvalue->expressionString(), cValue, tok->expressionString(), &value);
             } else {
