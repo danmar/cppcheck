@@ -40,6 +40,7 @@ private:
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(outOfBounds);
+        TEST_CASE(outOfBoundsSymbolic);
         TEST_CASE(outOfBoundsIndexExpression);
         TEST_CASE(outOfBoundsIterator);
 
@@ -643,6 +644,16 @@ private:
                     "        v[i] = 1;\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void outOfBoundsSymbolic() {
+        check("void foo(std::string textline, int col) {\n"
+                "    if(col > textline.size())\n"
+                "        return false;\n"
+                "    int x = textline[col];\n"
+                "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Either the condition 'col>textline.size()' is redundant or 'col' can have the value textline.size(). Expression 'textline[col]' cause access out of bounds.\n",
+                      errout.str());
     }
 
     void outOfBoundsIndexExpression() {
