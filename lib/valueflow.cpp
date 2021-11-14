@@ -5242,9 +5242,15 @@ struct ConditionHandler {
                     return;
                 if (!Token::Match(stepTok, "++|--"))
                     return;
-                if (Token::simpleMatch(stepTok, "++") && !Token::Match(tok, "<|<=|!="))
+                std::set<ValueFlow::Value::Bound> bounds;
+                for(const ValueFlow::Value& v:thenValues) {
+                    if (v.bound != ValueFlow::Value::Bound::Point && v.isImpossible())
+                        continue;
+                    bounds.insert(v.bound);
+                }
+                if (Token::simpleMatch(stepTok, "++") && bounds.count(ValueFlow::Value::Bound::Lower) > 0)
                     return;
-                if (Token::simpleMatch(stepTok, "--") && !Token::Match(tok, ">|>=|!="))
+                if (Token::simpleMatch(stepTok, "--") && bounds.count(ValueFlow::Value::Bound::Upper) > 0)
                     return;
                 const Token* childTok = tok->astOperand1();
                 if (!childTok)
