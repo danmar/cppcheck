@@ -1695,7 +1695,7 @@ static bool isConditionKnown(const Token* tok, bool then)
     const Token* parent = tok->astParent();
     while (parent && (parent->str() == op || parent->str() == "!"))
         parent = parent->astParent();
-    return (parent && parent->str() == "(");
+    return Token::Match(parent, "(|;");
 }
 
 static const std::string& invertAssign(const std::string& assign)
