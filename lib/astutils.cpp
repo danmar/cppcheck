@@ -596,12 +596,13 @@ static T* getCondTokFromEndImpl(T* endBlock)
 }
 
 template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-static T* getInitTokImpl(T* tok) {
+static T* getInitTokImpl(T* tok)
+{
     if (!tok)
         return nullptr;
     if (Token::Match(tok, "%name% ("))
         return getInitTokImpl(tok->next());
-    if (tok->str() !=  "(")
+    if (tok->str() != "(")
         return nullptr;
     if (!Token::simpleMatch(tok->astOperand2(), ";"))
         return nullptr;
@@ -611,7 +612,8 @@ static T* getInitTokImpl(T* tok) {
 }
 
 template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-static T* getStepTokImpl(T* tok) {
+static T* getStepTokImpl(T* tok)
+{
     if (!tok)
         return nullptr;
     if (Token::Match(tok, "%name% ("))
@@ -643,21 +645,17 @@ const Token* getCondTokFromEnd(const Token* endBlock)
     return getCondTokFromEndImpl(endBlock);
 }
 
-Token* getInitTok(Token* tok)
-{
+Token* getInitTok(Token* tok) {
     return getInitTokImpl(tok);
 }
-const Token* getInitTok(const Token* tok)
-{
+const Token* getInitTok(const Token* tok) {
     return getInitTokImpl(tok);
 }
 
-Token* getStepTok(Token* tok)
-{
+Token* getStepTok(Token* tok) {
     return getStepTokImpl(tok);
 }
-const Token* getStepTok(const Token* tok)
-{
+const Token* getStepTok(const Token* tok) {
     return getStepTokImpl(tok);
 }
 

@@ -5243,7 +5243,7 @@ struct ConditionHandler {
                 if (!Token::Match(stepTok, "++|--"))
                     return;
                 std::set<ValueFlow::Value::Bound> bounds;
-                for(const ValueFlow::Value& v:thenValues) {
+                for (const ValueFlow::Value& v : thenValues) {
                     if (v.bound != ValueFlow::Value::Bound::Point && v.isImpossible())
                         continue;
                     bounds.insert(v.bound);
@@ -5260,7 +5260,12 @@ struct ConditionHandler {
                 if (childTok->varId() != cond.vartok->varId())
                     return;
                 const Token* startBlock = top->link()->next();
-                if (isVariableChanged(startBlock, startBlock->link(), cond.vartok->varId(), cond.vartok->variable()->isGlobal(), settings, tokenlist->isCPP()))
+                if (isVariableChanged(startBlock,
+                                      startBlock->link(),
+                                      cond.vartok->varId(),
+                                      cond.vartok->variable()->isGlobal(),
+                                      settings,
+                                      tokenlist->isCPP()))
                     return;
                 // Check if condition in for loop is always false
                 const Token* initTok = getInitTok(top);
@@ -5271,8 +5276,8 @@ struct ConditionHandler {
                 if (result == 0)
                     return;
                 // Remove condition since for condition is not redundant
-                for(std::list<ValueFlow::Value>* values:{&thenValues, &elseValues}) {
-                    for(ValueFlow::Value& v:*values) {
+                for (std::list<ValueFlow::Value>* values : {&thenValues, &elseValues}) {
+                    for (ValueFlow::Value& v : *values) {
                         v.condition = nullptr;
                         v.conditional = true;
                     }
@@ -5377,13 +5382,13 @@ struct ConditionHandler {
                     values = thenValues;
                 } else {
                     std::copy_if(thenValues.begin(),
-                                    thenValues.end(),
-                                    std::back_inserter(values),
-                                    std::mem_fn(&ValueFlow::Value::isPossible));
+                                 thenValues.end(),
+                                 std::back_inserter(values),
+                                 std::mem_fn(&ValueFlow::Value::isPossible));
                     std::copy_if(elseValues.begin(),
-                                    elseValues.end(),
-                                    std::back_inserter(values),
-                                    std::mem_fn(&ValueFlow::Value::isPossible));
+                                 elseValues.end(),
+                                 std::back_inserter(values),
+                                 std::mem_fn(&ValueFlow::Value::isPossible));
                 }
 
                 if (values.empty())
