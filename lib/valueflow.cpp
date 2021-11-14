@@ -5221,144 +5221,187 @@ struct ConditionHandler {
                 }
             }
 
-            if (top && Token::Match(top->previous(), "if|while (") && !top->previous()->isExpandedMacro()) {
-                // if astParent is "!" we need to invert codeblock
-                {
-                    const Token* tok2 = tok;
-                    while (tok2->astParent()) {
-                        const Token* parent = tok2->astParent();
-                        while (parent && parent->str() == "&&")
-                            parent = parent->astParent();
-                        if (parent && (parent->str() == "!" || Token::simpleMatch(parent, "== false")))
-                            std::swap(thenValues, elseValues);
-                        tok2 = parent;
-                    }
-                }
+            if (!top)
+                return;
 
-                bool deadBranch[] = {false, false};
-                // start token of conditional code
-                Token* startTokens[] = {nullptr, nullptr};
-                // determine startToken(s)
-                if (Token::simpleMatch(top->link(), ") {"))
-                    startTokens[0] = top->link()->next();
-                if (Token::simpleMatch(top->link()->linkAt(1), "} else {"))
-                    startTokens[1] = top->link()->linkAt(1)->tokAt(2);
+            if (top->previous()->isExpandedMacro())
+                return;
 
-                int changeBlock = -1;
-                int bailBlock = -1;
+            if (!Token::Match(top->previous(), "if|while|for ("))
+                return;
 
-                for (int i = 0; i < 2; i++) {
-                    const Token* const startToken = startTokens[i];
-                    if (!startToken)
-                        continue;
-                    std::list<ValueFlow::Value>& values = (i == 0 ? thenValues : elseValues);
-                    valueFlowSetConditionToKnown(tok, values, i == 0);
-
-                    Analyzer::Result r =
-                        forward(startTokens[i], startTokens[i]->link(), cond.vartok, values, tokenlist, settings);
-                    deadBranch[i] = r.terminate == Analyzer::Terminate::Escape;
-                    if (r.action.isModified() && !deadBranch[i])
-                        changeBlock = i;
-                    if (r.terminate != Analyzer::Terminate::None && r.terminate != Analyzer::Terminate::Escape &&
-                        r.terminate != Analyzer::Terminate::Modified)
-                        bailBlock = i;
-                    changeKnownToPossible(values);
-                }
-                if (changeBlock >= 0 && !Token::simpleMatch(top->previous(), "while (")) {
-                    if (settings->debugwarnings)
-                        bailout(tokenlist,
-                                errorLogger,
-                                startTokens[changeBlock]->link(),
-                                "valueFlowAfterCondition: " + cond.vartok->expressionString() +
-                                " is changed in conditional block");
+            if (top->previous()->str() == "for") {
+                if (!Token::Match(tok, "%comp%"))
                     return;
-                } else if (bailBlock >= 0) {
+                if (!Token::simpleMatch(tok->astParent(), ";"))
+                    return;
+                const Token* stepTok = getStepTok(top);
+                if (cond.vartok->varId() == 0)
+                    return;
+                if (!cond.vartok->variable())
+                    return;
+                if (!Token::Match(stepTok, "++|--"))
+                    return;
+                if (Token::simpleMatch(stepTok, "++") && !Token::Match(tok, "<|<=|!="))
+                    return;
+                if (Token::simpleMatch(stepTok, "--") && !Token::Match(tok, ">|>=|!="))
+                    return;
+                const Token* childTok = tok->astOperand1();
+                if (!childTok)
+                    childTok = tok->astOperand2();
+                if (!childTok)
+                    return;
+                if (childTok->varId() != cond.vartok->varId())
+                    return;
+                const Token* startBlock = top->link()->next();
+                if (isVariableChanged(startBlock, startBlock->link(), cond.vartok->varId(), cond.vartok->variable()->isGlobal(), settings, tokenlist->isCPP()))
+                    return;
+                // Check if condition in for loop is always false
+                const Token* initTok = getInitTok(top);
+                ProgramMemory pm;
+                execute(initTok, &pm, nullptr, nullptr);
+                MathLib::bigint result = 1;
+                execute(tok, &pm, &result, nullptr);
+                if (result == 0)
+                    return;
+            }
+
+            // if astParent is "!" we need to invert codeblock
+            {
+                const Token* tok2 = tok;
+                while (tok2->astParent()) {
+                    const Token* parent = tok2->astParent();
+                    while (parent && parent->str() == "&&")
+                        parent = parent->astParent();
+                    if (parent && (parent->str() == "!" || Token::simpleMatch(parent, "== false")))
+                        std::swap(thenValues, elseValues);
+                    tok2 = parent;
+                }
+            }
+
+            bool deadBranch[] = {false, false};
+            // start token of conditional code
+            Token* startTokens[] = {nullptr, nullptr};
+            // determine startToken(s)
+            if (Token::simpleMatch(top->link(), ") {"))
+                startTokens[0] = top->link()->next();
+            if (Token::simpleMatch(top->link()->linkAt(1), "} else {"))
+                startTokens[1] = top->link()->linkAt(1)->tokAt(2);
+
+            int changeBlock = -1;
+            int bailBlock = -1;
+
+            for (int i = 0; i < 2; i++) {
+                const Token* const startToken = startTokens[i];
+                if (!startToken)
+                    continue;
+                std::list<ValueFlow::Value>& values = (i == 0 ? thenValues : elseValues);
+                valueFlowSetConditionToKnown(tok, values, i == 0);
+
+                Analyzer::Result r =
+                    forward(startTokens[i], startTokens[i]->link(), cond.vartok, values, tokenlist, settings);
+                deadBranch[i] = r.terminate == Analyzer::Terminate::Escape;
+                if (r.action.isModified() && !deadBranch[i])
+                    changeBlock = i;
+                if (r.terminate != Analyzer::Terminate::None && r.terminate != Analyzer::Terminate::Escape &&
+                    r.terminate != Analyzer::Terminate::Modified)
+                    bailBlock = i;
+                changeKnownToPossible(values);
+            }
+            if (changeBlock >= 0 && !Token::simpleMatch(top->previous(), "while (")) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist,
+                            errorLogger,
+                            startTokens[changeBlock]->link(),
+                            "valueFlowAfterCondition: " + cond.vartok->expressionString() +
+                            " is changed in conditional block");
+                return;
+            } else if (bailBlock >= 0) {
+                if (settings->debugwarnings)
+                    bailout(tokenlist,
+                            errorLogger,
+                            startTokens[bailBlock]->link(),
+                            "valueFlowAfterCondition: bailing in conditional block");
+                return;
+            }
+
+            // After conditional code..
+            if (Token::simpleMatch(top->link(), ") {")) {
+                Token* after = top->link()->linkAt(1);
+                bool dead_if = deadBranch[0];
+                bool dead_else = deadBranch[1];
+                const Token* unknownFunction = nullptr;
+                if (tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "while ("))
+                    dead_if = !isBreakScope(after);
+                else if (!dead_if)
+                    dead_if = isReturnScope(after, &settings->library, &unknownFunction);
+
+                if (!dead_if && unknownFunction) {
                     if (settings->debugwarnings)
-                        bailout(tokenlist,
-                                errorLogger,
-                                startTokens[bailBlock]->link(),
-                                "valueFlowAfterCondition: bailing in conditional block");
+                        bailout(tokenlist, errorLogger, unknownFunction, "possible noreturn scope");
                     return;
                 }
 
-                // After conditional code..
-                if (Token::simpleMatch(top->link(), ") {")) {
-                    Token* after = top->link()->linkAt(1);
-                    bool dead_if = deadBranch[0];
-                    bool dead_else = deadBranch[1];
-                    const Token* unknownFunction = nullptr;
-                    if (tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "while ("))
-                        dead_if = !isBreakScope(after);
-                    else if (!dead_if)
-                        dead_if = isReturnScope(after, &settings->library, &unknownFunction);
-
-                    if (!dead_if && unknownFunction) {
+                if (Token::simpleMatch(after, "} else {")) {
+                    after = after->linkAt(2);
+                    unknownFunction = nullptr;
+                    if (!dead_else)
+                        dead_else = isReturnScope(after, &settings->library, &unknownFunction);
+                    if (!dead_else && unknownFunction) {
                         if (settings->debugwarnings)
                             bailout(tokenlist, errorLogger, unknownFunction, "possible noreturn scope");
                         return;
                     }
-
-                    if (Token::simpleMatch(after, "} else {")) {
-                        after = after->linkAt(2);
-                        unknownFunction = nullptr;
-                        if (!dead_else)
-                            dead_else = isReturnScope(after, &settings->library, &unknownFunction);
-                        if (!dead_else && unknownFunction) {
-                            if (settings->debugwarnings)
-                                bailout(tokenlist, errorLogger, unknownFunction, "possible noreturn scope");
-                            return;
-                        }
-                    }
-
-                    if (dead_if && dead_else)
-                        return;
-
-                    std::list<ValueFlow::Value> values;
-                    if (dead_if) {
-                        values = elseValues;
-                    } else if (dead_else) {
-                        values = thenValues;
-                    } else {
-                        std::copy_if(thenValues.begin(),
-                                     thenValues.end(),
-                                     std::back_inserter(values),
-                                     std::mem_fn(&ValueFlow::Value::isPossible));
-                        std::copy_if(elseValues.begin(),
-                                     elseValues.end(),
-                                     std::back_inserter(values),
-                                     std::mem_fn(&ValueFlow::Value::isPossible));
-                    }
-
-                    if (values.empty())
-                        return;
-
-                    if (dead_if || dead_else) {
-                        const Token* parent = tok->astParent();
-                        // Skip the not operator
-                        while (Token::simpleMatch(parent, "!"))
-                            parent = parent->astParent();
-                        bool possible = false;
-                        if (Token::Match(parent, "&&|%oror%")) {
-                            std::string op = parent->str();
-                            while (parent && parent->str() == op)
-                                parent = parent->astParent();
-                            if (Token::simpleMatch(parent, "!") || Token::simpleMatch(parent, "== false"))
-                                possible = op == "||";
-                            else
-                                possible = op == "&&";
-                        }
-                        if (possible) {
-                            values.remove_if(std::mem_fn(&ValueFlow::Value::isImpossible));
-                            changeKnownToPossible(values);
-                        } else {
-                            valueFlowSetConditionToKnown(tok, values, true);
-                            valueFlowSetConditionToKnown(tok, values, false);
-                        }
-                    }
-                    if (values.empty())
-                        return;
-                    forward(after, scope->bodyEnd, cond.vartok, values, tokenlist, settings);
                 }
+
+                if (dead_if && dead_else)
+                    return;
+
+                std::list<ValueFlow::Value> values;
+                if (dead_if) {
+                    values = elseValues;
+                } else if (dead_else) {
+                    values = thenValues;
+                } else {
+                    std::copy_if(thenValues.begin(),
+                                    thenValues.end(),
+                                    std::back_inserter(values),
+                                    std::mem_fn(&ValueFlow::Value::isPossible));
+                    std::copy_if(elseValues.begin(),
+                                    elseValues.end(),
+                                    std::back_inserter(values),
+                                    std::mem_fn(&ValueFlow::Value::isPossible));
+                }
+
+                if (values.empty())
+                    return;
+
+                if (dead_if || dead_else) {
+                    const Token* parent = tok->astParent();
+                    // Skip the not operator
+                    while (Token::simpleMatch(parent, "!"))
+                        parent = parent->astParent();
+                    bool possible = false;
+                    if (Token::Match(parent, "&&|%oror%")) {
+                        std::string op = parent->str();
+                        while (parent && parent->str() == op)
+                            parent = parent->astParent();
+                        if (Token::simpleMatch(parent, "!") || Token::simpleMatch(parent, "== false"))
+                            possible = op == "||";
+                        else
+                            possible = op == "&&";
+                    }
+                    if (possible) {
+                        values.remove_if(std::mem_fn(&ValueFlow::Value::isImpossible));
+                        changeKnownToPossible(values);
+                    } else {
+                        valueFlowSetConditionToKnown(tok, values, true);
+                        valueFlowSetConditionToKnown(tok, values, false);
+                    }
+                }
+                if (values.empty())
+                    return;
+                forward(after, scope->bodyEnd, cond.vartok, values, tokenlist, settings);
             }
         });
     }

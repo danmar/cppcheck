@@ -693,7 +693,8 @@ void execute(const Token* expr, ProgramMemory* const programMemory, MathLib::big
 {
     ValueFlow::Value v = execute(expr, *programMemory);
     if (!v.isIntValue() || v.isImpossible())
-        *error = true;
-    else
+        if (error)
+            *error = true;
+    else if (result)
         *result = v.intvalue;
 }
