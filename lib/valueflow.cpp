@@ -5264,6 +5264,13 @@ struct ConditionHandler {
                 execute(tok, &pm, &result, nullptr);
                 if (result == 0)
                     return;
+                // Remove condition since for condition is not redundant
+                for(std::list<ValueFlow::Value>* values:{&thenValues, &elseValues}) {
+                    for(ValueFlow::Value& v:*values) {
+                        v.condition = nullptr;
+                        v.conditional = true;
+                    }
+                }
             }
 
             // if astParent is "!" we need to invert codeblock

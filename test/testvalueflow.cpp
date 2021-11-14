@@ -1317,7 +1317,8 @@ private:
                "  for (x = a; x < 50; x++) {}\n"
                "  b = x;\n"
                "}\n";
-        ASSERT_EQUALS("3,After for loop, x has value 50\n",
+        ASSERT_EQUALS("3,Assuming that condition 'x<50' is not redundant\n"
+                      "3,Assuming that condition 'x<50' is not redundant\n",
                       getErrorPathForX(code, 4U));
     }
 
