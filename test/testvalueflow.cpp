@@ -6647,6 +6647,14 @@ private:
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 11U, "d", 0));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 11U, 0));
+
+        code = "void f(int * p, int len) {\n"
+              "    for(int x = 0; x < len; ++x) {\n"
+              "        p[x] = 1;\n"
+              "    }\n"
+              "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, "len", -1));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "len", 0));
     }
 
     void valueFlowSymbolicIdentity()
