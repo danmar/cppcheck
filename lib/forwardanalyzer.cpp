@@ -784,34 +784,6 @@ struct ForwardTraversal {
         return parent && (parent->str() == ":" || parent->astOperand2() == tok);
     }
 
-    static Token* getInitTok(Token* tok) {
-        if (!tok)
-            return nullptr;
-        if (Token::Match(tok, "%name% ("))
-            return getInitTok(tok->next());
-        if (tok->str() !=  "(")
-            return nullptr;
-        if (!Token::simpleMatch(tok->astOperand2(), ";"))
-            return nullptr;
-        if (Token::simpleMatch(tok->astOperand2()->astOperand1(), ";"))
-            return nullptr;
-        return tok->astOperand2()->astOperand1();
-    }
-
-    static Token* getStepTok(Token* tok) {
-        if (!tok)
-            return nullptr;
-        if (Token::Match(tok, "%name% ("))
-            return getStepTok(tok->next());
-        if (tok->str() != "(")
-            return nullptr;
-        if (!Token::simpleMatch(tok->astOperand2(), ";"))
-            return nullptr;
-        if (!Token::simpleMatch(tok->astOperand2()->astOperand2(), ";"))
-            return nullptr;
-        return tok->astOperand2()->astOperand2()->astOperand2();
-    }
-
     static Token* getStepTokFromEnd(Token* tok) {
         if (!Token::simpleMatch(tok, "}"))
             return nullptr;
