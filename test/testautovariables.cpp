@@ -2474,6 +2474,13 @@ private:
               true);
         ASSERT_EQUALS("", errout.str());
 
+        check("std::string f(std::string s) {\n"
+              "    std::string r = { s.begin(), s.end() };\n"
+              "    return r;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
         check("struct A {\n"
               "    std::vector<std::unique_ptr<int>> mA;\n"
               "    void f(std::unique_ptr<int> a) {\n"
