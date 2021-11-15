@@ -1192,6 +1192,8 @@ public:
 
     const Scope *findRecordInBase(const std::string &name) const;
 
+    std::vector<const Scope*> findAssociatedScopes() const;
+
 private:
     /**
      * @brief helper function for getVariableList()

@@ -126,6 +126,12 @@ bool astIsRHS(const Token* tok);
 Token* getCondTok(Token* tok);
 const Token* getCondTok(const Token* tok);
 
+Token* getInitTok(Token* tok);
+const Token* getInitTok(const Token* tok);
+
+Token* getStepTok(Token* tok);
+const Token* getStepTok(const Token* tok);
+
 Token* getCondTokFromEnd(Token* endBlock);
 const Token* getCondTokFromEnd(const Token* endBlock);
 
