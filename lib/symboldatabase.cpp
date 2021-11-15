@@ -6510,6 +6510,11 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 setValueType(tok, valuetype);
             }
 
+            else if (Token::simpleMatch(tok->previous(), "= {") && tok->tokAt(-2) && tok->tokAt(-2)->valueType()) {
+                ValueType vt = *tok->tokAt(-2)->valueType();
+                setValueType(tok, vt);
+            }
+
             // library type/function
             else if (tok->previous()) {
                 if (tok->astParent() && Token::Match(tok->astOperand1(), "%name%|::")) {

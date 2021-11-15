@@ -2441,6 +2441,37 @@ private:
               "    return &*seq.begin();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::string f(std::string Str, int first, int last) {\n"
+              "    return { Str.begin() + first, Str.begin() + last + 1 };\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::string f(std::string s) {\n"
+              "    std::string r = { s.begin(), s.end() };\n"
+              "    return r;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    std::vector<std::unique_ptr<int>> mA;\n"
+              "    void f(std::unique_ptr<int> a) {\n"
+              "        auto x = a.get();\n"
+              "        mA.push_back(std::move(a));\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    std::map<std::string, int> m;\n"
+              "    int* f(std::string s) {\n"
+              "        auto r = m.emplace(name, name);\n"
+              "        return &(r.first->second);\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetime() {
