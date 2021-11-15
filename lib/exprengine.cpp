@@ -303,7 +303,7 @@ namespace {
             }
         }
 
-        void report(std::ostream &out, const Scope *functionScope) {
+        void report(std::ostream &out, const Scope *functionScope) const {
             int linenr = -1;
             std::string code;
             for (const Token *tok = functionScope->bodyStart->next(); tok != functionScope->bodyEnd; tok = tok->next()) {
@@ -572,10 +572,6 @@ namespace {
 
         void addMissingContract(const std::string &f) {
             mTrackExecution->addMissingContract(f);
-        }
-
-        const std::set<std::string> getMissingContracts() const {
-            return mTrackExecution->getMissingContracts();
         }
 
         ExprEngine::ValuePtr notValue(ExprEngine::ValuePtr v) {
@@ -884,7 +880,7 @@ ExprEngine::ArrayValue::ArrayValue(const std::string &name, ExprEngine::ValuePtr
 
 ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
     : Value(data->getNewSymbolName(), ExprEngine::ValueType::ArrayValue)
-    , pointer(var->isPointer()), nullPointer(var->isPointer()), uninitPointer(var->isPointer())
+    , pointer(var && var->isPointer()), nullPointer(var && var->isPointer()), uninitPointer(var && var->isPointer())
 {
     if (var) {
         for (const auto &dim : var->dimensions()) {
@@ -1924,7 +1920,8 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     }
 
     const Token *lhsToken = tok->astOperand1();
-    assignValue = truncateValue(assignValue, lhsToken->valueType(), data);
+    if (lhsToken)
+        assignValue = truncateValue(assignValue, lhsToken->valueType(), data);
     call(data.callbacks, tok, assignValue, &data);
 
     assignExprValue(lhsToken, assignValue, data);

@@ -1167,6 +1167,10 @@ void Tokenizer::simplifyTypedef()
                     }
                 }
 
+                else if (Token::Match(tok2->previous(), "class|struct %name% [:{]")) {
+                    // don't replace names in struct/class definition
+                }
+
                 // check for typedef that can be substituted
                 else if ((tok2->isNameOnly() || (tok2->isName() && tok2->isExpandedMacro())) &&
                          (Token::simpleMatch(tok2, pattern.c_str(), pattern.size()) ||
@@ -1792,47 +1796,6 @@ namespace {
                     return true;
             }
             return false;
-        }
-
-        void  printOut(const std::string & indent = "  ") const {
-            std::cerr << indent << "type: " << (type == Global ? "Global" :
-                                                type == Namespace ? "Namespace" :
-                                                type == Record ? "Record" :
-                                                type == MemberFunction ? "MemberFunction" :
-                                                type == Other ? "Other" :
-                                                "Unknown") << std::endl;
-            std::cerr << indent << "fullName: " << fullName << std::endl;
-            std::cerr << indent << "name: " << name << std::endl;
-            std::cerr << indent << usingNamespaces.size() << " usingNamespaces:";
-            for (const auto & usingNamespace : usingNamespaces)
-                std::cerr << " " << usingNamespace;
-            std::cerr << std::endl;
-            std::cerr << indent << baseTypes.size() << " baseTypes:";
-            for (const auto & baseType : baseTypes)
-                std::cerr << " " << baseType;
-            std::cerr << std::endl;
-            std::cerr << indent << children.size() << " children:" << std::endl;
-            size_t i = 0;
-            for (const auto & child : children) {
-                std::cerr << indent << "child " << i++ << std::endl;
-                child.printOut(indent + "  ");
-            }
-        }
-
-        const ScopeInfo3 * findScopeRecursive(const std::string & scope) const {
-            if (fullName.size() < scope.size() &&
-                fullName == scope.substr(0, fullName.size())) {
-                for (const auto & child : children) {
-                    if (child.fullName == scope && &child != this)
-                        return &child;
-                    else {
-                        const ScopeInfo3 * temp1 = child.findScopeRecursive(scope);
-                        if (temp1)
-                            return temp1;
-                    }
-                }
-            }
-            return nullptr;
         }
 
         const ScopeInfo3 * findInChildren(const std::string & scope) const {
@@ -4013,7 +3976,8 @@ void Tokenizer::setVarIdPass1()
                     if (tok && tok->str() == "<") {
                         const Token *end = tok->findClosingBracket();
                         while (tok != end) {
-                            if (tok->isName()) {
+                            if (tok->isName() && !(Token::simpleMatch(tok->next(), "<") &&
+                                                   Token::Match(tok->tokAt(-2), "std :: %name%"))) {
                                 const std::map<std::string, int>::const_iterator it = variableMap.find(tok->str());
                                 if (it != variableMap.end())
                                     tok->varId(it->second);
@@ -4478,10 +4442,10 @@ void Tokenizer::createLinks2()
     if (isC())
         return;
 
-    const Token * templateToken = nullptr;
     bool isStruct = false;
 
     std::stack<Token*> type;
+    std::stack<Token*> templateTokens;
     for (Token *token = list.front(); token; token = token->next()) {
         if (Token::Match(token, "%name%|> %name% [:<]"))
             isStruct = true;
@@ -4493,14 +4457,14 @@ void Tokenizer::createLinks2()
                 type.push(token);
             else if (!type.empty() && Token::Match(token, "}|]|)")) {
                 while (type.top()->str() == "<") {
-                    if (templateToken && templateToken->next() == type.top())
-                        templateToken = nullptr;
+                    if (!templateTokens.empty() && templateTokens.top()->next() == type.top())
+                        templateTokens.pop();
                     type.pop();
                 }
                 type.pop();
             } else
                 token->link(nullptr);
-        } else if (!templateToken && !isStruct && Token::Match(token, "%oror%|&&|;")) {
+        } else if (templateTokens.empty() && !isStruct && Token::Match(token, "%oror%|&&|;")) {
             if (Token::Match(token, "&& [,>]"))
                 continue;
             // If there is some such code:  A<B||C>..
@@ -4548,8 +4512,8 @@ void Tokenizer::createLinks2()
                                            (token->previous()->isName() && !token->previous()->varId()))) ||
                     Token::Match(token->next(), ">|>>"))) {
             type.push(token);
-            if (!templateToken && (token->previous()->str() == "template"))
-                templateToken = token;
+            if (token->previous()->str() == "template")
+                templateTokens.push(token);
         } else if (token->str() == ">" || token->str() == ">>") {
             if (type.empty() || type.top()->str() != "<") // < and > don't match.
                 continue;
@@ -4580,15 +4544,18 @@ void Tokenizer::createLinks2()
                 type.pop();
                 type.pop();
                 Token::createMutualLinks(top2, token);
-                if (top1 == templateToken || top2 == templateToken)
-                    templateToken = nullptr;
+                if (templateTokens.size() == 2 && (top1 == templateTokens.top() || top2 == templateTokens.top())) {
+                    templateTokens.pop();
+                    templateTokens.pop();
+                }
             } else {
                 type.pop();
-                if (Token::Match(token, "> %name%") && Token::Match(top1->tokAt(-2), "%op% %name% <"))
+                if (Token::Match(token, "> %name%") && Token::Match(top1->tokAt(-2), "%op% %name% <") &&
+                    (templateTokens.empty() || top1 != templateTokens.top()))
                     continue;
                 Token::createMutualLinks(top1, token);
-                if (top1 == templateToken)
-                    templateToken = nullptr;
+                if (!templateTokens.empty() && top1 == templateTokens.top())
+                    templateTokens.pop();
             }
         }
     }

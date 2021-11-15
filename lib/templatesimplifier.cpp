@@ -1680,9 +1680,9 @@ void TemplateSimplifier::expandTemplate(
                 const bool isVariadicTemplateArg = templateDeclaration.isVariadic() && itype + 1 == typeParametersInDeclaration.size();
                 if (isVariadicTemplateArg && Token::Match(start, "%name% ... %name%"))
                     start = start->tokAt(2);
-                const std::string endsWith(isVariadicTemplateArg ? ">" : ",>");
+                const std::string endStr(isVariadicTemplateArg ? ">" : ",>");
                 for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token();
-                     typetok && (typeindentlevel > 0 || endsWith.find(typetok->str()[0]) == std::string::npos);
+                     typetok && (typeindentlevel > 0 || endStr.find(typetok->str()[0]) == std::string::npos);
                      typetok = typetok->next()) {
                     if (typeindentlevel == 0 && typetok->str() == "*")
                         pointerType = true;
@@ -2041,9 +2041,9 @@ void TemplateSimplifier::expandTemplate(
                     const bool isVariadicTemplateArg = templateDeclaration.isVariadic() && itype + 1 == typeParametersInDeclaration.size();
                     if (isVariadicTemplateArg && Token::Match(tok3, "%name% ... %name%"))
                         tok3 = tok3->tokAt(2);
-                    const std::string endsWith(isVariadicTemplateArg ? ">" : ",>");
+                    const std::string endStr(isVariadicTemplateArg ? ">" : ",>");
                     for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token();
-                         typetok && (typeindentlevel > 0 || endsWith.find(typetok->str()[0]) == std::string::npos);
+                         typetok && (typeindentlevel > 0 || endStr.find(typetok->str()[0]) == std::string::npos);
                          typetok = typetok->next()) {
                         if (typeindentlevel == 0 && typetok->str() == "*")
                             pointerType = true;
@@ -2244,10 +2244,9 @@ void TemplateSimplifier::expandTemplate(
 
     // add new instantiations
     for (const auto & inst : newInstantiations) {
-        std::string fullName = inst.scope + (inst.scope.empty() ? "" : " :: ") + inst.token->str();
         simplifyTemplateArgs(inst.token->tokAt(2), inst.token->next()->findClosingBracket());
         // only add recursive instantiation if its arguments are a constant expression
-        if (templateDeclaration.fullName() != fullName ||
+        if (templateDeclaration.name() != inst.token->str() ||
             (inst.token->tokAt(2)->isNumber() || inst.token->tokAt(2)->isStandardType()))
             mTemplateInstantiations.emplace_back(inst.token, inst.scope);
     }
@@ -3467,7 +3466,6 @@ void TemplateSimplifier::fixForwardDeclaredDefaultArgumentValues()
                             }
                             if (end)
                                 TokenList::copyTokens(const_cast<Token *>(params2[k]), params1[k]->next(), end->previous());
-                            break;
                         }
                     }
 

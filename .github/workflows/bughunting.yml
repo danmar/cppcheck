@@ -1,0 +1,47 @@
+# Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+name: bughunting
+
+# TODO: enable this when
+on: workflow_dispatch
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+
+      - name: Install missing software
+        run: |
+          sudo apt-get update
+          sudo apt-get install z3 libz3-dev
+
+      - name: Build cppcheck
+        run: |
+          make -j$(nproc) USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes
+        env:
+          CXXFLAGS: "-O2 -march=native"
+
+      # currently to slow to execute it in the CI
+      - name: Run CVE suite
+        run: |
+          python test/bug-hunting/cve.py
+
+      - name: Run ITC suite
+        run: |
+          git clone https://github.com/regehr/itc-benchmarks.git ~/itc
+          python test/bug-hunting/itc.py
+
+      - name: Run juliet
+        run: |
+          mkdir ~/juliet
+          curl https://samate.nist.gov/SARD/testsuites/juliet/Juliet_Test_Suite_v1.3_for_C_Cpp.zip -o ~/juliet/juliet.zip
+          cd ~/juliet && unzip -qq ~/juliet/juliet.zip
+          python test/bug-hunting/juliet.py

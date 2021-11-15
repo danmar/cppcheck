@@ -954,7 +954,7 @@ private:
               "    }\n"
               "    return false;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'c!=a' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'c!=a' is always false\n", errout.str());
     }
 
     void incorrectLogicOperator2() {
@@ -1573,7 +1573,7 @@ private:
               "        ;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:200] -> [test.cpp:200]: (style) Condition 'g' is always true\n", errout.str());
     }
 
     void incorrectLogicOperator15() {
@@ -3330,7 +3330,7 @@ private:
               "    if (handle) return 1;\n"
               "    else return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition 'handle' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'handle' is always true\n", errout.str());
 
         check("int f(void *handle) {\n"
               "    if (handle != 0) return 0;\n"
@@ -3393,7 +3393,7 @@ private:
               "        if(array){}\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Condition 'array' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'array' is always true\n", errout.str());
 
         check("void f(int *array, int size ) {\n"
               "    for(int i = 0; i < size; ++i) {\n"
@@ -3402,7 +3402,7 @@ private:
               "        else if(array){}\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Condition 'array' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'array' is always true\n", errout.str());
 
         // #9277
         check("int f() {\n"
@@ -3770,7 +3770,7 @@ private:
         check("void f(int i) {\n"
               "    if(i < 0 && abs(i) == i) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'abs(i)==i' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'abs(i)==i' is always false\n", errout.str());
 
         check("void f(int i) {\n"
               "    if(i > -3 && abs(i) == i) {}\n"
@@ -3793,6 +3793,22 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10548
+        check("void f() {\n"
+              "    int i = 0;\n"
+              "    do {} while (i++ == 0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10582
+        check("static void fun(message_t *message) {\n"
+              "    if (message->length >= 1) {\n"
+              "        switch (data[0]) {}\n"
+              "    }\n"
+              "    uint8_t d0 = message->length > 0 ? data[0] : 0xff;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -3810,7 +3826,7 @@ private:
               "        if(x == y) {}\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'x==y' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'x==y' is always false\n", errout.str());
 
         check("void f(bool a, bool b) {  if (a == b && a && !b){} }");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Condition '!b' is always false\n", errout.str());
@@ -3824,7 +3840,17 @@ private:
               "    if (z < 1) {}\n"
               "  }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'z<1' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (style) Condition 'z<1' is always false\n", errout.str());
+
+        check("bool f(int &index, const int s, const double * const array, double & x) {\n"
+              "    if (index >= s)\n"
+              "        return false;\n"
+              "    else {\n"
+              "        x = array[index];\n"
+              "        return (index++) >= s;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:6]: (style) Condition '(index++)>=s' is always false\n", errout.str());
 
         check("struct a {\n"
               "  a *b() const;\n"
@@ -3855,6 +3881,36 @@ private:
               "        i++;\n"
               "        if (i >= j) {}\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int get_delta() {\n"
+              "    clock_t now_ms = (clock() / (CLOCKS_PER_SEC / 1000));\n"
+              "    static clock_t last_clock_ms = now_ms;\n"
+              "    clock_t delta = now_ms - last_clock_ms;\n"
+              "    last_clock_ms = now_ms;\n"
+              "    if (delta > 50)\n"
+              "        delta = 50;\n"
+              "    return delta;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10555
+        check("struct C {\n"
+              "  int GetI() const { return i; }\n"
+              "  int i{};\n"
+              "};\n"
+              "struct B {\n"
+              "    C *m_PC{};\n"
+              "    Modify();\n"
+              "};\n"
+              "struct D : B {\n"
+              "  void test();  \n"
+              "};\n"
+              "void D::test() {\n"
+              "    const int I = m_PC->GetI();\n"
+              "    Modify();\n"
+              "    if (m_PC->GetI() != I) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -4002,6 +4058,38 @@ private:
               "        if(i<=18) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'i<=18' is always true\n", errout.str());
+
+        // #8209
+        check("void f() {\n"
+              "    for(int x = 0; x < 3; ++x)\n"
+              "        if(x == -5) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'x==-5' is always false\n", errout.str());
+
+        // #8407
+        check("int f(void) {\n"
+              "    for(int i = 0; i <1; ++i)\n"
+              "        if(i == 0) return 1; \n" // <<
+              "        else return 0;\n"
+              "    return -1;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'i==0' is always true\n", errout.str());
+
+        check("void f(unsigned int u1, unsigned int u2) {\n"
+              "    if (u1 <= 10 && u2 >= 20) {\n"
+              "        if (u1 != u2) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Condition 'u1!=u2' is always true\n", errout.str());
+
+        // #10544
+        check("void f(int N) {\n"
+              "    if (N > 0) {\n"
+              "        while (N)\n"
+              "            N = test();\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueContainer() {
@@ -4055,6 +4143,16 @@ private:
               "        if( s.size() < 3 ) return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10226
+        check("int f(std::vector<int>::iterator it, const std::vector<int>& vector) {\n"
+              "    if (!(it != vector.end() && it != vector.begin()))\n"
+              "        throw 0;\n"
+              "    if (it != vector.end() && *it == 0)\n"
+              "        return -1;\n"
+              "    return *it;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'it!=vector.end()' is always true\n", errout.str());
     }
 
     void alwaysTrueLoop()

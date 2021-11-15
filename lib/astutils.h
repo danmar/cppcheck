@@ -58,15 +58,19 @@ const Token* findExpression(const nonneg int exprid,
 const Token* findExpression(const Token* start, const nonneg int exprid);
 
 std::vector<const Token*> astFlatten(const Token* tok, const char* op);
+std::vector<Token*> astFlatten(Token* tok, const char* op);
 
 bool astHasToken(const Token* root, const Token * tok);
 
 bool astHasVar(const Token * tok, nonneg int varid);
 
+bool astIsPrimitive(const Token* tok);
 /** Is expression a 'signed char' if no promotion is used */
 bool astIsSignedChar(const Token *tok);
 /** Is expression a 'char' if no promotion is used? */
 bool astIsUnknownSignChar(const Token *tok);
+/** Is expression a char according to valueType? */
+bool astIsGenericChar(const Token* tok);
 /** Is expression of integral type? */
 bool astIsIntegral(const Token *tok, bool unknown);
 bool astIsUnsigned(const Token* tok);
@@ -78,10 +82,14 @@ bool astIsBool(const Token *tok);
 bool astIsPointer(const Token *tok);
 
 bool astIsSmartPointer(const Token* tok);
+bool astIsUniqueSmartPointer(const Token* tok);
 
 bool astIsIterator(const Token *tok);
 
 bool astIsContainer(const Token *tok);
+
+bool astIsContainerView(const Token* tok);
+bool astIsContainerOwned(const Token* tok);
 
 /**
  * Get canonical type of expression. const/static/etc are not included and neither *&.
@@ -118,6 +126,12 @@ bool astIsRHS(const Token* tok);
 Token* getCondTok(Token* tok);
 const Token* getCondTok(const Token* tok);
 
+Token* getInitTok(Token* tok);
+const Token* getInitTok(const Token* tok);
+
+Token* getStepTok(Token* tok);
+const Token* getStepTok(const Token* tok);
+
 Token* getCondTokFromEnd(Token* endBlock);
 const Token* getCondTokFromEnd(const Token* endBlock);
 
@@ -138,7 +152,7 @@ bool extractForLoopValues(const Token *forToken,
 
 bool precedes(const Token * tok1, const Token * tok2);
 
-bool exprDependsOnThis(const Token* expr, nonneg int depth = 0);
+bool exprDependsOnThis(const Token* expr, bool onVar = true, nonneg int depth = 0);
 
 struct ReferenceToken {
     const Token* token;
@@ -272,6 +286,11 @@ std::vector<const Token *> getArguments(const Token *ftok);
 
 int getArgumentPos(const Variable* var, const Function* f);
 
+/**
+ * Are the arguments a pair of iterators/pointers?
+ */
+bool isIteratorPair(std::vector<const Token*> args);
+
 const Token *findLambdaStartToken(const Token *last);
 
 /**
@@ -373,5 +392,7 @@ private:
     std::vector<KnownAndToken> mValueFlow;
     bool mValueFlowKnown;
 };
+
+bool isSizeOfEtc(const Token *tok);
 
 #endif // astutilsH

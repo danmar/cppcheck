@@ -214,6 +214,7 @@ private:
         TEST_CASE(template171); // crash
         TEST_CASE(template172); // #10258 crash
         TEST_CASE(template173); // #10332 crash
+        TEST_CASE(template174); // #10506 hang
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -4439,6 +4440,19 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
+    void template174()
+    { // #10506 hang
+        const char code[] = "namespace a {\n"
+                            "template <typename> using b = int;\n"
+                            "template <typename c> c d() { return d<b<c>>(); }\n"
+                            "}\n"
+                            "void e() { a::d<int>(); }\n";
+        const char exp[] = "namespace a { int d<int> ( ) ; } "
+                           "void e ( ) { a :: d<int> ( ) ; } "
+                           "int a :: d<int> ( ) { return d < int > ( ) ; }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         const char code[] = "template <typename T> struct C {};\n"
                             "template <typename T> struct S {a};\n"
@@ -4713,6 +4727,26 @@ private:
                                "template < typename Lhs , int TriangularPart = ( int ( Lhs :: Flags ) & LowerTriangularBit ) > "
                                "struct ei_solve_triangular_selector { } ;";
 
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        { // #10432
+            const char code[] = "template<int A = 128, class T = wchar_t>\n"
+                                "class Foo;\n"
+                                "template<int A, class T>\n"
+                                "class Foo\n"
+                                "{\n"
+                                "public:\n"
+                                "  T operator[](int Index) const;\n"
+                                "};\n"
+                                "template<int A, class T>\n"
+                                "T Foo<A, T>::operator[](int Index) const\n"
+                                "{\n"
+                                "  return T{};\n"
+                                "}\n"
+                                "Foo<> f;";
+            const char exp[] = "class Foo<128,wchar_t> ; Foo<128,wchar_t> f ; "
+                               "class Foo<128,wchar_t> { public: wchar_t operator[] ( int Index ) const ; } ; "
+                               "wchar_t Foo<128,wchar_t> :: operator[] ( int Index ) const { return wchar_t { } ; }";
             ASSERT_EQUALS(exp, tok(code));
         }
     }

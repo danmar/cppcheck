@@ -443,8 +443,11 @@ def getEssentialTypeCategory(expr):
             return expr.valueType.sign
     if expr.valueType and expr.valueType.typeScope and expr.valueType.typeScope.className:
         return "enum<" + expr.valueType.typeScope.className + ">"
-    if expr.variable:
-        typeToken = expr.variable.typeStartToken
+    vartok = expr
+    while simpleMatch(vartok, '[') or (vartok and vartok.str == '*' and vartok.astOperand2 is None):
+        vartok = vartok.astOperand1
+    if vartok and vartok.variable:
+        typeToken = vartok.variable.typeStartToken
         while typeToken and typeToken.isName:
             if typeToken.str == 'char' and not typeToken.isSigned and not typeToken.isUnsigned:
                 return 'char'
@@ -456,6 +459,13 @@ def getEssentialTypeCategory(expr):
                 if typeToken.valueType.sign:
                     return typeToken.valueType.sign
             typeToken = typeToken.next
+
+    # See Appendix D, section D.6, Character constants
+    if expr.str[0] == "'" and expr.str[-1] == "'":
+        if len(expr.str) == 3 or (len(expr.str) == 4 and expr.str[1] == '\\'):
+            return 'char'
+        return expr.valueType.sign
+
     if expr.valueType:
         return expr.valueType.sign
     return None
@@ -568,19 +578,19 @@ def getEssentialType(expr):
 def bitsOfEssentialType(ty):
     if ty is None:
         return 0
-    ty = ty.split(' ')[-1]
-    if ty == 'Boolean':
+    last_type = ty.split(' ')[-1]
+    if last_type == 'Boolean':
         return 1
-    if ty == 'char':
+    if last_type == 'char':
         return typeBits['CHAR']
-    if ty == 'short':
+    if last_type == 'short':
         return typeBits['SHORT']
-    if ty == 'int':
+    if last_type == 'int':
         return typeBits['INT']
-    if ty == 'long':
-        return typeBits['LONG']
-    if ty == 'long long':
+    if ty.endswith('long long'):
         return typeBits['LONG_LONG']
+    if last_type == 'long':
+        return typeBits['LONG']
     for sty in STDINT_TYPES:
         if ty == sty:
             return int(''.join(filter(str.isdigit, sty)))
@@ -617,11 +627,15 @@ def isCast(expr):
 def is_constant_integer_expression(expr):
     if expr is None:
         return False
+    if expr.isInt:
+        return True
+    if not expr.isArithmeticalOp:
+        return False
     if expr.astOperand1 and not is_constant_integer_expression(expr.astOperand1):
         return False
     if expr.astOperand2 and not is_constant_integer_expression(expr.astOperand2):
         return False
-    return expr.astOperand1 or expr.astOperand2 or expr.isInt
+    return True
 
 def isFunctionCall(expr, std='c99'):
     if not expr:
@@ -1686,7 +1700,7 @@ class MisraChecker:
                 continue
 
             if data.standards.c == 'c89':
-                if token.valueType.type != 'int':
+                if token.valueType.type != 'int' and  not isUnsignedType(token.variable.typeStartToken.str):
                     self.reportError(token, 6, 1)
             elif data.standards.c == 'c99':
                 if token.valueType.type == 'bool':
@@ -1695,7 +1709,7 @@ class MisraChecker:
             isExplicitlySignedOrUnsigned = False
             typeToken = token.variable.typeStartToken
             while typeToken:
-                if typeToken.isUnsigned or typeToken.isSigned:
+                if typeToken.isUnsigned or typeToken.isSigned or isUnsignedType(typeToken.str):
                     isExplicitlySignedOrUnsigned = True
                     break
 
@@ -1863,7 +1877,7 @@ class MisraChecker:
             #
             # TODO: We actually need to check if the names of the arguments are
             # the same. But we can't do this because we have no links to
-            # variables in the arguments in function defintion in the dump file.
+            # variables in the arguments in function definition in the dump file.
             foundVariables = 0
             while startCall and startCall != endCall:
                 if startCall.varId:
@@ -1959,10 +1973,24 @@ class MisraChecker:
             if func.tokenDef.str == 'main':
                 continue
             self.reportError(func.tokenDef, 8, 4)
+
+        extern_vars = []
+        var_defs = []
+
         for var in cfg.variables:
-            # extern variable declaration in source file
-            if var.isExtern and var.nameToken and not is_header(var.nameToken.file):
-                self.reportError(var.nameToken, 8, 4)
+            if not var.isGlobal:
+                continue
+            if var.isStatic:
+                continue
+            if var.nameToken is None:
+                continue
+            if var.isExtern:
+                extern_vars.append(var.nameToken.str)
+            else:
+                var_defs.append(var.nameToken)
+        for vartok in var_defs:
+            if vartok.str not in extern_vars:
+                self.reportError(vartok, 8, 4)
 
     def misra_8_5(self, dumpfile, cfg):
         self._save_ctu_summary_identifiers(dumpfile, cfg)
@@ -2122,7 +2150,8 @@ class MisraChecker:
                     self.reportError(token, 10, 2)
 
             if token.str == '-':
-                if getEssentialType(token.astOperand1).split(' ')[-1] != 'char':
+                e1 = getEssentialType(token.astOperand1)
+                if e1 and e1.split(' ')[-1] != 'char':
                     self.reportError(token, 10, 2)
                 if not isEssentiallyChar(token.astOperand2) and not isEssentiallySignedOrUnsigned(token.astOperand2):
                     self.reportError(token, 10, 2)
@@ -2247,7 +2276,8 @@ class MisraChecker:
                     e = getEssentialType(token.astOperand2)
                 if not e:
                     continue
-                if bitsOfEssentialType(vt1.type) > bitsOfEssentialType(e):
+                lhsbits = vt1.bits if vt1.bits else bitsOfEssentialType(vt1.type)
+                if lhsbits > bitsOfEssentialType(e):
                     self.reportError(token, 10, 6)
             except ValueError:
                 pass
@@ -2802,14 +2832,41 @@ class MisraChecker:
         state = 0
         indent = 0
         tok1 = None
+        def tokAt(tok,i):
+            while i < 0 and tok:
+                tok = tok.previous
+                if tok.str.startswith('//') or tok.str.startswith('/*'):
+                    continue
+                i += 1
+            while i > 0 and tok:
+                tok = tok.next
+                if tok.str.startswith('//') or tok.str.startswith('/*'):
+                    continue
+                i -= 1
+            return tok
+
+        def strtokens(tok, i1, i2):
+            tok1 = tokAt(tok, i1)
+            tok2 = tokAt(tok, i2)
+            tok = tok1
+            s = ''
+            while tok != tok2:
+                if tok.str.startswith('//') or tok.str.startswith('/*'):
+                    tok = tok.next
+                    continue
+                s += ' ' + tok.str
+                tok = tok.next
+            s += ' ' + tok.str
+            return s[1:]
+
         for token in rawTokens:
             if token.str in ['if', 'for', 'while']:
-                if simpleMatch(token.previous, '# if'):
+                if strtokens(token,-1,0) == '# if':
                     continue
-                if simpleMatch(token.previous, "} while"):
+                if strtokens(token,-1,0) == "} while":
                     # is there a 'do { .. } while'?
-                    start = rawlink(token.previous)
-                    if start and simpleMatch(start.previous, 'do {'):
+                    start = rawlink(tokAt(token,-1))
+                    if start and strtokens(start, -1, 0) == 'do {':
                         continue
                 if state == 2:
                     self.reportError(tok1, 15, 6)
@@ -2817,9 +2874,9 @@ class MisraChecker:
                 indent = 0
                 tok1 = token
             elif token.str == 'else':
-                if simpleMatch(token.previous, '# else'):
+                if strtokens(token,-1,0) == '# else':
                     continue
-                if simpleMatch(token, 'else if'):
+                if strtokens(token,0,1) == 'else if':
                     continue
                 if state == 2:
                     self.reportError(tok1, 15, 6)

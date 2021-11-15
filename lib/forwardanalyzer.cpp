@@ -12,6 +12,14 @@
 #include <tuple>
 #include <utility>
 
+struct OnExit {
+    std::function<void()> f;
+
+    ~OnExit() {
+        f();
+    }
+};
+
 struct ForwardTraversal {
     enum class Progress { Continue, Break, Skip };
     enum class Terminate { None, Bail, Escape, Modified, Inconclusive, Conditional };
@@ -25,6 +33,7 @@ struct ForwardTraversal {
     bool analyzeTerminate;
     Analyzer::Terminate terminate = Analyzer::Terminate::None;
     bool forked = false;
+    std::vector<Token*> loopEnds = {};
 
     Progress Break(Analyzer::Terminate t = Analyzer::Terminate::None) {
         if ((!analyzeOnly || analyzeTerminate) && t != Analyzer::Terminate::None)
@@ -39,6 +48,7 @@ struct ForwardTraversal {
         bool check = false;
         bool escape = false;
         bool escapeUnknown = false;
+        bool active = false;
         bool isEscape() const {
             return escape || escapeUnknown;
         }
@@ -64,10 +74,10 @@ struct ForwardTraversal {
     std::pair<bool, bool> evalCond(const Token* tok, const Token* ctx = nullptr) const {
         if (!tok)
             return std::make_pair(false, false);
-        std::vector<int> result = analyzer->evaluate(tok, ctx);
+        std::vector<MathLib::bigint> result = analyzer->evaluate(tok, ctx);
         // TODO: We should convert to bool
         bool checkThen = std::any_of(result.begin(), result.end(), [](int x) {
-            return x == 1;
+            return x != 0;
         });
         bool checkElse = std::any_of(result.begin(), result.end(), [](int x) {
             return x == 0;
@@ -83,11 +93,17 @@ struct ForwardTraversal {
         return evalCond(tok, ctx).second;
     }
 
-    template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-    Progress traverseTok(T* tok, std::function<Progress(T*)> f, bool traverseUnknown, T** out = nullptr) {
-        if (Token::Match(tok, "asm|goto|continue|setjmp|longjmp"))
-            return Break();
-        else if (Token::Match(tok, "return|throw") || isEscapeFunction(tok, &settings->library)) {
+    template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+    Progress traverseTok(T* tok, F f, bool traverseUnknown, T** out = nullptr) {
+        if (Token::Match(tok, "asm|goto|setjmp|longjmp"))
+            return Break(Analyzer::Terminate::Bail);
+        else if (Token::simpleMatch(tok, "continue")) {
+            if (loopEnds.empty())
+                return Break(Analyzer::Terminate::Escape);
+            // If we are in a loop then jump to the end
+            if (out)
+                *out = loopEnds.back();
+        } else if (Token::Match(tok, "return|throw") || isEscapeFunction(tok, &settings->library)) {
             traverseRecursive(tok->astOperand1(), f, traverseUnknown);
             traverseRecursive(tok->astOperand2(), f, traverseUnknown);
             return Break(Analyzer::Terminate::Escape);
@@ -118,8 +134,8 @@ struct ForwardTraversal {
         return Progress::Continue;
     }
 
-    template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-    Progress traverseRecursive(T* tok, std::function<Progress(T*)> f, bool traverseUnknown, unsigned int recursion=0) {
+    template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+    Progress traverseRecursive(T* tok, F f, bool traverseUnknown, unsigned int recursion=0) {
         if (!tok)
             return Progress::Continue;
         if (recursion > 10000)
@@ -190,7 +206,7 @@ struct ForwardTraversal {
     }
 
     Progress updateTok(Token* tok, Token** out = nullptr) {
-        std::function<Progress(Token*)> f = [this](Token* tok2) {
+        auto f = [this](Token* tok2) {
             return update(tok2);
         };
         return traverseTok(tok, f, false, out);
@@ -198,14 +214,14 @@ struct ForwardTraversal {
 
     Progress updateRecursive(Token* tok) {
         forked = false;
-        std::function<Progress(Token*)> f = [this](Token* tok2) {
+        auto f = [this](Token* tok2) {
             return update(tok2);
         };
         return traverseRecursive(tok, f, false);
     }
 
-    template<class T>
-    T* findRange(T* start, const Token* end, std::function<bool(Analyzer::Action)> pred) {
+    template<class T, class F>
+    T* findRange(T* start, const Token* end, F pred) {
         for (T* tok = start; tok && tok != end; tok = tok->next()) {
             Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Forward);
             if (pred(action))
@@ -216,7 +232,7 @@ struct ForwardTraversal {
 
     Analyzer::Action analyzeRecursive(const Token* start) {
         Analyzer::Action result = Analyzer::Action::None;
-        std::function<Progress(const Token*)> f = [&](const Token* tok) {
+        auto f = [&](const Token* tok) {
             result = analyzer->analyze(tok, Analyzer::Direction::Forward);
             if (result.isModified() || result.isInconclusive())
                 return Break();
@@ -361,6 +377,10 @@ struct ForwardTraversal {
     }
 
     Progress updateInnerLoop(Token* endBlock, Token* stepTok, Token* condTok) {
+        loopEnds.push_back(endBlock);
+        OnExit oe{[&] {
+                loopEnds.pop_back();
+            }};
         if (endBlock && updateScope(endBlock) == Progress::Break)
             return Break();
         if (stepTok && updateRecursive(stepTok) == Progress::Break)
@@ -397,7 +417,8 @@ struct ForwardTraversal {
         actions |= allAnalysis;
         // do while(false) is not really a loop
         if (checkElse && isDoWhile &&
-            (condTok->hasKnownIntValue() || (!bodyAnalysis.isModified() && condAnalysis.isRead()))) {
+            (condTok->hasKnownIntValue() ||
+             (!bodyAnalysis.isModified() && !condAnalysis.isModified() && condAnalysis.isRead()))) {
             if (updateRange(endBlock->link(), endBlock) == Progress::Break)
                 return Break();
             return updateRecursive(condTok);
@@ -580,7 +601,8 @@ struct ForwardTraversal {
                         if (conTok && updateRecursive(conTok) == Progress::Break)
                             return Break();
                         bool isEmpty = false;
-                        std::vector<int> result = analyzer->evaluate(Analyzer::Evaluate::ContainerEmpty, conTok);
+                        std::vector<MathLib::bigint> result =
+                            analyzer->evaluate(Analyzer::Evaluate::ContainerEmpty, conTok);
                         if (result.empty())
                             analyzer->assume(conTok, false, Analyzer::Assume::ContainerEmpty);
                         else
@@ -609,9 +631,11 @@ struct ForwardTraversal {
                     // Traverse then block
                     thenBranch.escape = isEscapeScope(endBlock, thenBranch.escapeUnknown);
                     if (thenBranch.check) {
+                        thenBranch.active = true;
                         if (updateRange(endCond->next(), endBlock, depth - 1) == Progress::Break)
                             return Break();
                     } else if (!elseBranch.check) {
+                        thenBranch.active = true;
                         if (checkBranch(thenBranch))
                             bail = true;
                     }
@@ -619,10 +643,12 @@ struct ForwardTraversal {
                     if (hasElse) {
                         elseBranch.escape = isEscapeScope(endBlock->linkAt(2), elseBranch.escapeUnknown);
                         if (elseBranch.check) {
+                            elseBranch.active = true;
                             Progress result = updateRange(endBlock->tokAt(2), endBlock->linkAt(2), depth - 1);
                             if (result == Progress::Break)
                                 return Break();
                         } else if (!thenBranch.check) {
+                            elseBranch.active = true;
                             if (checkBranch(elseBranch))
                                 bail = true;
                         }
@@ -630,9 +656,12 @@ struct ForwardTraversal {
                     } else {
                         tok = endBlock;
                     }
-                    actions |= (thenBranch.action | elseBranch.action);
+                    if (thenBranch.active)
+                        actions |= thenBranch.action;
+                    if (elseBranch.active)
+                        actions |= elseBranch.action;
                     if (bail)
-                        return Break();
+                        return Break(Analyzer::Terminate::Bail);
                     if (thenBranch.isDead() && elseBranch.isDead()) {
                         if (thenBranch.isModified() && elseBranch.isModified())
                             return Break(Analyzer::Terminate::Modified);
@@ -641,7 +670,7 @@ struct ForwardTraversal {
                         return Break(Analyzer::Terminate::Bail);
                     }
                     // Conditional return
-                    if (thenBranch.isEscape() && !hasElse) {
+                    if (thenBranch.active && thenBranch.isEscape() && !hasElse) {
                         if (!thenBranch.isConclusiveEscape()) {
                             if (!analyzer->lowerToInconclusive())
                                 return Break(Analyzer::Terminate::Bail);
@@ -753,34 +782,6 @@ struct ForwardTraversal {
             parent = parent->astParent();
         }
         return parent && (parent->str() == ":" || parent->astOperand2() == tok);
-    }
-
-    static Token* getInitTok(Token* tok) {
-        if (!tok)
-            return nullptr;
-        if (Token::Match(tok, "%name% ("))
-            return getInitTok(tok->next());
-        if (tok->str() !=  "(")
-            return nullptr;
-        if (!Token::simpleMatch(tok->astOperand2(), ";"))
-            return nullptr;
-        if (Token::simpleMatch(tok->astOperand2()->astOperand1(), ";"))
-            return nullptr;
-        return tok->astOperand2()->astOperand1();
-    }
-
-    static Token* getStepTok(Token* tok) {
-        if (!tok)
-            return nullptr;
-        if (Token::Match(tok, "%name% ("))
-            return getStepTok(tok->next());
-        if (tok->str() != "(")
-            return nullptr;
-        if (!Token::simpleMatch(tok->astOperand2(), ";"))
-            return nullptr;
-        if (!Token::simpleMatch(tok->astOperand2()->astOperand2(), ";"))
-            return nullptr;
-        return tok->astOperand2()->astOperand2()->astOperand2();
     }
 
     static Token* getStepTokFromEnd(Token* tok) {

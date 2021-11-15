@@ -118,6 +118,7 @@ private:
         TEST_CASE(returnReference21); // #9530
         TEST_CASE(returnReference22);
         TEST_CASE(returnReference23);
+        TEST_CASE(returnReference24); // #10098
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -141,14 +142,18 @@ private:
 
         TEST_CASE(danglingLifetimeLambda);
         TEST_CASE(danglingLifetimeContainer);
+        TEST_CASE(danglingLifetimeContainerView);
+        TEST_CASE(danglingLifetimeUniquePtr);
         TEST_CASE(danglingLifetime);
         TEST_CASE(danglingLifetimeFunction);
         TEST_CASE(danglingLifetimeAggegrateConstructor);
         TEST_CASE(danglingLifetimeInitList);
         TEST_CASE(danglingLifetimeImplicitConversion);
         TEST_CASE(danglingTemporaryLifetime);
+        TEST_CASE(danglingLifetimeBorrowedMembers);
         TEST_CASE(invalidLifetime);
         TEST_CASE(deadPointer);
+        TEST_CASE(splitNamespaceAuto); // crash #10473
     }
 
 
@@ -740,6 +745,14 @@ private:
               "    free((char **)args1);\n"
               "    free((char **)args2);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10097
+        check("struct Array {\n"
+              "    ~Array() { delete m_Arr; }\n"
+              "    std::array<long, 256>* m_Arr{};\n"
+              "};\n"
+              "Array arr;\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1459,6 +1472,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void returnReference24()
+    {
+        check("struct A {\n"
+              "    A() {}\n"
+              "};\n"
+              "const A& a() {\n"
+              "    return A();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Reference to temporary returned.\n", errout.str());
+    }
+
     void returnReferenceFunction() {
         check("int& f(int& a) {\n"
               "    return a;\n"
@@ -1752,8 +1776,10 @@ private:
               "    int& x = h();\n"
               "    g(&x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5] -> [test.cpp:5]: (error) Using pointer to temporary.\n"
-                      "[test.cpp:4] -> [test.cpp:5]: (error) Using reference to dangling temporary.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:5] -> [test.cpp:4] -> [test.cpp:5]: (error) Using pointer that is a temporary.\n"
+            "[test.cpp:4] -> [test.cpp:5]: (error) Using reference to dangling temporary.\n",
+            errout.str());
 
         check("void g(int*);\n"
               "int h();\n"
@@ -2441,8 +2467,145 @@ private:
               "    return &*seq.begin();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::string f(std::string Str, int first, int last) {\n"
+              "    return { Str.begin() + first, Str.begin() + last + 1 };\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::string f(std::string s) {\n"
+              "    std::string r = { s.begin(), s.end() };\n"
+              "    return r;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    std::vector<std::unique_ptr<int>> mA;\n"
+              "    void f(std::unique_ptr<int> a) {\n"
+              "        auto x = a.get();\n"
+              "        mA.push_back(std::move(a));\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    std::map<std::string, int> m;\n"
+              "    int* f(std::string s) {\n"
+              "        auto r = m.emplace(name, name);\n"
+              "        return &(r.first->second);\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
+    void danglingLifetimeContainerView()
+    {
+        check("std::string_view f() {\n"
+              "    std::string s = \"\";\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 's' that will be invalid when returning.\n",
+            errout.str());
+
+        check("std::string_view f() {\n"
+              "    std::string s = \"\";\n"
+              "    std::string_view sv = s;\n"
+              "    return sv;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 's' that will be invalid when returning.\n",
+            errout.str());
+
+        check("std::string_view f() {\n"
+              "    std::string s = \"\";\n"
+              "    return std::string_view{s};\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 's' that will be invalid when returning.\n",
+            errout.str());
+
+        check("std::string_view f(std::string_view s) {\n"
+              "    return s;\n"
+              "}\n"
+              "std::string_view g() {\n"
+              "    std::string s = \"\";\n"
+              "    return f(s);\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:6] -> [test.cpp:6] -> [test.cpp:5] -> [test.cpp:6]: (error) Returning object that points to local variable 's' that will be invalid when returning.\n",
+            errout.str());
+
+        check("const char * f() {\n"
+              "    std::string s;\n"
+              "    std::string_view sv = s;\n"
+              "    return sv.begin();\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning iterator to local container 's' that will be invalid when returning.\n",
+            errout.str());
+
+        check("const char * f() {\n"
+              "    std::string s;\n"
+              "    return std::string_view{s}.begin();\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning iterator to local container 's' that will be invalid when returning.\n",
+            errout.str());
+
+        check("const char * f() {\n"
+              "    std::string s;\n"
+              "    return std::string_view(s).begin();\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning iterator to local container 's' that will be invalid when returning.\n",
+            "",
+            errout.str());
+
+        check("const char * f(std::string_view sv) {\n"
+              "    return sv.begin();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("const char * f(std::string s) {\n"
+              "    std::string_view sv = s;\n"
+              "    return sv.begin();\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:1] -> [test.cpp:3]: (error) Returning iterator to local container 's' that will be invalid when returning.\n",
+            errout.str());
+
+        check("std::string_view f(std::string s) {\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:1] -> [test.cpp:2]: (error) Returning object that points to local variable 's' that will be invalid when returning.\n",
+            errout.str());
+
+        check("const char * f(const std::string& s) {\n"
+              "    std::string_view sv = s;\n"
+              "    return sv.begin();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::string_view f(const std::string_view& sv) {\n"
+              "    return sv;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void danglingLifetimeUniquePtr()
+    {
+        check("int* f(std::unique_ptr<int> p) {\n"
+              "    int * rp = p.get();\n"
+              "    return rp;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:1] -> [test.cpp:3]: (error) Returning pointer to local variable 'p' that will be invalid when returning.\n",
+            errout.str());
+    }
     void danglingLifetime() {
         check("auto f() {\n"
               "    std::vector<int> a;\n"
@@ -2706,6 +2869,25 @@ private:
               "    auto getMore() -> int & { return get(); }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10575
+        check("struct Data {\n"
+              "    int x=0;\n"
+              "    int y=0;\n"
+              "};\n"
+              "struct MoreData {\n"
+              "    Data *data1;\n"
+              "};\n"
+              "struct Fred {\n"
+              "    Fred() {\n"
+              "        Data data;\n"
+              "        mMoreData.data1 = &data;\n"
+              "    }\n"
+              "    MoreData mMoreData;\n"
+              "};\n");
+        ASSERT_EQUALS(
+            "[test.cpp:11] -> [test.cpp:10] -> [test.cpp:11]: (error) Non-local variable 'mMoreData.data1' will use pointer to local variable 'data'.\n",
+            errout.str());
     }
 
     void danglingLifetimeFunction() {
@@ -2974,7 +3156,7 @@ private:
               "    i += *x;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:5] -> [test.cpp:5] -> [test.cpp:6]: (error) Using pointer to temporary.\n",
+            "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:5] -> [test.cpp:5] -> [test.cpp:5] -> [test.cpp:6]: (error) Using pointer that is a temporary.\n",
             errout.str());
 
         check("QString f() {\n"
@@ -2983,18 +3165,16 @@ private:
               "    QString c = b;\n"
               "    return c;\n"
               "}");
-        ASSERT_EQUALS(
-            "[test.cpp:3] -> [test.cpp:4]: (error) Using pointer to temporary.\n",
-            errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:4]: (error) Using pointer that is a temporary.\n",
+                      errout.str());
 
         check("auto f(std::string s) {\n"
               "    const char *x = s.substr(1,2).c_str();\n"
               "    auto i = s.substr(4,5).begin();\n"
               "    return *i;\n"
               "}");
-        ASSERT_EQUALS(
-            "[test.cpp:3] -> [test.cpp:4]: (error) Using iterator to temporary.\n",
-            errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:4]: (error) Using iterator that is a temporary.\n",
+                      errout.str());
 
         check("std::string f() {\n"
               "    std::stringstream tmp;\n"
@@ -3037,8 +3217,80 @@ private:
               "    a->fun();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    std::map<int, int> m_;\n"
+              "};\n"
+              "struct B {\n"
+              "    A a_;\n"
+              "};\n"
+              "B func();\n"
+              "void f() {\n"
+              "    const std::map<int, int>::iterator& m = func().a_.m_.begin();\n"
+              "    (void)m->first;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:9] -> [test.cpp:10]: (error) Using iterator that is a temporary.\n",
+                      errout.str());
     }
 
+    void danglingLifetimeBorrowedMembers()
+    {
+        // #10585
+        check("struct Info { int k; };\n"
+              "struct MoreInfo {\n"
+              "    int* k;\n"
+              "    char dat;\n"
+              "};\n"
+              "struct Fields {\n"
+              "    Info info;\n"
+              "};\n"
+              "template <typename T> void func1(T val){}\n"
+              "template <typename T> void func2(T val){}\n"
+              "Fields* get();\n"
+              "void doit() {\n"
+              "    MoreInfo rech;\n"
+              "    rech.k = &get()->info.k;\n"
+              "    func1(&rech.dat);\n"
+              "    func2(rech.k);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int x; };\n"
+              "A* g();\n"
+              "void f() {\n"
+              "    A** ap = &g();\n"
+              "    (*ap)->x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4] -> [test.cpp:5]: (error) Using pointer that is a temporary.\n",
+                      errout.str());
+
+        check("struct A { int* x; };\n"
+              "A g();\n"
+              "void f() {\n"
+              "    int* x = g().x;\n"
+              "    (void)*x + 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int x; };\n"
+              "struct B { A* a; }\n"
+              "B g();\n"
+              "void f() {\n"
+              "    int* x = &g()->a.x;\n"
+              "    (void)*x + 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int x; };\n"
+              "struct B { A* g(); };\n"
+              "A* g();\n"
+              "void f(B b) {\n"
+              "    A** ap = &b.g();\n"
+              "    (*ap)->x;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5] -> [test.cpp:6]: (error) Using pointer that is a temporary.\n",
+                      errout.str());
+    }
     void invalidLifetime() {
         check("void foo(int a) {\n"
               "    std::function<void()> f;\n"
@@ -3116,6 +3368,76 @@ private:
               "    }\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        check("namespace test {\n"
+              "class Foo {};\n"
+              "struct Bar {\n"
+              "  Foo *_foo;\n"
+              "};\n"
+              "\n"
+              "int f(Bar *bar);\n"
+              "\n"
+              "void g(Bar *bar) {\n"
+              "  {\n"
+              "    Foo foo;\n"
+              "    bar->_foo = &foo;\n"
+              "    bar->_foo = nullptr;\n"
+              "  }\n"
+              "  f(bar);\n"
+              "}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Foo {};\n"
+              "struct Bar {\n"
+              "  Foo *_foo;\n"
+              "};\n"
+              "\n"
+              "int f(Bar *bar);\n"
+              "\n"
+              "void g(Bar *bar) {\n"
+              "  {\n"
+              "    Foo foo;\n"
+              "    bar->_foo = &foo;\n"
+              "    bar->_foo = nullptr;\n"
+              "  }\n"
+              "  f(bar);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("namespace test {\n"
+              "class Foo {};\n"
+              "struct Bar {\n"
+              "  Foo *_foo;\n"
+              "};\n"
+              "\n"
+              "int f(Bar *bar);\n"
+              "\n"
+              "void g(Bar *bar) {\n"
+              "  {\n"
+              "    Foo foo;\n"
+              "    bar->_foo = &foo;\n"
+              "  }\n"
+              "  f(bar);\n"
+              "}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:12]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+
+        check("class Foo {};\n"
+              "struct Bar {\n"
+              "  Foo *_foo;\n"
+              "};\n"
+              "\n"
+              "int f(Bar *bar);\n"
+              "\n"
+              "void g(Bar *bar) {\n"
+              "  {\n"
+              "    Foo foo;\n"
+              "    bar->_foo = &foo;\n"
+              "  }\n"
+              "  f(bar);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:11]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void deadPointer() {
@@ -3192,6 +3514,18 @@ private:
               "    return 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:8]: (error) Using pointer to local variable 'x' that is out of scope.\n", errout.str());
+    }
+
+    void splitNamespaceAuto() { // #10473
+        check("namespace ns\n"
+              "{\n"
+              "    auto var{ 0 };\n"
+              "}\n"
+              "namespace ns\n"
+              "{\n"
+              "    int i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 };

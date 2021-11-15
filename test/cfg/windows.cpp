@@ -87,6 +87,28 @@ void invalidFunctionArg__getcwd(char * buffer)
     }
     free(buffer);
 }
+// DWORD GetPrivateProfileString(
+//  [in]  LPCTSTR lpAppName,
+//  [in]  LPCTSTR lpKeyName,
+//  [in]  LPCTSTR lpDefault,
+//  [out] LPTSTR  lpReturnedString,
+//  [in]  DWORD   nSize,
+//  [in]  LPCTSTR lpFileName)
+void nullPointer_GetPrivateProfileString(LPCTSTR lpAppName,
+                                         LPCTSTR lpKeyName,
+                                         LPCTSTR lpDefault,
+                                         LPTSTR lpReturnedString,
+                                         DWORD nSize,
+                                         LPCTSTR lpFileName)
+{
+    // No warning is expected
+    (void)GetPrivateProfileString(lpAppName, lpKeyName, lpDefault, lpReturnedString, nSize, lpFileName);
+
+    // No warning is expected for 1st arg as nullptr
+    (void)GetPrivateProfileString(nullptr, lpKeyName, lpDefault, lpReturnedString, nSize, lpFileName);
+    // No warning is expected for 2st arg as nullptr
+    (void)GetPrivateProfileString(lpAppName, nullptr, lpDefault, lpReturnedString, nSize, lpFileName);
+}
 
 void nullPointer__get_timezone(long *sec)
 {
@@ -688,15 +710,15 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     CloseHandle(hMutex2);
 
-    HANDLE hEvent;
+    HANDLE hEvent1, hEvent2, hEvent3, hEvent4;
     // cppcheck-suppress uninitvar
-    PulseEvent(hEvent);
+    PulseEvent(hEvent1);
     // cppcheck-suppress uninitvar
-    ResetEvent(hEvent);
+    ResetEvent(hEvent2);
     // cppcheck-suppress uninitvar
-    SetEvent(hEvent);
+    SetEvent(hEvent3);
     // cppcheck-suppress uninitvar
-    CloseHandle(hEvent);
+    CloseHandle(hEvent4);
 
     char buf_uninit1[10];
     char buf_uninit2[10];
@@ -900,11 +922,11 @@ HANDLE test_CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes,
 unsigned char * uninitvar_mbscat(unsigned char *strDestination, const unsigned char *strSource)
 {
     unsigned char *uninit_deststr;
-    unsigned char *uninit_srcstr;
+    unsigned char *uninit_srcstr1, *uninit_srcstr2;
     // cppcheck-suppress uninitvar
-    (void)_mbscat(uninit_deststr,uninit_srcstr);
+    (void)_mbscat(uninit_deststr,uninit_srcstr1);
     // cppcheck-suppress uninitvar
-    (void)_mbscat(strDestination,uninit_srcstr);
+    (void)_mbscat(strDestination,uninit_srcstr2);
 
     // no warning shall be shown for
     return _mbscat(strDestination,strSource);

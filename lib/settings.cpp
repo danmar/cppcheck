@@ -17,8 +17,14 @@
  */
 
 #include "settings.h"
+#include "path.h"
 #include "summaries.h"
 #include "valueflow.h"
+
+#include <fstream>
+
+#define PICOJSON_USE_INT64
+#include <picojson.h>
 
 std::atomic<bool> Settings::mTerminated;
 
@@ -70,6 +76,37 @@ Settings::Settings()
     certainty.setEnabled(Certainty::normal, true);
 }
 
+void Settings::loadCppcheckCfg(const std::string &executable)
+{
+    std::string fileName = Path::getPathFromFilename(executable) + "cppcheck.cfg";
+#ifdef FILESDIR
+    if (Path::fileExists(FILESDIR "/cppcheck.cfg"))
+        fileName = FILESDIR "/cppcheck.cfg";
+#endif
+
+    std::ifstream fin(fileName);
+    if (!fin.is_open())
+        return;
+    picojson::value json;
+    fin >> json;
+    if (!picojson::get_last_error().empty())
+        return;
+    picojson::object obj = json.get<picojson::object>();
+    if (obj.count("addons") && obj["addons"].is<picojson::array>()) {
+        for (const picojson::value &v : obj["addons"].get<picojson::array>()) {
+            const std::string &s = v.get<std::string>();
+            if (!Path::isAbsolute(s))
+                addons.push_back(Path::getPathFromFilename(fileName) + s);
+            else
+                addons.push_back(s);
+        }
+    }
+    if (obj.count("suppressions") && obj["suppressions"].is<picojson::array>()) {
+        for (const picojson::value &v : obj["suppressions"].get<picojson::array>())
+            nomsg.addSuppressionLine(v.get<std::string>());
+    }
+}
+
 std::string Settings::addEnabled(const std::string &str)
 {
     // Enable parameters may be comma separated...
@@ -78,7 +115,7 @@ std::string Settings::addEnabled(const std::string &str)
         std::string::size_type pos = 0;
         while ((pos = str.find(',', pos)) != std::string::npos) {
             if (pos == prevPos)
-                return std::string("cppcheck: --enable parameter is empty");
+                return std::string("--enable parameter is empty");
             const std::string errmsg(addEnabled(str.substr(prevPos, pos - prevPos)));
             if (!errmsg.empty())
                 return errmsg;
@@ -86,7 +123,7 @@ std::string Settings::addEnabled(const std::string &str)
             prevPos = pos;
         }
         if (prevPos >= str.length())
-            return std::string("cppcheck: --enable parameter is empty");
+            return std::string("--enable parameter is empty");
         return addEnabled(str.substr(prevPos));
     }
 

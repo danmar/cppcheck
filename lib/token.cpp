@@ -555,11 +555,14 @@ int Token::multiCompare(const Token *tok, const char *haystack, nonneg int varid
 
             do {
                 ++haystack;
-            } while (*haystack != ' ' && *haystack != '|' && *haystack);
 
-            if (*haystack == ' ' || *haystack == '\0') {
-                return -1;
-            }
+                if (*haystack == ' ' || *haystack == '\0') {
+                    return -1;
+                }
+                if (*haystack == '|') {
+                    break;
+                }
+            } while (true);
 
             ++haystack;
         }

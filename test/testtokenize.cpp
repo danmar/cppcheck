@@ -409,6 +409,7 @@ private:
         TEST_CASE(checkIfCppCast);
         TEST_CASE(checkRefQualifiers);
         TEST_CASE(checkConditionBlock);
+        TEST_CASE(checkUnknownCircularVar);
 
         // #9052
         TEST_CASE(noCrash1);
@@ -3304,6 +3305,32 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
             ASSERT(nullptr != Token::findsimplematch(tokenizer.tokens(), "> . f (")->link());
         }
+
+        {
+            // #10491
+            const char code[] = "template <template <class> class> struct a;\n";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< class");
+            const Token* tok2 = Token::findsimplematch(tok1, "> class");
+            ASSERT_EQUALS(true, tok1->link() == tok2);
+            ASSERT_EQUALS(true, tok2->link() == tok1);
+        }
+
+        {
+            // #10491
+            const char code[] = "template <template <class> class> struct a;\n";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< template");
+            const Token* tok2 = Token::findsimplematch(tok1, "> struct");
+            ASSERT_EQUALS(true, tok1->link() == tok2);
+            ASSERT_EQUALS(true, tok2->link() == tok1);
+        }
     }
 
     void simplifyString() {
@@ -3418,6 +3445,8 @@ private:
         ASSERT_EQUALS("void * ( * f ) ( ) ;", tokenizeAndStringify("void *(*f)();"));
         ASSERT_EQUALS("unsigned int ( * f ) ( ) ;", tokenizeAndStringify("unsigned int (*f)();"));
         ASSERT_EQUALS("unsigned int * ( * f ) ( ) ;", tokenizeAndStringify("unsigned int * (*f)();"));
+        ASSERT_EQUALS("void ( * f [ 2 ] ) ( ) ;", tokenizeAndStringify("void (*f[2])();"));
+        TODO_ASSERT_EQUALS("void ( * f [ 2 ] ) ( ) ;", "void ( * f ) ( ) [ 2 ] ;", tokenizeAndStringify("typedef void func_t(void); func_t *f[2];"));
     }
 
     void simplifyFunctionPointers2() {
@@ -6816,6 +6845,14 @@ private:
     void checkConditionBlock() {
         ASSERT_NO_THROW(tokenizeAndStringify("void a() {\n"
                                              "  for (auto b : std::vector<std::vector<int>>{{}, {}}) {}\n"
+                                             "}\n"));
+    }
+
+    void checkUnknownCircularVar()
+    {
+        ASSERT_NO_THROW(tokenizeAndStringify("void execute() {\n"
+                                             "    const auto &bias = GEMM_CTX_ARG_STORAGE(bias);\n"
+                                             "    auto &c = GEMM_CTX_ARG_STORAGE(c);\n"
                                              "}\n"));
     }
 

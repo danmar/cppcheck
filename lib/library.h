@@ -204,8 +204,8 @@ public:
 
     class Container {
     public:
-        Container() :
-            type_templateArgNo(-1),
+        Container()
+            : type_templateArgNo(-1),
             size_templateArgNo(-1),
             arrayLike_indexOp(false),
             stdStringLike(false),
@@ -213,14 +213,33 @@ public:
             opLessAllowed(true),
             hasInitializerListConstructor(false),
             unstableErase(false),
-            unstableInsert(false) {}
+            unstableInsert(false),
+            view(false)
+        {}
 
         enum class Action {
-            RESIZE, CLEAR, PUSH, POP, FIND, INSERT, ERASE, CHANGE_CONTENT, CHANGE, CHANGE_INTERNAL,
+            RESIZE,
+            CLEAR,
+            PUSH,
+            POP,
+            FIND,
+            INSERT,
+            ERASE,
+            CHANGE_CONTENT,
+            CHANGE,
+            CHANGE_INTERNAL,
             NO_ACTION
         };
         enum class Yield {
-            AT_INDEX, ITEM, BUFFER, BUFFER_NT, START_ITERATOR, END_ITERATOR, ITERATOR, SIZE, EMPTY,
+            AT_INDEX,
+            ITEM,
+            BUFFER,
+            BUFFER_NT,
+            START_ITERATOR,
+            END_ITERATOR,
+            ITERATOR,
+            SIZE,
+            EMPTY,
             NO_YIELD
         };
         struct Function {
@@ -238,6 +257,7 @@ public:
         bool hasInitializerListConstructor;
         bool unstableErase;
         bool unstableInsert;
+        bool view;
 
         Action getAction(const std::string& function) const {
             const std::map<std::string, Function>::const_iterator i = functions.find(function);

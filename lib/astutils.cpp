@@ -144,7 +144,8 @@ static int getArgumentPos(const Token* ftok, const Token* tokToFind){
     return findArgumentPos(startTok, tokToFind);
 }
 
-static void astFlattenRecursive(const Token *tok, std::vector<const Token *> *result, const char* op, nonneg int depth = 0)
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+static void astFlattenRecursive(T* tok, std::vector<T*>* result, const char* op, nonneg int depth = 0)
 {
     ++depth;
     if (!tok || depth >= 100)
@@ -164,14 +165,20 @@ std::vector<const Token*> astFlatten(const Token* tok, const char* op)
     return result;
 }
 
+std::vector<Token*> astFlatten(Token* tok, const char* op)
+{
+    std::vector<Token*> result;
+    astFlattenRecursive(tok, &result, op);
+    return result;
+}
 
 bool astHasToken(const Token* root, const Token * tok)
 {
     if (!root)
         return false;
-    if (root == tok)
-        return true;
-    return astHasToken(root->astOperand1(), tok) || astHasToken(root->astOperand2(), tok);
+    while (tok->astParent() && tok != root)
+        tok = tok->astParent();
+    return root == tok;
 }
 
 bool astHasVar(const Token * tok, nonneg int varid)
@@ -201,6 +208,19 @@ bool astIsSignedChar(const Token *tok)
 bool astIsUnknownSignChar(const Token *tok)
 {
     return astIsCharWithSign(tok, ValueType::Sign::UNKNOWN_SIGN);
+}
+
+bool astIsGenericChar(const Token* tok)
+{
+    return !astIsPointer(tok) && tok && tok->valueType() && (tok->valueType()->type == ValueType::Type::CHAR || tok->valueType()->type == ValueType::Type::WCHAR_T);
+}
+
+bool astIsPrimitive(const Token* tok)
+{
+    const ValueType* vt = tok ? tok->valueType() : nullptr;
+    if (!vt)
+        return false;
+    return vt->isPrimitive();
 }
 
 bool astIsIntegral(const Token *tok, bool unknown)
@@ -239,14 +259,32 @@ bool astIsSmartPointer(const Token* tok)
     return tok && tok->valueType() && tok->valueType()->smartPointerTypeToken;
 }
 
+bool astIsUniqueSmartPointer(const Token* tok)
+{
+    if (!astIsSmartPointer(tok))
+        return false;
+    if (!tok->valueType()->smartPointer)
+        return false;
+    return tok->valueType()->smartPointer->unique;
+}
+
 bool astIsIterator(const Token *tok)
 {
     return tok && tok->valueType() && tok->valueType()->type == ValueType::Type::ITERATOR;
 }
 
-bool astIsContainer(const Token *tok)
+bool astIsContainer(const Token* tok) {
+    return getLibraryContainer(tok) != nullptr && !astIsIterator(tok);
+}
+
+bool astIsContainerView(const Token* tok)
 {
-    return getLibraryContainer(tok) != nullptr && tok->valueType()->type != ValueType::Type::ITERATOR;
+    const Library::Container* container = getLibraryContainer(tok);
+    return container && !astIsIterator(tok) && container->view;
+}
+
+bool astIsContainerOwned(const Token* tok) {
+    return astIsContainer(tok) && !astIsContainerView(tok);
 }
 
 std::string astCanonicalType(const Token *expr)
@@ -350,6 +388,8 @@ bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknow
             return false;
         if (const Function * f = ftok->function()) {
             return !Function::returnsReference(f, true);
+        } else if (ftok->type()) {
+            return true;
         } else if (library) {
             std::string returnType = library->returnValueType(ftok);
             return !returnType.empty() && returnType.back() != '&';
@@ -455,6 +495,9 @@ Token* astParentSkipParens(Token* tok)
         return parent;
     if (parent->link() != nextAfterAstRightmostLeaf(tok))
         return parent;
+    if (Token::Match(parent->previous(), "%name% (") ||
+        (Token::simpleMatch(parent->previous(), "> (") && parent->previous()->link()))
+        return parent;
     return astParentSkipParens(parent);
 }
 
@@ -465,8 +508,11 @@ const Token* getParentMember(const Token * tok)
     const Token * parent = tok->astParent();
     if (!Token::simpleMatch(parent, "."))
         return tok;
-    if (tok == parent->astOperand2())
+    if (astIsRHS(tok)) {
+        if (Token::simpleMatch(parent->astOperand1(), "."))
+            return parent->astOperand1()->astOperand2();
         return parent->astOperand1();
+    }
     const Token * gparent = parent->astParent();
     if (!Token::simpleMatch(gparent, ".") || gparent->astOperand2() != parent)
         return tok;
@@ -549,6 +595,38 @@ static T* getCondTokFromEndImpl(T* endBlock)
     return nullptr;
 }
 
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+static T* getInitTokImpl(T* tok)
+{
+    if (!tok)
+        return nullptr;
+    if (Token::Match(tok, "%name% ("))
+        return getInitTokImpl(tok->next());
+    if (tok->str() != "(")
+        return nullptr;
+    if (!Token::simpleMatch(tok->astOperand2(), ";"))
+        return nullptr;
+    if (Token::simpleMatch(tok->astOperand2()->astOperand1(), ";"))
+        return nullptr;
+    return tok->astOperand2()->astOperand1();
+}
+
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+static T* getStepTokImpl(T* tok)
+{
+    if (!tok)
+        return nullptr;
+    if (Token::Match(tok, "%name% ("))
+        return getStepTokImpl(tok->next());
+    if (tok->str() != "(")
+        return nullptr;
+    if (!Token::simpleMatch(tok->astOperand2(), ";"))
+        return nullptr;
+    if (!Token::simpleMatch(tok->astOperand2()->astOperand2(), ";"))
+        return nullptr;
+    return tok->astOperand2()->astOperand2()->astOperand2();
+}
+
 Token* getCondTok(Token* tok)
 {
     return getCondTokImpl(tok);
@@ -565,6 +643,20 @@ Token* getCondTokFromEnd(Token* endBlock)
 const Token* getCondTokFromEnd(const Token* endBlock)
 {
     return getCondTokFromEndImpl(endBlock);
+}
+
+Token* getInitTok(Token* tok) {
+    return getInitTokImpl(tok);
+}
+const Token* getInitTok(const Token* tok) {
+    return getInitTokImpl(tok);
+}
+
+Token* getStepTok(Token* tok) {
+    return getStepTokImpl(tok);
+}
+const Token* getStepTok(const Token* tok) {
+    return getStepTokImpl(tok);
 }
 
 const Token *findNextTokenFromBreak(const Token *breakToken)
@@ -694,7 +786,7 @@ bool isAliased(const Variable *var)
     return isAliased(start, var->scope()->bodyEnd, var->declarationId());
 }
 
-bool exprDependsOnThis(const Token* expr, nonneg int depth)
+bool exprDependsOnThis(const Token* expr, bool onVar, nonneg int depth)
 {
     if (!expr)
         return false;
@@ -705,25 +797,27 @@ bool exprDependsOnThis(const Token* expr, nonneg int depth)
         return true;
     ++depth;
     // calling nonstatic method?
-    if (Token::Match(expr->previous(), "!!:: %name% (") && expr->function() && expr->function()->nestedIn && expr->function()->nestedIn->isClassOrStruct()) {
+    if (Token::Match(expr->previous(), "!!:: %name% (") && expr->function() && expr->function()->nestedIn &&
+        expr->function()->nestedIn->isClassOrStruct()) {
         // is it a method of this?
         const Scope* fScope = expr->scope();
         while (!fScope->functionOf && fScope->nestedIn)
             fScope = fScope->nestedIn;
-        const Scope* nestedIn = fScope->functionOf;
-        if (nestedIn && nestedIn->function)
-            nestedIn = nestedIn->function->token->scope();
-        while (nestedIn && nestedIn != expr->function()->nestedIn) {
-            nestedIn = nestedIn->nestedIn;
-        }
-        return nestedIn == expr->function()->nestedIn;
-    } else if (Token::Match(expr, "%var%") && expr->variable()) {
+
+        const Scope* classScope = fScope->functionOf;
+        if (classScope && classScope->function)
+            classScope = classScope->function->token->scope();
+
+        if (classScope && classScope->isClassOrStruct())
+            return contains(classScope->findAssociatedScopes(), expr->function()->nestedIn);
+        return false;
+    } else if (onVar && Token::Match(expr, "%var%") && expr->variable()) {
         const Variable* var = expr->variable();
         return (var->isPrivate() || var->isPublic() || var->isProtected());
     }
     if (Token::simpleMatch(expr, "."))
-        return exprDependsOnThis(expr->astOperand1(), depth);
-    return exprDependsOnThis(expr->astOperand1(), depth) || exprDependsOnThis(expr->astOperand2(), depth);
+        return exprDependsOnThis(expr->astOperand1(), onVar, depth);
+    return exprDependsOnThis(expr->astOperand1(), onVar, depth) || exprDependsOnThis(expr->astOperand2(), onVar, depth);
 }
 
 static bool hasUnknownVars(const Token* startTok)
@@ -833,6 +927,8 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok,
                 errors.emplace_back(var->declEndToken(), "Passed to reference.");
                 return {{tok, std::move(errors)}};
             } else if (Token::simpleMatch(var->declEndToken(), "=")) {
+                if (astHasToken(var->declEndToken(), tok))
+                    return std::vector<ReferenceToken>{};
                 errors.emplace_back(var->declEndToken(), "Assigned to reference.");
                 const Token *vartok = var->declEndToken()->astOperand2();
                 if (vartok == tok || (!temporary && isTemporary(true, vartok, nullptr, true) &&
@@ -1051,6 +1147,8 @@ static bool isUsedAsBool_internal(const Token * const tok, bool checkingParent)
             return var && (var->getTypeName() == "bool");
         }
     } else if (isForLoopCondition(tok))
+        return true;
+    else if (Token::simpleMatch(parent, "?") && astIsLHS(tok))
         return true;
 
     return isUsedAsBool_internal(parent, true);
@@ -1506,6 +1604,18 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
         } else if (lf->argumentChecks.empty()) {
             return false;
         }
+    } else if (Token::Match(ftok->previous(), ". %name% (") && ftok->previous()->originalName() != "->" &&
+               astIsSmartPointer(ftok->previous()->astOperand1())) {
+        return Token::Match(ftok, "get|get_deleter ( )");
+    } else if (Token::Match(ftok->previous(), ". %name% (") && astIsContainer(ftok->previous()->astOperand1())) {
+        const Library::Container* container = ftok->previous()->astOperand1()->valueType()->container;
+        if (!container)
+            return false;
+        if (container->getYield(ftok->str()) != Library::Container::Yield::NO_YIELD)
+            return true;
+        if (container->getAction(ftok->str()) == Library::Container::Action::FIND)
+            return true;
+        return false;
     } else {
         bool memberFunction = Token::Match(ftok->previous(), ". %name% (");
         bool constMember = !memberFunction;
@@ -1703,7 +1813,7 @@ bool isReturnScope(const Token* const endToken, const Library* library, const To
         if (!functionScope && Token::simpleMatch(prev->link()->previous(), ") {") &&
             Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "switch (") &&
             !Token::findsimplematch(prev->link(), "break", prev)) {
-            return true;
+            return isReturnScope(prev, library, unknownFunc, functionScope);
         }
         if (isEscaped(prev->link()->astTop(), functionScope, library))
             return true;
@@ -1870,7 +1980,7 @@ static bool isCPPCastKeyword(const Token* tok)
 {
     if (!tok)
         return false;
-    return endsWith(tok->str(), "_cast", 5);
+    return endsWith(tok->str(), "_cast");
 }
 
 static bool isTrivialConstructor(const Token* tok)
@@ -1904,6 +2014,9 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     if (Token::simpleMatch(tok, "{") && isTrivialConstructor(tok))
         return false;
     if (tok->isKeyword() && !isCPPCastKeyword(tok) && tok->str().compare(0,8,"operator") != 0)
+        return false;
+    // A functional cast won't modify the variable
+    if (Token::Match(tok, "%type% (|{") && tok->tokType() == Token::eType && astIsPrimitive(tok->next()))
         return false;
     const Token * parenTok = tok->next();
     if (Token::simpleMatch(parenTok, "<") && parenTok->link())
@@ -2260,7 +2373,8 @@ bool isVariablesChanged(const Token* start,
 
 bool isThisChanged(const Token* tok, int indirect, const Settings* settings, bool cpp)
 {
-    if (Token::Match(tok->previous(), "%name% (")) {
+    if ((Token::Match(tok->previous(), "%name% (") && !Token::simpleMatch(tok->astOperand1(), ".")) ||
+        Token::Match(tok->tokAt(-3), "this . %name% (")) {
         if (tok->previous()->function()) {
             return (!tok->previous()->function()->isConst());
         } else if (!tok->previous()->isKeyword()) {
@@ -2347,6 +2461,11 @@ int getArgumentPos(const Variable* var, const Function* f)
     if (arg_it == f->argumentList.end())
         return -1;
     return std::distance(f->argumentList.begin(), arg_it);
+}
+
+bool isIteratorPair(std::vector<const Token*> args)
+{
+    return args.size() == 2 && ((astIsIterator(args[0]) && astIsIterator(args[1])) || (astIsPointer(args[0]) && astIsPointer(args[1])));
 }
 
 const Token *findLambdaStartToken(const Token *last)
@@ -2485,6 +2604,8 @@ static void getLHSVariablesRecursive(std::vector<const Variable*>& vars, const T
         getLHSVariablesRecursive(vars, tok->next());
     } else if (Token::simpleMatch(tok, ".")) {
         getLHSVariablesRecursive(vars, tok->astOperand1());
+        getLHSVariablesRecursive(vars, tok->astOperand2());
+    } else if (Token::simpleMatch(tok, "::")) {
         getLHSVariablesRecursive(vars, tok->astOperand2());
     } else if (tok->variable()) {
         vars.push_back(tok->variable());
@@ -2627,6 +2748,14 @@ bool isNullOperand(const Token *expr)
 
 bool isGlobalData(const Token *expr, bool cpp)
 {
+    // function call that returns reference => assume global data
+    if (expr && expr->str() == "(" && expr->valueType() && expr->valueType()->reference != Reference::None) {
+        if (expr->isBinaryOp())
+            return true;
+        if (expr->astOperand1() && precedes(expr->astOperand1(), expr))
+            return true;
+    }
+
     bool globalData = false;
     bool var = false;
     visitAstNodes(expr,
@@ -2923,6 +3052,8 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             } else if (Token::Match(parent->astParent(), "%assign%") && !parent->astParent()->astParent() && parent == parent->astParent()->astOperand1()) {
                 if (mWhat == What::Reassign)
                     return Result(Result::Type::BAILOUT, parent->astParent());
+                if (mWhat == What::UnusedValue && (!parent->valueType() || parent->valueType()->reference != Reference::None))
+                    return Result(Result::Type::BAILOUT, parent->astParent());
                 continue;
             } else if (mWhat == What::UnusedValue && parent->isUnaryOp("&") && Token::Match(parent->astParent(), "[,(]")) {
                 // Pass variable to function the writes it
@@ -3170,4 +3301,9 @@ bool FwdAnalysis::isEscapedAlias(const Token* expr)
         }
     }
     return false;
+}
+
+bool isSizeOfEtc(const Token *tok)
+{
+    return Token::Match(tok, "sizeof|typeof|offsetof|decltype|__typeof__ (");
 }

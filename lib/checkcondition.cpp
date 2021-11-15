@@ -1803,7 +1803,7 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
                     break;
                 default:
                     break;
-                };
+                }
                 if (bits == 0 || bits >= 64)
                     continue;
 

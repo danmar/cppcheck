@@ -72,6 +72,13 @@ void CheckBool::incrementBooleanError(const Token *tok)
         );
 }
 
+static bool isConvertedToBool(const Token* tok)
+{
+    if (!tok->astParent())
+        return false;
+    return astIsBool(tok->astParent()) || Token::Match(tok->astParent()->previous(), "if|while (");
+}
+
 //---------------------------------------------------------------------------
 // if (bool & bool) -> if (bool && bool)
 // if (bool | bool) -> if (bool || bool)
@@ -90,20 +97,29 @@ void CheckBool::checkBitwiseOnBoolean()
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->isBinaryOp() && (tok->str() == "&" || tok->str() == "|")) {
-                if (astIsBool(tok->astOperand1()) || astIsBool(tok->astOperand2())) {
-                    if (tok->astOperand2()->variable() && tok->astOperand2()->variable()->nameToken() == tok->astOperand2())
-                        continue;
-                    const std::string expression = astIsBool(tok->astOperand1()) ? tok->astOperand1()->expressionString() : tok->astOperand2()->expressionString();
-                    bitwiseOnBooleanError(tok, expression, tok->str() == "&" ? "&&" : "||");
-                }
+                if (!(astIsBool(tok->astOperand1()) || astIsBool(tok->astOperand2())))
+                    continue;
+                if (tok->str() == "|" && !isConvertedToBool(tok) && !(astIsBool(tok->astOperand1()) && astIsBool(tok->astOperand2())))
+                    continue;
+                if (!isConstExpression(tok->astOperand1(), mSettings->library, true, mTokenizer->isCPP()))
+                    continue;
+                if (!isConstExpression(tok->astOperand2(), mSettings->library, true, mTokenizer->isCPP()))
+                    continue;
+                if (tok->astOperand2()->variable() && tok->astOperand2()->variable()->nameToken() == tok->astOperand2())
+                    continue;
+                const std::string expression = astIsBool(tok->astOperand1()) ? tok->astOperand1()->expressionString()
+                                                                             : tok->astOperand2()->expressionString();
+                bitwiseOnBooleanError(tok, expression, tok->str() == "&" ? "&&" : "||");
             }
         }
     }
 }
 
-void CheckBool::bitwiseOnBooleanError(const Token *tok, const std::string &expression, const std::string &op)
+void CheckBool::bitwiseOnBooleanError(const Token* tok, const std::string& expression, const std::string& op)
 {
-    reportError(tok, Severity::style, "bitwiseOnBoolean",
+    reportError(tok,
+                Severity::style,
+                "bitwiseOnBoolean",
                 "Boolean expression '" + expression + "' is used in bitwise operation. Did you mean '" + op + "'?",
                 CWE398,
                 Certainty::inconclusive);

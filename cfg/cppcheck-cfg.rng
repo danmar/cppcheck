@@ -417,6 +417,9 @@
           <attribute name="hasInitializerListConstructor"><ref name="DATA-BOOL"/></attribute>
         </optional>
         <optional>
+          <attribute name="view"><ref name="DATA-BOOL"/></attribute>
+        </optional>
+        <optional>
           <attribute name="itEndPattern"><text/></attribute>
         </optional>
         <zeroOrMore>

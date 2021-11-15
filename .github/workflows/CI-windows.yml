@@ -15,9 +15,9 @@ jobs:
   build:
     strategy:
       matrix:
-        # windows 2016 should default to VS 2017. Not supported by setup-msbuild
         os: [windows-2019]
         arch: [x64, x86]
+        qt_ver: ['', 5.9.9, 5.15.2]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -25,15 +25,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.9
+      - name: Set up Python 3.10
+        if: matrix.qt_ver == ''
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: '3.10'
 
       - name: Setup msbuild.exe
+        if: matrix.qt_ver == ''
         uses: microsoft/setup-msbuild@v1.0.2
 
       - name: Install PCRE
+        if: false
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           curl -fsSL https://ftp.pcre.org/pub/pcre/pcre-%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
@@ -62,20 +65,22 @@ jobs:
           Z3_VERSION: 4.8.10
 
       # no 32-bit Qt available
-      - name: Install Qt
-        if: matrix.arch == 'x64'
+      - name: Install Qt ${{ matrix.qt_ver }}
+        if: matrix.qt_ver != '' && matrix.arch == 'x64'
         uses: jurplel/install-qt-action@v2
         with:
+          version: ${{ matrix.qt_ver }}
           modules: 'qtcharts'
 
       - name: Install missing Python packages
+        if: matrix.qt_ver == ''
         run: |
-          python -m pip install pip --upgrade
-          python -m pip install pytest
-          python -m pip install pytest-custom_exit_code
+          python -m pip install pip --upgrade || exit /b !errorlevel!
+          python -m pip install pytest || exit /b !errorlevel!
+          python -m pip install pytest-custom_exit_code || exit /b !errorlevel!
 
       - name: Build GUI release
-        if: matrix.arch == 'x64'
+        if: matrix.qt_ver != '' && matrix.arch == 'x64'
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           cd gui || exit /b !errorlevel!
@@ -85,13 +90,14 @@ jobs:
           CL: /MP
       
       - name: Deploy GUI
-        if: matrix.arch == 'x64'
+        if: matrix.qt_ver != '' && matrix.arch == 'x64'
         run: |
           windeployqt Build\gui || exit /b !errorlevel!
           del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
           del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
 
       - name: Configure MSBuild
+        if: matrix.qt_ver == ''
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           set ARCH=${{ matrix.arch }}
@@ -101,32 +107,35 @@ jobs:
           rm -rf build
           mkdir build
           cd build
-          cmake -DBUILD_TESTS=On ..
+          cmake -DBUILD_TESTS=On .. || exit /b !errorlevel!
 
       - name: Build CLI debug configuration using MSBuild
+        if: matrix.qt_ver == ''
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           set ARCH=${{ matrix.arch }}
           if "${{ matrix.arch }}" == "x86" (
             set ARCH=Win32
           )
-          cmake --build build --target check --config Debug
+          cmake --build build --target check --config Debug || exit /b !errorlevel!
 
       - name: Build CLI release configuration using MSBuild
+        if: matrix.qt_ver == ''
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           set ARCH=${{ matrix.arch }}
           if "${{ matrix.arch }}" == "x86" (
             set ARCH=Win32
           )
-          cmake --build build --target check --config Release
+          cmake --build build --target check --config Release || exit /b !errorlevel!
 
       - name: Run test/cli
+        if: matrix.qt_ver == ''
         run: |
           :: since FILESDIR is not set copy the binary to the root so the addons are found
           copy .\build\bin\Release\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
           cd test/cli || exit /b !errorlevel!
-          python -m pytest --suppress-no-test-exit-code test-clang-import.py || exit /b !errorlevel!
+          :: python -m pytest --suppress-no-test-exit-code test-clang-import.py || exit /b !errorlevel!
           python -m pytest test-helloworld.py || exit /b !errorlevel!
           python -m pytest test-inline-suppress.py || exit /b !errorlevel!
           python -m pytest test-more-projects.py || exit /b !errorlevel!
@@ -134,6 +143,7 @@ jobs:
           python -m pytest test-suppress-syntaxError.py || exit /b !errorlevel!
 
       - name: Test addons
+        if: matrix.qt_ver == ''
         run: |
           .\cppcheck.exe --addon=misra --inline-suppr --enable=information --error-exitcode=1 addons\test\misra\misra-ctu-*-test.c
           cd addons\test

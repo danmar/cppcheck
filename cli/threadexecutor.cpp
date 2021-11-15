@@ -121,7 +121,12 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
         mErrorLogger.reportOut(buf);
     } else if (type == REPORT_ERROR || type == REPORT_INFO) {
         ErrorMessage msg;
-        msg.deserialize(buf);
+        try {
+            msg.deserialize(buf);
+        } catch (const InternalError& e) {
+            std::cerr << "#### ThreadExecutor::handleRead error, internal error:" << e.errorMessage << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
 
         if (!mSettings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage())) {
             // Alert only about unique errors

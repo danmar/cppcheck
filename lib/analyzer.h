@@ -20,6 +20,7 @@
 #define analyzerH
 
 #include "config.h"
+#include "mathlib.h"
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -49,6 +50,7 @@ struct Analyzer {
             Idempotent = (1 << 5),
             Incremental = (1 << 6),
             SymbolicMatch = (1 << 7),
+            Internal = (1 << 8),
         };
 
         void set(unsigned int f, bool state = true) {
@@ -93,6 +95,10 @@ struct Analyzer {
 
         bool isSymbolicMatch() const {
             return get(SymbolicMatch);
+        }
+
+        bool isInternal() const {
+            return get(Internal);
         }
 
         bool matches() const {
@@ -155,8 +161,9 @@ struct Analyzer {
     /// Update the state of the value
     virtual void update(Token* tok, Action a, Direction d) = 0;
     /// Try to evaluate the value of a token(most likely a condition)
-    virtual std::vector<int> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const = 0;
-    std::vector<int> evaluate(const Token* tok, const Token* ctx = nullptr) const {
+    virtual std::vector<MathLib::bigint> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const = 0;
+    std::vector<MathLib::bigint> evaluate(const Token* tok, const Token* ctx = nullptr) const
+    {
         return evaluate(Evaluate::Integral, tok, ctx);
     }
     /// Lower any values to possible
