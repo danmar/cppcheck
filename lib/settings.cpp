@@ -76,9 +76,9 @@ Settings::Settings()
     certainty.setEnabled(Certainty::normal, true);
 }
 
-void Settings::loadCppcheckCfg(const std::string &exename)
+void Settings::loadCppcheckCfg(const std::string &executable)
 {
-    std::string fileName = Path::getPathFromFilename(exename) + "cppcheck.cfg";
+    std::string fileName = Path::getPathFromFilename(executable) + "cppcheck.cfg";
 #ifdef FILESDIR
     if (Path::fileExists(FILESDIR "/cppcheck.cfg"))
         fileName = FILESDIR "/cppcheck.cfg";
