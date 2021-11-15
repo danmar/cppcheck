@@ -2474,8 +2474,9 @@ private:
               true);
         ASSERT_EQUALS("", errout.str());
 
-        check("std::string f(std::string Str, int first, int last) {\n"
-              "    return { Str.begin() + first, Str.begin() + last + 1 };\n"
+        check("std::string f(std::string s) {\n"
+              "    std::string r = { s.begin(), s.end() };\n"
+              "    return r;\n"
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
