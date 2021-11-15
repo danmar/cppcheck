@@ -4445,38 +4445,6 @@ private:
         ASSERT_EQUALS(1, value.intvalue);
 
         code = "bool f() {\n"
-               "  const int s( 4 );"
-               "  return s == 4;\n" // <- known value
-               "}";
-        value = valueOfTok(code, "==");
-        ASSERT(value.isKnown());
-        ASSERT_EQUALS(1, value.intvalue);
-
-        code = "bool f() {\n"
-               "  const int s{ 4 };"
-               "  return s == 4;\n" // <- known value
-               "}";
-        value = valueOfTok(code, "==");
-        ASSERT(value.isKnown());
-        ASSERT_EQUALS(1, value.intvalue);
-
-        code = "bool f() {\n"
-               "  const int s = int( 4 );"
-               "  return s == 4;\n" // <- known value
-               "}";
-        value = valueOfTok(code, "==");
-        ASSERT(value.isKnown());
-        ASSERT_EQUALS(1, value.intvalue);
-
-        code = "bool f() {\n"
-               "  const int s = int{ 4 };"
-               "  return s == 4;\n" // <- known value
-               "}";
-        value = valueOfTok(code, "==");
-        ASSERT(value.isKnown());
-        ASSERT_EQUALS(1, value.intvalue);
-
-        code = "bool f() {\n"
                "  const int s = int{};"
                "  return s == 0;\n" // <- known value
                "}";
