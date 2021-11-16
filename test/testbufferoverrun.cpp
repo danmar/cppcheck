@@ -4752,12 +4752,12 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("template <typename T, unsigned N>\n"
-            "using vector = Eigen::Matrix<T, N, 1>;\n"
-            "template <typename V>\n"
-            "void scharr(image2d<vector<V, 2>>& out) {\n"
-            "    vector<V, 2>* out_row = &out(r, 0);\n"
-            "    out_row[c] = vector<V, 2>(1,2);\n"
-            "}\n");
+              "using vector = Eigen::Matrix<T, N, 1>;\n"
+              "template <typename V>\n"
+              "void scharr(image2d<vector<V, 2>>& out) {\n"
+              "    vector<V, 2>* out_row = &out(r, 0);\n"
+              "    out_row[c] = vector<V, 2>(1,2);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
