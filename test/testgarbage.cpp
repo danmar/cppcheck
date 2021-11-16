@@ -1676,10 +1676,10 @@ private:
 
     void garbageCode217() { // #10011
       ASSERT_THROW(checkCode("void f() {\n"
-                  "    auto p;\n"
-                  "    if (g(p)) {}\n"
-                  "    assert();\n"
-                  "}"), InternalError);
+                             "    auto p;\n"
+                             "    if (g(p)) {}\n"
+                             "    assert();\n"
+                             "}"), InternalError);
     }
 
     void syntaxErrorFirstToken() {
