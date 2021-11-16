@@ -6093,9 +6093,9 @@ private:
         valueOfTok(code, "diff");
 
         code = "void foo() {\n" // #10462
-               "std::tuple<float, float, float, float> t4(5.2f, 3.1f, 2.4f, 9.1f), t5(4, 6, 9, 27);\n"
-               "t4 = t5;\n"
-               "ASSERT(!(t4 < t5) && t4 <= t5);\n"
+               "  std::tuple<float, float, float, float> t4(5.2f, 3.1f, 2.4f, 9.1f), t5(4, 6, 9, 27);\n"
+               "  t4 = t5;\n"
+               "  ASSERT(!(t4 < t5) && t4 <= t5);\n"
                "}";
         valueOfTok(code, "<=");
     }
