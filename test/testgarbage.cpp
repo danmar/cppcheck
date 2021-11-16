@@ -242,6 +242,7 @@ private:
         TEST_CASE(garbageCode214);
         TEST_CASE(garbageCode215); // daca@home script with extension .c
         TEST_CASE(garbageCode216); // #7884
+        TEST_CASE(garbageCode217); // #10011
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1671,6 +1672,14 @@ private:
         checkCode("template<typename> struct A {};\n"
                   "template<typename...T> struct A<T::T...> {}; \n"
                   "A<int> a;");
+    }
+
+    void garbageCode217() { // #10011
+      ASSERT_THROW(checkCode("void f() {\n"
+                  "    auto p;\n"
+                  "    if (g(p)) {}\n"
+                  "    assert();\n"
+                  "}"), InternalError);
     }
 
     void syntaxErrorFirstToken() {
