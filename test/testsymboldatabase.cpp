@@ -346,6 +346,7 @@ private:
         TEST_CASE(symboldatabase91);
         TEST_CASE(symboldatabase92); // daca crash
         TEST_CASE(symboldatabase93); // alignas attribute
+        TEST_CASE(symboldatabase96); // #10126
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
 
@@ -4698,6 +4699,15 @@ private:
         ASSERT(db != nullptr);
         const Scope* scope = db->findScopeByName("A");
         ASSERT(scope);
+    }
+
+    void symboldatabase96() { // #10126 
+        GET_SYMBOL_DB("struct A\n"
+                      "{\n"
+                      "    int i, j;\n"
+                      "};\n"
+                      "std::map<int, A> m{ { 0, A{0,0} }, {0, A{0,0} } };\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
