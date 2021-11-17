@@ -1981,8 +1981,9 @@ void Variable::evaluate(const Settings* settings)
 
     const Library * const lib = &settings->library;
 
+    bool isContainer = false;
     if (mNameToken)
-        setFlag(fIsArray, arrayDimensions(settings));
+        setFlag(fIsArray, arrayDimensions(settings, &isContainer));
 
     if (mTypeStartToken)
         setValueType(ValueType::parseDecl(mTypeStartToken,settings));
@@ -2008,7 +2009,7 @@ void Variable::evaluate(const Settings* settings)
             setFlag(fIsConst, true);
             setFlag(fIsStatic, true);
         } else if (tok->str() == "*") {
-            setFlag(fIsPointer, !isArray() || Token::Match(tok->previous(), "( * %name% )"));
+            setFlag(fIsPointer, !isArray() || (isContainer && !Token::Match(tok->next(), "%name% [")) || Token::Match(tok->previous(), "( * %name% )"));
             setFlag(fIsConst, false); // Points to const, isn't necessarily const itself
         } else if (tok->str() == "&") {
             if (isReference())
@@ -2053,7 +2054,7 @@ void Variable::evaluate(const Settings* settings)
                 tok = tok->link()->previous();
             // add array dimensions if present
             if (tok && tok->next()->str() == "[")
-                setFlag(fIsArray, arrayDimensions(settings));
+                setFlag(fIsArray, arrayDimensions(settings, &isContainer));
         }
         if (!tok)
             return;
@@ -3243,12 +3244,14 @@ bool Type::isDerivedFrom(const std::string & ancestor) const
     return false;
 }
 
-bool Variable::arrayDimensions(const Settings* settings)
+bool Variable::arrayDimensions(const Settings* settings, bool* isContainer)
 {
+    *isContainer = false;
     const Library::Container* container = settings->library.detectContainer(mTypeStartToken);
     if (container && container->arrayLike_indexOp && container->size_templateArgNo > 0) {
         const Token* tok = Token::findsimplematch(mTypeStartToken, "<");
         if (tok) {
+            *isContainer = true;
             Dimension dimension_;
             tok = tok->next();
             for (int i = 0; i < container->size_templateArgNo && tok; i++) {
@@ -4889,6 +4892,24 @@ const Scope *Scope::findRecordInBase(const std::string & name) const
     return nullptr;
 }
 
+std::vector<const Scope*> Scope::findAssociatedScopes() const
+{
+    std::vector<const Scope*> result = {this};
+    if (isClassOrStruct() && definedType && !definedType->derivedFrom.empty()) {
+        const std::vector<Type::BaseInfo>& derivedFrom = definedType->derivedFrom;
+        for (const Type::BaseInfo& i : derivedFrom) {
+            const Type* base = i.type;
+            if (base && base->classScope) {
+                if (contains(result, base->classScope))
+                    continue;
+                std::vector<const Scope*> baseScopes = base->classScope->findAssociatedScopes();
+                result.insert(result.end(), baseScopes.begin(), baseScopes.end());
+            }
+        }
+    }
+    return result;
+}
+
 //---------------------------------------------------------------------------
 
 static void checkVariableCallMatch(const Variable* callarg, const Variable* funcarg, size_t& same, size_t& fallback1, size_t& fallback2)
@@ -6504,6 +6525,8 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     valuetype.sign = ValueType::Sign::UNSIGNED;
                 else if (tok->previous()->isSigned())
                     valuetype.sign = ValueType::Sign::SIGNED;
+                else if (valuetype.isIntegral() && valuetype.type != ValueType::UNKNOWN_INT)
+                    valuetype.sign = mDefaultSignedness;
                 setValueType(tok, valuetype);
             }
 
@@ -6513,6 +6536,11 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 valuetype.type = ValueType::RECORD;
                 valuetype.typeScope = tok->previous()->function()->token->scope();
                 setValueType(tok, valuetype);
+            }
+
+            else if (Token::simpleMatch(tok->previous(), "= {") && tok->tokAt(-2) && tok->tokAt(-2)->valueType()) {
+                ValueType vt = *tok->tokAt(-2)->valueType();
+                setValueType(tok, vt);
             }
 
             // library type/function

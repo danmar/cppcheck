@@ -248,6 +248,12 @@ private:
         inconclusive = false;
         ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "x ) ;", &inconclusive));
         ASSERT_EQUALS(true, inconclusive);
+
+        code = "int f(int x) {\n"
+               "return int(x);\n"
+               "}\n";
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "x ) ;", &inconclusive));
+        TODO_ASSERT_EQUALS(false, true, inconclusive);
     }
 
 #define nextAfterAstRightmostLeaf(code, parentPattern, rightPattern) nextAfterAstRightmostLeaf_(code, parentPattern, rightPattern, __FILE__, __LINE__)

@@ -3466,7 +3466,6 @@ void TemplateSimplifier::fixForwardDeclaredDefaultArgumentValues()
                             }
                             if (end)
                                 TokenList::copyTokens(const_cast<Token *>(params2[k]), params1[k]->next(), end->previous());
-                            break;
                         }
                     }
 

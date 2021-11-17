@@ -121,8 +121,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
     mSettings->exename = argv[0];
 
-    mSettings->loadCppcheckCfg(Path::getPathFromFilename(argv[0]) + "cppcheck.cfg");
-
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             // User define
@@ -918,6 +916,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             mPathNames.emplace_back(Path::fromNativeSeparators(Path::removeQuotationMarks(argv[i])));
         }
     }
+
+    mSettings->loadCppcheckCfg(argv[0]);
 
     // Default template format..
     if (mSettings->templateFormat.empty()) {

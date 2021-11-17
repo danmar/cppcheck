@@ -6975,6 +6975,17 @@ private:
                                  "    A() { f(); }\n"
                                  "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkVirtualFunctionCall("class B {\n"
+                                 "public:"
+                                 "    virtual void f() {}\n"
+                                 "};\n"
+                                 "class A : B {\n"
+                                 "public:"
+                                 "    void f() override final {}\n"
+                                 "    A() { f(); }\n"
+                                 "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pureVirtualFunctionCall() {

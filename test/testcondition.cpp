@@ -3801,6 +3801,15 @@ private:
               "    do {} while (i++ == 0);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10582
+        check("static void fun(message_t *message) {\n"
+              "    if (message->length >= 1) {\n"
+              "        switch (data[0]) {}\n"
+              "    }\n"
+              "    uint8_t d0 = message->length > 0 ? data[0] : 0xff;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -3884,6 +3893,25 @@ private:
               "    if (delta > 50)\n"
               "        delta = 50;\n"
               "    return delta;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10555
+        check("struct C {\n"
+              "  int GetI() const { return i; }\n"
+              "  int i{};\n"
+              "};\n"
+              "struct B {\n"
+              "    C *m_PC{};\n"
+              "    Modify();\n"
+              "};\n"
+              "struct D : B {\n"
+              "  void test();  \n"
+              "};\n"
+              "void D::test() {\n"
+              "    const int I = m_PC->GetI();\n"
+              "    Modify();\n"
+              "    if (m_PC->GetI() != I) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

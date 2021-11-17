@@ -1414,6 +1414,16 @@ static void misra_15_6(void) {
   do {} while (x<0); // no-warning
 }
 
+static void misra_15_6_fp(void)
+{
+    uint8_t value = 0U;
+    do // Test
+    {
+        value++;
+    }
+    while (value < 2U);
+}
+
 #if defined(M_20_9) && M_20_9 > 1 // no-warning (#10380)
 #endif
 

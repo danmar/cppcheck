@@ -181,6 +181,7 @@ private:
         TEST_CASE(simplifyTypedef135); // ticket #10068
         TEST_CASE(simplifyTypedef136);
         TEST_CASE(simplifyTypedef137);
+        TEST_CASE(simplifyTypedef138);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2996,6 +2997,16 @@ private:
             ASSERT_EQUALS(exp, tok(code, true, Settings::Native, true));
             ASSERT_EQUALS("", errout.str());
         }
+    }
+
+    void simplifyTypedef138() {
+        const char code[] = "namespace foo { class Bar; }\n"
+                            "class Baz;\n"
+                            "typedef foo::Bar C;\n"
+                            "namespace bar {\n"
+                            "class C : Baz {};\n"
+                            "}\n";
+        ASSERT_EQUALS("namespace foo { class Bar ; } class Baz ; namespace bar { class C : Baz { } ; }", tok(code));
     }
 
     void simplifyTypedefFunction1() {

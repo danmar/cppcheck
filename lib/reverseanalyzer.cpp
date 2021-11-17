@@ -127,6 +127,11 @@ struct ReverseTraversal {
             i = tok->index();
             if (tok == start || (tok->str() == "{" && (tok->scope()->type == Scope::ScopeType::eFunction ||
                                                        tok->scope()->type == Scope::ScopeType::eLambda))) {
+                const Function* f = tok->scope()->function;
+                if (f && f->isConstructor()) {
+                    if (const Token* initList = f->constructorMemberInitialization())
+                        traverse(tok->previous(), tok->tokAt(initList->index() - tok->index()));
+                }
                 break;
             }
             if (Token::Match(tok, "return|break|continue"))
@@ -261,6 +266,15 @@ struct ReverseTraversal {
             }
             if (Token* parent = isDeadCode(tok)) {
                 tok = parent;
+                continue;
+            }
+            if (tok->str() == "case") {
+                const Scope* scope = tok->scope();
+                while (scope && scope->type != Scope::eSwitch)
+                    scope = scope->nestedIn;
+                if (!scope || scope->type != Scope::eSwitch)
+                    break;
+                tok = tok->tokAt(scope->bodyStart->index() - tok->index() - 1);
                 continue;
             }
             if (!update(tok))

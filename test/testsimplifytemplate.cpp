@@ -4730,6 +4730,26 @@ private:
 
             ASSERT_EQUALS(exp, tok(code));
         }
+        { // #10432
+            const char code[] = "template<int A = 128, class T = wchar_t>\n"
+                                "class Foo;\n"
+                                "template<int A, class T>\n"
+                                "class Foo\n"
+                                "{\n"
+                                "public:\n"
+                                "  T operator[](int Index) const;\n"
+                                "};\n"
+                                "template<int A, class T>\n"
+                                "T Foo<A, T>::operator[](int Index) const\n"
+                                "{\n"
+                                "  return T{};\n"
+                                "}\n"
+                                "Foo<> f;";
+            const char exp[] = "class Foo<128,wchar_t> ; Foo<128,wchar_t> f ; "
+                               "class Foo<128,wchar_t> { public: wchar_t operator[] ( int Index ) const ; } ; "
+                               "wchar_t Foo<128,wchar_t> :: operator[] ( int Index ) const { return wchar_t { } ; }";
+            ASSERT_EQUALS(exp, tok(code));
+        }
     }
 
     void template_default_type() {

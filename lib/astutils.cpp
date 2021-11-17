@@ -215,6 +215,14 @@ bool astIsGenericChar(const Token* tok)
     return !astIsPointer(tok) && tok && tok->valueType() && (tok->valueType()->type == ValueType::Type::CHAR || tok->valueType()->type == ValueType::Type::WCHAR_T);
 }
 
+bool astIsPrimitive(const Token* tok)
+{
+    const ValueType* vt = tok ? tok->valueType() : nullptr;
+    if (!vt)
+        return false;
+    return vt->isPrimitive();
+}
+
 bool astIsIntegral(const Token *tok, bool unknown)
 {
     const ValueType *vt = tok ? tok->valueType() : nullptr;
@@ -249,6 +257,15 @@ bool astIsPointer(const Token *tok)
 bool astIsSmartPointer(const Token* tok)
 {
     return tok && tok->valueType() && tok->valueType()->smartPointerTypeToken;
+}
+
+bool astIsUniqueSmartPointer(const Token* tok)
+{
+    if (!astIsSmartPointer(tok))
+        return false;
+    if (!tok->valueType()->smartPointer)
+        return false;
+    return tok->valueType()->smartPointer->unique;
 }
 
 bool astIsIterator(const Token *tok)
@@ -578,6 +595,38 @@ static T* getCondTokFromEndImpl(T* endBlock)
     return nullptr;
 }
 
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+static T* getInitTokImpl(T* tok)
+{
+    if (!tok)
+        return nullptr;
+    if (Token::Match(tok, "%name% ("))
+        return getInitTokImpl(tok->next());
+    if (tok->str() != "(")
+        return nullptr;
+    if (!Token::simpleMatch(tok->astOperand2(), ";"))
+        return nullptr;
+    if (Token::simpleMatch(tok->astOperand2()->astOperand1(), ";"))
+        return nullptr;
+    return tok->astOperand2()->astOperand1();
+}
+
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+static T* getStepTokImpl(T* tok)
+{
+    if (!tok)
+        return nullptr;
+    if (Token::Match(tok, "%name% ("))
+        return getStepTokImpl(tok->next());
+    if (tok->str() != "(")
+        return nullptr;
+    if (!Token::simpleMatch(tok->astOperand2(), ";"))
+        return nullptr;
+    if (!Token::simpleMatch(tok->astOperand2()->astOperand2(), ";"))
+        return nullptr;
+    return tok->astOperand2()->astOperand2()->astOperand2();
+}
+
 Token* getCondTok(Token* tok)
 {
     return getCondTokImpl(tok);
@@ -594,6 +643,20 @@ Token* getCondTokFromEnd(Token* endBlock)
 const Token* getCondTokFromEnd(const Token* endBlock)
 {
     return getCondTokFromEndImpl(endBlock);
+}
+
+Token* getInitTok(Token* tok) {
+    return getInitTokImpl(tok);
+}
+const Token* getInitTok(const Token* tok) {
+    return getInitTokImpl(tok);
+}
+
+Token* getStepTok(Token* tok) {
+    return getStepTokImpl(tok);
+}
+const Token* getStepTok(const Token* tok) {
+    return getStepTokImpl(tok);
 }
 
 const Token *findNextTokenFromBreak(const Token *breakToken)
@@ -734,18 +797,20 @@ bool exprDependsOnThis(const Token* expr, bool onVar, nonneg int depth)
         return true;
     ++depth;
     // calling nonstatic method?
-    if (Token::Match(expr->previous(), "!!:: %name% (") && expr->function() && expr->function()->nestedIn && expr->function()->nestedIn->isClassOrStruct()) {
+    if (Token::Match(expr->previous(), "!!:: %name% (") && expr->function() && expr->function()->nestedIn &&
+        expr->function()->nestedIn->isClassOrStruct()) {
         // is it a method of this?
         const Scope* fScope = expr->scope();
         while (!fScope->functionOf && fScope->nestedIn)
             fScope = fScope->nestedIn;
-        const Scope* nestedIn = fScope->functionOf;
-        if (nestedIn && nestedIn->function)
-            nestedIn = nestedIn->function->token->scope();
-        while (nestedIn && nestedIn != expr->function()->nestedIn) {
-            nestedIn = nestedIn->nestedIn;
-        }
-        return nestedIn == expr->function()->nestedIn;
+
+        const Scope* classScope = fScope->functionOf;
+        if (classScope && classScope->function)
+            classScope = classScope->function->token->scope();
+
+        if (classScope && classScope->isClassOrStruct())
+            return contains(classScope->findAssociatedScopes(), expr->function()->nestedIn);
+        return false;
     } else if (onVar && Token::Match(expr, "%var%") && expr->variable()) {
         const Variable* var = expr->variable();
         return (var->isPrivate() || var->isPublic() || var->isProtected());
@@ -1748,7 +1813,7 @@ bool isReturnScope(const Token* const endToken, const Library* library, const To
         if (!functionScope && Token::simpleMatch(prev->link()->previous(), ") {") &&
             Token::simpleMatch(prev->link()->linkAt(-1)->previous(), "switch (") &&
             !Token::findsimplematch(prev->link(), "break", prev)) {
-            return true;
+            return isReturnScope(prev, library, unknownFunc, functionScope);
         }
         if (isEscaped(prev->link()->astTop(), functionScope, library))
             return true;
@@ -1949,6 +2014,9 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     if (Token::simpleMatch(tok, "{") && isTrivialConstructor(tok))
         return false;
     if (tok->isKeyword() && !isCPPCastKeyword(tok) && tok->str().compare(0,8,"operator") != 0)
+        return false;
+    // A functional cast won't modify the variable
+    if (Token::Match(tok, "%type% (|{") && tok->tokType() == Token::eType && astIsPrimitive(tok->next()))
         return false;
     const Token * parenTok = tok->next();
     if (Token::simpleMatch(parenTok, "<") && parenTok->link())
