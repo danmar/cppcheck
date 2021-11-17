@@ -4836,14 +4836,14 @@ private:
     }
 
     void simplifyOperatorName31() { // #6342
-      const char code[] = "template <typename T>\n"
-        "struct B {\n"
-        "    typedef T A[3];\n"
-        "    operator A& () { return x_; }\n"
-        "    A x_;\n"
-        "};";
-      ASSERT_EQUALS("template < typename T >\nstruct B {\n\noperatorT ( & ( ) ) [ 3 ] { return x_ ; }\nT x_ [ 3 ] ;\n} ;", tokenizeAndStringify(code));
-      ASSERT_EQUALS("", errout.str());
+        const char code[] = "template <typename T>\n"
+                            "struct B {\n"
+                            "    typedef T A[3];\n"
+                            "    operator A& () { return x_; }\n"
+                            "    A x_;\n"
+                            "};";
+        ASSERT_EQUALS("template < typename T >\nstruct B {\n\noperatorT ( & ( ) ) [ 3 ] { return x_ ; }\nT x_ [ 3 ] ;\n} ;", tokenizeAndStringify(code));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyOperatorName10() { // #8746
