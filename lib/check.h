@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,11 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "errorlogger.h"
-#include "settings.h"
-#include "token.h"
-#include "tokenize.h"
-#include "valueflow.h"
+#include "errortypes.h"
 
 #include <list>
 #include <string>
@@ -35,8 +31,22 @@ namespace tinyxml2 {
     class XMLElement;
 }
 
+namespace CTU {
+    class FileInfo;
+}
+
+namespace ValueFlow {
+    class Value;
+}
+
+class Settings;
+class Token;
+class ErrorLogger;
+class ErrorMessage;
+class Tokenizer;
+
 /** Use WRONG_DATA in checkers to mark conditions that check that data is correct */
-#define WRONG_DATA(COND, TOK)  (wrongData((TOK), (COND), #COND))
+#define WRONG_DATA(COND, TOK)  ((COND) && wrongData((TOK), #COND))
 
 /// @addtogroup Core
 /// @{
@@ -52,11 +62,10 @@ public:
 
     /** This constructor is used when running checks. */
     Check(const std::string &aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger), _name(aname) {
-    }
+        : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger), mName(aname) {}
 
     virtual ~Check() {
-        if (!_tokenizer)
+        if (!mTokenizer)
             instances().remove(this);
     }
 
@@ -64,18 +73,14 @@ public:
     static std::list<Check *> &instances();
 
     /** run checks, the token list is not simplified */
-    virtual void runChecks(const Tokenizer *, const Settings *, ErrorLogger *) {
-    }
-
-    /** run checks, the token list is simplified */
-    virtual void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) = 0;
+    virtual void runChecks(const Tokenizer *, const Settings *, ErrorLogger *) = 0;
 
     /** get error messages */
     virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const = 0;
 
     /** class name, used to generate documentation */
     const std::string& name() const {
-        return _name;
+        return mName;
     }
 
     /** get information about this class, used to generate documentation */
@@ -86,10 +91,10 @@ public:
      * This is for for printout out the error list with --errorlist
      * @param errmsg Error message to write
      */
-    static void reportError(const ErrorLogger::ErrorMessage &errmsg);
+    static void reportError(const ErrorMessage &errmsg);
 
     /** Base class used for whole-program analysis */
-    class FileInfo {
+    class CPPCHECKLIB FileInfo {
     public:
         FileInfo() {}
         virtual ~FileInfo() {}
@@ -110,83 +115,55 @@ public:
     }
 
     // Return true if an error is reported.
-    virtual bool analyseWholeProgram(const std::list<FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) {
+    virtual bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<FileInfo*> &fileInfo, const Settings& /*settings*/, ErrorLogger & /*errorLogger*/) {
+        (void)ctu;
         (void)fileInfo;
-        (void)settings;
-        (void)errorLogger;
+        //(void)settings;
+        //(void)errorLogger;
         return false;
     }
 
+    static std::string getMessageId(const ValueFlow::Value &value, const char id[]);
+
 protected:
-    const Tokenizer * const _tokenizer;
-    const Settings * const _settings;
-    ErrorLogger * const _errorLogger;
+    const Tokenizer * const mTokenizer;
+    const Settings * const mSettings;
+    ErrorLogger * const mErrorLogger;
 
     /** report an error */
-    template<typename T, typename U>
-    void reportError(const Token *tok, const Severity::SeverityType severity, const T id, const U msg) {
-        reportError(tok, severity, id, msg, CWE(0U), false);
+    void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg) {
+        reportError(tok, severity, id, msg, CWE(0U), Certainty::normal);
     }
 
     /** report an error */
-    template<typename T, typename U>
-    void reportError(const Token *tok, const Severity::SeverityType severity, const T id, const U msg, const CWE &cwe, bool inconclusive) {
+    void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty::CertaintyLevel certainty) {
         const std::list<const Token *> callstack(1, tok);
-        reportError(callstack, severity, id, msg, cwe, inconclusive);
+        reportError(callstack, severity, id, msg, cwe, certainty);
     }
 
     /** report an error */
-    template<typename T, typename U>
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const T id, const U msg) {
-        reportError(callstack, severity, id, msg, CWE(0U), false);
+    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg) {
+        reportError(callstack, severity, id, msg, CWE(0U), Certainty::normal);
     }
 
     /** report an error */
-    template<typename T, typename U>
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const T id, const U msg, const CWE &cwe, bool inconclusive) {
-        const ErrorLogger::ErrorMessage errmsg(callstack, _tokenizer ? &_tokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
-        if (_errorLogger)
-            _errorLogger->reportErr(errmsg);
-        else
-            reportError(errmsg);
-    }
+    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty::CertaintyLevel certainty);
 
-    void reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive) {
-        const ErrorLogger::ErrorMessage errmsg(errorPath, _tokenizer ? &_tokenizer->list : nullptr, severity, id, msg, cwe, inconclusive);
-        if (_errorLogger)
-            _errorLogger->reportErr(errmsg);
-        else
-            reportError(errmsg);
-    }
+    void reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty::CertaintyLevel certainty);
 
-    ErrorPath getErrorPath(const Token *errtok, const ValueFlow::Value *value, const std::string &bug) const {
-        ErrorPath errorPath;
-        if (!value) {
-            errorPath.emplace_back(errtok,bug);
-        } else if (_settings->verbose || _settings->xml || !_settings->templateLocation.empty()) {
-            errorPath = value->errorPath;
-            errorPath.emplace_back(errtok,bug);
-        } else {
-            if (value->condition)
-                errorPath.emplace_back(value->condition, "condition '" + value->condition->expressionString() + "'");
-            //else if (!value->isKnown() || value->defaultArg)
-            //    errorPath = value->callstack;
-            errorPath.emplace_back(errtok,bug);
-        }
-        return errorPath;
-    }
+    ErrorPath getErrorPath(const Token* errtok, const ValueFlow::Value* value, const std::string& bug) const;
 
     /**
      * Use WRONG_DATA in checkers when you check for wrong data. That
      * will call this method
      */
-    bool wrongData(const Token *tok, bool condition, const char *str);
-private:
-    const std::string _name;
+    bool wrongData(const Token *tok, const char *str);
 
     /** disabled assignment operator and copy constructor */
     void operator=(const Check &) = delete;
     Check(const Check &) = delete;
+private:
+    const std::string mName;
 };
 
 /// @}

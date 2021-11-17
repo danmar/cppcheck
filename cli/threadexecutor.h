@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,19 +19,21 @@
 #ifndef THREADEXECUTOR_H
 #define THREADEXECUTOR_H
 
+#include "color.h"
+#include "config.h"
 #include "errorlogger.h"
-#include "importproject.h"
 
 #include <cstddef>
 #include <list>
 #include <map>
 #include <string>
+#include <mutex>
 
-#if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
+#if ((defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__) && !defined(__CYGWIN__)) || defined(__CPPCHECK__)
 #define THREADING_MODEL_FORK
 #elif defined(_WIN32)
 #define THREADING_MODEL_WIN
-#include <windows.h>
+#include "importproject.h"
 #endif
 
 class Settings;
@@ -46,12 +48,15 @@ class Settings;
 class ThreadExecutor : public ErrorLogger {
 public:
     ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
-    virtual ~ThreadExecutor();
+    ThreadExecutor(const ThreadExecutor &) = delete;
+    ~ThreadExecutor() OVERRIDE;
+    void operator=(const ThreadExecutor &) = delete;
     unsigned int check();
 
-    virtual void reportOut(const std::string &outmsg) override;
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) override;
-    virtual void reportInfo(const ErrorLogger::ErrorMessage &msg) override;
+    void reportOut(const std::string &outmsg, Color c) OVERRIDE;
+    void reportErr(const ErrorMessage &msg) OVERRIDE;
+    void reportInfo(const ErrorMessage &msg) OVERRIDE;
+    void bughuntingReport(const std::string &str) OVERRIDE;
 
     /**
      * @brief Add content to a file, to be used in unit testing.
@@ -63,17 +68,17 @@ public:
     void addFileContent(const std::string &path, const std::string &content);
 
 private:
-    const std::map<std::string, std::size_t> &_files;
-    Settings &_settings;
-    ErrorLogger &_errorLogger;
-    unsigned int _fileCount;
+    const std::map<std::string, std::size_t> &mFiles;
+    Settings &mSettings;
+    ErrorLogger &mErrorLogger;
+    unsigned int mFileCount;
 
 #if defined(THREADING_MODEL_FORK)
 
     /** @brief Key is file name, and value is the content of the file */
-    std::map<std::string, std::string> _fileContents;
+    std::map<std::string, std::string> mFileContents;
 private:
-    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', REPORT_INFO='3', CHILD_END='4'};
+    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', REPORT_INFO='3', REPORT_VERIFICATION='4', CHILD_END='5'};
 
     /**
      * Read from the pipe, parse and handle what ever is in there.
@@ -87,8 +92,8 @@ private:
      * Write end of status pipe, different for each child.
      * Not used in master process.
      */
-    std::list<std::string> _errorList;
-    int _wpipe;
+    std::list<std::string> mErrorList;
+    int mWpipe;
 
     /**
      * @brief Check load average condition
@@ -96,6 +101,12 @@ private:
      * @return true - if new process can be started
      */
     bool checkLoadAverage(size_t nchildren);
+
+    /**
+     * @brief Reports internal errors related to child processes
+     * @param msg The error message
+     */
+    void reportInternalChildErr(const std::string &childname, const std::string &msg);
 
 public:
     /**
@@ -108,25 +119,25 @@ public:
 #elif defined(THREADING_MODEL_WIN)
 
 private:
-    enum MessageType {REPORT_ERROR, REPORT_INFO};
+    enum class MessageType {REPORT_ERROR, REPORT_INFO};
 
-    std::map<std::string, std::string> _fileContents;
-    std::map<std::string, std::size_t>::const_iterator _itNextFile;
-    std::list<ImportProject::FileSettings>::const_iterator _itNextFileSettings;
-    std::size_t _processedFiles;
-    std::size_t _totalFiles;
-    std::size_t _processedSize;
-    std::size_t _totalFileSize;
-    CRITICAL_SECTION _fileSync;
+    std::map<std::string, std::string> mFileContents;
+    std::map<std::string, std::size_t>::const_iterator mItNextFile;
+    std::list<ImportProject::FileSettings>::const_iterator mItNextFileSettings;
+    std::size_t mProcessedFiles;
+    std::size_t mTotalFiles;
+    std::size_t mProcessedSize;
+    std::size_t mTotalFileSize;
+    std::mutex mFileSync;
 
-    std::list<std::string> _errorList;
-    CRITICAL_SECTION _errorSync;
+    std::list<std::string> mErrorList;
+    std::mutex mErrorSync;
 
-    CRITICAL_SECTION _reportSync;
+    std::mutex mReportSync;
 
-    void report(const ErrorLogger::ErrorMessage &msg, MessageType msgType);
+    void report(const ErrorMessage &msg, MessageType msgType);
 
-    static unsigned __stdcall threadProc(void*);
+    static unsigned __stdcall threadProc(ThreadExecutor *threadExecutor);
 
 public:
     /**
@@ -144,13 +155,6 @@ public:
         return false;
     }
 #endif
-
-private:
-    /** disabled copy constructor */
-    ThreadExecutor(const ThreadExecutor &);
-
-    /** disabled assignment operator */
-    void operator=(const ThreadExecutor &);
 };
 
 /// @}

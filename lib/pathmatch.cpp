@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,12 +26,12 @@
 #include <cstddef>
 
 PathMatch::PathMatch(const std::vector<std::string> &excludedPaths, bool caseSensitive)
-    : _excludedPaths(excludedPaths), _caseSensitive(caseSensitive)
+    : mExcludedPaths(excludedPaths), mCaseSensitive(caseSensitive)
 {
-    if (!_caseSensitive)
-        for (std::vector<std::string>::iterator i = _excludedPaths.begin(); i != _excludedPaths.end(); ++i)
-            std::transform(i->begin(), i->end(), i->begin(), ::tolower);
-    _workingDirectory.push_back(Path::getCurrentPath());
+    if (!mCaseSensitive)
+        for (std::string& excludedPath : mExcludedPaths)
+            std::transform(excludedPath.begin(), excludedPath.end(), excludedPath.begin(), ::tolower);
+    mWorkingDirectory.push_back(Path::getCurrentPath());
 }
 
 bool PathMatch::match(const std::string &path) const
@@ -39,11 +39,11 @@ bool PathMatch::match(const std::string &path) const
     if (path.empty())
         return false;
 
-    for (std::vector<std::string>::const_iterator i = _excludedPaths.begin(); i != _excludedPaths.end(); ++i) {
-        const std::string excludedPath((!Path::isAbsolute(path) && Path::isAbsolute(*i)) ? Path::getRelativePath(*i, _workingDirectory) : *i);
+    for (std::vector<std::string>::const_iterator i = mExcludedPaths.begin(); i != mExcludedPaths.end(); ++i) {
+        const std::string excludedPath((!Path::isAbsolute(path) && Path::isAbsolute(*i)) ? Path::getRelativePath(*i, mWorkingDirectory) : *i);
 
         std::string findpath = Path::fromNativeSeparators(path);
-        if (!_caseSensitive)
+        if (!mCaseSensitive)
             std::transform(findpath.begin(), findpath.end(), findpath.begin(), ::tolower);
 
         // Filtering directory name

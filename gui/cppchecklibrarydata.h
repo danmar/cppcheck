@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,8 @@
 #include <QList>
 #include <QString>
 #include <QStringList>
-#include <QIODevice>
+
+class QIODevice;
 
 class CppcheckLibraryData {
 public:
@@ -39,7 +40,7 @@ public:
         QString itEndPattern;
 
         bool access_arrayLike;
-        int  size_templateParameter;
+        int size_templateParameter;
 
         struct {
             QString templateParameter;
@@ -63,8 +64,7 @@ public:
 
     struct Function {
         Function() : noreturn(Unknown), gccPure(false), gccConst(false),
-            leakignore(false), useretval(false) {
-        }
+            leakignore(false), useretval(false) {}
 
         QString comments;
         QString name;
@@ -88,8 +88,7 @@ public:
         } formatstr;
         struct Arg {
             Arg() : nr(0), notbool(false), notnull(false), notuninit(false),
-                formatstr(false), strz(false) {
-            }
+                formatstr(false), strz(false) {}
 
             QString name;
             unsigned int nr;
@@ -136,36 +135,116 @@ public:
     struct MemoryResource {
         QString type; // "memory" or "resource"
         struct Alloc {
-            Alloc() : init(false) {}
+            Alloc() :
+                isRealloc(false),
+                init(false),
+                arg(-1),        // -1: Has no optional "arg" attribute
+                reallocArg(-1)  // -1: Has no optional "realloc-arg" attribute
+            {}
+
+            bool isRealloc;
             bool init;
+            int arg;
+            int reallocArg;
+            QString bufferSize;
             QString name;
         };
+        struct Dealloc {
+            Dealloc() :
+                arg(-1)        // -1: Has no optional "arg" attribute
+            {}
+
+            int arg;
+            QString name;
+        };
+
         QList<struct Alloc> alloc;
-        QStringList dealloc;
+        QList<struct Dealloc> dealloc;
         QStringList use;
     };
 
     struct PodType {
         QString name;
+        QString stdtype;
         QString size;
         QString sign;
+    };
+
+    struct PlatformType {
+        QString name;
+        QString value;
+        QStringList types;      // Keeps element names w/o attribute (e.g. unsigned)
+        QStringList platforms;  // Keeps "type" attribute of each "platform" element
+    };
+
+    using TypeChecks = QList<QPair<QString, QString>>;
+
+    struct Reflection {
+        struct Call {
+            Call() :
+                arg {-1}    // -1: Mandatory "arg" attribute not available
+            {}
+
+            int arg;
+            QString name;
+        };
+
+        QList<struct Call> calls;
+    };
+
+    struct Markup {
+        struct CodeBlocks {
+            CodeBlocks() :
+                offset {-1}
+            {}
+
+            QStringList blocks;
+            int offset;
+            QString start;
+            QString end;
+        };
+
+        struct Exporter {
+            QString prefix;
+            QStringList prefixList;
+            QStringList suffixList;
+        };
+
+        QString ext;
+        bool afterCode;
+        bool reportErrors;
+        QStringList keywords;
+        QStringList importer;
+        QList<CodeBlocks> codeBlocks;
+        QList<Exporter> exporter;
     };
 
     void clear() {
         containers.clear();
         defines.clear();
+        undefines.clear();
         functions.clear();
         memoryresource.clear();
         podtypes.clear();
+        smartPointers.clear();
+        typeChecks.clear();
+        platformTypes.clear();
+        reflections.clear();
+        markups.clear();
     }
-
 
     void swap(CppcheckLibraryData &other) {
         containers.swap(other.containers);
         defines.swap(other.defines);
+        undefines.swap(other.undefines);
         functions.swap(other.functions);
         memoryresource.swap(other.memoryresource);
         podtypes.swap(other.podtypes);
+        smartPointers.swap(other.smartPointers);
+        typeChecks.swap(other.typeChecks);
+        platformTypes.swap(other.platformTypes);
+        reflections.swap(other.reflections);
+        markups.swap(other.markups);
     }
 
     QString open(QIODevice &file);
@@ -176,6 +255,12 @@ public:
     QList<struct Function> functions;
     QList<struct MemoryResource> memoryresource;
     QList<struct PodType> podtypes;
+    QList<TypeChecks> typeChecks;
+    QList<struct PlatformType> platformTypes;
+    QStringList undefines;
+    QStringList smartPointers;
+    QList<struct Reflection> reflections;
+    QList<struct Markup> markups;
 };
 
-#endif // LIBRARYDATA_H
+#endif // CPPCHECKLIBRARYDATA_H

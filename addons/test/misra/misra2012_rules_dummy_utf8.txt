@@ -1,0 +1,5 @@
+Appendix A Summary of guidelines
+Rule 1.1
+Text of rule 1.1, utf8 test: ∑
+Rule 1.2
+Text of rule 1.2

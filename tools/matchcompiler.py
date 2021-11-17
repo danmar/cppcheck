@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Cppcheck - A tool for static C/C++ code analysis
-# Copyright (C) 2007-2018 Cppcheck team.
+# Copyright (C) 2007-2019 Cppcheck team.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -92,7 +92,7 @@ class MatchCompiler:
         elif tok == '%bool%':
             return 'tok->isBoolean()'
         elif tok == '%char%':
-            return '(tok->tokType()==Token::eChar)'
+            return '(tok->tokType() == Token::eChar)'
         elif tok == '%comp%':
             return 'tok->isComparisonOp()'
         elif tok == '%num%':
@@ -102,24 +102,24 @@ class MatchCompiler:
         elif tok == '%op%':
             return 'tok->isOp()'
         elif tok == '%or%':
-            return '(tok->tokType() == Token::eBitOp && tok->str()==MatchCompiler::makeConstString("|") )'
+            return '(tok->tokType() == Token::eBitOp && tok->str() == MatchCompiler::makeConstString("|") )'
         elif tok == '%oror%':
-            return '(tok->tokType() == Token::eLogicalOp && tok->str()==MatchCompiler::makeConstString("||"))'
+            return '(tok->tokType() == Token::eLogicalOp && tok->str() == MatchCompiler::makeConstString("||"))'
         elif tok == '%str%':
-            return '(tok->tokType()==Token::eString)'
+            return '(tok->tokType() == Token::eString)'
         elif tok == '%type%':
-            return '(tok->isName() && tok->varId()==0U && !tok->isKeyword())'
+            return '(tok->isName() && tok->varId() == 0U && (tok->str() != "delete" || !tok->isKeyword()))'
         elif tok == '%name%':
             return 'tok->isName()'
         elif tok == '%var%':
             return '(tok->varId() != 0)'
         elif tok == '%varid%':
-            return '(tok->isName() && tok->varId()==varid)'
+            return '(tok->isName() && tok->varId() == varid)'
         elif (len(tok) > 2) and (tok[0] == "%"):
             print("unhandled:" + tok)
 
         return (
-            '(tok->str()==MatchCompiler::makeConstString("' + tok + '"))'
+            '(tok->str() == MatchCompiler::makeConstString("' + tok + '"))'
         )
 
     def _compilePattern(self, pattern, nr, varid,
@@ -130,7 +130,7 @@ class MatchCompiler:
         else:
             arg2 = ''
             if varid:
-                arg2 = ', const unsigned int varid'
+                arg2 = ', const int varid'
 
             ret = '// pattern: ' + pattern + '\n'
             ret += 'static bool match' + \
@@ -155,7 +155,7 @@ class MatchCompiler:
 
             # [abc]
             if (len(tok) > 2) and (tok[0] == '[') and (tok[-1] == ']'):
-                ret += '    if (!tok || tok->str().size()!=1U || !strchr("' + tok[1:-1] + '", tok->str()[0]))\n'
+                ret += '    if (!tok || tok->str().size() != 1U || !strchr("' + tok[1:-1] + '", tok->str()[0]))\n'
                 ret += '        ' + returnStatement
 
             # a|b|c
@@ -186,7 +186,7 @@ class MatchCompiler:
             elif tok[0:2] == "!!":
                 ret += '    if (tok && tok->str() == MatchCompiler::makeConstString("' + tok[2:] + '"))\n'
                 ret += '        ' + returnStatement
-                gotoNextToken = '    tok = tok ? tok->next() : NULL;\n'
+                gotoNextToken = '    tok = tok ? tok->next() : nullptr;\n'
 
             else:
                 negatedTok = "!" + self._compileCmd(tok)
@@ -214,7 +214,7 @@ class MatchCompiler:
             more_args += ', const Token * end'
             endCondition = ' && start_tok != end'
         if varId:
-            more_args += ', unsigned int varid'
+            more_args += ', int varid'
 
         ret = '// pattern: ' + pattern + '\n'
         ret += 'template<class T> static T * findmatch' + \
@@ -224,7 +224,7 @@ class MatchCompiler:
 
         ret += self._compilePattern(pattern, -1, varId, True, 'T')
         ret += '    }\n'
-        ret += '    return NULL;\n}\n'
+        ret += '    return nullptr;\n}\n'
 
         return ret
 
@@ -298,7 +298,7 @@ class MatchCompiler:
             is_simplematch, verifyNumber, pattern, patternNumber, varId):
         more_args = ''
         if varId:
-            more_args = ', const unsigned int varid'
+            more_args = ', const int varid'
 
         ret = 'static bool match_verify' + \
             str(verifyNumber) + '(const Token *tok' + more_args + ') {\n'
@@ -330,8 +330,8 @@ class MatchCompiler:
         # ret += '            std::cout << "tok: " << tok->str();\n'
         # ret += '        if (tok->next())\n'
         # ret += '            std::cout << "tok next: " << tok->next()->str();\n'
-        ret += '        throw InternalError(tok, "Internal error.' +\
-            'compiled match returned different result than parsed match: ' + pattern + '");\n'
+        ret += '        throw InternalError(tok, "Internal error. ' +\
+            'Compiled match returned different result than parsed match: ' + pattern + '");\n'
         ret += '    }\n'
         ret += '    return res_compiled_match;\n'
         ret += '}\n'
@@ -380,44 +380,46 @@ class MatchCompiler:
         )
 
     def _replaceTokenMatch(self, line, linenr, filename):
-        while True:
-            is_simplematch = False
-            pos1 = line.find('Token::Match(')
-            if pos1 == -1:
-                is_simplematch = True
-                pos1 = line.find('Token::simpleMatch(')
-            if pos1 == -1:
-                break
+        for func in ('Match', 'simpleMatch'):
+            is_simplematch = func == 'simpleMatch'
+            pattern_start = 0
+            while True:
+                pos1 = line.find('Token::' + func + '(', pattern_start)
+                if pos1 == -1:
+                    break
 
-            res = self.parseMatch(line, pos1)
-            if res is None:
-                break
+                res = self.parseMatch(line, pos1)
+                if res is None:
+                    break
 
-            # assert that Token::Match has either 2 or 3 arguments
-            assert(len(res) == 3 or len(res) == 4)
+                # assert that Token::Match has either 2 or 3 arguments
+                assert(len(res) == 3 or len(res) == 4)
 
-            end_pos = len(res[0])
-            tok = res[1]
-            raw_pattern = res[2]
-            varId = None
-            if len(res) == 4:
-                varId = res[3]
+                end_pos = len(res[0])
+                tok = res[1]
+                raw_pattern = res[2]
+                varId = None
+                if len(res) == 4:
+                    varId = res[3]
 
-            res = re.match(r'\s*"((?:.|\\")*?)"\s*$', raw_pattern)
-            if res is None:
-                if self._showSkipped:
-                    print(filename + ":" + str(linenr) + " skipping match pattern:" + raw_pattern)
-                break  # Non-const pattern - bailout
+                pattern_start = pos1 + end_pos
+                res = re.match(r'\s*"((?:.|\\")*?)"\s*$', raw_pattern)
+                if res is None:
+                    if self._showSkipped:
+                        print(filename + ":" + str(linenr) + " skipping match pattern:" + raw_pattern)
+                    continue # Non-const pattern - bailout
 
-            pattern = res.group(1)
-            line = self._replaceSpecificTokenMatch(
-                is_simplematch,
-                line,
-                pos1,
-                end_pos,
-                pattern,
-                tok,
-                varId)
+                pattern = res.group(1)
+                orig_len = len(line)
+                line = self._replaceSpecificTokenMatch(
+                    is_simplematch,
+                    line,
+                    pos1,
+                    end_pos,
+                    pattern,
+                    tok,
+                    varId)
+                pattern_start += len(line) - orig_len
 
         return line
 
@@ -428,7 +430,7 @@ class MatchCompiler:
         if endToken:
             more_args += ', const Token * endToken'
         if varId:
-            more_args += ', const unsigned int varid'
+            more_args += ', const int varid'
 
         ret = 'template < class T > static T * findmatch_verify' + \
             str(verifyNumber) + '(T * tok' + more_args + ') {\n'
@@ -459,7 +461,7 @@ class MatchCompiler:
         # We also need to verify builds in 'release' mode
         ret += '    if (res_parsed_findmatch != res_compiled_findmatch) {\n'
         ret += '        throw InternalError(tok, "Internal error. ' +\
-            'compiled findmatch returned different result than parsed findmatch: ' + pattern + '");\n'
+            'Compiled findmatch returned different result than parsed findmatch: ' + pattern + '");\n'
         ret += '    }\n'
         ret += '    return res_compiled_findmatch;\n'
         ret += '}\n'
@@ -547,9 +549,9 @@ class MatchCompiler:
             # Function prototypes:
             #     Token *findsimplematch(const Token *tok, const char pattern[]);
             #     Token *findsimplematch(const Token *tok, const char pattern[], const Token *end);
-            #     Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
+            #     Token *findmatch(const Token *tok, const char pattern[], int varId = 0);
             # Token *findmatch(const Token *tok, const char pattern[], const
-            # Token *end, unsigned int varId = 0);
+            # Token *end, int varId = 0);
             endToken = None
             if ((is_findsimplematch and len(res) == 4) or
                (not is_findsimplematch and varId and (len(res) == 5)) or
@@ -604,16 +606,15 @@ class MatchCompiler:
         srclines = fin.readlines()
         fin.close()
 
-        header = '#include "token.h"\n'
-        header += '#include "errorlogger.h"\n'
-        header += '#include "matchcompiler.h"\n'
-        header += '#include <string>\n'
-        header += '#include <cstring>\n'
-        # header += '#include <iostream>\n'
-        code = ''
+        code = u''
+
+        modified = False
 
         linenr = 0
         for line in srclines:
+            if not modified:
+                line_orig = line
+
             linenr += 1
             # Compile Token::Match and Token::simpleMatch
             line = self._replaceTokenMatch(line, linenr, srcname)
@@ -624,19 +625,33 @@ class MatchCompiler:
             # Cache plain C-strings in C++ strings
             line = self._replaceCStrings(line)
 
+            if not modified and not line_orig == line:
+                modified = True
+
             code += line
 
         # Compute matchFunctions
-        strFunctions = ''
+        strFunctions = u''
         for function in self._rawMatchFunctions:
             strFunctions += function
 
-        lineno = ''
+        lineno = u''
         if line_directive:
-            lineno = '#line 1 "' + srcname + '"\n'
+            lineno = u'#line 1 "' + srcname + '"\n'
+
+        header = u'#include "matchcompiler.h"\n'
+        header += u'#include <string>\n'
+        header += u'#include <cstring>\n'
+        if len(self._rawMatchFunctions):
+            header += u'#include "errorlogger.h"\n'
+            header += u'#include "token.h"\n'
 
         fout = io.open(destname, 'wt', encoding="utf-8")
-        fout.write(header + strFunctions + lineno + code)
+        if modified or len(self._rawMatchFunctions):
+            fout.write(header)
+            fout.write(strFunctions)
+        fout.write(lineno)
+        fout.write(code)
         fout.close()
 
 
@@ -659,7 +674,7 @@ def main():
     parser.add_argument('--line', action='store_true', default=False,
                         help='add line directive to input files into build files')
     parser.add_argument('file', nargs='*',
-                        help='file to complile')
+                        help='file to compile')
     args = parser.parse_args()
     lib_dir = args.read_dir
     build_dir = args.write_dir

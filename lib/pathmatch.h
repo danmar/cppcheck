@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2018 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,9 +58,9 @@ protected:
     static std::string removeFilename(const std::string &path);
 
 private:
-    std::vector<std::string> _excludedPaths;
-    bool _caseSensitive;
-    std::vector<std::string> _workingDirectory;
+    std::vector<std::string> mExcludedPaths;
+    bool mCaseSensitive;
+    std::vector<std::string> mWorkingDirectory;
 };
 
 /// @}

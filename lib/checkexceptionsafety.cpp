@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 #include "settings.h"
 #include "symboldatabase.h"
 
-#include <cstddef>
 #include <set>
 #include <utility>
 
@@ -38,59 +37,62 @@ namespace {
 
 void CheckExceptionSafety::destructors()
 {
-    if (!_settings->isEnabled(Settings::WARNING))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Perform check..
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         const Function * function = scope->function;
-        if (function) {
-            // only looking for destructors
-            if (function->type == Function::eDestructor) {
-                // Inspect this destructor.
-                for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-                    // Skip try blocks
-                    if (Token::simpleMatch(tok, "try {")) {
-                        tok = tok->next()->link();
-                    }
+        if (!function)
+            continue;
+        // only looking for destructors
+        if (function->type == Function::eDestructor) {
+            // Inspect this destructor.
+            for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+                // Skip try blocks
+                if (Token::simpleMatch(tok, "try {")) {
+                    tok = tok->next()->link();
+                }
 
-                    // Skip uncaught exceptions
-                    else if (Token::simpleMatch(tok, "if ( ! std :: uncaught_exception ( ) ) {")) {
-                        tok = tok->next()->link(); // end of if ( ... )
-                        tok = tok->next()->link(); // end of { ... }
-                    }
+                // Skip uncaught exceptions
+                else if (Token::simpleMatch(tok, "if ( ! std :: uncaught_exception ( ) ) {")) {
+                    tok = tok->next()->link(); // end of if ( ... )
+                    tok = tok->next()->link(); // end of { ... }
+                }
 
-                    // throw found within a destructor
-                    else if (tok->str() == "throw") {
-                        destructorsError(tok, scope->className);
-                        break;
-                    }
+                // throw found within a destructor
+                else if (tok->str() == "throw") {
+                    destructorsError(tok, scope->className);
+                    break;
                 }
             }
         }
     }
 }
 
-
+void CheckExceptionSafety::destructorsError(const Token * const tok, const std::string &className)
+{
+    reportError(tok, Severity::warning, "exceptThrowInDestructor",
+                "Class " + className + " is not safe, destructor throws exception\n"
+                "The class " + className + " is not safe because its destructor "
+                "throws an exception. If " + className + " is used and an exception "
+                "is thrown that is caught in an outer scope the program will terminate.", CWE398, Certainty::normal);
+}
 
 
 void CheckExceptionSafety::deallocThrow()
 {
-    if (!_settings->isEnabled(Settings::WARNING))
+    if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
-    const bool printInconclusive = _settings->inconclusive;
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+    const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Deallocate a global/member pointer and then throw exception
     // the pointer will be a dead pointer
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             // only looking for delete now
             if (tok->str() != "delete")
@@ -141,6 +143,12 @@ void CheckExceptionSafety::deallocThrow()
     }
 }
 
+void CheckExceptionSafety::deallocThrowError(const Token * const tok, const std::string &varname)
+{
+    reportError(tok, Severity::warning, "exceptDeallocThrow", "Exception thrown in invalid state, '" +
+                varname + "' points at deallocated memory.", CWE398, Certainty::normal);
+}
+
 //---------------------------------------------------------------------------
 //      catch(const exception & err)
 //      {
@@ -149,21 +157,27 @@ void CheckExceptionSafety::deallocThrow()
 //---------------------------------------------------------------------------
 void CheckExceptionSafety::checkRethrowCopy()
 {
-    if (!_settings->isEnabled(Settings::STYLE))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
-    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        if (i->type != Scope::eCatch)
+    for (const Scope &scope : symbolDatabase->scopeList) {
+        if (scope.type != Scope::eCatch)
             continue;
 
-        const unsigned int varid = i->bodyStart->tokAt(-2)->varId();
+        const unsigned int varid = scope.bodyStart->tokAt(-2)->varId();
         if (varid) {
-            for (const Token* tok = i->bodyStart->next(); tok && tok != i->bodyEnd; tok = tok->next()) {
+            for (const Token* tok = scope.bodyStart->next(); tok && tok != scope.bodyEnd; tok = tok->next()) {
                 if (Token::simpleMatch(tok, "catch (") && tok->next()->link() && tok->next()->link()->next()) { // Don't check inner catch - it is handled in another iteration of outer loop.
                     tok = tok->next()->link()->next()->link();
                     if (!tok)
+                        break;
+                } else if (Token::Match(tok, "%varid% .", varid)) {
+                    const Token *parent = tok->astParent();
+                    while (Token::simpleMatch(parent->astParent(), "."))
+                        parent = parent->astParent();
+                    if (Token::Match(parent->astParent(), "%assign%|++|--|(") && parent == parent->astParent()->astOperand1())
                         break;
                 } else if (Token::Match(tok, "throw %varid% ;", varid))
                     rethrowCopyError(tok, tok->strAt(1));
@@ -172,26 +186,42 @@ void CheckExceptionSafety::checkRethrowCopy()
     }
 }
 
+void CheckExceptionSafety::rethrowCopyError(const Token * const tok, const std::string &varname)
+{
+    reportError(tok, Severity::style, "exceptRethrowCopy",
+                "Throwing a copy of the caught exception instead of rethrowing the original exception.\n"
+                "Rethrowing an exception with 'throw " + varname + ";' creates an unnecessary copy of '" + varname + "'. "
+                "To rethrow the caught exception without unnecessary copying or slicing, use a bare 'throw;'.", CWE398, Certainty::normal);
+}
+
 //---------------------------------------------------------------------------
 //    try {} catch (std::exception err) {} <- Should be "std::exception& err"
 //---------------------------------------------------------------------------
 void CheckExceptionSafety::checkCatchExceptionByValue()
 {
-    if (!_settings->isEnabled(Settings::STYLE))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
-    for (std::list<Scope>::const_iterator i = symbolDatabase->scopeList.begin(); i != symbolDatabase->scopeList.end(); ++i) {
-        if (i->type != Scope::eCatch)
+    for (const Scope &scope : symbolDatabase->scopeList) {
+        if (scope.type != Scope::eCatch)
             continue;
 
         // Find a pass-by-value declaration in the catch(), excluding basic types
         // e.g. catch (std::exception err)
-        const Variable *var = i->bodyStart->tokAt(-2)->variable();
+        const Variable *var = scope.bodyStart->tokAt(-2)->variable();
         if (var && var->isClass() && !var->isPointer() && !var->isReference())
-            catchExceptionByValueError(i->classDef);
+            catchExceptionByValueError(scope.classDef);
     }
+}
+
+void CheckExceptionSafety::catchExceptionByValueError(const Token *tok)
+{
+    reportError(tok, Severity::style,
+                "catchExceptionByValue", "Exception should be caught by reference.\n"
+                "The exception is caught by value. It could be caught "
+                "as a (const) reference which is usually recommended in C++.", CWE398, Certainty::normal);
 }
 
 
@@ -206,10 +236,8 @@ static const Token * functionThrowsRecursive(const Function * function, std::set
 
     for (const Token *tok = function->functionScope->bodyStart->next();
          tok != function->functionScope->bodyEnd; tok = tok->next()) {
-        if (tok->str() == "try") {
-            // just bail for now
-            break;
-        }
+        if (Token::simpleMatch(tok, "try {"))
+            tok = tok->linkAt(1);  // skip till start of catch clauses
         if (tok->str() == "throw") {
             return tok;
         } else if (tok->function()) {
@@ -231,7 +259,7 @@ static const Token * functionThrowsRecursive(const Function * function, std::set
 
 static const Token * functionThrows(const Function * function)
 {
-    std::set<const Function *>  recursive;
+    std::set<const Function *> recursive;
 
     return functionThrowsRecursive(function, recursive);
 }
@@ -243,11 +271,9 @@ static const Token * functionThrows(const Function * function)
 //--------------------------------------------------------------------------
 void CheckExceptionSafety::nothrowThrows()
 {
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         const Function* function = scope->function;
         if (!function)
             continue;
@@ -276,19 +302,22 @@ void CheckExceptionSafety::nothrowThrows()
     }
 }
 
+void CheckExceptionSafety::noexceptThrowError(const Token * const tok)
+{
+    reportError(tok, Severity::error, "throwInNoexceptFunction", "Exception thrown in function declared not to throw exceptions.", CWE398, Certainty::normal);
+}
+
 //--------------------------------------------------------------------------
 //    void func() { functionWithExceptionSpecification(); }
 //--------------------------------------------------------------------------
 void CheckExceptionSafety::unhandledExceptionSpecification()
 {
-    if (!_settings->isEnabled(Settings::STYLE) || !_settings->inconclusive)
+    if (!mSettings->severity.isEnabled(Severity::style) || !mSettings->certainty.isEnabled(Certainty::inconclusive))
         return;
 
-    const SymbolDatabase* const symbolDatabase = _tokenizer->getSymbolDatabase();
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
-    const std::size_t functions = symbolDatabase->functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope * scope = symbolDatabase->functionScopes[i];
+    for (const Scope * scope : symbolDatabase->functionScopes) {
         // only check functions without exception epecification
         if (scope->function && !scope->function->isThrow() &&
             scope->className != "main" && scope->className != "wmain" &&
@@ -310,3 +339,54 @@ void CheckExceptionSafety::unhandledExceptionSpecification()
     }
 }
 
+void CheckExceptionSafety::unhandledExceptionSpecificationError(const Token * const tok1, const Token * const tok2, const std::string & funcname)
+{
+    const std::string str1(tok1 ? tok1->str() : "foo");
+    const std::list<const Token*> locationList = { tok1, tok2 };
+    reportError(locationList, Severity::style, "unhandledExceptionSpecification",
+                "Unhandled exception specification when calling function " + str1 + "().\n"
+                "Unhandled exception specification when calling function " + str1 + "(). "
+                "Either use a try/catch around the function call, or add a exception specification for " + funcname + "() also.", CWE703, Certainty::inconclusive);
+}
+
+//--------------------------------------------------------------------------
+// 7.6.18.4 If no exception is presently being handled, evaluating a throw-expression with no operand calls std​::​​terminate().
+//--------------------------------------------------------------------------
+void CheckExceptionSafety::rethrowNoCurrentException()
+{
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        const Function* function = scope->function;
+        if (!function)
+            continue;
+
+        // Rethrow can be used in 'exception dispatcher' idiom which is FP in such case
+        // https://isocpp.org/wiki/faq/exceptions#throw-without-an-object
+        // We check the beginning of the function with idiom pattern
+        if (Token::simpleMatch(function->functionScope->bodyStart->next(), "try { throw ; } catch ("))
+            continue;
+
+        for (const Token *tok = function->functionScope->bodyStart->next();
+             tok != function->functionScope->bodyEnd; tok = tok->next()) {
+            if (Token::simpleMatch(tok, "catch (")) {
+                tok = tok->linkAt(1);       // skip catch argument
+                if (Token::simpleMatch(tok, ") {"))
+                    tok = tok->linkAt(1);   // skip catch scope
+                else
+                    break;
+            }
+            if (Token::simpleMatch(tok, "throw ;")) {
+                rethrowNoCurrentExceptionError(tok);
+            }
+        }
+    }
+}
+
+void CheckExceptionSafety::rethrowNoCurrentExceptionError(const Token *tok)
+{
+    reportError(tok, Severity::error, "rethrowNoCurrentException",
+                "Rethrowing current exception with 'throw;', it seems there is no current exception to rethrow."
+                " If there is no current exception this calls std::terminate()."
+                " More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object",
+                CWE480, Certainty::normal);
+}

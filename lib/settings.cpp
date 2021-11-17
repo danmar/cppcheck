@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,38 +17,94 @@
  */
 
 #include "settings.h"
-
+#include "path.h"
+#include "summaries.h"
 #include "valueflow.h"
 
-bool Settings::_terminated;
+#include <fstream>
+
+#define PICOJSON_USE_INT64
+#include <picojson.h>
+
+std::atomic<bool> Settings::mTerminated;
+
+const char Settings::SafeChecks::XmlRootName[] = "safe-checks";
+const char Settings::SafeChecks::XmlClasses[] = "class-public";
+const char Settings::SafeChecks::XmlExternalFunctions[] = "external-functions";
+const char Settings::SafeChecks::XmlInternalFunctions[] = "internal-functions";
+const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
 
 Settings::Settings()
-    : _enabled(0),
-      debug(false),
-      debugnormal(false),
-      debugwarnings(false),
-      dump(false),
-      exceptionHandling(false),
-      inconclusive(false),
-      jointSuppressionReport(false),
-      experimental(false),
-      quiet(false),
-      inlineSuppressions(false),
-      verbose(false),
-      force(false),
-      relativePaths(false),
-      xml(false), xml_version(2),
-      jobs(1),
-      loadAverage(0),
-      exitCode(0),
-      showtime(SHOWTIME_NONE),
-      preprocessOnly(false),
-      maxConfigs(12),
-      enforcedLang(None),
-      reportProgress(false),
-      checkConfiguration(false),
-      checkLibrary(false)
+    : bugHunting(false),
+    bugHuntingCheckFunctionMaxTime(60),
+    checkAllConfigurations(true),
+    checkConfiguration(false),
+    checkHeaders(true),
+    checkLibrary(false),
+    checkUnusedTemplates(true),
+    clang(false),
+    clangExecutable("clang"),
+    clangTidy(false),
+    daca(false),
+    debugBugHunting(false),
+    debugnormal(false),
+    debugSimplified(false),
+    debugtemplate(false),
+    debugwarnings(false),
+    dump(false),
+    enforcedLang(None),
+    exceptionHandling(false),
+    exitCode(0),
+    force(false),
+    inlineSuppressions(false),
+    jobs(1),
+    jointSuppressionReport(false),
+    loadAverage(0),
+    maxConfigs(12),
+    maxCtuDepth(2),
+    maxTemplateRecursion(100),
+    preprocessOnly(false),
+    quiet(false),
+    relativePaths(false),
+    reportProgress(false),
+    showtime(SHOWTIME_MODES::SHOWTIME_NONE),
+    verbose(false),
+    xml(false),
+    xml_version(2)
 {
+    severity.setEnabled(Severity::error, true);
+    certainty.setEnabled(Certainty::normal, true);
+}
+
+void Settings::loadCppcheckCfg(const std::string &executable)
+{
+    std::string fileName = Path::getPathFromFilename(executable) + "cppcheck.cfg";
+#ifdef FILESDIR
+    if (Path::fileExists(FILESDIR "/cppcheck.cfg"))
+        fileName = FILESDIR "/cppcheck.cfg";
+#endif
+
+    std::ifstream fin(fileName);
+    if (!fin.is_open())
+        return;
+    picojson::value json;
+    fin >> json;
+    if (!picojson::get_last_error().empty())
+        return;
+    picojson::object obj = json.get<picojson::object>();
+    if (obj.count("addons") && obj["addons"].is<picojson::array>()) {
+        for (const picojson::value &v : obj["addons"].get<picojson::array>()) {
+            const std::string &s = v.get<std::string>();
+            if (!Path::isAbsolute(s))
+                addons.push_back(Path::getPathFromFilename(fileName) + s);
+            else
+                addons.push_back(s);
+        }
+    }
+    if (obj.count("suppressions") && obj["suppressions"].is<picojson::array>()) {
+        for (const picojson::value &v : obj["suppressions"].get<picojson::array>())
+            nomsg.addSuppressionLine(v.get<std::string>());
+    }
 }
 
 std::string Settings::addEnabled(const std::string &str)
@@ -59,7 +115,7 @@ std::string Settings::addEnabled(const std::string &str)
         std::string::size_type pos = 0;
         while ((pos = str.find(',', pos)) != std::string::npos) {
             if (pos == prevPos)
-                return std::string("cppcheck: --enable parameter is empty");
+                return std::string("--enable parameter is empty");
             const std::string errmsg(addEnabled(str.substr(prevPos, pos - prevPos)));
             if (!errmsg.empty())
                 return errmsg;
@@ -67,30 +123,33 @@ std::string Settings::addEnabled(const std::string &str)
             prevPos = pos;
         }
         if (prevPos >= str.length())
-            return std::string("cppcheck: --enable parameter is empty");
+            return std::string("--enable parameter is empty");
         return addEnabled(str.substr(prevPos));
     }
 
     if (str == "all") {
-        _enabled |= WARNING | STYLE | PERFORMANCE | PORTABILITY | INFORMATION | UNUSED_FUNCTION | MISSING_INCLUDE;
+        severity.fill();
+        checks.enable(Checks::missingInclude);
+        checks.enable(Checks::unusedFunction);
     } else if (str == "warning") {
-        _enabled |= WARNING;
+        severity.enable(Severity::warning);
     } else if (str == "style") {
-        _enabled |= STYLE;
+        severity.enable(Severity::style);
     } else if (str == "performance") {
-        _enabled |= PERFORMANCE;
+        severity.enable(Severity::performance);
     } else if (str == "portability") {
-        _enabled |= PORTABILITY;
+        severity.enable(Severity::portability);
     } else if (str == "information") {
-        _enabled |= INFORMATION | MISSING_INCLUDE;
+        severity.enable(Severity::information);
+        checks.enable(Checks::missingInclude);
     } else if (str == "unusedFunction") {
-        _enabled |= UNUSED_FUNCTION;
+        checks.enable(Checks::unusedFunction);
     } else if (str == "missingInclude") {
-        _enabled |= MISSING_INCLUDE;
+        checks.enable(Checks::missingInclude);
     }
 #ifdef CHECK_INTERNAL
     else if (str == "internal") {
-        _enabled |= INTERNAL;
+        checks.enable(Checks::internalCheck);
     }
 #endif
     else {
@@ -103,35 +162,16 @@ std::string Settings::addEnabled(const std::string &str)
     return std::string();
 }
 
-bool Settings::isEnabled(Severity::SeverityType severity) const
-{
-    switch (severity) {
-    case Severity::none:
-        return true;
-    case Severity::error:
-        return true;
-    case Severity::warning:
-        return isEnabled(WARNING);
-    case Severity::style:
-        return isEnabled(STYLE);
-    case Severity::performance:
-        return isEnabled(PERFORMANCE);
-    case Severity::portability:
-        return isEnabled(PORTABILITY);
-    case Severity::information:
-        return isEnabled(INFORMATION);
-    case Severity::debug:
-        return false;
-    default:
-        return false;
-    }
-}
-
 bool Settings::isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck) const
 {
-    if (!isEnabled(Settings::WARNING) && (value->condition || value->defaultArg))
+    if (!severity.isEnabled(Severity::warning) && (value->condition || value->defaultArg))
         return false;
-    if (!inconclusive && (inconclusiveCheck || value->isInconclusive()))
+    if (!certainty.isEnabled(Certainty::inconclusive) && (inconclusiveCheck || value->isInconclusive()))
         return false;
     return true;
+}
+
+void Settings::loadSummaries()
+{
+    Summaries::loadReturn(buildDir, summaryReturn);
 }

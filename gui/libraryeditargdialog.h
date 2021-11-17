@@ -23,9 +23,9 @@ private slots:
     void minsizeChanged(int);
 
 private:
-    Ui::LibraryEditArgDialog *ui;
+    Ui::LibraryEditArgDialog *mUi;
 
-    QList<CppcheckLibraryData::Function::Arg::MinSize> minsizes;
+    QList<CppcheckLibraryData::Function::Arg::MinSize> mMinSizes;
 };
 
 #endif // LIBRARYEDITARGDIALOG_H

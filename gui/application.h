@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,73 +22,73 @@
 #include <QString>
 
 /**
-* @brief A class containing information of the application to execute.
-*
-* Each application has a name and a path. Name is displayed to the user
-* and has no other meaning. It isn't used to start the application.
-* Path contains the full path to the application containing the executable name.
-* Parameters contains the command line arguments for the executable.
-*
-* User can also specify certain predefined strings to parameters. These strings
-* will be replaced with appropriate values concerning the error. Strings are:
-* (file) - Filename containing the error
-* (line) - Line number containing the error
-* (message) - Error message
-* (severity) - Error severity
-*
-* Example opening a file with Kate and make Kate scroll to the correct line.
-* Executable: kate
-* Parameters: -l(line) (file)
-*/
+ * @brief A class containing information of the application to execute.
+ *
+ * Each application has a name and a path. Name is displayed to the user
+ * and has no other meaning. It isn't used to start the application.
+ * Path contains the full path to the application containing the executable name.
+ * Parameters contains the command line arguments for the executable.
+ *
+ * User can also specify certain predefined strings to parameters. These strings
+ * will be replaced with appropriate values concerning the error. Strings are:
+ * (file) - Filename containing the error
+ * (line) - Line number containing the error
+ * (message) - Error message
+ * (severity) - Error severity
+ *
+ * Example opening a file with Kate and make Kate scroll to the correct line.
+ * Executable: kate
+ * Parameters: -l(line) (file)
+ */
 class Application {
 public:
-    Application() { }
+    Application() {}
     Application(const QString &name, const QString &path, const QString &params);
 
     /**
-    * @brief Get application name.
-    * @return Application name.
-    */
+     * @brief Get application name.
+     * @return Application name.
+     */
     QString getName() const {
         return mName;
     }
 
     /**
-    * @brief Get application path.
-    * @return Application path.
-    */
+     * @brief Get application path.
+     * @return Application path.
+     */
     QString getPath() const {
         return mPath;
     }
 
     /**
-    * @brief Get application command line parameters.
-    * @return Application command line parameters.
-    */
+     * @brief Get application command line parameters.
+     * @return Application command line parameters.
+     */
     QString getParameters() const {
         return mParameters;
     }
 
     /**
-    * @brief Set application name.
-    * @param name Application name.
-    */
+     * @brief Set application name.
+     * @param name Application name.
+     */
     void setName(const QString &name) {
         mName = name;
     }
 
     /**
-    * @brief Set application path.
-    * @param path Application path.
-    */
+     * @brief Set application path.
+     * @param path Application path.
+     */
     void setPath(const QString &path) {
         mPath = path;
     }
 
     /**
-    * @brief Set application command line parameters.
-    * @param parameters Application command line parameters.
-    */
+     * @brief Set application command line parameters.
+     * @param parameters Application command line parameters.
+     */
     void setParameters(const QString &parameters) {
         mParameters = parameters;
     }
@@ -96,18 +96,18 @@ public:
 private:
 
     /**
-    * @brief Application's name
-    */
+     * @brief Application's name
+     */
     QString mName;
 
     /**
-    * @brief Application's path
-    */
+     * @brief Application's path
+     */
     QString mPath;
 
     /**
-    * @brief Application's parameters
-    */
+     * @brief Application's parameters
+     */
     QString mParameters;
 };
 

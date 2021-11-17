@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +21,12 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "errortypes.h"
 
 #include <istream>
 #include <list>
-#include <set>
 #include <string>
+#include <vector>
 
 /// @addtogroup Core
 /// @{
@@ -35,30 +36,33 @@ class CPPCHECKLIB Suppressions {
 public:
 
     struct CPPCHECKLIB ErrorMessage {
+        std::size_t hash;
         std::string errorId;
         void setFileName(const std::string &s);
         const std::string &getFileName() const {
-            return _fileName;
+            return mFileName;
         }
         int lineNumber;
-        bool inconclusive;
+        Certainty::CertaintyLevel certainty;
         std::string symbolNames;
     private:
-        std::string _fileName;
+        std::string mFileName;
     };
 
     struct CPPCHECKLIB Suppression {
-        Suppression() : lineNumber(NO_LINE), matched(false) {}
+        Suppression() : lineNumber(NO_LINE), hash(0), thisAndNextLine(false), matched(false) {}
         Suppression(const Suppression &other) {
             *this = other;
         }
-        Suppression(const std::string &id, const std::string &file, int line=NO_LINE) : errorId(id), fileName(file), lineNumber(line), matched(false) {}
+        Suppression(const std::string &id, const std::string &file, int line=NO_LINE) : errorId(id), fileName(file), lineNumber(line), hash(0), thisAndNextLine(false), matched(false) {}
 
         Suppression & operator=(const Suppression &other) {
             errorId = other.errorId;
             fileName = other.fileName;
             lineNumber = other.lineNumber;
             symbolName = other.symbolName;
+            hash = other.hash;
+            thisAndNextLine = other.thisAndNextLine;
             matched = other.matched;
             return *this;
         }
@@ -67,11 +71,15 @@ public:
             if (errorId != other.errorId)
                 return errorId < other.errorId;
             if (lineNumber < other.lineNumber)
-                return lineNumber < other.lineNumber;
+                return true;
             if (fileName != other.fileName)
                 return fileName < other.fileName;
             if (symbolName != other.symbolName)
                 return symbolName < other.symbolName;
+            if (hash != other.hash)
+                return hash < other.hash;
+            if (thisAndNextLine != other.thisAndNextLine)
+                return thisAndNextLine;
             return false;
         }
 
@@ -86,19 +94,31 @@ public:
         bool isSuppressed(const ErrorMessage &errmsg) const;
 
         bool isMatch(const ErrorMessage &errmsg);
+
         std::string getText() const;
 
         bool isLocal() const {
             return !fileName.empty() && fileName.find_first_of("?*") == std::string::npos;
         }
 
+        bool isSameParameters(const Suppression &other) const {
+            return errorId == other.errorId &&
+                   fileName == other.fileName &&
+                   lineNumber == other.lineNumber &&
+                   symbolName == other.symbolName &&
+                   hash == other.hash &&
+                   thisAndNextLine == other.thisAndNextLine;
+        }
+
         std::string errorId;
         std::string fileName;
         int lineNumber;
         std::string symbolName;
+        std::size_t hash;
+        bool thisAndNextLine; // Special case for backwards compatibility: { // cppcheck-suppress something
         bool matched;
 
-        static const int NO_LINE = 0;
+        enum { NO_LINE = -1 };
     };
 
     /**
@@ -116,6 +136,14 @@ public:
     std::string parseXmlFile(const char *filename);
 
     /**
+     * Parse multi inline suppression in comment
+     * @param comment the full comment text
+     * @param errorMessage output parameter for error message (wrong suppression attribute)
+     * @return empty vector if something wrong.
+     */
+    static std::vector<Suppression> parseMultiSuppressComment(const std::string &comment, std::string *errorMessage);
+
+    /**
      * @brief Don't show the given error.
      * @param line Description of error to suppress (in id:file:line format).
      * @return error message. empty upon success
@@ -129,6 +157,13 @@ public:
      * @return error message. empty upon success
      */
     std::string addSuppression(const Suppression &suppression);
+
+    /**
+     * @brief Combine list of suppressions into the current suppressions.
+     * @param suppressions list of suppression details
+     * @return error message. empty upon success
+     */
+    std::string addSuppressions(const std::list<Suppression> &suppressions);
 
     /**
      * @brief Returns true if this message should not be shown to the user.
@@ -147,8 +182,8 @@ public:
     /**
      * @brief Create an xml dump of suppressions
      * @param out stream to write XML to
-    */
-    void dump(std::ostream &out);
+     */
+    void dump(std::ostream &out) const;
 
     /**
      * @brief Returns list of unmatched local (per-file) suppressions.
@@ -162,10 +197,15 @@ public:
      */
     std::list<Suppression> getUnmatchedGlobalSuppressions(const bool unusedFunctionChecking) const;
 
-    static bool matchglob(const std::string &pattern, const std::string &name);
+    /**
+     * @brief Returns list of all suppressions.
+     * @return list of suppressions
+     */
+    const std::list<Suppression> &getSuppressions() const;
+
 private:
     /** @brief List of error which the user doesn't want to see. */
-    std::list<Suppression> _suppressions;
+    std::list<Suppression> mSuppressions;
 };
 
 /// @}

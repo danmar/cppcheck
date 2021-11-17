@@ -10,7 +10,7 @@ About
 Manual
 
     A manual is available online:
-    http://cppcheck.sourceforge.net/manual.pdf
+    https://cppcheck.sourceforge.io/manual.pdf
 
 Compiling
 
@@ -20,7 +20,15 @@ Compiling
 
     To build the GUI, you need Qt.
 
-    When building the command line tool, PCRE is optional. It is used if you build with rules.
+    While building the command line tool, PCRE is optional. It is used if you build with rules.
+
+    For "bug hunting" you need Z3. Installing Z3:
+     * debian: "sudo apt-get install libz3-dev
+     * windows:
+       32-bit: https://github.com/Z3Prover/z3/releases/download/z3-4.8.7/z3-4.8.7-x86-win.zip
+       64-bit: https://github.com/Z3Prover/z3/releases/download/z3-4.8.7/z3-4.8.7-x64-win.zip
+    If you do not want to install z3 in some "system" include/lib paths you can put the files in
+    cppcheck/externals/z3/include and cppcheck/externals/z3/bin
 
     There are multiple compilation choices:
       * qmake - cross platform build tool
@@ -31,6 +39,23 @@ Compiling
       * g++ 4.6 (or later)
       * clang++
 
+    cmake
+    =====
+        Example, compiling Cppcheck with cmake:
+            mkdir build
+            cd build
+            cmake ..
+            cmake --build .
+
+        If you want to compile the GUI you can use the flag
+        -DBUILD_GUI=ON
+
+        For rules support (requires pcre) use the flag
+        -DHAVE_RULES=ON
+
+        For release builds it is recommended that you use:
+        -DUSE_MATCHCOMPILER=ON
+
     qmake
     =====
         You can use the gui/gui.pro file to build the GUI.
@@ -40,12 +65,14 @@ Compiling
 
     Visual Studio
     =============
-        Use the cppcheck.sln file. The file is configured for Visual Studio 2015, but the platform
+        Use the cppcheck.sln file. The file is configured for Visual Studio 2019, but the platform
         toolset can be changed easily to older or newer versions. The solution contains platform
         targets for both x86 and x64.
 
         To compile with rules, select "Release-PCRE" or "Debug-PCRE" configuration.
         pcre.lib (pcre64.lib for x64 builds) and pcre.h are expected to be in /externals then.
+        A current version of PCRE for Visual Studio can be obtained using vcpkg:
+        https://github.com/microsoft/vcpkg
 
     Qt Creator + mingw
     ==================
@@ -58,20 +85,20 @@ Compiling
             make
 
         The recommended release build is:
-            make SRCDIR=build CFGDIR=cfg HAVE_RULES=yes
+            make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes
 
         Flags:
-        SRCDIR=build   : Python is used to optimise cppcheck
-        CFGDIR=cfg     : Specify folder where .cfg files are found
-        HAVE_RULES=yes : Enable rules (pcre is required if this is used)
+        MATCHCOMPILER=yes               : Python is used to optimise cppcheck at compile time
+        FILESDIR=/usr/share/cppcheck    : Specify folder where cppcheck files are installed
+        HAVE_RULES=yes                  : Enable rules (pcre is required if this is used)
 
     g++ (for experts)
     =================
         If you just want to build Cppcheck without dependencies then you can use this command:
-            g++ -o cppcheck -std=c++11 -Iexternals/simplecpp -Iexternals/tinyxml -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
+            g++ -o cppcheck -std=c++11 -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml2 -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml2/*.cpp
 
         If you want to use --rule and --rule-file then dependencies are needed:
-            g++ -o cppcheck -std=c++11 -lpcre -DHAVE_RULES -Ilib -Iexternals/simplecpp -Iexternals/tinyxml cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml/*.cpp
+            g++ -o cppcheck -std=c++11 -lpcre -DHAVE_RULES -Ilib -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml2 cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml2/*.cpp
 
     mingw
     =====
@@ -86,12 +113,19 @@ Compiling
         3. Add all cpp files in the externals folders to the project file / makefile.
         4. Compile.
 
-Cross compiling Win32 (CLI) version of Cppcheck in Linux
+    Cross compiling Win32 (CLI) version of Cppcheck in Linux
 
-    sudo apt-get install mingw32
-    make CXX=i586-mingw32msvc-g++ LDFLAGS="-lshlwapi"
-    mv cppcheck cppcheck.exe
+        sudo apt-get install mingw32
+        make CXX=i586-mingw32msvc-g++ LDFLAGS="-lshlwapi"
+        mv cppcheck cppcheck.exe
+
+Packages
+
+    You can install Cppcheck with yum/apt/brew/etc.
+
+    The official rpms are built with these files:
+    https://src.fedoraproject.org/rpms/cppcheck/tree/master
 
 Webpage
 
-    http://cppcheck.sourceforge.net/
+    https://cppcheck.sourceforge.io/

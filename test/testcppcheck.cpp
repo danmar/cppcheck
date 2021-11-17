@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 #include "check.h"
+#include "color.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
 #include "testsuite.h"
@@ -28,8 +29,7 @@
 
 class TestCppcheck : public TestFixture {
 public:
-    TestCppcheck() : TestFixture("TestCppcheck") {
-    }
+    TestCppcheck() : TestFixture("TestCppcheck") {}
 
 private:
 
@@ -37,15 +37,15 @@ private:
     public:
         std::list<std::string> id;
 
-        void reportOut(const std::string & /*outmsg*/) {
-        }
+        void reportOut(const std::string & /*outmsg*/, Color = Color::Reset) OVERRIDE {}
+        void bughuntingReport(const std::string & /*str*/) OVERRIDE {}
 
-        void reportErr(const ErrorLogger::ErrorMessage &msg) {
-            id.push_back(msg._id);
+        void reportErr(const ErrorMessage &msg) OVERRIDE {
+            id.push_back(msg.id);
         }
     };
 
-    void run() override {
+    void run() OVERRIDE {
         TEST_CASE(instancesSorted);
         TEST_CASE(classInfoFormat);
         TEST_CASE(getErrorMessages);
@@ -75,7 +75,7 @@ private:
 
     void getErrorMessages() const {
         ErrorLogger2 errorLogger;
-        CppCheck cppCheck(errorLogger, true);
+        CppCheck cppCheck(errorLogger, true, nullptr);
         cppCheck.getErrorMessages();
         ASSERT(!errorLogger.id.empty());
 
@@ -94,12 +94,10 @@ private:
         // Check for error ids from this class.
         bool foundPurgedConfiguration = false;
         bool foundTooManyConfigs = false;
-        for (std::list<std::string>::iterator it = errorLogger.id.begin();
-             it != errorLogger.id.end();
-             ++it) {
-            if (*it == "purgedConfiguration")
+        for (const std::string & it : errorLogger.id) {
+            if (it == "purgedConfiguration")
                 foundPurgedConfiguration = true;
-            else if (*it == "toomanyconfigs")
+            else if (it == "toomanyconfigs")
                 foundTooManyConfigs = true;
         }
         ASSERT(foundPurgedConfiguration);

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,8 +30,7 @@ public:
         , emptyMatcher(std::vector<std::string>())
         , srcMatcher(std::vector<std::string>(1, "src/"))
         , fooCppMatcher(std::vector<std::string>(1, "foo.cpp"))
-        , srcFooCppMatcher(std::vector<std::string>(1, "src/foo.cpp")) {
-    }
+        , srcFooCppMatcher(std::vector<std::string>(1, "src/foo.cpp")) {}
 
 private:
     const PathMatch emptyMatcher;
@@ -39,7 +38,7 @@ private:
     const PathMatch fooCppMatcher;
     const PathMatch srcFooCppMatcher;
 
-    void run() override {
+    void run() OVERRIDE {
         TEST_CASE(emptymaskemptyfile);
         TEST_CASE(emptymaskpath1);
         TEST_CASE(emptymaskpath2);
@@ -48,6 +47,7 @@ private:
         TEST_CASE(onemasksamepath);
         TEST_CASE(onemasksamepathdifferentcase);
         TEST_CASE(onemasksamepathwithfile);
+        TEST_CASE(onemaskshorterpath);
         TEST_CASE(onemaskdifferentdir1);
         TEST_CASE(onemaskdifferentdir2);
         TEST_CASE(onemaskdifferentdir3);
@@ -103,6 +103,15 @@ private:
 
     void onemasksamepathwithfile() const {
         ASSERT(srcMatcher.match("src/file.txt"));
+    }
+
+    void onemaskshorterpath() const {
+        const std::string longerExclude("longersrc/");
+        const std::string shorterToMatch("src/");
+        ASSERT(shorterToMatch.length() < longerExclude.length());
+        PathMatch match(std::vector<std::string>(1, longerExclude));
+        ASSERT(match.match(longerExclude));
+        ASSERT(!match.match(shorterToMatch));
     }
 
     void onemaskdifferentdir1() const {

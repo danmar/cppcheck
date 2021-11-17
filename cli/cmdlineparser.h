@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2020 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,42 +55,42 @@ public:
      * Return if user wanted to see program version.
      */
     bool getShowVersion() const {
-        return _showVersion;
+        return mShowVersion;
     }
 
     /**
      * Return if user wanted to see list of error messages.
      */
     bool getShowErrorMessages() const {
-        return _showErrorMessages;
+        return mShowErrorMessages;
     }
 
     /**
      * Return the path names user gave to command line.
      */
     const std::vector<std::string>& getPathNames() const {
-        return _pathnames;
+        return mPathNames;
     }
 
     /**
      * Return if help is shown to user.
      */
     bool getShowHelp() const {
-        return _showHelp;
+        return mShowHelp;
     }
 
     /**
      * Return if we should exit after printing version, help etc.
      */
     bool exitAfterPrinting() const {
-        return _exitAfterPrint;
+        return mExitAfterPrint;
     }
 
     /**
      * Return a list of paths user wants to ignore.
      */
     const std::vector<std::string>& getIgnoredPaths() const {
-        return _ignoredPaths;
+        return mIgnoredPaths;
     }
 
 protected:
@@ -101,19 +101,24 @@ protected:
     static void printHelp();
 
     /**
-     * Print message (to console?).
+     * Print message (to stdout).
      */
     static void printMessage(const std::string &message);
-    static void printMessage(const char* message);
+
+    /**
+     * Print error message (to stdout).
+     */
+    static void printError(const std::string &message);
 
 private:
-    std::vector<std::string> _pathnames;
-    std::vector<std::string> _ignoredPaths;
-    Settings *_settings;
-    bool _showHelp;
-    bool _showVersion;
-    bool _showErrorMessages;
-    bool _exitAfterPrint;
+    std::vector<std::string> mPathNames;
+    std::vector<std::string> mIgnoredPaths;
+    Settings *mSettings;
+    bool mShowHelp;
+    bool mShowVersion;
+    bool mShowErrorMessages;
+    bool mExitAfterPrint;
+    std::string mVSConfig;
 };
 
 /// @}

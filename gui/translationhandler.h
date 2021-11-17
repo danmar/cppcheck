@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,127 +20,128 @@
 #define TRANSLATIONHANDLER_H
 
 #include <QStringList>
-#include <QTranslator>
 #include <QObject>
 #include <QList>
+
+class QTranslator;
 
 /// @addtogroup GUI
 /// @{
 
 /**
-* @brief Information for one translation.
-*
-*/
+ * @brief Information for one translation.
+ *
+ */
 struct TranslationInfo {
     /**
-    * @brief Readable name for the translation (e.g. "English").
-    *
-    */
+     * @brief Readable name for the translation (e.g. "English").
+     *
+     */
     QString mName;
 
     /**
-    * @brief Filename for the translation.
-    *
-    */
+     * @brief Filename for the translation.
+     *
+     */
     QString mFilename;
 
     /**
-    * @brief ISO 639 language code for the translation (e.g. "en").
-    *
-    */
+     * @brief ISO 639 language code for the translation (e.g. "en").
+     *
+     */
     QString mCode;
 };
 
 /**
-* @brief A class handling the available translations.
-*
-* This class contains a list of available translations. The class also keeps
-* track which translation is the currently active translation.
-*
-*/
+ * @brief A class handling the available translations.
+ *
+ * This class contains a list of available translations. The class also keeps
+ * track which translation is the currently active translation.
+ *
+ */
 class TranslationHandler : QObject {
     Q_OBJECT
 public:
-    explicit TranslationHandler(QObject *parent = 0);
+    explicit TranslationHandler(QObject *parent = nullptr);
     virtual ~TranslationHandler();
 
     /**
-    * @brief Get a list of available translation names.
-    * @return List of available translation names.
-    *
-    */
+     * @brief Get a list of available translation names.
+     * @return List of available translation names.
+     *
+     */
     const QStringList getNames() const;
 
     /**
-    * @brief Get a list of available translations.
-    * @return List of available translations.
-    *
-    */
+     * @brief Get a list of available translations.
+     * @return List of available translations.
+     *
+     */
     QList<TranslationInfo> getTranslations() const {
         return mTranslations;
     }
 
     /**
-    * @brief Set active translation.
-    * @param code ISO 639 language code for new selected translation.
-    * @return true if succeeds, false otherwise.
-    *
-    */
+     * @brief Set active translation.
+     * @param code ISO 639 language code for new selected translation.
+     * @return true if succeeds, false otherwise.
+     *
+     */
     bool setLanguage(const QString &code);
 
     /**
-    * @brief Get currently selected translation.
-    * @return ISO 639 language code for current translation.
-    *
-    */
+     * @brief Get currently selected translation.
+     * @return ISO 639 language code for current translation.
+     *
+     */
     QString getCurrentLanguage() const;
 
     /**
-    * @brief Get translation suggestion for the system.
-    * This function checks the current system locale and determines which of
-    * the available translations is best as current translation. If none of
-    * the available translations is good then it returns English ("en").
-    * @return Suggested translation ISO 639 language code.
-    *
-    */
+     * @brief Get translation suggestion for the system.
+     * This function checks the current system locale and determines which of
+     * the available translations is best as current translation. If none of
+     * the available translations is good then it returns English ("en").
+     * @return Suggested translation ISO 639 language code.
+     *
+     */
     QString suggestLanguage() const;
 
 protected:
 
     /**
-    * @brief Add new translation to list of available translations.
-    * @param name Name of the translation ("English").
-    * @param filename Filename of the translation.
-    *
-    */
+     * @brief Add new translation to list of available translations.
+     * @param name Name of the translation ("English").
+     * @param filename Filename of the translation.
+     *
+     */
     void addTranslation(const char *name, const char *filename);
 
     /**
-    * @brief Find language in the list and return its index.
-    * @param code ISO 639 language code.
-    * @return Index at list, or -1 if not found.
-    *
-    */
+     * @brief Find language in the list and return its index.
+     * @param code ISO 639 language code.
+     * @return Index at list, or -1 if not found.
+     *
+     */
     int getLanguageIndexByCode(const QString &code) const;
 
 private:
 
     /**
-    * @brief ISO 639 language code of the currently selected translation.
-    *
-    */
+     * @brief ISO 639 language code of the currently selected translation.
+     *
+     */
     QString mCurrentLanguage;
 
     /**
-    * @brief List of available translations.
-    *
-    */
+     * @brief List of available translations.
+     *
+     */
     QList<TranslationInfo> mTranslations;
 
     /**
-    * @brief Translator class instance.
-    *
-    */
+     * @brief Translator class instance.
+     *
+     */
     QTranslator *mTranslator;
 };
 

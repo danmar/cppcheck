@@ -23,6 +23,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <float.h>
 
 void bufferAccessOutOfBounds(void)
 {
@@ -32,40 +33,43 @@ void bufferAccessOutOfBounds(void)
     fgets(a,6,stdin);
     sprintf(a, "ab%s", "cd");
     // cppcheck-suppress bufferAccessOutOfBounds
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     sprintf(a, "ab%s", "cde");
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     snprintf(a, 5, "abcde%i", 1);
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     // cppcheck-suppress bufferAccessOutOfBounds
     snprintf(a, 6, "abcde%i", 1);
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     strcpy(a,"abcd");
     // cppcheck-suppress bufferAccessOutOfBounds
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     strcpy(a, "abcde");
-    // cppcheck-suppress redundantCopy
+    // cppcheck-suppress bufferAccessOutOfBounds
+    strcpy_s(a, 10, "abcdefghij");
+    // TODO cppcheck-suppress redundantCopy
+    // cppcheck-suppress terminateStrncpy
     strncpy(a,"abcde",5);
     // cppcheck-suppress bufferAccessOutOfBounds
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     strncpy(a,"abcde",6);
     // cppcheck-suppress bufferAccessOutOfBounds
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     strncpy(a,"a",6);
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     strncpy(a,"abcdefgh",4);
     // valid call
     strncpy_s(a,5,"abcd",5);
     // string will be truncated, error is returned, but no buffer overflow
     strncpy_s(a,5,"abcde",6);
-    // cppcheck-suppress bufferAccessOutOfBounds
+    // TODO cppcheck-suppress bufferAccessOutOfBounds
     strncpy_s(a,5,"a",6);
     strncpy_s(a,5,"abcdefgh",4);
     // valid call
     strncat_s(a,5,"1",2);
     // cppcheck-suppress bufferAccessOutOfBounds
     strncat_s(a,10,"1",2);
-    // cppcheck-suppress bufferAccessOutOfBounds
+    // TODO cppcheck-suppress bufferAccessOutOfBounds
     strncat_s(a,5,"1",5);
     fread(a,1,5,stdin);
     // cppcheck-suppress bufferAccessOutOfBounds
@@ -73,6 +77,114 @@ void bufferAccessOutOfBounds(void)
     fwrite(a,1,5,stdout);
     // cppcheck-suppress bufferAccessOutOfBounds
     fread(a,1,6,stdout);
+
+    char * pAlloc1 = aligned_alloc(8, 16);
+    memset(pAlloc1, 0, 16);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    memset(pAlloc1, 0, 17);
+    free(pAlloc1);
+}
+
+void memleak_aligned_alloc(void)
+{
+    // cppcheck-suppress unusedAllocatedMemory
+    // cppcheck-suppress unreadVariable
+    char * alignedBuf = aligned_alloc(8, 16);
+    // cppcheck-suppress memleak
+}
+
+void pointerLessThanZero_aligned_alloc(void)
+{
+    char * alignedBuf = aligned_alloc(8, 16);
+    // cppcheck-suppress pointerLessThanZero
+    if (alignedBuf < 0) return;
+    free(alignedBuf);
+
+    // no warning is expected for
+    alignedBuf = aligned_alloc(8, 16);
+    if (alignedBuf == 0) return;
+    free(alignedBuf);
+
+    // no warning is expected for
+    alignedBuf = aligned_alloc(8, 16);
+    if (alignedBuf) free(alignedBuf);
+}
+
+void unusedRetVal_aligned_alloc(void)
+{
+    // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress leakReturnValNotUsed
+    aligned_alloc(8, 16);
+}
+
+void uninitvar_aligned_alloc(size_t alignment, size_t size)
+{
+    size_t uninitVar1, uninitVar2, uninitVar3;
+    // cppcheck-suppress uninitvar
+    free(aligned_alloc(uninitVar1, size));
+    // cppcheck-suppress uninitvar
+    free(aligned_alloc(alignment, uninitVar2));
+    // cppcheck-suppress uninitvar
+    free(aligned_alloc(uninitVar3, uninitVar3));
+    // no warning is expected
+    free(aligned_alloc(alignment, size));
+}
+
+void bufferAccessOutOfBounds_libraryDirectionConfiguration(void)
+{
+    // This tests whether the argument to isdigit() is configured with direction "in". This allows
+    // Cppcheck to report the error without marking it as inconclusive.
+    char arr[10];
+    char c = 'A';
+    (void)isdigit(c);
+    // cppcheck-suppress arrayIndexOutOfBounds
+    // cppcheck-suppress unreadVariable
+    arr[c] = 'x';
+}
+
+void arrayIndexOutOfBounds()
+{
+    char * pAlloc1 = aligned_alloc(8, 16);
+    pAlloc1[15] = '\0';
+    // cppcheck-suppress arrayIndexOutOfBounds
+    pAlloc1[16] = '1';
+    free(pAlloc1);
+
+    char * pAlloc2 = malloc(9);
+    pAlloc2[8] = 'a';
+    // cppcheck-suppress arrayIndexOutOfBounds
+    pAlloc2[9] = 'a';
+
+    // #1379
+    // cppcheck-suppress memleakOnRealloc
+    pAlloc2 = realloc(pAlloc2, 8);
+    pAlloc2[7] = 'b';
+    // cppcheck-suppress arrayIndexOutOfBounds
+    pAlloc2[8] = 0;
+    // cppcheck-suppress memleakOnRealloc
+    pAlloc2 = realloc(pAlloc2, 20);
+    pAlloc2[19] = 'b';
+    // cppcheck-suppress arrayIndexOutOfBounds
+    pAlloc2[20] = 0;
+    free(pAlloc2);
+
+    char * pAlloc3 = calloc(2,3);
+    pAlloc3[5] = 'a';
+    // cppcheck-suppress arrayIndexOutOfBounds
+    pAlloc3[6] = 1;
+    // cppcheck-suppress memleakOnRealloc
+    pAlloc3 = reallocarray(pAlloc3, 3,3);
+    pAlloc3[8] = 'a';
+    // cppcheck-suppress arrayIndexOutOfBounds
+    pAlloc3[9] = 1;
+    free(pAlloc3);
+}
+
+void resourceLeak_tmpfile(void)
+{
+    // cppcheck-suppress unreadVariable
+    FILE * fp = tmpfile();
+    // cppcheck-suppress resourceLeak
 }
 
 // memory leak
@@ -118,11 +230,9 @@ void nullpointer(int value)
     fp = 0;
     // No FP
     fflush(0);
-    // No FP
-    // cppcheck-suppress redundantAssignment
     fp = freopen(0,"abc",stdin);
     fclose(fp);
-    fp = 0;
+    fp = NULL;
     // cppcheck-suppress nullPointer
     fputc(0,0);
     // cppcheck-suppress nullPointer
@@ -180,6 +290,10 @@ void nullpointer(int value)
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress nullPointer
     wcscmp(0,0);
+    // cppcheck-suppress nullPointer
+    strcpy_s(0,1,1);
+    // cppcheck-suppress nullPointer
+    strcpy_s(1,1,0);
     // cppcheck-suppress nullPointer
     strncpy(0,0,1);
     // cppcheck-suppress nullPointer
@@ -249,22 +363,22 @@ void nullpointer(int value)
 
 void nullpointerMemchr1(char *p, char *s)
 {
-    // cppcheck-suppress uselessAssignmentPtrArg
     p = memchr(s, 'p', strlen(s));
+    (void)p;
 }
 
 void nullpointerMemchr2(char *p, char *s)
 {
-    // cppcheck-suppress uselessAssignmentPtrArg
     p = memchr(s, 0, strlen(s));
+    (void)p;
 }
 
 void nullPointer_memchr(char *p)
 {
     char *s = 0;
     // cppcheck-suppress nullPointer
-    // cppcheck-suppress uselessAssignmentPtrArg
     p = memchr(s, 0, strlen(s));
+    (void)p;
 }
 
 void nullPointer_memcmp(char *p)
@@ -277,6 +391,26 @@ void nullPointer_wmemcmp(wchar_t *p)
 {
     // cppcheck-suppress nullPointer
     (void)wmemcmp(p, 0, 123);
+}
+
+void nullPointer_vsnprintf(const char * format, ...)
+{
+    va_list args;
+    // valid
+    char buffer[256];
+    va_start(args, format);
+    vsnprintf(buffer, 256, format, args);
+    printf("%s", buffer);
+    va_end(args);
+    // valid
+    va_start(args, format);
+    vsnprintf(NULL, 0, format, args);
+    va_end(args);
+    // invalid
+    va_start(args, format);
+    // TODO #9410 cppcheck-suppress nullPointer
+    vsnprintf(NULL, 10, format, args);
+    va_end(args);
 }
 
 // uninit pointers
@@ -316,24 +450,24 @@ void uninitvar_fopen(void)
 
 void uninitvar_feof(void)
 {
-    FILE *fp;
+    FILE *fp1, *fp2;
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress uninitvar
-    feof(fp);
+    feof(fp1);
 
     // cppcheck-suppress uninitvar
-    (void)feof(fp);
+    (void)feof(fp2);
 }
 
 void uninitvar_ferror(void)
 {
-    FILE *fp;
+    FILE *fp1, *fp2;
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress uninitvar
-    ferror(fp);
+    ferror(fp1);
 
     // cppcheck-suppress uninitvar
-    (void)ferror(fp);
+    (void)ferror(fp2);
 }
 
 void uninitvar_fflush(void)
@@ -504,6 +638,63 @@ void uninitvar_acosh(void)
     long double ld;
     // cppcheck-suppress uninitvar
     (void)acoshl(ld);
+}
+
+void invalidFunctionArg_acosh(void)
+{
+    float f = .999f;
+    // cppcheck-suppress invalidFunctionArg
+    (void)acoshf(f);
+    f = 1.0f;
+    (void)acoshf(f);
+
+    double d = .999;
+    // cppcheck-suppress invalidFunctionArg
+    (void)acosh(d);
+    d = 1.0;
+    (void)acosh(d);
+
+    long double ld = .999L;
+    // cppcheck-suppress invalidFunctionArg
+    (void)acoshl(ld);
+    ld = 1.0;
+    (void)acoshl(ld);
+}
+
+void invalidFunctionArg_atanh(void)
+{
+    float f = 1.00001f;
+    // cppcheck-suppress invalidFunctionArg
+    (void)atanhf(f);
+    f = 1.0f;
+    (void)atanhf(f);
+    f = -1.0f;
+    (void)atanhf(f);
+    f = -1.00001f;
+    // cppcheck-suppress invalidFunctionArg
+    (void)atanhf(f);
+
+    double d = 1.00001;
+    // cppcheck-suppress invalidFunctionArg
+    (void)atanh(d);
+    d = 1.0;
+    (void)atanh(d);
+    d = -1.0;
+    (void)atanh(d);
+    d = -1.00001;
+    // cppcheck-suppress invalidFunctionArg
+    (void)atanh(d);
+
+    long double ld = 1.00001L;
+    // cppcheck-suppress invalidFunctionArg
+    (void)atanhl(ld);
+    ld = 1.0L;
+    (void)atanhl(ld);
+    ld = -1.0L;
+    (void)atanhl(ld);
+    ld = -1.00001L;
+    // cppcheck-suppress invalidFunctionArg
+    (void)atanhl(ld);
 }
 
 void uninitvar_asctime(void)
@@ -913,21 +1104,22 @@ void uninitvar_atof(void)
 
 void uninitvar_atol(void)
 {
-    char * c;
+    char * c1, *c2, *c3;
     // cppcheck-suppress uninitvar
-    (void)atoi(c);
+    (void)atoi(c1);
 
     // cppcheck-suppress uninitvar
-    (void)atol(c);
+    (void)atol(c2);
 
     // cppcheck-suppress uninitvar
-    (void)atoll(c);
+    (void)atoll(c3);
 }
 
 void uninitvar_calloc(void)
 {
     size_t nitems;
     size_t size;
+    // cppcheck-suppress unusedAllocatedMemory
     // cppcheck-suppress uninitvar
     int * p = (int*) calloc(nitems, size);
     free(p);
@@ -1301,17 +1493,17 @@ void uninitvar_fmod(void)
 
 void uninitvar_fprintf(FILE *Stream, char *Format, int Argument)
 {
-    FILE *stream;
-    char *format;
-    int argument;
+    FILE *stream1, *stream2;
+    char *format1, *format2;
+    int argument1, argument2;
     // cppcheck-suppress uninitvar
-    (void)fprintf(stream, format, argument);
+    (void)fprintf(stream1, format1, argument1);
     // cppcheck-suppress uninitvar
-    (void)fprintf(stream, Format, Argument);
+    (void)fprintf(stream2, Format, Argument);
     // cppcheck-suppress uninitvar
-    (void)fprintf(Stream, format, Argument);
+    (void)fprintf(Stream, format2, Argument);
     // cppcheck-suppress uninitvar
-    (void)fprintf(Stream, Format, argument);
+    (void)fprintf(Stream, Format, argument2);
 
     // no warning is expected
     (void)fprintf(Stream, Format, Argument);
@@ -1319,16 +1511,16 @@ void uninitvar_fprintf(FILE *Stream, char *Format, int Argument)
 
 void uninitvar_vfprintf(FILE *Stream, const char *Format, va_list Arg)
 {
-    FILE *stream;
-    char *format;
+    FILE *stream1, *stream2;
+    char *format1, *format2;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
-    (void)vfprintf(stream, format, arg);
+    (void)vfprintf(stream1, format1, arg);
     // cppcheck-suppress uninitvar
-    (void)vfprintf(stream, Format, Arg);
+    (void)vfprintf(stream2, Format, Arg);
     // cppcheck-suppress uninitvar
-    (void)vfprintf(Stream, format, Arg);
+    (void)vfprintf(Stream, format2, Arg);
 
     // no warning is expected
     (void)vfprintf(Stream, Format, Arg);
@@ -1338,16 +1530,16 @@ void uninitvar_vfprintf(FILE *Stream, const char *Format, va_list Arg)
 
 void uninitvar_vfwprintf(FILE *Stream, wchar_t *Format, va_list Arg)
 {
-    FILE *stream;
-    wchar_t *format;
+    FILE *stream1, *stream2;
+    wchar_t *format1, *format2;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
-    (void)vfwprintf(stream, format, arg);
+    (void)vfwprintf(stream1, format1, arg);
     // cppcheck-suppress uninitvar
-    (void)vfwprintf(stream, Format, Arg);
+    (void)vfwprintf(stream2, Format, Arg);
     // cppcheck-suppress uninitvar
-    (void)vfwprintf(Stream, format, Arg);
+    (void)vfwprintf(Stream, format2, Arg);
 
     // no warning is expected
     (void)vfwprintf(Stream, Format, Arg);
@@ -1396,7 +1588,7 @@ void uninitvar_freopen(void)
     FILE *stream;
     // cppcheck-suppress uninitvar
     FILE * p = freopen(filename,mode,stream);
-    free(p);
+    fclose(p);
 }
 
 void uninitvar_frexp(void)
@@ -1516,19 +1708,28 @@ void uninitvar_mbtowc(void)
 
 void uninitvar_mbrlen(const char* p, size_t m, mbstate_t* s)
 {
-    char* pmb;
-    size_t max;
-    mbstate_t* ps;
+    char* pmb1, *pmb2;
+    size_t max1, max2;
+    mbstate_t* ps1, *ps2;
     // cppcheck-suppress uninitvar
-    (void)mbrlen(pmb,max,ps);
+    (void)mbrlen(pmb1,max1,ps1);
     // cppcheck-suppress uninitvar
-    (void)mbrlen(pmb,m,s);
+    (void)mbrlen(pmb2,m,s);
     // cppcheck-suppress uninitvar
-    (void)mbrlen(p,max,s);
+    (void)mbrlen(p,max2,s);
     // cppcheck-suppress uninitvar
-    (void)mbrlen(p,m,ps);
+    (void)mbrlen(p,m,ps2);
     // no warning is expected
     (void)mbrlen(p,m,s);
+}
+
+void nullPointer_mbrlen(const char* p, size_t m, mbstate_t* s)
+{
+    /* no warning is expected: A call to the function with a null pointer as pmb resets the shift state (and ignores parameter max). */
+    (void)mbrlen(NULL,m,s);
+    (void)mbrlen(NULL,0,s);
+    /* cppcheck-suppress nullPointer */
+    (void)mbrlen(p,m,NULL);
 }
 
 void uninitvar_btowc(void)
@@ -1545,23 +1746,44 @@ void uninitvar_mbsinit(void)
     (void)mbsinit(ps);
 }
 
-void uninitvar_mbstowcs(void)
+void uninitvar_mbstowcs(wchar_t* d, const char* s, size_t m)
 {
-    wchar_t *ws;
-    char *s;
-    size_t n;
+    wchar_t *dest;
+    char *src;
+    size_t max;
+
     // cppcheck-suppress uninitvar
-    (void)mbstowcs(ws,s,n);
+    (void)mbstowcs(dest,s,m);
+    // cppcheck-suppress uninitvar
+    (void)mbstowcs(d,src,m);
+    // cppcheck-suppress uninitvar
+    (void)mbstowcs(d,s,max);
+
+    // No warning is expected
+    (void)mbstowcs(d,s,m);
+
+    wchar_t buf[100];
+    (void)mbstowcs(buf,s,100);
 }
 
-void uninitvar_mbsrtowcs(void)
+void uninitvar_mbsrtowcs(wchar_t* d, const char** s, size_t m, mbstate_t *p)
 {
     wchar_t* dest;
     const char* src;
     size_t max;
     mbstate_t* ps;
+
     // cppcheck-suppress uninitvar
-    (void)mbsrtowcs(dest,&src,max,ps);
+    (void)mbsrtowcs(dest,s,m,p);
+    // cppcheck-suppress uninitvar
+    (void)mbsrtowcs(d,&src,m,p);
+    // cppcheck-suppress uninitvar
+    (void)mbsrtowcs(d,s,max,p);
+    // cppcheck-suppress uninitvar
+    (void)mbsrtowcs(d,s,m,ps);
+
+    // No warning is expected
+    (void)mbsrtowcs(d,s,m,p);
 }
 
 void uninitvar_wctob(void)
@@ -2232,13 +2454,13 @@ void uninitvar_islessgreater(void)
 
 void uninitvar_nan(void)
 {
-    char *tagp;
+    char *tagp1, *tagp2, *tagp3;
     // cppcheck-suppress uninitvar
-    (void)nanf(tagp);
+    (void)nanf(tagp1);
     // cppcheck-suppress uninitvar
-    (void)nan(tagp);
+    (void)nan(tagp2);
     // cppcheck-suppress uninitvar
-    (void)nanl(tagp);
+    (void)nanl(tagp3);
 }
 
 void uninitvar_isnan(void)
@@ -2378,6 +2600,7 @@ void uninitvar_longjmp(void)
 void uninitvar_malloc(void)
 {
     size_t size;
+    // cppcheck-suppress unusedAllocatedMemory
     // cppcheck-suppress uninitvar
     int *p = (int*)malloc(size);
     free(p);
@@ -2475,7 +2698,7 @@ void uninitvar_memset(void)
 void uninitvar_wmemset(void)
 {
     wchar_t *cs;
-    wchar_t  c;
+    wchar_t c;
     size_t n;
     // cppcheck-suppress uninitvar
     (void)wmemset(cs,c,n);
@@ -2582,18 +2805,18 @@ void uninitvar_remquo(void)
 
 void uninitvar_printf(char *Format, int Argument)
 {
-    char * format;
-    int argument;
+    char * format_1, * format_2, * format_3;
+    int argument1, argument2;
     // no warning is expected
     (void)printf("x");
     // cppcheck-suppress uninitvar
-    (void)printf(format,argument);
+    (void)printf(format_1,argument1);
     // cppcheck-suppress uninitvar
-    (void)printf(Format,argument);
+    (void)printf(Format,argument2);
     // cppcheck-suppress uninitvar
-    (void)printf(format,Argument);
+    (void)printf(format_2,Argument);
     // cppcheck-suppress uninitvar
-    (void)printf(format,1);
+    (void)printf(format_3,1);
 
     // no warning is expected
     (void)printf(Format,Argument);
@@ -2601,29 +2824,29 @@ void uninitvar_printf(char *Format, int Argument)
 
 void uninitvar_vprintf(char *Format, va_list Arg)
 {
-    char * format;
-    va_list arg;
+    char * format1, *format2;
+    va_list arg1, arg2;
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
-    (void)vprintf(format,arg);
+    (void)vprintf(format1,arg1);
     // cppcheck-suppress uninitvar
-    (void)vprintf(format,Arg);
+    (void)vprintf(format2,Arg);
 
     // no warning is expected
     (void)vprintf(Format,Arg);
     // cppcheck-suppress va_list_usedBeforeStarted
-    (void)vprintf(Format,arg);
+    (void)vprintf(Format,arg2);
 }
 
 void uninitvar_vwprintf(wchar_t *Format, va_list Arg)
 {
-    wchar_t * format;
+    wchar_t * format1, * format2;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
-    (void)vwprintf(format,arg);
+    (void)vwprintf(format1,arg);
     // cppcheck-suppress uninitvar
-    (void)vwprintf(format,Arg);
+    (void)vwprintf(format2,Arg);
 
     // no warning is expected
     (void)vwprintf(Format,Arg);
@@ -2638,7 +2861,7 @@ void uninitvar_bsearch(void)
     size_t num;
     size_t size;
     // cppcheck-suppress uninitvar
-    (void)bsearch(key,base,num,size,(int(*)(const void*,const void*)) strcmp);
+    (void)bsearch(key,base,num,size,(int (*)(const void*,const void*))strcmp);
 }
 
 void uninitvar_qsort(void)
@@ -2647,7 +2870,7 @@ void uninitvar_qsort(void)
     size_t n;
     size_t size;
     // cppcheck-suppress uninitvar
-    (void)qsort(base,n,size, (int(*)(const void*,const void*)) strcmp);
+    (void)qsort(base,n,size, (int (*)(const void*,const void*))strcmp);
 }
 
 void uninitvar_putc(void)
@@ -2782,6 +3005,10 @@ void uninitvar_scanf(void)
     char str[42];
     // cppcheck-suppress uninitvar
     (void)scanf(format, str);
+
+    // no warning is expected (#9347)
+    int i;
+    sscanf("0", "%d", &i);
 }
 
 void uninitvar_vsscanf(void)
@@ -2842,14 +3069,14 @@ void uninitvar_setvbuf(void)
 
 void uninitvar_strcat(char *dest, const char * const source)
 {
-    char *deststr;
-    char *srcstr;
+    char *deststr1, *deststr2;
+    char *srcstr1, *srcstr2;
     // cppcheck-suppress uninitvar
-    (void)strcat(deststr,srcstr);
+    (void)strcat(deststr1,srcstr1);
     // cppcheck-suppress uninitvar
-    (void)strcat(dest,srcstr);
+    (void)strcat(dest,srcstr2);
     // cppcheck-suppress uninitvar
-    (void)strcat(deststr,source);
+    (void)strcat(deststr2,source);
 
     // no warning shall be shown for
     (void)strcat(dest,source);
@@ -2871,14 +3098,14 @@ void bufferAccessOutOfBounds_strcat(char *dest, const char * const source)
 
 void uninitvar_wcscat(wchar_t *dest, const wchar_t * const source)
 {
-    wchar_t *deststr;
-    wchar_t *srcstr;
+    wchar_t *deststr_1, *deststr_2;
+    wchar_t *srcstr_1, *srcstr_2;
     // cppcheck-suppress uninitvar
-    (void)wcscat(deststr,srcstr);
+    (void)wcscat(deststr_1,srcstr_1);
     // cppcheck-suppress uninitvar
-    (void)wcscat(dest,srcstr);
+    (void)wcscat(dest,srcstr_2);
     // cppcheck-suppress uninitvar
-    (void)wcscat(deststr,source);
+    (void)wcscat(deststr_2,source);
 
     // no warning shall be shown for
     (void)wcscat(dest,source);
@@ -2901,6 +3128,91 @@ void uninitvar_strchr(void)
     (void)strchr(cs,c);
 }
 
+void invalidFunctionArg_strchr(char *cs, int c)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)strchr(cs,-1);
+
+    // No warning shall be issued for
+    (void)strchr(cs, 0);
+    (void)strchr(cs, 255);
+
+    // cppcheck-suppress invalidFunctionArg
+    (void)strchr(cs, 256);
+}
+
+void invalidFunctionArg_log10(float f, double d, const long double ld)
+{
+    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress wrongmathcall
+    (void)log10f(0.0f);
+    (void)log10f(1.4013e-45f); // note: calculated by nextafterf(0.0f, 1.0f);
+    (void)log10f(f);
+    (void)log10f(FLT_MAX);
+
+    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress wrongmathcall
+    (void)log10(0.0);
+    (void)log10(4.94066e-324); // note: calculated by nextafterf(0.0, 1.0);
+    (void)log10(d);
+    (void)log10(DBL_MAX);
+
+    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress wrongmathcall
+    (void)log10l(0.0L);
+    (void)log10l(4.94066e-324L); // note: calculated by nextafterf(0.0L, 1.0L);
+    (void)log10l(ld);
+    (void)log10l(LDBL_MAX);
+}
+
+void invalidFunctionArg_log(float f, double d, const long double ld)
+{
+    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress wrongmathcall
+    (void)logf(0.0f);
+    (void)logf(1.4013e-45f); // note: calculated by nextafterf(0.0f, 1.0f);
+    (void)logf(f);
+    (void)logf(FLT_MAX);
+
+    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress wrongmathcall
+    (void)log(0.0);
+    (void)log(4.94066e-324); // note: calculated by nextafterf(0.0, 1.0);
+    (void)log(d);
+    (void)log(DBL_MAX);
+
+    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress wrongmathcall
+    (void)logl(0.0L);
+    (void)logl(4.94066e-324L); // note: calculated by nextafterf(0.0L, 1.0L);
+    (void)logl(ld);
+    (void)logl(LDBL_MAX);
+}
+
+void invalidFunctionArg_log2(float f, double d, const long double ld)
+{
+    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress wrongmathcall
+    (void)log2f(0.0f);
+    (void)log2f(1.4013e-45f); // note: calculated by nextafterf(0.0f, 1.0f);
+    (void)log2f(f);
+    (void)log2f(FLT_MAX);
+
+    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress wrongmathcall
+    (void)log2(0.0);
+    (void)log2(4.94066e-324); // note: calculated by nextafterf(0.0, 1.0);
+    (void)log2(d);
+    (void)log2(DBL_MAX);
+
+    // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress wrongmathcall
+    (void)log2l(0.0L);
+    (void)log2l(4.94066e-324L); // note: calculated by nextafterf(0.0L, 1.0L);
+    (void)log2l(ld);
+    (void)log2l(LDBL_MAX);
+}
+
 void uninitvar_wcschr(void)
 {
     wchar_t *cs;
@@ -2909,36 +3221,89 @@ void uninitvar_wcschr(void)
     (void)wcschr(cs,c);
 }
 
-void uninitvar_strcmp(void)
+void uninitvar_strcmp(char *s1, char *s2)
 {
     char *str1;
     char *str2;
+    char *str3;
+    char *str4;
+
     // cppcheck-suppress uninitvar
-    (void)strcmp(str1,str2);
+    (void)strcmp(str1,s2);
+    // cppcheck-suppress uninitvar
+    (void)strcmp(s1,str2);
+    // cppcheck-suppress uninitvar
+    (void)strcmp(str3,str4);
+
+    // No warning is expected
+    (void)strcmp(s1,s2);
 }
 
-void uninitvar_wcscmp(void)
+void uninitvar_wcscmp(wchar_t *s1, wchar_t *s2)
 {
     wchar_t *str1;
     wchar_t *str2;
+    wchar_t *str3;
+    wchar_t *str4;
+
     // cppcheck-suppress uninitvar
-    (void)wcscmp(str1,str2);
+    (void)wcscmp(str1,s2);
+    // cppcheck-suppress uninitvar
+    (void)wcscmp(s1,str2);
+    // cppcheck-suppress uninitvar
+    (void)wcscmp(str3,str4);
+
+    // No warning is expected
+    (void)wcscmp(s1,s2);
 }
 
-void uninitvar_strcpy(void)
+void uninitvar_strcpy(char *d, char *s)
 {
-    char *str1;
-    char *str2;
+    char *dest1, *dest2;
+    char *src1, *src2;
+
     // cppcheck-suppress uninitvar
-    (void)strcpy(str1,str2);
+    (void)strcpy(dest1,s);
+    // cppcheck-suppress uninitvar
+    (void)strcpy(d,src1);
+    // cppcheck-suppress uninitvar
+    (void)strcpy(dest2,src2);
+
+    // No warning is expected
+    (void)strcpy(d,s);
 }
 
-void uninitvar_wcscpy(void)
+void uninitvar_strcpy_s(char * strDest, ssize_t s, char *source)
 {
-    wchar_t *str1;
-    wchar_t *str2;
+    char *strUninit1;
+    char *strUninit2;
+    ssize_t size;
+
     // cppcheck-suppress uninitvar
-    (void)wcscpy(str1,str2);
+    (void)strcpy_s(strUninit1, 1, "a");
+    // cppcheck-suppress uninitvar
+    (void)strcpy_s(strDest, 1, strUninit2);
+    // cppcheck-suppress uninitvar
+    (void)strcpy_s(strDest, size, "a");
+
+    // No warning is expected
+    (void)strcpy_s(strDest, s, source);
+}
+
+void uninitvar_wcscpy(wchar_t *d, wchar_t*s)
+{
+    wchar_t *dest1, *dest2;
+    wchar_t *src1, *src2;
+
+    // cppcheck-suppress uninitvar
+    (void)wcscpy(dest1,s);
+    // cppcheck-suppress uninitvar
+    (void)wcscpy(d,src1);
+    // cppcheck-suppress uninitvar
+    (void)wcscpy(dest2,src2);
+
+    // No warning is expected
+    (void)wcscpy(d,s);
 }
 
 void uninitvar_strftime(void)
@@ -2955,11 +3320,19 @@ void uninitvar_strftime(void)
     (void)strfxtime(s,max,fmt,px);
 }
 
-void uninitvar_strlen(void)
+void uninitvar_strlen(const char *str)
 {
     char *s;
     // cppcheck-suppress uninitvar
     (void)strlen(s);
+
+    const char x;
+    const char *xPtr = &x;
+    // cppcheck-suppress uninitvar
+    (void)strlen(xPtr);
+
+    // No warning is expected
+    (void)strlen(str);
 }
 
 void uninitvar_wcslen(void)
@@ -2969,30 +3342,41 @@ void uninitvar_wcslen(void)
     (void)wcslen(s);
 }
 
-void uninitvar_strncpy(void)
+//char * strncpy ( char * destination, const char * source, size_t num );
+void uninitvar_strncpy(char * dest, const char * src, size_t num)
 {
+    char *d;
     char *s;
-    char *ct;
     size_t n;
+
     // cppcheck-suppress uninitvar
-    (void)strncpy(s,ct,n);
+    (void)strncpy(d,src,num);
+    // cppcheck-suppress uninitvar
+    (void)strncpy(dest,s,num);
+    // cppcheck-suppress uninitvar
+    (void)strncpy(dest,src,n);
+
+    // No warning is expected for
+    (void)strncpy(dest,src,num);
 }
 
 void uninitvar_strncpy_s(char *Ct, size_t N1, char *S, size_t N2)
 {
     char dest[42];
-    char *s;
+    char *s1, *s2;
     size_t n1;
     size_t n2;
+    size_t n3;
+    size_t n4;
 
     // cppcheck-suppress uninitvar
-    (void)strncpy_s(dest,n1,s,n2);
+    (void)strncpy_s(dest,n1,s1,n2);
     // cppcheck-suppress uninitvar
-    (void)strncpy_s(Ct,n1,S,N2);
+    (void)strncpy_s(Ct,n3,S,N2);
     // cppcheck-suppress uninitvar
-    (void)strncpy_s(Ct,N1,s,N2);
+    (void)strncpy_s(Ct,N1,s2,N2);
     // cppcheck-suppress uninitvar
-    (void)strncpy_s(Ct,N1,S,n2);
+    (void)strncpy_s(Ct,N1,S,n4);
 
     // no warning is expected for
     (void)strncpy_s(Ct,N1,S,N2);
@@ -3007,38 +3391,38 @@ void uninitvar_strpbrk(void)
     (void)strpbrk(cs,ct);
 }
 
-void uninitvar_strncat(char *Ct, char *S, size_t N)
+// char * strncat ( char * destination, const char * source, size_t num );
+void uninitvar_strncat(char *d, char *s, size_t n)
 {
-    char *ct;
-    char *s;
-    size_t n;
+    char *dest;
+    char *src;
+    size_t num;
+
     // cppcheck-suppress uninitvar
-    (void)strncat(ct,s,n);
+    (void)strncat(dest,s,n);
     // cppcheck-suppress uninitvar
-    (void)strncat(ct,S,N);
+    (void)strncat(d,src,n);
     // cppcheck-suppress uninitvar
-    (void)strncat(Ct,s,N);
-    // cppcheck-suppress uninitvar
-    (void)strncat(Ct,S,n);
+    (void)strncat(d,s,num);
 
     // no warning is expected for
-    (void)strncat(Ct,S,N);
+    (void)strncat(d,s,n);
 }
 
 // errno_t strcat_s(char *restrict dest, rsize_t destsz, const char *restrict src); // since C11
 void uninitvar_strcat_s(char *Ct, size_t N, char *S)
 {
-    char *ct;
-    char *s;
-    size_t n;
+    char *ct_1, *ct_2;
+    char *s1, *s2;
+    size_t n1, n2;
     // cppcheck-suppress uninitvar
-    (void)strcat_s(ct,n,s);
+    (void)strcat_s(ct_1,n1,s1);
     // cppcheck-suppress uninitvar
-    (void)strcat_s(ct,N,S);
+    (void)strcat_s(ct_2,N,S);
     // cppcheck-suppress uninitvar
-    (void)strcat_s(Ct,N,s);
+    (void)strcat_s(Ct,N,s2);
     // cppcheck-suppress uninitvar
-    (void)strcat_s(Ct,n,S);
+    (void)strcat_s(Ct,n2,S);
 
     // no warning is expected for
     (void) strcat_s(Ct,N,S);
@@ -3047,17 +3431,17 @@ void uninitvar_strcat_s(char *Ct, size_t N, char *S)
 // errno_t wcscat_s(wchar_t *restrict dest, rsize_t destsz, const wchar_t *restrict src); // since C11
 void uninitvar_wcscat_s(wchar_t *Ct, size_t N, wchar_t *S)
 {
-    wchar_t *ct;
-    wchar_t *s;
-    size_t n;
+    wchar_t *ct_1, *ct_2;
+    wchar_t *s1, *s2;
+    size_t n1, n2;
     // cppcheck-suppress uninitvar
-    (void)wcscat_s(ct,n,s);
+    (void)wcscat_s(ct_1,n1,s1);
     // cppcheck-suppress uninitvar
-    (void)wcscat_s(ct,N,S);
+    (void)wcscat_s(ct_2,N,S);
     // cppcheck-suppress uninitvar
-    (void)wcscat_s(Ct,N,s);
+    (void)wcscat_s(Ct,N,s2);
     // cppcheck-suppress uninitvar
-    (void)wcscat_s(Ct,n,S);
+    (void)wcscat_s(Ct,n2,S);
 
     // no warning is expected for
     (void) wcscat_s(Ct,N,S);
@@ -3065,21 +3449,23 @@ void uninitvar_wcscat_s(wchar_t *Ct, size_t N, wchar_t *S)
 
 void uninitvar_strncat_s(char *Ct, size_t N1, char *S, size_t N2)
 {
-    char *ct;
-    char *s;
+    char *ct_1, *ct_2;
+    char *s1, *s2;
     size_t n1;
     size_t n2;
+    size_t n3;
+    size_t n4;
 
     // cppcheck-suppress uninitvar
-    (void)strncat_s(ct,n1,s,n2);
+    (void)strncat_s(ct_1,n1,s1,n2);
     // cppcheck-suppress uninitvar
-    (void)strncat_s(ct,N1,S,N2);
+    (void)strncat_s(ct_2,N1,S,N2);
     // cppcheck-suppress uninitvar
-    (void)strncat_s(Ct,n1,S,N2);
+    (void)strncat_s(Ct,n3,S,N2);
     // cppcheck-suppress uninitvar
-    (void)strncat_s(Ct,N1,s,N2);
+    (void)strncat_s(Ct,N1,s2,N2);
     // cppcheck-suppress uninitvar
-    (void)strncat_s(Ct,N1,S,n2);
+    (void)strncat_s(Ct,N1,S,n4);
 
     // no warning is expected for
     (void)strncat_s(Ct,N1,S,N2);
@@ -3087,17 +3473,17 @@ void uninitvar_strncat_s(char *Ct, size_t N1, char *S, size_t N2)
 
 void uninitvar_wcsncat(wchar_t *Ct, wchar_t *S, size_t N)
 {
-    wchar_t *ct;
-    wchar_t *s;
-    size_t n;
+    wchar_t *ct_1, *ct_2;
+    wchar_t *s1, *s2;
+    size_t n1, n2;
     // cppcheck-suppress uninitvar
-    (void)wcsncat(ct,s,n);
+    (void)wcsncat(ct_1,s1,n1);
     // cppcheck-suppress uninitvar
-    (void)wcsncat(ct,S,N);
+    (void)wcsncat(ct_2,S,N);
     // cppcheck-suppress uninitvar
-    (void)wcsncat(Ct,s,N);
+    (void)wcsncat(Ct,s2,N);
     // cppcheck-suppress uninitvar
-    (void)wcsncat(Ct,S,n);
+    (void)wcsncat(Ct,S,n2);
 
     // no warning is expected for
     (void)wcsncat(Ct,S,N);
@@ -3107,15 +3493,14 @@ void uninitvar_strncmp(char *Ct, char *S, size_t N)
 {
     char *ct;
     char *s;
-    size_t n;
-    // cppcheck-suppress uninitvar
-    (void)strncmp(ct,s,n);
+    size_t n1;
+
     // cppcheck-suppress uninitvar
     (void)strncmp(ct,S,N);
     // cppcheck-suppress uninitvar
     (void)strncmp(Ct,s,N);
     // cppcheck-suppress uninitvar
-    (void)strncmp(Ct,S,n);
+    (void)strncmp(Ct,S,n1);
 
     // no warning is expected for
     (void)strncmp(Ct,S,N);
@@ -3123,17 +3508,17 @@ void uninitvar_strncmp(char *Ct, char *S, size_t N)
 
 void uninitvar_wcsncmp(wchar_t *Ct, wchar_t *S, size_t N)
 {
-    wchar_t *ct;
-    wchar_t *s;
-    size_t n;
+    wchar_t *ct1, *ct2;
+    wchar_t *s1, *s2;
+    size_t n1, n2;
     // cppcheck-suppress uninitvar
-    (void)wcsncmp(ct,s,n);
+    (void)wcsncmp(ct1,s1,n1);
     // cppcheck-suppress uninitvar
-    (void)wcsncmp(ct,S,N);
+    (void)wcsncmp(ct2,S,N);
     // cppcheck-suppress uninitvar
-    (void)wcsncmp(Ct,s,N);
+    (void)wcsncmp(Ct,s2,N);
     // cppcheck-suppress uninitvar
-    (void)wcsncmp(Ct,S,n);
+    (void)wcsncmp(Ct,S,n2);
 
     // no warning is expected for
     (void)wcsncmp(Ct,S,N);
@@ -3170,6 +3555,28 @@ void uninitvar_strxfrm(void)
     size_t n;
     // cppcheck-suppress uninitvar
     (void)strxfrm(ds,ss,n);
+}
+
+void bufferAccessOutOfBounds_strxfrm(void)
+{
+    const char src[3] = "abc";
+    char dest[1] = "a";
+    (void)strxfrm(dest,src,1);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)strxfrm(dest,src,2);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)strxfrm(dest,src,3);
+}
+
+void bufferAccessOutOfBounds_strncmp(void)
+{
+    const char src[3] = "abc";
+    char dest[1] = "a";
+    (void)strncmp(dest,src,1);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)strncmp(dest,src,2);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)strncmp(dest,src,3);
 }
 
 void uninitvar_wcsxfrm(void)
@@ -3253,12 +3660,20 @@ void uninitvar_wcscoll(void)
     (void)wcscoll(cs,ct);
 }
 
-void uninitvar_strrchr(void)
+//const char * strrchr ( const char * str, int character );
+//      char * strrchr (       char * str, int character );
+void uninitvar_strrchr(const char * s, int c)
 {
     char * str;
-    int c;
+    int character;
+
     // cppcheck-suppress uninitvar
     (void)strrchr(str,c);
+    // cppcheck-suppress uninitvar
+    (void)strrchr(s,character);
+
+    // No warning is expected for
+    (void)strrchr(s,c);
 }
 
 void uninitvar_wcsrchr(void)
@@ -3289,40 +3704,40 @@ void uninitvar_strtok(void)
 
 void uninitvar_strtoimax(void)
 {
-    const char *s;
-    char **endp;
-    int base;
+    const char *s1, *s2;
+    char **endp1, **endp2;
+    int base1, base2;
     // cppcheck-suppress uninitvar
-    (void)strtoimax(s,endp,base);
+    (void)strtoimax(s1,endp1,base1);
     // cppcheck-suppress uninitvar
-    (void)strtoumax(s,endp,base);
+    (void)strtoumax(s2,endp2,base2);
 }
 
 void uninitvar_strtof(void)
 {
-    const char *s;
-    char **endp;
+    const char *s1, *s2, *s3;
+    char **endp1, **endp2, **endp3;
     // cppcheck-suppress uninitvar
-    (void)strtof(s,endp);
+    (void)strtof(s1,endp1);
     // cppcheck-suppress uninitvar
-    (void)strtod(s,endp);
+    (void)strtod(s2,endp2);
     // cppcheck-suppress uninitvar
-    (void)strtold(s,endp);
+    (void)strtold(s3,endp3);
 }
 
 void uninitvar_strtol(void)
 {
-    const char *s;
-    char **endp;
-    int base;
+    const char *s1, *s2, *s3, *s4;
+    char **endp1, **endp2, **endp3, **endp4;
+    int base1, base2, base3, base4;
     // cppcheck-suppress uninitvar
-    (void)strtol(s,endp,base);
+    (void)strtol(s1,endp1,base1);
     // cppcheck-suppress uninitvar
-    (void)strtoll(s,endp,base);
+    (void)strtoll(s2,endp2,base2);
     // cppcheck-suppress uninitvar
-    (void)strtoul(s,endp,base);
+    (void)strtoul(s3,endp3,base3);
     // cppcheck-suppress uninitvar
-    (void)strtoull(s,endp,base);
+    (void)strtoull(s4,endp4,base4);
 }
 
 void uninitvar_time(void)
@@ -3339,30 +3754,56 @@ void uninitvar_tmpnam(void)
     (void)tmpnam(s);
 }
 
-void uninitvar_tolower(void)
+void uninitvar_tolower(int character)
 {
-    int c;
+    int c1;
     // cppcheck-suppress uninitvar
-    (void)tolower(c);
+    (void)tolower(c1);
+
+    // cppcheck-suppress unassignedVariable
+    int c2;
+    int *pc=&c2;
+    // cppcheck-suppress uninitvar
+    (void)tolower(*pc);
+
+    // No warning is expected
+    (void)tolower(character);
+
+    int *pChar = &character;
+    // No warning is expected
+    (void)tolower(*pChar);
 }
 
-void uninitvar_toupper(void)
+void uninitvar_toupper(int character)
 {
-    int c;
+    int c1;
     // cppcheck-suppress uninitvar
-    (void)toupper(c);
+    (void)toupper(c1);
+
+    // cppcheck-suppress unassignedVariable
+    int c2;
+    int *pc=&c2;
+    // cppcheck-suppress uninitvar
+    (void)toupper(*pc);
+
+    // No warning is expected
+    (void)toupper(character);
+
+    int *pChar = &character;
+    // No warning is expected
+    (void)toupper(*pChar);
 }
 
 void uninitvar_wcstof(void)
 {
-    const wchar_t *s;
-    wchar_t **endp;
+    const wchar_t *s1, *s2, *s3;
+    wchar_t **endp1, **endp2, **endp3;
     // cppcheck-suppress uninitvar
-    (void)wcstof(s,endp);
+    (void)wcstof(s1,endp1);
     // cppcheck-suppress uninitvar
-    (void)wcstod(s,endp);
+    (void)wcstod(s2,endp2);
     // cppcheck-suppress uninitvar
-    (void)wcstold(s,endp);
+    (void)wcstold(s3,endp3);
 }
 
 void uninitvar_mbrtowc(void)
@@ -3386,42 +3827,42 @@ void uninitvar_wcstok(void)
 
 void uninitvar_wcstoimax(void)
 {
-    const wchar_t *s;
-    wchar_t ** endp;
-    int base;
+    const wchar_t *s1, *s2;
+    wchar_t ** endp1, **endp2;
+    int base1, base2;
     // cppcheck-suppress uninitvar
-    (void)wcstoimax(s,endp,base);
+    (void)wcstoimax(s1,endp1,base1);
     // cppcheck-suppress uninitvar
-    (void)wcstoumax(s,endp,base);
+    (void)wcstoumax(s2,endp2,base2);
 }
 
 void uninitvar_wcstol(void)
 {
-    const wchar_t *s;
+    const wchar_t *s1, *s2, *s3, *s4;
     wchar_t ** endp;
-    int base;
+    int base1, base2, base3, base4;
     // cppcheck-suppress uninitvar
-    (void)wcstol(s,endp,base);
+    (void)wcstol(s1,endp,base1);
     // cppcheck-suppress uninitvar
-    (void)wcstoll(s,endp,base);
+    (void)wcstoll(s2,endp,base2);
     // cppcheck-suppress uninitvar
-    (void)wcstoul(s,endp,base);
+    (void)wcstoul(s3,endp,base3);
     // cppcheck-suppress uninitvar
-    (void)wcstoull(s,endp,base);
+    (void)wcstoull(s4,endp,base4);
 }
 
 void uninitvar_wprintf(wchar_t *Format, int Argument)
 {
-    const wchar_t *format;
-    int argument;
+    const wchar_t *format1, *format2, *format3;
+    int argument1, argument2;
     // cppcheck-suppress uninitvar
-    (void)wprintf(format,argument);
+    (void)wprintf(format1,argument1);
     // cppcheck-suppress uninitvar
-    (void)wprintf(format);
+    (void)wprintf(format2);
     // cppcheck-suppress uninitvar
-    (void)wprintf(Format,argument);
+    (void)wprintf(Format,argument2);
     // cppcheck-suppress uninitvar
-    (void)wprintf(format,Argument);
+    (void)wprintf(format3,Argument);
     // no warning is expected
     (void)wprintf(Format,Argument);
     (void)wprintf(Format);
@@ -3429,17 +3870,17 @@ void uninitvar_wprintf(wchar_t *Format, int Argument)
 
 void uninitvar_sprintf(char *S, char *Format, int Argument)
 {
-    char *s;
-    const char *format;
-    int argument;
+    char *s1, *s2;
+    const char *format1, *format2;
+    int argument1, argument2;
     // cppcheck-suppress uninitvar
-    (void)sprintf(s,format,argument);
+    (void)sprintf(s1,format1,argument1);
     // cppcheck-suppress uninitvar
-    (void)sprintf(s,Format,Argument);
+    (void)sprintf(s2,Format,Argument);
     // cppcheck-suppress uninitvar
-    (void)sprintf(S,format,Argument);
+    (void)sprintf(S,format2,Argument);
     // cppcheck-suppress uninitvar
-    (void)sprintf(S,Format,argument);
+    (void)sprintf(S,Format,argument2);
 
     // no warning is expected for
     (void)sprintf(S,Format,Argument);
@@ -3477,7 +3918,6 @@ void valid_vsprintf_helper(const char * format, ...)
 void valid_vsprintf()
 {
     // buffer will contain "2\0" => no bufferAccessOutOfBounds
-    // cppcheck-suppress checkLibraryFunction
     // cppcheck-suppress checkLibraryNoReturn
     valid_vsprintf_helper("%1.0f", 2.0f);
 }
@@ -3504,20 +3944,20 @@ void uninitvar_fwprintf(void)
 
 void uninitvar_snprintf(char *S, size_t N, char *Format, int Int)
 {
-    size_t n;
-    char *format;
-    int i;
-    char *s;
+    size_t n1,n2;
+    char *format1, *format2;
+    int i1, i2;
+    char *s1, *s2;
     // cppcheck-suppress uninitvar
-    (void)snprintf(s,n,format,i);
+    (void)snprintf(s1,n1,format1,i1);
     // cppcheck-suppress uninitvar
-    (void)snprintf(S,n,Format,Int); // n is uninitialized
+    (void)snprintf(S,n2,Format,Int); // n is uninitialized
     // cppcheck-suppress uninitvar
-    (void)snprintf(S,N,format,Int); // format is uninitialized
+    (void)snprintf(S,N,format2,Int); // format is uninitialized
     // cppcheck-suppress uninitvar
-    (void)snprintf(S,N,Format,i); // i is uninitialized
-    // TODO cppcheck-suppress uninitvar
-    (void)snprintf(s,N,Format,Int);
+    (void)snprintf(S,N,Format,i2); // i is uninitialized
+    // cppcheck-suppress uninitvar
+    (void)snprintf(s2,N,Format,Int);
 
     // no warning is expected for
     (void)snprintf(S,N,Format,Int);
@@ -3525,19 +3965,19 @@ void uninitvar_snprintf(char *S, size_t N, char *Format, int Int)
 
 void uninitvar_vsnprintf(char *S, size_t N, char *Format, va_list Arg)
 {
-    char *s;
-    size_t n;
-    char *format;
+    char *s1, *s2;
+    size_t n1, n2;
+    char *format1, *format2;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
-    (void)vsnprintf(s,n,format,arg);
+    (void)vsnprintf(s1,n1,format1,arg);
     // cppcheck-suppress uninitvar
-    (void)vsnprintf(s,N,Format,Arg);
+    (void)vsnprintf(s2,N,Format,Arg);
     // cppcheck-suppress uninitvar
-    (void)vsnprintf(S,n,Format,Arg);
+    (void)vsnprintf(S,n2,Format,Arg);
     // cppcheck-suppress uninitvar
-    (void)vsnprintf(S,N,format,Arg);
+    (void)vsnprintf(S,N,format2,Arg);
 
     // no warning is expected for
     (void)vsnprintf(S,N,Format,Arg);
@@ -3547,45 +3987,56 @@ void uninitvar_vsnprintf(char *S, size_t N, char *Format, va_list Arg)
 
 void uninitvar_wscanf(void)
 {
-    wchar_t *format;
+    wchar_t *format1, *format2;
     int i;
     // cppcheck-suppress uninitvar
-    (void)wscanf(format);
+    (void)wscanf(format1);
     // cppcheck-suppress uninitvar
-    (void)wscanf(format,&i);
+    (void)wscanf(format2,&i);
 }
 
-void uninitvar_sscanf(void)
+void uninitvar_sscanf(char *s, const char *f, int i, int *ip)
 {
-    char *string;
+    char *string1, *string2, *string3;
     const char * format;
-    int i;
+    int *pInteger;
+
     // cppcheck-suppress uninitvar
-    (void)sscanf(string,format);
+    (void)sscanf(string1,f);
     // cppcheck-suppress uninitvar
-    (void)sscanf(string,format,&i);
+    (void)sscanf(string2,f,i);
+    // cppcheck-suppress uninitvar
+    (void)sscanf(string3,f,ip);
+    // cppcheck-suppress uninitvar
+    (void)sscanf(s,format,&i);
+    // cppcheck-suppress uninitvar
+    (void)sscanf(s,f,pInteger);
+
+    // No warning is expected
+    (void)sscanf(s,f,&i);
+    (void)sscanf(s,f,ip);
 }
 
 void uninitvar_fwscanf(void)
 {
     FILE* stream;
-    wchar_t* format;
+    wchar_t* format1, *format2;
     int i;
     // cppcheck-suppress uninitvar
-    (void)fwscanf(stream,format);
+    (void)fwscanf(stream,format1);
     // cppcheck-suppress uninitvar
-    (void)fwscanf(stream,format,&i);
+    (void)fwscanf(stream,format2,&i);
 }
 
 void uninitvar_swscanf(void)
 {
     wchar_t* s;
-    wchar_t* format;
+    wchar_t* format1, *format2;
     int i;
     // cppcheck-suppress uninitvar
-    (void)swscanf(s,format);
+    (void)swscanf(s,format1);
     // cppcheck-suppress uninitvar
-    (void)swscanf(s,format,&i);
+    (void)swscanf(s,format2,&i);
 }
 
 void uninitvar_system(void)
@@ -3662,6 +4113,126 @@ void invalidFunctionArgBool_abs(bool b, double x, double y)
     (void)abs(b); // #6990
     // cppcheck-suppress invalidFunctionArgBool
     (void)abs(x<y); // #5635
+}
+
+int invalidFunctionArgBool_tolower(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)tolower(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return tolower(c != 0);
+}
+
+int invalidFunctionArgBool_toupper(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)toupper(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return toupper(c != 0);
+}
+
+bool invalidFunctionArgBool_iscntrl(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)iscntrl(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return iscntrl(c != 0);
+}
+
+bool invalidFunctionArgBool_isalpha(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isalpha(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isalpha(c != 0);
+}
+
+bool invalidFunctionArgBool_isalnum(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isalnum(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isalnum(c != 0);
+}
+
+bool invalidFunctionArgBool_isspace(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isspace(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isspace(c != 0);
+}
+
+bool invalidFunctionArgBool_isdigit(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isdigit(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isdigit(c != 0);
+}
+
+bool invalidFunctionArgBool_isgraph(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isgraph(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isgraph(c != 0);
+}
+
+bool invalidFunctionArgBool_islower(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)islower(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return islower(c != 0);
+}
+
+bool invalidFunctionArgBool_iswcntrl(bool b, wint_t c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)iswcntrl(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return iswcntrl(c != 0);
+}
+
+bool invalidFunctionArgBool_isprint(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isprint(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isprint(c != 0);
+}
+
+bool invalidFunctionArgBool_isblank(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isblank(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isblank(c != 0);
+}
+
+bool invalidFunctionArgBool_ispunct(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)ispunct(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return ispunct(c != 0);
+}
+
+bool invalidFunctionArgBool_isupper(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isupper(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isupper(c != 0);
+}
+
+bool invalidFunctionArgBool_isxdigit(bool b, int c)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)isxdigit(b);
+    // cppcheck-suppress invalidFunctionArgBool
+    return isxdigit(c != 0);
 }
 
 void invalidFunctionArg(char c)
@@ -3795,6 +4366,27 @@ void invalidFunctionArg(char c)
     (void)toupper(c);
     (void)toupper(0);
     (void)toupper(255);
+
+    /* cppcheck-suppress invalidFunctionArg */
+    (void)strcpy_s(1,0,"a");
+}
+
+void invalidFunctionArgString(char c)
+{
+    /* cppcheck-suppress invalidFunctionArgStr */
+    (void)atoi(&c);
+    char x = 'x';
+    /* cppcheck-suppress invalidFunctionArgStr */
+    (void)strlen(&x);
+
+    char y = '\0';
+    (void)strlen(&y);
+
+    // #5225
+    char str[80] = "hello worl";
+    char d='d';
+    /* cppcheck-suppress invalidFunctionArgStr */
+    (void)strcat(str,&d);
 }
 
 void ignoredReturnValue_abs(int i)
@@ -3917,7 +4509,7 @@ void invalidPrintfArgType_printf(void)
     // #7016
     uint8_t n = 7;
     // TODO cppcheck-suppress invalidPrintfArgType_uint
-    printf("%"PRIi16"\n", n);
+    printf("%" PRIi16 "\n", n);
 }
 
 

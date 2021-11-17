@@ -1,7 +1,10 @@
 The cppcheck team, in alphabetical order:
 
+Abhijit Sawant
 Abhishek Bharadwaj
 Abigail Buccaneer
+Adam J Richter
+Adrien Chardon
 Ahti Legonkov
 Akhilesh Nema
 Akio Idehara
@@ -9,13 +12,22 @@ Albert Aribaud
 Aleksandr Pikalev
 Aleksey Palazhchenko
 Alexander Alekseev
+Alexander Gushchin
 Alexander Mai
+Alexander Tkachev
+Alexandre Chouvellon
 Alexey Eryomenko
 Alexey Zhikhartsev
+Alfi Maulana
 Ali Can Demiralp
+Alon Liberman
 Ameen Ali
+Andreas Bacher
 Andreas Bießmann
+Andreas Grob
 Andreas Pokorny
+Andreas Rönnquist
+Andreas Vollenweider
 Andrei Karas
 Andrew C. Martin
 Andy Maloney
@@ -30,6 +42,7 @@ Ayaz Salikhov
 Balázs Tóth
 Baris Demiray
 Bartlomiej Grzeskowiak
+bbennetts
 Benjamin Bannier
 Benjamin Fovet
 Benjamin Goose
@@ -37,20 +50,33 @@ Benjamin Kramer
 Benjamin Woester
 Benjamin Wolsey
 Ben T
+Bernd Buschinski
 Bill Egert
 Björge Dijkstra
 booga
 Boris Barbulovski
 Boris Egorov
-Carlo Marcelo Arenas Belon
+Boussaffa Walid
+Bo Rydberg
+Carl Michael Grüner Monzón
+Carlo Marcelo Arenas Belón
 Carlos Gomes Martinho
+Carl-Oskar Larsson
 Cary R
 Changkyoon Kim
 Christian Ehrlicher
+Christian Franke
+Christoph Schmidt
+Christoph Strehle
 Chuck Larson
+Colomban Wendling
+Conrado Gouvea
+daisuke-chiba
+Daniel Friedrich
 Daniel Marjamäki
 David Hallas
 David Korth
+Dávid Slivka
 Debrard Sebastien
 Deepak Gupta
 dencat
@@ -61,22 +87,31 @@ Dmitry Marakasov
 Dmitry-Me
 Duraffort
 Edoardo Prezioso
+Eivind Tagseth
 Elbert Pol
 Emmanuel Blot
+Eric Malenfant
 Eric Sesterhenn
 Erik Hovland
 Erik Lax
 Ettl Martin
+Even Rouault
 Evgeny Mandrikov
 Felipe Pena
 Felix Geyer
+Felix Passenberg
+Felix Wolff
 Florin Iucha
+Francesc Elies
 Frank Zingsheim
+Frederik Schwarzer
 fu7mu4
 Galimov Albert
 Garrett Bodily
+Gary Leutheuser
 gaurav kaushik
 Gennady Feldman
+Georgy Komarov
 Gerhard Zlabinger
 Gianfranco Costamagna
 Gianluca Scacco
@@ -88,21 +123,31 @@ Guillaume Miossec
 Gustav Palmqvist
 Günther Makulik
 Harald Scheidl
+Heiko Bauke
 Heiko Eißfeldt
 Heinrich Schuchardt
 Henrik Nilsson
 He Yuqi
 Hoang Tuan Su
+Igor Rondarev
+Igor Zhukov
 Ivan Maidanski
 Iván Matellanes
 Ivan Ryabov
+Ivar Bonsaksen
 Jakub Melka
+Jan Egil Ruud
 Jan Hellwig
 János Maros
 Jay Sigbrandt
 Jens Bäckman
 Jérémy Lefaure
+Jes Ramsing
+Jesse Boswell
+Jim Zhou
+jlguardi
 Johan Samuelson
+John Marshall
 John-Paul Ore
 John Smits
 Jonathan Clohessy
@@ -112,16 +157,23 @@ Jose Roquette
 Joshua Beck
 Joshua Rogers
 Julian Santander
+Julien Peyregne
+Jure Menart
 Jussi Lehtola
 Jørgen Kvalsvik
 Kamil Dudka
 Kartik Bajaj
+keinflue
+Ken-Patrick Lehrmann
+Ketil Skjerve
 Kevin Christian
+Kevin Kendzia
 Kimmo Varis
 Konrad Grochowski
 Konrad Windszus
-Kyle Chisholm
 Kumar Ashwani
+Kyle Chisholm
+Lars Even Almaas
 larudwer
 Lau bakman
 Lauri Nurmi
@@ -129,12 +181,18 @@ Leandro Lisboa Penz
 Lena Herscheid
 Lieven de Cock
 lioncash
+Lionel Gimbert
 Lucas Manuel Rodriguez
 Luis Díaz Más
+Lukas Grützmacher
+Lukasz Czajczyk
+Łukasz Jankowski
 Luxon Jean-Pierre
+Maksim Derbasov
 Malcolm Parsons
 Marc-Antoine Perennou
 Marcel Raad
+Marco Trevisan
 Marek Zmysłowski
 Marian Klymov
 Mark de Wever
@@ -142,10 +200,15 @@ Markus Elfring
 Martin Ettl
 Martin Exner
 Martin Güthle
+Martin Herren
+Márton Csordás
+Masafumi Koba
 Massimo Paladin
 Mateusz Pusz
 Mathias De Maré
+Mathias Schmid
 Matthias Krüger
+Matthias Kuhn
 Matthias Schmieder
 Matt Johnson
 Mavik
@@ -153,6 +216,8 @@ Miika-Petteri Matikainen
 Mika Attila
 Mike Tzou
 Milhan Kim
+Mil Tolstoy
+Mischa Aster Alff
 Mohit Mate
 Monika Lukow
 Moritz Barsnick
@@ -168,13 +233,20 @@ Nicolas Le Cam
 Nilesh Kumar
 Ogawa KenIchi
 Oleksandr Redko
-Oliver Stoeneberg
+Oliver Schode
+Oliver Stöneberg
+Olivier Croquette
+Paul Aitken
 Paul Fultz II
 Pavel Bibergal
+Pavel Pimenov
 Pavel Roschin
+Pavel Skipenes
+Pavel Šimovec
 Pavol Misik
 Pete Johns
 Peter Pentchev
+Peter Schops
 Philipp Kloke
 Pierre Schweitzer
 Pino Toscano
@@ -182,6 +254,7 @@ Pranav Khanna
 Ramzan Bekbulatov
 Raphael Geissert
 Reijo Tomperi
+Riccardo Ghetta
 Richard A. Smith
 Richard Quirk
 Rick van der Sluijs
@@ -193,51 +266,77 @@ Roberto Martelloni
 Robert Reif
 rofl0r
 Roman Zaytsev Borisovich
+Ronald Hiemstra
 root
 Rosen Penev
+Rudi Danner
 Rudolf Grauberger
 Ryan Pavlik
 Samir Aguiar
 Sam Truscott
 Samuel Degrande
 Sandeep Dutta
+Savvas Etairidis
+Scott Furry
+Sebastian Held
 Sebastian Matuschka
 Sébastien Debrard
+Sergey Burgsdorf
+Shane Tapp
+Simon Cornell
 Simon Kagstrom
+Simon Large
 Simon Martin
 Simon Shanks
 Slava Semushin
 Stas Cymbalov
 Stefan Beller
 Stefan Naewe
+Stefan van Kessel
 Stefan Weil
+Stéphane Michel
 Steve Browne
 Steve Duan
+Steve Mokris
+Steven Cook
 Steven Myint
 Susi Lehtola
 Swasti Shrivastava
+Sylvain Joubert
+Tam Do Thanh
 Teddy Didé
 Thomas Arnhold
 Thomas Jarosch
+Thomas Niederberger
 Thomas Otto
 Thomas Sondergaard
+Thorsten Sick
 Tim Gerundt
+tititiou36
 Tobias Weibel
+Tomasz Kłoczko
 Tom Pollok
 Toralf Förster
 Troshin V.S.
+Tyson Nottingham
 Valerii Lashmanov
 Vasily Maslyukov
 Veli-Matti Visuri
 WenChung Chiu
 Vesa Pikki
+Ville-Pekka Vahteala
 Ville Skyttä
+Vincent Le Garrec
+Wolfgang Stöggl
 x29a
 XhmikosR
 Xuecheng Zhang
+Yichen Yan
+Yurii Putin
 Zachary Blair
 Zhao Qifa
 Zhiyuan Zhang
+Zhu Lei
 Дмитрий Старцев
 
 GUI graphics courtesy of Tango Desktop Project:

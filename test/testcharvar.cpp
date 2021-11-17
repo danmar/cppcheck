@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,16 +26,15 @@
 
 class TestCharVar : public TestFixture {
 public:
-    TestCharVar() : TestFixture("TestCharVar") {
-    }
+    TestCharVar() : TestFixture("TestCharVar") {}
 
 private:
     Settings settings;
 
-    void run() override {
+    void run() OVERRIDE {
         settings.platform(Settings::Unspecified);
-        settings.addEnabled("warning");
-        settings.addEnabled("portability");
+        settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::portability);
 
         TEST_CASE(array_index_1);
         TEST_CASE(array_index_2);
@@ -80,14 +79,6 @@ private:
               "    buf[ch] = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-
-        check("int buf[256];\n"
-              "void foo()\n"
-              "{\n"
-              "    signed char ch = 0x80;\n"
-              "    buf[ch] = 0;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Signed 'char' type used as array index.\n", errout.str());
 
         check("int buf[256];\n"
               "void foo()\n"

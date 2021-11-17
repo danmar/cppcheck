@@ -28,5 +28,6 @@
         <file>images/applications-development.png</file>
         <file>images/applications-system.png</file>
         <file>images/llvm-dragon.png</file>
+        <file>images/verify.svg</file>
     </qresource>
 </RCC>

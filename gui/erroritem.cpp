@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,37 +19,41 @@
 #include "erroritem.h"
 #include "common.h"
 
-QErrorPathItem::QErrorPathItem(const ErrorLogger::ErrorMessage::FileLocation &loc)
+QErrorPathItem::QErrorPathItem(const ErrorMessage::FileLocation &loc)
     : file(QString::fromStdString(loc.getfile(false)))
     , line(loc.line)
-    , col(loc.col)
+    , column(loc.column)
     , info(QString::fromStdString(loc.getinfo()))
-{
-}
+{}
 
 bool operator==(const QErrorPathItem &i1, const QErrorPathItem &i2)
 {
-    return i1.file == i2.file && i1.col == i2.col && i1.line == i2.line && i1.info == i2.info;
+    return i1.file == i2.file && i1.column == i2.column && i1.line == i2.line && i1.info == i2.info;
 }
 
 ErrorItem::ErrorItem()
     : severity(Severity::none)
+    , incomplete(false)
     , inconclusive(false)
     , cwe(-1)
-{
-}
+    , hash(0)
+{}
 
-ErrorItem::ErrorItem(const ErrorLogger::ErrorMessage &errmsg)
-    : errorId(QString::fromStdString(errmsg._id))
-    , severity(errmsg._severity)
-    , inconclusive(errmsg._inconclusive)
+ErrorItem::ErrorItem(const ErrorMessage &errmsg)
+    : file0(QString::fromStdString(errmsg.file0))
+    , function(QString::fromStdString(errmsg.function))
+    , errorId(QString::fromStdString(errmsg.id))
+    , severity(errmsg.severity)
+    , incomplete(errmsg.incomplete)
+    , inconclusive(errmsg.certainty == Certainty::inconclusive)
     , summary(QString::fromStdString(errmsg.shortMessage()))
     , message(QString::fromStdString(errmsg.verboseMessage()))
-    , cwe(errmsg._cwe.id)
+    , cwe(errmsg.cwe.id)
+    , hash(errmsg.hash)
     , symbolNames(QString::fromStdString(errmsg.symbolNames()))
 {
-    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator loc = errmsg._callStack.begin();
-         loc != errmsg._callStack.end();
+    for (std::list<ErrorMessage::FileLocation>::const_iterator loc = errmsg.callStack.begin();
+         loc != errmsg.callStack.end();
          ++loc) {
         errorPath << QErrorPathItem(*loc);
     }
@@ -66,7 +70,7 @@ QString ErrorItem::tool() const
     return "cppcheck";
 }
 
-QString ErrorItem::ToString() const
+QString ErrorItem::toString() const
 {
     QString str = errorPath.back().file + " - " + errorId + " - ";
     if (inconclusive)
@@ -74,8 +78,22 @@ QString ErrorItem::ToString() const
     str += GuiSeverity::toString(severity) +"\n";
     str += summary + "\n";
     str += message + "\n";
-    for (int i = 0; i < errorPath.size(); i++) {
-        str += "  " + errorPath[i].file + ": " + QString::number(errorPath[i].line) + "\n";
+    for (const QErrorPathItem& i : errorPath) {
+        str += "  " + i.file + ": " + QString::number(i.line) + "\n";
     }
     return str;
+}
+
+bool ErrorItem::sameCID(const ErrorItem &errorItem1, const ErrorItem &errorItem2)
+{
+    if (errorItem1.hash || errorItem2.hash)
+        return errorItem1.hash == errorItem2.hash;
+
+    // fallback
+    return errorItem1.errorId == errorItem2.errorId &&
+           errorItem1.errorPath == errorItem2.errorPath &&
+           errorItem1.file0 == errorItem2.file0 &&
+           errorItem1.message == errorItem2.message &&
+           errorItem1.inconclusive == errorItem2.inconclusive &&
+           errorItem1.severity == errorItem2.severity;
 }

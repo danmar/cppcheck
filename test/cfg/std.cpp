@@ -7,38 +7,270 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
-#include <cstring>
+#include <bitset>
+#include <cassert>
+#include <cctype>
+#include <cfenv>
+#include <cinttypes>
+#include <clocale>
+#include <cmath>
+#include <complex>
+#include <csetjmp>
+#include <csignal>
+#include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
-#include <cctype>
-#include <complex>
-#include <cassert>
 #include <cwchar>
-#include <cfenv>
-#include <csetjmp>
-#include <cmath>
-#include <csignal>
-#include <csetjmp>
-#include <iostream>
-#include <iomanip>
-#include <cinttypes>
-#include <istream>
 #include <fstream>
+#include <functional>
+#include <iomanip>
+#include <iostream>
+#include <istream>
+#include <iterator>
 #include <vector>
-#include <cstdarg>
+
+double invalidFunctionArg_log10(double d = 0.0) {
+    // cppcheck-suppress invalidFunctionArg
+    return log10(d);
+}
+
+void uninitvar_std_next(const std::vector<int> &v, int count)
+{
+    // No warning shall be shown:
+    if (std::next(v.begin()) != v.end()) {}
+    if (std::next(v.begin(), count) != v.end()) {}
+
+    std::vector<int>::iterator it;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::next(it) != v.end()) {}
+
+    std::vector<int>::const_iterator const_it;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::next(const_it) != v.end()) {}
+
+    std::vector<int>::reverse_iterator rit;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::next(rit) != v.rend()) {}
+
+    std::vector<int>::const_reverse_iterator const_rit;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::next(const_rit) != v.rend()) {}
+}
+
+void uninitvar_std_prev(const std::vector<int> &v, int count)
+{
+    // No warning shall be shown:
+    if (std::prev(v.begin()) != v.end()) {}
+    if (std::prev(v.begin(), count) != v.end()) {}
+
+    std::vector<int>::iterator it;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::prev(it) != v.end()) {}
+
+    std::vector<int>::const_iterator const_it;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::prev(const_it) != v.end()) {}
+
+    std::vector<int>::reverse_iterator rit;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::prev(rit) != v.rend()) {}
+
+    std::vector<int>::const_reverse_iterator const_rit;
+    // TODO-cppcheck-suppress uninitvar
+    if (std::prev(const_rit) != v.rend()) {}
+}
+
+void overlappingWriteFunction_wcscat(wchar_t *src, wchar_t *dest)
+{
+    // No warning shall be shown:
+    (void)wcscat(dest, src);
+    // cppcheck-suppress overlappingWriteFunction
+    (void)wcscat(src, src);
+}
+
+char * overlappingWriteFunction_strcat(char *src, char *dest)
+{
+    // No warning shall be shown:
+    (void)strcat(dest, src);
+    // cppcheck-suppress overlappingWriteFunction
+    return strcat(src, src);
+}
+
+char * overlappingWriteFunction_strncat(char *src, char *dest, const std::size_t count)
+{
+    // No warning shall be shown:
+    (void)strncat(dest, src, 42);
+    (void)strncat(dest, src, count);
+    (void)strncat(dest, dest, count);
+    // cppcheck-suppress overlappingWriteFunction
+    (void)strncat(dest, dest+1, 2);
+    char buffer[] = "strncat";
+    // cppcheck-suppress overlappingWriteFunction
+    return strncat(buffer, buffer + 1, 3);
+}
+
+wchar_t * overlappingWriteFunction_wcsncat(wchar_t *src, wchar_t *dest, const std::size_t count)
+{
+    // No warning shall be shown:
+    (void)wcsncat(dest, src, 42);
+    (void)wcsncat(dest, src, count);
+    (void)wcsncat(dest, dest, count);
+    // cppcheck-suppress overlappingWriteFunction
+    (void)wcsncat(dest, dest+1, 2);
+    wchar_t buffer[] = L"strncat";
+    // cppcheck-suppress overlappingWriteFunction
+    return wcsncat(buffer, buffer + 1, 3);
+}
+
+wchar_t * overlappingWriteFunction_wcscpy(wchar_t *src, wchar_t *dest)
+{
+    // No warning shall be shown:
+    (void)wcscpy(dest, src);
+    const wchar_t * destBuf = dest;
+    // TODO-cppcheck-suppress overlappingWriteFunction  #10355
+    (void)wcscpy(dest, destBuf);
+    // cppcheck-suppress overlappingWriteFunction
+    return wcscpy(src, src);
+}
+
+wchar_t * overlappingWriteFunction_wcsncpy(wchar_t *buf, const std::size_t count)
+{
+    // No warning shall be shown:
+    (void)wcsncpy(&buf[0], &buf[3], count); // size is not known
+    (void)wcsncpy(&buf[0], &buf[3], 3U);    // no-overlap
+    // cppcheck-suppress overlappingWriteFunction
+    return wcsncpy(&buf[0], &buf[3], 4U);
+}
+
+char * overlappingWriteFunction_strncpy(char *buf, const std::size_t count)
+{
+    // No warning shall be shown:
+    (void)strncpy(&buf[0], &buf[3], count); // size is not known
+    (void)strncpy(&buf[0], &buf[3], 3U);    // no-overlap
+    // cppcheck-suppress overlappingWriteFunction
+    return strncpy(&buf[0], &buf[3], 4U);
+}
+
+void * overlappingWriteFunction_memmove(void)
+{
+    // No warning shall be shown:
+    char str[] = "memmove handles overlapping data well";
+    return memmove(str,str+3,4);
+}
+
+std::bitset<10> std_bitset_test_ignoredReturnValue()
+{
+    std::bitset<10> b1("1111010000");
+    // cppcheck-suppress ignoredReturnValue
+    b1.test(2);
+    return b1;
+}
+
+std::bitset<10> std_bitset_all_ignoredReturnValue()
+{
+    std::bitset<10> b1("1111010000");
+    // cppcheck-suppress ignoredReturnValue
+    b1.all();
+    return b1;
+}
+
+std::bitset<10> std_bitset_none_ignoredReturnValue()
+{
+    std::bitset<10> b1("1111010000");
+    // cppcheck-suppress ignoredReturnValue
+    b1.none();
+    return b1;
+}
+
+std::bitset<10> std_bitset_any_ignoredReturnValue()
+{
+    std::bitset<10> b1("1111010000");
+    // cppcheck-suppress ignoredReturnValue
+    b1.any();
+    return b1;
+}
+
+std::bitset<10> std_bitset_size_ignoredReturnValue()
+{
+    std::bitset<10> b1("1111010000");
+    // cppcheck-suppress ignoredReturnValue
+    b1.size();
+    return b1;
+}
+
+std::bitset<10> std_bitset_count_ignoredReturnValue()
+{
+    std::bitset<10> b1("1111010000");
+    // cppcheck-suppress ignoredReturnValue
+    b1.count();
+    return b1;
+}
+
+void valid_code()
+{
+    std::vector<int> vecInt{0, 1, 2};
+    std::fill_n(vecInt.begin(), 2, 0);
+    vecInt.push_back(1);
+    vecInt.pop_back();
+}
+
+void returnValue_std_isgreater(void)
+{
+    // cppcheck-suppress knownConditionTrueFalse
+    if (std::isgreater(4,2) == 0) {}
+    // @todo support floats
+    if (std::isgreater(4.0f,2.0f) == 0) {}
+}
+
+void returnValue_std_isgreaterequal(void)
+{
+    // cppcheck-suppress knownConditionTrueFalse
+    if (std::isgreaterequal(4,2) == 0) {}
+    // @todo support floats
+    if (std::isgreaterequal(4.0f,2.0f) == 0) {}
+}
+
+void returnValue_std_isless(void)
+{
+    // cppcheck-suppress knownConditionTrueFalse
+    if (std::isless(4,2) == 0) {}
+    // @todo support floats
+    if (std::isless(4.0f,2.0f) == 0) {}
+}
+
+void returnValue_std_islessequal(void)
+{
+    // cppcheck-suppress knownConditionTrueFalse
+    if (std::islessequal(4,2) == 0) {}
+    // @todo support floats
+    if (std::islessequal(4.0f,2.0f) == 0) {}
+}
+
+void returnValue_std_islessgreater(void)
+{
+    // cppcheck-suppress knownConditionTrueFalse
+    if (std::islessgreater(4,2) == 0) {}
+    // cppcheck-suppress knownConditionTrueFalse
+    if (std::islessgreater(2,4) == 0) {}
+
+    if (std::islessgreater(4.0f,2.0f) == 0) {} // @todo support floats
+    if (std::islessgreater(2.0f,4.0f) == 0) {} // @todo support floats
+}
 
 void bufferAccessOutOfBounds(void)
 {
     char a[5];
     std::strcpy(a,"abcd");
     // cppcheck-suppress bufferAccessOutOfBounds
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     std::strcpy(a, "abcde");
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
+    // cppcheck-suppress terminateStrncpy
     std::strncpy(a,"abcde",5);
     // cppcheck-suppress bufferAccessOutOfBounds
-    // cppcheck-suppress redundantCopy
+    // TODO cppcheck-suppress redundantCopy
     std::strncpy(a,"abcde",6);
 }
 
@@ -51,11 +283,11 @@ void uninitvar_abs(void)
 
 void uninivar_imaxabs(void)
 {
-    intmax_t i;
+    intmax_t i1, i2;
     // cppcheck-suppress uninitvar
-    (void)std::imaxabs(i);
+    (void)std::imaxabs(i1);
     // cppcheck-suppress uninitvar
-    (void)imaxabs(i);
+    (void)imaxabs(i2);
 }
 
 void uninitvar_isalnum(void)
@@ -372,15 +604,15 @@ void uninitvar_atof(void)
 
 void uninitvar_atol(void)
 {
-    char * c;
+    char * c1, *c2, *c3;
     // cppcheck-suppress uninitvar
-    (void)std::atoi(c);
+    (void)std::atoi(c1);
 
     // cppcheck-suppress uninitvar
-    (void)std::atol(c);
+    (void)std::atol(c2);
 
     // cppcheck-suppress uninitvar
-    (void)std::atoll(c);
+    (void)std::atoll(c3);
 }
 
 void uninitvar_ceil(void)
@@ -467,16 +699,16 @@ void uninitvar_cosh(void)
 
 void uninitvar_feraiseexcept(void)
 {
-    int excepts;
+    int expects;
     // cppcheck-suppress uninitvar
-    (void)std::feraiseexcept(excepts);
+    (void)std::feraiseexcept(expects);
 }
 
 void uninitvar_fesetexceptflag(fexcept_t* flagp)
 {
-    int excepts;
+    int expects;
     // cppcheck-suppress uninitvar
-    (void)std::fesetexceptflag(flagp, excepts);
+    (void)std::fesetexceptflag(flagp, expects);
 }
 
 void uninitvar_feclearexcept(void)
@@ -538,12 +770,12 @@ void uninitvar_div(void)
 
 void uninitvar_imaxdiv(void)
 {
-    intmax_t numer;
-    intmax_t denom;
+    intmax_t numer1, numer2;
+    intmax_t denom1, denom2;
     // cppcheck-suppress uninitvar
-    (void)std::imaxdiv(numer,denom);
+    (void)std::imaxdiv(numer1,denom1);
     // cppcheck-suppress uninitvar
-    (void)imaxdiv(numer,denom);
+    (void)imaxdiv(numer2,denom2);
 }
 
 void uninitvar_exit(void)
@@ -794,17 +1026,17 @@ void uninitar_fopen(void)
 
 void uninitar_fprintf(FILE *Stream, char *Format, int Argument)
 {
-    FILE *stream;
-    char *format;
-    int argument;
+    FILE *stream1, *stream2;
+    char *format1, *format2;
+    int argument1, argument2;
     // cppcheck-suppress uninitvar
-    (void)std::fprintf(stream, format, argument);
+    (void)std::fprintf(stream1, format1, argument1);
     // cppcheck-suppress uninitvar
-    (void)std::fprintf(stream, Format, Argument);
+    (void)std::fprintf(stream2, Format, Argument);
     // cppcheck-suppress uninitvar
-    (void)std::fprintf(Stream, format, Argument);
+    (void)std::fprintf(Stream, format2, Argument);
     // cppcheck-suppress uninitvar
-    (void)std::fprintf(Stream, Format, argument);
+    (void)std::fprintf(Stream, Format, argument2);
 
     // no warning is expected
     (void)std::fprintf(Stream, Format, Argument);
@@ -812,16 +1044,16 @@ void uninitar_fprintf(FILE *Stream, char *Format, int Argument)
 
 void uninitar_vfprintf(FILE *Stream, const char *Format, va_list Arg)
 {
-    FILE *stream;
-    char *format;
+    FILE *stream1, *stream2;
+    char *format1, *format2;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
-    (void)std::vfprintf(stream, format, arg);
+    (void)std::vfprintf(stream1, format1, arg);
     // cppcheck-suppress uninitvar
-    (void)std::vfprintf(stream, Format, Arg);
+    (void)std::vfprintf(stream2, Format, Arg);
     // cppcheck-suppress uninitvar
-    (void)std::vfprintf(Stream, format, Arg);
+    (void)std::vfprintf(Stream, format2, Arg);
 
     // no warning is expected
     (void)std::vfprintf(Stream, Format, Arg);
@@ -831,16 +1063,16 @@ void uninitar_vfprintf(FILE *Stream, const char *Format, va_list Arg)
 
 void uninitar_vfwprintf(FILE *Stream, wchar_t *Format, va_list Arg)
 {
-    FILE *stream;
-    wchar_t *format;
+    FILE *stream1, *stream2;
+    wchar_t *format1, *format2;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
-    (void)std::vfwprintf(stream, format, arg);
+    (void)std::vfwprintf(stream1, format1, arg);
     // cppcheck-suppress uninitvar
-    (void)std::vfwprintf(stream, Format, Arg);
+    (void)std::vfwprintf(stream2, Format, Arg);
     // cppcheck-suppress uninitvar
-    (void)std::vfwprintf(Stream, format, Arg);
+    (void)std::vfwprintf(Stream, format2, Arg);
 
     // no warning is expected
     (void)std::vfwprintf(Stream, Format, Arg);
@@ -1049,19 +1281,28 @@ void uninitvar_mbtowc(void)
 
 void uninitvar_mbrlen(const char* p, size_t m, mbstate_t* s)
 {
-    char* pmb;
-    size_t max;
-    mbstate_t* ps;
+    char* pmb1, *pmb2;
+    size_t max1, max2;
+    mbstate_t* ps1, *ps2;
     // cppcheck-suppress uninitvar
-    (void)std::mbrlen(pmb,max,ps);
+    (void)std::mbrlen(pmb1,max1,ps1);
     // cppcheck-suppress uninitvar
-    (void)std::mbrlen(pmb,m,s);
+    (void)std::mbrlen(pmb2,m,s);
     // cppcheck-suppress uninitvar
-    (void)std::mbrlen(p,max,s);
+    (void)std::mbrlen(p,max2,s);
     // cppcheck-suppress uninitvar
-    (void)std::mbrlen(p,m,ps);
+    (void)std::mbrlen(p,m,ps2);
     // no warning is expected
     (void)std::mbrlen(p,m,s);
+}
+
+void nullPointer_mbrlen(const char* p, size_t m, mbstate_t* s)
+{
+    // no warning is expected: A call to the function with a null pointer as pmb resets the shift state (and ignores parameter max).
+    (void)std::mbrlen(NULL,m,s);
+    (void)std::mbrlen(NULL,0,s);
+    // cppcheck-suppress nullPointer
+    (void)std::mbrlen(p,m,NULL);
 }
 
 void uninitvar_btowc(void)
@@ -1597,13 +1838,13 @@ void uninitvar_islessgreater(void)
 
 void uninitvar_nan(void)
 {
-    char *tagp;
+    char *tagp1, *tagp2, *tagp3;
     // cppcheck-suppress uninitvar
-    (void)std::nanf(tagp);
+    (void)std::nanf(tagp1);
     // cppcheck-suppress uninitvar
-    (void)std::nan(tagp);
+    (void)std::nan(tagp2);
     // cppcheck-suppress uninitvar
-    (void)std::nanl(tagp);
+    (void)std::nanl(tagp3);
 }
 
 void uninitvar_isnan(void)
@@ -1832,7 +2073,7 @@ void uninitvar_memset(void)
 void uninitvar_wmemset(void)
 {
     wchar_t *cs;
-    wchar_t  c;
+    wchar_t c;
     size_t n;
     // cppcheck-suppress uninitvar
     (void)std::wmemset(cs,c,n);
@@ -1920,18 +2161,18 @@ void uninitvar_remquo(void)
 
 void uninivar_printf(char *Format, int Argument)
 {
-    char * format;
-    int argument;
+    char * format_1, * format_2, * format_3;
+    int argument1, argument2;
     // no warning is expected
     (void)std::printf("x");
     // cppcheck-suppress uninitvar
-    (void)std::printf(format,argument);
+    (void)std::printf(format_1,argument1);
     // cppcheck-suppress uninitvar
-    (void)std::printf(Format,argument);
+    (void)std::printf(Format,argument2);
     // cppcheck-suppress uninitvar
-    (void)std::printf(format,Argument);
+    (void)std::printf(format_2,Argument);
     // cppcheck-suppress uninitvar
-    (void)std::printf(format,1);
+    (void)std::printf(format_3,1);
 
     // no warning is expected
     (void)std::printf(Format,Argument);
@@ -1939,13 +2180,13 @@ void uninivar_printf(char *Format, int Argument)
 
 void uninivar_vprintf(char *Format, va_list Arg)
 {
-    char * format;
+    char * format1, *format2;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
-    (void)std::vprintf(format,arg);
+    (void)std::vprintf(format1,arg);
     // cppcheck-suppress uninitvar
-    (void)std::vprintf(format,Arg);
+    (void)std::vprintf(format2,Arg);
 
     // no warning is expected
     (void)std::vprintf(Format,Arg);
@@ -1955,13 +2196,13 @@ void uninivar_vprintf(char *Format, va_list Arg)
 
 void uninivar_vwprintf(wchar_t *Format, va_list Arg)
 {
-    wchar_t * format;
+    wchar_t * format1, *format2;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
-    (void)std::vwprintf(format,arg);
+    (void)std::vwprintf(format1,arg);
     // cppcheck-suppress uninitvar
-    (void)std::vwprintf(format,Arg);
+    (void)std::vwprintf(format2,Arg);
 
     // no warning is expected
     (void)std::vwprintf(Format,Arg);
@@ -1976,7 +2217,20 @@ void uninivar_bsearch(void)
     size_t num;
     size_t size;
     // cppcheck-suppress uninitvar
-    (void)std::bsearch(key,base,num,size,(int(*)(const void*,const void*)) strcmp);
+    (void)std::bsearch(key,base,num,size,(int (*)(const void*,const void*))strcmp);
+}
+
+void minsize_bsearch(const void* key, const void* base,
+                     size_t num, size_t size,
+                     int (*compar)(const void*,const void*))
+{
+    int Base[3] = {42, 43, 44};
+
+    (void)std::bsearch(key,Base,2,size,(int (*)(const void*,const void*))strcmp);
+    (void)std::bsearch(key,Base,3,size,(int (*)(const void*,const void*))strcmp);
+    (void)std::bsearch(key,Base,4,size,(int (*)(const void*,const void*))strcmp);
+
+    (void)std::bsearch(key,base,2,size,(int (*)(const void*,const void*))strcmp);
 }
 
 void uninitvar_qsort(void)
@@ -1985,7 +2239,7 @@ void uninitvar_qsort(void)
     size_t n;
     size_t size;
     // cppcheck-suppress uninitvar
-    (void)std::qsort(base,n,size, (int(*)(const void*,const void*)) strcmp);
+    (void)std::qsort(base,n,size, (int (*)(const void*,const void*))strcmp);
 }
 
 void uninitvar_putc(void)
@@ -2194,14 +2448,14 @@ void uninivar_setvbuf(void)
 
 void uninitvar_strcat(char *dest, const char * const source)
 {
-    char *deststr;
-    char *srcstr;
+    char *deststr1, *deststr2;
+    char *srcstr1, *srcstr2;
     // cppcheck-suppress uninitvar
-    (void)std::strcat(deststr,srcstr);
+    (void)std::strcat(deststr1,srcstr1);
     // cppcheck-suppress uninitvar
-    (void)std::strcat(dest,srcstr);
+    (void)std::strcat(dest,srcstr2);
     // cppcheck-suppress uninitvar
-    (void)std::strcat(deststr,source);
+    (void)std::strcat(deststr2,source);
 
     // no warning shall be shown for
     (void)std::strcat(dest,source);
@@ -2209,14 +2463,14 @@ void uninitvar_strcat(char *dest, const char * const source)
 
 void uninitvar_wcscat(wchar_t *dest, const wchar_t * const source)
 {
-    wchar_t *deststr;
-    wchar_t *srcstr;
+    wchar_t *deststr_1, *deststr_2;
+    wchar_t *srcstr1, *srcstr2;
     // cppcheck-suppress uninitvar
-    (void)std::wcscat(deststr,srcstr);
+    (void)std::wcscat(deststr_1,srcstr1);
     // cppcheck-suppress uninitvar
-    (void)std::wcscat(dest,srcstr);
+    (void)std::wcscat(dest,srcstr2);
     // cppcheck-suppress uninitvar
-    (void)std::wcscat(deststr,source);
+    (void)std::wcscat(deststr_2,source);
 
     // no warning shall be shown for
     (void)std::wcscat(dest,source);
@@ -2322,17 +2576,17 @@ void uninivar_strpbrk(void)
 
 void uninivar_strncat(char *Ct, char *S, size_t N)
 {
-    char *ct;
-    char *s;
-    size_t n;
+    char *ct_1, *ct_2;
+    char *s1, *s2;
+    size_t n1, n2;
     // cppcheck-suppress uninitvar
-    (void)std::strncat(ct,s,n);
+    (void)std::strncat(ct_1,s1,n1);
     // cppcheck-suppress uninitvar
-    (void)std::strncat(ct,S,N);
+    (void)std::strncat(ct_2,S,N);
     // cppcheck-suppress uninitvar
-    (void)std::strncat(Ct,s,N);
+    (void)std::strncat(Ct,s2,N);
     // cppcheck-suppress uninitvar
-    (void)std::strncat(Ct,S,n);
+    (void)std::strncat(Ct,S,n2);
 
     // no warning is expected for
     (void)std::strncat(Ct,S,N);
@@ -2340,17 +2594,17 @@ void uninivar_strncat(char *Ct, char *S, size_t N)
 
 void uninivar_wcsncat(wchar_t *Ct, wchar_t *S, size_t N)
 {
-    wchar_t *ct;
-    wchar_t *s;
-    size_t n;
+    wchar_t *ct_1, *ct_2;
+    wchar_t *s1, *s2;
+    size_t n1, n2;
     // cppcheck-suppress uninitvar
-    (void)std::wcsncat(ct,s,n);
+    (void)std::wcsncat(ct_1,s1,n1);
     // cppcheck-suppress uninitvar
-    (void)std::wcsncat(ct,S,N);
+    (void)std::wcsncat(ct_2,S,N);
     // cppcheck-suppress uninitvar
-    (void)std::wcsncat(Ct,s,N);
+    (void)std::wcsncat(Ct,s2,N);
     // cppcheck-suppress uninitvar
-    (void)std::wcsncat(Ct,S,n);
+    (void)std::wcsncat(Ct,S,n2);
 
     // no warning is expected for
     (void)std::wcsncat(Ct,S,N);
@@ -2358,17 +2612,17 @@ void uninivar_wcsncat(wchar_t *Ct, wchar_t *S, size_t N)
 
 void uninivar_strncmp(char *Ct, char *S, size_t N)
 {
-    char *ct;
-    char *s;
-    size_t n;
+    char *ct1, *ct2;
+    char *s1, *s2;
+    size_t n1, n2;
     // cppcheck-suppress uninitvar
-    (void)std::strncmp(ct,s,n);
+    (void)std::strncmp(ct1,s1,n1);
     // cppcheck-suppress uninitvar
-    (void)std::strncmp(ct,S,N);
+    (void)std::strncmp(ct2,S,N);
     // cppcheck-suppress uninitvar
-    (void)std::strncmp(Ct,s,N);
+    (void)std::strncmp(Ct,s2,N);
     // cppcheck-suppress uninitvar
-    (void)std::strncmp(Ct,S,n);
+    (void)std::strncmp(Ct,S,n2);
 
     // no warning is expected for
     (void)std::strncmp(Ct,S,N);
@@ -2376,17 +2630,17 @@ void uninivar_strncmp(char *Ct, char *S, size_t N)
 
 void uninivar_wcsncmp(wchar_t *Ct, wchar_t *S, size_t N)
 {
-    wchar_t *ct;
-    wchar_t *s;
-    size_t n;
+    wchar_t *ct1, *ct2;
+    wchar_t *s1, *s2;
+    size_t n1, n2;
     // cppcheck-suppress uninitvar
-    (void)std::wcsncmp(ct,s,n);
+    (void)std::wcsncmp(ct1,s1,n1);
     // cppcheck-suppress uninitvar
-    (void)std::wcsncmp(ct,S,N);
+    (void)std::wcsncmp(ct2,S,N);
     // cppcheck-suppress uninitvar
-    (void)std::wcsncmp(Ct,s,N);
+    (void)std::wcsncmp(Ct,s2,N);
     // cppcheck-suppress uninitvar
-    (void)std::wcsncmp(Ct,S,n);
+    (void)std::wcsncmp(Ct,S,n2);
 
     // no warning is expected for
     (void)std::wcsncmp(Ct,S,N);
@@ -2541,48 +2795,49 @@ void uninivar_strtok(void)
 
 void uninivar_strtoimax(void)
 {
-    const char *s;
-    char **endp;
-    int base;
+    const char *s1, *s2;
+    char **endp1, **endp2;
+    int base1, base2;
     // cppcheck-suppress uninitvar
-    (void)std::strtoimax(s,endp,base);
+    (void)std::strtoimax(s1,endp1,base1);
     // cppcheck-suppress uninitvar
-    (void)std::strtoumax(s,endp,base);
+    (void)std::strtoumax(s2,endp2,base2);
 }
 
 void uninivar_strtof(void)
 {
-    const char *s;
-    char **endp;
+    const char *s1, *s2, *s3;
+    char **endp1, **endp2, **endp3;
     // cppcheck-suppress uninitvar
-    (void)std::strtof(s,endp);
+    (void)std::strtof(s1,endp1);
     // cppcheck-suppress uninitvar
-    (void)std::strtod(s,endp);
+    (void)std::strtod(s2,endp2);
     // cppcheck-suppress uninitvar
-    (void)std::strtold(s,endp);
+    (void)std::strtold(s3,endp3);
 }
 
 void uninivar_strtol(void)
 {
-    const char *s;
-    char **endp;
-    int base;
+    const char *s1,*s2,*s3,*s4,*s5,*s6,*s7,*s8;
+    char **endp1, **endp2, **endp3, **endp4, **endp5, **endp6, **endp7, **endp8;
+    int base1, base2, base3, base4, base5, base6, base7, base8;
+
     // cppcheck-suppress uninitvar
-    (void)std::strtol(s,endp,base);
+    (void)std::strtol(s1,endp1,base1);
     // cppcheck-suppress uninitvar
-    (void)std::strtoll(s,endp,base);
+    (void)std::strtoll(s2,endp2,base2);
     // cppcheck-suppress uninitvar
-    (void)std::strtoul(s,endp,base);
+    (void)std::strtoul(s3,endp3,base3);
     // cppcheck-suppress uninitvar
-    (void)std::strtoull(s,endp,base);
+    (void)std::strtoull(s4,endp4,base4);
     // cppcheck-suppress uninitvar
-    (void)std::strtoimax(s,endp,base);
+    (void)std::strtoimax(s5,endp5,base5);
     // cppcheck-suppress uninitvar
-    (void)strtoimax(s,endp,base);
+    (void)strtoimax(s6,endp6,base6);
     // cppcheck-suppress uninitvar
-    (void)std::strtoumax(s,endp,base);
+    (void)std::strtoumax(s7,endp7,base7);
     // cppcheck-suppress uninitvar
-    (void)strtoumax(s,endp,base);
+    (void)strtoumax(s8,endp8,base8);
 }
 
 void uninitvar_time(void)
@@ -2615,53 +2870,68 @@ void uninivar_toupper(void)
 
 void uninivar_wcstof(void)
 {
-    const wchar_t *s;
-    wchar_t **endp;
+    const wchar_t *s1, *s2, *s3;
+    wchar_t **endp1, **endp2, **endp3;
     // cppcheck-suppress uninitvar
-    (void)std::wcstof(s,endp);
+    (void)std::wcstof(s1,endp1);
     // cppcheck-suppress uninitvar
-    (void)std::wcstod(s,endp);
+    (void)std::wcstod(s2,endp2);
     // cppcheck-suppress uninitvar
-    (void)std::wcstold(s,endp);
+    (void)std::wcstold(s3,endp3);
 }
 
 void uninivar_stoX(void)
 {
     std::string str;
     std::wstring wstr;
-    size_t* idx;
+    size_t* idx1;
+    size_t* idx2;
+    size_t* idx3;
+    size_t* idx4;
+    size_t* idx5;
+    size_t* idx6;
+    size_t* idx7;
+    size_t* idx8;
+    size_t* idx9;
+    size_t* idx10;
+    size_t* idx11;
+    size_t* idx12;
+    size_t* idx13;
+    size_t* idx14;
+    size_t* idx15;
+    size_t* idx16;
     // cppcheck-suppress uninitvar
-    (void)std::stod(str,idx);
+    (void)std::stod(str,idx1);
     // cppcheck-suppress uninitvar
-    (void)std::stod(wstr,idx);
+    (void)std::stod(wstr,idx2);
     // cppcheck-suppress uninitvar
-    (void)std::stof(str,idx);
+    (void)std::stof(str,idx3);
     // cppcheck-suppress uninitvar
-    (void)std::stof(wstr,idx);
+    (void)std::stof(wstr,idx4);
     // cppcheck-suppress uninitvar
-    (void)std::stoi(str,idx);
+    (void)std::stoi(str,idx5);
     // cppcheck-suppress uninitvar
-    (void)std::stoi(wstr,idx);
+    (void)std::stoi(wstr,idx6);
     // cppcheck-suppress uninitvar
-    (void)std::stol(str,idx);
+    (void)std::stol(str,idx7);
     // cppcheck-suppress uninitvar
-    (void)std::stol(wstr,idx);
+    (void)std::stol(wstr,idx8);
     // cppcheck-suppress uninitvar
-    (void)std::stold(str,idx);
+    (void)std::stold(str,idx9);
     // cppcheck-suppress uninitvar
-    (void)std::stold(wstr,idx);
+    (void)std::stold(wstr,idx10);
     // cppcheck-suppress uninitvar
-    (void)std::stoll(str,idx);
+    (void)std::stoll(str,idx11);
     // cppcheck-suppress uninitvar
-    (void)std::stoll(wstr,idx);
+    (void)std::stoll(wstr,idx12);
     // cppcheck-suppress uninitvar
-    (void)std::stoul(str,idx);
+    (void)std::stoul(str,idx13);
     // cppcheck-suppress uninitvar
-    (void)std::stoul(wstr,idx);
+    (void)std::stoul(wstr,idx14);
     // cppcheck-suppress uninitvar
-    (void)std::stoull(str,idx);
+    (void)std::stoull(str,idx15);
     // cppcheck-suppress uninitvar
-    (void)std::stoull(wstr,idx);
+    (void)std::stoull(wstr,idx16);
 }
 
 void uninivar_to_string(void)
@@ -2747,50 +3017,50 @@ void uninivar_wcstok(void)
 
 void uninivar_wcstoimax(void)
 {
-    const wchar_t *s;
-    wchar_t ** endp;
-    int base;
+    const wchar_t *s1, *s2;
+    wchar_t ** endp1, **endp2;
+    int base1, base2;
     // cppcheck-suppress uninitvar
-    (void)std::wcstoimax(s,endp,base);
+    (void)std::wcstoimax(s1,endp1,base1);
     // cppcheck-suppress uninitvar
-    (void)std::wcstoumax(s,endp,base);
+    (void)std::wcstoumax(s2,endp2,base2);
 }
 
 void uninivar_wcstol(void)
 {
-    const wchar_t *s;
-    wchar_t ** endp;
-    int base;
+    const wchar_t *s1,*s2,*s3,*s4,*s5,*s6,*s7,*s8;
+    wchar_t **endp1, **endp2, **endp3, **endp4, **endp5, **endp6, **endp7, **endp8;
+    int base1, base2, base3, base4, base5, base6, base7, base8;
     // cppcheck-suppress uninitvar
-    (void)std::wcstol(s,endp,base);
+    (void)std::wcstol(s1,endp1,base1);
     // cppcheck-suppress uninitvar
-    (void)std::wcstoll(s,endp,base);
+    (void)std::wcstoll(s2,endp2,base2);
     // cppcheck-suppress uninitvar
-    (void)std::wcstoul(s,endp,base);
+    (void)std::wcstoul(s3,endp3,base3);
     // cppcheck-suppress uninitvar
-    (void)std::wcstoull(s,endp,base);
+    (void)std::wcstoull(s4,endp4,base4);
     // cppcheck-suppress uninitvar
-    (void)std::wcstoimax(s,endp,base);
+    (void)std::wcstoimax(s5,endp5,base5);
     // cppcheck-suppress uninitvar
-    (void)wcstoimax(s,endp,base);
+    (void)wcstoimax(s6,endp6,base6);
     // cppcheck-suppress uninitvar
-    (void)std::wcstoumax(s,endp,base);
+    (void)std::wcstoumax(s7,endp7,base7);
     // cppcheck-suppress uninitvar
-    (void)wcstoumax(s,endp,base);
+    (void)wcstoumax(s8,endp8,base8);
 }
 
 void uninitvar_wprintf(wchar_t *Format, int Argument)
 {
-    const wchar_t *format;
-    int argument;
+    const wchar_t *format1, *format2, *format3;
+    int argument1, argument2;
     // cppcheck-suppress uninitvar
-    (void)std::wprintf(format,argument);
+    (void)std::wprintf(format1,argument1);
     // cppcheck-suppress uninitvar
-    (void)std::wprintf(format);
+    (void)std::wprintf(format2);
     // cppcheck-suppress uninitvar
-    (void)std::wprintf(Format,argument);
+    (void)std::wprintf(Format,argument2);
     // cppcheck-suppress uninitvar
-    (void)std::wprintf(format,Argument);
+    (void)std::wprintf(format3,Argument);
     // no warning is expected
     (void)std::wprintf(Format,Argument);
     (void)std::wprintf(Format);
@@ -2824,6 +3094,14 @@ void uninitvar_vsprintf(void)
     (void)std::vsprintf(s,format,arg);
 }
 
+void nullPointer_vsprintf(va_list arg,const char *format)
+{
+    char *s = NULL;
+    (void)std::vsprintf(s,format,arg); // Its allowed to provide 's' as NULL pointer
+    // cppcheck-suppress nullPointer
+    (void)std::vsprintf(s,NULL,arg);
+}
+
 void uninitvar_vswprintf(void)
 {
     wchar_t *s;
@@ -2846,20 +3124,20 @@ void uninivar_fwprintf(void)
 
 void uninivar_snprintf(char *S, size_t N, char *Format, int Int)
 {
-    size_t n;
-    char *format;
-    int i;
-    char *s;
+    size_t n1, n2;
+    char *format1, *format2;
+    int i1, i2;
+    char *s1, *s2;
     // cppcheck-suppress uninitvar
-    (void)std::snprintf(s,n,format,i);
+    (void)std::snprintf(s1,n1,format1,i1);
     // cppcheck-suppress uninitvar
-    (void)std::snprintf(S,n,Format,Int); // n is uninitialized
+    (void)std::snprintf(S,n2,Format,Int); // n is uninitialized
     // cppcheck-suppress uninitvar
-    (void)std::snprintf(S,N,format,Int); // format is uninitialized
+    (void)std::snprintf(S,N,format2,Int); // format is uninitialized
     // cppcheck-suppress uninitvar
-    (void)std::snprintf(S,N,Format,i); // i is uninitialized
-    // TODO cppcheck-suppress uninitvar
-    (void)std::snprintf(s,N,Format,Int);
+    (void)std::snprintf(S,N,Format,i2); // i is uninitialized
+    // cppcheck-suppress uninitvar
+    (void)std::snprintf(s2,N,Format,Int);
 
     // no warning is expected for
     (void)std::snprintf(S,N,Format,Int);
@@ -2867,19 +3145,19 @@ void uninivar_snprintf(char *S, size_t N, char *Format, int Int)
 
 void uninivar_vsnprintf(char *S, size_t N, char *Format, va_list Arg)
 {
-    char *s;
-    size_t n;
-    char *format;
+    char *s1, *s2;
+    size_t n1, n2;
+    char *format1, *format2;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
-    (void)std::vsnprintf(s,n,format,arg);
+    (void)std::vsnprintf(s1,n1,format1,arg);
     // cppcheck-suppress uninitvar
-    (void)std::vsnprintf(s,N,Format,Arg);
+    (void)std::vsnprintf(s2,N,Format,Arg);
     // cppcheck-suppress uninitvar
-    (void)std::vsnprintf(S,n,Format,Arg);
+    (void)std::vsnprintf(S,n2,Format,Arg);
     // cppcheck-suppress uninitvar
-    (void)std::vsnprintf(S,N,format,Arg);
+    (void)std::vsnprintf(S,N,format2,Arg);
 
     // no warning is expected for
     (void)std::vsnprintf(S,N,Format,Arg);
@@ -2889,45 +3167,45 @@ void uninivar_vsnprintf(char *S, size_t N, char *Format, va_list Arg)
 
 void uninivar_wscanf(void)
 {
-    wchar_t *format;
+    wchar_t *format1, *format2;
     int i;
     // cppcheck-suppress uninitvar
-    (void)std::wscanf(format);
+    (void)std::wscanf(format1);
     // cppcheck-suppress uninitvar
-    (void)std::wscanf(format,&i);
+    (void)std::wscanf(format2,&i);
 }
 
 void uninivar_sscanf(void)
 {
-    char *string;
+    char *string1, *string2;
     const char * format;
     int i;
     // cppcheck-suppress uninitvar
-    (void)std::sscanf(string,format);
+    (void)std::sscanf(string1,format);
     // cppcheck-suppress uninitvar
-    (void)std::sscanf(string,format,&i);
+    (void)std::sscanf(string2,format,&i);
 }
 
 void uninivar_fwscanf(void)
 {
     FILE* stream;
-    wchar_t* format;
+    wchar_t* format1, *format2;
     int i;
     // cppcheck-suppress uninitvar
-    (void)std::fwscanf(stream,format);
+    (void)std::fwscanf(stream,format1);
     // cppcheck-suppress uninitvar
-    (void)std::fwscanf(stream,format,&i);
+    (void)std::fwscanf(stream,format2,&i);
 }
 
 void uninivar_swscanf(void)
 {
     wchar_t* s;
-    wchar_t* format;
+    wchar_t* format1, *format2;
     int i;
     // cppcheck-suppress uninitvar
-    (void)std::swscanf(s,format);
+    (void)std::swscanf(s,format1);
     // cppcheck-suppress uninitvar
-    (void)std::swscanf(s,format,&i);
+    (void)std::swscanf(s,format2,&i);
 }
 
 void uninitvar_system(void)
@@ -2986,36 +3264,36 @@ void uninitvar_setbase(void)
 void uninitvar_find(std::string s)
 {
     // testing of size_t find (const string& str, size_t pos = 0)
-    size_t pos;
+    size_t pos1, pos2, pos3, pos4, pos5, pos6, pos7;
     // cppcheck-suppress uninitvar
-    (void)s.find("find",pos); // #6991
+    (void)s.find("find",pos1); // #6991
 
     // testing of  size_t find (const char* s, size_t pos = 0) const;
-    char *pc;
+    char *pc, *pc2;
     // cppcheck-suppress uninitvar
     (void)s.find(pc,0);
     // cppcheck-suppress uninitvar
-    (void)s.find(pc,pos);
+    (void)s.find(pc,pos2);
     // cppcheck-suppress uninitvar
-    (void)s.find("test",pos);
+    (void)s.find("test",pos3);
 
     // testing of size_t find (char c, size_t pos = 0) const;
     char c;
     // cppcheck-suppress uninitvar
-    (void)s.find(c,pos);
+    (void)s.find(c,pos4);
 
     // testing of size_t find (const char* pc, size_t pos, size_t n) const;
-    size_t n;
+    size_t n1,n2,n3;
     // cppcheck-suppress uninitvar
-    (void)s.find(pc,pos,n); // #6991
+    (void)s.find(pc,pos5,n1); // #6991
     // cppcheck-suppress uninitvar
-    (void)s.find("test",pos,n);
+    (void)s.find("test",pos6,n2);
     // cppcheck-suppress uninitvar
-    (void)s.find("test",1,n);
+    (void)s.find("test",1,n3);
     // cppcheck-suppress uninitvar
-    (void)s.find("test",pos,1);
+    (void)s.find("test",pos7,1);
     // cppcheck-suppress uninitvar
-    (void)s.find(pc,1,1);
+    (void)s.find(pc2,1,1);
 }
 
 void uninivar_ifstream_read(std::ifstream &f)
@@ -3126,13 +3404,13 @@ void nullPointer_fegetenv(void)
     (void)std::fegetenv(0);
 }
 
-void nullPointer_fegetexceptflag(int excepts)
+void nullPointer_fegetexceptflag(int expects)
 {
     fexcept_t* flagp = 0;
     // cppcheck-suppress nullPointer
-    (void)std::fegetexceptflag(flagp,excepts);
+    (void)std::fegetexceptflag(flagp,expects);
     // cppcheck-suppress nullPointer
-    (void)std::fegetexceptflag(0,excepts);
+    (void)std::fegetexceptflag(0,expects);
 }
 
 void nullPointer_feholdexcept(void)
@@ -3153,13 +3431,13 @@ void nullPointer_fesetenv(void)
     (void)std::fesetenv(0);
 }
 
-void nullPointer_fesetexceptflag(int excepts)
+void nullPointer_fesetexceptflag(int expects)
 {
     fexcept_t* flagp = 0;
     // cppcheck-suppress nullPointer
-    (void)std::fesetexceptflag(flagp,excepts);
+    (void)std::fesetexceptflag(flagp,expects);
     // cppcheck-suppress nullPointer
-    (void)std::fesetexceptflag(0,excepts);
+    (void)std::fesetexceptflag(0,expects);
 }
 
 void nullPointer_feupdateenv(void)
@@ -3205,7 +3483,7 @@ void nullPointer_wmemcmp(wchar_t *p)
 #include <algorithm>
 #include <list>
 
-#define pred    [](int i){return i==0;}
+#define pred    [] (int i) {return i==0;}
 
 
 void stdalgorithm(const std::list<int> &ints1, const std::list<int> &ints2)
@@ -3216,6 +3494,12 @@ void stdalgorithm(const std::list<int> &ints1, const std::list<int> &ints2)
     std::find(ints1.begin(), ints2.end(), 123);
     // cppcheck-suppress mismatchingContainers
     if (std::find(ints1.begin(), ints1.end(), 123) == ints2.end()) {}
+
+    // #9455
+    std::list<int>::const_iterator uninitItBegin;
+    std::list<int>::const_iterator uninitItEnd;
+    // @todo cppcheck-suppress uninitvar
+    if (std::find(uninitItBegin, uninitItEnd, 123) == uninitItEnd) {}
 
     // <!-- InputIterator std::find_if(InputIterator first, InputIterator last, UnaryPredicate val) -->
     // cppcheck-suppress mismatchingContainers
@@ -3259,9 +3543,7 @@ void stdalgorithm(const std::list<int> &ints1, const std::list<int> &ints2)
     // <!-- Function std::for_each(InputIterator first, InputIterator last, Function func) -->
     // cppcheck-suppress mismatchingContainers
     std::for_each(ints1.begin(), ints2.end(), [](int i) {});
-
 }
-
 
 void getline()
 {
@@ -3290,11 +3572,14 @@ void stdstring()
     std::string s;
     // cppcheck-suppress ignoredReturnValue
     s.size();
+
+    // valid
+    s.assign("a");
 }
 
 void stdvector()
 {
-    int uninit;
+    int uninit1, uninit2, uninit3;
     std::vector<int> v;
     // cppcheck-suppress ignoredReturnValue
     v.size();
@@ -3306,15 +3591,15 @@ void stdvector()
     // cppcheck-suppress ignoredReturnValue
     v.max_size();
     // cppcheck-suppress uninitvar
-    v.push_back(uninit);
+    v.push_back(uninit1);
     // cppcheck-suppress uninitvar
-    v.reserve(uninit);
+    v.reserve(uninit2);
     // cppcheck-suppress invalidFunctionArg
     v.reserve(-1);
     // no warning is expected for capacity 0 as it simply has no effect
     v.reserve(0);
     // cppcheck-suppress uninitvar
-    v.resize(uninit);
+    v.resize(uninit3);
     // cppcheck-suppress invalidFunctionArg
     v.resize(-1);
 
@@ -3330,4 +3615,22 @@ void stdvector()
     v.back();
     // cppcheck-suppress ignoredReturnValue
     v.front();
+}
+
+void stdbind_helper(int a)
+{
+    printf("%d", a);
+}
+
+void stdbind()
+{
+    using namespace std::placeholders;
+
+    // TODO cppcheck-suppress ignoredReturnValue #9369
+    std::bind(stdbind_helper, 1);
+
+    // cppcheck-suppress unreadVariable
+    auto f1 = std::bind(stdbind_helper, _1);
+    // cppcheck-suppress unreadVariable
+    auto f2 = std::bind(stdbind_helper, 10);
 }

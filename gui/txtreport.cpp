@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,17 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QDir>
 #include "txtreport.h"
+
+#include <QDir>
+#include "erroritem.h"
 
 TxtReport::TxtReport(const QString &filename) :
     Report(filename)
-{
-}
+{}
 
 TxtReport::~TxtReport()
-{
-}
+{}
 
 bool TxtReport::create()
 {
@@ -50,16 +50,16 @@ void TxtReport::writeFooter()
 void TxtReport::writeError(const ErrorItem &error)
 {
     /*
-    Error example from the core program in text
-    [gui/test.cpp:23] -> [gui/test.cpp:14]: (error) Mismatching allocation and deallocation: k
-    */
+       Error example from the core program in text
+       [gui/test.cpp:23] -> [gui/test.cpp:14]: (error) Mismatching allocation and deallocation: k
+     */
 
     QString line;
 
     for (int i = 0; i < error.errorPath.size(); i++) {
         const QString file = QDir::toNativeSeparators(error.errorPath[i].file);
         line += QString("[%1:%2]").arg(file).arg(error.errorPath[i].line);
-        if (i < error.errorPath.size() - 1 && !error.errorPath.isEmpty()) {
+        if (i < error.errorPath.size() - 1) {
             line += " -> ";
         }
 

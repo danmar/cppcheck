@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,11 +20,9 @@
 #define ERRORITEM_H
 
 #include <QString>
-#include <QStringList>
 #include <QMetaType>
+#include <QList>
 #include "errorlogger.h"
-
-class ErrorLine;
 
 /// @addtogroup GUI
 /// @{
@@ -47,66 +45,77 @@ public:
 };
 
 /**
-* @brief A class containing data for one error path item
-*/
+ * @brief A class containing data for one error path item
+ */
 class QErrorPathItem {
 public:
-    QErrorPathItem() : line(0), col(-1) {}
-    explicit QErrorPathItem(const ErrorLogger::ErrorMessage::FileLocation &loc);
+    QErrorPathItem() : line(0), column(-1) {}
+    explicit QErrorPathItem(const ErrorMessage::FileLocation &loc);
     QString file;
-    unsigned int line;
-    int col;
+    int line;
+    int column;
     QString info;
 };
 
 bool operator==(const QErrorPathItem &i1, const QErrorPathItem &i2);
 
 /**
-* @brief A class containing error data for one error.
-*
-* The paths are stored with internal ("/") separators. Only when we show the
-* path or copy if for user (to clipboard) we convert to native separators.
-* Full path is stored instead of relative path for flexibility. It is easy
-* to get the relative path from full path when needed.
-*/
+ * @brief A class containing error data for one error.
+ *
+ * The paths are stored with internal ("/") separators. Only when we show the
+ * path or copy if for user (to clipboard) we convert to native separators.
+ * Full path is stored instead of relative path for flexibility. It is easy
+ * to get the relative path from full path when needed.
+ */
 class ErrorItem {
 public:
     ErrorItem();
-    explicit ErrorItem(const ErrorLogger::ErrorMessage &errmsg);
+    explicit ErrorItem(const ErrorMessage &errmsg);
 
     /**
-    * @brief Convert error item to string.
-    * @return Error item as string.
-    */
-    QString ToString() const;
+     * @brief Convert error item to string.
+     * @return Error item as string.
+     */
+    QString toString() const;
     QString tool() const;
 
     QString file0;
+    QString function;
     QString errorId;
     Severity::SeverityType severity;
+    bool incomplete;
     bool inconclusive;
     QString summary;
     QString message;
     int cwe;
+    unsigned long long hash;
     QList<QErrorPathItem> errorPath;
     QString symbolNames;
 
     // Special GUI properties
     QString sinceDate;
     QString tags;
+
+    /**
+     * Compare "CID"
+     */
+    static bool sameCID(const ErrorItem &errorItem1, const ErrorItem &errorItem2);
 };
 
-Q_DECLARE_METATYPE(ErrorItem);
+Q_DECLARE_METATYPE(ErrorItem)
 
 /**
-* @brief A class containing error data for one shown error line.
-*/
+ * @brief A class containing error data for one shown error line.
+ */
 class ErrorLine {
 public:
     QString file;
-    unsigned int line;
+    int line;
     QString file0;
     QString errorId;
+    bool incomplete;
+    int cwe;
+    unsigned long long hash;
     bool inconclusive;
     Severity::SeverityType severity;
     QString summary;

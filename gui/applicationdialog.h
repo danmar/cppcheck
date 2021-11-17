@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,32 +21,33 @@
 
 #include <QDialog>
 #include <QString>
-#include "application.h"
 #include "ui_application.h"
 
 class QWidget;
+class Application;
 
 /// @addtogroup GUI
 /// @{
 
 /**
-* @brief Dialog to edit a startable application.
-* User can open errors with user specified applications. This is a dialog
-* to modify/add an application to open errors with.
-*
-*/
+ * @brief Dialog to edit a startable application.
+ * User can open errors with user specified applications. This is a dialog
+ * to modify/add an application to open errors with.
+ *
+ */
 class ApplicationDialog : public QDialog {
     Q_OBJECT
 
 public:
     /**
-    * @brief Constructor.
-    * @param title Title for the dialog.
-    * @param app Application definition.
-    * @param parent Parent widget.
-    */
-    ApplicationDialog(const QString &title, Application &app,
-                      QWidget *parent = 0);
+     * @brief Constructor.
+     * @param title Title for the dialog.
+     * @param app Application definition.
+     * @param parent Parent widget.
+     */
+    ApplicationDialog(const QString &title,
+                      Application &app,
+                      QWidget *parent = nullptr);
     virtual ~ApplicationDialog();
 
 protected slots:
@@ -54,24 +55,24 @@ protected slots:
     void ok();
 
     /**
-    * @brief Slot to browse for an application
-    *
-    */
+     * @brief Slot to browse for an application
+     *
+     */
     void browse();
 
 protected:
 
     /**
-    * @brief UI from the Qt designer
-    *
-    */
+     * @brief UI from the Qt designer
+     *
+     */
     Ui::ApplicationDialog mUI;
 
 private:
 
     /**
-    * @brief Underlying Application
-    */
+     * @brief Underlying Application
+     */
     Application& mApplication;
 };
 /// @}

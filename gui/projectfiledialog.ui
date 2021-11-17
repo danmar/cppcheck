@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>642</width>
-    <height>549</height>
+    <width>940</width>
+    <height>617</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,7 +29,7 @@
          <property name="title">
           <string>Import Project (Visual studio / compile database/ Borland C++ Builder 6)</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_4">
+         <layout class="QVBoxLayout" name="verticalLayout_17">
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout">
             <item>
@@ -64,14 +64,75 @@
            </layout>
           </item>
           <item>
-           <widget class="QCheckBox" name="mChkAllVsConfigs">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;You have a choice:&lt;/p&gt;&lt;p&gt; * Analyze all Debug and Release configurations&lt;/p&gt;&lt;p&gt; * Only analyze the first matching Debug configuration&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Analyze all Visual Studio configurations</string>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="horizontalLayout_8">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_4">
+              <item>
+               <widget class="QCheckBox" name="mChkAllVsConfigs">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;You have a choice:&lt;/p&gt;&lt;p&gt; * Analyze all Debug and Release configurations&lt;/p&gt;&lt;p&gt; * Only analyze the first matching Debug configuration&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Analyze all Visual Studio configurations</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="verticalSpacer_11">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_16">
+              <item>
+               <widget class="QLabel" name="mLabelVSConfig">
+                <property name="text">
+                 <string>Selected VS Configurations</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="verticalSpacer_12">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QListWidget" name="mListVsConfigs"/>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>
@@ -103,7 +164,14 @@
           </layout>
          </item>
          <item>
-          <widget class="QListWidget" name="mListCheckPaths"/>
+          <widget class="QListWidget" name="mListCheckPaths">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>140</height>
+            </size>
+           </property>
+          </widget>
          </item>
          <item>
           <layout class="QVBoxLayout" name="mLayoutCheckPathsButtons">
@@ -161,6 +229,27 @@
           <widget class="QLineEdit" name="mEditDefines">
            <property name="toolTip">
             <string>Defines must be separated by a semicolon. Example: DEF1;DEF2=5;DEF3=int</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="mLayoutUndefines">
+         <item>
+          <widget class="QLabel" name="mLabelUndefines">
+           <property name="text">
+            <string>Undefines:</string>
+           </property>
+           <property name="buddy">
+            <cstring>mEditUndefines</cstring>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="mEditUndefines">
+           <property name="toolTip">
+            <string>Undefines must be separated by a semicolon. Example: UNDEF1;UNDEF2;UNDEF3</string>
            </property>
           </widget>
          </item>
@@ -268,30 +357,11 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="mTabChecking">
+     <widget class="QWidget" name="mTabTypesAndFunctions">
       <attribute name="title">
-       <string>Checking</string>
+       <string>Types and Functions</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_15">
-       <item>
-        <widget class="QGroupBox" name="groupBox_2">
-         <property name="title">
-          <string>Cppcheck build dir (whole program analysis, incremental analysis, statistics, etc)</string>
-         </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <widget class="QLineEdit" name="mEditBuildDir"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="mBtnBrowseBuildDir">
-            <property name="text">
-             <string>Browse...</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
        <item>
         <widget class="QGroupBox" name="groupBox_6">
          <property name="title">
@@ -311,7 +381,7 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <layout class="QHBoxLayout" name="mLayoutLibraries"/>
+           <widget class="QListWidget" name="mLibraries"/>
           </item>
           <item>
            <widget class="QLabel" name="mLabelLibrariesNote">
@@ -326,6 +396,198 @@
          </layout>
         </widget>
        </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="mTabAnalysis">
+      <attribute name="title">
+       <string>Analysis</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_18">
+       <item>
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string>Cppcheck build dir (whole program analysis, incremental analysis, statistics, etc)</string>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QLineEdit" name="mEditBuildDir">
+            <property name="toolTip">
+             <string>This is a workfolder that Cppcheck will use for various purposes.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="mBtnBrowseBuildDir">
+            <property name="text">
+             <string>Browse...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_10">
+         <property name="title">
+          <string>Parser</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_14">
+          <item>
+           <widget class="QRadioButton" name="mBtnCppcheckParser">
+            <property name="text">
+             <string>Cppcheck (built in)</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="mBtnClangParser">
+            <property name="text">
+             <string>Clang (experimental)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_11">
+         <property name="title">
+          <string>Analysis</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_19">
+          <item>
+           <widget class="QRadioButton" name="mBtnNormalAnalysis">
+            <property name="text">
+             <string>Normal analysis -- Avoid false positives.</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="mBtnBugHunting">
+            <property name="text">
+             <string>Bug hunting -- Generates mostly noise. The goal is to be &quot;soundy&quot; and detect most bugs.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="mBtnSafeClasses">
+            <property name="toolTip">
+             <string>If you want to design your classes to be as flexible and robust as possible then the public interface must be very robust. Cppcheck will asumme that arguments can take *any* value.</string>
+            </property>
+            <property name="text">
+             <string>Check that each class has a safe public interface</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_9">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="title">
+          <string>Limit analysis</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_9">
+          <item>
+           <widget class="QCheckBox" name="mCheckHeaders">
+            <property name="text">
+             <string>Check code in headers  (should be ON normally. if you want a limited quick analysis then turn this OFF)</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="mCheckUnusedTemplates">
+            <property name="text">
+             <string>Check code in unused templates (should be ON normally, however in theory you can safely ignore warnings in unused templates)</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <item>
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>Max CTU depth</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="mMaxCtuDepth">
+              <property name="value">
+               <number>10</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_9">
+            <item>
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>Max recursion in template instantiation</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="mMaxTemplateRecursion">
+              <property name="maximum">
+               <number>1000</number>
+              </property>
+              <property name="value">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_3">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
        <item>
         <spacer name="verticalSpacer_7">
          <property name="orientation">
@@ -334,7 +596,7 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>96</height>
+           <height>73</height>
           </size>
          </property>
         </spacer>
@@ -353,7 +615,11 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_13">
           <item>
-           <widget class="QLineEdit" name="mEditProjectRoot"/>
+           <widget class="QLineEdit" name="mEditProjectRoot">
+            <property name="toolTip">
+             <string>Filepaths in warnings will be relative to this path</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -365,7 +631,11 @@
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
-           <widget class="QLineEdit" name="mEditTags"/>
+           <widget class="QLineEdit" name="mEditTags">
+            <property name="toolTip">
+             <string>If tags are added, you will be able to right click on warnings and set one of these tags. You can manually categorize warnings.</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -373,7 +643,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox_7">
          <property name="title">
-          <string>Exclude paths</string>
+          <string>Exclude source files</string>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
@@ -384,7 +654,14 @@
             <item>
              <widget class="QPushButton" name="mBtnAddIgnorePath">
               <property name="text">
-               <string>Add...</string>
+               <string>Exclude folder...</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="mBtnAddIgnoreFile">
+              <property name="text">
+               <string>Exclude file...</string>
               </property>
              </widget>
             </item>
@@ -478,9 +755,9 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="mTabAddonsAndTools">
+     <widget class="QWidget" name="mTabAddons">
       <attribute name="title">
-       <string>Addons and tools</string>
+       <string>Addons</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_10">
        <item>
@@ -489,6 +766,16 @@
           <string>Addons</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QLabel" name="label_addons_require_python">
+            <property name="text">
+             <string>Note: Addons require &lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt; being installed.</string>
+            </property>
+            <property name="openExternalLinks">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QCheckBox" name="mAddonY2038">
             <property name="text">
@@ -513,7 +800,7 @@
           <item>
            <widget class="QCheckBox" name="mAddonCert">
             <property name="text">
-             <string>Cert</string>
+             <string>CERT</string>
             </property>
            </widget>
           </item>
@@ -529,7 +816,7 @@
             <item>
              <widget class="QLabel" name="label_2">
               <property name="text">
-               <string>Misra rule texts</string>
+               <string>MISRA rule texts</string>
               </property>
              </widget>
             </item>

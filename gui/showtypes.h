@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,26 +20,27 @@
 #define SHOWTYPES_H
 
 #include <QVariant>
-#include "errorlogger.h"
+
+#include "errortypes.h"
 
 /// @addtogroup GUI
 /// @{
 
 /**
-  * @brief A class for different show types we have.
-  * This class contains enum type for the different show types we have. Each
-  * show type presents one severity selectable in the GUI. In addition there
-  * are several supporting functions.
-  *
-  * Notice that the "visibility" settings are automatically loaded when the
-  * class is constructed and saved when the class is destroyed.
-  */
+ * @brief A class for different show types we have.
+ * This class contains enum type for the different show types we have. Each
+ * show type presents one severity selectable in the GUI. In addition there
+ * are several supporting functions.
+ *
+ * Notice that the "visibility" settings are automatically loaded when the
+ * class is constructed and saved when the class is destroyed.
+ */
 class ShowTypes {
 public:
 
     /**
-      * @brief Show types we have (i.e. severities in the GUI).
-      */
+     * @brief Show types we have (i.e. severities in the GUI).
+     */
     enum ShowType {
         ShowStyle = 0,
         ShowWarnings,

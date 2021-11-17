@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 
 #include "config.h"
 
+#include <atomic>
 #include <simplecpp.h>
 #include <istream>
 #include <list>
@@ -84,21 +85,26 @@ public:
     explicit Preprocessor(Settings& settings, ErrorLogger *errorLogger = nullptr);
     virtual ~Preprocessor();
 
-    static bool missingIncludeFlag;
-    static bool missingSystemIncludeFlag;
+    static std::atomic<bool> missingIncludeFlag;
+    static std::atomic<bool> missingSystemIncludeFlag;
 
     void inlineSuppressions(const simplecpp::TokenList &tokens);
 
     void setDirectives(const simplecpp::TokenList &tokens);
+    void setDirectives(const std::list<Directive> &directives) {
+        mDirectives = directives;
+    }
 
     /** list of all directives met while preprocessing file */
     const std::list<Directive> &getDirectives() const {
-        return directives;
+        return mDirectives;
     }
 
     std::set<std::string> getConfigs(const simplecpp::TokenList &tokens) const;
 
-    void loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files);
+    void handleErrors(const simplecpp::OutputList &outputList, bool throwError);
+
+    bool loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files);
 
     void removeComments();
 
@@ -192,7 +198,7 @@ public:
     static void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings);
 
     void setFile0(const std::string &f) {
-        file0 = f;
+        mFile0 = f;
     }
 
     /**
@@ -206,16 +212,20 @@ private:
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);
     void error(const std::string &filename, unsigned int linenr, const std::string &msg);
 
-    Settings& _settings;
-    ErrorLogger *_errorLogger;
+    Settings& mSettings;
+    ErrorLogger *mErrorLogger;
 
     /** list of all directives met while preprocessing file */
-    std::list<Directive> directives;
+    std::list<Directive> mDirectives;
 
-    std::map<std::string, simplecpp::TokenList *> tokenlists;
+    std::map<std::string, simplecpp::TokenList *> mTokenLists;
 
     /** filename for cpp/c file - useful when reporting errors */
-    std::string file0;
+    std::string mFile0;
+
+    /** simplecpp tracking info */
+    std::list<simplecpp::MacroUsage> mMacroUsage;
+    std::list<simplecpp::IfCond> mIfCond;
 };
 
 /// @}

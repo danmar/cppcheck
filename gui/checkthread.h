@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,18 +22,18 @@
 
 #include <QThread>
 #include "cppcheck.h"
-#include "threadresult.h"
 #include "suppressions.h"
 
 class Settings;
+class ThreadResult;
 
 /// @addtogroup GUI
 /// @{
 
 /**
-* @brief Thread to run cppcheck
-*
-*/
+ * @brief Thread to run cppcheck
+ *
+ */
 class CheckThread : public QThread {
     Q_OBJECT
 public:
@@ -41,24 +41,20 @@ public:
     virtual ~CheckThread();
 
     /**
-    * @brief Set settings for cppcheck
-    *
-    * @param settings settings for cppcheck
-    */
+     * @brief Set settings for cppcheck
+     *
+     * @param settings settings for cppcheck
+     */
     void check(const Settings &settings);
 
     /**
-    * @brief Run whole program analysis
-    * @param files    All files
-    */
+     * @brief Run whole program analysis
+     * @param files    All files
+     */
     void analyseWholeProgram(const QStringList &files);
 
     void setAddonsAndTools(const QStringList &addonsAndTools) {
         mAddonsAndTools = addonsAndTools;
-    }
-
-    void setMisraFile(const QString &misraFile) {
-        mMisraFile = misraFile;
     }
 
     void setDataDir(const QString &dataDir) {
@@ -74,9 +70,9 @@ public:
     }
 
     /**
-    * @brief method that is run in a thread
-    *
-    */
+     * @brief method that is run in a thread
+     *
+     */
     void run();
 
     void stop();
@@ -93,36 +89,24 @@ public:
      */
     static QString clangTidyCmd();
 
-    /**
-     * Determine command to run python
-     * \return Command to run python, empty if it is not found
-     */
-    static QString pythonCmd();
-
-    /**
-     * Look for addon and return path
-     * \return path to addon if found, empty if it is not found
-     */
-    static QString getAddonFilePath(const QString &dataDir, const QString &addonFile);
-
 signals:
 
     /**
-    * @brief cpp checking is done
-    *
-    */
+     * @brief cpp checking is done
+     *
+     */
     void done();
 
     void fileChecked(const QString &file);
 protected:
 
     /**
-    * @brief States for the check thread.
-    * Whole purpose of these states is to allow stopping of the checking. When
-    * stopping we say for the thread (Stopping) that stop when current check
-    * has been completed. Thread must be stopped cleanly, just terminating thread
-    * likely causes unpredictable side-effects.
-    */
+     * @brief States for the check thread.
+     * Whole purpose of these states is to allow stopping of the checking. When
+     * stopping we say for the thread (Stopping) that stop when current check
+     * has been completed. Thread must be stopped cleanly, just terminating thread
+     * likely causes unpredictable side-effects.
+     */
     enum State {
         Running, /**< The thread is checking. */
         Stopping, /**< The thread will stop after current work. */
@@ -131,21 +115,22 @@ protected:
     };
 
     /**
-    * @brief Thread's current execution state.
-    */
+     * @brief Thread's current execution state.
+     */
     State mState;
 
     ThreadResult &mResult;
     /**
-    * @brief Cppcheck itself
-    */
+     * @brief Cppcheck itself
+     */
     CppCheck mCppcheck;
 
 private:
     void runAddonsAndTools(const ImportProject::FileSettings *fileSettings, const QString &fileName);
 
-    void parseAddonErrors(QString err, QString tool);
     void parseClangErrors(const QString &tool, const QString &file0, QString err);
+
+    bool isSuppressed(const Suppressions::ErrorMessage &errorMessage) const;
 
     QStringList mFiles;
     bool mAnalyseWholeProgram;
@@ -153,7 +138,6 @@ private:
     QString mDataDir;
     QStringList mClangIncludePaths;
     QList<Suppressions::Suppression> mSuppressions;
-    QString mMisraFile;
 };
 /// @}
 #endif // CHECKTHREAD_H

@@ -1,0 +1,181 @@
+<html>
+<head>
+<title>Project File Dialog</title>
+</head>
+<body>
+
+<h1>Project File Dialog</h1>
+
+<p>The <i>Project file</i> dialog contains 4 tabs:</p>
+<ul>
+<li>Paths and defines; paths to check and basic preprocessor settings.
+<li>Types and Functions; configuration of platform and 3rd party libraries
+<li>Analysis; analysis options
+<li>Warning options; formatting warnings, suppressing warnings, etc
+<li>Addons; extra analysis with addons
+</ul>
+
+<h2>Paths and defines</h2>
+
+<p>It is recommended to import a project file.</p>
+
+<h3> Import project</h3>
+
+Project to import. Cppcheck will get:
+<ul>
+<li>What files to check
+<li>Preprocessor defines
+<li>Preprocessor include paths
+<li>Language standard if set
+</ul>
+
+<h3>Paths (If you do not import project)</h3>
+
+<p>What paths to check.</p>
+
+<h3>Defines (If you do not import project)</h3>
+
+<p>Cppcheck automatically checks the code with different preprocessor
+configurations.</p>
+
+<blockquote><pre>#ifdef A
+code1
+#endif
+#ifdef B
+code2
+#endif</pre></blockquote>
+
+<p>Cppcheck will automatically perform analysis both when A is defined and B is
+defined. So any bugs in both code1 and code2 will be detected.</p>
+
+<p>If you want to configure that A will always be defined in Cppcheck analysis
+you can do that here.</p>
+
+<p>Defines are separated by semicolon. So you can for instance write:</p>
+
+<blockquote><pre>A;B=3;C</pre></blockquote>
+
+<h3>Undefines (If you do not import project)</h3>
+
+<p>Cppcheck automatically checks the code with different preprocessor
+configurations.</p>
+
+<blockquote><pre>#ifdef A
+code1
+#endif
+#ifdef B
+code2
+#endif</pre></blockquote>
+
+<p>Cppcheck will automatically perform analysis both when A is defined and B is
+defined. So any bugs in both code1 and code2 will be detected.</p>
+
+<p>If you want to configure that A is never defined in Cppcheck analysis you
+can do that here.</p>
+
+<p>Undefines are separated by semicolon. So you can for instance write:</p>
+
+<blockquote><pre>A;C</pre></blockquote>
+
+<h3>Include paths (If you do not import project)</h3>
+
+<p>Specify include paths.</p>
+
+<h2>Types and Functions</h2>
+
+<p>Cppcheck uses the <i>Platform</i> setting to determine size of
+short/int/long/pointer/etc.</p>
+
+<p>Check the libraries that you use in the <i>Libraries</i> listbox.</p>
+
+<h2>Analysis</h2>
+
+<h3>Cppcheck build dir</h3>
+
+<p>This is a work-folder that Cppcheck uses. Each Cppcheck project should have
+a separate build dir. It is used for:</p>
+<ul>
+<li>whole program analysis
+<li>debug output
+<li>faster analysis (if a source file has changed check it, if source file is
+   not changed then reuse old results)
+<li>statistics
+</ul>
+
+<h3>Parser</h3>
+
+<p>It is in general recommended to use Cppcheck parser. However you can choose
+to use Clang parser; Clang will be executed with a command line flag that tells
+it to dump its AST and Cppcheck will read that AST and convert it into a
+corresponding Cppcheck AST and use that.</p>
+
+<h3>Analysis</h3>
+
+<p>Configure what kind of analysis you want.</p>
+
+<p>The <i>Normal analysis</i> is recommended for most use cases. Especially if
+you use Cppcheck in CI.</p>
+
+<p>The <i>Bug hunting</i> can be used if you really want to find a bug in your
+code and can invest time looking at bad results and providing extra
+configuration.</p>
+
+<h3>Limit analysis</h3>
+
+<p>You can turn off checking of headers. That could be interesting if Cppcheck
+is very slow. But normally, you should check the code in headers.</p>
+
+<p>It is possible to check the code in unused templates. However the Cppcheck
+AST will be incomplete/wrong. The recommendation is that you do not check
+unused templates to avoid wrong warnings. The templates will be checked
+properly when you do use them.</p>
+
+<p>Max CTU depth: How deep should the whole program analysis be. The risk with
+a &quot;too high&quot; value is that Cppcheck will be slow.</p>
+
+<p>Max recursion in template instantiation: Max recursion when Cppcheck
+instantiates templates. The risk with a &quot;too high&quot; value is that
+Cppcheck will be slow and can require much memory.</p>
+
+
+<h2>Warning options</h2>
+
+<h3>Root path</h3>
+
+<p>The root path for warnings. Cppcheck will strip away this part of the path
+from warnings. For instance if there is a warning in
+<pre>../myproject/foo/bar/file.cpp</pre> and the root path is 
+<pre>../myproject/foo</pre> then the path for the warning will be
+<pre>bar/file.cpp</pre>.</p>
+
+<h3>Warning Tags</h3>
+
+<p>Tags allow you to manually categorize warnings.</p>
+
+<h3>Exclude source files</h3>
+
+<p>Excluded source files will not be analyzed by Cppcheck.</p>
+
+<h3>Suppressions</h3>
+
+<p>List of suppressions. These warnings will not be shown.</p>
+
+<h2>Addons</h2>
+
+<p><b>Y2038</b><br>32-bit timers that count number of seconds since 1970 will
+overflow in year 2038. Check that the code does not use such timers.</p>
+
+<p><b>Thread safety</b><br>Check that the code is thread safe</p>
+
+<p><b>CERT</b><br>Ensure that the CERT coding standard is followed</p>
+
+<p><b>MISRA</b><br>Ensure that the MISRA coding standard is followed. Please
+note you need to have a textfile with the misra rule texts to get proper
+warning messages. Cppcheck is not legally allowed to distribute the misra
+rule texts.</p>
+
+<p><b>Clang-tidy</b><br>Run Clang-tidy</p>
+
+</body>
+</html>
+

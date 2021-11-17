@@ -1,1 +1,3 @@
-[samples\outOfBounds\bad.c:5]: (error) Buffer is accessed out of bounds: str
+samples\outOfBounds\bad.c:5:12: error: Buffer is accessed out of bounds: str [bufferAccessOutOfBounds]
+    strcpy(str, "0123456789abcdef");
+           ^

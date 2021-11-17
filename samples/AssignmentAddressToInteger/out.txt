@@ -1,1 +1,3 @@
-[samples\AssignmentAddressToInteger\bad.c:3]: (portability) Assigning a pointer to an integer is not portable.
+samples\AssignmentAddressToInteger\bad.c:3:11: portability: Assigning a pointer to an integer is not portable. [AssignmentAddressToInteger]
+    int a = p;
+          ^

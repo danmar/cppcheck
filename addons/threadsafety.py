@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # This script analyses Cppcheck dump files to locate threadsafety issues
 # - warn about static local objects
@@ -7,10 +7,8 @@
 import cppcheckdata
 import sys
 
-
 def reportError(token, severity, msg, id):
-    sys.stderr.write(
-        '[' + token.file + ':' + str(token.linenr) + '] (' + severity + '): ' + msg + ' [' + id + ']\n')
+    cppcheckdata.reportError(token, severity, msg, 'threadsafety', id)
 
 
 def checkstatic(data):
@@ -22,14 +20,20 @@ def checkstatic(data):
             else:
                 type = 'variable'
             if var.isConst:
-                reportError(var.typeStartToken, 'warning', 'Local constant static ' + type + ' \'' + var.nameToken.str + '\', dangerous if it is initialized in parallel threads', 'threadsafety')
+                if data.standards.cpp == 'c++03':
+                    reportError(var.typeStartToken, 'warning', 'Local constant static ' + type + ' \'' + var.nameToken.str + '\', dangerous if it is initialized in parallel threads', 'threadsafety-const')
             else:
                 reportError(var.typeStartToken, 'warning', 'Local static ' + type + ': ' + var.nameToken.str, 'threadsafety')
 
 for arg in sys.argv[1:]:
-    print('Checking ' + arg + '...')
-    data = cppcheckdata.parsedump(arg)
-    for cfg in data.configurations:
-        if len(data.configurations) > 1:
-            print('Checking ' + arg + ', config "' + cfg.name + '"...')
+    if arg.startswith('-'):
+        continue
+
+    print('Checking %s...' % arg)
+    data = cppcheckdata.CppcheckData(arg)
+
+    for cfg in data.iterconfigurations():
+        print('Checking %s, config %s...' % (arg, cfg.name))
         checkstatic(cfg)
+
+    sys.exit(cppcheckdata.EXIT_CODE)

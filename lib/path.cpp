@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
-#include <cstring>
-#include <sstream>
+#include <fstream>
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -133,7 +132,7 @@ std::string Path::getCurrentPath()
 #ifndef _WIN32
     if (getcwd(currentPath, 4096) != nullptr)
 #else
-    if (_getcwd(currentPath, 4096) != 0)
+    if (_getcwd(currentPath, 4096) != nullptr)
 #endif
         return std::string(currentPath);
 
@@ -196,6 +195,8 @@ bool Path::isCPP(const std::string &path)
            extension == ".hh" ||
            extension == ".tpp" ||
            extension == ".txx" ||
+           extension == ".ipp" ||
+           extension == ".ixx" ||
            getFilenameExtension(path) == ".C"; // In unix, ".C" is considered C++ file
 }
 
@@ -217,7 +218,7 @@ std::string Path::getAbsoluteFilePath(const std::string& filePath)
     char absolute[_MAX_PATH];
     if (_fullpath(absolute, filePath.c_str(), _MAX_PATH))
         absolute_path = absolute;
-#elif defined(__linux__) || defined(__sun) || defined(__hpux) || defined(__GNUC__)
+#elif defined(__linux__) || defined(__sun) || defined(__hpux) || defined(__GNUC__) || defined(__CPPCHECK__)
     char * absolute = realpath(filePath.c_str(), nullptr);
     if (absolute)
         absolute_path = absolute;
@@ -241,4 +242,10 @@ std::string Path::stripDirectoryPart(const std::string &file)
         return file.substr(p + 1);
     }
     return file;
+}
+
+bool Path::fileExists(const std::string &file)
+{
+    std::ifstream f(file.c_str());
+    return f.is_open();
 }

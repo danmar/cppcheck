@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2016 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,14 +29,15 @@ class QWidget;
 /// @{
 
 /**
-* @brief About dialog
-*
-*/
+ * @brief About dialog
+ *
+ */
 class AboutDialog : public QDialog {
     Q_OBJECT
 public:
-    AboutDialog(const QString &version, const QString &extraVersion,
-                QWidget *parent = 0);
+    AboutDialog(const QString &version,
+                const QString &extraVersion,
+                QWidget *parent = nullptr);
 
 private:
     Ui::About mUI;

@@ -107,13 +107,16 @@ namespace simplecpp {
         }
 
         void flags() {
-            name = (std::isalpha((unsigned char)string[0]) || string[0] == '_' || string[0] == '$');
-            comment = (string.compare(0, 2, "//") == 0 || string.compare(0, 2, "/*") == 0);
+            name = (std::isalpha((unsigned char)string[0]) || string[0] == '_' || string[0] == '$')
+                   && (string.find('\'') == string.npos);
+            comment = string.size() > 1U && string[0] == '/' && (string[1] == '/' || string[1] == '*');
             number = std::isdigit((unsigned char)string[0]) || (string.size() > 1U && string[0] == '-' && std::isdigit((unsigned char)string[1]));
             op = (string.size() == 1U) ? string[0] : '\0';
         }
 
-        const TokenString& str() const { return string; }
+        const TokenString& str() const {
+            return string;
+        }
         void setstr(const std::string &s) {
             string = s;
             flags();
@@ -165,7 +168,8 @@ namespace simplecpp {
             INCLUDE_NESTED_TOO_DEEPLY,
             SYNTAX_ERROR,
             PORTABILITY_BACKSLASH,
-            UNHANDLED_CHAR_ERROR
+            UNHANDLED_CHAR_ERROR,
+            EXPLICIT_INCLUDE_NOT_FOUND
         } type;
         Location location;
         std::string msg;
@@ -177,10 +181,16 @@ namespace simplecpp {
     class SIMPLECPP_LIB TokenList {
     public:
         explicit TokenList(std::vector<std::string> &filenames);
-        TokenList(std::istream &istr, std::vector<std::string> &filenames, const std::string &filename=std::string(), OutputList *outputList = 0);
+        TokenList(std::istream &istr, std::vector<std::string> &filenames, const std::string &filename=std::string(), OutputList *outputList = NULL);
         TokenList(const TokenList &other);
+#if __cplusplus >= 201103L
+        TokenList(TokenList &&other);
+#endif
         ~TokenList();
         TokenList &operator=(const TokenList &other);
+#if __cplusplus >= 201103L
+        TokenList &operator=(TokenList &&other);
+#endif
 
         void clear();
         bool empty() const {
@@ -191,7 +201,7 @@ namespace simplecpp {
         void dump() const;
         std::string stringify() const;
 
-        void readfile(std::istream &istr, const std::string &filename=std::string(), OutputList *outputList = 0);
+        void readfile(std::istream &istr, const std::string &filename=std::string(), OutputList *outputList = NULL);
         void constFold();
 
         void removeComments();
@@ -256,9 +266,10 @@ namespace simplecpp {
         void constFoldLogicalOp(Token *tok);
         void constFoldQuestionOp(Token **tok1);
 
-        std::string readUntil(std::istream &istr, const Location &location, const char start, const char end, OutputList *outputList);
+        std::string readUntil(std::istream &istr, const Location &location, char start, char end, OutputList *outputList, unsigned int bom);
+        void lineDirective(unsigned int fileIndex, unsigned int line, Location *location);
 
-        std::string lastLine(int maxsize=10) const;
+        std::string lastLine(int maxsize=100000) const;
 
         unsigned int fileIndex(const std::string &filename);
 
@@ -269,15 +280,24 @@ namespace simplecpp {
 
     /** Tracking how macros are used */
     struct SIMPLECPP_LIB MacroUsage {
-        explicit MacroUsage(const std::vector<std::string> &f) : macroLocation(f), useLocation(f) {}
+        explicit MacroUsage(const std::vector<std::string> &f, bool macroValueKnown_) : macroLocation(f), useLocation(f), macroValueKnown(macroValueKnown_) {}
         std::string macroName;
         Location    macroLocation;
         Location    useLocation;
+        bool        macroValueKnown;
+    };
+
+    /** Tracking #if/#elif expressions */
+    struct SIMPLECPP_LIB IfCond {
+        explicit IfCond(const Location& location, const std::string &E, long long result) : location(location), E(E), result(result) {}
+        Location location; // location of #if/#elif
+        std::string E; // preprocessed condition
+        long long result; // condition result
     };
 
     /**
      * Command line preprocessor settings.
-     * On the command line these are configured by -D, -U, -I, --include
+     * On the command line these are configured by -D, -U, -I, --include, -std
      */
     struct SIMPLECPP_LIB DUI {
         DUI() {}
@@ -285,9 +305,12 @@ namespace simplecpp {
         std::set<std::string> undefined;
         std::list<std::string> includePaths;
         std::list<std::string> includes;
+        std::string std;
     };
 
-    SIMPLECPP_LIB std::map<std::string, TokenList*> load(const TokenList &rawtokens, std::vector<std::string> &filenames, const DUI &dui, OutputList *outputList = 0);
+    SIMPLECPP_LIB long long characterLiteralToLL(const std::string& str);
+
+    SIMPLECPP_LIB std::map<std::string, TokenList*> load(const TokenList &rawtokens, std::vector<std::string> &filenames, const DUI &dui, OutputList *outputList = NULL);
 
     /**
      * Preprocess
@@ -299,8 +322,9 @@ namespace simplecpp {
      * @param dui defines, undefs, and include paths
      * @param outputList output: list that will receive output messages
      * @param macroUsage output: macro usage
+     * @param ifCond output: #if/#elif expressions
      */
-    SIMPLECPP_LIB void preprocess(TokenList &output, const TokenList &rawtokens, std::vector<std::string> &files, std::map<std::string, TokenList*> &filedata, const DUI &dui, OutputList *outputList = 0, std::list<MacroUsage> *macroUsage = 0);
+    SIMPLECPP_LIB void preprocess(TokenList &output, const TokenList &rawtokens, std::vector<std::string> &files, std::map<std::string, TokenList*> &filedata, const DUI &dui, OutputList *outputList = NULL, std::list<MacroUsage> *macroUsage = NULL, std::list<IfCond> *ifCond = NULL);
 
     /**
      * Deallocate data
@@ -309,6 +333,9 @@ namespace simplecpp {
 
     /** Simplify path */
     SIMPLECPP_LIB std::string simplifyPath(std::string path);
+
+    /** Convert Cygwin path to Windows path */
+    SIMPLECPP_LIB std::string convertCygwinToWindowsPath(const std::string &cygwinPath);
 }
 
 #endif

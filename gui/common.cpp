@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ QString toFilterString(const QMap<QString,QString>& filters, bool addAllSupporte
 
     if (addAllSupported) {
         entries << QCoreApplication::translate("toFilterString", "All supported files (%1)")
-                .arg(QStringList(filters.values()).join(" "));
+            .arg(QStringList(filters.values()).join(" "));
     }
 
     if (addAll) {
@@ -60,9 +60,23 @@ QString toFilterString(const QMap<QString,QString>& filters, bool addAllSupporte
     // We're using the description of the filters as the map keys, the file
     // name patterns are our values. The generated filter string list will
     // thus be sorted alphabetically over the descriptions.
-    for (auto k: filters.keys()) {
+    for (const auto& k: filters.keys()) {
         entries << QString("%1 (%2)").arg(k).arg(filters.value(k));
     }
 
     return entries.join(";;");
+}
+
+QString getDataDir()
+{
+    QSettings settings;
+    const QString dataDir = settings.value("DATADIR", QString()).toString();
+    if (!dataDir.isEmpty())
+        return dataDir;
+    const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
+    if (QFileInfo(appPath + "/std.cfg").exists())
+        return appPath;
+    if (appPath.indexOf("/cppcheck/", 0, Qt::CaseInsensitive) > 0)
+        return appPath.left(appPath.indexOf("/cppcheck/", 0, Qt::CaseInsensitive) + 9);
+    return appPath;
 }

@@ -10,7 +10,7 @@ mv coverage_report devinfo/
 doxygen 2> devinfo/doxygen-errors.txt
 mv doxyoutput/html devinfo/doxyoutput
 
-cd addons
+cd addons || exit 1
 doxygen cppcheckdata.doxyfile
 mv html ../devinfo/cppcheckdata
 cd ..

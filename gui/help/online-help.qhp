@@ -1,14 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <QtHelpProject version="1.0">
-    <namespace>cppcheck.sourceforge.net</namespace>
+    <namespace>cppcheck.sourceforge.io</namespace>
     <virtualFolder>doc</virtualFolder>
     <filterSection>
         <toc>
-            <section title="Manual" ref="manual.html"/>
+            <section title="Cppcheck GUI help" ref="index.html">
+                <section title="Investigating warnings" ref="investigating-warnings.html"/>
+                <section title="Preferences" ref="preferences.html"/>
+                <section title="Project file dialog" ref="projectfiledialog.html"/>
+                <section title="Severities" ref="severities.html"/>
+                <section title="Standalone analysis" ref="standalone-analysis.html"/>
+                <section title="Tagging" ref="tagging.html"/>
+                <section title="Quick walk through" ref="walkthrough.html"/>
+            </section>
         </toc>
-        <keywords/>
+        <keywords>
+            <keyword name="Error" ref="severities.html"/>
+            <keyword name="Performance" ref="severities.html"/>
+            <keyword name="Portability" ref="severities.html"/>
+            <keyword name="Project" ref="projectfiledialog.html"/>
+            <keyword name="Style" ref="severities.html"/>
+            <keyword name="Tag" ref="tagging.html"/>
+            <keyword name="Warning" ref="severities.html"/>
+        </keywords>
         <files>
-          <file>manual.html</file>
+          <file>index.html</file>
+          <file>images/index-mainwindow.png</file>
+          <file>investigating-warnings.html</file>
+          <file>preferences.html</file>
+          <file>projectfiledialog.html</file>
+          <file>severities.html</file>
+          <file>images/severities-error.png</file>
+          <file>images/severities-warning.png</file>
+          <file>images/severities-style.png</file>
+          <file>images/severities-performance.png</file>
+          <file>images/severities-portability.png</file>
+          <file>images/severities-information.png</file>
+          <file>standalone-analysis.html</file>
+          <file>tagging.html</file>
+          <file>walkthrough.html</file>
+          <file>images/walkthrough-analysis.png</file>
+          <file>images/walkthrough-library.png</file>
+          <file>images/walkthrough-toolbar-severities.png</file>
+          <file>images/walkthrough-import-project.png</file>
+          <file>images/walkthrough-new-project.png</file> 
+          <file>images/walkthrough-warning-menu.png</file>
         </files>
     </filterSection>
 </QtHelpProject>

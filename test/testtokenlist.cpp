@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,21 +21,20 @@
 #include "token.h"
 #include "tokenlist.h"
 
-#include <sstream>
 #include <string>
 
 class TestTokenList : public TestFixture {
 public:
-    TestTokenList() : TestFixture("TestTokenList") {
-    }
+    TestTokenList() : TestFixture("TestTokenList") {}
 
 private:
     Settings settings;
 
-    void run() override {
+    void run() OVERRIDE {
         TEST_CASE(testaddtoken1);
         TEST_CASE(testaddtoken2);
         TEST_CASE(inc);
+        TEST_CASE(isKeyword);
     }
 
     // inspired by #5895
@@ -43,14 +42,7 @@ private:
         const std::string code = "0x89504e470d0a1a0a";
         TokenList tokenlist(&settings);
         tokenlist.addtoken(code, 1, 1, false);
-        ASSERT_EQUALS("9894494448401390090U", tokenlist.front()->str());
-        // that is supposed to break on 32bit
-        //unsigned long numberUL(0);
-        //std::istringstream(tokenlist.front()->str()) >> numberUL;
-        //ASSERT_EQUALS(9894494448401390090U, numberUL);
-        unsigned long long numberULL(0);
-        std::istringstream(tokenlist.front()->str()) >> numberULL;
-        ASSERT_EQUALS(9894494448401390090U, numberULL);
+        ASSERT_EQUALS("0x89504e470d0a1a0a", tokenlist.front()->str());
     }
 
     void testaddtoken2() {
@@ -58,7 +50,7 @@ private:
         settings.int_bit = 32;
         TokenList tokenlist(&settings);
         tokenlist.addtoken(code, 1, 1, false);
-        ASSERT_EQUALS("4026531840U", tokenlist.front()->str());
+        ASSERT_EQUALS("0xF0000000", tokenlist.front()->str());
     }
 
     void inc() const {
@@ -72,6 +64,48 @@ private:
         tokenlist.createTokens(istr, "a.cpp");
 
         ASSERT(Token::simpleMatch(tokenlist.front(), "a + + 1 ; 1 + + b ;"));
+    }
+
+    void isKeyword() {
+
+        const char code[] = "for a int delete true";
+
+        {
+            TokenList tokenlist(&settings);
+            std::istringstream istr(code);
+            tokenlist.createTokens(istr, "a.c");
+
+            ASSERT_EQUALS(true, tokenlist.front()->isKeyword());
+            ASSERT_EQUALS(true, tokenlist.front()->isControlFlowKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->next()->isKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->next()->isControlFlowKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(2)->isKeyword());
+            ASSERT_EQUALS(true, tokenlist.front()->tokAt(2)->tokType() == Token::eType);
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(2)->isControlFlowKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(3)->isKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(3)->isControlFlowKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(4)->isKeyword());
+            ASSERT_EQUALS(true, tokenlist.front()->tokAt(4)->isLiteral());
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(4)->isControlFlowKeyword());
+        }
+        {
+            TokenList tokenlist(&settings);
+            std::istringstream istr(code);
+            tokenlist.createTokens(istr, "a.cpp");
+
+            ASSERT_EQUALS(true, tokenlist.front()->isKeyword());
+            ASSERT_EQUALS(true, tokenlist.front()->isControlFlowKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->next()->isKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->next()->isControlFlowKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(2)->isKeyword());
+            ASSERT_EQUALS(true, tokenlist.front()->tokAt(2)->tokType() == Token::eType);
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(2)->isControlFlowKeyword());
+            ASSERT_EQUALS(true, tokenlist.front()->tokAt(3)->isKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(3)->isControlFlowKeyword());
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(4)->isKeyword());
+            ASSERT_EQUALS(true, tokenlist.front()->tokAt(4)->isLiteral());
+            ASSERT_EQUALS(false, tokenlist.front()->tokAt(4)->isControlFlowKeyword());
+        }
     }
 };
 

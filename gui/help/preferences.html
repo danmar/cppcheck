@@ -1,0 +1,74 @@
+<html>
+<head>
+<title>Preferences</title>
+</head>
+<body>
+
+<h1>Preferences</h1>
+
+<p><b>Number of threads</b><br>Number of threads to use in analysis. Each
+thread checks its own source file.</p>
+
+<p><b>Force checking of all #ifdef configurations</b><br>Cppcheck try to check
+all code and will therefore guess different preprocessor configurations. The
+maximum number of configurations that is checked is 14 by default.</p>
+
+<p><b>Show full path of files</b><br>Show the full paths in the results.</p>
+
+<p><b>Show &quot;No errors found&quot; message when no errors found</b><br>
+If you want to get a message box about this.</p>
+
+<p><b>Display error id column &quot;Id&quot;</b><br>Show error id in results</p>
+
+<p><b>Enable inline suppressions</b><br>You can suppress warnings with comments.
+See the Cppcheck manual (https://cppcheck.sourceforge.io/manual.pdf) for more
+information about inline suppressions.</p>
+
+<p><b>Check for inconclusive errors also</b><br>When full analysis of the code
+can not determine if there should be a warning or not, it is inconclusive.
+Normally Cppcheck does not warn then.</p>
+
+<p><b>Show statistics on check completion</b><br>Show statistics in a window
+when analysis finish.</p>
+
+<p><b>Show internal warnings in log</b><br>Internal warnings (for debugging) is
+shown in the <i>Analysis log</i>.</p>
+
+<p><b>Applications</b><br>Configure external editor to open from context menu
+when you right click on a warning.</p>
+
+<p><b>Save all errors when creating report</b><br>If hidden warnings should be
+saved or not.</p>
+
+<p><b>Save full path to files in report</b><br>If you use <i>Root path</i> the
+warnings on the screen will not have the full path.</p>
+
+<p><b>Language</b><br>Configure language to use for GUI.</p>
+
+<p><b>Python binary</b><br>To be able to execute addons, Cppcheck needs to know
+where python is. Unless you configure something, Cppcheck will try to execute
+python in your PATH.</p>
+
+<p><b>MISRA rule texts</b><br>Only needed if you want to use the MISRA addon.
+Cppcheck is not legally allowed to distribute the MISRA rule texts and these
+must be provided by users. The MISRA rule texts are proprietary. An example
+rule text file:
+<blockquote><pre>Appendix A Summary of guidelines
+Rule 1.1
+Text of rule 1.1
+Rule 1.2
+Text of rule 1.2</pre></blockquote>
+</p>
+
+<p><b>Clang path</b><br>The path to <i>clang</i> binary. If no path is provided
+then system PATH is used.</p>
+
+<p><b>Visual studio headers</b><br>If you want to use the Visual Studio headers
+in the analysis you can provide the path(s) here. Hint: Open a visual studio
+command prompt and type <i>SET INCLUDE</i>. Then copy/paste the paths.</p>
+
+<p><b>Code editor style</b><br>The visual theme to use for the code editor that
+is used when you investigate results.</p>
+
+</body>
+</html>

@@ -1,15 +1,23 @@
+unusedPrivateFunction:test/testbufferoverrun.cpp
 unusedPrivateFunction:test/testcmdlineparser.cpp
-redundantNextPrevious:test/testtoken.cpp
-simplePatternError:test/testtoken.cpp
-nullPointer:lib/checkother.cpp
-nullPointer:build/checkother.cpp
-missingOverride
-noValidConfiguration
+shadowFunction
+functionConst
+functionStatic
+bitwiseOnBoolean
+
+# temporary suppressions - fix the warnings!
+unusedPrivateFunction:test/test*.cpp
+useStlAlgorithm
+simplifyUsing:lib/valueptr.h
+
+# debug suppressions
+valueFlowBailout
+valueFlowBailoutIncompleteVar
+varid0
+autoNoType
+bailoutUninitVar
 
 *:gui/test/*
 *:test/test.cxx
 *:test/cfg/*
-
 *:externals/*/*
-*:htmlreport/*
-*:samples/*/bad.c*

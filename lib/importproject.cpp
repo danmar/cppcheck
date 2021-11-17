@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,25 +20,43 @@
 
 #include "path.h"
 #include "settings.h"
+#include "suppressions.h"
 #include "tinyxml2.h"
 #include "token.h"
 #include "tokenize.h"
-#include "tokenlist.h"
 #include "utils.h"
+#define PICOJSON_USE_INT64
+#include <picojson.h>
 
 #include <cstring>
 #include <fstream>
 #include <utility>
 
 
+ImportProject::ImportProject()
+{
+    projectType = Type::UNKNOWN;
+}
+
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
 {
     for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
         bool ignore = false;
-        for (std::size_t i = 0; i < ipaths.size(); ++i) {
-            if (it->filename.size() > ipaths[i].size() && it->filename.compare(0,ipaths[i].size(),ipaths[i])==0) {
+        for (std::string i : ipaths) {
+            if (it->filename.size() > i.size() && it->filename.compare(0,i.size(),i)==0) {
                 ignore = true;
                 break;
+            }
+            if (isValidGlobPattern(i) && matchglob(i, it->filename)) {
+                ignore = true;
+                break;
+            }
+            if (!Path::isAbsolute(i)) {
+                i = mPath + i;
+                if (it->filename.size() > i.size() && it->filename.compare(0,i.size(),i)==0) {
+                    ignore = true;
+                    break;
+                }
             }
         }
         if (ignore)
@@ -132,164 +150,304 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
 
 void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables)
 {
-    std::list<std::string> I;
+    std::list<std::string> listInc;
     // only parse each includePath once - so remove duplicates
     std::list<std::string> uniqueIncludePaths = in;
     uniqueIncludePaths.sort();
     uniqueIncludePaths.unique();
 
-    for (std::list<std::string>::const_iterator it = uniqueIncludePaths.begin(); it != uniqueIncludePaths.end(); ++it) {
-        if (it->empty())
+    for (const std::string &it : uniqueIncludePaths) {
+        if (it.empty())
             continue;
-        if (it->compare(0,2,"%(")==0)
+        if (it.compare(0,2,"%(")==0)
             continue;
-        std::string s(Path::fromNativeSeparators(*it));
+        std::string s(Path::fromNativeSeparators(it));
         if (s[0] == '/' || (s.size() > 1U && s.compare(1,2,":/") == 0)) {
             if (!endsWith(s,'/'))
                 s += '/';
-            I.push_back(s);
+            listInc.push_back(s);
             continue;
         }
 
         if (endsWith(s,'/')) // this is a temporary hack, simplifyPath can crash if path ends with '/'
             s.erase(s.size() - 1U); // TODO: Use std::string::pop_back() as soon as travis supports it
 
-        if (s.find("$(")==std::string::npos) {
+        if (s.find("$(") == std::string::npos) {
             s = Path::simplifyPath(basepath + s);
         } else {
-            if (!simplifyPathWithVariables(s,variables))
+            if (!simplifyPathWithVariables(s, variables))
                 continue;
         }
         if (s.empty())
             continue;
-        I.push_back(s + '/');
+        listInc.push_back(s + '/');
     }
-    includePaths.swap(I);
+    includePaths.swap(listInc);
 }
 
-void ImportProject::import(const std::string &filename)
+ImportProject::Type ImportProject::import(const std::string &filename, Settings *settings)
 {
     std::ifstream fin(filename);
     if (!fin.is_open())
-        return;
-    if (filename.find("compile_commands.json") != std::string::npos) {
+        return ImportProject::Type::MISSING;
+
+    mPath = Path::getPathFromFilename(Path::fromNativeSeparators(filename));
+    if (!mPath.empty() && !endsWith(mPath,'/'))
+        mPath += '/';
+
+    const std::string fileFilter = settings ? settings->fileFilter : std::string();
+
+    if (endsWith(filename, ".json")) {
         importCompileCommands(fin);
-    } else if (filename.find(".sln") != std::string::npos) {
-        std::string path(Path::getPathFromFilename(Path::fromNativeSeparators(filename)));
-        if (!path.empty() && !endsWith(path,'/'))
-            path += '/';
-        importSln(fin,path);
-    } else if (filename.find(".vcxproj") != std::string::npos) {
+        setRelativePaths(filename);
+        return ImportProject::Type::COMPILE_DB;
+    } else if (endsWith(filename, ".sln")) {
+        importSln(fin, mPath, fileFilter);
+        setRelativePaths(filename);
+        return ImportProject::Type::VS_SLN;
+    } else if (endsWith(filename, ".vcxproj")) {
         std::map<std::string, std::string, cppcheck::stricmp> variables;
-        importVcxproj(filename, variables, emptyString);
-    } else if (filename.find(".bpr") != std::string::npos) {
+        importVcxproj(filename, variables, emptyString, fileFilter);
+        setRelativePaths(filename);
+        return ImportProject::Type::VS_VCXPROJ;
+    } else if (endsWith(filename, ".bpr")) {
         importBcb6Prj(filename);
+        setRelativePaths(filename);
+        return ImportProject::Type::BORLAND;
+    } else if (settings && endsWith(filename, ".cppcheck")) {
+        const bool success = importCppcheckGuiProject(fin, settings);
+        setRelativePaths(filename);
+        return success ? ImportProject::Type::CPPCHECK_GUI : ImportProject::Type::MISSING;
     }
+    return ImportProject::Type::UNKNOWN;
+}
+
+static std::string readUntil(const std::string &command, std::string::size_type *pos, const char until[])
+{
+    std::string ret;
+    bool escapedString = false;
+    bool str = false;
+    bool escape = false;
+    for (; *pos < command.size() && (str || !std::strchr(until, command[*pos])); (*pos)++) {
+        if (escape)
+            escape = false;
+        else if (command[*pos] == '\\') {
+            if (str)
+                escape = true;
+            else if (command[*pos + 1] == '"') {
+                if (escapedString)
+                    return ret + "\\\"";
+                escapedString = true;
+                ret += "\\\"";
+                (*pos)++;
+                continue;
+            }
+        } else if (command[*pos] == '\"')
+            str = !str;
+        ret += command[*pos];
+    }
+    return ret;
+}
+
+static std::string unescape(const std::string &in)
+{
+    std::string out;
+    bool escape = false;
+    for (char c: in) {
+        if (escape) {
+            escape = false;
+            if (!std::strchr("\\\"\'",c))
+                out += "\\";
+            out += c;
+        } else if (c == '\\')
+            escape = true;
+        else
+            out += c;
+    }
+    return out;
+}
+
+void ImportProject::FileSettings::parseCommand(std::string command)
+{
+    std::string defs;
+
+    // Parse command..
+    std::string::size_type pos = 0;
+    while (std::string::npos != (pos = command.find(' ',pos))) {
+        while (pos < command.size() && command[pos] == ' ')
+            pos++;
+        if (pos >= command.size())
+            break;
+        if (command[pos] != '/' && command[pos] != '-')
+            continue;
+        pos++;
+        if (pos >= command.size())
+            break;
+        const char F = command[pos++];
+        if (std::strchr("DUI", F)) {
+            while (pos < command.size() && command[pos] == ' ')
+                ++pos;
+        }
+        const std::string fval = readUntil(command, &pos, " =");
+        if (F=='D') {
+            std::string defval = readUntil(command, &pos, " ");
+            defs += fval;
+            if (defval.size() >= 3 && defval.compare(0,2,"=\"")==0 && defval.back()=='\"')
+                defval = "=" + unescape(defval.substr(2, defval.size() - 3));
+            else if (defval.size() >= 5 && defval.compare(0, 3, "=\\\"") == 0 && endsWith(defval, "\\\""))
+                defval = "=\"" + unescape(defval.substr(3, defval.size() - 5)) + "\"";
+            if (!defval.empty())
+                defs += defval;
+            defs += ';';
+        } else if (F=='U')
+            undefs.insert(fval);
+        else if (F=='I') {
+            std::string i = fval;
+            if (i.size() > 1 && i[0] == '\"' && i.back() == '\"')
+                i = unescape(i.substr(1, i.size() - 2));
+            if (std::find(includePaths.begin(), includePaths.end(), i) == includePaths.end())
+                includePaths.push_back(i);
+        } else if (F=='s' && fval.compare(0,2,"td") == 0) {
+            ++pos;
+            const std::string stdval = readUntil(command, &pos, " ");
+            standard = stdval;
+            if (standard.compare(0, 3, "c++") || standard.compare(0, 5, "gnu++")) {
+                std::string stddef;
+                if (standard == "c++98" || standard == "gnu++98" || standard == "c++03" || standard == "gnu++03") {
+                    stddef = "199711L";
+                } else if (standard == "c++11" || standard == "gnu++11" || standard == "c++0x" || standard == "gnu++0x") {
+                    stddef = "201103L";
+                } else if (standard == "c++14" || standard == "gnu++14" || standard == "c++1y" || standard == "gnu++1y") {
+                    stddef = "201402L";
+                } else if (standard == "c++17" || standard == "gnu++17" || standard == "c++1z" || standard == "gnu++1z") {
+                    stddef = "201703L";
+                }
+
+                if (stddef.empty()) {
+                    // TODO: log error
+                    continue;
+                }
+
+                defs += "__cplusplus=";
+                defs += stddef;
+                defs += ";";
+            } else if (standard.compare(0, 1, "c") || standard.compare(0, 3, "gnu")) {
+                if (standard == "c90" || standard == "iso9899:1990" || standard == "gnu90" || standard == "iso9899:199409") {
+                    // __STDC_VERSION__ is not set for C90 although the macro was added in the 1994 amendments
+                    continue;
+                }
+
+                std::string stddef;
+
+                if (standard == "c99" || standard == "iso9899:1999" || standard == "gnu99") {
+                    stddef = "199901L";
+                } else if (standard == "c11" || standard == "iso9899:2011" || standard == "gnu11" || standard == "c1x" || standard == "gnu1x") {
+                    stddef = "201112L";
+                } else if (standard == "c17") {
+                    stddef = "201710L";
+                }
+
+                if (stddef.empty()) {
+                    // TODO: log error
+                    continue;
+                }
+
+                defs += "__STDC_VERSION__=";
+                defs += stddef;
+                defs += ";";
+            }
+        } else if (F == 'i' && fval == "system") {
+            ++pos;
+            const std::string isystem = readUntil(command, &pos, " ");
+            systemIncludePaths.push_back(isystem);
+        } else if (F=='m') {
+            if (fval == "unicode") {
+                defs += "UNICODE";
+                defs += ";";
+            }
+        } else if (F=='f') {
+            if (fval == "pic") {
+                defs += "__pic__";
+                defs += ";";
+            } else if (fval == "PIC") {
+                defs += "__PIC__";
+                defs += ";";
+            } else if (fval == "pie") {
+                defs += "__pie__";
+                defs += ";";
+            } else if (fval == "PIE") {
+                defs += "__PIE__";
+                defs += ";";
+            }
+        }
+    }
+    setDefines(defs);
 }
 
 void ImportProject::importCompileCommands(std::istream &istr)
 {
-    std::map<std::string, std::string> values;
+    picojson::value compileCommands;
+    istr >> compileCommands;
+    if (!compileCommands.is<picojson::array>())
+        return;
 
-    // TODO: Use a JSON parser
+    for (const picojson::value &fileInfo : compileCommands.get<picojson::array>()) {
+        picojson::object obj = fileInfo.get<picojson::object>();
+        std::string dirpath = Path::fromNativeSeparators(obj["directory"].get<std::string>());
 
-    Settings settings;
-    TokenList tokenList(&settings);
-    tokenList.createTokens(istr);
-    for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%str% : %str% [,}]")) {
-            const std::string& key = tok->str();
-            const std::string& value = tok->strAt(2);
-            values[key.substr(1, key.size() - 2U)] = value.substr(1, value.size() - 2U);
-        }
+        /* CMAKE produces the directory without trailing / so add it if not
+         * there - it is needed by setIncludePaths() */
+        if (!endsWith(dirpath, '/'))
+            dirpath += '/';
 
-        else if (Token::Match(tok, "%str% : [ %str%") && tok->str() == "\"arguments\"") {
-            std::string cmd;
-            tok = tok->tokAt(2);
-            while (Token::Match(tok, ",|[ %str%")) {
-                const std::string &s = tok->next()->str();
-                cmd += ' ' + s.substr(1, s.size() - 2);
-                tok = tok->tokAt(2);
-            }
-            values["command"] = cmd.substr(1);
-        }
+        const std::string directory = dirpath;
 
-        else if (tok->str() == "}") {
-            if (!values["file"].empty() && !values["command"].empty()) {
-                struct FileSettings fs;
-                fs.filename = Path::fromNativeSeparators(values["file"]);
-                const std::string& command = values["command"];
-                const std::string directory = Path::fromNativeSeparators(values["directory"]);
-                std::string::size_type pos = 0;
-                while (std::string::npos != (pos = command.find(' ',pos))) {
-                    pos++;
-                    if (pos >= command.size())
-                        break;
-                    if (command[pos] != '/' && command[pos] != '-')
-                        continue;
-                    pos++;
-                    if (pos >= command.size())
-                        break;
-                    const char F = command[pos++];
-                    if (std::strchr("DUI", F)) {
-                        while (pos < command.size() && command[pos] == ' ')
-                            ++pos;
-                    }
-                    std::string fval;
-                    while (pos < command.size() && command[pos] != ' ' && command[pos] != '=') {
-                        if (command[pos] != '\\')
-                            fval += command[pos];
-                        pos++;
-                    }
-                    if (F=='D') {
-                        std::string defval;
-                        bool escape = false;
-                        while (pos < command.size() && command[pos] != ' ') {
-                            if (command[pos] != '\\') {
-                                defval += command[pos];
-                                escape = false;
-                            } else {
-                                if (escape) {
-                                    defval += '\\';
-                                    escape = false;
-                                } else {
-                                    escape = true;
-                                }
-                            }
-                            pos++;
-                        }
-                        fs.defines += fval;
-                        if (!defval.empty())
-                            fs.defines += defval;
-                        fs.defines += ';';
-                    } else if (F=='U')
-                        fs.undefs.insert(fval);
-                    else if (F=='I')
-                        fs.includePaths.push_back(fval);
-                    else if (F=='s' && fval.compare(0,3,"td=") == 0)
-                        fs.standard = fval.substr(3);
-                    else if (F == 'i' && fval == "system") {
-                        ++pos;
-                        std::string isystem;
-                        while (pos < command.size() && command[pos] != ' ') {
-                            if (command[pos] != '\\')
-                                isystem += command[pos];
-                            pos++;
-                        }
-                        fs.systemIncludePaths.push_back(isystem);
+        std::ostringstream comm;
+        if (obj.find("arguments") != obj.end()) {
+            if (obj["arguments"].is<picojson::array>()) {
+                for (const picojson::value& arg : obj["arguments"].get<picojson::array>()) {
+                    if (arg.is<std::string>()) {
+                        comm << arg.get<std::string>() << " ";
                     }
                 }
-                std::map<std::string, std::string, cppcheck::stricmp> variables;
-                fs.setIncludePaths(directory, fs.includePaths, variables);
-                fs.setDefines(fs.defines);
-                fileSettings.push_back(fs);
+            } else {
+                return;
             }
-            values.clear();
+        } else if (obj.find("command") != obj.end()) {
+            if (obj["command"].is<std::string>()) {
+                comm << obj["command"].get<std::string>();
+            }
+        } else {
+            return;
         }
+
+        const std::string command = comm.str();
+        const std::string file = Path::fromNativeSeparators(obj["file"].get<std::string>());
+
+        // Accept file?
+        if (!Path::acceptFile(file))
+            continue;
+
+        struct FileSettings fs;
+        if (Path::isAbsolute(file))
+            fs.filename = Path::simplifyPath(file);
+#ifdef _WIN32
+        else if (file[0] == '/' && directory.size() > 2 && std::isalpha(directory[0]) && directory[1] == ':')
+            // directory: C:\foo\bar
+            // file: /xy/z.c
+            // => c:/xy/z.c
+            fs.filename = Path::simplifyPath(directory.substr(0,2) + file);
+#endif
+        else
+            fs.filename = Path::simplifyPath(directory + file);
+        fs.parseCommand(command); // read settings; -D, -I, -U, -std, -m*, -f*
+        std::map<std::string, std::string, cppcheck::stricmp> variables;
+        fs.setIncludePaths(directory, fs.includePaths, variables);
+        fileSettings.push_back(fs);
     }
 }
 
-void ImportProject::importSln(std::istream &istr, const std::string &path)
+void ImportProject::importSln(std::istream &istr, const std::string &path, const std::string &fileFilter)
 {
     std::map<std::string,std::string,cppcheck::stricmp> variables;
     variables["SolutionDir"] = path;
@@ -307,7 +465,7 @@ void ImportProject::importSln(std::istream &istr, const std::string &path)
         std::string vcxproj(line.substr(pos1+1, pos-pos1+7));
         if (!Path::isAbsolute(vcxproj))
             vcxproj = path + vcxproj;
-        importVcxproj(Path::fromNativeSeparators(vcxproj), variables, emptyString);
+        importVcxproj(Path::fromNativeSeparators(vcxproj), variables, emptyString, fileFilter);
     }
 }
 
@@ -355,6 +513,15 @@ namespace {
                             if (!additionalIncludePaths.empty())
                                 additionalIncludePaths += ';';
                             additionalIncludePaths += e->GetText();
+                        } else if (std::strcmp(e->Name(), "LanguageStandard") == 0) {
+                            if (std::strcmp(e->GetText(), "stdcpp14") == 0)
+                                cppstd = Standards::CPP14;
+                            else if (std::strcmp(e->GetText(), "stdcpp17") == 0)
+                                cppstd = Standards::CPP17;
+                            else if (std::strcmp(e->GetText(), "stdcpp20") == 0)
+                                cppstd = Standards::CPP20;
+                            else if (std::strcmp(e->GetText(), "stdcpplatest") == 0)
+                                cppstd = Standards::CPPLatest;
                         }
                     }
                 }
@@ -394,6 +561,7 @@ namespace {
         std::string condition;
         std::string preprocessorDefinitions;
         std::string additionalIncludePaths;
+        Standards::cppstd_t cppstd = Standards::CPPLatest;
     };
 }
 
@@ -490,7 +658,7 @@ static void loadVisualStudioProperties(const std::string &props, std::map<std::s
     }
 }
 
-void ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories)
+void ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::string &fileFilter)
 {
     variables["ProjectDir"] = Path::simplifyPath(Path::getPathFromFilename(filename));
 
@@ -515,8 +683,10 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                 for (const tinyxml2::XMLElement *cfg = node->FirstChildElement(); cfg; cfg = cfg->NextSiblingElement()) {
                     if (std::strcmp(cfg->Name(), "ProjectConfiguration") == 0) {
                         const ProjectConfiguration p(cfg);
-                        if (p.platform != ProjectConfiguration::Unknown)
+                        if (p.platform != ProjectConfiguration::Unknown) {
                             projectConfigurationList.emplace_back(cfg);
+                            mAllVSConfigs.insert(p.configuration);
+                        }
                     }
                 }
             } else {
@@ -524,7 +694,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                     if (std::strcmp(e->Name(), "ClCompile") == 0) {
                         const char *include = e->Attribute("Include");
                         if (include && Path::acceptFile(include))
-                            compileList.push_back(include);
+                            compileList.emplace_back(include);
                     }
                 }
             }
@@ -546,26 +716,50 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
         }
     }
 
-    for (std::list<std::string>::const_iterator c = compileList.begin(); c != compileList.end(); ++c) {
-        for (std::list<ProjectConfiguration>::const_iterator p = projectConfigurationList.begin(); p != projectConfigurationList.end(); ++p) {
+    for (const std::string &c : compileList) {
+        const std::string cfilename = Path::simplifyPath(Path::isAbsolute(c) ? c : Path::getPathFromFilename(filename) + c);
+        if (!fileFilter.empty() && !matchglob(fileFilter, cfilename))
+            continue;
+
+        for (const ProjectConfiguration &p : projectConfigurationList) {
+
+            if (!guiProject.checkVsConfigs.empty()) {
+                bool doChecking = false;
+                for (std::string config : guiProject.checkVsConfigs)
+                    if (config == p.configuration) {
+                        doChecking = true;
+                        break;
+                    }
+                if (!doChecking)
+                    continue;
+            }
+
             FileSettings fs;
-            fs.filename = Path::simplifyPath(Path::isAbsolute(*c) ? *c : Path::getPathFromFilename(filename) + *c);
-            fs.cfg = p->name;
+            fs.filename = cfilename;
+            fs.cfg = p.name;
             fs.msc = true;
             fs.useMfc = useOfMfc;
             fs.defines = "_WIN32=1";
-            if (p->platform == ProjectConfiguration::Win32)
+            if (p.platform == ProjectConfiguration::Win32)
                 fs.platformType = cppcheck::Platform::Win32W;
-            else if (p->platform == ProjectConfiguration::x64) {
+            else if (p.platform == ProjectConfiguration::x64) {
                 fs.platformType = cppcheck::Platform::Win64;
                 fs.defines += ";_WIN64=1";
             }
             std::string additionalIncludePaths;
-            for (std::list<ItemDefinitionGroup>::const_iterator i = itemDefinitionGroupList.begin(); i != itemDefinitionGroupList.end(); ++i) {
-                if (!i->conditionIsTrue(*p))
+            for (const ItemDefinitionGroup &i : itemDefinitionGroupList) {
+                if (!i.conditionIsTrue(p))
                     continue;
-                fs.defines += ';' + i->preprocessorDefinitions;
-                additionalIncludePaths += ';' + i->additionalIncludePaths;
+                if (i.cppstd == Standards::CPP11)
+                    fs.standard = "c++11";
+                else if (i.cppstd == Standards::CPP14)
+                    fs.standard = "c++14";
+                else if (i.cppstd == Standards::CPP17)
+                    fs.standard = "c++17";
+                else if (i.cppstd == Standards::CPP20)
+                    fs.standard = "c++20";
+                fs.defines += ';' + i.preprocessorDefinitions;
+                additionalIncludePaths += ';' + i.additionalIncludePaths;
             }
             fs.setDefines(fs.defines);
             fs.setIncludePaths(Path::getPathFromFilename(filename), toStringList(includePath + ';' + additionalIncludePaths), variables);
@@ -598,7 +792,7 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
                 if (std::strcmp(f->Name(), "FILE") == 0) {
                     const char *filename = f->Attribute("FILENAME");
                     if (filename && Path::acceptFile(filename))
-                        compileList.push_back(filename);
+                        compileList.emplace_back(filename);
                 }
             }
         } else if (std::strcmp(node->Name(), "MACROS") == 0) {
@@ -634,13 +828,13 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
     {
         std::string arg;
 
-        for (int i = 0; i < cflag1.size(); ++i) {
-            if (cflag1.at(i) == ' ' && !arg.empty()) {
+        for (char i : cflag1) {
+            if (i == ' ' && !arg.empty()) {
                 cflags.insert(arg);
                 arg.clear();
                 continue;
             }
-            arg += cflag1.at(i);
+            arg += i;
         }
 
         if (!arg.empty()) {
@@ -815,7 +1009,7 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
     const std::string cppDefines  = cppPredefines + ";" + defines;
     const bool forceCppMode = (cflags.find("-P") != cflags.end());
 
-    for (std::list<std::string>::const_iterator c = compileList.begin(); c != compileList.end(); ++c) {
+    for (const std::string &c : compileList) {
         // C++ compilation is selected by file extension by default, so these
         // defines have to be configured on a per-file base.
         //
@@ -825,11 +1019,242 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
         // (http://docwiki.embarcadero.com/RADStudio/Tokyo/en/BCC32.EXE,_the_C%2B%2B_32-bit_Command-Line_Compiler)
         //
         // We can also force C++ compilation for all files using the -P command line switch.
-        const bool cppMode = forceCppMode || Path::getFilenameExtensionInLowerCase(*c) == ".cpp";
+        const bool cppMode = forceCppMode || Path::getFilenameExtensionInLowerCase(c) == ".cpp";
         FileSettings fs;
         fs.setIncludePaths(projectDir, toStringList(includePath), variables);
         fs.setDefines(cppMode ? cppDefines : defines);
-        fs.filename = Path::simplifyPath(Path::isAbsolute(*c) ? *c : projectDir + *c);
+        fs.filename = Path::simplifyPath(Path::isAbsolute(c) ? c : projectDir + c);
         fileSettings.push_back(fs);
+    }
+}
+
+static std::string joinRelativePath(const std::string &path1, const std::string &path2)
+{
+    if (!path1.empty() && !Path::isAbsolute(path2))
+        return path1 + path2;
+    return path2;
+}
+
+static std::list<std::string> readXmlStringList(const tinyxml2::XMLElement *node, const std::string &path, const char name[], const char attribute[])
+{
+    std::list<std::string> ret;
+    for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
+        if (strcmp(child->Name(), name) != 0)
+            continue;
+        const char *attr = attribute ? child->Attribute(attribute) : child->GetText();
+        if (attr)
+            ret.push_back(joinRelativePath(path, attr));
+    }
+    return ret;
+}
+
+static std::string join(const std::list<std::string> &strlist, const char *sep)
+{
+    std::string ret;
+    for (const std::string &s : strlist) {
+        ret += (ret.empty() ? "" : sep) + s;
+    }
+    return ret;
+}
+
+static std::string istream_to_string(std::istream &istr)
+{
+    std::istreambuf_iterator<char> eos;
+    return std::string(std::istreambuf_iterator<char>(istr), eos);
+}
+
+
+bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *settings)
+{
+    tinyxml2::XMLDocument doc;
+    const std::string xmldata = istream_to_string(istr);
+    if (doc.Parse(xmldata.data(), xmldata.size()) != tinyxml2::XML_SUCCESS)
+        return false;
+    const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
+    if (rootnode == nullptr || strcmp(rootnode->Name(), CppcheckXml::ProjectElementName) != 0)
+        return false;
+
+    const std::string &path = mPath;
+
+    std::list<std::string> paths;
+    std::list<Suppressions::Suppression> suppressions;
+    Settings temp;
+
+    guiProject.analyzeAllVsConfigs.clear();
+
+    for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
+        if (strcmp(node->Name(), CppcheckXml::RootPathName) == 0 && node->Attribute(CppcheckXml::RootPathNameAttrib)) {
+            temp.basePaths.push_back(joinRelativePath(path, node->Attribute(CppcheckXml::RootPathNameAttrib)));
+            temp.relativePaths = true;
+        } else if (strcmp(node->Name(), CppcheckXml::BugHunting) == 0)
+            temp.bugHunting = true;
+        else if (strcmp(node->Name(), CppcheckXml::BuildDirElementName) == 0)
+            temp.buildDir = joinRelativePath(path, node->GetText() ? node->GetText() : "");
+        else if (strcmp(node->Name(), CppcheckXml::IncludeDirElementName) == 0)
+            temp.includePaths = readXmlStringList(node, path, CppcheckXml::DirElementName, CppcheckXml::DirNameAttrib);
+        else if (strcmp(node->Name(), CppcheckXml::DefinesElementName) == 0)
+            temp.userDefines = join(readXmlStringList(node, "", CppcheckXml::DefineName, CppcheckXml::DefineNameAttrib), ";");
+        else if (strcmp(node->Name(), CppcheckXml::UndefinesElementName) == 0) {
+            for (const std::string &u : readXmlStringList(node, "", CppcheckXml::UndefineName, nullptr))
+                temp.userUndefs.insert(u);
+        } else if (strcmp(node->Name(), CppcheckXml::ImportProjectElementName) == 0)
+            guiProject.projectFile = path + (node->GetText() ? node->GetText() : "");
+        else if (strcmp(node->Name(), CppcheckXml::PathsElementName) == 0)
+            paths = readXmlStringList(node, path, CppcheckXml::PathName, CppcheckXml::PathNameAttrib);
+        else if (strcmp(node->Name(), CppcheckXml::ExcludeElementName) == 0)
+            guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::ExcludePathName, CppcheckXml::ExcludePathNameAttrib);
+        else if (strcmp(node->Name(), CppcheckXml::FunctionContracts) == 0) {
+            for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
+                if (strcmp(child->Name(), CppcheckXml::FunctionContract) == 0) {
+                    const char *function = child->Attribute(CppcheckXml::ContractFunction);
+                    const char *expects = child->Attribute(CppcheckXml::ContractExpects);
+                    if (function && expects)
+                        temp.functionContracts[function] = expects;
+                }
+            }
+        } else if (strcmp(node->Name(), CppcheckXml::VariableContractsElementName) == 0) {
+            for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
+                if (strcmp(child->Name(), CppcheckXml::VariableContractItemElementName) == 0) {
+                    const char *name = child->Attribute(CppcheckXml::VariableContractVarName);
+                    const char *min = child->Attribute(CppcheckXml::VariableContractMin);
+                    const char *max = child->Attribute(CppcheckXml::VariableContractMax);
+                    if (name)
+                        temp.variableContracts[name] = Settings::VariableContracts{min?min:"", max?max:""};
+                }
+            }
+        } else if (strcmp(node->Name(), CppcheckXml::IgnoreElementName) == 0)
+            guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::IgnorePathName, CppcheckXml::IgnorePathNameAttrib);
+        else if (strcmp(node->Name(), CppcheckXml::LibrariesElementName) == 0)
+            guiProject.libraries = readXmlStringList(node, "", CppcheckXml::LibraryElementName, nullptr);
+        else if (strcmp(node->Name(), CppcheckXml::SuppressionsElementName) == 0) {
+            for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
+                if (strcmp(child->Name(), CppcheckXml::SuppressionElementName) != 0)
+                    continue;
+                auto read = [](const char *s, const char *def) {
+                    return s ? s : def;
+                };
+                Suppressions::Suppression s;
+                s.errorId = read(child->GetText(), "");
+                s.fileName = read(child->Attribute("fileName"), "");
+                if (!s.fileName.empty())
+                    s.fileName = joinRelativePath(path, s.fileName);
+                s.lineNumber = child->IntAttribute("lineNumber", Suppressions::Suppression::NO_LINE);
+                s.symbolName = read(child->Attribute("symbolName"), "");
+                std::istringstream(read(child->Attribute("hash"), "0")) >> s.hash;
+                suppressions.push_back(s);
+            }
+        } else if (strcmp(node->Name(), CppcheckXml::VSConfigurationElementName) == 0)
+            guiProject.checkVsConfigs = readXmlStringList(node, "", CppcheckXml::VSConfigurationName, nullptr);
+        else if (strcmp(node->Name(), CppcheckXml::PlatformElementName) == 0)
+            guiProject.platform = node->GetText();
+        else if (strcmp(node->Name(), CppcheckXml::AnalyzeAllVsConfigsElementName) == 0)
+            guiProject.analyzeAllVsConfigs = node->GetText();
+        else if (strcmp(node->Name(), CppcheckXml::Parser) == 0)
+            temp.clang = true;
+        else if (strcmp(node->Name(), CppcheckXml::AddonsElementName) == 0)
+            temp.addons = readXmlStringList(node, "", CppcheckXml::AddonElementName, nullptr);
+        else if (strcmp(node->Name(), CppcheckXml::TagsElementName) == 0)
+            node->Attribute(CppcheckXml::TagElementName); // FIXME: Write some warning
+        else if (strcmp(node->Name(), CppcheckXml::ToolsElementName) == 0) {
+            const std::list<std::string> toolList = readXmlStringList(node, "", CppcheckXml::ToolElementName, nullptr);
+            for (const std::string &toolName : toolList) {
+                if (toolName == std::string(CppcheckXml::ClangTidy))
+                    temp.clangTidy = true;
+            }
+        } else if (strcmp(node->Name(), CppcheckXml::CheckHeadersElementName) == 0)
+            temp.checkHeaders = (strcmp(node->GetText(), "true") == 0);
+        else if (strcmp(node->Name(), CppcheckXml::CheckUnusedTemplatesElementName) == 0)
+            temp.checkUnusedTemplates = (strcmp(node->GetText(), "true") == 0);
+        else if (strcmp(node->Name(), CppcheckXml::MaxCtuDepthElementName) == 0)
+            temp.maxCtuDepth = std::atoi(node->GetText());
+        else if (strcmp(node->Name(), CppcheckXml::MaxTemplateRecursionElementName) == 0)
+            temp.maxTemplateRecursion = std::atoi(node->GetText());
+        else if (strcmp(node->Name(), CppcheckXml::CheckUnknownFunctionReturn) == 0)
+            ; // TODO
+        else if (strcmp(node->Name(), Settings::SafeChecks::XmlRootName) == 0) {
+            for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
+                if (strcmp(child->Name(), Settings::SafeChecks::XmlClasses) == 0)
+                    temp.safeChecks.classes = true;
+                else if (strcmp(child->Name(), Settings::SafeChecks::XmlExternalFunctions) == 0)
+                    temp.safeChecks.externalFunctions = true;
+                else if (strcmp(child->Name(), Settings::SafeChecks::XmlInternalFunctions) == 0)
+                    temp.safeChecks.internalFunctions = true;
+                else if (strcmp(child->Name(), Settings::SafeChecks::XmlExternalVariables) == 0)
+                    temp.safeChecks.externalVariables = true;
+                else
+                    return false;
+            }
+        } else if (strcmp(node->Name(), CppcheckXml::TagWarningsElementName) == 0)
+            ; // TODO
+        else
+            return false;
+    }
+    settings->basePaths = temp.basePaths;
+    settings->relativePaths |= temp.relativePaths;
+    settings->buildDir = temp.buildDir;
+    settings->includePaths = temp.includePaths;
+    settings->userDefines = temp.userDefines;
+    settings->userUndefs = temp.userUndefs;
+    settings->addons = temp.addons;
+    settings->clang = temp.clang;
+    settings->clangTidy = temp.clangTidy;
+
+    for (const std::string &p : paths)
+        guiProject.pathNames.push_back(p);
+    for (const Suppressions::Suppression &supp : suppressions)
+        settings->nomsg.addSuppression(supp);
+    settings->checkHeaders = temp.checkHeaders;
+    settings->checkUnusedTemplates = temp.checkUnusedTemplates;
+    settings->maxCtuDepth = temp.maxCtuDepth;
+    settings->maxTemplateRecursion = temp.maxTemplateRecursion;
+    settings->safeChecks = temp.safeChecks;
+    settings->bugHunting = temp.bugHunting;
+    settings->functionContracts = temp.functionContracts;
+    return true;
+}
+
+void ImportProject::selectOneVsConfig(Settings::PlatformType platform)
+{
+    std::set<std::string> filenames;
+    for (std::list<ImportProject::FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
+        if (it->cfg.empty()) {
+            ++it;
+            continue;
+        }
+        const ImportProject::FileSettings &fs = *it;
+        bool remove = false;
+        if (fs.cfg.compare(0,5,"Debug") != 0)
+            remove = true;
+        if (platform == Settings::Win64 && fs.platformType != platform)
+            remove = true;
+        else if ((platform == Settings::Win32A || platform == Settings::Win32W) && fs.platformType == Settings::Win64)
+            remove = true;
+        else if (fs.platformType != Settings::Win64 && platform == Settings::Win64)
+            remove = true;
+        else if (filenames.find(fs.filename) != filenames.end())
+            remove = true;
+        if (remove) {
+            it = fileSettings.erase(it);
+        } else {
+            filenames.insert(fs.filename);
+            ++it;
+        }
+    }
+}
+
+std::list<std::string> ImportProject::getVSConfigs()
+{
+    return std::list<std::string>(mAllVSConfigs.begin(), mAllVSConfigs.end());
+}
+
+void ImportProject::setRelativePaths(const std::string &filename)
+{
+    if (Path::isAbsolute(filename))
+        return;
+    const std::vector<std::string> basePaths{Path::fromNativeSeparators(Path::getCurrentPath())};
+    for (auto &fs: fileSettings) {
+        fs.filename = Path::getRelativePath(fs.filename, basePaths);
+        for (auto &includePath: fs.includePaths)
+            includePath = Path::getRelativePath(includePath, basePaths);
     }
 }

@@ -1,51 +1,72 @@
-version: 1.73.{build}
+version: '{build}'
 
 clone_depth: 10
+
+matrix:
+  fast_finish: true
 
 environment:
   matrix:
     - VisualStudioVersion: 12.0
-      platform: "Win32"
-      configuration: "Debug"
-      vcvarsall_platform: "x86"
-      PlatformToolset: "v120"
+      platform: x64
+      configuration: Debug
+      vcvarsall_platform: x64
+      PlatformToolset: v120
+      MYQTDIR: C:\Qt\5.6\msvc2013_64
     - VisualStudioVersion: 12.0
-      platform: "Win32"
-      configuration: "Release"
-      vcvarsall_platform: "x86"
-      PlatformToolset: "v120"
-    - VisualStudioVersion: 12.0
-      platform: "x64"
-      configuration: "Debug"
-      vcvarsall_platform: "x64"
-      PlatformToolset: "v120"
-    - VisualStudioVersion: 12.0
-      platform: "x64"
-      configuration: "Release"
-      vcvarsall_platform: "x64"
-      PlatformToolset: "v120"
-    - VisualStudioVersion: 14.0
-      platform: "Win32"
-      configuration: "Debug"
-      vcvarsall_platform: "x86"
-      PlatformToolset: "v140"
-    - VisualStudioVersion: 14.0
-      platform: "x64"
-      configuration: "Debug"
-      vcvarsall_platform: "x64"
-      PlatformToolset: "v140"
+      platform: x64
+      configuration: Release
+      vcvarsall_platform: x64
+      PlatformToolset: v120
+# FIXME: These are disabled for now. They were broken by ae8653612802b41b70424ec9a5eefe8a1178f6d1
+#    - VisualStudioVersion: 14.0
+#      platform: x64
+#      configuration: Debug
+#      vcvarsall_platform: x64
+#      PlatformToolset: v140
+#      MYQTDIR: C:\Qt\5.11\msvc2015_64
+# That platform causes frequent errors on appveyor due to an unknown infrastructure failure
+#    - VisualStudioVersion: 14.0
+#      platform: x64
+#      configuration: Release
+#      vcvarsall_platform: x64
+#      PlatformToolset: v140
+
+install:
+  - curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-4.8.9/z3-4.8.9-%platform%-win.zip -o z3-4.8.9-win.zip
+  - 7z x z3-4.8.9-win.zip -oexternals -r -y
+  - move externals\z3-4.8.9-%platform%-win externals\z3
 
 build_script:
   - ECHO Building %configuration% %platform% with MSVC %VisualStudioVersion% using %PlatformToolset% PlatformToolset
-  - 'IF "%VisualStudioVersion%" == "10.0" IF "%platform%" == "x64" CALL "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /%vcvarsall_platform% /%configuration%'
   - 'CALL "C:\Program Files (x86)\Microsoft Visual Studio %VisualStudioVersion%\VC\vcvarsall.bat" %vcvarsall_platform%'
-  - msbuild "cppcheck.sln" /consoleloggerparameters:Verbosity=minimal /target:Build /property:Configuration="%configuration%";Platform=%platform% /p:PlatformToolset=%PlatformToolset% /maxcpucount /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  # Visual studio project..
+  - mkdir vsbuild
+  - cd vsbuild
+  - cmake -DBUILD_TESTS=ON -DCTEST_TIMEOUT=240 ..
+  - cmake --build . --target check --config %configuration%
+  - cd ..
+  # the following builds are Debug ones so do not perform them in Release jobs
+  - 'IF "%configuration%" == "Release" exit /b 0'
+  # use all available processes for nmake
+  - set CL=/MP
+  # cmake..
+  - mkdir build
+  - cd build
+  - cmake -DBUILD_TESTS=ON -G"NMake Makefiles" ..
+  - nmake
+  - copy bin\cppcheck.exe ..
+  - cd ..
+  # build gui..
+  - ECHO MYQTDIR=%MYQTDIR%
+  - 'IF defined MYQTDIR cd gui'
+  - 'IF defined MYQTDIR set QTDIR=%MYQTDIR%'
+  - 'IF defined MYQTDIR set PATH=%PATH%;%QTDIR%\bin'
+  - 'IF defined MYQTDIR %QTDIR%\bin\qmake'
+  - 'IF defined MYQTDIR nmake'
+  - 'IF defined MYQTDIR cd ..'
 
 test_script:
-  - IF "%CONFIGURATION%" == "Debug"   bin\debug\testrunner.exe
-  - IF "%CONFIGURATION%" == "Release" bin\testrunner.exe
-
-artifacts:
-  - path: bin
-    name: CLI binaries
-    type: zip
+  - build\bin\testrunner.exe -q
+  - IF EXIST bin\debug\testrunner.exe bin\debug\testrunner.exe -q
+  - IF EXIST bin\testrunner.exe bin\testrunner.exe -q

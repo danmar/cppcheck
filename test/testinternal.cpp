@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,22 +25,21 @@
 
 class TestInternal : public TestFixture {
 public:
-    TestInternal() : TestFixture("TestInternal") {
-    }
+    TestInternal() : TestFixture("TestInternal") {}
 
 private:
     Settings settings;
 
-    void run() override {
+    void run() OVERRIDE {
         settings.addEnabled("internal");
 
-        TEST_CASE(simplePatternInTokenMatch)
-        TEST_CASE(complexPatternInTokenSimpleMatch)
-        TEST_CASE(simplePatternSquareBrackets)
-        TEST_CASE(simplePatternAlternatives)
-        TEST_CASE(missingPercentCharacter)
-        TEST_CASE(unknownPattern)
-        TEST_CASE(redundantNextPrevious)
+        TEST_CASE(simplePatternInTokenMatch);
+        TEST_CASE(complexPatternInTokenSimpleMatch);
+        TEST_CASE(simplePatternSquareBrackets);
+        TEST_CASE(simplePatternAlternatives);
+        TEST_CASE(missingPercentCharacter);
+        TEST_CASE(unknownPattern);
+        TEST_CASE(redundantNextPrevious);
         TEST_CASE(internalError);
         TEST_CASE(orInComplexPattern);
         TEST_CASE(extraWhitespace);
@@ -55,11 +54,10 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
 
         // Check..
         CheckInternal checkInternal;
-        checkInternal.runSimplifiedChecks(&tokenizer, &settings, this);
+        checkInternal.runChecks(&tokenizer, &settings, this);
     }
 
     void simplePatternInTokenMatch() {
@@ -432,6 +430,30 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
 
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    if(a && tok && Token::Match(tok, \"5str% foobar\")) {};\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    if(a && b && tok && Token::Match(tok, \"5str% foobar\")) {};\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    if(a && b && c && tok && Token::Match(tok, \"5str% foobar\")) {};\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    if(a && b && c && tok && d && Token::Match(tok, \"5str% foobar\")) {};\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // simpleMatch
         check("void f() {\n"
               "    const Token *tok;\n"
@@ -472,6 +494,12 @@ private:
         check("void f() {\n"
               "    const Token *tok;\n"
               "    if(!tok || !Token::simpleMatch(tok, \"foobar\")) {};\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
+
+        check("void f() {\n"
+              "    const Token *tok;\n"
+              "    if(a || !tok || !Token::simpleMatch(tok, \"foobar\")) {};\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Unnecessary check of \"tok\", match-function already checks if it is null.\n", errout.str());
 

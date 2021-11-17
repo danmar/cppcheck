@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,37 +32,37 @@ class CheckStatistics;
 /// @{
 
 /**
-* @brief A dialog that shows project and scan statistics.
-*
-*/
+ * @brief A dialog that shows project and scan statistics.
+ *
+ */
 class StatsDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit StatsDialog(QWidget *parent = 0);
+    explicit StatsDialog(QWidget *parent = nullptr);
 
     /**
-    * @brief Sets the project to extract statistics from
-    */
+     * @brief Sets the project to extract statistics from
+     */
     void setProject(const ProjectFile *projectFile);
 
     /**
-    * @brief Sets the string to display beside "Path Selected:"
-    */
+     * @brief Sets the string to display beside "Path Selected:"
+     */
     void setPathSelected(const QString& path);
 
     /**
-    * @brief Sets the number to display beside "Number of Files Scanned:"
-    */
+     * @brief Sets the number to display beside "Number of Files Scanned:"
+     */
     void setNumberOfFilesScanned(int num);
 
     /**
-    * @brief Sets the number of seconds to display beside "Scan Duration:"
-    */
+     * @brief Sets the number of seconds to display beside "Scan Duration:"
+     */
     void setScanDuration(double seconds);
 
     /**
-    * @brief Sets the numbers of different error/warnings found."
-    */
+     * @brief Sets the numbers of different error/warnings found."
+     */
     void setStatistics(const CheckStatistics *stats);
 
 private slots:

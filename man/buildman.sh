@@ -1,5 +1,10 @@
 #!/bin/sh
+# To install required tools in debian:
+# sudo apt-get install pandoc texlive-latex-base texlive-fonts-recommended texlive-latex-extra
+# For Windows you can use the MiKTeX installer https://miktex.org/download
 
-xsltproc -o manual.html /usr/share/xml/docbook/stylesheet/nwalsh/xhtml/docbook.xsl manual.docbook
+./build-pdf.sh manual
+./build-html.sh manual
 
-docbook2pdf manual.docbook
+./build-pdf.sh reference-cfg-format
+./build-html.sh reference-cfg-format

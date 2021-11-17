@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "errorlogger.h"
 #include "importproject.h"
 #include "library.h"
 #include "platform.h"
@@ -30,10 +29,13 @@
 #include "suppressions.h"
 #include "timer.h"
 
+#include <algorithm>
+#include <atomic>
 #include <list>
 #include <set>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 namespace ValueFlow {
     class Value;
@@ -42,42 +44,130 @@ namespace ValueFlow {
 /// @addtogroup Core
 /// @{
 
+template<typename T>
+class SimpleEnableGroup {
+    uint32_t mFlags = 0;
+public:
+    uint32_t intValue() const {
+        return mFlags;
+    }
+    void clear() {
+        mFlags = 0;
+    }
+    void fill() {
+        mFlags = 0xFFFFFFFF;
+    }
+    void setEnabledAll(bool enabled) {
+        if (enabled)
+            fill();
+        else
+            clear();
+    }
+    bool isEnabled(T flag) const {
+        return (mFlags & (1U << (uint32_t)flag)) != 0;
+    }
+    void enable(T flag) {
+        mFlags |= (1U << (uint32_t)flag);
+    }
+    void disable(T flag) {
+        mFlags &= ~(1U << (uint32_t)flag);
+    }
+    void setEnabled(T flag, bool enabled) {
+        if (enabled)
+            enable(flag);
+        else
+            disable(flag);
+    }
+};
+
+
 /**
  * @brief This is just a container for general settings so that we don't need
  * to pass individual values to functions or constructors now or in the
  * future when we might have even more detailed settings.
  */
 class CPPCHECKLIB Settings : public cppcheck::Platform {
-public:
-    enum EnabledGroup {
-        WARNING = 0x1,
-        STYLE = 0x2,
-        PERFORMANCE = 0x4,
-        PORTABILITY = 0x8,
-        INFORMATION = 0x10,
-        UNUSED_FUNCTION = 0x20,
-        MISSING_INCLUDE = 0x40,
-        INTERNAL = 0x80
-    };
-
 private:
-    /** @brief enable extra checks by id */
-    int _enabled;
 
     /** @brief terminate checking */
-    static bool _terminated;
+    static std::atomic<bool> mTerminated;
 
 public:
     Settings();
 
-    /** @brief --cppcheck-build-dir */
+    void loadCppcheckCfg(const std::string &executable);
+
+    /** @brief addons, either filename of python/json file or json data */
+    std::list<std::string> addons;
+
+    /** @brief Path to the python interpreter to be used to run addons. */
+    std::string addonPython;
+
+    /** @brief Paths used as base for conversion to relative paths. */
+    std::vector<std::string> basePaths;
+
+    /** @brief Bug hunting */
+    bool bugHunting;
+
+    /** @brief Max time for bug hunting analysis in seconds, after
+     * timeout the analysis will just stop. */
+    int bugHuntingCheckFunctionMaxTime;
+
+    /** Filename for bug hunting report */
+    std::string bugHuntingReport;
+
+    /** @brief --cppcheck-build-dir. Always uses / as path separator. No trailing path separator. */
     std::string buildDir;
 
-    /** @brief Is --debug given? */
-    bool debug;
+    /** @brief check all configurations (false if -D or --max-configs is used */
+    bool checkAllConfigurations;
+
+    /** Is the 'configuration checking' wanted? */
+    bool checkConfiguration;
+
+    /**
+     * Check code in the headers, this is on by default but can
+     * be turned off to save CPU */
+    bool checkHeaders;
+
+    /** Check for incomplete info in library files? */
+    bool checkLibrary;
+
+    /** @brief List of selected Visual Studio configurations that should be checks */
+    std::list<std::string> checkVsConfigs;
+
+    /** @brief check unknown function return values */
+    std::set<std::string> checkUnknownFunctionReturn;
+
+    /** Check unused/uninstantiated templates */
+    bool checkUnusedTemplates;
+
+    /** Use Clang */
+    bool clang;
+
+    /** Custom Clang executable */
+    std::string clangExecutable;
+
+    /** Use clang-tidy */
+    bool clangTidy;
+
+    /** @brief include paths excluded from checking the configuration */
+    std::set<std::string> configExcludePaths;
+
+    /** @brief Are we running from DACA script? */
+    bool daca;
+
+    /** @brief Debug bug hunting */
+    bool debugBugHunting;
 
     /** @brief Is --debug-normal given? */
     bool debugnormal;
+
+    /** @brief Is --debug-simplified given? */
+    bool debugSimplified;
+
+    /** @brief Is --debug-template given? */
+    bool debugtemplate;
 
     /** @brief Is --debug-warnings given? */
     bool debugwarnings;
@@ -86,135 +176,6 @@ public:
     bool dump;
     std::string dumpFile;
 
-    /** @brief Is --exception-handling given */
-    bool exceptionHandling;
-
-    /** @brief Inconclusive checks */
-    bool inconclusive;
-
-    /** @brief Collect unmatched suppressions in one run.
-      * This delays the reporting until all files are checked.
-      * It is needed by checks that analyse the whole code base. */
-    bool jointSuppressionReport;
-
-    /**
-     * When this flag is false (default) then experimental
-     * heuristics and checks are disabled.
-     *
-     * It should not be possible to enable this from any client.
-     */
-    bool experimental;
-
-    /** @brief Is --quiet given? */
-    bool quiet;
-
-    /** @brief Is --inline-suppr given? */
-    bool inlineSuppressions;
-
-    /** @brief Is --verbose given? */
-    bool verbose;
-
-    /** @brief Request termination of checking */
-    static void terminate(bool t = true) {
-        Settings::_terminated = t;
-    }
-
-    /** @brief termination requested? */
-    static bool terminated() {
-        return Settings::_terminated;
-    }
-
-    /** @brief Force checking the files with "too many" configurations (--force). */
-    bool force;
-
-    /** @brief Use relative paths in output. */
-    bool relativePaths;
-
-    /** @brief Paths used as base for conversion to relative paths. */
-    std::vector<std::string> basePaths;
-
-    /** @brief write results (--output-file=&lt;file&gt;) */
-    std::string outputFile;
-
-    /** @brief plist output (--plist-output=&lt;dir&gt;) */
-    std::string plistOutput;
-
-    /** @brief write XML results (--xml) */
-    bool xml;
-
-    /** @brief XML version (--xml-version=..) */
-    int xml_version;
-
-    /** @brief How many processes/threads should do checking at the same
-        time. Default is 1. (-j N) */
-    unsigned int jobs;
-
-    /** @brief Load average value */
-    unsigned int loadAverage;
-
-    /** @brief If errors are found, this value is returned from main().
-        Default value is 0. */
-    int exitCode;
-
-    /** @brief The output format in which the errors are printed in text mode,
-        e.g. "{severity} {file}:{line} {message} {id}" */
-    std::string templateFormat;
-
-    /** @brief The output format in which the error locations are printed in
-     *  text mode, e.g. "{file}:{line} {info}" */
-    std::string templateLocation;
-
-    /** @brief show timing information (--showtime=file|summary|top5) */
-    SHOWTIME_MODES showtime;
-
-    /** @brief Using -E for debugging purposes */
-    bool preprocessOnly;
-
-    /** @brief List of include paths, e.g. "my/includes/" which should be used
-        for finding include files inside source files. (-I) */
-    std::list<std::string> includePaths;
-
-    /** @brief Maximum number of configurations to check before bailing.
-        Default is 12. (--max-configs=N) */
-    unsigned int maxConfigs;
-
-    /**
-     * @brief Returns true if given id is in the list of
-     * enabled extra checks (--enable)
-     * @param group group to be enabled
-     * @return true if the check is enabled.
-     */
-    bool isEnabled(EnabledGroup group) const {
-        return (_enabled & group) == group;
-    }
-
-    /**
-    * @brief Returns true if given severity is enabled
-    * @return true if the check is enabled.
-    */
-    bool isEnabled(Severity::SeverityType severity) const;
-
-    /**
-    * @brief Returns true if given value can be shown
-    * @return true if the value can be shown
-    */
-    bool isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck=false) const;
-
-    /**
-     * @brief Enable extra checks by id. See isEnabled()
-     * @param str single id or list of id values to be enabled
-     * or empty string to enable all. e.g. "style,possibleError"
-     * @return error message. empty upon success
-     */
-    std::string addEnabled(const std::string &str);
-
-    /**
-     * @brief Disables all severities, except from error.
-     */
-    void clearEnabled() {
-        _enabled = 0;
-    }
-
     enum Language {
         None, C, CPP
     };
@@ -222,30 +183,90 @@ public:
     /** @brief Name of the language that is enforced. Empty per default. */
     Language enforcedLang;
 
-    /** @brief suppress message (--suppressions) */
-    Suppressions nomsg;
+    /** @brief Is --exception-handling given */
+    bool exceptionHandling;
+
+    // argv[0]
+    std::string exename;
+
+    /** @brief If errors are found, this value is returned from main().
+        Default value is 0. */
+    int exitCode;
+
+    /** @brief --file-filter for analyzing special files */
+    std::string fileFilter;
+
+    /** @brief Force checking the files with "too many" configurations (--force). */
+    bool force;
+
+    std::map<std::string, std::string> functionContracts;
+
+    struct VariableContracts {
+        std::string minValue;
+        std::string maxValue;
+    };
+    std::map<std::string, VariableContracts> variableContracts;
+
+    /** @brief List of include paths, e.g. "my/includes/" which should be used
+        for finding include files inside source files. (-I) */
+    std::list<std::string> includePaths;
+
+    /** @brief Is --inline-suppr given? */
+    bool inlineSuppressions;
+
+    /** @brief How many processes/threads should do checking at the same
+        time. Default is 1. (-j N) */
+    unsigned int jobs;
+
+    /** @brief Collect unmatched suppressions in one run.
+     * This delays the reporting until all files are checked.
+     * It is needed by checks that analyse the whole code base. */
+    bool jointSuppressionReport;
+
+    /** @brief --library= */
+    std::list<std::string> libraries;
+
+    /** Library */
+    Library library;
+
+    /** @brief Load average value */
+    int loadAverage;
+
+    /** @brief Maximum number of configurations to check before bailing.
+        Default is 12. (--max-configs=N) */
+    int maxConfigs;
+
+    /** @brief --max-ctu-depth */
+    int maxCtuDepth;
+
+    /** @brief max template recursion */
+    int maxTemplateRecursion;
 
     /** @brief suppress exitcode */
     Suppressions nofail;
 
-    /** @brief defines given by the user */
-    std::string userDefines;
+    /** @brief suppress message (--suppressions) */
+    Suppressions nomsg;
 
-    /** @brief undefines given by the user */
-    std::set<std::string> userUndefs;
+    /** @brief write results (--output-file=&lt;file&gt;) */
+    std::string outputFile;
 
-    /** @brief forced includes given by the user */
-    std::list<std::string> userIncludes;
+    /** @brief plist output (--plist-output=&lt;dir&gt;) */
+    std::string plistOutput;
 
-    /** @brief include paths excluded from checking the configuration */
-    std::set<std::string> configExcludePaths;
+    /** @brief Using -E for debugging purposes */
+    bool preprocessOnly;
 
+    ImportProject project;
+
+    /** @brief Is --quiet given? */
+    bool quiet;
+
+    /** @brief Use relative paths in output. */
+    bool relativePaths;
 
     /** @brief --report-progress */
     bool reportProgress;
-
-    /** Library (--library) */
-    Library library;
 
     /** Rule */
     class CPPCHECKLIB Rule {
@@ -268,29 +289,132 @@ public:
      */
     std::list<Rule> rules;
 
-    /** Is the 'configuration checking' wanted? */
-    bool checkConfiguration;
+    /** Do not only check how interface is used. Also check that interface is safe. */
+    class CPPCHECKLIB SafeChecks {
+    public:
+        SafeChecks() : classes(false), externalFunctions(false), internalFunctions(false), externalVariables(false) {}
 
-    /** Check for incomplete info in library files? */
-    bool checkLibrary;
+        static const char XmlRootName[];
+        static const char XmlClasses[];
+        static const char XmlExternalFunctions[];
+        static const char XmlInternalFunctions[];
+        static const char XmlExternalVariables[];
+
+        void clear() {
+            classes = externalFunctions = internalFunctions = externalVariables = false;
+        }
+
+        /**
+         * Public interface of classes
+         * - public function parameters can have any value
+         * - public functions can be called in any order
+         * - public variables can have any value
+         */
+        bool classes;
+
+        /**
+         * External functions
+         * - external functions can be called in any order
+         * - function parameters can have any values
+         */
+        bool externalFunctions;
+
+        /**
+         * Experimental: assume that internal functions can be used in any way
+         * This is only available in the GUI.
+         */
+        bool internalFunctions;
+
+        /**
+         * Global variables that can be modified outside the TU.
+         * - Such variable can have "any" value
+         */
+        bool externalVariables;
+    };
+
+    SafeChecks safeChecks;
+
+    SimpleEnableGroup<Severity::SeverityType> severity;
+    SimpleEnableGroup<Certainty::CertaintyLevel> certainty;
+    SimpleEnableGroup<Checks::CheckList> checks;
+
+    /** @brief show timing information (--showtime=file|summary|top5) */
+    SHOWTIME_MODES showtime;
 
     /** Struct contains standards settings */
     Standards standards;
 
-    ImportProject project;
+    /** @brief The output format in which the errors are printed in text mode,
+        e.g. "{severity} {file}:{line} {message} {id}" */
+    std::string templateFormat;
+
+    /** @brief The output format in which the error locations are printed in
+     *  text mode, e.g. "{file}:{line} {info}" */
+    std::string templateLocation;
+
+    /** @brief defines given by the user */
+    std::string userDefines;
+
+    /** @brief undefines given by the user */
+    std::set<std::string> userUndefs;
+
+    /** @brief forced includes given by the user */
+    std::list<std::string> userIncludes;
+
+    /** @brief Is --verbose given? */
+    bool verbose;
+
+    /** @brief write XML results (--xml) */
+    bool xml;
+
+    /** @brief XML version (--xml-version=..) */
+    int xml_version;
 
     /**
      * @brief return true if a included file is to be excluded in Preprocessor::getConfigs
      * @return true for the file to be excluded.
      */
     bool configurationExcluded(const std::string &file) const {
-        for (std::set<std::string>::const_iterator i=configExcludePaths.begin(); i!=configExcludePaths.end(); ++i) {
-            if (file.length()>=i->length() && file.compare(0,i->length(),*i)==0) {
+        for (const std::string & configExcludePath : configExcludePaths) {
+            if (file.length()>=configExcludePath.length() && file.compare(0,configExcludePath.length(),configExcludePath)==0) {
                 return true;
             }
         }
         return false;
     }
+
+    /**
+     * @brief Enable extra checks by id. See isEnabled()
+     * @param str single id or list of id values to be enabled
+     * or empty string to enable all. e.g. "style,possibleError"
+     * @return error message. empty upon success
+     */
+    std::string addEnabled(const std::string &str);
+
+    /**
+     * @brief Returns true if given value can be shown
+     * @return true if the value can be shown
+     */
+    bool isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck=false) const;
+
+    /** Is posix library specified? */
+    bool posix() const {
+        return std::find(libraries.begin(), libraries.end(), "posix") != libraries.end();
+    }
+
+    /** @brief Request termination of checking */
+    static void terminate(bool t = true) {
+        Settings::mTerminated = t;
+    }
+
+    /** @brief termination requested? */
+    static bool terminated() {
+        return Settings::mTerminated;
+    }
+
+    std::set<std::string> summaryReturn;
+
+    void loadSummaries();
 };
 
 /// @}

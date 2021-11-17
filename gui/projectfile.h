@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,28 +19,43 @@
 #ifndef PROJECT_FILE_H
 #define PROJECT_FILE_H
 
+#include <map>
 #include <QObject>
 #include <QString>
 #include <QStringList>
-#include <QXmlStreamReader>
 
 #include "suppressions.h"
+
+#include <settings.h>
+
+class QXmlStreamReader;
+class QXmlStreamWriter;
 
 /// @addtogroup GUI
 /// @{
 
 
 /**
-* @brief A class that reads and writes project files.
-* The project files contain project-specific settings for checking. For
-* example a list of include paths.
-*/
+ * @brief A class that reads and writes project files.
+ * The project files contain project-specific settings for checking. For
+ * example a list of include paths.
+ */
 class ProjectFile : public QObject {
     Q_OBJECT
 
 public:
-    explicit ProjectFile(QObject *parent = 0);
-    ProjectFile(const QString &filename, QObject *parent = 0);
+    explicit ProjectFile(QObject *parent = nullptr);
+    explicit ProjectFile(const QString &filename, QObject *parent = nullptr);
+    ~ProjectFile() {
+        if (this == mActiveProject) mActiveProject = nullptr;
+    }
+
+    static ProjectFile* getActiveProject() {
+        return mActiveProject;
+    }
+    void setActiveProject() {
+        mActiveProject = this;
+    }
 
     /**
      * @brief Read the project file.
@@ -68,42 +83,74 @@ public:
         return mAnalyzeAllVsConfigs;
     }
 
+    bool getCheckHeaders() const {
+        return mCheckHeaders;
+    }
+
+    void setCheckHeaders(bool b) {
+        mCheckHeaders = b;
+    }
+
+    bool getCheckUnusedTemplates() const {
+        return mCheckUnusedTemplates;
+    }
+
+    void setCheckUnusedTemplates(bool b) {
+        mCheckUnusedTemplates = b;
+    }
+
     /**
-    * @brief Get list of include directories.
-    * @return list of directories.
-    */
+     * @brief Get list of include directories.
+     * @return list of directories.
+     */
     QStringList getIncludeDirs() const {
         return ProjectFile::fromNativeSeparators(mIncludeDirs);
     }
 
     /**
-    * @brief Get list of defines.
-    * @return list of defines.
-    */
+     * @brief Get list of defines.
+     * @return list of defines.
+     */
     QStringList getDefines() const {
         return mDefines;
     }
 
     /**
-    * @brief Get list of paths to check.
-    * @return list of paths.
-    */
+     * @brief Get list of undefines.
+     * @return list of undefines.
+     */
+    QStringList getUndefines() const {
+        return mUndefines;
+    }
+
+    /**
+     * @brief Get list of paths to check.
+     * @return list of paths.
+     */
     QStringList getCheckPaths() const {
         return ProjectFile::fromNativeSeparators(mPaths);
     }
 
     /**
-    * @brief Get list of paths to exclude from the check.
-    * @return list of paths.
-    */
+     * @brief Get list of paths to exclude from the check.
+     * @return list of paths.
+     */
     QStringList getExcludedPaths() const {
         return ProjectFile::fromNativeSeparators(mExcludedPaths);
     }
 
     /**
-    * @brief Get list libraries.
-    * @return list of libraries.
-    */
+     * @brief Get list of paths to exclude from the check.
+     * @return list of paths.
+     */
+    QStringList getVsConfigurations() const {
+        return mVsConfigurations;
+    }
+
+    /**
+     * @brief Get list libraries.
+     * @return list of libraries.
+     */
     QStringList getLibraries() const {
         return mLibraries;
     }
@@ -117,25 +164,32 @@ public:
     }
 
     /**
-    * @brief Get list suppressions.
-    * @return list of suppressions.
-    */
+     * @brief Get "raw" suppressions.
+     * @return list of suppressions.
+     */
     QList<Suppressions::Suppression> getSuppressions() const {
         return mSuppressions;
     }
 
     /**
-    * @brief Get list addons.
-    * @return list of addons.
-    */
+     * @brief Get list addons.
+     * @return list of addons.
+     */
     QStringList getAddons() const {
         return mAddons;
     }
 
     /**
-    * @brief Get list of addons and tools.
-    * @return list of addons and tools.
-    */
+     * @brief Get path to addon python script
+     * @param filesDir Data files folder set by --data-dir
+     * @param addon addon i.e. "misra" to lookup
+     */
+    static QString getAddonFilePath(QString filesDir, const QString &addon);
+
+    /**
+     * @brief Get list of addons and tools.
+     * @return list of addons and tools.
+     */
     QStringList getAddonsAndTools() const;
 
     bool getClangAnalyzer() const {
@@ -158,18 +212,54 @@ public:
         return mTags;
     }
 
+    int getMaxCtuDepth() const {
+        return mMaxCtuDepth;
+    }
+
+    void setMaxCtuDepth(int maxCtuDepth) {
+        mMaxCtuDepth = maxCtuDepth;
+    }
+
+    int getMaxTemplateRecursion() const {
+        return mMaxTemplateRecursion;
+    }
+
+    void setMaxTemplateRecursion(int maxTemplateRecursion) {
+        mMaxTemplateRecursion = maxTemplateRecursion;
+    }
+
+    const std::map<std::string,std::string>& getFunctionContracts() const {
+        return mFunctionContracts;
+    }
+
+    const std::map<QString, Settings::VariableContracts>& getVariableContracts() const {
+        return mVariableContracts;
+    }
+
+    void setVariableContracts(QString var, QString min, QString max) {
+        mVariableContracts[var] = Settings::VariableContracts{min.toStdString(), max.toStdString()};
+    }
+
+    void deleteFunctionContract(QString function) {
+        mFunctionContracts.erase(function.toStdString());
+    }
+
+    void deleteVariableContract(QString var) {
+        mVariableContracts.erase(var);
+    }
+
     /**
-    * @brief Get filename for the project file.
-    * @return file name.
-    */
+     * @brief Get filename for the project file.
+     * @return file name.
+     */
     QString getFilename() const {
         return mFilename;
     }
 
     /**
-    * @brief Set project root path.
-    * @param rootpath new project root path.
-    */
+     * @brief Set project root path.
+     * @param rootpath new project root path.
+     */
     void setRootPath(const QString &rootpath) {
         mRootPath = rootpath;
     }
@@ -199,6 +289,12 @@ public:
     void setDefines(const QStringList &defines);
 
     /**
+     * @brief Set list of undefines.
+     * @param undefines List of undefines.
+     */
+    void setUndefines(const QStringList &undefines);
+
+    /**
      * @brief Set list of paths to check.
      * @param paths List of paths.
      */
@@ -216,6 +312,9 @@ public:
      */
     void setLibraries(const QStringList &libraries);
 
+    /** Set contract for a function */
+    void setFunctionContract(QString function, QString expects);
+
     /**
      * @brief Set platform.
      * @param platform platform.
@@ -228,11 +327,19 @@ public:
      */
     void setSuppressions(const QList<Suppressions::Suppression> &suppressions);
 
+    /** Add suppression */
+    void addSuppression(const Suppressions::Suppression &suppression);
+
     /**
      * @brief Set list of addons.
      * @param addons List of addons.
      */
     void setAddons(const QStringList &addons);
+
+    /** @brief Set list of Visual Studio configurations to be checked
+     *  @param vsConfigs List of configurations
+     */
+    void setVSConfigurations(const QStringList &vsConfigs);
 
     /**
      * @brief Set tags.
@@ -241,6 +348,12 @@ public:
     void setTags(const QStringList &tags) {
         mTags = tags;
     }
+
+    /** Set tags for a warning */
+    void setWarningTags(std::size_t hash, QString tags);
+
+    /** Get tags for a warning */
+    QString getWarningTags(std::size_t hash) const;
 
     /**
      * @brief Write project file (to disk).
@@ -256,6 +369,30 @@ public:
         mFilename = filename;
     }
 
+    /** Do not only check how interface is used. Also check that interface is safe. */
+    class SafeChecks : public Settings::SafeChecks {
+    public:
+        SafeChecks() : Settings::SafeChecks() {}
+
+        void loadFromXml(QXmlStreamReader &xmlReader);
+        void saveToXml(QXmlStreamWriter &xmlWriter) const;
+    };
+
+    SafeChecks safeChecks;
+
+    /** Check unknown function return values */
+    QStringList getCheckUnknownFunctionReturn() const {
+        return mCheckUnknownFunctionReturn;
+    }
+    void setCheckUnknownFunctionReturn(const QStringList &s) {
+        mCheckUnknownFunctionReturn = s;
+    }
+
+    /** Use Clang parser */
+    bool clangParser;
+
+    /** Bug hunting */
+    bool bugHunting;
 protected:
 
     /**
@@ -272,7 +409,9 @@ protected:
      */
     void readImportProject(QXmlStreamReader &reader);
 
-    void readAnalyzeAllVsConfigs(QXmlStreamReader &reader);
+    bool readBool(QXmlStreamReader &reader);
+
+    int readInt(QXmlStreamReader &reader, int defaultValue);
 
     /**
      * @brief Read list of include directories from XML.
@@ -299,6 +438,24 @@ protected:
     void readExcludes(QXmlStreamReader &reader);
 
     /**
+     * @brief Read function contracts.
+     * @param reader XML stream reader.
+     */
+    void readFunctionContracts(QXmlStreamReader &reader);
+
+    /**
+     * @brief Read variable constraints.
+     * @param reader XML stream reader.
+     */
+    void readVariableContracts(QXmlStreamReader &reader);
+
+    /**
+     * @brief Read lists of Visual Studio configurations
+     * @param reader XML stream reader.
+     */
+    void readVsConfigurations(QXmlStreamReader &reader);
+
+    /**
      * @brief Read platform text.
      * @param reader XML stream reader.
      */
@@ -311,11 +468,17 @@ protected:
     void readSuppressions(QXmlStreamReader &reader);
 
     /**
-      * @brief Read string list
-      * @param stringlist   destination string list
-      * @param reader       XML stream reader
-      * @param elementname  elementname for each string
-      */
+     * @brief Read tag warnings, what warnings are tagged with a specific tag
+     * @param reader XML stream reader.
+     */
+    void readTagWarnings(QXmlStreamReader &reader, const QString &tag);
+
+    /**
+     * @brief Read string list
+     * @param stringlist   destination string list
+     * @param reader       XML stream reader
+     * @param elementname  elementname for each string
+     */
     void readStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[]);
 
     /**
@@ -362,6 +525,15 @@ private:
      */
     bool mAnalyzeAllVsConfigs;
 
+    /** Check only a selected VS configuration */
+    QStringList mVsConfigurations;
+
+    /** Check code in headers */
+    bool mCheckHeaders;
+
+    /** Check code in unused templates */
+    bool mCheckUnusedTemplates;
+
     /**
      * @brief List of include directories used to search include files.
      */
@@ -371,6 +543,11 @@ private:
      * @brief List of defines.
      */
     QStringList mDefines;
+
+    /**
+     * @brief List of undefines.
+     */
+    QStringList mUndefines;
 
     /**
      * @brief List of paths to check.
@@ -386,6 +563,10 @@ private:
      * @brief List of libraries.
      */
     QStringList mLibraries;
+
+    std::map<std::string, std::string> mFunctionContracts;
+
+    std::map<QString, Settings::VariableContracts> mVariableContracts;
 
     /**
      * @brief Platform
@@ -409,9 +590,24 @@ private:
     bool mClangTidy;
 
     /**
-     * @brief Warning tags
+     * @brief Tags
      */
     QStringList mTags;
+
+    /**
+     * @brief Warning tags
+     */
+    std::map<std::size_t, QString> mWarningTags;
+
+    /** Max CTU depth */
+    int mMaxCtuDepth;
+
+    /** Max template instantiation recursion */
+    int mMaxTemplateRecursion;
+
+    QStringList mCheckUnknownFunctionReturn;
+
+    static ProjectFile *mActiveProject;
 };
 /// @}
 #endif  // PROJECT_FILE_H

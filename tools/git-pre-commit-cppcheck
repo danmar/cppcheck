@@ -44,3 +44,5 @@ if [ -n "$changed_files" ]; then
 	cppcheck --error-exitcode=1 $changed_files
 	exit $?
 fi
+
+exit 0

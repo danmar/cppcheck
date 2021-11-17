@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,17 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QString>
-#include <QDir>
-#include <QFileInfo>
 #include "filelist.h"
-#include "path.h"
+
+#include <QDir>
 #include "pathmatch.h"
 
 QStringList FileList::getDefaultFilters()
 {
     QStringList extensions;
-    extensions << "*.cpp" << "*.cxx" << "*.cc" << "*.c" << "*.c++" << "*.txx" << "*.tpp";
+    extensions << "*.cpp" << "*.cxx" << "*.cc" << "*.c" << "*.c++" << "*.txx" << "*.tpp" << "*.ipp" << "*.ixx";
     return extensions;
 }
 
@@ -93,7 +91,7 @@ QStringList FileList::getFileList() const
     if (mExcludedPaths.empty()) {
         QStringList names;
         foreach (QFileInfo item, mFileList) {
-            QString name = QDir::fromNativeSeparators(item.canonicalFilePath());
+            QString name = QDir::fromNativeSeparators(item.filePath());
             names << name;
         }
         return names;

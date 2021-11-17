@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,14 +25,13 @@
 
 class Test64BitPortability : public TestFixture {
 public:
-    Test64BitPortability() : TestFixture("Test64BitPortability") {
-    }
+    Test64BitPortability() : TestFixture("Test64BitPortability") {}
 
 private:
     Settings settings;
 
-    void run() override {
-        settings.addEnabled("portability");
+    void run() OVERRIDE {
+        settings.severity.enable(Severity::portability);
 
         TEST_CASE(novardecl);
         TEST_CASE(functionpar);
@@ -40,6 +39,7 @@ private:
         TEST_CASE(ptrcompare);
         TEST_CASE(ptrarithmetic);
         TEST_CASE(returnIssues);
+        TEST_CASE(assignment);
     }
 
     void check(const char code[]) {
@@ -48,12 +48,22 @@ private:
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
+        LOAD_LIB_2(settings.library, "std.cfg");
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
         // Check char variable usage..
         Check64BitPortability check64BitPortability(&tokenizer, &settings, this);
         check64BitPortability.pointerassignment();
+    }
+
+    void assignment() {
+        // #8631
+        check("using CharArray = char[16];\n"
+              "void f() {\n"
+              "    CharArray foo = \"\";\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void novardecl() {
@@ -102,6 +112,32 @@ private:
         check("int foo(int *p) {\n" // #6096
               "    bool a = p;\n"
               "    return a;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::array<int,2> f();\n"
+              "void g() {\n"
+              "    std::array<int, 2> a = f();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::array<int,2> f(int x);\n"
+              "void g(int i) {\n"
+              "    std::array<int, 2> a = f(i);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("typedef std::array<int, 2> Array;\n"
+              "Array f(int x);\n"
+              "void g(int i) {\n"
+              "    Array a = f(i);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("typedef std::array<int, 2> Array;\n"
+              "Array f();\n"
+              "void g(int i) {\n"
+              "    Array a = f();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -221,7 +257,7 @@ private:
 
         // #7451: Lambdas
         check("const int* test(std::vector<int> outputs, const std::string& text) {\n"
-              "  auto it = std::find_if(outputs.begin(), outputs.end(), \n"
+              "  auto it = std::find_if(outputs.begin(), outputs.end(),\n"
               "     [&](int ele) { return \"test\" == text; });\n"
               "  return nullptr;\n"
               "}");

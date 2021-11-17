@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include "check.h"
 #include "config.h"
 #include "tokenize.h"
+#include "symboldatabase.h"
 
 #include <list>
 #include <map>
@@ -32,10 +33,7 @@
 #include <vector>
 
 class ErrorLogger;
-class Function;
-class Scope;
 class Settings;
-class SymbolDatabase;
 class Token;
 
 /// @addtogroup Checks
@@ -46,14 +44,13 @@ class Token;
 class CPPCHECKLIB CheckClass : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckClass() : Check(myName()), symbolDatabase(nullptr) {
-    }
+    CheckClass() : Check(myName()), mSymbolDatabase(nullptr) {}
 
     /** @brief This constructor is used when running checks. */
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
 
     /** @brief Run checks on the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         if (tokenizer->isC())
             return;
 
@@ -61,19 +58,7 @@ public:
 
         // can't be a simplified check .. the 'sizeof' is used.
         checkClass.checkMemset();
-        checkClass.checkUnsafeClassDivZero();
-    }
-
-    /** @brief Run checks on the simplified token list */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        if (tokenizer->isC())
-            return;
-
-        CheckClass checkClass(tokenizer, settings, errorLogger);
-
-        // Coding style checks
         checkClass.constructors();
-        checkClass.operatorEq();
         checkClass.privateFunctions();
         checkClass.operatorEqRetRefThis();
         checkClass.thisSubtraction();
@@ -81,19 +66,17 @@ public:
         checkClass.initializerListOrder();
         checkClass.initializationListUsage();
         checkClass.checkSelfInitialization();
-
         checkClass.virtualDestructor();
         checkClass.checkConst();
         checkClass.copyconstructors();
         checkClass.checkVirtualFunctionCallInConstructor();
-
         checkClass.checkDuplInheritedMembers();
         checkClass.checkExplicitConstructors();
         checkClass.checkCopyCtorAndEqOperator();
-
         checkClass.checkOverride();
+        checkClass.checkThisUseAfterFree();
+        checkClass.checkUnsafeClassRefMember();
     }
-
 
     /** @brief %Check that all class constructors are ok */
     void constructors();
@@ -115,9 +98,6 @@ public:
      */
     void checkMemset();
     void checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation, std::set<const Scope *> parsedTypes);
-
-    /** @brief 'operator=' should return something and it should not be const. */
-    void operatorEq();
 
     /** @brief 'operator=' should return reference to *this */
     void operatorEqRetRefThis();    // Warning upon no "return *this;"
@@ -154,14 +134,52 @@ public:
     /** @brief Check that copy constructor and operator defined together */
     void checkCopyCtorAndEqOperator();
 
-    /** @brief Check that arbitrary usage of the public interface does not result in division by zero */
-    void checkUnsafeClassDivZero(bool test=false);
-
-    /** @brief Check that the override keyword is used when overriding virtual methods */
+    /** @brief Check that the override keyword is used when overriding virtual functions */
     void checkOverride();
 
+    /** @brief When "self pointer" is destroyed, 'this' might become invalid. */
+    void checkThisUseAfterFree();
+
+    /** @brief Unsafe class check - const reference member */
+    void checkUnsafeClassRefMember();
+
+
+    /* multifile checking; one definition rule violations */
+    class MyFileInfo : public Check::FileInfo {
+    public:
+        struct NameLoc {
+            std::string className;
+            std::string fileName;
+            int lineNumber;
+            int column;
+            std::size_t hash;
+
+            bool operator==(const NameLoc& other) const {
+                return isSameLocation(other) && hash == other.hash;
+            }
+
+            bool isSameLocation(const NameLoc& other) const {
+                return fileName == other.fileName &&
+                       lineNumber == other.lineNumber &&
+                       column == other.column;
+            }
+        };
+        std::vector<NameLoc> classDefinitions;
+
+        /** Convert MyFileInfo data into xml string */
+        std::string toString() const OVERRIDE;
+    };
+
+    /** @brief Parse current TU and extract file info */
+    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const OVERRIDE;
+
+    Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const OVERRIDE;
+
+    /** @brief Analyse all file infos for all TU */
+    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) OVERRIDE;
+
 private:
-    const SymbolDatabase *symbolDatabase;
+    const SymbolDatabase *mSymbolDatabase;
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);
@@ -171,7 +189,7 @@ private:
     void noCopyConstructorError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
     void noOperatorEqError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
     void noDestructorError(const Scope *scope, bool isdefault, const Token *alloc);
-    void uninitVarError(const Token *tok, bool isprivate, const std::string &classname, const std::string &varname, bool inconclusive);
+    void uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive);
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
     void memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type);
@@ -179,7 +197,6 @@ private:
     void memsetErrorFloat(const Token *tok, const std::string &type);
     void mallocOnClassError(const Token* tok, const std::string &memfunc, const Token* classTok, const std::string &classname);
     void mallocOnClassWarning(const Token* tok, const std::string &memfunc, const Token* classTok);
-    void operatorEqReturnError(const Token *tok, const std::string &className);
     void virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived, bool inconclusive);
     void thisSubtractionError(const Token *tok);
     void operatorEqRetRefThisError(const Token *tok);
@@ -193,12 +210,14 @@ private:
     void selfInitializationError(const Token* tok, const std::string& varname);
     void pureVirtualFunctionCallInConstructorError(const Function * scopeFunction, const std::list<const Token *> & tokStack, const std::string &purefuncname);
     void virtualFunctionCallInConstructorError(const Function * scopeFunction, const std::list<const Token *> & tokStack, const std::string &funcname);
-    void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedname, const std::string &basename, const std::string &variablename, bool derivedIsStruct, bool baseIsStruct);
+    void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedName, const std::string &baseName, const std::string &variableName, bool derivedIsStruct, bool baseIsStruct);
     void copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor);
-    void unsafeClassDivZeroError(const Token *tok, const std::string &className, const std::string &methodName, const std::string &varName);
     void overrideError(const Function *funcInBase, const Function *funcInDerived);
+    void thisUseAfterFree(const Token *self, const Token *free, const Token *use);
+    void unsafeClassRefMemberError(const Token *tok, const std::string &varname);
+    void checkDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckClass c(nullptr, settings, errorLogger);
         c.noConstructorError(nullptr, "classname", false);
         c.noExplicitConstructorError(nullptr, "classname", false);
@@ -207,7 +226,10 @@ private:
         c.noCopyConstructorError(nullptr, false, nullptr, false);
         c.noOperatorEqError(nullptr, false, nullptr, false);
         c.noDestructorError(nullptr, false, nullptr);
-        c.uninitVarError(nullptr, false, "classname", "varname", false);
+        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", false, false);
+        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", false, false);
+        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", true, false);
+        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", true, false);
         c.operatorEqVarError(nullptr, "classname", emptyString, false);
         c.unusedPrivateFunctionError(nullptr, "classname", "funcname");
         c.memsetError(nullptr, "memfunc", "classname", "class");
@@ -215,7 +237,6 @@ private:
         c.memsetErrorFloat(nullptr, "class");
         c.mallocOnClassWarning(nullptr, "malloc", nullptr);
         c.mallocOnClassError(nullptr, "malloc", nullptr, "std::string");
-        c.operatorEqReturnError(nullptr, "class");
         c.virtualDestructorError(nullptr, "Base", "Derived", false);
         c.thisSubtractionError(nullptr);
         c.operatorEqRetRefThisError(nullptr);
@@ -229,17 +250,18 @@ private:
         c.selfInitializationError(nullptr, "var");
         c.duplInheritedMembersError(nullptr, nullptr, "class", "class", "variable", false, false);
         c.copyCtorAndEqOperatorError(nullptr, "class", false, false);
-        c.unsafeClassDivZeroError(nullptr, "Class", "dostuff", "x");
         c.pureVirtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
         c.virtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
         c.overrideError(nullptr, nullptr);
+        c.thisUseAfterFree(nullptr, nullptr, nullptr);
+        c.unsafeClassRefMemberError(nullptr, "UnsafeClass::var");
     }
 
     static std::string myName() {
         return "Class";
     }
 
-    std::string classInfo() const override {
+    std::string classInfo() const OVERRIDE {
         return "Check the code for each class.\n"
                "- Missing constructors and copy constructors\n"
                //"- Missing allocation of memory in copy constructor\n"
@@ -250,7 +272,6 @@ private:
                "- Warn if memory for classes is allocated with malloc()\n"
                "- If it's a base class, check that the destructor is virtual\n"
                "- Are there unused private functions?\n"
-               "- 'operator=' should return reference to self\n"
                "- 'operator=' should check for assignment to self\n"
                "- Constness for member functions\n"
                "- Order of initializations\n"
@@ -259,9 +280,11 @@ private:
                "- Suspicious subtraction from 'this'\n"
                "- Call of pure virtual function in constructor/destructor\n"
                "- Duplicated inherited data members\n"
-               "- If 'copy constructor' defined, 'operator=' also should be defined and vice versa\n"
+               // disabled for now "- If 'copy constructor' defined, 'operator=' also should be defined and vice versa\n"
                "- Check that arbitrary usage of public interface does not result in division by zero\n"
-               "- Check that the 'override' keyword is used when overriding virtual methods\n";
+               "- Delete \"self pointer\" and then access 'this'\n"
+               "- Check that the 'override' keyword is used when overriding virtual functions\n"
+               "- Check that the 'one definition rule' is not violated\n";
     }
 
     // operatorEqRetRefThis helper functions
@@ -270,7 +293,12 @@ private:
 
     // operatorEqToSelf helper functions
     bool hasAllocation(const Function *func, const Scope* scope) const;
-    static bool hasAssignSelf(const Function *func, const Token *rhs);
+    bool hasAllocation(const Function *func, const Scope* scope, const Token *start, const Token *end) const;
+    bool hasAllocationInIfScope(const Function *func, const Scope* scope, const Token *ifStatementScopeStart) const;
+    static bool hasAssignSelf(const Function *func, const Token *rhs, const Token **out_ifStatementScopeStart);
+    enum class Bool { TRUE, FALSE, BAILOUT };
+    static Bool isInverted(const Token *tok, const Token *rhs);
+    static const Token * getIfStmtBodyStart(const Token *tok, const Token *rhs);
 
     // checkConst helper functions
     bool isMemberVar(const Scope *scope, const Token *tok) const;
@@ -281,7 +309,10 @@ private:
     // constructors helper function
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
     struct Usage {
-        Usage() : assign(false), init(false) { }
+        explicit Usage(const Variable *var) : var(var), assign(false), init(false) {}
+
+        /** Variable that this usage is for */
+        const Variable *var;
 
         /** @brief has this variable been assigned? */
         bool assign;
@@ -293,32 +324,37 @@ private:
     static bool isBaseClassFunc(const Token *tok, const Scope *scope);
 
     /**
-     * @brief assign a variable in the varlist
-     * @param varid id of variable to mark assigned
-     * @param scope pointer to variable Scope
-     * @param usage reference to usage vector
+     * @brief Create usage list that contains all scope members and also members
+     * of base classes without constructors.
+     * @param scope current class scope
      */
-    static void assignVar(unsigned int varid, const Scope *scope, std::vector<Usage> &usage);
+    static std::vector<Usage> createUsageList(const Scope *scope);
+
+    /**
+     * @brief assign a variable in the varlist
+     * @param usageList reference to usage vector
+     * @param varid id of variable to mark assigned
+     */
+    static void assignVar(std::vector<Usage> &usageList, nonneg int varid);
 
     /**
      * @brief initialize a variable in the varlist
+     * @param usageList reference to usage vector
      * @param varid id of variable to mark initialized
-     * @param scope pointer to variable Scope
-     * @param usage reference to usage vector
      */
-    static void initVar(unsigned int varid, const Scope *scope, std::vector<Usage> &usage);
+    static void initVar(std::vector<Usage> &usageList, nonneg int varid);
 
     /**
      * @brief set all variables in list assigned
-     * @param usage reference to usage vector
+     * @param usageList reference to usage vector
      */
-    static void assignAllVar(std::vector<Usage> &usage);
+    static void assignAllVar(std::vector<Usage> &usageList);
 
     /**
      * @brief set all variables in list not assigned and not initialized
-     * @param usage reference to usage vector
+     * @param usageList reference to usage vector
      */
-    static void clearAllVar(std::vector<Usage> &usage);
+    static void clearAllVar(std::vector<Usage> &usageList);
 
     /**
      * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist
@@ -330,29 +366,34 @@ private:
     void initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage);
 
     /**
-     * @brief gives a list of tokens where pure virtual functions are called directly or indirectly
+     * @brief gives a list of tokens where virtual functions are called directly or indirectly
      * @param function function to be checked
      * @param virtualFunctionCallsMap map of results for already checked functions
      * @return list of tokens where pure virtual functions are called
      */
     const std::list<const Token *> & getVirtualFunctionCalls(
         const Function & function,
-        std::map<const Function *, std::list<const Token *> > & virtualFunctionCallsMap);
+        std::map<const Function *, std::list<const Token *>> & virtualFunctionCallsMap);
 
     /**
-     * @brief looks for the first pure virtual function call stack
+     * @brief looks for the first virtual function call stack
      * @param virtualFunctionCallsMap map of results obtained from getVirtualFunctionCalls
      * @param callToken token where pure virtual function is called directly or indirectly
      * @param[in,out] pureFuncStack list to append the stack
      */
     void getFirstVirtualFunctionCallStack(
-        std::map<const Function *, std::list<const Token *> > & virtualFunctionCallsMap,
+        std::map<const Function *, std::list<const Token *>> & virtualFunctionCallsMap,
         const Token *callToken,
         std::list<const Token *> & pureFuncStack);
 
     static bool canNotCopy(const Scope *scope);
 
     static bool canNotMove(const Scope *scope);
+
+    /**
+     * @brief Helper for checkThisUseAfterFree
+     */
+    bool checkThisUseAfterFreeRecursive(const Scope *classScope, const Function *func, const Variable *selfPointer, std::set<const Function *> callstack, const Token **freeToken);
 };
 /// @}
 //---------------------------------------------------------------------------

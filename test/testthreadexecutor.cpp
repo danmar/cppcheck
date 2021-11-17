@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,16 +20,13 @@
 #include "testsuite.h"
 #include "threadexecutor.h"
 
-#include <cstddef>
 #include <map>
-#include <ostream>
 #include <string>
 #include <utility>
 
 class TestThreadExecutor : public TestFixture {
 public:
-    TestThreadExecutor() : TestFixture("TestThreadExecutor") {
-    }
+    TestThreadExecutor() : TestFixture("TestThreadExecutor") {}
 
 private:
     Settings settings;
@@ -61,7 +58,7 @@ private:
         ASSERT_EQUALS(result, executor.check());
     }
 
-    void run() override {
+    void run() OVERRIDE {
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(deadlock_with_many_errors);

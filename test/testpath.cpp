@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,12 +24,11 @@
 
 class TestPath : public TestFixture {
 public:
-    TestPath() : TestFixture("TestPath") {
-    }
+    TestPath() : TestFixture("TestPath") {}
 
 private:
 
-    void run() override {
+    void run() OVERRIDE {
         TEST_CASE(removeQuotationMarks);
         TEST_CASE(acceptFile);
         TEST_CASE(getCurrentPath);

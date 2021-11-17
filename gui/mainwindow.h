@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +20,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QSettings>
 #include <QFileDialog>
-#include <QActionGroup>
-#include <QTimer>
 #include <QStringList>
 
 #include "settings.h"
@@ -34,8 +31,10 @@ class ThreadHandler;
 class TranslationHandler;
 class ScratchPad;
 class ProjectFile;
-class ErrorItem;
 class QAction;
+class QActionGroup;
+class QSettings;
+class QTimer;
 
 /// @addtogroup GUI
 /// @{
@@ -59,8 +58,8 @@ public:
     MainWindow &operator=(const MainWindow &) = delete;
 
     /**
-      * List of checked platforms.
-      */
+     * List of checked platforms.
+     */
     Platforms mPlatforms;
 
     /**
@@ -72,6 +71,12 @@ public:
     void analyzeCode(const QString& code, const QString& filename);
 
 public slots:
+
+    /** Update "Functions" tab */
+    void updateFunctionContractsTab();
+
+    /** Update "Variables" tab */
+    void updateVariableContractsTab();
 
     /** @brief Slot for analyze files menu item */
     void analyzeFiles();
@@ -89,7 +94,7 @@ public slots:
      * @brief Slot to reanalyze selected files
      * @param selectedFilesList list of selected files
      */
-    void performSelectedFilesCheck(QStringList selectedFilesList);
+    void performSelectedFilesCheck(const QStringList &selectedFilesList);
 
     /** @brief Slot to reanalyze modified files */
     void reAnalyzeModified();
@@ -219,11 +224,20 @@ protected slots:
     /** @brief Selects the platform as analyzed platform. */
     void selectPlatform();
 
-    /** Some results were tagged */
-    void tagged();
-
     /** Suppress error ids */
     void suppressIds(QStringList ids);
+
+    /** Edit contract for function */
+    void editFunctionContract(QString function);
+
+    /** Edit constraints for variable */
+    void editVariableContract(QString var);
+
+    /** Delete contract for function */
+    void deleteFunctionContract(QString function);
+
+    /** Edit constraints for variable */
+    void deleteVariableContract(QString var);
 
 private:
 
@@ -240,11 +254,11 @@ private:
     void reAnalyzeSelected(QStringList files);
 
     /**
-      * @brief Analyze the project.
-      * @param projectFile Pointer to the project to analyze.
-      * @param checkLibrary Flag to indicate if the library should be checked.
-      * @param checkConfiguration Flag to indicate if the configuration should be checked.
-      */
+     * @brief Analyze the project.
+     * @param projectFile Pointer to the project to analyze.
+     * @param checkLibrary Flag to indicate if the library should be checked.
+     * @param checkConfiguration Flag to indicate if the configuration should be checked.
+     */
     void analyzeProject(const ProjectFile *projectFile, const bool checkLibrary = false, const bool checkConfiguration = false);
 
     /**
@@ -349,19 +363,19 @@ private:
      * @brief Load XML file to the GUI.
      * @param selectedFile Filename (inc. path) of XML file to load.
      */
-    void loadResults(const QString selectedFile);
+    void loadResults(const QString &selectedFile);
 
     /**
      * @brief Load XML file to the GUI.
      * @param selectedFile Filename (inc. path) of XML file to load.
      * @param sourceDirectory Path to the directory that the results were generated for.
      */
-    void loadResults(const QString selectedFile, const QString sourceDirectory);
+    void loadResults(const QString &selectedFile, const QString &sourceDirectory);
 
     /**
-    * @brief Load last project results to the GUI.
-    * @return Returns true if last results was loaded
-    */
+     * @brief Load last project results to the GUI.
+     * @return Returns true if last results was loaded
+     */
     bool loadLastResults();
 
     /**
@@ -376,7 +390,7 @@ private:
      * @param filename filename (no path)
      * @return error code
      */
-    Library::Error loadLibrary(Library *library, QString filename);
+    Library::Error loadLibrary(Library *library, const QString &filename);
 
     /**
      * @brief Tries to load library file, prints message on error
@@ -384,7 +398,7 @@ private:
      * @param filename filename (no path)
      * @return True if no error
      */
-    bool tryLoadLibrary(Library *library, QString filename);
+    bool tryLoadLibrary(Library *library, const QString& filename);
 
     /**
      * @brief Update project MRU items in File-menu.

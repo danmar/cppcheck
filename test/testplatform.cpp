@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "errorlogger.h"
+#include "config.h"
 #include "platform.h"
 #include "testsuite.h"
 
@@ -25,10 +25,10 @@
 
 class TestPlatform : public TestFixture {
 public:
-    TestPlatform() : TestFixture("TestPlatform") { }
+    TestPlatform() : TestFixture("TestPlatform") {}
 
 private:
-    void run() override {
+    void run() OVERRIDE {
         TEST_CASE(empty);
         TEST_CASE(valid_config_native_1);
         TEST_CASE(valid_config_native_2);

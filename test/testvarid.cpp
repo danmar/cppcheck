@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,11 +30,10 @@ struct InternalError;
 
 class TestVarID : public TestFixture {
 public:
-    TestVarID() : TestFixture("TestVarID") {
-    }
+    TestVarID() : TestFixture("TestVarID") {}
 
 private:
-    void run() override {
+    void run() OVERRIDE {
         TEST_CASE(varid1);
         TEST_CASE(varid2);
         TEST_CASE(varid3);
@@ -92,6 +91,11 @@ private:
         TEST_CASE(varid59); // #6696
         TEST_CASE(varid60); // #7267 cast '(unsigned x)10'
         TEST_CASE(varid61); // #4988 inline function
+        TEST_CASE(varid62);
+        TEST_CASE(varid63);
+        TEST_CASE(varid64); // #9928 - extern const char (*x[256])
+        TEST_CASE(varid_for_1);
+        TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varidFunctionCall1);
@@ -129,6 +133,9 @@ private:
         TEST_CASE(varid_in_class21);    // #7788
         TEST_CASE(varid_namespace_1);   // #7272
         TEST_CASE(varid_namespace_2);   // #7000
+        TEST_CASE(varid_namespace_3);   // #8627
+        TEST_CASE(varid_namespace_4);
+        TEST_CASE(varid_namespace_5);
         TEST_CASE(varid_initList);
         TEST_CASE(varid_initListWithBaseTemplate);
         TEST_CASE(varid_initListWithScope);
@@ -143,6 +150,7 @@ private:
         TEST_CASE(varid_templateArray);
         TEST_CASE(varid_templateParameter); // #7046 set varid for "X":  std::array<int,X> Y;
         TEST_CASE(varid_templateUsing); // #5781 #7273
+        TEST_CASE(varid_not_template_in_condition); // #7988
         TEST_CASE(varid_cppcast); // #6190
         TEST_CASE(varid_variadicFunc);
         TEST_CASE(varid_typename); // #4644
@@ -157,6 +165,14 @@ private:
         TEST_CASE(varid_rangeBasedFor);
         TEST_CASE(varid_structinit); // #6406
         TEST_CASE(varid_arrayinit); // #7579
+        TEST_CASE(varid_lambda_arg);
+        TEST_CASE(varid_lambda_mutable);
+        TEST_CASE(varid_trailing_return1); // #8889
+        TEST_CASE(varid_trailing_return2); // #9066
+        TEST_CASE(varid_parameter_pack); // #9383
+        TEST_CASE(varid_for_auto_cpp17);
+        TEST_CASE(varid_not); // #9689 'not x'
+        TEST_CASE(varid_declInIfCondition);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -177,45 +193,107 @@ private:
         TEST_CASE(varidclass17);  // #6073
         TEST_CASE(varidclass18);
         TEST_CASE(varidclass19);  // initializer list
+        TEST_CASE(varidclass20);   // #7578: int (*p)[2]
         TEST_CASE(varid_classnameshaddowsvariablename); // #3990
+        TEST_CASE(varid_classnametemplate); // #10221
+
+        TEST_CASE(varidenum1);
+        TEST_CASE(varidenum2);
+        TEST_CASE(varidenum3);
+        TEST_CASE(varidenum4);
+        TEST_CASE(varidenum5);
 
         TEST_CASE(varidnamespace1);
         TEST_CASE(varidnamespace2);
         TEST_CASE(usingNamespace1);
         TEST_CASE(usingNamespace2);
         TEST_CASE(usingNamespace3);
+
+        TEST_CASE(setVarIdStructMembers1);
+
+        TEST_CASE(decltype1);
+        TEST_CASE(decltype2);
+
+        TEST_CASE(exprid1);
+
+        TEST_CASE(structuredBindings);
     }
 
-    std::string tokenize(const char code[], bool simplify = false, const char filename[] = "test.cpp") {
+    std::string tokenize(const char code[], const char filename[] = "test.cpp") {
+        errout.str("");
+
+        Settings settings;
+        settings.platform(Settings::Unix64);
+        settings.standards.c   = Standards::C89;
+        settings.standards.cpp = Standards::CPPLatest;
+        settings.checkUnusedTemplates = true;
+
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, filename);
+
+        // result..
+        Token::stringifyOptions options = Token::stringifyOptions::forDebugVarId();
+        options.files = false;
+        return tokenizer.tokens()->stringifyList(options);
+    }
+
+    std::string tokenizeExpr(const char code[], const char filename[] = "test.cpp") {
+        errout.str("");
+
+        Settings settings;
+        settings.platform(Settings::Unix64);
+        settings.standards.c   = Standards::C89;
+        settings.standards.cpp = Standards::CPPLatest;
+        settings.checkUnusedTemplates = true;
+
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, filename);
+
+        // result..
+        Token::stringifyOptions options = Token::stringifyOptions::forDebugExprId();
+        options.files = false;
+        return tokenizer.tokens()->stringifyList(options);
+    }
+
+    std::string compareVaridsForVariable(const char code[], const char varname[], const char filename[] = "test.cpp") {
         errout.str("");
 
         Settings settings;
         settings.platform(Settings::Unix64);
         settings.standards.c   = Standards::C89;
         settings.standards.cpp = Standards::CPP11;
+        settings.checkUnusedTemplates = true;
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, filename);
 
-        if (simplify)
-            tokenizer.simplifyTokenList2();
+        unsigned int varid = ~0U;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+            if (tok->str() == varname) {
+                if (varid == ~0U)
+                    varid = tok->varId();
+                else if (varid != tok->varId())
+                    return std::string("Variable ") + varname + " has different varids:\n" + tokenizer.tokens()->stringifyList(true,true,true,true,false);
+            }
+        }
 
-        // result..
-        return tokenizer.tokens()->stringifyList(true,true,true,true,false);
+        return "same varid";
     }
 
     void varid1() {
         {
             const std::string actual = tokenize(
-                                           "static int i = 1;\n"
-                                           "void f()\n"
-                                           "{\n"
-                                           "    int i = 2;\n"
-                                           "    for (int i = 0; i < 10; ++i)\n"
-                                           "        i = 3;\n"
-                                           "    i = 4;\n"
-                                           "}\n", false, "test.c");
+                "static int i = 1;\n"
+                "void f()\n"
+                "{\n"
+                "    int i = 2;\n"
+                "    for (int i = 0; i < 10; ++i)\n"
+                "        i = 3;\n"
+                "    i = 4;\n"
+                "}\n", "test.c");
 
             const char expected[] = "1: static int i@1 = 1 ;\n"
                                     "2: void f ( )\n"
@@ -231,16 +309,16 @@ private:
 
         {
             const std::string actual = tokenize(
-                                           "static int i = 1;\n"
-                                           "void f()\n"
-                                           "{\n"
-                                           "    int i = 2;\n"
-                                           "    for (int i = 0; i < 10; ++i)\n"
-                                           "    {\n"
-                                           "      i = 3;\n"
-                                           "    }\n"
-                                           "    i = 4;\n"
-                                           "}\n", false, "test.c");
+                "static int i = 1;\n"
+                "void f()\n"
+                "{\n"
+                "    int i = 2;\n"
+                "    for (int i = 0; i < 10; ++i)\n"
+                "    {\n"
+                "      i = 3;\n"
+                "    }\n"
+                "    i = 4;\n"
+                "}\n", "test.c");
 
             const char expected[] = "1: static int i@1 = 1 ;\n"
                                     "2: void f ( )\n"
@@ -259,12 +337,12 @@ private:
 
     void varid2() {
         const std::string actual = tokenize(
-                                       "void f()\n"
-                                       "{\n"
-                                       "    struct ABC abc;\n"
-                                       "    abc.a = 3;\n"
-                                       "    i = abc.a;\n"
-                                       "}\n", false, "test.c");
+            "void f()\n"
+            "{\n"
+            "    struct ABC abc;\n"
+            "    abc.a = 3;\n"
+            "    i = abc.a;\n"
+            "}\n", "test.c");
 
         const char expected[] = "1: void f ( )\n"
                                 "2: {\n"
@@ -278,12 +356,12 @@ private:
 
     void varid3() {
         const std::string actual = tokenize(
-                                       "static char str[4];\n"
-                                       "void f()\n"
-                                       "{\n"
-                                       "    char str[10];\n"
-                                       "    str[0] = 0;\n"
-                                       "}\n", false, "test.c");
+            "static char str[4];\n"
+            "void f()\n"
+            "{\n"
+            "    char str[10];\n"
+            "    str[0] = 0;\n"
+            "}\n", "test.c");
 
         const char expected[] = "1: static char str@1 [ 4 ] ;\n"
                                 "2: void f ( )\n"
@@ -297,10 +375,10 @@ private:
 
     void varid4() {
         const std::string actual = tokenize(
-                                       "void f(const unsigned int a[])\n"
-                                       "{\n"
-                                       "    int i = *(a+10);\n"
-                                       "}\n", false, "test.c");
+            "void f(const unsigned int a[])\n"
+            "{\n"
+            "    int i = *(a+10);\n"
+            "}\n", "test.c");
 
         const char expected[] = "1: void f ( const unsigned int a@1 [ ] )\n"
                                 "2: {\n"
@@ -312,10 +390,10 @@ private:
 
     void varid5() {
         const std::string actual = tokenize(
-                                       "void f()\n"
-                                       "{\n"
-                                       "    int a,b;\n"
-                                       "}\n", false, "test.c");
+            "void f()\n"
+            "{\n"
+            "    int a,b;\n"
+            "}\n", "test.c");
 
         const char expected[] = "1: void f ( )\n"
                                 "2: {\n"
@@ -328,10 +406,10 @@ private:
 
     void varid6() {
         const std::string actual = tokenize(
-                                       "int f(int a, int b)\n"
-                                       "{\n"
-                                       "    return a+b;\n"
-                                       "}\n", false, "test.c");
+            "int f(int a, int b)\n"
+            "{\n"
+            "    return a+b;\n"
+            "}\n", "test.c");
 
         const char expected[] = "1: int f ( int a@1 , int b@2 )\n"
                                 "2: {\n"
@@ -344,12 +422,12 @@ private:
 
     void varid7() {
         const std::string actual = tokenize(
-                                       "void func() {\n"
-                                       "    char a[256] = \"test\";\n"
-                                       "    {\n"
-                                       "        char b[256] = \"test\";\n"
-                                       "    }\n"
-                                       "}\n", false, "test.c");
+            "void func() {\n"
+            "    char a[256] = \"test\";\n"
+            "    {\n"
+            "        char b[256] = \"test\";\n"
+            "    }\n"
+            "}\n", "test.c");
 
         const char expected[] = "1: void func ( ) {\n"
                                 "2: char a@1 [ 256 ] = \"test\" ;\n"
@@ -363,11 +441,11 @@ private:
 
     void varidReturn1() {
         const std::string actual = tokenize(
-                                       "int f()\n"
-                                       "{\n"
-                                       "    int a;\n"
-                                       "    return a;\n"
-                                       "}\n", false, "test.c");
+            "int f()\n"
+            "{\n"
+            "    int a;\n"
+            "    return a;\n"
+            "}\n", "test.c");
 
         const char expected[] = "1: int f ( )\n"
                                 "2: {\n"
@@ -380,11 +458,11 @@ private:
 
     void varidReturn2() {
         const std::string actual = tokenize(
-                                       "void foo()\n"
-                                       "{\n"
-                                       "    unsigned long mask = (1UL << size_) - 1;\n"
-                                       "    return (abits_val_ & mask);\n"
-                                       "}\n", false, "test.c");
+            "void foo()\n"
+            "{\n"
+            "    unsigned long mask = (1UL << size_) - 1;\n"
+            "    return (abits_val_ & mask);\n"
+            "}\n", "test.c");
 
         const char expected[] = "1: void foo ( )\n"
                                 "2: {\n"
@@ -397,11 +475,11 @@ private:
 
     void varid8() {
         const std::string actual = tokenize(
-                                       "void func()\n"
-                                       "{\n"
-                                       "    std::string str(\"test\");\n"
-                                       "    str.clear();\n"
-                                       "}\n");
+            "void func()\n"
+            "{\n"
+            "    std::string str(\"test\");\n"
+            "    str.clear();\n"
+            "}");
 
         const char expected[] = "1: void func ( )\n"
                                 "2: {\n"
@@ -414,7 +492,7 @@ private:
 
     void varid9() {
         const std::string actual = tokenize(
-                                       "typedef int INT32;\n", false, "test.c");
+            "typedef int INT32;\n", "test.c");
 
         const char expected[] = "1: ;\n";
 
@@ -423,11 +501,11 @@ private:
 
     void varid10() {
         const std::string actual = tokenize(
-                                       "void foo()\n"
-                                       "{\n"
-                                       "    int abc;\n"
-                                       "    struct abc abc1;\n"
-                                       "}", false, "test.c");
+            "void foo()\n"
+            "{\n"
+            "    int abc;\n"
+            "    struct abc abc1;\n"
+            "}", "test.c");
 
         const char expected[] = "1: void foo ( )\n"
                                 "2: {\n"
@@ -439,8 +517,7 @@ private:
     }
 
     void varid11() {
-        const std::string actual = tokenize(
-                                       "class Foo;\n");
+        const std::string actual = tokenize("class Foo;");
 
         const char expected[] = "1: class Foo ;\n";
 
@@ -449,10 +526,10 @@ private:
 
     void varid12() {
         const std::string actual = tokenize(
-                                       "static void a()\n"
-                                       "{\n"
-                                       "    class Foo *foo;\n"
-                                       "}\n");
+            "static void a()\n"
+            "{\n"
+            "    class Foo *foo;\n"
+            "}");
 
         const char expected[] = "1: static void a ( )\n"
                                 "2: {\n"
@@ -464,11 +541,11 @@ private:
 
     void varid13() {
         const std::string actual = tokenize(
-                                       "void f()\n"
-                                       "{\n"
-                                       "    int a; int b;\n"
-                                       "    a = a;\n"
-                                       "}\n", false, "test.c");
+            "void f()\n"
+            "{\n"
+            "    int a; int b;\n"
+            "    a = a;\n"
+            "}\n", "test.c");
 
         const char expected[] = "1: void f ( )\n"
                                 "2: {\n"
@@ -482,12 +559,12 @@ private:
     void varid14() {
         // Overloaded operator*
         const std::string actual = tokenize(
-                                       "void foo()\n"
-                                       "{\n"
-                                       "A a;\n"
-                                       "B b;\n"
-                                       "b * a;\n"
-                                       "}", false, "test.c");
+            "void foo()\n"
+            "{\n"
+            "A a;\n"
+            "B b;\n"
+            "b * a;\n"
+            "}", "test.c");
 
         const char expected[] = "1: void foo ( )\n"
                                 "2: {\n"
@@ -502,10 +579,10 @@ private:
     void varid15() {
         {
             const std::string actual = tokenize(
-                                           "struct S {\n"
-                                           "    struct T {\n"
-                                           "    } t;\n"
-                                           "} s;", false, "test.c");
+                "struct S {\n"
+                "    struct T {\n"
+                "    } t;\n"
+                "} s;", "test.c");
 
             const char expected[] = "1: struct S {\n"
                                     "2: struct T {\n"
@@ -517,10 +594,10 @@ private:
 
         {
             const std::string actual = tokenize(
-                                           "struct S {\n"
-                                           "    struct T {\n"
-                                           "    } t;\n"
-                                           "};", false, "test.c");
+                "struct S {\n"
+                "    struct T {\n"
+                "    } t;\n"
+                "};", "test.c");
 
             const char expected[] = "1: struct S {\n"
                                     "2: struct T {\n"
@@ -533,10 +610,10 @@ private:
 
     void varid16() {
         const char code[] ="void foo()\n"
-                           "{\n"
-                           "    int x = 1;\n"
-                           "    y = (z * x);\n"
-                           "}\n";
+                            "{\n"
+                            "    int x = 1;\n"
+                            "    y = (z * x);\n"
+                            "}\n";
 
         const char expected[] = "1: void foo ( )\n"
                                 "2: {\n"
@@ -544,15 +621,15 @@ private:
                                 "4: y = z * x@1 ;\n"
                                 "5: }\n";
 
-        ASSERT_EQUALS(expected, tokenize(code, false, "test.c"));
+        ASSERT_EQUALS(expected, tokenize(code, "test.c"));
     }
 
     void varid17() { // ticket #1810
         const char code[] ="char foo()\n"
-                           "{\n"
-                           "    char c('c');\n"
-                           "    return c;\n"
-                           "}\n";
+                            "{\n"
+                            "    char c('c');\n"
+                            "    return c;\n"
+                            "}\n";
 
         const char expected[] = "1: char foo ( )\n"
                                 "2: {\n"
@@ -560,14 +637,14 @@ private:
                                 "4: return c@1 ;\n"
                                 "5: }\n";
 
-        ASSERT_EQUALS(expected, tokenize(code, false, "test.c"));
+        ASSERT_EQUALS(expected, tokenize(code, "test.c"));
     }
 
     void varid18() {
         const char code[] ="char foo(char c)\n"
-                           "{\n"
-                           "    bar::c = c;\n"
-                           "}\n";
+                            "{\n"
+                            "    bar::c = c;\n"
+                            "}\n";
 
         const char expected[] = "1: char foo ( char c@1 )\n"
                                 "2: {\n"
@@ -579,9 +656,9 @@ private:
 
     void varid19() {
         const char code[] ="void foo()\n"
-                           "{\n"
-                           "    std::pair<std::vector<double>, int> x;\n"
-                           "}\n";
+                            "{\n"
+                            "    std::pair<std::vector<double>, int> x;\n"
+                            "}\n";
 
         const char expected[] = "1: void foo ( )\n"
                                 "2: {\n"
@@ -593,9 +670,9 @@ private:
 
     void varid20() {
         const char code[] ="void foo()\n"
-                           "{\n"
-                           "    pair<vector<int>, vector<double> > x;\n"
-                           "}\n";
+                            "{\n"
+                            "    pair<vector<int>, vector<double> > x;\n"
+                            "}\n";
 
         const char expected[] = "1: void foo ( )\n"
                                 "2: {\n"
@@ -607,12 +684,12 @@ private:
 
     void varid24() {
         const char code[] ="class foo()\n"
-                           "{\n"
-                           "public:\n"
-                           "    ;\n"
-                           "private:\n"
-                           "    static int i;\n"
-                           "};\n";
+                            "{\n"
+                            "public:\n"
+                            "    ;\n"
+                            "private:\n"
+                            "    static int i;\n"
+                            "};\n";
 
         const char expected[] = "1: class foo ( )\n"
                                 "2: {\n"
@@ -627,12 +704,12 @@ private:
 
     void varid25() {
         const char code[] ="class foo()\n"
-                           "{\n"
-                           "public:\n"
-                           "    ;\n"
-                           "private:\n"
-                           "    mutable int i;\n"
-                           "};\n";
+                            "{\n"
+                            "public:\n"
+                            "    ;\n"
+                            "private:\n"
+                            "    mutable int i;\n"
+                            "};\n";
 
         const char expected[] = "1: class foo ( )\n"
                                 "2: {\n"
@@ -653,7 +730,7 @@ private:
 
     void varid27() {
         const char code[] ="int fooled_ya;\n"
-                           "fooled_ya::iterator iter;\n";
+                            "fooled_ya::iterator iter;\n";
         const char expected[] = "1: int fooled_ya@1 ;\n"
                                 "2: fooled_ya :: iterator iter@2 ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
@@ -665,8 +742,8 @@ private:
 
     void varid29() {
         const char code[] ="class A {\n"
-                           "    B<C<1>,1> b;\n"
-                           "};\n";
+                            "    B<C<1>,1> b;\n"
+                            "};\n";
         const char expected[] = "1: class A {\n"
                                 "2: B < C < 1 > , 1 > b@1 ;\n"
                                 "3: } ;\n";
@@ -684,7 +761,7 @@ private:
                                  "3: EventPtr event@3 ; event@3 = * eventP@1 ;\n"
                                  "4: * actionsP@2 = & event@3 . actions@4 ;\n"
                                  "5: }\n";
-        ASSERT_EQUALS(expected1, tokenize(code1, false, "test.c"));
+        ASSERT_EQUALS(expected1, tokenize(code1, "test.c"));
 
         const char code2[] = "void f(int b, int c) {\n"
                              "    x(a*b*c,10);\n"
@@ -692,7 +769,7 @@ private:
         const char expected2[] = "1: void f ( int b@1 , int c@2 ) {\n"
                                  "2: x ( a * b@1 * c@2 , 10 ) ;\n"
                                  "3: }\n";
-        ASSERT_EQUALS(expected2, tokenize(code2, false, "test.c"));
+        ASSERT_EQUALS(expected2, tokenize(code2, "test.c"));
 
         const char code3[] = "class Nullpointer : public ExecutionPath\n"
                              " {\n"
@@ -713,12 +790,12 @@ private:
 
     void varid34() { // ticket #2825
         const char code[] ="class Fred : public B1, public B2\n"
-                           "{\n"
-                           "public:\n"
-                           "    Fred() { a = 0; }\n"
-                           "private:\n"
-                           "    int a;\n"
-                           "};\n";
+                            "{\n"
+                            "public:\n"
+                            "    Fred() { a = 0; }\n"
+                            "private:\n"
+                            "    int a;\n"
+                            "};\n";
         const char expected[] = "1: class Fred : public B1 , public B2\n"
                                 "2: {\n"
                                 "3: public:\n"
@@ -733,9 +810,9 @@ private:
     void varid35() { // function declaration inside function body
         // #2937
         const char code[] ="int foo() {\n"
-                           "    int f(x);\n"
-                           "    return f;\n"
-                           "}\n";
+                            "    int f(x);\n"
+                            "    return f;\n"
+                            "}\n";
         const char expected[] = "1: int foo ( ) {\n"
                                 "2: int f@1 ( x ) ;\n"
                                 "3: return f@1 ;\n"
@@ -765,7 +842,7 @@ private:
 
     void varid36() { // ticket #2980 (segmentation fault)
         const char code[] ="#elif A\n"
-                           "A,a<b<x0\n";
+                            "A,a<b<x0\n";
         tokenize(code);
         ASSERT_EQUALS("", errout.str());
     }
@@ -803,7 +880,7 @@ private:
         {
             const char code[] = "static int const SZ = 22;\n";
             ASSERT_EQUALS("1: static const int SZ@1 = 22 ;\n",
-                          tokenize(code, false, "test.c"));
+                          tokenize(code, "test.c"));
         }
     }
 
@@ -816,19 +893,19 @@ private:
     void varid41() {
         const char code1[] = "union evt; void f(const evt & event);";
         ASSERT_EQUALS("1: union evt ; void f ( const evt & event@1 ) ;\n",
-                      tokenize(code1, false, "test.c"));
+                      tokenize(code1, "test.c"));
 
         const char code2[] = "struct evt; void f(const evt & event);";
         ASSERT_EQUALS("1: struct evt ; void f ( const evt & event@1 ) ;\n",
-                      tokenize(code2, false, "test.c"));
+                      tokenize(code2, "test.c"));
     }
 
     void varid42() {
         const char code[] ="namespace fruit { struct banana {}; };\n"
-                           "class Fred {\n"
-                           "public:\n"
-                           "     struct fruit::banana Bananas[25];\n"
-                           "};";
+                            "class Fred {\n"
+                            "public:\n"
+                            "     struct fruit::banana Bananas[25];\n"
+                            "};";
         ASSERT_EQUALS("1: namespace fruit { struct banana { } ; } ;\n"
                       "2: class Fred {\n"
                       "3: public:\n"
@@ -840,7 +917,7 @@ private:
     void varid43() {
         const char code[] ="int main(int flag) { if(a & flag) { return 1; } }";
         ASSERT_EQUALS("1: int main ( int flag@1 ) { if ( a & flag@1 ) { return 1 ; } }\n",
-                      tokenize(code, false, "test.c"));
+                      tokenize(code, "test.c"));
     }
 
     void varid44() {
@@ -858,7 +935,7 @@ private:
     void varid46() { // #3756
         const char code[] ="void foo() { int t; x = (struct t *)malloc(); f(t); }";
         ASSERT_EQUALS("1: void foo ( ) { int t@1 ; x = ( struct t * ) malloc ( ) ; f ( t@1 ) ; }\n",
-                      tokenize(code, false, "test.c"));
+                      tokenize(code, "test.c"));
     }
 
     void varid47() { // function parameters
@@ -866,7 +943,7 @@ private:
         {
             const char code[] ="void f(std::string &string, std::string &len) {}";
             ASSERT_EQUALS("1: void f ( std :: string & string@1 , std :: string & len@2 ) { }\n",
-                          tokenize(code, false, "test.cpp"));
+                          tokenize(code, "test.cpp"));
         }
 
         // #4729
@@ -884,55 +961,55 @@ private:
     void varid48() {  // #3785 - return (a*b)
         const char code[] ="int X::f(int b) const { return(a*b); }";
         ASSERT_EQUALS("1: int X :: f ( int b@1 ) const { return ( a * b@1 ) ; }\n",
-                      tokenize(code, false));
+                      tokenize(code));
     }
 
     void varid49() {  // #3799 - void f(std::vector<int>)
         const char code[] ="void f(std::vector<int>)";
         ASSERT_EQUALS("1: void f ( std :: vector < int > )\n",
-                      tokenize(code, false, "test.cpp"));
+                      tokenize(code, "test.cpp"));
     }
 
     void varid50() {  // #3760 - explicit
         const char code[] ="class A { explicit A(const A&); };";
         ASSERT_EQUALS("1: class A { explicit A ( const A & ) ; } ;\n",
-                      tokenize(code, false, "test.cpp"));
+                      tokenize(code, "test.cpp"));
     }
 
     void varid51() {  // don't set varid on template function
         const char code[] ="T t; t.x<0>();";
         ASSERT_EQUALS("1: T t@1 ; t@1 . x < 0 > ( ) ;\n",
-                      tokenize(code, false, "test.cpp"));
+                      tokenize(code, "test.cpp"));
     }
 
     void varid52() {
         const char code[] ="A<B<C>::D> e;\n"
-                           "B< C<> > b[10];\n"
-                           "B<C<>> c[10];";
+                            "B< C<> > b[10];\n"
+                            "B<C<>> c[10];";
         ASSERT_EQUALS("1: A < B < C > :: D > e@1 ;\n"
                       "2: B < C < > > b@2 [ 10 ] ;\n"
                       "3: B < C < > > c@3 [ 10 ] ;\n",
-                      tokenize(code, false, "test.cpp"));
+                      tokenize(code, "test.cpp"));
     }
 
     void varid53() { // #4172 - Template instantiation: T<&functionName> list[4];
         ASSERT_EQUALS("1: A < & f > list@1 [ 4 ] ;\n",
-                      tokenize("A<&f> list[4];", false, "test.cpp"));
+                      tokenize("A<&f> list[4];", "test.cpp"));
     }
 
     void varid54() { // hang
         // Original source code: libgc
-        tokenize("STATIC ptr_t GC_approx_sp(void) { word sp; sp = (word)&sp; return((ptr_t)sp); }",true);
+        tokenize("STATIC ptr_t GC_approx_sp(void) { word sp; sp = (word)&sp; return((ptr_t)sp); }");
     }
 
     void varid55() { // Ticket #5868
         const char code[] =     "typedef struct foo {} foo; "
-                                "void bar1(struct foo foo) {} "
-                                "void baz1(foo foo) {} "
-                                "void bar2(struct foo& foo) {} "
-                                "void baz2(foo& foo) {} "
-                                "void bar3(struct foo* foo) {} "
-                                "void baz3(foo* foo) {}";
+                            "void bar1(struct foo foo) {} "
+                            "void baz1(foo foo) {} "
+                            "void bar2(struct foo& foo) {} "
+                            "void baz2(foo& foo) {} "
+                            "void bar3(struct foo* foo) {} "
+                            "void baz3(foo* foo) {}";
         const char expected[] = "1: "
                                 "struct foo { } ; "
                                 "void bar1 ( struct foo foo@1 ) { } "
@@ -941,7 +1018,7 @@ private:
                                 "void baz2 ( struct foo & foo@4 ) { } "
                                 "void bar3 ( struct foo * foo@5 ) { } "
                                 "void baz3 ( struct foo * foo@6 ) { }\n";
-        ASSERT_EQUALS(expected, tokenize(code, false, "test.cpp"));
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
     }
 
     void varid56() { // Ticket #6548 - function with a throw()
@@ -950,42 +1027,42 @@ private:
         const char expected1[] = "1: "
                                  "void fred ( int x@1 ) throw ( ) { } "
                                  "void wilma ( ) { x ++ ; }\n";
-        ASSERT_EQUALS(expected1, tokenize(code1, false, "test.cpp"));
+        ASSERT_EQUALS(expected1, tokenize(code1, "test.cpp"));
 
         const char code2[] = "void fred(int x) const throw(EXCEPT) {}"
                              "void wilma() { x++; }";
         const char expected2[] = "1: "
                                  "void fred ( int x@1 ) const throw ( EXCEPT ) { } "
                                  "void wilma ( ) { x ++ ; }\n";
-        ASSERT_EQUALS(expected2, tokenize(code2, false, "test.cpp"));
+        ASSERT_EQUALS(expected2, tokenize(code2, "test.cpp"));
 
         const char code3[] = "void fred(int x) throw() ABCD {}"
                              "void wilma() { x++; }";
         const char expected3[] = "1: "
                                  "void fred ( int x@1 ) throw ( ) { } "
                                  "void wilma ( ) { x ++ ; }\n";
-        ASSERT_EQUALS(expected3, tokenize(code3, false, "test.cpp"));
+        ASSERT_EQUALS(expected3, tokenize(code3, "test.cpp"));
 
         const char code4[] = "void fred(int x) noexcept() {}"
                              "void wilma() { x++; }";
         const char expected4[] = "1: "
                                  "void fred ( int x@1 ) noexcept ( ) { } "
                                  "void wilma ( ) { x ++ ; }\n";
-        ASSERT_EQUALS(expected4, tokenize(code4, false, "test.cpp"));
+        ASSERT_EQUALS(expected4, tokenize(code4, "test.cpp"));
 
         const char code5[] = "void fred(int x) noexcept {}"
                              "void wilma() { x++; }";
         const char expected5[] = "1: "
                                  "void fred ( int x@1 ) noexcept ( true ) { } "
                                  "void wilma ( ) { x ++ ; }\n";
-        ASSERT_EQUALS(expected5, tokenize(code5, false, "test.cpp"));
+        ASSERT_EQUALS(expected5, tokenize(code5, "test.cpp"));
 
         const char code6[] = "void fred(int x) noexcept ( false ) {}"
                              "void wilma() { x++; }";
         const char expected6[] = "1: "
                                  "void fred ( int x@1 ) noexcept ( false ) { } "
                                  "void wilma ( ) { x ++ ; }\n";
-        ASSERT_EQUALS(expected6, tokenize(code6, false, "test.cpp"));
+        ASSERT_EQUALS(expected6, tokenize(code6, "test.cpp"));
     }
 
     void varid57() { // #6636: new scope by {}
@@ -1015,7 +1092,7 @@ private:
                                  "11: }\n"
                                  "12:\n"
                                  "13: }\n";
-        ASSERT_EQUALS(expected1, tokenize(code1, false, "test.cpp"));
+        ASSERT_EQUALS(expected1, tokenize(code1, "test.cpp"));
     }
 
     void varid58() { // #6638: for loop in for condition
@@ -1033,7 +1110,7 @@ private:
                                  "5: i@1 ++ ;\n"
                                  "6: }\n"
                                  "7: }\n";
-        ASSERT_EQUALS(expected1, tokenize(code1, false, "test.cpp"));
+        ASSERT_EQUALS(expected1, tokenize(code1, "test.cpp"));
     }
 
     void varid59() { // #6696
@@ -1048,13 +1125,13 @@ private:
         const char wanted[] = "1: class DLLSYM B@1 ;\n"
                               "2: struct B {\n"
                               "3: ~ B ( ) { }\n"
-                              "4: } ;\n";;
-        TODO_ASSERT_EQUALS(wanted, expected, tokenize(code, false, "test.cpp"));
+                              "4: } ;\n";
+        TODO_ASSERT_EQUALS(wanted, expected, tokenize(code, "test.cpp"));
     }
 
     void varid60() { // #7267 - cast
         ASSERT_EQUALS("1: a = ( x y ) 10 ;\n",
-                      tokenize("a=(x y)10;", false));
+                      tokenize("a=(x y)10;"));
     }
 
     void varid61() {
@@ -1064,7 +1141,51 @@ private:
         const char expected[] = "1: void foo ( int b@1 ) {\n"
                                 "2: void bar ( int a@2 , int b@3 ) { }\n"
                                 "3: }\n";
-        ASSERT_EQUALS(expected, tokenize(code, false));
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varid62() {
+        const char code[] = "void bar(int,int);\n"
+                            "void f() {\n"
+                            "    for (size_t c = 0; c < 42; ++c) {\n"
+                            "        int x;\n"
+                            "        bar(r, r * x);\n"
+                            "    }\n"
+                            "}";
+        // Ensure that there is only one variable id for "x"
+        ASSERT_EQUALS("same varid", compareVaridsForVariable(code, "x"));
+    }
+
+    void varid63() {
+        const char code[] = "void f(boost::optional<int> const& x) {}";
+        const char expected[] = "1: void f ( boost :: optional < int > const & x@1 ) { }\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varid64() {
+        const char code[] = "extern const char (*x[256]);";
+        const char expected[] = "1: extern const char ( * x@1 [ 256 ] ) ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varid_for_1() {
+        const char code[] = "void foo(int a, int b) {\n"
+                            "  for (int a=1,b=2;;) {}\n"
+                            "}";
+        const char expected[] = "1: void foo ( int a@1 , int b@2 ) {\n"
+                                "2: for ( int a@3 = 1 , b@4 = 2 ; ; ) { }\n"
+                                "3: }\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varid_for_2() {
+        const char code[] = "void foo(int a, int b) {\n"
+                            "  for (int a=f(x,y,z),b=2;;) {}\n"
+                            "}";
+        const char expected[] = "1: void foo ( int a@1 , int b@2 ) {\n"
+                                "2: for ( int a@3 = f ( x , y , z ) , b@4 = 2 ; ; ) { }\n"
+                                "3: }\n";
+        ASSERT_EQUALS(expected, tokenize(code));
     }
 
     void varid_cpp_keywords_in_c_code() {
@@ -1078,7 +1199,7 @@ private:
                                 "3: throw t@2 ;\n"
                                 "4: }\n";
 
-        ASSERT_EQUALS(expected, tokenize(code,false,"test.c"));
+        ASSERT_EQUALS(expected, tokenize(code, "test.c"));
     }
 
     void varid_cpp_keywords_in_c_code2() { // #5373
@@ -1091,39 +1212,39 @@ private:
                             "  return clear_extent_bit(tree, start, end, EXTENT_DIRTY | EXTENT_DELALLOC | "
                             "                          EXTENT_DO_ACCOUNTING, 0, 0, NULL, mask);\n"
                             "}";
-        tokenize(code, false, "test.c");
+        tokenize(code, "test.c");
     }
 
     void varidFunctionCall1() {
         const char code[] ="void f() {\n"
-                           "    int x;\n"
-                           "    x = a(y*x,10);\n"
-                           "}";
+                            "    int x;\n"
+                            "    x = a(y*x,10);\n"
+                            "}";
         const char expected[] = "1: void f ( ) {\n"
                                 "2: int x@1 ;\n"
                                 "3: x@1 = a ( y * x@1 , 10 ) ;\n"
                                 "4: }\n";
-        ASSERT_EQUALS(expected, tokenize(code, false, "test.c"));
+        ASSERT_EQUALS(expected, tokenize(code, "test.c"));
     }
 
     void varidFunctionCall2() {
         // #2491
         const char code[] ="void f(int b) {\n"
-                           "    x(a*b,10);\n"
-                           "}";
+                            "    x(a*b,10);\n"
+                            "}";
         const std::string expected1("1: void f ( int b@1 ) {\n"
                                     "2: x ( a * b");
         const std::string expected2(" , 10 ) ;\n"
                                     "3: }\n");
-        ASSERT_EQUALS(expected1+"@1"+expected2, tokenize(code,false,"test.c"));
+        ASSERT_EQUALS(expected1+"@1"+expected2, tokenize(code, "test.c"));
     }
 
     void varidFunctionCall3() {
         // Ticket #2339
         const char code[] ="void f() {\n"
-                           "    int a = 0;\n"
-                           "    int b = c - (foo::bar * a);\n"
-                           "}";
+                            "    int a = 0;\n"
+                            "    int b = c - (foo::bar * a);\n"
+                            "}";
 
         const char expected[] = "1: void f ( ) {\n"
                                 "2: int a@1 ; a@1 = 0 ;\n"
@@ -1137,36 +1258,35 @@ private:
         // Ticket #3280
         const char code1[] = "void f() { int x; fun(a,b*x); }";
         ASSERT_EQUALS("1: void f ( ) { int x@1 ; fun ( a , b * x@1 ) ; }\n",
-                      tokenize(code1, false, "test.c"));
+                      tokenize(code1, "test.c"));
         const char code2[] = "void f(int a) { int x; fun(a,b*x); }";
         ASSERT_EQUALS("1: void f ( int a@1 ) { int x@2 ; fun ( a@1 , b * x@2 ) ; }\n",
-                      tokenize(code2, false, "test.c"));
+                      tokenize(code2, "test.c"));
     }
 
     void varidFunctionCall5() {
         const char code[] = "void foo() { (f(x[2]))(x[2]); }";
         ASSERT_EQUALS("1: void foo ( ) { f ( x [ 2 ] ) ( x [ 2 ] ) ; }\n",
-                      tokenize(code, false, "test.c"));
+                      tokenize(code, "test.c"));
     }
 
     void varidStl() {
         const std::string actual = tokenize(
-                                       "list<int> ints;\n"
-                                       "list<int>::iterator it;\n"
-                                       "std::vector<std::string> dirs;\n"
-                                       "std::map<int, int> coords;\n"
-                                       "std::tr1::unordered_map<int, int> xy;\n"
-                                       "std::list<boost::wave::token_id> tokens;\n"
-                                       "static std::vector<CvsProcess*> ex1;\n"
-                                       "extern std::vector<CvsProcess*> ex2;\n"
-                                       "std::map<int, 1> m;\n"
-                                   );
+            "list<int> ints;\n"
+            "list<int>::iterator it;\n"
+            "std::vector<std::string> dirs;\n"
+            "std::map<int, int> coords;\n"
+            "std::tr1::unordered_map<int, int> xy;\n"
+            "std::list<boost::wave::token_id> tokens;\n"
+            "static std::vector<CvsProcess*> ex1;\n"
+            "extern std::vector<CvsProcess*> ex2;\n"
+            "std::map<int, 1> m;");
 
         const char expected[] = "1: list < int > ints@1 ;\n"
                                 "2: list < int > :: iterator it@2 ;\n"
                                 "3: std :: vector < std :: string > dirs@3 ;\n"
                                 "4: std :: map < int , int > coords@4 ;\n"
-                                "5: std :: unordered_map < int , int > xy@5 ;\n"
+                                "5: std :: tr1 :: unordered_map < int , int > xy@5 ;\n"
                                 "6: std :: list < boost :: wave :: token_id > tokens@6 ;\n"
                                 "7: static std :: vector < CvsProcess * > ex1@7 ;\n"
                                 "8: extern std :: vector < CvsProcess * > ex2@8 ;\n"
@@ -1190,11 +1310,11 @@ private:
 
     void varid_delete() {
         const std::string actual = tokenize(
-                                       "void f()\n"
-                                       "{\n"
-                                       "  int *a;\n"
-                                       "  delete a;\n"
-                                       "}\n");
+            "void f()\n"
+            "{\n"
+            "  int *a;\n"
+            "  delete a;\n"
+            "}");
 
         const char expected[] = "1: void f ( )\n"
                                 "2: {\n"
@@ -1208,8 +1328,8 @@ private:
     void varid_functions() {
         {
             const std::string actual = tokenize(
-                                           "void f();\n"
-                                           "void f(){}\n", false, "test.c");
+                "void f();\n"
+                "void f(){}\n", "test.c");
 
             const char expected[] = "1: void f ( ) ;\n"
                                     "2: void f ( ) { }\n";
@@ -1219,10 +1339,10 @@ private:
 
         {
             const std::string actual = tokenize(
-                                           "A f(3);\n"
-                                           "A f2(true);\n"
-                                           "A g();\n"
-                                           "A e(int c);\n", false, "test.c");
+                "A f(3);\n"
+                "A f2(true);\n"
+                "A g();\n"
+                "A e(int c);\n", "test.c");
 
             const char expected[] = "1: A f@1 ( 3 ) ;\n"
                                     "2: A f2@2 ( true ) ;\n"
@@ -1234,18 +1354,18 @@ private:
 
         {
             const std::string actual = tokenize(
-                                           "void f1(int &p)\n"
-                                           "{\n"
-                                           "    p = 0;\n"
-                                           "}\n"
-                                           "void f2(std::string &str)\n"
-                                           "{\n"
-                                           "   str.clear();\n"
-                                           "}\n"
-                                           "void f3(const std::string &s)\n"
-                                           "{\n"
-                                           "    s.size();\n"
-                                           "}\n");
+                "void f1(int &p)\n"
+                "{\n"
+                "    p = 0;\n"
+                "}\n"
+                "void f2(std::string &str)\n"
+                "{\n"
+                "   str.clear();\n"
+                "}\n"
+                "void f3(const std::string &s)\n"
+                "{\n"
+                "    s.size();\n"
+                "}");
 
             const char expected[] = "1: void f1 ( int & p@1 )\n"
                                     "2: {\n"
@@ -1264,13 +1384,13 @@ private:
         }
 
         {
-            const std::string actual = tokenize("void f(struct foobar);", false, "test.c");
+            const std::string actual = tokenize("void f(struct foobar);", "test.c");
             const char expected[] = "1: void f ( struct foobar ) ;\n";
             ASSERT_EQUALS(expected, actual);
         }
 
         {
-            const std::string actual = tokenize("bool f(X x, int=3);", false, "test.cpp");
+            const std::string actual = tokenize("bool f(X x, int=3);", "test.cpp");
             const char expected[] = "1: bool f ( X x@1 , int = 3 ) ;\n";
             ASSERT_EQUALS(expected, actual);
         }
@@ -1279,17 +1399,17 @@ private:
     void varid_sizeof() {
         const char code[] = "x = sizeof(a*b);";
         const char expected[] = "1: x = sizeof ( a * b ) ;\n";
-        ASSERT_EQUALS(expected, tokenize(code,false,"test.c"));
+        ASSERT_EQUALS(expected, tokenize(code, "test.c"));
     }
 
     void varid_reference_to_containers() {
         const std::string actual = tokenize(
-                                       "void f()\n"
-                                       "{\n"
-                                       "    std::vector<int> b;\n"
-                                       "    std::vector<int> &a = b;\n"
-                                       "    std::vector<int> *c = &b;\n"
-                                       "}\n");
+            "void f()\n"
+            "{\n"
+            "    std::vector<int> b;\n"
+            "    std::vector<int> &a = b;\n"
+            "    std::vector<int> *c = &b;\n"
+            "}");
 
         const char expected[] = "1: void f ( )\n"
                                 "2: {\n"
@@ -1304,12 +1424,12 @@ private:
     void varid_in_class1() {
         {
             const std::string actual = tokenize(
-                                           "class Foo\n"
-                                           "{\n"
-                                           "public:\n"
-                                           "    std::string name1;\n"
-                                           "    std::string name2;\n"
-                                           "};\n");
+                "class Foo\n"
+                "{\n"
+                "public:\n"
+                "    std::string name1;\n"
+                "    std::string name2;\n"
+                "};");
 
             const char expected[] = "1: class Foo\n"
                                     "2: {\n"
@@ -1323,19 +1443,19 @@ private:
 
         {
             const std::string actual = tokenize(
-                                           "class foo\n"
-                                           "{\n"
-                                           "public:\n"
-                                           "    void do_something(const int x, const int y);\n"
-                                           "    void bar();\n"
-                                           "};\n"
-                                           "\n"
-                                           "void foo::bar()\n"
-                                           "{\n"
-                                           "    POINT pOutput = { 0 , 0 };\n"
-                                           "    int x = pOutput.x;\n"
-                                           "    int y = pOutput.y;\n"
-                                           "}\n");
+                "class foo\n"
+                "{\n"
+                "public:\n"
+                "    void do_something(const int x, const int y);\n"
+                "    void bar();\n"
+                "};\n"
+                "\n"
+                "void foo::bar()\n"
+                "{\n"
+                "    POINT pOutput = { 0 , 0 };\n"
+                "    int x = pOutput.x;\n"
+                "    int y = pOutput.y;\n"
+                "}");
 
             const char expected[] = "1: class foo\n"
                                     "2: {\n"
@@ -1357,20 +1477,20 @@ private:
 
     void varid_in_class2() {
         const std::string actual = tokenize(
-                                       "struct Foo {\n"
-                                       "    int x;\n"
-                                       "};\n"
-                                       "\n"
-                                       "struct Bar {\n"
-                                       "    Foo foo;\n"
-                                       "    int x;\n"
-                                       "    void f();\n"
-                                       "};\n"
-                                       "\n"
-                                       "void Bar::f()\n"
-                                       "{\n"
-                                       "    foo.x = x;\n"
-                                       "}\n");
+            "struct Foo {\n"
+            "    int x;\n"
+            "};\n"
+            "\n"
+            "struct Bar {\n"
+            "    Foo foo;\n"
+            "    int x;\n"
+            "    void f();\n"
+            "};\n"
+            "\n"
+            "void Bar::f()\n"
+            "{\n"
+            "    foo.x = x;\n"
+            "}");
         const char expected[] = "1: struct Foo {\n"
                                 "2: int x@1 ;\n"
                                 "3: } ;\n"
@@ -1513,21 +1633,14 @@ private:
                             "void Foo::Clone(FooBase& g) {\n"
                             "    ((FooBase)g)->m_bar = m_bar;\n"
                             "}";
-        TODO_ASSERT_EQUALS("1: class Foo : public FooBase {\n"
-                           "2: void Clone ( FooBase & g@1 ) ;\n"
-                           "3: short m_bar@2 ;\n"
-                           "4: } ;\n"
-                           "5: void Foo :: Clone ( FooBase & g@3 ) {\n"
-                           "6: ( ( FooBase ) g@3 ) . m_bar@4 = m_bar@2 ;\n"
-                           "7: }\n",
-                           "1: class Foo : public FooBase {\n"
-                           "2: void Clone ( FooBase & g@1 ) ;\n"
-                           "3: short m_bar@2 ;\n"
-                           "4: } ;\n"
-                           "5: void Foo :: Clone ( FooBase & g@3 ) {\n"
-                           "6: ( ( FooBase ) g@3 ) . m_bar = m_bar@2 ;\n"
-                           "7: }\n",
-                           tokenize(code));
+        ASSERT_EQUALS("1: class Foo : public FooBase {\n"
+                      "2: void Clone ( FooBase & g@1 ) ;\n"
+                      "3: short m_bar@2 ;\n"
+                      "4: } ;\n"
+                      "5: void Foo :: Clone ( FooBase & g@3 ) {\n"
+                      "6: ( ( FooBase ) g@3 ) . m_bar@4 = m_bar@2 ;\n"
+                      "7: }\n",
+                      tokenize(code));
     }
 
     void varid_in_class11() { // #4277 - anonymous union
@@ -1592,7 +1705,7 @@ private:
                             "};";
         ASSERT_EQUALS("1: class Foo {\n"
                       "2: private:\n"
-                      "3: void f ( ) ;\n"
+                      "3: void f ( void ) ;\n"
                       "4: } ;\n",
                       tokenize(code));
     }
@@ -1600,15 +1713,15 @@ private:
     void varid_in_class13() {
         const char code1[] = "struct a { char typename; };";
         ASSERT_EQUALS("1: struct a { char typename@1 ; } ;\n",
-                      tokenize(code1, false, "test.c"));
+                      tokenize(code1, "test.c"));
         ASSERT_EQUALS("1: struct a { char typename ; } ;\n",  // not valid C++ code
-                      tokenize(code1, false, "test.cpp"));
+                      tokenize(code1, "test.cpp"));
 
         const char code2[] = "struct a { char typename[2]; };";
         ASSERT_EQUALS("1: struct a { char typename@1 [ 2 ] ; } ;\n",
-                      tokenize(code2, false, "test.c"));
+                      tokenize(code2, "test.c"));
         ASSERT_EQUALS("1: struct a { char typename [ 2 ] ; } ;\n",  // not valid C++ code
-                      tokenize(code2, false, "test.cpp"));
+                      tokenize(code2, "test.cpp"));
     }
 
     void varid_in_class14() {
@@ -1625,7 +1738,7 @@ private:
                       "4: std :: list < int > x@2 ;\n"
                       "5: list@1 . do_something ( ) ;\n"
                       "6: Tokenizer :: list@1 . do_something ( ) ;\n"
-                      "7: }\n", tokenize(code, false, "test.cpp"));
+                      "7: }\n", tokenize(code, "test.cpp"));
     }
 
     void varid_in_class15() { // #5533 - functions
@@ -1636,7 +1749,7 @@ private:
         ASSERT_EQUALS("1: class Fred {\n"
                       "2: void x ( int a@1 ) const ;\n"
                       "3: void y ( ) { a = 0 ; }\n"
-                      "4: }\n", tokenize(code, false, "test.cpp"));
+                      "4: }\n", tokenize(code, "test.cpp"));
     }
 
     void varid_in_class16() { // Set varId for inline member functions
@@ -1648,7 +1761,7 @@ private:
             ASSERT_EQUALS("1: class Fred {\n"
                           "2: int x@1 ;\n"
                           "3: void foo ( int x@2 ) { this . x@1 = x@2 ; }\n"
-                          "4: } ;\n", tokenize(code, false, "test.cpp"));
+                          "4: } ;\n", tokenize(code, "test.cpp"));
         }
         {
             const char code[] = "class Fred {\n"
@@ -1658,7 +1771,7 @@ private:
             ASSERT_EQUALS("1: class Fred {\n"
                           "2: void foo ( int x@1 ) { this . x@2 = x@1 ; }\n"
                           "3: int x@2 ;\n"
-                          "4: } ;\n", tokenize(code, false, "test.cpp"));
+                          "4: } ;\n", tokenize(code, "test.cpp"));
         }
         {
             const char code[] = "class Fred {\n"
@@ -1668,7 +1781,7 @@ private:
             ASSERT_EQUALS("1: class Fred {\n"
                           "2: void foo ( int x@1 ) { ( * this ) . x@2 = x@1 ; }\n"
                           "3: int x@2 ;\n"
-                          "4: } ;\n", tokenize(code, false, "test.cpp"));
+                          "4: } ;\n", tokenize(code, "test.cpp"));
         }
     }
 
@@ -1696,7 +1809,7 @@ private:
                       "9: FOO Set ( BAR ) ;\n"
                       "10: int method_with_class ( B < B > b@3 ) ;\n"
                       "11: bool function ( std :: map < int , int , MYless > & m@4 ) ;\n"
-                      "12: } ;\n", tokenize(code1, false, "test.cpp"));
+                      "12: } ;\n", tokenize(code1, "test.cpp"));
 
         const char code2[] = "int i;\n"
                              "SomeType someVar1(i, i);\n"
@@ -1707,7 +1820,7 @@ private:
                       "2: SomeType someVar1@2 ( i@1 , i@1 ) ;\n"
                       "3: SomeType someVar2 ( j , j ) ;\n" // This one could be a function
                       "4: SomeType someVar3@3 ( j , 1 ) ;\n"
-                      "5: SomeType someVar4@4 ( new bar ) ;\n", tokenize(code2, false, "test.cpp"));
+                      "5: SomeType someVar4@4 ( new bar ) ;\n", tokenize(code2, "test.cpp"));
     }
 
     void varid_in_class18() {
@@ -1730,7 +1843,7 @@ private:
                       "7: } ;\n"
                       "8: A :: B :: B ( ) :\n"
                       "9: i@1 ( 0 )\n"
-                      "10: { }\n", tokenize(code, false, "test.cpp"));
+                      "10: { }\n", tokenize(code, "test.cpp"));
     }
 
     void varid_in_class19() {
@@ -1747,7 +1860,7 @@ private:
                       "4: } ;\n"
                       "5: Fred :: ~ Fred ( ) {\n"
                       "6: free ( str1@1 ) ;\n"
-                      "7: }\n", tokenize(code, false, "test.cpp"));
+                      "7: }\n", tokenize(code, "test.cpp"));
     }
 
     void varid_in_class20() {
@@ -1767,7 +1880,7 @@ private:
                       "5: cacheEntry ( ) ;\n"
                       "6: } ;\n"
                       "7:\n"
-                      "8: template < class C > cacheEntry < C > :: cacheEntry ( ) : m_key@1 ( ) { }\n", tokenize(code, false, "test.cpp"));
+                      "8: template < class C > cacheEntry < C > :: cacheEntry ( ) : m_key@1 ( ) { }\n", tokenize(code, "test.cpp"));
     }
 
     void varid_in_class21() {
@@ -1789,7 +1902,7 @@ private:
                                 "7: template < typename t1 , typename t2 >\n"
                                 "8: A :: B < t1 , t2 > :: B ( ) : x@1 ( 9 ) { }\n";
 
-        ASSERT_EQUALS(expected, tokenize(code, false, "test.cpp"));
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
     }
 
     void varid_namespace_1() { // #7272
@@ -1806,7 +1919,7 @@ private:
                       "4: int x@2 ;\n"
                       "5: union { char y@3 ; } ;\n"
                       "6: } ;\n"
-                      "7: }\n", tokenize(code, false, "test.cpp"));
+                      "7: }\n", tokenize(code, "test.cpp"));
     }
 
     void varid_namespace_2() { // #7000
@@ -1823,9 +1936,79 @@ private:
                             "   X = 0;\n"  // X@2
                             "}";
 
-        const std::string actual = tokenize(code, false, "test.cpp");
+        const std::string actual = tokenize(code, "test.cpp");
 
         ASSERT(actual.find("X@2 = 0") != std::string::npos);
+    }
+
+    std::string getLine(const std::string &code, int lineNumber) {
+        std::string nr = MathLib::toString(lineNumber);
+        const std::string::size_type pos1 = code.find('\n' + nr + ": ");
+        if (pos1 == std::string::npos)
+            return "";
+        const std::string::size_type pos2 = code.find('\n', pos1+1);
+        if (pos2 == std::string::npos)
+            return "";
+        return code.substr(pos1+1, pos2-pos1-1);
+    }
+
+    void varid_namespace_3() { // #8627
+        const char code[] = "namespace foo {\n"
+                            "struct Bar {\n"
+                            "  explicit Bar(int type);\n"
+                            "  void f();\n"
+                            "  int type;\n"  // <- Same varid here ...
+                            "};\n"
+                            "\n"
+                            "Bar::Bar(int type) : type(type) {}\n"
+                            "\n"
+                            "void Bar::f() {\n"
+                            "  type = 0;\n"  // <- ... and here
+                            "}\n"
+                            "}";
+
+        const std::string actual = tokenize(code, "test.cpp");
+
+        ASSERT_EQUALS("5: int type@2 ;", getLine(actual,5));
+        ASSERT_EQUALS("11: type@2 = 0 ;", getLine(actual,11));
+    }
+
+    void varid_namespace_4() {
+        const char code[] = "namespace X {\n"
+                            "  struct foo { int x;};\n"
+                            "  struct bar: public foo {\n"
+                            "    void dostuff();\n"
+                            "  };\n"
+                            "  void bar::dostuff() { int x2 = x * 2; }\n"
+                            "}";
+        ASSERT_EQUALS("1: namespace X {\n"
+                      "2: struct foo { int x@1 ; } ;\n"
+                      "3: struct bar : public foo {\n"
+                      "4: void dostuff ( ) ;\n"
+                      "5: } ;\n"
+                      "6: void bar :: dostuff ( ) { int x2@2 ; x2@2 = x@1 * 2 ; }\n"
+                      "7: }\n", tokenize(code, "test.cpp"));
+    }
+
+    void varid_namespace_5() {
+        const char code[] = "namespace X {\n"
+                            "  struct foo { int x;};\n"
+                            "  namespace Y {\n"
+                            "    struct bar: public foo {\n"
+                            "      void dostuff();\n"
+                            "    };\n"
+                            "    void bar::dostuff() { int x2 = x * 2; }\n"
+                            "  }\n"
+                            "}";
+        ASSERT_EQUALS("1: namespace X {\n"
+                      "2: struct foo { int x@1 ; } ;\n"
+                      "3: namespace Y {\n"
+                      "4: struct bar : public foo {\n"
+                      "5: void dostuff ( ) ;\n"
+                      "6: } ;\n"
+                      "7: void bar :: dostuff ( ) { int x2@2 ; x2@2 = x@1 * 2 ; }\n"
+                      "8: }\n"
+                      "9: }\n", tokenize(code, "test.cpp"));
     }
 
     void varid_initList() {
@@ -2013,11 +2196,11 @@ private:
     void varid_operator() {
         {
             const std::string actual = tokenize(
-                                           "class Foo\n"
-                                           "{\n"
-                                           "public:\n"
-                                           "    void operator=(const Foo &);\n"
-                                           "};\n");
+                "class Foo\n"
+                "{\n"
+                "public:\n"
+                "    void operator=(const Foo &);\n"
+                "};");
 
             const char expected[] = "1: class Foo\n"
                                     "2: {\n"
@@ -2029,9 +2212,9 @@ private:
         }
         {
             const std::string actual = tokenize(
-                                           "struct Foo {\n"
-                                           "    void * operator new [](int);\n"
-                                           "};\n");
+                "struct Foo {\n"
+                "    void * operator new [](int);\n"
+                "};");
             const char expected[] = "1: struct Foo {\n"
                                     "2: void * operatornew[] ( int ) ;\n"
                                     "3: } ;\n";
@@ -2042,8 +2225,8 @@ private:
 
     void varid_throw() {  // ticket #1723
         const std::string actual = tokenize(
-                                       "UserDefinedException* pe = new UserDefinedException();\n"
-                                       "throw pe;\n");
+            "UserDefinedException* pe = new UserDefinedException();\n"
+            "throw pe;");
 
         const char expected[] = "1: UserDefinedException * pe@1 ; pe@1 = new UserDefinedException ( ) ;\n"
                                 "2: throw pe@1 ;\n";
@@ -2063,7 +2246,7 @@ private:
                                 "3: AAA\n"
                                 "4: a@1 [ 0 ] = 0 ;\n"
                                 "5: }\n";
-        ASSERT_EQUALS(expected, tokenize(code, false, "test.c"));
+        ASSERT_EQUALS(expected, tokenize(code, "test.c"));
     }
 
     void varid_using() {
@@ -2114,10 +2297,22 @@ private:
     void varid_templateUsing() { // #5781 #7273
         const char code[] = "template<class T> using X = Y<T,4>;\n"
                             "X<int> x;";
-        TODO_ASSERT_EQUALS("\nY<int,4> x@1;\n",
-                           "1: template < class T > using X = Y < T , 4 > ;\n"
-                           "2: X < int > x@1 ;\n",
-                           tokenize(code));
+        ASSERT_EQUALS("2: Y < int , 4 > x@1 ;\n",
+                      tokenize(code));
+    }
+
+    void varid_not_template_in_condition() {
+        const char code1[] = "void f() { if (x<a||x>b); }";
+        ASSERT_EQUALS("1: void f ( ) { if ( x < a || x > b ) { ; } }\n", tokenize(code1));
+
+        const char code2[] = "void f() { if (1+x<a||x>b); }";
+        ASSERT_EQUALS("1: void f ( ) { if ( 1 + x < a || x > b ) { ; } }\n", tokenize(code2));
+
+        const char code3[] = "void f() { if (x<a||x>b+1); }";
+        ASSERT_EQUALS("1: void f ( ) { if ( x < a || x > b + 1 ) { ; } }\n", tokenize(code3));
+
+        const char code4[] = "void f() { if ((x==13) && (x<a||x>b)); }";
+        ASSERT_EQUALS("1: void f ( ) { if ( ( x == 13 ) && ( x < a || x > b ) ) { ; } }\n", tokenize(code4));
     }
 
     void varid_cppcast() {
@@ -2135,7 +2330,7 @@ private:
     }
 
     void varid_variadicFunc() {
-        ASSERT_EQUALS("1: int foo ( . . . ) ;\n", tokenize("int foo(...);"));
+        ASSERT_EQUALS("1: int foo ( ... ) ;\n", tokenize("int foo(...);"));
     }
 
     void varid_typename() {
@@ -2143,22 +2338,22 @@ private:
 
         ASSERT_EQUALS("1: template < int d , typename A , typename B > struct S { } ;\n", tokenize("template<int d, typename A, typename B> struct S {};"));
 
-        ASSERT_EQUALS("1: typename A a@1 ;\n", tokenize("typename A a;"));
+        ASSERT_EQUALS("1: A a@1 ;\n", tokenize("typename A a;"));
     }
 
     void varid_rvalueref() {
-        ASSERT_EQUALS("1: int & & a@1 ;\n", tokenize("int&& a;"));
+        ASSERT_EQUALS("1: int && a@1 ;\n", tokenize("int&& a;"));
 
-        ASSERT_EQUALS("1: void foo ( int & & a@1 ) { }\n", tokenize("void foo(int&& a) {}"));
+        ASSERT_EQUALS("1: void foo ( int && a@1 ) { }\n", tokenize("void foo(int&& a) {}"));
 
         ASSERT_EQUALS("1: class C {\n"
-                      "2: C ( int & & a@1 ) ;\n"
+                      "2: C ( int && a@1 ) ;\n"
                       "3: } ;\n",
                       tokenize("class C {\n"
                                "    C(int&& a);\n"
                                "};"));
 
-        ASSERT_EQUALS("1: void foo ( int & & ) ;\n", tokenize("void foo(int&&);"));
+        ASSERT_EQUALS("1: void foo ( int && ) ;\n", tokenize("void foo(int&&);"));
     }
 
     void varid_arrayFuncPar() {
@@ -2189,7 +2384,7 @@ private:
                                "    class QErrorLogger {\n"
                                "        void reportErr(ErrorLogger::ErrorMessage &msg) {\n"
                                "        }\n"
-                               "    }; \n"
+                               "    };\n"
                                "}"));
     }
 
@@ -2337,7 +2532,7 @@ private:
                       tokenize("class A;\n"
                                "struct B {\n"
                                "    void setData(const A & a);\n"
-                               "}; ", false, "test.h"));
+                               "}; ", "test.h"));
     }
 
     void varid_rangeBasedFor() {
@@ -2377,7 +2572,7 @@ private:
                                "        delta = 1;\n"
                                "        break;\n"
                                "    }\n"
-                               "}", false, "test.c"));
+                               "}", "test.c"));
     }
 
     void varid_structinit() { // #6406
@@ -2394,30 +2589,182 @@ private:
                       tokenize("void foo() {\n"
                                "  struct ABC abc = {.a=abc.a,.b=abc.b};\n"
                                "}"));
+
+        ASSERT_EQUALS("1: void foo ( ) {\n"
+                      "2: struct ABC abc@1 ; abc@1 = { . a@2 { abc@1 . a@2 } , . b@3 = { abc@1 . b@3 } } ;\n"
+                      "3: }\n",
+                      tokenize("void foo() {\n"
+                               "  struct ABC abc = {.a { abc.a },.b= { abc.b } };\n"
+                               "}"));
     }
 
     void varid_arrayinit() { // #7579 - no variable declaration in rhs
         ASSERT_EQUALS("1: void foo ( int * a@1 ) { int b@2 [ 1 ] = { x * a@1 [ 0 ] } ; }\n", tokenize("void foo(int*a) { int b[] = { x*a[0] }; }"));
     }
 
+    void varid_lambda_arg() {
+        // #8664
+        const char code1[] = "static void func(int ec) {\n"
+                             "    func2([](const std::error_code& ec) { return ec; });\n"
+                             "}";
+        const char exp1[] = "1: static void func ( int ec@1 ) {\n"
+                            "2: func2 ( [ ] ( const std :: error_code & ec@2 ) { return ec@2 ; } ) ;\n"
+                            "3: }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
+
+        const char code2[] = "static void func(int ec) {\n"
+                             "    func2([](int x, const std::error_code& ec) { return x + ec; });\n"
+                             "}";
+        const char exp2[] = "1: static void func ( int ec@1 ) {\n"
+                            "2: func2 ( [ ] ( int x@2 , const std :: error_code & ec@3 ) { return x@2 + ec@3 ; } ) ;\n"
+                            "3: }\n";
+        ASSERT_EQUALS(exp2, tokenize(code2));
+    }
+
+    void varid_lambda_mutable() {
+        // #8957
+        const char code1[] = "static void func() {\n"
+                             "    auto x = []() mutable {};\n"
+                             "    dostuff(x);\n"
+                             "}";
+        const char exp1[] = "1: static void func ( ) {\n"
+                            "2: auto x@1 ; x@1 = [ ] ( ) mutable { } ;\n"
+                            "3: dostuff ( x@1 ) ;\n"
+                            "4: }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_trailing_return1() { // #8889
+        const char code1[] = "struct Fred {\n"
+                             "    auto foo(const Fred & other) -> Fred &;\n"
+                             "    auto bar(const Fred & other) -> Fred & {\n"
+                             "        return *this;\n"
+                             "    }\n"
+                             "};\n"
+                             "auto Fred::foo(const Fred & other) -> Fred & {\n"
+                             "    return *this;\n"
+                             "}";
+        const char exp1[] = "1: struct Fred {\n"
+                            "2: auto foo ( const Fred & other@1 ) . Fred & ;\n"
+                            "3: auto bar ( const Fred & other@2 ) . Fred & {\n"
+                            "4: return * this ;\n"
+                            "5: }\n"
+                            "6: } ;\n"
+                            "7: auto Fred :: foo ( const Fred & other@3 ) . Fred & {\n"
+                            "8: return * this ;\n"
+                            "9: }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_trailing_return2() { // #9066
+        const char code1[] = "auto func(int arg) -> bar::quux {}";
+        const char exp1[] = "1: auto func ( int arg@1 ) . bar :: quux { }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_parameter_pack() { // #9383
+        const char code1[] = "template <typename... Rest>\n"
+                             "void func(Rest... parameters) {\n"
+                             "    foo(parameters...);\n"
+                             "}\n";
+        const char exp1[] = "1: template < typename ... Rest >\n"
+                            "2: void func ( Rest ... parameters@1 ) {\n"
+                            "3: foo ( parameters@1 ... ) ;\n"
+                            "4: }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_for_auto_cpp17() {
+        const char code[] = "void f() {\n"
+                            "  for (auto [x,y,z]: xyz) {\n"
+                            "    x+y+z;\n"
+                            "  }\n"
+                            "  x+y+z;\n"
+                            "}";
+        const char exp1[] = "1: void f ( ) {\n"
+                            "2: for ( auto [ x@1 , y@2 , z@3 ] : xyz ) {\n"
+                            "3: x@1 + y@2 + z@3 ;\n"
+                            "4: }\n"
+                            "5: x + y + z ;\n"
+                            "6: }\n";
+        ASSERT_EQUALS(exp1, tokenize(code));
+    }
+
+    void varid_not() { // #9689 'not x'
+        const char code1[] = "void foo(int x) const {\n"
+                             "  if (not x) {}\n"
+                             "}";
+        const char exp1[] = "1: void foo ( int x@1 ) const {\n"
+                            "2: if ( ! x@1 ) { }\n"
+                            "3: }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_declInIfCondition() {
+        // if
+        ASSERT_EQUALS("1: void f ( int x@1 ) {\n"
+                      "2: if ( int x@2 = 0 ) { x@2 ; }\n"
+                      "3: x@1 ;\n"
+                      "4: }\n",
+                      tokenize("void f(int x) {\n"
+                               "  if (int x = 0) { x; }\n"
+                               "  x;\n"
+                               "}"));
+        // if, else
+        ASSERT_EQUALS("1: void f ( int x@1 ) {\n"
+                      "2: if ( int x@2 = 0 ) { x@2 ; }\n"
+                      "3: else { x@2 ; }\n"
+                      "4: x@1 ;\n"
+                      "5: }\n",
+                      tokenize("void f(int x) {\n"
+                               "  if (int x = 0) { x; }\n"
+                               "  else { x; }\n"
+                               "  x;\n"
+                               "}"));
+        // if, else if
+        ASSERT_EQUALS("1: void f ( int x@1 ) {\n"
+                      "2: if ( int x@2 = 0 ) { x@2 ; }\n"
+                      "3: else { if ( void * x@3 = & x@3 ) { x@3 ; } }\n"
+                      "4: x@1 ;\n"
+                      "5: }\n",
+                      tokenize("void f(int x) {\n"
+                               "  if (int x = 0) x;\n"
+                               "  else if (void* x = &x) x;\n"
+                               "  x;\n"
+                               "}"));
+        // if, else if, else
+        ASSERT_EQUALS("1: void f ( int x@1 ) {\n"
+                      "2: if ( int x@2 = 0 ) { x@2 ; }\n"
+                      "3: else { if ( void * x@3 = & x@3 ) { x@3 ; }\n"
+                      "4: else { x@3 ; } }\n"
+                      "5: x@1 ;\n"
+                      "6: }\n",
+                      tokenize("void f(int x) {\n"
+                               "  if (int x = 0) x;\n"
+                               "  else if (void* x = &x) x;\n"
+                               "  else x;\n"
+                               "  x;\n"
+                               "}"));
+    }
+
     void varidclass1() {
         const std::string actual = tokenize(
-                                       "class Fred\n"
-                                       "{\n"
-                                       "private:\n"
-                                       "    int i;\n"
-                                       "\n"
-                                       "    void foo1();\n"
-                                       "    void foo2()\n"
-                                       "    {\n"
-                                       "        ++i;\n"
-                                       "    }\n"
-                                       "}\n"
-                                       "\n"
-                                       "Fred::foo1()\n"
-                                       "{\n"
-                                       "    i = 0;\n"
-                                       "}\n");
+            "class Fred\n"
+            "{\n"
+            "private:\n"
+            "    int i;\n"
+            "\n"
+            "    void foo1();\n"
+            "    void foo2()\n"
+            "    {\n"
+            "        ++i;\n"
+            "    }\n"
+            "}\n"
+            "\n"
+            "Fred::foo1()\n"
+            "{\n"
+            "    i = 0;\n"
+            "}");
 
         const char expected[] = "1: class Fred\n"
                                 "2: {\n"
@@ -2442,18 +2789,18 @@ private:
 
     void varidclass2() {
         const std::string actual = tokenize(
-                                       "class Fred\n"
-                                       "{ void f(); };\n"
-                                       "\n"
-                                       "void A::foo1()\n"
-                                       "{\n"
-                                       "    int i = 0;\n"
-                                       "}\n"
-                                       "\n"
-                                       "void Fred::f()\n"
-                                       "{\n"
-                                       "    i = 0;\n"
-                                       "}\n");
+            "class Fred\n"
+            "{ void f(); };\n"
+            "\n"
+            "void A::foo1()\n"
+            "{\n"
+            "    int i = 0;\n"
+            "}\n"
+            "\n"
+            "void Fred::f()\n"
+            "{\n"
+            "    i = 0;\n"
+            "}");
 
         const char expected[] = "1: class Fred\n"
                                 "2: { void f ( ) ; } ;\n"
@@ -2474,18 +2821,18 @@ private:
 
     void varidclass3() {
         const std::string actual = tokenize(
-                                       "class Fred\n"
-                                       "{ int i; void f(); };\n"
-                                       "\n"
-                                       "void Fred::f()\n"
-                                       "{\n"
-                                       "    i = 0;\n"
-                                       "}\n"
-                                       "\n"
-                                       "void A::f()\n"
-                                       "{\n"
-                                       "    i = 0;\n"
-                                       "}\n");
+            "class Fred\n"
+            "{ int i; void f(); };\n"
+            "\n"
+            "void Fred::f()\n"
+            "{\n"
+            "    i = 0;\n"
+            "}\n"
+            "\n"
+            "void A::f()\n"
+            "{\n"
+            "    i = 0;\n"
+            "}");
 
         const char expected[] = "1: class Fred\n"
                                 "2: { int i@1 ; void f ( ) ; } ;\n"
@@ -2506,14 +2853,14 @@ private:
 
     void varidclass4() {
         const std::string actual = tokenize(
-                                       "class Fred\n"
-                                       "{ int i; void f(); };\n"
-                                       "\n"
-                                       "void Fred::f()\n"
-                                       "{\n"
-                                       "    if (i) { }\n"
-                                       "    i = 0;\n"
-                                       "}\n");
+            "class Fred\n"
+            "{ int i; void f(); };\n"
+            "\n"
+            "void Fred::f()\n"
+            "{\n"
+            "    if (i) { }\n"
+            "    i = 0;\n"
+            "}");
 
         const char expected[] = "1: class Fred\n"
                                 "2: { int i@1 ; void f ( ) ; } ;\n"
@@ -2529,13 +2876,13 @@ private:
 
     void varidclass5() {
         const std::string actual = tokenize(
-                                       "class A { };\n"
-                                       "class B\n"
-                                       "{\n"
-                                       "    A *a;\n"
-                                       "    B() : a(new A)\n"
-                                       "    { }\n"
-                                       "};\n");
+            "class A { };\n"
+            "class B\n"
+            "{\n"
+            "    A *a;\n"
+            "    B() : a(new A)\n"
+            "    { }\n"
+            "};");
 
         const char expected[] = "1: class A { } ;\n"
                                 "2: class B\n"
@@ -2550,17 +2897,17 @@ private:
 
     void varidclass6() {
         const std::string actual = tokenize(
-                                       "class A\n"
-                                       "{\n"
-                                       "  public:\n"
-                                       "  static char buf[20];\n"
-                                       "};\n"
-                                       "char A::buf[20];\n"
-                                       "int main()\n"
-                                       "{\n"
-                                       "  char buf[2];\n"
-                                       "  A::buf[10] = 0;\n"
-                                       "}");
+            "class A\n"
+            "{\n"
+            "  public:\n"
+            "  static char buf[20];\n"
+            "};\n"
+            "char A::buf[20];\n"
+            "int main()\n"
+            "{\n"
+            "  char buf[2];\n"
+            "  A::buf[10] = 0;\n"
+            "}");
 
         const char expected[] = "1: class A\n"
                                 "2: {\n"
@@ -2579,11 +2926,11 @@ private:
 
     void varidclass7() {
         const std::string actual = tokenize(
-                                       "int main()\n"
-                                       "{\n"
-                                       "  char buf[2];\n"
-                                       "  A::buf[10] = 0;\n"
-                                       "}");
+            "int main()\n"
+            "{\n"
+            "  char buf[2];\n"
+            "  A::buf[10] = 0;\n"
+            "}");
 
         const char expected[] = "1: int main ( )\n"
                                 "2: {\n"
@@ -2596,12 +2943,12 @@ private:
 
     void varidclass8() {
         const char code[] ="class Fred {\n"
-                           "public:\n"
-                           "    void foo(int d) {\n"
-                           "        int i = bar(x * d);\n"
-                           "    }\n"
-                           "    int x;\n"
-                           "}\n";
+                            "public:\n"
+                            "    void foo(int d) {\n"
+                            "        int i = bar(x * d);\n"
+                            "    }\n"
+                            "    int x;\n"
+                            "}\n";
 
         const char expected[] = "1: class Fred {\n"
                                 "2: public:\n"
@@ -2616,14 +2963,14 @@ private:
 
     void varidclass9() {
         const char code[] ="typedef char Str[10];"
-                           "class A {\n"
-                           "public:\n"
-                           "    void f(Str &cl);\n"
-                           "    void g(Str cl);\n"
-                           "}\n"
-                           "void Fred::f(Str &cl) {\n"
-                           "    sizeof(cl);\n"
-                           "}";
+                            "class A {\n"
+                            "public:\n"
+                            "    void f(Str &cl);\n"
+                            "    void g(Str cl);\n"
+                            "}\n"
+                            "void Fred::f(Str &cl) {\n"
+                            "    sizeof(cl);\n"
+                            "}";
 
         const char expected[] = "1: class A {\n"
                                 "2: public:\n"
@@ -2639,11 +2986,11 @@ private:
 
     void varidclass10() {
         const char code[] ="class A {\n"
-                           "    void f() {\n"
-                           "        a = 3;\n"
-                           "    }\n"
-                           "    int a;\n"
-                           "};\n";
+                            "    void f() {\n"
+                            "        a = 3;\n"
+                            "    }\n"
+                            "    int a;\n"
+                            "};\n";
 
         const char expected[] = "1: class A {\n"
                                 "2: void f ( ) {\n"
@@ -2656,15 +3003,15 @@ private:
 
     void varidclass11() {
         const char code[] ="class Fred {\n"
-                           "    int a;\n"
-                           "    void f();\n"
-                           "};\n"
-                           "class Wilma {\n"
-                           "    int a;\n"
-                           "    void f();\n"
-                           "};\n"
-                           "void Fred::f() { a = 0; }\n"
-                           "void Wilma::f() { a = 0; }\n";
+                            "    int a;\n"
+                            "    void f();\n"
+                            "};\n"
+                            "class Wilma {\n"
+                            "    int a;\n"
+                            "    void f();\n"
+                            "};\n"
+                            "void Fred::f() { a = 0; }\n"
+                            "void Wilma::f() { a = 0; }\n";
 
         const char expected[] = "1: class Fred {\n"
                                 "2: int a@1 ;\n"
@@ -2682,9 +3029,9 @@ private:
 
     void varidclass12() {
         const char code[] ="class Fred {\n"
-                           "    int a;\n"
-                           "    void f() { Fred::a = 0; }\n"
-                           "};\n";
+                            "    int a;\n"
+                            "    void f() { Fred::a = 0; }\n"
+                            "};\n";
 
         const char expected[] = "1: class Fred {\n"
                                 "2: int a@1 ;\n"
@@ -2696,9 +3043,9 @@ private:
 
     void varidclass13() {
         const char code[] ="class Fred {\n"
-                           "    int a;\n"
-                           "    void f() { Foo::Fred::a = 0; }\n"
-                           "};\n";
+                            "    int a;\n"
+                            "    void f() { Foo::Fred::a = 0; }\n"
+                            "};\n";
 
         const char expected[] = "1: class Fred {\n"
                                 "2: int a@1 ;\n"
@@ -2712,8 +3059,8 @@ private:
         // don't give friend classes varid
         {
             const char code[] ="class A {\n"
-                               "friend class B;\n"
-                               "}";
+                                "friend class B;\n"
+                                "}";
 
             const char expected[] = "1: class A {\n"
                                     "2: friend class B ;\n"
@@ -2724,8 +3071,8 @@ private:
 
         {
             const char code[] ="class A {\n"
-                               "private: friend class B;\n"
-                               "}";
+                                "private: friend class B;\n"
+                                "}";
 
             const char expected[] = "1: class A {\n"
                                     "2: private: friend class B ;\n"
@@ -2765,7 +3112,7 @@ private:
         const char expected[] = "1: struct A ;\n"
                                 "2:\n"
                                 "3: struct A {\n"
-                                "4: bool * pFun@1 ;\n"
+                                "4: bool ( * pFun@1 ) ( ) ;\n"
                                 "5: void setPFun ( int mode@2 ) ;\n"
                                 "6: bool funcNorm ( ) ;\n"
                                 "7: } ;\n"
@@ -2821,6 +3168,84 @@ private:
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
+    void varidclass20() { // #7578: int (*p)[2]
+        const char code[] = "struct S {\n"
+                            "  int (*p)[2];\n"
+                            "  S();\n"
+                            "};\n"
+                            "S::S() { p[0] = 0; }";
+        const char expected[] = "1: struct S {\n"
+                                "2: int ( * p@1 ) [ 2 ] ;\n"
+                                "3: S ( ) ;\n"
+                                "4: } ;\n"
+                                "5: S :: S ( ) { p@1 [ 0 ] = 0 ; }\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidenum1() {
+        const char code[] = "const int eStart = 6;\n"
+                            "enum myEnum {\n"
+                            "  A = eStart;\n"
+                            "};\n";
+        const char expected[] = "1: const int eStart@1 = 6 ;\n"
+                                "2: enum myEnum {\n"
+                                "3: A = eStart@1 ;\n"
+                                "4: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidenum2() {
+        const char code[] = "const int eStart = 6;\n"
+                            "enum myEnum {\n"
+                            "  A = f(eStart);\n"
+                            "};\n";
+        const char expected[] = "1: const int eStart@1 = 6 ;\n"
+                                "2: enum myEnum {\n"
+                                "3: A = f ( eStart@1 ) ;\n"
+                                "4: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidenum3() {
+        const char code[] = "const int eStart = 6;\n"
+                            "enum myEnum {\n"
+                            "  A = f(eStart, x);\n"
+                            "};\n";
+        const char expected[] = "1: const int eStart@1 = 6 ;\n"
+                                "2: enum myEnum {\n"
+                                "3: A = f ( eStart@1 , x ) ;\n"
+                                "4: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidenum4() {
+        const char code[] = "const int eStart = 6;\n"
+                            "enum myEnum {\n"
+                            "  A = f(x, eStart);\n"
+                            "};\n";
+        const char expected[] = "1: const int eStart@1 = 6 ;\n"
+                                "2: enum myEnum {\n"
+                                "3: A = f ( x , eStart@1 ) ;\n"
+                                "4: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidenum5() {
+        const char code[] = "const int eStart = 6;\n"
+                            "enum myEnum {\n"
+                            "  A = f(x, eStart, y);\n"
+                            "};\n";
+        const char expected[] = "1: const int eStart@1 = 6 ;\n"
+                                "2: enum myEnum {\n"
+                                "3: A = f ( x , eStart@1 , y ) ;\n"
+                                "4: } ;\n";
+        const char current[] = "1: const int eStart@1 = 6 ;\n"
+                               "2: enum myEnum {\n"
+                               "3: A = f ( x , eStart , y ) ;\n"
+                               "4: } ;\n";
+        TODO_ASSERT_EQUALS(expected, current, tokenize(code));
+    }
+
     void varid_classnameshaddowsvariablename() {
         const char code[] = "class Data;\n"
                             "void strange_declarated(const Data& Data);\n"
@@ -2832,6 +3257,37 @@ private:
                                 "3: void handleData ( const Data & data@2 ) {\n"
                                 "4: strange_declarated ( data@2 ) ;\n"
                                 "5: }\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+
+    }
+
+    void varid_classnametemplate() {
+        const char code[] = "template <typename T>\n"
+                            "struct BBB {\n"
+                            "  struct inner;\n"
+                            "};\n"
+                            "\n"
+                            "template <typename T>\n"
+                            "struct BBB<T>::inner {\n"
+                            "  inner(int x);\n"
+                            "  int x;\n"
+                            "};\n"
+                            "\n"
+                            "template <typename T>\n"
+                            "BBB<T>::inner::inner(int x): x(x) {}\n";
+        const char expected[] = "1: template < typename T >\n"
+                                "2: struct BBB {\n"
+                                "3: struct inner ;\n"
+                                "4: } ;\n"
+                                "5:\n"
+                                "6: template < typename T >\n"
+                                "7: struct BBB < T > :: inner {\n"
+                                "8: inner ( int x@1 ) ;\n"
+                                "9: int x@2 ;\n"
+                                "10: } ;\n"
+                                "11:\n"
+                                "12: template < typename T >\n"
+                                "13: BBB < T > :: inner :: inner ( int x@3 ) : x@2 ( x@3 ) { }\n";
         ASSERT_EQUALS(expected, tokenize(code));
 
     }
@@ -2924,6 +3380,61 @@ private:
                                 "10: C :: C ( ) : m@1 ( 42 ) { }\n";
 
         ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void setVarIdStructMembers1() {
+        const char code[] = "void f(Foo foo)\n"
+                            "{\n"
+                            "    foo.size = 0;\n"
+                            "    return ((uint8_t)(foo).size);\n"
+                            "}";
+        const char expected[] = "1: void f ( Foo foo@1 )\n"
+                                "2: {\n"
+                                "3: foo@1 . size@2 = 0 ;\n"
+                                "4: return ( ( uint8_t ) ( foo@1 ) . size@2 ) ;\n"
+                                "5: }\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void decltype1() {
+        const char code[] = "void foo(int x, decltype(A::b) *p);";
+        const char expected[] = "1: void foo ( int x@1 , decltype ( A :: b ) * p@2 ) ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void decltype2() {
+        const char code[] = "int x; decltype(x) y;";
+        const char expected[] = "1: int x@1 ; decltype ( x@1 ) y@2 ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void exprid1() {
+        const std::string actual = tokenizeExpr(
+            "struct A {\n"
+            "    int x, y;\n"
+            "};\n"
+            "int f(A a, A b) {\n"
+            "    int x = a.x + b.x;\n"
+            "    int y = b.x + a.x;\n"
+            "    return x + y + a.y + b.y;\n"
+            "}\n");
+
+        const char expected[] = "1: struct A {\n"
+                                "2: int x ; int y ;\n"
+                                "3: } ;\n"
+                                "4: int f ( A a , A b ) {\n"
+                                "5: int x@5 ; x@5 =@9 a@3 .@10 x@6 +@11 b@4 .@12 x@7 ;\n"
+                                "6: int y@8 ; y@8 =@13 b@4 .@12 x@7 +@11 a@3 .@10 x@6 ;\n"
+                                "7: return x@5 +@17 y@8 +@18 a@3 .@19 y@9 +@20 b@4 .@21 y@10 ;\n"
+                                "8: }\n";
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+    void structuredBindings() {
+        const char code[] = "int foo() { auto [x,y] = xy(); return x+y; }";
+        ASSERT_EQUALS("1: int foo ( ) { auto [ x@1 , y@2 ] = xy ( ) ; return x@1 + y@2 ; }\n",
+                      tokenize(code));
     }
 };
 

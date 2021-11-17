@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,10 +25,10 @@
 #include "token.h"
 
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 class Settings;
-class Token;
 
 namespace simplecpp {
     class TokenList;
@@ -43,11 +43,11 @@ public:
     ~TokenList();
 
     void setSettings(const Settings *settings) {
-        _settings = settings;
+        mSettings = settings;
     }
 
     const Settings *getSettings() const {
-        return _settings;
+        return mSettings;
     }
 
     /** @return the source file path. e.g. "file.cpp" */
@@ -55,12 +55,12 @@ public:
 
     /** Is the code C. Used for bailouts */
     bool isC() const {
-        return _isC;
+        return mIsC;
     }
 
     /** Is the code CPP. Used for bailouts */
     bool isCPP() const {
-        return _isCPP;
+        return mIsCpp;
     }
 
     /**
@@ -69,10 +69,14 @@ public:
      */
     static void deleteTokens(Token *tok);
 
-    void addtoken(std::string str, const unsigned int lineno, const unsigned int fileno, bool split = false);
-    void addtoken(const Token *tok, const unsigned int lineno, const unsigned int fileno);
+    void addtoken(std::string str, const nonneg int lineno, const nonneg int column, const nonneg int fileno, bool split = false);
+    void addtoken(std::string str, const Token *locationTok);
 
-    static void insertTokens(Token *dest, const Token *src, unsigned int n);
+    void addtoken(const Token *tok, const nonneg int lineno, const nonneg int column, const nonneg int fileno);
+    void addtoken(const Token *tok, const Token *locationTok);
+    void addtoken(const Token *tok);
+
+    static void insertTokens(Token *dest, const Token *src, nonneg int n);
 
     /**
      * Copy tokens.
@@ -95,28 +99,28 @@ public:
      */
     bool createTokens(std::istream &code, const std::string& file0 = emptyString);
 
-    void createTokens(const simplecpp::TokenList *tokenList);
+    void createTokens(simplecpp::TokenList&& tokenList);
 
     /** Deallocate list */
     void deallocateTokens();
 
     /** append file name if seen the first time; return its index in any case */
-    unsigned int appendFileIfNew(const std::string &fileName);
+    int appendFileIfNew(const std::string &fileName);
 
     /** get first token of list */
     const Token *front() const {
-        return _tokensFrontBack.front;
+        return mTokensFrontBack.front;
     }
     Token *front() {
-        return _tokensFrontBack.front;
+        return mTokensFrontBack.front;
     }
 
     /** get last token of list */
     const Token *back() const {
-        return _tokensFrontBack.back;
+        return mTokensFrontBack.back;
     }
     Token *back() {
-        return _tokensFrontBack.back;
+        return mTokensFrontBack.back;
     }
 
     /**
@@ -125,8 +129,10 @@ public:
      * @return vector with filenames
      */
     const std::vector<std::string>& getFiles() const {
-        return _files;
+        return mFiles;
     }
+
+    std::string getOrigFile(const Token *tok) const;
 
     /**
      * get filename for given token
@@ -143,15 +149,15 @@ public:
     std::string fileLine(const Token *tok) const;
 
     /**
-    * Calculates a 64-bit checksum of the token list used to compare
-    * multiple token lists with each other as quickly as possible.
-    */
+     * Calculates a 64-bit checksum of the token list used to compare
+     * multiple token lists with each other as quickly as possible.
+     */
     unsigned long long calculateChecksum() const;
 
     /**
      * Create abstract syntax tree.
      */
-    void createAst();
+    void createAst() const;
 
     /**
      * Check abstract syntax tree.
@@ -168,10 +174,21 @@ public:
     bool validateToken(const Token* tok) const;
 
     /**
+     * Convert platform dependent types to standard types.
+     * 32 bits: size_t -> unsigned long
+     * 64 bits: size_t -> unsigned long long
+     */
+    void simplifyPlatformTypes();
+
+    /**
      * Collapse compound standard types into a single token.
      * unsigned long long int => long _isUnsigned=true,_isLong=true
      */
     void simplifyStdType();
+
+    void clangSetOrigFiles();
+
+    bool isKeyword(const std::string &str) const;
 
 private:
 
@@ -181,17 +198,25 @@ private:
     /** Disable assignment operator, no implementation */
     TokenList &operator=(const TokenList &);
 
+    void determineCppC();
+
     /** Token list */
-    TokensFrontBack _tokensFrontBack;
+    TokensFrontBack mTokensFrontBack;
 
     /** filenames for the tokenized source code (source + included) */
-    std::vector<std::string> _files;
+    std::vector<std::string> mFiles;
+
+    /** Original filenames for the tokenized source code (source + included) */
+    std::vector<std::string> mOrigFiles;
 
     /** settings */
-    const Settings* _settings;
+    const Settings* mSettings;
+
+    std::unordered_set<std::string> mKeywords;
 
     /** File is known to be C/C++ code */
-    bool _isC, _isCPP;
+    bool mIsC;
+    bool mIsCpp;
 };
 
 /// @}

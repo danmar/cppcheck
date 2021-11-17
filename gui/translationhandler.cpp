@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,25 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "translationhandler.h"
+
 #include <QApplication>
 #include <QFile>
-#include <QDebug>
 #include <QLocale>
 #include <QMessageBox>
-#include <QSettings>
 #include <QFileInfo>
-#include "translationhandler.h"
+#include <QTranslator>
+#include "common.h"
 
 
 // Provide own translations for standard buttons. This (garbage) code is needed to enforce them to appear in .ts files even after "lupdate gui.pro"
 static void unused()
 {
-#if ((QT_VERSION >= 0x040000)&&(QT_VERSION < 0x050000))
+// NOTE: Keeping semi-colons at end of macro for style preference
+#if ((QT_VERSION >= 0x040000) && (QT_VERSION < 0x050000))
     Q_UNUSED(QT_TRANSLATE_NOOP("QDialogButtonBox", "OK"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QDialogButtonBox", "Cancel"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QDialogButtonBox", "Close"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QDialogButtonBox", "Save"));
-#elif ((QT_VERSION >= 0x050000)&&(QT_VERSION < 0x060000))
+#elif ((QT_VERSION >= 0x050000) && (QT_VERSION < 0x060000))
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "OK"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "Cancel"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "Close"));
@@ -47,7 +49,7 @@ static void unused()
 TranslationHandler::TranslationHandler(QObject *parent) :
     QObject(parent),
     mCurrentLanguage("en"),
-    mTranslator(NULL)
+    mTranslator(nullptr)
 {
     // Add our available languages
     // Keep this list sorted
@@ -67,8 +69,7 @@ TranslationHandler::TranslationHandler(QObject *parent) :
 }
 
 TranslationHandler::~TranslationHandler()
-{
-}
+{}
 
 const QStringList TranslationHandler::getNames() const
 {
@@ -84,13 +85,13 @@ bool TranslationHandler::setLanguage(const QString &code)
     bool failure = false;
     QString error;
 
-    //If English is the language
-    if (code == "en") {
+    //If English is the language. Code can be e.g. en_US
+    if (code.indexOf("en") == 0) {
         //Just remove all extra translators
         if (mTranslator) {
             qApp->removeTranslator(mTranslator);
             delete mTranslator;
-            mTranslator = NULL;
+            mTranslator = nullptr;
         }
 
         mCurrentLanguage = code;
@@ -102,42 +103,39 @@ bool TranslationHandler::setLanguage(const QString &code)
     if (index == -1) {
         error = QObject::tr("Unknown language specified!");
         failure = true;
-    }
+    } else {
+        // Make sure there is a translator
+        if (!mTranslator && !failure)
+            mTranslator = new QTranslator(this);
 
-    // Make sure there is a translator
-    if (!mTranslator && !failure)
-        mTranslator = new QTranslator(this);
+        //Load the new language
+        const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
 
-    //Load the new language
-    const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
+        QString datadir = getDataDir();
 
-    QSettings settings;
-    QString datadir = settings.value("DATADIR").toString();
-    if (datadir.isEmpty())
-        datadir = appPath;
+        QString translationFile;
+        if (QFile::exists(datadir + "/lang/" + mTranslations[index].mFilename + ".qm"))
+            translationFile = datadir + "/lang/" + mTranslations[index].mFilename + ".qm";
 
-    QString translationFile;
-    if (QFile::exists(datadir + "/lang/" + mTranslations[index].mFilename + ".qm"))
-        translationFile = datadir + "/lang/" + mTranslations[index].mFilename + ".qm";
+        else if (QFile::exists(datadir + "/" + mTranslations[index].mFilename + ".qm"))
+            translationFile = datadir + "/" + mTranslations[index].mFilename + ".qm";
 
-    else if (QFile::exists(datadir + "/" + mTranslations[index].mFilename + ".qm"))
-        translationFile = datadir + "/" + mTranslations[index].mFilename + ".qm";
+        else
+            translationFile = appPath + "/" + mTranslations[index].mFilename + ".qm";
 
-    else
-        translationFile = appPath + "/" + mTranslations[index].mFilename + ".qm";
+        if (!mTranslator->load(translationFile) && !failure) {
+            //If it failed, lets check if the default file exists
+            if (!QFile::exists(translationFile)) {
+                error = QObject::tr("Language file %1 not found!");
+                error = error.arg(translationFile);
+                failure = true;
+            }
 
-    if (!mTranslator->load(translationFile) && !failure) {
-        //If it failed, lets check if the default file exists
-        if (!QFile::exists(translationFile)) {
-            error = QObject::tr("Language file %1 not found!");
+            //If file exists, there's something wrong with it
+            error = QObject::tr("Failed to load translation for language %1 from file %2");
+            error = error.arg(mTranslations[index].mName);
             error = error.arg(translationFile);
-            failure = true;
         }
-
-        //If file exists, there's something wrong with it
-        error = QObject::tr("Failed to load translation for language %1 from file %2");
-        error = error.arg(mTranslations[index].mName);
-        error = error.arg(translationFile);
     }
 
     if (failure) {

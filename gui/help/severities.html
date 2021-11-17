@@ -1,0 +1,47 @@
+<html>
+<head>
+<title>Severities</title>
+</head>
+<body>
+
+<h1>Severities</h1>
+
+<h2>error</h2>
+
+<img src="images/severities-error.png"><br>
+<p>when code is executed there is some bad behavior (undefined behavior, leak)</p>
+
+<h2>warning</h2>
+
+<img src="images/severities-warning.png"><br>
+<p>when code is executed there might be undefined behavior</p>
+
+<h2>style</h2>
+
+<img src="images/severities-style.png"><br>
+<p>point out possible mistakes, and suggest more defensive programming. Examples:
+<ul>
+  <li>unused code/variables/functions
+  <li>conditions that are always true/false
+  <li>constness
+  <li>operator precedence
+</ul>
+</p>
+
+<h2>performance</h2>
+
+<img src="images/severities-performance.png"><br>
+<p>Suggestions for making the code faster. These suggestions are only based on common knowledge. It is not certain you'll get any measurable difference in speed by fixing these messages.</p>
+
+<h2>portability</h2>
+
+<img src="images/severities-portability.png"><br>
+<p>portability warnings. Implementation defined behavior. 64-bit portability. Some undefined behavior that probably works &quot;as you want&quot;. etc.</p>
+
+<h2>information</h2>
+
+<img src="images/severities-information.png"><br>
+<p>Configuration problems. If you get such output then your code is ok but your cppcheck configuration could be improved.</p>
+
+</body>
+</html>

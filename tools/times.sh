@@ -18,7 +18,7 @@ git reset --hard HEAD > times.log
 for i in $(seq 1 50); do
     git_head=$(git log -1 --format=%h)
     # if build fails, make clean and try again
-    make SRCDIR=build CXXFLAGS=-O2 -j4 || make clean ; make SRCDIR=build CXXFLAGS=-O2 -j4
+    make SRCDIR=build CXXFLAGS=-O2 -j4 || make clean ; make MATCHCOMPILER=yes CXXFLAGS=-O2 -j4
     echo "Run number $i"
     for j in $(seq 1 ${iterations}); do
         ./cppcheck --quiet --showtime=summary --enable=all --inconclusive src 2> /dev/null | tee -a times.log

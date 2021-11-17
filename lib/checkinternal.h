@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 
 #include "check.h"
 #include "config.h"
+#include "settings.h"
 
 #include <string>
 
@@ -35,17 +36,14 @@
 class CPPCHECKLIB CheckInternal : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckInternal() : Check(myName()) {
-    }
+    CheckInternal() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
     CheckInternal(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+        : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    /** Simplified checks. The token list is simplified. */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        if (!settings->isEnabled(Settings::INTERNAL))
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+        if (!settings->checks.isEnabled(Checks::internalCheck))
             return;
 
         CheckInternal checkInternal(tokenizer, settings, errorLogger);
@@ -94,7 +92,7 @@ private:
     void extraWhitespaceError(const Token *tok, const std::string &pattern, const std::string &funcname);
     void checkRedundantTokCheckError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckInternal c(nullptr, settings, errorLogger);
         c.multiComparePatternError(nullptr, ";|%type%", "Match");
         c.simplePatternError(nullptr, "class {", "Match");
@@ -111,7 +109,7 @@ private:
         return "cppcheck internal API usage";
     }
 
-    std::string classInfo() const override {
+    std::string classInfo() const OVERRIDE {
         // Don't include these checks on the WIKI where people can read what
         // checks there are. These checks are not intended for users.
         return "";

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "settingsdialog.h"
 
-#include <QDialog>
 #include <QWidget>
 #include <QList>
-#include <QListWidgetItem>
-#include <QSettings>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QThread>
-#include "settingsdialog.h"
+#include <QSettings>
 #include "applicationdialog.h"
 #include "applicationlist.h"
 #include "translationhandler.h"
+#include "codeeditorstyle.h"
+#include "codeeditstyledialog.h"
 #include "common.h"
 
 SettingsDialog::SettingsDialog(ApplicationList *list,
@@ -39,6 +40,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mTranslator(translator)
 {
     mUI.setupUi(this);
+    mUI.mPythonPathWarning->setStyleSheet("color: red");
     QSettings settings;
     mTempApplications->copy(list);
 
@@ -54,6 +56,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mUI.mShowStatistics->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_STATISTICS, false).toBool()));
     mUI.mShowErrorId->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_ERROR_ID, false).toBool()));
     mUI.mEditPythonPath->setText(settings.value(SETTINGS_PYTHON_PATH, QString()).toString());
+    validateEditPythonPath();
     mUI.mEditMisraFile->setText(settings.value(SETTINGS_MISRA_FILE, QString()).toString());
 
 #ifdef Q_OS_WIN
@@ -64,6 +67,12 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
 #else
     mUI.mTabClang->setVisible(false);
 #endif
+    mCurrentStyle = new CodeEditorStyle(CodeEditorStyle::loadSettings(&settings));
+    manageStyleControls();
+
+    connect(mUI.mEditPythonPath, SIGNAL(textEdited(const QString&)),
+            this, SLOT(validateEditPythonPath()));
+
     connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &SettingsDialog::ok);
     connect(mUI.mButtons, &QDialogButtonBox::rejected, this, &SettingsDialog::reject);
     connect(mUI.mBtnAddApplication, SIGNAL(clicked()),
@@ -74,11 +83,16 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
             this, SLOT(editApplication()));
     connect(mUI.mBtnDefaultApplication, SIGNAL(clicked()),
             this, SLOT(defaultApplication()));
-    connect(mUI.mListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)),
+    connect(mUI.mListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
             this, SLOT(editApplication()));
 
     connect(mUI.mBtnBrowsePythonPath, &QPushButton::clicked, this, &SettingsDialog::browsePythonPath);
     connect(mUI.mBtnBrowseMisraFile, &QPushButton::clicked, this, &SettingsDialog::browseMisraFile);
+    connect(mUI.mBtnEditTheme, SIGNAL(clicked()), this, SLOT(editCodeEditorStyle()));
+    connect(mUI.mThemeSystem, SIGNAL(released()), this, SLOT(setCodeEditorStyleDefault()));
+    connect(mUI.mThemeDark, SIGNAL(released()), this, SLOT(setCodeEditorStyleDefault()));
+    connect(mUI.mThemeLight, SIGNAL(released()), this, SLOT(setCodeEditorStyleDefault()));
+    connect(mUI.mThemeCustom, SIGNAL(toggled(bool)), mUI.mBtnEditTheme, SLOT(setEnabled(bool)));
 
     mUI.mListWidget->setSortingEnabled(false);
     populateApplicationList();
@@ -105,7 +119,7 @@ void SettingsDialog::initTranslationsList()
     foreach (TranslationInfo translation, translations) {
         QListWidgetItem *item = new QListWidgetItem;
         item->setText(translation.mName);
-        item->setData(LangCodeRole, QVariant(translation.mCode));
+        item->setData(mLangCodeRole, QVariant(translation.mCode));
         mUI.mListLanguages->addItem(item);
         if (translation.mCode == current || translation.mCode == current.mid(0, 2))
             mUI.mListLanguages->setCurrentItem(item);
@@ -172,15 +186,38 @@ void SettingsDialog::saveSettingValues() const
 
     const QListWidgetItem *currentLang = mUI.mListLanguages->currentItem();
     if (currentLang) {
-        const QString langcode = currentLang->data(LangCodeRole).toString();
+        const QString langcode = currentLang->data(mLangCodeRole).toString();
         settings.setValue(SETTINGS_LANGUAGE, langcode);
     }
+    CodeEditorStyle::saveSettings(&settings, *mCurrentStyle);
 }
 
 void SettingsDialog::saveCheckboxValue(QSettings *settings, QCheckBox *box,
                                        const QString &name)
 {
     settings->setValue(name, checkStateToBool(box->checkState()));
+}
+
+void SettingsDialog::validateEditPythonPath()
+{
+    const auto pythonPath = mUI.mEditPythonPath->text();
+    if (pythonPath.isEmpty()) {
+        mUI.mEditPythonPath->setStyleSheet("");
+        mUI.mPythonPathWarning->hide();
+        return;
+    }
+
+    QFileInfo pythonPathInfo(pythonPath);
+    if (!pythonPathInfo.exists() ||
+        !pythonPathInfo.isFile() ||
+        !pythonPathInfo.isExecutable()) {
+        mUI.mEditPythonPath->setStyleSheet("QLineEdit {border: 1px solid red}");
+        mUI.mPythonPathWarning->setText(tr("The executable file \"%1\" is not available").arg(pythonPath));
+        mUI.mPythonPathWarning->show();
+    } else {
+        mUI.mEditPythonPath->setStyleSheet("");
+        mUI.mPythonPathWarning->hide();
+    }
 }
 
 void SettingsDialog::addApplication()
@@ -215,7 +252,7 @@ void SettingsDialog::removeApplication()
 void SettingsDialog::editApplication()
 {
     QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
-    QListWidgetItem *item = 0;
+    QListWidgetItem *item = nullptr;
     foreach (item, selected) {
         int row = mUI.mListWidget->row(item);
         Application& app = mTempApplications->getApplication(row);
@@ -316,13 +353,49 @@ void SettingsDialog::browseMisraFile()
         mUI.mEditMisraFile->setText(fileName);
 }
 
+// Slot to set default light style
+void SettingsDialog::setCodeEditorStyleDefault()
+{
+    if (mUI.mThemeSystem->isChecked())
+        *mCurrentStyle = CodeEditorStyle::getSystemTheme();
+    if (mUI.mThemeLight->isChecked())
+        *mCurrentStyle = defaultStyleLight;
+    if (mUI.mThemeDark->isChecked())
+        *mCurrentStyle = defaultStyleDark;
+    manageStyleControls();
+}
+
+// Slot to edit custom style
+void SettingsDialog::editCodeEditorStyle()
+{
+    StyleEditDialog dlg(*mCurrentStyle, this);
+    int nResult = dlg.exec();
+    if (nResult == QDialog::Accepted) {
+        *mCurrentStyle = dlg.getStyle();
+        manageStyleControls();
+    }
+}
+
 void SettingsDialog::browseClangPath()
 {
     QString selectedDir = QFileDialog::getExistingDirectory(this,
-                          tr("Select clang path"),
-                          QDir::rootPath());
+                                                            tr("Select clang path"),
+                                                            QDir::rootPath());
 
     if (!selectedDir.isEmpty()) {
         mUI.mEditClangPath->setText(selectedDir);
     }
 }
+
+void SettingsDialog::manageStyleControls()
+{
+    bool isSystemTheme = mCurrentStyle->isSystemTheme();
+    bool isDefaultLight = !isSystemTheme && *mCurrentStyle == defaultStyleLight;
+    bool isDefaultDark =  !isSystemTheme && *mCurrentStyle == defaultStyleDark;
+    mUI.mThemeSystem->setChecked(isSystemTheme);
+    mUI.mThemeLight->setChecked(isDefaultLight && !isDefaultDark);
+    mUI.mThemeDark->setChecked(!isDefaultLight && isDefaultDark);
+    mUI.mThemeCustom->setChecked(!isSystemTheme && !isDefaultLight && !isDefaultDark);
+    mUI.mBtnEditTheme->setEnabled(!isSystemTheme && !isDefaultLight && !isDefaultDark);
+}
+

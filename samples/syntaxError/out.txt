@@ -1,1 +1,3 @@
-[samples\syntaxError\bad.c:2]: (error) Invalid number of character '{' when no macros are defined.
+samples\syntaxError\bad.c:2:1: error: Unmatched '{'. Configuration: ''. [syntaxError]
+{
+^

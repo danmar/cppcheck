@@ -5,7 +5,7 @@
 The matchcompiler.py is a build script that performs a few code transformations to *.cpp* files under the *lib* directory. These transformations are related to the use of `Token::Match()` function and are intended to improve code performance. The transformed files are saved on the *build* directory. This tool is silently used when building the code with `SRCDIR=build`, that is:
 ```shell
 $ cd path/to/cppcheck
-$ make SRCDIR=build
+$ make MATCHCOMPILER=yes
 ```
 Here is a simple example of the *matchcompiler.py* optimization. Suppose there is a file *example.cpp* under *lib/*:
 ```cpp
@@ -57,14 +57,24 @@ $ cd path/to/cppcheck
 $ make dmake
 $ ./dmake
 ```
-### * tools/reduce.cpp
+### * tools/reduce.py
 
-Cppcheck tool that reduces code for a hang/false positive. To build the tool run:
-```shell
-$ cd path/to/cppcheck
-$ make reduce
-```
+Script that reduces code for a hang/false positive.
 
 ### * tools/times.sh
 
 Script to generate a `times.log` file that contains timing information of the last 20 revisions.
+
+### * tools/donate-cpu.py
+
+Script to donate CPU time to Cppcheck project by checking current Debian packages.
+
+### * tools/test-my-pr.py
+
+Script to compare result of working Cppcheck from your branch with main branch.
+
+### * tools/triage
+
+This tool lets you comfortably look at Cppcheck analysis results for daca packages. It automatically
+downloads the package, extracts it and jumps to the corresponding source code for a Cppcheck
+message.

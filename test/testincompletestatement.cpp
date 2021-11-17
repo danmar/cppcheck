@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,16 +27,16 @@
 
 class TestIncompleteStatement : public TestFixture {
 public:
-    TestIncompleteStatement() : TestFixture("TestIncompleteStatement") {
-    }
+    TestIncompleteStatement() : TestFixture("TestIncompleteStatement") {}
 
 private:
     Settings settings;
 
-    void check(const char code[]) {
+    void check(const char code[], bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
+        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
@@ -50,17 +50,16 @@ private:
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
-        tokenizer.createTokens(&tokens2);
+        tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
-        tokenizer.simplifyTokenList2();
 
         // Check for incomplete statements..
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.checkIncompleteStatement();
     }
 
-    void run() override {
-        settings.addEnabled("warning");
+    void run() OVERRIDE {
+        settings.severity.enable(Severity::warning);
 
         TEST_CASE(test1);
         TEST_CASE(test2);
@@ -68,6 +67,7 @@ private:
         TEST_CASE(test4);
         TEST_CASE(test5);
         TEST_CASE(test6);
+        TEST_CASE(test7);
         TEST_CASE(test_numeric);
         TEST_CASE(void0); // #6327: No fp for statement "(void)0;"
         TEST_CASE(intarray);
@@ -79,8 +79,17 @@ private:
         TEST_CASE(cast);                // #3009 : (struct Foo *)123.a = 1;
         TEST_CASE(increment);           // #3251 : FP for increment
         TEST_CASE(cpp11init);           // #5493 : int i{1};
+        TEST_CASE(cpp11init2);          // #8449
+        TEST_CASE(cpp11init3);          // #8995
         TEST_CASE(block);               // ({ do_something(); 0; })
         TEST_CASE(mapindex);
+        TEST_CASE(commaoperator1);
+        TEST_CASE(commaoperator2);
+        TEST_CASE(redundantstmts);
+        TEST_CASE(vardecl);
+        TEST_CASE(archive);             // ar & x
+        TEST_CASE(ast);
+        TEST_CASE(oror);                // dostuff() || x=32;
     }
 
     void test1() {
@@ -143,18 +152,32 @@ private:
               "}");
     }
 
+    void test7() { // #9335
+        check("namespace { std::string S = \"\"; }\n"
+              "\n"
+              "class C {\n"
+              "public:\n"
+              "  explicit C(const std::string& s);\n"
+              "};\n"
+              "\n"
+              "void f() {\n"
+              "  for (C c(S); ; ) {\n"
+              "    (void)c;\n"
+              "  }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void test_numeric() {
-        check("struct P\n"
-              "{\n"
-              "double a;\n"
-              "double b;\n"
+        check("struct P {\n"
+              "    double a;\n"
+              "    double b;\n"
               "};\n"
-              "void f()\n"
-              "{\n"
-              "const P values[2] =\n"
-              "{\n"
-              "{ 346.1,114.1 }, { 347.1,111.1 }\n"
-              "};\n"
+              "void f() {\n"
+              "    const P values[2] =\n"
+              "    {\n"
+              "        { 346.1,114.1 }, { 347.1,111.1 }\n"
+              "    };\n"
               "}");
 
         ASSERT_EQUALS("", errout.str());
@@ -272,6 +295,27 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void cpp11init2() {
+        check("x<string> handlers{\n"
+              "  { \"mode2\", []() { return 2; } },\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void cpp11init3() {
+        check("struct A { void operator()(int); };\n"
+              "void f() {\n"
+              "A{}(0);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template<class> struct A { void operator()(int); };\n"
+              "void f() {\n"
+              "A<int>{}(0);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void block() {
         check("void f() {\n"
               "    ({ do_something(); 0; });\n"
@@ -289,6 +333,101 @@ private:
         check("void f() {\n"
               "  map[{\"1\",\"2\"}]=0;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // #8827
+    void commaoperator1() {
+        check("void foo(int,const char*,int);\n"
+              "void f(int value) {\n"
+              "    foo(42,\"test\",42),(value&42);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found suspicious operator ','\n", errout.str());
+    }
+
+    void commaoperator2() {
+        check("void f() {\n"
+              "    for(unsigned int a=0, b; a<10; a++ ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // #8451
+    void redundantstmts() {
+        check("void f1(int x) {\n"
+              "    1;\n"
+              "    (1);\n"
+              "    (char)1;\n"
+              "    ((char)1);\n"
+              "    !x;\n"
+              "    (!x);\n"
+              "    (unsigned int)!x;\n"
+              "    ~x;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
+                      "[test.cpp:3]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
+                      "[test.cpp:4]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
+                      "[test.cpp:5]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
+                      "[test.cpp:6]: (warning, inconclusive) Found suspicious operator '!'\n"
+                      "[test.cpp:7]: (warning, inconclusive) Found suspicious operator '!'\n"
+                      "[test.cpp:9]: (warning, inconclusive) Found suspicious operator '~'\n", errout.str());
+
+        check("void f1(int x) { x; }", true);
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Unused variable value 'x'\n", errout.str());
+
+    }
+
+    void vardecl() {
+        // #8984
+        check("void f() { a::b *c = d(); }", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { std::vector<b> *c; }", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { a::b &c = d(); }", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { std::vector<b> &c; }", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { a::b &&c = d(); }", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { std::vector<b> &&c; }", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { char * const * a, * const * b; }", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { char * const * a = 0, * volatile restrict * b; }", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { char * const * a = 0, * volatile const * b; }", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void archive() {
+        check("void f(Archive &ar) {\n"
+              "  ar & x;\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int ar) {\n"
+              "  ar & x;\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '&'\n", errout.str());
+    }
+
+    void ast() {
+        check("struct c { void a() const { for (int x=0; x;); } };", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void oror() {
+        check("void foo() {\n"
+              "    params_given (params, \"overrides\") || (overrides = \"1\");\n"
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 };

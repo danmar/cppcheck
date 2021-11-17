@@ -77,6 +77,12 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>mComboErrorId</tabstop>
+  <tabstop>mTextFileName</tabstop>
+  <tabstop>mTextLineNumber</tabstop>
+  <tabstop>mTextSymbolName</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

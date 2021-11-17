@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2018 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,29 +22,32 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <ostream>
 #include <string>
 
 class TestUnusedFunctions : public TestFixture {
 public:
-    TestUnusedFunctions() : TestFixture("TestUnusedFunctions") {
-    }
+    TestUnusedFunctions() : TestFixture("TestUnusedFunctions") {}
 
 private:
     Settings settings;
 
-    void run() override {
-        settings.addEnabled("style");
+    void run() OVERRIDE {
+        settings.severity.enable(Severity::style);
 
         TEST_CASE(incondition);
         TEST_CASE(return1);
         TEST_CASE(return2);
         TEST_CASE(callback1);
+        TEST_CASE(callback2);
         TEST_CASE(else1);
         TEST_CASE(functionpointer);
         TEST_CASE(template1);
         TEST_CASE(template2);
         TEST_CASE(template3);
+        TEST_CASE(template4); // #9805
+        TEST_CASE(template5);
+        TEST_CASE(template6); // #10475 crash
+        TEST_CASE(template7); // #9766 crash
         TEST_CASE(throwIsNotAFunction);
         TEST_CASE(unusedError);
         TEST_CASE(unusedMain);
@@ -80,10 +83,11 @@ private:
         CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings, this);
         checkUnusedFunctions.parseTokens(tokenizer,  "someFile.c", &settings);
         // check() returns error if and only if errout is not empty.
-        if (checkUnusedFunctions.check(this, settings))
+        if (checkUnusedFunctions.check(this, settings)) {
             ASSERT(errout.str() != "");
-        else
+        } else {
             ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void incondition() {
@@ -117,6 +121,19 @@ private:
               "    void (*f)() = cond ? f1 : NULL;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void callback2() { // #8677
+        check("class C {\n"
+              "public:\n"
+              "    void callback();\n"
+              "    void start();\n"
+              "};\n"
+              "\n"
+              "void C::callback() {}\n" // <- not unused
+              "\n"
+              "void C::start() { ev.set<C, &C::callback>(this); }");
+        ASSERT_EQUALS("[test.cpp:9]: (style) The function 'start' is never used.\n", errout.str());
     }
 
     void else1() {
@@ -197,7 +214,9 @@ private:
               "template<class T> void g()\n"
               "{\n"
               "    f();\n"
-              "}");
+              "}\n"
+              "\n"
+              "void h() { g<int>(); h(); }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -208,8 +227,54 @@ private:
               "private:\n"
               "    template<typename T> void foo( T t ) const;\n"
               "};\n"
-              "template<typename T> void X::foo( T t ) const { }\n");
+              "template<typename T> void X::foo( T t ) const { }");
         ASSERT_EQUALS("[test.cpp:3]: (style) The function 'bar' is never used.\n", errout.str());
+    }
+
+    void template4() { // #9805
+        check("struct A {\n"
+              "    int a = 0;\n"
+              "    void f() { a = 1; }\n"
+              "    template <typename T, typename... Args> auto call(const Args &... args) -> T {\n"
+              "        a = 2;\n"
+              "        return T{};\n"
+              "    }\n"
+              "};\n"
+              "\n"
+              "struct B : public A {\n"
+              "    void test() {\n"
+              "        f();\n"
+              "        call<int>(1, 2, 3);\n"
+              "        test();\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void template5() { // #9220
+        check("void f(){}\n"
+              "\n"
+              "typedef void(*Filter)();\n"
+              "\n"
+              "template <Filter fun>\n"
+              "void g() { fun(); }\n"
+              "\n"
+              "int main() { g<f>(); return 0;}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void template6() { // #10475
+        check("template<template<typename...> class Ref, typename... Args>\n"
+              "struct Foo<Ref<Args...>, Ref> : std::true_type {};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void template7()
+    { // #9766
+        check("void f() {\n"
+              "    std::array<std::array<double,3>,3> array;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'f' is never used.\n", errout.str());
     }
 
     void throwIsNotAFunction() {
@@ -219,19 +284,19 @@ private:
 
     void unusedError() {
         check("void foo() {}\n"
-              "int main()\n");
+              "int main()");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
 
         check("void foo() const {}\n"
-              "int main()\n");
+              "int main()");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
 
         check("void foo() const throw() {}\n"
-              "int main()\n");
+              "int main()");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
 
         check("void foo() throw() {}\n"
-              "int main()\n");
+              "int main()");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
     }
 
@@ -311,8 +376,7 @@ private:
 
         // Don't crash on wrong syntax
         check("int x __attribute__((constructor));\n"
-              "int x __attribute__((destructor));");
-        ASSERT_EQUALS("", errout.str());
+              "int y __attribute__((destructor));");
     }
 
     void initializer_list() {
@@ -321,6 +385,17 @@ private:
               "    A() : m_i(foo())\n"
               "    {}\n"
               "int m_i;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        // #8580
+        check("int foo() { return 12345; }\n"
+              "int bar(std::function<int()> func) { return func(); }\n"
+              "\n"
+              "class A {\n"
+              "public:\n"
+              "  A() : a(bar([] { return foo(); })) {}\n"
+              "  const int a;\n"
               "};");
         ASSERT_EQUALS("", errout.str());
     }
@@ -378,7 +453,7 @@ private:
     void lineNumber() {
         check("void foo() {}\n"
               "void bar() {}\n"
-              "int main()\n");
+              "int main()");
         ASSERT_EQUALS("[test.cpp:2]: (style) The function 'bar' is never used.\n"
                       "[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
     }
@@ -437,7 +512,7 @@ private:
               "A operator ++ (const A &){ return A(); }\n"
               "A operator -- (const A &, const int){ return A(); }\n"
               "A operator -- (const A &){ return A(); }\n"
-              "A operator , (const A &, const A &){ return A(); }\n");
+              "A operator , (const A &, const A &){ return A(); }");
         ASSERT_EQUALS("", errout.str());
 
 

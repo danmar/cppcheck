@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,10 +38,10 @@ public:
     /** @brief value class */
     class value {
     private:
-        long long intValue;
-        double doubleValue;
-        enum { INT, LONG, LONGLONG, FLOAT } type;
-        bool isUnsigned;
+        long long mIntValue;
+        double mDoubleValue;
+        enum class Type { INT, LONG, LONGLONG, FLOAT } mType;
+        bool mIsUnsigned;
 
         void promote(const value &v);
 
@@ -49,14 +49,14 @@ public:
         explicit value(const std::string &s);
         std::string str() const;
         bool isInt() const {
-            return type != FLOAT;
+            return mType != Type::FLOAT;
         }
         bool isFloat() const {
-            return type == FLOAT;
+            return mType == Type::FLOAT;
         }
 
         double getDoubleValue() const {
-            return isFloat() ? doubleValue : (double)intValue;
+            return isFloat() ? mDoubleValue : (double)mIntValue;
         }
 
         static value calc(char op, const value &v1, const value &v2);
@@ -92,8 +92,12 @@ public:
     static bool isBin(const std::string& str);
 
     static std::string getSuffix(const std::string& value);
-    static bool isValidIntegerSuffix(const std::string& str);
-    static bool isValidIntegerSuffix(std::string::const_iterator it, std::string::const_iterator end);
+    /**
+     * \param[in] str string
+     * \param[in] supportMicrosoftExtensions support Microsoft extension: i64
+     *  \return true if str is a non-empty valid integer suffix
+     */
+    static bool isValidIntegerSuffix(const std::string& str, bool supportMicrosoftExtensions=true);
 
     static std::string add(const std::string & first, const std::string & second);
     static std::string subtract(const std::string & first, const std::string & second);
@@ -121,11 +125,7 @@ public:
      */
     static bool isOctalDigit(char c);
 
-    /**
-     * \param[in] str character literal
-     * @return Number of internal representation of the character literal
-     * */
-    static MathLib::bigint characterLiteralToLongNumber(const std::string& str);
+    static unsigned int encodeMultiChar(const std::string& str);
 
     /**
      * \param[in] iCode Code being considered
@@ -153,7 +153,7 @@ MathLib::value operator^(const MathLib::value &v1, const MathLib::value &v2);
 MathLib::value operator<<(const MathLib::value &v1, const MathLib::value &v2);
 MathLib::value operator>>(const MathLib::value &v1, const MathLib::value &v2);
 
-template<> CPPCHECKLIB std::string MathLib::toString(double value); // Declare specialization to avoid linker problems
+template<> CPPCHECKLIB std::string MathLib::toString<double>(double value); // Declare specialization to avoid linker problems
 
 /// @}
 //---------------------------------------------------------------------------

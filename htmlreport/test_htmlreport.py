@@ -24,7 +24,7 @@ HTML_REPORT_BIN = os.path.join(os.path.abspath(os.path.dirname(__file__)),
 class TestHTMLReport(unittest.TestCase):
 
     def testReportError(self):
-        for xml_version in ['1', '2']:
+        for xml_version in ['2']:
             self.checkReportError(xml_version)
 
     def checkReportError(self, xml_version):
@@ -47,7 +47,7 @@ class TestHTMLReport(unittest.TestCase):
                 self.assertIn('Memory leak:', detail_contents)
 
     def testReportNoError(self):
-        for xml_version in ['1', '2']:
+        for xml_version in ['2']:
             self.checkReportNoError(xml_version)
 
     def checkReportNoError(self, xml_version):
@@ -98,7 +98,7 @@ def runCheck(source_filename=None, xml_version='1', xml_filename=None):
     assert os.path.exists(xml_filename)
 
     subprocess.check_call(
-        [HTML_REPORT_BIN,
+        [sys.executable, HTML_REPORT_BIN,
          '--file=' + os.path.realpath(xml_filename),
          '--report-dir=' + os.path.realpath(output_directory)],
         cwd=os.path.join(ROOT_DIR, 'htmlreport'))
@@ -106,7 +106,7 @@ def runCheck(source_filename=None, xml_version='1', xml_filename=None):
     with open(os.path.join(output_directory, 'index.html')) as index_file:
         index_contents = index_file.read()
 
-    yield (index_contents, output_directory)
+    yield index_contents, output_directory
 
     shutil.rmtree(output_directory)
 
